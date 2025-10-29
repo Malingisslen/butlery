@@ -8,46 +8,11 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
 
-/// Activity feed item widget for displaying individual activities in social feeds
+/// Activity feed item widget for social activities with engagement display.
 ///
-/// This widget provides comprehensive display of social activities building on the
-/// existing activity card patterns from FriendActivitySection. It integrates with
-/// the established design system and supports all activity types with rich engagement
-/// display and interaction capabilities.
-///
-/// **Design Integration:**
-/// - Extends existing activity card patterns from discovery dashboard
-/// - Uses established design system (AppColors, AppTextStyles, AppDimensions)
-/// - Follows component theming principles with no inline styling
-/// - Supports Swedish localization throughout
-/// - Integrates with existing avatar and engagement components
-///
-/// **Activity Support:**
-/// - Content creation activities (recipes, menus, shopping lists)
-/// - Social interaction activities (comments, reactions, ratings)
-/// - Sharing and collaboration activities
-/// - Achievement and milestone activities
-/// - Rich metadata display with contextual information
-///
-/// **Interaction Features:**
-/// - Tap to navigate to content or activity details
-/// - Long press for activity options (hide, report, etc.)
-/// - Engagement metrics display with interactive elements
-/// - Time formatting with Swedish localization
-/// - User profile integration with avatar and name display
-///
-/// **Usage Examples:**
+/// **Features:** Content creation/sharing/interaction activities, Swedish time formatting, avatar integration.
 /// ```dart
-/// // Basic activity display
-/// ActivityFeedItemWidget(
-///   activity: activityItem,
-///   onTap: (activity) => navigateToContent(activity),
-/// )
-/// 
-/// // With engagement interaction
-/// ActivityFeedItemWidget(
-///   activity: activityItem,
-///   onTap: (activity) => showActivityDetails(activity),
+/// ActivityFeedItemWidget(activity: item, onTap: (a) => navigate(a),
 ///   onLongPress: (activity) => showActivityOptions(activity),
 ///   showEngagement: true,
 /// )

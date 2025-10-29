@@ -9,7 +9,7 @@ import 'package:butlery/widgets/image/editable_image_widget.dart';
 import 'package:butlery/widgets/image/image_picker_widget.dart';
 import 'package:butlery/widgets/image/image_gallery_widget.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
-import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
+import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Universal Image Manager - Refactored with focused widgets

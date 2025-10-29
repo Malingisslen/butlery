@@ -5,64 +5,42 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for rating statistics and aggregation
-/// 
-/// This module handles ONLY rating statistics operations:
-/// - Rating statistics calculation and aggregation
-/// - Rating distribution analysis
-/// - Top-rated recipe queries and ranking
-/// - Rating aggregate management
-/// 
-/// ❌ DOES NOT CONTAIN: Individual rating operations, social metrics, notifications, engagement scoring
+///
+/// Handles: Rating statistics, distribution analysis, top-rated queries, aggregates
+/// Excludes: Individual rating operations, social metrics, notifications, engagement scoring
 class RatingStatistics {
   static const String _ratingsCollection = 'recipe_ratings';
   static const String _socialStatsCollection = 'recipe_social_stats';
 
-  // ===== RATING STATISTICS CALCULATION =====
+  // RATING STATISTICS CALCULATION
 
   /// Calculate comprehensive rating statistics
   static Map<String, dynamic> calculateRatingStatistics(List<Map<String, dynamic>> ratings) {
     if (ratings.isEmpty) {
       return {
-        'count': 0,
-        'average': 0.0,
+        'count': 0, 'average': 0.0,
         'distribution': {1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
-        'reviews': [],
-        'recent_reviews': [],
-        'review_count': 0,
-        'review_percentage': 0,
+        'reviews': [], 'recent_reviews': [],
+        'review_count': 0, 'review_percentage': 0,
       };
     }
-
-    // Calculate average
     final totalRating = ratings.fold<double>(
-      0.0, (total, rating) => total + (rating['rating'] as double)
-    );
+      0.0, (total, rating) => total + (rating['rating'] as double));
     final average = totalRating / ratings.length;
-
-    // Calculate distribution
     final distribution = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
     for (final rating in ratings) {
       final starRating = (rating['rating'] as double).round();
       distribution[starRating] = distribution[starRating]! + 1;
     }
-
-    // Get reviews (ratings with text)
-    final reviews = ratings
-        .where((rating) => rating['review'] != null && 
-                          (rating['review'] as String).trim().isNotEmpty)
-        .toList();
-
-    // Sort reviews by date (most recent first)
+    final reviews = ratings.where((rating) => rating['review'] != null &&
+        (rating['review'] as String).trim().isNotEmpty).toList();
     reviews.sort((a, b) {
       final aTime = a['createdAt'] as Timestamp?;
       final bTime = b['createdAt'] as Timestamp?;
       if (aTime == null || bTime == null) return 0;
       return bTime.compareTo(aTime);
     });
-
-    // Get recent reviews (last 5)
     final recentReviews = reviews.take(5).toList();
-
     return {
       'count': ratings.length,
       'average': double.parse(average.toStringAsFixed(1)),
@@ -70,9 +48,8 @@ class RatingStatistics {
       'reviews': reviews,
       'recent_reviews': recentReviews,
       'review_count': reviews.length,
-      'review_percentage': ratings.isNotEmpty 
-          ? ((reviews.length / ratings.length) * 100).round()
-          : 0,
+      'review_percentage': ratings.isNotEmpty
+          ? ((reviews.length / ratings.length) * 100).round() : 0,
     };
   }
 
@@ -83,29 +60,17 @@ class RatingStatistics {
     required Recipe recipe,
   }) async {
     try {
-      AppLogger.debug('📊 Getting comprehensive statistics for recipe $recipeId');
-
-      // Get all ratings for this recipe
-      final ratingsSnapshot = await firestore
-          .collection(_ratingsCollection)
-          .where('recipeId', isEqualTo: recipeId)
-          .get();
-
+      final ratingsSnapshot = await firestore.collection(_ratingsCollection)
+          .where('recipeId', isEqualTo: recipeId).get();
       final ratings = ratingsSnapshot.docs.map((doc) {
         final data = doc.data();
         return {
-          'userId': data['userId'],
-          'userDisplayName': data['userDisplayName'],
-          'rating': data['rating'],
-          'review': data['review'],
+          'userId': data['userId'], 'userDisplayName': data['userDisplayName'],
+          'rating': data['rating'], 'review': data['review'],
           'createdAt': data['createdAt'],
         };
       }).toList();
-
-      // Calculate rating statistics
       final ratingStats = calculateRatingStatistics(ratings);
-
-      // Combine recipe info with statistics
       final result = {
         'recipe': {
           'id': recipe.id,
@@ -119,15 +84,15 @@ class RatingStatistics {
         'ratings': ratingStats,
       };
 
-      AppLogger.debug('📋 Generated comprehensive recipe statistics');
+      AppLogger.debug('Generated recipe statistics');
       return result;
     } catch (e) {
-      AppLogger.error('❌ Failed to get recipe statistics', e);
+      AppLogger.error('Failed to get recipe statistics', e);
       return {'error': 'Failed to calculate statistics'};
     }
   }
 
-  // ===== RATING AGGREGATION =====
+  // RATING AGGREGATION
 
   /// Update aggregated rating for recipe
   static Future<void> updateRecipeRatingAggregate({
@@ -135,28 +100,24 @@ class RatingStatistics {
     required String recipeId,
   }) async {
     try {
-      AppLogger.debug('📊 Updating rating aggregate for recipe $recipeId');
+      AppLogger.debug('Updating rating aggregate for recipe $recipeId');
 
-      // Get all ratings for the recipe
       final ratingsSnapshot = await firestore
           .collection(_ratingsCollection)
           .where('recipeId', isEqualTo: recipeId)
           .get();
 
       if (ratingsSnapshot.docs.isEmpty) {
-        // No ratings, remove aggregate
         await firestore
             .collection(_socialStatsCollection)
             .doc(recipeId)
             .delete();
-        AppLogger.debug('📋 Removed rating aggregate (no ratings)');
         return;
       }
 
       final ratings = ratingsSnapshot.docs.map((doc) => doc.data()).toList();
       final stats = calculateRatingStatistics(ratings);
 
-      // Store aggregate data
       await firestore
           .collection(_socialStatsCollection)
           .doc(recipeId)
@@ -169,9 +130,9 @@ class RatingStatistics {
         'lastUpdated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
-      AppLogger.debug('✅ Updated rating aggregate for recipe $recipeId');
+      AppLogger.debug('Updated rating aggregate');
     } catch (e) {
-      AppLogger.error('❌ Failed to update rating aggregate', e);
+      AppLogger.error('Failed to update rating aggregate', e);
       rethrow;
     }
   }
@@ -198,12 +159,12 @@ class RatingStatistics {
         'last_updated': data['lastUpdated'],
       };
     } catch (e) {
-      AppLogger.error('❌ Failed to get cached rating aggregate', e);
+      AppLogger.error('Failed to get cached rating aggregate', e);
       return null;
     }
   }
 
-  // ===== TOP-RATED QUERIES =====
+  // TOP-RATED QUERIES
 
   /// Get top-rated recipes with filtering
   static Future<List<Map<String, dynamic>>> getTopRatedRecipes({
@@ -214,31 +175,29 @@ class RatingStatistics {
     int minRatingCount = 3,
   }) async {
     try {
-      AppLogger.info('🏆 Getting top-rated recipes (${accessibleRecipes.length} candidates)');
+      AppLogger.info('Getting top-rated recipes (${accessibleRecipes.length} candidates)');
 
       final recipeStats = <Map<String, dynamic>>[];
-      
-      // ✅ PERFORMANCE FIX: Batch query cached stats instead of N+1 queries
-      // First, try to get cached stats for all recipes in batches
+
+      // Batch query cached stats to avoid N+1 queries
       final cachedStatsMap = await _batchGetCachedRatingAggregates(
         firestore: firestore,
         recipeIds: accessibleRecipes.map((r) => r.id).toList(),
       );
-      
+
       for (final recipe in accessibleRecipes) {
         Map<String, dynamic> ratingStats;
         final cachedStats = cachedStatsMap[recipe.id];
-        
+
         if (cachedStats != null) {
           ratingStats = cachedStats;
         } else {
-          // Calculate fresh stats only for uncached recipes
           final fullStats = await getRecipeStatistics(
             firestore: firestore,
             recipeId: recipe.id,
             recipe: recipe,
           );
-          
+
           if (fullStats.containsKey('error')) continue;
           ratingStats = fullStats['ratings'] as Map<String, dynamic>;
         }
@@ -256,23 +215,21 @@ class RatingStatistics {
         }
       }
 
-      // Sort by rating (descending) and then by rating count
       recipeStats.sort((a, b) {
         final ratingComparison = (b['averageRating'] as double)
             .compareTo(a['averageRating'] as double);
-        
+
         if (ratingComparison != 0) return ratingComparison;
-        
+
         return (b['ratingCount'] as int).compareTo(a['ratingCount'] as int);
       });
 
-      // Apply limit and return
       final result = recipeStats.take(limit).toList();
-      
-      AppLogger.success('✅ Found ${result.length} top-rated recipes');
+
+      AppLogger.success('Found ${result.length} top-rated recipes');
       return result;
     } catch (e) {
-      AppLogger.error('❌ Failed to get top-rated recipes', e);
+      AppLogger.error('Failed to get top-rated recipes', e);
       return [];
     }
   }
@@ -306,18 +263,17 @@ class RatingStatistics {
         }
       }
 
-      // Sort by rating descending
-      filteredRecipes.sort((a, b) => 
+      filteredRecipes.sort((a, b) =>
           (b['averageRating'] as double).compareTo(a['averageRating'] as double));
 
       return filteredRecipes;
     } catch (e) {
-      AppLogger.error('❌ Failed to get recipes by rating range', e);
+      AppLogger.error('Failed to get recipes by rating range', e);
       return [];
     }
   }
 
-  // ===== RATING DISTRIBUTION ANALYSIS =====
+  // RATING DISTRIBUTION ANALYSIS
 
   /// Analyze rating distribution patterns
   static Map<String, dynamic> analyzeRatingDistribution(Map<int, int> distribution) {
@@ -332,19 +288,16 @@ class RatingStatistics {
       };
     }
 
-    // Calculate percentages
     final percentages = <int, double>{};
     for (final entry in distribution.entries) {
       percentages[entry.key] = (entry.value / totalRatings) * 100;
     }
 
-    // Find dominant rating
     final dominantEntry = distribution.entries
         .reduce((a, b) => a.value > b.value ? a : b);
     final dominantRating = dominantEntry.key;
     final dominantPercentage = percentages[dominantRating]!;
 
-    // Determine distribution pattern
     String pattern;
     if (dominantPercentage >= 60) {
       pattern = 'highly_concentrated';
@@ -354,21 +307,18 @@ class RatingStatistics {
       pattern = 'distributed';
     }
 
-    // Determine skew
     final highRatings = (distribution[4] ?? 0) + (distribution[5] ?? 0);
     final lowRatings = (distribution[1] ?? 0) + (distribution[2] ?? 0);
-    // final midRatings = distribution[3] ?? 0; // Currently unused
 
     String skew;
     if (highRatings > lowRatings * 1.5) {
-      skew = 'positive'; // Skewed toward high ratings
+      skew = 'positive';
     } else if (lowRatings > highRatings * 1.5) {
-      skew = 'negative'; // Skewed toward low ratings
+      skew = 'negative';
     } else {
       skew = 'balanced';
     }
 
-    // Determine distribution type
     String distributionType;
     if (dominantRating >= 4) {
       distributionType = 'high_quality';
@@ -402,7 +352,6 @@ class RatingStatistics {
       };
     }
 
-    // Sort by creation date
     final sortedRatings = List<Map<String, dynamic>>.from(ratings);
     sortedRatings.sort((a, b) {
       final aTime = a['createdAt'] as Timestamp?;
@@ -411,22 +360,19 @@ class RatingStatistics {
       return aTime.compareTo(bTime);
     });
 
-    // Split into older and recent ratings
     final splitPoint = (sortedRatings.length * 0.6).round();
     final olderRatings = sortedRatings.take(splitPoint).toList();
     final recentRatings = sortedRatings.skip(splitPoint).toList();
 
-    // Calculate averages
     final olderAverage = olderRatings.isEmpty ? 0.0 :
         olderRatings.fold<double>(0.0, (total, r) => total + (r['rating'] as double)) / olderRatings.length;
-    
+
     final recentAverage = recentRatings.isEmpty ? 0.0 :
         recentRatings.fold<double>(0.0, (total, r) => total + (r['rating'] as double)) / recentRatings.length;
 
-    // Determine trend direction
     String direction;
     String trend;
-    
+
     final difference = recentAverage - olderAverage;
     if (difference.abs() < 0.2) {
       direction = 'stable';
@@ -450,30 +396,28 @@ class RatingStatistics {
     };
   }
 
-  // ===== BATCH OPERATIONS =====
+  // BATCH OPERATIONS
 
-  /// Batch get cached rating aggregates for multiple recipes
-  /// ✅ PERFORMANCE FIX: Reduces N+1 queries to batch queries
+  /// Batch get cached rating aggregates (reduces N+1 queries)
   static Future<Map<String, Map<String, dynamic>>> _batchGetCachedRatingAggregates({
     required FirebaseFirestore firestore,
     required List<String> recipeIds,
   }) async {
     final results = <String, Map<String, dynamic>>{};
-    
+
     if (recipeIds.isEmpty) return results;
-    
-    // Firestore allows max 10 documents in whereIn query
+
     const batchSize = 10;
-    
+
     for (int i = 0; i < recipeIds.length; i += batchSize) {
       final batch = recipeIds.skip(i).take(batchSize).toList();
-      
+
       try {
         final querySnapshot = await firestore
             .collection(_socialStatsCollection)
             .where(FieldPath.documentId, whereIn: batch)
             .get();
-            
+
         for (final doc in querySnapshot.docs) {
           if (doc.exists) {
             final data = doc.data();
@@ -485,11 +429,10 @@ class RatingStatistics {
           }
         }
       } catch (e) {
-        AppLogger.error('Failed to batch get cached rating aggregates for batch: $batch', e);
-        // Continue with other batches
+        AppLogger.error('Failed to batch get cached rating aggregates', e);
       }
     }
-    
+
     return results;
   }
 
@@ -499,9 +442,9 @@ class RatingStatistics {
     required List<String> recipeIds,
   }) async {
     try {
-      AppLogger.info('📊 Updating ${recipeIds.length} rating aggregates');
+      AppLogger.info('Updating ${recipeIds.length} rating aggregates');
 
-      final futures = recipeIds.map((recipeId) => 
+      final futures = recipeIds.map((recipeId) =>
         updateRecipeRatingAggregate(
           firestore: firestore,
           recipeId: recipeId,
@@ -509,9 +452,9 @@ class RatingStatistics {
       );
 
       await Future.wait(futures);
-      AppLogger.success('✅ Updated ${recipeIds.length} rating aggregates');
+      AppLogger.success('Updated ${recipeIds.length} rating aggregates');
     } catch (e) {
-      AppLogger.error('❌ Failed to update multiple rating aggregates', e);
+      AppLogger.error('Failed to update multiple rating aggregates', e);
       rethrow;
     }
   }
@@ -541,7 +484,7 @@ class RatingStatistics {
 
       return results;
     } catch (e) {
-      AppLogger.error('❌ Failed to get multiple recipe statistics', e);
+      AppLogger.error('Failed to get multiple recipe statistics', e);
       return {};
     }
   }

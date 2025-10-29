@@ -40,7 +40,7 @@ import 'package:butlery/models/shared_menu.dart';
 // Import Recipe Lifecycle services and models (verified against production code)
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
-import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/offline_service.dart' as offline_service;
 import 'package:butlery/services/analytics_service.dart';
@@ -192,11 +192,11 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
     }
       
     try {
-      final mockSharedContentViewModel = _E2EStubFactory.createSharedContentViewModel();
-      getIt.registerSingleton<SharedContentViewModel>(mockSharedContentViewModel);
+      final mockSharedContentCoordinator = _E2EStubFactory.createSharedContentCoordinator();
+      getIt.registerSingleton<SharedContentCoordinatorViewModel>(mockSharedContentCoordinator);
       successCount++;
     } catch (e) {
-      if (kDebugMode) debugPrint('⚠️ Failed to register SharedContentViewModel: $e');
+      if (kDebugMode) debugPrint('⚠️ Failed to register SharedContentCoordinatorViewModel: $e');
     }
       
     try {
@@ -562,13 +562,13 @@ class _E2EStubFactory {
     return _E2EFriendsViewModelMock();
   }
   
-  /// Create SharedContentViewModel stub - simplified mock approach
-  static dynamic createSharedContentViewModel() {
+  /// Create SharedContentCoordinatorViewModel stub - simplified mock approach
+  static dynamic createSharedContentCoordinator() {
     if (kDebugMode) {
-      debugPrint('✅ E2E Factory: Creating simplified SharedContentViewModel mock');  
+      debugPrint('✅ E2E Factory: Creating simplified SharedContentCoordinatorViewModel mock');
     }
     // Create a simplified mock that provides basic functionality without complex dependencies
-    return _E2ESharedContentViewModelMock();
+    return _E2ESharedContentCoordinatorMock();
   }
   
   /// Create OfflineService stub - simplified mock approach
@@ -651,28 +651,28 @@ class _E2EFriendsViewModelMock extends ChangeNotifier {
   void clearError() {}
 }
 
-/// Simplified SharedContentViewModel mock that provides basic shared content functionality
-class _E2ESharedContentViewModelMock extends ChangeNotifier {
+/// Simplified SharedContentCoordinatorViewModel mock that provides basic shared content functionality
+class _E2ESharedContentCoordinatorMock extends ChangeNotifier {
   String get searchQuery => '';
   int get currentTabIndex => 0;
   bool get isLoading => false;
   String? get error => null;
   bool get hasError => false;
   bool get isImporting => false;
-  
+
   List<SharedRecipe> get visibleSharedRecipes => [];
   List<SharedMenu> get visibleSharedMenus => [];
   bool get hasSharedContent => false;
   bool get hasFilteredContent => false;
   List<SharedRecipe> get filteredSharedRecipes => [];
   List<SharedMenu> get filteredSharedMenus => [];
-  
+
   int get totalSharedRecipes => 0;
   int get totalSharedMenus => 0;
   int get unreadRecipesCount => 0;
   int get unreadMenusCount => 0;
   int get totalUnreadCount => 0;
-  
+
   void updateSearchQuery(String query) {}
   void clearSearch() {}
   void setTabIndex(int index) {}

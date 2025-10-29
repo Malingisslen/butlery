@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/services/recommendation_service.dart';
+import 'package:butlery/models/recommendation.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// Recommendations Section - Shows personalized content recommendations

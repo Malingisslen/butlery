@@ -1,70 +1,14 @@
-/// Mixin providing standardized async operation handling for ViewModels.
+/// Mixin for standardized async operations with loading states, error handling, debouncing, caching, and retry logic.
 ///
-/// This mixin eliminates duplicated async operation patterns found across ViewModels
-/// by providing a comprehensive set of async operation utilities with built-in
-/// loading state management, error handling, concurrency control, and performance
-/// optimizations.
-///
-/// Key capabilities:
-/// - Automatic loading state management during async operations
-/// - Concurrent operation tracking and prevention of duplicate operations
-/// - Debounced operations to prevent excessive API calls
-/// - Background operations that don't affect loading states
-/// - Operation caching to avoid redundant network requests
-/// - Retry mechanisms with exponential backoff
-/// - Operation cancellation and cleanup
-///
-/// Architecture benefits:
-/// - Eliminates try-catch boilerplate in ViewModels
-/// - Provides consistent loading and error states across the app
-/// - Prevents race conditions and duplicate operations
-/// - Improves performance through debouncing and caching
-/// - Simplifies ViewModel testing with predictable state management
-///
-/// Usage pattern transformation:
 /// ```dart
-/// // Before (duplicated across ViewModels):
-/// Future<void> loadData() async {
-///   try {
-///     _setLoading(true);
-///     _clearError();
-///     final data = await _service.fetchData();
-///     _data = data;
-///     _setLoading(false);
-///     notifyListeners();
-///   } catch (e) {
-///     _setError(e.toString());
-///     _setLoading(false);
-///   }
-/// }
-///
-/// // After (using AsyncOperationMixin):
-/// Future<void> loadData() async {
-///   await executeAsync(() async {
-///     final data = await _service.fetchData();
-///     _data = data;
-///   });
-/// }
-/// ```
+/// Future<void> loadData() => executeAsync(() async { _data = await _service.fetchData(); });
 
 import 'dart:async';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 
-/// Mixin for standardizing async operations in ViewModels.
-///
-/// Built on top of [StateNotifierMixin] to provide comprehensive async operation
-/// management including loading states, error handling, concurrency control,
-/// and performance optimizations. This mixin should be used by all ViewModels
-/// that perform async operations.
-///
-/// Provides these operation types:
-/// - [executeAsync] - Standard async operations with loading states
-/// - [executeNamedOperation] - Named operations that prevent duplicates
-/// - [executeDebouncedOperation] - Debounced operations for user input
-/// - [executeBackgroundOperation] - Background operations without loading states
-/// - [executeBatchOperations] - Batch processing with progress tracking
-/// - [executeWithRetry] - Operations with automatic retry logic
+/// Mixin for async operations with loading states, error handling, concurrency control, debouncing, caching, and batch processing.
+/// Built on [StateNotifierMixin]. Use in ViewModels for executeAsync, executeNamedOperation, executeDebounced, executeBatch.
 mixin AsyncOperationMixin on StateNotifierMixin {
   // ===== OPERATION TRACKING =====
   
@@ -79,42 +23,18 @@ mixin AsyncOperationMixin on StateNotifierMixin {
   
   // ===== PUBLIC GETTERS =====
   
-  /// Whether any operations are currently executing.
-  ///
-  /// Useful for UI components that need to show global loading states
-  /// or disable certain actions while operations are in progress.
+  /// Whether any operations are currently executing
   bool get hasActiveOperations => _activeOperations.isNotEmpty;
-  
-  /// The number of operations currently executing.
-  ///
-  /// Can be used to show progress indicators or operation counts in the UI.
+
+  /// The number of operations currently executing
   int get activeOperationCount => _activeOperations.length;
-  
-  /// List of names of currently executing operations.
-  ///
-  /// Useful for debugging and showing detailed operation status in the UI.
+
+  /// List of names of currently executing operations
   List<String> get activeOperationNames => _activeOperations.toList();
   
   // ===== BASIC ASYNC OPERATIONS =====
   
-  /// Executes an async operation with automatic loading state and error management.
-  ///
-  /// This is the primary method for executing async operations in ViewModels.
-  /// It automatically manages loading states, clears previous errors, and
-  /// handles exceptions with proper error messaging and logging.
-  ///
-  /// [operation] The async operation to execute
-  /// [errorPrefix] Prefix for error messages (optional)
-  /// [clearErrorOnStart] Whether to clear existing errors before starting (default: true)
-  ///
-  /// Returns the result of the operation.
-  ///
-  /// Example:
-  /// ```dart
-  /// final recipes = await executeAsync(() async {
-  ///   return await recipeService.fetchRecipes();
-  /// });
-  /// ```
+  /// Execute async operation with loading states and error handling
   @override
   Future<T> executeAsync<T>(
     Future<T> Function() operation, {
@@ -128,24 +48,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
     );
   }
   
-  /// Executes a named async operation, preventing duplicate executions.
-  ///
-  /// Named operations are tracked to prevent the same operation from running
-  /// concurrently. If an operation with the same name is already running,
-  /// subsequent calls will wait for the first operation to complete.
-  ///
-  /// [operationName] Unique name for the operation
-  /// [operation] The async operation to execute
-  ///
-  /// Returns the result of the operation.
-  ///
-  /// Example:
-  /// ```dart
-  /// final user = await executeNamedOperation(
-  ///   'fetchUserProfile',
-  ///   () => userService.fetchProfile(userId),
-  /// );
-  /// ```
+  /// Execute named async operation, preventing duplicate concurrent executions
   Future<T> executeNamedOperation<T>(
     String operationName,
     Future<T> Function() operation, {

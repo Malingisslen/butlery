@@ -29,7 +29,6 @@ class ChatActionHandler {
     this.onReplyToMessage,
   })  : _messagingService = ServiceLocator.get<MessagingService>(),
         _mediaService = MessagingMediaService(
-          storageService: ServiceLocator.get(),
           messagingService: ServiceLocator.get(),
           authRepository: ServiceLocator.get(),
         );

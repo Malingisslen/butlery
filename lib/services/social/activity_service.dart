@@ -8,59 +8,11 @@ import 'package:butlery/models/social/activity_feed_item.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/services/social/helpers/activity_cache_helper.dart';
 
-/// Universal activity service providing comprehensive social activity feed functionality
+/// Social activity service for tracking and feed generation.
 ///
-/// This service manages activity tracking and feed generation across all content types
-/// with sophisticated privacy controls, engagement tracking, and real-time updates. It
-/// follows the established BaseService architecture for consistent error handling and
-/// logging while providing optimized performance through intelligent caching and
-/// bulk operations.
-///
-/// **Architecture Integration:**
-/// - Extends BaseService for consistent service patterns and error handling
-/// - Uses ActivityRepository interface for flexible backend implementations
-/// - Integrates with AuthRepository for user authentication and permission validation
-/// - Coordinates with existing social services for comprehensive activity tracking
-/// - Implements dependency injection through service locator for decoupled architecture
-///
-/// **Activity Tracking Features:**
-/// - **Universal Activity Creation**: Records activities across all content types
-/// - **Friend-Based Feeds**: Generates personalized feeds based on friend relationships
-/// - **Privacy Controls**: Granular visibility control with friend category filtering
-/// - **Real-time Updates**: Live activity streams with efficient change notification
-/// - **Engagement Metrics**: Comprehensive interaction tracking and analytics
-/// - **Performance Optimization**: Intelligent caching and bulk operations
-///
-/// **Feed Generation Features:**
-/// - **Personalized Feeds**: AI-powered activity relevance and friend prioritization
-/// - **Content Filtering**: Activity type filtering and user preference enforcement
-/// - **Trending Activities**: Engagement-based trending content identification
-/// - **Privacy Enforcement**: Automatic friend category and visibility validation
-/// - **Performance Optimization**: Pagination, caching, and bulk loading
-///
-/// **Usage Examples:**
-/// ```dart
-/// final activityService = ActivityService(
-///   activityRepository: ServiceLocator.get<ActivityRepository>(),
-///   authRepository: ServiceLocator.get<AuthRepository>(),
-/// );
-/// 
-/// // Track recipe creation activity
-/// await activityService.trackRecipeCreated(
-///   recipeId: 'recipe123',
-///   recipeTitle: 'Köttbullar med potatismos',
-///   visibility: ['close_friends', 'family'],
-/// );
-/// 
-/// // Get personalized activity feed
-/// final activities = await activityService.getFriendActivityFeed(limit: 20);
-/// 
-/// // Get real-time activity updates
-/// activityService.getActivityFeedStream().listen((activities) {
-///   updateFeedUI(activities);
-/// });
-/// ```
+/// Manages activity tracking, personalized feeds, privacy controls, and real-time updates with caching.
 class ActivityService extends BaseService with StreamManagementMixin {
   final ActivityRepository _activityRepository;
   final auth_repo.AuthRepository _authRepository;
@@ -72,10 +24,6 @@ class ActivityService extends BaseService with StreamManagementMixin {
   final Map<String, List<ActivityFeedItem>> _feedCache = {};
   final Map<String, StreamSubscription> _feedStreams = {};
   final Map<String, DateTime> _cacheTimestamps = {};
-  
-  // Cache configuration
-  static const Duration _cacheTimeout = Duration(minutes: 5);
-  static const int _maxCacheSize = 100;
 
   ActivityService({
     required ActivityRepository activityRepository,
@@ -83,46 +31,24 @@ class ActivityService extends BaseService with StreamManagementMixin {
   }) : _activityRepository = activityRepository,
        _authRepository = authRepository;
 
-  // ===== ACTIVITY TRACKING OPERATIONS =====
 
-  /// Track recipe creation activity
   Future<void> trackRecipeCreated({
     required String recipeId,
     required String recipeTitle,
     String? recipeImageUrl,
     List<String>? visibility,
   }) async {
-    await executeServiceOperation(
-      () async {
-        final currentUser = _authRepository.currentUser;
-        if (currentUser == null) {
-          throw AuthenticationException('User must be authenticated to track activity');
-        }
-
-        final activity = ActivityFeedItem.create(
-          userId: currentUser.uid,
-          userDisplayName: currentUser.displayName ?? 'Okänd användare',
-          userAvatarUrl: currentUser.photoURL,
-          type: ActivityType.recipeCreated,
-          targetId: recipeId,
-          targetType: 'recipe',
-          targetTitle: recipeTitle,
-          targetImageUrl: recipeImageUrl,
-          visibility: visibility ?? ['all_friends'],
-        );
-
-        await _activityRepository.createActivity(activity);
-        _invalidateCache(currentUser.uid);
-        
-        AppLogger.debug('Recipe creation activity tracked: $recipeId');
-      },
+    await _trackGenericActivity(
+      type: ActivityType.recipeCreated,
+      targetId: recipeId,
+      targetType: 'recipe',
+      targetTitle: recipeTitle,
+      targetImageUrl: recipeImageUrl,
+      visibility: visibility,
       operationName: 'Track recipe created',
-      requiresAuth: true,
-      requiresNetwork: true,
     );
   }
 
-  /// Track recipe sharing activity
   Future<void> trackRecipeShared({
     required String recipeId,
     required String recipeTitle,
@@ -130,41 +56,21 @@ class ActivityService extends BaseService with StreamManagementMixin {
     required List<String> sharedWith,
     List<String>? visibility,
   }) async {
-    await executeServiceOperation(
-      () async {
-        final currentUser = _authRepository.currentUser;
-        if (currentUser == null) {
-          throw AuthenticationException('User must be authenticated to track activity');
-        }
-
-        final activity = ActivityFeedItem.create(
-          userId: currentUser.uid,
-          userDisplayName: currentUser.displayName ?? 'Okänd användare',
-          userAvatarUrl: currentUser.photoURL,
-          type: ActivityType.recipeShared,
-          targetId: recipeId,
-          targetType: 'recipe',
-          targetTitle: recipeTitle,
-          targetImageUrl: recipeImageUrl,
-          visibility: visibility ?? ['all_friends'],
-          metadata: {
-            'sharedWith': sharedWith,
-            'shareCount': sharedWith.length,
-          },
-        );
-
-        await _activityRepository.createActivity(activity);
-        _invalidateCache(currentUser.uid);
-        
-        AppLogger.debug('Recipe sharing activity tracked: $recipeId shared with ${sharedWith.length} users');
+    await _trackGenericActivity(
+      type: ActivityType.recipeShared,
+      targetId: recipeId,
+      targetType: 'recipe',
+      targetTitle: recipeTitle,
+      targetImageUrl: recipeImageUrl,
+      visibility: visibility,
+      metadata: {
+        'sharedWith': sharedWith,
+        'shareCount': sharedWith.length,
       },
       operationName: 'Track recipe shared',
-      requiresAuth: true,
-      requiresNetwork: true,
     );
   }
 
-  /// Track recipe rating activity
   Future<void> trackRecipeRated({
     required String recipeId,
     required String recipeTitle,
@@ -172,41 +78,21 @@ class ActivityService extends BaseService with StreamManagementMixin {
     required int rating,
     List<String>? visibility,
   }) async {
-    await executeServiceOperation(
-      () async {
-        final currentUser = _authRepository.currentUser;
-        if (currentUser == null) {
-          throw AuthenticationException('User must be authenticated to track activity');
-        }
-
-        final activity = ActivityFeedItem.create(
-          userId: currentUser.uid,
-          userDisplayName: currentUser.displayName ?? 'Okänd användare',
-          userAvatarUrl: currentUser.photoURL,
-          type: ActivityType.recipeRated,
-          targetId: recipeId,
-          targetType: 'recipe',
-          targetTitle: recipeTitle,
-          targetImageUrl: recipeImageUrl,
-          visibility: visibility ?? ['all_friends'],
-          metadata: {
-            'rating': rating,
-            'maxRating': 5,
-          },
-        );
-
-        await _activityRepository.createActivity(activity);
-        _invalidateCache(currentUser.uid);
-        
-        AppLogger.debug('Recipe rating activity tracked: $recipeId rated $rating stars');
+    await _trackGenericActivity(
+      type: ActivityType.recipeRated,
+      targetId: recipeId,
+      targetType: 'recipe',
+      targetTitle: recipeTitle,
+      targetImageUrl: recipeImageUrl,
+      visibility: visibility,
+      metadata: {
+        'rating': rating,
+        'maxRating': 5,
       },
       operationName: 'Track recipe rated',
-      requiresAuth: true,
-      requiresNetwork: true,
     );
   }
 
-  /// Track comment added activity
   Future<void> trackCommentAdded({
     required String contentId,
     required String contentType,
@@ -216,44 +102,22 @@ class ActivityService extends BaseService with StreamManagementMixin {
     String? parentCommentId,
     List<String>? visibility,
   }) async {
-    await executeServiceOperation(
-      () async {
-        final currentUser = _authRepository.currentUser;
-        if (currentUser == null) {
-          throw AuthenticationException('User must be authenticated to track activity');
-        }
-
-        final activity = ActivityFeedItem.create(
-          userId: currentUser.uid,
-          userDisplayName: currentUser.displayName ?? 'Okänd användare',
-          userAvatarUrl: currentUser.photoURL,
-          type: ActivityType.commentAdded,
-          targetId: contentId,
-          targetType: contentType,
-          targetTitle: contentTitle,
-          targetImageUrl: contentImageUrl,
-          parentId: commentId,
-          parentType: 'comment',
-          visibility: visibility ?? ['all_friends'],
-          metadata: {
-            'commentId': commentId,
-            'parentCommentId': parentCommentId,
-            'isReply': parentCommentId != null,
-          },
-        );
-
-        await _activityRepository.createActivity(activity);
-        _invalidateCache(currentUser.uid);
-        
-        AppLogger.debug('Comment activity tracked: comment on $contentType:$contentId');
+    await _trackGenericActivity(
+      type: ActivityType.commentAdded,
+      targetId: contentId,
+      targetType: contentType,
+      targetTitle: contentTitle,
+      targetImageUrl: contentImageUrl,
+      visibility: visibility,
+      metadata: {
+        'commentId': commentId,
+        'parentCommentId': parentCommentId,
+        'isReply': parentCommentId != null,
       },
       operationName: 'Track comment added',
-      requiresAuth: true,
-      requiresNetwork: true,
     );
   }
 
-  /// Track reaction added activity
   Future<void> trackReactionAdded({
     required String contentId,
     required String contentType,
@@ -262,40 +126,20 @@ class ActivityService extends BaseService with StreamManagementMixin {
     required String reactionType,
     List<String>? visibility,
   }) async {
-    await executeServiceOperation(
-      () async {
-        final currentUser = _authRepository.currentUser;
-        if (currentUser == null) {
-          throw AuthenticationException('User must be authenticated to track activity');
-        }
-
-        final activity = ActivityFeedItem.create(
-          userId: currentUser.uid,
-          userDisplayName: currentUser.displayName ?? 'Okänd användare',
-          userAvatarUrl: currentUser.photoURL,
-          type: ActivityType.reactionAdded,
-          targetId: contentId,
-          targetType: contentType,
-          targetTitle: contentTitle,
-          targetImageUrl: contentImageUrl,
-          visibility: visibility ?? ['all_friends'],
-          metadata: {
-            'reactionType': reactionType,
-          },
-        );
-
-        await _activityRepository.createActivity(activity);
-        _invalidateCache(currentUser.uid);
-        
-        AppLogger.debug('Reaction activity tracked: $reactionType on $contentType:$contentId');
+    await _trackGenericActivity(
+      type: ActivityType.reactionAdded,
+      targetId: contentId,
+      targetType: contentType,
+      targetTitle: contentTitle,
+      targetImageUrl: contentImageUrl,
+      visibility: visibility,
+      metadata: {
+        'reactionType': reactionType,
       },
       operationName: 'Track reaction added',
-      requiresAuth: true,
-      requiresNetwork: true,
     );
   }
 
-  /// Track menu creation activity
   Future<void> trackMenuCreated({
     required String menuId,
     required String menuTitle,
@@ -311,7 +155,6 @@ class ActivityService extends BaseService with StreamManagementMixin {
     );
   }
 
-  /// Track shopping list creation activity
   Future<void> trackShoppingListCreated({
     required String listId,
     required String listTitle,
@@ -327,9 +170,7 @@ class ActivityService extends BaseService with StreamManagementMixin {
     );
   }
 
-  // ===== FEED OPERATIONS =====
 
-  /// Get personalized friend activity feed
   Future<List<ActivityFeedItem>> getFriendActivityFeed({
     int limit = 20,
     int offset = 0,
@@ -342,10 +183,10 @@ class ActivityService extends BaseService with StreamManagementMixin {
           throw AuthenticationException('User must be authenticated to get activity feed');
         }
 
-        final cacheKey = _getFeedCacheKey(currentUser.uid, friendCategories);
-        
+        final cacheKey = ActivityCacheHelper.getFeedCacheKey(currentUser.uid, friendCategories);
+
         // Check cache first
-        if (_isCacheValid(cacheKey) && offset == 0) {
+        if (ActivityCacheHelper.isCacheValid(cacheKey, _cacheTimestamps) && offset == 0) {
           final cachedFeed = _feedCache[cacheKey];
           if (cachedFeed != null) {
             return cachedFeed.take(limit).toList();
@@ -363,7 +204,7 @@ class ActivityService extends BaseService with StreamManagementMixin {
         if (offset == 0) {
           _feedCache[cacheKey] = activities;
           _cacheTimestamps[cacheKey] = DateTime.now();
-          _cleanupCache();
+          ActivityCacheHelper.cleanupCache(_feedCache, _cacheTimestamps);
         }
 
         return activities;
@@ -376,7 +217,6 @@ class ActivityService extends BaseService with StreamManagementMixin {
     return result ?? [];
   }
 
-  /// Get real-time activity feed stream
   Stream<List<ActivityFeedItem>> getActivityFeedStream({
     int limit = 50,
     List<String>? friendCategories,
@@ -387,7 +227,7 @@ class ActivityService extends BaseService with StreamManagementMixin {
       return const Stream.empty();
     }
 
-    final streamKey = _getFeedCacheKey(currentUser.uid, friendCategories);
+    final streamKey = ActivityCacheHelper.getFeedCacheKey(currentUser.uid, friendCategories);
     
     // Close existing stream if any
     _feedStreams[streamKey]?.cancel();
@@ -407,7 +247,6 @@ class ActivityService extends BaseService with StreamManagementMixin {
     return stream;
   }
 
-  /// Get user's own activity history
   Future<List<ActivityFeedItem>> getUserActivities({
     String? userId,
     int limit = 50,
@@ -436,7 +275,6 @@ class ActivityService extends BaseService with StreamManagementMixin {
     return result ?? [];
   }
 
-  /// Get trending activities
   Future<List<ActivityFeedItem>> getTrendingActivities({
     Duration timeWindow = const Duration(hours: 24),
     int limit = 20,
@@ -458,7 +296,6 @@ class ActivityService extends BaseService with StreamManagementMixin {
     return result ?? [];
   }
 
-  /// Get unseen activity count
   Future<int> getUnseenActivityCount({
     List<String>? friendCategories,
   }) async {
@@ -482,7 +319,6 @@ class ActivityService extends BaseService with StreamManagementMixin {
     return result ?? 0;
   }
 
-  /// Mark activities as seen
   Future<void> markActivitiesAsSeen(List<String> activityIds) async {
     await executeServiceOperation(
       () async {
@@ -495,9 +331,9 @@ class ActivityService extends BaseService with StreamManagementMixin {
           userId: currentUser.uid,
           activityIds: activityIds,
         );
-        
+
         // Invalidate cache after marking as seen
-        _invalidateCache(currentUser.uid);
+        ActivityCacheHelper.invalidateCache(currentUser.uid, _feedCache, _cacheTimestamps);
       },
       operationName: 'Mark activities as seen',
       requiresAuth: true,
@@ -505,9 +341,7 @@ class ActivityService extends BaseService with StreamManagementMixin {
     );
   }
 
-  // ===== PRIVACY OPERATIONS =====
 
-  /// Hide activity from user's feed
   Future<void> hideActivity(String activityId) async {
     await executeServiceOperation(
       () async {
@@ -520,8 +354,8 @@ class ActivityService extends BaseService with StreamManagementMixin {
           userId: currentUser.uid,
           activityId: activityId,
         );
-        
-        _invalidateCache(currentUser.uid);
+
+        ActivityCacheHelper.invalidateCache(currentUser.uid, _feedCache, _cacheTimestamps);
         AppLogger.debug('Activity hidden: $activityId');
       },
       operationName: 'Hide activity',
@@ -530,7 +364,6 @@ class ActivityService extends BaseService with StreamManagementMixin {
     );
   }
 
-  /// Block activity type for current user
   Future<void> blockActivityType(ActivityType activityType) async {
     await executeServiceOperation(
       () async {
@@ -543,8 +376,8 @@ class ActivityService extends BaseService with StreamManagementMixin {
           userId: currentUser.uid,
           activityType: activityType,
         );
-        
-        _invalidateCache(currentUser.uid);
+
+        ActivityCacheHelper.invalidateCache(currentUser.uid, _feedCache, _cacheTimestamps);
         AppLogger.debug('Activity type blocked: ${activityType.key}');
       },
       operationName: 'Block activity type',
@@ -553,9 +386,7 @@ class ActivityService extends BaseService with StreamManagementMixin {
     );
   }
 
-  // ===== PRIVATE HELPER METHODS =====
 
-  /// Generic activity tracking method
   Future<void> _trackGenericActivity({
     required ActivityType type,
     required String targetId,
@@ -587,51 +418,14 @@ class ActivityService extends BaseService with StreamManagementMixin {
         );
 
         await _activityRepository.createActivity(activity);
-        _invalidateCache(currentUser.uid);
-        
+        ActivityCacheHelper.invalidateCache(currentUser.uid, _feedCache, _cacheTimestamps);
+
         AppLogger.debug('Activity tracked: ${type.key} for $targetType:$targetId');
       },
       operationName: operationName,
       requiresAuth: true,
       requiresNetwork: true,
     );
-  }
-
-  String _getFeedCacheKey(String userId, List<String>? friendCategories) {
-    final categories = friendCategories?.join(',') ?? 'all';
-    return '${userId}_$categories';
-  }
-
-  bool _isCacheValid(String cacheKey) {
-    final timestamp = _cacheTimestamps[cacheKey];
-    if (timestamp == null) return false;
-    
-    return DateTime.now().difference(timestamp) < _cacheTimeout;
-  }
-
-  void _invalidateCache(String userId) {
-    final keysToRemove = _feedCache.keys
-        .where((key) => key.startsWith(userId))
-        .toList();
-    
-    for (final key in keysToRemove) {
-      _feedCache.remove(key);
-      _cacheTimestamps.remove(key);
-    }
-  }
-
-  void _cleanupCache() {
-    if (_feedCache.length <= _maxCacheSize) return;
-    
-    // Remove oldest cache entries
-    final sortedEntries = _cacheTimestamps.entries.toList()
-      ..sort((a, b) => a.value.compareTo(b.value));
-    
-    final entriesToRemove = sortedEntries.take(_feedCache.length - _maxCacheSize);
-    for (final entry in entriesToRemove) {
-      _feedCache.remove(entry.key);
-      _cacheTimestamps.remove(entry.key);
-    }
   }
 
   @override

@@ -12,7 +12,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/content_card.dart';
-import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/widgets/common/indicators/status_badge.dart';
 import 'package:butlery/widgets/common/layout/category_header.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -263,9 +263,9 @@ class MenuPreviewView extends StatelessWidget {
     return SliverToBoxAdapter(
       child: Padding(
         padding: AppDimensions.screenPadding,
-        child: Consumer<SharedContentViewModel>(
+        child: Consumer<SharedContentCoordinatorViewModel>(
           builder: (context, viewModel, _) {
-            final isImported = viewModel.isMenuImported(sharedMenu);
+            final isImported = viewModel.menuViewModel.isMenuImported(sharedMenu);
 
             return Column(
               children: [
@@ -278,10 +278,10 @@ class MenuPreviewView extends StatelessWidget {
                   icon: isImported
                       ? Icons.check
                       : Icons.download,
-                  onPressed: isImported || viewModel.isImporting
+                  onPressed: isImported || viewModel.menuViewModel.isOperating
                       ? null
                       : () => _importMenu(context, viewModel),
-                  isLoading: viewModel.isImporting,
+                  isLoading: viewModel.menuViewModel.isOperating,
                   loadingText: 'Importerar...',
                   isExpanded: true,
                 ),
@@ -351,11 +351,11 @@ class MenuPreviewView extends StatelessWidget {
 
   Future<void> _importMenu(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
   ) async {
-    final success = await viewModel.importSharedMenu(sharedMenu);
+    final menuId = await viewModel.menuViewModel.importSharedMenu(sharedMenu);
 
-    if (success && context.mounted) {
+    if (menuId != null && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('✅ Meny "${sharedMenu.menuTitle}" importerad!'),
@@ -366,10 +366,10 @@ class MenuPreviewView extends StatelessWidget {
 
       // Navigera tillbaka efter lyckad import
       Navigator.pop(context);
-    } else if (context.mounted && viewModel.hasError) {
+    } else if (context.mounted && viewModel.menuViewModel.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(viewModel.error!),
+          content: Text(viewModel.menuViewModel.error ?? 'Import misslyckades'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -378,7 +378,7 @@ class MenuPreviewView extends StatelessWidget {
 
   Future<void> _dismissMenu(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
   ) async {
     // Visa bekräftelsedialog
     final shouldDismiss = await showDialog<bool>(
@@ -406,7 +406,7 @@ class MenuPreviewView extends StatelessWidget {
     );
 
     if (shouldDismiss == true) {
-      final success = await viewModel.dismissSharedMenu(sharedMenu);
+      final success = await viewModel.menuViewModel.dismissSharedMenu(sharedMenu);
 
       if (success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -415,17 +415,17 @@ class MenuPreviewView extends StatelessWidget {
             backgroundColor: AppColors.success,
             action: SnackBarAction(
               label: 'Ångra',
-              onPressed: () => viewModel.undismissSharedMenu(sharedMenu),
+              onPressed: () => viewModel.menuViewModel.undismissSharedMenu(sharedMenu),
             ),
           ),
         );
 
         // Navigera tillbaka efter dismiss
         Navigator.pop(context);
-      } else if (context.mounted && viewModel.hasError) {
+      } else if (context.mounted && viewModel.menuViewModel.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(viewModel.error!),
+            content: Text(viewModel.menuViewModel.error ?? 'Kunde inte dölja meny'),
             backgroundColor: AppColors.error,
           ),
         );

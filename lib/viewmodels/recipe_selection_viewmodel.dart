@@ -1,63 +1,10 @@
-/// Comprehensive recipe selection ViewModel providing advanced recipe sharing and selection management for Flutter applications.
+/// Recipe selection ViewModel for multi-selection, search, sharing status tracking, and social distribution.
 ///
-/// This module implements sophisticated recipe selection functionality following Single Responsibility Principle,
-/// specializing in recipe discovery, multi-selection coordination, sharing status tracking, and social recipe distribution.
-/// It provides complete recipe selection infrastructure while maintaining clean separation from UI rendering,
-/// recipe data persistence, and complex social sharing business logic implementation.
-///
-/// **Single Responsibility Focus:**
-/// This module exclusively handles recipe selection presentation layer concerns:
-/// - **Recipe Discovery Intelligence**: Advanced recipe search with filtering and discovery functionality
-/// - **Multi-Selection Management**: Sophisticated recipe selection with state tracking and visual feedback
-/// - **Sharing Status Coordination**: Comprehensive shared recipe tracking with availability management
-/// - **Social Distribution System**: Recipe sharing operations with friend targeting and delivery confirmation
-/// - **Swedish Localization Excellence**: Complete Swedish language support for selection operations and user feedback
-///
-/// **What This Module Does NOT Handle:**
-/// - UI rendering and widget creation (handled by recipe selection views and presentation components)
-/// - Recipe data persistence and storage (handled by UnifiedRecipeService and underlying data repositories)
-/// - Complex social relationship business logic (handled by social recipe services and relationship infrastructure)
-/// - Share delivery infrastructure (handled by social services and communication systems)
-///
-/// **Recipe Selection ViewModel Features:**
-/// - **Advanced Recipe Search**: Intelligent recipe discovery with multi-criteria search and filtering capabilities
-/// - **Smart Selection Management**: Multi-recipe selection with state tracking and shared recipe awareness
-/// - **Sharing Status Intelligence**: Comprehensive tracking of already shared recipes with visual indicators
-/// - **Social Recipe Distribution**: Friend-targeted sharing with delivery confirmation and status tracking
-/// - **Swedish Localization**: Complete Swedish language support for selection operations and error messages
-///
-/// **Usage Examples:**
 /// ```dart
-/// // Initialize recipe selection ViewModel with service and friend targeting
-/// final recipeSelectionViewModel = RecipeSelectionViewModel(
-///   recipeService: ServiceLocator.get<UnifiedRecipeService>(),
-///   targetFriend: friendProfile,
-/// );
-/// 
-/// // Load recipes and sharing status
-/// await recipeSelectionViewModel.loadRecipes();
-/// 
-/// // Recipe search and filtering
-/// recipeSelectionViewModel.updateSearchQuery('vegetarisk pasta');
-/// final searchResults = recipeSelectionViewModel.filteredRecipes;
-/// recipeSelectionViewModel.clearSearch(); // Clear search results
-/// 
-/// // Recipe selection and management  
-/// recipeSelectionViewModel.toggleRecipeSelection('recipe_123'); // Select recipe
-/// recipeSelectionViewModel.toggleRecipeSelection('recipe_456'); // Select another
-/// recipeSelectionViewModel.clearSelection(); // Clear all selections
-/// 
-/// // Selection state monitoring
-/// if (recipeSelectionViewModel.hasSelectedRecipes) {
-///   final selectedCount = recipeSelectionViewModel.selectedCount;
-///   final selectedRecipes = recipeSelectionViewModel.selectedRecipes;
-///   final summary = recipeSelectionViewModel.getSelectionSummary();
-/// }
-/// 
-/// // Shared recipe status checking
-/// final isShared = recipeSelectionViewModel.isRecipeAlreadyShared('recipe_789');
-/// final sharedRecipeIds = recipeSelectionViewModel.alreadySharedRecipeIds;
-/// 
+/// final vm = RecipeSelectionViewModel(recipeService: ServiceLocator.get<UnifiedRecipeService>());
+/// await vm.loadRecipes();
+/// vm.toggleRecipeSelection(id);
+/// if (vm.hasSelectedRecipes) { final summary = vm.getSelectionSummary(); }
 /// // Share selected recipes with comprehensive coordination
 /// final shared = await recipeSelectionViewModel.shareSelectedRecipes();
 /// if (shared) {

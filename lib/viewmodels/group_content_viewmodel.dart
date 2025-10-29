@@ -13,56 +13,23 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
-/// Manages content shared within social groups, providing filtering and activity tracking.
-///
-/// This ViewModel serves as the primary interface for group content management,
-/// handling the display and interaction with recipes, menus, and shopping lists
-/// shared within a specific social group. It implements reactive state management
-/// for real-time content updates and provides comprehensive filtering capabilities.
-///
-/// Key responsibilities:
-/// - Loading and caching group-specific shared content
-/// - Managing group activity timeline and feed generation
-/// - Providing search and filtering functionality across all content types
-/// - Handling group sharing operations with proper state management
-/// - Generating group statistics and engagement metrics
-///
-/// The ViewModel follows MVVM architecture patterns and integrates with the
-/// unified social sharing system to provide a seamless group content experience.
-///
-/// Example usage:
+/// Manages group-shared content (recipes, menus, shopping lists) with filtering and activity tracking.
 /// ```dart
-/// final viewModel = GroupContentViewModel(
-///   friendsService: ServiceLocator.get<UnifiedFriendsService>(),
-///   sharingRepository: ServiceLocator.get<SocialSharingRepository>(),
-/// );
-/// await viewModel.initialize(selectedGroup);
-/// // Content is now available via getters like groupSharedRecipes
-/// ```
+/// final vm = GroupContentViewModel(sharingRepo: ServiceLocator.get()); await vm.initialize(group);
 class GroupContentViewModel extends ChangeNotifier with StreamManagementMixin {
   final SocialSharingRepository _sharingRepository;
 
-  // ===== STATE MANAGEMENT =====
-
-  // Group state
+  // State
   FriendCategory? _group;
-  
-  // Search and filtering state
   String _searchQuery = '';
   int _currentTabIndex = 0;
-
-  // Loading and error state
   bool _isLoading = false;
   String? _error;
   bool _isSharing = false;
-
-  // Content state
   List<SharedContent> _groupSharedContent = [];
   List<SharedRecipe> _groupSharedRecipes = [];
   List<SharedMenu> _groupSharedMenus = [];
   List<UnifiedShoppingList> _groupSharedShoppingLists = [];
-  
-  // Activity state
   List<Map<String, dynamic>> _groupActivityFeed = [];
 
   GroupContentViewModel({

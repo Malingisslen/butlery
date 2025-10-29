@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
@@ -16,12 +16,12 @@ import 'package:butlery/core/constants/routes.dart';
 class SharedRecipeCard {
   static Widget build(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     SharedRecipe sharedRecipe,
   ) {
     final recipe = sharedRecipe.recipeSnapshot;
-    final isRead = viewModel.isRecipeRead(sharedRecipe);
-    final isImported = viewModel.isRecipeImported(sharedRecipe);
+    final isRead = viewModel.recipeViewModel.isRecipeViewed(sharedRecipe);
+    final isImported = viewModel.recipeViewModel.isRecipeImported(sharedRecipe);
 
     return Material(
       elevation: isRead ? AppDimensions.elevationLow : AppDimensions.elevationMedium,
@@ -30,7 +30,7 @@ class SharedRecipeCard {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         onTap: () {
           if (!isRead) {
-            viewModel.markRecipeAsRead(sharedRecipe);
+            viewModel.recipeViewModel.markAsViewed(sharedRecipe);
           }
           Navigator.pushNamed(
             context,
@@ -85,7 +85,7 @@ class SharedRecipeCard {
 
   static Widget _buildHeader(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     SharedRecipe sharedRecipe,
     bool isRead,
   ) {
@@ -267,7 +267,7 @@ class SharedRecipeCard {
 
   static Widget _buildActionButtons(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     SharedRecipe sharedRecipe,
     dynamic recipe,
     bool isRead,
@@ -280,7 +280,7 @@ class SharedRecipeCard {
             text: 'Visa',
             onPressed: () {
               if (!isRead) {
-                viewModel.markRecipeAsRead(sharedRecipe);
+                viewModel.recipeViewModel.markAsViewed(sharedRecipe);
               }
               Navigator.pushNamed(
                 context,
@@ -298,7 +298,7 @@ class SharedRecipeCard {
           child: SocialComponents.socialActionButton(
             text: isImported ? 'Importerat' : 'Importera',
             onPressed: () {
-              if (!isImported && !viewModel.isImporting) {
+              if (!isImported && !viewModel.recipeViewModel.isOperating) {
                 SharedContentActions.importRecipe(
                   context,
                   viewModel,
@@ -308,10 +308,10 @@ class SharedRecipeCard {
             },
             icon: isImported
                 ? Icons.check
-                : viewModel.isImporting
+                : viewModel.recipeViewModel.isOperating
                     ? null  // Loading handled by facade
                     : Icons.download,
-            loading: viewModel.isImporting,
+            loading: viewModel.recipeViewModel.isOperating,
             compact: true,
           ),
         ),

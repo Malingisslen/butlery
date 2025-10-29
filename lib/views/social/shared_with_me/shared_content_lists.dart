@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/social/shared_with_me/shared_recipe_card.dart';
 import 'package:butlery/views/social/shared_with_me/shared_menu_card.dart';
@@ -15,10 +15,10 @@ class SharedContentLists {
   /// Build recipes list
   static Widget buildRecipesList(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     TextEditingController searchController,
   ) {
-    final recipes = viewModel.filteredSharedRecipes;
+    final recipes = viewModel.recipeViewModel.filteredContent;
 
     if (recipes.isEmpty) {
       return StateWidget.empty(
@@ -31,7 +31,7 @@ class SharedContentLists {
     }
 
     return RefreshIndicator(
-      onRefresh: viewModel.refresh,
+      onRefresh: viewModel.refreshAllContent,
       child: ListView.separated(
         padding: AppDimensions.screenPadding,
         itemCount: recipes.length,
@@ -52,10 +52,10 @@ class SharedContentLists {
   /// Build menus list
   static Widget buildMenusList(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     TextEditingController searchController,
   ) {
-    final menus = viewModel.filteredSharedMenus;
+    final menus = viewModel.menuViewModel.filteredContent;
 
     if (menus.isEmpty) {
       return StateWidget.empty(
@@ -68,7 +68,7 @@ class SharedContentLists {
     }
 
     return RefreshIndicator(
-      onRefresh: viewModel.refresh,
+      onRefresh: viewModel.refreshAllContent,
       child: ListView.separated(
         padding: AppDimensions.screenPadding,
         itemCount: menus.length,
@@ -89,10 +89,10 @@ class SharedContentLists {
   /// Build shared shopping lists list
   static Widget buildSharedShoppingListsList(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     TextEditingController searchController,
   ) {
-    final sharedShoppingLists = viewModel.filteredSharedShoppingLists;
+    final sharedShoppingLists = viewModel.shoppingViewModel.filteredContent;
 
     if (sharedShoppingLists.isEmpty) {
       return StateWidget.empty(
@@ -105,7 +105,7 @@ class SharedContentLists {
     }
 
     return RefreshIndicator(
-      onRefresh: viewModel.refresh,
+      onRefresh: viewModel.refreshAllContent,
       child: ListView.separated(
         padding: AppDimensions.screenPadding,
         itemCount: sharedShoppingLists.length,

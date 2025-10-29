@@ -1,51 +1,17 @@
 // lib/models/social/activity_feed_item.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/models/social/activity_engagement.dart';
+import 'package:butlery/models/social/activity_type.dart';
 
-/// Activity feed item model for social activity streams
-///
-/// This model represents individual activities in friend activity feeds, building on the
-/// existing activity tracking patterns from the discovery dashboard. It provides comprehensive
-/// activity data with engagement metrics, privacy controls, and real-time updates.
-///
-/// **Architecture Integration:**
-/// - Extends existing activity patterns from FriendActivitySection
-/// - Integrates with friend relationship system for privacy control
-/// - Supports all content types (recipes, menus, shopping lists, comments)
-/// - Provides engagement metrics for social interactions
-///
-/// **Activity Types:**
-/// - Content creation (recipes, menus, shopping lists)
-/// - Social interactions (comments, reactions, sharing)
-/// - Collaborative activities (group sharing, invitations)
-/// - Achievement activities (milestones, badges)
-///
-/// **Privacy Features:**
-/// - Friend category visibility control
-/// - Content-specific privacy settings
-/// - User-controlled activity sharing preferences
-/// - Granular activity type filtering
-///
-/// **Usage Examples:**
+// Export dependencies so consumers can use ActivityType and ActivityEngagement
+export 'package:butlery/models/social/activity_engagement.dart';
+export 'package:butlery/models/social/activity_type.dart';
+
+/// Activity feed item for social streams with engagement metrics and privacy controls.
 /// ```dart
-/// // Recipe creation activity
-/// final recipeActivity = ActivityFeedItem.create(
-///   userId: 'user123',
-///   type: ActivityType.recipeCreated,
-///   targetId: 'recipe456',
-///   targetTitle: 'Köttbullar med potatismos',
-///   visibility: ['close_friends', 'family'],
-/// );
-/// 
-/// // Social interaction activity
-/// final commentActivity = ActivityFeedItem.create(
-///   userId: 'user123',
-///   type: ActivityType.commentAdded,
-///   targetId: 'recipe456',
-///   targetTitle: 'Köttbullar med potatismos',
-///   parentId: 'comment789',
-/// );
-/// ```
+/// final a = ActivityFeedItem.create(userId: uid, type: ActivityType.recipeCreated,
+///   targetId: rid, targetTitle: 'Köttbullar', visibility: ['close_friends']);
 class ActivityFeedItem {
   /// Unique identifier for this activity
   final String id;
@@ -377,167 +343,4 @@ class ActivityFeedItem {
 
   @override
   int get hashCode => id.hashCode;
-}
-
-/// Activity engagement metrics for social interactions
-class ActivityEngagement {
-  /// Number of likes/reactions on this activity
-  final int likes;
-  
-  /// Number of comments on this activity
-  final int comments;
-  
-  /// Number of shares of this activity
-  final int shares;
-  
-  /// Number of views of this activity
-  final int views;
-
-  const ActivityEngagement({
-    required this.likes,
-    required this.comments,
-    required this.shares,
-    required this.views,
-  });
-
-  /// Create empty engagement metrics
-  factory ActivityEngagement.empty() {
-    return const ActivityEngagement(
-      likes: 0,
-      comments: 0,
-      shares: 0,
-      views: 0,
-    );
-  }
-
-  /// Create from Firestore data
-  factory ActivityEngagement.fromFirestore(Map<String, dynamic> data) {
-    return ActivityEngagement(
-      likes: data['likes'] as int? ?? 0,
-      comments: data['comments'] as int? ?? 0,
-      shares: data['shares'] as int? ?? 0,
-      views: data['views'] as int? ?? 0,
-    );
-  }
-
-  /// Convert to Firestore format
-  Map<String, dynamic> toFirestore() {
-    return {
-      'likes': likes,
-      'comments': comments,
-      'shares': shares,
-      'views': views,
-    };
-  }
-
-  /// Convert to JSON format
-  Map<String, dynamic> toJson() {
-    return {
-      'likes': likes,
-      'comments': comments,
-      'shares': shares,
-      'views': views,
-    };
-  }
-
-  /// Create from JSON format
-  factory ActivityEngagement.fromJson(Map<String, dynamic> json) {
-    return ActivityEngagement(
-      likes: json['likes'] as int? ?? 0,
-      comments: json['comments'] as int? ?? 0,
-      shares: json['shares'] as int? ?? 0,
-      views: json['views'] as int? ?? 0,
-    );
-  }
-
-  /// Get total engagement count
-  int get totalEngagement => likes + comments + shares;
-
-  /// Check if activity has any engagement
-  bool get hasEngagement => totalEngagement > 0;
-
-  /// Create copy with updated metrics
-  ActivityEngagement copyWith({
-    int? likes,
-    int? comments,
-    int? shares,
-    int? views,
-  }) {
-    return ActivityEngagement(
-      likes: likes ?? this.likes,
-      comments: comments ?? this.comments,
-      shares: shares ?? this.shares,
-      views: views ?? this.views,
-    );
-  }
-}
-
-/// Enumeration of activity types for social feeds
-enum ActivityType {
-  // Content creation activities
-  recipeCreated('recipe_created', '👨‍🍳 Recept skapat'),
-  menuCreated('menu_created', '📋 Meny skapad'),
-  shoppingListCreated('shopping_list_created', '🛒 Inköpslista skapad'),
-  
-  // Sharing activities
-  recipeShared('recipe_shared', '📤 Recept delat'),
-  menuShared('menu_shared', '📤 Meny delad'),
-  shoppingListShared('shopping_list_shared', '📤 Inköpslista delad'),
-  
-  // Social interaction activities
-  commentAdded('comment_added', '💬 Kommentar'),
-  reactionAdded('reaction_added', '❤️ Reaktion'),
-  recipeRated('recipe_rated', '⭐ Betyg'),
-  
-  // Collaborative activities
-  groupJoined('group_joined', '👥 Gick med i grupp'),
-  invitationSent('invitation_sent', '📩 Inbjudan skickad'),
-  invitationAccepted('invitation_accepted', '✅ Inbjudan accepterad'),
-  
-  // Achievement activities
-  achievementUnlocked('achievement_unlocked', '🏆 Bedrift'),
-  milestoneReached('milestone_reached', '🎯 Milstolpe'),
-  
-  // Unknown/fallback
-  unknown('unknown', '❓ Okänd aktivitet');
-
-  const ActivityType(this.key, this.displayName);
-
-  /// Database key for storage
-  final String key;
-  
-  /// Swedish display name for UI
-  final String displayName;
-
-  /// Get ActivityType from database key
-  static ActivityType fromKey(String key) {
-    return ActivityType.values.firstWhere(
-      (type) => type.key == key,
-      orElse: () => ActivityType.unknown,
-    );
-  }
-
-  /// Get content creation activity types
-  static List<ActivityType> get contentTypes => [
-    ActivityType.recipeCreated,
-    ActivityType.menuCreated,
-    ActivityType.shoppingListCreated,
-  ];
-
-  /// Get social interaction activity types
-  static List<ActivityType> get socialTypes => [
-    ActivityType.commentAdded,
-    ActivityType.reactionAdded,
-    ActivityType.recipeRated,
-  ];
-
-  /// Get sharing activity types
-  static List<ActivityType> get sharingTypes => [
-    ActivityType.recipeShared,
-    ActivityType.menuShared,
-    ActivityType.shoppingListShared,
-  ];
-
-  @override
-  String toString() => key;
 }

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 
 /// SharedContentTabBar - Tab bar for shared content view
 ///
@@ -12,10 +12,10 @@ import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
 class SharedContentTabBar {
   static Widget build(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     TabController tabController,
   ) {
-    if (!viewModel.hasSharedContent) {
+    if (!viewModel.hasAnyContent) {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
     }
 
@@ -35,12 +35,12 @@ class SharedContentTabBar {
                 children: [
                   const Icon(Icons.restaurant, size: AppDimensions.iconSizeM),
                   const SizedBox(width: AppDimensions.spacingXs),
-                  Text('Recept (${viewModel.totalSharedRecipes})'),
-                  if (viewModel.unreadRecipesCount > 0) ...[
+                  Text('Recept (${viewModel.recipeViewModel.totalCount})'),
+                  if (viewModel.recipeViewModel.unreadCount > 0) ...[
                     const SizedBox(width: AppDimensions.spacingXs),
                     _buildUnreadBadge(
                       context,
-                      viewModel.unreadRecipesCount,
+                      viewModel.recipeViewModel.unreadCount,
                     ),
                   ],
                 ],
@@ -52,12 +52,12 @@ class SharedContentTabBar {
                 children: [
                   const Icon(Icons.calendar_month, size: AppDimensions.iconSizeM),
                   const SizedBox(width: AppDimensions.spacingXs),
-                  Text('Menyer (${viewModel.totalSharedMenus})'),
-                  if (viewModel.unreadMenusCount > 0) ...[
+                  Text('Menyer (${viewModel.menuViewModel.totalCount})'),
+                  if (viewModel.menuViewModel.unreadCount > 0) ...[
                     const SizedBox(width: AppDimensions.spacingXs),
                     _buildUnreadBadge(
                       context,
-                      viewModel.unreadMenusCount,
+                      viewModel.menuViewModel.unreadCount,
                     ),
                   ],
                 ],
@@ -69,12 +69,12 @@ class SharedContentTabBar {
                 children: [
                   const Icon(Icons.shopping_cart, size: AppDimensions.iconSizeM),
                   const SizedBox(width: AppDimensions.spacingXs),
-                  Text('Inköpslistor (${viewModel.totalSharedShoppingLists})'),
-                  if (viewModel.unreadShoppingListsCount > 0) ...[
+                  Text('Inköpslistor (${viewModel.shoppingViewModel.totalCount})'),
+                  if (viewModel.shoppingViewModel.unreadCount > 0) ...[
                     const SizedBox(width: AppDimensions.spacingXs),
                     _buildUnreadBadge(
                       context,
-                      viewModel.unreadShoppingListsCount,
+                      viewModel.shoppingViewModel.unreadCount,
                     ),
                   ],
                 ],

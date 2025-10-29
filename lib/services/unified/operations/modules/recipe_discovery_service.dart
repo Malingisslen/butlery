@@ -20,11 +20,8 @@ class RecipeDiscoveryService {
 
   RecipeDiscoveryService(this._parent);
 
-  // ===== COLLABORATIVE RECIPE DISCOVERY =====
 
-  /// Get all collaborative recipes current user is member of
   ///
-  /// Returns recipes where user has any level of access
   Future<List<Recipe>> getCollaborativeRecipes({
     int limit = 50,
     String? startAfter,
@@ -96,9 +93,7 @@ class RecipeDiscoveryService {
     }
   }
 
-  /// Get recipes shared with current user
   ///
-  /// Returns recipes where current user is a member but not the owner
   Future<List<Recipe>> getSharedWithMe({
     int limit = 50,
     List<String>? categoryFilter,
@@ -172,9 +167,7 @@ class RecipeDiscoveryService {
     }
   }
 
-  /// Get recipes shared by current user
   ///
-  /// Returns collaborative recipes owned by current user
   Future<List<Recipe>> getSharedByMe({
     int limit = 50,
     bool includeEmpty = false,
@@ -246,9 +239,7 @@ class RecipeDiscoveryService {
     }
   }
 
-  /// Get recipes by specific user (if accessible)
   ///
-  /// Returns recipes by a specific user that current user has access to
   Future<List<Recipe>> getRecipesByUser({
     required String userId,
     int limit = 50,
@@ -327,11 +318,8 @@ class RecipeDiscoveryService {
     }
   }
 
-  // ===== ADVANCED DISCOVERY FEATURES =====
 
-  /// Get trending collaborative recipes
   ///
-  /// Returns popular recipes based on activity and member count
   Future<List<Recipe>> getTrendingRecipes({
     int limit = 20,
     Duration? timeWindow,
@@ -401,9 +389,7 @@ class RecipeDiscoveryService {
     }
   }
 
-  /// Get recently shared recipes
   ///
-  /// Returns recipes that were recently made collaborative
   Future<List<Recipe>> getRecentlySharedRecipes({
     int limit = 20,
     Duration? timeWindow,
@@ -453,9 +439,7 @@ class RecipeDiscoveryService {
     }
   }
 
-  // ===== DISCOVERY STATISTICS AND ANALYTICS =====
 
-  /// Get discovery statistics for current user
   Map<String, dynamic> getDiscoveryStatistics() {
     try {
       final currentUserId = _parent.currentUserId;
@@ -508,7 +492,6 @@ class RecipeDiscoveryService {
     }
   }
 
-  /// Get popular categories in collaborative recipes
   Future<Map<String, int>> getPopularCollaborativeCategories(
       {int limit = 10}) async {
     try {
@@ -533,7 +516,6 @@ class RecipeDiscoveryService {
     }
   }
 
-  /// Search recipes across all accessible recipes
   Future<List<Recipe>> searchRecipes({
     required String query,
     int limit = 20,

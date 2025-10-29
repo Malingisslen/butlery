@@ -17,13 +17,13 @@ class ComponentThemes {
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primaryBlue,
         foregroundColor: AppColors.cardWhite,
-        elevation: 2, // Subtle elevation per spec
+        elevation: 2,
         shadowColor: Colors.black26,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(
-              AppDimensions.borderRadius8), // 8px per spec
+              AppDimensions.borderRadius8),
         ),
-        minimumSize: const Size(double.infinity, 48), // Fixed height per spec
+        minimumSize: const Size(double.infinity, 48),
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacing24,
           vertical: AppDimensions.spacing12,
@@ -41,9 +41,9 @@ class ComponentThemes {
         foregroundColor: AppColors.cardWhite,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(
-              AppDimensions.borderRadius8), // 8px per spec
+              AppDimensions.borderRadius8),
         ),
-        minimumSize: const Size(double.infinity, 48), // Fixed height per spec
+        minimumSize: const Size(double.infinity, 48),
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacing24,
           vertical: AppDimensions.spacing12,
@@ -61,13 +61,13 @@ class ComponentThemes {
         backgroundColor: AppColors.transparent,
         side: const BorderSide(
           color: AppColors.primaryBlue,
-          width: 1, // 1px border per spec
+          width: 1,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(
-              AppDimensions.borderRadius8), // 8px per spec
+              AppDimensions.borderRadius8),
         ),
-        minimumSize: const Size(double.infinity, 48), // Fixed height per spec
+        minimumSize: const Size(double.infinity, 48),
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacing24,
           vertical: AppDimensions.spacing12,
@@ -85,9 +85,9 @@ class ComponentThemes {
         backgroundColor: AppColors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(
-              AppDimensions.borderRadius8), // 8px per spec
+              AppDimensions.borderRadius8),
         ),
-        minimumSize: const Size(0, 48), // Fixed height per spec
+        minimumSize: const Size(0, 48),
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacing16,
           vertical: AppDimensions.spacing12,
@@ -101,10 +101,10 @@ class ComponentThemes {
   static IconButtonThemeData get iconButtonTheme {
     return IconButtonThemeData(
       style: IconButton.styleFrom(
-        foregroundColor: AppColors.textMedium, // Grey 700 for action icons per spec
+        foregroundColor: AppColors.textMedium,
         backgroundColor: AppColors.transparent,
-        minimumSize: const Size(48, 48), // Standard touch target per spec
-        iconSize: AppDimensions.iconSizeL, // Consistent 24px size per spec
+        minimumSize: const Size(48, 48),
+        iconSize: AppDimensions.iconSizeL,
       ),
     );
   }
@@ -112,78 +112,78 @@ class ComponentThemes {
   /// Floating action button theme
   static FloatingActionButtonThemeData get floatingActionButtonTheme {
     return const FloatingActionButtonThemeData(
-      backgroundColor: AppColors.primaryBlue, // Primary blue per spec
+      backgroundColor: AppColors.primaryBlue,
       foregroundColor: AppColors.cardWhite, // White icon per spec
-      elevation: 6, // Standard FAB elevation per spec
+      elevation: 6,
       highlightElevation: 8, // Elevated when pressed per spec
-      shape: CircleBorder(), // Perfect circle per spec
-      iconSize: AppDimensions.iconSizeL, // Standard 24px icon per spec
+      shape: CircleBorder(),
+      iconSize: AppDimensions.iconSizeL,
     );
   }
 
   /// Card theme
   static CardThemeData get cardTheme {
     return CardThemeData(
-      color: AppColors.cardWhite, // White cards against greige background
-      elevation: 1, // Subtle elevation per spec
+      color: AppColors.cardWhite,
+      elevation: 1,
       shadowColor: Colors.black12,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8), // 8px radius per spec
+            AppDimensions.borderRadius8),
       ),
       margin: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacing16,
-          vertical: AppDimensions.spacing8), // Consistent margins per spec
+          vertical: AppDimensions.spacing8),
     );
   }
 
   /// Input decoration theme
   static InputDecorationTheme get inputDecorationTheme {
     return InputDecorationTheme(
-      filled: false, // No fill as per design spec
+      filled: false,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8), // 8px radius per spec
+            AppDimensions.borderRadius8),
         borderSide: const BorderSide(
           color: AppColors.textMedium, // Medium grey border matching text
-          width: 1, // 1px border per spec
+          width: 1,
         ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8), // 8px radius per spec
+            AppDimensions.borderRadius8),
         borderSide: const BorderSide(
           color: AppColors.textMedium, // Medium grey border when enabled
-          width: 1, // 1px border per spec
+          width: 1,
         ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8), // 8px radius per spec
+            AppDimensions.borderRadius8),
         borderSide: const BorderSide(
           color: AppColors.primaryBlue, // Primary blue when focused
-          width: 1.5, // Slightly thicker when focused per spec
+          width: 1.5,
         ),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8), // 8px radius per spec
+            AppDimensions.borderRadius8),
         borderSide: const BorderSide(
           color: AppColors.error,
-          width: 1, // 1px border per spec
+          width: 1,
         ),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8), // 8px radius per spec
+            AppDimensions.borderRadius8),
         borderSide: const BorderSide(
           color: AppColors.error,
-          width: 1.5, // Slightly thicker when focused per spec
+          width: 1.5,
         ),
       ),
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacing16, // 16px horizontal padding per spec
-        vertical: AppDimensions.spacing14, // 14px vertical padding per spec
+        horizontal: AppDimensions.spacing16,
+        vertical: AppDimensions.spacing14,
       ),
       hintStyle: const TextStyle(
           color: AppColors.textMedium), // Medium grey for hints consistency
@@ -193,37 +193,25 @@ class ComponentThemes {
   }
 
   /// Trending recipe card decoration
-  static BoxDecoration get trendingRecipeCardDecoration {
-    return BoxDecoration(
-      color: AppColors.primaryContainer.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-      border: Border.all(
-        color: AppColors.primary.withValues(alpha: 0.2),
-      ),
-    );
-  }
+  static BoxDecoration get trendingRecipeCardDecoration => BoxDecoration(
+    color: AppColors.primaryContainer.withValues(alpha: 0.1),
+    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+    border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+  );
 
-  /// Activity timeline item decoration  
-  static BoxDecoration get activityTimelineItemDecoration {
-    return BoxDecoration(
-      color: AppColors.secondaryContainer.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-      border: Border.all(
-        color: AppColors.secondary.withValues(alpha: 0.2),
-      ),
-    );
-  }
+  /// Activity timeline item decoration
+  static BoxDecoration get activityTimelineItemDecoration => BoxDecoration(
+    color: AppColors.secondaryContainer.withValues(alpha: 0.1),
+    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+    border: Border.all(color: AppColors.secondary.withValues(alpha: 0.2)),
+  );
 
   /// Empty state container decoration
-  static BoxDecoration get emptyStateContainerDecoration {
-    return BoxDecoration(
-      color: AppColors.primaryContainer.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(AppDimensions.radiusM),
-      border: Border.all(
-        color: AppColors.primary.withValues(alpha: 0.2),
-      ),
-    );
-  }
+  static BoxDecoration get emptyStateContainerDecoration => BoxDecoration(
+    color: AppColors.primaryContainer.withValues(alpha: 0.1),
+    borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+    border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+  );
 
   /// App bar theme
   static AppBarTheme get appBarTheme {
@@ -232,7 +220,7 @@ class ComponentThemes {
       foregroundColor: AppColors.cardWhite,
       elevation: AppDimensions.elevationLow, // 0 or 1 as per design
       shadowColor: Colors.black26,
-      centerTitle: false, // Left-aligned titles as per design spec
+      centerTitle: false,
       titleTextStyle: AppTextStyles.appBarTitle.copyWith(
         color: AppColors.cardWhite,
       ),
@@ -251,9 +239,9 @@ class ComponentThemes {
   static BottomNavigationBarThemeData get bottomNavigationBarTheme {
     return const BottomNavigationBarThemeData(
       backgroundColor: AppColors.primaryBlue, // Dark background as per design
-      selectedItemColor: AppColors.cardWhite, // White when selected
+      selectedItemColor: AppColors.cardWhite,
       unselectedItemColor: ThemeConstants
-          .whiteOverlay40, // White with transparency when unselected
+          .whiteOverlay40,
       selectedLabelStyle: AppTextStyles.navigationText,
       unselectedLabelStyle: AppTextStyles.navigationText,
       type: BottomNavigationBarType.fixed,
@@ -283,19 +271,19 @@ class ComponentThemes {
     return ListTileThemeData(
       tileColor: AppColors.cardWhite,
       selectedTileColor: AppColors.lightColorScheme.primaryContainer,
-      iconColor: AppColors.textMedium, // Grey 700 for icons per spec
+      iconColor: AppColors.textMedium,
       textColor: AppColors.textDark,
       titleTextStyle: AppTextStyles.listTileTitle,
       subtitleTextStyle: AppTextStyles.listTileSubtitle,
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacing16, // 16px horizontal padding per spec
-        vertical: AppDimensions.spacing8, // 8px vertical padding per spec
+        horizontal: AppDimensions.spacing16,
+        vertical: AppDimensions.spacing8,
       ),
       minVerticalPadding:
-          AppDimensions.spacing8, // Consistent vertical padding per spec
+          AppDimensions.spacing8,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8), // 8px radius per spec
+            AppDimensions.borderRadius8),
       ),
     );
   }
@@ -304,11 +292,11 @@ class ComponentThemes {
   static DialogThemeData get dialogTheme {
     return DialogThemeData(
       backgroundColor: AppColors.cardWhite,
-      elevation: 8, // Standard dialog elevation per spec
+      elevation: 8,
       shadowColor: Colors.black26,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8), // 8px radius per spec
+            AppDimensions.borderRadius8),
       ),
       titleTextStyle: AppTextStyles.dialogTitle,
       contentTextStyle: AppTextStyles.dialogContent,
@@ -319,16 +307,16 @@ class ComponentThemes {
   static BottomSheetThemeData get bottomSheetTheme {
     return const BottomSheetThemeData(
       backgroundColor: AppColors.cardWhite,
-      elevation: 16, // Strong elevation for modals per spec
+      elevation: 16,
       shadowColor: Colors.black26,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(
-              AppDimensions.borderRadius16), // 16px top radius per spec
+              AppDimensions.borderRadius16),
         ),
       ),
       modalBackgroundColor: AppColors.cardWhite,
-      modalElevation: 16, // Consistent elevation per spec
+      modalElevation: 16,
     );
   }
 
@@ -361,16 +349,16 @@ class ComponentThemes {
     return SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryBlue; // Primary blue when active per spec
+          return AppColors.primaryBlue;
         }
-        return AppColors.textLight; // Grey 400 when inactive per spec
+        return AppColors.textLight;
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
           return AppColors.primaryBlue
-              .withValues(alpha: 0.5); // Primary blue with 50% opacity per spec
+              .withValues(alpha: 0.5);
         }
-        return AppColors.divider; // Grey 300 when inactive per spec
+        return AppColors.divider;
       }),
     );
   }
@@ -380,18 +368,18 @@ class ComponentThemes {
     return CheckboxThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryBlue; // Primary blue when checked per spec
+          return AppColors.primaryBlue;
         }
         return AppColors.cardWhite;
       }),
       checkColor: WidgetStateProperty.all(
-          AppColors.cardWhite), // White checkmark per spec
+          AppColors.cardWhite),
       side: const BorderSide(
-        color: AppColors.textLight, // Grey 400 border per spec
+        color: AppColors.textLight,
         width: 1.5, // 1.5px border per spec
       ),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadius4), // 4px radius per spec
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius4),
       ),
     );
   }
@@ -425,7 +413,7 @@ class ComponentThemes {
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8), // 8px radius per spec
+            AppDimensions.borderRadius8),
       ),
     );
   }
@@ -454,119 +442,56 @@ class ComponentThemes {
   }
 
   /// Primary button style
-  static ButtonStyle get primaryButtonStyle {
-    return ElevatedButton.styleFrom(
-      backgroundColor: AppColors.primaryBlue,
-      foregroundColor: AppColors.cardWhite,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.paddingM,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      ),
-    );
-  }
+  static ButtonStyle get primaryButtonStyle => ElevatedButton.styleFrom(
+    backgroundColor: AppColors.primaryBlue, foregroundColor: AppColors.cardWhite,
+    padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+  );
 
   /// Text button style
-  static ButtonStyle get textButtonStyle {
-    return TextButton.styleFrom(
-      foregroundColor: AppColors.primaryBlue,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.paddingM,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      ),
-    );
-  }
+  static ButtonStyle get textButtonStyle => TextButton.styleFrom(
+    foregroundColor: AppColors.primaryBlue,
+    padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+  );
 
   /// Secondary button style
-  static ButtonStyle get secondaryButtonStyle {
-    return ElevatedButton.styleFrom(
-      backgroundColor: AppColors.cardWhite,
-      foregroundColor: AppColors.primaryBlue,
-      side: const BorderSide(color: AppColors.primaryBlue),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.paddingM,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      ),
-    );
-  }
+  static ButtonStyle get secondaryButtonStyle => ElevatedButton.styleFrom(
+    backgroundColor: AppColors.cardWhite, foregroundColor: AppColors.primaryBlue,
+    side: const BorderSide(color: AppColors.primaryBlue),
+    padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+  );
 
   /// Danger button style
-  static ButtonStyle get dangerButtonStyle {
-    return ElevatedButton.styleFrom(
-      backgroundColor: AppColors.error,
-      foregroundColor: AppColors.cardWhite,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.paddingM,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      ),
-    );
-  }
+  static ButtonStyle get dangerButtonStyle => ElevatedButton.styleFrom(
+    backgroundColor: AppColors.error, foregroundColor: AppColors.cardWhite,
+    padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+  );
 
   /// Outlined button style
-  static ButtonStyle get outlinedButtonStyle {
-    return OutlinedButton.styleFrom(
-      foregroundColor: AppColors.primaryBlue,
-      backgroundColor: AppColors.transparent,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.paddingM,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      ),
-      side: const BorderSide(
-        color: AppColors.primaryBlue,
-        width: 1,
-      ),
-    );
-  }
+  static ButtonStyle get outlinedButtonStyle => OutlinedButton.styleFrom(
+    foregroundColor: AppColors.primaryBlue, backgroundColor: AppColors.transparent,
+    padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+    side: const BorderSide(color: AppColors.primaryBlue, width: 1),
+  );
 
   /// Delete button style
-  static ButtonStyle get deleteButtonStyle {
-    return OutlinedButton.styleFrom(
-      foregroundColor: AppColors.error,
-      backgroundColor: AppColors.transparent,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.paddingM,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-      ),
-      side: const BorderSide(
-        color: AppColors.error,
-        width: 1,
-      ),
-    );
-  }
+  static ButtonStyle get deleteButtonStyle => OutlinedButton.styleFrom(
+    foregroundColor: AppColors.error, backgroundColor: AppColors.transparent,
+    padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+    side: const BorderSide(color: AppColors.error, width: 1),
+  );
 
   /// Extended FAB style for Swedish text with proper sizing
-  static ButtonStyle get extendedFabStyle {
-    return ElevatedButton.styleFrom(
-      backgroundColor: AppColors.primaryBlue,
-      foregroundColor: AppColors.cardWhite,
-      elevation: AppDimensions.elevationMedium,
-      shadowColor: Colors.black26,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingXl,
-        vertical: AppDimensions.paddingM,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
-      ),
-      minimumSize: const Size(200, 56), // Guaranteed width for Swedish text
-      textStyle: AppTextStyles.buttonText,
-    );
-  }
+  static ButtonStyle get extendedFabStyle => ElevatedButton.styleFrom(
+    backgroundColor: AppColors.primaryBlue, foregroundColor: AppColors.cardWhite,
+    elevation: AppDimensions.elevationMedium, shadowColor: Colors.black26,
+    padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingXl, vertical: AppDimensions.paddingM),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound)),
+    minimumSize: const Size(200, 56), textStyle: AppTextStyles.buttonText,
+  );
 }

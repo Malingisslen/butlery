@@ -76,7 +76,7 @@ import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
 import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
-import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
 import 'package:butlery/viewmodels/realtime/optimistic_update_manager.dart';
 import 'package:butlery/services/social/activity_service.dart';
@@ -93,6 +93,7 @@ import 'package:butlery/services/unified/operations/friends_management_operation
 import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
 import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
 import 'package:butlery/services/unified/operations/shopping_share_operations.dart';
+import 'package:butlery/services/unified/operations/modules/shopping_social_share_module.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/archive_import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
@@ -4339,15 +4340,15 @@ class MockPhotoImportViewModel extends Mock implements PhotoImportViewModel {
   // All methods left without implementation to allow stubbing with when()
 }
 
-/// Mock implementation of SharedContentViewModel
-class MockSharedContentViewModel extends Mock implements SharedContentViewModel {
+/// Mock implementation of SharedContentCoordinatorViewModel
+class MockSharedContentCoordinatorViewModel extends Mock implements SharedContentCoordinatorViewModel {
   // Configuration state
   bool _isLoading = false;
   String? _error;
   List<dynamic>? _sharedContent;
   int _activeTab = 0;
   String _searchQuery = '';
-  
+
   /// Configure mock state for tests
   void setSharedContentState({
     bool isLoading = false,
@@ -4362,17 +4363,14 @@ class MockSharedContentViewModel extends Mock implements SharedContentViewModel 
     _activeTab = activeTab;
     _searchQuery = searchQuery;
   }
-  
+
   // Getters for configured state (tests can access)
-  @override
   bool get isLoading => _isLoading;
-  @override
   String? get error => _error;
   List<dynamic>? get sharedContent => _sharedContent;
   int get activeTab => _activeTab;
-  @override
   String get searchQuery => _searchQuery;
-  
+
   // All methods left without implementation to allow stubbing with when()
 }
 

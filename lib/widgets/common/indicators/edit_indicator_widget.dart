@@ -1,0 +1,135 @@
+// lib/widgets/common/indicators/edit_indicator_widget.dart
+
+import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+
+/// Edit indicator widget showing active editor
+class EditIndicatorWidget extends StatefulWidget {
+  final String editorName;
+  final String? editorId;
+  final String editingWhat;
+  final Color? color;
+  final bool isVisible;
+  final Duration animationDuration;
+
+  const EditIndicatorWidget({
+    super.key,
+    required this.editorName,
+    this.editorId,
+    required this.editingWhat,
+    this.color,
+    this.isVisible = true,
+    this.animationDuration = const Duration(milliseconds: 300),
+  });
+
+  @override
+  State<EditIndicatorWidget> createState() => _EditIndicatorWidgetState();
+}
+
+class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
+    with TickerProviderStateMixin {
+  late AnimationController _fadeController;
+  late AnimationController _pulseController;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      duration: widget.animationDuration,
+      vsync: this,
+    );
+    _pulseController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
+    );
+    _pulseAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+    if (widget.isVisible) {
+      _fadeController.forward();
+      _pulseController.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void didUpdateWidget(EditIndicatorWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isVisible != oldWidget.isVisible) {
+      if (widget.isVisible) {
+        _fadeController.forward();
+        _pulseController.repeat(reverse: true);
+      } else {
+        _fadeController.reverse();
+        _pulseController.stop();
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = widget.color ?? AppColors.primaryBlue;
+    return AnimatedBuilder(
+      animation: _fadeAnimation,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _fadeAnimation.value,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
+              border: Border.all(
+                color: color.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedBuilder(
+                  animation: _pulseAnimation,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: _pulseAnimation.value,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(AppDimensions.borderRadius4),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(width: AppDimensions.spacing6),
+                Text(
+                  '${widget.editorName} redigerar ${widget.editingWhat}',
+                  style: TextStyle(
+                    fontSize: AppTextStyles.bodySmall.fontSize,
+                    color: color,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
+}

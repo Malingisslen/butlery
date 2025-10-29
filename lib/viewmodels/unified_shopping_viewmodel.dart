@@ -1,87 +1,20 @@
-/// Comprehensive unified shopping ViewModel providing advanced shopping list management for Flutter applications.
+/// Unified shopping ViewModel for comprehensive shopping list management.
 ///
-/// This module implements sophisticated shopping list management following Single Responsibility Principle,
-/// serving as the main coordinator for all shopping list operations including personal and collaborative lists,
-/// item management, bulk operations, and comprehensive analytics. It provides complete shopping functionality
-/// while maintaining clean separation from UI rendering, data persistence, and business logic implementation.
+/// Coordinates personal and collaborative shopping lists, item management,
+/// analytics, and export functionality. Delegates specialized operations
+/// to focused manager classes while maintaining clean MVVM architecture.
 ///
-/// **Single Responsibility Focus:**
-/// This module exclusively handles shopping list presentation layer concerns:
-/// - **Unified Shopping Coordination**: Comprehensive shopping list management with personal and collaborative list support
-/// - **Item Management Excellence**: Advanced item operations including bulk operations, categorization, and search functionality
-/// - **Collaborative Shopping**: Real-time collaborative list sharing, member management, and permission coordination
-/// - **Analytics and Insights**: Comprehensive shopping analytics, completion tracking, and usage statistics
-/// - **Cross-Platform Compatibility**: Unified API maintaining backward compatibility with existing shopping components
+/// **Architecture:**
+/// - Main ViewModel: Service coordination, list management, error handling
+/// - ShoppingAnalyticsManager: Insights, statistics, export functionality
+/// - ShoppingItemOperationsManager: Search, grouping, bulk operations
 ///
-/// **What This Module Does NOT Handle:**
-/// - Direct shopping data persistence (handled by UnifiedShoppingService and specialized data repositories)
-/// - UI rendering and widget creation (handled by shopping views and presentation components)
-/// - Complex business logic implementation (handled by UnifiedShoppingService and underlying service layer)
-/// - Permission system implementation (handled by PermissionService for focused access control)
-///
-/// **Unified Shopping ViewModel Features:**
-/// - **Personal Shopping Lists**: Individual user shopping list creation, management, and organization
-/// - **Collaborative Shopping**: Multi-user collaborative lists with member management and real-time synchronization
-/// - **Advanced Item Management**: Comprehensive item operations with categorization, priority, and bulk operations
-/// - **Shopping Analytics**: Detailed completion tracking, usage statistics, and shopping insights
-/// - **Import/Export Functionality**: Recipe ingredient import and list sharing capabilities
-///
-/// **Usage Examples:**
+/// **Usage:**
 /// ```dart
-/// // Initialize unified shopping ViewModel
-/// final shoppingViewModel = UnifiedShoppingViewModel();
-/// await shoppingViewModel.initialize();
-/// 
-/// // Personal shopping list management
-/// final personalCreated = await shoppingViewModel.createPersonalList('Veckans Inköp');
-/// await shoppingViewModel.setActiveList('list_123');
-/// 
-/// // Collaborative shopping list creation
-/// final collaborativeCreated = await shoppingViewModel.createCollaborativeList(
-///   name: 'Familjen Inköpslista',
-///   memberIds: ['user1', 'user2', 'user3'],
-///   memberDisplayNames: {'user1': 'Anna', 'user2': 'Erik', 'user3': 'Lisa'},
-///   allowGuestEditing: true,
-///   autoRemoveCompleted: false,
-/// );
-/// 
-/// // Advanced item management
-/// final itemAdded = await shoppingViewModel.addItem(
-///   name: 'Mjölk',
-///   amount: 1.0,
-///   unit: 'liter',
-///   category: 'Mejeri',
-///   note: 'Laktosfri',
-///   priority: 4,
-/// );
-/// 
-/// // Bulk operations from recipe ingredients
-/// await shoppingViewModel.addItemsFromRecipe([
-///   {'name': 'Mjöl', 'amount': 500.0, 'unit': 'g', 'category': 'Bakning'},
-///   {'name': 'Ägg', 'amount': 3.0, 'unit': 'st', 'category': 'Mejeri'},
-/// ]);
-/// 
-/// // Item state management
-/// await shoppingViewModel.toggleItemBought('item_456');
-/// await shoppingViewModel.updateItem(
-///   itemId: 'item_789',
-///   name: 'Uppdaterat namn',
-///   quantity: 2.0,
-///   category: 'Ny kategori',
-/// );
-/// 
-/// // Shopping analytics and insights
-/// final insights = shoppingViewModel.shoppingInsights;
-/// final completion = shoppingViewModel.completionPercentage;
-/// final categorizedItems = shoppingViewModel.itemsByCategory;
-/// 
-/// // Search and filtering
-/// final searchResults = shoppingViewModel.searchItems('mjölk');
-/// final categories = shoppingViewModel.usedCategories;
-/// 
-/// // Export functionality
-/// final exportedText = shoppingViewModel.exportListAsTextWithCategories();
+/// final viewModel = UnifiedShoppingViewModel();
+/// await viewModel.initialize();
 /// ```
+/// See tests for comprehensive examples.
 
 // lib/viewmodels/unified_shopping_viewmodel.dart
 
@@ -93,197 +26,105 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/viewmodels/shopping/shopping_analytics_manager.dart';
+import 'package:butlery/viewmodels/shopping/shopping_item_operations_manager.dart';
 
-/// Comprehensive unified shopping ViewModel providing advanced shopping list management through service coordination.
-///
-/// Serves as the main presentation layer coordinator for all shopping operations, providing unified API
-/// for personal and collaborative shopping lists, item management, analytics, and export functionality
-/// while maintaining clean MVVM architecture separation between shopping business logic and UI presentation concerns.
+/// Unified shopping ViewModel coordinating shopping operations through service delegation.
 class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
   final UnifiedShoppingService _shoppingService = ServiceLocator.get<UnifiedShoppingService>();
+  late final ShoppingAnalyticsManager _analyticsManager;
+  late final ShoppingItemOperationsManager _itemOpsManager;
 
   // ===== SHOPPING LIST STATE ACCESSORS =====
 
-  /// Complete shopping list collection for comprehensive access and management.
-  /// 
-  /// Provides access to all shopping lists across personal and collaborative categories
-  /// for unified shopping management and complete application functionality.
+  /// All shopping lists (personal + collaborative)
   List<UnifiedShoppingList> get lists => _shoppingService.lists;
-  
-  /// Personal shopping lists collection for individual user list management.
-  /// 
-  /// Provides access to user-owned shopping lists for personal shopping operations
-  /// and individual meal planning functionality.
+
+  /// Personal shopping lists only
   List<UnifiedShoppingList> get personalLists => _shoppingService.personalLists;
-  
-  /// Collaborative shopping lists collection for social shopping management and sharing.
-  /// 
-  /// Provides access to shared and collaborative shopping lists for family and group
-  /// shopping coordination and collaborative meal planning functionality.
+
+  /// Collaborative shopping lists only
   List<UnifiedShoppingList> get collaborativeLists => _shoppingService.collaborativeLists;
-  
-  /// Currently active shopping list for focused shopping operations and item management.
-  /// 
-  /// Provides access to the selected shopping list for item operations, analytics,
-  /// and focused shopping functionality throughout the application.
+
+  /// Currently active shopping list
   UnifiedShoppingList? get activeList => _shoppingService.activeList;
-  
-  /// Items in active shopping list for display and management operations.
-  /// 
-  /// Provides direct access to shopping items in the currently active list
-  /// for item display, management, and shopping completion tracking.
+
+  /// Items in active shopping list
   List<UnifiedShoppingItem> get items => activeList?.items ?? [];
 
   // ===== LOADING AND SYNCHRONIZATION STATE =====
 
-  /// Loading operation state for UI progress indication and interaction control.
-  /// 
-  /// Indicates active loading operations for UI loading indicators and user interaction
-  /// management during shopping data retrieval and synchronization processes.
+  /// Loading operation state
   bool get isLoading => _shoppingService.isLoading;
-  
-  /// Synchronization state for data consistency indication and offline coordination.
-  /// 
-  /// Indicates active synchronization between local and remote data sources
-  /// for data consistency management and offline shopping functionality.
+
+  /// Synchronization state
   bool get isSyncing => _shoppingService.isSyncing;
-  
-  /// Initialization state for application readiness and feature availability.
-  /// 
-  /// Indicates whether shopping service is fully initialized and ready for operations,
-  /// enabling UI feature activation and shopping functionality availability.
+
+  /// Initialization state
   bool get isInitialized => _shoppingService.isInitialized;
 
   // ===== ERROR HANDLING AND CONNECTIVITY =====
 
-  /// Current error message for user feedback and error state management.
-  /// 
-  /// Delegates to UnifiedShoppingService for centralized error handling with localized
-  /// Swedish error messages for comprehensive user feedback and error recovery.
+  /// Current error message
   String? get error => _shoppingService.error;
-  
-  /// Error state indicator for UI conditional rendering and error handling.
-  /// 
-  /// Provides boolean error state check for UI error display decisions
-  /// and error state management throughout shopping operations.
+
+  /// Error state indicator
   bool get hasError => _shoppingService.hasError;
 
-  /// Online connectivity status for feature availability and user guidance.
-  /// 
-  /// Combines initialization and error states to indicate application connectivity
-  /// and feature availability for user interface adaptation and functionality guidance.
+  /// Online connectivity status
   bool get isOnline => !hasError && isInitialized;
 
   // ===== SHOPPING LIST AVAILABILITY AND STATISTICS =====
 
-  /// Shopping list availability indicator for UI conditional display and feature enabling.
-  /// 
-  /// Indicates whether any shopping lists are available for display and operations,
-  /// enabling UI conditional rendering and shopping-dependent feature activation.
+  /// Shopping list availability indicator
   bool get hasLists => _shoppingService.hasLists;
-  
-  /// Shopping items availability for active list feature enabling and UI coordination.
-  /// 
-  /// Indicates whether active list contains items for item-dependent feature
-  /// activation and shopping completion functionality.
+
+  /// Shopping items availability
   bool get hasItems => items.isNotEmpty;
 
   // ===== SHOPPING ANALYTICS AND COMPLETION TRACKING =====
 
-  /// Total item count in active list for statistics display and completion tracking.
-  /// 
-  /// Provides total number of items in active shopping list for analytics display
-  /// and shopping progress calculations.
+  /// Total item count in active list
   int get totalItems => activeList?.totalItems ?? 0;
-  
-  /// Purchased item count for completion tracking and progress indication.
-  /// 
-  /// Provides number of purchased items for shopping completion progress
-  /// and shopping analytics functionality.
+
+  /// Purchased item count
   int get boughtItems => activeList?.boughtItems ?? 0;
-  
-  /// Remaining item count for shopping progress and completion tracking.
-  /// 
-  /// Provides number of unpurchased items for shopping progress indication
-  /// and remaining shopping task management.
+
+  /// Remaining item count
   int get unboughtItems => activeList?.unboughtItems ?? 0;
-  
-  /// Shopping completion percentage for progress indication and analytics.
-  /// 
-  /// Calculates completion percentage for shopping progress bars and
-  /// completion analytics display throughout the application.
+
+  /// Shopping completion percentage
   double get completionPercentage => activeList?.completionPercentage ?? 0.0;
-  
-  /// Active list summary for display and status indication.
-  /// 
-  /// Provides formatted summary of active shopping list status for UI display
-  /// and shopping overview functionality.
+
+  /// Active list summary
   String get listSummary => activeList?.summary ?? 'Ingen aktiv lista';
-  
-  /// Complete shopping indicator for completion celebration and status management.
-  /// 
-  /// Indicates whether all items in active list are purchased for completion
-  /// celebration and shopping task completion functionality.
+
+  /// Complete shopping indicator
   bool get allItemsBought => activeList?.allItemsBought ?? false;
 
   // ===== USER CONTEXT AND IDENTIFICATION =====
 
-  /// Current user identifier for permission management and operation coordination.
-  /// 
-  /// Provides current user ID for permission validation, operation attribution,
-  /// and user-specific functionality throughout shopping management operations.
+  /// Current user identifier
   String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
-  
-  /// Current user display name for UI personalization and collaborative interaction.
-  /// 
-  /// Provides user display name for UI personalization, collaborative features,
-  /// and social interaction display throughout the shopping application.
+
+  /// Current user display name
   String? get currentUserDisplayName => _shoppingService.currentUserDisplayName;
 
-  /// Initializes unified shopping ViewModel with comprehensive service integration and reactive coordination.
-  /// 
-  /// Establishes shopping service integration with reactive state coordination, enabling
-  /// comprehensive shopping list management with automatic state synchronization and UI updates
-  /// for optimal user experience and responsive shopping functionality.
-  /// 
-  /// **Initialization Process:**
-  /// - Shopping service listener setup for reactive state management
-  /// - State synchronization coordination for unified shopping operations
-  /// - UI notification system preparation for responsive updates
+  /// Initializes unified shopping ViewModel with service integration and manager setup
   UnifiedShoppingViewModel() {
-    // Establish reactive service state synchronization
+    _analyticsManager = ShoppingAnalyticsManager(_shoppingService);
+    _itemOpsManager = ShoppingItemOperationsManager();
     _shoppingService.addListener(_onServiceUpdate);
   }
 
-  /// Handles unified state updates from shopping service with comprehensive coordination.
-  /// 
-  /// Provides centralized state synchronization for all shopping operations ensuring
-  /// UI components receive immediate updates when shopping service changes state,
-  /// maintaining reactive consistency across the entire shopping management system.
+  /// Handles state updates from shopping service
   void _onServiceUpdate() {
     notifyListeners();
   }
 
-  // ===== COMPREHENSIVE INITIALIZATION =====
+  // ===== INITIALIZATION =====
 
-  /// Initializes unified shopping system with comprehensive service coordination and default list creation.
-  /// 
-  /// Performs complete system initialization including service initialization, data loading,
-  /// and default list creation for new users. Includes comprehensive error handling
-  /// and automatic default list setup for improved user experience.
-  /// 
-  /// **Initialization Process:**
-  /// - UnifiedShoppingService initialization with data loading
-  /// - User authentication and permission validation
-  /// - Default shopping list creation for new users
-  /// - Error handling and recovery coordination
-  /// 
-  /// **Usage Example:**
-  /// ```dart
-  /// final viewModel = UnifiedShoppingViewModel();
-  /// await viewModel.initialize();
-  /// // System ready for all shopping operations
-  /// ```
+  /// Initializes unified shopping system
   Future<void> initialize() async {
     await safeExecute(
       () async {
@@ -295,27 +136,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   // ===== PERSONAL SHOPPING LIST MANAGEMENT =====
 
-  /// Creates personal shopping list with comprehensive validation and Swedish localization.
-  /// 
-  /// [name] Shopping list name for identification and display
-  /// 
-  /// Returns true if list creation succeeds, false if validation fails or creation errors occur.
-  /// Performs personal shopping list creation through service coordination with validation,
-  /// data processing, and state synchronization for complete shopping list management.
-  /// 
-  /// **Creation Process:**
-  /// - Name validation with trimming and empty check
-  /// - Personal shopping list creation through service
-  /// - State synchronization and UI notification
-  /// - Error handling with user feedback
-  /// 
-  /// **Usage Example:**
-  /// ```dart
-  /// final created = await shoppingViewModel.createPersonalList('Veckans Inköp');
-  /// if (created) {
-  ///   // List created successfully, update UI
-  /// }
-  /// ```
+  /// Creates personal shopping list with validation
   Future<bool> createPersonalList(String name) async {
     if (name.trim().isEmpty) return false;
 
@@ -323,42 +144,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
     return listId != null;
   }
 
-  /// Creates collaborative shopping list with comprehensive member management and permission coordination.
-  /// 
-  /// [name] Shopping list name for identification and collaborative display
-  /// [description] Optional detailed description for collaborative context
-  /// [memberIds] List of user IDs for collaborative access and member management
-  /// [memberDisplayNames] User ID to display name mapping for collaborative UI
-  /// [items] Optional initial items for list pre-population
-  /// [categoryIds] Category assignments for collaborative organization
-  /// [allowGuestEditing] Whether non-members can edit collaborative list
-  /// [autoRemoveCompleted] Whether completed items are automatically removed
-  /// 
-  /// Returns true if collaborative list creation succeeds, false if validation or creation fails.
-  /// Performs collaborative shopping list creation through service coordination with member validation,
-  /// permission setup, and comprehensive collaborative feature configuration.
-  /// 
-  /// **Collaborative Creation Process:**
-  /// - Name and member validation with comprehensive checks
-  /// - Collaborative shopping list creation with member coordination
-  /// - Permission system initialization for collaborative access
-  /// - Collaborative feature configuration and settings
-  /// 
-  /// **Usage Example:**
-  /// ```dart
-  /// final collaborativeCreated = await shoppingViewModel.createCollaborativeList(
-  ///   name: 'Familjen Inköpslista',
-  ///   description: 'Veckohandling för hela familjen',
-  ///   memberIds: ['user1', 'user2', 'user3'],
-  ///   memberDisplayNames: {
-  ///     'user1': 'Anna Andersson',
-  ///     'user2': 'Erik Svensson', 
-  ///     'user3': 'Lisa Johansson'
-  ///   },
-  ///   allowGuestEditing: true,
-  ///   autoRemoveCompleted: false,
-  /// );
-  /// ```
+  /// Creates collaborative shopping list with member management
   Future<bool> createCollaborativeList({
     required String name,
     String? description,
@@ -385,128 +171,53 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
     return listId != null;
   }
 
-  /// Renames active shopping list with comprehensive validation and state coordination.
-  /// 
-  /// [newName] New shopping list name for identification and display
-  /// 
-  /// Returns true if rename operation succeeds, false if validation fails or no active list.
-  /// Performs active list renaming through service coordination with validation,
-  /// state synchronization, and UI notification for complete list management.
-  /// 
-  /// **Usage Example:**
-  /// ```dart
-  /// final renamed = await shoppingViewModel.renameActiveList('Nytt Listnamn');
-  /// ```
+  /// Renames active shopping list
   Future<bool> renameActiveList(String newName) async {
     if (activeList == null || newName.trim().isEmpty) return false;
     return await _shoppingService.renameList(activeList!.id, newName.trim());
   }
 
-  /// Deletes active shopping list with comprehensive validation and cleanup coordination.
-  /// 
-  /// Returns true if deletion succeeds, false if no active list or operation fails.
-  /// Performs active list deletion through service coordination with state cleanup,
-  /// UI notification, and active list reset for complete shopping list management.
-  /// 
-  /// **Usage Example:**
-  /// ```dart
-  /// final deleted = await shoppingViewModel.deleteActiveList();
-  /// if (deleted) {
-  ///   // Active list deleted, update UI to show list selection
-  /// }
-  /// ```
+  /// Deletes active shopping list
   Future<bool> deleteActiveList() async {
     if (activeList == null) return false;
     return await _shoppingService.deleteList(activeList!.id);
   }
 
-  /// Sets active shopping list with comprehensive validation and state coordination.
-  /// 
-  /// [listId] Shopping list identifier for activation
-  /// 
-  /// Returns true if activation succeeds, false if list not found or operation fails.
-  /// Performs shopping list activation through service coordination with state updates,
-  /// UI synchronization, and feature activation for focused shopping operations.
-  /// 
-  /// **Usage Example:**
-  /// ```dart
-  /// final activated = await shoppingViewModel.setActiveList('list_123');
-  /// if (activated) {
-  ///   // List activated, items now available for management
-  /// }
-  /// ```
+  /// Sets active shopping list
   Future<bool> setActiveList(String listId) async {
     return await _shoppingService.setActiveList(listId);
   }
 
   // ===== BACKWARD COMPATIBILITY API METHODS =====
 
-  /// Loads all shopping lists for shopping list selector API compatibility.
-  /// 
-  /// Performs comprehensive list loading through service coordination for
-  /// shopping list selector functionality and UI population.
+  /// Loads all shopping lists
   Future<void> loadLists() async {
     await _shoppingService.loadLists();
   }
 
-  /// Creates shopping list for shopping list selector API compatibility.
-  /// 
-  /// [name] Shopping list name for creation
-  /// 
-  /// Returns true if creation succeeds. Delegates to createPersonalList
-  /// for backward compatibility with existing shopping list selector components.
+  /// Creates shopping list (delegates to createPersonalList)
   Future<bool> createList(String name) async {
     return await createPersonalList(name);
   }
 
-  /// Renames specific shopping list for shopping list actions API compatibility.
-  /// 
-  /// [listId] Shopping list identifier for renaming
-  /// [newName] New name for shopping list identification
-  /// 
-  /// Returns true if rename succeeds. Provides direct list renaming capability
-  /// for shopping list actions and management components.
+  /// Renames specific shopping list
   Future<bool> renameList(String listId, String newName) async {
     return await _shoppingService.renameList(listId, newName);
   }
 
-  /// Deletes specific shopping list for shopping list actions API compatibility.
-  /// 
-  /// [listId] Shopping list identifier for deletion
-  /// 
-  /// Returns true if deletion succeeds. Provides direct list deletion capability
-  /// for shopping list actions and management components.
+  /// Deletes specific shopping list
   Future<bool> deleteList(String listId) async {
     return await _shoppingService.deleteList(listId);
   }
 
-  /// Exports shopping list for shopping list actions API compatibility.
-  /// 
-  /// Returns formatted text representation of active shopping list.
-  /// Delegates to exportListAsText for backward compatibility with
-  /// existing export functionality and sharing components.
+  /// Exports shopping list (delegates to exportListAsText)
   String exportList() {
     return exportListAsText();
   }
 
-  /// Adds bulk items to specific shopping list using optimized batch operations.
-  /// 
-  /// [listId] Target shopping list identifier for item addition
-  /// [items] List of shopping items for bulk addition
-  /// 
-  /// Returns true if bulk addition succeeds, false if operation fails.
-  /// Uses Firebase batch operations for better performance and atomic operations.
-  /// 
-  /// **Optimized Bulk Addition Process:**
-  /// - Target list activation for focused operations
-  /// - Single batch Firebase operation for all items
-  /// - Atomic transaction ensuring data consistency
-  /// - Single UI notification after completion
+  /// Adds bulk items to specific shopping list using batch operations
   Future<bool> addItemsToList(String listId, List<UnifiedShoppingItem> items) async {
-    // Activate target list for focused operations
     await setActiveList(listId);
-    
-    // Use optimized batch operation instead of individual item additions
     return await _shoppingService.addItemsBatch(items);
   }
 
@@ -655,70 +366,30 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   // ===== ADVANCED ITEM OPERATIONS =====
 
-  /// Bulk add items (för recept-import)
+  /// Bulk add items from recipe ingredients
   Future<bool> addItemsFromRecipe(
       List<Map<String, dynamic>> ingredientData) async {
     return await safeExecute(
-      () async {
-        for (final ingredient in ingredientData) {
-          await addItem(
-            name: ingredient['name'] as String,
-            amount: (ingredient['amount'] as num).toDouble(),
-            unit: ingredient['unit'] as String? ?? '',
-            category: ingredient['category'] as String? ?? 'Övrigt',
-          );
-        }
-        return true;
-      },
+      () => _itemOpsManager.addItemsFromRecipe(
+        ingredientData,
+        ({required name, required amount, required unit, required category}) =>
+          addItem(name: name, amount: amount, unit: unit, category: category),
+      ),
       operationName: 'Add items from recipe',
     ) ?? false;
   }
 
-  /// Gruppera items efter kategori - för UI rendering
-  Map<String, List<UnifiedShoppingItem>> get itemsByCategory {
-    final Map<String, List<UnifiedShoppingItem>> grouped = {};
+  /// Group items by category for UI rendering
+  Map<String, List<UnifiedShoppingItem>> get itemsByCategory =>
+      _itemOpsManager.groupItemsByCategory(items);
 
-    for (final item in items) {
-      grouped.putIfAbsent(item.category, () => []).add(item);
-    }
+  /// Get list of all used categories
+  List<String> get usedCategories =>
+      _itemOpsManager.getUsedCategories(items);
 
-    // Sortera kategorier och items
-    final sortedGrouped = <String, List<UnifiedShoppingItem>>{};
-    final sortedKeys = grouped.keys.toList()..sort();
-
-    for (final key in sortedKeys) {
-      final sortedItems = grouped[key]!;
-      sortedItems.sort((a, b) {
-        // Oköpta först, sedan alfabetiskt
-        if (a.bought != b.bought) {
-          return a.bought ? 1 : -1;
-        }
-        return a.name.compareTo(b.name);
-      });
-      sortedGrouped[key] = sortedItems;
-    }
-
-    return sortedGrouped;
-  }
-
-  /// Få lista över alla använda kategorier
-  List<String> get usedCategories {
-    final categories = items.map((item) => item.category).toSet().toList();
-    categories.sort();
-    return categories;
-  }
-
-  /// Sök i items
-  List<UnifiedShoppingItem> searchItems(String query) {
-    if (query.trim().isEmpty) return items;
-
-    final lowercaseQuery = query.toLowerCase();
-    return items
-        .where((item) =>
-            item.name.toLowerCase().contains(lowercaseQuery) ||
-            item.category.toLowerCase().contains(lowercaseQuery))
-        .toList();
-  }
+  /// Search items by name or category
+  List<UnifiedShoppingItem> searchItems(String query) =>
+      _itemOpsManager.searchItems(items, query);
 
   // ===== COLLABORATIVE FEATURES =====
 
@@ -760,49 +431,16 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   // ===== ANALYTICS & INSIGHTS =====
 
-  /// Få shopping insights för UI
-  Map<String, dynamic> get shoppingInsights {
-    if (activeList == null) return {};
+  /// Get shopping insights for UI
+  Map<String, dynamic> get shoppingInsights =>
+      _analyticsManager.getShoppingInsights(activeList, items, usedCategories);
 
-    return {
-      'totalItems': totalItems,
-      'boughtItems': boughtItems,
-      'completionPercentage': completionPercentage,
-      'isCollaborative': activeList!.isCollaborative,
-      'memberCount': activeList!.memberCount,
-      'lastActivity': activeList!.activitySummary,
-      'hasRecentActivity': activeList!.hasRecentActivity,
-      'categories': usedCategories.length,
-      'priorityItems': items.where((item) => item.priority > 3).length,
-    };
-  }
+  /// Export list as text for sharing
+  String exportListAsText() => _analyticsManager.exportListAsText();
 
-  /// ✅ NY: Export lista som text - för delning (ShoppingListSelector API)
-  String exportListAsText() {
-    return _shoppingService.exportListAsText();
-  }
-
-  /// Export lista som text med kategorier - för UI
-  String exportListAsTextWithCategories() {
-    if (activeList == null) return '';
-
-    final buffer = StringBuffer();
-    buffer.writeln('📝 ${activeList!.name}');
-    buffer.writeln('');
-
-    final grouped = itemsByCategory;
-    for (final category in grouped.keys) {
-      buffer.writeln('🏷️ $category:');
-      for (final item in grouped[category]!) {
-        final check = item.bought ? '✅' : '⬜';
-        buffer.writeln('  $check ${item.displayText}');
-      }
-      buffer.writeln('');
-    }
-
-    buffer.writeln('📊 ${activeList!.summary}');
-    return buffer.toString();
-  }
+  /// Export list as text with categories for UI
+  String exportListAsTextWithCategories() =>
+      _analyticsManager.exportListAsTextWithCategories(activeList, itemsByCategory);
 
   // ===== STATE MANAGEMENT =====
 

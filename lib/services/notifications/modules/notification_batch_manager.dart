@@ -6,57 +6,11 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/notifications/notification_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 
-/// Specialized notification batching and spam prevention module providing intelligent grouping and rate limiting.
-///
-/// This focused module implements sophisticated notification batching following Single Responsibility Principle,
-/// handling intelligent notification grouping, spam prevention, and rate limiting to optimize user experience
-/// while preventing notification fatigue. It provides comprehensive batch processing capabilities that enhance
-/// user engagement through thoughtful notification timing and grouping strategies.
-///
-/// **Single Responsibility Focus:**
-/// This module exclusively handles batching and spam prevention responsibilities:
-/// - **Intelligent Grouping**: Smart notification clustering based on content similarity and timing patterns
-/// - **Batch Window Management**: Configurable time windows for optimal notification delivery timing
-/// - **Spam Detection**: Advanced algorithms detecting excessive notifications and implementing prevention strategies
-/// - **Rate Limiting**: Comprehensive per-user and per-category rate limiting preventing notification overload
-/// - **Queue Management**: Efficient batch processing with priority-based delivery optimization
-///
-/// **What This Module Does NOT Handle:**
-/// - FCM token management and device registration (handled by FCMTokenManager)
-/// - Content generation and message templating (handled by NotificationContentManager)
-/// - User preferences and quiet hours (handled by NotificationPreferenceManager)
-/// - Delivery analytics and tracking (handled by NotificationAnalyticsManager)
-///
-/// **Batching Intelligence:**
-/// - Smart grouping algorithms that identify related notifications for optimal user experience
-/// - Configurable batch windows respecting user's cooking schedules and activity patterns
-/// - Content similarity detection preventing redundant notifications from reaching users
-/// - Priority-based processing ensuring critical notifications bypass batching when necessary
-/// - Rate limiting algorithms that adapt to user engagement patterns and preferences
-///
-/// **Spam Prevention Features:**
-/// - Frequency analysis detecting notification spam patterns before they impact users
-/// - Content similarity algorithms identifying duplicate or near-duplicate notification attempts
-/// - User-specific rate limiting adapting to individual engagement patterns and preferences
-/// - Category-based throttling preventing any single notification type from overwhelming users
-/// - Intelligent backoff strategies that gradually reduce notification frequency for disengaged users
-///
-/// **Usage Examples:**
+/// Notification batching and spam prevention with intelligent grouping, rate limiting, and spam detection.
+/// Follows SRP - handles only batching/spam (not FCM tokens, content, preferences, or analytics).
 /// ```dart
-/// final batchManager = NotificationBatchManager(
-///   userId: currentUserId,
-///   repository: notificationRepository,
-///   sendBatchCallback: deliveryManager.sendBatch,
-/// );
-/// 
-/// // Add notification to batching system
-/// await batchManager.addNotification(notification);
-/// 
-/// // Process pending batches
-/// await batchManager.processPendingBatches();
-/// 
-/// // Check rate limiting status
-/// final canSend = await batchManager.checkRateLimit('recipe_sharing');
+/// await manager.addToBatch(targetUserIds: [id], strategy: strategy, variables: vars);
+/// await manager.processAllPendingBatches();
 /// ```
 class NotificationBatchManager {
   final String _userId;

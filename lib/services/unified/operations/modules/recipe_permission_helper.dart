@@ -3,29 +3,16 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/operations/modules/legacy_recipe_ownership_resolver.dart';
 import 'package:butlery/core/utils/logger.dart';
 
-/// Focused module for recipe permission checking and legacy compatibility
-/// 
-/// This module handles ONLY permission-related responsibilities:
-/// - Recipe access permission validation
-/// - User capability checking for recipe operations  
-/// - Legacy permission system compatibility
-/// - Permission level determination and mapping
-/// - Access control for various recipe actions
-/// - Permission inheritance and delegation logic
-/// 
-/// ❌ DOES NOT CONTAIN: Recipe sharing, member management, comments, ratings, discovery
+/// Recipe permission checking module handling access validation, user capabilities, legacy compatibility, and permission level determination.
 class RecipePermissionHelper {
   final UnifiedRecipeService _parent;
+  final LegacyRecipeOwnershipResolver _legacyResolver;
 
-  RecipePermissionHelper(this._parent);
+  RecipePermissionHelper(this._parent) : _legacyResolver = LegacyRecipeOwnershipResolver();
 
-  // ===== RECIPE ACCESS PERMISSIONS =====
-
-  /// Check if user can view a recipe
-  /// 
-  /// Determines if current user has permission to view recipe content
   bool canViewRecipe(Recipe recipe) {
     try {
       final currentUserId = _parent.currentUserId;
@@ -57,9 +44,6 @@ class RecipePermissionHelper {
     }
   }
 
-  /// Check if user can edit a recipe
-  /// 
-  /// Determines if current user has permission to modify recipe content
   bool canEditRecipe(Recipe recipe) {
     try {
       final currentUserId = _parent.currentUserId;
@@ -90,29 +74,24 @@ class RecipePermissionHelper {
     }
   }
 
-  /// Check if user can delete a recipe with legacy compatibility
-  /// 
-  /// Determines if current user has permission to delete recipe
-  /// Includes fallback logic for legacy recipes with missing ownership data
   bool canDeleteRecipe(Recipe recipe) {
     try {
       final currentUserId = _parent.currentUserId;
       if (currentUserId == null) return false;
 
-      // ULTRATHINK FIX: Enhanced ownership determination with legacy fallbacks
-      final ownerId = _determineRecipeOwnership(recipe, currentUserId);
-      
+      final ownerId = _legacyResolver.determineOwnership(recipe, currentUserId);
+
       if (ownerId == null) {
         AppLogger.warning('⚠️ Could not determine recipe ownership for deletion: ${recipe.id}');
         return false;
       }
-      
+
       final canDelete = ownerId == currentUserId;
-      
+
       if (!canDelete) {
         AppLogger.debug('🔍 Delete permission denied - Owner: $ownerId, Current: $currentUserId');
       }
-      
+
       return canDelete;
     } catch (e) {
       AppLogger.error('❌ Failed to check delete permission', e);
@@ -120,9 +99,6 @@ class RecipePermissionHelper {
     }
   }
 
-  /// Check if user can manage recipe members
-  /// 
-  /// Determines if current user can add/remove members or change permissions
   bool canManageMembers(Recipe recipe) {
     try {
       final currentUserId = _parent.currentUserId;
@@ -146,9 +122,6 @@ class RecipePermissionHelper {
     }
   }
 
-  /// Check if user can invite new members to recipe
-  /// 
-  /// Determines if current user can send invitations to join recipe
   bool canInviteMembers(Recipe recipe) {
     try {
       final currentUserId = _parent.currentUserId;
@@ -177,9 +150,6 @@ class RecipePermissionHelper {
     }
   }
 
-  /// Check if user can comment on recipe
-  /// 
-  /// Determines if current user can add comments to recipe
   bool canCommentOnRecipe(Recipe recipe) {
     try {
       final currentUserId = _parent.currentUserId;
@@ -205,9 +175,6 @@ class RecipePermissionHelper {
     }
   }
 
-  /// Check if user can rate a recipe
-  /// 
-  /// Determines if current user can add ratings to recipe
   bool canRateRecipe(Recipe recipe) {
     try {
       final currentUserId = _parent.currentUserId;
@@ -232,11 +199,6 @@ class RecipePermissionHelper {
     }
   }
 
-  // ===== PERMISSION LEVEL DETERMINATION =====
-
-  /// Get user's permission level for a recipe
-  /// 
-  /// Returns the specific permission level the user has for this recipe
   ResourcePermission getUserPermission(Recipe recipe, String userId) {
     try {
       // Owner has owner-level permissions
@@ -264,9 +226,6 @@ class RecipePermissionHelper {
     }
   }
 
-  /// Check if user has at least the specified permission level
-  /// 
-  /// Useful for checking minimum permission requirements
   bool hasMinimumPermission(Recipe recipe, String userId, ResourcePermission minimumLevel) {
     try {
       final userPermission = getUserPermission(recipe, userId);
@@ -296,11 +255,6 @@ class RecipePermissionHelper {
     }
   }
 
-  // ===== LEGACY COMPATIBILITY =====
-
-  /// Check legacy permission compatibility
-  /// 
-  /// Ensures backwards compatibility with older permission systems
   bool checkLegacyPermission(Recipe recipe, String userId, String action) {
     try {
       AppLogger.debug('🔍 Checking legacy permission for action: $action');
@@ -346,9 +300,6 @@ class RecipePermissionHelper {
     }
   }
 
-  /// Convert legacy permission strings to ResourcePermission enum
-  /// 
-  /// Maintains compatibility with string-based permission systems
   ResourcePermission parseLegacyPermission(String? legacyPermission) {
     if (legacyPermission == null) return ResourcePermission.read;
 
@@ -383,162 +334,6 @@ class RecipePermissionHelper {
     }
   }
 
-  // ===== LEGACY COMPATIBILITY METHODS =====
-
-  /// Determine recipe ownership with comprehensive legacy fallback logic
-  /// 
-  /// Handles multiple legacy scenarios where ownership data is missing or incomplete
-  String? _determineRecipeOwnership(Recipe recipe, String currentUserId) {
-    try {
-      AppLogger.debug('🔍 Determining ownership for recipe: ${recipe.id}');
-      
-      // Method 1: Standard ownership check (modern recipes)
-      final standardOwnerId = recipe.socialData?.ownerId ?? recipe.createdBy;
-      if (standardOwnerId != null && standardOwnerId.isNotEmpty) {
-        AppLogger.debug('✅ Standard ownership found: $standardOwnerId');
-        return standardOwnerId;
-      }
-      
-      // Method 2: Legacy recipe detection and repair
-      if (_isLegacyRecipe(recipe)) {
-        AppLogger.info('🔧 Legacy recipe detected, applying ownership inference');
-        return _inferLegacyRecipeOwnership(recipe, currentUserId);
-      }
-      
-      // Method 3: Repository-level ownership check (fallback to Firebase document metadata)
-      // This would require extending the repository interface
-      AppLogger.warning('⚠️ No ownership data found for recipe: ${recipe.id}');
-      return null;
-      
-    } catch (e) {
-      AppLogger.error('❌ Error determining recipe ownership: $e');
-      return null;
-    }
-  }
-  
-  /// Check if recipe is a legacy recipe with missing ownership data
-  bool _isLegacyRecipe(Recipe recipe) {
-    // Legacy indicators:
-    // 1. No socialData at all
-    // 2. Empty or null createdBy field
-    // 3. Created before social data structure (before 2022-06-01)
-    final hasNoSocialData = recipe.socialData == null;
-    final hasEmptyCreatedBy = recipe.createdBy == null || recipe.createdBy!.isEmpty;
-    final isOldRecipe = recipe.createdAt.isBefore(DateTime(2022, 6, 1));
-    
-    final isLegacy = hasNoSocialData || hasEmptyCreatedBy || isOldRecipe;
-    
-    if (isLegacy) {
-      AppLogger.info('🕰️ Legacy recipe indicators - NoSocialData: $hasNoSocialData, EmptyCreatedBy: $hasEmptyCreatedBy, OldRecipe: $isOldRecipe');
-    }
-    
-    return isLegacy;
-  }
-  
-  /// Infer ownership for legacy recipes using multiple strategies
-  String? _inferLegacyRecipeOwnership(Recipe recipe, String currentUserId) {
-    AppLogger.info('🔍 Inferring legacy recipe ownership for: ${recipe.id}');
-    
-    // Strategy 1: Check if current user has this recipe in their collection
-    // This is the safest assumption - if user can see it, they likely own it
-    // for personal recipes in the legacy era
-    if (recipe.isPersonal && _isRecipeInUserCollection(recipe, currentUserId)) {
-      AppLogger.success('✅ Legacy ownership inferred via collection membership');
-      return currentUserId;
-    }
-    
-    // Strategy 2: Admin override for recipes older than 2 years
-    if (_isVeryOldRecipe(recipe) && _hasAdminOverride(currentUserId)) {
-      AppLogger.warning('🔓 Admin override applied for very old recipe');
-      return currentUserId;
-    }
-    
-    // Strategy 3: Last resort - allow deletion if recipe is clearly orphaned
-    // This handles the case where recipe is completely broken but user needs to delete it
-    if (_isOrphanedLegacyRecipe(recipe)) {
-      AppLogger.warning('🚨 Allowing deletion of orphaned legacy recipe as last resort');
-      return currentUserId; // Allow deletion to clean up orphaned data
-    }
-    
-    AppLogger.warning('⚠️ Could not safely infer ownership for legacy recipe');
-    return null;
-  }
-  
-  /// Check if recipe is in user's collection (indicates ownership for personal recipes)
-  bool _isRecipeInUserCollection(Recipe recipe, String userId) {
-    // Enhanced logic for legacy recipe ownership inference
-    
-    // Strategy 1: If it's a personal recipe and user can access it, they likely own it
-    if (recipe.isPersonal) {
-      AppLogger.info('🔍 Personal recipe accessible by user - assuming ownership');
-      return true;
-    }
-    
-    // Strategy 2: Check if recipe ID contains user identifier patterns
-    if (recipe.id.contains(userId) || recipe.id.startsWith('user_$userId')) {
-      AppLogger.info('🔍 Recipe ID contains user identifier - assuming ownership');
-      return true;
-    }
-    
-    // Strategy 3: Check if recipe images are in user's storage path
-    if (recipe.imageUrls.isNotEmpty && recipe.imageUrls.any((url) => url.contains(userId))) {
-      AppLogger.info('🔍 Recipe images in user storage path - assuming ownership');
-      return true;
-    }
-    
-    return false;
-  }
-  
-  /// Check if recipe is very old (before reliable ownership tracking)
-  bool _isVeryOldRecipe(Recipe recipe) {
-    return recipe.createdAt.isBefore(DateTime(2021, 12, 31));
-  }
-  
-  /// Check if user has admin override capabilities (enhanced for legacy cleanup)
-  bool _hasAdminOverride(String userId) {
-    // Temporary: Allow admin override for very problematic legacy recipes
-    // This helps users delete stuck legacy recipes from their account
-    AppLogger.info('🔓 Checking admin override for legacy recipe cleanup');
-    
-    // For now, allow admin override for any authenticated user dealing with legacy recipes
-    // This is safe because:
-    // 1. Only applies to very old recipes (before 2022)
-    // 2. User must be authenticated
-    // 3. Recipe must fail all other ownership strategies
-    // 4. Comprehensive audit logging is in place
-    return userId.isNotEmpty;
-  }
-  
-  /// Check if recipe is completely orphaned and can be safely cleaned up
-  bool _isOrphanedLegacyRecipe(Recipe recipe) {
-    // A recipe is considered orphaned if:
-    // 1. It has no ownership data at all
-    // 2. It's very old (legacy era)
-    // 3. It has minimal or corrupted data
-    
-    final hasNoOwnershipData = (recipe.createdBy == null || recipe.createdBy!.isEmpty) && 
-                               (recipe.socialData?.ownerId == null || recipe.socialData!.ownerId!.isEmpty);
-    
-    final isVeryOld = recipe.createdAt.isBefore(DateTime(2022, 1, 1));
-    
-    // Additional indicators of orphaned data
-    final hasMinimalData = recipe.title.isEmpty || recipe.title.length < 3;
-    final hasCorruptedId = recipe.id.length < 10; // Firebase IDs are typically longer
-    
-    final isOrphaned = hasNoOwnershipData && isVeryOld && (hasMinimalData || hasCorruptedId);
-    
-    if (isOrphaned) {
-      AppLogger.warning('🗑️ Recipe identified as orphaned legacy data - allowing cleanup');
-    }
-    
-    return isOrphaned;
-  }
-
-  // ===== PERMISSION UTILITIES =====
-
-  /// Get human-readable permission description
-  /// 
-  /// Returns user-friendly text describing permission level
   String getPermissionDescription(ResourcePermission permission) {
     if (permission == ResourcePermission.read) {
       return 'Ingen åtkomst';
@@ -557,9 +352,6 @@ class RecipePermissionHelper {
     }
   }
 
-  /// Get available actions for user permission level
-  /// 
-  /// Returns list of actions the user can perform based on their permission
   List<String> getAvailableActions(Recipe recipe, String userId) {
     try {
       final actions = <String>[];
@@ -579,9 +371,6 @@ class RecipePermissionHelper {
     }
   }
 
-  /// Check if recipe allows guest viewing
-  /// 
-  /// Determines if recipe can be viewed by non-members
   bool allowsGuestViewing(Recipe recipe) {
     try {
       if (recipe.isPersonal) return false;
@@ -593,9 +382,6 @@ class RecipePermissionHelper {
     }
   }
 
-  /// Get permission summary for recipe
-  /// 
-  /// Returns comprehensive permission information for debugging/admin purposes
   Map<String, dynamic> getPermissionSummary(Recipe recipe, String userId) {
     try {
       final permission = getUserPermission(recipe, userId);

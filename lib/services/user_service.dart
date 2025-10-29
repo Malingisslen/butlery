@@ -1,31 +1,4 @@
-/// Comprehensive user profile management service with advanced caching and social features.
-///
-/// This service provides sophisticated user profile functionality including profile creation, updates,
-/// social discovery, friend management, and comprehensive caching strategies. It serves as the central
-/// coordinator for all user-related operations, integrating authentication, permissions, and social
-/// features while maintaining optimal performance through intelligent caching and state management.
-///
-/// **Architecture Integration:**
-/// - Extends [ChangeNotifier] for reactive UI state management with user profile updates
-/// - Uses [ErrorHandlingMixin] for consistent error handling and user feedback patterns
-/// - Integrates [FirebaseServiceMixin] for Firebase-specific operations and connectivity management
-/// - Implements [StreamManagementMixin] for efficient real-time data stream handling
-/// - Coordinates with [AuthRepository] for authentication state synchronization
-/// - Integrates with [PermissionService] for secure user operation validation
-///
-/// **User Management Features:**
-/// - **Profile Management**: Complete user profile creation, updates, and validation
-/// - **Social Discovery**: User search and discovery with privacy controls and preferences
-/// - **Caching Strategy**: Intelligent 30-minute profile caching for optimal performance
-/// - **Real-time Updates**: Automatic profile synchronization with authentication state changes
-/// - **Privacy Controls**: Comprehensive privacy settings for searchability and email visibility
-/// - **Permission Integration**: Secure operations with comprehensive permission validation
-///
-/// **Performance and Caching:**
-/// - **Profile Caching**: 30-minute intelligent caching system reducing database load
-/// - **Cache Management**: Automatic cache invalidation and cleanup on authentication changes
-/// - **Stream Management**: Efficient stream handling with automatic cleanup and error recovery
-/// - **Batch Operations**: Optimized batch profile fetching for social features
+/// User profile service with 30-min caching, social discovery, real-time auth sync, and privacy controls.
 
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -39,48 +12,11 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
-/// User profile service with comprehensive caching, social features, and real-time synchronization.
-///
-/// This service provides complete user profile management using advanced caching strategies,
-/// real-time authentication state synchronization, and comprehensive social discovery features.
-/// It serves as the central coordination point for all user-related operations throughout
-/// the application with sophisticated performance optimization and error handling.
-///
-/// **Service Architecture:**
-/// Uses multiple specialized mixins for robust functionality:
-/// - [ErrorHandlingMixin] for consistent error handling and user feedback
-/// - [FirebaseServiceMixin] for Firebase-specific operations and connectivity
-/// - [StreamManagementMixin] for efficient real-time stream management
-///
-/// **Caching Strategy:**
-/// Implements intelligent profile caching with:
-/// - 30-minute cache duration for optimal performance
-/// - Automatic cache invalidation on authentication state changes
-/// - Memory-efficient cache management with timestamp tracking
-///
-/// **Usage Examples:**
+/// User profile service with 30-min caching, social discovery, auth monitoring, and privacy controls.
 /// ```dart
-/// final userService = UserService(
-///   repository: ServiceLocator.get<UserRepository>(),
-///   authRepository: ServiceLocator.get<AuthRepository>(),
-/// );
-/// 
-/// // Initialize service with authentication monitoring
-/// await userService.initialize();
-/// 
-/// // Create or update user profile
-/// final profile = await userService.createOrUpdateProfile(
-///   displayName: 'John Doe',
-///   isSearchable: true,
-/// );
-/// 
-/// // Listen to profile changes
-/// userService.addListener(() {
-///   if (userService.currentUserProfile != null) {
-///     updateProfileUI(userService.currentUserProfile!);
-///   }
-/// });
-/// ```
+/// final svc = UserService(repository: ServiceLocator.get(), authRepository: ServiceLocator.get());
+/// await svc.initialize(); // Monitor auth state
+/// await svc.createOrUpdateProfile(displayName: 'John', isSearchable: true);
 class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServiceMixin, StreamManagementMixin {
   final UserRepository _repository;
   final AuthRepository _authRepository;

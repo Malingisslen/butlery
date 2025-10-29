@@ -3,30 +3,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
-import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
-import 'package:butlery/widgets/common/universal_share_dialog.dart';
-import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
-import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/user_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/core/utils/common_dialog_actions.dart';
-import 'package:butlery/services/share_service.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
-import 'package:butlery/services/unified/unified_shopping_service.dart';
-import 'package:butlery/utils/text/shopping_list_generator.dart';
-import 'package:butlery/widgets/common/dialogs/shopping_list_selection_dialog.dart';
-import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/core/exceptions/permission_exceptions.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-/// Recipe detail actions handler
+import 'package:butlery/views/recipe_detail/handlers/recipe_management_handler.dart';
+import 'package:butlery/views/recipe_detail/handlers/recipe_social_handler.dart';
+import 'package:butlery/views/recipe_detail/handlers/recipe_shopping_handler.dart';
+
+/// Recipe detail actions facade
 ///
-/// This class provides action methods and helper functionality for the recipe detail view.
-/// It handles user interactions like deleting, sharing, and portion scaling.
+/// **SRP Compliance:** This facade coordinates action handlers and manages view state.
+/// Delegates action logic to specialized handlers:
+/// - RecipeManagementHandler: CRUD operations
+/// - RecipeSocialHandler: Social features
+/// - RecipeShoppingHandler: Shopping list generation
 class RecipeDetailActions {
   // State variables
   List<String> _scaledIngredients = [];
@@ -41,128 +31,95 @@ class RecipeDetailActions {
   // SAFETY/HELPER METHODS
 
   /// Show snackbar safely with context check
-  void showSnackBarSafely(
-    BuildContext context,
+  void _showSnackBar(
     String message, {
     Color? backgroundColor,
-    Duration duration = const Duration(seconds: 2),
-  }) {
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: backgroundColor ?? AppColors.success,
-          duration: duration,
-        ),
-      );
-    }
-  }
+  }) {}
 
-  /// Pop navigation safely with context check
-  void popSafely(BuildContext context) {
-    if (context.mounted) {
-      Navigator.pop(context);
-    }
-  }
+  /// Pop navigation safely
+  void _popNavigation() {}
 
   /// Initialize actions with recipe data
   void initializeActions(BuildContext context) {
     final viewModel = context.read<RecipeDetailViewModel>();
     _scaledIngredients = List.from(viewModel.recipe.ingredients);
-    _currentPortions = viewModel.recipe.portions ?? 0; // Use 0 to indicate no portions specified
+    _currentPortions = viewModel.recipe.portions ?? 0;
     _isCommentsExpanded = false;
   }
 
-  // ACTION METHODS
+  // ACTION METHODS (Delegating to specialized handlers)
 
   /// Delete recipe with confirmation dialog
   Future<void> deleteRecipe(BuildContext context) async {
-    if (!context.mounted) return;
-
-    final viewModel = context.read<RecipeDetailViewModel>();
-    final confirmed = await CommonDialogActions.showRecipeDeleteConfirmation(
-      context: context,
-      recipeName: viewModel.recipe.title,
+    await RecipeManagementHandler.deleteRecipe(
+      context,
+      onSuccess: () {},
+      showSnackBar: _showSnackBar,
+      popNavigation: _popNavigation,
     );
-
-    if (confirmed == true) {
-      if (!context.mounted) return;
-      final success = await viewModel.deleteRecipe();
-      if (!context.mounted) return;
-      if (success) {
-        popSafely(context);
-        showSnackBarSafely(
-          context,
-          'Recept borttaget',
-          backgroundColor: AppColors.success,
-        );
-      } else {
-        showSnackBarSafely(
-          context,
-          'Kunde inte ta bort recept',
-          backgroundColor: AppColors.error,
-        );
-      }
-    }
   }
 
   /// Share recipe functionality
   Future<void> shareRecipe(BuildContext context) async {
-    if (!context.mounted) return;
+    await RecipeManagementHandler.shareRecipe(
+      context,
+      showSnackBar: _showSnackBar,
+    );
+  }
 
-    final viewModel = context.read<RecipeDetailViewModel>();
-    final shareService = ServiceLocator.get<ShareService>();
+  /// Mark recipe as cooked
+  Future<void> markAsCooked(BuildContext context) async {
+    await RecipeManagementHandler.markAsCooked(
+      context,
+      showSnackBar: _showSnackBar,
+    );
+  }
 
-    try {
-      await shareService.shareRecipe(viewModel.recipe);
-      if (!context.mounted) return;
-      showSnackBarSafely(
-        context,
-        'Recept delat',
-        backgroundColor: AppColors.success,
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-      showSnackBarSafely(
-        context,
-        'Kunde inte dela recept',
-        backgroundColor: AppColors.error,
-      );
-    }
+  /// Edit recipe
+  Future<void> editRecipe(BuildContext context) async {
+    await RecipeManagementHandler.editRecipe(
+      context,
+      showSnackBar: _showSnackBar,
+    );
   }
 
   /// Show social sharing dialog
   Future<void> showSocialShareDialog(BuildContext context) async {
-    if (!context.mounted) return;
+    await RecipeSocialHandler.showSocialShareDialog(context);
+  }
 
-    final viewModel = context.read<RecipeDetailViewModel>();
-    final shareViewModel = ServiceLocator.get<UniversalShareDialogViewModel>();
-    final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-
-    // Fetch available friends and groups (like veckomeny does)
-    List<UserProfile> availableFriends = [];
-    try {
-      availableFriends = friendsService.friends;
-    } catch (e) {
-      debugPrint('⚠️ Could not fetch friends: $e');
-    }
-
-    // Fetch available groups
-    final availableGroups = friendsService.categoriesList;
-
-    await showDialog(
-      context: context,
-      builder: (context) => ChangeNotifierProvider.value(
-        value: shareViewModel,
-        child: UniversalShareDialog.recipe(
-          recipe: viewModel.recipe,
-          viewModel: shareViewModel,
-          availableFriends: availableFriends,
-          availableGroups: availableGroups,
-        ),
-      ),
+  /// Post a comment
+  Future<void> postComment(
+    BuildContext context,
+    String commentText,
+    String recipeId,
+  ) async {
+    await RecipeSocialHandler.postComment(
+      context,
+      commentText: commentText,
+      recipeId: recipeId,
+      showSnackBar: _showSnackBar,
     );
   }
+
+  /// Create user profile if missing
+  Future<void> createUserProfile(BuildContext context) async {
+    await RecipeSocialHandler.createUserProfile(
+      context,
+      showSnackBar: _showSnackBar,
+    );
+  }
+
+  /// Generate shopping list from recipe
+  Future<void> generateShoppingListFromRecipe(BuildContext context) async {
+    await RecipeShoppingHandler.generateShoppingListFromRecipe(
+      context,
+      currentPortions: _currentPortions,
+      showSnackBar: _showSnackBar,
+    );
+  }
+
+  // UI HELPER METHODS
 
   /// Show fullscreen images
   Future<void> showFullscreenImages(
@@ -183,150 +140,6 @@ class RecipeDetailActions {
     );
   }
 
-  /// Handle portion scaling
-  void onPortionChanged(int newPortions, List<String> newIngredients) {
-    _currentPortions = newPortions;
-    _scaledIngredients = newIngredients;
-  }
-
-  /// Toggle comments expansion
-  void toggleCommentsExpansion() {
-    _isCommentsExpanded = !_isCommentsExpanded;
-  }
-
-  /// Post a comment
-  Future<void> postComment(
-    BuildContext context,
-    String commentText,
-    String recipeId,
-  ) async {
-    if (!context.mounted || commentText.trim().isEmpty) return;
-
-    final socialViewModel = context.read<SocialRecipeViewModel>();
-    final userService = ServiceLocator.get<UserService>();
-    final currentUser = FirebaseAuthRepository().currentUser;
-
-    if (currentUser == null) {
-      showSnackBarSafely(
-        context,
-        'Du måste vara inloggad för att kommentera',
-        backgroundColor: AppColors.error,
-      );
-      return;
-    }
-
-    try {
-      // Get user profile
-      final userProfile = await userService.getUserProfile(currentUser.uid);
-      if (userProfile == null) {
-        if (context.mounted) {
-          showSnackBarSafely(
-            context,
-            'Kunde inte hämta användardata',
-            backgroundColor: AppColors.error,
-          );
-        }
-        return;
-      }
-
-      // Post comment
-      await socialViewModel.postComment(recipeId);
-      if (!context.mounted) return;
-
-      if (!context.mounted) return;
-      showSnackBarSafely(
-        context,
-        'Kommentar postad',
-        backgroundColor: AppColors.success,
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-      showSnackBarSafely(
-        context,
-        'Kunde inte posta kommentar',
-        backgroundColor: AppColors.error,
-      );
-    }
-  }
-
-  /// Create user profile if missing
-  Future<void> createUserProfile(BuildContext context) async {
-    if (!context.mounted) return;
-
-    final userService = ServiceLocator.get<UserService>();
-    final currentUser = FirebaseAuthRepository().currentUser;
-
-    if (currentUser == null) return;
-
-    try {
-      await userService.createOrUpdateProfile(
-        displayName: currentUser.displayName ?? currentUser.email ?? 'Användare',
-        isSearchable: true,
-        allowEmailSearch: false,
-      );
-      if (!context.mounted) return;
-      showSnackBarSafely(
-        context,
-        'Användarprofil skapad',
-        backgroundColor: AppColors.success,
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-      showSnackBarSafely(
-        context,
-        'Kunde inte skapa användarprofil',
-        backgroundColor: AppColors.error,
-      );
-    }
-  }
-
-  /// Mark recipe as cooked
-  Future<void> markAsCooked(BuildContext context) async {
-    if (!context.mounted) return;
-
-    final viewModel = context.read<RecipeDetailViewModel>();
-    
-    try {
-      await viewModel.markAsCooked();
-      if (!context.mounted) return;
-      showSnackBarSafely(
-        context,
-        'Recept markerat som lagat idag!',
-        backgroundColor: AppColors.success,
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-      showSnackBarSafely(
-        context,
-        'Kunde inte markera som lagat',
-        backgroundColor: AppColors.error,
-      );
-    }
-  }
-
-  /// Navigate to edit recipe view
-  Future<void> editRecipe(BuildContext context) async {
-    if (!context.mounted) return;
-
-    final viewModel = context.read<RecipeDetailViewModel>();
-    
-    try {
-      // Navigate to edit recipe view with the current recipe
-      await Navigator.pushNamed(
-        context,
-        Routes.redigeraRecept,
-        arguments: viewModel.recipe,
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-      showSnackBarSafely(
-        context,
-        'Kunde inte öppna redigeringsvy',
-        backgroundColor: AppColors.error,
-      );
-    }
-  }
-
   /// Handle source URL click
   Future<void> handleSourceUrlClick(BuildContext context, String url) async {
     if (!context.mounted) return;
@@ -337,19 +150,11 @@ class RecipeDetailActions {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         if (!context.mounted) return;
-        showSnackBarSafely(
-          context,
-          'Kunde inte öppna länk',
-          backgroundColor: AppColors.error,
-        );
+        _showSnackBar('Kunde inte öppna länk', backgroundColor: AppColors.error);
       }
     } catch (e) {
       if (!context.mounted) return;
-      showSnackBarSafely(
-        context,
-        'Ogiltig länk',
-        backgroundColor: AppColors.error,
-      );
+      _showSnackBar('Ogiltig länk', backgroundColor: AppColors.error);
     }
   }
 
@@ -371,164 +176,17 @@ class RecipeDetailActions {
     }
   }
 
-  /// Generate shopping list from current recipe with portion scaling and Swedish categorization.
-  ///
-  /// This method creates a shopping list from the recipe's ingredients, allowing users to 
-  /// select an existing shopping list or create a new one. It leverages Swedish ingredient
-  /// parsing and intelligent categorization for optimal shopping organization.
-  ///
-  /// **Process Flow:**
-  /// 1. Generate UnifiedShoppingItem objects from recipe ingredients
-  /// 2. Show shopping list selection dialog (existing lists + create new option)
-  /// 3. Add items to selected shopping list using batch operations
-  /// 4. Provide success feedback with navigation option to shopping view
-  /// 5. Handle errors gracefully with user feedback
-  ///
-  /// **Features:**
-  /// - Portion scaling based on current recipe portions
-  /// - Swedish ingredient categorization (Mejeri, Kött & Fisk, etc.)
-  /// - Batch addition for optimal performance
-  /// - User-friendly shopping list selection
-  /// - Success feedback with navigation option
-  Future<void> generateShoppingListFromRecipe(BuildContext context) async {
-    if (!context.mounted) return;
+  // STATE MANAGEMENT METHODS
 
-    try {
-      final viewModel = context.read<RecipeDetailViewModel>();
-      final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
-      final recipe = viewModel.recipe;
+  /// Handle portion scaling
+  void onPortionChanged(int newPortions, List<String> newIngredients) {
+    _currentPortions = newPortions;
+    _scaledIngredients = newIngredients;
+  }
 
-      // Generate shopping items from recipe using current portions
-      final shoppingItems = ShoppingListGenerator.generateShoppingItemsFromRecipe(
-        recipe,
-        portions: _currentPortions,
-      );
-
-      if (shoppingItems.isEmpty) {
-        if (!context.mounted) return;
-        showSnackBarSafely(
-          context,
-          'Receptet har inga ingredienser att lägga till',
-          backgroundColor: AppColors.warning,
-        );
-        return;
-      }
-
-      // Show shopping list selection dialog
-      if (!context.mounted) return;
-      final selectedListResult = await showDialog<Map<String, dynamic>>(
-        context: context,
-        builder: (context) => ShoppingListSelectionDialog(
-          title: 'Välj inköpslista',
-          subtitle: 'Lägg till ingredienser från "${recipe.title}"',
-          shoppingService: shoppingService,
-        ),
-      );
-
-      if (selectedListResult == null || !context.mounted) return;
-
-      // Handle the selection result
-      String? targetListId;
-      String? targetListName;
-
-      if (selectedListResult['action'] == 'create_new') {
-        // Create new shopping list with recipe name
-        final newListName = selectedListResult['name'] as String? ?? '${recipe.title} - Ingredienser';
-        targetListId = await shoppingService.createPersonalList(newListName);
-        targetListName = newListName;
-      } else if (selectedListResult['action'] == 'select_existing') {
-        // Use existing list
-        targetListId = selectedListResult['listId'] as String?;
-        targetListName = selectedListResult['listName'] as String?;
-      }
-
-      if (targetListId == null) {
-        if (context.mounted) {
-          showSnackBarSafely(
-            context,
-            'Kunde inte skapa eller välja inköpslista',
-            backgroundColor: AppColors.error,
-          );
-        }
-        return;
-      }
-      
-      if (!context.mounted) return;
-
-      // Set the target list as active and validate permissions
-      await shoppingService.setActiveList(targetListId);
-      
-      // ULTRATHINK FIX: Pre-validate edit permissions for better user feedback
-      final permissionService = ServiceLocator.get<PermissionService>();
-      if (!permissionService.canEditShoppingList(targetListId)) {
-        if (context.mounted) {
-          showSnackBarSafely(
-            context,
-            'Du har inte behörighet att redigera denna inköpslista',
-            backgroundColor: AppColors.error,
-          );
-        }
-        return;
-      }
-      
-      final success = await shoppingService.addItemsBatch(shoppingItems);
-
-      if (!context.mounted) return;
-      if (success) {
-        // Success feedback with navigation option
-        final shouldNavigate = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Inköpslista skapad!'),
-            content: Text(
-              '${shoppingItems.length} ingredienser har lagts till i "${targetListName ?? 'din inköpslista'}".\n\n'
-              'Vill du gå till inköpslistan nu?'
-            ),
-            actions: [
-              ActionButtons.secondaryButton(
-                context,
-                label: 'Senare',
-                onPressed: () => Navigator.pop(context, false),
-              ),
-              ActionButtons.primaryButton(
-                context,
-                label: 'Visa lista',
-                onPressed: () => Navigator.pop(context, true),
-              ),
-            ],
-          ),
-        );
-
-        if (shouldNavigate == true && context.mounted) {
-          // Navigate to shopping view
-          Navigator.pushNamed(context, Routes.inkopslista);
-        }
-      } else {
-        showSnackBarSafely(
-          context,
-          'Kunde inte lägga till ingredienser i inköpslistan',
-          backgroundColor: AppColors.error,
-        );
-      }
-
-    } catch (e) {
-      if (!context.mounted) return;
-      
-      // ULTRATHINK FIX: Handle specific permission errors with clear Swedish messages
-      if (e is PermissionDeniedException) {
-        showSnackBarSafely(
-          context,
-          'Du har inte behörighet att redigera denna delade inköpslista',
-          backgroundColor: AppColors.error,
-        );
-      } else {
-        showSnackBarSafely(
-          context,
-          'Ett fel uppstod: ${e.toString()}',
-          backgroundColor: AppColors.error,
-        );
-      }
-    }
+  /// Toggle comments expansion
+  void toggleCommentsExpansion() {
+    _isCommentsExpanded = !_isCommentsExpanded;
   }
 
   /// Reset state
@@ -537,9 +195,9 @@ class RecipeDetailActions {
     _isCommentsExpanded = false;
     _currentPortions = 1;
   }
+
+  /// Dispose resources
   void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources    super.dispose();
+    // Resources are cleaned up
   }
 }

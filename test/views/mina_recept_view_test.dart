@@ -39,7 +39,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/views/mina_recept_view.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
-import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/offline_service.dart' as offline_service;
 
@@ -88,8 +88,8 @@ void main() {
 
     late RecipeListViewModel mockRecipeListViewModel;
     late UserService mockUserService;
-    late FriendsViewModel mockFriendsViewModel; 
-    late SharedContentViewModel mockSharedContentViewModel;
+    late FriendsViewModel mockFriendsViewModel;
+    late SharedContentCoordinatorViewModel mockSharedContentCoordinator;
     late offline_service.OfflineService mockOfflineService;
     late List<Recipe> testRecipes;
     late UserProfile testUser;
@@ -143,8 +143,8 @@ void main() {
         );
       }
       
-      if (mockSharedContentViewModel is TestSharedContentViewModel) {
-        (mockSharedContentViewModel as TestSharedContentViewModel).configureContentState(
+      if (mockSharedContentCoordinator is TestSharedContentCoordinatorViewModel) {
+        (mockSharedContentCoordinator as TestSharedContentCoordinatorViewModel).configureContentState(
           unreadRecipesCount: 0,
           unreadMenusCount: 0,
         );
@@ -188,7 +188,7 @@ void main() {
       // Create our test instances
       mockRecipeListViewModel = TestRecipeListViewModel();
       mockFriendsViewModel = TestFriendsViewModel();
-      mockSharedContentViewModel = TestSharedContentViewModel();
+      mockSharedContentCoordinator = TestSharedContentCoordinatorViewModel();
       mockOfflineService = TestOfflineService();
       
       // Get UserService from TestServiceLocator (already registered)
@@ -198,7 +198,7 @@ void main() {
       // This ensures ServiceLocator.get<>() returns our configured test mocks
       TestServiceLocator.registerFactory<RecipeListViewModel>(() => mockRecipeListViewModel);
       TestServiceLocator.registerFactory<FriendsViewModel>(() => mockFriendsViewModel);
-      TestServiceLocator.registerSingleton<SharedContentViewModel>(mockSharedContentViewModel);
+      TestServiceLocator.registerSingleton<SharedContentCoordinatorViewModel>(mockSharedContentCoordinator);
       TestServiceLocator.registerSingleton<offline_service.OfflineService>(mockOfflineService);
 
       // Configure method stubs and set default states
@@ -228,7 +228,7 @@ void main() {
         expect(production.ServiceLocator.get<RecipeListViewModel>(), isA<TestRecipeListViewModel>());
         expect(production.ServiceLocator.get<UserService>(), isNotNull);
         expect(production.ServiceLocator.get<FriendsViewModel>(), isA<TestFriendsViewModel>());
-        expect(production.ServiceLocator.get<SharedContentViewModel>(), isA<TestSharedContentViewModel>());
+        expect(production.ServiceLocator.get<SharedContentCoordinatorViewModel>(), isA<TestSharedContentCoordinatorViewModel>());
         expect(production.ServiceLocator.get<offline_service.OfflineService>(), isA<TestOfflineService>());
       });
 
@@ -274,7 +274,7 @@ void main() {
         (mockFriendsViewModel as TestFriendsViewModel).configureFriendsState(
           pendingRequestsCount: 2,
         );
-        (mockSharedContentViewModel as TestSharedContentViewModel).configureContentState(
+        (mockSharedContentCoordinator as TestSharedContentCoordinatorViewModel).configureContentState(
           unreadRecipesCount: 3,
           unreadMenusCount: 1,
         );
@@ -939,8 +939,8 @@ class TestFriendsViewModel extends ChangeNotifier implements FriendsViewModel {
   }
 }
 
-/// Test implementation of SharedContentViewModel for view testing
-class TestSharedContentViewModel extends ChangeNotifier implements SharedContentViewModel {
+/// Test implementation of SharedContentCoordinatorViewModel for view testing
+class TestSharedContentCoordinatorViewModel extends ChangeNotifier implements SharedContentCoordinatorViewModel {
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
 
@@ -948,10 +948,16 @@ class TestSharedContentViewModel extends ChangeNotifier implements SharedContent
   int _unreadMenusCount = 0;
   bool _disposed = false;
 
+  // Match the coordinator's unreadCounts map interface
   @override
-  int get unreadRecipesCount => _unreadRecipesCount;
+  Map<ContentTab, int> get unreadCounts => {
+    ContentTab.recipes: _unreadRecipesCount,
+    ContentTab.menus: _unreadMenusCount,
+    ContentTab.shoppingLists: 0,
+  };
 
-  @override
+  // Convenience getters for test compatibility
+  int get unreadRecipesCount => _unreadRecipesCount;
   int get unreadMenusCount => _unreadMenusCount;
 
   void configureContentState({

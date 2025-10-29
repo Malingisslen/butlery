@@ -4,29 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 
 /// GDPR Article 20 - Right to Data Portability
-///
-/// Comprehensive data export service providing users with complete access to their personal data
-/// in a structured, commonly used, and machine-readable format (JSON).
-///
-/// This service implements the GDPR Right to Data Portability, allowing users to:
-/// - Export all personal data stored in the Butlery platform
-/// - Receive data in JSON format for easy processing
-/// - Transfer data to other services if desired
-///
-/// **Exported Data Includes:**
-/// - User profile and settings
-/// - All recipes (personal and shared)
-/// - Friends and social connections
-/// - Messages and conversations
-/// - Shopping lists and menus
-/// - Comments, ratings, and activity history
-/// - Notification preferences
-///
-/// **GDPR Compliance:**
-/// - Exports all personal data as required by Article 20
-/// - Provides data in machine-readable format (JSON)
-/// - Includes metadata about data collection and processing
-/// - Ensures no data from other users is included (privacy protection)
+/// Exports all user data (profile, recipes, friends, messages, shopping lists, menus, comments, activity) in JSON format.
 class DataExportService {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
@@ -87,7 +65,6 @@ class DataExportService {
     }
   }
 
-  /// Export user profile data
   Future<Map<String, dynamic>> _exportUserProfile(String userId) async {
     try {
       // Get private profile
@@ -116,7 +93,6 @@ class DataExportService {
     }
   }
 
-  /// Export all recipes (personal and owned)
   Future<Map<String, dynamic>> _exportRecipes(String userId) async {
     try {
       final recipes = <Map<String, dynamic>>[];
@@ -160,7 +136,6 @@ class DataExportService {
     }
   }
 
-  /// Export friends and social connections
   Future<Map<String, dynamic>> _exportFriends(String userId) async {
     try {
       final friendsData = <String, dynamic>{
@@ -236,7 +211,6 @@ class DataExportService {
     }
   }
 
-  /// Export messages and conversations
   Future<Map<String, dynamic>> _exportMessages(String userId) async {
     try {
       final messagesData = <String, dynamic>{
@@ -292,7 +266,6 @@ class DataExportService {
     }
   }
 
-  /// Export shopping lists
   Future<Map<String, dynamic>> _exportShoppingLists(String userId) async {
     try {
       final lists = <Map<String, dynamic>>[];
@@ -339,7 +312,6 @@ class DataExportService {
     }
   }
 
-  /// Export menus
   Future<Map<String, dynamic>> _exportMenus(String userId) async {
     try {
       final menus = <Map<String, dynamic>>[];
@@ -382,7 +354,6 @@ class DataExportService {
     }
   }
 
-  /// Export comments and ratings
   Future<Map<String, dynamic>> _exportCommentsAndRatings(String userId) async {
     try {
       final data = <String, dynamic>{
@@ -426,7 +397,6 @@ class DataExportService {
     }
   }
 
-  /// Export activity history
   Future<Map<String, dynamic>> _exportActivityHistory(String userId) async {
     try {
       final activities = <Map<String, dynamic>>[];
@@ -457,7 +427,6 @@ class DataExportService {
     }
   }
 
-  /// Export shared content (recipes, menus, lists shared with user)
   Future<Map<String, dynamic>> _exportSharedContent(String userId) async {
     try {
       final sharedData = <String, dynamic>{
@@ -501,7 +470,6 @@ class DataExportService {
     }
   }
 
-  /// Export user preferences and settings
   Future<Map<String, dynamic>> _exportPreferences(String userId) async {
     try {
       final prefsDoc = await _firestore

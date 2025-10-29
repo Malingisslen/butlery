@@ -3,17 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 
-/// GDPR Article 7 - Consent Management View
-///
-/// Full-page view for managing user consents in settings.
-/// Allows users to view and update their consent preferences at any time.
-///
-/// **Features:**
-/// - View current consent status
-/// - Update individual consent purposes
-/// - Revoke all optional consents
-/// - View consent history
-/// - GDPR compliant consent management
+/// GDPR Article 7 - Consent Management View for user consent preferences
 class ConsentManagementView extends StatefulWidget {
   const ConsentManagementView({super.key});
 
@@ -25,7 +15,6 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
   @override
   void initState() {
     super.initState();
-    // Load current consent on view open
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ConsentViewModel>().loadConsent();
     });
@@ -92,25 +81,14 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                 ),
                 SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    'Dina samtycken',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: Text('Dina samtycken',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            Text(
-              'Enligt GDPR har du full kontroll över hur vi behandlar dina personuppgifter. Du kan när som helst ändra eller återkalla dina samtycken.',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[700],
-                height: 1.5,
-              ),
-            ),
+            Text('Enligt GDPR har du full kontroll över hur vi behandlar dina personuppgifter. Du kan när som helst ändra eller återkalla dina samtycken.',
+              style: TextStyle(fontSize: 14, color: Colors.grey[700], height: 1.5)),
             if (viewModel.hasConsent) ...[
               const SizedBox(height: 12),
               Container(
@@ -124,15 +102,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                   children: [
                     const Icon(Icons.info_outline, color: AppColors.info, size: 20),
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Senast uppdaterad: ${viewModel.getConsentTimestampText()}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.info,
-                        ),
-                      ),
-                    ),
+                    Expanded(child: Text('Senast uppdaterad: ${viewModel.getConsentTimestampText()}',
+                        style: const TextStyle(fontSize: 12, color: AppColors.info))),
                   ],
                 ),
               ),
@@ -156,23 +127,13 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
               children: [
                 Icon(Icons.lock, color: Colors.grey[700], size: 20),
                 const SizedBox(width: 8),
-                const Text(
-                  'Nödvändiga samtycken',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                const Text('Nödvändiga samtycken',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 8),
-            Text(
-              'Dessa samtycken krävs för att appen ska fungera och kan inte inaktiveras.',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
+            Text('Dessa samtycken krävs för att appen ska fungera och kan inte inaktiveras.',
+              style: TextStyle(fontSize: 12, color: Colors.grey[600])),
             const SizedBox(height: 16),
             _buildRequiredConsentItem(
               'Grundläggande tjänster',
@@ -201,22 +162,9 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),
-              Text(
-                description,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[700],
-                  height: 1.4,
-                ),
-              ),
+              Text(description, style: TextStyle(fontSize: 12, color: Colors.grey[700], height: 1.4)),
             ],
           ),
         ),
@@ -232,13 +180,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Valfria samtycken',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            const Text('Valfria samtycken',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             TextButton.icon(
               onPressed: viewModel.isSaving ? null : () => _handleRevokeAll(viewModel),
               icon: const Icon(Icons.block, size: 16),
@@ -250,13 +193,8 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
           ],
         ),
         const SizedBox(height: 4),
-        Text(
-          'Du kan när som helst aktivera eller inaktivera dessa samtycken.',
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
+        Text('Du kan när som helst aktivera eller inaktivera dessa samtycken.',
+          style: TextStyle(fontSize: 12, color: Colors.grey[600])),
         const SizedBox(height: 16),
         _buildConsentToggle(
           viewModel,

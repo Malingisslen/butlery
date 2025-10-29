@@ -3,7 +3,7 @@
 /// This module implements sophisticated shared content interface following Single Responsibility Principle,
 /// specializing in shared content display, search functionality, categorization, and comprehensive content interaction.
 /// It provides complete shared content interface while maintaining clean separation from business logic,
-/// data persistence, and state management through SharedContentViewModel integration and modern component architecture.
+/// data persistence, and state management through SharedContentCoordinatorViewModel integration and modern component architecture.
 ///
 /// **Single Responsibility Focus:**
 /// This module exclusively handles shared content UI presentation concerns through comprehensive content architecture:
@@ -14,7 +14,7 @@
 /// - **Swedish Localization Excellence**: Complete Swedish language support with timeago localization and user feedback
 ///
 /// **What This Module Does NOT Handle:**
-/// - Shared content business logic and data operations (handled by SharedContentViewModel and content services)
+/// - Shared content business logic and data operations (handled by SharedContentCoordinatorViewModel and content services)
 /// - Content sharing implementation and social distribution (handled by sharing services and social infrastructure)
 /// - Friend relationship management (handled by friend services and social relationship systems)
 /// - Content persistence and synchronization (handled by content services and data management systems)
@@ -56,7 +56,7 @@ import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -73,7 +73,7 @@ import 'package:butlery/views/social/shared_with_me/shared_content_lists.dart';
 ///
 /// Manages complete shared content interface enabling content display, search functionality, categorization,
 /// and comprehensive content interaction while maintaining clean separation between UI presentation
-/// and business logic through SharedContentViewModel integration and specialized component architecture.
+/// and business logic through SharedContentCoordinatorViewModel integration and specialized component architecture.
 ///
 /// **Core Responsibilities:**
 /// - Advanced content organization with tabbed categorization, comprehensive display, and structured content management
@@ -83,9 +83,9 @@ import 'package:butlery/views/social/shared_with_me/shared_content_lists.dart';
 /// - Swedish localized content experience with timeago formatting, cultural adaptation, and comprehensive localization
 class SharedWithMeView extends StatelessWidget {
   /// Creates comprehensive shared content view with organized display and search coordination.
-  /// 
+  ///
   /// Establishes shared content interface with content organization, search functionality,
-  /// and comprehensive content interaction through SharedContentViewModel integration
+  /// and comprehensive content interaction through SharedContentCoordinatorViewModel integration
   /// and advanced content architecture with focused component coordination.
   const SharedWithMeView({super.key});
 
@@ -94,11 +94,11 @@ class SharedWithMeView extends StatelessWidget {
   /// [context] Build context for theme access and component construction coordination
   /// 
   /// Constructs complete shared content interface featuring content organization, search functionality,
-  /// and comprehensive content interaction through SharedContentViewModel integration
+  /// and comprehensive content interaction through SharedContentCoordinatorViewModel integration
   /// with service locator dependency injection and specialized content coordination.
-  /// 
+  ///
   /// **Interface Architecture:**
-  /// - SharedContentViewModel integration with service locator and dependency injection
+  /// - SharedContentCoordinatorViewModel integration with service locator and dependency injection
   /// - Content organization with tabbed categorization and comprehensive display
   /// - Search functionality with real-time filtering and content discovery
   /// - Content delegation with specialized focused component architecture
@@ -107,13 +107,13 @@ class SharedWithMeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     AppLogger.info('SharedWithMeView.build() called');
-    AppLogger.info('Creating ChangeNotifierProvider for SharedContentViewModel');
-    
-    return ChangeNotifierProvider<SharedContentViewModel>(
+    AppLogger.info('Creating ChangeNotifierProvider for SharedContentCoordinatorViewModel');
+
+    return ChangeNotifierProvider<SharedContentCoordinatorViewModel>(
       create: (context) {
-        AppLogger.info('Provider create() called - getting SharedContentViewModel from ServiceLocator');
-        final viewModel = ServiceLocator.get<SharedContentViewModel>();
-        AppLogger.info('SharedContentViewModel obtained from ServiceLocator');
+        AppLogger.info('Provider create() called - getting SharedContentCoordinatorViewModel from ServiceLocator');
+        final viewModel = ServiceLocator.get<SharedContentCoordinatorViewModel>();
+        AppLogger.info('SharedContentCoordinatorViewModel obtained from ServiceLocator');
         return viewModel;
       },
       child: const _SharedWithMeViewContent(),
@@ -140,21 +140,9 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      AppLogger.info('PostFrameCallback executed - getting SharedContentViewModel');
-      final viewModel = context.read<SharedContentViewModel>();
-      AppLogger.info('SharedContentViewModel obtained from context');
-
-      // Sync tab controller med ViewModel
-      _tabController.addListener(() {
-        if (!_tabController.indexIsChanging) {
-          AppLogger.info('Tab changed to index: ${_tabController.index}');
-          viewModel.setTabIndex(_tabController.index);
-        }
-      });
-      
-      AppLogger.info('Tab controller listener added');
-    });
+    // Tab controller is managed locally - no need to sync with ViewModel
+    // in the modular architecture since each specialized viewmodel manages
+    // its own content independently
 
     // Konfigurera svenska för timeago
     timeago.setLocaleMessages('sv', timeago.SvMessages());
@@ -171,7 +159,7 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: Consumer<SharedContentViewModel>(
+      body: Consumer<SharedContentCoordinatorViewModel>(
         builder: (context, viewModel, _) {
           return CustomScrollView(
             slivers: [
@@ -186,8 +174,8 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     );
   }
 
-  Widget _buildContent(BuildContext context, SharedContentViewModel viewModel) {
-    if (viewModel.isLoading) {
+  Widget _buildContent(BuildContext context, SharedContentCoordinatorViewModel viewModel) {
+    if (viewModel.isGloballyLoading) {
       return const SliverFillRemaining(
         child: Center(
           child: Column(
@@ -209,16 +197,16 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
       );
     }
 
-    if (viewModel.hasError) {
+    if (viewModel.hasGlobalError) {
       return SliverFillRemaining(
         child: StateWidget.error(
-          message: viewModel.error!,
-          onAction: viewModel.loadSharedContent,
+          message: viewModel.globalError!,
+          onAction: viewModel.refreshAllContent,
         ),
       );
     }
 
-    if (!viewModel.hasSharedContent) {
+    if (!viewModel.hasAnyContent) {
       return SliverFillRemaining(
         child: StateWidget.empty(
           title: 'Inga delade recept än',
@@ -231,13 +219,19 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
       );
     }
 
-    if (!viewModel.hasFilteredContent && viewModel.searchQuery.isNotEmpty) {
+    // Check if search is active and no results - check each specialized viewmodel
+    final hasSearchQuery = viewModel.searchViewModel.hasSearchQuery;
+    final hasFilteredContent = viewModel.recipeViewModel.hasFilteredContent ||
+                                viewModel.menuViewModel.hasFilteredContent ||
+                                viewModel.shoppingViewModel.hasFilteredContent;
+
+    if (!hasFilteredContent && hasSearchQuery) {
       return SliverFillRemaining(
         child: StateWidget.noSearchResults(
           actionLabel: 'Rensa sökning',
           onAction: () {
             _searchController.clear();
-            viewModel.clearSearch();
+            viewModel.clearAllSearch();
           },
         ),
       );

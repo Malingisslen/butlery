@@ -1,19 +1,4 @@
-/// Comprehensive OCR extraction service providing multi-tier text recognition for Flutter applications.
-///
-/// This module implements a sophisticated OCR strategy designed for maximum compatibility across all device types:
-/// 1. **Universal Hybrid Architecture**: Cloud-first approach with multiple fallbacks for broad device compatibility
-/// 2. **Device-Agnostic Processing**: Works on all Android/iOS devices regardless of Google Play Services availability
-/// 3. **Multiple Cloud Providers**: OCR.space (primary) → Google Vision (secondary) → Tesseract (tertiary) fallbacks
-/// 4. **Swedish Language Optimization**: Enhanced recognition accuracy for Swedish recipe content
-///
-/// **Core OCR Strategy Features:**
-/// - **Multi-Provider Cloud Processing**: OCR.space → Google Vision → Tesseract with intelligent fallback
-/// - **Universal Device Support**: No dependency on Google Play Services or specific device capabilities  
-/// - **Circuit Breaker Pattern**: Exponential backoff and failure detection for service resilience
-/// - **Image Preprocessing**: Basic but effective image optimization for text recognition
-/// - **Swedish Language Focus**: Swedish text recognition optimization with localized error messages
-/// - **Smart Caching**: OCR result caching to avoid redundant processing and improve performance
-/// - **Quality Assessment**: Pre-processing image quality evaluation for optimal OCR results
+/// OCR service with multi-provider fallback (OCR.space → Google Vision → Tesseract), Swedish optimization, and smart caching.
 
 import 'dart:convert';
 import 'dart:math' as math;
@@ -134,45 +119,29 @@ class OCRExtractionService {
   
   OCRExtractionService._();
 
-  // OCR processing components - universal cloud-based approach
+  // Circuit breakers
   final CircuitBreaker _ocrSpaceCircuitBreaker = CircuitBreaker();
   final CircuitBreaker _googleVisionCircuitBreaker = CircuitBreaker();
   final CircuitBreaker _tesseractCircuitBreaker = CircuitBreaker();
-  
-  // Caching system
   final Map<String, OCRResult> _cache = {};
   static const int _maxCacheSize = 100;
   static const Duration _cacheExpiry = Duration(hours: 24);
-  
-  // Processing configuration
-  static const int _maxImageSize = 10 * 1024 * 1024; // 10MB
-  static const double _minConfidenceThreshold = 0.6; // Lower for broader compatibility
-
-  // API configuration
+  static const int _maxImageSize = 10 * 1024 * 1024;
+  static const double _minConfidenceThreshold = 0.6;
   String get _ocrApiKey => dotenv.env['OCR_API_KEY'] ?? '';
   String get _ocrApiUrl => dotenv.env['OCR_API_URL'] ?? 'https://api.ocr.space/parse/image';
   String get _googleVisionKey => dotenv.env['GOOGLE_VISION_API_KEY'] ?? '';
   String get _tesseractApiUrl => dotenv.env['TESSERACT_API_URL'] ?? '';
 
-  /// Initialize OCR service - no device-specific setup required
+  /// Initialize OCR service
   Future<void> initialize() async {
     try {
-      debugPrint('✅ [OCR] Universal OCR extraction service initialized successfully');
-      debugPrint('🔍 [OCR] Available providers: OCR.space, Google Vision, Tesseract');
-      
-      // Validate API keys
-      if (_ocrApiKey.isEmpty) {
-        debugPrint('⚠️ [OCR] OCR.space API key not configured');
-      }
-      if (_googleVisionKey.isEmpty) {
-        debugPrint('⚠️ [OCR] Google Vision API key not configured');
-      }
-      if (_tesseractApiUrl.isEmpty) {
-        debugPrint('⚠️ [OCR] Tesseract API URL not configured');
-      }
-      
+      debugPrint('✅ [OCR] Service initialized - Providers: OCR.space, Google Vision, Tesseract');
+      if (_ocrApiKey.isEmpty) debugPrint('⚠️ [OCR] OCR.space API key not configured');
+      if (_googleVisionKey.isEmpty) debugPrint('⚠️ [OCR] Google Vision API key not configured');
+      if (_tesseractApiUrl.isEmpty) debugPrint('⚠️ [OCR] Tesseract API URL not configured');
     } catch (e) {
-      debugPrint('❌ [OCR] Failed to initialize OCR service: $e');
+      debugPrint('❌ [OCR] Init failed: $e');
       rethrow;
     }
   }
@@ -181,83 +150,57 @@ class OCRExtractionService {
   Future<OCRResult> extractText(Uint8List imageBytes) async {
     final imageHash = _generateImageHash(imageBytes);
     
-    // Check cache first
     final cachedResult = _getCachedResult(imageHash);
-    if (cachedResult != null) {
-      debugPrint('✅ [OCR] Using cached result for image');
-      return cachedResult;
-    }
-
-    // Assess image quality
+    if (cachedResult != null) return cachedResult;
     final qualityAssessment = await _assessImageQuality(imageBytes);
-    debugPrint('🔍 [OCR] Image quality: ${qualityAssessment.qualityScore.toStringAsFixed(2)}');
-    
     if (!qualityAssessment.isGoodQuality) {
-      debugPrint('⚠️ [OCR] Poor image quality detected: ${qualityAssessment.issues.join(', ')}');
+      debugPrint('⚠️ [OCR] Poor quality: ${qualityAssessment.issues.join(', ')}');
     }
-
-    // Preprocess image
     final preprocessedImage = await _preprocessImage(imageBytes, qualityAssessment);
-    
-    // Multi-tier OCR processing - cloud providers for universal compatibility
     OCRResult result;
-    
-    // Tier 1: OCR.space API (Primary - works on all devices)
+
     if (_ocrSpaceCircuitBreaker.canExecute && _ocrApiKey.isNotEmpty) {
       try {
         result = await _extractWithOCRSpace(preprocessedImage);
         if (result.isSuccessful && result.confidence >= _minConfidenceThreshold) {
           _ocrSpaceCircuitBreaker.recordSuccess();
-          debugPrint('✅ [OCR] OCR.space succeeded with confidence: ${result.confidence}');
           _cacheResult(imageHash, result);
           return result;
         }
       } catch (e) {
-        debugPrint('⚠️ [OCR] OCR.space failed: $e');
         _ocrSpaceCircuitBreaker.recordFailure();
       }
     }
 
-    // Tier 2: Google Vision API (Secondary fallback)
     if (_googleVisionCircuitBreaker.canExecute && _googleVisionKey.isNotEmpty) {
       try {
         result = await _extractWithGoogleVision(preprocessedImage);
         if (result.isSuccessful && result.confidence >= _minConfidenceThreshold) {
           _googleVisionCircuitBreaker.recordSuccess();
-          debugPrint('✅ [OCR] Google Vision succeeded with confidence: ${result.confidence}');
           _cacheResult(imageHash, result);
           return result;
         }
       } catch (e) {
-        debugPrint('⚠️ [OCR] Google Vision failed: $e');
         _googleVisionCircuitBreaker.recordFailure();
       }
     }
 
-    // Tier 3: Tesseract API (Tertiary fallback)
     if (_tesseractCircuitBreaker.canExecute && _tesseractApiUrl.isNotEmpty) {
       try {
         result = await _extractWithTesseract(preprocessedImage);
         if (result.isSuccessful && result.confidence >= _minConfidenceThreshold) {
           _tesseractCircuitBreaker.recordSuccess();
-          debugPrint('✅ [OCR] Tesseract succeeded with confidence: ${result.confidence}');
           _cacheResult(imageHash, result);
           return result;
         }
       } catch (e) {
-        debugPrint('⚠️ [OCR] Tesseract failed: $e');
         _tesseractCircuitBreaker.recordFailure();
       }
     }
 
-    // Tier 3: User Recovery (Graceful Failure)
     final failureResult = OCRResult.failure(
       method: 'user_recovery',
-      error: 'Automatisk textextrahering misslyckades. Prova att:\n'
-             '• Ta en ny bild med bättre belysning\n'
-             '• Se till att texten är tydlig och läsbar\n'
-             '• Välj en annan del av receptet\n'
-             '• Skriv in texten manuellt',
+      error: 'OCR failed. Try: better lighting, clearer image, or manual input',
       metadata: {
         'quality_assessment': qualityAssessment.qualityScore,
         'recommendations': qualityAssessment.recommendations,
@@ -411,43 +354,20 @@ class OCRExtractionService {
         );
       }
     } catch (e) {
-      // Tesseract is optional fallback, don't throw
-      debugPrint('⚠️ [OCR] Tesseract API not available: $e');
+      // Optional fallback
     }
-
     throw Exception('Tesseract API processing failed or not configured');
   }
 
   /// Assess image quality for OCR optimization
   Future<ImageQualityAssessment> _assessImageQuality(Uint8List imageBytes) async {
-    final issues = <String>[];
-    final recommendations = <String>[];
+    final issues = <String>[], recommendations = <String>[];
     double qualityScore = 1.0;
-
-    // Size validation
-    if (imageBytes.length > _maxImageSize) {
-      issues.add('Bilden är för stor');
-      recommendations.add('Komprimera bilden eller välj en mindre del');
-      qualityScore -= 0.2;
-    }
-
-    if (imageBytes.length < 50 * 1024) { // Less than 50KB
-      issues.add('Bilden är för liten');
-      recommendations.add('Använd en större bild med högre upplösning');
-      qualityScore -= 0.3;
-    }
-
-    // Basic format validation
-    if (!_isValidImageFormat(imageBytes)) {
-      issues.add('Bildformat stöds inte optimalt');
-      recommendations.add('Använd JPEG eller PNG format');
-      qualityScore -= 0.1;
-    }
-
-    final isGoodQuality = qualityScore >= 0.6 && issues.isEmpty;
-
+    if (imageBytes.length > _maxImageSize) { issues.add('Bilden är för stor'); recommendations.add('Komprimera bilden'); qualityScore -= 0.2; }
+    if (imageBytes.length < 50 * 1024) { issues.add('Bilden är för liten'); recommendations.add('Använd högre upplösning'); qualityScore -= 0.3; }
+    if (!_isValidImageFormat(imageBytes)) { issues.add('Bildformat stöds inte optimalt'); recommendations.add('Använd JPEG eller PNG'); qualityScore -= 0.1; }
     return ImageQualityAssessment(
-      isGoodQuality: isGoodQuality,
+      isGoodQuality: qualityScore >= 0.6 && issues.isEmpty,
       qualityScore: math.max(0.0, qualityScore),
       issues: issues,
       recommendations: recommendations,
@@ -455,18 +375,8 @@ class OCRExtractionService {
   }
 
   /// Preprocess image for optimal OCR results
-  Future<Uint8List> _preprocessImage(
-    Uint8List imageBytes,
-    ImageQualityAssessment assessment,
-  ) async {
-    // For now, return original image
-    // In a full implementation, this would:
-    // - Correct orientation
-    // - Enhance contrast
-    // - Reduce noise
-    // - Optimize for text recognition
-    
-    debugPrint('🔄 [OCR] Image preprocessing completed');
+  Future<Uint8List> _preprocessImage(Uint8List imageBytes, ImageQualityAssessment assessment) async {
+    // Future: orientation correction, contrast enhancement, noise reduction
     return imageBytes;
   }
 
@@ -482,16 +392,12 @@ class OCRExtractionService {
     if (textLength < 30) return 0.5;
     if (textLength < 100) return 0.7;
     
-    // Higher confidence for more structured text (multiple lines)
     const baseConfidence = 0.8;
     final structureBonus = math.min(0.2, lineCount * 0.03);
     
-    // Swedish recipe keywords boost confidence
-    const swedishKeywords = ['ingrediens', 'tillsätt', 'vispa', 'stek', 'portioner', 'minut'];
-    final keywordMatches = swedishKeywords.where((keyword) => 
-      text.toLowerCase().contains(keyword)).length;
+    const keywords = ['ingrediens', 'tillsätt', 'vispa', 'stek', 'portioner', 'minut'];
+    final keywordMatches = keywords.where((k) => text.toLowerCase().contains(k)).length;
     final keywordBonus = math.min(0.15, keywordMatches * 0.03);
-    
     return math.min(1.0, baseConfidence + structureBonus + keywordBonus);
   }
 
@@ -517,20 +423,14 @@ class OCRExtractionService {
 
   /// Cache OCR result with size management
   void _cacheResult(String imageHash, OCRResult result) {
-    // Manage cache size
     if (_cache.length >= _maxCacheSize) {
-      // Remove oldest entries
       final sortedEntries = _cache.entries.toList()
         ..sort((a, b) => a.value.timestamp.compareTo(b.value.timestamp));
-      
-      final toRemove = sortedEntries.take(_maxCacheSize ~/ 4);
-      for (final entry in toRemove) {
+      for (final entry in sortedEntries.take(_maxCacheSize ~/ 4)) {
         _cache.remove(entry.key);
       }
     }
-
     _cache[imageHash] = result;
-    debugPrint('💾 [OCR] Cached result for image hash: ${imageHash.substring(0, 8)}...');
   }
 
   /// Basic image format validation
@@ -559,21 +459,9 @@ class OCRExtractionService {
       'timestamp': DateTime.now().toIso8601String(),
       'cache_size': _cache.length,
       'circuit_breakers': {
-        'ocr_space': {
-          'state': _ocrSpaceCircuitBreaker.state.name,
-          'failures': _ocrSpaceCircuitBreaker.failures,
-          'can_execute': _ocrSpaceCircuitBreaker.canExecute,
-        },
-        'google_vision': {
-          'state': _googleVisionCircuitBreaker.state.name,
-          'failures': _googleVisionCircuitBreaker.failures,
-          'can_execute': _googleVisionCircuitBreaker.canExecute,
-        },
-        'tesseract': {
-          'state': _tesseractCircuitBreaker.state.name,
-          'failures': _tesseractCircuitBreaker.failures,
-          'can_execute': _tesseractCircuitBreaker.canExecute,
-        },
+        'ocr_space': {'state': _ocrSpaceCircuitBreaker.state.name, 'failures': _ocrSpaceCircuitBreaker.failures, 'can_execute': _ocrSpaceCircuitBreaker.canExecute},
+        'google_vision': {'state': _googleVisionCircuitBreaker.state.name, 'failures': _googleVisionCircuitBreaker.failures, 'can_execute': _googleVisionCircuitBreaker.canExecute},
+        'tesseract': {'state': _tesseractCircuitBreaker.state.name, 'failures': _tesseractCircuitBreaker.failures, 'can_execute': _tesseractCircuitBreaker.canExecute},
       },
       'device_compatibility': 'universal_ios_android',
       'api_keys_configured': {
@@ -591,23 +479,13 @@ class OCRExtractionService {
   }
 
   /// Clear OCR cache
-  void clearCache() {
-    _cache.clear();
-    debugPrint('🗑️ [OCR] Cache cleared');
-  }
+  void clearCache() => _cache.clear();
 
-  /// Clear cache for debugging/testing
-  static void clearCacheForTesting() {
-    instance.clearCache();
-  }
+  /// Clear cache for testing
+  static void clearCacheForTesting() => instance.clearCache();
 
   /// Dispose OCR service
   Future<void> dispose() async {
-    try {
-      _cache.clear();
-      debugPrint('✅ [OCR] Universal OCR service disposed successfully');
-    } catch (e) {
-      debugPrint('❌ [OCR] Error disposing OCR service: $e');
-    }
+    _cache.clear();
   }
 }

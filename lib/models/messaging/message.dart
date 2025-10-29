@@ -1,67 +1,14 @@
-/// Comprehensive message model providing advanced messaging capabilities for multi-type content communication.
+/// Message model with multi-type content support and delivery status tracking.
 ///
-/// This model implements sophisticated message management following Single Responsibility Principle,
-/// handling all aspects of individual messages including content types, delivery status tracking,
-/// reply functionality, and comprehensive UI integration. It provides complete message infrastructure
-/// while maintaining clean separation from conversation management and messaging transport concerns.
+/// **Features:** Text, recipe/menu/shopping list sharing, images, voice, system messages.
+/// **Delivery:** Sent, delivered, read confirmation with timestamps. Reply threading and edit history.
 ///
-/// **Single Responsibility Focus:**
-/// This model exclusively handles individual message representation and status management:
-/// - **Multi-Type Content**: Unified support for text, media, system messages, and content sharing with appropriate formatting
-/// - **Delivery Tracking**: Complete message lifecycle from sending through delivery confirmation and read receipts
-/// - **Reply System**: Advanced message threading with reply tracking and conversation context management
-/// - **Status Management**: Comprehensive status tracking including sent, delivered, read, and edit states
-///
-/// **What This Model Does NOT Handle:**
-/// - Message persistence and synchronization (handled by messaging repositories and real-time services)
-/// - Message delivery and transport logic (handled by messaging services and push notification systems)
-/// - UI presentation and interaction handling (handled by ViewModels and UI components)
-/// - Conversation-level operations and participant management (handled by Conversation model)
-///
-/// **Message Features:**
-/// - **Rich Content Types**: Support for text, recipe sharing, menu sharing, shopping list sharing, images, voice, and system messages
-/// - **Delivery Intelligence**: Advanced status tracking with sent, delivered, and read confirmation timestamps
-/// - **Reply Threading**: Complete reply system with message reference tracking for threaded conversations
-/// - **Edit Capabilities**: Message editing support with edit history and timestamp tracking for message management
-/// - **Content Intelligence**: Smart content display based on message type with appropriate formatting and icons
-///
-/// **Usage Examples:**
 /// ```dart
-/// // Create a text message
-/// final textMessage = Message.text(
-///   conversationId: conversation.id,
-///   senderId: currentUserId,
-///   senderDisplayName: 'Anna Andersson',
-///   senderAvatarUrl: currentUser.avatarUrl,
-///   content: 'Hej! Hur mår du?',
-/// );
-/// 
-/// // Create a recipe share message
-/// final recipeMessage = Message.recipeShare(
-///   conversationId: conversation.id,
-///   senderId: currentUserId,
-///   senderDisplayName: 'Anna Andersson',
-///   recipeId: recipe.id,
-///   recipeTitle: 'Mormors köttbullar',
-///   message: 'Provade detta recept igår - så gott!',
-/// );
-/// 
-/// // Create a system message
-/// final systemMessage = Message.system(
-///   conversationId: conversation.id,
-///   content: 'Erik Svensson har anslutit sig till konversationen',
-/// );
-/// 
-/// // Update message status and track delivery
-/// final deliveredMessage = message.copyWith(
-///   status: MessageStatus.delivered,
-///   deliveredAt: DateTime.now(),
-/// );
-/// 
-/// // Check message properties and display
-/// final isFromMe = message.isFromCurrentUser(currentUserId);
-/// final displayText = message.displayContent;
-/// final hasBeenRead = message.isRead;
+/// final msg = Message.text(conversationId: id, senderId: uid,
+///   senderDisplayName: 'Anna', content: 'Hej!');
+/// final shared = Message.recipeShare(conversationId: id, senderId: uid,
+///   senderDisplayName: 'Anna', recipeId: recipe.id, recipeTitle: 'Köttbullar');
+/// final delivered = msg.copyWith(status: MessageStatus.delivered, deliveredAt: DateTime.now());
 /// ```
 
 // lib/models/messaging/message.dart

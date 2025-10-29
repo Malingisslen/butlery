@@ -8,332 +8,43 @@ import 'package:image_picker/image_picker.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/widgets/image/image_picker_dialogs.dart';
+import 'package:butlery/widgets/recipe/upload_choice_dialog.dart' as upload_dialog;
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/services/permission_service.dart' as permission;
+import 'package:butlery/services/upload/upload_models.dart';
+import 'package:butlery/services/upload/image_upload_service.dart';
+import 'package:butlery/viewmodels/recipe_form/image_management/image_upload_validator.dart';
+import 'package:butlery/viewmodels/recipe_form/image_management/image_upload_notification_manager.dart';
+import 'package:butlery/viewmodels/recipe_form/image_management/image_upload_coordinator.dart';
+import 'package:butlery/viewmodels/recipe_form/image_management/upload_queue_summary_calculator.dart';
 
-/// Image upload state tracking for race condition prevention
-enum ImageUploadState {
-  pending,
-  uploading,
-  completed,
-  failed,
-  cancelled,
-  retrying
-}
+/// ===== RECIPE IMAGE MANAGER =====
+/// REFACTORED: Now delegates to ImageUploadService for upload execution
+///
+/// Recipe-specific multi-image coordination for recipe forms.
+/// Handles image selection, recipe-specific state, and upload safety checks.
+/// Upload execution, retry, and progress delegated to ImageUploadService.
+/// Delete operations handled by StorageService.
 
-/// Error classification for targeted handling and recovery
-enum ImageUploadErrorType {
-  network, // Network connectivity issues
-  validation, // File size, format, permission issues
-  server, // Firebase/storage server errors
-  cancelled, // User cancelled upload
-  unknown // Unclassified errors
-}
-
-/// Comprehensive image upload status with advanced progress tracking and error recovery
-class ImageUploadStatus {
-  final File? file;
-  final String? url;
-  final ImageUploadState state;
-
-  // Enhanced Error Information
-  final String? error;
-  final ImageUploadErrorType? errorType;
-  final DateTime? errorOccurredAt;
-
-  // Detailed Progress Tracking
-  final double progress; // 0.0 to 1.0
-  final int? bytesTransferred;
-  final int? totalBytes;
-  final double? uploadSpeedBytesPerSecond;
-  final DateTime? uploadStartTime;
-  final Duration? estimatedTimeRemaining;
-
-  // Retry Management
-  final int retryAttempts;
-  final int maxRetryAttempts;
-  final DateTime? nextRetryAt;
-  final Duration? retryDelay;
-
-  const ImageUploadStatus({
-    this.file,
-    this.url,
-    required this.state,
-    this.error,
-    this.errorType,
-    this.errorOccurredAt,
-    this.progress = 0.0,
-    this.bytesTransferred,
-    this.totalBytes,
-    this.uploadSpeedBytesPerSecond,
-    this.uploadStartTime,
-    this.estimatedTimeRemaining,
-    this.retryAttempts = 0,
-    this.maxRetryAttempts = 3,
-    this.nextRetryAt,
-    this.retryDelay,
-  });
-
-  // ===== COMPUTED PROPERTIES =====
-
-  bool get isDisplayable => file != null || url != null;
-  bool get isPersistable => url != null && state == ImageUploadState.completed;
-  bool get hasError => error != null;
-  bool get canRetry =>
-      hasError &&
-      retryAttempts < maxRetryAttempts &&
-      state != ImageUploadState.cancelled;
-  bool get isRetrying => state == ImageUploadState.retrying;
-  bool get isActive =>
-      state == ImageUploadState.uploading || state == ImageUploadState.retrying;
-
-  String get displayPath => url ?? file?.path ?? '';
-
-  /// Progress as percentage (0-100)
-  int get progressPercentage => (progress * 100).round();
-
-  /// File size in MB for display
-  double? get fileSizeMB =>
-      totalBytes != null ? totalBytes! / (1024 * 1024) : null;
-
-  /// Upload speed in MB/s for display
-  double? get uploadSpeedMBPerSecond => uploadSpeedBytesPerSecond != null
-      ? uploadSpeedBytesPerSecond! / (1024 * 1024)
-      : null;
-
-  /// Formatted time remaining (e.g., "2m 30s")
-  String? get formattedTimeRemaining {
-    if (estimatedTimeRemaining == null) return null;
-
-    final totalSeconds = estimatedTimeRemaining!.inSeconds;
-    if (totalSeconds < 60) {
-      return '${totalSeconds}s';
-    } else if (totalSeconds < 3600) {
-      final minutes = totalSeconds ~/ 60;
-      final seconds = totalSeconds % 60;
-      return seconds > 0 ? '${minutes}m ${seconds}s' : '${minutes}m';
-    } else {
-      final hours = totalSeconds ~/ 3600;
-      final minutes = (totalSeconds % 3600) ~/ 60;
-      return minutes > 0 ? '${hours}h ${minutes}m' : '${hours}h';
-    }
-  }
-
-  /// User-friendly Swedish status description
-  String get statusDescription {
-    switch (state) {
-      case ImageUploadState.pending:
-        return 'Väntar på uppladdning...';
-      case ImageUploadState.uploading:
-        if (progressPercentage > 0) {
-          return 'Laddar upp ($progressPercentage%)...';
-        }
-        return 'Förbereder uppladdning...';
-      case ImageUploadState.retrying:
-        return 'Försöker igen (${retryAttempts + 1}/$maxRetryAttempts)...';
-      case ImageUploadState.completed:
-        return 'Uppladdning slutförd';
-      case ImageUploadState.cancelled:
-        return 'Uppladdning avbruten';
-      case ImageUploadState.failed:
-        return _getFailureDescription();
-    }
-  }
-
-  String _getFailureDescription() {
-    switch (errorType) {
-      case ImageUploadErrorType.network:
-        return 'Nätverksfel - kontrollera anslutningen';
-      case ImageUploadErrorType.validation:
-        return 'Bilden kunde inte valideras';
-      case ImageUploadErrorType.server:
-        return 'Serverfel - försök igen';
-      case ImageUploadErrorType.cancelled:
-        return 'Uppladdning avbruten';
-      case ImageUploadErrorType.unknown:
-      case null:
-        return 'Uppladdning misslyckades';
-    }
-  }
-
-  /// Get retry instruction for user
-  String? get retryInstruction {
-    if (!hasError || !canRetry) return null;
-
-    switch (errorType) {
-      case ImageUploadErrorType.network:
-        return 'Kontrollera internetanslutningen och tryck för att försöka igen';
-      case ImageUploadErrorType.validation:
-        return 'Kontrollera att bilden är giltig och inte för stor';
-      case ImageUploadErrorType.server:
-        return 'Försök igen om en stund';
-      case ImageUploadErrorType.cancelled:
-        return null; // No retry for cancelled uploads
-      case ImageUploadErrorType.unknown:
-      case null:
-        return 'Tryck för att försöka igen';
-    }
-  }
-
-  ImageUploadStatus copyWith({
-    File? file,
-    String? url,
-    ImageUploadState? state,
-    String? error,
-    ImageUploadErrorType? errorType,
-    DateTime? errorOccurredAt,
-    double? progress,
-    int? bytesTransferred,
-    int? totalBytes,
-    double? uploadSpeedBytesPerSecond,
-    DateTime? uploadStartTime,
-    Duration? estimatedTimeRemaining,
-    int? retryAttempts,
-    int? maxRetryAttempts,
-    DateTime? nextRetryAt,
-    Duration? retryDelay,
-  }) {
-    return ImageUploadStatus(
-      file: file ?? this.file,
-      url: url ?? this.url,
-      state: state ?? this.state,
-      error: error ?? this.error,
-      errorType: errorType ?? this.errorType,
-      errorOccurredAt: errorOccurredAt ?? this.errorOccurredAt,
-      progress: progress ?? this.progress,
-      bytesTransferred: bytesTransferred ?? this.bytesTransferred,
-      totalBytes: totalBytes ?? this.totalBytes,
-      uploadSpeedBytesPerSecond:
-          uploadSpeedBytesPerSecond ?? this.uploadSpeedBytesPerSecond,
-      uploadStartTime: uploadStartTime ?? this.uploadStartTime,
-      estimatedTimeRemaining:
-          estimatedTimeRemaining ?? this.estimatedTimeRemaining,
-      retryAttempts: retryAttempts ?? this.retryAttempts,
-      maxRetryAttempts: maxRetryAttempts ?? this.maxRetryAttempts,
-      nextRetryAt: nextRetryAt ?? this.nextRetryAt,
-      retryDelay: retryDelay ?? this.retryDelay,
-    );
-  }
-}
-
-/// Upload safety check result for preventing data corruption
-class UploadSafetyResult {
-  final bool isSafe;
-  final List<String> pendingImagePaths;
-  final List<String> failedImagePaths;
-
-  const UploadSafetyResult({
-    required this.isSafe,
-    this.pendingImagePaths = const [],
-    this.failedImagePaths = const [],
-  });
-
-  bool get hasPendingUploads => pendingImagePaths.isNotEmpty;
-  bool get hasFailedUploads => failedImagePaths.isNotEmpty;
-  int get totalProblemsCount =>
-      pendingImagePaths.length + failedImagePaths.length;
-}
-
-/// User choice for handling pending uploads during save
-enum UploadChoice { wait, saveWithoutPending, cancel }
-
-/// Configuration for retry behavior per error type
-class RetryStrategy {
-  final bool autoRetry;
-  final int maxAttempts;
-  final String description;
-
-  const RetryStrategy({
-    required this.autoRetry,
-    required this.maxAttempts,
-    required this.description,
-  });
-}
-
-/// Upload notification triggers for background notifications
-enum UploadNotificationTrigger {
-  allCompleted, // All uploads completed successfully
-  majorFailure, // Multiple uploads failed
-  significantProgress, // 25%, 50%, 75% completion milestones
-  queueCleared, // Upload queue became empty
-  retrySuccess, // Failed upload succeeded on retry
-}
-
-/// Upload notification event data
-class UploadNotificationEvent {
-  final UploadNotificationTrigger trigger;
-  final String title;
-  final String message;
-  final NotificationPriority priority;
-  final Map<String, dynamic>? data;
-  final DateTime timestamp;
-
-  const UploadNotificationEvent({
-    required this.trigger,
-    required this.title,
-    required this.message,
-    required this.priority,
-    this.data,
-    required this.timestamp,
-  });
-}
-
-/// Notification priority levels for upload events
-enum NotificationPriority { low, medium, high, critical }
-
-/// Circuit breaker state for preventing cascading failures
-class CircuitBreakerState {
-  final int failureCount;
-  final DateTime? lastFailureTime;
-  final bool isOpen;
-
-  const CircuitBreakerState({
-    required this.failureCount,
-    this.lastFailureTime,
-    required this.isOpen,
-  });
-
-  /// Check if circuit breaker should reset (close) after timeout
-  bool shouldReset(Duration resetTime) {
-    if (!isOpen || lastFailureTime == null) return false;
-    return DateTime.now().difference(lastFailureTime!) >= resetTime;
-  }
-
-  /// Create new state with incremented failure count
-  CircuitBreakerState withFailure() {
-    return CircuitBreakerState(
-      failureCount: failureCount + 1,
-      lastFailureTime: DateTime.now(),
-      isOpen: failureCount + 1 >=
-          RecipeImageManager._circuitBreakerFailureThreshold,
-    );
-  }
-
-  /// Reset circuit breaker to closed state
-  CircuitBreakerState reset() {
-    return const CircuitBreakerState(
-      failureCount: 0,
-      lastFailureTime: null,
-      isOpen: false,
-    );
-  }
-}
-
-/// Manages image operations for recipe forms
+/// Manages recipe-specific multi-image operations for recipe forms
 class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
+  final ImageUploadService _uploadService;
   final StorageService _storageService;
   final ImagePickerService _imagePickerService;
+
+  // ===== SPECIALIZED MANAGERS (FACADE PATTERN) =====
+  late final ImageUploadValidator _validator;
+  late final ImageUploadNotificationManager _notificationManager;
+  late final ImageUploadCoordinator _coordinator;
 
   // ===== DISPOSAL TRACKING =====
   bool _disposed = false;
   bool get disposed => _disposed;
 
   // CRITICAL FIX: Thread-safe upload operation coordination
-  final Set<_CancellableUploadOperation> _activeUploads =
-      <_CancellableUploadOperation>{};
   bool _uploadsCanceled = false;
 
   // CRITICAL FIX: State synchronization to prevent race conditions
@@ -357,31 +68,29 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   bool _isUploadingImage = false;
   String? _imageUploadError;
 
-  // Enhanced retry system dependencies
-  static final Random _random =
-      Random(); // Shared Random instance for jitter calculations
-
-  // Circuit breaker for preventing excessive retry attempts
-  final Map<ImageUploadErrorType, CircuitBreakerState> _circuitBreakers = {};
-  static const Duration _circuitBreakerResetTime = Duration(minutes: 5);
-  static const int _circuitBreakerFailureThreshold =
-      10; // Open circuit after 10 failures
-
-  // Background notification system
-  final Set<UploadNotificationTrigger> _notificationTriggers = {};
-  DateTime? _lastNotificationTime;
-  static const Duration _notificationCooldown =
-      Duration(seconds: 3); // Prevent notification spam
+  // Random instance for temporary recipe ID generation
+  static final Random _random = Random();
 
   static const int maxImages = 5;
 
   RecipeImageManager({
+    ImageUploadService? uploadService,
     StorageService? storageService,
     ImagePickerService? imagePickerService,
-  })  : _storageService =
-            storageService ?? ServiceLocator.get<StorageService>(),
+  })  : _uploadService = uploadService ?? ImageUploadService(),
+        _storageService = storageService ?? ServiceLocator.get<StorageService>(),
         _imagePickerService =
-            imagePickerService ?? ServiceLocator.get<ImagePickerService>();
+            imagePickerService ?? ServiceLocator.get<ImagePickerService>() {
+    // Initialize specialized managers
+    _validator = ImageUploadValidator();
+    _notificationManager = ImageUploadNotificationManager();
+    _coordinator = ImageUploadCoordinator(
+      storageService: _storageService,
+      notifyListeners: _safeNotifyListeners,
+      setError: _setImageUploadError,
+      checkCompletionEvents: _checkAndTriggerCompletionEvents,
+    );
+  }
 
   // ===== GETTERS =====
 
@@ -581,158 +290,93 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   /// Visa image picker dialog och hantera bildval
   Future<void> showImagePickerDialog(BuildContext context,
       {String? recipeId}) async {
-    AppLogger.info('🎯 IMAGE_PICKER_FLOW: Starting showImagePickerDialog');
-
     if (!canAddMoreImages) {
-      AppLogger.warning(
-          '🎯 IMAGE_PICKER_FLOW: Cannot add more images ($totalImageCount/$maxImages)');
       _setImageUploadError('Du kan bara ha maximalt $maxImages bilder');
       return;
     }
 
     try {
       _clearImageUploadError();
-      AppLogger.info('🎯 IMAGE_PICKER_FLOW: Cleared previous errors');
-
-      // Step 1: Get image source selection (camera/gallery) from dialog
-      AppLogger.info(
-          '🎯 IMAGE_PICKER_FLOW: Showing ImagePickerDialogs.showImageSourceDialog');
       final imageSource =
           await ImagePickerDialogs.showImageSourceDialog(context);
-      AppLogger.info(
-          '🎯 IMAGE_PICKER_FLOW: Dialog returned imageSource: $imageSource');
 
       if (imageSource != null) {
-        // Step 2: Use ImagePickerService to actually pick image from selected source
-        AppLogger.info(
-            '🎯 IMAGE_PICKER_FLOW: Using ImagePickerService to pick image from: ${imageSource.name}');
         final pickedFile = await _imagePickerService.pickImage(imageSource);
-        AppLogger.info(
-            '🎯 IMAGE_PICKER_FLOW: ImagePickerService returned: $pickedFile');
 
         if (pickedFile != null) {
-          AppLogger.info('🎯 IMAGE_PICKER_FLOW: File path: ${pickedFile.path}');
-          // Step 3: Convert File to XFile and process through existing upload pipeline
           final xFile = XFile(pickedFile.path);
-          AppLogger.info(
-              '🎯 IMAGE_PICKER_FLOW: Created XFile, calling _processImagePickerResult');
           await _processImagePickerResult(xFile, recipeId: recipeId);
-          AppLogger.info(
-              '🎯 IMAGE_PICKER_FLOW: _processImagePickerResult completed');
         } else {
-          AppLogger.warning(
-              '🎯 IMAGE_PICKER_FLOW: No image selected from ${imageSource.name}');
           _setImageUploadError('Ingen bild valdes');
         }
-      } else {
-        AppLogger.info('🎯 IMAGE_PICKER_FLOW: User cancelled dialog');
       }
     } catch (e) {
-      AppLogger.error('🎯 IMAGE_PICKER_FLOW: Exception occurred: $e');
+      AppLogger.error('Image picker error: $e');
       _setImageUploadError('Kunde inte välja bild: $e');
     }
-
-    AppLogger.info('🎯 IMAGE_PICKER_FLOW: showImagePickerDialog completed');
   }
 
   /// Pick single image from camera directly (no dialog)
   Future<void> pickImageFromCamera(BuildContext context,
       {String? recipeId}) async {
-    AppLogger.info('🎯 IMAGE_PICKER_FLOW: Starting pickImageFromCamera');
-
     if (!canAddMoreImages) {
-      AppLogger.warning(
-          '🎯 IMAGE_PICKER_FLOW: Cannot add more images ($totalImageCount/$maxImages)');
       _setImageUploadError('Du kan bara ha maximalt $maxImages bilder');
       return;
     }
 
     try {
       _clearImageUploadError();
-      _setUploadingImage(true); // Add loading state
-      AppLogger.info(
-          '🎯 IMAGE_PICKER_FLOW: Using ImagePickerService to pick image from camera');
+      _setUploadingImage(true);
 
       final pickedFile =
           await _imagePickerService.pickImage(ImageSource.camera);
-      AppLogger.info(
-          '🎯 IMAGE_PICKER_FLOW: ImagePickerService returned: $pickedFile');
 
       if (pickedFile != null) {
-        AppLogger.info('🎯 IMAGE_PICKER_FLOW: File path: ${pickedFile.path}');
         final xFile = XFile(pickedFile.path);
-        AppLogger.info(
-            '🎯 IMAGE_PICKER_FLOW: Created XFile, calling _processImagePickerResult');
         await _processImagePickerResult(xFile, recipeId: recipeId);
-        AppLogger.info(
-            '🎯 IMAGE_PICKER_FLOW: _processImagePickerResult completed');
       } else {
-        AppLogger.warning(
-            '🎯 IMAGE_PICKER_FLOW: No image selected from camera');
         _setImageUploadError('Ingen bild valdes');
       }
     } catch (e) {
-      AppLogger.error('🎯 IMAGE_PICKER_FLOW: Exception occurred: $e');
+      AppLogger.error('Camera picker error: $e');
       _setImageUploadError('Kunde inte ta foto: $e');
     } finally {
-      _setUploadingImage(false); // Clear loading state
+      _setUploadingImage(false);
     }
-
-    AppLogger.info('🎯 IMAGE_PICKER_FLOW: pickImageFromCamera completed');
   }
 
   /// Pick single image from gallery directly (no dialog)
   Future<void> pickImageFromGallery(BuildContext context,
       {String? recipeId}) async {
-    AppLogger.info('🎯 IMAGE_PICKER_FLOW: Starting pickImageFromGallery');
-
     if (!canAddMoreImages) {
-      AppLogger.warning(
-          '🎯 IMAGE_PICKER_FLOW: Cannot add more images ($totalImageCount/$maxImages)');
       _setImageUploadError('Du kan bara ha maximalt $maxImages bilder');
       return;
     }
 
     try {
       _clearImageUploadError();
-      _setUploadingImage(true); // Add loading state
-      AppLogger.info(
-          '🎯 IMAGE_PICKER_FLOW: Using ImagePickerService to pick image from gallery');
+      _setUploadingImage(true);
 
       final pickedFile =
           await _imagePickerService.pickImage(ImageSource.gallery);
-      AppLogger.info(
-          '🎯 IMAGE_PICKER_FLOW: ImagePickerService returned: $pickedFile');
 
       if (pickedFile != null) {
-        AppLogger.info('🎯 IMAGE_PICKER_FLOW: File path: ${pickedFile.path}');
         final xFile = XFile(pickedFile.path);
-        AppLogger.info(
-            '🎯 IMAGE_PICKER_FLOW: Created XFile, calling _processImagePickerResult');
         await _processImagePickerResult(xFile, recipeId: recipeId);
-        AppLogger.info(
-            '🎯 IMAGE_PICKER_FLOW: _processImagePickerResult completed');
       } else {
-        AppLogger.warning(
-            '🎯 IMAGE_PICKER_FLOW: No image selected from gallery');
         _setImageUploadError('Ingen bild valdes');
       }
     } catch (e) {
-      AppLogger.error('🎯 IMAGE_PICKER_FLOW: Exception occurred: $e');
+      AppLogger.error('Gallery picker error: $e');
       _setImageUploadError('Kunde inte välja bild: $e');
     } finally {
-      _setUploadingImage(false); // Clear loading state
+      _setUploadingImage(false);
     }
-
-    AppLogger.info('🎯 IMAGE_PICKER_FLOW: pickImageFromGallery completed');
   }
 
   /// Pick multiple images from gallery directly (no dialog)
   Future<void> pickMultipleImagesFromGallery(BuildContext context,
       {String? recipeId}) async {
-    AppLogger.info(
-        '🎯 IMAGE_PICKER_FLOW: Starting pickMultipleImagesFromGallery');
-
     if (!canAddMoreImages) {
       _setImageUploadError('Du kan bara ha maximalt $maxImages bilder');
       return;
@@ -740,26 +384,21 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
     try {
       _clearImageUploadError();
-      _setUploadingImage(true); // Add loading state
+      _setUploadingImage(true);
 
-      AppLogger.info(
-          '🔍 Using ImagePickerService to pick multiple images from gallery');
       final pickedFiles = await _imagePickerService.pickMultipleImages();
 
       if (pickedFiles.isNotEmpty) {
-        AppLogger.info('🎯 Selected ${pickedFiles.length} images from gallery');
-        // Convert List<File> to List<XFile> and process
         final xFiles = pickedFiles.map((file) => XFile(file.path)).toList();
         await _processImagePickerResult(xFiles, recipeId: recipeId);
       } else {
-        AppLogger.warning('No images selected from gallery');
         _setImageUploadError('Inga bilder valdes');
       }
     } catch (e) {
-      AppLogger.error('Fel vid val av flera bilder: $e');
+      AppLogger.error('Multiple image picker error: $e');
       _setImageUploadError('Kunde inte välja bilder: $e');
     } finally {
-      _setUploadingImage(false); // Clear loading state
+      _setUploadingImage(false);
     }
   }
 
@@ -819,14 +458,27 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       // Convert XFile to File
       final file = File(imageFile.path);
 
-      // Ladda upp bilden
-      final imageUrl = await _storageService.uploadRecipeImage(file, recipeId);
+      // Get authenticated user ID
+      final permissionService = ServiceLocator.get<permission.PermissionService>();
+      final userId = permissionService.currentUserId;
 
-      if (imageUrl != null && imageUrl.isNotEmpty) {
-        addUploadedImageUrl(imageUrl);
-        AppLogger.info('Bild uppladdad: $imageUrl');
+      if (userId == null) {
+        _setImageUploadError('Ingen användare inloggad');
+        return;
+      }
+
+      // Upload using ImageUploadService (with automatic retry, progress tracking)
+      final result = await _uploadService.uploadImage(
+        file: file,
+        userId: userId,
+        path: 'recipes/$recipeId/${file.path.split('/').last}',
+      );
+
+      if (result.success && result.url != null) {
+        addUploadedImageUrl(result.url!);
+        AppLogger.info('Bild uppladdad: ${result.url}');
       } else {
-        _setImageUploadError('Kunde inte ladda upp bild');
+        _setImageUploadError(result.error ?? 'Kunde inte ladda upp bild');
       }
     } catch (e) {
       AppLogger.error('Fel vid uppladdning av bild: $e');
@@ -1068,7 +720,10 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     _temporaryRecipeId = recipeId;
   }
 
-  /// Start background upload for a single file with comprehensive state tracking
+  /// Start background upload for a single file
+  ///
+  /// REFACTORED: Simplified to delegate to ImageUploadService.
+  /// The service handles progress tracking, retry logic, circuit breaker, and notifications.
   void _startBackgroundUploadForFile(File imageFile, String recipeId) {
     final filePath = imageFile.path;
 
@@ -1081,25 +736,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
     AppLogger.info('🚀 Starting background upload for: $filePath');
 
-    // Get file size for progress tracking
-    final fileSize = imageFile.lengthSync();
-    final startTime = DateTime.now();
-
-    // Update comprehensive state tracking with enhanced details
-    _imageStates[filePath] = ImageUploadStatus(
-      file: imageFile,
-      state: ImageUploadState.uploading,
-      progress: 0.0,
-      totalBytes: fileSize,
-      uploadStartTime: startTime,
-      retryAttempts: currentState?.retryAttempts ?? 0, // Preserve retry count
-      maxRetryAttempts: currentState?.maxRetryAttempts ??
-          3, // Will be updated based on error type
-    );
-
-    notifyListeners();
-
-    // Start upload with enhanced error handling
+    // Start upload - service handles all progress tracking, retry, circuit breaker
     _uploadSingleFileWithEnhancedTracking(imageFile, recipeId)
         .then((uploadedUrl) {
       if (_uploadsCanceled || _disposed) {
@@ -1112,36 +749,27 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         AppLogger.info(
             '✅ Background upload completed: $filePath -> $uploadedUrl');
 
-        // Reset circuit breaker on successful upload (half-open -> closed)
-        _resetCircuitBreakerOnSuccess();
-
-        // Check if this was a retry success
-        final wasRetry = currentState?.retryAttempts != null &&
-            currentState!.retryAttempts > 0;
-        if (wasRetry) {
-          _triggerRetrySuccessNotification(imageFile.path.split('/').last);
-        }
-
-        // Update comprehensive state to completed
+        // Update local state to completed (service already updated via onProgress)
         _imageStates.remove(filePath); // Remove file path key
         _imageStates[uploadedUrl] = ImageUploadStatus(
           url: uploadedUrl,
           state: ImageUploadState.completed,
           progress: 1.0,
-          totalBytes: fileSize,
-          bytesTransferred: fileSize,
         );
-
-        // Check for completion notification
-        _checkAndTriggerCompletionEvents();
       } else {
         AppLogger.error('❌ Background upload failed: $filePath');
-        _handleUploadFailure(filePath, imageFile, 'Upload failed', null);
+        // Service already handled retry/circuit breaker, just update local state
+        final failedStatus = _imageStates[filePath];
+        if (failedStatus != null) {
+          _imageStates[filePath] = failedStatus.copyWith(
+            state: ImageUploadState.failed,
+            error: 'Upload failed',
+          );
+        }
       }
 
       if (!_disposed) {
         notifyListeners();
-        // Check for completion events after state change
         _checkAndTriggerCompletionEvents();
       }
     }).catchError((error) {
@@ -1152,11 +780,18 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       }
 
       AppLogger.error('❌ Background upload error: $error');
-      _handleUploadFailure(filePath, imageFile, error.toString(), error);
+
+      // Service already handled retry/circuit breaker, just update local state
+      final failedStatus = _imageStates[filePath];
+      if (failedStatus != null) {
+        _imageStates[filePath] = failedStatus.copyWith(
+          state: ImageUploadState.failed,
+          error: error.toString(),
+        );
+      }
 
       if (!_disposed) {
         notifyListeners();
-        // Check for completion events after error
         _checkAndTriggerCompletionEvents();
       }
     });
@@ -1250,53 +885,52 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Upload XFile with web platform support (handles blob URLs)
+  ///
+  /// REFACTORED: For web blob URLs, convert to File first then use ImageUploadService
   Future<String?> _uploadXFileWithWebSupport(
       XFile xFile, String recipeId) async {
     try {
       AppLogger.info(
           '🌐 WEB_FIX: Uploading XFile with web support: ${xFile.path}');
 
-      // Read bytes from XFile (works with blob URLs)
-      final bytes = await xFile.readAsBytes();
-      AppLogger.info('🌐 WEB_FIX: Read ${bytes.length} bytes from XFile');
-
-      // Use uploadImageBytes for web blob URL handling
+      // Get authenticated user ID
       final userId =
           ServiceLocator.get<permission.PermissionService>().currentUserId;
       if (userId == null) {
         throw Exception('No authenticated user');
       }
 
-      final uploadedUrl = await _storageService.uploadImageBytes(
-        bytes,
-        userId,
-        xFile.name,
-        prefix: 'recipe', // Use recipe prefix for proper path
+      // Convert XFile to File (works for both mobile and web)
+      final file = File(xFile.path);
+
+      // Upload using ImageUploadService (with automatic retry, progress tracking)
+      final result = await _uploadService.uploadImage(
+        file: file,
+        userId: userId,
+        path: 'recipes/$recipeId/${xFile.name}',
       );
 
-      AppLogger.info('🌐 WEB_FIX: Upload result: $uploadedUrl');
-      return uploadedUrl;
+      AppLogger.info('🌐 WEB_FIX: Upload result: ${result.url}');
+      return result.success ? result.url : null;
     } catch (e) {
       AppLogger.error('🌐 WEB_FIX: Upload failed: $e');
       return null;
     }
   }
 
-  /// Handle XFile upload failure with error classification
+  /// Handle XFile upload failure
+  ///
+  /// REFACTORED: Simplified - ImageUploadService handles error classification and retry logic
   void _handleXFileUploadFailure(
       String filePath, XFile xFile, String errorMessage, dynamic error) {
-    final errorType = _classifyError(error ?? errorMessage);
     final currentStatus = _imageStates[filePath];
 
     final failedStatus = ImageUploadStatus(
       // Note: No File object for XFile blob URLs
       state: ImageUploadState.failed,
       error: errorMessage,
-      errorType: errorType,
       errorOccurredAt: DateTime.now(),
       progress: currentStatus?.progress ?? 0.0,
-      retryAttempts: currentStatus?.retryAttempts ?? 0,
-      maxRetryAttempts: _getMaxRetryAttempts(errorType),
     );
 
     _imageStates[filePath] = failedStatus;
@@ -1305,351 +939,47 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     AppLogger.error('❌ XFile upload failed: $filePath - $errorMessage');
   }
 
-  /// Handle upload failure with error classification and enhanced retry logic
-  void _handleUploadFailure(
-      String filePath, File imageFile, String errorMessage, dynamic error) {
-    final errorType = _classifyError(error ?? errorMessage);
-    final currentStatus = _imageStates[filePath];
-    final maxAttempts = _getMaxRetryAttempts(errorType);
-    final currentAttempts = currentStatus?.retryAttempts ?? 0;
 
-    final failedStatus = ImageUploadStatus(
-      file: imageFile,
-      state: ImageUploadState.failed,
-      error: errorMessage,
-      errorType: errorType,
-      errorOccurredAt: DateTime.now(),
-      progress: currentStatus?.progress ?? 0.0,
-      totalBytes: currentStatus?.totalBytes,
-      bytesTransferred: currentStatus?.bytesTransferred,
-      retryAttempts: currentAttempts,
-      maxRetryAttempts: maxAttempts, // Use configurable max attempts
-    );
-
-    _imageStates[filePath] = failedStatus;
-
-    AppLogger.info(
-        '🔄 UPLOAD_FAILURE: $filePath failed with ${errorType.name} (attempt ${currentAttempts + 1}/$maxAttempts)');
-
-    // Update circuit breaker state for this error type
-    _updateCircuitBreakerOnFailure(errorType);
-
-    // Enhanced auto-retry with circuit breaker logic
-    if (failedStatus.canRetry && _shouldAutoRetry(errorType)) {
-      final retryDelay = _calculateRetryDelay(currentAttempts);
-
-      AppLogger.info(
-          '🔄 RETRY_SCHEDULED: Auto-retrying $filePath in ${retryDelay.inSeconds}s (${currentAttempts + 1}/$maxAttempts)');
-
-      // Schedule retry with enhanced delay calculation
-      Future.delayed(retryDelay).then((_) {
-        if (!_uploadsCanceled && !_disposed) {
-          // Double-check retry conditions before executing
-          final latestStatus = _imageStates[filePath];
-          if (latestStatus?.canRetry == true &&
-              latestStatus?.errorType == errorType) {
-            retryFailedUpload(filePath);
-          } else {
-            AppLogger.info(
-                '🔄 RETRY_CANCELLED: Conditions changed for $filePath');
-          }
-        }
-      });
-    } else {
-      final strategy = _retryStrategies[errorType];
-      AppLogger.info(
-          '🔄 NO_AUTO_RETRY: $filePath - ${strategy?.description ?? "No retry strategy"}');
-    }
-  }
-
-  /// Enhanced retry strategy configuration for different error types
-  static const Map<ImageUploadErrorType, RetryStrategy> _retryStrategies = {
-    ImageUploadErrorType.network: RetryStrategy(
-        autoRetry: true,
-        maxAttempts: 5, // More attempts for network issues
-        description: 'Nätverksproblem - försöker igen automatiskt'),
-    ImageUploadErrorType.server: RetryStrategy(
-        autoRetry: true,
-        maxAttempts: 3, // Standard attempts for server errors
-        description: 'Serverproblem - försöker igen automatiskt'),
-    ImageUploadErrorType.validation: RetryStrategy(
-        autoRetry: false,
-        maxAttempts: 1, // No auto-retry for validation errors
-        description: 'Bilden är ogiltig - kontrollera storlek och format'),
-    ImageUploadErrorType.cancelled: RetryStrategy(
-        autoRetry: false,
-        maxAttempts: 0, // No retry for cancelled uploads
-        description: 'Uppladdning avbruten av användaren'),
-    ImageUploadErrorType.unknown: RetryStrategy(
-        autoRetry: false,
-        maxAttempts: 2, // Limited retry for unknown errors
-        description: 'Okänt fel - försök igen manuellt'),
-  };
-
-  /// Determine if error type should trigger automatic retry with enhanced strategy and circuit breaker
-  bool _shouldAutoRetry(ImageUploadErrorType errorType) {
-    final strategy = _retryStrategies[errorType];
-    if (strategy == null || !strategy.autoRetry) return false;
-
-    // Check circuit breaker state
-    final circuitBreakerState = _getCircuitBreakerState(errorType);
-
-    // Reset circuit breaker if timeout has passed
-    if (circuitBreakerState.shouldReset(_circuitBreakerResetTime)) {
-      _circuitBreakers[errorType] = circuitBreakerState.reset();
-      AppLogger.info(
-          '🔄 CIRCUIT_BREAKER: Reset ${errorType.name} circuit breaker after timeout');
-    }
-
-    // Check if circuit is open (too many failures)
-    if (_circuitBreakers[errorType]?.isOpen == true) {
-      AppLogger.warning(
-          '🔄 CIRCUIT_BREAKER: ${errorType.name} circuit is OPEN - blocking auto-retry');
-      return false;
-    }
-
-    AppLogger.info(
-        '🔄 RETRY_STRATEGY: ${errorType.name} -> ${strategy.description} (auto: ${strategy.autoRetry}, circuit: CLOSED)');
-    return true;
-  }
-
-  /// Get circuit breaker state for error type, creating if needed
-  CircuitBreakerState _getCircuitBreakerState(ImageUploadErrorType errorType) {
-    return _circuitBreakers[errorType] ??
-        const CircuitBreakerState(
-          failureCount: 0,
-          isOpen: false,
-        );
-  }
-
-  /// Update circuit breaker state after failure
-  void _updateCircuitBreakerOnFailure(ImageUploadErrorType errorType) {
-    final currentState = _getCircuitBreakerState(errorType);
-    final newState = currentState.withFailure();
-    _circuitBreakers[errorType] = newState;
-
-    if (newState.isOpen && !currentState.isOpen) {
-      AppLogger.warning(
-          '🔄 CIRCUIT_BREAKER: ${errorType.name} circuit OPENED after ${newState.failureCount} failures');
-    }
-  }
-
-  /// Reset circuit breakers on successful upload (recovery)
-  void _resetCircuitBreakerOnSuccess() {
-    final hadOpenCircuits =
-        _circuitBreakers.values.any((state) => state.isOpen);
-
-    if (hadOpenCircuits) {
-      // Reset all circuit breakers on success to allow normal operation
-      _circuitBreakers.clear();
-      AppLogger.info(
-          '🔄 CIRCUIT_BREAKER: All circuits RESET on successful upload');
-    }
-  }
-
-  /// Get maximum retry attempts for specific error type
-  int _getMaxRetryAttempts(ImageUploadErrorType errorType) {
-    return _retryStrategies[errorType]?.maxAttempts ?? 3;
-  }
-
-  // ===== BULK UPLOAD MANAGEMENT =====
+  // ===== BULK UPLOAD MANAGEMENT (Delegated to ImageUploadCoordinator) =====
 
   /// Retry all failed uploads that can be retried
   Future<void> retryAllFailedUploads() async {
-    final failedItems = failedUploads;
-    if (failedItems.isEmpty) {
-      AppLogger.info('🔄 BULK_RETRY: No retryable failed uploads found');
-      return;
-    }
-
-    AppLogger.info(
-        '🔄 BULK_RETRY: Starting bulk retry for ${failedItems.length} failed uploads');
-
-    // Retry each failed upload
-    final retryFutures = failedItems.keys.map((pathOrUrl) =>
-        retryFailedUpload(pathOrUrl).catchError((error) {
-          AppLogger.error('🔄 BULK_RETRY: Error retrying $pathOrUrl: $error');
-        }));
-
-    await Future.wait(retryFutures);
-    AppLogger.info('🔄 BULK_RETRY: Bulk retry completed');
+    await _coordinator.retryAllFailedUploads(
+      failedUploads: failedUploads,
+      retryFailedUpload: retryFailedUpload,
+    );
   }
 
   /// Cancel all active uploads
   void cancelAllActiveUploads() {
-    final activeItems = activeUploads;
-    if (activeItems.isEmpty) {
-      AppLogger.info('🔄 BULK_CANCEL: No active uploads to cancel');
-      return;
-    }
-
-    AppLogger.info(
-        '🔄 BULK_CANCEL: Cancelling ${activeItems.length} active uploads');
-
-    for (final pathOrUrl in activeItems.keys) {
-      removeImageAndCleanup(pathOrUrl);
-    }
+    _coordinator.cancelAllActiveUploads(
+      activeUploads: activeUploads,
+      removeImageAndCleanup: removeImageAndCleanup,
+    );
   }
 
   /// Clear all failed uploads (remove from state)
   void clearAllFailedUploads() {
-    final failedItems = failedUploads;
-    if (failedItems.isEmpty) {
-      AppLogger.info('🔄 BULK_CLEAR: No failed uploads to clear');
-      return;
-    }
-
-    AppLogger.info(
-        '🔄 BULK_CLEAR: Clearing ${failedItems.length} failed uploads');
-
-    for (final pathOrUrl in failedItems.keys) {
-      _imageStates.remove(pathOrUrl);
-    }
-
-    notifyListeners();
-    _checkAndTriggerCompletionEvents();
+    _coordinator.clearAllFailedUploads(
+      imageStates: _imageStates,
+      failedUploads: failedUploads,
+    );
   }
 
   /// Get upload management summary for UI display
   Map<String, dynamic> get uploadManagementSummary {
-    final failed = failedUploads.length;
-    final active = activeUploads.length;
-    final total = _imageStates.length;
-    final completed = _imageStates.values
-        .where((s) => s.state == ImageUploadState.completed)
-        .length;
-
-    return {
-      'failed': failed,
-      'active': active,
-      'completed': completed,
-      'total': total,
-      'hasRetryableFailures': failed > 0,
-      'hasActiveUploads': active > 0,
-      'canBulkRetry': failed > 1, // Show bulk retry only for multiple failures
-      'canBulkCancel': active > 1, // Show bulk cancel only for multiple active
-    };
+    return _coordinator.getUploadManagementSummary(
+      imageStates: _imageStates,
+      failedUploads: failedUploads,
+      activeUploads: activeUploads,
+    );
   }
 
-  // ===== BACKGROUND NOTIFICATION SYSTEM =====
-
-  /// Stream controller for upload notification events
-  static final StreamController<UploadNotificationEvent>
-      _notificationController =
-      StreamController<UploadNotificationEvent>.broadcast();
+  // ===== BACKGROUND NOTIFICATION SYSTEM (Delegated to ImageUploadNotificationManager) =====
 
   /// Stream of upload notification events for UI subscription
   static Stream<UploadNotificationEvent> get notificationStream =>
-      _notificationController.stream;
-
-  /// Check if notification cooldown allows new notification
-  bool _canSendNotification() {
-    if (_lastNotificationTime == null) return true;
-    return DateTime.now().difference(_lastNotificationTime!) >=
-        _notificationCooldown;
-  }
-
-  /// Send upload notification event
-  void _sendNotificationEvent(UploadNotificationEvent event) {
-    if (!_canSendNotification()) {
-      AppLogger.debug(
-          '🔔 NOTIFICATION: Skipping notification due to cooldown: ${event.trigger.name}');
-      return;
-    }
-
-    _lastNotificationTime = DateTime.now();
-    _notificationTriggers.add(event.trigger);
-    _notificationController.add(event);
-
-    AppLogger.info(
-        '🔔 NOTIFICATION: Sent ${event.trigger.name} notification: ${event.message}');
-  }
-
-  /// Check and trigger progress milestone notifications
-  void _checkProgressMilestones(
-      double previousProgress, double currentProgress) {
-    const milestones = [0.25, 0.50, 0.75];
-
-    for (final milestone in milestones) {
-      if (previousProgress < milestone && currentProgress >= milestone) {
-        final percentage = (milestone * 100).round();
-        _sendNotificationEvent(UploadNotificationEvent(
-          trigger: UploadNotificationTrigger.significantProgress,
-          title: 'Uppladdning $percentage% klar',
-          message: 'Bilduppladdning gör framsteg - $percentage% slutförd',
-          priority: NotificationPriority.low,
-          data: {'milestone': milestone, 'progress': currentProgress},
-          timestamp: DateTime.now(),
-        ));
-        break; // Only send one milestone notification at a time
-      }
-    }
-  }
-
-  /// Trigger completion notification
-  void _triggerCompletionNotification(int totalImages) {
-    if (_notificationTriggers
-        .contains(UploadNotificationTrigger.allCompleted)) {
-      return; // Already sent
-    }
-
-    final imageText = totalImages == 1 ? 'bild' : 'bilder';
-    _sendNotificationEvent(UploadNotificationEvent(
-      trigger: UploadNotificationTrigger.allCompleted,
-      title: 'Uppladdning slutförd!',
-      message: 'Alla $totalImages $imageText har laddats upp framgångsrikt',
-      priority: NotificationPriority.medium,
-      data: {'totalImages': totalImages},
-      timestamp: DateTime.now(),
-    ));
-  }
-
-  /// Trigger major failure notification
-  void _triggerMajorFailureNotification(int failedCount, int totalCount) {
-    if (_notificationTriggers
-        .contains(UploadNotificationTrigger.majorFailure)) {
-      return; // Already sent
-    }
-
-    if (failedCount >= 2 || (totalCount > 1 && failedCount >= totalCount / 2)) {
-      _sendNotificationEvent(UploadNotificationEvent(
-        trigger: UploadNotificationTrigger.majorFailure,
-        title: 'Uppladdningsproblem',
-        message:
-            '$failedCount av $totalCount bilder misslyckades - kontrollera din internetanslutning',
-        priority: NotificationPriority.high,
-        data: {'failedCount': failedCount, 'totalCount': totalCount},
-        timestamp: DateTime.now(),
-      ));
-    }
-  }
-
-  /// Trigger retry success notification
-  void _triggerRetrySuccessNotification(String fileName) {
-    _sendNotificationEvent(UploadNotificationEvent(
-      trigger: UploadNotificationTrigger.retrySuccess,
-      title: 'Återförsök lyckades',
-      message: 'Bilden laddades upp efter återförsök',
-      priority: NotificationPriority.low,
-      data: {'fileName': fileName},
-      timestamp: DateTime.now(),
-    ));
-  }
-
-  /// Trigger queue cleared notification
-  void _triggerQueueClearedNotification() {
-    if (_imageStates.isEmpty && _notificationTriggers.isNotEmpty) {
-      _sendNotificationEvent(UploadNotificationEvent(
-        trigger: UploadNotificationTrigger.queueCleared,
-        title: 'Uppladdningskö rensad',
-        message: 'Alla uppladdningar har hanterats',
-        priority: NotificationPriority.low,
-        data: {},
-        timestamp: DateTime.now(),
-      ));
-      _notificationTriggers.clear(); // Reset triggers
-    }
-  }
+      ImageUploadNotificationManager.notificationStream;
 
   /// Check and trigger completion events based on current state
   void _checkAndTriggerCompletionEvents() {
@@ -1659,78 +989,42 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     final failed = summary['failed'] as int;
     final active = summary['active'] as int;
 
-    // Trigger completion notification if all uploads are done
-    if (total > 0 && completed == total && active == 0) {
-      _triggerCompletionNotification(total);
-    }
-
-    // Trigger major failure notification if significant failures
-    if (failed > 0) {
-      _triggerMajorFailureNotification(failed, total);
-    }
-
-    // Trigger queue cleared if everything is finished and queue is empty
-    if (total == 0 || (active == 0 && completed + failed == total)) {
-      _triggerQueueClearedNotification();
-    }
+    _notificationManager.checkAndTriggerNotifications(
+      total: total,
+      completed: completed,
+      failed: failed,
+      active: active,
+    );
   }
 
   /// Upload a single file with enhanced progress tracking and speed calculation
+  ///
+  /// REFACTORED: Now uses ImageUploadService which provides automatic progress tracking,
+  /// speed calculation, ETA, retry logic, and circuit breaker protection.
   Future<String?> _uploadSingleFileWithEnhancedTracking(
       File imageFile, String recipeId) async {
     final filePath = imageFile.path;
-    final fileSize = imageFile.lengthSync();
-    DateTime? lastProgressUpdate;
-    int? lastBytesTransferred;
 
     try {
-      // Perform actual upload with enhanced progress tracking
-      final uploadedUrl = await _storageService.uploadRecipeImage(
-        imageFile,
-        recipeId,
-        onProgress: (progress) {
+      // Get authenticated user ID
+      final permissionService = ServiceLocator.get<permission.PermissionService>();
+      final userId = permissionService.currentUserId;
+
+      if (userId == null) {
+        AppLogger.error('No authenticated user for upload');
+        return null;
+      }
+
+      // Upload using ImageUploadService (handles progress, retry, circuit breaker automatically)
+      final result = await _uploadService.uploadImage(
+        file: imageFile,
+        userId: userId,
+        path: 'recipes/$recipeId/${imageFile.path.split('/').last}',
+        onProgress: (status) {
           if (_uploadsCanceled || _disposed) return;
 
-          final currentStatus = _imageStates[filePath];
-          if (currentStatus == null) return;
-
-          final now = DateTime.now();
-          final bytesTransferred = (progress * fileSize).round();
-          final previousProgress = currentStatus.progress;
-
-          // Check for progress milestones before updating state
-          _checkProgressMilestones(previousProgress, progress);
-
-          // Calculate upload speed and time remaining
-          double? uploadSpeed;
-          Duration? timeRemaining;
-
-          if (lastProgressUpdate != null && lastBytesTransferred != null) {
-            final timeDiff =
-                now.difference(lastProgressUpdate!).inMilliseconds / 1000.0;
-            final bytesDiff = bytesTransferred - lastBytesTransferred!;
-
-            if (timeDiff > 0) {
-              uploadSpeed = bytesDiff / timeDiff; // bytes per second
-
-              if (uploadSpeed > 0) {
-                final remainingBytes = fileSize - bytesTransferred;
-                timeRemaining =
-                    Duration(seconds: (remainingBytes / uploadSpeed).round());
-              }
-            }
-          }
-
-          // Update comprehensive state with detailed progress
-          _imageStates[filePath] = currentStatus.copyWith(
-            progress: progress,
-            bytesTransferred: bytesTransferred,
-            uploadSpeedBytesPerSecond: uploadSpeed,
-            estimatedTimeRemaining: timeRemaining,
-          );
-
-          lastProgressUpdate = now;
-          lastBytesTransferred = bytesTransferred;
+          // Update local state with service-provided progress
+          _imageStates[filePath] = status;
 
           if (!_disposed) {
             notifyListeners();
@@ -1738,7 +1032,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         },
       );
 
-      return uploadedUrl;
+      return result.success ? result.url : null;
     } catch (e) {
       AppLogger.error('Upload failed for $filePath: $e');
       return null;
@@ -1859,144 +1153,40 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     _safeNotifyListeners(immediate: true);
   }
 
-  // ===== UPLOAD SAFETY CHECKS =====
+  // ===== UPLOAD SAFETY CHECKS (Delegated to ImageUploadValidator) =====
 
   /// Check if it's safe to save recipe without losing pending uploads
   /// HIGH PRIORITY FIX: Prevent data corruption from race conditions
   UploadSafetyResult ensureUploadSafety() {
-    final List<String> pendingImagePaths = [];
-    final List<String> failedImagePaths = [];
-
-    // Check comprehensive state tracking
-    for (final entry in _imageStates.entries) {
-      final status = entry.value;
-      switch (status.state) {
-        case ImageUploadState.pending:
-        case ImageUploadState.uploading:
-        case ImageUploadState.retrying:
-          pendingImagePaths.add(entry.key);
-          break;
-        case ImageUploadState.failed:
-        case ImageUploadState.cancelled:
-          failedImagePaths.add(entry.key);
-          break;
-        case ImageUploadState.completed:
-          // Safe to save
-          break;
-      }
-    }
-
-    final isSafe = pendingImagePaths.isEmpty && failedImagePaths.isEmpty;
-
-    AppLogger.info(
-        'Upload safety check: Safe=$isSafe, Pending=${pendingImagePaths.length}, Failed=${failedImagePaths.length}');
-
-    return UploadSafetyResult(
-      isSafe: isSafe,
-      pendingImagePaths: pendingImagePaths,
-      failedImagePaths: failedImagePaths,
-    );
+    return _validator.checkUploadSafety(_imageStates);
   }
 
   /// Show dialog to user about pending uploads during save
   /// Returns user choice for how to handle pending uploads
+  /// Show upload choice dialog for handling pending/failed uploads.
+  ///
+  /// REFACTORED: Delegates to upload_choice_dialog widget for UI rendering.
+  /// Maintains separation of concerns (ViewModel should not build widgets).
   Future<UploadChoice?> showUploadChoiceDialog(
       BuildContext context, UploadSafetyResult safetyResult) async {
-    if (safetyResult.isSafe) {
-      return UploadChoice.wait; // No issues, proceed normally
-    }
-
-    final hasFailedUploads = safetyResult.hasFailedUploads;
-    final hasPendingUploads = safetyResult.hasPendingUploads;
-
-    String dialogTitle;
-    String dialogContent;
-    final List<Widget> actions = [];
-
-    if (hasFailedUploads && hasPendingUploads) {
-      dialogTitle = 'Bilduppladdning pågår';
-      dialogContent =
-          'Några bilder kunde inte laddas upp (${safetyResult.failedImagePaths.length}) och andra laddas fortfarande upp (${safetyResult.pendingImagePaths.length}).\n\nVad vill du göra?';
-    } else if (hasFailedUploads) {
-      dialogTitle = 'Bilduppladdning misslyckades';
-      dialogContent =
-          '${safetyResult.failedImagePaths.length} bilder kunde inte laddas upp.\n\nVad vill du göra?';
-    } else {
-      dialogTitle = 'Bilduppladdning pågår';
-      dialogContent =
-          '${safetyResult.pendingImagePaths.length} bilder laddas fortfarande upp.\n\nVad vill du göra?';
-    }
-
-    // Add common actions
-    actions.addAll([
-      TextButton(
-        onPressed: () => Navigator.of(context).pop(UploadChoice.cancel),
-        child: const Text('Avbryt'),
-      ),
-      if (hasPendingUploads)
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(UploadChoice.wait),
-          child: const Text('Vänta på uppladdning'),
-        ),
-      TextButton(
-        onPressed: () =>
-            Navigator.of(context).pop(UploadChoice.saveWithoutPending),
-        style: TextButton.styleFrom(foregroundColor: Colors.orange),
-        child: Text(hasFailedUploads
-            ? 'Spara utan misslyckade bilder'
-            : 'Spara utan väntande bilder'),
-      ),
-    ]);
-
-    return showDialog<UploadChoice>(
+    return upload_dialog.showUploadChoiceDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(dialogTitle),
-        content: Text(dialogContent),
-        actions: actions,
-      ),
+      safetyResult: safetyResult,
     );
   }
 
   /// Wait for all pending uploads to complete or timeout
   /// Returns true if all uploads completed successfully
   Future<bool> waitForUploadsToComplete({Duration? timeout}) async {
-    final timeoutDuration = timeout ?? const Duration(minutes: 2);
-    final startTime = DateTime.now();
-
-    AppLogger.info(
-        'Waiting for uploads to complete (timeout: ${timeoutDuration.inSeconds}s)');
-
-    while (true) {
-      final safetyCheck = ensureUploadSafety();
-
-      if (safetyCheck.isSafe) {
-        AppLogger.info('All uploads completed successfully');
-        return true;
-      }
-
-      // Check timeout
-      if (DateTime.now().difference(startTime) > timeoutDuration) {
-        AppLogger.warning('Upload wait timeout reached');
-        return false;
-      }
-
-      // Wait a bit before checking again
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
+    return _validator.waitForUploadsToComplete(
+      imageStates: _imageStates,
+      timeout: timeout,
+    );
   }
 
   /// Remove pending and failed images from state (called when user chooses to save without them)
   void removePendingAndFailedImages() {
-    final toRemove = <String>[];
-
-    // Find all non-completed images
-    for (final entry in _imageStates.entries) {
-      final status = entry.value;
-      if (status.state != ImageUploadState.completed) {
-        toRemove.add(entry.key);
-      }
-    }
+    final toRemove = _validator.getPendingAndFailedImageKeys(_imageStates);
 
     // Remove from state tracking
     for (final path in toRemove) {
@@ -2007,151 +1197,19 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     notifyListeners();
   }
 
-  // ===== UPLOAD OPERATIONS =====
+  // ===== UPLOAD OPERATIONS (Delegated to ImageUploadCoordinator) =====
 
   /// CRITICAL FIX: Thread-safe upload all pending images with cancellation support
   Future<List<String>> uploadPendingImagesInBackground(String recipeId,
       {Function(int completed, int total)? onProgress}) async {
-    // CRITICAL FIX: Atomic disposal and cancellation check
-    if (_disposed || _uploadsCanceled) {
-      AppLogger.info(
-          '☁️ Upload canceled - manager disposed or uploads canceled');
-      return [];
-    }
-
-    final pendingImages = this.pendingImages;
-
-    if (pendingImages.isEmpty) {
-      AppLogger.info('☁️ No pending images to upload');
-      return [];
-    }
-
-    AppLogger.info(
-        '🚀 Starting thread-safe upload of ${pendingImages.length} pending images');
-    final List<String> uploadedUrls = [];
-    int completed = 0;
-    final total = pendingImages.length;
-
-    // CRITICAL FIX: Create operation group for coordinated cancellation
-    final operationGroup = _UploadOperationGroup();
-
-    try {
-      // CRITICAL FIX: Create cancellable upload operations with proper tracking
-      final uploadOperations = pendingImages.map((file) {
-        final operation = _CancellableUploadOperation(
-          file: file,
-          recipeId: recipeId,
-          onProgress: () {
-            completed++;
-            onProgress?.call(completed, total);
-          },
-          uploadFunction: (file, recipeId) =>
-              _uploadSingleImageWithTracking(file, recipeId, () {}),
-        );
-
-        // Add to operation group and active uploads
-        operationGroup.addOperation(operation);
-        _activeUploads.add(operation);
-
-        return operation;
-      }).toList();
-
-      // CRITICAL FIX: Start all operations with cancellation coordination
-      final uploadFutures = uploadOperations.map((op) => op.start());
-
-      // Wait for all uploads to complete or be cancelled
-      final results = await Future.wait(uploadFutures, eagerError: false);
-      final successfulUrls =
-          results.where((url) => url != null).cast<String>().toList();
-
-      AppLogger.info(
-          '✅ Completed ${successfulUrls.length}/$total uploads successfully');
-
-      return successfulUrls;
-    } catch (e) {
-      AppLogger.error('❌ Fatal error during upload: $e');
-      _safeSetImageUploadError('Kunde inte ladda upp bilder: $e');
-      return uploadedUrls;
-    } finally {
-      // CRITICAL FIX: Clean up operation group and notify safely
-      operationGroup.dispose();
-      _safeNotifyListeners();
-    }
-  }
-
-  /// CRITICAL FIX: Upload single image with proper disposal tracking
-  Future<String?> _uploadSingleImageWithTracking(
-      File file, String recipeId, VoidCallback? onComplete) async {
-    final filePath = file.path;
-
-    try {
-      // CRITICAL FIX: Check cancellation before each operation
-      if (_disposed || _uploadsCanceled) {
-        AppLogger.info('☁️ Upload canceled for ${file.path}');
-        return null;
-      }
-
-      // Update state to uploading
-      if (_imageStates.containsKey(filePath)) {
-        _imageStates[filePath] =
-            _imageStates[filePath]!.copyWith(state: ImageUploadState.uploading);
-
-        if (!disposed) {
-          notifyListeners();
-        }
-      }
-
-      // CRITICAL FIX: Check cancellation before actual upload
-      if (_disposed || _uploadsCanceled) {
-        AppLogger.info(
-            '☁️ Upload canceled during state update for ${file.path}');
-        return null;
-      }
-
-      final imageUrl = await _storageService.uploadRecipeImage(file, recipeId);
-
-      // CRITICAL FIX: Check cancellation after upload completes
-      if (_disposed || _uploadsCanceled) {
-        AppLogger.info(
-            '☁️ Upload canceled after completion for ${file.path} - ignoring result');
-        return null;
-      }
-
-      if (imageUrl != null && imageUrl.isNotEmpty) {
-        // Update state to completed with URL
-        _imageStates.remove(filePath);
-        _imageStates[imageUrl] = ImageUploadStatus(
-          url: imageUrl,
-          state: ImageUploadState.completed,
-          progress: 1.0,
-        );
-
-        onComplete?.call();
-
-        AppLogger.info('✅ Uploaded ${file.path} -> $imageUrl');
-        return imageUrl;
-      } else {
-        // Update state to failed
-        if (_imageStates.containsKey(filePath)) {
-          _imageStates[filePath] = _imageStates[filePath]!
-              .copyWith(state: ImageUploadState.failed, error: 'Upload failed');
-        }
-
-        AppLogger.error('❌ Failed to upload ${file.path}');
-        return null;
-      }
-    } catch (e) {
-      // Update state to failed with error
-      if (_imageStates.containsKey(filePath) &&
-          !_disposed &&
-          !_uploadsCanceled) {
-        _imageStates[filePath] = _imageStates[filePath]!
-            .copyWith(state: ImageUploadState.failed, error: e.toString());
-      }
-
-      AppLogger.error('❌ Error uploading ${file.path}: $e');
-      return null;
-    }
+    return _coordinator.uploadPendingImagesInBackground(
+      pendingImages,
+      recipeId,
+      imageStates: _imageStates,
+      disposed: _disposed,
+      uploadsCanceled: _uploadsCanceled,
+      onProgress: onProgress,
+    );
   }
 
   /// Get upload progress information
@@ -2176,117 +1234,34 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     };
   }
 
-  // ===== VALIDATION =====
+  // ===== VALIDATION (Delegated to ImageUploadValidator) =====
 
   /// Validera bildformat
   bool isValidImageFormat(String imageUrl) {
-    final validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-    final lowercaseUrl = imageUrl.toLowerCase();
-    return validExtensions.any((ext) => lowercaseUrl.contains(ext));
+    return _validator.isValidImageFormat(imageUrl);
   }
 
   /// Validera bildstorlek (om tillgänglig)
   Future<bool> isValidImageSize(XFile imageFile) async {
-    try {
-      final fileSize = await imageFile.length();
-      const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
-      return fileSize <= maxSizeInBytes;
-    } catch (e) {
-      AppLogger.error('Fel vid validering av bildstorlek: $e');
-      return true; // Fortsätt om vi inte kan validera
-    }
+    return _validator.isValidImageSize(imageFile);
   }
 
-  // ===== ERROR CLASSIFICATION & RETRY MANAGEMENT =====
+  // ===== RETRY MANAGEMENT =====
 
-  /// Classify error type from exception for targeted handling
-  ImageUploadErrorType _classifyError(dynamic error) {
-    final errorString = error.toString().toLowerCase();
-
-    if (errorString.contains('network') ||
-        errorString.contains('connection') ||
-        errorString.contains('timeout') ||
-        errorString.contains('unreachable')) {
-      return ImageUploadErrorType.network;
-    }
-
-    if (errorString.contains('permission') ||
-        errorString.contains('unauthorized') ||
-        errorString.contains('forbidden') ||
-        errorString.contains('size') ||
-        errorString.contains('format') ||
-        errorString.contains('validation')) {
-      return ImageUploadErrorType.validation;
-    }
-
-    if (errorString.contains('server') ||
-        errorString.contains('firebase') ||
-        errorString.contains('storage') ||
-        errorString.contains('internal')) {
-      return ImageUploadErrorType.server;
-    }
-
-    if (errorString.contains('cancel')) {
-      return ImageUploadErrorType.cancelled;
-    }
-
-    return ImageUploadErrorType.unknown;
-  }
-
-  /// Calculate retry delay with enhanced exponential backoff and intelligent jitter
-  Duration _calculateRetryDelay(int attemptNumber) {
-    // Enhanced exponential backoff with cap: 1s, 2s, 4s, 8s, 16s (max 30s)
-    final exponent = min(attemptNumber, 4); // Cap at 16 seconds base delay
-    final baseDelaySeconds = 1 * (1 << exponent);
-    final maxDelaySeconds = min(baseDelaySeconds, 30); // Hard cap at 30 seconds
-
-    // Enhanced jitter using full jitter algorithm (0% to 100% of base delay)
-    // This is more effective at preventing thundering herd than additive jitter
-    final jitterFactor = _random.nextDouble(); // 0.0 to 1.0
-    final jitteredDelay = (maxDelaySeconds * jitterFactor).round();
-
-    final finalDelay =
-        Duration(seconds: max(jitteredDelay, 1)); // Minimum 1 second
-
-    AppLogger.info(
-        '🔄 RETRY_BACKOFF: Attempt $attemptNumber -> ${finalDelay.inSeconds}s delay (base: ${maxDelaySeconds}s, jitter: ${jitterFactor.toStringAsFixed(2)})');
-
-    return finalDelay;
-  }
-
-  /// Retry failed upload with exponential backoff
+  /// Retry failed upload
+  ///
+  /// REFACTORED: Simplified to restart upload via ImageUploadService
+  /// Service handles retry delays, exponential backoff, and circuit breaker
   Future<void> retryFailedUpload(String filePath) async {
     final status = _imageStates[filePath];
-    if (status == null || !status.canRetry) {
-      AppLogger.warning(
-          'Cannot retry upload for $filePath - status: ${status?.state}');
+    if (status == null) {
+      AppLogger.warning('Cannot retry upload for $filePath - status not found');
       return;
     }
 
-    AppLogger.info(
-        '🔄 Retrying upload for: $filePath (attempt ${status.retryAttempts + 1}/${status.maxRetryAttempts})');
+    AppLogger.info('🔄 Manual retry initiated for: $filePath');
 
-    // Update status to retrying
-    _imageStates[filePath] = status.copyWith(
-      state: ImageUploadState.retrying,
-      retryAttempts: status.retryAttempts + 1,
-      retryDelay: _calculateRetryDelay(status.retryAttempts),
-      nextRetryAt:
-          DateTime.now().add(_calculateRetryDelay(status.retryAttempts)),
-    );
-
-    notifyListeners();
-
-    // Wait for retry delay
-    await Future.delayed(status.retryDelay ?? Duration.zero);
-
-    // Check if still should retry (might have been cancelled)
-    final currentStatus = _imageStates[filePath];
-    if (currentStatus?.state != ImageUploadState.retrying || _uploadsCanceled) {
-      return;
-    }
-
-    // Start the retry upload
+    // Restart the upload - service handles all retry logic
     final recipeId = _getTemporaryRecipeId();
     if (status.file != null) {
       _startBackgroundUploadForFile(status.file!, recipeId);
@@ -2294,234 +1269,13 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Get enhanced upload queue summary for UI display with analytics
-  Map<String, dynamic> get uploadQueueSummary {
-    int pending = 0;
-    int uploading = 0;
-    int retrying = 0;
-    int completed = 0;
-    int failed = 0;
-    int cancelled = 0;
-    double totalProgress = 0.0;
-    double totalSpeedBytesPerSecond = 0.0;
-    int totalBytesTransferred = 0;
-    int totalBytes = 0;
-    int activeUploadsWithSpeed = 0;
-    DateTime? earliestStartTime;
-
-    for (final status in _imageStates.values) {
-      // Count by state
-      switch (status.state) {
-        case ImageUploadState.pending:
-          pending++;
-          break;
-        case ImageUploadState.uploading:
-          uploading++;
-          totalProgress += status.progress;
-          break;
-        case ImageUploadState.retrying:
-          retrying++;
-          totalProgress += status.progress;
-          break;
-        case ImageUploadState.completed:
-          completed++;
-          totalProgress += 1.0;
-          break;
-        case ImageUploadState.failed:
-          failed++;
-          break;
-        case ImageUploadState.cancelled:
-          cancelled++;
-          break;
-      }
-
-      // Collect analytics data
-      if (status.totalBytes != null) {
-        totalBytes += status.totalBytes!;
-      }
-      if (status.bytesTransferred != null) {
-        totalBytesTransferred += status.bytesTransferred!;
-      }
-
-      // Collect speed data from active uploads
-      if (status.isActive && status.uploadSpeedBytesPerSecond != null) {
-        totalSpeedBytesPerSecond += status.uploadSpeedBytesPerSecond!;
-        activeUploadsWithSpeed++;
-      }
-
-      // Track earliest start time for total elapsed time
-      if (status.uploadStartTime != null) {
-        if (earliestStartTime == null ||
-            status.uploadStartTime!.isBefore(earliestStartTime)) {
-          earliestStartTime = status.uploadStartTime;
-        }
-      }
-    }
-
-    final total = _imageStates.length;
-    final active = uploading + retrying;
-    final hasActivity = pending > 0 || active > 0;
-    final overallProgress = total > 0 ? totalProgress / total : 1.0;
-    final progressPercentage =
-        total > 0 ? ((overallProgress) * 100).round() : 100;
-
-    // Calculate analytics
-    final averageSpeedBytesPerSecond = activeUploadsWithSpeed > 0
-        ? totalSpeedBytesPerSecond / activeUploadsWithSpeed
-        : 0.0;
-
-    final totalElapsedTime = earliestStartTime != null
-        ? DateTime.now().difference(earliestStartTime)
-        : null;
-
-    Duration? estimatedTimeRemaining;
-    if (averageSpeedBytesPerSecond > 0 && totalBytes > totalBytesTransferred) {
-      final remainingBytes = totalBytes - totalBytesTransferred;
-      final secondsRemaining = remainingBytes / averageSpeedBytesPerSecond;
-      estimatedTimeRemaining = Duration(seconds: secondsRemaining.round());
-    }
-
-    return {
-      // Basic counts
-      'total': total,
-      'pending': pending,
-      'uploading': uploading,
-      'retrying': retrying,
-      'completed': completed,
-      'failed': failed,
-      'cancelled': cancelled,
-      'active': active,
-      'hasActivity': hasActivity,
-
-      // Progress metrics
-      'overallProgress': overallProgress,
-      'progressPercentage': progressPercentage,
-
-      // Analytics data
-      'totalBytes': totalBytes,
-      'totalBytesTransferred': totalBytesTransferred,
-      'averageSpeedBytesPerSecond': averageSpeedBytesPerSecond,
-      'totalElapsedTime': totalElapsedTime,
-      'estimatedTimeRemaining': estimatedTimeRemaining,
-
-      // Formatted display data
-      'statusText': _getEnhancedQueueStatusText(
-          pending, active, completed, failed, total, overallProgress),
-      'progressText':
-          _getProgressDisplayText(overallProgress, estimatedTimeRemaining),
-      'speedText': _getSpeedDisplayText(averageSpeedBytesPerSecond),
-      'summaryText':
-          _getQueueSummaryText(completed, failed, total, totalElapsedTime),
-    };
-  }
-
-  /// Enhanced queue status text with progress information
-  String _getEnhancedQueueStatusText(int pending, int active, int completed,
-      int failed, int total, double overallProgress) {
-    if (total == 0) return '';
-
-    final progressPercent = (overallProgress * 100).round();
-
-    if (active > 0) {
-      if (pending > 0) {
-        return 'Laddar upp $active bilder ($progressPercent% klart, $pending väntar)';
-      } else {
-        return 'Laddar upp $active bilder ($progressPercent% klart)';
-      }
-    } else if (pending > 0) {
-      return 'Väntar på att ladda upp $pending bilder...';
-    } else if (failed > 0 && completed > 0) {
-      return '$completed av $total bilder uppladdade, $failed misslyckades';
-    } else if (failed > 0) {
-      return '$failed av $total bilder misslyckades - tryck för att försöka igen';
-    } else if (completed == total && total > 0) {
-      return 'Alla $total bilder uppladdade framgångsrikt';
-    } else {
-      return '';
-    }
-  }
-
-  /// Get progress display text with time estimates
-  String _getProgressDisplayText(double progress, Duration? timeRemaining) {
-    final progressPercent = (progress * 100).round();
-
-    if (timeRemaining != null) {
-      final timeText = _formatDuration(timeRemaining);
-      return '$progressPercent% klart - $timeText kvar';
-    } else if (progress < 1.0) {
-      return '$progressPercent% klart';
-    } else {
-      return 'Uppladdning slutförd';
-    }
-  }
-
-  /// Get speed display text for upload analytics
-  String _getSpeedDisplayText(double bytesPerSecond) {
-    if (bytesPerSecond <= 0) return '';
-
-    final mbPerSecond = bytesPerSecond / (1024 * 1024);
-    if (mbPerSecond >= 1.0) {
-      return '${mbPerSecond.toStringAsFixed(1)} MB/s';
-    } else {
-      final kbPerSecond = bytesPerSecond / 1024;
-      return '${kbPerSecond.toStringAsFixed(0)} KB/s';
-    }
-  }
-
-  /// Get queue summary text with completion analytics
-  String _getQueueSummaryText(
-      int completed, int failed, int total, Duration? elapsedTime) {
-    if (total == 0) return '';
-
-    final successRate = total > 0 ? ((completed / total) * 100).round() : 0;
-
-    if (completed == total && failed == 0) {
-      final timeText =
-          elapsedTime != null ? ' på ${_formatDuration(elapsedTime)}' : '';
-      return 'Alla bilder uppladdade$timeText (100% framgång)';
-    } else if (completed > 0 || failed > 0) {
-      final completionText = '$completed av $total slutförda';
-      final failureText = failed > 0 ? ', $failed misslyckades' : '';
-      final rateText = ' ($successRate% framgång)';
-
-      return '$completionText$failureText$rateText';
-    } else {
-      return 'Förbereder uppladdning...';
-    }
-  }
-
-  /// Format duration for display (e.g., "2m 30s", "45s", "1h 15m")
-  String _formatDuration(Duration duration) {
-    final totalSeconds = duration.inSeconds;
-
-    if (totalSeconds < 60) {
-      return '${totalSeconds}s';
-    } else if (totalSeconds < 3600) {
-      final minutes = totalSeconds ~/ 60;
-      final seconds = totalSeconds % 60;
-      return seconds > 0 ? '${minutes}m ${seconds}s' : '${minutes}m';
-    } else {
-      final hours = totalSeconds ~/ 3600;
-      final remainingMinutes = (totalSeconds % 3600) ~/ 60;
-      return remainingMinutes > 0
-          ? '${hours}h ${remainingMinutes}m'
-          : '${hours}h';
-    }
-  }
+  Map<String, dynamic> get uploadQueueSummary =>
+      UploadQueueSummaryCalculator.calculateQueueSummary(_imageStates);
 
   /// CRITICAL FIX: Thread-safe cancel all active uploads with proper coordination
   void cancelAllUploads() {
     _uploadsCanceled = true;
-    AppLogger.info(
-        '🛑 Thread-safe canceling ${_activeUploads.length} active uploads');
-
-    // CRITICAL FIX: Cancel all active operations properly
-    final operationsToCancel = _activeUploads.toList();
-    for (final operation in operationsToCancel) {
-      operation.cancel();
-    }
-
-    // Clear active uploads set
-    _activeUploads.clear();
+    AppLogger.info('🛑 Thread-safe canceling active uploads');
 
     // CRITICAL FIX: Thread-safe state update for cancelled uploads
     _safeUpdateState(() {
@@ -2556,6 +1310,9 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
     // Clear pending state updates
     _pendingStateUpdates.clear();
+
+    // Dispose specialized managers
+    _coordinator.dispose();
 
     // Cancel all timers and stream subscriptions
     disposeStreamResources(); // From StreamManagementMixin
@@ -2630,93 +1387,3 @@ class ImageDisplayInfo {
   }
 }
 
-// ===== THREAD-SAFE UPLOAD OPERATION CLASSES =====
-
-/// CRITICAL FIX: Cancellable upload operation with proper resource management
-class _CancellableUploadOperation {
-  final File file;
-  final String recipeId;
-  final VoidCallback? onProgress;
-  final Future<String?> Function(File, String) uploadFunction;
-
-  bool _isCancelled = false;
-  bool _isCompleted = false;
-  Completer<String?>? _completer;
-
-  _CancellableUploadOperation({
-    required this.file,
-    required this.recipeId,
-    this.onProgress,
-    required this.uploadFunction,
-  });
-
-  /// Start the upload operation
-  Future<String?> start() async {
-    if (_isCancelled) {
-      return null;
-    }
-
-    _completer = Completer<String?>();
-
-    try {
-      // Start the actual upload
-      final result = await uploadFunction(file, recipeId);
-
-      if (_isCancelled) {
-        _completer!.complete(null);
-        return null;
-      }
-
-      _isCompleted = true;
-      onProgress?.call();
-      _completer!.complete(result);
-      return result;
-    } catch (e) {
-      if (!_isCancelled && !_completer!.isCompleted) {
-        _completer!.complete(null);
-      }
-      return null;
-    }
-  }
-
-  /// Cancel the upload operation
-  void cancel() {
-    if (_isCompleted) return;
-
-    _isCancelled = true;
-    if (_completer != null && !_completer!.isCompleted) {
-      _completer!.complete(null);
-    }
-  }
-
-  bool get isCancelled => _isCancelled;
-  bool get isCompleted => _isCompleted;
-}
-
-/// CRITICAL FIX: Upload operation group for coordinated cancellation
-class _UploadOperationGroup {
-  final List<_CancellableUploadOperation> _operations = [];
-  bool _isDisposed = false;
-
-  void addOperation(_CancellableUploadOperation operation) {
-    if (_isDisposed) return;
-    _operations.add(operation);
-  }
-
-  void cancelAll() {
-    for (final operation in _operations) {
-      operation.cancel();
-    }
-  }
-
-  void dispose() {
-    _isDisposed = true;
-    cancelAll();
-    _operations.clear();
-  }
-
-  int get activeCount =>
-      _operations.where((op) => !op.isCompleted && !op.isCancelled).length;
-  int get completedCount => _operations.where((op) => op.isCompleted).length;
-  int get cancelledCount => _operations.where((op) => op.isCancelled).length;
-}

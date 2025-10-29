@@ -1,69 +1,7 @@
-/// Comprehensive recipe list ViewModel providing advanced recipe management and filtering for Flutter applications.
-///
-/// This module implements sophisticated recipe list management following Single Responsibility Principle,
-/// handling all aspects of recipe list presentation including search functionality, multi-criteria filtering,
-/// sorting coordination, and performance optimization. It provides complete recipe list infrastructure while
-/// maintaining clean separation from UI rendering, data persistence, and business logic implementation.
-///
-/// **Single Responsibility Focus:**
-/// This module exclusively handles recipe list presentation layer concerns:
-/// - **Advanced Search Intelligence**: Comprehensive recipe search with real-time query processing and result optimization
-/// - **Multi-Criteria Filtering**: Sophisticated filtering by time, meal type, and rating with logical OR combinations
-/// - **Dynamic Sorting**: Flexible sorting by multiple criteria with ascending/descending toggle functionality
-/// - **Performance Optimization**: Advanced caching system with intelligent cache invalidation for optimal responsiveness
-/// - **State Management**: Reactive state coordination with service integration and comprehensive UI synchronization
-///
-/// **What This Module Does NOT Handle:**
-/// - Recipe data persistence and storage (handled by UnifiedRecipeService and data repositories)
-/// - UI rendering and widget creation (handled by MinaReceptView and recipe list UI components)
-/// - Recipe business logic and operations (handled by recipe service layer and business logic)
-/// - Search algorithm implementation (handled by SearchService for focused search responsibility)
-///
-/// **Recipe List ViewModel Features:**
-/// - **Intelligent Search**: Real-time recipe search with query optimization and result relevance ranking
-/// - **Advanced Filtering System**: Multi-dimensional filtering with time ranges, meal types, and rating thresholds
-/// - **Dynamic Sorting**: Flexible sorting with criteria toggling and directional control for user preference
-/// - **Performance Caching**: Sophisticated result caching with precise invalidation for optimal user experience
-/// - **Swedish Localization**: Complete Swedish language support for filters, meal types, and user interface
-///
-/// **Usage Examples:**
+/// Recipe list ViewModel with search, multi-criteria filtering, sorting, and caching.
 /// ```dart
-/// // Initialize recipe list ViewModel with service dependencies
-/// final recipeListViewModel = RecipeListViewModel(
-///   recipeService: unifiedRecipeService,
-///   searchService: searchService,
-/// );
-/// 
-/// // Search recipes with real-time filtering
-/// recipeListViewModel.updateSearch('vegetarisk pasta');
-/// 
-/// // Apply time-based filtering
-/// recipeListViewModel.toggleTimeFilter('quick'); // Under 30 minutes
-/// recipeListViewModel.toggleTimeFilter('medium'); // 30-60 minutes
-/// 
-/// // Filter by meal type with Swedish localization
-/// recipeListViewModel.toggleMealTypeFilter('dinner'); // Middag
-/// recipeListViewModel.toggleMealTypeFilter('lunch'); // Lunch
-/// 
-/// // Apply rating filters
-/// recipeListViewModel.toggleRatingFilter('high_rated'); // 4+ stars
-/// 
-/// // Dynamic sorting with toggle functionality
-/// recipeListViewModel.updateSort(SortCriteria.title); // First click: A-Z
-/// recipeListViewModel.updateSort(SortCriteria.title); // Second click: Z-A
-/// 
-/// // Recipe management operations
-/// await recipeListViewModel.deleteRecipe('recipe_123');
-/// await recipeListViewModel.refresh(); // Pull-to-refresh
-/// 
-/// // Clear filters and state
-/// recipeListViewModel.clearAllFilters();
-/// recipeListViewModel.clearError();
-/// 
-/// // Access filtered and sorted results
-/// final recipes = recipeListViewModel.recipes; // Cached, optimized results
-/// final hasFilters = recipeListViewModel.hasActiveFilters;
-/// ```
+/// final vm = RecipeListViewModel(recipeService: sl.get());
+/// vm.updateSearch('pasta'); vm.toggleTimeFilter('quick');
 
 // lib/viewmodels/recipe_list_viewmodel.dart
 
@@ -74,43 +12,19 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
-/// Comprehensive recipe list ViewModel providing advanced recipe management and filtering for Flutter applications.
-///
-/// Serves as the presentation layer coordinator for recipe list operations, providing intelligent search,
-/// multi-criteria filtering, dynamic sorting, and performance optimization while maintaining clean MVVM architecture
-/// separation between recipe list business logic and UI presentation concerns.
+/// Recipe list ViewModel for search, filtering, sorting, and caching (MVVM).
 class RecipeListViewModel extends ChangeNotifier {
   final UnifiedRecipeService _recipeService;
   final SearchService _searchService;
 
-  // ===== SEARCH AND SORTING STATE MANAGEMENT =====
-
-  /// Current search query for real-time recipe filtering and search functionality.
+  // State
   String _searchQuery = '';
-
-  /// Debounce timer for search input to prevent excessive filtering operations
   Timer? _searchDebounceTimer;
-
-  /// Active sorting criteria for recipe list organization and user preference management.
   SortCriteria _sortCriteria = SortCriteria.title;
-
-  /// Sorting direction for ascending/descending toggle functionality and user control.
   bool _sortAscending = true;
-
-  // ===== PAGINATION STATE =====
-
-  /// Number of recipes to show initially for performance optimization
   static const int _initialPageSize = 50;
-  
-  /// Current display limit for progressive loading
   int _displayLimit = _initialPageSize;
-  
-  /// Whether more recipes are available to load
   bool get canLoadMore => _displayLimit < (_cachedFilteredRecipes?.length ?? 0);
-
-  // ===== MULTI-CRITERIA FILTER STATE =====
-
-  /// Active time-based filters for cooking duration filtering with OR logic combination.
   final Set<String> _activeTimeFilters = {};
 
   /// Active meal type filters for category-based recipe filtering with Swedish localization.

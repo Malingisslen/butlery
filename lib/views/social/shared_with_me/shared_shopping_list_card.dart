@@ -8,7 +8,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart';
@@ -21,11 +21,11 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 class SharedShoppingListCard {
   static Widget build(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     SharedShoppingList sharedShoppingList,
   ) {
-    final isRead = viewModel.isShoppingListViewed(sharedShoppingList);
-    final isJoined = viewModel.isShoppingListJoined(sharedShoppingList);
+    final isRead = viewModel.shoppingViewModel.isShoppingListViewed(sharedShoppingList);
+    final isJoined = viewModel.shoppingViewModel.isShoppingListJoined(sharedShoppingList);
 
     return Material(
       elevation: isRead ? AppDimensions.elevationLow : AppDimensions.elevationMedium,
@@ -34,7 +34,7 @@ class SharedShoppingListCard {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         onTap: () {
           if (!isRead) {
-            viewModel.markShoppingListAsViewed(sharedShoppingList);
+            viewModel.shoppingViewModel.markAsViewed(sharedShoppingList);
           }
           _showShoppingListPreview(context, viewModel, sharedShoppingList);
         },
@@ -84,7 +84,7 @@ class SharedShoppingListCard {
 
   static Widget _buildHeader(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     SharedShoppingList sharedShoppingList,
     bool isRead,
   ) {
@@ -257,7 +257,7 @@ class SharedShoppingListCard {
 
   static Widget _buildActionButtons(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     SharedShoppingList sharedShoppingList,
     bool isRead,
     bool isJoined,
@@ -271,7 +271,7 @@ class SharedShoppingListCard {
             icon: Icons.visibility,
             onPressed: () {
               if (!isRead) {
-                viewModel.markShoppingListAsViewed(sharedShoppingList);
+                viewModel.shoppingViewModel.markAsViewed(sharedShoppingList);
               }
               _showShoppingListPreview(context, viewModel, sharedShoppingList);
             },
@@ -283,8 +283,8 @@ class SharedShoppingListCard {
             context,
             label: isJoined ? 'Medlem' : 'Gå med',
             icon: isJoined ? Icons.check : Icons.add_shopping_cart,
-            isLoading: viewModel.isJoining,
-            onPressed: isJoined || viewModel.isJoining
+            isLoading: viewModel.shoppingViewModel.isOperating,
+            onPressed: isJoined || viewModel.shoppingViewModel.isOperating
                 ? null
                 : () => SharedContentActions.joinShoppingList(
                       context,
@@ -300,7 +300,7 @@ class SharedShoppingListCard {
   // Helper method to show shopping list preview
   static void _showShoppingListPreview(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     SharedShoppingList sharedShoppingList,
   ) {
     showModalBottomSheet(
@@ -322,11 +322,11 @@ class SharedShoppingListCard {
 
   static Widget _buildPreviewContent(
     BuildContext context,
-    SharedContentViewModel viewModel,
+    SharedContentCoordinatorViewModel viewModel,
     SharedShoppingList sharedShoppingList,
     ScrollController scrollController,
   ) {
-    final isJoined = viewModel.isShoppingListJoined(sharedShoppingList);
+    final isJoined = viewModel.shoppingViewModel.isShoppingListJoined(sharedShoppingList);
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -415,8 +415,8 @@ class SharedShoppingListCard {
                     context,
                     label: isJoined ? 'Redan medlem' : 'Gå med i lista',
                     icon: isJoined ? Icons.check : Icons.add_shopping_cart,
-                    isLoading: viewModel.isJoining,
-                    onPressed: isJoined || viewModel.isJoining
+                    isLoading: viewModel.shoppingViewModel.isOperating,
+                    onPressed: isJoined || viewModel.shoppingViewModel.isOperating
                         ? null
                         : () {
                             SharedContentActions.joinShoppingList(

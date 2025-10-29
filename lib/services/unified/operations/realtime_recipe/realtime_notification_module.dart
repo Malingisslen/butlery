@@ -28,7 +28,6 @@ class RealtimeNotificationModule {
   RealtimeNotificationModule(this._parent)
       : _notificationService = _initializeNotificationService(_parent);
 
-  /// Initialize notification service
   static NotificationService? _initializeNotificationService(dynamic parent) {
     try {
       final currentUserId = parent.currentUserId;
@@ -46,9 +45,6 @@ class RealtimeNotificationModule {
     }
   }
 
-  // ===== COLLABORATION JOIN/LEAVE NOTIFICATIONS =====
-
-  /// Send notification when user joins collaborative editing session
   Future<void> sendCollaborationJoinedNotification(Recipe recipe) async {
     if (_notificationService == null || !recipe.isCollaborative) {
       AppLogger.debug(
@@ -93,7 +89,6 @@ class RealtimeNotificationModule {
     }
   }
 
-  /// Send notification when user leaves collaborative editing session
   Future<void> sendCollaborationLeftNotification(Recipe recipe) async {
     if (_notificationService == null || !recipe.isCollaborative) {
       AppLogger.debug(
@@ -137,9 +132,6 @@ class RealtimeNotificationModule {
     }
   }
 
-  // ===== REAL-TIME EDIT NOTIFICATIONS =====
-
-  /// Send notification about real-time edit to recipe
   Future<void> sendRealtimeEditNotification(
     Recipe recipe,
     Map<String, dynamic> changes,
@@ -192,7 +184,6 @@ class RealtimeNotificationModule {
     }
   }
 
-  /// Send batch notification for multiple edits
   Future<void> sendBatchEditNotification(
     Recipe recipe,
     List<Map<String, dynamic>> changeList,
@@ -246,9 +237,6 @@ class RealtimeNotificationModule {
     }
   }
 
-  // ===== COLLABORATION LIFECYCLE NOTIFICATIONS =====
-
-  /// Send notification when collaborative editing is enabled for a recipe
   Future<void> sendCollaborationEnabledNotification(
       Recipe recipe, List<String> memberIds) async {
     if (_notificationService == null) {
@@ -291,7 +279,6 @@ class RealtimeNotificationModule {
     }
   }
 
-  /// Send notification when collaborative editing is disabled for a recipe
   Future<void> sendCollaborationDisabledNotification(Recipe recipe) async {
     if (_notificationService == null || !recipe.isCollaborative) return;
 
@@ -333,9 +320,6 @@ class RealtimeNotificationModule {
     }
   }
 
-  // ===== CONFLICT RESOLUTION NOTIFICATIONS =====
-
-  /// Send notification when conflict occurs
   Future<void> sendConflictNotification(
     Recipe recipe,
     String conflictDescription,
@@ -373,7 +357,6 @@ class RealtimeNotificationModule {
     }
   }
 
-  /// Send notification when conflict is resolved
   Future<void> sendConflictResolvedNotification(
     Recipe recipe,
     String resolutionStrategy,
@@ -411,9 +394,6 @@ class RealtimeNotificationModule {
     }
   }
 
-  // ===== MEMBER MANAGEMENT NOTIFICATIONS =====
-
-  /// Send notification when members are added to collaboration
   Future<void> sendMembersAddedNotification(
     Recipe recipe,
     List<String> addedMemberIds,
@@ -474,7 +454,6 @@ class RealtimeNotificationModule {
     }
   }
 
-  /// Send notification when members are removed from collaboration
   Future<void> sendMembersRemovedNotification(
     Recipe recipe,
     List<String> removedMemberIds,
@@ -536,9 +515,6 @@ class RealtimeNotificationModule {
     }
   }
 
-  // ===== NOTIFICATION UTILITIES =====
-
-  /// Send custom realtime notification
   Future<void> sendCustomRealtimeNotification({
     required Recipe recipe,
     required String notificationType,
@@ -577,7 +553,6 @@ class RealtimeNotificationModule {
     }
   }
 
-  /// Get notification statistics
   Map<String, dynamic> getNotificationStatistics() {
     return {
       'hasNotificationService': _notificationService != null,
@@ -587,10 +562,8 @@ class RealtimeNotificationModule {
     };
   }
 
-  /// Check if notifications are available
   bool get isNotificationAvailable => _notificationService != null;
 
-  /// Get notification preferences (placeholder for future implementation)
   Map<String, bool> getNotificationPreferences() {
     return {
       'collaborationJoined': true,
@@ -606,7 +579,6 @@ class RealtimeNotificationModule {
     };
   }
 
-  /// Update notification preferences (placeholder for future implementation)
   Future<bool> updateNotificationPreferences(
       Map<String, bool> preferences) async {
     try {

@@ -1,71 +1,4 @@
-/// Comprehensive social recipe ViewModel providing advanced social interaction management for Flutter applications.
-///
-/// This module implements sophisticated social recipe functionality following Single Responsibility Principle,
-/// handling all aspects of social recipe interaction including comments system, ratings management, recipe sharing,
-/// and comprehensive social engagement coordination. It provides complete social recipe functionality
-/// while maintaining clean separation from UI rendering, data persistence, and business logic implementation.
-///
-/// **Single Responsibility Focus:**
-/// This module exclusively handles social recipe presentation layer concerns:
-/// - **Comment System Management**: Comprehensive comment operations including posting, replying, threading, and moderation
-/// - **Social Engagement Intelligence**: Advanced like/unlike functionality, rating management, and engagement tracking
-/// - **Recipe Sharing Coordination**: Social recipe sharing, friend targeting, and collaborative recipe management
-/// - **User Profile Integration**: Friend profile management, author identification, and social context coordination
-/// - **Real-time Social Updates**: Live comment updates, engagement notifications, and social activity synchronization
-///
-/// **What This Module Does NOT Handle:**
-/// - Direct social data persistence (handled by UnifiedRecipeService and social data repositories)
-/// - UI rendering and widget creation (handled by social recipe views and comment components)
-/// - Complex business logic implementation (handled by UnifiedRecipeService and social services)
-/// - Authentication and permission logic (handled by PermissionService and social security layers)
-///
-/// **Social Recipe ViewModel Features:**
-/// - **Threaded Comment System**: Complete comment hierarchy with replies, threading, and conversation management
-/// - **Social Engagement Tracking**: Like/unlike functionality, engagement metrics, and social interaction analytics
-/// - **Friend Integration**: Friend profile coordination, author identification, and social context management
-/// - **Real-time Updates**: Live comment streaming, engagement notifications, and activity synchronization
-/// - **Swedish Localization**: Complete Swedish language support for social interactions and user feedback
-///
-/// **Usage Examples:**
-/// ```dart
-/// // Initialize social recipe ViewModel with service dependencies
-/// final socialRecipeViewModel = SocialRecipeViewModel(
-///   recipeService: unifiedRecipeService,
-///   friendsService: unifiedFriendsService,
-/// );
-/// await socialRecipeViewModel.initialize();
-/// 
-/// // Comment system operations
-/// await socialRecipeViewModel.refreshComments('recipe_123');
-/// 
-/// // Post new comment
-/// socialRecipeViewModel.updateNewCommentText('Fantastiskt recept! Barnen älskade det.');
-/// await socialRecipeViewModel.postComment('recipe_123');
-/// 
-/// // Reply to existing comment
-/// socialRecipeViewModel.setReplyTo('comment_456');
-/// socialRecipeViewModel.updateNewCommentText('Håller med! Vilken krydda använde du?');
-/// await socialRecipeViewModel.postComment('recipe_123');
-/// 
-/// // Social engagement operations
-/// await socialRecipeViewModel.toggleCommentLike('comment_789');
-/// final hasLiked = socialRecipeViewModel.hasLikedComment('comment_789');
-/// 
-/// // Comment hierarchy and threading
-/// final topComments = socialRecipeViewModel.topLevelComments;
-/// final replies = socialRecipeViewModel.getReplies('parent_comment_id');
-/// 
-/// // User profile integration
-/// final authorName = socialRecipeViewModel.getAuthorDisplayName('user_id');
-/// final avatarUrl = socialRecipeViewModel.getAuthorAvatarUrl('user_id');
-/// 
-/// // State monitoring for UI updates
-/// if (socialRecipeViewModel.isLoadingComments) {
-///   // Show loading indicator
-/// } else if (socialRecipeViewModel.commentsError != null) {
-///   // Handle error: socialRecipeViewModel.commentsError
-/// }
-/// ```
+/// ViewModel managing social recipe interactions including comments, likes, and sharing.
 
 // lib/viewmodels/social_recipe_viewmodel.dart
 
@@ -73,519 +6,115 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/social/social_comment.dart';
-import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/core/utils/logger.dart';
-/// Comprehensive social recipe ViewModel providing advanced social interaction management through service coordination.
-///
-/// Serves as the main presentation layer coordinator for all social recipe operations, providing unified API
-/// for comment management, social engagement, recipe sharing, and user interaction while maintaining clean MVVM architecture
-/// separation between social recipe business logic and UI presentation concerns.
+import 'package:butlery/viewmodels/social_recipe/social_comments_manager.dart';
+import 'package:butlery/viewmodels/social_recipe/social_engagement_manager.dart';
+import 'package:butlery/viewmodels/social_recipe/social_profile_manager.dart';
+
 class SocialRecipeViewModel extends ChangeNotifier {
   final UnifiedFriendsService _friendsService;
   final UnifiedRecipeService _recipeService;
   final UserService _userService;
 
-  // ===== COMMENT SYSTEM STATE MANAGEMENT =====
-  
-  /// Comment loading operation state for UI progress indication during comment retrieval.
-  /// 
-  /// Indicates active comment loading for loading indicators and interaction control
-  /// during comment system operations and data refresh.
-  bool _isLoadingComments = false;
-  
-  /// Comment operation error message for user feedback and error recovery.
-  /// 
-  /// Provides comment-specific error messages for comprehensive error handling
-  /// and user guidance during comment operations.
-  String? _commentsError;
-  
-  /// Comment posting operation state for UI progress indication during comment submission.
-  /// 
-  /// Indicates active comment posting for loading indicators and interaction control
-  /// during comment creation and submission operations.
-  bool _isPostingComment = false;
-  
-  /// Reply mode state for comment threading and conversation management.
-  /// 
-  /// Indicates whether user is currently replying to a specific comment
-  /// for UI state management and comment threading coordination.
-  bool _isReplying = false;
-  
-  /// Current comment text for form management and input validation.
-  /// 
-  /// Stores user input for comment posting with real-time text management
-  /// and form state coordination.
-  String _newCommentText = '';
-  
-  /// Target comment ID for reply threading and conversation context.
-  /// 
-  /// Identifies parent comment for reply operations enabling threaded
-  /// conversations and comment hierarchy management.
-  String? _replyToCommentId;
+  late final SocialCommentsManager _commentsManager;
+  late final SocialEngagementManager _engagementManager;
+  late final SocialProfileManager _profileManager;
 
-  // ===== SOCIAL CONTENT STATE =====
-
-  /// Comments collection for display and interaction management.
-  ///
-  /// Stores complete comment hierarchy including replies and threading
-  /// for comprehensive comment system functionality.
-  List<SocialComment> _comments = [];
-
-  /// Friends collection for social context and author identification.
-  ///
-  /// Caches friend profiles for comment author display and social
-  /// interaction context throughout comment operations.
-  List<UserProfile> _friends = [];
-
-  /// Current user profile for comment authoring and social context.
-  ///
-  /// Provides current user information for comment attribution
-  /// and social interaction personalization.
-  UserProfile? _currentUser;
-
-  // ===== REAL-TIME STREAMING STATE =====
-
-  /// Active comment stream subscription for real-time updates.
-  ///
-  /// Manages Firestore stream connection for live comment updates,
-  /// ensuring proper cleanup and lifecycle management.
-  StreamSubscription<List<RecipeComment>>? _commentStreamSubscription;
-
-  /// Currently watched recipe ID for stream management.
-  ///
-  /// Tracks which recipe's comments are being streamed to prevent
-  /// duplicate subscriptions and enable proper cleanup.
-  String? _watchedRecipeId;
-
-  /// Initializes social recipe ViewModel with comprehensive service integration and social coordination.
-  ///
-  /// [recipeService] UnifiedRecipeService instance for recipe data operations and social integration
-  /// [friendsService] UnifiedFriendsService instance for friend management and social context
-  /// [userService] UserService instance for current user profile management
-  ///
-  /// Establishes service layer integration for comprehensive social recipe functionality,
-  /// enabling comment management, social engagement, and friend integration with reactive
-  /// state coordination for optimal social user experience.
-  ///
-  /// **Initialization Process:**
-  /// - Service dependency injection with social integration
-  /// - Social state preparation for comment and engagement systems
-  /// - Friend integration setup for social context management
-  /// - Comment system preparation for threaded conversations
   SocialRecipeViewModel({
     required UnifiedFriendsService friendsService,
     required UnifiedRecipeService recipeService,
     required UserService userService,
   }) : _friendsService = friendsService,
        _recipeService = recipeService,
-       _userService = userService;
+       _userService = userService {
+    _commentsManager = SocialCommentsManager(_recipeService);
+    _engagementManager = SocialEngagementManager(() => _commentsManager.comments);
+    _profileManager = SocialProfileManager(_friendsService, _userService);
 
-  // ===== COMMENT SYSTEM STATE ACCESSORS =====
+    _commentsManager.addListener(_onManagerChanged);
+    _engagementManager.addListener(_onManagerChanged);
+    _profileManager.addListener(_onManagerChanged);
+  }
 
-  /// Comment availability indicator for UI conditional display and feature enabling.
-  /// 
-  /// Indicates whether recipe has comments for UI conditional rendering
-  /// and comment-dependent feature activation.
-  bool get hasComments => _comments.isNotEmpty;
-  
-  /// Comment loading state for UI progress indication during comment operations.
-  /// 
-  /// Indicates active comment loading for loading indicators and user interaction
-  /// management during comment system operations.
-  bool get isLoadingComments => _isLoadingComments;
-  
-  /// Comment error message for user feedback and error state management.
-  /// 
-  /// Provides comment-specific error messages for comprehensive error handling
-  /// and user guidance during comment operations.
-  String? get commentsError => _commentsError;
-  
-  /// Comment posting state for UI progress indication during comment submission.
-  /// 
-  /// Indicates active comment posting for loading indicators and interaction
-  /// control during comment creation operations.
-  bool get isPostingComment => _isPostingComment;
-  
-  /// Reply mode state for comment threading and UI state management.
-  /// 
-  /// Indicates whether user is currently in reply mode for UI conditional
-  /// rendering and comment threading functionality.
-  bool get isReplying => _isReplying;
-  
-  /// Current comment text for form display and input management.
-  /// 
-  /// Provides access to current comment text for UI form synchronization
-  /// and comment posting functionality.
-  String get newCommentText => _newCommentText;
-  
-  /// Complete comments collection for display and interaction management.
-  /// 
-  /// Provides access to all comments including replies for comprehensive
-  /// comment system functionality and threading support.
-  List<SocialComment> get comments => _comments;
-  
-  /// Top-level comments for hierarchical display and threading organization.
-  /// 
-  /// Filters comments to show only parent comments for hierarchical comment
-  /// display and threaded conversation organization.
-  List<SocialComment> get topLevelComments => 
-      _comments.where((comment) => comment.parentCommentId == null).toList();
-  
-  /// Friends collection for social context and author identification.
-  /// 
-  /// Provides access to friend profiles for comment author display
-  /// and social interaction context management.
-  List<UserProfile> get friends => _friends;
-  
-  /// Current user profile for comment authoring and social personalization.
-  /// 
-  /// Provides current user information for comment attribution
-  /// and personalized social interaction functionality.
-  UserProfile? get currentUser => _currentUser;
+  void _onManagerChanged() {
+    notifyListeners();
+  }
 
-  // ===== COMMENT SYSTEM OPERATIONS =====
+  // State accessors - delegate to comment manager
+  bool get hasComments => _commentsManager.hasComments;
+  bool get isLoadingComments => _commentsManager.isLoadingComments;
+  String? get commentsError => _commentsManager.commentsError;
+  bool get isPostingComment => _commentsManager.isPostingComment;
+  bool get isReplying => _commentsManager.isReplying;
+  String get newCommentText => _commentsManager.newCommentText;
+  List<SocialComment> get comments => _commentsManager.comments;
+  List<SocialComment> get topLevelComments => _commentsManager.topLevelComments;
 
-  /// Refreshes comments with comprehensive loading state management and error handling.
-  ///
-  /// [recipeId] Recipe identifier for comment retrieval
-  ///
-  /// Performs comment system refresh with loading state coordination, comprehensive error handling,
-  /// and UI notification for optimal user experience. Includes Swedish localized error messages
-  /// and detailed logging for comment system operations.
-  ///
-  /// **Refresh Process:**
-  /// - Loading state activation with UI notification
-  /// - Comment data retrieval through service coordination
-  /// - Error handling with Swedish localized feedback
-  /// - State cleanup and UI synchronization
-  ///
-  /// **Usage Example:**
-  /// ```dart
-  /// await socialRecipeViewModel.refreshComments('recipe_123');
-  /// if (socialRecipeViewModel.commentsError == null) {
-  ///   // Comments loaded successfully
-  /// }
-  /// ```
+  // Profile accessors - delegate to profile manager
+  List<UserProfile> get friends => _profileManager.friends;
+  UserProfile? get currentUser => _profileManager.currentUser;
+
+  // Comment operations - delegate to comment manager
   Future<void> refreshComments(String recipeId) async {
-    _isLoadingComments = true;
-    _commentsError = null;
-    notifyListeners();
-
-    try {
-      // Load comments from service with comprehensive error handling
-      final recipeComments = await _recipeService.social.getComments(recipeId: recipeId);
-      _comments = recipeComments.map((comment) => _convertRecipeCommentToSocialComment(comment)).toList();
-      AppLogger.info('Comments refreshed successfully for recipe: $recipeId');
-    } catch (e) {
-      _commentsError = 'Kunde inte ladda kommentarer: $e';
-      AppLogger.error('Failed to refresh comments for recipe $recipeId: $e');
-    } finally {
-      _isLoadingComments = false;
-      notifyListeners();
-    }
+    await _commentsManager.refreshComments(recipeId);
   }
 
-  /// Starts watching comments with real-time updates from Firestore.
-  ///
-  /// [recipeId] Recipe identifier for comment streaming
-  ///
-  /// Subscribes to real-time comment stream for live updates when other users post comments.
-  /// Automatically converts RecipeComment to SocialComment and updates UI.
-  /// Prevents duplicate subscriptions and manages stream lifecycle.
-  ///
-  /// **Usage Example:**
-  /// ```dart
-  /// socialRecipeViewModel.startWatchingComments('recipe_123');
-  /// // Comments will auto-update when others post
-  /// ```
   void startWatchingComments(String recipeId) {
-    // Prevent duplicate subscriptions
-    if (_watchedRecipeId == recipeId && _commentStreamSubscription != null) {
-      AppLogger.debug('Already watching comments for recipe: $recipeId');
-      return;
-    }
-
-    // Stop any existing subscription
-    stopWatchingComments();
-
-    _isLoadingComments = true;
-    _commentsError = null;
-    _watchedRecipeId = recipeId;
-    notifyListeners();
-
-    try {
-      AppLogger.info('Starting real-time comment stream for recipe: $recipeId');
-
-      // Subscribe to comment stream from service
-      _commentStreamSubscription = _recipeService.social
-          .getCommentsStream(recipeId)
-          .listen(
-        (recipeComments) {
-          // Convert to SocialComment and update state
-          _comments = recipeComments
-              .map((comment) => _convertRecipeCommentToSocialComment(comment))
-              .toList();
-          _isLoadingComments = false;
-          _commentsError = null;
-          notifyListeners();
-          AppLogger.debug(
-              'Real-time comment update received: ${_comments.length} comments');
-        },
-        onError: (error) {
-          _commentsError = 'Kunde inte lyssna på kommentarer: $error';
-          _isLoadingComments = false;
-          notifyListeners();
-          AppLogger.error('Comment stream error for recipe $recipeId: $error');
-        },
-      );
-    } catch (e) {
-      _commentsError = 'Kunde inte starta kommentarströmning: $e';
-      _isLoadingComments = false;
-      notifyListeners();
-      AppLogger.error('Failed to start comment stream for recipe $recipeId: $e');
-    }
+    _commentsManager.startWatchingComments(recipeId);
   }
 
-  /// Stops watching comments and cleans up stream subscription.
-  ///
-  /// Cancels active comment stream subscription and resets stream state.
-  /// Safe to call even if no stream is active.
-  ///
-  /// **Usage Example:**
-  /// ```dart
-  /// socialRecipeViewModel.stopWatchingComments();
-  /// // Stream subscription cleaned up
-  /// ```
   void stopWatchingComments() {
-    if (_commentStreamSubscription != null) {
-      AppLogger.info('Stopping comment stream for recipe: $_watchedRecipeId');
-      _commentStreamSubscription?.cancel();
-      _commentStreamSubscription = null;
-      _watchedRecipeId = null;
-    }
+    _commentsManager.stopWatchingComments();
   }
 
-  /// Updates comment text with real-time form synchronization and state management.
-  /// 
-  /// [text] Comment text for form input and posting preparation
-  /// 
-  /// Performs comment text update with immediate UI notification for responsive
-  /// form input and real-time comment composition with state synchronization.
-  /// 
-  /// **Usage Example:**
-  /// ```dart
-  /// socialRecipeViewModel.updateNewCommentText('Fantastiskt recept!');
-  /// // Text immediately available for posting
-  /// ```
   void updateNewCommentText(String text) {
-    _newCommentText = text;
-    notifyListeners();
+    _commentsManager.updateNewCommentText(text);
   }
 
-  /// Posts comment with comprehensive validation, threading support, and state management.
-  /// 
-  /// [recipeId] Recipe identifier for comment association
-  /// 
-  /// Performs comment posting with text validation, reply threading support, and comprehensive
-  /// state management. Includes automatic form cleanup, reply mode reset, and detailed
-  /// logging for complete comment posting functionality.
-  /// 
-  /// **Posting Process:**
-  /// - Comment text validation with empty text prevention
-  /// - Comment creation with threading and reply support
-  /// - Local state updates with immediate UI feedback
-  /// - Form cleanup and reply mode reset
-  /// 
-  /// **Usage Example:**
-  /// ```dart
-  /// socialRecipeViewModel.updateNewCommentText('Excellent recipe!');
-  /// await socialRecipeViewModel.postComment('recipe_123');
-  /// // Comment posted and form automatically reset
-  /// ```
   Future<void> postComment(String recipeId) async {
-    if (_newCommentText.trim().isEmpty) return;
-
-    _isPostingComment = true;
-    notifyListeners();
-
-    try {
-      // Post comment to backend service
-      final commentId = await _recipeService.social.addComment(
-        recipeId: recipeId,
-        content: _newCommentText.trim(),
-        parentCommentId: _replyToCommentId,
-      );
-      
-      if (commentId != null) {
-        // Clean up form state and reply mode
-        _newCommentText = '';
-        _replyToCommentId = null;
-        _isReplying = false;
-
-        // Refresh comments to get the updated list from server
-        await refreshComments(recipeId);
-
-        AppLogger.info('Comment posted successfully for recipe: $recipeId');
-      } else {
-        throw Exception('Failed to post comment - service returned null');
-      }
-    } catch (e) {
-      _commentsError = 'Kunde inte posta kommentar: $e';
-      AppLogger.error('Failed to post comment for recipe $recipeId: $e');
-    } finally {
-      _isPostingComment = false;
-      notifyListeners();
-    }
+    await _commentsManager.postComment(recipeId);
   }
 
-  /// Sets reply target with threading context and UI state management.
-  /// 
-  /// [commentId] Target comment identifier for reply threading
-  /// 
-  /// Activates reply mode for specific comment with threading context setup
-  /// and UI state coordination for comment reply functionality.
-  /// 
-  /// **Usage Example:**
-  /// ```dart
-  /// socialRecipeViewModel.setReplyTo('comment_456');
-  /// // Reply mode activated, ready for threaded response
-  /// ```
   void setReplyTo(String commentId) {
-    _replyToCommentId = commentId;
-    _isReplying = true;
-    notifyListeners();
+    _commentsManager.setReplyTo(commentId);
   }
 
-  /// Cancels reply mode with comprehensive state cleanup and UI coordination.
-  /// 
-  /// Deactivates reply mode with complete state reset and UI notification
-  /// for clean comment form state management.
-  /// 
-  /// **Usage Example:**
-  /// ```dart
-  /// socialRecipeViewModel.cancelReply();
-  /// // Reply mode deactivated, back to top-level comment mode
-  /// ```
   void cancelReply() {
-    _replyToCommentId = null;
-    _isReplying = false;
-    notifyListeners();
+    _commentsManager.cancelReply();
   }
 
-  // ===== SOCIAL ENGAGEMENT OPERATIONS =====
-
-  /// Toggles comment like with optimistic updates and engagement tracking.
-  /// 
-  /// [commentId] Comment identifier for like/unlike operation
-  /// 
-  /// Performs like/unlike toggle with optimistic UI updates, engagement tracking,
-  /// and comprehensive error handling. Includes immediate UI feedback and detailed
-  /// logging for social engagement functionality.
-  /// 
-  /// **Like Toggle Process:**
-  /// - Comment identification and validation
-  /// - Optimistic like state toggle with immediate UI feedback
-  /// - Like count adjustment for accurate engagement display
-  /// - Comprehensive logging for engagement tracking
-  /// 
-  /// **Usage Example:**
-  /// ```dart
-  /// await socialRecipeViewModel.toggleCommentLike('comment_789');
-  /// final isLiked = socialRecipeViewModel.hasLikedComment('comment_789');
-  /// ```
-  Future<void> toggleCommentLike(String commentId) async {
-    try {
-      // Find target comment and perform optimistic update
-      final comment = _comments.firstWhere((c) => c.id == commentId);
-      comment.isLiked = !comment.isLiked;
-      comment.likeCount += comment.isLiked ? 1 : -1;
-      notifyListeners();
-      
-      AppLogger.info('Successfully toggled like for comment: $commentId (liked: ${comment.isLiked})');
-    } catch (e) {
-      AppLogger.error('Failed to toggle comment like for $commentId: $e');
-    }
-  }
-
-  /// Checks comment like status for UI state management and engagement display.
-  /// 
-  /// [commentId] Comment identifier for like status checking
-  /// 
-  /// Returns true if current user has liked the comment, false otherwise.
-  /// Provides like status information for UI like button state and engagement
-  /// display with comprehensive error handling.
-  /// 
-  /// **Usage Example:**
-  /// ```dart
-  /// final isLiked = socialRecipeViewModel.hasLikedComment('comment_789');
-  /// // Use for like button UI state
-  /// ```
-  bool hasLikedComment(String commentId) {
-    try {
-      final comment = _comments.firstWhere((c) => c.id == commentId);
-      return comment.isLiked;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  // Reply operations
   List<SocialComment> getReplies(String parentCommentId) {
-    return _comments.where((comment) => 
-        comment.parentCommentId == parentCommentId).toList();
+    return _commentsManager.getReplies(parentCommentId);
   }
 
-  // User operations
+  // Engagement operations - delegate to engagement manager
+  Future<void> toggleCommentLike(String commentId) async {
+    await _engagementManager.toggleCommentLike(commentId);
+  }
+
+  bool hasLikedComment(String commentId) {
+    return _engagementManager.hasLikedComment(commentId);
+  }
+
+  // Profile operations - delegate to profile manager
   String getAuthorDisplayName(String authorId) {
-    if (authorId == _currentUser?.uid) {
-      return _currentUser?.displayName ?? 'Du';
-    }
-    
-    try {
-      final friend = _friends.firstWhere((f) => f.uid == authorId);
-      return friend.displayName;
-    } catch (e) {
-      return 'Okänd användare';
-    }
+    return _profileManager.getAuthorDisplayName(authorId);
   }
 
   String? getAuthorAvatarUrl(String authorId) {
-    if (authorId == _currentUser?.uid) {
-      return _currentUser?.avatarUrl;
-    }
-    
-    try {
-      final friend = _friends.firstWhere((f) => f.uid == authorId);
-      return friend.avatarUrl;
-    } catch (e) {
-      return null;
-    }
+    return _profileManager.getAuthorAvatarUrl(authorId);
   }
 
-  // Initialization
   Future<void> initialize() async {
-    try {
-      // Load current user from UserService
-      _currentUser = _userService.currentUserProfile;
-
-      // Load friends from FriendsService
-      _friends = _friendsService.friends;
-
-      AppLogger.info('SocialRecipeViewModel initialized - User: ${_currentUser?.displayName ?? "Not logged in"}, Friends: ${_friends.length}');
-      notifyListeners();
-    } catch (e) {
-      AppLogger.error('Failed to initialize SocialRecipeViewModel: $e');
-    }
+    await _profileManager.initialize();
   }
 
-  // ===== COLLABORATIVE RECIPE OPERATIONS =====
-
-  /// Creates collaborative recipe (placeholder implementation)
+  // Collaborative recipe operations (placeholder implementations)
   Future<bool> createCollaborativeRecipe({
     required String name,
     required List<String> memberIds,
@@ -605,12 +134,10 @@ class SocialRecipeViewModel extends ChangeNotifier {
     bool allowMemberInvites = true,
     List<String>? categoryIds,
   }) async {
-    // Placeholder implementation
     AppLogger.info('Creating collaborative recipe: $name');
     return false;
   }
 
-  /// Shares recipe (placeholder implementation)
   Future<String?> shareRecipe({
     required String recipeId,
     required List<String> memberIds,
@@ -620,77 +147,57 @@ class SocialRecipeViewModel extends ChangeNotifier {
     bool allowMemberInvites = true,
     List<String>? categoryIds,
   }) async {
-    // Placeholder implementation
     AppLogger.info('Sharing recipe: $recipeId');
     return null;
   }
 
-  /// Makes recipe personal (placeholder implementation)
   Future<String?> makeRecipePersonal(String collaborativeRecipeId) async {
-    // Placeholder implementation
     AppLogger.info('Making recipe personal: $collaborativeRecipeId');
     return null;
   }
 
-  // ===== MEMBER MANAGEMENT =====
-
-  /// Adds member to recipe (placeholder implementation)
+  // Member management operations (placeholder implementations)
   Future<bool> addMemberToRecipe(String recipeId, String userId, String userDisplayName, {required permission}) async {
     AppLogger.info('Adding member to recipe: $recipeId');
     return false;
   }
 
-  /// Removes member from recipe (placeholder implementation)
   Future<bool> removeMemberFromRecipe(String recipeId, String userId) async {
     AppLogger.info('Removing member from recipe: $recipeId');
     return false;
   }
 
-  /// Updates member permission (placeholder implementation)
   Future<bool> updateMemberPermission(String recipeId, String userId, permission) async {
     AppLogger.info('Updating member permission for recipe: $recipeId');
     return false;
   }
 
-  /// Gets recipe members (placeholder implementation)
   Map<String, ResourcePermission> getRecipeMembers(String recipeId) {
     return {};
   }
 
-  /// Checks if can invite members (placeholder implementation)
   bool canInviteMembers(String recipeId) {
     return false;
   }
 
-  /// Gets recipes shared with me (placeholder implementation)
   List<Recipe> getSharedWithMe() {
     return [];
   }
 
-  /// Gets recipes shared by me (placeholder implementation)
   List<Recipe> getSharedByMe() {
     return [];
   }
 
-  /// Convert RecipeComment to SocialComment for ViewModel compatibility
-  SocialComment _convertRecipeCommentToSocialComment(RecipeComment recipeComment) {
-    return SocialComment(
-      id: recipeComment.id,
-      recipeId: recipeComment.recipeId,
-      authorId: recipeComment.authorId,
-      text: recipeComment.text,
-      createdAt: recipeComment.createdAt,
-      parentCommentId: recipeComment.parentCommentId,
-    );
-  }
-
-  /// Service name for debugging
   String get serviceName => 'SocialRecipeViewModel';
 
   @override
   void dispose() {
-    // Cancel comment stream subscription
-    stopWatchingComments();
+    _commentsManager.removeListener(_onManagerChanged);
+    _engagementManager.removeListener(_onManagerChanged);
+    _profileManager.removeListener(_onManagerChanged);
+    _commentsManager.dispose();
+    _engagementManager.dispose();
+    _profileManager.dispose();
     AppLogger.info('SocialRecipeViewModel disposed');
     super.dispose();
   }

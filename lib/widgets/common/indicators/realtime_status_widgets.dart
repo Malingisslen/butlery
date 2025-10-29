@@ -1,0 +1,117 @@
+// lib/widgets/common/indicators/realtime_status_widgets.dart
+
+import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+
+/// Realtime status widget showing connection status
+class RealtimeStatusWidget extends StatelessWidget {
+  final bool isOnline;
+  final String statusDescription;
+  final String statusEmoji;
+  final bool showText;
+  final EdgeInsets? padding;
+
+  const RealtimeStatusWidget({
+    super.key,
+    required this.isOnline,
+    required this.statusDescription,
+    required this.statusEmoji,
+    this.showText = false,
+    this.padding,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: statusDescription,
+      child: Container(
+        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingS),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: Text(
+                statusEmoji,
+                key: ValueKey(statusEmoji),
+                style: TextStyle(fontSize: AppTextStyles.bodyLarge.fontSize),
+              ),
+            ),
+            if (showText) ...[
+              const SizedBox(width: AppDimensions.spacingXs),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Text(
+                  statusDescription,
+                  key: ValueKey(statusDescription),
+                  style: TextStyle(
+                    fontSize: AppTextStyles.bodySmall.fontSize,
+                    color: isOnline
+                        ? Theme.of(context).colorScheme.onSurface
+                        : AppColors.error,
+                    fontWeight: isOnline ? FontWeight.normal : FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Realtime status banner for offline state
+class RealtimeStatusBanner extends StatelessWidget {
+  final bool isOnline;
+  final String statusDescription;
+  final String statusEmoji;
+  final VoidCallback? onRetry;
+
+  const RealtimeStatusBanner({
+    super.key,
+    required this.isOnline,
+    required this.statusDescription,
+    required this.statusEmoji,
+    this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isOnline) return const SizedBox.shrink();
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.spacing12),
+      color: AppColors.error.withValues(alpha: 0.1),
+      child: Row(
+        children: [
+          Text(statusEmoji, style: TextStyle(fontSize: AppDimensions.iconSizeM.toDouble())),
+          const SizedBox(width: AppDimensions.spacing12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Offline',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.error,
+                  ),
+                ),
+                Text(statusDescription, style: TextStyle(fontSize: AppTextStyles.bodyLarge.fontSize)),
+              ],
+            ),
+          ),
+          if (onRetry != null)
+            TextButton(
+              onPressed: onRetry,
+              child: const Text('Försök igen'),
+            ),
+        ],
+      ),
+    );
+  }
+}

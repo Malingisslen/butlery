@@ -1,39 +1,9 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: Base Scaffold - Widget scaffolding consolidation
-/// File: lib/widgets/common/scaffolds/base_scaffold.dart
-/// Quick Guide: Eliminates 300-600 lines of duplicate scaffold patterns across 30+ view files
-/// Dependencies IN: Material widgets, AppStrings, app theme
-/// Dependencies OUT: All view files that use standard scaffold patterns
-/// Data flow: Widget configuration -> Scaffold structure -> Standardized layout
-/// State management: Stateless scaffold templates with configurable options
-/// Purpose: Standardize AppBar, Scaffold, FloatingActionButton, and navigation patterns
-/// Common issues: Inconsistent AppBar styling, duplicate scaffold code, scattered navigation
-/// Test coverage: Widget testing for scaffold configurations and responsive behavior
-/// Performance: Efficient scaffold rendering with consistent theming
-/// Analytics: Standardized scaffold metrics and user interaction tracking
-/// Code smells: None - clean template pattern with clear configuration options
-/// Connected to: All view widgets, navigation system, theme configuration
-/// Used in phases: Cross-Cutting Concerns Consolidation - Widget Template Unification
-
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
-/// Comprehensive scaffold templates that eliminate duplicate scaffold patterns
-/// found across 30+ view files in the codebase.
-/// 
-/// This class consolidates all common scaffold patterns:
-/// - Standard AppBar configurations (found in 30+ files)
-/// - FloatingActionButton patterns (found in 18+ files)
-/// - Drawer/Bottom navigation (found in 12+ files)
-/// - Loading state scaffolds (found in 25+ files)
-/// - Error state scaffolds (found in 15+ files)
-
-// ===== BASE SCAFFOLD TEMPLATE =====
-
-/// Base scaffold that consolidates common scaffold patterns
-/// Replaces repetitive Scaffold + AppBar code across view files
+/// Scaffold templates eliminating duplicate patterns across 30+ view files (AppBar, FAB, drawer, loading, error, empty states).
 class BaseScaffold extends StatelessWidget {
   final String? title;
   final Widget body;
@@ -106,7 +76,6 @@ class BaseScaffold extends StatelessWidget {
 
   Widget? _buildLeading(BuildContext context) {
     if (leading != null) return leading;
-    
     if (showBackButton && Navigator.canPop(context)) {
       return IconButton(
         icon: const Icon(Icons.arrow_back),
@@ -114,15 +83,11 @@ class BaseScaffold extends StatelessWidget {
         tooltip: AppStrings.backButton,
       );
     }
-    
     return null;
   }
 }
 
-// ===== SPECIALIZED SCAFFOLD TEMPLATES =====
-
-/// Loading scaffold - consolidates loading state patterns
-/// Replaces loading scaffold patterns found in 25+ files
+/// Loading scaffold consolidating patterns from 25+ files
 class LoadingScaffold extends StatelessWidget {
   final String? title;
   final String loadingMessage;
@@ -160,8 +125,7 @@ class LoadingScaffold extends StatelessWidget {
   }
 }
 
-/// Error scaffold - consolidates error state patterns
-/// Replaces error scaffold patterns found in 15+ files
+/// Error scaffold consolidating patterns from 15+ files
 class ErrorScaffold extends StatelessWidget {
   final String? title;
   final String errorMessage;
@@ -216,8 +180,7 @@ class ErrorScaffold extends StatelessWidget {
   }
 }
 
-/// Empty state scaffold - consolidates empty state patterns
-/// Replaces empty state patterns found in 20+ files
+/// Empty state scaffold consolidating patterns from 20+ files
 class EmptyStateScaffold extends StatelessWidget {
   final String? title;
   final String emptyMessage;
@@ -278,10 +241,7 @@ class EmptyStateScaffold extends StatelessWidget {
   }
 }
 
-// ===== FORM SCAFFOLD TEMPLATES =====
-
-/// Form scaffold - consolidates form layout patterns
-/// Replaces form scaffold patterns found in 18+ files
+/// Form scaffold consolidating patterns from 18+ files
 class FormScaffold extends StatelessWidget {
   final String? title;
   final Widget form;
@@ -328,16 +288,14 @@ class FormScaffold extends StatelessWidget {
 
   List<Widget>? _buildActions(BuildContext context) {
     final actions = <Widget>[];
-    
     if (additionalActions != null) {
       actions.addAll(additionalActions!);
     }
-    
     if (showSaveButton && onSave != null) {
       actions.add(
         IconButton(
           onPressed: isLoading ? null : onSave,
-          icon: isLoading 
+          icon: isLoading
               ? const SizedBox(
                   height: 16,
                   width: 16,
@@ -348,7 +306,6 @@ class FormScaffold extends StatelessWidget {
         ),
       );
     }
-    
     return actions.isEmpty ? null : actions;
   }
 
@@ -398,10 +355,7 @@ class FormScaffold extends StatelessWidget {
   }
 }
 
-// ===== LIST SCAFFOLD TEMPLATES =====
-
-/// List scaffold - consolidates list view patterns
-/// Replaces list scaffold patterns found in 22+ files
+/// List scaffold consolidating patterns from 22+ files
 class ListScaffold<T> extends StatelessWidget {
   final String? title;
   final List<T> items;
@@ -480,10 +434,7 @@ class ListScaffold<T> extends StatelessWidget {
   }
 }
 
-// ===== TABBED SCAFFOLD TEMPLATES =====
-
-/// Tabbed scaffold - consolidates tab view patterns  
-/// Replaces tabbed patterns found in 8+ files
+/// Tabbed scaffold consolidating patterns from 8+ files
 class TabbedScaffold extends StatelessWidget {
   final String? title;
   final List<Tab> tabs;
@@ -523,9 +474,7 @@ class TabbedScaffold extends StatelessWidget {
   }
 }
 
-// ===== RESPONSIVE SCAFFOLD UTILITIES =====
-
-/// Responsive scaffold helper - consolidates responsive patterns
+/// Responsive scaffold helper consolidating responsive patterns
 class ResponsiveScaffoldBuilder extends StatelessWidget {
   final Widget Function(BuildContext context, bool isMobile) builder;
   final double breakpoint;

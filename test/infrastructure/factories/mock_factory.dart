@@ -525,8 +525,8 @@ class MockFactory {
     return mock;
   }
   
-  /// Create mock shared content viewmodel
-  static production.MockSharedContentViewModel createSharedContentViewModel({
+  /// Create mock shared content coordinator viewmodel
+  static production.MockSharedContentCoordinatorViewModel createSharedContentCoordinatorViewModel({
     bool isLoading = false,
     String? error,
     List? sharedContent,
@@ -535,11 +535,11 @@ class MockFactory {
     bool hasSharedContent = true,
     bool hasFilteredContent = true,
   }) {
-    final mock = production.MockSharedContentViewModel();
-    
+    final mock = production.MockSharedContentCoordinatorViewModel();
+
     // Use non-empty content if hasSharedContent is true
     final contentList = hasSharedContent ? (sharedContent ?? ['test-content']) : <dynamic>[];
-    
+
     mock.setSharedContentState(
       isLoading: isLoading,
       error: error,

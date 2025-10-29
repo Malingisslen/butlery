@@ -1,20 +1,3 @@
-/// 🔍 AI INFO BLOCK:
-/// Component: Friends Management Operations - Feature interface for friend management
-/// File: lib/services/unified/operations/friends_management_operations.dart
-/// Quick Guide: Handles all friend-related operations including invitations and relationships
-/// Dependencies IN: UnifiedFriendsService, FriendRequest model, User model
-/// Dependencies OUT: Used by ViewModels for friend operations
-/// Data flow: ViewModels -> FriendsManagementOperations -> UnifiedFriendsService -> Firebase
-/// State management: Real-time updates for friend requests and relationships
-/// Purpose: Separate friend management concerns from unified service
-/// Common issues: Friend request validation, duplicate prevention, permission checks
-/// Test coverage: Unit tests for friend operations and request handling
-/// Performance: Real-time updates with optimistic UI updates
-/// Analytics: Friend activity, invitation success rates
-/// Code smells: None - follows single responsibility principle
-/// Connected to: UnifiedFriendsService, Social ViewModels, User management
-/// Used in phases: Phase 5 - Service Consolidation
-
 // ignore: unused_import
 import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent fields
 import 'package:butlery/models/friend_request.dart';
@@ -30,56 +13,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/notifications/notification_service.dart' as notif;
 import 'package:butlery/services/notifications/notification_types.dart';
 
-/// Comprehensive friends management operations providing complete social relationship lifecycle management and discovery features.
-///
-/// This operations class implements sophisticated friend management functionality following Single Responsibility Principle,
-/// handling all aspects of social relationship management including friend requests, relationship lifecycle, blocking,
-/// and discovery features. It provides comprehensive friend management capabilities while maintaining clean separation
-/// from friend categorization and invitation system concerns.
-///
-/// **Single Responsibility Focus:**
-/// This class exclusively handles friends management operations:
-/// - **Friend Request Management**: Complete friend request lifecycle with sending, accepting, rejecting, and cancellation
-/// - **Relationship Management**: Friend relationship lifecycle including addition, removal, and status management
-/// - **User Discovery**: Advanced user search and discovery with mutual friend detection and social graph analysis
-/// - **Security Features**: User blocking and unblocking with comprehensive security and privacy controls
-///
-/// **What This Class Does NOT Handle:**
-/// - Friend categorization and organization (handled by FriendsCategoriesOperations)
-/// - Group invitations and group management (handled by FriendsInvitationsOperations)
-/// - UI concerns and presentation logic (handled by ViewModels and UI components)
-/// - Authentication and user management (handled by parent services)
-///
-/// **Friends Management Features:**
-/// - **Advanced Request System**: Comprehensive friend request management with validation, duplicate prevention, and status tracking
-/// - **Social Discovery**: Intelligent user search with friend recommendations and mutual friend analysis
-/// - **Relationship Analytics**: Detailed friend statistics and social graph insights with engagement tracking
-/// - **Security Management**: Robust blocking system with privacy controls and relationship cleanup
-/// - **Notification Integration**: Complete notification system for friend activities and relationship changes
-///
-/// **Usage Examples:**
-/// ```dart
-/// final friendsManagement = FriendsManagementOperations(parentService);
-/// 
-/// // Friend request management
-/// await friendsManagement.sendFriendRequest(
-///   userId,
-///   message: 'Hej! Vi träffades på matlagningskursen.',
-/// );
-/// await friendsManagement.acceptFriendRequest(requestId);
-/// 
-/// // User discovery and search
-/// final searchResults = await friendsManagement.searchUsers('Anna');
-/// final mutualFriends = await friendsManagement.getMutualFriends(userId);
-/// 
-/// // Relationship management
-/// await friendsManagement.removeFriend(friendId);
-/// await friendsManagement.blockUser(problematicUserId);
-/// 
-/// // Analytics and insights
-/// final stats = friendsManagement.getFriendStats();
-/// final isBlocked = friendsManagement.isBlocked(userId);
-/// ```
+/// Friends management operations handling request lifecycle, relationship management, user discovery, blocking, and notification integration.
 class FriendsManagementOperations extends BaseService {
   @override
   String get serviceName => 'FriendsManagementOperations';
@@ -108,9 +42,6 @@ class FriendsManagementOperations extends BaseService {
     );
   }
 
-  // ===== FRIEND REQUEST MANAGEMENT =====
-
-  /// Send a friend request to another user
   Future<bool> sendFriendRequest(String recipientId, {String? message}) async {
     // Validate input
     if (ValidationUtils.isNullOrEmpty(recipientId)) {
@@ -173,7 +104,6 @@ class FriendsManagementOperations extends BaseService {
     ) == true;
   }
 
-  /// Accept an incoming friend request
   Future<bool> acceptFriendRequest(String requestId) async {
     if (ValidationUtils.isNullOrEmpty(requestId)) {
       return false;
@@ -234,7 +164,6 @@ class FriendsManagementOperations extends BaseService {
     ) == true;
   }
 
-  /// Reject an incoming friend request
   Future<bool> rejectFriendRequest(String requestId) async {
     try {
       final request = _parent.incomingRequests
@@ -266,7 +195,6 @@ class FriendsManagementOperations extends BaseService {
     }
   }
 
-  /// Cancel an outgoing friend request
   Future<bool> cancelFriendRequest(String requestId) async {
     try {
       final request = _parent.outgoingRequests
@@ -298,9 +226,6 @@ class FriendsManagementOperations extends BaseService {
     }
   }
 
-  // ===== FRIEND RELATIONSHIP MANAGEMENT =====
-
-  /// Remove a friend
   Future<bool> removeFriend(String friendId) async {
     try {
       final friend = _parent.friends
@@ -329,7 +254,6 @@ class FriendsManagementOperations extends BaseService {
     }
   }
 
-  /// Block a user
   Future<bool> blockUser(String userId) async {
     try {
       // Remove from friends if they are friends
@@ -355,7 +279,6 @@ class FriendsManagementOperations extends BaseService {
     }
   }
 
-  /// Unblock a user
   Future<bool> unblockUser(String userId) async {
     try {
       // Remove from blocked users
@@ -372,44 +295,35 @@ class FriendsManagementOperations extends BaseService {
     }
   }
 
-  // ===== FRIEND QUERIES =====
-
-  /// Get all friends
   List<model.UserProfile> getAllFriends() {
     return List.unmodifiable(_parent.friends);
   }
 
-  /// Get friend by ID
   model.UserProfile? getFriendById(String friendId) {
     return _parent.friends.where((f) => f.uid == friendId).firstOrNull;
   }
 
-  /// Check if user is a friend
   bool isFriend(String userId) {
     return _parent.friends.any((f) => f.uid == userId);
   }
 
-  /// Get online friends
   List<model.UserProfile> getOnlineFriends() {
     // model.UserProfile doesn't have isOnline property, so return all friends for now
     return _parent.friends.toList();
   }
 
-  /// Get friends by category
   List<model.UserProfile> getFriendsByCategory(String category) {
     // This would need to be implemented with category relationships
     return _parent.friends.toList();
   }
 
-  /// Search friends by name
   List<model.UserProfile> searchFriends(String query) {
     final searchTerm = query.toLowerCase();
     return _parent.friends
         .where((f) => f.displayName.toLowerCase().contains(searchTerm))
         .toList();
   }
-  
-  /// Search users (both current friends and new users to add)
+
   Future<List<model.UserProfile>> searchUsers(String query) async {
     try {
       AppLogger.info('Searching users with query: $query');
@@ -439,46 +353,36 @@ class FriendsManagementOperations extends BaseService {
     }
   }
 
-  /// Get incoming friend requests
   List<FriendRequest> getIncomingRequests() {
     return List.unmodifiable(_parent.incomingRequests);
   }
 
-  /// Get outgoing friend requests
   List<FriendRequest> getOutgoingRequests() {
     return List.unmodifiable(_parent.outgoingRequests);
   }
 
-  /// Check if there's an outgoing request to user
   bool hasOutgoingRequest(String userId) {
-    return _parent.outgoingRequests.any((r) => 
+    return _parent.outgoingRequests.any((r) =>
         r.toUserId == userId && r.status == FriendRequestStatus.pending);
   }
 
-  /// Check if there's an incoming request from user
   bool hasIncomingRequest(String userId) {
-    return _parent.incomingRequests.any((r) => 
+    return _parent.incomingRequests.any((r) =>
         r.fromUserId == userId && r.status == FriendRequestStatus.pending);
   }
 
-  /// Get friend request count
   int getIncomingRequestCount() {
     return _parent.incomingRequests.length;
   }
 
-  /// Check if user is blocked
   bool isBlocked(String userId) {
     return _parent.blockedUsers.contains(userId);
   }
 
-  /// Get blocked users
   List<String> getBlockedUsers() {
     return List.unmodifiable(_parent.blockedUsers);
   }
 
-  // ===== FRIEND STATISTICS =====
-
-  /// Get friend statistics
   Map<String, dynamic> getFriendStats() {
     final totalFriends = _parent.friends.length;
     const onlineFriends = 0; // model.UserProfile doesn't have isOnline property
@@ -495,7 +399,6 @@ class FriendsManagementOperations extends BaseService {
     };
   }
 
-  /// Get mutual friends with another user
   Future<List<model.UserProfile>> getMutualFriends(String userId) async {
     try {
       if (_parent.currentUserId == null) {
@@ -558,9 +461,6 @@ class FriendsManagementOperations extends BaseService {
     }
   }
 
-  // ===== NOTIFICATION HELPERS =====
-
-  /// Send notification when a friend request is sent
   Future<void> _sendFriendRequestNotification(
     FriendRequest request,
     String senderDisplayName,
@@ -591,7 +491,6 @@ class FriendsManagementOperations extends BaseService {
     }
   }
 
-  /// Send notification when a friend request is accepted
   Future<void> _sendFriendRequestAcceptedNotification(
     FriendRequest request,
     String acceptorDisplayName,

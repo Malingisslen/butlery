@@ -132,7 +132,6 @@ void main() {
       
       viewModel = UserProfileViewModel(
         mockUserService,
-        mockStorageService,
         mockImagePickerService,
       );
     });
@@ -196,7 +195,6 @@ void main() {
         // Act - create new viewModel with existing profile
         final vmWithProfile = UserProfileViewModel(
           mockUserService,
-          mockStorageService,
           mockImagePickerService,
         );
         
@@ -399,7 +397,6 @@ void main() {
         // Create a new viewModel with the avatar profile
         final viewModelWithAvatar = UserProfileViewModel(
           mockUserService,
-          mockStorageService,
           mockImagePickerService,
         );
         
@@ -523,7 +520,6 @@ void main() {
         // Create new viewModel with existing profile
         final vmWithProfile = UserProfileViewModel(
           mockUserService,
-          mockStorageService,
           mockImagePickerService,
         );
         
@@ -642,7 +638,6 @@ void main() {
         // Create viewModel with existing profile
         final vmWithProfile = UserProfileViewModel(
           mockUserService,
-          mockStorageService,
           mockImagePickerService,
         );
         
@@ -693,7 +688,6 @@ void main() {
         // Create viewModel with existing profile
         final vmWithProfile = UserProfileViewModel(
           mockUserService,
-          mockStorageService,
           mockImagePickerService,
         );
         
@@ -814,7 +808,6 @@ void main() {
         // Arrange
         final testViewModel = UserProfileViewModel(
           mockUserService,
-          mockStorageService,
           mockImagePickerService,
         );
         
@@ -826,7 +819,6 @@ void main() {
         // Arrange
         final testViewModel = UserProfileViewModel(
           mockUserService,
-          mockStorageService,
           mockImagePickerService,
         );
         

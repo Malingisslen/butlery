@@ -14,6 +14,7 @@ import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/recommendation_service.dart';
+import 'package:butlery/models/recommendation.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
 import 'package:butlery/models/messaging/message.dart';

@@ -1,53 +1,10 @@
-/// Comprehensive photo import ViewModel providing advanced OCR processing and image recognition for Flutter applications.
+/// Photo import ViewModel with OCR processing for converting recipe images to Recipe objects.
 ///
-/// This module implements sophisticated photo-based recipe importing following Single Responsibility Principle,
-/// specializing in converting recipe images into structured Recipe objects through OCR technology, image processing,
-/// and intelligent text extraction. It provides complete photo import infrastructure while maintaining clean
-/// separation from UI rendering, data persistence, and other import types.
-///
-/// **Single Responsibility Focus:**
-/// This module exclusively handles photo import presentation layer concerns:
-/// - **Photo Processing Excellence**: Advanced image capture, processing, and OCR coordination with multi-engine support
-/// - **OCR Technology Integration**: Sophisticated text extraction through OCR.space API with fallback strategies and engine optimization
-/// - **Image Recognition Intelligence**: Smart image processing with orientation detection and text clarity optimization
-/// - **Recipe Text Analysis**: Intelligent OCR text processing with automatic recipe parsing and structure recognition
-/// - **Photo Import Workflow**: Complete photo-to-recipe conversion with validation, error handling, and state coordination
-///
-/// **What This Module Does NOT Handle:**
-/// - Text-based content parsing (handled by TextImportViewModel and text parsing services)
-/// - UI rendering and widget creation (handled by photo import views and presentation components)
-/// - Direct data persistence (handled by ImportManager and underlying storage services)
-/// - Complex OCR infrastructure implementation (handled by OCR services and external API integration)
-///
-/// **Photo Import ViewModel Features:**
-/// - **Multi-Source Image Capture**: Complete camera and gallery integration with ImagePicker coordination
-/// - **Advanced OCR Processing**: Sophisticated text extraction with multi-engine support and fallback strategies
-/// - **Intelligent Text Recognition**: Smart OCR with orientation detection and text clarity optimization
-/// - **Automatic Recipe Parsing**: Intelligent OCR text analysis with automatic recipe structure recognition
-/// - **Swedish Localization**: Complete Swedish language support for errors, suggestions, and user feedback
-///
-/// **Usage Examples:**
+/// **Features:** Camera/gallery capture, OCR.space API, multi-engine text extraction, auto-parsing, Swedish localization.
 /// ```dart
-/// // Initialize photo import ViewModel with ImportManager dependency
-/// final photoImportViewModel = PhotoImportViewModel(
-///   importManager: ServiceLocator.get<ImportManager>(),
-/// );
-/// 
-/// // Camera capture and OCR processing workflow
-/// await photoImportViewModel.pickImageFromCamera();
-/// if (photoImportViewModel.hasOcrResult) {
-///   final ocrText = photoImportViewModel.ocrText;
-///   if (photoImportViewModel.hasParsedRecipe) {
-///     final recipe = photoImportViewModel.parsedRecipe;
-///   }
-/// }
-/// 
-/// // Gallery selection and processing workflow
-/// await photoImportViewModel.pickImageFromGallery();
-/// if (photoImportViewModel.hasImage) {
-///   final imageBytes = photoImportViewModel.imageBytes;
-///   // Image is being processed with OCR
-/// }
+/// final vm = PhotoImportViewModel(importManager: ServiceLocator.get<ImportManager>());
+/// await vm.pickImageFromCamera();
+/// if (vm.hasOcrResult && vm.hasParsedRecipe) { final recipe = vm.parsedRecipe; }
 /// 
 /// // Manual import processing if auto-parsing fails
 /// if (photoImportViewModel.hasOcrResult && !photoImportViewModel.hasParsedRecipe) {

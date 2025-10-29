@@ -1,93 +1,19 @@
-/// Comprehensive recipe form ViewModel providing advanced recipe creation and editing for Flutter applications.
+/// Recipe form ViewModel with state management, collaborative editing, and image handling.
 ///
-/// This module implements sophisticated recipe form management following Single Responsibility Principle,
-/// handling all aspects of recipe creation and editing through focused manager architecture including form state management,
-/// collaborative editing, image management, and permission coordination. It provides complete recipe form infrastructure
-/// while maintaining clean separation from UI rendering, data persistence, and business logic implementation.
-///
-/// **Single Responsibility Focus:**
-/// This module exclusively handles recipe form presentation layer concerns through specialized manager delegation:
-/// - **Form State Excellence**: Comprehensive recipe form state management with validation, change tracking, and data coordination
-/// - **Collaborative Editing Intelligence**: Advanced real-time collaborative editing with live participant tracking and conflict resolution
-/// - **Image Management System**: Sophisticated multi-image upload, ordering, and storage coordination with performance optimization
-/// - **Permission Management**: Comprehensive permission system with role-based access control and collaborative sharing
-/// - **Manager Architecture**: Clean delegation to focused managers for maintainable and scalable recipe form functionality
-///
-/// **What This Module Does NOT Handle:**
-/// - UI rendering and widget creation (handled by RecipeFormView and recipe form UI components)
-/// - Recipe data persistence and storage (handled by UnifiedRecipeService and data repositories)
-/// - Image processing and storage operations (handled by specialized image services and cloud storage)
-/// - Collaborative infrastructure implementation (handled by Firebase and real-time synchronization services)
-///
-/// **Recipe Form ViewModel Architecture:**
-/// - **RecipeFormState**: Comprehensive form state management with validation and data coordination
-/// - **RecipeCollaborativeManager**: Real-time collaborative editing with participant management and synchronization
-/// - **RecipeImageManager**: Multi-image upload, ordering, and storage management with performance optimization
-/// - **RecipePermissionManager**: Permission system with role-based access control and sharing capabilities
-/// - **Focused Manager Pattern**: Clean delegation architecture for maintainable and scalable functionality
-///
-/// **Usage Examples:**
-/// ```dart
-/// // Initialize recipe form ViewModel for creation
-/// final recipeFormViewModel = RecipeFormViewModel(
-///   recipeService: unifiedRecipeService,
-///   analyticsService: analyticsService,
-/// );
-/// 
-/// // Initialize for editing existing recipe
-/// final editFormViewModel = RecipeFormViewModel(
-///   recipeService: unifiedRecipeService,
-///   initialRecipe: existingRecipe,
-/// );
-/// 
-/// // Form data management
-/// recipeFormViewModel.setTitle('Vegetarisk Pasta Carbonara');
-/// recipeFormViewModel.setDescription('Krämig pasta med vegetariska alternativ');
-/// recipeFormViewModel.setMealType('Middag');
-/// recipeFormViewModel.setPortions(4);
-/// recipeFormViewModel.setTimeMinutes(30);
-/// 
-/// // Dynamic list management
-/// recipeFormViewModel.addIngredient();
-/// recipeFormViewModel.updateIngredient(0, '200g pasta');
-/// recipeFormViewModel.addInstruction();
-/// recipeFormViewModel.updateInstruction(0, 'Koka pastan al dente');
-/// 
-/// // Image management
-/// await recipeFormViewModel.pickAndUploadImage(context);
-/// recipeFormViewModel.setPrimaryImage(imageUrl);
-/// recipeFormViewModel.reorderImages(0, 2);
-/// 
-/// // Recipe operations
-/// final savedRecipe = await recipeFormViewModel.saveRecipe();
-/// final forkedRecipe = await recipeFormViewModel.forkRecipe();
-/// final deleted = await recipeFormViewModel.deleteRecipe();
-/// 
-/// // Collaborative features
-/// await recipeFormViewModel.enableCollaborativeMode();
-/// await recipeFormViewModel.inviteUserToCollaboration(
-///   'user123', 'Anna Svensson', ResourcePermission.editor
-/// );
-/// 
-/// // Form state monitoring
-/// if (recipeFormViewModel.hasUnsavedChanges) {
-///   // Show save prompt
-/// }
-/// if (recipeFormViewModel.isSaving) {
-///   // Show saving progress
-/// }
-/// ```
+/// Manages recipe creation/editing through focused managers:
+/// - RecipeFormState: Form state and validation
+/// - RecipeCollaborativeManager: Real-time collaborative editing
+/// - RecipeImageManager: Multi-image upload and ordering
+/// - RecipePermissionManager: Role-based access control
 
 // lib/viewmodels/recipe_form_viewmodel.dart
 
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:uuid/uuid.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
-import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -95,67 +21,76 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/errors/unified_error_coordinator.dart';
 
+// Import upload models for image upload status and notifications
+import 'package:butlery/services/upload/upload_models.dart';
+
 // Import focused managers
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_collaborative_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_persistence_manager.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_form_coordinator.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_backward_compatibility_mixin.dart';
 
 // ===== FOCUSED MANAGER ARCHITECTURE =====
 
-/// Comprehensive recipe form ViewModel providing advanced recipe creation and editing through focused manager architecture.
-///
-/// Serves as the main coordinator for all recipe form operations, delegating to specialized managers
-/// for form state, collaborative editing, image management, and permission control while maintaining
-/// clean MVVM architecture separation between recipe form business logic and UI presentation concerns.
-class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorCoordinatorMixin {
+/// Coordinator for recipe form operations with delegation to specialized managers.
+class RecipeFormViewModel extends ChangeNotifier
+    with ErrorHandlingMixin, ErrorCoordinatorMixin, RecipeBackwardCompatibilityMixin {
   final UnifiedRecipeService _recipeService;
   // final AnalyticsService _analyticsService; // Currently unused
-  final _uuid = const Uuid();
 
   // ===== DISPOSAL TRACKING =====
   bool _disposed = false;
   bool get disposed => _disposed;
 
-  // CRITICAL FIX: Notification coordination to prevent cascading loops
-  bool _isNotifying = false;
-  Timer? _notificationDebounceTimer;
-  
-  // CRITICAL FIX: Atomic save operation coordination
-  bool _isSaveInProgress = false;
-  final Map<String, Completer<Recipe?>> _pendingSaveOperations = {};
-  Recipe? _lastSaveResult;
-  
-  String? _currentSaveOperationId;
-
   // ===== FOCUSED MANAGER ARCHITECTURE =====
-  
+
   /// Form state manager for comprehensive recipe data and validation coordination.
   late final RecipeFormState _state;
-  
+
   /// Collaborative editing manager for real-time synchronization and participant management.
   late final RecipeCollaborativeManager _collaborativeManager;
-  
+
   /// Image management system for multi-image upload, ordering, and storage coordination.
   late final RecipeImageManager _imageManager;
-  
+
   /// Permission management system for access control and collaborative sharing.
   late final RecipePermissionManager _permissionManager;
-  
+
+  /// Persistence manager for save/fork/delete operations with atomic coordination.
+  late final RecipePersistenceManager _persistenceManager;
+
+  /// Coordinator for manager synchronization and state coordination.
+  late final RecipeFormCoordinator _coordinator;
+
   // CRITICAL FIX: Unified error coordination for consistent error handling
   late final UnifiedErrorCoordinator _errorCoordinator;
 
-  /// Initializes recipe form ViewModel with comprehensive manager coordination and service integration.
-  /// 
-  /// [recipeService] Optional UnifiedRecipeService instance for dependency injection
-  /// [analyticsService] Optional AnalyticsService instance for analytics tracking
-  /// [initialRecipe] Optional existing recipe for editing mode initialization
-  /// [isTemplate] Whether initializing as template for recipe creation patterns
-  /// 
-  /// Establishes focused manager architecture with specialized components for recipe form management,
-  /// sets up reactive state coordination, and initializes permission systems for complete
-  /// recipe creation and editing functionality with collaborative features.
+  // ===== MIXIN INTERFACE IMPLEMENTATIONS =====
+
+  /// Expose state for backward compatibility mixin
+  @override
+  RecipeFormState get state => _state;
+
+  /// Expose imageManager for backward compatibility mixin
+  @override
+  RecipeImageManager get imageManager => _imageManager;
+
+  /// Expose permissionManager for backward compatibility mixin
+  @override
+  RecipePermissionManager get permissionManager => _permissionManager;
+
+  /// Expose persistenceManager for backward compatibility mixin
+  @override
+  RecipePersistenceManager get persistenceManager => _persistenceManager;
+
+  /// Expose coordinator for backward compatibility mixin
+  @override
+  RecipeFormCoordinator get coordinator => _coordinator;
+
   RecipeFormViewModel({
     UnifiedRecipeService? recipeService,
     AnalyticsService? analyticsService,
@@ -163,26 +98,44 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
     bool isTemplate = false,
   }) : _recipeService = recipeService ?? ServiceLocator.get<UnifiedRecipeService>() {
        // _analyticsService = analyticsService ?? ServiceLocator.get<AnalyticsService>();
-    
+
     // Initialize focused managers
     _state = RecipeFormState(initialRecipe: initialRecipe, isTemplate: isTemplate);
     _collaborativeManager = RecipeCollaborativeManager();
     _imageManager = RecipeImageManager();
     _permissionManager = RecipePermissionManager();
 
+    // Initialize persistence manager
+    _persistenceManager = RecipePersistenceManager(
+      recipeService: _recipeService,
+      state: _state,
+      imageManager: _imageManager,
+      collaborativeManager: _collaborativeManager,
+      permissionManager: _permissionManager,
+    );
+
+    // Initialize coordinator
+    _coordinator = RecipeFormCoordinator(
+      state: _state,
+      imageManager: _imageManager,
+      collaborativeManager: _collaborativeManager,
+      permissionManager: _permissionManager,
+      parentNotify: notifyListeners,
+    );
+
     // CRITICAL FIX: Initialize unified error coordinator
     _errorCoordinator = UnifiedErrorCoordinator();
     initializeErrorCoordinator(_errorCoordinator, 'RecipeFormViewModel');
-    
-    // Set up listeners
-    _setupManagerListeners();
-    
+
+    // Set up listeners through coordinator
+    _coordinator.setupManagerListeners();
+
     // Initialize error coordination for all managers
     _initializeManagerErrorCoordination();
 
     // Load permissions if editing existing recipe
     if (initialRecipe != null && !isTemplate) {
-      _loadInitialPermissions(initialRecipe);
+      _coordinator.loadInitialPermissions(initialRecipe);
     }
   }
 
@@ -200,34 +153,19 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
   /// management during recipe save operations and form submission.
   bool get isSaving => _state.isSaving;
   
-  /// Fork operation state for UI progress indication and copy functionality.
-  /// 
-  /// Indicates active recipe forking operation for progress display
-  /// and interaction control during recipe duplication processes.
+  /// Fork operation in progress.
   bool get isForking => _state.isForking;
-  
-  /// Current error message for user feedback and error state management.
-  /// 
-  /// Delegates to RecipeFormState for centralized error handling with localized
-  /// Swedish error messages for comprehensive user feedback and error recovery.
+
+  /// Current error message.
   String? get error => _state.error;
-  
-  /// Error state indicator for UI conditional rendering and error handling.
-  /// 
-  /// Provides boolean error state check for UI error display decisions
-  /// and error state management throughout recipe form operations.
+
+  /// Error state indicator.
   bool get hasError => _state.hasError;
-  
-  /// Editing mode indicator for form behavior and UI conditional rendering.
-  /// 
-  /// Indicates whether form is in edit mode for existing recipe modification
-  /// versus creation mode for new recipe functionality.
+
+  /// Edit mode for existing recipe vs creation mode.
   bool get isEditing => _state.isEditing;
-  
-  /// Form validation state for submission control and UI enabling.
-  /// 
-  /// Combines all form validation requirements for form submission enabling
-  /// and comprehensive validation status across all form fields.
+
+  /// Form validation state.
   bool get isValid => _state.isValid;
   
   /// CRITICAL FIX: Unsaved changes detection with comprehensive null safety
@@ -272,122 +210,66 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
 
   // ===== RECIPE FORM DATA ACCESSORS =====
 
-  /// Recipe title for form display and validation coordination.
-  /// 
-  /// Delegates to RecipeFormState for title access enabling UI binding
-  /// and form validation throughout recipe creation and editing operations.
+  /// Recipe title.
   String get title => _state.title;
-  
-  /// Recipe description for detailed content management and form coordination.
-  /// 
-  /// Provides access to recipe description for UI display and validation
-  /// enabling comprehensive recipe content management and user input coordination.
+
+  /// Recipe description.
   String get description => _state.description;
-  
-  /// Meal type selection for categorization and Swedish localized meal planning.
-  /// 
-  /// Provides meal type access with Swedish localization support for
-  /// recipe categorization and meal planning functionality.
+
+  /// Meal type (e.g., "Middag", "Lunch").
   String get mealType => _state.mealType;
-  
-  /// Portion count for serving size management and recipe scaling.
-  /// 
-  /// Provides portion information for recipe serving calculations
-  /// and meal planning coordination with nullable support for optional data.
+
+  /// Portion count.
   int? get portions => _state.portions;
   
-  /// Cooking time in minutes for meal planning and recipe organization.
-  /// 
-  /// Provides cooking time information for meal planning calculations
-  /// and recipe filtering with nullable support for optional timing data.
+  /// Cooking time in minutes.
   int? get timeMinutes => _state.timeMinutes;
-  
-  /// Recipe rating for quality assessment and recipe recommendation.
-  /// 
-  /// Provides rating information for recipe quality indication
-  /// and recommendation systems with nullable support for unrated recipes.
+
+  /// Recipe rating (0-5).
   double? get rating => _state.rating;
-  
-  /// Image URLs for visual recipe presentation and gallery management.
-  /// 
-  /// Returns complete list including pending file paths for immediate UI preview
-  /// and uploaded Firebase URLs for comprehensive image display coordination.
+
+  /// Image URLs (pending + uploaded).
   List<String> get imageUrls => _imageManager.imageUrls;
-  
-  /// Source URL for recipe attribution and external reference management.
-  /// 
-  /// Provides source URL access for recipe attribution and external linking
-  /// with nullable support for original recipes without external sources.
+
+  /// Source URL for attribution.
   String? get sourceUrl => _state.sourceUrl;
-  
-  /// Ingredient list for recipe content management and shopping integration.
-  /// 
-  /// Delegates to RecipeFormState for ingredient access enabling
-  /// dynamic ingredient management and shopping list integration.
+
+  /// Ingredient list.
   List<String> get ingredients => _state.ingredients;
-  
-  /// Instruction list for cooking guidance and recipe execution.
-  /// 
-  /// Provides instruction access for step-by-step cooking guidance
-  /// and recipe execution with dynamic instruction management capabilities.
+
+  /// Instruction list.
   List<String> get instructions => _state.instructions;
-  
-  /// Tag list for recipe organization and search functionality.
-  /// 
-  /// Delegates to RecipeFormState for tag access enabling
-  /// recipe categorization and advanced search functionality.
+
+  /// Tag list.
   List<String> get tags => _state.tags;
 
   // ===== SPECIALIZED MANAGER ACCESSORS =====
   
-  /// Ingredients manager for dynamic ingredient list coordination and management.
-  /// 
-  /// Provides access to specialized ingredient management functionality
-  /// enabling dynamic list operations and form field coordination.
+  /// Dynamic ingredients manager.
   get ingredientsManager => _state.ingredientsManager;
-  
-  /// Instructions manager for dynamic instruction list coordination and management.
-  /// 
-  /// Provides access to specialized instruction management functionality
-  /// enabling step-by-step recipe guidance and dynamic list operations.
+
+  /// Dynamic instructions manager.
   get instructionsManager => _state.instructionsManager;
-  
-  /// Tags manager for dynamic tag list coordination and organization.
-  /// 
-  /// Provides access to specialized tag management functionality
-  /// enabling recipe categorization and dynamic tag operations.
+
+  /// Dynamic tags manager.
   get tagsManager => _state.tagsManager;
 
   // ===== COLLABORATIVE EDITING ACCESSORS =====
   
-  /// Collaborative mode indicator for real-time editing functionality and UI coordination.
-  /// 
-  /// Indicates whether recipe form is in collaborative mode enabling
-  /// real-time synchronization and multi-user editing features.
+  /// Collaborative mode active.
+  @override
   bool get isCollaborative => _collaborativeManager.isCollaborative;
-  
-  /// Firebase connection status for collaborative infrastructure and connectivity indication.
-  /// 
-  /// Provides real-time connection status for collaborative editing infrastructure
-  /// enabling connection feedback and collaborative feature availability.
+
+  /// Firebase connection status.
   bool get isConnectedToFirebase => _collaborativeManager.isConnectedToFirebase;
-  
-  /// Connection status text for user feedback and collaborative state display.
-  /// 
-  /// Provides Swedish localized connection status messages for user feedback
-  /// and collaborative editing state indication in the user interface.
+
+  /// Connection status text (Swedish).
   String get connectionStatusText => _collaborativeManager.connectionStatusText;
-  
-  /// Collaborative participants for participant management and social coordination.
-  /// 
-  /// Provides list of active collaborative participants enabling
-  /// participant display and collaborative member management functionality.
+
+  /// Active collaborative participants.
   List<UserProfile> get collaborativeParticipants => _collaborativeManager.collaborativeParticipants;
-  
-  /// Live editors for real-time presence indication and collaborative awareness.
-  /// 
-  /// Provides access to currently active editors enabling
-  /// real-time presence indication and collaborative editing awareness.
+
+  /// Currently active editors.
   get liveEditors => _collaborativeManager.liveEditors;
 
   // ===== IMAGE MANAGEMENT ACCESSORS =====
@@ -619,410 +501,49 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
   /// and storage resource management throughout image operations.
   static const int maxImages = RecipeFormState.maxImages;
 
-  // ===== ATOMIC SAVE COORDINATION HELPERS =====
-  
-  /// Complete all pending save operations with the given result
-  void _completePendingSaveOperations(Recipe? result) {
-    for (final completer in _pendingSaveOperations.values) {
-      if (!completer.isCompleted) {
-        completer.complete(result);
-      }
-    }
-    _pendingSaveOperations.clear();
-  }
-  
-  /// Safe notification that respects disposal state and coordination locks
-  void _safeNotifyListeners() {
-    if (_disposed || _isNotifying) return;
-    
-    _isNotifying = true;
-    try {
-      notifyListeners();
-    } catch (e) {
-      AppLogger.debug('Notification skipped due to disposal: $e');
-    } finally {
-      _isNotifying = false;
-    }
-  }
-
   // ===== RECIPE MANAGEMENT OPERATIONS =====
 
-  /// CRITICAL FIX: Atomic save operation with comprehensive race condition protection and image consistency.
-  /// 
+  /// Saves recipe with atomic coordination through persistence manager.
+  ///
+  /// Delegates to RecipePersistenceManager for comprehensive save coordination including:
+  /// - Atomic save operation locking
+  /// - Image upload completion coordination
+  /// - Auto-save conflict prevention
+  /// - Collaborative state synchronization
+  ///
   /// Returns saved Recipe instance if successful, null if validation fails or save errors occur.
-  /// Implements atomic save coordination ensuring:
-  /// - Single concurrent save operation per recipe
-  /// - Image upload completion before final recipe persistence
-  /// - Auto-save conflict prevention and coordination
-  /// - State consistency throughout save operation
-  /// - Comprehensive disposal protection
-  /// 
-  /// **Atomic Save Process:**
-  /// - Save operation locking to prevent concurrent saves
-  /// - Image upload completion coordination for consistency
-  /// - Form validation with comprehensive field checking
-  /// - Permission validation for save operation authorization
-  /// - Service-coordinated recipe persistence with atomic state management
-  /// - Collaborative state synchronization for real-time updates
-  /// 
-  /// **Usage Example:**
-  /// ```dart
-  /// final savedRecipe = await recipeFormViewModel.saveRecipe();
-  /// if (savedRecipe != null) {
-  ///   // Navigate to recipe detail or show success
-  /// } else {
-  ///   // Display validation errors or save failure
-  /// }
-  /// ```
   Future<Recipe?> saveRecipe() async {
-    // CRITICAL FIX: Prevent disposal-related race conditions
-    if (_disposed) {
-      AppLogger.warning('⚠️ Save operation prevented - ViewModel disposed');
-      return null;
-    }
-    
-    // CRITICAL FIX: Prevent concurrent save operations
-    if (_isSaveInProgress) {
-      AppLogger.warning('⚠️ Save operation already in progress - queuing request');
-      final operationId = _uuid.v4();
-      final completer = Completer<Recipe?>();
-      _pendingSaveOperations[operationId] = completer;
-      
-      // Wait for current save to complete, then return same result
-      try {
-        await Future.doWhile(() async {
-          if (_disposed) return false;
-          if (!_isSaveInProgress) return false;
-          await Future.delayed(const Duration(milliseconds: 100));
-          return true;
-        });
-        
-        // Return the result of the completed save operation
-        final result = _lastSaveResult;
-        _pendingSaveOperations.remove(operationId);
-        completer.complete(result);
-        return result;
-      } catch (e) {
-        _pendingSaveOperations.remove(operationId);
-        completer.completeError(e);
-        rethrow;
-      }
-    }
-    
-    // CRITICAL FIX: Check if auto-save is in progress and wait for it
-    if (_state.isAutoSaving) {
-      AppLogger.info('⏳ Waiting for auto-save to complete before manual save...');
-      await Future.doWhile(() async {
-        if (_disposed) return false;
-        if (!_state.isAutoSaving) return false;
-        await Future.delayed(const Duration(milliseconds: 50));
-        return true;
-      });
-    }
-    
-    if (!_state.isValid) {
-      _state.setError('Fyll i alla obligatoriska fält');
-      return null;
-    }
-
-    if (!canEdit) {
-      _state.setError('Du har inte behörighet att spara detta recept');
-      return null;
-    }
-
-    // CRITICAL FIX: Set atomic save lock
-    _isSaveInProgress = true;
-    _currentSaveOperationId = _uuid.v4();
-    AppLogger.info('🔒 Starting atomic save operation: $_currentSaveOperationId');
-    
-    _state.setSaving(true);
-    _state.clearError();
-
-    try {
-      final result = await safeExecute<Recipe>(
-        () async {
-          // CRITICAL FIX: Prevent disposal during save operation
-          if (_disposed) {
-            throw Exception('Save operation cancelled - ViewModel disposed');
-          }
-          
-          // Create recipe ID for both metadata and image uploads
-          final recipeId = _state.isEditing ? _state.originalRecipe!.id : _uuid.v4();
-          
-          // Update image manager with actual recipe ID
-          _imageManager.setActualRecipeId(recipeId);
-          
-          AppLogger.info('🚀 Starting atomic recipe save process for: $recipeId');
-          
-          // CRITICAL FIX: Atomic image upload coordination for consistency
-          if (_imageManager.pendingImages.isNotEmpty) {
-            AppLogger.info('📤 Waiting for ${_imageManager.pendingImages.length} images to upload before save...');
-            
-            try {
-              // CRITICAL FIX: Wait for all images to upload before saving recipe
-              await _imageManager.uploadPendingImagesInBackground(
-                recipeId,
-                onProgress: (completed, total) {
-                  AppLogger.info('📈 Upload progress: $completed/$total');
-                  // CRITICAL FIX: Disposal-safe progress updates
-                  _safeNotifyListeners();
-                },
-              );
-              
-              // CRITICAL FIX: Verify upload completion before proceeding
-              if (_imageManager.pendingImages.isNotEmpty) {
-                throw Exception('Image upload incomplete - cannot save recipe');
-              }
-              
-              AppLogger.info('✅ All images uploaded successfully, proceeding with recipe save');
-            } catch (e) {
-              AppLogger.error('❌ Image upload failed during recipe save: $e');
-              throw Exception('Failed to upload images: $e');
-            }
-          }
-          
-          // CRITICAL FIX: Final disposal check before recipe persistence
-          if (_disposed) {
-            throw Exception('Save operation cancelled - ViewModel disposed during image upload');
-          }
-          
-          // CRITICAL FIX: Create recipe with atomic image URL consistency
-          // Use only uploaded Firebase URLs to ensure image consistency
-          final validImageUrls = _imageManager.validImageUrls;
-          AppLogger.info('📝 Creating recipe with ${validImageUrls.length} validated image URLs');
-          
-          final recipe = _state.createRecipe(
-            recipeId: recipeId,
-            imageUrls: validImageUrls, // Only use validated Firebase URLs
-          );
-
-          // CRITICAL FIX: Atomic recipe persistence with state consistency
-          Recipe savedRecipe;
-          if (_state.isEditing) {
-            AppLogger.info('📝 Updating existing recipe: $recipeId');
-            final result = await _recipeService.personal.updateUnifiedRecipe(recipe);
-            if (result.isSuccess) {
-              savedRecipe = recipe;
-            } else {
-              throw Exception(result.message ?? 'Failed to update recipe');
-            }
-          } else {
-            AppLogger.info('📝 Creating new recipe: $recipeId');
-            final result = await _recipeService.personal.addUnifiedRecipe(recipe);
-            if (result.isSuccess) {
-              savedRecipe = recipe;
-            } else {
-              throw Exception(result.message ?? 'Failed to create recipe');
-            }
-          }
-
-          // CRITICAL FIX: Final disposal check after persistence
-          if (_disposed) {
-            AppLogger.warning('⚠️ Save completed but ViewModel disposed - skipping state updates');
-            return savedRecipe; // Return saved recipe even if state updates are skipped
-          }
-          
-          AppLogger.info('✅ Recipe saved atomically with ${savedRecipe.imageUrls.length} images: ${savedRecipe.id}');
-
-          // CRITICAL FIX: Atomic collaborative state update
-          if (isCollaborative && !_disposed) {
-            try {
-              await _collaborativeManager.updateRecipeInFirebase(savedRecipe);
-              AppLogger.info('🔄 Collaborative state updated for recipe: ${savedRecipe.id}');
-            } catch (e) {
-              AppLogger.error('❌ Failed to update collaborative state: $e');
-              // Don't fail the entire save operation for collaborative update issues
-            }
-          }
-
-          return savedRecipe;
-        },
-        operationName: 'Save Recipe',
-        customErrorMessage: null, // Handle error with custom logic below
-      );
-      
-      // CRITICAL FIX: Store result for pending operations
-      _lastSaveResult = result;
-      
-      // Check if safeExecute returned null (indicating an error)
-      if (result == null) {
-        if (!_disposed) {
-          _state.setError('Kunde inte spara recept');
-        }
-      } else {
-        // CRITICAL FIX: Safe state updates after successful save
-        if (!_disposed) {
-          // Clear auto-save draft after successful save
-          _state.clearCurrentDraft();
-          AppLogger.info('✅ Save operation completed successfully: ${result.id}');
-        }
-      }
-      
-      // CRITICAL FIX: Complete any pending save operations
-      _completePendingSaveOperations(result);
-      
-      return result;
-    } catch (e) {
-      AppLogger.error('❌ Atomic save operation failed: $e');
-      
-      // CRITICAL FIX: Safe error handling with disposal protection
-      if (!_disposed) {
-        _state.setError('Kunde inte spara recept: $e');
-      }
-      
-      // CRITICAL FIX: Complete pending operations with error
-      _completePendingSaveOperations(null);
-      
-      return null;
-    } finally {
-      // CRITICAL FIX: Always release atomic save lock
-      _isSaveInProgress = false;
-      _currentSaveOperationId = null;
-      
-      // CRITICAL FIX: Safe state cleanup
-      if (!_disposed) {
-        _state.setSaving(false);
-      }
-      
-      AppLogger.info('🔓 Atomic save operation completed and lock released');
-    }
+    return await _persistenceManager.saveRecipe(
+      isCollaborative: isCollaborative,
+      onNotify: _coordinator.safeNotifyParent,
+    );
   }
 
-  /// Forks recipe creating independent copy with comprehensive duplication and state management.
-  /// 
-  /// Returns forked Recipe instance if successful, null if operation fails.
-  /// Performs complete recipe forking flow including data duplication, service coordination,
-  /// and analytics tracking for comprehensive recipe copy functionality and user workflow support.
-  /// 
-  /// **Fork Process:**
+  /// Forks recipe creating independent copy through persistence manager.
+  ///
+  /// Delegates to RecipePersistenceManager for complete fork coordination including:
   /// - Recipe data duplication with new unique identifier
   /// - Service-coordinated recipe creation with error handling
-  /// - Analytics tracking for fork operation monitoring
-  /// - State management with progress indication
-  /// 
-  /// **Usage Example:**
-  /// ```dart
-  /// final forkedRecipe = await recipeFormViewModel.forkRecipe();
-  /// if (forkedRecipe != null) {
-  ///   // Navigate to forked recipe or show success
-  /// } else {
-  ///   // Handle fork failure
-  /// }
-  /// ```
+  /// - Auto-save draft cleanup for consistency
+  ///
+  /// Returns forked Recipe instance if successful, null if operation fails.
   Future<Recipe?> forkRecipe() async {
-    if (_state.originalRecipe == null) {
-      _state.setError('Inget recept att forka');
-      return null;
-    }
-
-    _state.setForking(true);
-    _state.clearError();
-
-    try {
-      final result = await safeExecute<Recipe>(
-        () async {
-          // Skapa nytt recept från state
-          final newRecipe = _state.createRecipe(recipeId: _uuid.v4());
-          
-          // Spara som nytt recipe
-          final saveResult = await _recipeService.personal.addUnifiedRecipe(newRecipe);
-          if (!saveResult.isSuccess) {
-            throw Exception(saveResult.message ?? 'Failed to fork recipe');
-          }
-          final savedRecipe = newRecipe;
-          
-          // _analyticsService.trackRecipeForked(_state.originalRecipe!.id, savedRecipe.id);
-          AppLogger.info('Recept forkat: ${savedRecipe.id}');
-          
-          return savedRecipe;
-        },
-        operationName: 'Fork Recipe',
-        customErrorMessage: null, // Handle error with custom logic below
-      );
-      
-      // Check if safeExecute returned null (indicating an error)
-      if (result == null) {
-        _state.setError('Kunde inte forka recept');
-      } else {
-        // CRITICAL: Clear auto-save draft after successful fork operation
-        // This ensures consistency with saveRecipe() behavior and prevents
-        // orphaned drafts from confusing users with recovery prompts
-        if (!_disposed) {
-          _state.clearCurrentDraft();
-        }
-      }
-      
-      return result;
-    } catch (e) {
-      AppLogger.error('Fel vid forkning av recept: $e');
-      _state.setError('Kunde inte forka recept: $e');
-      return null;
-    } finally {
-      _state.setForking(false);
-    }
+    return await _persistenceManager.forkRecipe();
   }
 
-  /// Deletes recipe with comprehensive cleanup, permission validation, and collaborative coordination.
-  /// 
-  /// Returns true if deletion succeeds, false if operation fails or permission denied.
-  /// Performs complete recipe deletion flow including permission validation, service coordination,
-  /// collaborative cleanup, and resource management for comprehensive recipe removal and cleanup.
-  /// 
-  /// **Deletion Process:**
+  /// Deletes recipe through persistence manager with cleanup coordination.
+  ///
+  /// Delegates to RecipePersistenceManager for complete deletion including:
   /// - Permission validation for delete operation authorization
   /// - Service-coordinated recipe deletion with error handling
   /// - Collaborative state cleanup and participant notification
   /// - Image and resource cleanup for complete removal
-  /// 
-  /// **Usage Example:**
-  /// ```dart
-  /// final deleted = await recipeFormViewModel.deleteRecipe();
-  /// if (deleted) {
-  ///   // Navigate back to recipe list
-  /// } else {
-  ///   // Display deletion error or permission denial
-  /// }
-  /// ```
+  ///
+  /// Returns true if deletion succeeds, false if operation fails or permission denied.
   Future<bool> deleteRecipe() async {
-    if (_state.originalRecipe == null) {
-      _state.setError('Inget recept att ta bort');
-      return false;
-    }
-
-    if (!canDelete) {
-      _state.setError('Du har inte behörighet att ta bort detta recept');
-      return false;
-    }
-
-    _state.clearError();
-
-    final result = await safeExecute<bool>(
-      () async {
-        await _recipeService.deleteRecipe(_state.originalRecipe!.id);
-        
-        // Cleanup collaborative state
-        if (isCollaborative) {
-          await _collaborativeManager.leaveCollaborativeMode();
-        }
-        
-        // Cleanup images
-        await _imageManager.clearAllImages();
-        
-        // _analyticsService.trackRecipeDeleted(_state.originalRecipe!.id);
-        AppLogger.info('Recept borttaget: ${_state.originalRecipe!.id}');
-        
-        return true;
-      },
-      operationName: 'Delete Recipe',
-      customErrorMessage: null, // Handle error with custom logic below
+    return await _persistenceManager.deleteRecipe(
+      isCollaborative: isCollaborative,
     );
-
-    if (result == null) {
-      _state.setError('Kunde inte ta bort recept');
-      return false;
-    }
-
-    return result;
   }
   
   // ===== ERROR COORDINATION METHODS =====
@@ -1098,7 +619,7 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
       final success = await _state.loadFromDraft(draftId);
       if (success) {
         // Sync with collaborative and image managers after restoration
-        _syncToCollaborative();
+        _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
       }
       return success;
     } catch (e) {
@@ -1132,7 +653,7 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
   /// synchronization for real-time updates in collaborative editing mode.
   void setTitle(String title) {
     _state.setTitle(title);
-    _syncToCollaborative();
+    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Updates recipe description with comprehensive state management and collaborative coordination.
@@ -1143,7 +664,7 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
   /// enabling real-time content updates in collaborative editing scenarios.
   void setDescription(String description) {
     _state.setDescription(description);
-    _syncToCollaborative();
+    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Updates meal type selection with Swedish localization and collaborative synchronization.
@@ -1154,7 +675,7 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
   /// for consistent categorization in collaborative editing mode.
   void setMealType(String mealType) {
     _state.setMealType(mealType);
-    _syncToCollaborative();
+    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Updates portion count with nullable support and collaborative coordination.
@@ -1165,7 +686,7 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
   /// supporting nullable values for optional portion information.
   void setPortions(int? portions) {
     _state.setPortions(portions);
-    _syncToCollaborative();
+    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Updates cooking time with nullable support and collaborative synchronization.
@@ -1176,7 +697,7 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
   /// supporting nullable values for optional timing information.
   void setTimeMinutes(int? timeMinutes) {
     _state.setTimeMinutes(timeMinutes);
-    _syncToCollaborative();
+    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Updates recipe rating with nullable support and collaborative coordination.
@@ -1187,7 +708,7 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
   /// supporting nullable values for unrated recipes.
   void setRating(double? rating) {
     _state.setRating(rating);
-    _syncToCollaborative();
+    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Updates source URL with nullable support and collaborative synchronization.
@@ -1198,7 +719,7 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
   /// supporting nullable values for original recipes without external sources.
   void setSourceUrl(String? sourceUrl) {
     _state.setSourceUrl(sourceUrl);
-    _syncToCollaborative();
+    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   // ===== BACKWARD COMPATIBILITY SUPPORT =====
@@ -1231,6 +752,7 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
   /// 
   /// Delegates to RecipeImageManager for image selection dialog with automatic
   /// image URL synchronization and collaborative state management.
+  @override
   Future<void> showImagePickerDialog(BuildContext context) async {
     AppLogger.info('🎯 VIEWMODEL: showImagePickerDialog called');
     final recipeId = _state.originalRecipe?.id ?? 'temp_${DateTime.now().millisecondsSinceEpoch}';
@@ -1240,7 +762,7 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
     // Use post-frame callback to prevent setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       AppLogger.info('🎯 VIEWMODEL: Running _syncImageUrls in post-frame callback');
-      _syncImageUrls();
+      _coordinator.syncImageUrls(isCollaborative: isCollaborative);
     });
   }
 
@@ -1250,9 +772,10 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
   /// 
   /// Performs image URL addition through RecipeImageManager with automatic
   /// state synchronization and collaborative coordination.
+  @override
   Future<void> addImageFromUrl(String imageUrl) async {
     await _imageManager.addImageFromUrl(imageUrl);
-    _syncImageUrls();
+    _coordinator.syncImageUrls(isCollaborative: isCollaborative);
   }
 
   /// Uploads image from file with comprehensive processing and storage coordination.
@@ -1264,7 +787,7 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
   Future<void> uploadImageFromFile(XFile imageFile) async {
     final recipeId = _state.originalRecipe?.id ?? 'temp_${DateTime.now().millisecondsSinceEpoch}';
     await _imageManager.uploadImageFromFile(imageFile, recipeId);
-    _syncImageUrls();
+    _coordinator.syncImageUrls(isCollaborative: isCollaborative);
   }
 
   /// Removes image with comprehensive cleanup and storage management.
@@ -1273,9 +796,10 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
   /// 
   /// Delegates to RecipeImageManager for image removal with automatic
   /// cleanup, storage management, and state synchronization.
+  @override
   Future<void> removeImageAndCleanup(String imageUrl) async {
     await _imageManager.removeImageAndCleanup(imageUrl);
-    _syncImageUrls();
+    _coordinator.syncImageUrls(isCollaborative: isCollaborative);
   }
 
   /// Moves image to first position for primary image designation and visual hierarchy.
@@ -1284,9 +808,10 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
   /// 
   /// Performs image reordering through RecipeImageManager with automatic
   /// state synchronization and collaborative coordination.
+  @override
   void moveImageToFirst(String imageUrl) {
     _imageManager.moveImageToFirst(imageUrl);
-    _syncImageUrls();
+    _coordinator.syncImageUrls(isCollaborative: isCollaborative);
   }
 
   /// Reorders images with comprehensive position management and state coordination.
@@ -1298,180 +823,8 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
   /// state synchronization and collaborative updates.
   void reorderImages(int oldIndex, int newIndex) {
     _imageManager.reorderImages(oldIndex, newIndex);
-    _syncImageUrls();
+    _coordinator.syncImageUrls(isCollaborative: isCollaborative);
   }
-
-  // ===== MISSING API METHODS (for backward compatibility) =====
-
-  /// Save fork - creates a copy of the current recipe
-  Future<Recipe?> saveFork() async {
-    return await forkRecipe();
-  }
-
-  /// Pick and upload single image
-  Future<void> pickAndUploadImage(BuildContext context) async {
-    AppLogger.info('🎯 VIEWMODEL: pickAndUploadImage called');
-    await showImagePickerDialog(context);
-  }
-
-  /// Pick single image from camera (direct, no dialog)
-  Future<void> pickImageFromCamera(BuildContext context) async {
-    AppLogger.info('🎯 VIEWMODEL: pickImageFromCamera called');
-    final recipeId = _state.originalRecipe?.id ?? 'temp_${DateTime.now().millisecondsSinceEpoch}';
-    await _imageManager.pickImageFromCamera(context, recipeId: recipeId);
-    _syncImageUrls();
-  }
-
-  /// Pick single image from gallery (direct, no dialog)
-  Future<void> pickImageFromGallery(BuildContext context) async {
-    AppLogger.info('🎯 VIEWMODEL: pickImageFromGallery called');
-    final recipeId = _state.originalRecipe?.id ?? 'temp_${DateTime.now().millisecondsSinceEpoch}';
-    await _imageManager.pickImageFromGallery(context, recipeId: recipeId);
-    _syncImageUrls();
-  }
-
-  /// Pick multiple images from gallery (direct, no dialog)
-  Future<void> pickMultipleImagesFromGallery(BuildContext context) async {
-    AppLogger.info('🎯 VIEWMODEL: pickMultipleImagesFromGallery called');
-    final recipeId = _state.originalRecipe?.id ?? 'temp_${DateTime.now().millisecondsSinceEpoch}';
-    await _imageManager.pickMultipleImagesFromGallery(context, recipeId: recipeId);
-    _syncImageUrls();
-  }
-
-  /// Legacy method - Pick multiple images (shows dialog)
-  Future<void> pickMultipleImages(BuildContext context) async {
-    AppLogger.info('🎯 VIEWMODEL: pickMultipleImages called');
-    await showImagePickerDialog(context);
-  }
-
-  /// Add image URL directly
-  Future<void> addImageUrl(String imageUrl) async {
-    await addImageFromUrl(imageUrl);
-  }
-
-  /// Remove image at specific index
-  Future<void> removeImageAt(int index) async {
-    if (index >= 0 && index < _imageManager.imageUrls.length) {
-      final imageUrl = _imageManager.imageUrls[index];
-      await removeImageAndCleanup(imageUrl);
-    }
-  }
-
-  /// Set primary image (move to first position)
-  void setPrimaryImage(String imageUrl) {
-    moveImageToFirst(imageUrl);
-  }
-
-  /// Get ingredient controllers (for backward compatibility)
-  List<TextEditingController> get ingredientControllers {
-    debugPrint('🎯 VIEWMODEL_DEBUG: ingredientControllers called');
-    final controllers = _state.ingredientsManager.controllers;
-    debugPrint('🎯 VIEWMODEL_DEBUG: ingredientControllers returning ${controllers.length} controllers');
-    return controllers;
-  }
-
-  /// Get instruction controllers (for backward compatibility)
-  List<TextEditingController> get instructionControllers {
-    debugPrint('🎯 VIEWMODEL_DEBUG: instructionControllers called');
-    final controllers = _state.instructionsManager.controllers;
-    debugPrint('🎯 VIEWMODEL_DEBUG: instructionControllers returning ${controllers.length} controllers');
-    return controllers;
-  }
-
-  /// Get tag controllers (for backward compatibility)
-  List<TextEditingController> get tagControllers {
-    debugPrint('🎯 VIEWMODEL_DEBUG: tagControllers called');
-    final controllers = _state.tagsManager.controllers;
-    debugPrint('🎯 VIEWMODEL_DEBUG: tagControllers returning ${controllers.length} controllers');
-    return controllers;
-  }
-
-  /// Update ingredient at index
-  void updateIngredient(int index, String value) {
-    _state.ingredientsManager.updateAt(index, value);
-    _syncToCollaborative();
-  }
-
-  /// Add new ingredient
-  void addIngredient() {
-    _state.ingredientsManager.add('');
-    notifyListeners();
-    _syncToCollaborative();
-  }
-
-  /// Remove ingredient at index
-  void removeIngredient(int index) {
-    _state.ingredientsManager.removeAt(index);
-    notifyListeners();
-    _syncToCollaborative();
-  }
-
-  /// Update instruction at index
-  void updateInstruction(int index, String value) {
-    _state.instructionsManager.updateAt(index, value);
-    _syncToCollaborative();
-  }
-
-  /// Add new instruction
-  void addInstruction() {
-    _state.instructionsManager.add('');
-    notifyListeners();
-    _syncToCollaborative();
-  }
-
-  /// Remove instruction at index
-  void removeInstruction(int index) {
-    _state.instructionsManager.removeAt(index);
-    notifyListeners();
-    _syncToCollaborative();
-  }
-
-  /// Update tag at index
-  void updateTag(int index, String value) {
-    _state.tagsManager.updateAt(index, value);
-    _syncToCollaborative();
-  }
-
-  /// Add new tag
-  void addTag() {
-    _state.tagsManager.add('');
-    notifyListeners();
-    _syncToCollaborative();
-  }
-
-  /// Remove tag at index
-  void removeTag(int index) {
-    _state.tagsManager.removeAt(index);
-    notifyListeners();
-    _syncToCollaborative();
-  }
-
-  /// Get edit mode (for backward compatibility)
-  String? get editMode {
-    return _permissionManager.editMode;
-  }
-
-  /// Get edit mode as enum
-  EditMode? get editModeEnum {
-    return _permissionManager.editModeEnum;
-  }
-
-  /// Check if in edit mode
-  bool get isEditMode => canEdit;
-
-  /// Get function getters (for backward compatibility)
-  Function(String) get addImageUrlFunc => addImageFromUrl;
-  Function(int) get removeImageAtFunc => (int index) => removeImageAt(index);
-  Function(String) get setPrimaryImageFunc => (String url) => setPrimaryImage(url);
-  Function(int, String) get updateIngredientFunc => (int index, String value) => updateIngredient(index, value);
-  Function() get addIngredientFunc => () => addIngredient();
-  Function(int) get removeIngredientFunc => (int index) => removeIngredient(index);
-  Function(int, String) get updateInstructionFunc => (int index, String value) => updateInstruction(index, value);
-  Function() get addInstructionFunc => () => addInstruction();
-  Function(int) get removeInstructionFunc => (int index) => removeInstruction(index);
-  Function(int, String) get updateTagFunc => (int index, String value) => updateTag(index, value);
-  Function() get addTagFunc => () => addTag();
-  Function(int) get removeTagFunc => (int index) => removeTag(index);
 
   // ===== COLLABORATIVE OPERATIONS (Delegate to collaborative manager) =====
 
@@ -1522,118 +875,6 @@ class RecipeFormViewModel extends ChangeNotifier with ErrorHandlingMixin, ErrorC
   /// Sets up listener connections to all focused managers ensuring automatic UI notification
   /// and state synchronization across form state, collaborative editing, image management,
   /// and permission systems for comprehensive reactive state coordination.
-  void _setupManagerListeners() {
-    _state.addListener(_onStateChanged);
-    _collaborativeManager.addListener(_onCollaborativeChanged);
-    _imageManager.addListener(_onImageChanged);
-    _permissionManager.addListener(_onPermissionChanged);
-  }
-
-  /// CRITICAL FIX: Coordinated notification system to prevent cascading loops
-  void _coordinatedNotifyListeners() {
-    // Prevent notification loops with debouncing
-    if (_isNotifying) {
-      return; // Skip if already in a notification cycle
-    }
-    
-    _notificationDebounceTimer?.cancel();
-    _notificationDebounceTimer = Timer(const Duration(milliseconds: 50), () {
-      if (!_disposed && !_isNotifying) {
-        _isNotifying = true;
-        try {
-          notifyListeners();
-        } finally {
-          _isNotifying = false;
-        }
-      }
-    });
-  }
-
-  /// Handles form state changes with automatic UI notification and reactive coordination.
-  /// 
-  /// Provides seamless state synchronization from RecipeFormState ensuring
-  /// all form state changes are immediately reflected in UI components
-  /// for consistent user experience and real-time form updates.
-  void _onStateChanged() {
-    _coordinatedNotifyListeners();
-  }
-
-  /// Handles collaborative state changes with automatic UI synchronization and participant updates.
-  /// 
-  /// Provides seamless collaborative state synchronization ensuring
-  /// all collaborative changes are immediately reflected in UI components
-  /// for real-time collaborative editing and participant awareness.
-  void _onCollaborativeChanged() {
-    _coordinatedNotifyListeners();
-  }
-
-  /// Handles image management changes with automatic UI notification and visual updates.
-  /// 
-  /// Provides seamless image state synchronization ensuring
-  /// all image changes are immediately reflected in UI components
-  /// for real-time image management and visual coordination.
-  void _onImageChanged() {
-    _coordinatedNotifyListeners();
-  }
-
-  /// Handles permission changes with automatic UI synchronization and access control updates.
-  /// 
-  /// Provides seamless permission state synchronization ensuring
-  /// all permission changes are immediately reflected in UI components
-  /// for real-time access control and feature availability.
-  void _onPermissionChanged() {
-    _coordinatedNotifyListeners();
-  }
-
-  /// Loads initial permissions for recipe form initialization with comprehensive error handling.
-  /// 
-  /// [recipe] Recipe instance for permission validation and initialization
-  /// 
-  /// Performs asynchronous permission loading through RecipePermissionManager with
-  /// comprehensive error handling and Swedish localized error messages
-  /// for proper recipe form initialization and access control setup.
-  Future<void> _loadInitialPermissions(Recipe recipe) async {
-    await safeExecute(
-      () async {
-        _permissionManager.setRecipeId(recipe.id);
-        _permissionManager.checkPermissions();
-      },
-      operationName: 'Load Initial Permissions',
-      customErrorMessage: 'Fel vid laddning av permissions',
-    );
-  }
-
-  /// Synchronizes form state to collaborative infrastructure for real-time updates.
-  /// 
-  /// Performs collaborative state synchronization when in collaborative mode,
-  /// creating recipe from current state and updating Firebase for real-time
-  /// collaborative editing and participant synchronization.
-  void _syncToCollaborative() {
-    if (isCollaborative && _state.originalRecipe != null) {
-      final recipe = _state.createRecipe(recipeId: _state.originalRecipe!.id);
-      _collaborativeManager.updateRecipeInFirebase(recipe);
-    }
-  }
-
-  /// Synchronizes image URLs between image manager and form state with collaborative coordination.
-  /// 
-  /// Updates form state with ONLY valid Firebase URLs from RecipeImageManager
-  /// (filters out file paths to prevent invalid URLs from being persisted)
-  /// and triggers collaborative synchronization for real-time image updates
-  /// in collaborative editing scenarios.
-  void _syncImageUrls() {
-    // RACE CONDITION GUARD: Prevent sync during save operations to avoid autosave conflicts
-    if (_isSaveInProgress || _state.isSaving || _state.isForking) {
-      // Skip sync during save operations to prevent race conditions
-      return;
-    }
-    
-    // ULTRATHINK FIX: Only sync valid URLs for persistence, not file paths
-    // This prevents recipes from being saved with invalid local file paths
-    _state.setImageUrls(_imageManager.validImageUrls, skipAutoSave: _state.isAutoSaving);
-    _syncToCollaborative();
-  }
-
 
   /// Performs comprehensive ViewModel disposal with manager cleanup and memory management.
   /// 

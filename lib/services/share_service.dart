@@ -1,56 +1,6 @@
-/// Comprehensive content sharing service providing multi-format recipe and meal planning sharing capabilities.
-///
-/// This service implements sophisticated content formatting and sharing functionality for recipes, shopping lists,
-/// and meal planning data. It provides multiple output formats optimized for different sharing contexts including
-/// social media, messaging, email, and clipboard operations with Swedish language localization and emoji integration
-/// for enhanced visual appeal and user engagement.
-///
-/// **Architecture Integration:**
-/// - Extends [BaseService] for consistent service patterns and comprehensive error handling
-/// - Integrates with [Share] plugin for native platform sharing capabilities
-/// - Uses [Clipboard] services for direct content copying functionality
-/// - Supports [Recipe] unified model for comprehensive recipe data formatting
-/// - Implements [UnifiedShoppingItem] integration for shopping list sharing
-///
-/// **Sharing Capabilities:**
-/// - **Recipe Sharing**: Multiple format options for different sharing contexts and platforms
-/// - **Shopping List Sharing**: Organized shopping lists with category grouping and completion status
-/// - **Menu Planning**: Weekly menu sharing with comprehensive meal organization and metadata
-/// - **Clipboard Integration**: Direct content copying for paste operations in external applications
-/// - **Smart Formatting**: Context-aware format selection for optimal sharing experience
-///
-/// **Format Support:**
-/// - **Complete Format**: Full recipe details with comprehensive metadata and structured presentation
-/// - **Compact Format**: Optimized for messaging and social media with emoji enhancement
-/// - **Markdown Format**: Structured format for documentation and export with technical formatting
-/// - **Shopping Lists**: Category-organized lists with completion status and visual indicators
-/// - **Weekly Menus**: Comprehensive meal planning with metadata and summary statistics
-///
-/// **Localization Features:**
-/// - Swedish language labels and terminology throughout all formats
-/// - Cultural cooking terminology and measurement units
-/// - Emoji integration for visual appeal and cross-platform compatibility
-/// - Category naming conventions aligned with Swedish meal planning patterns
-///
-/// **Usage Examples:**
+/// Share service for recipes, shopping lists, and menus with formats (complete/compact/markdown), Swedish.
 /// ```dart
-/// final shareService = ShareService();
-/// 
-/// // Share recipe with smart format selection
-/// await shareService.shareRecipe(recipe);
-/// 
-/// // Share with specific format
-/// await shareService.shareRecipeWithFormat(recipe, RecipeShareFormat.compact);
-/// 
-/// // Copy to clipboard
-/// await shareService.copyRecipe(recipe, format: RecipeShareFormat.markdown);
-/// 
-/// // Share shopping list
-/// await shareService.shareShoppingList(shoppingItems);
-/// 
-/// // Get formatted text for custom usage
-/// final formattedText = shareService.getFormattedRecipe(recipe);
-/// ```
+/// final ss = ShareService(); await ss.shareRecipe(recipe);
 
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -58,38 +8,10 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/base/base_service.dart';
 
-/// Enumeration defining available recipe sharing formats for different contexts and platforms.
-///
-/// This enum provides comprehensive format options for recipe sharing enabling optimal presentation
-/// across different sharing contexts from social media and messaging to documentation and export.
-/// Each format is optimized for specific use cases with appropriate detail levels and formatting.
-///
-/// **Format Options:**
-/// - [complete] Full recipe details with comprehensive metadata and structured presentation
-/// - [compact] Optimized for messaging and social media with emoji enhancement and concise layout
-/// - [markdown] Technical format for documentation and export with structured markup
-///
-/// **Usage Context Guidelines:**
-/// - Complete format: Email sharing, recipe collections, detailed documentation
-/// - Compact format: SMS, instant messaging, social media posts, quick sharing
-/// - Markdown format: Recipe blogs, documentation systems, structured export
-enum RecipeShareFormat {
-  /// Full recipe details with comprehensive metadata and structured presentation.
-  complete,
-  
-  /// Optimized for messaging and social media with emoji enhancement and concise layout.
-  compact,
-  
-  /// Technical format for documentation and export with structured markup.
-  markdown,
-}
+/// Recipe sharing formats: complete (full details), compact (messaging/social), markdown (documentation/export).
+enum RecipeShareFormat { complete, compact, markdown }
 
-/// Comprehensive content sharing service providing multi-format recipe and meal planning sharing.
-///
-/// This service implements sophisticated content formatting and sharing with multiple output formats,
-/// Swedish localization, and platform-native sharing capabilities. It provides a complete sharing
-/// solution for recipes, shopping lists, and meal planning with intelligent format selection and
-/// comprehensive error handling through the BaseService architecture.
+/// Content sharing service with multi-format output, Swedish localization, and platform-native sharing.
 class ShareService extends BaseService {
   
   @override
@@ -110,33 +32,7 @@ class ShareService extends BaseService {
   static const String _servingsEmoji = '🍴';
   static const String _starEmoji = '⭐';
 
-  // ===== RECIPE FORMATTING =====
-
-  /// Formats recipe as complete text with comprehensive details and structured presentation.
-  ///
-  /// This method generates a full-featured text representation of a recipe including all available
-  /// metadata, ingredients, instructions, and source information. It provides structured formatting
-  /// with visual separators and organized sections for optimal readability in email sharing and
-  /// detailed documentation contexts.
-  ///
-  /// [recipe] Complete recipe object to format with all available data
-  /// Returns formatted string with comprehensive recipe information and structured layout
-  ///
-  /// **Formatting Features:**
-  /// - **Structured Header**: Recipe title with visual separator for clear identification
-  /// - **Metadata Section**: Portions, cooking time, and rating with organized presentation
-  /// - **Content Sections**: Description, ingredients, and instructions with clear labeling
-  /// - **Additional Information**: Tags and source URL with appropriate formatting
-  /// - **Swedish Localization**: All labels and terminology in Swedish for cultural alignment
-  ///
-  /// **Section Organization:**
-  /// 1. Title with equal-sign separator for visual emphasis
-  /// 2. Metadata row with portions, time, and star rating
-  /// 3. Recipe description if available
-  /// 4. Bulleted ingredient list with clear organization
-  /// 5. Numbered instruction steps for easy following
-  /// 6. Tag list for categorization and discovery
-  /// 7. Source URL for attribution and reference
+  /// Formats recipe as complete text (title, metadata, description, ingredients, instructions, tags, source).
   String formatRecipeComplete(Recipe recipe) {
     final buffer = StringBuffer();
 
@@ -201,29 +97,7 @@ class ShareService extends BaseService {
     return buffer.toString();
   }
 
-  /// Formats recipe in compact format optimized for messaging and social media sharing.
-  ///
-  /// This method generates a concise yet comprehensive recipe representation with emoji enhancement
-  /// and condensed formatting suitable for SMS, instant messaging, and social media platforms.
-  /// It maintains all essential recipe information while optimizing for character limits and
-  /// visual appeal through strategic emoji usage and compact layout.
-  ///
-  /// [recipe] Recipe object to format in compact, messaging-friendly format
-  /// Returns condensed recipe string with emoji enhancement and optimized layout
-  ///
-  /// **Compact Formatting Features:**
-  /// - **Emoji Integration**: Visual recipe emoji and metadata icons for enhanced appeal
-  /// - **Condensed Metadata**: Time, portions, and rating with abbreviated labels and icons
-  /// - **Complete Content**: All ingredients and instructions despite compact format
-  /// - **Mobile Optimization**: Format suitable for mobile messaging and social platforms
-  /// - **Character Efficiency**: Optimized for character-limited sharing contexts
-  ///
-  /// **Visual Enhancement:**
-  /// - Recipe emoji (🍽) for immediate identification
-  /// - Time emoji (⏱) for cooking time indication
-  /// - Serving emoji (🍴) for portion information
-  /// - Star emojis (⭐) for rating visualization
-  /// - Bulleted lists and numbered steps for clear organization
+  /// Formats recipe in compact format with emoji (🍽⏱🍴⭐) for messaging/social media.
   String formatRecipeCompact(Recipe recipe) {
     final buffer = StringBuffer();
 

@@ -1,40 +1,10 @@
-/// Base service class for standardizing service patterns across the application.
+/// Base service class standardizing patterns for all business logic services.
 ///
-/// This class consolidates common service patterns found across 94+ service files
-/// in the Butlery codebase, eliminating 500-800 lines of duplicate code and
-/// providing a consistent foundation for all business logic services.
-
-///
-/// Key features provided:
-/// - Standardized dependency injection patterns
-/// - Comprehensive error handling with user-friendly messages
-/// - Service lifecycle management (initialization/disposal)
-/// - Centralized logging and operation monitoring
-/// - Caching mechanisms for frequently accessed data
-/// - Permission checking and validation patterns
-/// - Batch operation support with error handling
-/// - Network and authentication state validation
-///
-/// Architecture benefits:
-/// - Eliminates duplicate service locator calls
-/// - Provides consistent error handling across all services
-/// - Centralizes logging and monitoring
-/// - Enables easy testing with mocked dependencies
-/// - Maintains separation of concerns
-///
-/// Usage example:
+/// **Features:** DI, error handling, lifecycle, logging, caching, permissions, batch operations, auth validation.
 /// ```dart
-/// class RecipeService extends BaseService with UserContextMixin {
-///   @override
-///   String get serviceName => 'RecipeService';
-///   
-///   Future<Recipe?> getRecipe(String id) async {
-///     return await executeServiceOperation(
-///       () => _fetchRecipeFromFirestore(id),
-///       operationName: 'Get recipe',
-///       requiresAuth: true,
-///     );
-///   }
+/// class MyService extends BaseService {
+///   String get serviceName => 'MyService';
+///   Future<T> get(String id) => executeServiceOperation(() => _fetch(id), requiresAuth: true);
 /// }
 /// ```
 

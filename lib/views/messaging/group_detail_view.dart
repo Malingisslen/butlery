@@ -16,31 +16,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/models/user_profile.dart';
 
-/// View for group conversation details and member management.
-///
-/// Provides comprehensive interface for viewing and managing group conversations
-/// including member list display, add/remove member operations, group settings,
-/// and leave group functionality. Follows MVVM architecture with real-time updates.
-///
-/// **Key Features:**
-/// - Real-time group information display
-/// - Member list with avatars and names
-/// - Add members button (opens friend selector)
-/// - Remove members (admin only)
-/// - Edit group name (admin only)
-/// - Leave group with confirmation
-/// - Admin indicators and permissions
-///
-/// **Usage Example:**
-/// ```dart
-/// Navigator.of(context).push(
-///   MaterialPageRoute(
-///     builder: (context) => GroupDetailView(
-///       conversationId: conversationId,
-///     ),
-///   ),
-/// );
-/// ```
+/// Group conversation details view with member management, add/remove operations, and admin controls.
 class GroupDetailView extends StatelessWidget {
   final String conversationId;
 
@@ -69,8 +45,7 @@ class GroupDetailView extends StatelessWidget {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(
-      BuildContext context, GroupDetailViewModel viewModel) {
+  PreferredSizeWidget _buildAppBar(BuildContext context, GroupDetailViewModel viewModel) {
     return AppBar(
       title: const Text(
         'Gruppinformation',
@@ -132,8 +107,7 @@ class GroupDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildGroupInfoCard(
-      BuildContext context, GroupDetailViewModel viewModel) {
+  Widget _buildGroupInfoCard(BuildContext context, GroupDetailViewModel viewModel) {
     final createdAt = viewModel.createdAt;
     final createdDateStr = createdAt != null
         ? DateFormat('d MMM yyyy, HH:mm', 'sv_SE').format(createdAt)
@@ -226,8 +200,7 @@ class GroupDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildMembersSection(
-      BuildContext context, GroupDetailViewModel viewModel) {
+  Widget _buildMembersSection(BuildContext context, GroupDetailViewModel viewModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -259,8 +232,7 @@ class GroupDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildMemberItem(
-      BuildContext context, GroupDetailViewModel viewModel, String memberId) {
+  Widget _buildMemberItem(BuildContext context, GroupDetailViewModel viewModel, String memberId) {
     final displayName = viewModel.getMemberDisplayName(memberId);
     final avatarUrl = viewModel.getMemberAvatarUrl(memberId);
     final isCurrentUser = memberId == viewModel.currentUserId;

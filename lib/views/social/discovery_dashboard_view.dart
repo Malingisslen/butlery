@@ -21,14 +21,7 @@ import 'package:butlery/views/social/discovery_dashboard/trending_content_sectio
 import 'package:butlery/views/social/discovery_dashboard/friend_activity_section.dart';
 import 'package:butlery/views/social/discovery_dashboard/recommendations_section.dart';
 
-/// Discovery Dashboard View - Unified content discovery for social platform
-/// 
-/// This view provides a comprehensive discovery experience featuring:
-/// - Trending recipes, menus, and shopping lists
-/// - Friend activity timeline
-/// - Personalized recommendations
-/// - Advanced search and filtering
-/// - Content categories and discovery feeds
+/// Discovery Dashboard View - Unified content discovery with trending content, friend activity, and personalized recommendations.
 class DiscoveryDashboardView extends StatelessWidget {
   const DiscoveryDashboardView({super.key});
 
@@ -67,17 +60,14 @@ class _DiscoveryDashboardViewContentState
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = context.read<DiscoveryDashboardViewModel>();
 
-      // Initialize the view model
       viewModel.initialize();
 
-      // Sync tab controller with ViewModel
       _tabController.addListener(() {
         if (!_tabController.indexIsChanging) {
           viewModel.setActiveTab(_tabController.index);
         }
       });
 
-      // Setup scroll controller for infinite loading
       _scrollController.addListener(() {
         if (_scrollController.position.pixels >= 
             _scrollController.position.maxScrollExtent - 200) {
@@ -139,9 +129,7 @@ class _DiscoveryDashboardViewContentState
             ],
             labelColor: Theme.of(context).colorScheme.primary,
             unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
-            labelStyle: AppTextStyles.bodyMedium.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            labelStyle: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
             unselectedLabelStyle: AppTextStyles.bodyMedium,
             indicator: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.1),
@@ -182,23 +170,15 @@ class _DiscoveryDashboardViewContentState
                       minWidth: 16,
                       minHeight: 16,
                     ),
-                    child: Text(
-                      count > 99 ? '99+' : count.toString(),
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: AppColors.onPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                    child: Text(count > 99 ? '99+' : count.toString(),
+                      style: AppTextStyles.labelSmall.copyWith(color: AppColors.onPrimary, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center),
                   ),
                 ),
             ],
           ),
           const SizedBox(height: AppDimensions.spacingXs),
-          Text(
-            label,
-            style: AppTextStyles.bodySmall,
-          ),
+          Text(label, style: AppTextStyles.bodySmall),
         ],
       ),
     );
@@ -250,7 +230,6 @@ class _DiscoveryDashboardViewContentState
 
   Widget _buildDiscoveryTab(BuildContext context, DiscoveryDashboardViewModel viewModel) {
     if (viewModel.searchQuery.isNotEmpty) {
-      // Show search results when searching
       return _buildSearchResults(context, viewModel);
     }
 
@@ -320,36 +299,21 @@ class _DiscoveryDashboardViewContentState
   }
 
   Widget _buildSearchResultCard(BuildContext context, Map<String, dynamic> item) {
-    final type = item['type'] as String;
-    final title = item['title'] as String;
-    final description = item['description'] as String?;
-    // final imageUrl = item['imageUrl'] as String?; // Unused for now
-    final ownerName = item['ownerName'] as String?;
+    final type = item['type'] as String, title = item['title'] as String;
+    final description = item['description'] as String?, ownerName = item['ownerName'] as String?;
 
     return Card(
       child: ListTile(
         leading: _buildSearchResultIcon(type),
-        title: Text(
-          title,
-          style: AppTextStyles.titleSmall,
-        ),
+        title: Text(title, style: AppTextStyles.titleSmall),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (description != null)
-              Text(
-                description,
-                style: AppTextStyles.bodySmall,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
+              Text(description, style: AppTextStyles.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
             if (ownerName != null)
-              Text(
-                'Av $ownerName',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.onSurface.withValues(alpha: 0.6),
-                ),
-              ),
+              Text('Av $ownerName',
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.onSurface.withValues(alpha: 0.6))),
           ],
         ),
         trailing: Icon(
@@ -363,30 +327,15 @@ class _DiscoveryDashboardViewContentState
   }
 
   Widget _buildSearchResultIcon(String type) {
-    IconData icon;
-    Color color;
-    
-    switch (type) {
-      case 'recipe':
-        icon = Icons.restaurant;
-        color = AppColors.success;
-        break;
-      case 'menu':
-        icon = Icons.calendar_month;
-        color = AppColors.info;
-        break;
-      case 'shopping_list':
-        icon = Icons.shopping_cart;
-        color = AppColors.warning;
-        break;
-      default:
-        icon = Icons.help_outline;
-        color = AppColors.onSurface;
-    }
-
+    final iconData = switch (type) {
+      'recipe' => (Icons.restaurant, AppColors.success),
+      'menu' => (Icons.calendar_month, AppColors.info),
+      'shopping_list' => (Icons.shopping_cart, AppColors.warning),
+      _ => (Icons.help_outline, AppColors.onSurface),
+    };
     return CircleAvatar(
-      backgroundColor: color.withValues(alpha: 0.1),
-      child: Icon(icon, color: color, size: AppDimensions.iconSizeM),
+      backgroundColor: iconData.$2.withValues(alpha: 0.1),
+      child: Icon(iconData.$1, color: iconData.$2, size: AppDimensions.iconSizeM),
     );
   }
 
@@ -402,23 +351,13 @@ class _DiscoveryDashboardViewContentState
               size: AppDimensions.iconSizeM,
             ),
             const SizedBox(width: AppDimensions.spacingS),
-            Text(
-              'Populärt bland vänner',
-              style: AppTextStyles.titleMedium.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text('Populärt bland vänner', style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w600)),
           ],
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        Text(
-          'Innehåll som dina vänner gillar och delar',
-          style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.onSurface.withValues(alpha: 0.7),
-          ),
-        ),
+        Text('Innehåll som dina vänner gillar och delar',
+          style: AppTextStyles.bodySmall.copyWith(color: AppColors.onSurface.withValues(alpha: 0.7))),
         const SizedBox(height: AppDimensions.spacingM),
-        // Show trending recipes from discovery service
         if (viewModel.trendingRecipes.isNotEmpty)
           SizedBox(
             height: 120,
@@ -478,23 +417,13 @@ class _DiscoveryDashboardViewContentState
               size: AppDimensions.iconSizeM,
             ),
             const SizedBox(width: AppDimensions.spacingS),
-            Text(
-              'Nyligen delat',
-              style: AppTextStyles.titleMedium.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text('Nyligen delat', style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w600)),
           ],
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        Text(
-          'Senast delade innehåll i ditt nätverk',
-          style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.onSurface.withValues(alpha: 0.7),
-          ),
-        ),
+        Text('Senast delade innehåll i ditt nätverk',
+          style: AppTextStyles.bodySmall.copyWith(color: AppColors.onSurface.withValues(alpha: 0.7))),
         const SizedBox(height: AppDimensions.spacingM),
-        // Show friend activity from discovery service
         if (viewModel.friendActivity.isNotEmpty)
           SizedBox(
             height: 120,
@@ -525,20 +454,10 @@ class _DiscoveryDashboardViewContentState
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              title,
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              '$user delade $type',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.onSurface.withValues(alpha: 0.7),
-                              ),
-                            ),
+                            Text(title, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
+                              maxLines: 1, overflow: TextOverflow.ellipsis),
+                            Text('$user delade $type',
+                              style: AppTextStyles.bodySmall.copyWith(color: AppColors.onSurface.withValues(alpha: 0.7))),
                           ],
                         ),
                       ),
@@ -561,8 +480,7 @@ class _DiscoveryDashboardViewContentState
   }
 
   void _handleSearchResultTap(BuildContext context, Map<String, dynamic> item) {
-    final type = item['type'] as String;
-    final id = item['id'] as String;
+    final type = item['type'] as String, id = item['id'] as String;
 
     switch (type) {
       case 'recipe':

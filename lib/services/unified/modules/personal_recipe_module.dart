@@ -9,54 +9,7 @@ import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 
-/// Specialized personal recipe operations module providing focused CRUD functionality and local storage management.
-///
-/// This module implements sophisticated personal recipe management following Single Responsibility Principle,
-/// handling all aspects of individual recipe operations including creation, modification, validation, and local
-/// storage. It provides comprehensive personal recipe functionality while maintaining clean separation from
-/// social features and real-time collaboration concerns for maintainable and testable recipe management.
-///
-/// **Single Responsibility Focus:**
-/// This module exclusively handles personal recipe operations:
-/// - **Personal Recipe CRUD**: Complete create, read, update, delete operations for individual recipes
-/// - **Import/Export Functionality**: Recipe import from various sources and export to different formats
-/// - **Recipe Validation**: Comprehensive validation of recipe data integrity and content requirements
-/// - **Local Storage Management**: Efficient local caching and offline storage for personal recipes
-///
-/// **What This Module Does NOT Handle:**
-/// - Social features and recipe sharing (handled by SocialRecipeModule)
-/// - Real-time collaborative editing (handled by RealtimeRecipeModule)
-/// - UI concerns and presentation logic (handled by ViewModels and UI components)
-/// - Authentication logic and user management (handled by authentication services)
-///
-/// **Personal Recipe Features:**
-/// - **Recipe Creation**: Comprehensive recipe creation with validation and metadata management
-/// - **Content Management**: Recipe editing with ingredient management and instruction optimization
-/// - **Local Storage**: Intelligent caching with offline support and automatic synchronization
-/// - **Import Support**: Multi-format recipe import with intelligent content parsing and validation
-/// - **Export Capabilities**: Recipe export to various formats for sharing and backup purposes
-///
-/// **Usage Examples:**
-/// ```dart
-/// final personalModule = PersonalRecipeModule(
-///   recipeRepository: recipeRepo,
-///   cacheHelper: cacheHelper,
-///   getCurrentUserId: () => authService.currentUserId,
-/// );
-/// 
-/// // Create personal recipe
-/// final recipe = await personalModule.createPersonalRecipe(
-///   title: 'Köttbullar med gräddsås',
-///   ingredients: ingredients,
-///   instructions: instructions,
-/// );
-/// 
-/// // Update recipe content
-/// await personalModule.updateRecipeContent(recipeId, updatedContent);
-/// 
-/// // Import recipe from text
-/// final importedRecipe = await personalModule.importRecipeFromText(recipeText);
-/// ```
+/// Personal recipe CRUD operations module handling recipe creation, updates, import/export, and local storage.
 class PersonalRecipeModule {
   final RecipeRepository _recipeRepository;
   final UserRepository _userRepository;
@@ -85,9 +38,6 @@ class PersonalRecipeModule {
         _notifyListeners = notifyListeners,
         _getServiceAdapter = getServiceAdapter;
 
-  // ===== PERSONAL RECIPE CRUD =====
-
-  /// Create a new personal recipe
   Future<String?> createPersonalRecipe({
     required String title,
     String description = '',
@@ -152,7 +102,6 @@ class PersonalRecipeModule {
     }
   }
 
-  /// Update an existing personal recipe
   Future<bool> updatePersonalRecipe(Recipe updatedRecipe) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
@@ -186,7 +135,6 @@ class PersonalRecipeModule {
     }
   }
 
-  /// Delete a personal recipe
   Future<bool> deletePersonalRecipe(String recipeId) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
@@ -223,7 +171,6 @@ class PersonalRecipeModule {
     }
   }
 
-  /// Mark recipe as cooked
   Future<bool> markRecipeAsCooked(String recipeId) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
@@ -243,9 +190,6 @@ class PersonalRecipeModule {
     }
   }
 
-  // ===== RECIPE CONTENT OPERATIONS =====
-
-  /// Add ingredient to recipe
   Future<bool> addIngredient(String recipeId, String ingredient) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
@@ -264,7 +208,6 @@ class PersonalRecipeModule {
     }
   }
 
-  /// Update ingredient at specific index
   Future<bool> updateIngredient(String recipeId, int index, String newIngredient) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
@@ -283,7 +226,6 @@ class PersonalRecipeModule {
     }
   }
 
-  /// Remove ingredient at specific index
   Future<bool> removeIngredient(String recipeId, int index) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
@@ -302,7 +244,6 @@ class PersonalRecipeModule {
     }
   }
 
-  /// Add instruction to recipe
   Future<bool> addInstruction(String recipeId, String instruction) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
@@ -321,7 +262,6 @@ class PersonalRecipeModule {
     }
   }
 
-  /// Update instruction at specific index
   Future<bool> updateInstruction(String recipeId, int index, String newInstruction) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
@@ -340,7 +280,6 @@ class PersonalRecipeModule {
     }
   }
 
-  /// Remove instruction at specific index
   Future<bool> removeInstruction(String recipeId, int index) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
@@ -359,9 +298,6 @@ class PersonalRecipeModule {
     }
   }
 
-  // ===== VALIDATION =====
-
-  /// Validate recipe data before creation/update
   bool validateRecipeData({
     required String title,
     required List<String> ingredients,
@@ -385,15 +321,11 @@ class PersonalRecipeModule {
     return true;
   }
 
-  /// Check if recipe belongs to current user
   bool isOwnRecipe(Recipe recipe) {
     final currentUserId = _getCurrentUserId();
     return currentUserId != null && recipe.core.createdBy == currentUserId;
   }
 
-  // ===== CACHE OPERATIONS =====
-
-  /// Save recipe to local cache
   Future<void> _saveToCache(Recipe recipe) async {
     try {
       final recipeData = recipe.toJson();
@@ -404,7 +336,6 @@ class PersonalRecipeModule {
     }
   }
 
-  /// Remove recipe from local cache
   Future<void> _removeFromCache(String recipeId) async {
     try {
       await _cacheHelper.delete(recipeId);
@@ -414,7 +345,6 @@ class PersonalRecipeModule {
     }
   }
 
-  /// Load cached recipes for offline access
   Future<List<Recipe>> loadCachedPersonalRecipes() async {
     try {
       final cachedRecipeIds = await _cacheHelper.getAllKeys();
@@ -443,17 +373,13 @@ class PersonalRecipeModule {
     }
   }
 
-  // ===== REPOSITORY OPERATIONS =====
-  
-  /// Get personal recipes stream via repository
   Stream<List<Recipe>>? getPersonalRecipesStream() {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) return null;
 
     return _recipeRepository.watchRecipes(currentUserId);
   }
-  
-  /// Get personal recipes list via repository
+
   Future<List<Recipe>?> getPersonalRecipesList() async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) return null;
@@ -466,9 +392,6 @@ class PersonalRecipeModule {
     }
   }
 
-  // ===== IMPORT/EXPORT FUNCTIONALITY =====
-
-  /// Import recipes from external sources
   Future<List<String>> importRecipesFromData(List<Map<String, dynamic>> recipesData) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
@@ -513,7 +436,6 @@ class PersonalRecipeModule {
     }
   }
 
-  /// Export personal recipes to JSON format
   Future<List<Map<String, dynamic>>> exportPersonalRecipes() async {
     try {
       final cachedRecipes = await loadCachedPersonalRecipes();
@@ -528,26 +450,18 @@ class PersonalRecipeModule {
     }
   }
 
-  // ===== UTILITY METHODS =====
-
-  /// Create recipe operation result
   RecipeOperationResult createSuccessResult([String? message]) {
     return RecipeOperationResult.success(message);
   }
 
-  /// Create recipe operation failure result
   RecipeOperationResult createFailureResult(String error) {
     return RecipeOperationResult.failure(error);
   }
 
-  /// Clear any existing errors
   void clearError() {
     // This would be handled by the parent service
   }
 
-  // ===== BACKGROUND SYNC METHODS =====
-
-  /// Start background database sync for optimistic updates
   void _startBackgroundRecipeSync(Recipe recipe, String operation) {
     // Use Future.microtask to ensure this runs asynchronously without blocking
     Future.microtask(() async {
@@ -576,7 +490,6 @@ class PersonalRecipeModule {
     });
   }
 
-  /// Schedule retry sync for failed background operations
   void _scheduleRetrySync(Recipe recipe, String operation) {
     // Retry after 5 seconds with exponential backoff
     Future.delayed(const Duration(seconds: 5), () {

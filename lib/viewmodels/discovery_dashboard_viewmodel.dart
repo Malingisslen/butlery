@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
 import 'package:butlery/services/recommendation_service.dart';
+import 'package:butlery/models/recommendation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
@@ -17,73 +18,34 @@ import 'package:butlery/viewmodels/discovery_dashboard/discovery_content_manager
 import 'package:butlery/viewmodels/discovery_dashboard/discovery_friend_activity_manager.dart';
 import 'package:butlery/viewmodels/discovery_dashboard/discovery_recommendations_manager.dart';
 
-/// Manages the unified content discovery dashboard with trending content and social features.
-///
-/// This ViewModel serves as the central hub for content discovery within the Butlery
-/// application, providing users with trending recipes, friend activity, and personalized
-/// recommendations. It implements intelligent caching and state management for optimal
-/// performance while handling multiple content types seamlessly.
-///
-/// Key responsibilities:
-/// - Aggregating trending content across recipes, menus, and shopping lists
-/// - Managing friend activity timeline with real-time updates
-/// - Providing personalized content recommendations based on user preferences
-/// - Handling advanced search and filtering across all discovery content
-/// - Managing discovery categories and content organization
-///
-/// The ViewModel integrates with multiple services including the unified recipe service,
-/// friends service, and social sharing repository to provide a comprehensive discovery
-/// experience following MVVM architecture patterns.
-///
-/// Example usage:
+/// Discovery dashboard ViewModel for trending content, friend activity, and recommendations.
 /// ```dart
-/// final viewModel = DiscoveryDashboardViewModel();
-/// await viewModel.initialize();
-/// // Access trending content via trendingRecipes, friendActivity, etc.
-/// ```
+/// final vm = DiscoveryDashboardViewModel(); await vm.initialize();
 class DiscoveryDashboardViewModel extends ChangeNotifier with StreamManagementMixin {
   late final UnifiedRecipeService _recipeService;
   late final RecommendationService _recommendationService;
   late final RecipeDiscoveryService _discoveryService;
   
-  // Manager instances for focused responsibilities
+  // Manager instances
   late final DiscoveryContentManager _contentManager;
   late final DiscoveryFriendActivityManager _friendActivityManager;
   late final DiscoveryRecommendationsManager _recommendationsManager;
 
-  // ===== STATE MANAGEMENT =====
-
-  // Tab and search state
-  int _activeTab = 0; // 0: Discovery, 1: Activity, 2: Recommendations
+  // State
+  int _activeTab = 0;
   String _searchQuery = '';
   String _selectedCategory = 'all';
-  
-  // Content type filter state
-  final Map<String, bool> _contentTypeFilters = {
-    'recipes': true,
-    'menus': true,
-    'shopping_lists': true,
-  };
-
-  // Loading and error state
+  final Map<String, bool> _contentTypeFilters = {'recipes': true, 'menus': true, 'shopping_lists': true};
   bool _isInitialLoading = false;
   bool _isLoadingMore = false;
   String? _error;
-  
-  // Search state
   List<Map<String, dynamic>> _searchResults = [];
-  
-  // Pagination state
   int _currentPage = 0;
   bool _hasMoreContent = true;
-  
-  // Discovery settings state
   bool _showTrendingContent = true;
   bool _showFriendActivity = true;
   bool _showRecommendations = true;
   bool _enablePushNotifications = true;
-
-  // Discovery categories
   final List<Map<String, dynamic>> _discoveryCategories = [
     {'id': 'all', 'name': 'Allt', 'icon': 'explore', 'count': 0},
     {'id': 'recipes', 'name': 'Recept', 'icon': 'restaurant', 'count': 0},
@@ -108,9 +70,7 @@ class DiscoveryDashboardViewModel extends ChangeNotifier with StreamManagementMi
     loadDiscoverySettings();
   }
 
-  // ===== GETTERS =====
-
-  // Basic state getters
+  // Getters
   int get activeTab => _activeTab;
   String get searchQuery => _searchQuery;
   String get selectedCategory => _selectedCategory;
@@ -118,8 +78,6 @@ class DiscoveryDashboardViewModel extends ChangeNotifier with StreamManagementMi
   bool get isLoadingMore => _isLoadingMore;
   String? get error => _error;
   bool get hasError => _error != null;
-
-  // Content getters (delegated to managers)
   List<Recipe> get trendingRecipes => _contentManager.trendingRecipes;
   List<SharedMenu> get trendingMenus => _contentManager.trendingMenus;
   List<UnifiedShoppingList> get trendingShoppingLists => _contentManager.trendingShoppingLists;
@@ -127,23 +85,15 @@ class DiscoveryDashboardViewModel extends ChangeNotifier with StreamManagementMi
   List<Map<String, dynamic>> get personalizedRecommendations => _recommendationsManager.personalizedRecommendations;
   List<Map<String, dynamic>> get searchResults => List.unmodifiable(_searchResults);
   List<Map<String, dynamic>> get discoveryCategories => List.unmodifiable(_discoveryCategories);
-  
-  // Filter getters
   Map<String, bool> get contentTypeFilters => Map.unmodifiable(_contentTypeFilters);
   bool get recipesFilterEnabled => _contentTypeFilters['recipes'] ?? true;
   bool get menusFilterEnabled => _contentTypeFilters['menus'] ?? true;
   bool get shoppingListsFilterEnabled => _contentTypeFilters['shopping_lists'] ?? true;
-
-  // Content counts for tabs
   int get trendingContentCount => _contentManager.trendingContentCount;
   int get friendActivityCount => _friendActivityManager.friendActivityCount;
   int get recommendationsCount => _recommendationsManager.recommendationsCount;
-
-  // Search and filtering
   bool get hasSearchResults => _searchResults.isNotEmpty;
   bool get hasMoreContent => _hasMoreContent;
-
-  // Discovery statistics
   Map<String, dynamic> get discoveryStats => {
     'trendingRecipes': _contentManager.trendingRecipes.length,
     'trendingMenus': _contentManager.trendingMenus.length,
@@ -153,14 +103,10 @@ class DiscoveryDashboardViewModel extends ChangeNotifier with StreamManagementMi
     'totalDiscoverableContent': trendingContentCount,
     'searchResultsCount': _searchResults.length,
   };
-  
-  // Discovery settings getters
   bool get showTrendingContent => _showTrendingContent;
   bool get showFriendActivity => _showFriendActivity;
   bool get showRecommendations => _showRecommendations;
   bool get enablePushNotifications => _enablePushNotifications;
-
-  // ===== INITIALIZATION =====
 
   /// Initialize the discovery dashboard
   Future<void> initialize() async {
@@ -190,8 +136,6 @@ class DiscoveryDashboardViewModel extends ChangeNotifier with StreamManagementMi
     }
   }
 
-  // Content loading is now handled by dedicated managers
-
   /// Provide feedback on a recommendation
   Future<void> provideRecommendationFeedback(String recommendationId, FeedbackType feedbackType) async {
     await _recommendationsManager.provideRecommendationFeedback(recommendationId, feedbackType);
@@ -209,8 +153,6 @@ class DiscoveryDashboardViewModel extends ChangeNotifier with StreamManagementMi
     await _recommendationsManager.undoRecommendationDismissal(recommendationId);
     notifyListeners();
   }
-
-  // ===== SEARCH FUNCTIONALITY =====
 
   /// Update search query and perform search
   Future<void> updateSearchQuery(String query) async {
@@ -238,29 +180,19 @@ class DiscoveryDashboardViewModel extends ChangeNotifier with StreamManagementMi
     try {
       AppLogger.info('🔍 Searching for: "$query"');
       final queryLower = query.toLowerCase();
-
-      // Search across all content types using managers
       final allResults = <Map<String, dynamic>>[];
-      
-      // Search recipes via content manager
       if (_contentTypeFilters['recipes'] == true) {
         final recipeResults = await _contentManager.searchRecipes(query);
         allResults.addAll(recipeResults);
       }
-      
-      // Search menus via content manager
       if (_contentTypeFilters['menus'] == true) {
         final menuResults = _contentManager.searchMenus(queryLower);
         allResults.addAll(menuResults);
       }
-      
-      // Search shopping lists via content manager
       if (_contentTypeFilters['shopping_lists'] == true) {
         final shoppingListResults = _contentManager.searchShoppingLists(queryLower);
         allResults.addAll(shoppingListResults);
       }
-
-      // Sort by relevance score (highest first)
       allResults.sort((a, b) => (b['relevanceScore'] as double).compareTo(a['relevanceScore'] as double));
       
       _searchResults = allResults;
@@ -272,8 +204,6 @@ class DiscoveryDashboardViewModel extends ChangeNotifier with StreamManagementMi
       notifyListeners();
     }
   }
-
-  // ===== TAB AND CATEGORY MANAGEMENT =====
 
   /// Set active tab
   void setActiveTab(int tabIndex) {

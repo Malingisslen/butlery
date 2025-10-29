@@ -1,0 +1,78 @@
+/// Shopping item operations manager for search, grouping, and bulk operations.
+///
+/// Handles item search, category grouping, and bulk operations like recipe imports.
+/// Part of UnifiedShoppingViewModel's modular architecture.
+
+import 'package:butlery/models/unified/unified_shopping_item.dart';
+
+/// Shopping item operations manager for search, grouping, and bulk operations.
+class ShoppingItemOperationsManager {
+  /// Group items by category with sorting
+  Map<String, List<UnifiedShoppingItem>> groupItemsByCategory(
+      List<UnifiedShoppingItem> items) {
+    final Map<String, List<UnifiedShoppingItem>> grouped = {};
+
+    for (final item in items) {
+      grouped.putIfAbsent(item.category, () => []).add(item);
+    }
+
+    // Sort categories and items
+    final sortedGrouped = <String, List<UnifiedShoppingItem>>{};
+    final sortedKeys = grouped.keys.toList()..sort();
+
+    for (final key in sortedKeys) {
+      final sortedItems = grouped[key]!;
+      sortedItems.sort((a, b) {
+        // Unbought first, then alphabetically
+        if (a.bought != b.bought) {
+          return a.bought ? 1 : -1;
+        }
+        return a.name.compareTo(b.name);
+      });
+      sortedGrouped[key] = sortedItems;
+    }
+
+    return sortedGrouped;
+  }
+
+  /// Get all used categories (sorted)
+  List<String> getUsedCategories(List<UnifiedShoppingItem> items) {
+    final categories = items.map((item) => item.category).toSet().toList();
+    categories.sort();
+    return categories;
+  }
+
+  /// Search items by name or category
+  List<UnifiedShoppingItem> searchItems(
+      List<UnifiedShoppingItem> items, String query) {
+    if (query.trim().isEmpty) return items;
+
+    final lowercaseQuery = query.toLowerCase();
+    return items
+        .where((item) =>
+            item.name.toLowerCase().contains(lowercaseQuery) ||
+            item.category.toLowerCase().contains(lowercaseQuery))
+        .toList();
+  }
+
+  /// Bulk add items from recipe ingredients
+  Future<bool> addItemsFromRecipe(
+    List<Map<String, dynamic>> ingredientData,
+    Future<bool> Function({
+      required String name,
+      required double amount,
+      required String unit,
+      required String category,
+    }) addItemCallback,
+  ) async {
+    for (final ingredient in ingredientData) {
+      await addItemCallback(
+        name: ingredient['name'] as String,
+        amount: (ingredient['amount'] as num).toDouble(),
+        unit: ingredient['unit'] as String? ?? '',
+        category: ingredient['category'] as String? ?? 'Övrigt',
+      );
+    }
+    return true;
+  }
+}

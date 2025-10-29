@@ -26,7 +26,7 @@ import 'package:butlery/viewmodels/url_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/archive_import_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
-import 'package:butlery/viewmodels/shared_content_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
@@ -44,7 +44,6 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/messaging_service.dart';
-import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
@@ -101,7 +100,7 @@ class UIModule implements DIModule {
     
     // Social ViewModels
     FriendsViewModel,
-    SharedContentViewModel,
+    SharedContentCoordinatorViewModel,
     CreateGroupViewModel,
     GroupInvitationsViewModel,
     GroupContentViewModel,
@@ -142,7 +141,6 @@ class UIModule implements DIModule {
       container.registerFactory<UserProfileViewModel>(
         () => UserProfileViewModel(
           container<UserService>(),
-          container<StorageService>(),
           container<ImagePickerService>(),
         ),
       );
@@ -225,12 +223,10 @@ class UIModule implements DIModule {
         ),
       );
       
-      // Shared Content ViewModel
-      container.registerFactory<SharedContentViewModel>(
-        () => SharedContentViewModel(
-          socialRecipeService: container<SocialRecipeService>(),
-          friendsService: container<UnifiedFriendsService>(),
-          shoppingService: container<UnifiedShoppingService>(),
+      // Shared Content Coordinator ViewModel - modular architecture
+      container.registerFactory<SharedContentCoordinatorViewModel>(
+        () => SharedContentCoordinatorViewModel(
+          // ViewModels created internally if not provided
         ),
       );
       

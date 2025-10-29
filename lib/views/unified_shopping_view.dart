@@ -1,55 +1,7 @@
-/// Comprehensive unified shopping view providing advanced shopping list management through facade pattern architecture for Flutter applications.
-///
-/// This module implements sophisticated shopping list interface following Single Responsibility Principle and Facade Pattern,
-/// specializing in shopping list presentation, item management, collaborative features, and comprehensive shopping coordination.
-/// It provides complete shopping interface while maintaining clean separation from business logic, data persistence,
-/// and state management through MVVM architecture and focused component integration.
-///
-/// **Single Responsibility Focus:**
-/// This module exclusively handles shopping list UI presentation concerns through facade pattern delegation:
-/// - **Shopping List Presentation Excellence**: Comprehensive shopping list display with item management and visual coordination
-/// - **Collaborative Shopping Intelligence**: Advanced collaborative features with sharing, synchronization, and multi-user coordination
-/// - **Item Management System**: Complete item operations including adding, editing, deletion, and status management
-/// - **Facade Pattern Architecture**: Clean component delegation through specialized shopping widgets and dialog coordination
-/// - **Swedish Localization Excellence**: Complete Swedish language support for shopping operations and user feedback
-///
-/// **What This Module Does NOT Handle:**
-/// - Shopping business logic and data operations (handled by UnifiedShoppingViewModel and shopping services)
-/// - Data persistence and synchronization (handled by shopping repositories and Firebase services)
-/// - Collaborative infrastructure implementation (handled by collaborative shopping services)
-/// - Share delivery and external integration (handled by ShareService and platform integrations)
-///
-/// **Unified Shopping View Architecture:**
-/// - **Facade Pattern Implementation**: Clean delegation to specialized shopping components and dialog management
-/// - **Focused Component Integration**: Modular architecture with ShoppingAppBar, ShoppingListHeader, and ShoppingListContent
-/// - **Dialog Management System**: Comprehensive dialog coordination through ShoppingDialogs facade
-/// - **Event Handler Architecture**: Clean event delegation with proper separation of concerns
-/// - **Collaborative Features**: Real-time synchronization with offline indicators and collaborative coordination
-///
-/// **Usage Examples:**
-/// ```dart
-/// // Navigate to unified shopping view
-/// Navigator.of(context).push(
-///   MaterialPageRoute(
-///     builder: (context) => const UnifiedShoppingView(),
-///   ),
-/// );
-/// 
-/// // The view provides comprehensive shopping functionality:
-/// // - Shopping list display with item management and status tracking
-/// // - Item operations including adding, editing, deletion, and completion
-/// // - Collaborative features with sharing, synchronization, and multi-user support
-/// // - Offline functionality with sync status and collaborative indicators
-/// // - External sharing with system integration and content distribution
-/// 
-/// // Facade pattern component integration:
-/// // - ShoppingAppBar for action management and floating action button coordination
-/// // - ShoppingListHeader for list statistics and bulk operations
-/// // - ShoppingListContent for item display and interaction management
-/// // - ShoppingDialogs for comprehensive dialog management and user input
-/// ```
+/// Unified shopping view with facade pattern delegation for list management, item operations, and collaborative features.
+/// Implements MVVM architecture with Swedish localization and component-based UI (AppBar, Header, Content, Dialogs).
 
-// lib/views/unified_shopping_view.dart - FACADE PATTERN IMPLEMENTATION
+// lib/views/unified_shopping_view.dart
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -129,32 +81,12 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     _initializeViewModel();
   }
 
-  /// Comprehensive ViewModel initialization with shopping data loading and state preparation.
-  /// 
-  /// Initializes shopping ViewModel enabling shopping list loading, collaborative features,
-  /// and comprehensive shopping functionality through asynchronous initialization
-  /// and proper state management coordination.
-  /// 
-  /// **Initialization Features:**
-  /// - Shopping list data loading with collaborative synchronization
-  /// - Item management preparation with CRUD operation setup
-  /// - Collaborative feature initialization with sharing and synchronization coordination
-  /// - Error handling with proper initialization failure management
+  /// Initialize ViewModel with shopping data loading and collaborative features
   Future<void> _initializeViewModel() async {
     await _viewModel.initialize();
   }
 
-  /// Comprehensive shopping interface construction with facade pattern components and collaborative features.
-  /// 
-  /// [context] Build context for theme access and component construction coordination
-  /// 
-  /// Constructs complete shopping list interface featuring facade pattern architecture,
-  /// collaborative features, item management, and comprehensive shopping functionality
-  /// through provider-based state management and specialized component integration.
-  /// 
-  /// **Interface Architecture:**
-  /// - Provider-based state management with ChangeNotifierProvider and reactive coordination
-  /// - Facade pattern component integration with specialized shopping widgets
+  /// Build shopping interface with Provider state management and facade pattern components
   /// - Main menu layout with navigation integration and consistent app structure
   /// - Collaborative features with offline indicators and synchronization status
   /// - Floating action button integration with item addition functionality

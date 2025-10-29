@@ -1,68 +1,6 @@
-/// Comprehensive menu ViewModel providing advanced meal planning and menu management for Flutter applications.
-///
-/// This module implements sophisticated menu management following Single Responsibility Principle,
-/// handling all aspects of menu presentation layer including AI-powered generation, social sharing, storage coordination,
-/// and comprehensive state management. It provides complete meal planning infrastructure while
-/// maintaining clean separation from UI rendering, data persistence, and business logic implementation.
-///
-/// **Single Responsibility Focus:**
-/// This module exclusively handles menu presentation layer concerns through focused module delegation:
-/// - **Menu Generation Excellence**: AI-powered menu generation with prompt-based meal planning and section regeneration
-/// - **Social Integration Intelligence**: Comprehensive social sharing, importing, and collaborative menu management
-/// - **Storage Coordination**: Advanced local storage with menu persistence, retrieval, and modification tracking
-/// - **State Management**: Sophisticated reactive state management with error handling and notification coordination
-/// - **Module Architecture**: Clean facade pattern delegating to specialized modules for focused responsibility
-///
-/// **What This Module Does NOT Handle:**
-/// - Complex business logic implementation (handled by specialized modules: MenuGenerator, MenuStorage, etc.)
-/// - Direct service implementations (handled by UnifiedRecipeService, MenuService, and SocialMenuOperations)
-/// - UI rendering and widget creation (handled by MenuView and meal planning UI components)
-/// - Data persistence logic (handled by MenuStorage module and underlying storage services)
-///
-/// **Menu ViewModel Architecture:**
-/// - **MenuStateManager**: Reactive state management and UI notification coordination
-/// - **MenuGenerator**: AI-powered menu generation and section regeneration capabilities
-/// - **MenuStorage**: Local menu persistence, retrieval, and modification tracking
-/// - **MenuSocialManager**: Social sharing, importing, and collaborative menu features
-/// - **Clean Facade Pattern**: Unified API delegating to focused modules for maintainable architecture
-///
-/// **Usage Examples:**
+/// Menu ViewModel for AI meal planning, social sharing, and storage with modular architecture.
 /// ```dart
-/// // Initialize menu ViewModel with service dependencies
-/// final menuViewModel = MenuViewModel(
-///   recipeService: unifiedRecipeService,
-///   menuService: menuService,
-/// );
-/// 
-/// // AI-powered menu generation with Swedish prompts
-/// await menuViewModel.generateMenu('Vegetarisk veckomeny för familj med barn');
-/// 
-/// // Regenerate specific menu sections
-/// await menuViewModel.regenerateSection('Middag');
-/// 
-/// // Save menu with social sharing
-/// final saved = await menuViewModel.saveMenuWithNameAndComment(
-///   'Vegetarisk Veckomeny',
-///   'Hälsosam och barnvänlig meny',
-///   shareWithFriends: true,
-///   selectedFriendIds: ['friend1', 'friend2'],
-///   shareMessage: 'Kolla in denna fantastiska vegetariska meny!',
-/// );
-/// 
-/// // Load saved menu
-/// await menuViewModel.loadSavedMenu('menu_key_123');
-/// 
-/// // Social menu operations
-/// final sharedMenus = await menuViewModel.getAvailableSharedMenus();
-/// await menuViewModel.importSharedMenu('shared_menu_id');
-/// 
-/// // Reactive state monitoring
-/// if (menuViewModel.isGenerating) {
-///   // Show generation progress
-/// } else if (menuViewModel.hasMenu) {
-///   // Display generated menu
-/// }
-/// ```
+/// final vm = MenuViewModel(); await vm.generateMenu('Veckomeny');
 
 // lib/viewmodels/menu_viewmodel.dart
 
@@ -81,37 +19,16 @@ import 'package:butlery/viewmodels/menu/menu_generator.dart';
 import 'package:butlery/viewmodels/menu/menu_storage.dart';
 import 'package:butlery/viewmodels/menu/menu_social_manager.dart';
 
-/// Comprehensive menu ViewModel providing advanced meal planning and menu management through focused module architecture.
-///
-/// Serves as a clean facade coordinating specialized modules for menu operations, providing unified API
-/// for AI-powered menu generation, social sharing, storage management, and reactive state coordination
-/// while maintaining clean MVVM architecture separation between menu business logic and UI presentation concerns.
+/// Menu ViewModel with focused modules for generation, storage, and social sharing (MVVM).
 class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
   final UnifiedRecipeService _recipeService;
   final MenuService _menuService;
   
-  // ===== FOCUSED MODULE ARCHITECTURE =====
-  
-  /// State management module for reactive UI coordination and error handling.
+  // Modules
   late final MenuStateManager _stateManager;
-  
-  /// AI-powered menu generation module for prompt-based meal planning.
   late final MenuGenerator _generator;
-  
-  /// Local storage module for menu persistence and retrieval operations.
   late final MenuStorage _storage;
-  
-  /// Social features module for sharing, importing, and collaborative menu management.
   late final MenuSocialManager _socialManager;
-
-  /// Initializes menu ViewModel with comprehensive module coordination and service integration.
-  /// 
-  /// [recipeService] Optional UnifiedRecipeService instance for dependency injection
-  /// [menuService] Optional MenuService instance for dependency injection
-  /// 
-  /// Establishes focused module architecture with specialized components for menu management,
-  /// sets up reactive state coordination, and initializes menu data loading for complete
-  /// meal planning functionality with clean separation of concerns.
   MenuViewModel({
     UnifiedRecipeService? recipeService,
     MenuService? menuService,
@@ -139,82 +56,19 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     _loadAllMenus();
   }
 
-  // ===== REACTIVE STATE ACCESSORS (DELEGATE TO SPECIALIZED MODULES) =====
-  
-  /// Current generated menu organized by categories for UI display and meal planning.
-  /// 
-  /// Delegates to MenuStateManager for reactive menu state access enabling
-  /// UI components to display categorized recipes and meal planning information.
+  // Getters
   Map<String, List<Recipe>> get menu => _stateManager.menu;
-  
-  /// Menu generation operation state for UI progress indication and interaction control.
-  /// 
-  /// Provides real-time generation status for loading indicators and user interaction
-  /// management during AI-powered menu generation and section regeneration operations.
   bool get isGenerating => _stateManager.isGenerating;
-  
-  /// Current error message for user feedback and error state management.
-  /// 
-  /// Delegates to MenuStateManager for centralized error handling with localized
-  /// Swedish error messages for comprehensive user feedback and error recovery.
   String? get error => _stateManager.error;
-  
-  /// Error state indicator for UI conditional rendering and error handling.
-  /// 
-  /// Provides boolean error state check for UI error display decisions
-  /// and error state management throughout menu operations.
   bool get hasError => _stateManager.hasError;
-  
-  /// Menu existence indicator for UI conditional display and feature enabling.
-  /// 
-  /// Indicates whether a generated menu is available for display and operations,
-  /// enabling UI conditional rendering and menu-dependent feature activation.
   bool get hasMenu => _stateManager.hasMenu;
-  
-  /// Last generation prompt for regeneration and context display.
-  /// 
-  /// Provides access to the last AI generation prompt for UI display
-  /// and menu regeneration operations with user context preservation.
   String get lastPrompt => _stateManager.lastPrompt;
-  
-  /// Saved menus list for UI display and menu selection functionality.
-  /// 
-  /// Delegates to MenuStateManager for comprehensive saved menu information
-  /// including local and imported menus for complete menu management.
   List<SavedMenuInfo> get savedMenus => _stateManager.savedMenus;
-  
-  /// Total recipe count across all menu categories for statistics and UI display.
-  /// 
-  /// Provides aggregate recipe count for menu statistics display
-  /// and meal planning information presentation to users.
   int get totalRecipeCount => _stateManager.totalRecipeCount;
-
-  /// Available recipes for menu generation from recipe service integration.
-  /// 
-  /// Delegates to MenuGenerator for recipe availability information
-  /// enabling menu generation capability assessment and user guidance.
   List<Recipe> get availableRecipes => _generator.availableRecipes;
-  
-  /// Recipe availability indicator for menu generation capability assessment.
-  /// 
-  /// Indicates whether sufficient recipes are available for menu generation,
-  /// enabling UI conditional display and generation feature availability.
   bool get hasAvailableRecipes => _generator.hasAvailableRecipes;
 
-  // ===== AI-POWERED MENU GENERATION OPERATIONS =====
-
-  /// Generates complete menu from AI prompt with comprehensive state management and error handling.
-  /// 
-  /// [prompt] Swedish language prompt describing desired menu characteristics
-  /// 
-  /// Performs AI-powered menu generation through MenuGenerator module with complete
-  /// state coordination, progress tracking, and error handling. Validates prompt,
-  /// manages generation state, and updates menu with generated recipes organized by categories.
-  /// 
-  /// **Generation Process:**
-  /// - Prompt validation with Swedish localized error feedback
-  /// - Generation state management with UI progress indication
-  /// - AI-powered recipe selection and categorization
+  /// Generates menu from AI prompt
   /// - Menu state update with generated content
   /// 
   /// **Usage Example:**

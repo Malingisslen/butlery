@@ -1,60 +1,6 @@
-/// Comprehensive group invitation data model providing complete group invitation lifecycle management and social integration.
-///
-/// This model implements sophisticated group invitation management following Single Responsibility Principle,
-/// handling all aspects of group invitation operations including status tracking, lifecycle management,
-/// expiration handling, caching optimization, and group-based social interaction features. It provides
-/// comprehensive group invitation functionality while maintaining clean separation from group management
-/// and general social interaction concerns.
-///
-/// **Single Responsibility Focus:**
-/// This model exclusively handles group invitation data and operations:
-/// - **Invitation Lifecycle**: Complete group invitation workflow with pending, accepted, rejected, expired, and cancelled states
-/// - **Group Integration**: Cached group metadata for UI performance with name, emoji, and display optimization
-/// - **Status Management**: Comprehensive status tracking with timestamps and automated expiration detection
-/// - **Social Messaging**: Personalized message support for custom group invitation communication and context
-///
-/// **What This Model Does NOT Handle:**
-/// - Group management and member operations (handled by group models and services)
-/// - General social interaction and friend management (handled by friend models and operations)
-/// - UI concerns and presentation logic (handled by ViewModels and UI components)
-/// - Authentication and permission validation (handled by permission services)
-///
-/// **Group Invitation Features:**
-/// - **Complete Lifecycle Management**: Full invitation workflow from creation through resolution with status tracking
-/// - **Cached Group Metadata**: Performance-optimized group information caching for enhanced UI responsiveness
-/// - **Automated Expiration**: Smart expiration detection with 7-day timeout and status transition management
-/// - **Personalized Messaging**: Optional message support for custom group invitation communication and context
-/// - **Notification Integration**: Comprehensive notification text generation with Swedish localization support
-///
-/// **Usage Examples:**
+/// Group invitation model with lifecycle (pending/accepted/rejected/expired), 7-day expiration, Swedish.
 /// ```dart
-/// // Create new group invitation
-/// final invitation = GroupInvitation.create(
-///   groupId: groupId,
-///   groupName: 'Matlagningsgruppen',
-///   groupEmoji: '👨‍🍳',
-///   fromUserId: currentUserId,
-///   fromUserName: 'Anna Andersson', 
-///   toUserId: targetUserId,
-///   personalMessage: 'Hej! Vill du vara med i vår matlagningsgrupp?',
-/// );
-/// 
-/// // Handle invitation responses
-/// final acceptedInvitation = invitation.accept();
-/// final rejectedInvitation = invitation.reject();
-/// final cancelledInvitation = invitation.cancel();
-/// 
-/// // Check invitation status and timing
-/// final isPending = invitation.isPending;
-/// final isExpired = invitation.isExpired;
-/// final timeAgo = invitation.timeAgoText; // '3 dagar sedan'
-/// final expiresIn = invitation.expiresInText; // '4 dagar kvar'
-/// 
-/// // Notification and UI integration
-/// final notificationText = invitation.notificationText;
-/// final shortText = invitation.shortNotificationText;
-/// final statusColor = invitation.statusColorName;
-/// ```
+/// final inv = GroupInvitation.create(groupId: id, groupName: 'Mat', fromUserId: u1, toUserId: u2);
 
 // lib/models/group_invitation.dart
 
@@ -62,14 +8,7 @@ import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 
-/// Enumeration defining the different states of a group invitation throughout its lifecycle.
-///
-/// Group invitation statuses determine the current state and available actions:
-/// - [pending] - Invitation sent but not yet responded to by recipient (Väntande inbjudan)
-/// - [accepted] - Invitation approved by recipient, group membership established (Accepterad)
-/// - [rejected] - Invitation declined by recipient (Avvisad)
-/// - [expired] - Invitation automatically expired due to timeout (Utgången)
-/// - [cancelled] - Invitation withdrawn by sender before response (Avbruten av avsändare)
+/// Invitation status: pending, accepted, rejected, expired, cancelled.
 enum GroupInvitationStatus {
   pending, // Väntande inbjudan
   accepted, // Accepterad
@@ -78,83 +17,20 @@ enum GroupInvitationStatus {
   cancelled // Avbruten av avsändare
 }
 
-/// Comprehensive group invitation data model with lifecycle management and cached group metadata.
-///
-/// Represents a complete group invitation with all associated metadata including status tracking,
-/// temporal information, cached group data for UI performance, and optional messaging features.
+/// Group invitation with lifecycle management and cached metadata (group name/emoji, sender name).
 class GroupInvitation with JsonSerializableMixin {
-  /// Unique identifier for this group invitation.
   final String id;
-  
-  /// Target group identifier for the invitation.
-  ///
-  /// References the group that the user is being invited to join.
-  final String groupId; // Vilken grupp
-  
-  /// Cached group name for UI performance optimization.
-  ///
-  /// Stored locally to avoid additional group lookups during UI rendering.
-  final String groupName; // Gruppnamn (cached för UI)
-  
-  /// Cached group emoji for visual identification.
-  ///
-  /// Provides visual context and branding for the group in invitation displays.
-  final String groupEmoji; // Gruppemoji (cached för UI)
-  
-  /// User ID of the invitation sender.
-  ///
-  /// Identifies who initiated the group invitation request.
-  final String fromUserId; // Vem som bjöd in
-  
-  /// Cached sender name for UI performance optimization.
-  ///
-  /// Stored locally to avoid additional user profile lookups during display.
-  final String fromUserName; // Avsändarens namn (cached för UI)
-  
-  /// User ID of the invitation recipient.
-  ///
-  /// Identifies who is being invited to join the group.
-  final String toUserId; // Vem som blev inbjuden
-  
-  /// Current status of the group invitation.
-  ///
-  /// Tracks the invitation state through its complete lifecycle.
+  final String groupId;
+  final String groupName;
+  final String groupEmoji;
+  final String fromUserId;
+  final String fromUserName;
+  final String toUserId;
   final GroupInvitationStatus status;
-  
-  /// Timestamp when the invitation was originally sent.
-  ///
-  /// Used for time-based displays and expiration calculations.
   final DateTime sentAt;
-  
-  /// Timestamp when the invitation was responded to (accepted/rejected).
-  ///
-  /// Null for pending invitations, set when any response action is taken.
   final DateTime? respondedAt;
-  
-  /// Optional personal message included with the invitation.
-  ///
-  /// Allows for custom communication and context for the group invitation.
-  final String? personalMessage; // Personligt meddelande
-  
-  /// Timestamp when the invitation expires and becomes invalid.
-  ///
-  /// Defaults to 7 days from creation time for automatic cleanup.
-  final DateTime expiresAt; // När inbjudan går ut
-
-  /// Creates a new group invitation with all required metadata and default values.
-  ///
-  /// [id] Unique identifier for the invitation
-  /// [groupId] Target group identifier
-  /// [groupName] Cached group name for UI performance
-  /// [groupEmoji] Cached group emoji for visual identification
-  /// [fromUserId] Sender's user identifier
-  /// [fromUserName] Cached sender name for UI performance
-  /// [toUserId] Recipient's user identifier
-  /// [status] Invitation status, defaults to pending
-  /// [sentAt] Send timestamp, defaults to current time
-  /// [respondedAt] Response timestamp, null for pending invitations
-  /// [personalMessage] Optional custom message
-  /// [expiresAt] Expiration timestamp, defaults to 7 days from send time
+  final String? personalMessage;
+  final DateTime expiresAt;
   GroupInvitation({
     required this.id,
     required this.groupId,
