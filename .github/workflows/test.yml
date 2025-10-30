@@ -16,19 +16,19 @@ jobs:
       
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.2'
+          flutter-version: '3.32.4'
           channel: 'stable'
       
       - run: flutter pub get
       
-      # Run unit tests only (exclude integration tests)
-      - name: Run unit tests
+      # Run unit and widget tests (exclude integration tests)
+      - name: Run unit and widget tests
         run: |
-          if [ -n "$(find test -name '*.dart' -type f 2>/dev/null)" ]; then
-            echo "Running unit tests (excluding integration tests)..."
-            flutter test --exclude-tags=integration
+          if [ -n "$(find test/unit test/widget -name '*.dart' -type f 2>/dev/null)" ]; then
+            echo "Running unit and widget tests..."
+            flutter test test/unit test/widget --reporter=expanded
           else
-            echo "No tests found, skipping test step"
+            echo "No unit/widget tests found, skipping test step"
           fi
       
       # Upload test results if tests fail
@@ -48,7 +48,7 @@ jobs:
       
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.2'
+          flutter-version: '3.32.4'
           channel: 'stable'
       
       # Setup Java for Firebase Emulator
@@ -100,9 +100,9 @@ jobs:
       # Run integration tests only
       - name: Run integration tests
         run: |
-          if [ -n "$(find test -path "*/integration/*" -name '*.dart' -type f 2>/dev/null)" ]; then
+          if [ -n "$(find test/integration -name '*.dart' -type f 2>/dev/null)" ]; then
             echo "Running integration tests..."
-            flutter test --tags=integration
+            flutter test test/integration --reporter=expanded
           else
             echo "No integration tests found, skipping integration test step"
           fi
