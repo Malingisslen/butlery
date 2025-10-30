@@ -1,0 +1,46 @@
+# Codecov Configuration for Butlery
+# https://docs.codecov.com/docs/codecov-yaml
+
+# Coverage targets and thresholds
+coverage:
+  precision: 2
+  round: down
+  range: "50...100"
+
+  status:
+    project:
+      default:
+        target: 50%                 # Current baseline (will increase over time)
+        threshold: 2%               # Allow 2% decrease before failing
+        if_ci_failed: error
+
+    patch:
+      default:
+        target: 60%                 # New code should have better coverage
+        threshold: 5%
+        if_ci_failed: error
+
+# Comment on PRs with coverage report
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false
+  require_base: true
+  require_head: true
+
+# Ignore generated files and test mocks
+ignore:
+  - "**/*.g.dart"                   # Generated files
+  - "**/*.freezed.dart"             # Freezed generated files
+  - "**/*.mocks.dart"               # Mock files
+  - "**/mock_*.dart"                # Mock files
+  - "test/**/*"                     # Test files themselves
+  - "lib/firebase_options.dart"     # Firebase config
+  - "lib/l10n/**/*"                 # Localization files
+  - "lib/theme/**/*"                # Theme files (UI constants)
+
+# Coverage analysis settings
+codecov:
+  require_ci_to_pass: true
+  notify:
+    wait_for_ci: true
