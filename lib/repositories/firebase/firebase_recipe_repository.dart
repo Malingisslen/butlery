@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_change.dart';
@@ -9,6 +10,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/performance/firebase_performance_service.dart';
 
 /// Firebase Firestore implementation for recipe data operations and real-time synchronization.
 ///
@@ -68,9 +70,11 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   FirebaseRecipeRepository({
     FirebaseFirestore? firestore,
     required AuthRepository authRepository,
+    FirebaseAuditRepository? auditRepository,
   }) : super(
           firestore: firestore,
           authRepository: authRepository,
+          auditRepository: auditRepository,
         );
 
   // ===== BASE CLASS IMPLEMENTATION =====
@@ -87,6 +91,72 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
   @override
   String getId(Recipe entity) => entity.id;
+
+  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
+
+  @override
+  Future<bool> validateCreatePermission(String userId, Recipe entity) async {
+    // Users can only create recipes in their own collection
+    // Validate ownerId matches the authenticated user
+    final ownerId = entity.socialData?.ownerId ?? entity.createdBy ?? userId;
+    return ownerId == userId;
+  }
+
+  @override
+  Future<bool> validateReadPermission(String userId, String resourceId, Recipe? entity) async {
+    if (entity == null) return false;
+
+    // Owner can always read their own recipes
+    final ownerId = entity.socialData?.ownerId ?? entity.createdBy;
+    if (ownerId == userId) return true;
+
+    // Check if user is a collaborator/member with permissions (for collaborative recipes)
+    if (entity.isCollaborative && entity.socialData?.memberPermissions != null) {
+      if (entity.socialData!.memberPermissions!.containsKey(userId)) {
+        return true;
+      }
+    }
+
+    // For now, allow guest viewing on collaborative recipes if enabled
+    if (entity.isCollaborative && (entity.socialData?.allowGuestViewing ?? false)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  @override
+  Future<bool> validateUpdatePermission(String userId, String resourceId, Recipe entity) async {
+    // Owner can always update
+    final ownerId = entity.socialData?.ownerId ?? entity.createdBy;
+    if (ownerId == userId) return true;
+
+    // For collaborative recipes, check if user has write permission
+    if (entity.isCollaborative && entity.socialData?.memberPermissions != null) {
+      if (entity.socialData!.memberPermissions!.containsKey(userId)) {
+        // For now, allow all members with permissions to edit collaborative recipes
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  @override
+  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+    // Only the owner can delete recipes
+    // Note: We need to fetch the recipe to check ownership
+    try {
+      final recipe = await read(resourceId);
+      if (recipe == null) return false;
+
+      final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
+      return ownerId == userId;
+    } catch (e) {
+      AppLogger.error('Failed to validate delete permission: $e');
+      return false;
+    }
+  }
 
   // ===== ENHANCED BASE CLASS METHODS WITH PERMISSION VALIDATION =====
 
@@ -218,22 +288,33 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   Future<List<Recipe>> searchRecipes(String query) async {
     // ✅ PERFORMANCE FIX: Added limit and optimized search approach
     // Instead of loading ALL recipes, we limit and use server-side orderBy for better performance
-    final lower = query.toLowerCase();
-    
-    // For small datasets, this is acceptable, but for optimization we could implement
-    // server-side text search with Algolia or similar in the future
-    final userId = currentUserId;
-    if (userId == null) return [];
-    
-    final snap = await getCollectionForUser(userId)
-        .orderBy('core.updatedAt', descending: true)
-        .limit(200) // Limit search scope to most recent 200 recipes
-        .get();
-    
-    return snap.docs
-        .map(fromFirestore)
-        .where((r) => r.title.toLowerCase().contains(lower))
-        .toList();
+    return await FirebasePerformanceService.traceSearch(
+      (trace) async {
+        final lower = query.toLowerCase();
+
+        // For small datasets, this is acceptable, but for optimization we could implement
+        // server-side text search with Algolia or similar in the future
+        final userId = currentUserId;
+        if (userId == null) return [];
+
+        final snap = await getCollectionForUser(userId)
+            .orderBy('core.updatedAt', descending: true)
+            .limit(200) // Limit search scope to most recent 200 recipes
+            .get();
+
+        final results = snap.docs
+            .map(fromFirestore)
+            .where((r) => r.title.toLowerCase().contains(lower))
+            .toList();
+
+        trace.putAttribute('query_length', query.length.toString());
+        trace.putAttribute('user_id', userId);
+        trace.setMetric('result_count', results.length);
+
+        return results;
+      },
+      searchType: 'recipe_title',
+    );
   }
 
   @override
@@ -270,12 +351,20 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   Future<List<Recipe>> fetchArchiveRecipes() async {
     // Archive recipes are stored in a global collection, not user-scoped
     // ✅ PERFORMANCE FIX: Added limit to prevent unbounded query
-    final snap = await firestore
-        .collection('butlery_archive')
-        .orderBy('core.createdAt', descending: true)
-        .limit(100) // Load max 100 archive recipes
-        .get();
-    return snap.docs.map(fromFirestore).toList();
+    return await FirebasePerformanceService.traceFirebaseQuery(
+      (trace) async {
+        final snap = await firestore
+            .collection('butlery_archive')
+            .orderBy('core.createdAt', descending: true)
+            .limit(100) // Load max 100 archive recipes
+            .get();
+
+        final recipes = snap.docs.map(fromFirestore).toList();
+        trace.putAttribute('source', 'archive');
+        return recipes;
+      },
+      collection: 'butlery_archive',
+    );
   }
 
   @override
@@ -295,27 +384,45 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   Future<List<Recipe>> fetchUserRecipes(String userId) async {
     // Use the mixin method for user-specific collection
     // ✅ PERFORMANCE FIX: Added limit to prevent unbounded query
-    final snap = await getCollectionForUser(userId)
-        .orderBy('core.updatedAt', descending: true)
-        .limit(50) // Limit to 50 most recent recipes
-        .get();
-    return snap.docs.map(fromFirestore).toList();
+    return await FirebasePerformanceService.traceFirebaseQuery(
+      (trace) async {
+        final snap = await getCollectionForUser(userId)
+            .orderBy('core.updatedAt', descending: true)
+            .limit(50) // Limit to 50 most recent recipes
+            .get();
+
+        final recipes = snap.docs.map(fromFirestore).toList();
+        trace.putAttribute('user_id', userId);
+        return recipes;
+      },
+      collection: 'recipes',
+      resultCount: null, // Will be set after query
+    );
   }
 
   // ===== SEARCH AND FILTER METHODS =====
 
   /// Find recipes by meal type (e.g., 'Frukost', 'Lunch', 'Middag')
   Future<List<Recipe>> findByMealType(String mealType) async {
-    final userId = currentUserId;
-    if (userId == null) return [];
-    
-    final snap = await getCollectionForUser(userId)
-        .where('core.mealType', isEqualTo: mealType)
-        .orderBy('core.updatedAt', descending: true)
-        .limit(100)
-        .get();
-    
-    return snap.docs.map(fromFirestore).toList();
+    return await FirebasePerformanceService.traceSearch(
+      (trace) async {
+        final userId = currentUserId;
+        if (userId == null) return [];
+
+        final snap = await getCollectionForUser(userId)
+            .where('core.mealType', isEqualTo: mealType)
+            .orderBy('core.updatedAt', descending: true)
+            .limit(100)
+            .get();
+
+        final recipes = snap.docs.map(fromFirestore).toList();
+        trace.putAttribute('meal_type', mealType);
+        trace.setMetric('result_count', recipes.length);
+
+        return recipes;
+      },
+      searchType: 'meal_type',
+    );
   }
 
   /// Find recipes containing a specific ingredient

@@ -27,7 +27,7 @@ class UserConsent {
   factory UserConsent.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return UserConsent(
-      userId: doc.id,
+      userId: data['userId'] as String, // Read from document data for data integrity
       purposes: ConsentPurposes.fromMap(data['purposes'] as Map<String, dynamic>),
       grantedAt: (data['grantedAt'] as Timestamp).toDate(),
       updatedAt: data['updatedAt'] != null
@@ -42,6 +42,7 @@ class UserConsent {
   /// Convert to Firestore document
   Map<String, dynamic> toFirestore() {
     return {
+      'userId': userId, // Store userId for data integrity and GDPR compliance
       'purposes': purposes.toMap(),
       'grantedAt': Timestamp.fromDate(grantedAt),
       'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,

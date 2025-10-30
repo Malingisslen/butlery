@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:butlery/repositories/interfaces/storage_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_storage_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
@@ -25,15 +24,13 @@ class StorageService extends BaseService
   StorageService._internal(this._repository);
   
   /// Factory constructor with dependency injection support.
-  /// 
-  /// Accepts an optional [repository] parameter for testing.
-  /// In production, uses FirebaseStorageRepository by default.
-  factory StorageService({StorageRepository? repository}) => 
+  ///
+  /// Requires [repository] parameter to be provided from DI container.
+  /// Use `ServiceLocator.get<StorageService>()` to obtain instance.
+  factory StorageService({required StorageRepository repository}) =>
     SingletonServiceMixin.createSingletonWithDependencies(
-      () => StorageService._internal(
-        repository ?? FirebaseStorageRepository(),
-      ),
-      dependencies: repository != null ? [repository] : [],
+      () => StorageService._internal(repository),
+      dependencies: [repository],
     );
   
   @override
@@ -162,9 +159,9 @@ class StorageService extends BaseService
   }
 
   /// Check if a file is a valid image
-  static bool isValidImageFile(File file) {
-    // Use static method from repository implementation
-    return FirebaseStorageRepository().isValidImageFile(file);
+  bool isValidImageFile(File file) {
+    // Delegate to repository implementation
+    return _repository.isValidImageFile(file);
   }
 
   /// Upload a recipe image

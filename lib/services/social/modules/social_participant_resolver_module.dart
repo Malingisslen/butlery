@@ -4,6 +4,7 @@ import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Module handling participant resolution for shared content.
@@ -11,6 +12,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// Provides participant lookup and profile resolution for recipes, menus, and shopping lists.
 class SocialParticipantResolverModule {
   final UserService userService;
+  final UnifiedShoppingService? shoppingService;
   final List<SharedRecipe> Function() getSharedRecipes;
   final List<SharedMenu> Function() getSharedMenus;
 
@@ -18,6 +20,7 @@ class SocialParticipantResolverModule {
     required this.userService,
     required this.getSharedRecipes,
     required this.getSharedMenus,
+    this.shoppingService,
   });
 
   /// Get recipe participants
@@ -51,8 +54,29 @@ class SocialParticipantResolverModule {
   /// Get shopping list participants
   Future<List<UserProfile>> getShoppingListParticipants(String listId) async {
     try {
-      AppLogger.info('getShoppingListParticipants called - not implemented');
-      return [];
+      // If shopping service not available, return empty list
+      if (shoppingService == null) {
+        AppLogger.warning('Shopping service not available for participant resolution');
+        return [];
+      }
+
+      // Get collaborative shopping lists
+      final collaborativeLists = shoppingService!.collaborative.getAllLists();
+      final list = collaborativeLists.where((l) => l.id == listId).firstOrNull;
+
+      if (list == null) {
+        AppLogger.debug('Shopping list $listId not found');
+        return [];
+      }
+
+      // Get all participant IDs (owner + members)
+      final participantIds = [
+        list.ownerId,
+        ...list.memberPermissions.keys,
+      ];
+
+      // Resolve user profiles
+      return await userService.getUserProfiles(participantIds);
     } catch (e) {
       AppLogger.error('Failed to get shopping list participants', e);
       return [];

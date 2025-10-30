@@ -91,6 +91,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   FirebaseFriendsRepository({
     super.firestore,
     AuthRepository? authRepository,
+    super.auditRepository,
   }) : super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         ) {
@@ -127,6 +128,33 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   String getId(UserProfile entity) => entity.uid;
+
+  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
+
+  @override
+  Future<bool> validateCreatePermission(String userId, UserProfile entity) async {
+    // Users can only create their own friend relationships
+    return userId == entity.uid;
+  }
+
+  @override
+  Future<bool> validateReadPermission(String userId, String resourceId, UserProfile? entity) async {
+    // Users can read profiles of their friends
+    // This is validated at a higher level (friend relationship must exist)
+    return true;
+  }
+
+  @override
+  Future<bool> validateUpdatePermission(String userId, String resourceId, UserProfile entity) async {
+    // Users can only update their own profile in the context of friendships
+    return userId == entity.uid;
+  }
+
+  @override
+  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+    // Users can only delete their own friend relationships
+    return userId == resourceId;
+  }
 
   // ===== FRIEND REQUEST OPERATIONS (Delegate to FriendRequestRepository) =====
 

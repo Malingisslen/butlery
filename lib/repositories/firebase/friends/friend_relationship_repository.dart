@@ -106,6 +106,34 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   @override
   String getId(UserProfile entity) => entity.uid;
 
+  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
+
+  @override
+  Future<bool> validateCreatePermission(String userId, UserProfile entity) async {
+    // Friend relationships are created through specific methods (addMutualFriends)
+    // Not through generic CRUD, so we allow it and validate in specific methods
+    return true;
+  }
+
+  @override
+  Future<bool> validateReadPermission(String userId, String resourceId, UserProfile? entity) async {
+    // Anyone authenticated can read public profiles (for friend discovery)
+    // Privacy is controlled via isSearchable flag in the profile
+    return true;
+  }
+
+  @override
+  Future<bool> validateUpdatePermission(String userId, String resourceId, UserProfile entity) async {
+    // Users can only update their own profile
+    return userId == entity.uid;
+  }
+
+  @override
+  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+    // Users can only delete their own profile
+    return userId == resourceId;
+  }
+
   // ===== FRIEND RELATIONSHIP OPERATIONS =====
 
   /// Check if users are already friends.

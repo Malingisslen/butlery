@@ -79,6 +79,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
   FirebaseCommentsRepository({
     super.firestore,
     required super.authRepository,
+    super.auditRepository,
   });
 
   @override
@@ -93,6 +94,39 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
 
   @override
   String getId(RecipeComment entity) => entity.id;
+
+  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
+
+  @override
+  Future<bool> validateCreatePermission(String userId, RecipeComment entity) async {
+    // Users can only create comments as themselves
+    return entity.authorId == userId;
+  }
+
+  @override
+  Future<bool> validateReadPermission(String userId, String resourceId, RecipeComment? entity) async {
+    // All authenticated users can read comments on recipes they have access to
+    // The recipe-level access control is enforced separately
+    return true;
+  }
+
+  @override
+  Future<bool> validateUpdatePermission(String userId, String resourceId, RecipeComment entity) async {
+    // Users can only edit their own comments
+    return entity.authorId == userId;
+  }
+
+  @override
+  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+    // Users can only delete their own comments
+    try {
+      final comment = await read(resourceId);
+      if (comment == null) return false;
+      return comment.authorId == userId;
+    } catch (e) {
+      return false;
+    }
+  }
 
   // ===== SPECIALIZED COMMENT OPERATIONS =====
 

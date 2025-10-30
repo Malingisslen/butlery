@@ -24,6 +24,7 @@ dependencies:
   firebase_analytics: ^12.0.0
   firebase_app_check: ^0.4.0
   firebase_messaging: ^16.0.0  # For push notifications
+  firebase_performance: ^0.11.0  # For performance monitoring
 
   # ==================== STATE MANAGEMENT ====================
   provider: ^6.1.2

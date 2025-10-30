@@ -60,7 +60,16 @@
       "Bash(echo:*)",
       "Bash(powershell -Command \"Get-Content lib/viewmodels/friends_viewmodel.dart | Measure-Object -Line\")",
       "Bash(powershell:*)",
-      "Bash(timeout 30 flutter analyze:*)"
+      "Bash(timeout 30 flutter analyze:*)",
+      "Bash(do echo \"=== lib/repositories/firebase/$file.dart ===\")",
+      "Bash(head:*)",
+      "Bash(sed:*)",
+      "Bash(while read file)",
+      "Bash(do sed -i 's/AppDimensions\\.radiusLarge\\b/AppDimensions.borderRadiusL/g; s/AppDimensions\\.radiusMedium\\b/AppDimensions.borderRadiusM/g; s/AppDimensions\\.smallRadius\\b/AppDimensions.borderRadiusS/g; s/AppDimensions\\.radiusS\\b/AppDimensions.borderRadiusS/g; s/AppDimensions\\.radiusM\\b/AppDimensions.borderRadiusM/g; s/AppDimensions\\.radiusL\\b/AppDimensions.borderRadiusL/g' \"$file\")",
+      "Bash(do sed -i 's/AppDimensions\\.spacing12\\b/(AppDimensions.spacingSm + AppDimensions.spacingXs)/g; s/AppDimensions\\.spacing14\\b/(AppDimensions.spacingSm + 6.0)/g' \"$file\")",
+      "Bash(do sed -i 's/AppColors\\.cardColor\\b/AppColors.cardWhite/g; s/AppColors\\.textPrimary\\b/AppColors.textDark/g; s/AppColors\\.dividerColor\\b/AppColors.divider/g; s/AppColors\\.warningColor\\b/AppColors.warning/g' \"$file\")",
+      "Bash(xargs:*)",
+      "Bash(do sed -i 's/AppColors\\.cardColor\\b/AppColors.cardWhite/g; s/AppColors\\.textPrimary\\b/AppColors.textDark/g; s/AppColors\\.dividerColor\\b/AppColors.divider/g' \"$file\")"
     ],
     "deny": [],
     "ask": []

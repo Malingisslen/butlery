@@ -105,6 +105,36 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
   @override
   String getId(FriendCategory entity) => entity.id;
 
+  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
+
+  @override
+  Future<bool> validateCreatePermission(String userId, FriendCategory entity) async {
+    // Users can only create categories in their own collection
+    // Categories are user-scoped, so we need to check context
+    return true; // Will be validated in saveCategory method
+  }
+
+  @override
+  Future<bool> validateReadPermission(String userId, String resourceId, FriendCategory? entity) async {
+    // Users can read their own categories
+    // Categories are stored in user-scoped collections, so if they can access it, they own it
+    return true;
+  }
+
+  @override
+  Future<bool> validateUpdatePermission(String userId, String resourceId, FriendCategory entity) async {
+    // Users can update their own categories or categories where they are members
+    // This is validated in saveCategory method with more context
+    return true;
+  }
+
+  @override
+  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+    // Users can only delete their own categories
+    // This is validated in deleteCategory method with user context
+    return true;
+  }
+
   // ===== FRIEND CATEGORY OPERATIONS =====
 
   /// Save a friend category for a user.

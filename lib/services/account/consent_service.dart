@@ -1,25 +1,26 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/models/account/user_consent.dart';
+import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 
 /// Service for managing user consent (GDPR Article 7)
 ///
 /// Handles consent tracking, storage, and validation for GDPR compliance.
+/// Now uses FirebaseConsentRepository for secure, validated data access.
 class ConsentService {
   static const String _logTag = 'ConsentService';
   static const String _currentConsentVersion = '1.0.0'; // Update when policies change
 
   final FirebaseAuth _auth;
-  final FirebaseFirestore _firestore;
+  final FirebaseConsentRepository _consentRepository;
 
   ConsentService({
     required FirebaseAuth auth,
-    required FirebaseFirestore firestore,
+    required FirebaseConsentRepository consentRepository,
   })  : _auth = auth,
-        _firestore = firestore;
+        _consentRepository = consentRepository;
 
   /// Get current user's consent
   Future<UserConsent?> getUserConsent() async {
@@ -30,19 +31,7 @@ class ConsentService {
     }
 
     try {
-      final doc = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('consent')
-          .doc('current')
-          .get();
-
-      if (!doc.exists) {
-        app_logger.AppLogger.debug('[$_logTag] No consent found for user $userId');
-        return null;
-      }
-
-      return UserConsent.fromFirestore(doc);
+      return await _consentRepository.getUserConsent(userId);
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to get user consent: $e');
       return null;
@@ -77,18 +66,14 @@ class ConsentService {
             deviceInfo: deviceInfo,
           );
 
-      await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('consent')
-          .doc('current')
-          .set(consent.toFirestore());
+      // Use repository for secure storage (includes permission validation and audit logging)
+      final success = await _consentRepository.saveConsent(userId, consent);
 
-      // Log consent change to audit log
-      await _logConsentChange(userId, purposes, existingConsent?.purposes);
+      if (success) {
+        app_logger.AppLogger.info('[$_logTag] Consent saved for user $userId');
+      }
 
-      app_logger.AppLogger.info('[$_logTag] Consent saved for user $userId');
-      return true;
+      return success;
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to save consent: $e');
       return false;
@@ -155,15 +140,7 @@ class ConsentService {
     if (userId == null) return [];
 
     try {
-      final snapshot = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('consent_history')
-          .orderBy('grantedAt', descending: true)
-          .limit(50)
-          .get();
-
-      return snapshot.docs.map((doc) => UserConsent.fromFirestore(doc)).toList();
+      return await _consentRepository.getConsentHistory(userId);
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to get consent history: $e');
       return [];
@@ -192,59 +169,8 @@ class ConsentService {
     }
   }
 
-  /// Log consent changes to audit log for GDPR accountability
-  Future<void> _logConsentChange(
-    String userId,
-    ConsentPurposes newPurposes,
-    ConsentPurposes? oldPurposes,
-  ) async {
-    try {
-      final changes = <String, Map<String, bool>>{};
-
-      if (oldPurposes == null) {
-        changes['initial_consent'] = newPurposes.toMap().map(
-          (key, value) => MapEntry(key, value as bool),
-        );
-      } else {
-        // Track what changed
-        final newMap = newPurposes.toMap();
-        final oldMap = oldPurposes.toMap();
-
-        for (final key in newMap.keys) {
-          if (newMap[key] != oldMap[key]) {
-            changes[key] = {
-              'from': oldMap[key] as bool,
-              'to': newMap[key] as bool,
-            };
-          }
-        }
-      }
-
-      if (changes.isNotEmpty) {
-        await _firestore.collection('audit_logs').add({
-          'userId': userId,
-          'action': 'consent_change',
-          'changes': changes,
-          'timestamp': FieldValue.serverTimestamp(),
-          'consentVersion': _currentConsentVersion,
-        });
-
-        // Also save to consent history
-        await _firestore
-            .collection('users')
-            .doc(userId)
-            .collection('consent_history')
-            .add({
-          'purposes': newPurposes.toMap(),
-          'grantedAt': FieldValue.serverTimestamp(),
-          'consentVersion': _currentConsentVersion,
-          'deviceInfo': await _getDeviceInfo(),
-        });
-      }
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to log consent change: $e');
-    }
-  }
+  // Note: Audit logging for consent changes is now handled automatically by FirebaseConsentRepository
+  // This ensures GDPR compliance with Article 30 (Records of Processing Activities)
 
   /// Get current consent version
   String get currentConsentVersion => _currentConsentVersion;

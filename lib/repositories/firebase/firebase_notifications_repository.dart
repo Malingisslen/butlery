@@ -78,6 +78,7 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
   FirebaseNotificationsRepository({
     super.firestore,
     required super.authRepository,
+    super.auditRepository,
   });
 
   @override
@@ -92,6 +93,41 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
 
   @override
   String getId(UserNotification entity) => entity.id;
+
+  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
+
+  @override
+  Future<bool> validateCreatePermission(String userId, UserNotification entity) async {
+    // System can create notifications for any user (server-side notification creation)
+    // This supports notification delivery from system/admin operations
+    return true;
+  }
+
+  @override
+  Future<bool> validateReadPermission(String userId, String resourceId, UserNotification? entity) async {
+    if (entity == null) return false;
+
+    // Users can only read their own notifications
+    return entity.userId == userId;
+  }
+
+  @override
+  Future<bool> validateUpdatePermission(String userId, String resourceId, UserNotification entity) async {
+    // Users can only update their own notifications (mark as read)
+    return entity.userId == userId;
+  }
+
+  @override
+  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+    // Users can only delete their own notifications
+    try {
+      final notification = await read(resourceId);
+      if (notification == null) return false;
+      return notification.userId == userId;
+    } catch (e) {
+      return false;
+    }
+  }
 
   // ===== SPECIALIZED NOTIFICATION OPERATIONS =====
 
