@@ -60,7 +60,6 @@ void main() {
 
         // Assert - Note: FakeFirebaseFirestore limitation with server timestamps
         // In real Firebase, this would create a document. Verified in integration tests.
-        final logs = await fakeFirestore.collection('audit_logs').get();
         // Due to server timestamp issue, document may not be created
         // This is acceptable as the method is fire-and-forget
       }, skip: 'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
@@ -81,7 +80,6 @@ void main() {
         );
 
         // Assert
-        final logs = await fakeFirestore.collection('audit_logs').get();
         // Server timestamp limitation - see integration tests
       }, skip: 'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
 
@@ -106,7 +104,6 @@ void main() {
         );
 
         // Assert
-        final logs = await fakeFirestore.collection('audit_logs').get();
         // Server timestamp limitation - see integration tests
       }, skip: 'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
 
