@@ -79,6 +79,7 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
   FirebaseRatingsRepository({
     super.firestore,
     required super.authRepository,
+    super.auditRepository,
   });
 
   @override
@@ -93,6 +94,38 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
 
   @override
   String getId(RecipeRating entity) => entity.id;
+
+  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
+
+  @override
+  Future<bool> validateCreatePermission(String userId, RecipeRating entity) async {
+    // Users can only create ratings for themselves
+    return entity.userId == userId;
+  }
+
+  @override
+  Future<bool> validateReadPermission(String userId, String resourceId, RecipeRating? entity) async {
+    // All authenticated users can read ratings (public social feature)
+    return true;
+  }
+
+  @override
+  Future<bool> validateUpdatePermission(String userId, String resourceId, RecipeRating entity) async {
+    // Users can only update their own ratings
+    return entity.userId == userId;
+  }
+
+  @override
+  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+    // Users can only delete their own ratings
+    try {
+      final rating = await read(resourceId);
+      if (rating == null) return false;
+      return rating.userId == userId;
+    } catch (e) {
+      return false;
+    }
+  }
 
   // ===== SPECIALIZED RATING OPERATIONS =====
 

@@ -37,6 +37,7 @@ class FirebaseMessagingRepository
   FirebaseMessagingRepository({
     super.firestore,
     AuthRepository? authRepository,
+    super.auditRepository,
   }) : super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         ) {
@@ -89,6 +90,40 @@ class FirebaseMessagingRepository
 
   @override
   String getId(Conversation entity) => entity.id;
+
+  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
+
+  @override
+  Future<bool> validateCreatePermission(String userId, Conversation entity) async {
+    // User must be a participant in conversations they create
+    return entity.participantIds.contains(userId);
+  }
+
+  @override
+  Future<bool> validateReadPermission(String userId, String resourceId, Conversation? entity) async {
+    if (entity == null) return false;
+    // Only participants can read the conversation
+    return entity.participantIds.contains(userId);
+  }
+
+  @override
+  Future<bool> validateUpdatePermission(String userId, String resourceId, Conversation entity) async {
+    // Only participants can update conversation metadata
+    return entity.participantIds.contains(userId);
+  }
+
+  @override
+  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+    // Only participants can delete conversations
+    try {
+      final conversation = await read(resourceId);
+      if (conversation == null) return false;
+      return conversation.participantIds.contains(userId);
+    } catch (e) {
+      AppLogger.error('Failed to validate delete permission: $e');
+      return false;
+    }
+  }
 
   // ===== COLLECTION REFERENCES =====
 

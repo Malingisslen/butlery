@@ -93,6 +93,7 @@ class FirebaseShoppingRepository
   FirebaseShoppingRepository({
     super.firestore,
     AuthRepository? authRepository,
+    super.auditRepository,
   }) : super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         ) {
@@ -158,6 +159,55 @@ class FirebaseShoppingRepository
 
   @override
   String getId(UnifiedShoppingList entity) => entity.id;
+
+  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
+
+  @override
+  Future<bool> validateCreatePermission(String userId, UnifiedShoppingList entity) async {
+    // Users can only create shopping lists in their own collection
+    return entity.ownerId == userId;
+  }
+
+  @override
+  Future<bool> validateReadPermission(String userId, String resourceId, UnifiedShoppingList? entity) async {
+    if (entity == null) return false;
+
+    // Owner can always read
+    if (entity.ownerId == userId) return true;
+
+    // For collaborative lists, check if user is a member (has permissions)
+    if (entity.isCollaborative) {
+      return entity.memberPermissions.containsKey(userId);
+    }
+
+    return false;
+  }
+
+  @override
+  Future<bool> validateUpdatePermission(String userId, String resourceId, UnifiedShoppingList entity) async {
+    // Owner can always update
+    if (entity.ownerId == userId) return true;
+
+    // For collaborative lists, members with permissions can update
+    if (entity.isCollaborative) {
+      return entity.memberPermissions.containsKey(userId);
+    }
+
+    return false;
+  }
+
+  @override
+  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+    // Only the owner can delete shopping lists
+    try {
+      final list = await read(resourceId);
+      if (list == null) return false;
+      return list.ownerId == userId;
+    } catch (e) {
+      AppLogger.error('Failed to validate delete permission: $e');
+      return false;
+    }
+  }
 
   // ===== SHARED COLLECTIONS ACCESS =====
 

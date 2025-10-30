@@ -70,6 +70,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
   FirebaseUserRepository({
     super.firestore,
     AuthRepository? authRepository,
+    super.auditRepository,
   }) : super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         );
@@ -88,6 +89,37 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   String getId(UserProfile entity) => entity.uid;
+
+  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
+
+  @override
+  Future<bool> validateCreatePermission(String userId, UserProfile entity) async {
+    // Users can only create their own profile
+    // This prevents users from creating fake profiles for other users
+    return userId == entity.uid;
+  }
+
+  @override
+  Future<bool> validateReadPermission(String userId, String resourceId, UserProfile? entity) async {
+    // Anyone authenticated can read public profiles (for social features)
+    // This enables friend search, recipe sharing, and social discovery
+    // Privacy is controlled via the isSearchable flag within the profile
+    return true;
+  }
+
+  @override
+  Future<bool> validateUpdatePermission(String userId, String resourceId, UserProfile entity) async {
+    // Users can only update their own profile
+    // This prevents unauthorized profile modifications
+    return userId == entity.uid && userId == resourceId;
+  }
+
+  @override
+  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+    // Users can only delete their own profile
+    // This supports GDPR Article 17 (Right to Erasure)
+    return userId == resourceId;
+  }
 
   // ===== SPECIALIZED USER PROFILE OPERATIONS =====
 

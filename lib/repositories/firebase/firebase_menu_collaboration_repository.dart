@@ -45,6 +45,7 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
   FirebaseMenuCollaborationRepository({
     super.firestore,
     AuthRepository? authRepository,
+    super.auditRepository,
   }) : super(authRepository: authRepository ?? FirebaseAuthRepository());
 
   // ===== BASE REPOSITORY IMPLEMENTATION =====
@@ -64,6 +65,57 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
 
   @override
   String getId(SharedMenu menu) => menu.id;
+
+  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
+
+  @override
+  Future<bool> validateCreatePermission(String userId, SharedMenu entity) async {
+    // Users can only create shared menus as themselves (must be the owner)
+    return entity.sharedByUserId == userId;
+  }
+
+  @override
+  Future<bool> validateReadPermission(String userId, String resourceId, SharedMenu? entity) async {
+    if (entity == null) return false;
+
+    // Owner can always read their shared menu
+    if (entity.sharedByUserId == userId) return true;
+
+    // Recipients can read menus shared with them
+    if (entity.sharedToUserIds.contains(userId)) return true;
+
+    // Active collaborators can read the menu if collaboration is enabled
+    if (entity.allowCollaboration && entity.activeCollaboratorIds.contains(userId)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  @override
+  Future<bool> validateUpdatePermission(String userId, String resourceId, SharedMenu entity) async {
+    // Owner can always update their shared menu
+    if (entity.sharedByUserId == userId) return true;
+
+    // Active collaborators can update if collaboration is enabled
+    if (entity.allowCollaboration && entity.activeCollaboratorIds.contains(userId)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  @override
+  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+    // Only the owner can delete the shared menu
+    try {
+      final menu = await read(resourceId);
+      if (menu == null) return false;
+      return menu.sharedByUserId == userId;
+    } catch (e) {
+      return false;
+    }
+  }
 
   // ===== COLLABORATION MANAGEMENT =====
 

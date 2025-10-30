@@ -48,6 +48,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 
 /// Base class for Firebase repositories that eliminates duplicate CRUD patterns.
 ///
@@ -79,12 +80,15 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implements Repository<T> {
   final FirebaseFirestore _firestore;
   final AuthRepository _authRepository;
+  final FirebaseAuditRepository? _auditRepository;
 
   BaseFirebaseRepository({
     FirebaseFirestore? firestore,
     required AuthRepository authRepository,
+    FirebaseAuditRepository? auditRepository,
   })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _authRepository = authRepository;
+        _authRepository = authRepository,
+        _auditRepository = auditRepository;
 
   // ===== PROTECTED ACCESSORS =====
 
@@ -179,12 +183,13 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
       // Step 2: Validate create permission
       final canCreate = await validateCreatePermission(userId, entity);
 
-      // Step 3: Log permission check
-      logPermissionCheck(
+      // Step 3: Log permission check (console + persistent audit for GDPR)
+      await logPermissionCheck(
         userId: userId,
         resource: '${T.toString()}/$docId',
         operation: 'create',
         granted: canCreate,
+        auditRepository: _auditRepository,
       );
 
       // Step 4: Enforce permission
@@ -229,12 +234,13 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
       // Step 4: Validate read permission (CRITICAL FIX - was missing)
       final canRead = await validateReadPermission(userId, id, entity);
 
-      // Step 5: Log permission check
-      logPermissionCheck(
+      // Step 5: Log permission check (console + persistent audit for GDPR)
+      await logPermissionCheck(
         userId: userId,
         resource: '${T.toString()}/$id',
         operation: 'read',
         granted: canRead,
+        auditRepository: _auditRepository,
       );
 
       // Step 6: Enforce permission (CRITICAL FIX - was missing)
@@ -269,12 +275,13 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
         final entity = fromFirestore(doc);
         final canRead = await validateReadPermission(userId, doc.id, entity);
 
-        // Log permission check
-        logPermissionCheck(
+        // Log permission check (console + persistent audit for GDPR)
+        await logPermissionCheck(
           userId: userId,
           resource: '${T.toString()}/${doc.id}',
           operation: 'readAll',
           granted: canRead,
+          auditRepository: _auditRepository,
         );
 
         if (canRead) {
@@ -304,12 +311,13 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
       // Step 2: Validate update permission
       final canUpdate = await validateUpdatePermission(userId, docId, entity);
 
-      // Step 3: Log permission check
-      logPermissionCheck(
+      // Step 3: Log permission check (console + persistent audit for GDPR)
+      await logPermissionCheck(
         userId: userId,
         resource: '${T.toString()}/$docId',
         operation: 'update',
         granted: canUpdate,
+        auditRepository: _auditRepository,
       );
 
       // Step 4: Enforce permission
@@ -341,12 +349,13 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
       // Step 2: Validate delete permission
       final canDelete = await validateDeletePermission(userId, id);
 
-      // Step 3: Log permission check
-      logPermissionCheck(
+      // Step 3: Log permission check (console + persistent audit for GDPR)
+      await logPermissionCheck(
         userId: userId,
         resource: '${T.toString()}/$id',
         operation: 'delete',
         granted: canDelete,
+        auditRepository: _auditRepository,
       );
 
       // Step 4: Enforce permission

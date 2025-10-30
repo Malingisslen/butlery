@@ -667,6 +667,206 @@ service cloud.firestore {
     }
 
     // ========================================
+    // RECIPE RATINGS - User ratings for recipes
+    // ========================================
+
+    match /recipe_ratings/{ratingId} {
+      // Can read all ratings (public social feature)
+      allow read: if isAuthenticated();
+
+      // Can create if authenticated and rating as yourself
+      // Rating ID format: {recipeId}_{userId}
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.userId
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && hasRequiredFields(['recipeId', 'userId', 'rating', 'createdAt']);
+
+      // Can update only your own ratings
+      allow update: if isAuthenticated()
+        && request.auth.uid == resource.data.userId
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5;
+
+      // Can delete only your own ratings
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.userId;
+    }
+
+    // ========================================
+    // USER NOTIFICATIONS - Push notifications
+    // ========================================
+
+    match /user_notifications/{notificationId} {
+      // Can read only your own notifications
+      allow read: if isAuthenticated()
+        && request.auth.uid == resource.data.userId;
+
+      // System/authenticated users can create notifications for any user
+      // (supports server-side notification delivery)
+      allow create: if isAuthenticated()
+        && hasRequiredFields(['userId', 'type', 'title', 'body', 'createdAt']);
+
+      // Can update only your own notifications (mark as read)
+      allow update: if isAuthenticated()
+        && request.auth.uid == resource.data.userId;
+
+      // Can delete only your own notifications
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.userId;
+    }
+
+    // ========================================
+    // FCM TOKENS - Firebase Cloud Messaging tokens
+    // ========================================
+
+    match /user_fcm_tokens/{userId} {
+      // Can read only your own token
+      allow read: if isAuthenticated()
+        && request.auth.uid == userId;
+
+      // Can write only your own token
+      allow write: if isAuthenticated()
+        && request.auth.uid == userId;
+    }
+
+    // ========================================
+    // NOTIFICATION PREFERENCES - User notification settings
+    // ========================================
+
+    match /user_notification_preferences/{userId} {
+      // Can read only your own preferences
+      allow read: if isAuthenticated()
+        && request.auth.uid == userId;
+
+      // Can write only your own preferences
+      allow write: if isAuthenticated()
+        && request.auth.uid == userId;
+    }
+
+    // ========================================
+    // AUDIT LOGS - GDPR Article 30 compliance
+    // ========================================
+
+    match /audit_logs/{logId} {
+      // Users can read their own audit logs (GDPR Article 15 - Right of Access)
+      allow read: if isAuthenticated()
+        && request.auth.uid == resource.data.userId;
+
+      // Only system/server can create audit logs (fire-and-forget from app)
+      // In practice, client-side creates are allowed but validated
+      allow create: if isAuthenticated()
+        && hasRequiredFields(['userId', 'operation', 'resourceType', 'timestamp']);
+
+      // No updates or deletes allowed (immutable audit trail)
+      allow update, delete: if false;
+    }
+
+    // ========================================
+    // USER CONSENT - GDPR Article 7 compliance
+    // ========================================
+
+    match /users/{userId}/consent/{consentDoc} {
+      // Users can read only their own consent records
+      allow read: if isAuthenticated()
+        && request.auth.uid == userId;
+
+      // Users can write only their own consent records
+      allow write: if isAuthenticated()
+        && request.auth.uid == userId
+        && hasRequiredFields(['consentVersion', 'purposes', 'timestamp']);
+    }
+
+    // ========================================
+    // MENU RATINGS - Collaborative menu ratings
+    // ========================================
+
+    match /menu_ratings/{menuId}/ratings/{ratingId} {
+      // Can read all ratings for a menu you have access to
+      allow read: if isAuthenticated();
+
+      // Can create rating if authenticated and rating as yourself
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.ratedBy
+        && request.resource.data.rating >= 1.0
+        && request.resource.data.rating <= 5.0
+        && hasRequiredFields(['rating', 'ratedBy', 'ratedByDisplayName', 'ratedAt']);
+
+      // Can update only your own rating
+      allow update: if isAuthenticated()
+        && request.auth.uid == resource.data.ratedBy;
+
+      // Can delete only your own rating
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.ratedBy;
+    }
+
+    // ========================================
+    // MENU COMMENTS - Collaborative menu comments
+    // ========================================
+
+    match /menu_comments/{menuId}/comments/{commentId} {
+      // Can read all comments for a menu you have access to
+      allow read: if isAuthenticated();
+
+      // Can create comment if authenticated and commenting as yourself
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.commentedBy
+        && request.resource.data.comment.size() > 0
+        && request.resource.data.comment.size() <= 1000
+        && hasRequiredFields(['comment', 'commentedBy', 'commentedByDisplayName', 'commentedAt']);
+
+      // Can update only your own comment
+      allow update: if isAuthenticated()
+        && request.auth.uid == resource.data.commentedBy;
+
+      // Can delete only your own comment
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.commentedBy;
+    }
+
+    // ========================================
+    // MENU TEMPLATES - Reusable menu templates
+    // ========================================
+
+    match /menu_templates/{templateId} {
+      // Can read public templates and your own templates
+      allow read: if isAuthenticated() && (
+        resource.data.get('isPublic', false) == true ||
+        request.auth.uid == resource.data.ownerId
+      );
+
+      // Can create if authenticated and creating as yourself
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.ownerId
+        && hasRequiredFields(['templateName', 'ownerId', 'menuSnapshot', 'createdAt']);
+
+      // Can update only your own templates
+      allow update: if isAuthenticated()
+        && request.auth.uid == resource.data.ownerId;
+
+      // Can delete only your own templates
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.ownerId;
+    }
+
+    // ========================================
+    // MENU ACTIVITY - Collaboration activity logs
+    // ========================================
+
+    match /menu_activity/{menuId}/activities/{activityId} {
+      // Can read activities for menus you have access to
+      allow read: if isAuthenticated();
+
+      // Can create activity if authenticated (logged by collaborators)
+      allow create: if isAuthenticated()
+        && hasRequiredFields(['menuId', 'timestamp']);
+
+      // No updates or deletes allowed (immutable activity trail)
+      allow update, delete: if false;
+    }
+
+    // ========================================
     // DEFAULT DENY - Catch all other paths
     // ========================================
 

@@ -104,6 +104,39 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
   @override
   String getId(GroupInvitation entity) => entity.id;
 
+  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
+
+  @override
+  Future<bool> validateCreatePermission(String userId, GroupInvitation entity) async {
+    // Users can only create invitations from their own account
+    return userId == entity.fromUserId;
+  }
+
+  @override
+  Future<bool> validateReadPermission(String userId, String resourceId, GroupInvitation? entity) async {
+    if (entity == null) return false;
+    // Users can read invitations they sent or received
+    return userId == entity.fromUserId || userId == entity.toUserId;
+  }
+
+  @override
+  Future<bool> validateUpdatePermission(String userId, String resourceId, GroupInvitation entity) async {
+    // Sender can cancel, recipient can accept/reject
+    return userId == entity.fromUserId || userId == entity.toUserId;
+  }
+
+  @override
+  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+    // Users can delete invitations they sent or received
+    try {
+      final invitation = await getInvitation(resourceId);
+      if (invitation == null) return false;
+      return userId == invitation.fromUserId || userId == invitation.toUserId;
+    } catch (e) {
+      return false;
+    }
+  }
+
   // ===== GROUP INVITATION OPERATIONS =====
 
   /// Stream received invitations for a user.

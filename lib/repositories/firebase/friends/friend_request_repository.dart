@@ -102,6 +102,39 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
   @override
   String getId(FriendRequest entity) => entity.id;
 
+  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
+
+  @override
+  Future<bool> validateCreatePermission(String userId, FriendRequest entity) async {
+    // Users can only create friend requests from their own account
+    return userId == entity.fromUserId;
+  }
+
+  @override
+  Future<bool> validateReadPermission(String userId, String resourceId, FriendRequest? entity) async {
+    if (entity == null) return false;
+    // Users can read requests they sent or received
+    return userId == entity.fromUserId || userId == entity.toUserId;
+  }
+
+  @override
+  Future<bool> validateUpdatePermission(String userId, String resourceId, FriendRequest entity) async {
+    // Sender can cancel, recipient can accept/reject
+    return userId == entity.fromUserId || userId == entity.toUserId;
+  }
+
+  @override
+  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+    // Users can delete requests they sent or received
+    try {
+      final request = await fetchRequest(resourceId);
+      if (request == null) return false;
+      return userId == request.fromUserId || userId == request.toUserId;
+    } catch (e) {
+      return false;
+    }
+  }
+
   // ===== FRIEND REQUEST OPERATIONS =====
 
   /// Send a new friend request.

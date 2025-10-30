@@ -7,6 +7,7 @@ import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/interfaces/social_recipe_repository.dart';
@@ -18,6 +19,7 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin {
   final SocialRecipeRepository _repository;
   final UserService _userService;
   final UnifiedRecipeService _recipeService;
+  final UnifiedShoppingService? _shoppingService;
   final PermissionService _permissionService;
 
   // Modules
@@ -34,14 +36,17 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin {
     required UserService userService,
     required UnifiedRecipeService recipeService,
     required PermissionService permissionService,
+    UnifiedShoppingService? shoppingService,
   })  : _repository = repository,
         _userService = userService,
         _recipeService = recipeService,
+        _shoppingService = shoppingService,
         _permissionService = permissionService {
     _participantResolver = SocialParticipantResolverModule(
       userService: _userService,
       getSharedRecipes: () => _sharedRecipes,
       getSharedMenus: () => _sharedMenus,
+      shoppingService: _shoppingService,
     );
   }
 
@@ -337,9 +342,28 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin {
   /// Check if shopping list is shared by user
   Future<bool> isShoppingListSharedByUser(String listId, String userId) async {
     try {
-      // This would need to be implemented with proper shopping list sharing
-      AppLogger.info('isShoppingListSharedByUser called - not implemented');
-      return false;
+      // If shopping service not available, return false
+      if (_shoppingService == null) {
+        AppLogger.warning('Shopping service not available - cannot check sharing status');
+        return false;
+      }
+
+      // Get all collaborative shopping lists
+      final collaborativeLists = _shoppingService.collaborative.getAllLists();
+      final list = collaborativeLists.where((l) => l.id == listId).firstOrNull;
+
+      if (list == null) {
+        AppLogger.debug('Shopping list $listId not found');
+        return false;
+      }
+
+      // List is shared if:
+      // 1. The user is the owner AND
+      // 2. The list has at least one member (shared with someone)
+      final isOwner = list.ownerId == userId;
+      final hasMembers = list.memberPermissions.isNotEmpty;
+
+      return isOwner && hasMembers;
     } catch (e) {
       AppLogger.error('Failed to check if shopping list is shared', e);
       return false;

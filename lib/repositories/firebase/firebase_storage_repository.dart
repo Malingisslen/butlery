@@ -5,17 +5,31 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
 import 'package:butlery/repositories/interfaces/storage_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
+import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/performance/firebase_performance_service.dart';
 
-/// Firebase implementation of the StorageRepository interface.
+/// Firebase implementation of the StorageRepository interface with security validation.
 ///
 /// This repository provides Firebase Storage functionality while maintaining
 /// the abstraction required for dependency injection and testability.
 /// It encapsulates all Firebase-specific storage operations and can be
 /// easily mocked or replaced with alternative implementations.
-class FirebaseStorageRepository implements StorageRepository {
+///
+/// **Security Features:**
+/// - Ownership validation for all file operations (upload, delete)
+/// - Authentication checks preventing unauthorized access
+/// - Path-based security (users can only access their own directories)
+/// - Comprehensive audit logging for GDPR compliance
+/// - Permission validation using PermissionValidationMixin
+class FirebaseStorageRepository with PermissionValidationMixin implements StorageRepository {
   final FirebaseStorage _storage;
   final Uuid _uuid;
+  final AuthRepository _authRepository;
+  final FirebaseAuditRepository? _auditRepository;
   
   // Image compression constants - optimized for mobile with aspect ratio preservation
   static const int _defaultMaxWidth = 1200;   // Max width while preserving aspect ratio
@@ -24,16 +38,174 @@ class FirebaseStorageRepository implements StorageRepository {
   static const int _defaultThumbnailSize = 300;
   static const int _defaultThumbnailQuality = 70;
   
-  /// Creates a FirebaseStorageRepository with optional custom FirebaseStorage instance.
-  /// 
-  /// If no instance is provided, it uses the default FirebaseStorage.instance.
+  /// Creates a FirebaseStorageRepository with security validation.
+  ///
+  /// [storage] Optional FirebaseStorage instance (default: FirebaseStorage.instance)
+  /// [authRepository] Required for authentication and permission checks
+  /// [auditRepository] Optional for GDPR-compliant audit logging
+  /// [uuid] Optional UUID generator (for testing)
+  ///
   /// This allows for dependency injection in tests while maintaining production simplicity.
   FirebaseStorageRepository({
     FirebaseStorage? storage,
+    required AuthRepository authRepository,
+    FirebaseAuditRepository? auditRepository,
     Uuid? uuid,
   }) : _storage = storage ?? FirebaseStorage.instance,
+       _authRepository = authRepository,
+       _auditRepository = auditRepository,
        _uuid = uuid ?? const Uuid();
-  
+
+  // ===== SECURITY VALIDATION METHODS =====
+
+  /// Get current authenticated user ID
+  String? _getCurrentUserId() {
+    return _authRepository.currentUser?.uid;
+  }
+
+  /// Validate that user can upload to the specified path
+  ///
+  /// **Security Rule:** Users can only upload to their own directory (users/{userId}/...)
+  Future<void> _validateUploadPermission(String userId, String path) async {
+    final currentUserId = _getCurrentUserId();
+
+    if (currentUserId == null) {
+      await logPermissionCheck(
+        userId: 'anonymous',
+        resource: 'storage/$path',
+        operation: 'upload',
+        granted: false,
+        auditRepository: _auditRepository,
+      );
+      throw PermissionDeniedException(
+        'User must be authenticated to upload files',
+        resource: 'storage',
+        operation: 'upload',
+      );
+    }
+
+    // Validate user is uploading to their own path
+    if (userId != currentUserId) {
+      await logPermissionCheck(
+        userId: currentUserId,
+        resource: 'storage/$path',
+        operation: 'upload',
+        granted: false,
+        details: 'User attempted to upload to another user\'s directory',
+        auditRepository: _auditRepository,
+      );
+      throw PermissionDeniedException(
+        'Users can only upload files to their own directory',
+        resource: 'storage/$path',
+        operation: 'upload',
+        userId: currentUserId,
+      );
+    }
+
+    // Validate path starts with users/{userId}/
+    if (!path.startsWith('users/$userId/')) {
+      await logPermissionCheck(
+        userId: currentUserId,
+        resource: 'storage/$path',
+        operation: 'upload',
+        granted: false,
+        details: 'Invalid path format - must start with users/{userId}/',
+        auditRepository: _auditRepository,
+      );
+      throw PermissionDeniedException(
+        'Invalid upload path - must be in user directory',
+        resource: 'storage/$path',
+        operation: 'upload',
+        userId: currentUserId,
+      );
+    }
+
+    // Log successful permission check
+    await logPermissionCheck(
+      userId: currentUserId,
+      resource: 'storage/$path',
+      operation: 'upload',
+      granted: true,
+      auditRepository: _auditRepository,
+    );
+  }
+
+  /// Validate that user can delete the specified file
+  ///
+  /// **Security Rule:** Users can only delete their own files (files in users/{userId}/...)
+  Future<void> _validateDeletePermission(String imageUrl) async {
+    final currentUserId = _getCurrentUserId();
+
+    if (currentUserId == null) {
+      await logPermissionCheck(
+        userId: 'anonymous',
+        resource: 'storage/$imageUrl',
+        operation: 'delete',
+        granted: false,
+        auditRepository: _auditRepository,
+      );
+      throw PermissionDeniedException(
+        'User must be authenticated to delete files',
+        resource: 'storage',
+        operation: 'delete',
+      );
+    }
+
+    // Extract userId from URL path
+    final userIdFromPath = _extractUserIdFromPath(imageUrl);
+
+    if (userIdFromPath == null || userIdFromPath != currentUserId) {
+      await logPermissionCheck(
+        userId: currentUserId,
+        resource: 'storage/$imageUrl',
+        operation: 'delete',
+        granted: false,
+        details: 'User attempted to delete another user\'s file',
+        auditRepository: _auditRepository,
+      );
+      throw PermissionDeniedException(
+        'Users can only delete their own files',
+        resource: 'storage',
+        operation: 'delete',
+        userId: currentUserId,
+      );
+    }
+
+    // Log successful permission check
+    await logPermissionCheck(
+      userId: currentUserId,
+      resource: 'storage/$imageUrl',
+      operation: 'delete',
+      granted: true,
+      auditRepository: _auditRepository,
+    );
+  }
+
+  /// Extract user ID from storage path or URL
+  ///
+  /// Expected formats:
+  /// - users/{userId}/recipes/...
+  /// - https://...users%2F{userId}%2Frecipes%2F...
+  String? _extractUserIdFromPath(String pathOrUrl) {
+    try {
+      // Handle URL-encoded paths in download URLs
+      final decodedPath = Uri.decodeFull(pathOrUrl);
+
+      // Extract userId from path pattern: users/{userId}/...
+      final match = RegExp(r'users[/\\]([^/\\]+)[/\\]').firstMatch(decodedPath);
+      if (match != null && match.groupCount >= 1) {
+        return match.group(1);
+      }
+
+      return null;
+    } catch (e) {
+      AppLogger.error('Failed to extract userId from path: $e');
+      return null;
+    }
+  }
+
+  // ===== PUBLIC STORAGE OPERATIONS =====
+
   @override
   Future<String?> uploadImage({
     required File imageFile,
@@ -44,7 +216,10 @@ class FirebaseStorageRepository implements StorageRepository {
   }) async {
     try {
       AppLogger.info('Starting image upload: ${imageFile.path}');
-      
+
+      // 🔒 SECURITY: Validate upload permission before proceeding
+      await _validateUploadPermission(userId, path);
+
       // Compress image first
       final compressedBytes = await compressImage(imageFile: imageFile);
       if (compressedBytes == null) {
@@ -76,41 +251,57 @@ class FirebaseStorageRepository implements StorageRepository {
     Map<String, String>? metadata,
     Function(double progress)? onProgress,
   }) async {
-    try {
-      final storageRef = _storage.ref().child(path);
-      
-      // Create upload task
-      final uploadTask = storageRef.putData(
-        imageData,
-        SettableMetadata(
-          contentType: 'image/jpeg',
-          customMetadata: {
-            'uploadedAt': DateTime.now().toIso8601String(),
-            ...?metadata,
-          },
-        ),
-      );
-      
-      // Listen to progress if callback provided
-      if (onProgress != null) {
-        uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
-          final progress = snapshot.bytesTransferred / snapshot.totalBytes;
-          onProgress(progress);
-        });
-      }
-      
-      // Wait for upload to complete
-      final taskSnapshot = await uploadTask;
-      
-      // Get download URL
-      final downloadUrl = await taskSnapshot.ref.getDownloadURL();
-      AppLogger.info('Image uploaded successfully: $downloadUrl');
-      
-      return downloadUrl;
-    } catch (e) {
-      AppLogger.error('Image data upload failed: $e');
-      return null;
-    }
+    return await FirebasePerformanceService.traceImageUpload(
+      (trace) async {
+        try {
+          // 🔒 SECURITY: Validate upload permission before proceeding
+          await _validateUploadPermission(userId, path);
+
+          final storageRef = _storage.ref().child(path);
+
+          // Create upload task
+          final uploadTask = storageRef.putData(
+            imageData,
+            SettableMetadata(
+              contentType: 'image/jpeg',
+              customMetadata: {
+                'uploadedAt': DateTime.now().toIso8601String(),
+                ...?metadata,
+              },
+            ),
+          );
+
+          // Listen to progress if callback provided
+          if (onProgress != null) {
+            uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+              final progress = snapshot.bytesTransferred / snapshot.totalBytes;
+              onProgress(progress);
+            });
+          }
+
+          // Wait for upload to complete
+          final taskSnapshot = await uploadTask;
+
+          // Get download URL
+          final downloadUrl = await taskSnapshot.ref.getDownloadURL();
+          AppLogger.info('Image uploaded successfully: $downloadUrl');
+
+          // Add trace metrics
+          trace.setMetric('size_bytes', imageData.length);
+          trace.putAttribute('user_id', userId);
+          trace.putAttribute('success', 'true');
+
+          return downloadUrl;
+        } catch (e) {
+          AppLogger.error('Image data upload failed: $e');
+          trace.putAttribute('success', 'false');
+          trace.putAttribute('error', e.toString());
+          return null;
+        }
+      },
+      imageSize: imageData.length,
+      imageFormat: 'jpeg',
+    );
   }
   
   @override
@@ -158,6 +349,9 @@ class FirebaseStorageRepository implements StorageRepository {
   @override
   Future<bool> deleteImage(String imageUrl) async {
     try {
+      // 🔒 SECURITY: Validate delete permission before proceeding
+      await _validateDeletePermission(imageUrl);
+
       // Extract reference from URL
       final ref = _storage.refFromURL(imageUrl);
       await ref.delete();

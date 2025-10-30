@@ -369,6 +369,39 @@ abstract class BaseSharedContentRepository<T> extends BaseFirebaseRepository<T> 
   /// Check if content is viewed by user (content-specific logic)
   bool isViewedByUser(T content, String userId);
 
-  /// Check if content is created by user (content-specific logic)  
+  /// Check if content is created by user (content-specific logic)
   bool isCreatedBy(T content, String userId);
+
+  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
+
+  @override
+  Future<bool> validateCreatePermission(String userId, T entity) async {
+    // Only the creator can create shared content for themselves
+    return isCreatedBy(entity, userId);
+  }
+
+  @override
+  Future<bool> validateReadPermission(String userId, String resourceId, T? entity) async {
+    if (entity == null) return false;
+    // Users can read content that should be shown to them
+    return shouldShowToUser(entity, userId);
+  }
+
+  @override
+  Future<bool> validateUpdatePermission(String userId, String resourceId, T entity) async {
+    // Only the creator can update shared content
+    return isCreatedBy(entity, userId);
+  }
+
+  @override
+  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+    // Only the creator can delete shared content
+    try {
+      final content = await read(resourceId);
+      if (content == null) return false;
+      return isCreatedBy(content, userId);
+    } catch (e) {
+      return false;
+    }
+  }
 }
