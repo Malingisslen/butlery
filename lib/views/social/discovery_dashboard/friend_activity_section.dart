@@ -72,12 +72,12 @@ class FriendActivitySection {
               color: AppColors.outline,
               size: AppDimensions.iconSizeXxl,
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            SizedBox(height: AppDimensions.spacingM),
             Text(
               'Ingen vänaktivitet än',
               style: AppTextStyles.titleSmall,
             ),
-            const SizedBox(height: AppDimensions.spacingS),
+            SizedBox(height: AppDimensions.spacingS),
             Text(
               'När dina vänner delar recept, menyer eller inköpslistor visas de här.',
               style: AppTextStyles.bodyMedium,
@@ -339,7 +339,7 @@ class FriendActivitySection {
                     size: AppDimensions.iconSizeXXXl,
                     color: AppColors.onSurface,
                   ),
-                  const SizedBox(height: AppDimensions.spacingM),
+                  SizedBox(height: AppDimensions.spacingM),
                   Text(
                     'Ingen vänaktivitet än',
                     style: TextStyle(
@@ -347,7 +347,7 @@ class FriendActivitySection {
                       color: AppColors.onSurface,
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingS),
+                  SizedBox(height: AppDimensions.spacingS),
                   Text(
                     'Aktivitet från dina vänner visas här',
                     style: TextStyle(
