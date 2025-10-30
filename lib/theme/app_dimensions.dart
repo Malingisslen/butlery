@@ -27,29 +27,36 @@ class AppDimensions {
   /// Extra extra large spacing (48px) - matches original spacingXxl
   static const double spacingXxl = 48.0;
 
-  // Aliases for backwards compatibility
-  static const double spacingXxs = 2.0; // Extra extra small spacing (2px)
-  static const double spacingS = 3.0; // Small spacing (3px) - reduced for tighter grid
-  static const double spacingM = 8.0; // Medium spacing (8px) - alias for spacingSm
-  static const double spacingL = 12.0; // Large spacing (12px)
-  static const double spacingXxxl = 24.0; // Triple extra large spacing (24px) - alias for spacingLg
+  /// **Spacing Scale Guide:**
+  /// Use semantic names instead of numeric constants
+  ///
+  /// Scale: Xs(4) → Sm(8) → Md(16) → Lg(24) → Xl(32) → Xxl(48)
+  ///
+  /// For values between scale points, combine semantically:
+  /// - 12px = spacingSm + spacingXs (8 + 4)
+  /// - 20px = spacingMd + spacingXs (16 + 4)
+  /// - 28px = spacingLg + spacingXs (24 + 4)
+  ///
+  /// ❌ Don't: padding: spacing12
+  /// ✅ Do: padding: spacingMd or combine: spacingSm + spacingXs
 
-  // Additional spacing constants for common hardcoded values
-  static const double spacing2 = 2.0;
-  static const double spacing4 = 4.0;
+  // Minimal aliases for backward compatibility
+  static const double spacingXxs = 2.0;  // Extra extra small (2px) - use sparingly
+  static const double spacingS = 3.0;    // Small (3px) - use sparingly
+  static const double spacingM = spacingSm;  // Alias for 8px
+  static const double spacingL = 12.0;   // 12px - consider using spacingSm + spacingXs
+  static const double spacingXxxl = spacingLg; // Alias for 24px
+
+  // Numeric spacing aliases (legacy - prefer semantic names above)
+  static const double spacing2 = spacingXxs;
+  static const double spacing4 = spacingXs;
   static const double spacing6 = 6.0;
-  static const double spacing8 = 8.0;
-  static const double spacing10 = 10.0;
-  static const double spacing12 = 12.0;
+  static const double spacing8 = spacingSm;
+  static const double spacing12 = spacingL;
   static const double spacing14 = 14.0;
-  static const double spacing16 = 16.0;
-  static const double spacing18 = 18.0;
+  static const double spacing16 = spacingMd;
   static const double spacing20 = 20.0;
-  static const double spacing24 = 24.0;
-  static const double spacing32 = 32.0;
-  static const double spacing48 = 48.0;
-  static const double spacing50 = 50.0;
-  static const double spacing60 = 60.0;
+  static const double spacing24 = spacingLg;
   static const double spacing80 = 80.0;
 
   // ===== PADDING CONSTANTS =====
@@ -87,6 +94,14 @@ class AppDimensions {
 
   /// Round border radius (50px) for fully rounded elements
   static const double borderRadiusRound = 50.0;
+
+  // Legacy radius aliases (prefer borderRadius* names above)
+  static const double radiusS = borderRadiusS;
+  static const double radiusM = borderRadiusM;
+  static const double radiusL = borderRadiusL;
+  static const double smallRadius = borderRadiusS;
+  static const double radiusMedium = borderRadiusM;
+  static const double radiusLarge = borderRadiusL;
 
   // Additional border radius constants for common hardcoded values
   static const double borderRadius0 = 0.0;
@@ -189,17 +204,6 @@ class AppDimensions {
   static const double iconSizeEmptyState = iconSizeXl;
 
   // Removed redundant numeric aliases - use semantic names instead
-
-  // ===== GAP CONSTANTS =====
-
-  /// Small gap (8px) - moved to bottom as widget
-  // static const double smallGap = spacingM; // Removed duplicate - see widgets section
-
-  /// Medium gap (16px) - moved to bottom as widget
-  // static const double mediumGap = spacingXl; // Removed duplicate - see widgets section
-
-  /// Large gap (24px) - moved to bottom as widget
-  // static const double largeGap = spacingXxxl; // Removed duplicate - see widgets section
 
   // ===== AVATAR DIMENSIONS =====
 
@@ -330,31 +334,14 @@ class AppDimensions {
   /// Section padding
   static const EdgeInsets sectionPadding = EdgeInsets.all(paddingL);
 
-  /// Card border radius (alias)
+  // Component-specific radius aliases (semantic value)
+  /// Card border radius (8px)
   static const double cardBorderRadius = borderRadiusM;
 
-  /// Chip radius (alias)
+  /// Chip radius (4px)
   static const double chipRadius = borderRadiusS;
 
-  /// Small radius (alias)
-  static const double smallRadius = borderRadiusS;
-
-  /// Medium radius (alias)
-  static const double radiusMedium = borderRadiusM;
-
-  /// Large radius (alias)
-  static const double largeRadius = borderRadiusL;
-
-  /// Large radius (alias)
-  static const double radiusLarge = borderRadiusL;
-
-  /// Small radius (alias)
-  static const double radiusSmall = borderRadiusS;
-
-  /// Round radius (alias)
-  static const double roundRadius = borderRadiusRound;
-
-  /// Bottom sheet border radius
+  /// Bottom sheet border radius (12px)
   static const double bottomSheetBorderRadius = borderRadiusXl;
 
   /// Divider height
@@ -371,25 +358,12 @@ class AppDimensions {
   // Note: Elevation constants are already defined above in the ELEVATION section
 
   // ===== LEGACY COMPATIBILITY ALIASES =====
-  // Additional aliases for backwards compatibility
 
   /// Extra small border radius (2px)
   static const double borderRadiusXs = 2.0;
 
-  // ===== NEW COMPONENT COMPATIBILITY =====
-  // Properties expected by new social platform components
-
-  /// Small radius (alias for borderRadiusS)
-  static const double radiusS = borderRadiusS;
-  
-  /// Medium radius (alias for borderRadiusM)
-  static const double radiusM = borderRadiusM;
-  
-  /// Large radius (alias for borderRadiusL)
-  static const double radiusL = borderRadiusL;
-
   /// Extra large buttons width
-  static const double buttonWidthXLarge = 280.0; // Extra large buttons
+  static const double buttonWidthXLarge = 280.0;
 
   // ===== GRID BUTTON LAYOUT CONSTANTS =====
 
