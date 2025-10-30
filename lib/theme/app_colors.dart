@@ -1,4 +1,14 @@
 /// Color palette system for the Butlery cooking application.
+///
+/// **Naming Strategy:**
+/// - Primary names: Semantic and descriptive (e.g., `primaryBlue`, `success`, `backgroundBeige`)
+/// - Component-specific aliases: Allowed for semantic clarity (e.g., `sharedRecipeTextColor`)
+/// - Generic aliases: Being phased out in future versions
+///
+/// **Usage Guidelines:**
+/// - Prefer primary names for new code
+/// - Use Material 3 ColorScheme for theme-aware components
+/// - Modern syntax: Use `color.withValues(alpha: 0.8)` not deprecated `withOpacity()`
 
 import 'package:flutter/material.dart';
 
@@ -44,15 +54,8 @@ class AppColors {
   static const Color sectionHeader = Color(0xFF374151);
   static const Color starGold = Color(0xFFFBBF24);
   
-  // Alias colors
-  static const Color accentColor = accent;
-  static const Color warningColor = warning;
-  static const Color backgroundColor = backgroundBeige;
-  static const Color cardColor = cardWhite;
-  static const Color dividerColor = divider;
-  static const Color starColor = starGold;
+  // Utility colors (keep these - not simple aliases)
   static const Color backgroundTint = Color(0xFFF8F9FA);
-  static const Color textPrimary = textDark;
   static const Color overlay = Color(0x80000000);
   static const Color transparent = Colors.transparent;
 
@@ -144,8 +147,12 @@ class AppColors {
   static const Color secondaryPurple = Color(0xFF9C27B0);
   static const Color backgroundDark = neutralDark;
   static const Color surfaceDark = Color(0xFF374151);
+  static const Color cardColor = cardWhite;
+  static const Color textPrimary = textDark;
+  static const Color dividerColor = divider;
+  static const Color warningColor = warning;
 
-  // Component compatibility colors
+  // Material 3 compatibility - use ColorScheme instead where possible
   static const Color primary = primaryBlue;
   static const Color secondary = accent;
   static const Color surface = backgroundBeige;
