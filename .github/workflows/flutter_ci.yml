@@ -1,14 +1,12 @@
-name: Flutter CI/CD
+name: Flutter CI/CD (Disabled - Too Complex)
 
+# Disabled: This workflow is overly complex and references non-existent test paths.
+# Use analyze.yml, test.yml, build-validation.yml, and architecture-validation.yml instead.
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
   workflow_dispatch:
 
 env:
-  FLUTTER_VERSION: '3.24.0'
+  FLUTTER_VERSION: '3.32.4'
   JAVA_VERSION: '17'
   COVERAGE_THRESHOLD: 90
 

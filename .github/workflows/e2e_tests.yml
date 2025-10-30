@@ -21,7 +21,7 @@ on:
           - all
 
 env:
-  FLUTTER_VERSION: '3.24.5'
+  FLUTTER_VERSION: '3.32.4'
 
 jobs:
   e2e-tests:

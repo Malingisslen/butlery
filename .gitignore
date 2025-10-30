@@ -57,3 +57,11 @@ android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 service-account-key.json
 *firebase-adminsdk*.json
+
+# Firebase debug logs
+firebase-debug.log
+*-debug.log
+
+# Test result logs
+test/**/results/logs/*.log
+test/**/results/*.log
