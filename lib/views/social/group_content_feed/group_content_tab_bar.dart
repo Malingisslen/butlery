@@ -35,7 +35,7 @@ class GroupContentTabBar {
       margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: TabBar(
         controller: tabController,
@@ -69,7 +69,7 @@ class GroupContentTabBar {
         unselectedLabelStyle: AppTextStyles.bodyMedium,
         indicator: BoxDecoration(
           color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: Colors.transparent,

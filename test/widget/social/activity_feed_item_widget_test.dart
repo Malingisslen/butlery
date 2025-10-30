@@ -690,7 +690,7 @@ void main() {
         );
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.color, equals(AppColors.surface));
-        expect(decoration.borderRadius, equals(BorderRadius.circular(AppDimensions.radiusM)));
+        expect(decoration.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadiusM)));
       });
 
       testWidgets('renders correctly in ListView', (WidgetTester tester) async {

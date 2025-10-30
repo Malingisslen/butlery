@@ -24,8 +24,8 @@ class ButtonThemes {
         ),
         minimumSize: const Size(double.infinity, 48),
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacing24,
-          vertical: AppDimensions.spacing12,
+          horizontal: AppDimensions.spacingLg,
+          vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
         ),
         textStyle: AppTextStyles.buttonText,
       ),
@@ -44,8 +44,8 @@ class ButtonThemes {
         ),
         minimumSize: const Size(double.infinity, 48),
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacing24,
-          vertical: AppDimensions.spacing12,
+          horizontal: AppDimensions.spacingLg,
+          vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
         ),
         textStyle: AppTextStyles.buttonText,
       ),
@@ -68,8 +68,8 @@ class ButtonThemes {
         ),
         minimumSize: const Size(double.infinity, 48),
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacing24,
-          vertical: AppDimensions.spacing12,
+          horizontal: AppDimensions.spacingLg,
+          vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
         ),
         textStyle: AppTextStyles.buttonText,
       ),
@@ -88,8 +88,8 @@ class ButtonThemes {
         ),
         minimumSize: const Size(0, 48),
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacing16,
-          vertical: AppDimensions.spacing12,
+          horizontal: AppDimensions.spacingMd,
+          vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
         ),
         textStyle: AppTextStyles.buttonText,
       ),

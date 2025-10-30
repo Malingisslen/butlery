@@ -19,6 +19,7 @@ import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/services/performance/intelligent_cache_manager.dart';
 import 'package:butlery/services/performance/startup_optimization_manager.dart';
 import 'package:butlery/services/performance/performance_monitoring_service.dart';
+import 'package:butlery/services/performance/firebase_performance_service.dart';
 
 // Dependencies from Core Module
 import 'package:butlery/core/di/modules/core_module.dart';
@@ -87,6 +88,13 @@ class PerformanceModule implements DIModule {
       // Initialize performance monitoring first
       final performanceMonitoring = container<PerformanceMonitoringService>();
       performanceMonitoring.initialize();
+
+      // Initialize Firebase Performance (enabled by default)
+      await FirebasePerformanceService.setPerformanceCollectionEnabled(true);
+
+      if (kDebugMode) {
+        debugPrint('✅ [PerformanceModule] Firebase Performance initialized');
+      }
 
       // Note: IntelligentCacheManager is lazy and will initialize on first use
       // StartupOptimizationManager is initialized early in main.dart

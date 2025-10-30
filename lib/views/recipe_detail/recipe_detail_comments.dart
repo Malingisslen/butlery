@@ -11,6 +11,35 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
+/// Consolidated state class for RecipeDetailComments to reduce setState calls
+class CommentsState {
+  final bool isCommentsExpanded;
+  final String? replyingToCommentId;
+  final String? replyingToUserName;
+  final bool isInitialized;
+
+  const CommentsState({
+    this.isCommentsExpanded = false,
+    this.replyingToCommentId,
+    this.replyingToUserName,
+    this.isInitialized = false,
+  });
+
+  CommentsState copyWith({
+    bool? isCommentsExpanded,
+    String? replyingToCommentId,
+    String? replyingToUserName,
+    bool? isInitialized,
+  }) {
+    return CommentsState(
+      isCommentsExpanded: isCommentsExpanded ?? this.isCommentsExpanded,
+      replyingToCommentId: replyingToCommentId,
+      replyingToUserName: replyingToUserName,
+      isInitialized: isInitialized ?? this.isInitialized,
+    );
+  }
+}
+
 /// Recipe detail comments widget
 ///
 /// This widget provides a complete comments system for recipe details including:
@@ -35,10 +64,7 @@ class RecipeDetailComments extends StatefulWidget {
 
 class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   final TextEditingController _commentController = TextEditingController();
-  bool _isCommentsExpanded = false;
-  String? _replyingToCommentId;
-  String? _replyingToUserName;
-  bool _isInitialized = false;
+  CommentsState _state = const CommentsState();
 
   @override
   void initState() {
@@ -51,9 +77,11 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
   /// Initialize SocialRecipeViewModel and load comments
   Future<void> _initializeComments() async {
-    if (!mounted || _isInitialized) return;
+    if (!mounted || _state.isInitialized) return;
 
-    _isInitialized = true;
+    setState(() {
+      _state = _state.copyWith(isInitialized: true);
+    });
     final socialViewModel =
         Provider.of<SocialRecipeViewModel>(context, listen: false);
 
@@ -93,11 +121,11 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
               onTap: () {
                 if (mounted) {
                   setState(() {
-                    _isCommentsExpanded = !_isCommentsExpanded;
+                    _state = _state.copyWith(isCommentsExpanded: !_state.isCommentsExpanded);
                   });
 
                   // Start or stop real-time comment streaming based on expansion
-                  if (_isCommentsExpanded) {
+                  if (_state.isCommentsExpanded) {
                     // Start watching for real-time updates
                     socialViewModel.startWatchingComments(widget.recipe.id);
                   } else {
@@ -141,7 +169,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                       ),
                     ),
                     Icon(
-                      _isCommentsExpanded
+                      _state.isCommentsExpanded
                           ? Icons.keyboard_arrow_up
                           : Icons.keyboard_arrow_down,
                       color: AppColors.textMedium,
@@ -153,7 +181,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
             ),
 
             // Expanded comments section
-            if (_isCommentsExpanded) ...[
+            if (_state.isCommentsExpanded) ...[
               const SizedBox(height: AppDimensions.spacingM),
               _buildCommentsSection(socialViewModel),
             ],
@@ -247,7 +275,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       child: Column(
         children: [
           // Reply indicator
-          if (_replyingToCommentId != null) ...[
+          if (_state.replyingToCommentId != null) ...[
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -264,7 +292,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                   ),
                   const SizedBox(width: AppDimensions.spacingM),
                   Text(
-                    'Svarar $_replyingToUserName',
+                    'Svarar ${_state.replyingToUserName}',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.primaryBlue,
                     ),
@@ -274,8 +302,10 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                     onPressed: () {
                       if (mounted) {
                         setState(() {
-                          _replyingToCommentId = null;
-                          _replyingToUserName = null;
+                          _state = _state.copyWith(
+                            replyingToCommentId: null,
+                            replyingToUserName: null,
+                          );
                         });
                       }
                     },
@@ -298,7 +328,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 child: TextField(
                   controller: _commentController,
                   decoration: InputDecoration(
-                    hintText: _replyingToCommentId != null
+                    hintText: _state.replyingToCommentId != null
                         ? 'Skriv ditt svar...'
                         : 'Skriv en kommentar...',
                     hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
@@ -437,7 +467,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       decoration: isReply
           ? BoxDecoration(
               color: AppColors.surface.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             )
           : null,
       child: Column(
@@ -483,10 +513,12 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 onPressed: () {
                   if (mounted) {
                     setState(() {
-                      _replyingToCommentId = comment.id;
-                      _replyingToUserName = _getAuthorDisplayName(
-                        comment.authorId,
-                        socialViewModel,
+                      _state = _state.copyWith(
+                        replyingToCommentId: comment.id,
+                        replyingToUserName: _getAuthorDisplayName(
+                          comment.authorId,
+                          socialViewModel,
+                        ),
                       );
                     });
                   }
@@ -558,8 +590,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       socialViewModel.updateNewCommentText(commentText);
 
       // Set reply context if replying to a comment
-      if (_replyingToCommentId != null) {
-        socialViewModel.setReplyTo(_replyingToCommentId!);
+      if (_state.replyingToCommentId != null) {
+        socialViewModel.setReplyTo(_state.replyingToCommentId!);
       }
 
       // Post comment through viewmodel (now has the text!)
@@ -570,8 +602,10 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       socialViewModel.cancelReply();
       if (mounted) {
         setState(() {
-          _replyingToCommentId = null;
-          _replyingToUserName = null;
+          _state = _state.copyWith(
+            replyingToCommentId: null,
+            replyingToUserName: null,
+          );
         });
       }
 
@@ -648,6 +682,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                     final avatarUrl = _getAuthorAvatarUrl(userId, socialViewModel);
 
                     return ListTile(
+                      key: ValueKey(userId),
                       leading: SocialComponents.avatar(
                         displayName: displayName,
                         imageUrl: avatarUrl,

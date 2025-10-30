@@ -63,7 +63,7 @@ class ShoppingListContent {
 
         // Completed items section
         if (viewModel.boughtItems > 0) ...[
-          const SizedBox(height: AppDimensions.spacing24),
+          const SizedBox(height: AppDimensions.spacingLg),
           _buildCompletedItemsHeader(viewModel),
           const SizedBox(height: AppDimensions.spacingSm),
           ..._buildCompletedItems(
@@ -71,7 +71,7 @@ class ShoppingListContent {
         ],
 
         // Bottom spacing
-        const SizedBox(height: AppDimensions.spacing80),
+        const SizedBox(height: AppDimensions.spacingHuge),
       ],
     );
   }
@@ -150,7 +150,7 @@ class ShoppingListContent {
       children: [
         // Category header
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacing12, vertical: AppDimensions.spacingSm),
+          padding: const EdgeInsets.symmetric(horizontal: (AppDimensions.spacingSm + AppDimensions.spacingXs), vertical: AppDimensions.spacingSm),
           margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
           decoration: BoxDecoration(
             color:
@@ -161,7 +161,7 @@ class ShoppingListContent {
           child: Row(
             children: [
               _getCategoryIcon(category, isCompleted),
-              const SizedBox(width: AppDimensions.spacing12),
+              const SizedBox(width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
               Expanded(
                 child: Text(
                   category,
@@ -179,8 +179,8 @@ class ShoppingListContent {
               const SizedBox(width: AppDimensions.spacingSm),
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacing6,
-                    vertical: AppDimensions.spacing2),
+                    horizontal: AppDimensions.spacingTight,
+                    vertical: AppDimensions.spacingXxs),
                 decoration: BoxDecoration(
                   color: (isCompleted
                           ? AppColors.textMedium

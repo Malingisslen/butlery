@@ -17,7 +17,7 @@ class CollaborativeLiveWidgets {
   }) {
     if (!isVisible) return const SizedBox.shrink();
 
-    final indicatorColor = color ?? AppColors.warningColor;
+    final indicatorColor = color ?? AppColors.warning;
 
     return TweenAnimationBuilder<double>(
       duration: animationDuration,

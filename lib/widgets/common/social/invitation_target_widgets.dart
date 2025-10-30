@@ -193,7 +193,7 @@ class InvitationTargetWidgets {
         hintText: hint ?? 'Sök...',
         prefixIcon: const Icon(Icons.search),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingL,

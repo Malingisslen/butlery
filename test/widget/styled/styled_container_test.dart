@@ -429,7 +429,7 @@ void main() {
         ));
 
         final container = tester.widget<Container>(find.byType(Container));
-        expect(container.padding, equals(const EdgeInsets.all(AppDimensions.spacing16)));
+        expect(container.padding, equals(const EdgeInsets.all(AppDimensions.spacingMd)));
       });
     });
 
@@ -500,7 +500,7 @@ void main() {
     group('Utility Container Common Properties', () {
       testWidgets('all utility containers should have consistent padding', (WidgetTester tester) async {
         // Test all utility containers have same padding
-        const expectedPadding = EdgeInsets.all(AppDimensions.spacing16);
+        const expectedPadding = EdgeInsets.all(AppDimensions.spacingMd);
         
         // Error container
         await tester.pumpWidget(createTestWidget(

@@ -81,7 +81,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
 
         // Selected images preview
         if (hasImages && widget.showImagePreview) ...[
-          if (canAddMore) const SizedBox(height: AppDimensions.spacing16),
+          if (canAddMore) const SizedBox(height: AppDimensions.spacingMd),
           _buildSelectedImagesPreview(),
         ],
 
@@ -92,7 +92,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             child: Text(
               '${widget.selectedImages.length}/${widget.config.maxImages} images selected',
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textPrimary.withValues(alpha: 0.7),
+                color: AppColors.textDark.withValues(alpha: 0.7),
               ),
             ),
           ),
@@ -111,10 +111,10 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: AppColors.dividerColor.withValues(alpha: 0.3),
+          color: AppColors.divider.withValues(alpha: 0.3),
           style: BorderStyle.solid,
         ),
-        color: AppColors.cardColor,
+        color: AppColors.cardWhite,
       ),
       child: Material(
         color: AppColors.transparent,
@@ -136,16 +136,16 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacing12),
+                  const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
                   Text(
                     'Selecting images...',
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textPrimary.withValues(alpha: 0.7),
+                      color: AppColors.textDark.withValues(alpha: 0.7),
                     ),
                   ),
                 ] else ...[
                   Container(
-                    padding: const EdgeInsets.all(AppDimensions.spacing16),
+                    padding: const EdgeInsets.all(AppDimensions.spacingMd),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: AppColors.primaryBlue.withValues(alpha: 0.1),
@@ -156,21 +156,21 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       color: AppColors.primaryBlue,
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacing12),
+                  const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
                   Text(
                     widget.allowMultiple ? 'Select images' : 'Select image',
                     style: AppTextStyles.bodyLarge.copyWith(
-                      color: AppColors.textPrimary,
+                      color: AppColors.textDark,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacing4),
+                  const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     widget.allowMultiple
                         ? 'Tap to select up to ${widget.config.maxImages} images'
                         : 'Tap to select an image',
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textPrimary.withValues(alpha: 0.7),
+                      color: AppColors.textDark.withValues(alpha: 0.7),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -196,7 +196,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: AppDimensions.spacing8),
+        const SizedBox(height: AppDimensions.spacingSm),
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -226,7 +226,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
             border: Border.all(
-              color: AppColors.dividerColor.withValues(alpha: 0.2),
+              color: AppColors.divider.withValues(alpha: 0.2),
             ),
           ),
           child: ClipRRect(
@@ -238,13 +238,13 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     width: double.infinity,
                     height: double.infinity,
                     placeholder: (context, url) => const ColoredBox(
-                      color: AppColors.cardColor,
+                      color: AppColors.cardWhite,
                       child: Center(
                         child: CircularProgressIndicator(),
                       ),
                     ),
                     errorWidget: (context, url, error) => const ColoredBox(
-                      color: AppColors.cardColor,
+                      color: AppColors.cardWhite,
                       child: Icon(
                         Icons.error_outline,
                         color: AppColors.error,
@@ -257,7 +257,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     width: double.infinity,
                     height: double.infinity,
                     errorBuilder: (context, error, stackTrace) => const ColoredBox(
-                      color: AppColors.cardColor,
+                      color: AppColors.cardWhite,
                       child: Icon(
                         Icons.error_outline,
                         color: AppColors.error,
@@ -274,12 +274,12 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           child: GestureDetector(
             onTap: () => _removeImage(imagePath, index),
             child: Container(
-              padding: const EdgeInsets.all(AppDimensions.spacing4),
+              padding: const EdgeInsets.all(AppDimensions.spacingXs),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: AppColors.error,
                 border: Border.all(
-                  color: AppColors.cardColor,
+                  color: AppColors.cardWhite,
                   width: 1,
                 ),
               ),
@@ -297,9 +297,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           bottom: AppDimensions.spacingXs,
           left: AppDimensions.spacingXs,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacing6, vertical: AppDimensions.spacing2),
+            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingTight, vertical: AppDimensions.spacingXxs),
             decoration: BoxDecoration(
-              color: AppColors.cardColor.withValues(alpha: 0.9),
+              color: AppColors.cardWhite.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
             ),
             child: Text(

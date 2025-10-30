@@ -38,7 +38,7 @@ class GroupContentSearchBar {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
           color: AppColors.outline.withValues(alpha: 0.2),
         ),
@@ -97,7 +97,7 @@ class GroupContentSearchBar {
       ),
       decoration: BoxDecoration(
         color: AppColors.secondaryContainer.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Row(
         children: [
@@ -138,7 +138,7 @@ class GroupContentSearchBar {
       ),
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

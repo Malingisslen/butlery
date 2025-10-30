@@ -1,6 +1,7 @@
 // lib/views/recipe_detail_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
@@ -150,12 +151,18 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                 ],
                               ),
                             ),
-                            child: Image.network(
-                              recipe.imageUrls.first,
+                            child: CachedNetworkImage(
+                              imageUrl: recipe.imageUrls.first,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
+                              placeholder: (context, url) => const ColoredBox(
+                                color: AppColors.cardWhite,
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) {
                                 return const ColoredBox(
-                                  color: AppColors.cardColor,
+                                  color: AppColors.cardWhite,
                                   child: Icon(
                                     Icons.restaurant,
                                     size: AppDimensions.iconSizeHero,
@@ -167,7 +174,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           ),
                         )
                       : const ColoredBox(
-                          color: AppColors.cardColor,
+                          color: AppColors.cardWhite,
                           child: Icon(
                             Icons.restaurant,
                             size: AppDimensions.iconSizeHero,

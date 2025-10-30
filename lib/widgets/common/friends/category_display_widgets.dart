@@ -58,7 +58,7 @@ class CategoryDisplayWidgets {
         return Card(
           child: InkWell(
             onTap: () => onCategoryTap(category),
-            borderRadius: BorderRadius.circular(AppDimensions.smallRadius),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             child: Padding(
               padding: const EdgeInsets.all(AppDimensions.spacingMd),
               child: Column(

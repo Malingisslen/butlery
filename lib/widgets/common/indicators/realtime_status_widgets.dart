@@ -83,12 +83,12 @@ class RealtimeStatusBanner extends StatelessWidget {
     if (isOnline) return const SizedBox.shrink();
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacing12),
+      padding: const EdgeInsets.all((AppDimensions.spacingSm + AppDimensions.spacingXs)),
       color: AppColors.error.withValues(alpha: 0.1),
       child: Row(
         children: [
           Text(statusEmoji, style: TextStyle(fontSize: AppDimensions.iconSizeM.toDouble())),
-          const SizedBox(width: AppDimensions.spacing12),
+          const SizedBox(width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

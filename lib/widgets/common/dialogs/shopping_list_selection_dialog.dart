@@ -211,7 +211,7 @@ class _ShoppingListSelectionDialogState
                 Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
                   decoration: BoxDecoration(
-                    color: AppColors.cardColor,
+                    color: AppColors.cardWhite,
                     borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
                   ),
                   child: const Row(

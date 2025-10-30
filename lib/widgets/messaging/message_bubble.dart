@@ -335,7 +335,7 @@ class _MessageBubbleState extends State<MessageBubble>
                   : AppColors.primaryBlue,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacing2),
+          const SizedBox(height: AppDimensions.spacingXxs),
           Text(
             replyTo.displayContent,
             style: AppTextStyles.labelSmall.copyWith(
@@ -716,7 +716,7 @@ class _MessageBubbleState extends State<MessageBubble>
             size: AppDimensions.iconSizeXs,
             color: AppColors.cardWhite.withValues(alpha: 0.7),
           ),
-          const SizedBox(width: AppDimensions.spacing2),
+          const SizedBox(width: AppDimensions.spacingXxs),
           Text(
             _getStatusText(),
             style: AppTextStyles.labelSmall.copyWith(

@@ -305,11 +305,11 @@ void main() {
         
         // Check spacing after logo
         expect(children[1], isA<SizedBox>());
-        expect((children[1] as SizedBox).height, equals(AppDimensions.spacing16));
+        expect((children[1] as SizedBox).height, equals(AppDimensions.spacingMd));
         
         // Check spacing before tagline
         expect(children[3], isA<SizedBox>());
-        expect((children[3] as SizedBox).height, equals(AppDimensions.spacing8));
+        expect((children[3] as SizedBox).height, equals(AppDimensions.spacingSm));
       });
 
       testWidgets('should center align tagline text', (WidgetTester tester) async {

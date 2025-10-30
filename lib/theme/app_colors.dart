@@ -141,16 +141,12 @@ class AppColors {
 
 
 
-  // Legacy compatibility colors
+  // Legacy compatibility colors (minimal set)
   static const Color shadowColor = Color(0x1A000000);
   static const Color backgroundLight = backgroundBeige;
   static const Color secondaryPurple = Color(0xFF9C27B0);
   static const Color backgroundDark = neutralDark;
   static const Color surfaceDark = Color(0xFF374151);
-  static const Color cardColor = cardWhite;
-  static const Color textPrimary = textDark;
-  static const Color dividerColor = divider;
-  static const Color warningColor = warning;
 
   // Material 3 compatibility - use ColorScheme instead where possible
   static const Color primary = primaryBlue;

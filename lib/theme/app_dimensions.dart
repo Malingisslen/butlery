@@ -27,6 +27,15 @@ class AppDimensions {
   /// Extra extra large spacing (48px) - matches original spacingXxl
   static const double spacingXxl = 48.0;
 
+  /// Huge spacing (80px) - for large gaps like avatar widths, empty states
+  static const double spacingHuge = 80.0;
+
+  /// Tight spacing (6px) - between scale points, for compact layouts
+  static const double spacingTight = 6.0;
+
+  /// Moderate spacing (14px) - between scale points, for input padding
+  static const double spacingModerate = 14.0;
+
   /// **Spacing Scale Guide:**
   /// Use semantic names instead of numeric constants
   ///
@@ -40,24 +49,12 @@ class AppDimensions {
   /// ❌ Don't: padding: spacing12
   /// ✅ Do: padding: spacingMd or combine: spacingSm + spacingXs
 
-  // Minimal aliases for backward compatibility
-  static const double spacingXxs = 2.0;  // Extra extra small (2px) - use sparingly
-  static const double spacingS = 3.0;    // Small (3px) - use sparingly
-  static const double spacingM = spacingSm;  // Alias for 8px
-  static const double spacingL = 12.0;   // 12px - consider using spacingSm + spacingXs
+  // Minimal aliases for backward compatibility with existing code
+  static const double spacingXxs = 2.0;       // Extra extra small (2px)
+  static const double spacingS = 3.0;         // 3px - use sparingly
+  static const double spacingM = spacingSm;   // Alias for 8px
+  static const double spacingL = (spacingSm + spacingXs);  // 12px (8+4)
   static const double spacingXxxl = spacingLg; // Alias for 24px
-
-  // Numeric spacing aliases (legacy - prefer semantic names above)
-  static const double spacing2 = spacingXxs;
-  static const double spacing4 = spacingXs;
-  static const double spacing6 = 6.0;
-  static const double spacing8 = spacingSm;
-  static const double spacing12 = spacingL;
-  static const double spacing14 = 14.0;
-  static const double spacing16 = spacingMd;
-  static const double spacing20 = 20.0;
-  static const double spacing24 = spacingLg;
-  static const double spacing80 = 80.0;
 
   // ===== PADDING CONSTANTS =====
 
@@ -94,14 +91,6 @@ class AppDimensions {
 
   /// Round border radius (50px) for fully rounded elements
   static const double borderRadiusRound = 50.0;
-
-  // Legacy radius aliases (prefer borderRadius* names above)
-  static const double radiusS = borderRadiusS;
-  static const double radiusM = borderRadiusM;
-  static const double radiusL = borderRadiusL;
-  static const double smallRadius = borderRadiusS;
-  static const double radiusMedium = borderRadiusM;
-  static const double radiusLarge = borderRadiusL;
 
   // Additional border radius constants for common hardcoded values
   static const double borderRadius0 = 0.0;

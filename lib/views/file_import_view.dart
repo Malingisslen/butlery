@@ -7,6 +7,35 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
+/// Consolidated state class for FileImportView to reduce setState calls
+class FileImportState {
+  final bool isLoading;
+  final String? statusMessage;
+  final int importedCount;
+  final int failedCount;
+
+  const FileImportState({
+    this.isLoading = false,
+    this.statusMessage,
+    this.importedCount = 0,
+    this.failedCount = 0,
+  });
+
+  FileImportState copyWith({
+    bool? isLoading,
+    String? statusMessage,
+    int? importedCount,
+    int? failedCount,
+  }) {
+    return FileImportState(
+      isLoading: isLoading ?? this.isLoading,
+      statusMessage: statusMessage ?? this.statusMessage,
+      importedCount: importedCount ?? this.importedCount,
+      failedCount: failedCount ?? this.failedCount,
+    );
+  }
+}
+
 /// File import view for CSV and Excel recipe imports
 class FileImportView extends StatefulWidget {
   const FileImportView({super.key});
@@ -17,38 +46,41 @@ class FileImportView extends StatefulWidget {
 
 class _FileImportViewState extends State<FileImportView> {
   final FileImportStrategy _fileImportStrategy = FileImportStrategy();
-  bool _isLoading = false;
-  String? _statusMessage;
-  int _importedCount = 0;
-  int _failedCount = 0;
+  FileImportState _state = const FileImportState();
 
   Future<void> _importFile() async {
     setState(() {
-      _isLoading = true;
-      _statusMessage = 'Väljer fil...';
-      _importedCount = 0;
-      _failedCount = 0;
+      _state = _state.copyWith(
+        isLoading: true,
+        statusMessage: 'Väljer fil...',
+        importedCount: 0,
+        failedCount: 0,
+      );
     });
 
     try {
       // Import multiple recipes from file
       final recipes = await _fileImportStrategy.importMultiple();
-      
+
       if (recipes.isEmpty) {
         setState(() {
-          _statusMessage = 'Ingen fil vald eller filen innehåller inga recept';
-          _isLoading = false;
+          _state = _state.copyWith(
+            statusMessage: 'Ingen fil vald eller filen innehåller inga recept',
+            isLoading: false,
+          );
         });
         return;
       }
 
       setState(() {
-        _statusMessage = 'Importerar ${recipes.length} recept...';
+        _state = _state.copyWith(
+          statusMessage: 'Importerar ${recipes.length} recept...',
+        );
       });
 
       // Get recipe service
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-      
+
       // Import each recipe
       for (final recipe in recipes) {
         try {
@@ -66,23 +98,25 @@ class _FileImportViewState extends State<FileImportView> {
             imageUrls: recipe.imageUrls,
           );
           setState(() {
-            _importedCount++;
+            _state = _state.copyWith(importedCount: _state.importedCount + 1);
           });
         } catch (e) {
           AppLogger.error('Failed to import recipe: ${recipe.title}', e);
           setState(() {
-            _failedCount++;
+            _state = _state.copyWith(failedCount: _state.failedCount + 1);
           });
         }
       }
 
       setState(() {
-        _isLoading = false;
-        _statusMessage = 'Import klar: $_importedCount lyckades, $_failedCount misslyckades';
+        _state = _state.copyWith(
+          isLoading: false,
+          statusMessage: 'Import klar: ${_state.importedCount} lyckades, ${_state.failedCount} misslyckades',
+        );
       });
 
       // Navigate back if all successful
-      if (_failedCount == 0 && mounted) {
+      if (_state.failedCount == 0 && mounted) {
         await Future.delayed(const Duration(seconds: 2));
         if (mounted) {
           Navigator.pop(context);
@@ -91,8 +125,10 @@ class _FileImportViewState extends State<FileImportView> {
     } catch (e) {
       AppLogger.error('File import failed', e);
       setState(() {
-        _isLoading = false;
-        _statusMessage = 'Import misslyckades: ${e.toString()}';
+        _state = _state.copyWith(
+          isLoading: false,
+          statusMessage: 'Import misslyckades: ${e.toString()}',
+        );
       });
     }
   }
@@ -146,70 +182,70 @@ class _FileImportViewState extends State<FileImportView> {
               ),
               
               const SizedBox(height: AppDimensions.spacingXl),
-              
+
               // Import button
-              if (!_isLoading)
+              if (!_state.isLoading)
                 UtilityComponents.primaryButton(
                   context,
                   label: 'Välj fil och importera',
                   icon: Icons.file_upload,
                   onPressed: _importFile,
                 ),
-              
+
               // Loading indicator
-              if (_isLoading)
+              if (_state.isLoading)
                 Column(
                   children: [
                     const CircularProgressIndicator(),
                     const SizedBox(height: AppDimensions.spacingL),
-                    if (_statusMessage != null)
+                    if (_state.statusMessage != null)
                       Text(
-                        _statusMessage!,
+                        _state.statusMessage!,
                         style: AppTextStyles.bodyLarge,
                         textAlign: TextAlign.center,
                       ),
-                    if (_importedCount > 0 || _failedCount > 0)
+                    if (_state.importedCount > 0 || _state.failedCount > 0)
                       Padding(
                         padding: const EdgeInsets.only(top: AppDimensions.spacingM),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            if (_importedCount > 0) ...[
+                            if (_state.importedCount > 0) ...[
                               Icon(
                                 Icons.check_circle,
                                 color: Theme.of(context).colorScheme.primary,
                               ),
                               const SizedBox(width: AppDimensions.spacingS),
-                              Text('$_importedCount lyckades'),
+                              Text('${_state.importedCount} lyckades'),
                             ],
-                            if (_importedCount > 0 && _failedCount > 0)
+                            if (_state.importedCount > 0 && _state.failedCount > 0)
                               const SizedBox(width: AppDimensions.spacingL),
-                            if (_failedCount > 0) ...[
+                            if (_state.failedCount > 0) ...[
                               Icon(
                                 Icons.error,
                                 color: Theme.of(context).colorScheme.error,
                               ),
                               const SizedBox(width: AppDimensions.spacingS),
-                              Text('$_failedCount misslyckades'),
+                              Text('${_state.failedCount} misslyckades'),
                             ],
                           ],
                         ),
                       ),
                   ],
                 ),
-              
+
               // Status message
-              if (!_isLoading && _statusMessage != null)
+              if (!_state.isLoading && _state.statusMessage != null)
                 Padding(
                   padding: const EdgeInsets.only(top: AppDimensions.spacingL),
                   child: Card(
-                    color: _failedCount > 0 
+                    color: _state.failedCount > 0
                         ? Theme.of(context).colorScheme.errorContainer
                         : Theme.of(context).colorScheme.primaryContainer,
                     child: Padding(
                       padding: const EdgeInsets.all(AppDimensions.spacingM),
                       child: Text(
-                        _statusMessage!,
+                        _state.statusMessage!,
                         style: AppTextStyles.bodyMedium,
                         textAlign: TextAlign.center,
                       ),

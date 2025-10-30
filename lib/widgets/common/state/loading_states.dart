@@ -101,7 +101,7 @@ class LoadingStates {
                     SkeletonComponents.skeletonBox(
                       height: 14,
                       width: double.infinity,
-                      margin: const EdgeInsets.only(bottom: AppDimensions.spacingXxs),
+                      margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
                     ),
                     // Beskrivning rad 2
                     SkeletonComponents.skeletonBox(

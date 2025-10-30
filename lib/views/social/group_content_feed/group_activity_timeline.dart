@@ -99,7 +99,7 @@ class GroupActivityTimeline {
             padding: const EdgeInsets.all(AppDimensions.spacingM),
             decoration: BoxDecoration(
               color: AppColors.surface,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               border: Border.all(
                 color: AppColors.outline.withValues(alpha: 0.2),
               ),
@@ -199,7 +199,7 @@ class GroupActivityTimeline {
       padding: const EdgeInsets.all(AppDimensions.spacingS),
       decoration: BoxDecoration(
         color: _getActivityColor(activityType).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Row(
         children: [
@@ -274,7 +274,7 @@ class GroupActivityTimeline {
       ),
       decoration: BoxDecoration(
         color: AppColors.primaryContainer.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

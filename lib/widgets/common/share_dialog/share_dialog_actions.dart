@@ -129,7 +129,7 @@ class ShareDialogActions {
       ),
       decoration: BoxDecoration(
         color: AppColors.success.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppDimensions.smallRadius),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
           color: AppColors.success.withValues(alpha: 0.3),
         ),

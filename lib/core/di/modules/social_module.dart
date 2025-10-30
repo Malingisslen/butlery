@@ -33,6 +33,7 @@ import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
 
@@ -120,6 +121,7 @@ class SocialModule implements DIModule {
           userService: container<UserService>(),
           recipeService: container<UnifiedRecipeService>(),
           permissionService: container<PermissionService>(),
+          shoppingService: container<UnifiedShoppingService>(),
         ),
       );
 

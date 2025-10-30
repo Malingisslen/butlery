@@ -265,7 +265,7 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
           ),
         ),
         if (warningMessage != null) ...[
-          const SizedBox(height: AppDimensions.spacing12),
+          const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
           Text(
             warningMessage!,
             style: AppTextStyles.bodySmall.copyWith(
@@ -273,7 +273,7 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
             ),
           ),
         ],
-        const SizedBox(height: AppDimensions.spacing12),
+        const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
         const Text(
           'Denna åtgärd kan inte ångras.',
           style: TextStyle(

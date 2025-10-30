@@ -417,10 +417,10 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: AppColors.dividerColor.withValues(alpha: 0.3),
+          color: AppColors.divider.withValues(alpha: 0.3),
           style: BorderStyle.solid,
         ),
-        color: AppColors.cardColor,
+        color: AppColors.cardWhite,
       ),
       child: Material(
         color: AppColors.transparent,
@@ -448,7 +448,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                     Text(
                       'Adding image...',
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textPrimary.withValues(alpha: 0.7),
+                        color: AppColors.textDark.withValues(alpha: 0.7),
                       ),
                     ),
                   ] else ...[
@@ -471,7 +471,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                       'Lägg till bilder',
                       style: AppTextStyles.bodyMedium.copyWith(
                         // Changed from bodyLarge
-                        color: AppColors.textPrimary,
+                        color: AppColors.textDark,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -481,7 +481,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
                       'Tryck för att lägga till upp till ${widget.config.maxImages} bilder',
                       style: AppTextStyles.bodySmall.copyWith(
                         // Changed from bodyMedium
-                        color: AppColors.textPrimary.withValues(alpha: 0.7),
+                        color: AppColors.textDark.withValues(alpha: 0.7),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -908,7 +908,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
     return Tooltip(
       message: tooltip,
       child: Material(
-        color: isDestructive ? AppColors.error : AppColors.cardColor,
+        color: isDestructive ? AppColors.error : AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         child: InkWell(
           onTap: onTap,
@@ -918,7 +918,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
             child: Icon(
               icon,
               size: AppDimensions.iconSizeM,
-              color: isDestructive ? AppColors.cardWhite : AppColors.textPrimary,
+              color: isDestructive ? AppColors.cardWhite : AppColors.textDark,
             ),
           ),
         ),
@@ -1214,7 +1214,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
         width: AppDimensions.iconSizeAction,
         height: AppDimensions.iconSizeAction,
         decoration: BoxDecoration(
-          color: isDestructive ? AppColors.error : AppColors.cardColor,
+          color: isDestructive ? AppColors.error : AppColors.cardWhite,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
@@ -1227,7 +1227,7 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
         child: Icon(
           icon,
           size: AppDimensions.iconSizeS,
-          color: isDestructive ? AppColors.cardWhite : AppColors.textPrimary,
+          color: isDestructive ? AppColors.cardWhite : AppColors.textDark,
         ),
       ),
     );

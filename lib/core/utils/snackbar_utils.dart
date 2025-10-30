@@ -280,7 +280,7 @@ class SnackBarUtils {
       content = Row(
         children: [
           Icon(icon, color: textColor, size: AppDimensions.iconSizeM),
-          const SizedBox(width: AppDimensions.spacing12),
+          const SizedBox(width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
           Expanded(child: content),
         ],
       );

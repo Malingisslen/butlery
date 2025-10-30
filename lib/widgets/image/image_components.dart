@@ -239,8 +239,8 @@ class ImageComponents {
       right: AppDimensions.spacingSm,
       child: Container(
         padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacing6,
-            vertical: AppDimensions.spacing2),
+            horizontal: AppDimensions.spacingTight,
+            vertical: AppDimensions.spacingXxs),
         decoration: BoxDecoration(
           color: AppColors.cardWhite.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
@@ -254,15 +254,15 @@ class ImageComponents {
             const Icon(
               Icons.collections_outlined,
               size: AppDimensions.iconSizeXs,
-              color: AppColors.textPrimary,
+              color: AppColors.textDark,
             ),
-            const SizedBox(width: AppDimensions.spacing2),
+            const SizedBox(width: AppDimensions.spacingXxs),
             Text(
               '$imageCount',
               style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
+                color: AppColors.textDark,
               ),
             ),
           ],
@@ -298,7 +298,7 @@ class ImageComponents {
           style: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: AppColors.textPrimary,
+            color: AppColors.textDark,
           ),
         ),
       ),
@@ -355,7 +355,7 @@ class ImageComponents {
     final dimensions = config.getDimensions();
     // Handle infinite dimensions gracefully - use reasonable default size
     final indicatorSize = dimensions.width == double.infinity 
-        ? AppDimensions.spacing20  // Default indicator size for infinite/large avatars
+        ? AppDimensions.spacingMd + AppDimensions.spacingXs  // Default indicator size for infinite/large avatars (20px)
         : dimensions.width * 0.25;
 
     return Positioned(

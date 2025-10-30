@@ -36,7 +36,7 @@ class CollaborativeShoppingPresence extends StatelessWidget {
       margin: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
         color: hasConflicts ? AppColors.error.withValues(alpha: 0.1) : AppColors.info.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
           color: hasConflicts ? AppColors.error.withValues(alpha: 0.3) : AppColors.info.withValues(alpha: 0.3),
         ),
@@ -154,7 +154,7 @@ class CollaborativeShoppingPresence extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: statusColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
           color: statusColor.withValues(alpha: 0.3),
         ),
@@ -224,7 +224,7 @@ class CollaborativeShoppingPresence extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: AppColors.primary.withValues(alpha: 0.5)),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
               ),
             ),
           ),
@@ -258,7 +258,7 @@ class CollaborativeShoppingPresence extends StatelessWidget {
               backgroundColor: AppColors.success,
               foregroundColor: AppColors.onSuccess,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
               ),
             ),
           ),
@@ -321,7 +321,7 @@ class ShoppingConflictDialog extends StatelessWidget {
             padding: const EdgeInsets.all(AppDimensions.spacingM),
             decoration: BoxDecoration(
               color: AppColors.info.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
               border: Border.all(
                 color: AppColors.info.withValues(alpha: 0.2),
               ),

@@ -30,7 +30,7 @@ class GroupSharedShoppingListCard {
   ) {
     return Material(
       elevation: AppDimensions.elevationMedium,
-      borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       color: AppColors.surface,
       child: Padding(
         padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -57,7 +57,7 @@ class GroupSharedShoppingListCard {
           padding: const EdgeInsets.all(AppDimensions.spacingS),
           decoration: BoxDecoration(
             color: AppColors.primaryContainer.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           ),
           child: const Icon(
             Icons.shopping_cart,
@@ -129,7 +129,7 @@ class GroupSharedShoppingListCard {
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,7 +158,7 @@ class GroupSharedShoppingListCard {
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.info.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                   ),
                   child: Text(
                     'Kollaborativ',
@@ -235,7 +235,7 @@ class GroupSharedShoppingListCard {
       ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

@@ -21,6 +21,7 @@ import 'package:butlery/core/di/interfaces/service_health.dart';
 // Dependencies from Core Module
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
 // Recipe repositories and interfaces
@@ -148,7 +149,10 @@ class ContentModule implements DIModule {
 
       // Storage repository for storage operations
       container.registerSingleton<StorageRepository>(
-        FirebaseStorageRepository(),
+        FirebaseStorageRepository(
+          authRepository: container<AuthRepository>(),
+          auditRepository: container<FirebaseAuditRepository>(),
+        ),
       );
 
       // Storage service for file management

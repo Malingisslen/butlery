@@ -162,7 +162,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           height: AppDimensions.iconSizeDisplay,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(AppDimensions.smallRadius),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           ),
           child: Icon(
             Icons.restaurant_menu,

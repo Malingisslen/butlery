@@ -438,7 +438,7 @@ void main() {
         
         expect(decoration.color, equals(AppColors.surface));
         expect(decoration.borderRadius, 
-          equals(BorderRadius.circular(AppDimensions.radiusM)));
+          equals(BorderRadius.circular(AppDimensions.borderRadiusM)));
       });
 
       testWidgets('displays stat chips with correct styling', (WidgetTester tester) async {

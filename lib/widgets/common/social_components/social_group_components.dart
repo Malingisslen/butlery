@@ -333,7 +333,7 @@ class SocialGroupComponents {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacing16),
+        padding: const EdgeInsets.all(AppDimensions.spacingMd),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -341,7 +341,7 @@ class SocialGroupComponents {
               'Kategoristatistik',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            const SizedBox(height: AppDimensions.spacing12),
+            const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
             Row(
               children: [
                 Expanded(
@@ -362,7 +362,7 @@ class SocialGroupComponents {
               ],
             ),
             if (showAverageSize || showLargestCategory) ...[
-              const SizedBox(height: AppDimensions.spacing12),
+              const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
               Row(
                 children: [
                   if (showAverageSize)
@@ -430,19 +430,19 @@ class SocialGroupComponents {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: AppDimensions.iconSizeXxl, color: AppColors.textMedium),
-          const SizedBox(height: AppDimensions.spacing16),
+          const SizedBox(height: AppDimensions.spacingMd),
           Text(
             title,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: AppDimensions.spacing8),
+          const SizedBox(height: AppDimensions.spacingSm),
           Text(
             subtitle,
             style: const TextStyle(color: AppColors.textMedium),
             textAlign: TextAlign.center,
           ),
           if (onCreateFirst != null && createButtonText != null) ...[
-            const SizedBox(height: AppDimensions.spacing24),
+            const SizedBox(height: AppDimensions.spacingLg),
             ElevatedButton(
               onPressed: onCreateFirst,
               child: Text(createButtonText),
@@ -464,7 +464,7 @@ class SocialGroupComponents {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircularProgressIndicator(),
-          SizedBox(height: AppDimensions.spacing16),
+          SizedBox(height: AppDimensions.spacingMd),
           Text('Laddar kategorier...'),
         ],
       ),

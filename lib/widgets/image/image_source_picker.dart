@@ -92,7 +92,7 @@ class ImagePickerBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,14 +104,14 @@ class ImagePickerBottomSheet extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacing16),
+            const SizedBox(height: AppDimensions.spacingMd),
           ],
           ImageSourcePickerWidget(
             onSourceSelected: onSourceSelected,
             showCamera: showCamera,
             showGallery: showGallery,
           ),
-          const SizedBox(height: AppDimensions.spacing8),
+          const SizedBox(height: AppDimensions.spacingSm),
         ],
       ),
     );

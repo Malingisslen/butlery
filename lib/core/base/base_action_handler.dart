@@ -319,7 +319,7 @@ abstract class BaseActionHandler {
               height: 16,
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
-            const SizedBox(width: AppDimensions.spacing12),
+            const SizedBox(width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
             Text(message),
           ],
         ),

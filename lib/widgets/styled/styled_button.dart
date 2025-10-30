@@ -100,8 +100,8 @@ class StyledButton extends StatelessWidget {
           onPressed: null,
           style: _getButtonStyle(context),
           child: const SizedBox(
-            width: AppDimensions.spacing20,
-            height: AppDimensions.spacing20,
+            width: (AppDimensions.spacingMd + AppDimensions.spacingXs),
+            height: (AppDimensions.spacingMd + AppDimensions.spacingXs),
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
         ),
@@ -193,15 +193,15 @@ class StyledButton extends StatelessWidget {
 
   ButtonStyle _getButtonStyle(BuildContext context) {
     EdgeInsetsGeometry effectivePadding = padding ?? const EdgeInsets.symmetric(
-      horizontal: AppDimensions.spacing16,
-      vertical: AppDimensions.spacing12,
+      horizontal: AppDimensions.spacingMd,
+      vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
     );
     
     // Handle small button padding
     if (height != null && height! < AppDimensions.buttonHeight) {
       effectivePadding = const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacing12,
-        vertical: AppDimensions.spacing8,
+        horizontal: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+        vertical: AppDimensions.spacingSm,
       );
     }
     
@@ -220,8 +220,8 @@ class StyledButton extends StatelessWidget {
       backgroundColor: AppColors.errorContainer,
       foregroundColor: AppColors.onErrorContainer,
       padding: padding ?? const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacing16,
-        vertical: AppDimensions.spacing12,
+        horizontal: AppDimensions.spacingMd,
+        vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),

@@ -20,8 +20,8 @@ class ShareDialogHeader {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer,
         borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(AppDimensions.radiusLarge),
-          topRight: Radius.circular(AppDimensions.radiusLarge),
+          topLeft: Radius.circular(AppDimensions.borderRadiusL),
+          topRight: Radius.circular(AppDimensions.borderRadiusL),
         ),
       ),
       child: Row(

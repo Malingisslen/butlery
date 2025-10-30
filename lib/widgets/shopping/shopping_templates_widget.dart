@@ -80,7 +80,7 @@ class ShoppingTemplatesWidget extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
           color: AppColors.outline.withValues(alpha: 0.2),
         ),
@@ -145,11 +145,11 @@ class ShoppingTemplatesWidget extends StatelessWidget {
     return Card(
       elevation: AppDimensions.elevationLow,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: InkWell(
         onTap: () => _showCreateFromTemplateDialog(context, template),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.spacingM),
           child: Column(
@@ -163,7 +163,7 @@ class ShoppingTemplatesWidget extends StatelessWidget {
                     height: 40,
                     decoration: BoxDecoration(
                       color: AppColors.primaryContainer.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                     ),
                     child: const Icon(
                       Icons.library_books,
@@ -246,7 +246,7 @@ class ShoppingTemplatesWidget extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.secondary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                     ),
                     child: Text(
                       tag,
@@ -308,7 +308,7 @@ class ShoppingTemplatesWidget extends StatelessWidget {
               padding: const EdgeInsets.all(AppDimensions.spacingM),
               decoration: BoxDecoration(
                 color: AppColors.info.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                 border: Border.all(
                   color: AppColors.info.withValues(alpha: 0.2),
                 ),

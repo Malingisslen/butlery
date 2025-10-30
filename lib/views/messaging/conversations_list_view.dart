@@ -230,7 +230,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         separatorBuilder: (context, index) => Divider(
           height: 1,
           color: Theme.of(context).dividerColor,
-          indent: AppDimensions.spacing80, // Account for avatar width
+          indent: AppDimensions.spacingHuge, // Account for avatar width
         ),
         itemBuilder: (context, index) {
           final conversation = _filteredConversations[index];

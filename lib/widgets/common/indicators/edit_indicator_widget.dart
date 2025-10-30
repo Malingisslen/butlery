@@ -109,7 +109,7 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
                     );
                   },
                 ),
-                const SizedBox(width: AppDimensions.spacing6),
+                const SizedBox(width: AppDimensions.spacingTight),
                 Text(
                   '${widget.editorName} redigerar ${widget.editingWhat}',
                   style: TextStyle(

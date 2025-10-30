@@ -13,6 +13,27 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
+/// Consolidated state class for ChatInputSection to reduce setState calls
+class ChatInputState {
+  final bool isComposing;
+  final bool showAttachments;
+
+  const ChatInputState({
+    this.isComposing = false,
+    this.showAttachments = false,
+  });
+
+  ChatInputState copyWith({
+    bool? isComposing,
+    bool? showAttachments,
+  }) {
+    return ChatInputState(
+      isComposing: isComposing ?? this.isComposing,
+      showAttachments: showAttachments ?? this.showAttachments,
+    );
+  }
+}
+
 /// Clean input section with message composition and attachments
 class ChatInputSection extends StatefulWidget {
   final String conversationId;
@@ -37,8 +58,7 @@ class ChatInputSection extends StatefulWidget {
 class _ChatInputSectionState extends State<ChatInputSection> {
   final TextEditingController _textController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-  bool _isComposing = false;
-  bool _showAttachments = false;
+  ChatInputState _state = const ChatInputState();
 
   @override
   void initState() {
@@ -58,20 +78,20 @@ class _ChatInputSectionState extends State<ChatInputSection> {
 
   void _onTextChanged() {
     final isComposing = _textController.text.trim().isNotEmpty;
-    if (isComposing != _isComposing) {
+    if (isComposing != _state.isComposing) {
       if (mounted) {
         setState(() {
-          _isComposing = isComposing;
+          _state = _state.copyWith(isComposing: isComposing);
         });
       }
     }
   }
 
   void _onFocusChanged() {
-    if (_focusNode.hasFocus && _showAttachments) {
+    if (_focusNode.hasFocus && _state.showAttachments) {
       if (mounted) {
         setState(() {
-          _showAttachments = false;
+          _state = _state.copyWith(showAttachments: false);
         });
       }
     }
@@ -99,7 +119,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
       _textController.clear();
       if (mounted) {
         setState(() {
-          _isComposing = false;
+          _state = _state.copyWith(isComposing: false);
         });
       }
     } catch (e, stackTrace) {
@@ -123,11 +143,11 @@ class _ChatInputSectionState extends State<ChatInputSection> {
   void _toggleAttachments() {
     if (mounted) {
       setState(() {
-        _showAttachments = !_showAttachments;
+        _state = _state.copyWith(showAttachments: !_state.showAttachments);
       });
     }
 
-    if (_showAttachments) {
+    if (_state.showAttachments) {
       _focusNode.unfocus();
     }
   }
@@ -177,7 +197,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Attachment options (shown above input when active)
-                if (_showAttachments)
+                if (_state.showAttachments)
                   Container(
                     margin:
                         const EdgeInsets.only(bottom: AppDimensions.spacingS),
@@ -204,12 +224,12 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                     IconButton(
                       onPressed: _toggleAttachments,
                       icon: Icon(
-                        _showAttachments ? Icons.close : Icons.attach_file,
-                        color: _showAttachments
+                        _state.showAttachments ? Icons.close : Icons.attach_file,
+                        color: _state.showAttachments
                             ? AppColors.primary
                             : AppColors.textSecondary,
                       ),
-                      tooltip: _showAttachments ? 'Stäng' : 'Bilagor',
+                      tooltip: _state.showAttachments ? 'Stäng' : 'Bilagor',
                     ),
 
                     // Text input field
@@ -226,10 +246,10 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       child: IconButton(
-                        onPressed: _isComposing ? _handleSendMessage : null,
+                        onPressed: _state.isComposing ? _handleSendMessage : null,
                         icon: Icon(
                           Icons.send,
-                          color: _isComposing
+                          color: _state.isComposing
                               ? AppColors.primary
                               : AppColors.textSecondary,
                         ),

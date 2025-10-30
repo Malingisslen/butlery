@@ -246,7 +246,7 @@ class InvitationLists {
           child: InkWell(
             onTap: onTargetTap != null ? () => onTargetTap(target) : null,
             child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacing12),
+              padding: const EdgeInsets.all((AppDimensions.spacingSm + AppDimensions.spacingXs)),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

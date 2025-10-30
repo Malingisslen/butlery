@@ -1,6 +1,7 @@
 // lib/widgets/social/activity_feed_item_widget.dart
 
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/models/social/activity_feed_item.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -57,7 +58,7 @@ class ActivityFeedItemWidget extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         boxShadow: [
           BoxShadow(
             color: AppColors.shadow.withValues(alpha: 0.1),
@@ -71,7 +72,7 @@ class ActivityFeedItemWidget extends StatelessWidget {
         child: InkWell(
           onTap: onTap != null ? () => onTap!(activity) : null,
           onLongPress: onLongPress != null ? () => onLongPress!(activity) : null,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           child: Padding(
             padding: const EdgeInsets.all(AppDimensions.spacingM),
             child: Row(
@@ -184,7 +185,7 @@ class ActivityFeedItemWidget extends StatelessWidget {
       padding: const EdgeInsets.all(AppDimensions.spacingS),
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
           color: AppColors.outline.withValues(alpha: 0.2),
         ),
@@ -197,17 +198,24 @@ class ActivityFeedItemWidget extends StatelessWidget {
             height: AppDimensions.iconSizeXl,
             decoration: BoxDecoration(
               color: AppColors.primaryContainer.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             ),
             child: activity.targetImageUrl != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                    child: Image.network(
-                      activity.targetImageUrl!,
+                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                    child: CachedNetworkImage(
+                      imageUrl: activity.targetImageUrl!,
                       width: AppDimensions.iconSizeXl,
                       height: AppDimensions.iconSizeXl,
                       fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => _buildContentIcon(),
+                      placeholder: (context, url) => const Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => _buildContentIcon(),
                     ),
                   )
                 : _buildContentIcon(),
@@ -381,7 +389,7 @@ class ActivityFeedItemWidget extends StatelessWidget {
       height: 32,
       decoration: BoxDecoration(
         color: iconColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Icon(
         iconData,

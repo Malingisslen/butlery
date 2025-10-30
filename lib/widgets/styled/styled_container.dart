@@ -156,7 +156,7 @@ class StyledContainers {
     return StyledContainer(
       backgroundColor: AppColors.errorContainer,
       borderRadius: AppDimensions.borderRadius8,
-      padding: const EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       onTap: onRetry,
       child: child,
     );
@@ -169,7 +169,7 @@ class StyledContainers {
     return StyledContainer(
       backgroundColor: AppColors.successContainer,
       borderRadius: AppDimensions.borderRadius8,
-      padding: const EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       child: child,
     );
   }
@@ -181,7 +181,7 @@ class StyledContainers {
     return StyledContainer(
       backgroundColor: AppColors.warningContainer,
       borderRadius: AppDimensions.borderRadius8,
-      padding: const EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       child: child,
     );
   }
@@ -193,7 +193,7 @@ class StyledContainers {
     return StyledContainer(
       backgroundColor: AppColors.infoContainer,
       borderRadius: AppDimensions.borderRadius8,
-      padding: const EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       child: child,
     );
   }
