@@ -380,16 +380,49 @@ firebase deploy --only firestore:rules --debug
 3. **Test locally with emulator**
 4. **Deploy to production**
 
+## Quick Reference
+
+### Security Principles
+
+1. **Authentication Required**: All operations require user authentication
+2. **User Data Isolation**: Users can only access their own private data
+3. **Explicit Sharing**: Shared content requires explicit permissions
+4. **Least Privilege**: Users get minimum necessary access
+5. **Input Validation**: Required fields and data types are enforced
+
+### Helper Functions
+
+- `isAuthenticated()`: Checks if user is logged in (request.auth != null)
+- `isOwner(userId)`: Verifies user owns the resource (request.auth.uid == userId)
+- `isDocumentOwner()`: Checks document ownership via resource.data
+- `isInList(field)`: Checks if user is in a list field (e.g., sharedWith, participants)
+- `hasRequiredFields(fields)`: Validates required fields exist in document
+
+### Security Checklist
+
+Before deploying to production, verify:
+
+- [ ] All paths have explicit rules
+- [ ] Authentication required for all operations
+- [ ] User data properly isolated
+- [ ] Shared data has permission checks
+- [ ] Input validation on writes
+- [ ] No admin operations exposed
+- [ ] Default deny rule in place
+- [ ] Indexes created for all queries
+- [ ] Rules tested in emulator
+- [ ] API keys restricted in Firebase Console
+
 ## Support
 
 For issues with security rules deployment:
 1. Check Firebase Console logs
-2. Review `docs/REMEDIATION_ACTION_PLAN.md`
+2. Review `docs/audit/REMEDIATION_ACTION_PLAN.md`
 3. Check application-layer security in repositories
 4. Consult Firebase Security Rules documentation
 
 ---
 
-**Last Updated**: 2025-01-XX
-**Rules Version**: Phase 1 Security Remediation
+**Last Updated**: January 30, 2025
+**Rules Version**: Phase 1 Security Remediation (Complete)
 **Maintainer**: Development Team
