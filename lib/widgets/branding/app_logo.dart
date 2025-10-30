@@ -135,7 +135,7 @@ class AppBranding extends StatelessWidget {
           size: logoSize,
           showShadow: logoSize == AppDimensions.imageSizeLarge,
         ),
-        const SizedBox(height: AppDimensions.spacing16),
+        const SizedBox(height: AppDimensions.spacingMd),
         Text(
           appName,
           style: nameStyle ?? AppTextStyles.headlineMedium.copyWith(
@@ -144,7 +144,7 @@ class AppBranding extends StatelessWidget {
           ),
         ),
         if (tagline != null) ...[
-          const SizedBox(height: AppDimensions.spacing8),
+          const SizedBox(height: AppDimensions.spacingSm),
           Text(
             tagline!,
             style: taglineStyle ?? AppTextStyles.bodyMedium.copyWith(

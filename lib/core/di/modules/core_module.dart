@@ -22,6 +22,8 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_analytics_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_consent_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
 // Core services
@@ -59,6 +61,8 @@ class CoreModule implements DIModule {
     SharedPreferences,
     AuthRepository,
     AuthService,
+    FirebaseAuditRepository,
+    FirebaseConsentRepository,
     FirestoreRepository,
     PersistenceService,
     AnalyticsRepository,
@@ -86,6 +90,19 @@ class CoreModule implements DIModule {
       // ==================== CORE REPOSITORIES ====================
       // Core repositories form the foundation of the data access layer
       container.registerSingleton<AuthRepository>(FirebaseAuthRepository());
+
+      // Audit repository for GDPR Article 30 compliance (persistent audit logging)
+      container.registerSingleton<FirebaseAuditRepository>(
+        FirebaseAuditRepository(),
+      );
+
+      // Consent repository for GDPR Article 7 compliance (consent management)
+      container.registerSingleton<FirebaseConsentRepository>(
+        FirebaseConsentRepository(
+          authRepository: container<AuthRepository>(),
+          auditRepository: container<FirebaseAuditRepository>(),
+        ),
+      );
 
       // ==================== DATABASE REPOSITORIES ====================
       // FirestoreRepository provides centralized Firestore access
@@ -138,12 +155,12 @@ class CoreModule implements DIModule {
       container.registerLazySingleton<ConsentService>(
         () => ConsentService(
           auth: FirebaseAuth.instance,
-          firestore: FirebaseFirestore.instance,
+          consentRepository: container<FirebaseConsentRepository>(),
         ),
       );
 
       if (kDebugMode) {
-        debugPrint('✅ [CoreModule] Configured 10 core services (Auth, Storage, Analytics, Persistence, GDPR)');
+        debugPrint('✅ [CoreModule] Configured 12 core services (Auth, Audit, Consent, Storage, Analytics, Persistence, GDPR)');
       }
     } catch (e) {
       throw DIModuleException(

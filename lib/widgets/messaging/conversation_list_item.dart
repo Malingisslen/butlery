@@ -92,7 +92,7 @@ class ConversationListItem extends StatelessWidget {
                     ],
                   ),
                   
-                  const SizedBox(height: AppDimensions.spacing2),
+                  const SizedBox(height: AppDimensions.spacingXxs),
                   
                   // Last message and unread indicator row
                   Row(
@@ -146,8 +146,8 @@ class ConversationListItem extends StatelessWidget {
         // Online status indicator (only for direct conversations)
         if (!conversation.isGroup && showOnlineStatus)
           Positioned(
-            bottom: AppDimensions.spacing2,
-            right: AppDimensions.spacing2,
+            bottom: AppDimensions.spacingXxs,
+            right: AppDimensions.spacingXxs,
             child: Container(
               width: 16,
               height: 16,

@@ -120,12 +120,12 @@ void main() {
 
         expect(tester.takeException(), isNull);
         
-        // ULTRATHINK: Custom color should be applied (line 20: color ?? AppColors.warningColor)
+        // ULTRATHINK: Custom color should be applied (line 20: color ?? AppColors.warning)
         expect(find.byType(Container), findsAtLeastNWidgets(1));
         expect(find.text('Anna redigerar receptet'), findsOneWidget);
       });
 
-      testWidgets('uses AppColors.warningColor as default when no color provided',
+      testWidgets('uses AppColors.warning as default when no color provided',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code default color fallback from line 20
         await pumpLiveWidget(
@@ -140,7 +140,7 @@ void main() {
 
         expect(tester.takeException(), isNull);
         
-        // ULTRATHINK: Should use AppColors.warningColor as default (line 20)
+        // ULTRATHINK: Should use AppColors.warning as default (line 20)
         expect(find.byType(Container), findsAtLeastNWidgets(1));
         expect(find.text('Anna redigerar receptet'), findsOneWidget);
       });

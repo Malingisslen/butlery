@@ -1,6 +1,7 @@
 // lib/views/social/discovery_dashboard/recommendations_section.dart
 
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -61,7 +62,7 @@ class RecommendationsSection {
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
           color: AppColors.outline.withValues(alpha: 0.2),
         ),
@@ -103,7 +104,7 @@ class RecommendationsSection {
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         boxShadow: [
           BoxShadow(
             color: AppColors.shadow.withValues(alpha: 0.1),
@@ -118,7 +119,7 @@ class RecommendationsSection {
       ),
       child: InkWell(
         onTap: () => _openRecommendation(context, recommendation),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.spacingM),
           child: Row(
@@ -129,17 +130,27 @@ class RecommendationsSection {
                 height: 70,
                 decoration: BoxDecoration(
                   color: AppColors.secondaryContainer.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 child: imageUrl != null
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                        child: Image.network(
-                          imageUrl,
+                        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
                           width: 70,
                           height: 70,
                           fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) => _buildContentPlaceholder(),
+                          placeholder: (context, url) => ColoredBox(
+                            color: AppColors.secondaryContainer.withValues(alpha: 0.3),
+                            child: const Center(
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => _buildContentPlaceholder(),
                         ),
                       )
                     : _buildContentPlaceholder(),
@@ -159,7 +170,7 @@ class RecommendationsSection {
                       ),
                       decoration: BoxDecoration(
                         color: AppColors.secondary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,

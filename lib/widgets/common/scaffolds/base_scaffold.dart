@@ -150,7 +150,7 @@ class ErrorScaffold extends StatelessWidget {
       actions: actions,
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacing16),
+          padding: const EdgeInsets.all(AppDimensions.spacingMd),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -209,7 +209,7 @@ class EmptyStateScaffold extends StatelessWidget {
       actions: actions,
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacing16),
+          padding: const EdgeInsets.all(AppDimensions.spacingMd),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -330,7 +330,7 @@ class FormScaffold extends StatelessWidget {
                 child: const Text(AppStrings.cancel),
               ),
             ),
-            if (showSaveButton) const SizedBox(width: AppDimensions.spacing16),
+            if (showSaveButton) const SizedBox(width: AppDimensions.spacingMd),
           ],
           if (showSaveButton) ...[
             Expanded(

@@ -255,7 +255,7 @@ class InvitationSelectors {
               },
             ),
           if (showSearch && (showTypeFilters || showSorting))
-            const SizedBox(height: AppDimensions.spacing12),
+            const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
           if (showTypeFilters) ...[
             targetTypeFilters(
               availableTypes: allTargets.map((t) => t.type.name).toSet().toList(),

@@ -53,7 +53,7 @@ class DiscoveryCategories {
         padding: const EdgeInsets.all(AppDimensions.spacingM),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.primary : AppColors.surface,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.outline.withValues(alpha: 0.2),
           ),

@@ -135,7 +135,7 @@ class GroupContentAppBar {
       ),
       decoration: BoxDecoration(
         color: AppColors.onPrimary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

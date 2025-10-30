@@ -81,7 +81,7 @@ class CollaborativeStatusWidgets {
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.smallRadius),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         child: Row(
           children: [
             const Icon(

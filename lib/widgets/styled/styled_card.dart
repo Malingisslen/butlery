@@ -143,19 +143,19 @@ class StyledCard extends StatelessWidget {
     // Apply default spacing for specific card types
     if (padding == null) {
       if (runtimeType.toString().contains('recipe')) {
-        effectivePadding = const EdgeInsets.all(AppDimensions.spacing12);
-        effectiveMargin = const EdgeInsets.all(AppDimensions.spacing8);
+        effectivePadding = const EdgeInsets.all((AppDimensions.spacingSm + AppDimensions.spacingXs));
+        effectiveMargin = const EdgeInsets.all(AppDimensions.spacingSm);
       } else if (runtimeType.toString().contains('listItem')) {
         effectivePadding = AppDimensions.listItemPadding;
         effectiveMargin = const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacing8,
-          vertical: AppDimensions.spacing4,
+          horizontal: AppDimensions.spacingSm,
+          vertical: AppDimensions.spacingXs,
         );
       } else if (runtimeType.toString().contains('dialog')) {
-        effectivePadding = const EdgeInsets.all(AppDimensions.spacing24);
+        effectivePadding = const EdgeInsets.all(AppDimensions.spacingLg);
       } else if (runtimeType.toString().contains('selection')) {
-        effectivePadding = const EdgeInsets.all(AppDimensions.spacing12);
-        effectiveMargin = const EdgeInsets.all(AppDimensions.spacing4);
+        effectivePadding = const EdgeInsets.all((AppDimensions.spacingSm + AppDimensions.spacingXs));
+        effectiveMargin = const EdgeInsets.all(AppDimensions.spacingXs);
       }
     }
     
@@ -205,7 +205,7 @@ class StyledCards {
     VoidCallback? onAction,
   }) {
     return StyledCard.outlined(
-      padding: const EdgeInsets.all(AppDimensions.spacing24),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       onTap: onAction,
       child: child,
     );
@@ -219,7 +219,7 @@ class StyledCards {
     return StyledCard.outlined(
       backgroundColor: AppColors.errorContainer,
       borderColor: AppColors.error,
-      padding: const EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       onTap: onRetry,
       child: child,
     );
@@ -232,7 +232,7 @@ class StyledCards {
     return StyledCard.outlined(
       backgroundColor: AppColors.infoContainer,
       borderColor: AppColors.info,
-      padding: const EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       child: child,
     );
   }
@@ -244,7 +244,7 @@ class StyledCards {
     return StyledCard.outlined(
       backgroundColor: AppColors.successContainer,
       borderColor: AppColors.success,
-      padding: const EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       child: child,
     );
   }
@@ -256,7 +256,7 @@ class StyledCards {
     return StyledCard.outlined(
       backgroundColor: AppColors.warningContainer,
       borderColor: AppColors.warning,
-      padding: const EdgeInsets.all(AppDimensions.spacing16),
+      padding: const EdgeInsets.all(AppDimensions.spacingMd),
       child: child,
     );
   }

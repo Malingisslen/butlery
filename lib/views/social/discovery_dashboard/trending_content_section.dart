@@ -1,6 +1,7 @@
 // lib/views/social/discovery_dashboard/trending_content_section.dart
 
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -65,7 +66,7 @@ class TrendingContentSection {
       height: AppDimensions.heightLarge,
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant.withValues(alpha: AppDimensions.opacityMediumLight),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
           color: AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
         ),
@@ -97,7 +98,7 @@ class TrendingContentSection {
         width: 160,
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           boxShadow: [
             BoxShadow(
               color: AppColors.shadow.withValues(alpha: 0.1),
@@ -115,22 +116,32 @@ class TrendingContentSection {
               decoration: BoxDecoration(
                 color: AppColors.primaryContainer.withValues(alpha: 0.3),
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(AppDimensions.radiusM),
-                  topRight: Radius.circular(AppDimensions.radiusM),
+                  topLeft: Radius.circular(AppDimensions.borderRadiusM),
+                  topRight: Radius.circular(AppDimensions.borderRadiusM),
                 ),
               ),
               child: recipe.imageUrls.isNotEmpty
                   ? ClipRRect(
                       borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(AppDimensions.radiusM),
-                        topRight: Radius.circular(AppDimensions.radiusM),
+                        topLeft: Radius.circular(AppDimensions.borderRadiusM),
+                        topRight: Radius.circular(AppDimensions.borderRadiusM),
                       ),
-                      child: Image.network(
-                        recipe.imageUrls.first,
+                      child: CachedNetworkImage(
+                        imageUrl: recipe.imageUrls.first,
                         width: double.infinity,
                         height: 100,
                         fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
+                        placeholder: (context, url) => ColoredBox(
+                          color: AppColors.primaryContainer.withValues(alpha: 0.3),
+                          child: const Center(
+                            child: SizedBox(
+                              width: 30,
+                              height: 30,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => _buildImagePlaceholder(),
                       ),
                     )
                   : _buildImagePlaceholder(),
@@ -185,7 +196,7 @@ class TrendingContentSection {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.success.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                           ),
                           child: Text(
                             'Populär',

@@ -79,33 +79,39 @@ void main() {
     late MockReference mockRef;
     late MockReference mockChildRef;
     late MockTaskSnapshot mockTaskSnapshot;
-    
+    late MockAuthRepository mockAuthRepository;
+
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(Uint8List(0));
       registerFallbackValue(FakeSettableMetadata());
       registerFallbackValue(File(''));
     });
-    
+
     setUp(() async {
       await TestServiceLocator.initialize();
-      
+
       // Create mocks
       mockStorage = MockFirebaseStorage();
       mockUuid = MockUuid();
       mockRef = MockReference();
       mockChildRef = MockReference();
       mockTaskSnapshot = MockTaskSnapshot();
-      
+      mockAuthRepository = MockAuthRepository();
+
+      // Setup mock auth behaviors
+      when(() => mockAuthRepository.currentUserId).thenReturn('test-user-123');
+
       // Setup mock behaviors
       when(() => mockUuid.v4()).thenReturn('test-uuid-123');
       when(() => mockStorage.ref()).thenReturn(mockRef);
       when(() => mockRef.child(any())).thenReturn(mockChildRef);
-      
+
       // Create repository with mocked dependencies
       repository = FirebaseStorageRepository(
         storage: mockStorage,
         uuid: mockUuid,
+        authRepository: mockAuthRepository,
       );
     });
     

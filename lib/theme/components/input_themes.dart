@@ -55,8 +55,8 @@ class InputThemes {
         ),
       ),
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacing16,
-        vertical: AppDimensions.spacing14,
+        horizontal: AppDimensions.spacingMd,
+        vertical: AppDimensions.spacingModerate,
       ),
       hintStyle: const TextStyle(color: AppColors.textMedium),
       labelStyle: AppTextStyles.bodyMedium,
@@ -75,8 +75,8 @@ class InputThemes {
             AppDimensions.borderRadius8),
       ),
       margin: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacing16,
-          vertical: AppDimensions.spacing8),
+          horizontal: AppDimensions.spacingMd,
+          vertical: AppDimensions.spacingSm),
     );
   }
 
@@ -90,10 +90,10 @@ class InputThemes {
       titleTextStyle: AppTextStyles.listTileTitle,
       subtitleTextStyle: AppTextStyles.listTileSubtitle,
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacing16,
-        vertical: AppDimensions.spacing8,
+        horizontal: AppDimensions.spacingMd,
+        vertical: AppDimensions.spacingSm,
       ),
-      minVerticalPadding: AppDimensions.spacing8,
+      minVerticalPadding: AppDimensions.spacingSm,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(
             AppDimensions.borderRadius8),

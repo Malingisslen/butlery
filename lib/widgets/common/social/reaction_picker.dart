@@ -251,7 +251,7 @@ class _ReactionPickerState extends State<ReactionPicker>
       ),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         boxShadow: [
           BoxShadow(
             color: AppColors.shadow.withValues(alpha: 0.2),
@@ -293,7 +293,7 @@ class _ReactionPickerState extends State<ReactionPicker>
                 color: isSelected
                     ? AppColors.primary.withValues(alpha: 0.1)
                     : AppColors.transparent,
-                borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -419,7 +419,7 @@ class _ReactionPickerState extends State<ReactionPicker>
           color: widget.currentReaction != null
               ? AppColors.primary.withValues(alpha: 0.1)
               : AppColors.transparent,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           border: Border.all(
             color: widget.currentReaction != null
                 ? AppColors.primary.withValues(alpha: 0.3)

@@ -615,7 +615,7 @@ void main() {
 
         // Check border radius
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.borderRadius, equals(BorderRadius.circular(AppDimensions.radiusM)));
+        expect(decoration.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadiusM)));
       });
 
       testWidgets('should arrange elements correctly in Row', (WidgetTester tester) async {

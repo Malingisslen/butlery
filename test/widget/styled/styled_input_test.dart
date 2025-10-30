@@ -580,8 +580,8 @@ void main() {
       final spacingBoxes = tester.widgetList<SizedBox>(find.byType(SizedBox));
       
       // Should have spacing after label and at bottom
-      expect(spacingBoxes.any((box) => box.height == AppDimensions.spacing8), isTrue);
-      expect(spacingBoxes.any((box) => box.height == AppDimensions.spacing16), isTrue);
+      expect(spacingBoxes.any((box) => box.height == AppDimensions.spacingSm), isTrue);
+      expect(spacingBoxes.any((box) => box.height == AppDimensions.spacingMd), isTrue);
     });
 
     testWidgets('should layout vertically', (WidgetTester tester) async {

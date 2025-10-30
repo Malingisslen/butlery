@@ -81,7 +81,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
           color: AppColors.outline.withValues(alpha: 0.2),
         ),
@@ -235,7 +235,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: TabBar(
         controller: _tabController,
@@ -265,7 +265,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
         unselectedLabelColor: AppColors.onSurface.withValues(alpha: 0.6),
         indicator: BoxDecoration(
           color: AppColors.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: Colors.transparent,
@@ -359,7 +359,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
             padding: const EdgeInsets.all(AppDimensions.spacingM),
             decoration: BoxDecoration(
               color: AppColors.surfaceVariant.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             ),
             child: Text(
               comment,
@@ -423,7 +423,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
               padding: const EdgeInsets.all(AppDimensions.spacingS),
               decoration: BoxDecoration(
                 color: AppColors.info.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
               ),
               child: Row(
                 children: [
@@ -468,7 +468,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
                   decoration: InputDecoration(
                     hintText: _replyToDisplayName != null ? 'Skriv ditt svar...' : 'Skriv en kommentar...',
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.spacingM,
@@ -508,7 +508,7 @@ class _MenuRatingCommentsWidgetState extends State<MenuRatingCommentsWidget>
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
         color: replyToCommentId != null ? AppColors.surfaceVariant.withValues(alpha: 0.5) : AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
           color: AppColors.outline.withValues(alpha: 0.2),
         ),

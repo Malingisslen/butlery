@@ -1,6 +1,7 @@
 // lib/views/social/discovery_dashboard/friend_activity_section.dart
 
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -58,7 +59,7 @@ class FriendActivitySection {
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
           color: AppColors.outline.withValues(alpha: 0.2),
         ),
@@ -71,12 +72,12 @@ class FriendActivitySection {
               color: AppColors.outline,
               size: AppDimensions.iconSizeXxl,
             ),
-            SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingM),
             Text(
               'Ingen vänaktivitet än',
               style: AppTextStyles.titleSmall,
             ),
-            SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.spacingS),
             Text(
               'När dina vänner delar recept, menyer eller inköpslistor visas de här.',
               style: AppTextStyles.bodyMedium,
@@ -100,7 +101,7 @@ class FriendActivitySection {
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         boxShadow: [
           BoxShadow(
             color: AppColors.shadow.withValues(alpha: 0.1),
@@ -111,7 +112,7 @@ class FriendActivitySection {
       ),
       child: InkWell(
         onTap: () => _openActivityContent(context, activity),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.spacingM),
           child: Row(
@@ -122,17 +123,27 @@ class FriendActivitySection {
                 height: 60,
                 decoration: BoxDecoration(
                   color: AppColors.primaryContainer.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 child: imageUrl != null
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
-                        child: Image.network(
-                          imageUrl,
+                        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
                           width: 60,
                           height: 60,
                           fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) => _buildContentPlaceholder(type),
+                          placeholder: (context, url) => ColoredBox(
+                            color: AppColors.primaryContainer.withValues(alpha: 0.3),
+                            child: const Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => _buildContentPlaceholder(type),
                         ),
                       )
                     : _buildContentPlaceholder(type),
@@ -328,7 +339,7 @@ class FriendActivitySection {
                     size: AppDimensions.iconSizeXXXl,
                     color: AppColors.onSurface,
                   ),
-                  SizedBox(height: AppDimensions.spacingM),
+                  const SizedBox(height: AppDimensions.spacingM),
                   Text(
                     'Ingen vänaktivitet än',
                     style: TextStyle(
@@ -336,7 +347,7 @@ class FriendActivitySection {
                       color: AppColors.onSurface,
                     ),
                   ),
-                  SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.spacingS),
                   Text(
                     'Aktivitet från dina vänner visas här',
                     style: TextStyle(

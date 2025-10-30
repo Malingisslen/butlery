@@ -269,8 +269,8 @@ class StyledInput extends StatelessWidget {
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
         contentPadding: contentPadding ?? const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacing16,
-          vertical: AppDimensions.spacing12,
+          horizontal: AppDimensions.spacingMd,
+          vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
@@ -358,11 +358,11 @@ class StyledFormField extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacing8),
+          const SizedBox(height: AppDimensions.spacingSm),
         ],
         child,
         if (errorText != null) ...[
-          const SizedBox(height: AppDimensions.spacing4),
+          const SizedBox(height: AppDimensions.spacingXs),
           Text(
             errorText!,
             style: AppTextStyles.captionText.copyWith(
@@ -371,13 +371,13 @@ class StyledFormField extends StatelessWidget {
           ),
         ],
         if (helperText != null && errorText == null) ...[
-          const SizedBox(height: AppDimensions.spacing4),
+          const SizedBox(height: AppDimensions.spacingXs),
           Text(
             helperText!,
             style: AppTextStyles.captionText,
           ),
         ],
-        const SizedBox(height: AppDimensions.spacing16),
+        const SizedBox(height: AppDimensions.spacingMd),
       ],
     );
   }

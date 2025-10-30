@@ -39,7 +39,7 @@ class DiscoverySearchSection {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusL),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         border: Border.all(
           color: AppColors.outline.withValues(alpha: 0.2),
         ),
@@ -122,7 +122,7 @@ class DiscoverySearchSection {
       ),
       decoration: BoxDecoration(
         color: AppColors.primaryContainer.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
           color: AppColors.primary.withValues(alpha: 0.2),
         ),
@@ -166,7 +166,7 @@ class DiscoverySearchSection {
       ),
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Text(
         '$count $label',

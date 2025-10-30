@@ -140,7 +140,7 @@ class ReactionBar extends StatelessWidget {
     
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.paddingS,
@@ -225,7 +225,7 @@ class ReactionBar extends StatelessWidget {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: AnimatedContainer(
         duration: animated ? const Duration(milliseconds: 200) : Duration.zero,
         padding: const EdgeInsets.symmetric(
@@ -236,7 +236,7 @@ class ReactionBar extends StatelessWidget {
           color: isSelected
               ? AppColors.primary.withValues(alpha: 0.1)
               : AppColors.transparent,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusM),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           border: Border.all(
             color: isSelected
                 ? AppColors.primary.withValues(alpha: 0.3)
@@ -306,7 +306,7 @@ class ReactionBar extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusS),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

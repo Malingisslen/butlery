@@ -315,7 +315,7 @@ class SocialCollaborativeComponents {
     bool showLabels = true,
   }) {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacing12),
+      padding: const EdgeInsets.all((AppDimensions.spacingSm + AppDimensions.spacingXs)),
       decoration: BoxDecoration(
         border: Border.all(color: AppColors.textMedium.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
@@ -383,7 +383,7 @@ class SocialCollaborativeComponents {
             ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacing2),
+        const SizedBox(height: AppDimensions.spacingXxs),
         Text(
           label,
           style: const TextStyle(fontSize: 10, color: AppColors.textMedium),
@@ -422,7 +422,7 @@ class SocialCollaborativeComponents {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacing6, vertical: AppDimensions.spacing2),
+          horizontal: AppDimensions.spacingTight, vertical: AppDimensions.spacingXxs),
       decoration: BoxDecoration(
         color: (color ?? config.color).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),

@@ -127,9 +127,9 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: AppColors.dividerColor.withValues(alpha: 0.3),
+          color: AppColors.divider.withValues(alpha: 0.3),
         ),
-        color: AppColors.cardColor,
+        color: AppColors.cardWhite,
       ),
       child: Center(
         child: Column(
@@ -138,20 +138,20 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             Icon(
               Icons.photo_library_outlined,
               size: AppDimensions.iconSizeXxl,
-              color: AppColors.textPrimary.withValues(alpha: 0.4),
+              color: AppColors.textDark.withValues(alpha: 0.4),
             ),
-            const SizedBox(height: AppDimensions.spacing12),
+            const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
             Text(
               'No images yet',
               style: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.textPrimary.withValues(alpha: 0.6),
+                color: AppColors.textDark.withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
               'Images will appear here',
               style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textPrimary.withValues(alpha: 0.4),
+                color: AppColors.textDark.withValues(alpha: 0.4),
               ),
             ),
           ],
@@ -207,10 +207,10 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
       decoration: BoxDecoration(
         borderRadius: widget.config.effectiveBorderRadius,
         border: Border.all(
-          color: AppColors.dividerColor.withValues(alpha: 0.3),
+          color: AppColors.divider.withValues(alpha: 0.3),
           style: BorderStyle.solid,
         ),
-        color: AppColors.cardColor,
+        color: AppColors.cardWhite,
       ),
       child: Material(
         color: Colors.transparent,
@@ -255,7 +255,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             border: Border.all(
               color: isSelected
                   ? AppColors.primaryBlue
-                  : AppColors.dividerColor.withValues(alpha: 0.2),
+                  : AppColors.divider.withValues(alpha: 0.2),
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -297,14 +297,14 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             top: AppDimensions.spacingSm,
             right: AppDimensions.spacingSm,
             child: Container(
-              padding: const EdgeInsets.all(AppDimensions.spacing2),
+              padding: const EdgeInsets.all(AppDimensions.spacingXxs),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isSelected
                     ? AppColors.primaryBlue
-                    : AppColors.cardColor.withValues(alpha: 0.8),
+                    : AppColors.cardWhite.withValues(alpha: 0.8),
                 border: Border.all(
-                  color: AppColors.dividerColor.withValues(alpha: 0.3),
+                  color: AppColors.divider.withValues(alpha: 0.3),
                 ),
               ),
               child: Icon(
@@ -312,7 +312,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                 size: AppDimensions.iconSizeS,
                 color: isSelected
                     ? Colors.white
-                    : AppColors.textPrimary.withValues(alpha: 0.6),
+                    : AppColors.textDark.withValues(alpha: 0.6),
               ),
             ),
           ),
@@ -413,9 +413,9 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: config.effectiveBorderRadius,
           border: Border.all(
-            color: AppColors.dividerColor.withValues(alpha: 0.3),
+            color: AppColors.divider.withValues(alpha: 0.3),
           ),
-          color: AppColors.cardColor,
+          color: AppColors.cardWhite,
         ),
         child: Center(
           child: Column(
@@ -424,13 +424,13 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
               Icon(
                 Icons.photo_library_outlined,
                 size: AppDimensions.iconSizeXxl,
-                color: AppColors.textPrimary.withValues(alpha: 0.4),
+                color: AppColors.textDark.withValues(alpha: 0.4),
               ),
-              const SizedBox(height: AppDimensions.spacing12),
+              const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
               Text(
                 'No images to display',
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: AppColors.textPrimary.withValues(alpha: 0.6),
+                  color: AppColors.textDark.withValues(alpha: 0.6),
                 ),
               ),
             ],

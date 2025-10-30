@@ -280,7 +280,7 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                     // Tab bar
                     DecoratedBox(
                       decoration: BoxDecoration(
-                        color: AppColors.cardColor,
+                        color: AppColors.cardWhite,
                         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
                       ),
                       child: TabBar(

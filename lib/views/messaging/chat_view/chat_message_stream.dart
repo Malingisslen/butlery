@@ -1,8 +1,8 @@
 /// Nuclear Message Stream Component - Real-time Message Display
-/// 
+///
 /// Focused component handling ONLY message streaming and display logic that was
 /// previously embedded in the massive ChatView. Implements clean separation of
-/// concerns with optimized message rendering and real-time updates.
+/// concerns with real-time message updates.
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -18,7 +18,7 @@ import 'package:butlery/widgets/common/state/empty_states.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
-/// Optimized message stream with real-time updates and pagination
+/// Message stream widget with real-time updates (50 message limit)
 class ChatMessageStream extends StatefulWidget {
   final String conversationId;
   final Function(Message, String) onMessageAction;
@@ -81,8 +81,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
         _messageStream?.listen((newMessages) {
           if (mounted) {
             setState(() {
-              _messages.clear();
-              _messages.addAll(newMessages);
+              _updateMessagesIncremental(newMessages);
             });
             _scrollToBottom();
           }
@@ -114,6 +113,35 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
     }
   }
 
+  /// Incrementally update messages list (O(m+n) instead of O(n) clear/rebuild)
+  void _updateMessagesIncremental(List<Message> newMessages) {
+    final newMessageIds = newMessages.map((m) => m.id).toSet();
+    final currentMessageIds = _messages.map((m) => m.id).toSet();
+
+    // Add new messages that don't exist
+    final toAdd = newMessages.where((m) => !currentMessageIds.contains(m.id));
+    _messages.addAll(toAdd);
+
+    // Update existing messages if content changed
+    for (var newMsg in newMessages) {
+      final index = _messages.indexWhere((m) => m.id == newMsg.id);
+      if (index != -1) {
+        // Only update if message content actually changed
+        if (_messages[index].content != newMsg.content ||
+            _messages[index].status != newMsg.status ||
+            _messages[index].readAt != newMsg.readAt) {
+          _messages[index] = newMsg;
+        }
+      }
+    }
+
+    // Remove messages that no longer exist
+    _messages.removeWhere((m) => !newMessageIds.contains(m.id));
+
+    // Sort by sentAt timestamp (most recent at bottom)
+    _messages.sort((a, b) => a.sentAt.compareTo(b.sentAt));
+  }
+
   Future<void> _refreshMessages() async {
     try {
       // Refresh messages from MessagingService
@@ -124,8 +152,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
       
       if (mounted) {
         setState(() {
-          _messages.clear();
-          _messages.addAll(messages);
+          _updateMessagesIncremental(messages);
           _error = null;
         });
       }

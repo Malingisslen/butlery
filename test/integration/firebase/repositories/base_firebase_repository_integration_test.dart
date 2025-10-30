@@ -95,6 +95,32 @@ class TestFirebaseRepository extends BaseFirebaseRepository<TestModel> {
 
   @override
   String getId(TestModel entity) => entity.id;
+
+  // ===== PERMISSION VALIDATION STUBS FOR TESTING =====
+
+  @override
+  Future<bool> validateCreatePermission(String userId, TestModel entity) async {
+    // For tests: allow creation if ownerId matches or is null
+    return entity.ownerId == null || entity.ownerId == userId;
+  }
+
+  @override
+  Future<bool> validateReadPermission(String userId, String resourceId, TestModel? entity) async {
+    // For tests: allow all reads
+    return true;
+  }
+
+  @override
+  Future<bool> validateUpdatePermission(String userId, String resourceId, TestModel entity) async {
+    // For tests: allow update if ownerId matches
+    return entity.ownerId == null || entity.ownerId == userId;
+  }
+
+  @override
+  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+    // For tests: allow all deletes
+    return true;
+  }
 }
 
 void main() {
