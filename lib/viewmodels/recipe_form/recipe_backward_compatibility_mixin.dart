@@ -9,6 +9,7 @@ import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_persistence_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_coordinator.dart';
+import 'package:butlery/utils/text/ingredient_processor.dart';
 
 /// Mixin providing backward compatibility methods for RecipeFormViewModel.
 ///
@@ -134,9 +135,24 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
 
   // ===== INGREDIENT MANAGEMENT =====
 
-  /// Update ingredient at index
+  /// Update ingredient at index with MODUL1 preprocessing
+  ///
+  /// **MODUL1 Integration**: Processes raw user input through full pipeline:
+  /// 1. Preprocessing: Removes approximations, ranges, parentheses, instructions
+  /// 2. Parsing: Extracts quantity, unit, ingredient name
+  /// 3. Normalization: Validates and normalizes ingredient name
+  ///
+  /// Examples of preprocessing:
+  /// - "ca 3-5 dl mjölk" → "5 dl mjölk" (max from range, removed approximation)
+  /// - "2 dl hackad lök (gul)" → "2 dl hackad lök" (removed parentheses)
+  /// - "glutenfri pasta" → "glutenfri pasta" (diet descriptors preserved!)
   void updateIngredient(int index, String value) {
-    state.ingredientsManager.updateAt(index, value);
+    // MODUL1: Process raw user input through full pipeline
+    // This cleans up messy recipe text before storing in database
+    final cleanedValue = IngredientProcessor.preprocessOnly(value);
+
+    // Store cleaned version in database
+    state.ingredientsManager.updateAt(index, cleanedValue);
     coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 

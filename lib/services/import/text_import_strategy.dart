@@ -3,6 +3,7 @@
 import 'package:uuid/uuid.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_strategy.dart';
+import 'package:butlery/utils/text/ingredient_processor.dart';
 
 /// Strategy for importing recipes from text (social media, manual input, structured/unstructured text).
 class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
@@ -372,26 +373,37 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   String? _parseIngredientLine(String line) {
-    // Remove bullet points, numbers, and asterisks
+    // Step 1: Basic cleanup (bullets, numbers, asterisks)
     String cleaned = line.replaceAll(RegExp(r'^[•\-\*\d+\.]\s*'), '').trim();
-    
+
     if (cleaned.isEmpty) return null;
-    
-    // Further clean up common prefixes
+
+    // Step 2: Further cleanup of common prefixes
     cleaned = cleaned.replaceAll(RegExp(r'^-\s*'), ''); // Additional dash cleanup
     cleaned = cleaned.replaceAll(RegExp(r'^\*\s*'), ''); // Asterisk cleanup
-    
-    // Normalize fractions to make them more readable
+
+    // Step 3: MODUL1 Integration - Full preprocessing pipeline
+    // This handles:
+    // - Approximations ("ca", "cirka" → removed)
+    // - Ranges ("3-5" → "5" max value)
+    // - Optional markers ("ev" → removed)
+    // - Parentheses ("(kall)" → removed)
+    // - Instructions ("till gröten" → removed)
+    // - Preserves diet descriptors ("glutenfri" → kept!)
+    // - Preserves "med [flavor]" products
+    cleaned = IngredientProcessor.preprocessOnly(cleaned);
+
+    // Step 4: Normalize fractions (ASCII → Unicode for readability)
     cleaned = cleaned.replaceAll('1/2', '½');
     cleaned = cleaned.replaceAll('1/4', '¼');
     cleaned = cleaned.replaceAll('3/4', '¾');
-    
-    // Fix common spacing issues with measurements
+
+    // Step 5: Fix common spacing issues with measurements
     cleaned = cleaned.replaceAllMapped(
       RegExp(r'(\d+)([a-zA-ZåäöÅÄÖ]+)'),
       (match) => '${match.group(1)} ${match.group(2)}',
     );
-    
+
     return cleaned;
   }
 
