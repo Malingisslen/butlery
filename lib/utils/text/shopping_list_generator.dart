@@ -45,6 +45,7 @@
 import 'package:butlery/utils/text/unit_converter.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/swedish_pluralization.dart';
+import 'package:butlery/utils/text/ingredient_processor.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
@@ -141,21 +142,23 @@ class ShoppingListGenerator {
       // Skip empty or whitespace-only ingredients
       if (rawIngredient.trim().isEmpty) continue;
 
-      final parsed = IngredientParser.parseIngredient(rawIngredient);
+      // MODUL1 Pattern B: Parse + Normalize for better grouping
+      // This removes preparation words, normalizes plural, and validates ingredients
+      // Examples:
+      // - "2 dl hackad lök" + "1 dl skivad lök" → both group as "dl lök"
+      // - "3 st stora ägg" + "2 st ägg" → both group as "st ägg"
+      final processed = IngredientProcessor.parseAndNormalize(rawIngredient);
 
       // Create grouping key based on unit + normalized ingredient name
-      // This enables proper consolidation of similar ingredients
-      final normalizedName = SwedishPluralization.normalizeToSingular(
-        parsed.name,
-      );
+      // Use normalized name for grouping to consolidate similar ingredients
       final key =
-          parsed.unit.isEmpty
-              ? normalizedName
-              : '${parsed.unit} $normalizedName';
+          processed.unit.isEmpty
+              ? processed.normalizedName
+              : '${processed.unit} ${processed.normalizedName}';
 
       // Aggregate quantities for identical ingredients
       groupedIngredients[key] =
-          (groupedIngredients[key] ?? 0.0) + parsed.quantity;
+          (groupedIngredients[key] ?? 0.0) + processed.quantity;
     }
 
     // Format for display with smart unit conversion and Swedish formatting
@@ -253,28 +256,31 @@ class ShoppingListGenerator {
       if (rawIngredient.trim().isEmpty) continue;
 
       try {
-        // Parse Swedish ingredient string into structured data
-        final parsed = IngredientParser.parseIngredient(rawIngredient);
-        
+        // MODUL1 Pattern B: Parse + Normalize for better categorization
+        // Normalized name improves category detection accuracy
+        final processed = IngredientProcessor.parseAndNormalize(rawIngredient);
+
         // Scale quantity based on portion adjustment
-        final scaledQuantity = parsed.quantity * scalingFactor;
-        
-        // Determine appropriate category for ingredient
-        final category = _categorizeIngredient(parsed.name);
-        
-        // Create UnifiedShoppingItem with parsed and processed data
+        final scaledQuantity = processed.quantity * scalingFactor;
+
+        // Determine category using normalized name for better accuracy
+        // Example: "hackad lök" → normalized to "lök" → correctly categorized as vegetable
+        final category = _categorizeIngredient(processed.normalizedName);
+
+        // Create UnifiedShoppingItem with original name for display
+        // but use normalized name for better categorization
         final shoppingItem = UnifiedShoppingItem(
-          name: parsed.name.trim(),
+          name: processed.originalName.trim(), // Display original
           amount: scaledQuantity,
-          unit: parsed.unit,
+          unit: processed.unit,
           category: category,
           bought: false,
           note: '', // No notes from recipe ingredients
           priority: 3, // Default priority
         );
-        
+
         shoppingItems.add(shoppingItem);
-        
+
       } catch (e) {
         // Handle parsing errors gracefully - create basic item
         final fallbackItem = UnifiedShoppingItem(

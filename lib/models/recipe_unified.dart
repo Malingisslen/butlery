@@ -169,6 +169,22 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
   @HiveField(16)
   DateTime? lastCookedAt;
 
+  /// Normalized ingredient names for search and tagging.
+  ///
+  /// MODUL1 Enhancement: Stores normalized versions of ingredients
+  /// with preparation words removed and plural forms normalized.
+  /// Used for improved search, filtering, and shopping list grouping.
+  ///
+  /// Examples:
+  /// - "2 dl hackad lök" → "lök"
+  /// - "3 st stora ägg" → "ägg"
+  /// - "glutenfri pasta" → "glutenfri pasta" (diet descriptors preserved)
+  ///
+  /// Optional field for backward compatibility. Null for recipes created
+  /// before MODUL1 integration.
+  @HiveField(17)
+  List<String>? ingredientsNormalized;
+
   RecipeCore({
     String? id,
     required this.title,
@@ -187,6 +203,7 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
     this.createdBy,
     this.isPublic = false,
     this.lastCookedAt,
+    this.ingredientsNormalized,
   }) : id = id ?? const Uuid().v4(),
        imageUrls = imageUrls ?? [],
        createdAt = createdAt ?? DateTime.now(),
@@ -209,6 +226,7 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
     String? createdBy,
     bool? isPublic,
     DateTime? lastCookedAt,
+    List<String>? ingredientsNormalized,
   }) {
     return RecipeCore(
       id: id,
@@ -228,6 +246,7 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
       createdBy: createdBy ?? this.createdBy,
       isPublic: isPublic ?? this.isPublic,
       lastCookedAt: lastCookedAt ?? this.lastCookedAt,
+      ingredientsNormalized: ingredientsNormalized ?? this.ingredientsNormalized,
     );
   }
 
@@ -264,6 +283,7 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
     'createdBy': createdBy,
     'isPublic': isPublic,
     'lastCookedAt': lastCookedAt?.toIso8601String(),
+    'ingredientsNormalized': ingredientsNormalized,
   };
 
   Map<String, dynamic> toFirestore() => {
@@ -284,6 +304,7 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
     'createdBy': createdBy,
     'isPublic': isPublic,
     'lastCookedAt': lastCookedAt != null ? Timestamp.fromDate(lastCookedAt!) : null,
+    'ingredientsNormalized': ingredientsNormalized,
   };
 
   factory RecipeCore.fromJson(Map<String, dynamic> json) => RecipeCore(
@@ -304,6 +325,7 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
     createdBy: json['createdBy'] as String?,
     isPublic: json['isPublic'] as bool? ?? false,
     lastCookedAt: json['lastCookedAt'] != null ? DateTime.parse(json['lastCookedAt'] as String) : null,
+    ingredientsNormalized: json['ingredientsNormalized'] != null ? List<String>.from(json['ingredientsNormalized']) : null,
   );
 
   /// Create from repository data map (removes Firebase dependency)
@@ -333,10 +355,13 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
               : DateTime.now()),
       createdBy: data['createdBy'] as String?,
       isPublic: data['isPublic'] as bool? ?? false,
-      lastCookedAt: data['lastCookedAt'] != null 
-          ? (data['lastCookedAt'] is DateTime 
+      lastCookedAt: data['lastCookedAt'] != null
+          ? (data['lastCookedAt'] is DateTime
               ? data['lastCookedAt'] as DateTime
               : AppTimestamp.fromFirestore(data['lastCookedAt']).dateTime)
+          : null,
+      ingredientsNormalized: data['ingredientsNormalized'] != null
+          ? List<String>.from(data['ingredientsNormalized'])
           : null,
     );
   }
