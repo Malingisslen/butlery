@@ -853,7 +853,44 @@ final name = userName.orEmpty(); // '' if null
 
 **Lines of Code**: ~350 lines
 **Eliminates**: 400+ lines of null coalescing
-**Current Adoption**: 0% (newly created)
+**Current Adoption**: Phase 1: 16-32% (129 migrations in 10 models, Nov 2025)
+
+### Phase 1 Completion (Nov 2025)
+
+**Status**: ✅ Complete
+**Models Migrated**: 10 core models
+**Total Migrations**: 129
+**Lines Improved**: ~120-150 lines of verbose null coalescing eliminated
+
+**Migrated Models**:
+1. `recipe_unified.dart` - 11 migrations (RecipeCore, RecipeSocialData, RecipeRealtimeData)
+2. `shared_shopping_list.dart` - 14 migrations (fromFirestore, fromMap, fromJson)
+3. `activity_feed_item.dart` - 16 migrations (metadata access patterns, 4 reverted due to method chaining)
+4. `unified_shopping_list.dart` - 8 migrations (collaborative features)
+5. `shared_menu.dart` - 20 migrations (menu snapshot reconstruction)
+6. `shared_content.dart` - 11 migrations (permissions, SharingPermissions)
+7. `unified_shopping_item.dart` - 8 migrations (fromJson, fromFirestore)
+8. `recipe_serialization.dart` - 16 migrations (sanitization, compression, import/export)
+9. `user_profile.dart` - 12 migrations (social networking, notifications)
+10. `realtime_invitation.dart` - 13 migrations (temporal management, _parseDateTime)
+
+**Extension Methods Used**:
+- `.orEmpty()` - String and collection defaults (replaced `?? ''`, `?? []`, `?? {}`)
+- `.orZero()` - Integer defaults (replaced `?? 0`)
+- `.orTrue()` / `.orFalse()` - Boolean defaults (replaced `?? true`, `?? false`)
+- `.orDefault(value)` - Custom defaults (replaced `?? 'custom value'`)
+- `.orNow()` - DateTime defaults (replaced `?? DateTime.now()`)
+
+**Key Learning**:
+- Method chaining requires parentheses: `(field?.toString()).orEmpty()` not `field?.toString().orEmpty()`
+- Extensions work well with SerializationUtils: `SerializationUtils.safeDateTime(data, 'field').orNow()`
+- Some patterns require keeping `??` for complex method chaining (`.cast<T>()`, `.toDate()`)
+
+**Phase 2 Targets**:
+- Expand to ViewModels (~15-20 files, estimated 80-120 migrations)
+- Expand to Services/Repositories (~20-25 files, estimated 100-150 migrations)
+- Add linter rule to encourage adoption in new code
+- Target: 80%+ adoption across codebase
 
 ### Available Extensions
 
