@@ -7,6 +7,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:get_it/get_it.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Comprehensive notification data repository providing persistent storage for preferences, history, and batching management.
 ///
@@ -255,7 +256,7 @@ class NotificationRepository {
         if (doc.exists && doc.data() != null) {
           // Add to existing batch
           final data = doc.data();
-          final notifications = List<Map<String, dynamic>>.from(data?['notifications'] ?? []);
+          final notifications = List<Map<String, dynamic>>.from((data?['notifications'] as List?).orEmpty());
           notifications.add(notification.toMap());
           
           transaction.update(batchDoc, {
@@ -633,36 +634,36 @@ class NotificationPreferences {
   /// Check if user should receive notification for category and type
   bool isEnabled(NotificationCategory category, NotificationType type) {
     if (!enabled) return false;
-    
-    final categoryEnabled = categorySettings[category] ?? false;
-    final typeEnabled = typeSettings[type] ?? false;
-    
+
+    final categoryEnabled = (categorySettings[category]).orFalse();
+    final typeEnabled = (typeSettings[type]).orFalse();
+
     return categoryEnabled && typeEnabled;
   }
 
   /// Create from repository data (removes Firebase dependency)
   factory NotificationPreferences.fromMap(String id, Map<String, dynamic> data) {
     return NotificationPreferences(
-      enabled: data['enabled'] ?? true,
+      enabled: (data['enabled'] as bool?).orTrue(),
       categorySettings: _parseEnumMap(data['categorySettings'], NotificationCategory.values),
       typeSettings: _parseEnumMap(data['typeSettings'], NotificationType.values),
-      allowBatching: data['allowBatching'] ?? true,
-      digestFrequency: data['digestFrequency'] ?? 'never',
+      allowBatching: (data['allowBatching'] as bool?).orTrue(),
+      digestFrequency: (data['digestFrequency'] as String?).orDefault('never'),
       quietHoursStart: _parseTimeOfDay(data['quietHoursStart']),
       quietHoursEnd: _parseTimeOfDay(data['quietHoursEnd']),
-      soundEnabled: data['soundEnabled'] ?? true,
-      vibrationEnabled: data['vibrationEnabled'] ?? true,
-      lastUpdated: data['lastUpdated'] is DateTime 
+      soundEnabled: (data['soundEnabled'] as bool?).orTrue(),
+      vibrationEnabled: (data['vibrationEnabled'] as bool?).orTrue(),
+      lastUpdated: data['lastUpdated'] is DateTime
           ? data['lastUpdated'] as DateTime
-          : (data['lastUpdated'] != null 
-              ? AppTimestamp.fromFirestore(data['lastUpdated']).dateTime 
+          : (data['lastUpdated'] != null
+              ? AppTimestamp.fromFirestore(data['lastUpdated']).dateTime
               : DateTime.now()),
     );
   }
 
   /// Create from Firestore document
   factory NotificationPreferences.fromFirestore(DocumentSnapshot doc) {
-    return NotificationPreferences.fromMap(doc.id, (doc.data() ?? {}) as Map<String, dynamic>);
+    return NotificationPreferences.fromMap(doc.id, ((doc.data() as Map<String, dynamic>?).orEmpty()));
   }
 
   /// Convert to Firestore document
@@ -698,7 +699,7 @@ class NotificationPreferences {
     final result = <T, bool>{};
     if (data is Map<String, dynamic>) {
       for (final enumValue in enumValues) {
-        result[enumValue] = data[enumValue.toString()] ?? false;
+        result[enumValue] = (data[enumValue.toString()] as bool?).orFalse();
       }
     }
     return result;
@@ -713,8 +714,8 @@ class NotificationPreferences {
   static TimeOfDay? _parseTimeOfDay(dynamic data) {
     if (data is Map<String, dynamic>) {
       return TimeOfDay(
-        hour: data['hour'] ?? 0,
-        minute: data['minute'] ?? 0,
+        hour: (data['hour'] as int?).orZero(),
+        minute: (data['minute'] as int?).orZero(),
       );
     }
     return null;
@@ -745,7 +746,7 @@ class NotificationBatch {
 
   /// Create from repository data map (removes Firebase dependency)
   factory NotificationBatch.fromMap(String id, Map<String, dynamic> data) {
-    final notificationsList = data['notifications'] as List<dynamic>? ?? [];
+    final notificationsList = (data['notifications'] as List<dynamic>?).orEmpty();
     final notifications = notificationsList
         .map((item) => _mapToNotificationTemplate(item))
         .toList();
@@ -765,7 +766,7 @@ class NotificationBatch {
 
   /// Create from Firestore document
   factory NotificationBatch.fromFirestore(DocumentSnapshot doc) {
-    return NotificationBatch.fromMap(doc.id, (doc.data() ?? {}) as Map<String, dynamic>);
+    return NotificationBatch.fromMap(doc.id, ((doc.data() as Map<String, dynamic>?).orEmpty()));
   }
 }
 
@@ -788,7 +789,7 @@ extension NotificationTemplateExtension on NotificationTemplate {
 
 /// Helper function to create NotificationTemplate from map
 NotificationTemplate _mapToNotificationTemplate(Map<String, dynamic> map) {
-  final actionsList = map['actions'] as List<dynamic>? ?? [];
+  final actionsList = (map['actions'] as List<dynamic>?).orEmpty();
   final actions = actionsList.isNotEmpty
       ? actionsList.map((item) {
           final actionMap = item;

@@ -7,6 +7,7 @@ import 'package:butlery/repositories/interfaces/menu_collaboration_repository.da
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Firebase implementation of MenuCollaborationRepository.
 ///
@@ -137,7 +138,7 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
       final collaborationData = {
         'allowCollaboration': true,
         'collaboratorIds': collaboratorIds,
-        'collaboratorDisplayNames': collaboratorDisplayNames ?? {},
+        'collaboratorDisplayNames': collaboratorDisplayNames.orEmpty(),
         'collaborationEnabledAt': FieldValue.serverTimestamp(),
         'collaborationEnabledBy': userId,
         'collaborationSettings': {
@@ -167,10 +168,10 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
       }
 
       final menuData = menuDoc.data()!;
-      final allowCollaboration = menuData['allowCollaboration'] as bool? ?? false;
+      final allowCollaboration = (menuData['allowCollaboration'] as bool?).orFalse();
       final sharedByUserId = menuData['sharedByUserId'] as String?;
-      final sharedToUserIds = List<String>.from(menuData['sharedToUserIds'] ?? []);
-      final collaboratorIds = List<String>.from(menuData['collaboratorIds'] ?? []);
+      final sharedToUserIds = List<String>.from((menuData['sharedToUserIds'] as List?).orEmpty());
+      final collaboratorIds = List<String>.from((menuData['collaboratorIds'] as List?).orEmpty());
 
       return allowCollaboration && 
              (sharedByUserId == userId || 
@@ -271,8 +272,8 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
       }
 
       final menuData = menuDoc.data()!;
-      final menuSnapshot = menuData['menuSnapshot'] as Map<String, dynamic>? ?? {};
-      final categoryRecipes = List<Map<String, dynamic>>.from(menuSnapshot[category] ?? []);
+      final menuSnapshot = (menuData['menuSnapshot'] as Map<String, dynamic>?).orEmpty();
+      final categoryRecipes = List<Map<String, dynamic>>.from((menuSnapshot[category] as List?).orEmpty());
       
       final recipeToRemove = categoryRecipes.where((r) => r['id'] == recipeId).firstOrNull;
       if (recipeToRemove == null) {
@@ -495,8 +496,8 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
       if (!commentDoc.exists) return false;
 
       final commentData = commentDoc.data()!;
-      final likedBy = List<String>.from(commentData['likedBy'] ?? []);
-      final currentLikes = commentData['likes'] as int? ?? 0;
+      final likedBy = List<String>.from((commentData['likedBy'] as List?).orEmpty());
+      final currentLikes = (commentData['likes'] as int?).orZero();
 
       if (likedBy.contains(userId)) {
         // Unlike
@@ -546,7 +547,7 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
         'ownerDisplayName': userDisplayName,
         'menuSnapshot': menuSnapshot.map((category, recipes) => 
             MapEntry(category, recipes.map((r) => r.toFirestore()).toList())),
-        'tags': tags ?? [],
+        'tags': tags.orEmpty(),
         'isTemplate': true,
         'isPublic': false,
         'createdAt': FieldValue.serverTimestamp(),
@@ -597,20 +598,20 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
       }
 
       final templateData = templateDoc.data()!;
-      final menuSnapshot = (templateData['menuSnapshot'] as Map<String, dynamic>?)?.map(
+      final menuSnapshot = ((templateData['menuSnapshot'] as Map<String, dynamic>?)?.map(
         (category, recipes) => MapEntry(
           category,
           (recipes as List<dynamic>)
               .map((r) => Recipe.fromMap('', r as Map<String, dynamic>))
               .toList(),
         ),
-      ) ?? <String, List<Recipe>>{};
+      )).orEmpty();
 
       // Create shared menu
       final sharedMenu = SharedMenu.create(
         sharedByUserId: userId,
         sharedByDisplayName: userDisplayName,
-        sharedToUserIds: sharedToUserIds ?? [],
+        sharedToUserIds: sharedToUserIds.orEmpty(),
         shareMessage: shareMessage,
         menuTitle: menuTitle,
         menuSnapshot: menuSnapshot,

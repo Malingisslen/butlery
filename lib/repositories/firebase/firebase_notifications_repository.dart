@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Firebase Firestore implementation for push notification and user notification management.
 ///
@@ -212,7 +213,7 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
     final notificationData = doc.data() as Map<String, dynamic>;
     await validateOwnership(
       currentUserId: currentUser,
-      resourceOwnerId: notificationData['userId'] ?? '',
+      resourceOwnerId: (notificationData['userId'] as String?).orEmpty(),
       resourceType: 'notification',
       resourceId: notificationId,
     );
@@ -247,7 +248,7 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
       final notificationData = doc.data() as Map<String, dynamic>;
       await validateOwnership(
         currentUserId: currentUser,
-        resourceOwnerId: notificationData['userId'] ?? '',
+        resourceOwnerId: (notificationData['userId'] as String?).orEmpty(),
         resourceType: 'notification',
         resourceId: id,
       );
@@ -319,7 +320,7 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
     final notificationData = doc.data() as Map<String, dynamic>;
     await validateOwnership(
       currentUserId: currentUser,
-      resourceOwnerId: notificationData['userId'] ?? '',
+      resourceOwnerId: (notificationData['userId'] as String?).orEmpty(),
       resourceType: 'notification',
       resourceId: notificationId,
     );
