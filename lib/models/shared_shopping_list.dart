@@ -60,6 +60,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/shared_content/base_shared_content_model.dart';
 import 'package:butlery/models/shared_content/shared_content_status_mixin.dart';
@@ -179,24 +180,24 @@ class SharedShoppingList extends BaseSharedContentModel<List<UnifiedShoppingItem
   /// Creates a shared shopping list instance from Firestore repository data with robust error handling.
   factory SharedShoppingList.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
-    
+
     return SharedShoppingList(
       id: doc.id,
-      sharedByUserId: data['sharedByUserId'] ?? '',
-      sharedByDisplayName: data['sharedByDisplayName'] ?? 'Unknown User',
-      sharedToUserIds: List<String>.from(data['sharedToUserIds'] ?? []),
-      sharedAt: (data['sharedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      shareMessage: data['shareMessage'] ?? '',
-      viewCount: data['viewCount'] as int? ?? 0,
-      engagementCount: data['joinedCount'] as int? ?? 0,
-      viewedByUserIds: List<String>.from(data['viewedByUserIds'] ?? []),
-      engagedByUserIds: List<String>.from(data['joinedByUserIds'] ?? []),
-      dismissedByUserIds: List<String>.from(data['dismissedByUserIds'] ?? []),
-      listName: data['listName'] ?? '',
+      sharedByUserId: (data['sharedByUserId'] as String?).orEmpty(),
+      sharedByDisplayName: (data['sharedByDisplayName'] as String?).orDefault('Unknown User'),
+      sharedToUserIds: List<String>.from((data['sharedToUserIds'] as List?).orEmpty()),
+      sharedAt: (data['sharedAt'] as Timestamp?)?.toDate().orNow(),
+      shareMessage: (data['shareMessage'] as String?).orEmpty(),
+      viewCount: (data['viewCount'] as int?).orZero(),
+      engagementCount: (data['joinedCount'] as int?).orZero(),
+      viewedByUserIds: List<String>.from((data['viewedByUserIds'] as List?).orEmpty()),
+      engagedByUserIds: List<String>.from((data['joinedByUserIds'] as List?).orEmpty()),
+      dismissedByUserIds: List<String>.from((data['dismissedByUserIds'] as List?).orEmpty()),
+      listName: (data['listName'] as String?).orEmpty(),
       listDescription: data['listDescription'],
       listItems: (data['listItems'] as List<dynamic>?)
           ?.map((item) => UnifiedShoppingItem.fromFirestore(Map<String, dynamic>.from(item)))
-          .toList() ?? [],
+          .toList().orEmpty(),
       originalOwnerId: data['originalOwnerId'] ?? data['sharedByUserId'] ?? '',
       originalOwnerDisplayName: data['originalOwnerDisplayName'] ?? data['sharedByDisplayName'] ?? 'Unknown User',
     );
@@ -209,7 +210,7 @@ class SharedShoppingList extends BaseSharedContentModel<List<UnifiedShoppingItem
       sharedByUserId: SerializationUtils.safeString(data, 'sharedByUserId'),
       sharedByDisplayName: SerializationUtils.safeString(data, 'sharedByDisplayName', defaultValue: 'Unknown User'),
       sharedToUserIds: SerializationUtils.safeStringList(data, 'sharedToUserIds'),
-      sharedAt: SerializationUtils.safeDateTime(data, 'sharedAt') ?? DateTime.now(),
+      sharedAt: SerializationUtils.safeDateTime(data, 'sharedAt').orNow(),
       shareMessage: SerializationUtils.safeString(data, 'shareMessage'),
       viewCount: SerializationUtils.safeInt(data, 'viewCount'),
       engagementCount: SerializationUtils.safeInt(data, 'joinedCount'),
@@ -280,7 +281,7 @@ class SharedShoppingList extends BaseSharedContentModel<List<UnifiedShoppingItem
       listDescription: json['listDescription'] as String?,
       listItems: (json['listItems'] as List<dynamic>?)
           ?.map((item) => UnifiedShoppingItem.fromJson(item as Map<String, dynamic>))
-          .toList() ?? [],
+          .toList().orEmpty(),
       originalOwnerId: json['originalOwnerId'] as String,
       originalOwnerDisplayName: json['originalOwnerDisplayName'] as String,
     );

@@ -8,6 +8,7 @@ import 'package:hive/hive.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 
 // Focused modules
@@ -314,17 +315,17 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
     description: json['description'] as String,
     portions: json['portions'] as int?,
     timeMinutes: json['timeMinutes'] as int?,
-    ingredients: List<String>.from(json['ingredients'] ?? []),
-    instructions: List<String>.from(json['instructions'] ?? []),
+    ingredients: List<String>.from((json['ingredients'] as List?).orEmpty()),
+    instructions: List<String>.from((json['instructions'] as List?).orEmpty()),
     tags: json['tags'] != null ? List<String>.from(json['tags']) : null,
     rating: (json['rating'] as num?)?.toDouble(),
     mealType: json['mealType'] as String,
     sourceUrl: json['sourceUrl'] as String?,
-    imageUrls: List<String>.from(json['imageUrls'] ?? []),
+    imageUrls: List<String>.from((json['imageUrls'] as List?).orEmpty()),
     createdAt: DateTime.parse(json['createdAt'] as String),
     updatedAt: DateTime.parse(json['updatedAt'] as String),
     createdBy: json['createdBy'] as String?,
-    isPublic: json['isPublic'] as bool? ?? false,
+    isPublic: (json['isPublic'] as bool?).orFalse(),
     lastCookedAt: json['lastCookedAt'] != null ? DateTime.parse(json['lastCookedAt'] as String) : null,
     ingredientsNormalized: json['ingredientsNormalized'] != null ? List<String>.from(json['ingredientsNormalized']) : null,
   );
@@ -346,8 +347,8 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
       mealType: utils.SerializationUtils.safeString(data, 'mealType', defaultValue: 'Middag'),
       sourceUrl: utils.SerializationUtils.safeNullableString(data, 'sourceUrl'),
       imageUrls: utils.SerializationUtils.safeStringList(data, 'imageUrls'),
-      createdAt: utils.SerializationUtils.safeDateTime(data, 'createdAt') ?? DateTime.now(),
-      updatedAt: utils.SerializationUtils.safeDateTime(data, 'updatedAt') ?? DateTime.now(),
+      createdAt: utils.SerializationUtils.safeDateTime(data, 'createdAt').orNow(),
+      updatedAt: utils.SerializationUtils.safeDateTime(data, 'updatedAt').orNow(),
       createdBy: utils.SerializationUtils.safeNullableString(data, 'createdBy'),
       isPublic: utils.SerializationUtils.safeBool(data, 'isPublic', defaultValue: false),
       lastCookedAt: utils.SerializationUtils.safeDateTime(data, 'lastCookedAt'),
@@ -395,13 +396,13 @@ class RecipeSocialData {
   factory RecipeSocialData.fromJson(Map<String, dynamic> json) => RecipeSocialData(
     ownerId: json['ownerId'] as String?,
     ownerDisplayName: json['ownerDisplayName'] as String?,
-    memberPermissions: json['memberPermissions'] != null 
+    memberPermissions: json['memberPermissions'] != null
         ? Map<String, ResourcePermission>.from(
             (json['memberPermissions'] as Map).map((k, v) => MapEntry(k, ResourcePermission.values[v]))
           )
         : null,
-    allowGuestViewing: json['allowGuestViewing'] as bool? ?? false,
-    allowMemberInvites: json['allowMemberInvites'] as bool? ?? true,
+    allowGuestViewing: (json['allowGuestViewing'] as bool?).orFalse(),
+    allowMemberInvites: (json['allowMemberInvites'] as bool?).orTrue(),
     categoryIds: json['categoryIds'] != null ? List<String>.from(json['categoryIds']) : null,
     descriptionCollaborative: json['descriptionCollaborative'] as String?,
   );
@@ -459,7 +460,7 @@ class RecipeRealtimeData {
 
   factory RecipeRealtimeData.fromJson(Map<String, dynamic> json) => RecipeRealtimeData(
     activeEditorIds: json['activeEditorIds'] != null ? List<String>.from(json['activeEditorIds']) : null,
-    lastSeenAt: json['lastSeenAt'] != null 
+    lastSeenAt: json['lastSeenAt'] != null
         ? Map<String, DateTime>.from(
             (json['lastSeenAt'] as Map).map((k, v) => MapEntry(k, DateTime.parse(v)))
           )
@@ -467,8 +468,8 @@ class RecipeRealtimeData {
     lastEditedByUserId: json['lastEditedByUserId'] as String?,
     lastEditedByDisplayName: json['lastEditedByDisplayName'] as String?,
     lastEditedAt: json['lastEditedAt'] != null ? DateTime.parse(json['lastEditedAt']) : null,
-    editCount: json['editCount'] as int? ?? 0,
-    isActive: json['isActive'] as bool? ?? true,
+    editCount: (json['editCount'] as int?).orZero(),
+    isActive: (json['isActive'] as bool?).orTrue(),
   );
 }
 
@@ -494,7 +495,7 @@ class RecipeOfflineData {
 
   factory RecipeOfflineData.fromJson(Map<String, dynamic> json) => RecipeOfflineData(
     lastSyncedAt: json['lastSyncedAt'] != null ? DateTime.parse(json['lastSyncedAt']) : null,
-    isModifiedOffline: json['isModifiedOffline'] as bool? ?? false,
+    isModifiedOffline: (json['isModifiedOffline'] as bool?).orFalse(),
     pendingChanges: json['pendingChanges'] != null ? List<String>.from(json['pendingChanges']) : null,
   );
 }
