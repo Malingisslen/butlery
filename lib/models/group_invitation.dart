@@ -7,6 +7,7 @@
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
+import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 
 /// Invitation status: pending, accepted, rejected, expired, cancelled.
 enum GroupInvitationStatus {
@@ -337,20 +338,23 @@ class GroupInvitation with JsonSerializableMixin {
   factory GroupInvitation.fromMap(String id, Map<String, dynamic> data) {
     return GroupInvitation(
       id: id,
-      groupId: data['groupId'] as String,
-      groupName: data['groupName'] as String,
-      groupEmoji: data['groupEmoji'] as String? ?? '👥',
-      fromUserId: data['fromUserId'] as String,
-      fromUserName: data['fromUserName'] as String,
-      toUserId: data['toUserId'] as String,
-      status: GroupInvitationStatus.values.firstWhere(
-        (s) => s.name == data['status'],
-        orElse: () => GroupInvitationStatus.pending,
+      groupId: utils.SerializationUtils.safeString(data, 'groupId'),
+      groupName: utils.SerializationUtils.safeString(data, 'groupName'),
+      groupEmoji: utils.SerializationUtils.safeString(data, 'groupEmoji', defaultValue: '👥'),
+      fromUserId: utils.SerializationUtils.safeString(data, 'fromUserId'),
+      fromUserName: utils.SerializationUtils.safeString(data, 'fromUserName'),
+      toUserId: utils.SerializationUtils.safeString(data, 'toUserId'),
+      status: utils.SerializationUtils.safeEnum(
+        data,
+        'status',
+        GroupInvitationStatus.values,
+        GroupInvitationStatus.pending,
+        (e) => e.name,
       ),
-      sentAt: _parseTimestamp(data['sentAt']) ?? DateTime.now(),
-      respondedAt: _parseTimestamp(data['respondedAt']),
-      personalMessage: data['personalMessage'] as String?,
-      expiresAt: _parseTimestamp(data['expiresAt']) ?? DateTime.now().add(const Duration(days: 7)),
+      sentAt: utils.SerializationUtils.safeDateTime(data, 'sentAt') ?? DateTime.now(),
+      respondedAt: utils.SerializationUtils.safeDateTime(data, 'respondedAt'),
+      personalMessage: utils.SerializationUtils.safeNullableString(data, 'personalMessage'),
+      expiresAt: utils.SerializationUtils.safeDateTime(data, 'expiresAt') ?? DateTime.now().add(const Duration(days: 7)),
     );
   }
 
@@ -388,83 +392,25 @@ class GroupInvitation with JsonSerializableMixin {
   /// Returns a new [GroupInvitation] instance with all data properly deserialized.
   factory GroupInvitation.fromJson(Map<String, dynamic> json) {
     return GroupInvitation(
-      id: json['id'] as String,
-      groupId: json['groupId'] as String,
-      groupName: json['groupName'] as String,
-      groupEmoji: json['groupEmoji'] as String,
-      fromUserId: json['fromUserId'] as String,
-      fromUserName: json['fromUserName'] as String,
-      toUserId: json['toUserId'] as String,
-      status: GroupInvitationStatus.values.firstWhere(
-        (s) => s.name == json['status'],
-        orElse: () => GroupInvitationStatus.pending,
+      id: utils.SerializationUtils.safeString(json, 'id'),
+      groupId: utils.SerializationUtils.safeString(json, 'groupId'),
+      groupName: utils.SerializationUtils.safeString(json, 'groupName'),
+      groupEmoji: utils.SerializationUtils.safeString(json, 'groupEmoji'),
+      fromUserId: utils.SerializationUtils.safeString(json, 'fromUserId'),
+      fromUserName: utils.SerializationUtils.safeString(json, 'fromUserName'),
+      toUserId: utils.SerializationUtils.safeString(json, 'toUserId'),
+      status: utils.SerializationUtils.safeEnum(
+        json,
+        'status',
+        GroupInvitationStatus.values,
+        GroupInvitationStatus.pending,
+        (e) => e.name,
       ),
-      sentAt: GroupInvitation._deserializeDateTime(json['sentAt']) ?? DateTime.now(),
-      respondedAt: GroupInvitation._deserializeDateTime(json['respondedAt']),
-      personalMessage: json['personalMessage'] as String?,
-      expiresAt: GroupInvitation._deserializeDateTime(json['expiresAt']) ?? DateTime.now(),
+      sentAt: utils.SerializationUtils.safeDateTime(json, 'sentAt') ?? DateTime.now(),
+      respondedAt: utils.SerializationUtils.safeDateTime(json, 'respondedAt'),
+      personalMessage: utils.SerializationUtils.safeNullableString(json, 'personalMessage'),
+      expiresAt: utils.SerializationUtils.safeDateTime(json, 'expiresAt') ?? DateTime.now(),
     );
-  }
-
-  /// Utility and helper methods for timestamp parsing and object operations.
-
-  /// Helper method for deserializing DateTime from JSON data with format flexibility.
-  ///
-  /// Handles multiple DateTime formats including ISO strings, DateTime objects,
-  /// and Firestore timestamp maps for robust data recovery from various sources.
-  ///
-  /// [value] Dynamic value that may contain DateTime data in various formats
-  ///
-  /// Returns parsed DateTime or null if parsing fails.
-  static DateTime? _deserializeDateTime(dynamic value) {
-    if (value is String) return DateTime.parse(value);
-    if (value is DateTime) return value;
-    if (value is Map) {
-      // Handle raw timestamp data from Firestore
-      final seconds = value['seconds'] as int?;
-      final nanoseconds = value['nanoseconds'] as int? ?? 0;
-      if (seconds != null) {
-        return DateTime.fromMillisecondsSinceEpoch(
-            seconds * 1000 + nanoseconds ~/ 1000000);
-      }
-    }
-    return null;
-  }
-
-  /// Helper method for parsing timestamps from repository data with comprehensive format support.
-  ///
-  /// Provides robust timestamp parsing for Firestore data including DateTime objects,
-  /// timestamp maps, epoch milliseconds, and ISO strings with fallback handling for data reliability.
-  ///
-  /// [timestamp] Dynamic timestamp value from repository in various possible formats
-  ///
-  /// Returns parsed DateTime or null if timestamp is null, with current time as fallback for errors.
-  static DateTime? _parseTimestamp(dynamic timestamp) {
-    if (timestamp == null) return null;
-
-    try {
-      if (timestamp is DateTime) {
-        return timestamp;
-      } else if (timestamp is Map) {
-        // Handle raw timestamp data from Firestore
-        final seconds = timestamp['seconds'] as int?;
-        final nanoseconds = timestamp['nanoseconds'] as int? ?? 0;
-        if (seconds != null) {
-          return DateTime.fromMillisecondsSinceEpoch(
-              seconds * 1000 + nanoseconds ~/ 1000000);
-        }
-      } else if (timestamp is int) {
-        // Handle milliseconds since epoch
-        return DateTime.fromMillisecondsSinceEpoch(timestamp);
-      } else if (timestamp is String) {
-        // Handle ISO string format
-        return DateTime.parse(timestamp);
-      }
-
-      return DateTime.now();
-    } catch (e) {
-      return DateTime.now();
-    }
   }
 
   /// Standard object methods for debugging, comparison, and identity management.
