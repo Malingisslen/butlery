@@ -68,6 +68,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 /// Comprehensive unified shopping item with dual-mode support and collaborative features.
 ///
 /// Represents a complete shopping item with all associated metadata including basic shopping data,
@@ -621,9 +622,9 @@ class UnifiedShoppingItem {
       id: json['id'] as String,
       name: json['name'] as String,
       amount: (json['amount'] as num).toDouble(),
-      unit: json['unit'] as String? ?? '',
-      category: json['category'] as String? ?? 'Övrigt',
-      bought: json['bought'] as bool? ?? false,
+      unit: (json['unit'] as String?).orEmpty(),
+      category: (json['category'] as String?).orDefault('Övrigt'),
+      bought: (json['bought'] as bool?).orFalse(),
       addedByUserId: json['addedByUserId'] as String?,
       addedByDisplayName: json['addedByDisplayName'] as String?,
       addedAt: json['addedAt'] != null ? DateTime.parse(json['addedAt']) : null,
@@ -639,7 +640,7 @@ class UnifiedShoppingItem {
           : null,
       note: json['note'] as String?,
       estimatedPrice: (json['estimatedPrice'] as num?)?.toDouble(),
-      priority: json['priority'] as int? ?? 3,
+      priority: (json['priority'] as int?).orDefault(3),
     );
   }
 
@@ -657,9 +658,9 @@ class UnifiedShoppingItem {
       id: data['id'] as String,
       name: data['name'] as String,
       amount: (data['amount'] as num).toDouble(),
-      unit: data['unit'] as String? ?? '',
-      category: data['category'] as String? ?? 'Övrigt',
-      bought: data['bought'] as bool? ?? false,
+      unit: (data['unit'] as String?).orEmpty(),
+      category: (data['category'] as String?).orDefault('Övrigt'),
+      bought: (data['bought'] as bool?).orFalse(),
       addedByUserId: data['addedByUserId'] as String?,
       addedByDisplayName: data['addedByDisplayName'] as String?,
       addedAt: (data['addedAt'] as Timestamp?)?.toDate(),
@@ -671,7 +672,7 @@ class UnifiedShoppingItem {
       lastModifiedAt: (data['lastModifiedAt'] as Timestamp?)?.toDate(),
       note: data['note'] as String?,
       estimatedPrice: (data['estimatedPrice'] as num?)?.toDouble(),
-      priority: data['priority'] as int? ?? 3,
+      priority: (data['priority'] as int?).orDefault(3),
     );
   }
 

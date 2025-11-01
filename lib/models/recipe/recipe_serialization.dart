@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Focused module for recipe serialization
 /// 
@@ -64,7 +65,7 @@ class RecipeSerialization {
     
     return Recipe(
       core: RecipeCore.fromMap(id, coreData),
-      type: RecipeType.values[data['type'] as int? ?? 0],
+      type: RecipeType.values[(data['type'] as int?).orZero()],
       socialData: data['socialData'] != null 
           ? RecipeSocialData.fromJson(data['socialData'] as Map<String, dynamic>)
           : null,
@@ -158,9 +159,9 @@ class RecipeSerialization {
   /// Sanitize JSON data before deserialization
   static Map<String, dynamic> sanitizeJsonData(Map<String, dynamic> json) {
     final sanitized = Map<String, dynamic>.from(json);
-    
+
     // Ensure type is valid
-    final type = sanitized['type'] as int? ?? 0;
+    final type = (sanitized['type'] as int?).orZero();
     sanitized['type'] = type.clamp(0, RecipeType.values.length - 1);
     
     // Sanitize core data if needed
@@ -174,46 +175,46 @@ class RecipeSerialization {
   /// Sanitize core recipe data
   static Map<String, dynamic> _sanitizeCoreData(Map<String, dynamic> core) {
     final sanitized = Map<String, dynamic>.from(core);
-    
+
     // Ensure required string fields are strings
-    sanitized['title'] = sanitized['title']?.toString() ?? '';
-    sanitized['description'] = sanitized['description']?.toString() ?? '';
-    sanitized['mealType'] = sanitized['mealType']?.toString() ?? 'Middag';
+    sanitized['title'] = (sanitized['title']?.toString()).orEmpty();
+    sanitized['description'] = (sanitized['description']?.toString()).orEmpty();
+    sanitized['mealType'] = (sanitized['mealType']?.toString()).orDefault('Middag');
     
     // Ensure list fields are lists
     if (sanitized['ingredients'] is! List) {
       sanitized['ingredients'] = <String>[];
     } else {
       sanitized['ingredients'] = (sanitized['ingredients'] as List)
-          .map((item) => item?.toString() ?? '')
+          .map((item) => (item?.toString()).orEmpty())
           .where((item) => item.isNotEmpty)
           .toList();
     }
-    
+
     if (sanitized['instructions'] is! List) {
       sanitized['instructions'] = <String>[];
     } else {
       sanitized['instructions'] = (sanitized['instructions'] as List)
-          .map((item) => item?.toString() ?? '')
+          .map((item) => (item?.toString()).orEmpty())
           .where((item) => item.isNotEmpty)
           .toList();
     }
-    
+
     if (sanitized['imageUrls'] is! List) {
       sanitized['imageUrls'] = <String>[];
     } else {
       sanitized['imageUrls'] = (sanitized['imageUrls'] as List)
-          .map((item) => item?.toString() ?? '')
+          .map((item) => (item?.toString()).orEmpty())
           .where((item) => item.isNotEmpty)
           .toList();
     }
-    
+
     // Handle tags (can be null)
     if (sanitized['tags'] != null && sanitized['tags'] is! List) {
       sanitized['tags'] = <String>[];
     } else if (sanitized['tags'] is List) {
       sanitized['tags'] = (sanitized['tags'] as List)
-          .map((item) => item?.toString() ?? '')
+          .map((item) => (item?.toString()).orEmpty())
           .where((item) => item.isNotEmpty)
           .toList();
     }
@@ -250,15 +251,15 @@ class RecipeSerialization {
   }) {
     return Recipe(
       core: RecipeCore(
-        title: data['title']?.toString() ?? 'Importerat recept',
-        description: data['description']?.toString() ?? '',
-        ingredients: data['ingredients'] is List 
+        title: (data['title']?.toString()).orDefault('Importerat recept'),
+        description: (data['description']?.toString()).orEmpty(),
+        ingredients: data['ingredients'] is List
             ? List<String>.from(data['ingredients'])
             : [],
         instructions: data['instructions'] is List
             ? List<String>.from(data['instructions'])
             : [],
-        mealType: data['mealType']?.toString() ?? 'Middag',
+        mealType: (data['mealType']?.toString()).orDefault('Middag'),
         portions: data['portions'] as int?,
         timeMinutes: data['timeMinutes'] as int?,
         rating: (data['rating'] as num?)?.toDouble(),
@@ -304,25 +305,25 @@ class RecipeSerialization {
   static Recipe fromCompressed(Map<String, dynamic> compressed) {
     return Recipe(
       core: RecipeCore(
-        title: compressed['t']?.toString() ?? '',
-        description: compressed['d']?.toString() ?? '',
-        ingredients: compressed['i'] is List 
+        title: (compressed['t']?.toString()).orEmpty(),
+        description: (compressed['d']?.toString()).orEmpty(),
+        ingredients: compressed['i'] is List
             ? List<String>.from(compressed['i'])
             : [],
         instructions: compressed['s'] is List
             ? List<String>.from(compressed['s'])
             : [],
-        mealType: compressed['m']?.toString() ?? 'Middag',
+        mealType: (compressed['m']?.toString()).orDefault('Middag'),
         portions: compressed['p'] as int?,
         timeMinutes: compressed['tm'] as int?,
         rating: (compressed['r'] as num?)?.toDouble(),
         tags: compressed['tg'] is List ? List<String>.from(compressed['tg']) : null,
-        imageUrls: compressed['img'] is List 
+        imageUrls: compressed['img'] is List
             ? List<String>.from(compressed['img'])
             : [],
         sourceUrl: compressed['src']?.toString(),
       ),
-      type: RecipeType.values[compressed['ty'] as int? ?? 0],
+      type: RecipeType.values[(compressed['ty'] as int?).orZero()],
     );
   }
 }

@@ -57,6 +57,7 @@
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Comprehensive user profile data model with social networking and notification capabilities.
 ///
@@ -256,8 +257,8 @@ class UserProfile with JsonSerializableMixin {
       allowEmailSearch: utils.SerializationUtils.safeBool(data, 'allowEmailSearch'),
       publicRecipeCount: utils.SerializationUtils.safeInt(data, 'publicRecipeCount'),
       friendsCount: utils.SerializationUtils.safeInt(data, 'friendsCount'),
-      joinedAt: utils.SerializationUtils.safeDateTime(data, 'joinedAt') ?? DateTime.now(),
-      lastActiveAt: utils.SerializationUtils.safeDateTime(data, 'lastActiveAt') ?? DateTime.now(),
+      joinedAt: utils.SerializationUtils.safeDateTime(data, 'joinedAt').orNow(),
+      lastActiveAt: utils.SerializationUtils.safeDateTime(data, 'lastActiveAt').orNow(),
       isOnline: utils.SerializationUtils.safeBool(data, 'isOnline'),
       // Notification fields
       fcmToken: utils.SerializationUtils.safeNullableString(data, 'fcmToken'),
@@ -270,20 +271,20 @@ class UserProfile with JsonSerializableMixin {
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
       uid: json['uid'] as String,
-      displayName: json['displayName'] as String? ?? '',
-      email: json['email'] as String? ?? '',
+      displayName: (json['displayName'] as String?).orEmpty(),
+      email: (json['email'] as String?).orEmpty(),
       avatarUrl: json['avatarUrl'] as String?,
-      isSearchable: json['isSearchable'] as bool? ?? true,
-      allowEmailSearch: json['allowEmailSearch'] as bool? ?? false,
-      publicRecipeCount: json['publicRecipeCount'] as int? ?? 0,
-      friendsCount: json['friendsCount'] as int? ?? 0,
-      joinedAt: UserProfile._deserializeDateTime(json['joinedAt']) ?? DateTime.now(),
-      lastActiveAt: UserProfile._deserializeDateTime(json['lastActiveAt']) ?? DateTime.now(),
-      isOnline: json['isOnline'] as bool? ?? false,
+      isSearchable: (json['isSearchable'] as bool?).orTrue(),
+      allowEmailSearch: (json['allowEmailSearch'] as bool?).orFalse(),
+      publicRecipeCount: (json['publicRecipeCount'] as int?).orZero(),
+      friendsCount: (json['friendsCount'] as int?).orZero(),
+      joinedAt: UserProfile._deserializeDateTime(json['joinedAt']).orNow(),
+      lastActiveAt: UserProfile._deserializeDateTime(json['lastActiveAt']).orNow(),
+      isOnline: (json['isOnline'] as bool?).orFalse(),
       // Notification fields
       fcmToken: json['fcmToken'] as String?,
       fcmTokenUpdatedAt: UserProfile._deserializeDateTime(json['fcmTokenUpdatedAt']),
-      notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
+      notificationsEnabled: (json['notificationsEnabled'] as bool?).orTrue(),
     );
   }
 
