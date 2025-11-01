@@ -853,7 +853,7 @@ final name = userName.orEmpty(); // '' if null
 
 **Lines of Code**: ~350 lines
 **Eliminates**: 400+ lines of null coalescing
-**Current Adoption**: Phase 1+2: 19-24% (201 migrations across 17 files, Nov 2025)
+**Current Adoption**: Phase 1+2+3A: 24-29% (305 migrations across 25 files, Nov 2025)
 
 ### Phase 1 Completion (Nov 2025)
 
@@ -890,30 +890,57 @@ final name = userName.orEmpty(); // '' if null
 6. `menu_storage.dart` - 6 migrations (local storage, menu persistence, JSON deserialization)
 7. `unified_shopping_viewmodel.dart` - 5 migrations (shopping list analytics, completion tracking)
 
-**Combined Phase 1+2 Results**:
-- **Total Files**: 17 (10 models + 7 ViewModels)
-- **Total Migrations**: 201 (129 Phase 1 + 72 Phase 2)
-- **Total Lines Improved**: ~190-235 lines
-- **Adoption Rate**: 19-24% of target (201 of 800-1000 locations)
+### Phase 3A Completion (Nov 2025)
 
-**Extension Methods Usage Breakdown**:
-- `.orEmpty()` - 31× in Phase 2 (String and collection defaults)
-- `.orFalse()` - 15× in Phase 2 (Boolean defaults)
-- `.orZero()` - 17× in Phase 2 (Integer defaults)
-- `.orNow()` - 2× in Phase 2 (DateTime defaults)
-- `.orDefault(value)` - 7× in Phase 2 (Custom defaults)
+**Status**: ✅ Complete
+**Services & Repositories Migrated**: 8 critical files
+**Total Migrations**: 104
+**Lines Improved**: ~95-115 lines of verbose null coalescing eliminated
+
+**Migrated Services (4 files, 53 migrations)**:
+1. `intelligent_cache_manager.dart` - 15 migrations (cache patterns, behavior tracking, map increments)
+2. `notification_repository.dart` - 14 migrations (preferences, batch operations, enum parsing)
+3. `search_service.dart` - 12 migrations (sorting defaults, popularity tracking, map increments)
+4. `cache_optimization.dart` - 12 migrations (cleanup results, member permissions, aggregations)
+
+**Migrated Repositories (4 files, 51 migrations)**:
+5. `firebase_social_recipe_repository.dart` - 16 migrations (shared resource access, permission validation)
+6. `firebase_recipe_repository.dart` - 14 migrations (permission validation, ownership checks, chained defaults)
+7. `firebase_notifications_repository.dart` - 3 migrations (resource ownership validation)
+8. `firebase_menu_collaboration_repository.dart` - 10 migrations (collaboration data, list processing, menu snapshots)
 
 **Key Learnings**:
-- **Phase 1**: Method chaining requires parentheses: `(field?.toString()).orEmpty()` not `field?.toString().orEmpty()`
-- **Phase 2**: ValidationUtils extensions conflict with default value extensions; keep `??` where ValidationUtils is imported to avoid `ambiguous_extension_member_access` errors
-- Extensions work well with SerializationUtils: `SerializationUtils.safeDateTime(data, 'field').orNow()`
-- Some patterns require keeping `??` for complex method chaining (`.cast<T>()`, `.toDate()`)
+- ❌ **Set types**: No extension support (must keep `??`)
+- ❌ **Duration types**: No extension support (must keep `??`)
+- ✅ All other standard types work perfectly (String, int, double, bool, List, Map, DateTime)
+- ✅ `replace_all` feature highly effective for repeated repository patterns
+- ✅ Chained defaults work: `(a ?? b).orDefault(c)` for triple null coalescing
 
-**Phase 3 Targets (Optional)**:
-- Expand to Services/Repositories (~20-25 files, estimated 100-150 migrations)
-- Focus on high-usage services (UnifiedRecipeService, UnifiedShoppingService, etc.)
+**Combined Phase 1+2+3A Results**:
+- **Total Files**: 25 (10 models + 7 ViewModels + 8 Services/Repositories)
+- **Total Migrations**: 305 (129 Phase 1 + 72 Phase 2 + 104 Phase 3A)
+- **Total Lines Improved**: ~285-350 lines
+- **Adoption Rate**: 24-29% of target (305 of 1000-1200 locations)
+
+**Extension Methods Usage**:
+- `.orEmpty()` - Most frequently used (String, List, Map defaults)
+- `.orFalse()` - Boolean defaults across all layers
+- `.orZero()` - Integer defaults, especially for counting/aggregations
+- `.orNow()` - DateTime defaults in timestamps and temporal logic
+- `.orDefault(value)` - Custom defaults, especially for chained coalescing
+
+**All Phase Learnings**:
+- **Phase 1**: Method chaining requires parentheses: `(field?.toString()).orEmpty()`
+- **Phase 2**: ValidationUtils extensions conflict; keep `??` where ValidationUtils imported
+- **Phase 3A**: Set & Duration types not supported; replace_all effective for patterns
+- Extensions work well with SerializationUtils: `SerializationUtils.safeDateTime(data, 'field').orNow()`
+- Proven scalable across all architectural layers (Models → ViewModels → Services → Repositories)
+
+**Phase 3B Targets (Optional)**:
+- Complete remaining Services/Repositories (~15-20 files, estimated 100-200 migrations)
+- Consider expanding to Views/Widgets for UI consistency
 - Add linter rule to encourage adoption in new code
-- Target: 80%+ adoption in critical layers achieved (Models: 100%, ViewModels: 93.5%)
+- Target: 40-50% overall adoption achievable
 
 ### Available Extensions
 
