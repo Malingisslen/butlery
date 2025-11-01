@@ -1,3 +1,5 @@
+import 'package:butlery/core/utils/serialization_utils.dart';
+
 /// Feedback types for recommendations
 enum FeedbackType {
   like,
@@ -69,19 +71,19 @@ class Recommendation {
 
   factory Recommendation.fromMap(Map<String, dynamic> map) {
     return Recommendation(
-      id: map['id'] as String,
-      contentId: map['contentId'] as String,
-      contentType: map['contentType'] as String,
-      title: map['title'] as String,
-      description: map['description'] as String,
-      reason: map['reason'] as String,
-      type: _parseType(map['type'] as String),
-      score: (map['score'] as num).toDouble(),
-      imageUrl: map['imageUrl'] as String?,
-      metadata: map['metadata'] as Map<String, dynamic>?,
-      createdAt: DateTime.parse(map['createdAt'] as String),
-      isDismissed: map['isDismissed'] as bool? ?? false,
-      isLiked: map['isLiked'] as bool? ?? false,
+      id: SerializationUtils.safeString(map, 'id'),
+      contentId: SerializationUtils.safeString(map, 'contentId'),
+      contentType: SerializationUtils.safeString(map, 'contentType'),
+      title: SerializationUtils.safeString(map, 'title'),
+      description: SerializationUtils.safeString(map, 'description'),
+      reason: SerializationUtils.safeString(map, 'reason'),
+      type: _parseType(SerializationUtils.safeString(map, 'type')),
+      score: SerializationUtils.safeDouble(map, 'score'),
+      imageUrl: SerializationUtils.safeNullableString(map, 'imageUrl'),
+      metadata: SerializationUtils.safeNullableMap(map, 'metadata'),
+      createdAt: SerializationUtils.safeDateTime(map, 'createdAt') ?? DateTime.now(),
+      isDismissed: SerializationUtils.safeBool(map, 'isDismissed', defaultValue: false),
+      isLiked: SerializationUtils.safeBool(map, 'isLiked', defaultValue: false),
     );
   }
 
