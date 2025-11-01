@@ -38,6 +38,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Shared menu model with unified base infrastructure and menu-specific features.
 class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
@@ -488,12 +489,12 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   factory SharedMenu.fromMap(String id, Map<String, dynamic> data) {
     try {
       // 🔧 FIXED: Reconstruct menu snapshot utan MockDocumentSnapshot type cast
-      final menuData = data['menuSnapshot'] as Map<String, dynamic>? ?? {};
+      final menuData = (data['menuSnapshot'] as Map<String, dynamic>?).orEmpty();
       final reconstructedMenu = <String, List<Recipe>>{};
 
       for (final entry in menuData.entries) {
         final recipeList = <Recipe>[];
-        final recipes = entry.value as List<dynamic>? ?? [];
+        final recipes = (entry.value as List<dynamic>?).orEmpty();
 
         for (final recipeData in recipes) {
           try {
@@ -513,8 +514,8 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
                 rating: utils.SerializationUtils.safeNullableDouble(recipeMap, 'rating'),
                 tags: utils.SerializationUtils.safeStringList(recipeMap, 'tags'),
                 sourceUrl: utils.SerializationUtils.safeNullableString(recipeMap, 'sourceUrl'),
-                createdAt: utils.SerializationUtils.safeDateTime(recipeMap, 'createdAt') ?? DateTime.now(),
-                updatedAt: utils.SerializationUtils.safeDateTime(recipeMap, 'updatedAt') ?? DateTime.now(),
+                createdAt: utils.SerializationUtils.safeDateTime(recipeMap, 'createdAt').orNow(),
+                updatedAt: utils.SerializationUtils.safeDateTime(recipeMap, 'updatedAt').orNow(),
                 lastCookedAt: utils.SerializationUtils.safeDateTime(recipeMap, 'lastCookedAt'),
               ),
               type: RecipeType.shared, // Mark as shared menu recipe
@@ -536,7 +537,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
         sharedByUserId: utils.SerializationUtils.safeString(data, 'sharedByUserId'),
         sharedByDisplayName: utils.SerializationUtils.safeString(data, 'sharedByDisplayName'),
         sharedToUserIds: utils.SerializationUtils.safeStringList(data, 'sharedToUserIds'),
-        sharedAt: utils.SerializationUtils.safeDateTime(data, 'sharedAt') ?? DateTime.now(),
+        sharedAt: utils.SerializationUtils.safeDateTime(data, 'sharedAt').orNow(),
         shareMessage: utils.SerializationUtils.safeNullableString(data, 'shareMessage'),
         menuTitle: utils.SerializationUtils.safeString(data, 'menuTitle', defaultValue: 'Delad meny'),
         menuSnapshot: reconstructedMenu,
@@ -596,12 +597,12 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
 
   factory SharedMenu.fromJson(Map<String, dynamic> json) {
     // Reconstruct menu snapshot from JSON
-    final menuData = json['menuSnapshot'] as Map<String, dynamic>? ?? {};
+    final menuData = (json['menuSnapshot'] as Map<String, dynamic>?).orEmpty();
     final reconstructedMenu = <String, List<Recipe>>{};
 
     for (final entry in menuData.entries) {
       final recipeList = <Recipe>[];
-      final recipes = entry.value as List<dynamic>? ?? [];
+      final recipes = (entry.value as List<dynamic>?).orEmpty();
 
       for (final recipeData in recipes) {
         try {
@@ -616,23 +617,23 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
 
     return SharedMenu(
       id: json['id'] as String,
-      sharedByUserId: json['sharedByUserId'] as String? ?? '',
-      sharedByDisplayName: json['sharedByDisplayName'] as String? ?? '',
-      sharedToUserIds: List<String>.from(json['sharedToUserIds'] ?? []),
+      sharedByUserId: (json['sharedByUserId'] as String?).orEmpty(),
+      sharedByDisplayName: (json['sharedByDisplayName'] as String?).orEmpty(),
+      sharedToUserIds: List<String>.from((json['sharedToUserIds'] as List?).orEmpty()),
       sharedAt: DateTime.parse(json['sharedAt'] as String),
       shareMessage: json['shareMessage'] as String?,
-      menuTitle: json['menuTitle'] as String? ?? 'Delad meny',
+      menuTitle: (json['menuTitle'] as String?).orDefault('Delad meny'),
       menuSnapshot: reconstructedMenu,
-      viewCount: json['viewCount'] as int? ?? 0,
-      engagementCount: json['importCount'] as int? ?? 0,
-      viewedByUserIds: List<String>.from(json['viewedByUserIds'] ?? []),
-      engagedByUserIds: List<String>.from(json['importedByUserIds'] ?? []),
-      dismissedByUserIds: List<String>.from(json['dismissedByUserIds'] ?? []),
-      allowCollaboration: json['allowCollaboration'] as bool? ?? false,
-      isOriginalReference: json['isOriginalReference'] as bool? ?? true,
-      copyOnWriteTriggered: json['copyOnWriteTriggered'] as bool? ?? false,
+      viewCount: (json['viewCount'] as int?).orZero(),
+      engagementCount: (json['importCount'] as int?).orZero(),
+      viewedByUserIds: List<String>.from((json['viewedByUserIds'] as List?).orEmpty()),
+      engagedByUserIds: List<String>.from((json['importedByUserIds'] as List?).orEmpty()),
+      dismissedByUserIds: List<String>.from((json['dismissedByUserIds'] as List?).orEmpty()),
+      allowCollaboration: (json['allowCollaboration'] as bool?).orFalse(),
+      isOriginalReference: (json['isOriginalReference'] as bool?).orTrue(),
+      copyOnWriteTriggered: (json['copyOnWriteTriggered'] as bool?).orFalse(),
       originalOwnerStaticCopyId: json['originalOwnerStaticCopyId'] as String?,
-      activeCollaboratorIds: List<String>.from(json['activeCollaboratorIds'] ?? []),
+      activeCollaboratorIds: List<String>.from((json['activeCollaboratorIds'] as List?).orEmpty()),
     );
   }
 
