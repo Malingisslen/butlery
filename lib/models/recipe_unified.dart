@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
+import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 import 'package:butlery/models/permissions/resource_permission.dart';
 
 // Focused modules
@@ -332,36 +333,26 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
   factory RecipeCore.fromMap(String id, Map<String, dynamic> data) {
     return RecipeCore(
       id: id,
-      title: data['title'] as String? ?? '',
-      description: data['description'] as String? ?? '',
-      portions: data['portions'] as int?,
-      timeMinutes: data['timeMinutes'] as int?,
-      ingredients: List<String>.from(data['ingredients'] ?? []),
-      instructions: List<String>.from(data['instructions'] ?? []),
-      tags: data['tags'] != null ? List<String>.from(data['tags']) : null,
-      rating: data['rating']?.toDouble(),
-      mealType: data['mealType'] as String? ?? 'Middag',
-      sourceUrl: data['sourceUrl'] as String?,
-      imageUrls: List<String>.from(data['imageUrls'] ?? []),
-      createdAt: data['createdAt'] is DateTime 
-          ? data['createdAt'] as DateTime
-          : (data['createdAt'] != null 
-              ? AppTimestamp.fromFirestore(data['createdAt']).dateTime 
-              : DateTime.now()),
-      updatedAt: data['updatedAt'] is DateTime 
-          ? data['updatedAt'] as DateTime
-          : (data['updatedAt'] != null 
-              ? AppTimestamp.fromFirestore(data['updatedAt']).dateTime 
-              : DateTime.now()),
-      createdBy: data['createdBy'] as String?,
-      isPublic: data['isPublic'] as bool? ?? false,
-      lastCookedAt: data['lastCookedAt'] != null
-          ? (data['lastCookedAt'] is DateTime
-              ? data['lastCookedAt'] as DateTime
-              : AppTimestamp.fromFirestore(data['lastCookedAt']).dateTime)
+      title: utils.SerializationUtils.safeString(data, 'title'),
+      description: utils.SerializationUtils.safeString(data, 'description'),
+      portions: utils.SerializationUtils.safeNullableInt(data, 'portions'),
+      timeMinutes: utils.SerializationUtils.safeNullableInt(data, 'timeMinutes'),
+      ingredients: utils.SerializationUtils.safeStringList(data, 'ingredients'),
+      instructions: utils.SerializationUtils.safeStringList(data, 'instructions'),
+      tags: utils.SerializationUtils.safeStringList(data, 'tags').isNotEmpty
+          ? utils.SerializationUtils.safeStringList(data, 'tags')
           : null,
-      ingredientsNormalized: data['ingredientsNormalized'] != null
-          ? List<String>.from(data['ingredientsNormalized'])
+      rating: utils.SerializationUtils.safeNullableDouble(data, 'rating'),
+      mealType: utils.SerializationUtils.safeString(data, 'mealType', defaultValue: 'Middag'),
+      sourceUrl: utils.SerializationUtils.safeNullableString(data, 'sourceUrl'),
+      imageUrls: utils.SerializationUtils.safeStringList(data, 'imageUrls'),
+      createdAt: utils.SerializationUtils.safeDateTime(data, 'createdAt') ?? DateTime.now(),
+      updatedAt: utils.SerializationUtils.safeDateTime(data, 'updatedAt') ?? DateTime.now(),
+      createdBy: utils.SerializationUtils.safeNullableString(data, 'createdBy'),
+      isPublic: utils.SerializationUtils.safeBool(data, 'isPublic', defaultValue: false),
+      lastCookedAt: utils.SerializationUtils.safeDateTime(data, 'lastCookedAt'),
+      ingredientsNormalized: utils.SerializationUtils.safeStringList(data, 'ingredientsNormalized').isNotEmpty
+          ? utils.SerializationUtils.safeStringList(data, 'ingredientsNormalized')
           : null,
     );
   }
@@ -774,6 +765,7 @@ class Recipe {
     String? createdBy,
     bool? isPublic,
     DateTime? lastCookedAt,
+    List<String>? ingredientsNormalized,
     String? lastEditedByUserId,
     String? lastEditedByDisplayName,
     RecipeType? type,
@@ -797,6 +789,7 @@ class Recipe {
         createdBy: createdBy,
         isPublic: isPublic,
         lastCookedAt: lastCookedAt,
+        ingredientsNormalized: ingredientsNormalized,
         updatedAt: DateTime.now(),
       ),
       type: type ?? this.type,

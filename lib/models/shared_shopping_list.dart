@@ -59,6 +59,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:uuid/uuid.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/shared_content/base_shared_content_model.dart';
 import 'package:butlery/models/shared_content/shared_content_status_mixin.dart';
@@ -205,25 +206,27 @@ class SharedShoppingList extends BaseSharedContentModel<List<UnifiedShoppingItem
   factory SharedShoppingList.fromMap(String id, Map<String, dynamic> data) {
     return SharedShoppingList(
       id: id,
-      sharedByUserId: data['sharedByUserId'] ?? '',
-      sharedByDisplayName: data['sharedByDisplayName'] ?? 'Unknown User',
-      sharedToUserIds: List<String>.from(data['sharedToUserIds'] ?? []),
-      sharedAt: data['sharedAt'] is DateTime 
-          ? data['sharedAt'] as DateTime
-          : (data['sharedAt'] != null ? (data['sharedAt'] as Timestamp).toDate() : DateTime.now()),
-      shareMessage: data['shareMessage'] ?? '',
-      viewCount: data['viewCount'] as int? ?? 0,
-      engagementCount: data['joinedCount'] as int? ?? 0,
-      viewedByUserIds: List<String>.from(data['viewedByUserIds'] ?? []),
-      engagedByUserIds: List<String>.from(data['joinedByUserIds'] ?? []),
-      dismissedByUserIds: List<String>.from(data['dismissedByUserIds'] ?? []),
-      listName: data['listName'] ?? '',
-      listDescription: data['listDescription'],
-      listItems: (data['listItems'] as List<dynamic>?)
-          ?.map((item) => UnifiedShoppingItem.fromFirestore(item as Map<String, dynamic>))
-          .toList() ?? [],
-      originalOwnerId: data['originalOwnerId'] ?? data['sharedByUserId'] ?? '',
-      originalOwnerDisplayName: data['originalOwnerDisplayName'] ?? data['sharedByDisplayName'] ?? 'Unknown User',
+      sharedByUserId: SerializationUtils.safeString(data, 'sharedByUserId'),
+      sharedByDisplayName: SerializationUtils.safeString(data, 'sharedByDisplayName', defaultValue: 'Unknown User'),
+      sharedToUserIds: SerializationUtils.safeStringList(data, 'sharedToUserIds'),
+      sharedAt: SerializationUtils.safeDateTime(data, 'sharedAt') ?? DateTime.now(),
+      shareMessage: SerializationUtils.safeString(data, 'shareMessage'),
+      viewCount: SerializationUtils.safeInt(data, 'viewCount'),
+      engagementCount: SerializationUtils.safeInt(data, 'joinedCount'),
+      viewedByUserIds: SerializationUtils.safeStringList(data, 'viewedByUserIds'),
+      engagedByUserIds: SerializationUtils.safeStringList(data, 'joinedByUserIds'),
+      dismissedByUserIds: SerializationUtils.safeStringList(data, 'dismissedByUserIds'),
+      listName: SerializationUtils.safeString(data, 'listName'),
+      listDescription: SerializationUtils.safeNullableString(data, 'listDescription'),
+      listItems: SerializationUtils.safeObjectList(
+        data,
+        'listItems',
+        (itemData) => UnifiedShoppingItem.fromFirestore(itemData),
+      ),
+      originalOwnerId: SerializationUtils.safeString(data, 'originalOwnerId',
+          defaultValue: SerializationUtils.safeString(data, 'sharedByUserId')),
+      originalOwnerDisplayName: SerializationUtils.safeString(data, 'originalOwnerDisplayName',
+          defaultValue: SerializationUtils.safeString(data, 'sharedByDisplayName', defaultValue: 'Unknown User')),
     );
   }
 
