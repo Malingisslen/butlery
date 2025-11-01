@@ -56,6 +56,7 @@
 
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
+import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 
 /// Comprehensive user profile data model with social networking and notification capabilities.
 ///
@@ -248,28 +249,20 @@ class UserProfile with JsonSerializableMixin {
   factory UserProfile.fromMap(String uid, Map<String, dynamic> data) {
     return UserProfile(
       uid: uid,
-      displayName: data['displayName'] as String? ?? '',
-      email: data['email'] as String? ?? '',
-      avatarUrl: data['avatarUrl'] as String?,
-      isSearchable: data['isSearchable'] as bool? ?? true,
-      allowEmailSearch: data['allowEmailSearch'] as bool? ?? false,
-      publicRecipeCount: data['publicRecipeCount'] as int? ?? 0,
-      friendsCount: data['friendsCount'] as int? ?? 0,
-      joinedAt: data['joinedAt'] is DateTime 
-          ? data['joinedAt'] as DateTime
-          : AppTimestamp.fromFirestore(data['joinedAt']).dateTime,
-      lastActiveAt: data['lastActiveAt'] is DateTime 
-          ? data['lastActiveAt'] as DateTime
-          : AppTimestamp.fromFirestore(data['lastActiveAt']).dateTime,
-      isOnline: data['isOnline'] as bool? ?? false,
+      displayName: utils.SerializationUtils.safeString(data, 'displayName'),
+      email: utils.SerializationUtils.safeString(data, 'email'),
+      avatarUrl: utils.SerializationUtils.safeNullableString(data, 'avatarUrl'),
+      isSearchable: utils.SerializationUtils.safeBool(data, 'isSearchable', defaultValue: true),
+      allowEmailSearch: utils.SerializationUtils.safeBool(data, 'allowEmailSearch'),
+      publicRecipeCount: utils.SerializationUtils.safeInt(data, 'publicRecipeCount'),
+      friendsCount: utils.SerializationUtils.safeInt(data, 'friendsCount'),
+      joinedAt: utils.SerializationUtils.safeDateTime(data, 'joinedAt') ?? DateTime.now(),
+      lastActiveAt: utils.SerializationUtils.safeDateTime(data, 'lastActiveAt') ?? DateTime.now(),
+      isOnline: utils.SerializationUtils.safeBool(data, 'isOnline'),
       // Notification fields
-      fcmToken: data['fcmToken'] as String?,
-      fcmTokenUpdatedAt: data['fcmTokenUpdatedAt'] != null
-          ? (data['fcmTokenUpdatedAt'] is DateTime 
-              ? data['fcmTokenUpdatedAt'] as DateTime
-              : AppTimestamp.fromFirestore(data['fcmTokenUpdatedAt']).dateTime)
-          : null,
-      notificationsEnabled: data['notificationsEnabled'] as bool? ?? true,
+      fcmToken: utils.SerializationUtils.safeNullableString(data, 'fcmToken'),
+      fcmTokenUpdatedAt: utils.SerializationUtils.safeDateTime(data, 'fcmTokenUpdatedAt'),
+      notificationsEnabled: utils.SerializationUtils.safeBool(data, 'notificationsEnabled', defaultValue: true),
     );
   }
 
