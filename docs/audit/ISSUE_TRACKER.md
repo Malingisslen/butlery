@@ -3,7 +3,7 @@
 **Audit Date**: January 31, 2025
 **Total Issues**: 9 Real Issues (73 False Positives/Resolved)
 **Status**: Phase 4 Complete (75% audit complete)
-**Recent Progress**: Nov 2025 - Architecture violations corrected, SerializationUtils Phase 1 complete (3 models, ~60 lines saved)
+**Recent Progress**: Nov 2025 - Architecture violations corrected, SerializationUtils Phase 1-2 complete (5 models, ~71-74 lines saved)
 
 ---
 
@@ -55,10 +55,10 @@
 | ARCH-006 | 10 Firebase repositories | Not extending BaseFirebaseRepository - CRUD inconsistency | Medium | M | P2 | ✅ MOSTLY FALSE POSITIVE | **Phase 3**: 70% actual compliance (14/20 repos). 4 repos use different Firebase SDKs (justified), 3 use BaseSharedContentRepository (compliant). Only 3 repos are candidates for optional migration. NO ACTION REQUIRED. |
 | ARCH-007 | AccountDeletionService, DataExportService | Direct Firebase.instance usage - violates repository pattern | High | S | P1 | ✅ FALSE POSITIVE | **Nov 2025**: Both services already use proper repository injection via constructor. Access Firestore via `_firestoreRepository.firestore` getter (acceptable pattern). NO ACTION NEEDED. |
 | ARCH-008 | Infrastructure adoption | BaseFirebaseRepository claimed 90%+, actual 31.6% - documentation discrepancy | Medium | XS | P2 | ✅ RESOLVED | **Nov 2025**: Resolved in Quick Wins session. CLAUDE.md updated with corrected adoption rates: BaseService 21% (39/186), BaseFirebaseRepository 46.6% (27/58). Phase 3 verified BaseFirebaseRepository at 70-85% when counted correctly (excluding non-Firestore repos). Documentation now accurate. |
-| ARCH-009 | Codebase-wide (~20-30 model files) | SerializationUtils adoption 30% in models (Phase 1 complete) - duplicate Firestore parsing (540-740 lines remaining) | Medium | M | P2 | ✅ PHASE 1 COMPLETE | **Nov 2025 - Phase 1 Complete**: 3 models migrated (UserProfile, FriendRequest, RecipeComment), ~60 lines saved, 112/112 tests passing. **Remaining**: Phase 2 (RecipeCore, SharedShoppingList - 35-45 lines), Phase 3 (SharedRecipe, SharedMenu - 50-65 lines), Phase 4 (3 models - 15-24 lines). Total opportunity: 100-134 lines remaining. Incremental migration (1-2 weeks). |
+| ARCH-009 | Codebase-wide (~20-30 model files) | SerializationUtils adoption 50% in models (Phase 1-2 complete) - duplicate Firestore parsing (420-635 lines remaining) | Medium | M | P2 | ✅ PHASE 2 COMPLETE | **Nov 2025 - Phase 2 Complete**: 5 models migrated (UserProfile, FriendRequest, RecipeComment, RecipeCore, SharedShoppingList), ~71-74 lines saved, 215+ tests passing. **Phase 1** (60 lines): UserProfile, FriendRequest, RecipeComment. **Phase 2** (11-14 lines): RecipeCore, SharedShoppingList with safeObjectList pattern. **Remaining**: Phase 3 (SharedRecipe, SharedMenu - 50-65 lines), Phase 4 (3 models - 15-24 lines). Total opportunity: 65-89 lines remaining. Incremental migration (1 week remaining). |
 | ARCH-010 | Codebase-wide (40-50 files) | ValidationUtils adoption 15-20% (71 usages in 12 files) - duplicate validation (800-1,200 lines waste) | Medium | M | P2 | Open | **EXPANSION NEEDED**: Current adoption 15-20%. Expand to 60-70% (40-50 more files). Incremental adoption in forms and services (3-4 weeks). |
 | ARCH-011 | Codebase-wide (400-800 locations) | Default Value Extensions adoption ~0% practical - verbose null coalescing (200-400 lines waste) | Low | S | P3 | Open | Replace ?? operators with extension methods. 2,617 ?? operators found, realistic targets: 400-800 locations. Incremental adoption + linter rule (1-2 weeks). |
-| ARCH-012 | Overall codebase | 1,400-2,400 lines realistic duplicate code (revised from 5,400-7,900, Phase 1: -60 lines) | Medium | L | P2 | Open | **REVISED**: Incremental infrastructure adoption program (8-12 weeks). Much infrastructure already adopted. Many "violations" were false positives. **Nov 2025 Progress**: SerializationUtils Phase 1 complete (-60 lines). **Remaining**: SerializationUtils Phase 2-4 (540-740 lines) + ValidationUtils expansion (800-1,200 lines) + incremental cleanup. |
+| ARCH-012 | Overall codebase | 1,320-2,330 lines realistic duplicate code (revised from 5,400-7,900, Phase 1-2: -71-74 lines) | Medium | L | P2 | Open | **REVISED**: Incremental infrastructure adoption program (8-12 weeks). Much infrastructure already adopted. Many "violations" were false positives. **Nov 2025 Progress**: SerializationUtils Phase 1-2 complete (-71-74 lines). **Remaining**: SerializationUtils Phase 3-4 (420-635 lines) + ValidationUtils expansion (800-1,200 lines) + incremental cleanup. |
 | ARCH-013 | Documentation | Large files identified (48) include well-architected facades - not all violations | Low | XS | P3 | Resolved | CLAUDE.md updated to clarify facade pattern is acceptable; only ~20-30 files need refactoring |
 
 ### 2. Code Quality Issues
@@ -247,11 +247,11 @@
 **Total P1 Effort**: 13-17 weeks
 
 ### P2 - Medium Priority (3 REAL ISSUES)
-5. **ARCH-009**: SerializationUtils Adoption - 28 models, 2 weeks effort
+5. **ARCH-009**: SerializationUtils Adoption - Phase 1-2 complete (5/10 models), Phase 3-4 remaining (5 models, 1 week effort)
 6. **ARCH-010**: ValidationUtils Expansion - 3-4 weeks effort
 7. **ARCH-006**: BaseFirebaseRepository Gap - 3 optional migrations, 1 week effort
 
-**Total P2 Effort**: 6-7 weeks
+**Total P2 Effort**: 5-6 weeks
 
 ### P3 - Low Priority (2 REAL ISSUES)
 8. **QUAL-002**: File Size Violations - 20-30 true violations, 3-4 weeks effort
@@ -261,7 +261,7 @@
 
 ---
 
-**Total Remediation Timeline**: 23-29 weeks (5.5-7 months)
+**Total Remediation Timeline**: 22-28 weeks (5-7 months)
 **Estimated Effort**: 1-2 developers full-time
 
 ---
