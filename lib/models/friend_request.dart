@@ -51,6 +51,7 @@
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
+import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 
 /// Enumeration defining the different states of a friend request throughout its lifecycle.
 ///
@@ -184,15 +185,18 @@ class FriendRequest with JsonSerializableMixin {
   factory FriendRequest.fromMap(String id, Map<String, dynamic> data) {
     return FriendRequest(
       id: id,
-      fromUserId: data['fromUserId'] as String,
-      toUserId: data['toUserId'] as String,
-      status: FriendRequestStatus.values.firstWhere(
-        (s) => s.name == data['status'],
-        orElse: () => FriendRequestStatus.pending,
+      fromUserId: utils.SerializationUtils.safeString(data, 'fromUserId'),
+      toUserId: utils.SerializationUtils.safeString(data, 'toUserId'),
+      status: utils.SerializationUtils.safeEnum(
+        data,
+        'status',
+        FriendRequestStatus.values,
+        FriendRequestStatus.pending,
+        (e) => e.name,
       ),
-      sentAt: _parseTimestamp(data['sentAt']) ?? DateTime.now(),
-      respondedAt: _parseTimestamp(data['respondedAt']),
-      message: data['message'] as String?,
+      sentAt: utils.SerializationUtils.safeDateTime(data, 'sentAt') ?? DateTime.now(),
+      respondedAt: utils.SerializationUtils.safeDateTime(data, 'respondedAt'),
+      message: utils.SerializationUtils.safeNullableString(data, 'message'),
     );
   }
 
@@ -241,34 +245,6 @@ class FriendRequest with JsonSerializableMixin {
     return null;
   }
 
-  /// Helper method for parsing timestamps from repository data
-  static DateTime? _parseTimestamp(dynamic timestamp) {
-    if (timestamp == null) return null;
-
-    try {
-      if (timestamp is DateTime) {
-        return timestamp;
-      } else if (timestamp is Map) {
-        // Handle raw timestamp data from Firestore
-        final seconds = timestamp['seconds'] as int?;
-        final nanoseconds = timestamp['nanoseconds'] as int? ?? 0;
-        if (seconds != null) {
-          return DateTime.fromMillisecondsSinceEpoch(
-              seconds * 1000 + nanoseconds ~/ 1000000);
-        }
-      } else if (timestamp is int) {
-        // Handle milliseconds since epoch
-        return DateTime.fromMillisecondsSinceEpoch(timestamp);
-      } else if (timestamp is String) {
-        // Handle ISO string format
-        return DateTime.parse(timestamp);
-      }
-
-      return DateTime.now();
-    } catch (e) {
-      return DateTime.now();
-    }
-  }
 
   @override
   String toString() {
