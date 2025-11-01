@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// ```dart
 /// final timer = CacheOptimization.startPeriodicCleanup(interval, cacheHelper, getUserId);
@@ -54,22 +55,22 @@ class CacheOptimization {
         );
 
         cleanupResults['null_entries_removed'] =
-            (cleanupResults['null_entries_removed'] ?? 0) + (cleanupResult['null'] ?? 0);
+            (cleanupResults['null_entries_removed']).orZero() + (cleanupResult['null']).orZero();
         cleanupResults['corrupted_entries_removed'] =
-            (cleanupResults['corrupted_entries_removed'] ?? 0) + (cleanupResult['corrupted'] ?? 0);
+            (cleanupResults['corrupted_entries_removed']).orZero() + (cleanupResult['corrupted']).orZero();
         cleanupResults['permission_invalid_removed'] =
-            (cleanupResults['permission_invalid_removed'] ?? 0) + (cleanupResult['permission'] ?? 0);
+            (cleanupResults['permission_invalid_removed']).orZero() + (cleanupResult['permission']).orZero();
         cleanupResults['old_recipes_removed'] =
-            (cleanupResults['old_recipes_removed'] ?? 0) + (cleanupResult['old'] ?? 0);
+            (cleanupResults['old_recipes_removed']).orZero() + (cleanupResult['old']).orZero();
       }
 
-      cleanupResults['total_removed'] = 
-          (cleanupResults['null_entries_removed'] ?? 0) +
-          (cleanupResults['corrupted_entries_removed'] ?? 0) +
-          (cleanupResults['permission_invalid_removed'] ?? 0) +
-          (cleanupResults['old_recipes_removed'] ?? 0);
+      cleanupResults['total_removed'] =
+          (cleanupResults['null_entries_removed']).orZero() +
+          (cleanupResults['corrupted_entries_removed']).orZero() +
+          (cleanupResults['permission_invalid_removed']).orZero() +
+          (cleanupResults['old_recipes_removed']).orZero();
 
-      final totalRemoved = cleanupResults['total_removed'] ?? 0;
+      final totalRemoved = (cleanupResults['total_removed']).orZero();
       if (totalRemoved > 0) {
         AppLogger.info('Cache cleanup completed: removed $totalRemoved items');
       } else {
@@ -121,7 +122,7 @@ class CacheOptimization {
     }
 
     if (recipe.isCollaborative) {
-      final memberPermissions = recipe.socialData?.memberPermissions ?? {};
+      final memberPermissions = (recipe.socialData?.memberPermissions).orEmpty();
       if (!memberPermissions.containsKey(currentUserId)) {
         return true;
       }
@@ -145,7 +146,7 @@ class CacheOptimization {
     }
 
     if (recipe.isCollaborative) {
-      final memberPermissions = recipe.socialData?.memberPermissions ?? {};
+      final memberPermissions = (recipe.socialData?.memberPermissions).orEmpty();
       if (!memberPermissions.containsKey(currentUserId)) {
         return 'permission';
       }
@@ -182,7 +183,7 @@ class CacheOptimization {
           if (recipe.isPersonal) {
             hasAccess = recipe.core.createdBy == currentUserId;
           } else if (recipe.isCollaborative) {
-            final memberPermissions = recipe.socialData?.memberPermissions ?? {};
+            final memberPermissions = (recipe.socialData?.memberPermissions).orEmpty();
             hasAccess = memberPermissions.containsKey(currentUserId);
           }
 

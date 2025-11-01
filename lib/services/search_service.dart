@@ -5,6 +5,7 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Search service for recipe discovery with multi-criteria filtering and Swedish language support.
 class SearchService extends BaseService with SingletonServiceMixin<SearchService> {
@@ -39,7 +40,7 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
     if (tags.isEmpty) return recipes;
 
     return recipes.where((recipe) {
-      return tags.every((tag) => recipe.tags?.contains(tag) ?? false);
+      return tags.every((tag) => (recipe.tags?.contains(tag)).orFalse());
     }).toList();
   }
 
@@ -147,16 +148,16 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
 
       case SortCriteria.time:
         sorted.sort((a, b) {
-          final timeA = a.timeMinutes ?? 9999;
-          final timeB = b.timeMinutes ?? 9999;
+          final timeA = (a.timeMinutes).orDefault(9999);
+          final timeB = (b.timeMinutes).orDefault(9999);
           return ascending ? timeA.compareTo(timeB) : timeB.compareTo(timeA);
         });
         break;
 
       case SortCriteria.rating:
         sorted.sort((a, b) {
-          final ratingA = a.rating ?? 0.0;
-          final ratingB = b.rating ?? 0.0;
+          final ratingA = (a.rating).orDefault(0.0);
+          final ratingB = (b.rating).orDefault(0.0);
           return ascending
               ? ratingA.compareTo(ratingB)
               : ratingB.compareTo(ratingA);
@@ -165,8 +166,8 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
 
       case SortCriteria.portions:
         sorted.sort((a, b) {
-          final portionsA = a.portions ?? 0;
-          final portionsB = b.portions ?? 0;
+          final portionsA = (a.portions).orZero();
+          final portionsB = (b.portions).orZero();
           return ascending
               ? portionsA.compareTo(portionsB)
               : portionsB.compareTo(portionsA);
@@ -258,12 +259,12 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
     for (final recipe in recipes) {
       // Räkna måltidstyper
       termFrequency[recipe.mealType] =
-          (termFrequency[recipe.mealType] ?? 0) + 1;
+          (termFrequency[recipe.mealType]).orZero() + 1;
 
       // Räkna taggar
       if (recipe.tags != null) {
         for (final tag in recipe.tags!) {
-          termFrequency[tag] = (termFrequency[tag] ?? 0) + 1;
+          termFrequency[tag] = (termFrequency[tag]).orZero() + 1;
         }
       }
 
@@ -278,7 +279,7 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
                 )
                 .trim();
         if (cleaned.length > 3) {
-          termFrequency[cleaned] = (termFrequency[cleaned] ?? 0) + 1;
+          termFrequency[cleaned] = (termFrequency[cleaned]).orZero() + 1;
         }
       }
     }
@@ -314,7 +315,7 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
     }
 
     // Taggar
-    if (recipe.tags?.any((tag) => tag.toLowerCase().contains(query)) ?? false) {
+    if ((recipe.tags?.any((tag) => tag.toLowerCase().contains(query))).orFalse()) {
       return true;
     }
 
@@ -324,9 +325,9 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
     // Numeriska fält (portioner, tid, betyg)
     final queryAsNumber = double.tryParse(query);
     if (queryAsNumber != null) {
-      if (recipe.portions?.toString().contains(query) ?? false) return true;
-      if (recipe.timeMinutes?.toString().contains(query) ?? false) return true;
-      if (recipe.rating?.toString().contains(query) ?? false) return true;
+      if ((recipe.portions?.toString().contains(query)).orFalse()) return true;
+      if ((recipe.timeMinutes?.toString().contains(query)).orFalse()) return true;
+      if ((recipe.rating?.toString().contains(query)).orFalse()) return true;
     }
 
     return false;

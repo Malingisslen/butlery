@@ -19,6 +19,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// User behavior pattern data
 class UserBehaviorPattern {
@@ -38,10 +39,10 @@ class UserBehaviorPattern {
     Map<int, int>? viewTimePreferences,
     Set<String>? favoriteRecipeIds,
     Set<String>? activeFriendIds,
-  })  : recipeViews = recipeViews ?? {},
-        lastViewedTimes = lastViewedTimes ?? {},
-        mealTypePreferences = mealTypePreferences ?? {},
-        viewTimePreferences = viewTimePreferences ?? {},
+  })  : recipeViews = recipeViews.orEmpty(),
+        lastViewedTimes = lastViewedTimes.orEmpty(),
+        mealTypePreferences = mealTypePreferences.orEmpty(),
+        viewTimePreferences = viewTimePreferences.orEmpty(),
         favoriteRecipeIds = favoriteRecipeIds ?? {},
         activeFriendIds = activeFriendIds ?? {};
   
@@ -81,13 +82,13 @@ class UserBehaviorPattern {
   factory UserBehaviorPattern.fromJson(Map<String, dynamic> json) {
     return UserBehaviorPattern(
       userId: json['userId'],
-      recipeViews: Map<String, int>.from(json['recipeViews'] ?? {}),
-      lastViewedTimes: (json['lastViewedTimes'] as Map<String, dynamic>?)
-          ?.map((k, v) => MapEntry(k, DateTime.parse(v))) ?? {},
-      mealTypePreferences: Map<String, int>.from(json['mealTypePreferences'] ?? {}),
-      viewTimePreferences: Map<int, int>.from(json['viewTimePreferences'] ?? {}),
-      favoriteRecipeIds: Set<String>.from(json['favoriteRecipeIds'] ?? []),
-      activeFriendIds: Set<String>.from(json['activeFriendIds'] ?? []),
+      recipeViews: Map<String, int>.from((json['recipeViews'] as Map?).orEmpty()),
+      lastViewedTimes: ((json['lastViewedTimes'] as Map<String, dynamic>?)
+          ?.map((k, v) => MapEntry(k, DateTime.parse(v)))).orEmpty(),
+      mealTypePreferences: Map<String, int>.from((json['mealTypePreferences'] as Map?).orEmpty()),
+      viewTimePreferences: Map<int, int>.from((json['viewTimePreferences'] as Map?).orEmpty()),
+      favoriteRecipeIds: Set<String>.from((json['favoriteRecipeIds'] as List?).orEmpty()),
+      activeFriendIds: Set<String>.from((json['activeFriendIds'] as List?).orEmpty()),
     );
   }
 }
@@ -106,7 +107,7 @@ class CacheEntry<T> {
     required this.data,
     required this.size,
     DateTime? cachedAt,
-  })  : cachedAt = cachedAt ?? DateTime.now(),
+  })  : cachedAt = cachedAt.orNow(),
         lastAccessed = DateTime.now(),
         accessCount = 0;
   
@@ -323,26 +324,26 @@ class IntelligentCacheManager {
   /// Record a recipe view for pattern analysis
   void _recordRecipeView(String recipeId) {
     _currentPattern ??= UserBehaviorPattern(
-      userId: _permissionService?.currentUserId ?? 'anonymous',
+      userId: (_permissionService?.currentUserId).orDefault('anonymous'),
     );
-    
+
     // Update view count
-    _currentPattern!.recipeViews[recipeId] = 
-        (_currentPattern!.recipeViews[recipeId] ?? 0) + 1;
-    
+    _currentPattern!.recipeViews[recipeId] =
+        (_currentPattern!.recipeViews[recipeId]).orZero() + 1;
+
     // Update last viewed time
     _currentPattern!.lastViewedTimes[recipeId] = DateTime.now();
-    
+
     // Update time preferences
     final hour = DateTime.now().hour;
-    _currentPattern!.viewTimePreferences[hour] = 
-        (_currentPattern!.viewTimePreferences[hour] ?? 0) + 1;
-    
+    _currentPattern!.viewTimePreferences[hour] =
+        (_currentPattern!.viewTimePreferences[hour]).orZero() + 1;
+
     // Update meal type preferences if recipe is cached
     final recipe = _recipeCache[recipeId]?.data;
     if (recipe != null) {
-      _currentPattern!.mealTypePreferences[recipe.mealType] = 
-          (_currentPattern!.mealTypePreferences[recipe.mealType] ?? 0) + 1;
+      _currentPattern!.mealTypePreferences[recipe.mealType] =
+          (_currentPattern!.mealTypePreferences[recipe.mealType]).orZero() + 1;
     }
   }
   
