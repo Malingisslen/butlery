@@ -37,6 +37,7 @@ import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
+import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 
 /// Shared menu model with unified base infrastructure and menu-specific features.
 class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
@@ -486,8 +487,6 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   
   factory SharedMenu.fromMap(String id, Map<String, dynamic> data) {
     try {
-      debugPrint('🔍 Parsing SharedMenu från doc ID: $id');
-
       // 🔧 FIXED: Reconstruct menu snapshot utan MockDocumentSnapshot type cast
       final menuData = data['menuSnapshot'] as Map<String, dynamic>? ?? {};
       final reconstructedMenu = <String, List<Recipe>>{};
@@ -502,29 +501,29 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
             final recipeMap = recipeData as Map<String, dynamic>;
             final recipe = Recipe(
               core: RecipeCore(
-                id: recipeMap['id'] as String? ?? '',
-                title: recipeMap['title'] as String? ?? 'Untitled Recipe',
-                description: recipeMap['description'] as String? ?? '',
-                ingredients: List<String>.from(recipeMap['ingredients'] ?? []),
-                instructions: List<String>.from(recipeMap['instructions'] ?? []),
-                imageUrls: List<String>.from(recipeMap['imageUrls'] ?? []),
-                mealType: recipeMap['mealType'] as String? ?? 'Middag',
-                portions: recipeMap['portions'] as int?,
-                timeMinutes: recipeMap['timeMinutes'] as int?,
-                rating: (recipeMap['rating'] as num?)?.toDouble(),
-                tags: List<String>.from(recipeMap['tags'] ?? []),
-                sourceUrl: recipeMap['sourceUrl'] as String?,
-                createdAt:
-                    _parseTimestamp(recipeMap['createdAt']) ?? DateTime.now(),
-                updatedAt:
-                    _parseTimestamp(recipeMap['updatedAt']) ?? DateTime.now(),
-                lastCookedAt: _parseTimestamp(recipeMap['lastCookedAt']),
+                id: utils.SerializationUtils.safeString(recipeMap, 'id'),
+                title: utils.SerializationUtils.safeString(recipeMap, 'title', defaultValue: 'Untitled Recipe'),
+                description: utils.SerializationUtils.safeString(recipeMap, 'description'),
+                ingredients: utils.SerializationUtils.safeStringList(recipeMap, 'ingredients'),
+                instructions: utils.SerializationUtils.safeStringList(recipeMap, 'instructions'),
+                imageUrls: utils.SerializationUtils.safeStringList(recipeMap, 'imageUrls'),
+                mealType: utils.SerializationUtils.safeString(recipeMap, 'mealType', defaultValue: 'Middag'),
+                portions: utils.SerializationUtils.safeNullableInt(recipeMap, 'portions'),
+                timeMinutes: utils.SerializationUtils.safeNullableInt(recipeMap, 'timeMinutes'),
+                rating: utils.SerializationUtils.safeNullableDouble(recipeMap, 'rating'),
+                tags: utils.SerializationUtils.safeStringList(recipeMap, 'tags'),
+                sourceUrl: utils.SerializationUtils.safeNullableString(recipeMap, 'sourceUrl'),
+                createdAt: utils.SerializationUtils.safeDateTime(recipeMap, 'createdAt') ?? DateTime.now(),
+                updatedAt: utils.SerializationUtils.safeDateTime(recipeMap, 'updatedAt') ?? DateTime.now(),
+                lastCookedAt: utils.SerializationUtils.safeDateTime(recipeMap, 'lastCookedAt'),
               ),
               type: RecipeType.shared, // Mark as shared menu recipe
             );
             recipeList.add(recipe);
           } catch (e) {
-            debugPrint('⚠️ Skippar ogiltigt recept i meny: $e');
+            if (kDebugMode) {
+              debugPrint('⚠️ Skippar ogiltigt recept i meny: $e');
+            }
             // Skip invalid recipes rather than failing entirely
             continue;
           }
@@ -534,59 +533,30 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
 
       return SharedMenu(
         id: id,
-        sharedByUserId: data['sharedByUserId'] as String? ?? '',
-        sharedByDisplayName: data['sharedByDisplayName'] as String? ?? '',
-        sharedToUserIds: List<String>.from(data['sharedToUserIds'] ?? []),
-        sharedAt: _parseTimestamp(data['sharedAt']) ?? DateTime.now(),
-        shareMessage: data['shareMessage'] as String?,
-        menuTitle: data['menuTitle'] as String? ?? 'Delad meny',
+        sharedByUserId: utils.SerializationUtils.safeString(data, 'sharedByUserId'),
+        sharedByDisplayName: utils.SerializationUtils.safeString(data, 'sharedByDisplayName'),
+        sharedToUserIds: utils.SerializationUtils.safeStringList(data, 'sharedToUserIds'),
+        sharedAt: utils.SerializationUtils.safeDateTime(data, 'sharedAt') ?? DateTime.now(),
+        shareMessage: utils.SerializationUtils.safeNullableString(data, 'shareMessage'),
+        menuTitle: utils.SerializationUtils.safeString(data, 'menuTitle', defaultValue: 'Delad meny'),
         menuSnapshot: reconstructedMenu,
-        viewCount: data['viewCount'] as int? ?? 0,
-        engagementCount: data['importCount'] as int? ?? 0,
-        viewedByUserIds: List<String>.from(data['viewedByUserIds'] ?? []),
-        engagedByUserIds: List<String>.from(data['importedByUserIds'] ?? []),
-        dismissedByUserIds: List<String>.from(data['dismissedByUserIds'] ?? []),
-        allowCollaboration: data['allowCollaboration'] as bool? ?? false,
-        isOriginalReference: data['isOriginalReference'] as bool? ?? true,
-        copyOnWriteTriggered: data['copyOnWriteTriggered'] as bool? ?? false,
-        originalOwnerStaticCopyId: data['originalOwnerStaticCopyId'] as String?,
-        activeCollaboratorIds: List<String>.from(data['activeCollaboratorIds'] ?? []),
+        viewCount: utils.SerializationUtils.safeInt(data, 'viewCount'),
+        engagementCount: utils.SerializationUtils.safeInt(data, 'importCount'),
+        viewedByUserIds: utils.SerializationUtils.safeStringList(data, 'viewedByUserIds'),
+        engagedByUserIds: utils.SerializationUtils.safeStringList(data, 'importedByUserIds'),
+        dismissedByUserIds: utils.SerializationUtils.safeStringList(data, 'dismissedByUserIds'),
+        allowCollaboration: utils.SerializationUtils.safeBool(data, 'allowCollaboration', defaultValue: false),
+        isOriginalReference: utils.SerializationUtils.safeBool(data, 'isOriginalReference', defaultValue: true),
+        copyOnWriteTriggered: utils.SerializationUtils.safeBool(data, 'copyOnWriteTriggered', defaultValue: false),
+        originalOwnerStaticCopyId: utils.SerializationUtils.safeNullableString(data, 'originalOwnerStaticCopyId'),
+        activeCollaboratorIds: utils.SerializationUtils.safeStringList(data, 'activeCollaboratorIds'),
       );
     } catch (e, stackTrace) {
-      debugPrint('❌ Error parsing SharedMenu från doc $id: $e');
-      debugPrint('❌ Stack trace: $stackTrace');
-      rethrow;
-    }
-  }
-
-  /// 🔧 ADDED: Helper method för robust timestamp parsing
-  static DateTime? _parseTimestamp(dynamic timestamp) {
-    if (timestamp == null) return null;
-
-    try {
-      if (timestamp is DateTime) {
-        return timestamp;
-      } else if (timestamp is Map) {
-        // Handle raw timestamp data from Firestore
-        final seconds = timestamp['seconds'] as int?;
-        final nanoseconds = timestamp['nanoseconds'] as int? ?? 0;
-        if (seconds != null) {
-          return DateTime.fromMillisecondsSinceEpoch(
-              seconds * 1000 + nanoseconds ~/ 1000000);
-        }
-      } else if (timestamp is int) {
-        // Handle milliseconds since epoch
-        return DateTime.fromMillisecondsSinceEpoch(timestamp);
-      } else if (timestamp is String) {
-        // Handle ISO string format
-        return DateTime.parse(timestamp);
+      if (kDebugMode) {
+        debugPrint('❌ Error parsing SharedMenu från doc $id: $e');
+        debugPrint('❌ Stack trace: $stackTrace');
       }
-
-      debugPrint('⚠️ Unknown timestamp format: ${timestamp.runtimeType}');
-      return DateTime.now();
-    } catch (e) {
-      debugPrint('❌ Error parsing timestamp: $e');
-      return DateTime.now();
+      rethrow;
     }
   }
 

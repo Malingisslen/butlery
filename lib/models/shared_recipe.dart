@@ -17,6 +17,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 
 /// Enumeration defining the scope of recipe sharing for distribution categorization.
 ///
@@ -355,21 +356,21 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
 
       final recipe = Recipe(
         core: RecipeCore(
-          id: recipeData['id'] as String? ?? '',
-          title: recipeData['title'] as String? ?? 'Untitled Recipe',
-          description: recipeData['description'] as String? ?? '',
-          ingredients: List<String>.from(recipeData['ingredients'] ?? []),
-          instructions: List<String>.from(recipeData['instructions'] ?? []),
-          imageUrls: List<String>.from(recipeData['imageUrls'] ?? []),
-          mealType: recipeData['mealType'] as String? ?? 'Middag',
-          portions: recipeData['portions'] as int?,
-          timeMinutes: recipeData['timeMinutes'] as int?,
-          rating: (recipeData['rating'] as num?)?.toDouble(),
-          tags: List<String>.from(recipeData['tags'] ?? []),
-          sourceUrl: recipeData['sourceUrl'] as String?,
-          createdAt: BaseSharedContentModel.parseTimestamp(recipeData['createdAt']) ?? DateTime.now(),
-          updatedAt: BaseSharedContentModel.parseTimestamp(recipeData['updatedAt']) ?? DateTime.now(),
-          lastCookedAt: BaseSharedContentModel.parseTimestamp(recipeData['lastCookedAt']),
+          id: utils.SerializationUtils.safeString(recipeData, 'id'),
+          title: utils.SerializationUtils.safeString(recipeData, 'title', defaultValue: 'Untitled Recipe'),
+          description: utils.SerializationUtils.safeString(recipeData, 'description'),
+          ingredients: utils.SerializationUtils.safeStringList(recipeData, 'ingredients'),
+          instructions: utils.SerializationUtils.safeStringList(recipeData, 'instructions'),
+          imageUrls: utils.SerializationUtils.safeStringList(recipeData, 'imageUrls'),
+          mealType: utils.SerializationUtils.safeString(recipeData, 'mealType', defaultValue: 'Middag'),
+          portions: utils.SerializationUtils.safeNullableInt(recipeData, 'portions'),
+          timeMinutes: utils.SerializationUtils.safeNullableInt(recipeData, 'timeMinutes'),
+          rating: utils.SerializationUtils.safeNullableDouble(recipeData, 'rating'),
+          tags: utils.SerializationUtils.safeStringList(recipeData, 'tags'),
+          sourceUrl: utils.SerializationUtils.safeNullableString(recipeData, 'sourceUrl'),
+          createdAt: utils.SerializationUtils.safeDateTime(recipeData, 'createdAt') ?? DateTime.now(),
+          updatedAt: utils.SerializationUtils.safeDateTime(recipeData, 'updatedAt') ?? DateTime.now(),
+          lastCookedAt: utils.SerializationUtils.safeDateTime(recipeData, 'lastCookedAt'),
         ),
         type: RecipeType.shared,
       );
@@ -386,22 +387,27 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
         viewedByUserIds: commonFields['viewedByUserIds'] as List<String>,
         engagedByUserIds: commonFields['engagedByUserIds'] as List<String>,
         dismissedByUserIds: commonFields['dismissedByUserIds'] as List<String>,
-        originalRecipeId: data['originalRecipeId'] as String? ?? '',
+        originalRecipeId: utils.SerializationUtils.safeString(data, 'originalRecipeId'),
         recipeSnapshot: recipe,
-        scope: ShareScope.values.firstWhere(
-          (s) => s.name == data['scope'],
-          orElse: () => ShareScope.individual,
+        scope: utils.SerializationUtils.safeEnum(
+          data,
+          'scope',
+          ShareScope.values,
+          ShareScope.individual,
+          (e) => e.name,
         ),
-        allowImport: data['allowImport'] as bool? ?? true,
-        allowCollaboration: data['allowCollaboration'] as bool? ?? false,
+        allowImport: utils.SerializationUtils.safeBool(data, 'allowImport', defaultValue: true),
+        allowCollaboration: utils.SerializationUtils.safeBool(data, 'allowCollaboration', defaultValue: false),
         isOriginalReference: cowFields['isOriginalReference'] as bool,
         copyOnWriteTriggered: cowFields['copyOnWriteTriggered'] as bool,
         originalOwnerStaticCopyId: cowFields['originalOwnerStaticCopyId'] as String?,
         activeCollaboratorIds: cowFields['activeCollaboratorIds'] as List<String>,
       );
     } catch (e, stackTrace) {
-      debugPrint('❌ Error parsing SharedRecipe från doc $id: $e');
-      debugPrint('❌ Stack trace: $stackTrace');
+      if (kDebugMode) {
+        debugPrint('❌ Error parsing SharedRecipe från doc $id: $e');
+        debugPrint('❌ Stack trace: $stackTrace');
+      }
       rethrow;
     }
   }
