@@ -63,6 +63,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 
 /// Enumeration defining synchronization status for shopping list data management.
@@ -722,10 +723,10 @@ class UnifiedShoppingList {
       lastActivityByUserId: json['lastActivityByUserId'] as String?,
       lastActivityByDisplayName: json['lastActivityByDisplayName'] as String?,
       description: json['description'] as String?,
-      settings: Map<String, dynamic>.from(json['settings'] as Map? ?? {}),
-      categoryIds: List<String>.from(json['categoryIds'] as List? ?? []),
-      allowGuestEditing: json['allowGuestEditing'] as bool? ?? true,
-      autoRemoveCompleted: json['autoRemoveCompleted'] as bool? ?? false,
+      settings: Map<String, dynamic>.from((json['settings'] as Map?).orEmpty()),
+      categoryIds: List<String>.from((json['categoryIds'] as List?).orEmpty()),
+      allowGuestEditing: (json['allowGuestEditing'] as bool?).orTrue(),
+      autoRemoveCompleted: (json['autoRemoveCompleted'] as bool?).orFalse(),
     );
   }
 
@@ -775,10 +776,10 @@ class UnifiedShoppingList {
       lastActivityByUserId: data['lastActivityByUserId'] as String?,
       lastActivityByDisplayName: data['lastActivityByDisplayName'] as String?,
       description: data['description'] as String?,
-      settings: (data['settings'] as Map<String, dynamic>?) ?? {},
-      categoryIds: List<String>.from(data['categoryIds'] ?? []),
-      allowGuestEditing: data['allowGuestEditing'] as bool? ?? true,
-      autoRemoveCompleted: data['autoRemoveCompleted'] as bool? ?? false,
+      settings: (data['settings'] as Map<String, dynamic>?).orEmpty(),
+      categoryIds: List<String>.from((data['categoryIds'] as List?).orEmpty()),
+      allowGuestEditing: (data['allowGuestEditing'] as bool?).orTrue(),
+      autoRemoveCompleted: (data['autoRemoveCompleted'] as bool?).orFalse(),
       collaborativeOrigin: data['collaborativeOrigin'] as String?,
     );
   }
