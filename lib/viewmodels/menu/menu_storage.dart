@@ -2,24 +2,33 @@
 
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Focused module for menu local storage
-/// 
+///
 /// This module handles ONLY local storage operations:
 /// - SharedPreferences save/load/delete operations
 /// - Menu serialization/deserialization
 /// - Local storage validation and error handling
 /// - Storage key management
-/// 
+///
 /// ❌ DOES NOT CONTAIN: State management, social features, menu generation
 class MenuStorage {
+  final FirestoreRepository _firestoreRepository;
+
+  /// Creates MenuStorage with dependency injection support
+  ///
+  /// [firestoreRepository] Optional FirestoreRepository for testing.
+  /// If not provided, uses ServiceLocator to get the instance.
+  MenuStorage({FirestoreRepository? firestoreRepository})
+      : _firestoreRepository = firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
   
   // ===== SAVE OPERATIONS =====
 
@@ -50,9 +59,10 @@ class MenuStorage {
       menuSnapshot: menu,
     );
 
-    // Save to Firestore
-    final firestore = FirebaseFirestore.instance;
-    final docRef = await firestore.collection('menus').add(sharedMenu.toFirestore());
+    // Save to Firestore using repository
+    final docRef = await _firestoreRepository.collection('menus').add(
+      sharedMenu.toFirestore(),
+    );
 
     AppLogger.success('✅ Meny sparad till Firestore: $menuName med $totalRecipeCount recept');
 
@@ -140,9 +150,8 @@ class MenuStorage {
         return [];
       }
 
-      // Query menus from Firestore
-      final firestore = FirebaseFirestore.instance;
-      final snapshot = await firestore
+      // Query menus from Firestore using repository
+      final snapshot = await _firestoreRepository
           .collection('menus')
           .where('sharedByUserId', isEqualTo: userId)
           .get();
@@ -350,15 +359,15 @@ class SavedMenuData {
     }
 
     return SavedMenuData(
-      name: json['name'] ?? '',
-      savedDate: DateTime.fromMillisecondsSinceEpoch(json['savedDate'] ?? 0),
-      recipeCount: json['recipeCount'] ?? 0,
+      name: (json['name'] as String?).orEmpty(),
+      savedDate: DateTime.fromMillisecondsSinceEpoch((json['savedDate'] as int?).orZero()),
+      recipeCount: (json['recipeCount'] as int?).orZero(),
       menu: menuMap,
-      lastPrompt: json['lastPrompt'] ?? '',
-      comment: json['comment'] ?? '',
+      lastPrompt: (json['lastPrompt'] as String?).orEmpty(),
+      comment: (json['comment'] as String?).orEmpty(),
       originalAuthor: json['originalAuthor'],
       originalAuthorId: json['originalAuthorId'],
-      isModified: json['isModified'] ?? false,
+      isModified: (json['isModified'] as bool?).orFalse(),
       firebaseId: json['firebaseId'],
     );
   }

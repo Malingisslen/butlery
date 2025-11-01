@@ -5,9 +5,10 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
-import 'package:butlery/core/utils/logging_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Realtime Recipe ViewModel
 /// 
@@ -56,28 +57,31 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
   Future<bool> startRealtimeEditing(String recipeId) async {
     if (ValidationUtils.isNullOrEmpty(recipeId) || recipeId.trim().isEmpty) return false;
 
-    try {
-      return await LoggingUtils.loggedOperation(
-        'Start Realtime Editing',
-        () => _recipeService.realtime.startRealtimeEditing(recipeId),
-        metadata: {'recipe_id': recipeId},
-        level: LogLevel.info,
-      );
-    } catch (e) {
-      // Handle exceptions gracefully - return false on any error
-      return false;
+    final result = await safeExecute(
+      () => _recipeService.realtime.startRealtimeEditing(recipeId),
+      operationName: 'Start Realtime Editing',
+      defaultValue: false,
+    );
+
+    if (result == true) {
+      AppLogger.info('✅ Started realtime editing: $recipeId');
     }
+    return result.orFalse();
   }
 
   Future<bool> stopRealtimeEditing(String recipeId) async {
     if (ValidationUtils.isNullOrEmpty(recipeId)) return false;
 
-    return await LoggingUtils.loggedOperation(
-      'Stop Realtime Editing',
+    final result = await safeExecute(
       () => _recipeService.realtime.stopRealtimeEditing(recipeId),
-      metadata: {'recipe_id': recipeId},
-      level: LogLevel.info,
+      operationName: 'Stop Realtime Editing',
+      defaultValue: false,
     );
+
+    if (result == true) {
+      AppLogger.info('✅ Stopped realtime editing: $recipeId');
+    }
+    return result.orFalse();
   }
 
   bool isInRealtimeEditingSession(String recipeId) {
@@ -94,19 +98,15 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
   }) async {
     if (ValidationUtils.isNullOrEmpty(recipeId) || changes.isEmpty) return false;
 
-    return await LoggingUtils.loggedUpdate(
-      'Realtime Recipe Edit',
+    return (await safeExecute(
       () => _recipeService.realtime.makeRealtimeEdit(
         recipeId: recipeId,
         changes: changes,
         editDescription: editDescription,
       ),
-      itemId: recipeId,
-      metadata: {
-        'change_keys': changes.keys.toList(),
-        'description': editDescription,
-      },
-    );
+      operationName: 'Realtime Recipe Edit',
+      defaultValue: false,
+    )).orFalse();
   }
 
   // ===== REALTIME CONTENT OPERATIONS =====
@@ -120,12 +120,11 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       return false;
     }
 
-    return await LoggingUtils.loggedUpdate(
-      'Realtime Recipe Ingredient',
+    return (await safeExecute(
       () => _recipeService.addIngredient(recipeId, ingredient),
-      itemId: recipeId,
-      metadata: {'ingredient': ingredient, 'operation': 'add'},
-    );
+      operationName: 'Add Ingredient',
+      defaultValue: false,
+    )).orFalse();
   }
 
   Future<bool> updateIngredientRealtime(String recipeId, int index, String newIngredient) async {
@@ -137,12 +136,11 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       return false;
     }
 
-    return await LoggingUtils.loggedUpdate(
-      'Realtime Recipe Ingredient',
+    return (await safeExecute(
       () => _recipeService.updateIngredient(recipeId, index, newIngredient),
-      itemId: recipeId,
-      metadata: {'index': index, 'ingredient': newIngredient, 'operation': 'update'},
-    );
+      operationName: 'Update Ingredient',
+      defaultValue: false,
+    )).orFalse();
   }
 
   Future<bool> removeIngredientRealtime(String recipeId, int index) async {
@@ -152,12 +150,11 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       return false;
     }
 
-    return await LoggingUtils.loggedDelete(
-      'Realtime Recipe Ingredient',
+    return (await safeExecute(
       () => _recipeService.removeIngredient(recipeId, index),
-      itemId: recipeId,
-      metadata: {'index': index, 'operation': 'remove'},
-    );
+      operationName: 'Remove Ingredient',
+      defaultValue: false,
+    )).orFalse();
   }
 
   Future<bool> addInstructionRealtime(String recipeId, String instruction) async {
@@ -169,12 +166,11 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       return false;
     }
 
-    return await LoggingUtils.loggedUpdate(
-      'Realtime Recipe Instruction',
+    return (await safeExecute(
       () => _recipeService.addInstruction(recipeId, instruction),
-      itemId: recipeId,
-      metadata: {'instruction': instruction, 'operation': 'add'},
-    );
+      operationName: 'Add Instruction',
+      defaultValue: false,
+    )).orFalse();
   }
 
   Future<bool> updateInstructionRealtime(String recipeId, int index, String newInstruction) async {
@@ -186,12 +182,11 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       return false;
     }
 
-    return await LoggingUtils.loggedUpdate(
-      'Realtime Recipe Instruction',
+    return (await safeExecute(
       () => _recipeService.updateInstruction(recipeId, index, newInstruction),
-      itemId: recipeId,
-      metadata: {'index': index, 'instruction': newInstruction, 'operation': 'update'},
-    );
+      operationName: 'Update Instruction',
+      defaultValue: false,
+    )).orFalse();
   }
 
   Future<bool> removeInstructionRealtime(String recipeId, int index) async {
@@ -201,12 +196,11 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       return false;
     }
 
-    return await LoggingUtils.loggedDelete(
-      'Realtime Recipe Instruction',
+    return (await safeExecute(
       () => _recipeService.removeInstruction(recipeId, index),
-      itemId: recipeId,
-      metadata: {'index': index, 'operation': 'remove'},
-    );
+      operationName: 'Remove Instruction',
+      defaultValue: false,
+    )).orFalse();
   }
 
   // ===== REALTIME WATCHING =====
@@ -232,14 +226,14 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
   Future<List<String>> getActiveEditorsAsync(String recipeId) async {
     if (ValidationUtils.isNullOrEmpty(recipeId)) return [];
     
-    return await LoggingUtils.loggedOperation(
-      'Get Active Editors',
+    return await safeExecute(
       () async {
         final presence = await _recipeService.realtime.getRecipePresence(recipeId);
         return presence.map((p) => p['userId'] as String? ?? '').toList();
       },
-      metadata: {'recipe_id': recipeId},
-    );
+      operationName: 'Get Active Editors',
+      defaultValue: <String>[],
+    ) ?? [];
   }
 
   List<String> getActiveEditors(String recipeId) {
@@ -276,8 +270,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
   // ===== CONNECTION MANAGEMENT =====
 
   Future<bool> reconnectRealtime() async {
-    return await LoggingUtils.loggedOperation(
-      'Reconnect Realtime',
+    return (await safeExecute(
       () async {
         // Connection management is handled automatically by the service
         // Force refresh of all active resources
@@ -288,19 +281,19 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
         }
         return isRealtimeConnected;
       },
-      level: LogLevel.info,
-    );
+      operationName: 'Reconnect Realtime',
+      defaultValue: false,
+    )).orFalse();
   }
 
   Future<void> disconnectRealtime() async {
-    await LoggingUtils.loggedOperation(
-      'Disconnect Realtime',
+    await safeExecute(
       () async {
         // Clear all presence when disconnecting
         await _recipeService.realtime.clearAllPresence();
         notifyListeners();
       },
-      level: LogLevel.info,
+      operationName: 'Disconnect Realtime',
     );
   }
 
@@ -339,15 +332,14 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       return false;
     }
 
-    return await LoggingUtils.loggedOperation(
-      'Resolve Edit Conflict',
+    return (await safeExecute(
       () async {
         // Get current recipe
         final recipe = _recipeService.recipes.firstWhere(
           (r) => r.id == recipeId,
           orElse: () => throw Exception('Recipe not found'),
         );
-        
+
         // Apply resolution strategy
         Recipe resolvedRecipe;
         switch (resolution) {
@@ -367,7 +359,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
           default:
             throw ArgumentError('Invalid resolution type: $resolution');
         }
-        
+
         // Save resolved recipe through conflict resolution
         return await _recipeService.realtime.resolveConflict(
           recipeId: recipeId,
@@ -376,15 +368,11 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
           resolution: resolution,
         );
       },
-      metadata: {
-        'recipe_id': recipeId,
-        'resolution': resolution,
-        'local_keys': localChanges.keys.toList(),
-        'remote_keys': remoteChanges.keys.toList(),
-      },
-    );
+      operationName: 'Resolve Edit Conflict',
+      defaultValue: false,
+    )).orFalse();
   }
-  
+
   Recipe _applyChangesToRecipe(Recipe recipe, Map<String, dynamic> changes) {
     // Create a new RecipeCore with updated values
     final updatedCore = RecipeCore(
