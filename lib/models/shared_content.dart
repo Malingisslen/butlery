@@ -3,6 +3,7 @@
 // lib/models/shared_content.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Shared content model with multi-target distribution and engagement tracking.
 class SharedContent {
@@ -66,14 +67,14 @@ class SharedContent {
     final data = doc.data() as Map<String, dynamic>;
     return SharedContent(
       id: doc.id,
-      contentType: data['contentType'] ?? '',
-      contentId: data['contentId'] ?? '',
-      ownerId: data['ownerId'] ?? '',
-      sharedWithUserIds: List<String>.from(data['sharedWithUserIds'] ?? []),
-      sharedWithGroupIds: List<String>.from(data['sharedWithGroupIds'] ?? []),
+      contentType: (data['contentType'] as String?).orEmpty(),
+      contentId: (data['contentId'] as String?).orEmpty(),
+      ownerId: (data['ownerId'] as String?).orEmpty(),
+      sharedWithUserIds: List<String>.from((data['sharedWithUserIds'] as List?).orEmpty()),
+      sharedWithGroupIds: List<String>.from((data['sharedWithGroupIds'] as List?).orEmpty()),
       sharedAt: (data['sharedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      metadata: Map<String, dynamic>.from(data['metadata'] ?? {}),
-      permissions: SharingPermissions.fromMap(data['permissions'] ?? {}),
+      metadata: Map<String, dynamic>.from((data['metadata'] as Map?).orEmpty()),
+      permissions: SharingPermissions.fromMap((data['permissions'] as Map<String, dynamic>?).orEmpty()),
       viewedBy: _dateMapFromFirestore(data['viewedBy']),
       acceptedBy: _dateMapFromFirestore(data['acceptedBy']),
       declinedBy: _dateMapFromFirestore(data['declinedBy']),
@@ -205,10 +206,10 @@ class SharingPermissions {
   /// Creates sharing permissions from Firestore data with proper type conversion.
   factory SharingPermissions.fromMap(Map<String, dynamic> map) {
     return SharingPermissions(
-      canView: map['canView'] ?? true,
-      canEdit: map['canEdit'] ?? false,
-      canReshare: map['canReshare'] ?? false,
-      canComment: map['canComment'] ?? true,
+      canView: (map['canView'] as bool?).orTrue(),
+      canEdit: (map['canEdit'] as bool?).orFalse(),
+      canReshare: (map['canReshare'] as bool?).orFalse(),
+      canComment: (map['canComment'] as bool?).orTrue(),
       expiresAt: map['expiresAt'] != null
           ? (map['expiresAt'] as Timestamp).toDate()
           : null,
