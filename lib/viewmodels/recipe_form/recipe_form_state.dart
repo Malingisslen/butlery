@@ -9,6 +9,7 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/core/utils/connectivity_check.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Core state management for recipe form with intelligent auto-save
 class RecipeFormState extends ChangeNotifier {
@@ -252,8 +253,8 @@ class RecipeFormState extends ChangeNotifier {
     final serializedData = _serializeFormData();
     
     // Cross-validate that our validation sources match serialization sources
-    final serializedIngredients = List<String>.from(serializedData['ingredients'] ?? []);
-    final serializedInstructions = List<String>.from(serializedData['instructions'] ?? []);
+    final serializedIngredients = List<String>.from((serializedData['ingredients'] as List?).orEmpty());
+    final serializedInstructions = List<String>.from((serializedData['instructions'] as List?).orEmpty());
     
     if (!_listEquals(ingredientValues, serializedIngredients) ||
         !_listEquals(instructionValues, serializedInstructions)) {
@@ -309,9 +310,9 @@ class RecipeFormState extends ChangeNotifier {
   bool _isDataConsistent() {
     try {
       final serializedData = _serializeFormData();
-      final serializedIngredients = List<String>.from(serializedData['ingredients'] ?? []);
-      final serializedInstructions = List<String>.from(serializedData['instructions'] ?? []);
-      final serializedTags = List<String>.from(serializedData['tags'] ?? []);
+      final serializedIngredients = List<String>.from((serializedData['ingredients'] as List?).orEmpty());
+      final serializedInstructions = List<String>.from((serializedData['instructions'] as List?).orEmpty());
+      final serializedTags = List<String>.from((serializedData['tags'] as List?).orEmpty());
       
       return _listEquals(_ingredientsManager.values, serializedIngredients) &&
              _listEquals(_instructionsManager.values, serializedInstructions) &&
@@ -597,15 +598,15 @@ class RecipeFormState extends ChangeNotifier {
     if (draftData == null) return false;
     
     try {
-      _title = draftData['title'] ?? '';
-      _description = draftData['description'] ?? '';
+      _title = (draftData['title'] as String?).orEmpty();
+      _description = (draftData['description'] as String?).orEmpty();
       _mealType = draftData['mealType'] ?? 'Middag';
       _portions = draftData['portions'];
       _timeMinutes = draftData['timeMinutes'];
       _rating = draftData['rating'];
       _sourceUrl = draftData['sourceUrl'];
-      _imageUrls = List<String>.from(draftData['imageUrls'] ?? []);
-      
+      _imageUrls = List<String>.from((draftData['imageUrls'] as List?).orEmpty());
+
       final ingredients = List<String>.from(draftData['ingredients'] ?? ['']);
       final instructions = List<String>.from(draftData['instructions'] ?? ['']);
       final tags = List<String>.from(draftData['tags'] ?? ['']);
@@ -646,7 +647,7 @@ class RecipeFormState extends ChangeNotifier {
 
     return Recipe(
       core: RecipeCore(
-        id: recipeId ?? _originalRecipe?.id ?? '',
+        id: (recipeId ?? _originalRecipe?.id).orEmpty(),
         title: _title.trim(),
         description: _description.trim(),
         mealType: _mealType,
@@ -658,7 +659,7 @@ class RecipeFormState extends ChangeNotifier {
         tags: cleanTags,
         imageUrls: imageUrls ?? _imageUrls,
         sourceUrl: _sourceUrl?.trim(),
-        createdAt: _originalRecipe?.createdAt ?? DateTime.now(),
+        createdAt: (_originalRecipe?.createdAt).orNow(),
         updatedAt: DateTime.now(),
       ),
       type: RecipeType.personal,

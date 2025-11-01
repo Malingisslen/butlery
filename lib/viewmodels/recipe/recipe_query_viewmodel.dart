@@ -8,6 +8,7 @@ import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Recipe Query ViewModel
 /// 
@@ -56,7 +57,7 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, Strea
 
   List<Recipe> getRecipesByTag(String tag) {
     if (ValidationUtils.isNullOrEmpty(tag)) return [];
-    return allRecipes.where((r) => r.tags?.contains(tag) ?? false).toList();
+    return allRecipes.where((r) => (r.tags?.contains(tag)).orFalse()).toList();
   }
 
   List<Recipe> getRecipesByType(RecipeType type) {
@@ -77,8 +78,7 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, Strea
           recipe.instructions.any((instruction) =>
               instruction.toLowerCase().contains(lowercaseQuery)) ||
           (recipe.tags
-                  ?.any((tag) => tag.toLowerCase().contains(lowercaseQuery)) ??
-              false);
+                  ?.any((tag) => tag.toLowerCase().contains(lowercaseQuery))).orFalse();
     }).toList();
   }
 
@@ -109,7 +109,7 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, Strea
 
     // Apply tag filter
     if (_selectedTag != null) {
-      recipes = recipes.where((r) => r.tags?.contains(_selectedTag) ?? false).toList();
+      recipes = recipes.where((r) => (r.tags?.contains(_selectedTag)).orFalse()).toList();
     }
 
     // Apply type filter
@@ -198,9 +198,9 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, Strea
   List<Recipe> getFavoriteRecipes() {
     // For now, consider recipes with rating >= 4.5 as favorites
     // In the future, this would be based on user-specific favorite flags
-    return allRecipes.where((recipe) => 
+    return allRecipes.where((recipe) =>
       recipe.rating != null && recipe.rating! >= 4.5
-    ).toList()..sort((a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0));
+    ).toList()..sort((a, b) => (b.rating).orZero().compareTo((a.rating).orZero()));
   }
 
   List<Recipe> getHighRatedRecipes({double minRating = 4.0}) {
@@ -245,7 +245,7 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, Strea
     if (ValidationUtils.isNullOrEmpty(userId)) return [];
     
     return collaborativeRecipes.where((recipe) =>
-      recipe.socialData?.memberPermissions?.containsKey(userId) ?? false
+      (recipe.socialData?.memberPermissions?.containsKey(userId)).orFalse()
     ).toList();
   }
 
@@ -354,7 +354,7 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, Strea
 
     for (final recipe in allRecipes) {
       mealTypeCounts[recipe.mealType] =
-          (mealTypeCounts[recipe.mealType] ?? 0) + 1;
+          (mealTypeCounts[recipe.mealType]).orZero() + 1;
     }
 
     final sortedEntries = mealTypeCounts.entries.toList();
@@ -369,7 +369,7 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, Strea
     for (final recipe in allRecipes) {
       if (recipe.tags != null) {
         for (final tag in recipe.tags!) {
-          tagCounts[tag] = (tagCounts[tag] ?? 0) + 1;
+          tagCounts[tag] = (tagCounts[tag]).orZero() + 1;
         }
       }
     }
@@ -402,7 +402,7 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, Strea
 
     for (final recipe in allRecipes) {
       if (recipe.lastCookedAt != null) {
-        cookingCounts[recipe.mealType] = (cookingCounts[recipe.mealType] ?? 0) + 1;
+        cookingCounts[recipe.mealType] = (cookingCounts[recipe.mealType]).orZero() + 1;
       }
     }
 

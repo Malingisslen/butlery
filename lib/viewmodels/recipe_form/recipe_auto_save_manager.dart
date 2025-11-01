@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Draft metadata for managing saved drafts
 class DraftMetadata {
@@ -32,13 +33,13 @@ class DraftMetadata {
       };
 
   factory DraftMetadata.fromJson(Map<String, dynamic> json) => DraftMetadata(
-        draftId: json['draftId'] ?? '',
+        draftId: (json['draftId'] as String?).orEmpty(),
         createdAt: DateTime.parse(
-            json['createdAt'] ?? DateTime.now().toIso8601String()),
+            (json['createdAt'] as String?).orDefault(DateTime.now().toIso8601String())),
         lastModifiedAt: DateTime.parse(
-            json['lastModifiedAt'] ?? DateTime.now().toIso8601String()),
-        title: json['title'] ?? '',
-        fieldCount: json['fieldCount'] ?? 0,
+            (json['lastModifiedAt'] as String?).orDefault(DateTime.now().toIso8601String())),
+        title: (json['title'] as String?).orEmpty(),
+        fieldCount: (json['fieldCount'] as int?).orZero(),
       );
 
   /// Check if draft is recent (within last 24 hours)
@@ -194,10 +195,10 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
     int changeScore = 0;
     
     // Major edits that indicate user is actively customizing the template
-    final title = formData['title'] as String? ?? '';
-    final description = formData['description'] as String? ?? '';
-    final ingredients = formData['ingredients'] as List<String>? ?? [];
-    final instructions = formData['instructions'] as List<String>? ?? [];
+    final title = (formData['title'] as String?).orEmpty();
+    final description = (formData['description'] as String?).orEmpty();
+    final ingredients = (formData['ingredients'] as List<String>?).orEmpty();
+    final instructions = (formData['instructions'] as List<String>?).orEmpty();
     
     // Title or description editing (indicates intentional customization)
     if (title.trim().isNotEmpty) changeScore += 2;
@@ -208,7 +209,7 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
     changeScore += instructions.where((i) => i.trim().isNotEmpty).length;
     
     // Images indicate serious editing intent
-    final imageUrls = formData['imageUrls'] as List<String>? ?? [];
+    final imageUrls = (formData['imageUrls'] as List<String>?).orEmpty();
     changeScore += imageUrls.length * 3;
     
     // Portion/time changes indicate recipe customization
@@ -232,17 +233,17 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
     if (_isNotEmpty(formData['sourceUrl'])) count++;
 
     // Dynamic lists
-    final ingredients = formData['ingredients'] as List<String>? ?? [];
+    final ingredients = (formData['ingredients'] as List<String>?).orEmpty();
     count += ingredients.where((i) => i.trim().isNotEmpty).length;
 
-    final instructions = formData['instructions'] as List<String>? ?? [];
+    final instructions = (formData['instructions'] as List<String>?).orEmpty();
     count += instructions.where((i) => i.trim().isNotEmpty).length;
 
-    final tags = formData['tags'] as List<String>? ?? [];
+    final tags = (formData['tags'] as List<String>?).orEmpty();
     count += tags.where((t) => t.trim().isNotEmpty).length;
 
     // Images
-    final imageUrls = formData['imageUrls'] as List<String>? ?? [];
+    final imageUrls = (formData['imageUrls'] as List<String>?).orEmpty();
     count += imageUrls.length;
 
     return count;
@@ -250,11 +251,11 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
 
   /// Extract meaningful title for draft identification
   String _extractTitle(Map<String, dynamic> formData) {
-    final title = formData['title'] as String? ?? '';
+    final title = (formData['title'] as String?).orEmpty();
     if (title.trim().isNotEmpty) return title.trim();
 
     // Fallback to first ingredient if no title
-    final ingredients = formData['ingredients'] as List<String>? ?? [];
+    final ingredients = (formData['ingredients'] as List<String>?).orEmpty();
     final firstIngredient =
         ingredients.firstWhere((i) => i.trim().isNotEmpty, orElse: () => '');
 

@@ -23,14 +23,16 @@ import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
-import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/shopping/shopping_analytics_manager.dart';
 import 'package:butlery/viewmodels/shopping/shopping_item_operations_manager.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Unified shopping ViewModel coordinating shopping operations through service delegation.
-class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
+class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin {
   final UnifiedShoppingService _shoppingService = ServiceLocator.get<UnifiedShoppingService>();
   late final ShoppingAnalyticsManager _analyticsManager;
   late final ShoppingItemOperationsManager _itemOpsManager;
@@ -55,6 +57,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== LOADING AND SYNCHRONIZATION STATE =====
 
   /// Loading operation state
+  @override
   bool get isLoading => _shoppingService.isLoading;
 
   /// Synchronization state
@@ -66,9 +69,11 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== ERROR HANDLING AND CONNECTIVITY =====
 
   /// Current error message
+  @override
   String? get error => _shoppingService.error;
 
   /// Error state indicator
+  @override
   bool get hasError => _shoppingService.hasError;
 
   /// Online connectivity status
@@ -85,22 +90,22 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== SHOPPING ANALYTICS AND COMPLETION TRACKING =====
 
   /// Total item count in active list
-  int get totalItems => activeList?.totalItems ?? 0;
+  int get totalItems => (activeList?.totalItems).orZero();
 
   /// Purchased item count
-  int get boughtItems => activeList?.boughtItems ?? 0;
+  int get boughtItems => (activeList?.boughtItems).orZero();
 
   /// Remaining item count
-  int get unboughtItems => activeList?.unboughtItems ?? 0;
+  int get unboughtItems => (activeList?.unboughtItems).orZero();
 
   /// Shopping completion percentage
-  double get completionPercentage => activeList?.completionPercentage ?? 0.0;
+  double get completionPercentage => (activeList?.completionPercentage).orZero();
 
   /// Active list summary
   String get listSummary => activeList?.summary ?? 'Ingen aktiv lista';
 
   /// Complete shopping indicator
-  bool get allItemsBought => activeList?.allItemsBought ?? false;
+  bool get allItemsBought => (activeList?.allItemsBought).orFalse();
 
   // ===== USER CONTEXT AND IDENTIFICATION =====
 
@@ -126,12 +131,9 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   /// Initializes unified shopping system
   Future<void> initialize() async {
-    await safeExecute(
-      () async {
-        await _shoppingService.initialize();
-      },
-      operationName: 'Initialize unified shopping system',
-    );
+    await executeAsync(() async {
+      await _shoppingService.initialize();
+    });
   }
 
   // ===== PERSONAL SHOPPING LIST MANAGEMENT =====
@@ -369,14 +371,13 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// Bulk add items from recipe ingredients
   Future<bool> addItemsFromRecipe(
       List<Map<String, dynamic>> ingredientData) async {
-    return await safeExecute(
-      () => _itemOpsManager.addItemsFromRecipe(
+    return await executeAsync(() async {
+      return _itemOpsManager.addItemsFromRecipe(
         ingredientData,
         ({required name, required amount, required unit, required category}) =>
           addItem(name: name, amount: amount, unit: unit, category: category),
-      ),
-      operationName: 'Add items from recipe',
-    ) ?? false;
+      );
+    });
   }
 
   /// Group items by category for UI rendering
@@ -425,6 +426,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   // ===== ERROR HANDLING =====
 
+  @override
   void clearError() {
     _shoppingService.clearError();
   }

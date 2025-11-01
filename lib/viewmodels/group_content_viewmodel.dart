@@ -12,20 +12,27 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Manages group-shared content (recipes, menus, shopping lists) with filtering and activity tracking.
+///
+/// Uses AsyncOperationMixin for loading state management while maintaining
+/// operation-specific _isSharing state for distinct UI treatment.
+///
 /// ```dart
 /// final vm = GroupContentViewModel(sharingRepo: ServiceLocator.get()); await vm.initialize(group);
-class GroupContentViewModel extends ChangeNotifier with StreamManagementMixin {
+class GroupContentViewModel extends ChangeNotifier
+    with StreamManagementMixin, StateNotifierMixin, AsyncOperationMixin {
   final SocialSharingRepository _sharingRepository;
 
   // State
   FriendCategory? _group;
   String _searchQuery = '';
   int _currentTabIndex = 0;
-  bool _isLoading = false;
-  String? _error;
-  bool _isSharing = false;
+  /// isLoading, error, hasError provided by StateNotifierMixin
+  bool _isSharing = false;  // Operation-specific state for sharing
   List<SharedContent> _groupSharedContent = [];
   List<SharedRecipe> _groupSharedRecipes = [];
   List<SharedMenu> _groupSharedMenus = [];
@@ -42,10 +49,8 @@ class GroupContentViewModel extends ChangeNotifier with StreamManagementMixin {
   FriendCategory? get group => _group;
   String get searchQuery => _searchQuery;
   int get currentTabIndex => _currentTabIndex;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-  bool get hasError => _error != null;
-  bool get isSharing => _isSharing;
+  /// isLoading, error, hasError provided by StateNotifierMixin
+  bool get isSharing => _isSharing;  // Operation-specific state
 
   // Content getters
   List<SharedContent> get groupSharedContent => List.unmodifiable(_groupSharedContent);
@@ -122,53 +127,50 @@ class GroupContentViewModel extends ChangeNotifier with StreamManagementMixin {
       return;
     }
 
-    _setLoading(true);
-    _setError(null);
-
     try {
-      AppLogger.info('📥 Loading content for group: ${_group!.name}');
+      await executeNamedOperation('loadGroupContent', () async {
+        AppLogger.info('📥 Loading content for group: ${_group!.name}');
 
-      // Get shared content from repository filtered by group
-      // Using placeholder user ID - actual user ID is managed by the auth layer
-      final sharedContentStream = _sharingRepository.getSharedWithMe('current_user_id');
-      final sharedContent = await sharedContentStream.first;
-      
-      // Filter content shared to this specific group
-      _groupSharedContent = sharedContent.where((content) {
-        return content.sharedWithGroupIds.contains(_group!.id);
-      }).toList();
+        // Get shared content from repository filtered by group
+        // Using placeholder user ID - actual user ID is managed by the auth layer
+        final sharedContentStream = _sharingRepository.getSharedWithMe('current_user_id');
+        final sharedContent = await sharedContentStream.first;
 
-      // Separate content by type
-      _groupSharedRecipes = _groupSharedContent
-          .where((content) => content.contentType == 'recipe')
-          .map((content) => _convertToSharedRecipe(content))
-          .where((recipe) => recipe != null)
-          .cast<SharedRecipe>()
-          .toList();
+        // Filter content shared to this specific group
+        _groupSharedContent = sharedContent.where((content) {
+          return content.sharedWithGroupIds.contains(_group!.id);
+        }).toList();
 
-      _groupSharedMenus = _groupSharedContent
-          .where((content) => content.contentType == 'menu')
-          .map((content) => _convertToSharedMenu(content))
-          .where((menu) => menu != null)
-          .cast<SharedMenu>()
-          .toList();
+        // Separate content by type
+        _groupSharedRecipes = _groupSharedContent
+            .where((content) => content.contentType == 'recipe')
+            .map((content) => _convertToSharedRecipe(content))
+            .where((recipe) => recipe != null)
+            .cast<SharedRecipe>()
+            .toList();
 
-      _groupSharedShoppingLists = _groupSharedContent
-          .where((content) => content.contentType == 'shopping_list')
-          .map((content) => _convertToShoppingList(content))
-          .where((list) => list != null)
-          .cast<UnifiedShoppingList>()
-          .toList();
+        _groupSharedMenus = _groupSharedContent
+            .where((content) => content.contentType == 'menu')
+            .map((content) => _convertToSharedMenu(content))
+            .where((menu) => menu != null)
+            .cast<SharedMenu>()
+            .toList();
 
-      // Load group activity feed
-      await _loadGroupActivityFeed();
+        _groupSharedShoppingLists = _groupSharedContent
+            .where((content) => content.contentType == 'shopping_list')
+            .map((content) => _convertToShoppingList(content))
+            .where((list) => list != null)
+            .cast<UnifiedShoppingList>()
+            .toList();
 
-      AppLogger.success('✅ Loaded ${_groupSharedContent.length} items for group: ${_group!.name}');
+        // Load group activity feed
+        await _loadGroupActivityFeed();
+
+        AppLogger.success('✅ Loaded ${_groupSharedContent.length} items for group: ${_group!.name}');
+      });
     } catch (e) {
       AppLogger.error('❌ Failed to load group content', e);
-      _setError('Kunde inte ladda gruppinnehåll: ${e.toString()}');
-    } finally {
-      _setLoading(false);
+      setError('Kunde inte ladda gruppinnehåll: ${e.toString()}');
     }
   }
 
@@ -183,7 +185,7 @@ class GroupContentViewModel extends ChangeNotifier with StreamManagementMixin {
           'id': content.id,
           'type': content.contentType,
           'title': _getContentTitle(content),
-          'ownerName': content.metadata['ownerDisplayName'] ?? 'Okänd användare',
+          'ownerName': (content.metadata['ownerDisplayName'] as String?).orDefault('Okänd användare'),
           'ownerAvatarUrl': content.metadata['ownerAvatarUrl'],
           'sharedAt': content.sharedAt,
           'action': 'shared_to_group',
@@ -264,7 +266,7 @@ class GroupContentViewModel extends ChangeNotifier with StreamManagementMixin {
       return true;
     } catch (e) {
       AppLogger.error('❌ Failed to share content to group', e);
-      _setError('Kunde inte dela innehåll till gruppen: ${e.toString()}');
+      setError('Kunde inte dela innehåll till gruppen: ${e.toString()}');
       return false;
     } finally {
       _setSharing(false);
@@ -307,7 +309,7 @@ class GroupContentViewModel extends ChangeNotifier with StreamManagementMixin {
     final lowerQuery = query.toLowerCase();
     return menus.where((menu) {
       return menu.menuTitle.toLowerCase().contains(lowerQuery) ||
-             (menu.shareMessage?.toLowerCase().contains(lowerQuery) ?? false) ||
+             (menu.shareMessage?.toLowerCase().contains(lowerQuery)).orFalse() ||
              (menu.sharedByDisplayName.toLowerCase().contains(lowerQuery));
     }).toList();
   }
@@ -319,7 +321,7 @@ class GroupContentViewModel extends ChangeNotifier with StreamManagementMixin {
     final lowerQuery = query.toLowerCase();
     return lists.where((list) {
       return list.name.toLowerCase().contains(lowerQuery) ||
-             (list.description?.toLowerCase().contains(lowerQuery) ?? false);
+             (list.description?.toLowerCase().contains(lowerQuery)).orFalse();
     }).toList();
   }
 
@@ -332,28 +334,28 @@ class GroupContentViewModel extends ChangeNotifier with StreamManagementMixin {
       final recipeSnapshot = Recipe(
         core: RecipeCore(
           id: content.contentId,
-          title: content.metadata['title'] ?? 'Namnlöst recept',
-          description: content.metadata['description'] ?? '',
-          ingredients: List<String>.from(content.metadata['ingredients'] ?? []),
-          instructions: List<String>.from(content.metadata['instructions'] ?? []),
+          title: (content.metadata['title'] as String?).orDefault('Namnlöst recept'),
+          description: (content.metadata['description'] as String?).orEmpty(),
+          ingredients: List<String>.from((content.metadata['ingredients'] as List?).orEmpty()),
+          instructions: List<String>.from((content.metadata['instructions'] as List?).orEmpty()),
           imageUrls: content.metadata['imageUrl'] != null ? [content.metadata['imageUrl'] as String] : [],
-          mealType: content.metadata['mealType'] ?? 'Middag',
+          mealType: (content.metadata['mealType'] as String?).orDefault('Middag'),
           portions: content.metadata['portions'] as int?,
           timeMinutes: content.metadata['timeMinutes'] as int?,
           rating: (content.metadata['rating'] as num?)?.toDouble(),
-          tags: List<String>.from(content.metadata['tags'] ?? []),
+          tags: List<String>.from((content.metadata['tags'] as List?).orEmpty()),
           sourceUrl: content.metadata['sourceUrl'] as String?,
           createdAt: content.sharedAt,
           updatedAt: content.sharedAt,
         ),
         type: RecipeType.shared,
       );
-      
+
       return SharedRecipe(
         id: content.id,
         originalRecipeId: content.contentId,
         sharedByUserId: content.ownerId,
-        sharedByDisplayName: content.metadata['ownerDisplayName'] ?? 'Okänd användare',
+        sharedByDisplayName: (content.metadata['ownerDisplayName'] as String?).orDefault('Okänd användare'),
         sharedToUserIds: content.sharedWithUserIds,
         sharedAt: content.sharedAt,
         shareMessage: content.metadata['shareMessage'] as String?,
@@ -375,30 +377,30 @@ class GroupContentViewModel extends ChangeNotifier with StreamManagementMixin {
       if (content.contentType != 'menu') return null;
       
       // Create a simplified menu snapshot from metadata
-      final menuSnapshot = content.metadata['menuSnapshot'] as Map<String, dynamic>? ?? {};
+      final menuSnapshot = (content.metadata['menuSnapshot'] as Map<String, dynamic>?).orEmpty();
       final reconstructedMenu = <String, List<Recipe>>{};
-      
+
       // Reconstruct menu from metadata if available
       for (final entry in menuSnapshot.entries) {
         final recipeList = <Recipe>[];
-        final recipes = entry.value as List<dynamic>? ?? [];
+        final recipes = (entry.value as List?).orEmpty();
         
         for (final recipeData in recipes) {
           try {
             if (recipeData is Map<String, dynamic>) {
               final recipe = Recipe(
                 core: RecipeCore(
-                  id: recipeData['id'] ?? '',
-                  title: recipeData['title'] ?? 'Namnlöst recept',
-                  description: recipeData['description'] ?? '',
-                  ingredients: List<String>.from(recipeData['ingredients'] ?? []),
-                  instructions: List<String>.from(recipeData['instructions'] ?? []),
-                  imageUrls: List<String>.from(recipeData['imageUrls'] ?? []),
-                  mealType: recipeData['mealType'] ?? 'Middag',
+                  id: (recipeData['id'] as String?).orEmpty(),
+                  title: (recipeData['title'] as String?).orDefault('Namnlöst recept'),
+                  description: (recipeData['description'] as String?).orEmpty(),
+                  ingredients: List<String>.from((recipeData['ingredients'] as List?).orEmpty()),
+                  instructions: List<String>.from((recipeData['instructions'] as List?).orEmpty()),
+                  imageUrls: List<String>.from((recipeData['imageUrls'] as List?).orEmpty()),
+                  mealType: (recipeData['mealType'] as String?).orDefault('Middag'),
                   portions: recipeData['portions'] as int?,
                   timeMinutes: recipeData['timeMinutes'] as int?,
                   rating: (recipeData['rating'] as num?)?.toDouble(),
-                  tags: List<String>.from(recipeData['tags'] ?? []),
+                  tags: List<String>.from((recipeData['tags'] as List?).orEmpty()),
                   sourceUrl: recipeData['sourceUrl'] as String?,
                   createdAt: content.sharedAt,
                   updatedAt: content.sharedAt,
@@ -418,11 +420,11 @@ class GroupContentViewModel extends ChangeNotifier with StreamManagementMixin {
       return SharedMenu(
         id: content.id,
         sharedByUserId: content.ownerId,
-        sharedByDisplayName: content.metadata['ownerDisplayName'] ?? 'Okänd användare',
+        sharedByDisplayName: (content.metadata['ownerDisplayName'] as String?).orDefault('Okänd användare'),
         sharedToUserIds: content.sharedWithUserIds,
         sharedAt: content.sharedAt,
         shareMessage: content.metadata['shareMessage'] as String?,
-        menuTitle: content.metadata['title'] ?? 'Namnlös meny',
+        menuTitle: (content.metadata['title'] as String?).orDefault('Namnlös meny'),
         menuSnapshot: reconstructedMenu,
         viewedByUserIds: content.viewedBy.keys.toList(),
         engagedByUserIds: content.acceptedBy.keys.toList(),
@@ -442,9 +444,9 @@ class GroupContentViewModel extends ChangeNotifier with StreamManagementMixin {
       // This is a simplified conversion - in a real implementation,
       // you'd need to properly reconstruct the shopping list from the metadata
       return UnifiedShoppingList.personal(
-        name: content.metadata['listName'] ?? 'Namnlös lista',
+        name: (content.metadata['listName'] as String?).orDefault('Namnlös lista'),
         ownerId: content.ownerId,
-        ownerDisplayName: content.metadata['ownerDisplayName'] ?? 'Okänd användare',
+        ownerDisplayName: (content.metadata['ownerDisplayName'] as String?).orDefault('Okänd användare'),
       );
     } catch (e) {
       AppLogger.error('Failed to convert SharedContent to UnifiedShoppingList', e);
@@ -456,31 +458,24 @@ class GroupContentViewModel extends ChangeNotifier with StreamManagementMixin {
   String _getContentTitle(SharedContent content) {
     switch (content.contentType) {
       case 'recipe':
-        return content.metadata['title'] ?? 'Namnlöst recept';
+        return (content.metadata['title'] as String?).orDefault('Namnlöst recept');
       case 'menu':
-        return content.metadata['title'] ?? 'Namnlös meny';
+        return (content.metadata['title'] as String?).orDefault('Namnlös meny');
       case 'shopping_list':
-        return content.metadata['listName'] ?? 'Namnlös lista';
+        return (content.metadata['listName'] as String?).orDefault('Namnlös lista');
       default:
         return 'Okänt innehåll';
     }
   }
 
   // ===== STATE MANAGEMENT HELPERS =====
+  /// setLoading, setError provided by StateNotifierMixin
 
+  /// Public wrapper for clearError (for tests/external use)
+  /// Overrides protected clearError from StateNotifierMixin to make it public
+  @override
   void clearError() {
-    _error = null;
-    notifyListeners();
-  }
-
-  void _setError(String? message) {
-    _error = message;
-    notifyListeners();
-  }
-
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
+    super.clearError();
   }
 
   void _setSharing(bool sharing) {
