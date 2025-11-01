@@ -1,6 +1,7 @@
 // lib/models/social/activity_feed_item.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/social/activity_engagement.dart';
 import 'package:butlery/models/social/activity_type.dart';
 
@@ -124,20 +125,20 @@ class ActivityFeedItem {
   factory ActivityFeedItem.fromFirestore(String id, Map<String, dynamic> data) {
     return ActivityFeedItem(
       id: id,
-      userId: data['userId'] as String? ?? '',
-      userDisplayName: data['userDisplayName'] as String? ?? 'Okänd användare',
+      userId: (data['userId'] as String?).orEmpty(),
+      userDisplayName: (data['userDisplayName'] as String?).orDefault('Okänd användare'),
       userAvatarUrl: data['userAvatarUrl'] as String?,
-      type: ActivityType.fromKey(data['type'] as String? ?? 'unknown'),
-      targetId: data['targetId'] as String? ?? '',
-      targetType: data['targetType'] as String? ?? '',
-      targetTitle: data['targetTitle'] as String? ?? '',
+      type: ActivityType.fromKey((data['type'] as String?).orDefault('unknown')),
+      targetId: (data['targetId'] as String?).orEmpty(),
+      targetType: (data['targetType'] as String?).orEmpty(),
+      targetTitle: (data['targetTitle'] as String?).orEmpty(),
       targetImageUrl: data['targetImageUrl'] as String?,
       parentId: data['parentId'] as String?,
       parentType: data['parentType'] as String?,
       timestamp: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
       visibility: (data['visibility'] as List?)?.cast<String>() ?? ['all_friends'],
-      metadata: data['metadata'] as Map<String, dynamic>? ?? {},
-      engagement: ActivityEngagement.fromFirestore(data['engagement'] as Map<String, dynamic>? ?? {}),
+      metadata: (data['metadata'] as Map<String, dynamic>?).orEmpty(),
+      engagement: ActivityEngagement.fromFirestore((data['engagement'] as Map<String, dynamic>?).orEmpty()),
     );
   }
 
@@ -208,13 +209,13 @@ class ActivityFeedItem {
 
     return ActivityFeedItem(
       id: json['id'] as String,
-      userId: json['userId'] as String? ?? '',
-      userDisplayName: json['userDisplayName'] as String? ?? 'Okänd användare',
+      userId: (json['userId'] as String?).orEmpty(),
+      userDisplayName: (json['userDisplayName'] as String?).orDefault('Okänd användare'),
       userAvatarUrl: json['userAvatarUrl'] as String?,
-      type: ActivityType.fromKey(json['type'] as String? ?? 'unknown'),
-      targetId: json['targetId'] as String? ?? '',
-      targetType: json['targetType'] as String? ?? '',
-      targetTitle: json['targetTitle'] as String? ?? '',
+      type: ActivityType.fromKey((json['type'] as String?).orDefault('unknown')),
+      targetId: (json['targetId'] as String?).orEmpty(),
+      targetType: (json['targetType'] as String?).orEmpty(),
+      targetTitle: (json['targetTitle'] as String?).orEmpty(),
       targetImageUrl: json['targetImageUrl'] as String?,
       parentId: json['parentId'] as String?,
       parentType: json['parentType'] as String?,
@@ -288,12 +289,12 @@ class ActivityFeedItem {
       case ActivityType.recipeShared:
         return 'delade ett recept';
       case ActivityType.recipeRated:
-        final rating = metadata['rating'] as int? ?? 0;
+        final rating = (metadata['rating'] as int?).orZero();
         return 'betygsatte ett recept ($rating⭐)';
       case ActivityType.commentAdded:
         return 'kommenterade ett recept';
       case ActivityType.reactionAdded:
-        final reaction = metadata['reactionType'] as String? ?? '';
+        final reaction = (metadata['reactionType'] as String?).orEmpty();
         return 'reagerade på ett recept ($reaction)';
       case ActivityType.menuCreated:
         return 'skapade en meny';
@@ -306,7 +307,7 @@ class ActivityFeedItem {
       case ActivityType.groupJoined:
         return 'gick med i en grupp';
       case ActivityType.achievementUnlocked:
-        final achievement = metadata['achievementName'] as String? ?? '';
+        final achievement = (metadata['achievementName'] as String?).orEmpty();
         return 'låste upp en bedrift: $achievement';
       default:
         return 'gjorde något';
