@@ -69,6 +69,7 @@
 import 'package:uuid/uuid.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 
 /// Enumeration defining comprehensive invitation status lifecycle for realtime resource collaboration.
@@ -606,12 +607,12 @@ class RealtimeInvitation {
     return RealtimeInvitation(
       id: id,
       resourceType: RealtimeResourceType.fromString(
-        data['resourceType'] as String? ?? 'recipe',
+        (data['resourceType'] as String?).orDefault('recipe'),
       ),
       resourceId: data['resourceId'] as String,
-      resourceTitle: data['resourceTitle'] as String? ?? '',
+      resourceTitle: (data['resourceTitle'] as String?).orEmpty(),
       fromUserId: data['fromUserId'] as String,
-      fromUserDisplayName: data['fromUserDisplayName'] as String? ?? '',
+      fromUserDisplayName: (data['fromUserDisplayName'] as String?).orEmpty(),
       target: InvitationTarget.fromFirestore(
         data['target'] as Map<String, dynamic>,
       ),
@@ -619,13 +620,12 @@ class RealtimeInvitation {
         (s) => s.name == data['status'],
         orElse: () => RealtimeInvitationStatus.pending,
       ),
-      sentAt: _parseDateTime(data['sentAt']) ?? DateTime.now(),
+      sentAt: _parseDateTime(data['sentAt']).orNow(),
       respondedAt: _parseDateTime(data['respondedAt']),
-      expiresAt: _parseDateTime(data['expiresAt']) ??
-          DateTime.now().add(const Duration(days: 7)),
+      expiresAt: (_parseDateTime(data['expiresAt']) ?? DateTime.now()).add(const Duration(days: 7)),
       message: data['message'] as String?,
-      permissionLevel: data['permissionLevel'] as String? ?? 'editor',
-      metadata: Map<String, dynamic>.from(data['metadata'] ?? {}),
+      permissionLevel: (data['permissionLevel'] as String?).orDefault('editor'),
+      metadata: Map<String, dynamic>.from((data['metadata'] as Map?).orEmpty()),
     );
   }
 
@@ -660,12 +660,12 @@ class RealtimeInvitation {
     return RealtimeInvitation(
       id: json['id'] as String,
       resourceType: RealtimeResourceType.fromString(
-        json['resourceType'] as String? ?? 'recipe',
+        (json['resourceType'] as String?).orDefault('recipe'),
       ),
       resourceId: json['resourceId'] as String,
-      resourceTitle: json['resourceTitle'] as String? ?? '',
+      resourceTitle: (json['resourceTitle'] as String?).orEmpty(),
       fromUserId: json['fromUserId'] as String,
-      fromUserDisplayName: json['fromUserDisplayName'] as String? ?? '',
+      fromUserDisplayName: (json['fromUserDisplayName'] as String?).orEmpty(),
       target: InvitationTarget.fromJson(
         json['target'] as Map<String, dynamic>,
       ),
@@ -679,8 +679,8 @@ class RealtimeInvitation {
           : null,
       expiresAt: DateTime.parse(json['expiresAt'] as String),
       message: json['message'] as String?,
-      permissionLevel: json['permissionLevel'] as String? ?? 'editor',
-      metadata: Map<String, dynamic>.from(json['metadata'] ?? {}),
+      permissionLevel: (json['permissionLevel'] as String?).orDefault('editor'),
+      metadata: Map<String, dynamic>.from((json['metadata'] as Map?).orEmpty()),
     );
   }
 
@@ -739,7 +739,7 @@ class RealtimeInvitation {
     } else if (value is Map && value.containsKey('seconds')) {
       // Handle Firestore Timestamp-like objects passed from repository
       final seconds = value['seconds'] as int?;
-      final nanoseconds = value['nanoseconds'] as int? ?? 0;
+      final nanoseconds = (value['nanoseconds'] as int?).orZero();
       if (seconds != null) {
         return DateTime.fromMillisecondsSinceEpoch(
           seconds * 1000 + nanoseconds ~/ 1000000,
