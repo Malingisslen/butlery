@@ -49,6 +49,9 @@
 /// ```
 
 import 'dart:developer' as developer;
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/analytics_service.dart';
+
 /// Application logging utility providing structured, production-safe logging with hierarchical severity levels.
 ///
 /// This utility class implements comprehensive logging functionality using Flutter's developer.log() system
@@ -142,6 +145,9 @@ class AppLogger {
   /// with comprehensive error context including stack traces when available. It's designed for critical
   /// issues that impact application functionality and require immediate attention or investigation.
   ///
+  /// **Analytics Integration:** Automatically tracks errors to Firebase Analytics for production monitoring
+  /// (if AnalyticsService is available and initialized). This enables error rate tracking and crash analysis.
+  ///
   /// [message] Descriptive error message explaining what went wrong
   /// [error] Optional error object providing additional context, stack traces, and debugging information
   /// [name] Optional logger name for contextual categorization (defaults to 'Butlery')
@@ -153,7 +159,7 @@ class AppLogger {
   /// AppLogger.error('Authentication error occurred', authError, 'Auth');
   /// ```
   ///
-  /// **Log Level:** 1000 (Error) - Highest priority for critical issues requiring attention  
+  /// **Log Level:** 1000 (Error) - Highest priority for critical issues requiring attention
   static void error(String message, [Object? error, String? name]) {
     developer.log(
       '❌ $message',
@@ -161,6 +167,33 @@ class AppLogger {
       level: 1000, // Error level
       error: error,
     );
+
+    // Track error analytics (if service is available and initialized)
+    _trackErrorAnalytics(message, error, name);
+  }
+
+  /// Tracks error analytics to Firebase (safe to call even if service not initialized)
+  static void _trackErrorAnalytics(String message, Object? error, String? name) {
+    try {
+      // Use Future.microtask to avoid blocking the error logging
+      Future.microtask(() async {
+        try {
+          final analyticsService = ServiceLocator.get<AnalyticsService>();
+          await analyticsService.logErrorOccurred(
+            errorCode: name ?? 'app_error',
+            errorType: error?.runtimeType.toString() ?? 'unknown',
+            userAction: message,
+            stackTrace: error?.toString(),
+          );
+        } catch (e) {
+          // Silently fail if analytics service not available
+          // This prevents errors during app initialization
+        }
+      });
+    } catch (e) {
+      // Silently fail if ServiceLocator not initialized
+      // This prevents errors during app initialization
+    }
   }
 
   /// Logs development and debugging information that only appears in debug builds for development analysis.

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
+import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 
 /// GDPR Compliance - Right to Data Portability (Article 20) and Right of Access (Article 15)
@@ -14,16 +16,24 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 /// - **Consent records (Article 7)** - User consent history
 /// - Notification data and preferences
 /// - All shared content
-class DataExportService {
-  final FirebaseAuth _auth;
-  final FirebaseFirestore _firestore;
+///
+/// Uses repository pattern for database access to improve testability and maintain
+/// architectural consistency across the application.
+class DataExportService extends BaseService {
+  @override
+  String get serviceName => 'DataExportService';
+  final auth_repo.AuthRepository _authRepository;
+  final FirestoreRepository _firestoreRepository;
   static const String _logTag = 'DataExportService';
 
   DataExportService({
-    required FirebaseAuth auth,
-    required FirebaseFirestore firestore,
-  })  : _auth = auth,
-        _firestore = firestore;
+    required auth_repo.AuthRepository authRepository,
+    required FirestoreRepository firestoreRepository,
+  })  : _authRepository = authRepository,
+        _firestoreRepository = firestoreRepository;
+
+  /// Access Firestore instance from repository
+  FirebaseFirestore get _firestore => _firestoreRepository.firestore;
 
   /// Export all user data in GDPR-compliant JSON format
   ///
@@ -32,129 +42,126 @@ class DataExportService {
   ///
   /// Throws an exception if user is not authenticated or export fails.
   Future<String> exportUserData() async {
-    try {
-      final user = _auth.currentUser;
-      if (user == null) {
-        throw Exception('No authenticated user found');
-      }
-
-      final userId = user.uid;
-      app_logger.AppLogger.info('[$_logTag] Starting data export for user: $userId');
-
-      // Create comprehensive export data structure
-      final exportData = {
-        'export_metadata': {
-          'export_date': DateTime.now().toIso8601String(),
-          'export_version': '2.0',
-          'gdpr_compliance': {
-            'article_15': 'Right of Access',
-            'article_20': 'Right to Data Portability',
-            'article_30': 'Records of Processing Activities (Audit Logs)',
-            'article_7': 'Consent Records',
-          },
-          'user_id': userId,
-          'format': 'JSON',
-          'includes_audit_logs': true,
-          'includes_consent_history': true,
-        },
-        'profile': await _exportUserProfile(userId),
-        'recipes': await _exportRecipes(userId),
-        'friends': await _exportFriends(userId),
-        'messages': await _exportMessages(userId),
-        'shopping_lists': await _exportShoppingLists(userId),
-        'menus': await _exportMenus(userId),
-        'comments_and_ratings': await _exportCommentsAndRatings(userId),
-        'activity_history': await _exportActivityHistory(userId),
-        'shared_content': await _exportSharedContent(userId),
-        'preferences': await _exportPreferences(userId),
-        // NEW: GDPR-critical data exports
-        'audit_logs': await _exportAuditLogs(userId),
-        'consent_records': await _exportConsentRecords(userId),
-        'notifications': await _exportNotifications(userId),
-        'notification_preferences': await _exportNotificationPreferences(userId),
-      };
-
-      // Convert to pretty-printed JSON
-      final jsonString = const JsonEncoder.withIndent('  ').convert(exportData);
-
-      app_logger.AppLogger.success('[$_logTag] Data export completed successfully');
-      return jsonString;
-
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Data export failed', e);
-      rethrow;
+    final user = _authRepository.currentUser;
+    if (user == null) {
+      throw Exception('No authenticated user found');
     }
+
+    final userId = user.uid;
+    app_logger.AppLogger.info('[$_logTag] Starting data export for user: $userId');
+
+    // Create comprehensive export data structure
+    final exportData = {
+      'export_metadata': {
+        'export_date': DateTime.now().toIso8601String(),
+        'export_version': '2.0',
+        'gdpr_compliance': {
+          'article_15': 'Right of Access',
+          'article_20': 'Right to Data Portability',
+          'article_30': 'Records of Processing Activities (Audit Logs)',
+          'article_7': 'Consent Records',
+        },
+        'user_id': userId,
+        'format': 'JSON',
+        'includes_audit_logs': true,
+        'includes_consent_history': true,
+      },
+      'profile': await _exportUserProfile(userId),
+      'recipes': await _exportRecipes(userId),
+      'friends': await _exportFriends(userId),
+      'messages': await _exportMessages(userId),
+      'shopping_lists': await _exportShoppingLists(userId),
+      'menus': await _exportMenus(userId),
+      'comments_and_ratings': await _exportCommentsAndRatings(userId),
+      'activity_history': await _exportActivityHistory(userId),
+      'shared_content': await _exportSharedContent(userId),
+      'preferences': await _exportPreferences(userId),
+      // NEW: GDPR-critical data exports
+      'audit_logs': await _exportAuditLogs(userId),
+      'consent_records': await _exportConsentRecords(userId),
+      'notifications': await _exportNotifications(userId),
+      'notification_preferences': await _exportNotificationPreferences(userId),
+    };
+
+    // Convert to pretty-printed JSON
+    final jsonString = const JsonEncoder.withIndent('  ').convert(exportData);
+
+    app_logger.AppLogger.success('[$_logTag] Data export completed successfully');
+    return jsonString;
   }
 
   Future<Map<String, dynamic>> _exportUserProfile(String userId) async {
-    try {
-      // Get private profile
-      final userDoc = await _firestore.collection('users').doc(userId).get();
+    return await safeExecute(
+      () async {
+        // Get private profile
+        final userDoc = await _firestore.collection('users').doc(userId).get();
 
-      // Get public profile
-      final publicProfileDoc = await _firestore
-          .collection('public_profiles')
-          .doc(userId)
-          .get();
+        // Get public profile
+        final publicProfileDoc = await _firestore
+            .collection('public_profiles')
+            .doc(userId)
+            .get();
 
-      return {
-        'private_profile': userDoc.data() ?? {},
-        'public_profile': publicProfileDoc.data() ?? {},
-        'firebase_auth': {
-          'uid': userId,
-          'email': _auth.currentUser?.email,
-          'email_verified': _auth.currentUser?.emailVerified,
-          'creation_time': _auth.currentUser?.metadata.creationTime?.toIso8601String(),
-          'last_sign_in': _auth.currentUser?.metadata.lastSignInTime?.toIso8601String(),
-        },
-      };
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export user profile', e);
-      return {'error': e.toString()};
-    }
+        final currentUser = _authRepository.currentUser;
+        return {
+          'private_profile': userDoc.data() ?? {},
+          'public_profile': publicProfileDoc.data() ?? {},
+          'firebase_auth': {
+            'uid': userId,
+            'email': currentUser?.email,
+            'email_verified': currentUser?.emailVerified,
+            'creation_time': currentUser?.metadata.creationTime?.toIso8601String(),
+            'last_sign_in': currentUser?.metadata.lastSignInTime?.toIso8601String(),
+          },
+        };
+      },
+      operationName: 'Export user profile',
+      defaultValue: {'error': 'Failed to export user profile'},
+    ) ?? {'error': 'Failed to export user profile'};
   }
 
   Future<Map<String, dynamic>> _exportRecipes(String userId) async {
-    try {
-      final recipes = <Map<String, dynamic>>[];
+    return await safeExecute(
+      () async {
+        final recipes = <Map<String, dynamic>>[];
 
-      // Personal recipes in user's subcollection
-      final personalRecipes = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('recipes')
-          .get();
+        // Personal recipes in user's subcollection
+        final personalRecipes = await _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('recipes')
+            .get();
 
-      for (final doc in personalRecipes.docs) {
-        recipes.add({
-          'recipe_id': doc.id,
-          'type': 'personal',
-          'data': doc.data(),
-        });
-      }
+        for (final doc in personalRecipes.docs) {
+          recipes.add({
+            'recipe_id': doc.id,
+            'type': 'personal',
+            'data': doc.data(),
+          });
+        }
 
-      // Unified recipes where user is owner
-      final unifiedRecipes = await _firestore
-          .collection('recipes')
-          .where('userId', isEqualTo: userId)
-          .get();
+        // Unified recipes where user is owner
+        final unifiedRecipes = await _firestore
+            .collection('recipes')
+            .where('userId', isEqualTo: userId)
+            .get();
 
-      for (final doc in unifiedRecipes.docs) {
-        recipes.add({
-          'recipe_id': doc.id,
-          'type': 'unified',
-          'data': doc.data(),
-        });
-      }
+        for (final doc in unifiedRecipes.docs) {
+          recipes.add({
+            'recipe_id': doc.id,
+            'type': 'unified',
+            'data': doc.data(),
+          });
+        }
 
-      return {
-        'total_count': recipes.length,
-        'recipes': recipes,
-      };
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export recipes', e);
-      return {'error': e.toString()};
-    }
+        return {
+          'total_count': recipes.length,
+          'recipes': recipes,
+        };
+      },
+      operationName: 'Export recipes',
+      defaultValue: {'error': 'Failed to export recipes'},
+    ) ?? {'error': 'Failed to export recipes'};
   }
 
   Future<Map<String, dynamic>> _exportFriends(String userId) async {
@@ -492,22 +499,23 @@ class DataExportService {
   }
 
   Future<Map<String, dynamic>> _exportPreferences(String userId) async {
-    try {
-      final prefsDoc = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('settings')
-          .doc('preferences')
-          .get();
+    return await safeExecute(
+      () async {
+        final prefsDoc = await _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('settings')
+            .doc('preferences')
+            .get();
 
-      return {
-        'preferences': prefsDoc.data() ?? {},
-        'preferences_exist': prefsDoc.exists,
-      };
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export preferences', e);
-      return {'error': e.toString()};
-    }
+        return {
+          'preferences': prefsDoc.data() ?? {},
+          'preferences_exist': prefsDoc.exists,
+        };
+      },
+      operationName: 'Export preferences',
+      defaultValue: {'error': 'Failed to export preferences'},
+    ) ?? {'error': 'Failed to export preferences'};
   }
 
   /// Export audit logs for GDPR Article 30 compliance
@@ -530,11 +538,11 @@ class DataExportService {
         final data = doc.data();
         auditLogs.add({
           'audit_log_id': doc.id,
-          'timestamp': data['timestamp']?.toDate()?.toIso8601String() ?? 'unknown',
-          'operation': data['operation'] ?? 'unknown',
-          'resource_type': data['resourceType'] ?? 'unknown',
+          'timestamp': ((data['timestamp']?.toDate()?.toIso8601String()) ?? 'unknown'),
+          'operation': ((data['operation']) ?? 'unknown'),
+          'resource_type': ((data['resourceType']) ?? 'unknown'),
           'resource_id': data['resourceId'],
-          'granted': data['granted'] ?? false,
+          'granted': ((data['granted']) ?? false),
           'metadata': data['metadata'],
         });
       }

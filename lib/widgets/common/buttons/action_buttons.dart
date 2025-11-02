@@ -294,6 +294,43 @@ class ActionButtons {
         ? SizedBox(width: double.infinity, child: button)
         : button;
   }
+
+  /// Standard cancel button that pops the dialog/screen with false result.
+  ///
+  /// This convenience method eliminates duplication of the cancel button pattern across
+  /// 9+ locations in the codebase. All cancel buttons now have consistent behavior,
+  /// wording, and styling.
+  ///
+  /// **Parameters:**
+  /// - [label]: Custom label for the cancel button (defaults to 'Avbryt')
+  /// - [result]: Value to return when cancel is pressed (defaults to false)
+  ///
+  /// **Usage Example:**
+  /// ```dart
+  /// AlertDialog(
+  ///   title: Text('Confirm Action'),
+  ///   content: Text('Are you sure?'),
+  ///   actions: [
+  ///     ActionButtons.cancel(context),
+  ///     ActionButtons.primaryButton(
+  ///       context,
+  ///       label: 'Confirm',
+  ///       onPressed: () => Navigator.pop(context, true),
+  ///     ),
+  ///   ],
+  /// )
+  /// ```
+  static Widget cancel<T>(
+    BuildContext context, {
+    String label = 'Avbryt',
+    T? result,
+  }) {
+    return secondaryButton(
+      context,
+      label: label,
+      onPressed: () => Navigator.pop(context, result ?? false),
+    );
+  }
 }
 
 /// Floating Action Button Widget

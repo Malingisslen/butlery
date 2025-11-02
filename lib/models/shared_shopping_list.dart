@@ -197,7 +197,7 @@ class SharedShoppingList extends BaseSharedContentModel<List<UnifiedShoppingItem
       listDescription: data['listDescription'],
       listItems: (data['listItems'] as List<dynamic>?)
           ?.map((item) => UnifiedShoppingItem.fromFirestore(Map<String, dynamic>.from(item)))
-          .toList().orEmpty(),
+          .toList() ?? [],
       originalOwnerId: data['originalOwnerId'] ?? data['sharedByUserId'] ?? '',
       originalOwnerDisplayName: data['originalOwnerDisplayName'] ?? data['sharedByDisplayName'] ?? 'Unknown User',
     );
@@ -281,7 +281,7 @@ class SharedShoppingList extends BaseSharedContentModel<List<UnifiedShoppingItem
       listDescription: json['listDescription'] as String?,
       listItems: (json['listItems'] as List<dynamic>?)
           ?.map((item) => UnifiedShoppingItem.fromJson(item as Map<String, dynamic>))
-          .toList().orEmpty(),
+          .toList() ?? [],
       originalOwnerId: json['originalOwnerId'] as String,
       originalOwnerDisplayName: json['originalOwnerDisplayName'] as String,
     );

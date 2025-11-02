@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/menu_service.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -23,7 +24,8 @@ import 'package:butlery/viewmodels/menu/menu_social_manager.dart';
 class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
   final UnifiedRecipeService _recipeService;
   final MenuService _menuService;
-  
+  final AnalyticsService _analyticsService;
+
   // Modules
   late final MenuStateManager _stateManager;
   late final MenuGenerator _generator;
@@ -32,8 +34,10 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
   MenuViewModel({
     UnifiedRecipeService? recipeService,
     MenuService? menuService,
+    AnalyticsService? analyticsService,
   })  : _recipeService = recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
-        _menuService = menuService ?? ServiceLocator.get<MenuService>() {
+        _menuService = menuService ?? ServiceLocator.get<MenuService>(),
+        _analyticsService = analyticsService ?? ServiceLocator.get<AnalyticsService>() {
     
     // Initialize focused modules
     _stateManager = MenuStateManager();
@@ -70,7 +74,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
   /// Generates menu from AI prompt
   /// - Menu state update with generated content
-  /// 
+  ///
   /// **Usage Example:**
   /// ```dart
   /// await menuViewModel.generateMenu(
@@ -86,12 +90,41 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     _stateManager.setGenerating(true);
     _stateManager.setLastPrompt(prompt.trim());
 
+    // Track menu generation started
+    await _analyticsService.logMenuGenerationStarted(
+      promptLength: prompt.trim().length,
+    );
+
+    final startTime = DateTime.now();
+
     try {
       final generatedMenu = await _generator.generateMenuFromPrompt(prompt.trim());
       _stateManager.setMenu(generatedMenu);
       _stateManager.clearErrorAfterSuccess();
+
+      // Track menu generation success
+      final generationTime = DateTime.now().difference(startTime).inMilliseconds;
+      await _analyticsService.logMenuGenerated(
+        recipeCount: totalRecipeCount,
+        method: 'ai_prompt',
+      );
+
+      // Also log the time taken if it was slow
+      if (generationTime > 10000) { // More than 10 seconds
+        await _analyticsService.logSlowOperation(
+          operationName: 'menu_generation',
+          durationMs: generationTime,
+          thresholdMs: 10000,
+        );
+      }
     } catch (e) {
       _stateManager.handleOperationError('Meny-generering misslyckades', e);
+
+      // Track menu generation failure
+      await _analyticsService.logMenuGenerationFailed(
+        errorCode: 'menu_generation_error',
+        errorMessage: e.toString(),
+      );
     } finally {
       _stateManager.setGenerating(false);
     }
@@ -195,12 +228,19 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
     try {
       // Save locally first
-      await _storage.saveMenuLocally(
+      final menuId = await _storage.saveMenuLocally(
         menuName: menuName,
         comment: comment,
         menu: menu,
         lastPrompt: lastPrompt,
         totalRecipeCount: totalRecipeCount,
+      );
+
+      // Track menu saved analytics
+      await _analyticsService.logMenuSaved(
+        menuId: menuId,
+        recipeCount: totalRecipeCount,
+        isShared: shareWithFriends && (selectedFriendIds?.isNotEmpty ?? false),
       );
 
       // Handle social sharing if requested
@@ -215,7 +255,14 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
             shareMessage: shareMessage,
           );
 
-          if (!shareSuccess) {
+          if (shareSuccess) {
+            // Track menu shared analytics
+            await _analyticsService.logMenuShared(
+              menuId: menuId,
+              recipientCount: selectedFriendIds.length,
+              shareMethod: 'social',
+            );
+          } else {
             _stateManager.setError('Meny sparad, men kunde inte dela med vänner');
           }
         } catch (e) {

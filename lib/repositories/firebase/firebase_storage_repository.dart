@@ -558,7 +558,7 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
     final validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
     final fileExtension =
         validExtensions.contains(extension) ? extension : '.jpg';
-    
+
     final filePrefix = prefix ?? 'recipe';
     return '${filePrefix}_${timestamp}_$uniqueId$fileExtension';
   }

@@ -6,25 +6,28 @@ import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 
 /// ViewModel for messaging group conversation creation with friend selection and validation.
 ///
 /// Manages complete group conversation creation workflow including friend list loading,
 /// member selection, group name validation, and conversation creation through MessagingService.
-/// Follows MVVM architecture with proper state management and error handling.
+/// Follows MVVM architecture with AsyncOperationMixin for state management.
 ///
 /// **Core Responsibilities:**
-/// - Load available friends for group member selection
+/// - Load available friends for group member selection (loading managed by AsyncOperationMixin)
 /// - Manage selected members set with add/remove operations
 /// - Validate group name and member count requirements (minimum 2 members)
 /// - Create group conversation via MessagingService
 /// - Handle loading states and error conditions with Swedish messages
 ///
 /// **State Management:**
+/// - General loading/error managed by StateNotifierMixin
+/// - Operation-specific _isCreatingGroup for distinct UI treatment
 /// - Available friends list from UnifiedFriendsService
 /// - Selected members set for multi-selection
 /// - Group name and optional avatar URL
-/// - Loading and error states with notifications
 /// - Validation state for creation button
 ///
 /// **Usage Example:**
@@ -49,7 +52,8 @@ import 'package:butlery/core/utils/logger.dart';
 ///   // Navigate to chat
 /// }
 /// ```
-class CreateGroupConversationViewModel extends ChangeNotifier with ErrorHandlingMixin {
+class CreateGroupConversationViewModel extends ChangeNotifier
+    with ErrorHandlingMixin, StateNotifierMixin, AsyncOperationMixin {
   final MessagingService _messagingService;
   final UnifiedFriendsService _friendsService;
 
@@ -59,9 +63,8 @@ class CreateGroupConversationViewModel extends ChangeNotifier with ErrorHandling
   final Set<String> _selectedMemberIds = {};
   String _groupName = '';
   String? _groupAvatarUrl;
-  bool _isLoading = false;
-  bool _isCreatingGroup = false;
-  String? _error;
+  /// isLoading, error, hasError provided by StateNotifierMixin
+  bool _isCreatingGroup = false;  // Operation-specific state for group creation
   String? _validationError;
 
   CreateGroupConversationViewModel({
@@ -77,9 +80,8 @@ class CreateGroupConversationViewModel extends ChangeNotifier with ErrorHandling
       _availableFriends.where((f) => _selectedMemberIds.contains(f.uid)).toList();
   String get groupName => _groupName;
   String? get groupAvatarUrl => _groupAvatarUrl;
-  bool get isLoading => _isLoading;
-  bool get isCreatingGroup => _isCreatingGroup;
-  String? get error => _error;
+  /// isLoading, error, hasError provided by StateNotifierMixin
+  bool get isCreatingGroup => _isCreatingGroup;  // Operation-specific state
   String? get validationError => _validationError;
   int get selectedMemberCount => _selectedMemberIds.length;
   bool get hasSelectedMembers => _selectedMemberIds.isNotEmpty;
@@ -89,35 +91,29 @@ class CreateGroupConversationViewModel extends ChangeNotifier with ErrorHandling
   /// Load available friends for group member selection.
   ///
   /// Fetches complete friend list from UnifiedFriendsService and updates
-  /// available friends state. Handles loading states and errors.
+  /// available friends state. Handles loading states and errors via AsyncOperationMixin.
   Future<void> loadFriends() async {
     if (_isDisposed) return;
 
-    _isLoading = true;
-    _error = null;
-    _safeNotifyListeners();
-
     try {
-      AppLogger.info('🔄 Laddar vänner för gruppkonversation...');
+      await executeNamedOperation('loadFriends', () async {
+        AppLogger.info('🔄 Laddar vänner för gruppkonversation...');
 
-      final friends = _friendsService.friends;
+        final friends = _friendsService.friends;
 
-      if (_isDisposed) return;
+        if (_isDisposed) return;
 
-      _availableFriends = friends;
-      _isLoading = false;
+        _availableFriends = friends;
 
-      AppLogger.success('✅ Laddade ${friends.length} vänner');
+        AppLogger.success('✅ Laddade ${friends.length} vänner');
+      });
     } catch (e) {
       AppLogger.error('❌ Misslyckades ladda vänner', e);
 
       if (_isDisposed) return;
 
-      _error = 'Kunde inte ladda vänner: ${e.toString()}';
-      _isLoading = false;
+      setError('Kunde inte ladda vänner: ${e.toString()}');
     }
-
-    _safeNotifyListeners();
   }
 
   /// Toggle friend selection for group membership.
@@ -198,13 +194,12 @@ class CreateGroupConversationViewModel extends ChangeNotifier with ErrorHandling
     // Validate before creation
     _validateGroupCreation();
     if (_validationError != null) {
-      _error = _validationError;
-      _safeNotifyListeners();
+      setError(_validationError!);
       return null;
     }
 
     _isCreatingGroup = true;
-    _error = null;
+    clearError();
     _safeNotifyListeners();
 
     try {
@@ -246,7 +241,7 @@ class CreateGroupConversationViewModel extends ChangeNotifier with ErrorHandling
 
       if (_isDisposed) return null;
 
-      _error = 'Kunde inte skapa grupp: ${e.toString()}';
+      setError('Kunde inte skapa grupp: ${e.toString()}');
       _isCreatingGroup = false;
       _safeNotifyListeners();
 

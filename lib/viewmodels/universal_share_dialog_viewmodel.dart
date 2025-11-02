@@ -369,7 +369,12 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
           _shoppingService,
         );
 
-        // Share to groups if any selected (TODO: Implement group invitations)
+        // Share to groups if any selected
+        // TODO(Phase 6 - Social Features): Implement group invitations for copy mode
+        //   - Extend invitation system to support group sharing
+        //   - Add group member notification system
+        //   - Update UI to show group share status
+        //   - Priority: Medium (friend sharing works, groups are less common use case)
         if (groupIds != null && groupIds.isNotEmpty) {
           AppLogger.warning('⚠️ COPY MODE: Group sharing not yet implemented for copy mode');
           // For now, just log this - group sharing would need similar invitation system

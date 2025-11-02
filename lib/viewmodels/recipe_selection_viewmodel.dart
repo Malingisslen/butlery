@@ -46,6 +46,8 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 
 /// Comprehensive recipe selection ViewModel providing advanced recipe sharing through service integration.
 ///
@@ -54,12 +56,13 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 /// recipe selection business logic and UI presentation concerns through comprehensive state management.
 ///
 /// **Core Responsibilities:**
-/// - Advanced recipe discovery with search functionality and intelligent filtering capabilities
+/// - Advanced recipe discovery with search functionality and intelligent filtering capabilities (loading managed by AsyncOperationMixin)
 /// - Comprehensive multi-selection management with state tracking and shared recipe awareness
 /// - Sharing status coordination with already shared recipe tracking and visual feedback
 /// - Social recipe distribution with friend targeting and delivery confirmation
 /// - Swedish localized error messages and user feedback coordination throughout selection operations
-class RecipeSelectionViewModel extends ChangeNotifier with StreamManagementMixin {
+class RecipeSelectionViewModel extends ChangeNotifier
+    with StreamManagementMixin, StateNotifierMixin, AsyncOperationMixin {
   final UnifiedRecipeService _recipeService;
   
   /// Target friend for recipe sharing and social distribution coordination.
@@ -108,27 +111,18 @@ class RecipeSelectionViewModel extends ChangeNotifier with StreamManagementMixin
   String _searchQuery = '';
 
   // ===== OPERATION STATE MANAGEMENT =====
+  /// isLoading, error, hasError provided by StateNotifierMixin
 
-  /// Loading state for UI progress indication during data operations.
-  /// 
-  /// Indicates active data loading for loading indicators and interaction
-  /// control during recipe loading and initialization processes.
-  bool _isLoading = false;
-  
-  /// Error message for user feedback and comprehensive error state management.
-  /// 
-  /// Provides localized error messages for user display and error recovery
-  /// throughout recipe selection operations and sharing functionality.
-  String? _error;
-  
   /// Selected recipe IDs for sharing coordination and selection management.
-  /// 
+  ///
   /// Stores selected recipes for sharing enabling multi-recipe selection,
   /// sharing coordination, and selection state tracking.
   final Set<String> _selectedRecipeIds = {};
-  
+
   /// Sharing operation state for UI progress indication during sharing operations.
-  /// 
+  ///
+  /// Operation-specific state maintained separately from general loading (isLoading)
+  /// because sharing requires distinct visual treatment from recipe loading.
   /// Indicates active sharing operation for loading indicators and interaction
   /// control during recipe sharing and delivery processes.
   bool _isSharing = false;
@@ -155,10 +149,8 @@ class RecipeSelectionViewModel extends ChangeNotifier with StreamManagementMixin
   List<Recipe> get allRecipes => _allRecipes;
   List<Recipe> get filteredRecipes => _filteredRecipes;
   String get searchQuery => _searchQuery;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-  bool get isSharing => _isSharing;
-  bool get hasError => _error != null;
+  /// isLoading, error, hasError provided by StateNotifierMixin
+  bool get isSharing => _isSharing;  // Operation-specific state for sharing
   bool get hasRecipes => _allRecipes.isNotEmpty;
   bool get hasFilteredRecipes => _filteredRecipes.isNotEmpty;
   bool get canShare => _selectedRecipeIds.isNotEmpty && !_isSharing;
@@ -175,26 +167,23 @@ class RecipeSelectionViewModel extends ChangeNotifier with StreamManagementMixin
 
   /// Ladda alla recept
   Future<void> loadRecipes() async {
-    _setLoading(true);
-    _clearError();
-
     try {
-      AppLogger.info('📋 Laddar recept för delning...');
+      await executeNamedOperation('loadRecipes', () async {
+        AppLogger.info('📋 Laddar recept för delning...');
 
-      final recipes = _recipeService.recipes;
-      _allRecipes = recipes.toList();
+        final recipes = _recipeService.recipes;
+        _allRecipes = recipes.toList();
 
-      // Ladda redan delade recept
-      await _loadSharedRecipes();
+        // Ladda redan delade recept
+        await _loadSharedRecipes();
 
-      _applyFilters();
-      _setLoading(false);
+        _applyFilters();
 
-      AppLogger.success('✅ ${_allRecipes.length} recept laddade');
+        AppLogger.success('✅ ${_allRecipes.length} recept laddade');
+      });
     } catch (e) {
       AppLogger.error('❌ Fel vid laddning av recept', e);
-      _setError('Kunde inte ladda recept');
-      _setLoading(false);
+      setError('Kunde inte ladda recept');
     }
   }
 
@@ -270,7 +259,7 @@ class RecipeSelectionViewModel extends ChangeNotifier with StreamManagementMixin
     if (_selectedRecipeIds.isEmpty || _isSharing) return false;
 
     _setSharing(true);
-    _clearError();
+    clearError();
 
     try {
       AppLogger.info('📤 Delar ${_selectedRecipeIds.length} recept med ${targetFriend.displayName}');
@@ -299,7 +288,7 @@ class RecipeSelectionViewModel extends ChangeNotifier with StreamManagementMixin
       return true;
     } catch (e) {
       AppLogger.error('❌ Fel vid delning av recept', e);
-      _setError('Kunde inte dela recept. Försök igen.');
+      setError('Kunde inte dela recept. Försök igen.');
       _setSharing(false);
       return false;
     }
@@ -377,50 +366,18 @@ class RecipeSelectionViewModel extends ChangeNotifier with StreamManagementMixin
   }
 
   // ===== PRIVATE STATE MANAGEMENT OPERATIONS =====
-
-  /// Loading state management with UI notification coordination.
-  /// 
-  /// [loading] Loading state for operation progress indication and interaction control
-  /// 
-  /// Updates loading state enabling UI progress indicators, interaction control,
-  /// and comprehensive loading state management throughout recipe operations
-  /// with reactive UI coordination and responsive state management.
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
-  }
+  /// setLoading, setError, clearError provided by StateNotifierMixin
 
   /// Sharing operation state management with UI notification coordination.
-  /// 
-  /// [sharing] Sharing state for operation progress indication and interaction control
-  /// 
+  ///
+  /// [sharing] Sharing state for operation-specific progress indication
+  ///
   /// Updates sharing operation state enabling UI sharing progress indicators,
   /// interaction control, and comprehensive sharing state management throughout
   /// recipe sharing operations with reactive UI coordination.
   void _setSharing(bool sharing) {
     _isSharing = sharing;
     notifyListeners();
-  }
-
-  /// Error state management with Swedish localized message coordination.
-  /// 
-  /// [message] Swedish localized error message for user feedback and error display
-  /// 
-  /// Updates error state enabling UI error display, user feedback coordination,
-  /// and comprehensive error management throughout recipe selection operations
-  /// with Swedish localized error messages and responsive error handling.
-  void _setError(String message) {
-    _error = message;
-    notifyListeners();
-  }
-
-  /// Error state clearing with state reset coordination.
-  /// 
-  /// Clears current error state enabling error recovery, state reset functionality,
-  /// and comprehensive error management with UI error display clearing
-  /// and responsive error state coordination.
-  void _clearError() {
-    _error = null;
   }
 
   /// Comprehensive shared recipe loading with friend-specific sharing status coordination.

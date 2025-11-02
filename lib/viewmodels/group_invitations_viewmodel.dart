@@ -8,22 +8,21 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/utils/error_handler.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 
 
-class GroupInvitationsViewModel extends ChangeNotifier {
+class GroupInvitationsViewModel extends ChangeNotifier
+    with ErrorHandlingMixin, StateNotifierMixin, AsyncOperationMixin {
   final UnifiedFriendsService _friendsService;
 
   // ===== STATE =====
   List<FriendCategory> _availableGroups = [];
   final Map<String, List<UserProfile>> _groupMembers = {};
-  final Set<String> _joiningGroupIds = {};
+  final Set<String> _joiningGroupIds = {};  // Operation-specific tracking for concurrent joins
   List<GroupInvitation> _receivedInvitations = [];
-  final Set<String> _respondingInvitationIds = {};
-
-  // ===== GENERAL STATE =====
-  bool _isLoading = false;
-  String? _error;
+  final Set<String> _respondingInvitationIds = {};  // Operation-specific tracking for concurrent responses
 
   GroupInvitationsViewModel({
     required UnifiedFriendsService friendsService,
@@ -65,13 +64,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
       _respondingInvitationIds.contains(invitationId);
 
   /// ===== GENERAL GETTERS =====
-
-  /// Loading state
-  bool get isLoading => _isLoading;
-
-  /// Error state
-  String? get error => _error;
-  bool get hasError => _error != null;
+  /// isLoading, error, hasError provided by StateNotifierMixin
 
   /// Aktuell användare
   String? get _currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
@@ -93,46 +86,42 @@ class GroupInvitationsViewModel extends ChangeNotifier {
 
   Future<void> _loadAvailableGroups() async {
     try {
-      _setLoading(true);
-      _clearError();
+      await executeNamedOperation('loadGroups', () async {
+        AppLogger.info('🔄 Laddar tillgängliga grupper för användare...');
 
-      AppLogger.info('🔄 Laddar tillgängliga grupper för användare...');
-
-      final currentUserId = _currentUserId;
-      if (currentUserId == null) {
-        throw Exception('Ingen användare inloggad');
-      }
-
-      // Hämta alla grupper
-      final allGroups = _friendsService.categories.getAllCategories();
-
-      // Filtrera bort grupper där användaren redan är medlem eller admin
-      _availableGroups = allGroups.where((group) {
-        // Hoppa över grupper där användaren redan är medlem
-        if (group.friendUserIds.contains(currentUserId)) {
-          return false;
+        final currentUserId = _currentUserId;
+        if (currentUserId == null) {
+          throw Exception('Ingen användare inloggad');
         }
 
-        // Hoppa över grupper som användaren äger
-        if (group.createdBy == currentUserId) {
-          return false;
-        }
+        // Hämta alla grupper
+        final allGroups = _friendsService.categories.getAllCategories();
 
-        return true;
-      }).toList();
+        // Filtrera bort grupper där användaren redan är medlem eller admin
+        _availableGroups = allGroups.where((group) {
+          // Hoppa över grupper där användaren redan är medlem
+          if (group.friendUserIds.contains(currentUserId)) {
+            return false;
+          }
 
-      AppLogger.info(
-        '📋 ${_availableGroups.length} tillgängliga grupper att gå med i',
-      );
+          // Hoppa över grupper som användaren äger
+          if (group.createdBy == currentUserId) {
+            return false;
+          }
 
-      // Ladda medlemmar för varje grupp
-      await _loadMembersForGroups();
+          return true;
+        }).toList();
+
+        AppLogger.info(
+          '📋 ${_availableGroups.length} tillgängliga grupper att gå med i',
+        );
+
+        // Ladda medlemmar för varje grupp
+        await _loadMembersForGroups();
+      });
     } catch (e) {
-      final failure = ErrorHandler().handleError(error: e, context: 'groupInvitationsOperation');
       AppLogger.error('❌ Kunde inte ladda tillgängliga grupper', e);
-      _setError(failure.userMessage);
-    } finally {
-      _setLoading(false);
+      setError(extractUserMessage(e));
     }
   }
 
@@ -207,7 +196,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
   Future<void> joinGroup(String groupId) async {
     final currentUserId = _currentUserId;
     if (currentUserId == null) {
-      _setError('Ingen användare inloggad');
+      setError('Ingen användare inloggad');
       return;
     }
 
@@ -218,7 +207,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
 
     try {
       _joiningGroupIds.add(groupId);
-      _clearError();
+      clearError();
       notifyListeners();
 
       final group = _availableGroups.firstWhere(
@@ -249,9 +238,8 @@ class GroupInvitationsViewModel extends ChangeNotifier {
         throw Exception(errorMessage);
       }
     } catch (e) {
-      final failure = ErrorHandler().handleError(error: e, context: 'groupInvitationsOperation');
       AppLogger.error('❌ Fel vid gruppmedlemskap', e);
-      _setError(failure.userMessage);
+      setError(extractUserMessage(e));
     } finally {
       _joiningGroupIds.remove(groupId);
       notifyListeners();
@@ -270,7 +258,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
 
     try {
       _respondingInvitationIds.add(invitationId);
-      _clearError();
+      clearError();
       notifyListeners();
 
       final invitation = _receivedInvitations.firstWhere(
@@ -303,9 +291,8 @@ class GroupInvitationsViewModel extends ChangeNotifier {
         throw Exception(errorMessage);
       }
     } catch (e) {
-      final failure = ErrorHandler().handleError(error: e, context: 'groupInvitationsOperation');
       AppLogger.error('❌ Fel vid acceptans av inbjudan', e);
-      _setError(failure.userMessage);
+      setError(extractUserMessage(e));
     } finally {
       _respondingInvitationIds.remove(invitationId);
       notifyListeners();
@@ -322,7 +309,7 @@ class GroupInvitationsViewModel extends ChangeNotifier {
 
     try {
       _respondingInvitationIds.add(invitationId);
-      _clearError();
+      clearError();
       notifyListeners();
 
       final invitation = _receivedInvitations.firstWhere(
@@ -351,9 +338,8 @@ class GroupInvitationsViewModel extends ChangeNotifier {
         throw Exception(errorMessage);
       }
     } catch (e) {
-      final failure = ErrorHandler().handleError(error: e, context: 'groupInvitationsOperation');
       AppLogger.error('❌ Fel vid avvisning av inbjudan', e);
-      _setError(failure.userMessage);
+      setError(extractUserMessage(e));
     } finally {
       _respondingInvitationIds.remove(invitationId);
       notifyListeners();
@@ -411,24 +397,11 @@ class GroupInvitationsViewModel extends ChangeNotifier {
 
   // ===== HELPER METHODS =====
 
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
-  }
-
-  void _setError(String message) {
-    _error = message;
-    notifyListeners();
-  }
-
-  void _clearError() {
-    _error = null;
-  }
-
-  /// Rensa fel (public metod för UI)
+  /// Public method to clear errors (for external/test use)
+  /// Overrides protected clearError from StateNotifierMixin to make it public
+  @override
   void clearError() {
-    _clearError();
-    notifyListeners();
+    super.clearError();
   }
 
   /// Logga analytics för gruppmedlemskap (befintlig)

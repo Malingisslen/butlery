@@ -10,19 +10,24 @@ import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/friends/friends_search_manager.dart';
 import 'package:butlery/viewmodels/friends/friends_profile_cache_manager.dart';
 import 'package:butlery/viewmodels/friends/friends_selection_manager.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
 
 /// Friendship status between current user and another user
 enum FriendshipStatus { none, friends, requestSent, requestReceived, blocked }
 
 
 /// Main ViewModel coordinating social relationship operations through service and manager delegation.
-class FriendsViewModel extends ChangeNotifier {
+class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin {
   final UnifiedFriendsService _friendsService;
   final UserService _userService;
+  final AnalyticsService _analyticsService;
 
   // ===== MANAGER INSTANCES (FACADE PATTERN) =====
   late final FriendsSearchManager _searchManager;
@@ -40,8 +45,10 @@ class FriendsViewModel extends ChangeNotifier {
   FriendsViewModel({
     required UnifiedFriendsService friendsService,
     required UserService userService,
+    AnalyticsService? analyticsService,
   })  : _friendsService = friendsService,
-        _userService = userService {
+        _userService = userService,
+        _analyticsService = analyticsService ?? ServiceLocator.get<AnalyticsService>() {
     // Initialize managers
     _searchManager = FriendsSearchManager(friendsService: friendsService);
     _profileCacheManager = FriendsProfileCacheManager(userService: userService);
@@ -116,13 +123,16 @@ class FriendsViewModel extends ChangeNotifier {
   // ===== LOADING AND ERROR STATE COORDINATION =====
 
   /// Comprehensive loading state combining all operations
+  @override
   bool get isLoading =>
       _friendsService.isLoading || _profileCacheManager.isLoadingUserProfiles || _isCreatingGroup;
 
   /// Comprehensive error state
+  @override
   String? get error => _friendsService.error ?? _groupCreationError ?? _searchManager.searchError;
 
   /// Error presence indicator
+  @override
   bool get hasError => _friendsService.hasError || _groupCreationError != null || _searchManager.searchError != null;
 
   // ===== FRIEND SELECTION STATE ACCESSORS (DELEGATES) =====
@@ -178,6 +188,12 @@ class FriendsViewModel extends ChangeNotifier {
     if (success) {
       AppLogger.success('✅ Friend request sent successfully to $userId');
 
+      // Track friend request sent
+      await _analyticsService.logFriendRequestSent(
+        recipientId: userId,
+        source: hasSearchQuery ? 'search' : 'discovery',
+      );
+
       // Clear search to show clean state after successful request
       _searchManager.clearSearch();
 
@@ -194,7 +210,22 @@ class FriendsViewModel extends ChangeNotifier {
 
   /// Accept incoming friend request
   Future<bool> acceptFriendRequest(String requestId) async {
-    return await _friendsService.management.acceptFriendRequest(requestId);
+    // Find the request to get sender ID for analytics
+    final request = incomingRequests.firstWhere(
+      (r) => r.id == requestId,
+      orElse: () => throw Exception('Request not found'),
+    );
+
+    final success = await _friendsService.management.acceptFriendRequest(requestId);
+
+    if (success) {
+      // Track friend request accepted
+      await _analyticsService.logFriendRequestAccepted(
+        senderId: request.fromUserId,
+      );
+    }
+
+    return success;
   }
 
   /// Reject incoming friend request
@@ -234,30 +265,26 @@ class FriendsViewModel extends ChangeNotifier {
     notifyListeners();
     
     try {
-      final result = await safeExecute(
-        () async {
-          AppLogger.info('🔄 Skapar grupp: $name');
+      final result = await executeAsync(() async {
+        AppLogger.info('🔄 Skapar grupp: $name');
 
-          final categoryId = await _friendsService.categories.createCategory(
-            name: name,
-            description: description ?? '',
-            initialMemberIds: selectedFriendIds,
-          );
+        final categoryId = await _friendsService.categories.createCategory(
+          name: name,
+          description: description ?? '',
+          initialMemberIds: selectedFriendIds,
+        );
 
-          final success = categoryId != null;
-          if (success) {
-            AppLogger.success('✅ Grupp "$name" skapad!');
-            return true;
-          } else {
-            _groupCreationError = _friendsService.error ?? 'Kunde inte skapa grupp';
-            throw Exception(_groupCreationError!);
-          }
-        },
-        operationName: 'Create group',
-        customErrorMessage: 'Fel vid skapande av grupp',
-      );
+        final success = categoryId != null;
+        if (success) {
+          AppLogger.success('✅ Grupp "$name" skapad!');
+          return true;
+        } else {
+          _groupCreationError = _friendsService.error ?? 'Kunde inte skapa grupp';
+          throw Exception(_groupCreationError!);
+        }
+      });
       
-      return result ?? false;
+      return result;
     } finally {
       _isCreatingGroup = false;
       notifyListeners();
@@ -314,12 +341,9 @@ class FriendsViewModel extends ChangeNotifier {
   Future<List<UserProfile>> getMutualFriends(String userId) async {
     if (_isDisposed) return [];
 
-    return await safeExecute(
-      () async {
-        return await _friendsService.management.getMutualFriends(userId);
-      },
-      operationName: 'Get mutual friends',
-    ) ?? [];
+    return await executeAsync(() async {
+      return await _friendsService.management.getMutualFriends(userId);
+    });
   }
 
   /// Check if user can be added as friend
@@ -386,21 +410,6 @@ class FriendsViewModel extends ChangeNotifier {
     );
   }
 
-  // ===== ERROR HANDLING METHODS (Consolidated from mixins) =====
-  
-  /// Safe execution wrapper with error handling (consolidated from ErrorHandlingMixin)
-  Future<T?> safeExecute<T>(
-    Future<T> Function() operation, {
-    required String operationName,
-    String? customErrorMessage,
-  }) async {
-    try {
-      return await operation();
-    } catch (e) {
-      AppLogger.error('$operationName failed: $e');
-      return null;
-    }
-  }
 
   // ===== LISTENER CALLBACKS =====
 
@@ -440,6 +449,7 @@ class FriendsViewModel extends ChangeNotifier {
   }
 
   /// Clear errors
+  @override
   void clearError() {
     if (!_isDisposed) {
       _friendsService.clearError();

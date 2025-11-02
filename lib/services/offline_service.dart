@@ -31,6 +31,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
@@ -85,7 +86,7 @@ export 'offline/sync_result.dart';
 /// // Manual synchronization
 /// final syncResult = await offlineService.syncNow();
 /// ```
-class OfflineService extends ChangeNotifier {
+class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   // Singleton pattern using SingletonServiceMixin approach
   static OfflineService? _instance;
   

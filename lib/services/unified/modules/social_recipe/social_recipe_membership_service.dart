@@ -6,7 +6,6 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
-import 'package:butlery/core/utils/logging_utils.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 
 /// Social Recipe Membership Service
@@ -47,41 +46,35 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
     }
 
     final result = await executeAsUser<bool>((currentUserId) async {
-      return await LoggingUtils.loggedUpdate(
-        'Recipe Member',
-        () async {
-          // 1. Load the recipe
-          final recipe = await _getRecipe(recipeId);
-          if (recipe == null) {
-            throw Exception('Recipe not found');
-          }
+      // 1. Load the recipe
+      final recipe = await _getRecipe(recipeId);
+      if (recipe == null) {
+        throw Exception('Recipe not found');
+      }
 
-          // 2. Check permissions - only admin can add members
-          if (!_hasAdminPermission(recipe, currentUserId)) {
-            throw Exception('No permission to add members');
-          }
+      // 2. Check permissions - only admin can add members
+      if (!_hasAdminPermission(recipe, currentUserId)) {
+        throw Exception('No permission to add members');
+      }
 
-          // 3. Add the member
-          final updatedMemberPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
-          updatedMemberPermissions[userId] = permission;
+      // 3. Add the member
+      final updatedMemberPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
+      updatedMemberPermissions[userId] = permission;
 
-          final updatedRecipe = recipe.copyWith(
-            socialData: recipe.socialData?.copyWith(
-              memberPermissions: updatedMemberPermissions,
-            ),
-          );
-
-          // 4. Save back to Firebase and cache
-          final success = await _saveRecipe(updatedRecipe);
-          if (success) {
-            _notifyListeners(); // Notify UI of changes
-          }
-          
-          return success;
-        },
-        itemId: recipeId,
-        metadata: {'new_member': userId, 'permission': permission.toString()},
+      final updatedRecipe = recipe.copyWith(
+        socialData: recipe.socialData?.copyWith(
+          memberPermissions: updatedMemberPermissions,
+        ),
       );
+
+      // 4. Save back to Firebase and cache
+      final success = await _saveRecipe(updatedRecipe);
+      if (success) {
+        _notifyListeners(); // Notify UI of changes
+        AppLogger.success('✅ Added member to recipe: $userId');
+      }
+
+      return success;
     }, operationName: 'Add recipe member');
     return result ?? false;
   }
@@ -89,41 +82,35 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
   /// Remove member from collaborative recipe
   Future<bool> removeMemberFromRecipe(String recipeId, String userId) async {
     final result = await executeAsUser<bool>((currentUserId) async {
-      return await LoggingUtils.loggedDelete(
-        'Recipe Member',
-        () async {
-          // 1. Load the recipe
-          final recipe = await _getRecipe(recipeId);
-          if (recipe == null) {
-            throw Exception('Recipe not found');
-          }
+      // 1. Load the recipe
+      final recipe = await _getRecipe(recipeId);
+      if (recipe == null) {
+        throw Exception('Recipe not found');
+      }
 
-          // 2. Check admin permissions - only admin can remove members
-          if (!_hasAdminPermission(recipe, currentUserId)) {
-            throw Exception('No permission to remove members');
-          }
+      // 2. Check admin permissions - only admin can remove members
+      if (!_hasAdminPermission(recipe, currentUserId)) {
+        throw Exception('No permission to remove members');
+      }
 
-          // 3. Remove the member
-          final updatedMemberPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
-          updatedMemberPermissions.remove(userId);
+      // 3. Remove the member
+      final updatedMemberPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
+      updatedMemberPermissions.remove(userId);
 
-          final updatedRecipe = recipe.copyWith(
-            socialData: recipe.socialData?.copyWith(
-              memberPermissions: updatedMemberPermissions,
-            ),
-          );
-
-          // 4. Save back to Firebase and cache
-          final success = await _saveRecipe(updatedRecipe);
-          if (success) {
-            _notifyListeners(); // Notify UI of changes
-          }
-          
-          return success;
-        },
-        itemId: recipeId,
-        metadata: {'removed_member': userId},
+      final updatedRecipe = recipe.copyWith(
+        socialData: recipe.socialData?.copyWith(
+          memberPermissions: updatedMemberPermissions,
+        ),
       );
+
+      // 4. Save back to Firebase and cache
+      final success = await _saveRecipe(updatedRecipe);
+      if (success) {
+        _notifyListeners(); // Notify UI of changes
+        AppLogger.success('✅ Removed member from recipe: $userId');
+      }
+
+      return success;
     }, operationName: 'Remove recipe member');
     return result ?? false;
   }
@@ -132,41 +119,35 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
   Future<bool> updateMemberPermission(
       String recipeId, String userId, ResourcePermission permission) async {
     final result = await executeAsUser<bool>((currentUserId) async {
-      return await LoggingUtils.loggedUpdate(
-        'Recipe Member Permission',
-        () async {
-          // 1. Load the recipe
-          final recipe = await _getRecipe(recipeId);
-          if (recipe == null) {
-            throw Exception('Recipe not found');
-          }
+      // 1. Load the recipe
+      final recipe = await _getRecipe(recipeId);
+      if (recipe == null) {
+        throw Exception('Recipe not found');
+      }
 
-          // 2. Check admin permissions - only admin can update permissions
-          if (!_hasAdminPermission(recipe, currentUserId)) {
-            throw Exception('No permission to update permissions');
-          }
+      // 2. Check admin permissions - only admin can update permissions
+      if (!_hasAdminPermission(recipe, currentUserId)) {
+        throw Exception('No permission to update permissions');
+      }
 
-          // 3. Update the permission
-          final updatedMemberPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
-          updatedMemberPermissions[userId] = permission;
+      // 3. Update the permission
+      final updatedMemberPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
+      updatedMemberPermissions[userId] = permission;
 
-          final updatedRecipe = recipe.copyWith(
-            socialData: recipe.socialData?.copyWith(
-              memberPermissions: updatedMemberPermissions,
-            ),
-          );
-
-          // 4. Save back to Firebase and cache
-          final success = await _saveRecipe(updatedRecipe);
-          if (success) {
-            _notifyListeners(); // Notify UI of changes
-          }
-          
-          return success;
-        },
-        itemId: recipeId,
-        metadata: {'updated_member': userId, 'new_permission': permission.toString()},
+      final updatedRecipe = recipe.copyWith(
+        socialData: recipe.socialData?.copyWith(
+          memberPermissions: updatedMemberPermissions,
+        ),
       );
+
+      // 4. Save back to Firebase and cache
+      final success = await _saveRecipe(updatedRecipe);
+      if (success) {
+        _notifyListeners(); // Notify UI of changes
+        AppLogger.success('✅ Updated member permission: $userId -> $permission');
+      }
+
+      return success;
     }, operationName: 'Update recipe member permission');
     return result ?? false;
   }

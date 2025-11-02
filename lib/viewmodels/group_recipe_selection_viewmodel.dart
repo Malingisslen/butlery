@@ -6,9 +6,15 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 
 /// ViewModel for selecting and sharing recipes with a group
-class GroupRecipeSelectionViewModel extends ChangeNotifier {
+///
+/// Uses AsyncOperationMixin for loading state management while maintaining
+/// operation-specific _isSharing state for distinct UI treatment.
+class GroupRecipeSelectionViewModel extends ChangeNotifier
+    with StateNotifierMixin, AsyncOperationMixin {
   final UnifiedRecipeService _recipeService;
   final FriendCategory targetGroup;
   final List<UserProfile> groupMembers;
@@ -25,19 +31,16 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier {
   final Set<String> _selectedRecipeIds = {};
   final Set<String> _alreadySharedRecipeIds = {};
   String _searchQuery = '';
-  bool _isLoading = false;
-  bool _isSharing = false;
-  String? _error;
+  /// isLoading, error, hasError provided by StateNotifierMixin
+  bool _isSharing = false;  // Operation-specific state for sharing
 
   // Getters
   List<Recipe> get filteredRecipes => _filteredRecipes;
   int get filteredCount => _filteredRecipes.length;
   int get totalCount => _allRecipes.length;
   String get searchQuery => _searchQuery;
-  bool get isLoading => _isLoading;
-  bool get isSharing => _isSharing;
-  bool get hasError => _error != null;
-  String? get error => _error;
+  /// isLoading, error, hasError provided by StateNotifierMixin
+  bool get isSharing => _isSharing;  // Operation-specific state
   bool get isEmpty => _allRecipes.isEmpty;
   bool get hasSelectedRecipes => _selectedRecipeIds.isNotEmpty;
   int get selectedCount => _selectedRecipeIds.length;
@@ -47,26 +50,23 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier {
 
   /// Load user's recipes
   Future<void> loadRecipes() async {
-    _setLoading(true);
-    _clearError();
-
     try {
-      AppLogger.info('📚 Laddar recept för gruppdelning');
+      await executeNamedOperation('loadRecipes', () async {
+        AppLogger.info('📚 Laddar recept för gruppdelning');
 
-      // Load personal recipes from cached list
-      _allRecipes = _recipeService.recipes.toList();
+        // Load personal recipes from cached list
+        _allRecipes = _recipeService.recipes.toList();
 
-      // Check which recipes are already shared with group members
-      await _loadAlreadySharedRecipes();
+        // Check which recipes are already shared with group members
+        await _loadAlreadySharedRecipes();
 
-      _applyFilters();
-      _setLoading(false);
+        _applyFilters();
 
-      AppLogger.success('✅ ${_allRecipes.length} recept laddade');
+        AppLogger.success('✅ ${_allRecipes.length} recept laddade');
+      });
     } catch (e) {
       AppLogger.error('❌ Fel vid laddning av recept', e);
-      _setError('Kunde inte ladda recept. Försök igen.');
-      _setLoading(false);
+      setError('Kunde inte ladda recept. Försök igen.');
     }
   }
 
@@ -134,7 +134,7 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier {
     if (_selectedRecipeIds.isEmpty || _isSharing) return false;
 
     _setSharing(true);
-    _clearError();
+    clearError();
 
     try {
       AppLogger.info('📤 Delar ${_selectedRecipeIds.length} recept med grupp ${targetGroup.name}');
@@ -169,7 +169,7 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier {
       return true;
     } catch (e) {
       AppLogger.error('❌ Fel vid delning av recept', e);
-      _setError('Kunde inte dela recept. Försök igen.');
+      setError('Kunde inte dela recept. Försök igen.');
       _setSharing(false);
       return false;
     }
@@ -214,23 +214,10 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier {
   }
 
   // Private state setters
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
-  }
+  /// setLoading, setError, clearError provided by StateNotifierMixin
 
   void _setSharing(bool sharing) {
     _isSharing = sharing;
-    notifyListeners();
-  }
-
-  void _setError(String error) {
-    _error = error;
-    notifyListeners();
-  }
-
-  void _clearError() {
-    _error = null;
     notifyListeners();
   }
 }

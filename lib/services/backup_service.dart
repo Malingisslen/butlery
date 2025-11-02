@@ -6,10 +6,13 @@ import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 
-class BackupService {
+class BackupService extends BaseService {
+  @override
+  String get serviceName => 'BackupService';
   Future<BackupResult> exportToFile() async {
     try {
       // Hämta alla recept

@@ -3,6 +3,7 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/core/base/base_service.dart';
 
 /// Focused module for social recipe discovery and filtering
 ///
@@ -15,7 +16,10 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 /// - Discovery analytics and recommendations
 ///
 /// ❌ DOES NOT CONTAIN: Recipe sharing, member management, comments, ratings, permissions
-class RecipeDiscoveryService {
+class RecipeDiscoveryService extends BaseService {
+  @override
+  String get serviceName => 'RecipeDiscoveryService';
+
   final UnifiedRecipeService _parent;
 
   RecipeDiscoveryService(this._parent);

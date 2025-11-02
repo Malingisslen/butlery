@@ -5,7 +5,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
-import 'package:butlery/core/utils/logging_utils.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/realtime_watching_module.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/realtime_editing_module.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/collaboration_management_module.dart';
@@ -157,16 +156,16 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
   Future<bool> startRealtimeEditing(String recipeId) async {
     if (ValidationUtils.isNullOrEmpty(recipeId)) return false;
 
-    return await LoggingUtils.loggedOperation(
-      'Start Realtime Editing',
+    final result = await executeServiceOperation(
       () => _executeWithNotification(
         recipeId,
         () => _editingModule.startRealtimeEditing(recipeId),
         _notificationModule.sendCollaborationJoinedNotification,
         beforeNotification: () => _presenceModule.showPresence(recipeId),
       ),
-      metadata: {'recipe_id': recipeId},
-    ) == true;
+      operationName: 'Start Realtime Editing',
+    );
+    return result == true;
   }
 
   /// Stop real-time editing session for recipe
@@ -174,15 +173,15 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     if (ValidationUtils.isNullOrEmpty(recipeId)) return false;
 
     await _presenceModule.hidePresence(recipeId);
-    return await LoggingUtils.loggedOperation(
-      'Stop Realtime Editing',
+    final result = await executeServiceOperation(
       () => _executeWithNotification(
         recipeId,
         () => _editingModule.stopRealtimeEditing(recipeId),
         _notificationModule.sendCollaborationLeftNotification,
       ),
-      metadata: {'recipe_id': recipeId},
-    ) == true;
+      operationName: 'Stop Realtime Editing',
+    );
+    return result == true;
   }
 
   /// Check if recipe is in realtime editing mode

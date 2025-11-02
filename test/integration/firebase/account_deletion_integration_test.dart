@@ -33,6 +33,8 @@ void main() {
     late AccountDeletionService service;
     late FirebaseFirestore firestore;
     late MockFirebaseAuth mockAuth;
+    late MockAuthRepository mockAuthRepository;
+    late MockFirestoreRepository mockFirestoreRepository;
     late MockAuthService mockAuthService;
     late MockUserService mockUserService;
     late MockUnifiedRecipeService mockRecipeService;
@@ -54,6 +56,8 @@ void main() {
       
       // Create mocks for non-Firebase services
       mockAuth = MockFirebaseAuth();
+      mockAuthRepository = MockAuthRepository();
+      mockFirestoreRepository = MockFirestoreRepository();
       mockAuthService = MockAuthService();
       mockUserService = MockUserService();
       mockRecipeService = MockUnifiedRecipeService();
@@ -81,11 +85,15 @@ void main() {
       when(() => mockOfflineService.clearUserData(any())).thenAnswer((_) async => true);
       when(() => mockAnalyticsService.logAccountDeleted(any())).thenAnswer((_) async {});
       when(() => mockUser.delete()).thenAnswer((_) async {});
-      
-      // Create service with real Firestore
+
+      // Setup repository mocks
+      when(() => mockAuthRepository.currentUser).thenReturn(mockUser);
+      when(() => mockFirestoreRepository.firestore).thenReturn(firestore);
+
+      // Create service with repository wrappers
       service = AccountDeletionService(
-        auth: mockAuth,
-        firestore: firestore,
+        authRepository: mockAuthRepository,
+        firestoreRepository: mockFirestoreRepository,
         authService: mockAuthService,
         userService: mockUserService,
         recipeService: mockRecipeService,

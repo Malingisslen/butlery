@@ -14,6 +14,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:butlery/core/base/base_service.dart';
 
 /// Performance metric types
 enum MetricType {
@@ -96,7 +97,10 @@ class PerformanceReport {
 }
 
 /// Performance monitoring service
-class PerformanceMonitoringService {
+class PerformanceMonitoringService extends BaseService {
+  @override
+  String get serviceName => 'PerformanceMonitoringService';
+
   static final PerformanceMonitoringService _instance = PerformanceMonitoringService._internal();
   factory PerformanceMonitoringService() => _instance;
   PerformanceMonitoringService._internal();
@@ -132,21 +136,18 @@ class PerformanceMonitoringService {
   int _cacheMisses = 0;
   
   /// Initialize performance monitoring
-  void initialize() {
+  @override
+  Future<void> onInitialize() async {
     if (_isMonitoring) return;
-    
-    AppLogger.info('📊 Initializing PerformanceMonitoringService...');
-    
+
     _isMonitoring = true;
     _sessionStartTime = DateTime.now();
-    
+
     // Start frame monitoring
     _startFrameMonitoring();
-    
+
     // Start periodic reporting
     _startPeriodicReporting();
-    
-    AppLogger.success('✅ PerformanceMonitoringService initialized');
   }
   
   /// Start monitoring frame rendering performance
@@ -427,9 +428,10 @@ class PerformanceMonitoringService {
   }
   
   /// Stop performance monitoring
-  void dispose() {
+  @override
+  Future<void> onDispose() async {
     _reportTimer?.cancel();
-    
+
     // Only remove callback if monitoring was started
     if (_isMonitoring && !kReleaseMode) {
       try {
@@ -438,10 +440,8 @@ class PerformanceMonitoringService {
         // Callback might not have been added, ignore
       }
     }
-    
+
     _isMonitoring = false;
-    
-    AppLogger.info('PerformanceMonitoringService disposed');
   }
 }
 

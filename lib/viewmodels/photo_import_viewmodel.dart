@@ -214,7 +214,7 @@ class PhotoImportViewModel extends ImportBaseViewModel {
     clearImportData();
     
     // Also clear OCR cache for testing
-    OCRExtractionService.instance.clearCache();
+    OCRExtractionService.instance.clearAllCache();
   }
 
   /// Alias for clearPhoto() to provide consistent API naming conventions.

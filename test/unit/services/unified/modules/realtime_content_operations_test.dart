@@ -60,18 +60,32 @@ void main() {
     void setError(String error) {
       lastError = error;
     }
-    
+
     Future<void> applyEditWithConflictResolution(String recipeId, Map<String, dynamic> edit) async {
       conflictResolutionCallCount++;
       lastAppliedEdit = edit;
     }
-    
+
     StreamSubscription<DocumentSnapshot> createMockSubscription() {
       // Create a mock stream subscription without creating actual DocumentSnapshot
       final controller = StreamController<DocumentSnapshot>();
       final subscription = controller.stream.listen((_) {});
       controller.close(); // Close immediately to avoid leaks
       return subscription;
+    }
+
+    RealtimeEditContext createTestContext({
+      required String currentUserId,
+      String? currentUserDisplayName,
+    }) {
+      return RealtimeEditContext(
+        currentUserId: currentUserId,
+        currentUserDisplayName: currentUserDisplayName,
+        activeEditingSessions: activeEditingSessions,
+        pendingRealtimeEdits: pendingRealtimeEdits,
+        applyEditWithConflictResolution: applyEditWithConflictResolution,
+        setError: setError,
+      );
     }
     
     group('Core Real-time Edit Operation', () {
@@ -87,14 +101,12 @@ void main() {
         
         // Act
         final result = await RealtimeContentOperations.makeRealtimeEdit(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: currentUserDisplayName,
+          ),
           recipeId: recipeId,
           changes: changes,
-          currentUserId: currentUserId,
-          currentUserDisplayName: currentUserDisplayName,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
         
         // Assert
@@ -116,45 +128,48 @@ void main() {
         
         // Act
         final result = await RealtimeContentOperations.makeRealtimeEdit(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           changes: changes,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
-        
+
         // Assert
         expect(result, isFalse);
         expect(lastError, contains('Inte i realtidsredigeringsläge'));
         expect(conflictResolutionCallCount, equals(0));
       });
-      
+
       test('should handle conflict resolution errors', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const currentUserId = 'user-123';
         final changes = {'title': 'New Title'};
-        
+
         activeEditingSessions[recipeId] = createMockSubscription();
-        
+
         // Make conflict resolution throw error
         Future<void> failingConflictResolution(String id, Map<String, dynamic> edit) async {
           throw Exception('Conflict resolution failed');
         }
-        
-        // Act
-        final result = await RealtimeContentOperations.makeRealtimeEdit(
-          recipeId: recipeId,
-          changes: changes,
+
+        // Create custom context with failing conflict resolution
+        final customContext = RealtimeEditContext(
           currentUserId: currentUserId,
           currentUserDisplayName: null,
           activeEditingSessions: activeEditingSessions,
           pendingRealtimeEdits: pendingRealtimeEdits,
           applyEditWithConflictResolution: failingConflictResolution,
           setError: setError,
+        );
+
+        // Act
+        final result = await RealtimeContentOperations.makeRealtimeEdit(
+          context: customContext,
+          recipeId: recipeId,
+          changes: changes,
         );
         
         // Assert
@@ -174,66 +189,60 @@ void main() {
         const recipeId = 'recipe-1';
         const newTitle = 'Updated Title';
         const currentUserId = 'user-123';
-        
+
         // Act
         final result = await RealtimeContentOperations.updateTitleRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: 'Test User',
+          ),
           recipeId: recipeId,
           newTitle: newTitle,
-          currentUserId: currentUserId,
-          currentUserDisplayName: 'Test User',
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
-        
+
         // Assert
         expect(result, isTrue);
         expect(lastAppliedEdit?['title'], equals(newTitle));
         expect(lastAppliedEdit?['field'], equals('title'));
       });
-      
+
       test('should reject empty title', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const newTitle = '   '; // Empty after trim
         const currentUserId = 'user-123';
-        
+
         // Act
         final result = await RealtimeContentOperations.updateTitleRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           newTitle: newTitle,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
-        
+
         // Assert
         expect(result, isFalse);
         expect(lastError, contains('Titel kan inte vara tom'));
       });
-      
+
       test('should update description in real-time', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const newDescription = 'Updated description';
         const currentUserId = 'user-123';
-        
+
         // Act
         final result = await RealtimeContentOperations.updateDescriptionRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           newDescription: newDescription,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
-        
+
         // Assert
         expect(result, isTrue);
         expect(lastAppliedEdit?['description'], equals(newDescription));
@@ -245,90 +254,82 @@ void main() {
         const recipeId = 'recipe-1';
         const newPortions = 6;
         const currentUserId = 'user-123';
-        
+
         // Act
         final result = await RealtimeContentOperations.updatePortionsRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           newPortions: newPortions,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
-        
+
         // Assert
         expect(result, isTrue);
         expect(lastAppliedEdit?['portions'], equals(newPortions));
         expect(lastAppliedEdit?['field'], equals('portions'));
       });
-      
+
       test('should reject invalid portions', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const newPortions = 0; // Invalid
         const currentUserId = 'user-123';
-        
+
         // Act
         final result = await RealtimeContentOperations.updatePortionsRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           newPortions: newPortions,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
-        
+
         // Assert
         expect(result, isFalse);
         expect(lastError, contains('Portioner måste vara större än 0'));
       });
-      
+
       test('should update time in real-time', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const newTimeMinutes = 45;
         const currentUserId = 'user-123';
-        
+
         // Act
         final result = await RealtimeContentOperations.updateTimeRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           newTimeMinutes: newTimeMinutes,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
-        
+
         // Assert
         expect(result, isTrue);
         expect(lastAppliedEdit?['timeMinutes'], equals(newTimeMinutes));
         expect(lastAppliedEdit?['field'], equals('timeMinutes'));
       });
-      
+
       test('should reject invalid time', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const newTimeMinutes = -10; // Invalid
         const currentUserId = 'user-123';
-        
+
         // Act
         final result = await RealtimeContentOperations.updateTimeRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           newTimeMinutes: newTimeMinutes,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
-        
+
         // Assert
         expect(result, isFalse);
         expect(lastError, contains('Tid måste vara större än 0 minuter'));
@@ -345,18 +346,16 @@ void main() {
         const recipeId = 'recipe-1';
         const ingredient = '2 cups flour';
         const currentUserId = 'user-123';
-        
+
         // Act
         final result = await RealtimeContentOperations.addIngredientRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           ingredient: ingredient,
           index: null,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
         
         // Assert
@@ -371,18 +370,16 @@ void main() {
         const recipeId = 'recipe-1';
         const ingredient = '  '; // Empty after trim
         const currentUserId = 'user-123';
-        
+
         // Act
         final result = await RealtimeContentOperations.addIngredientRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           ingredient: ingredient,
           index: null,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
         
         // Assert
@@ -399,15 +396,13 @@ void main() {
         
         // Act
         final result = await RealtimeContentOperations.updateIngredientRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           index: index,
           newIngredient: newIngredient,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
         
         // Assert
@@ -426,15 +421,13 @@ void main() {
         
         // Act
         final result = await RealtimeContentOperations.updateIngredientRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           index: index,
           newIngredient: newIngredient,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
         
         // Assert
@@ -450,14 +443,12 @@ void main() {
         
         // Act
         final result = await RealtimeContentOperations.removeIngredientRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           index: index,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
         
         // Assert
@@ -475,15 +466,13 @@ void main() {
         
         // Act
         final result = await RealtimeContentOperations.reorderIngredientsRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           fromIndex: fromIndex,
           toIndex: toIndex,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
         
         // Assert
@@ -502,15 +491,13 @@ void main() {
         
         // Act
         final result = await RealtimeContentOperations.reorderIngredientsRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           fromIndex: fromIndex,
           toIndex: toIndex,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
         
         // Assert
@@ -532,15 +519,13 @@ void main() {
         
         // Act
         final result = await RealtimeContentOperations.addInstructionRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           instruction: instruction,
           index: 0,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
         
         // Assert
@@ -560,15 +545,13 @@ void main() {
         
         // Act
         final result = await RealtimeContentOperations.updateInstructionRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           index: index,
           newInstruction: newInstruction,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
         
         // Assert
@@ -586,14 +569,12 @@ void main() {
         
         // Act
         final result = await RealtimeContentOperations.removeInstructionRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           index: index,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
         
         // Assert
@@ -611,15 +592,13 @@ void main() {
         
         // Act
         final result = await RealtimeContentOperations.reorderInstructionsRealtime(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           fromIndex: fromIndex,
           toIndex: toIndex,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
         
         // Assert
@@ -645,14 +624,12 @@ void main() {
         
         // Act
         final result = await RealtimeContentOperations.applyBatchEdits(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: 'Test User',
+          ),
           recipeId: recipeId,
           edits: edits,
-          currentUserId: currentUserId,
-          currentUserDisplayName: 'Test User',
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
         
         // Assert
@@ -672,16 +649,14 @@ void main() {
         
         // Act
         final result = await RealtimeContentOperations.applyBatchEdits(
+          context: createTestContext(
+            currentUserId: currentUserId,
+            currentUserDisplayName: null,
+          ),
           recipeId: recipeId,
           edits: edits,
-          currentUserId: currentUserId,
-          currentUserDisplayName: null,
-          activeEditingSessions: activeEditingSessions,
-          pendingRealtimeEdits: pendingRealtimeEdits,
-          applyEditWithConflictResolution: applyEditWithConflictResolution,
-          setError: setError,
         );
-        
+
         // Assert
         expect(result, isTrue); // Empty batch succeeds
         expect(conflictResolutionCallCount, equals(0)); // No edits applied

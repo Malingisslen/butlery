@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/unified/modules/realtime_edit_context.dart';
 
 /// Core real-time field operations module
 ///
@@ -12,184 +13,128 @@ class RealtimeFieldOperations {
 
   /// Make a real-time edit to recipe content (CORE METHOD)
   static Future<bool> makeRealtimeEdit({
+    required RealtimeEditContext context,
     required String recipeId,
     required Map<String, dynamic> changes,
-    required String currentUserId,
-    required String? currentUserDisplayName,
-    required Map<String, StreamSubscription<DocumentSnapshot>> activeEditingSessions,
-    required Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
-    required Future<void> Function(String, Map<String, dynamic>) applyEditWithConflictResolution,
-    required void Function(String) setError,
   }) async {
     try {
       // Validate session
-      if (!activeEditingSessions.containsKey(recipeId)) {
-        setError('Inte i realtidsredigeringsläge');
+      if (!context.hasActiveSession(recipeId)) {
+        context.setError('Inte i realtidsredigeringsläge');
         return false;
       }
       // Add metadata to changes
       final editMetadata = {
-        'editedBy': currentUserId,
-        'editedByDisplayName': currentUserDisplayName,
+        'editedBy': context.currentUserId,
+        'editedByDisplayName': context.currentUserDisplayName,
         'editedAt': FieldValue.serverTimestamp(),
         'editType': 'realtime_edit',
         ...changes,
       };
       // Add to pending edits queue
-      pendingRealtimeEdits.putIfAbsent(recipeId, () => []);
-      pendingRealtimeEdits[recipeId]!.add(editMetadata);
+      context.enqueuePendingEdit(recipeId, editMetadata);
       // Apply edit with conflict resolution
-      await applyEditWithConflictResolution(recipeId, editMetadata);
+      await context.applyEditWithConflictResolution(recipeId, editMetadata);
       AppLogger.debug('Real-time edit applied to recipe $recipeId');
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not apply real-time edit: $e');
-      setError('Kunde inte genomföra realtidsändring: $e');
+      context.setError('Kunde inte genomföra realtidsändring: $e');
       return false;
     }
   }
 
   /// Update recipe title in real-time
   static Future<bool> updateTitleRealtime({
+    required RealtimeEditContext context,
     required String recipeId,
     required String newTitle,
-    required String currentUserId,
-    required String? currentUserDisplayName,
-    required Map<String, StreamSubscription<DocumentSnapshot>> activeEditingSessions,
-    required Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
-    required Future<void> Function(String, Map<String, dynamic>) applyEditWithConflictResolution,
-    required void Function(String) setError,
   }) async {
     if (newTitle.trim().isEmpty) {
-      setError('Titel kan inte vara tom');
+      context.setError('Titel kan inte vara tom');
       return false;
     }
     return await makeRealtimeEdit(
+      context: context,
       recipeId: recipeId,
       changes: {
         'title': newTitle.trim(),
         'field': 'title',
       },
-      currentUserId: currentUserId,
-      currentUserDisplayName: currentUserDisplayName,
-      activeEditingSessions: activeEditingSessions,
-      pendingRealtimeEdits: pendingRealtimeEdits,
-      applyEditWithConflictResolution: applyEditWithConflictResolution,
-      setError: setError,
     );
   }
 
   /// Update recipe description in real-time
   static Future<bool> updateDescriptionRealtime({
+    required RealtimeEditContext context,
     required String recipeId,
     required String newDescription,
-    required String currentUserId,
-    required String? currentUserDisplayName,
-    required Map<String, StreamSubscription<DocumentSnapshot>> activeEditingSessions,
-    required Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
-    required Future<void> Function(String, Map<String, dynamic>) applyEditWithConflictResolution,
-    required void Function(String) setError,
   }) async {
     return await makeRealtimeEdit(
+      context: context,
       recipeId: recipeId,
       changes: {
         'description': newDescription.trim(),
         'field': 'description',
       },
-      currentUserId: currentUserId,
-      currentUserDisplayName: currentUserDisplayName,
-      activeEditingSessions: activeEditingSessions,
-      pendingRealtimeEdits: pendingRealtimeEdits,
-      applyEditWithConflictResolution: applyEditWithConflictResolution,
-      setError: setError,
     );
   }
 
   /// Update recipe portions in real-time
   static Future<bool> updatePortionsRealtime({
+    required RealtimeEditContext context,
     required String recipeId,
     required int newPortions,
-    required String currentUserId,
-    required String? currentUserDisplayName,
-    required Map<String, StreamSubscription<DocumentSnapshot>> activeEditingSessions,
-    required Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
-    required Future<void> Function(String, Map<String, dynamic>) applyEditWithConflictResolution,
-    required void Function(String) setError,
   }) async {
     if (newPortions <= 0) {
-      setError('Portioner måste vara större än 0');
+      context.setError('Portioner måste vara större än 0');
       return false;
     }
     return await makeRealtimeEdit(
+      context: context,
       recipeId: recipeId,
       changes: {
         'portions': newPortions,
         'field': 'portions',
       },
-      currentUserId: currentUserId,
-      currentUserDisplayName: currentUserDisplayName,
-      activeEditingSessions: activeEditingSessions,
-      pendingRealtimeEdits: pendingRealtimeEdits,
-      applyEditWithConflictResolution: applyEditWithConflictResolution,
-      setError: setError,
     );
   }
 
   /// Update recipe time in real-time
   static Future<bool> updateTimeRealtime({
+    required RealtimeEditContext context,
     required String recipeId,
     required int newTimeMinutes,
-    required String currentUserId,
-    required String? currentUserDisplayName,
-    required Map<String, StreamSubscription<DocumentSnapshot>> activeEditingSessions,
-    required Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
-    required Future<void> Function(String, Map<String, dynamic>) applyEditWithConflictResolution,
-    required void Function(String) setError,
   }) async {
     if (newTimeMinutes <= 0) {
-      setError('Tid måste vara större än 0 minuter');
+      context.setError('Tid måste vara större än 0 minuter');
       return false;
     }
     return await makeRealtimeEdit(
+      context: context,
       recipeId: recipeId,
       changes: {
         'timeMinutes': newTimeMinutes,
         'field': 'timeMinutes',
       },
-      currentUserId: currentUserId,
-      currentUserDisplayName: currentUserDisplayName,
-      activeEditingSessions: activeEditingSessions,
-      pendingRealtimeEdits: pendingRealtimeEdits,
-      applyEditWithConflictResolution: applyEditWithConflictResolution,
-      setError: setError,
     );
   }
 
   /// Apply multiple edits as a batch
   static Future<bool> applyBatchEdits({
+    required RealtimeEditContext context,
     required String recipeId,
     required List<Map<String, dynamic>> edits,
-    required String currentUserId,
-    required String? currentUserDisplayName,
-    required Map<String, StreamSubscription<DocumentSnapshot>> activeEditingSessions,
-    required Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits,
-    required Future<void> Function(String, Map<String, dynamic>) applyEditWithConflictResolution,
-    required void Function(String) setError,
   }) async {
     if (edits.isEmpty) return true;
     return await makeRealtimeEdit(
+      context: context,
       recipeId: recipeId,
       changes: {
         'operation': 'batch_edit',
         'edits': edits,
         'field': 'batch',
       },
-      currentUserId: currentUserId,
-      currentUserDisplayName: currentUserDisplayName,
-      activeEditingSessions: activeEditingSessions,
-      pendingRealtimeEdits: pendingRealtimeEdits,
-      applyEditWithConflictResolution: applyEditWithConflictResolution,
-      setError: setError,
     );
   }
 

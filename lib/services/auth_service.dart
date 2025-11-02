@@ -30,9 +30,12 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
+import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 /// Firebase authentication service with comprehensive state management and error handling.
 ///
@@ -67,9 +70,12 @@ import 'package:butlery/core/utils/logger.dart';
 ///   }
 /// });
 /// ```
-class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin, StreamManagementMixin {
+class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin, StreamManagementMixin, ErrorHandlingMixin {
   /// Repository handling all Firebase Auth communication and operations.
   final auth_repo.AuthRepository _authRepository;
+
+  /// Analytics service for tracking authentication events.
+  final AnalyticsService _analyticsService;
 
   /// Currently authenticated user (null if logged out).
   User? _currentUser;
@@ -92,8 +98,12 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
   /// and sets up real-time authentication state listening for immediate UI updates.
   ///
   /// [authRepository] Optional auth repository for dependency injection and testing
-  AuthService({auth_repo.AuthRepository? authRepository})
-      : _authRepository = authRepository ?? FirebaseAuthRepository() {
+  /// [analyticsService] Optional analytics service for dependency injection and testing
+  AuthService({
+    auth_repo.AuthRepository? authRepository,
+    AnalyticsService? analyticsService,
+  })  : _authRepository = authRepository ?? FirebaseAuthRepository(),
+        _analyticsService = analyticsService ?? ServiceLocator.get<AnalyticsService>() {
     // Listen to authentication state changes and update UI accordingly
     _authRepository.authStateChanges().listen(
       (User? user) {
@@ -128,14 +138,29 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
         await _authRepository.updateDisplayName(credential.user!, displayName);
         _currentUser = _authRepository.currentUser;
         setLoading(false);
+
+        // Track user sign up analytics
+        await _analyticsService.logSignUp(method: 'email');
+
         return true;
       }
-      
+
       setLoading(false);
       return false;
     } on FirebaseAuthException catch (e) {
       setLoading(false);
       _handleAuthError(e);
+
+      // Track authentication failure
+      await _analyticsService.logEvent(
+        name: 'auth_failed',
+        parameters: {
+          'method': 'email',
+          'error_code': e.code,
+          'action': 'sign_up',
+        },
+      );
+
       return false;
     } catch (e) {
       setLoading(false);
@@ -166,15 +191,18 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
       // Verify login was successful
       _currentUser = _authRepository.currentUser;
       AppLogger.debug('Login result - User: ${_currentUser?.email ?? "null"}');
-      
+
       setLoading(false);
-      
+
       if (_currentUser == null) {
         AppLogger.error('Login appeared successful but no user returned');
         setError('Inloggning misslyckades. Försök igen.');
         return false;
       }
-      
+
+      // Track user sign in analytics
+      await _analyticsService.logLogin(method: 'email');
+
       return true;
     } on FirebaseAuthException catch (e) {
       setLoading(false);
@@ -182,6 +210,17 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
       AppLogger.error('🔥 Firebase Auth Error Message: ${e.message}');
       AppLogger.error('Firebase Auth Error: ${e.code} - ${e.message}');
       _handleAuthError(e);
+
+      // Track authentication failure
+      await _analyticsService.logEvent(
+        name: 'auth_failed',
+        parameters: {
+          'method': 'email',
+          'error_code': e.code,
+          'action': 'sign_in',
+        },
+      );
+
       return false;
     } catch (e) {
       setLoading(false);
@@ -202,6 +241,9 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
       await _authRepository.signOut();
       _currentUser = null;
       AppLogger.info('User signed out successfully');
+
+      // Track user sign out analytics
+      await _analyticsService.logLogout();
     }).catchError((e) {
       setError('Kunde inte logga ut: ${e.toString()}');
     });

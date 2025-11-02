@@ -23,22 +23,22 @@ class TestViewModel extends BaseViewModel {
   Future<T?> testExecuteAsync<T>(
     Future<T> Function() operation, {
     String? errorPrefix,
-    bool clearErrorFirst = true,
+    bool clearErrorOnStart = true,
   }) {
     return executeAsync(operation, 
       errorPrefix: errorPrefix, 
-      clearErrorFirst: clearErrorFirst
+      clearErrorOnStart: clearErrorOnStart
     );
   }
   
   Future<bool> testExecuteAsyncVoid(
     Future<void> Function() operation, {
     String? errorPrefix,
-    bool clearErrorFirst = true,
+    bool clearErrorOnStart = true,
   }) {
     return executeAsyncVoid(operation,
       errorPrefix: errorPrefix,
-      clearErrorFirst: clearErrorFirst
+      clearErrorOnStart: clearErrorOnStart
     );
   }
   
@@ -259,7 +259,7 @@ void main() {
         expect(viewModel.hasError, isFalse);
       });
       
-      test('should not clear error initially when clearErrorFirst is false', () async {
+      test('should not clear error initially when clearErrorOnStart is false', () async {
         viewModel.testSetError('Previous error');
         
         // Start an operation that will fail
@@ -267,7 +267,7 @@ void main() {
           () async {
             throw Exception('New error');
           },
-          clearErrorFirst: false,
+          clearErrorOnStart: false,
         );
         
         // Error should be updated to new error
@@ -451,7 +451,7 @@ void main() {
       expect(result, equals('Success on attempt 3'));
       expect(attemptCount, equals(3));
       // Note: executeAsync sets error even when errorPrefix is null (uses e.toString())
-      // and doesn't clear errors on success, only at the beginning if clearErrorFirst is true.
+      // and doesn't clear errors on success, only at the beginning if clearErrorOnStart is true.
       // So the error from attempt 2 remains set even though attempt 3 succeeded.
       // This is the intended behavior - executeWithRetry returns the result but doesn't
       // guarantee error state is cleared on eventual success.

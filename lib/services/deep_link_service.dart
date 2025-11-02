@@ -28,9 +28,10 @@
 
 import 'dart:async';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/permission_service.dart' as perm_service;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
+import 'package:butlery/core/base/base_service.dart';
 
 /// Deep link service providing comprehensive URL management, navigation routing, and analytics tracking.
 ///
@@ -68,7 +69,10 @@ import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
 /// // Handle incoming deep link
 /// await DeepLinkService.handleDeepLink(shortUrl, (route) => navigateTo(route));
 /// ```
-class DeepLinkService {
+class DeepLinkService extends BaseService {
+  @override
+  String get serviceName => 'DeepLinkService';
+
   final DeepLinkRepository _deepLinkRepository;
   static const String _baseUrl = 'https://butlery.app';
   static const String _invitePath = '/invite';
@@ -277,7 +281,7 @@ class DeepLinkService {
   /// Generate internal short URL using Firestore
   static Future<String?> _generateInternalShortUrl(String longUrl) async {
     try {
-      if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
+      if (!ServiceLocator.get<perm_service.PermissionService>().isAuthenticated) {
         return null;
       }
       

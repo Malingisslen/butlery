@@ -5,7 +5,6 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/utils/error_handler.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
@@ -133,9 +132,8 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
       notifyListeners();
       return profile;
     } catch (e) {
-      final failure = ErrorHandler().handleError(error: e, context: 'saveProfile');
       AppLogger.error('❌ Kunde inte spara profil: $e');
-      _setError(failure.userMessage);
+      _setError(extractUserMessage(e));
       return null;
     } finally {
       _setLoading(false);

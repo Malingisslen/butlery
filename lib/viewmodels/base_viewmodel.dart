@@ -184,7 +184,7 @@ abstract class BaseViewModel extends ChangeNotifier {
   /// 
   /// [operation] The async operation to execute with automatic state management
   /// [errorPrefix] Optional prefix for error messages to provide context
-  /// [clearErrorFirst] Whether to clear existing errors before operation (default: true)
+  /// [clearErrorOnStart] Whether to clear existing errors before operation (default: true)
   /// 
   /// Returns the operation result or null if operation fails or ViewModel is disposed.
   /// Automatically manages loading state, error handling, and UI notifications for consistent
@@ -198,14 +198,14 @@ abstract class BaseViewModel extends ChangeNotifier {
   /// );
   /// ```
   @protected
-  Future<T?> executeAsync<T>(
+  Future<T> executeAsync<T>(
     Future<T> Function() operation, {
     String? errorPrefix,
-    bool clearErrorFirst = true,
+    bool clearErrorOnStart = true,
   }) async {
-    if (_isDisposed) return null;
+    if (_isDisposed) throw StateError('ViewModel is disposed');
 
-    if (clearErrorFirst) clearError();
+    if (clearErrorOnStart) clearError();
     setLoading(true);
 
     try {
@@ -217,7 +217,7 @@ abstract class BaseViewModel extends ChangeNotifier {
           ? '$errorPrefix: ${e.toString()}'
           : e.toString();
       setError(errorMessage);
-      return null;
+      rethrow;
     }
   }
 
@@ -225,7 +225,7 @@ abstract class BaseViewModel extends ChangeNotifier {
   /// 
   /// [operation] The void async operation to execute
   /// [errorPrefix] Optional prefix for error messages to provide context
-  /// [clearErrorFirst] Whether to clear existing errors before operation (default: true)
+  /// [clearErrorOnStart] Whether to clear existing errors before operation (default: true)
   /// 
   /// Returns true if operation succeeds, false if it fails or ViewModel is disposed.
   /// Ideal for operations like save, delete, or update that don't return data but need
@@ -243,11 +243,11 @@ abstract class BaseViewModel extends ChangeNotifier {
   Future<bool> executeAsyncVoid(
     Future<void> Function() operation, {
     String? errorPrefix,
-    bool clearErrorFirst = true,
+    bool clearErrorOnStart = true,
   }) async {
     if (_isDisposed) return false;
 
-    if (clearErrorFirst) clearError();
+    if (clearErrorOnStart) clearError();
     setLoading(true);
 
     try {
@@ -384,7 +384,7 @@ mixin AsyncOperationMixin on BaseViewModel {
         errorPrefix: attempt == maxRetries 
             ? errorPrefix 
             : null, // Only show error on final attempt
-        clearErrorFirst: attempt == 1,
+        clearErrorOnStart: attempt == 1,
       );
       
       if (result != null || attempt == maxRetries) {

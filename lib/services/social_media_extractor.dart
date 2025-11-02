@@ -44,6 +44,7 @@
 
 import 'package:butlery/services/extraction/extraction_manager.dart';
 import 'package:butlery/core/mixins/singleton_service_mixin.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 // Export extraction components for external usage
 export 'extraction/platform_detector.dart';
@@ -137,7 +138,7 @@ class ExtractionResult {
 /// final scraper = WebScraper();
 /// final content = await scraper.scrapeContent(url, platform);
 /// ```
-class SocialMediaExtractor with SingletonServiceMixin<SocialMediaExtractor> {
+class SocialMediaExtractor with SingletonServiceMixin<SocialMediaExtractor>, ErrorHandlingMixin {
   // Private constructor for singleton
   SocialMediaExtractor._internal();
   

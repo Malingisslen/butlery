@@ -1,6 +1,6 @@
 # 📚 Butlery Documentation Index
 
-**Last Updated**: January 30, 2025
+**Last Updated**: January 31, 2025
 **Documentation Status**: Consolidated and Verified (16 active files)
 **Consolidation**: 41% reduction (27 → 16 files) through strategic merging
 **Note**: Major consolidation completed September 30, 2024
@@ -70,10 +70,10 @@ New to the project? Start here:
 ### Metrics & Tracking
 - **[testing/TESTING_DASHBOARD.md](testing/TESTING_DASHBOARD.md)** ⭐ Single source of truth for metrics
   - Service coverage: 96.2%
-  - ViewModel coverage: 86.7%
-  - Repository coverage: 29.3%
+  - ViewModel coverage: **100%** 🎯
+  - Repository coverage: 46.6%
   - Widget tests: 149 files
-  - Overall: 66.5%
+  - Overall: ~76%
 
 - **[testing/TRACKING.md](testing/TRACKING.md)** ⭐ **NEW** - Unified tracking dashboard
   - Feature Status (97 features tracked)
@@ -131,12 +131,12 @@ All archived documentation consolidated in `docs/archived/` (January 2025)
 
 ## 📊 Quick Reference: Project Statistics
 
-### Codebase (Verified September 30, 2025)
+### Codebase (Updated January 31, 2025)
 - **Total Dart Files**: 669 files
-- **Total Test Files**: 445 files (66.5% coverage)
+- **Total Test Files**: 451 files (67.4% coverage)
 - **Services**: 130 files (96.2% tested) ✅
-- **ViewModels**: 60 files (86.7% tested) ✅
-- **Repositories**: 58 files (29.3% tested) ⚠️
+- **ViewModels**: 60 files (**100%** tested) 🎯
+- **Repositories**: 58 files (46.6% tested) ⚠️
 - **Widget Tests**: 149 files ✅
 
 ### Architecture

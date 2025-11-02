@@ -72,14 +72,15 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
 
 /// Comprehensive recipe detail ViewModel providing advanced recipe interaction and management for Flutter applications.
 ///
 /// Serves as the presentation layer coordinator for individual recipe operations, providing detailed display coordination,
 /// recipe interactions, analytics tracking, and real-time state management while maintaining clean MVVM architecture
 /// separation between recipe detail business logic and UI presentation concerns.
-class RecipeDetailViewModel extends ChangeNotifier with ErrorHandlingMixin {
+class RecipeDetailViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin {
   final UnifiedRecipeService _recipeService;
   final AnalyticsService _analyticsService;
 
@@ -154,12 +155,14 @@ class RecipeDetailViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// 
   /// Currently returns null as recipe detail operations use ErrorHandlingMixin
   /// for comprehensive error management, designed for future error state expansion.
+  @override
   String? get error => null; // No error state needed for now
 
   /// Error presence indicator for UI conditional rendering and future error handling.
   /// 
   /// Currently returns false as recipe detail operations use ErrorHandlingMixin
   /// for error management, maintaining consistency with other ViewModels.
+  @override
   bool get hasError => false; // No error state needed for now
 
   // ===== UI CONVENIENCE ACCESSORS =====
@@ -233,8 +236,7 @@ class RecipeDetailViewModel extends ChangeNotifier with ErrorHandlingMixin {
     _setDeleting(true);
     
     try {
-      final result = await safeExecute(
-        () async {
+      final result = await executeAsync(() async {
           final success = await _recipeService.deleteRecipe(_recipe.id);
 
           if (success) {
@@ -252,11 +254,9 @@ class RecipeDetailViewModel extends ChangeNotifier with ErrorHandlingMixin {
             final errorMessage = _recipeService.error ?? 'Kunde inte ta bort recept';
             throw Exception(errorMessage);
           }
-        },
-        operationName: 'Delete recipe',
-      );
+      });
       
-      return result ?? false;
+      return result;
     } finally {
       _setDeleting(false);
     }
@@ -285,8 +285,7 @@ class RecipeDetailViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// }
   /// ```
   Future<bool> markAsCooked() async {
-    return await safeExecute(
-      () async {
+    return await executeAsync(() async {
         // Check if this is the first time cooking BEFORE updating
         final isFirstTime = _recipe.lastCookedAt == null;
         
@@ -311,9 +310,7 @@ class RecipeDetailViewModel extends ChangeNotifier with ErrorHandlingMixin {
         } else {
           throw Exception('Kunde inte uppdatera recept');
         }
-      },
-      operationName: 'Mark as cooked',
-    ) ?? false;
+    });
   }
 
   // ===== INTERNAL STATE MANAGEMENT =====
@@ -333,6 +330,8 @@ class RecipeDetailViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// 
   /// Provides error state cleanup capability designed for future error handling expansion
   /// and consistency with other ViewModels for comprehensive error management patterns.
+  @override
+  @override
   void clearError() {
     // Clear any error state if needed
     notifyListeners();

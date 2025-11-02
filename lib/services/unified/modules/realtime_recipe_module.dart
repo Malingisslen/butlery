@@ -148,12 +148,9 @@ class RealtimeRecipeModule {
 
   // ===== REAL-TIME CONTENT OPERATIONS =====
 
-  /// Make a real-time edit to recipe content
-  Future<bool> makeRealtimeEdit(
-      String recipeId, Map<String, dynamic> changes) async {
-    return await RealtimeContentOperations.makeRealtimeEdit(
-      recipeId: recipeId,
-      changes: changes,
+  /// Helper to create RealtimeEditContext for all operations
+  RealtimeEditContext _createEditContext() {
+    return RealtimeEditContext(
       currentUserId: _getCurrentUserId() ?? '',
       currentUserDisplayName: _getCurrentUserDisplayName(),
       activeEditingSessions: _activeEditingSessions,
@@ -163,17 +160,22 @@ class RealtimeRecipeModule {
     );
   }
 
+  /// Make a real-time edit to recipe content
+  Future<bool> makeRealtimeEdit(
+      String recipeId, Map<String, dynamic> changes) async {
+    return await RealtimeContentOperations.makeRealtimeEdit(
+      context: _createEditContext(),
+      recipeId: recipeId,
+      changes: changes,
+    );
+  }
+
   /// Update recipe title in real-time
   Future<bool> updateTitleRealtime(String recipeId, String newTitle) async {
     return await RealtimeContentOperations.updateTitleRealtime(
+      context: _createEditContext(),
       recipeId: recipeId,
       newTitle: newTitle,
-      currentUserId: _getCurrentUserId() ?? '',
-      currentUserDisplayName: _getCurrentUserDisplayName(),
-      activeEditingSessions: _activeEditingSessions,
-      pendingRealtimeEdits: _pendingRealtimeEdits,
-      applyEditWithConflictResolution: _applyRealtimeEditWithConflictResolution,
-      setError: _setError,
     );
   }
 
@@ -181,14 +183,9 @@ class RealtimeRecipeModule {
   Future<bool> updateDescriptionRealtime(
       String recipeId, String newDescription) async {
     return await RealtimeContentOperations.updateDescriptionRealtime(
+      context: _createEditContext(),
       recipeId: recipeId,
       newDescription: newDescription,
-      currentUserId: _getCurrentUserId() ?? '',
-      currentUserDisplayName: _getCurrentUserDisplayName(),
-      activeEditingSessions: _activeEditingSessions,
-      pendingRealtimeEdits: _pendingRealtimeEdits,
-      applyEditWithConflictResolution: _applyRealtimeEditWithConflictResolution,
-      setError: _setError,
     );
   }
 
@@ -196,15 +193,10 @@ class RealtimeRecipeModule {
   Future<bool> addIngredientRealtime(
       String recipeId, String ingredient, int? index) async {
     return await RealtimeContentOperations.addIngredientRealtime(
+      context: _createEditContext(),
       recipeId: recipeId,
       ingredient: ingredient,
       index: index,
-      currentUserId: _getCurrentUserId() ?? '',
-      currentUserDisplayName: _getCurrentUserDisplayName(),
-      activeEditingSessions: _activeEditingSessions,
-      pendingRealtimeEdits: _pendingRealtimeEdits,
-      applyEditWithConflictResolution: _applyRealtimeEditWithConflictResolution,
-      setError: _setError,
     );
   }
 
@@ -212,29 +204,19 @@ class RealtimeRecipeModule {
   Future<bool> updateIngredientRealtime(
       String recipeId, int index, String newIngredient) async {
     return await RealtimeContentOperations.updateIngredientRealtime(
+      context: _createEditContext(),
       recipeId: recipeId,
       index: index,
       newIngredient: newIngredient,
-      currentUserId: _getCurrentUserId() ?? '',
-      currentUserDisplayName: _getCurrentUserDisplayName(),
-      activeEditingSessions: _activeEditingSessions,
-      pendingRealtimeEdits: _pendingRealtimeEdits,
-      applyEditWithConflictResolution: _applyRealtimeEditWithConflictResolution,
-      setError: _setError,
     );
   }
 
   /// Remove ingredient in real-time
   Future<bool> removeIngredientRealtime(String recipeId, int index) async {
     return await RealtimeContentOperations.removeIngredientRealtime(
+      context: _createEditContext(),
       recipeId: recipeId,
       index: index,
-      currentUserId: _getCurrentUserId() ?? '',
-      currentUserDisplayName: _getCurrentUserDisplayName(),
-      activeEditingSessions: _activeEditingSessions,
-      pendingRealtimeEdits: _pendingRealtimeEdits,
-      applyEditWithConflictResolution: _applyRealtimeEditWithConflictResolution,
-      setError: _setError,
     );
   }
 
@@ -242,15 +224,10 @@ class RealtimeRecipeModule {
   Future<bool> addInstructionRealtime(
       String recipeId, String instruction, int? index) async {
     return await RealtimeContentOperations.addInstructionRealtime(
+      context: _createEditContext(),
       recipeId: recipeId,
       instruction: instruction,
       index: index,
-      currentUserId: _getCurrentUserId() ?? '',
-      currentUserDisplayName: _getCurrentUserDisplayName(),
-      activeEditingSessions: _activeEditingSessions,
-      pendingRealtimeEdits: _pendingRealtimeEdits,
-      applyEditWithConflictResolution: _applyRealtimeEditWithConflictResolution,
-      setError: _setError,
     );
   }
 
@@ -258,29 +235,19 @@ class RealtimeRecipeModule {
   Future<bool> updateInstructionRealtime(
       String recipeId, int index, String newInstruction) async {
     return await RealtimeContentOperations.updateInstructionRealtime(
+      context: _createEditContext(),
       recipeId: recipeId,
       index: index,
       newInstruction: newInstruction,
-      currentUserId: _getCurrentUserId() ?? '',
-      currentUserDisplayName: _getCurrentUserDisplayName(),
-      activeEditingSessions: _activeEditingSessions,
-      pendingRealtimeEdits: _pendingRealtimeEdits,
-      applyEditWithConflictResolution: _applyRealtimeEditWithConflictResolution,
-      setError: _setError,
     );
   }
 
   /// Remove instruction in real-time
   Future<bool> removeInstructionRealtime(String recipeId, int index) async {
     return await RealtimeContentOperations.removeInstructionRealtime(
+      context: _createEditContext(),
       recipeId: recipeId,
       index: index,
-      currentUserId: _getCurrentUserId() ?? '',
-      currentUserDisplayName: _getCurrentUserDisplayName(),
-      activeEditingSessions: _activeEditingSessions,
-      pendingRealtimeEdits: _pendingRealtimeEdits,
-      applyEditWithConflictResolution: _applyRealtimeEditWithConflictResolution,
-      setError: _setError,
     );
   }
 

@@ -4,24 +4,28 @@ import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// Focused module for comment CRUD operations
-/// 
+///
 /// This module handles ONLY comment content management:
 /// - Comment creation and validation
 /// - Comment reading and streaming
 /// - Comment editing and deletion
 /// - Comment threading and sorting
-/// 
+///
 /// ❌ DOES NOT CONTAIN: Likes, notifications, reply counts, statistics
 class CommentCrudOperations {
   final CommentsRepository _commentsRepository;
+  final AnalyticsService _analyticsService;
 
   CommentCrudOperations({
     CommentsRepository? commentsRepository,
-  }) : _commentsRepository = commentsRepository ?? ServiceLocator.get<CommentsRepository>();
+    AnalyticsService? analyticsService,
+  }) : _commentsRepository = commentsRepository ?? ServiceLocator.get<CommentsRepository>(),
+       _analyticsService = analyticsService ?? ServiceLocator.get<AnalyticsService>();
 
   // ===== COMMENT CREATION =====
 
@@ -64,6 +68,13 @@ class CommentCrudOperations {
       );
 
       AppLogger.success('✅ Comment created with ID: ${comment.id}');
+
+      // Track comment created analytics
+      await _analyticsService.logCommentCreated(
+        recipeId: recipeId,
+        commentLength: content.trim().length,
+      );
+
       return comment.id;
     } catch (e) {
       AppLogger.error('❌ Failed to create comment', e);

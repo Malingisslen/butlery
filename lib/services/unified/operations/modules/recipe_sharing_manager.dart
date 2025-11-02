@@ -9,22 +9,28 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 
 /// Focused module for recipe sharing and collaboration setup
-/// 
+///
 /// This module handles ONLY recipe sharing responsibilities:
 /// - Converting personal recipes to collaborative format
 /// - Converting collaborative recipes back to personal format
 /// - Share state management and validation
 /// - Basic sharing notifications and member alerts
 /// - Share metadata and collaboration settings
-/// 
+///
 /// ❌ DOES NOT CONTAIN: Member management, comments, discovery, ratings, permissions
 class RecipeSharingManager {
   final UnifiedRecipeService _parent;
   final NotificationService? _notificationService;
+  final FirestoreRepository _firestoreRepository;
 
-  RecipeSharingManager(this._parent, this._notificationService);
+  RecipeSharingManager(
+    this._parent,
+    this._notificationService, {
+    FirestoreRepository? firestoreRepository,
+  }) : _firestoreRepository = firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
 
   // ===== RECIPE SHARING CONVERSION =====
 
@@ -454,7 +460,6 @@ class RecipeSharingManager {
     required dynamic recipeData,
   }) async {
     try {
-      final firestore = FirebaseFirestore.instance;
       final permissionService = ServiceLocator.get<PermissionService>();
 
       final currentUserId = permissionService.currentUserId;
@@ -466,7 +471,7 @@ class RecipeSharingManager {
       // Ensure owner is included in sharedWithUserIds along with members
       final allUserIds = {currentUserId, ...memberIds}.toList();
 
-      await firestore.collection('shared_recipes').doc(recipeId).set({
+      await _firestoreRepository.collection('shared_recipes').doc(recipeId).set({
         'recipeId': recipeId,
         'title': recipeTitle,
         'description': recipeData.description ?? '',
