@@ -1,0 +1,481 @@
+{
+  "butlery-architecture": {
+    "type": "domain",
+    "enforcement": "enforce",
+    "priority": "critical",
+    "promptTriggers": {
+      "keywords": [
+        "architecture",
+        "mvvm",
+        "repository",
+        "service",
+        "viewmodel",
+        "dependency injection",
+        "di",
+        "layer",
+        "separation",
+        "service locator"
+      ],
+      "intentPatterns": [
+        "create.*service",
+        "new.*repository",
+        "add.*viewmodel",
+        "refactor.*architecture",
+        "di.*setup",
+        "dependency.*injection",
+        "how.*architecture",
+        "layer.*violation"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "lib/services/**/*.dart",
+        "lib/repositories/**/*.dart",
+        "lib/viewmodels/**/*.dart",
+        "lib/core/di/**/*.dart"
+      ],
+      "contentPatterns": [
+        "class.*Service",
+        "class.*Repository",
+        "class.*ViewModel",
+        "extends BaseService",
+        "extends BaseFirebaseRepository",
+        "ServiceLocator\\.get",
+        "FirebaseFirestore\\.instance",
+        "sl<"
+      ]
+    }
+  },
+  "testing-patterns": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "critical",
+    "promptTriggers": {
+      "keywords": [
+        "test",
+        "testing",
+        "unit test",
+        "mock",
+        "coverage",
+        "flutter test",
+        "fake firestore",
+        "mocktail",
+        "test factory"
+      ],
+      "intentPatterns": [
+        "write.*test",
+        "create.*test",
+        "test.*coverage",
+        "generate.*test",
+        "mock.*repository",
+        "mock.*service",
+        "test.*viewmodel",
+        "widget.*test"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "test/unit/**/*_test.dart",
+        "test/integration/**/*_test.dart",
+        "test/widget/**/*_test.dart",
+        "lib/**/*.dart"
+      ],
+      "contentPatterns": [
+        "void main\\(\\)",
+        "group\\(",
+        "test\\(",
+        "testWidgets\\(",
+        "@visibleForTesting",
+        "FakeFirebaseFirestore",
+        "Mock.*Repository",
+        "Mock.*Service"
+      ]
+    }
+  },
+  "firebase-repository-patterns": {
+    "type": "domain",
+    "enforcement": "enforce",
+    "priority": "critical",
+    "promptTriggers": {
+      "keywords": [
+        "repository",
+        "firebase",
+        "firestore",
+        "crud",
+        "permission",
+        "validation",
+        "base repository",
+        "audit log"
+      ],
+      "intentPatterns": [
+        "create.*repository",
+        "new.*repository",
+        "firebase.*repository",
+        "permission.*validation",
+        "crud.*operation",
+        "firestore.*access"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "lib/repositories/firebase/**/*.dart",
+        "lib/repositories/interfaces/**/*.dart"
+      ],
+      "contentPatterns": [
+        "class.*Repository",
+        "extends BaseFirebaseRepository",
+        "implements.*Repository",
+        "FirebaseFirestore\\.instance",
+        "validateCreatePermission",
+        "validateUpdatePermission",
+        "fromFirestore",
+        "toFirestore"
+      ]
+    }
+  },
+  "state-management-patterns": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "high",
+    "promptTriggers": {
+      "keywords": [
+        "state management",
+        "provider",
+        "changenotifier",
+        "viewmodel",
+        "async operation",
+        "loading state",
+        "error handling"
+      ],
+      "intentPatterns": [
+        "create.*viewmodel",
+        "state.*management",
+        "manage.*state",
+        "loading.*state",
+        "error.*state",
+        "async.*operation"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "lib/viewmodels/**/*.dart",
+        "lib/views/**/*.dart"
+      ],
+      "contentPatterns": [
+        "extends ChangeNotifier",
+        "with AsyncOperationMixin",
+        "with StateNotifierMixin",
+        "notifyListeners\\(",
+        "ChangeNotifierProvider",
+        "Provider\\.of",
+        "Consumer<"
+      ]
+    }
+  },
+  "code-deduplication-utilities": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "high",
+    "promptTriggers": {
+      "keywords": [
+        "serialization",
+        "error handling",
+        "null coalescing",
+        "validation",
+        "try catch",
+        "default value",
+        "parsing"
+      ],
+      "intentPatterns": [
+        "serialize.*data",
+        "parse.*firestore",
+        "handle.*error",
+        "null.*check",
+        "validation",
+        "default.*value",
+        "try.*catch"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "lib/models/**/*.dart",
+        "lib/services/**/*.dart",
+        "lib/repositories/**/*.dart"
+      ],
+      "contentPatterns": [
+        "as String\\? \\?\\? ''",
+        "as int\\? \\?\\? 0",
+        "as List\\?.*\\?\\? \\[\\]",
+        "try \\{",
+        "catch \\(",
+        "fromFirestore",
+        "Timestamp.*toDate"
+      ]
+    }
+  },
+  "flutter-widget-guidelines": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "high",
+    "promptTriggers": {
+      "keywords": [
+        "widget",
+        "ui",
+        "stateless",
+        "stateful",
+        "build",
+        "performance",
+        "const",
+        "theme",
+        "accessibility"
+      ],
+      "intentPatterns": [
+        "create.*widget",
+        "new.*widget",
+        "build.*ui",
+        "widget.*composition",
+        "performance.*widget",
+        "theme.*color"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "lib/widgets/**/*.dart",
+        "lib/views/**/*.dart"
+      ],
+      "contentPatterns": [
+        "extends StatelessWidget",
+        "extends StatefulWidget",
+        "Widget build\\(",
+        "const.*Widget",
+        "Theme\\.of",
+        "MediaQuery\\.of",
+        "TextEditingController"
+      ]
+    }
+  },
+  "gdpr-compliance": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "gdpr",
+        "consent",
+        "data export",
+        "right to erasure",
+        "audit log",
+        "user data",
+        "privacy",
+        "delete account"
+      ],
+      "intentPatterns": [
+        "gdpr.*compliance",
+        "user.*consent",
+        "data.*export",
+        "delete.*account",
+        "audit.*log",
+        "right.*erasure",
+        "data.*privacy"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "lib/services/account/**/*.dart",
+        "lib/repositories/firebase/firebase_audit_repository.dart"
+      ],
+      "contentPatterns": [
+        "ConsentService",
+        "DataExportService",
+        "AccountDeletionService",
+        "AuditRepository",
+        "grantConsent",
+        "exportAllUserData",
+        "deleteAllUserData",
+        "logAuditEvent"
+      ]
+    }
+  },
+  "realtime-collaboration": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "realtime",
+        "collaboration",
+        "conflict resolution",
+        "presence",
+        "live sync",
+        "concurrent editing"
+      ],
+      "intentPatterns": [
+        "realtime.*sync",
+        "collaborative.*editing",
+        "conflict.*resolution",
+        "presence.*tracking",
+        "live.*updates"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "lib/services/realtime/**/*.dart",
+        "lib/services/unified/modules/realtime_*.dart"
+      ],
+      "contentPatterns": [
+        "RealtimeService",
+        "conflictResolution",
+        "presenceTracking",
+        "Stream<.*>",
+        "snapshots\\(\\)",
+        "concurrent.*edit"
+      ]
+    }
+  },
+  "offline-first-patterns": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "offline",
+        "hive",
+        "local storage",
+        "sync",
+        "background sync",
+        "connectivity"
+      ],
+      "intentPatterns": [
+        "offline.*storage",
+        "local.*cache",
+        "background.*sync",
+        "sync.*data",
+        "offline.*first"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "lib/services/offline_service.dart",
+        "lib/services/unified/modules/*_sync_*.dart"
+      ],
+      "contentPatterns": [
+        "Hive",
+        "Box<",
+        "OfflineService",
+        "syncWhenOnline",
+        "queueForSync",
+        "ConnectivityMonitoring"
+      ]
+    }
+  },
+  "navigation-routing": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "navigation",
+        "routing",
+        "routes",
+        "deep link",
+        "navigation args"
+      ],
+      "intentPatterns": [
+        "navigate.*to",
+        "route.*definition",
+        "deep.*link",
+        "navigation.*argument",
+        "route.*generation"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "lib/core/router/**/*.dart",
+        "lib/views/**/*.dart"
+      ],
+      "contentPatterns": [
+        "AppRouter",
+        "generateRoute",
+        "Routes\\.",
+        "Navigator\\.pushNamed",
+        "Navigator\\.of",
+        "RouteSettings",
+        "DeepLinkHandler"
+      ]
+    }
+  },
+  "dependency-injection-patterns": {
+    "type": "domain",
+    "enforcement": "enforce",
+    "priority": "high",
+    "promptTriggers": {
+      "keywords": [
+        "dependency injection",
+        "di",
+        "service locator",
+        "getit",
+        "module",
+        "registration"
+      ],
+      "intentPatterns": [
+        "register.*service",
+        "di.*module",
+        "service.*locator",
+        "dependency.*injection",
+        "container.*register"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "lib/core/di/**/*.dart",
+        "lib/core/bootstrap/**/*.dart"
+      ],
+      "contentPatterns": [
+        "DIModule",
+        "GetIt",
+        "ServiceLocator\\.get",
+        "registerSingleton",
+        "registerLazySingleton",
+        "ApplicationBootstrap",
+        "sl<"
+      ]
+    }
+  },
+  "performance-optimization": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "performance",
+        "optimization",
+        "caching",
+        "image optimization",
+        "lazy loading",
+        "const widget"
+      ],
+      "intentPatterns": [
+        "optimize.*performance",
+        "cache.*data",
+        "image.*optimization",
+        "lazy.*load",
+        "performance.*improvement"
+      ]
+    },
+    "fileTriggers": {
+      "pathPatterns": [
+        "lib/services/performance/**/*.dart",
+        "lib/widgets/**/*.dart",
+        "lib/services/upload/**/*.dart"
+      ],
+      "contentPatterns": [
+        "const.*Widget",
+        "CachedNetworkImage",
+        "ImageOptimization",
+        "LazyLoad",
+        "PerformanceMonitoring",
+        "CacheService"
+      ]
+    }
+  }
+}
