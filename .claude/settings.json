@@ -1,0 +1,70 @@
+{
+  "hooks": {
+    "userPromptSubmit": [
+      {
+        "path": ".claude/hooks/skill-activation-prompt.sh",
+        "description": "Auto-activate relevant skills based on file context and user intent",
+        "blocking": false
+      }
+    ],
+    "postToolUse": [
+      {
+        "path": ".claude/hooks/architecture-validator.sh",
+        "description": "Validate MVVM compliance - BLOCKS critical violations, WARNS on style issues",
+        "blocking": true
+      },
+      {
+        "path": ".claude/hooks/migration-detector.sh",
+        "description": "Detect opportunities to use SerializationUtils or ErrorHandlingMixin",
+        "blocking": false
+      },
+      {
+        "path": ".claude/hooks/file-size-enforcer.sh",
+        "description": "Warn if file exceeds 500 LOC without facade pattern",
+        "blocking": false
+      }
+    ],
+    "stop": [
+      {
+        "path": ".claude/hooks/dart-analyze-check.sh",
+        "description": "Run flutter analyze before returning control",
+        "blocking": false
+      },
+      {
+        "path": ".claude/hooks/dart-format-check.sh",
+        "description": "Auto-format changed Dart files",
+        "blocking": false
+      }
+    ]
+  },
+  "customInstructions": {
+    "enabled": true,
+    "instructions": [
+      "Always follow Butlery's MVVM + Repository architecture pattern",
+      "Use ServiceLocator.get<T>() for runtime access (never sl<T>())",
+      "Extend BaseService for all instance-based services",
+      "Extend BaseFirebaseRepository for all Firebase repositories",
+      "Validate permissions on all repository CRUD operations",
+      "Use AsyncOperationMixin for simple loading/error state management",
+      "Files >500 LOC must use facade pattern with extracted modules",
+      "Never use FirebaseFirestore.instance directly - inject repository",
+      "Use UserService.currentUserProfile for user data (not PermissionService.currentUser)",
+      "Always dispose resources (controllers, subscriptions, etc.)"
+    ]
+  },
+  "linting": {
+    "preCommit": {
+      "runAnalyze": true,
+      "runFormat": true,
+      "runTests": false
+    }
+  },
+  "documentation": {
+    "autoUpdateMetrics": true,
+    "metricsFiles": [
+      "docs/testing/TESTING_DASHBOARD.md",
+      "docs/PROJECT_STATUS.md",
+      "README.md"
+    ]
+  }
+}
