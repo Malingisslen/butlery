@@ -242,15 +242,17 @@ void main() {
 
     group('Initialization', () {
       test('should initialize with loading state', () {
-        // Assert initial state
+        // Assert initial state - Stream loading
         expect(viewModel.isLoadingConversations, isTrue);
         expect(viewModel.conversations, isEmpty);
         expect(viewModel.conversationsError, isNull);
         expect(viewModel.hasConversations, isFalse);
         expect(viewModel.searchQuery, isEmpty);
         expect(viewModel.isSearching, isFalse);
-        expect(viewModel.isLoadingConversations, isFalse);
-        expect(viewModel.conversationsError, isNull);
+
+        // Operation state (AsyncOperationMixin) should be idle
+        expect(viewModel.isLoading, isFalse);
+        expect(viewModel.error, isNull);
       });
 
       test('should setup stream subscription on initialization', () {
@@ -354,10 +356,10 @@ void main() {
         // Act
         conversationsStreamController.addError('Stream error');
         await Future.delayed(Duration.zero);
-        
-        // Assert
-        expect(viewModel.error, equals('Kunde inte ladda konversationer'));
-        expect(viewModel.isLoading, isFalse);
+
+        // Assert - Stream error, check stream state
+        expect(viewModel.conversationsError, equals('Kunde inte ladda konversationer'));
+        expect(viewModel.isLoadingConversations, isFalse);
       });
 
       test('should not update when disposed', () async {
@@ -912,34 +914,34 @@ void main() {
       });
 
       test('should clear general error', () async {
-        // Arrange - Set an error first
+        // Arrange - Set a stream error first
         conversationsStreamController.addError('Test error');
         await Future.delayed(Duration.zero); // Wait for error to be set
-        expect(viewModel.error, isNotNull);
-        
+        expect(viewModel.conversationsError, isNotNull);
+
         // Act
-        viewModel.clearError();
-        
+        viewModel.clearAllErrors();
+
         // Assert
-        expect(viewModel.error, isNull);
+        expect(viewModel.conversationsError, isNull);
       });
 
       test('should clear conversation creation error', () async {
-        // Arrange - Create an error
+        // Arrange - Create an operation error
         when(() => mockMessagingService.startDirectConversation(
           otherUserId: any(named: 'otherUserId'),
           otherUserDisplayName: any(named: 'otherUserDisplayName'),
           otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
         )).thenThrow(Exception('Creation error'));
-        
+
         await viewModel.startDirectConversation(
           otherUserId: 'user',
           otherUserDisplayName: 'User',
         );
         expect(viewModel.error, isNotNull);
-        
+
         // Act
-        viewModel.clearError();
+        viewModel.clearAllErrors();
         
         // Assert
         expect(viewModel.error, isNull);
@@ -967,7 +969,7 @@ void main() {
         expect(viewModel.error, isNotNull);
         
         // Clear all errors
-        viewModel.clearError();
+        viewModel.clearAllErrors();
         
         // Both should be cleared
         expect(viewModel.error, isNull);
@@ -998,7 +1000,7 @@ void main() {
         // Act & Assert - Should not throw
         expect(() => testViewModel.updateSearchQuery('test'), returnsNormally);
         expect(() => testViewModel.clearSearch(), returnsNormally);
-        expect(() => testViewModel.clearError(), returnsNormally);
+        expect(() => testViewModel.clearAllErrors(), returnsNormally);
       });
 
       test('should handle multiple dispose calls safely', () {
@@ -1026,7 +1028,7 @@ void main() {
         // Act
         testViewModel.updateSearchQuery('test');
         testViewModel.clearSearch();
-        testViewModel.clearError();
+        testViewModel.clearAllErrors();
         await testViewModel.refresh();
         await testViewModel.markConversationAsRead('conv');
         await testViewModel.leaveGroup('group');

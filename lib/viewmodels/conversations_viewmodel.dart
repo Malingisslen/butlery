@@ -120,19 +120,24 @@ class ConversationsViewModel extends ChangeNotifier
   }) async {
     if (_isDisposed) return null;
 
-    return await executeAsync<String?>(
-      () async {
-        final conversationId = await _messagingService.startDirectConversation(
-          otherUserId: otherUserId,
-          otherUserDisplayName: otherUserDisplayName,
-          otherUserAvatarUrl: otherUserAvatarUrl,
-        );
+    try {
+      return await executeAsync<String?>(
+        () async {
+          final conversationId = await _messagingService.startDirectConversation(
+            otherUserId: otherUserId,
+            otherUserDisplayName: otherUserDisplayName,
+            otherUserAvatarUrl: otherUserAvatarUrl,
+          );
 
-        AppLogger.success('Direct conversation started: $conversationId');
-        return conversationId;
-      },
-      errorPrefix: 'Kunde inte starta konversation',
-    );
+          AppLogger.success('Direct conversation started: $conversationId');
+          return conversationId;
+        },
+        errorPrefix: 'Kunde inte starta konversation',
+      );
+    } catch (e) {
+      // Error state already set by executeAsync, just return null
+      return null;
+    }
   }
 
   Future<String?> createGroupConversation({
@@ -143,20 +148,25 @@ class ConversationsViewModel extends ChangeNotifier
   }) async {
     if (_isDisposed) return null;
 
-    return await executeAsync<String?>(
-      () async {
-        final conversationId = await _messagingService.createGroupConversation(
-          participantIds: participantIds,
-          participantDisplayNames: participantDisplayNames,
-          participantAvatarUrls: participantAvatarUrls,
-          title: title,
-        );
+    try {
+      return await executeAsync<String?>(
+        () async {
+          final conversationId = await _messagingService.createGroupConversation(
+            participantIds: participantIds,
+            participantDisplayNames: participantDisplayNames,
+            participantAvatarUrls: participantAvatarUrls,
+            title: title,
+          );
 
-        AppLogger.success('Group conversation created: $conversationId');
-        return conversationId;
-      },
-      errorPrefix: 'Kunde inte skapa gruppchatt',
-    );
+          AppLogger.success('Group conversation created: $conversationId');
+          return conversationId;
+        },
+        errorPrefix: 'Kunde inte skapa gruppchatt',
+      );
+    } catch (e) {
+      // Error state already set by executeAsync, just return null
+      return null;
+    }
   }
 
   Future<void> markConversationAsRead(String conversationId) async {
