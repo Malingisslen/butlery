@@ -1,9 +1,9 @@
 ﻿# Butlery Audit Issue Tracker
 
 **Audit Date**: January 31, 2025
-**Total Issues**: 9 Real Issues (73 False Positives/Resolved)
+**Total Issues**: 8 Real Issues (74 False Positives/Resolved)
 **Status**: Phase 4 Complete (75% audit complete)
-**Recent Progress**: Nov 2025 - Default Value Extensions Phase 3B complete (pattern limitations documented), SerializationUtils Phase 1-4 complete (10 models, ~189-227 lines saved), ARCH-011 core opportunities exhausted
+**Recent Progress**: Dec 2025 - ARCH-007 resolved (repository injection verified), TEST-001/TEST-002 baselines updated with accurate counts. Nov 2025 - Default Value Extensions Phase 3B complete (pattern limitations documented), SerializationUtils Phase 1-4 complete (10 models, ~189-227 lines saved)
 
 ---
 
@@ -210,16 +210,16 @@
   - File Size Violations (20-30 true violations)
   - Default Value Extensions
 - **Total Issues Identified**: 82
-- **False Positives/Resolved**: 73 (89%)
-- **Real Issues Remaining**: 9 (11%)
+- **False Positives/Resolved**: 74 (90%)
+- **Real Issues Remaining**: 8 (10%)
 
 ### By Status
-- **✅ Resolved/False Positive**: 73 (89%)
-- **⚠️ Real Issue - Open**: 9 (11%)
+- **✅ Resolved/False Positive**: 74 (90%)
+- **⚠️ Real Issue - Open**: 8 (10%)
 - **⏸️ Deferred**: 1 (Firebase security rules - needs console access)
 
 ### Critical Insight
-**89% of identified issues are false positives or already resolved**. The codebase is in MUCH BETTER condition than automated tools suggest. Real issues are primarily infrastructure adoption opportunities, not critical bugs or security vulnerabilities.
+**90% of identified issues are false positives or already resolved**. The codebase is in MUCH BETTER condition than automated tools suggest. Real issues are primarily infrastructure adoption opportunities, not critical bugs or security vulnerabilities.
 
 ---
 
