@@ -134,7 +134,7 @@
 | ID | File/Component | Issue | Impact | Effort | Priority | Status | Recommended Fix |
 |----|----------------|-------|--------|--------|----------|--------|-----------------|
 | TEST-001 | Repositories | Coverage 61% (33/54) - target: 70% | High | M | P1 | ⚠️ REAL ISSUE | **Dec 2025**: Current: 33 repository test files exist. Add 5-10 repository tests to reach 70% coverage (38/54). Priority: Missing tests for critical repositories. 1-2 weeks effort. |
-| TEST-002 | Integration tests | Only 13 tests (target: 30) | High | XL | P1 | ⚠️ REAL ISSUE | **Phase 4**: Add 17 integration tests for critical flows (recipe CRUD + sharing, shopping lists, consent management, friend/group features). 3-4 weeks effort. |
+| TEST-002 | Integration tests | 15 tests exist (target: 30) | High | L | P1 | ⚠️ REAL ISSUE | **Dec 2025**: Current: 15 integration test files exist. Add 15 integration tests for critical flows (recipe CRUD + sharing, shopping lists, consent management, friend/group features, offline sync, search). 2-3 weeks effort. |
 | TEST-003 | ViewModels | Coverage 113% (51/45) - EXCELLENT! | Low | XS | P3 | ✅ BETTER THAN TARGET | **Phase 4**: ViewModels have EXCELLENT coverage (some have multiple test files). NO ACTION NEEDED. |
 | TEST-004 | Services | Coverage 69.1% (125/181) - target: 70% | Low | S | P3 | ✅ ALMOST AT TARGET | **Phase 4**: Services nearly at target. Add ~2-3 tests to reach 70%. 1-2 days effort. |
 | TEST-005 | Widget Tests | 148 widget test files found | Medium | M | P2 | ✅ GOOD | **Phase 4**: Widget testing better than reported. Continue expansion for complex widgets. |
