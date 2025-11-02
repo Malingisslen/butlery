@@ -2,7 +2,8 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/friend_category.dart';
-import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/permission_service.dart' as perm_service;
+import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Model for shared content items displayed in group views
@@ -60,13 +61,15 @@ class SharedContentItem {
 }
 
 /// Service for querying and managing shared content within groups
-class GroupSharedContentService {
+class GroupSharedContentService extends BaseService {
+  @override
+  String get serviceName => 'GroupSharedContentService';
   final FirebaseFirestore _firestore;
-  final PermissionService _permissionService;
+  final perm_service.PermissionService _permissionService;
 
   GroupSharedContentService({
     required FirebaseFirestore firestore,
-    required PermissionService permissionService,
+    required perm_service.PermissionService permissionService,
   })  : _firestore = firestore,
         _permissionService = permissionService;
 

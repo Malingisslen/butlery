@@ -38,7 +38,6 @@ import 'package:butlery/services/account/consent_service.dart';
 
 // Firebase dependencies
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Core module providing foundational application services.
 ///
@@ -133,8 +132,8 @@ class CoreModule implements DIModule {
       // Account deletion service for GDPR Article 17 (Right to Erasure)
       container.registerLazySingleton<AccountDeletionService>(
         () => AccountDeletionService(
-          auth: FirebaseAuth.instance,
-          firestore: FirebaseFirestore.instance,
+          authRepository: container<AuthRepository>(),
+          firestoreRepository: container<FirestoreRepository>(),
           authService: container<AuthService>(),
           userService: container(),  // Will be provided by content module
           recipeService: container(),  // Will be provided by content module
@@ -146,8 +145,8 @@ class CoreModule implements DIModule {
       // Data export service for GDPR Article 20 (Right to Data Portability)
       container.registerLazySingleton<DataExportService>(
         () => DataExportService(
-          auth: FirebaseAuth.instance,
-          firestore: FirebaseFirestore.instance,
+          authRepository: container<AuthRepository>(),
+          firestoreRepository: container<FirestoreRepository>(),
         ),
       );
 

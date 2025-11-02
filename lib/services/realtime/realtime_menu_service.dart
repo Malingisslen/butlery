@@ -15,6 +15,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/realtime/modules/menu_operations.dart';
 import 'package:butlery/services/realtime/modules/menu_participants.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 /// Clean facade for realtime menu management using focused modules
 ///
@@ -23,7 +24,7 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 /// - MenuParticipants: Participant management (adding, removing, permissions)
 ///
 /// ❌ DOES NOT CONTAIN: Complex business logic, direct implementation details
-class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin {
+class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
   final RealtimeSyncService _syncService;
   final AuthService _authService;
 

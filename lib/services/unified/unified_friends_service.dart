@@ -67,6 +67,7 @@ import 'package:butlery/repositories/firebase/friends/friend_relationship_reposi
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 // Feature interfaces
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
@@ -90,7 +91,7 @@ import 'package:butlery/services/unified/friends/friends_utility_operations.dart
 /// - Feature operations: Handle specific business logic
 /// 
 /// Maintains 100% backward compatibility while providing clean modular architecture.
-class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin {
+class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
   // Dependencies
   final FirestoreRepository _firestoreRepository;
   final AuthRepository _authRepository;
@@ -178,47 +179,42 @@ class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin {
   // ===== INITIALIZATION (Delegated to Service Coordinator) =====
 
   Future<void> initialize() async {
-    try {
-      AppLogger.info('🔄 Initializing UnifiedFriendsService facade...');
-      
-      // Set up auth state change listener (CRITICAL FIX for authentication bug)
-      listenToStream(
-        _authRepository.authStateChanges(),
-        (user) async {
-          if (user != null) {
-            // User logged in - reload friends data
-            AppLogger.info('🔄 User logged in - reloading friends data for: ${user.uid}');
-            await _stateManager.initialize();
-            
-            // Run migration to ensure owners are members of their groups
-            await categories.migrateOwnersAsMembers();
-          } else {
-            // User logged out - clear all cached data
-            AppLogger.info('🚪 User logged out - clearing friends data');
-            // ULTRATHINK FIX: Ensure clearAllData completes before any subsequent operations
-            await Future.microtask(() => _stateManager.clearAllData());
-            AppLogger.debug('✅ Friends data clearing completed');
-          }
-        },
-        name: 'friends_auth_state_changes',
-      );
-      
-      // Initialize for current user if already authenticated
-      if (_authRepository.currentUser != null) {
-        await _stateManager.initialize();
-        
-        // Run migration to ensure owners are members of their groups
-        await categories.migrateOwnersAsMembers();
-      }
-      
-      // Initialize the service coordinator
-      await _serviceCoordinator.initialize();
-      
-      AppLogger.success('✅ UnifiedFriendsService facade initialized with auth state handling');
-    } catch (e) {
-      AppLogger.error('❌ Failed to initialize UnifiedFriendsService facade: $e');
-      rethrow;
+    AppLogger.info('🔄 Initializing UnifiedFriendsService facade...');
+
+    // Set up auth state change listener (CRITICAL FIX for authentication bug)
+    listenToStream(
+      _authRepository.authStateChanges(),
+      (user) async {
+        if (user != null) {
+          // User logged in - reload friends data
+          AppLogger.info('🔄 User logged in - reloading friends data for: ${user.uid}');
+          await _stateManager.initialize();
+
+          // Run migration to ensure owners are members of their groups
+          await categories.migrateOwnersAsMembers();
+        } else {
+          // User logged out - clear all cached data
+          AppLogger.info('🚪 User logged out - clearing friends data');
+          // ULTRATHINK FIX: Ensure clearAllData completes before any subsequent operations
+          await Future.microtask(() => _stateManager.clearAllData());
+          AppLogger.debug('✅ Friends data clearing completed');
+        }
+      },
+      name: 'friends_auth_state_changes',
+    );
+
+    // Initialize for current user if already authenticated
+    if (_authRepository.currentUser != null) {
+      await _stateManager.initialize();
+
+      // Run migration to ensure owners are members of their groups
+      await categories.migrateOwnersAsMembers();
     }
+
+    // Initialize the service coordinator
+    await _serviceCoordinator.initialize();
+
+    AppLogger.success('✅ UnifiedFriendsService facade initialized with auth state handling');
   }
 
   // ===== PRIVATE INITIALIZATION METHODS =====

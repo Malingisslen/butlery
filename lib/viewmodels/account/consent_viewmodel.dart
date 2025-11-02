@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 
 /// ViewModel for managing user consent UI state and operations (GDPR Article 7)
 ///
@@ -10,18 +12,19 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 ///
 /// **State Management:**
 /// - Current consent state
-/// - Loading states
-/// - Success/error handling
+/// - Loading states managed by AsyncOperationMixin
+/// - Success/error handling via AsyncOperationMixin
 /// - Individual purpose toggles
 ///
 /// **User Flow:**
 /// 1. User views current consent settings
 /// 2. User toggles consent purposes
 /// 3. ViewModel saves consent via ConsentService
-/// 4. Shows loading state during save
+/// 4. Shows loading state during save (managed by AsyncOperationMixin)
 /// 5. On success: Updates UI with new state
 /// 6. On error: Shows error message with retry option
-class ConsentViewModel extends ChangeNotifier {
+class ConsentViewModel extends ChangeNotifier
+    with StateNotifierMixin, AsyncOperationMixin {
   final ConsentService _consentService;
   static const String _logTag = 'ConsentViewModel';
 
@@ -30,10 +33,7 @@ class ConsentViewModel extends ChangeNotifier {
   }) : _consentService = consentService;
 
   // State
-  bool _isLoading = false;
-  bool _isSaving = false;
   UserConsent? _currentConsent;
-  String? _errorMessage;
   bool _needsRenewal = false;
 
   // Current consent purposes (editable state)
@@ -43,11 +43,9 @@ class ConsentViewModel extends ChangeNotifier {
   bool _pushNotifications = false;
 
   // Getters - State
-  bool get isLoading => _isLoading;
-  bool get isSaving => _isSaving;
+  bool get isSaving => isLoading;  // Compatibility alias - StateNotifierMixin provides isLoading
   UserConsent? get currentConsent => _currentConsent;
-  String? get errorMessage => _errorMessage;
-  bool get hasError => _errorMessage != null;
+  String? get errorMessage => error;  // Compatibility alias - StateNotifierMixin provides error
   bool get needsRenewal => _needsRenewal;
   bool get hasConsent => _currentConsent != null;
 
@@ -63,86 +61,69 @@ class ConsentViewModel extends ChangeNotifier {
 
   /// Load current user consent
   Future<void> loadConsent() async {
-    if (_isLoading) {
-      app_logger.AppLogger.warning('[$_logTag] Load already in progress');
-      return;
-    }
-
     try {
-      _setLoading(true);
-      _clearError();
+      await executeNamedOperation('load', () async {
+        app_logger.AppLogger.info('[$_logTag] Loading user consent');
 
-      app_logger.AppLogger.info('[$_logTag] Loading user consent');
+        final consent = await _consentService.getUserConsent();
+        _currentConsent = consent;
 
-      final consent = await _consentService.getUserConsent();
-      _currentConsent = consent;
+        if (consent != null) {
+          // Update editable state from loaded consent
+          _analytics = consent.purposes.analytics;
+          _marketing = consent.purposes.marketing;
+          _socialFeatures = consent.purposes.socialFeatures;
+          _pushNotifications = consent.purposes.pushNotifications;
 
-      if (consent != null) {
-        // Update editable state from loaded consent
-        _analytics = consent.purposes.analytics;
-        _marketing = consent.purposes.marketing;
-        _socialFeatures = consent.purposes.socialFeatures;
-        _pushNotifications = consent.purposes.pushNotifications;
+          // Check if renewal needed
+          _needsRenewal = await _consentService.needsConsentRenewal();
+        } else {
+          // No consent found - set defaults
+          _analytics = false;
+          _marketing = false;
+          _socialFeatures = false;
+          _pushNotifications = false;
+          _needsRenewal = true;
+        }
 
-        // Check if renewal needed
-        _needsRenewal = await _consentService.needsConsentRenewal();
-      } else {
-        // No consent found - set defaults
-        _analytics = false;
-        _marketing = false;
-        _socialFeatures = false;
-        _pushNotifications = false;
-        _needsRenewal = true;
-      }
-
-      _setLoading(false);
-
-      app_logger.AppLogger.success('[$_logTag] Consent loaded successfully');
+        app_logger.AppLogger.success('[$_logTag] Consent loaded successfully');
+      });
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to load consent', e);
-      _setError(_formatErrorMessage(e));
-      _setLoading(false);
+      setError(_formatErrorMessage(e));
     }
   }
 
   /// Save current consent settings
   Future<bool> saveConsent() async {
-    if (_isSaving) {
-      app_logger.AppLogger.warning('[$_logTag] Save already in progress');
-      return false;
-    }
-
     try {
-      _setSaving(true);
-      _clearError();
+      return await executeNamedOperation('save', () async {
+        app_logger.AppLogger.info('[$_logTag] Saving user consent');
 
-      app_logger.AppLogger.info('[$_logTag] Saving user consent');
+        final purposes = ConsentPurposes(
+          essentialServices: true, // Always required
+          dataProcessing: true, // Always required
+          analytics: _analytics,
+          marketing: _marketing,
+          socialFeatures: _socialFeatures,
+          pushNotifications: _pushNotifications,
+        );
 
-      final purposes = ConsentPurposes(
-        essentialServices: true, // Always required
-        dataProcessing: true, // Always required
-        analytics: _analytics,
-        marketing: _marketing,
-        socialFeatures: _socialFeatures,
-        pushNotifications: _pushNotifications,
-      );
+        final success = await _consentService.saveConsent(purposes);
 
-      final success = await _consentService.saveConsent(purposes);
+        if (success) {
+          // Reload to get updated consent with timestamps
+          await loadConsent();
+          app_logger.AppLogger.success('[$_logTag] Consent saved successfully');
+        } else {
+          setError('Kunde inte spara samtycken. Försök igen.');
+        }
 
-      if (success) {
-        // Reload to get updated consent with timestamps
-        await loadConsent();
-        app_logger.AppLogger.success('[$_logTag] Consent saved successfully');
-      } else {
-        _setError('Kunde inte spara samtycken. Försök igen.');
-      }
-
-      _setSaving(false);
-      return success;
+        return success;
+      });
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to save consent', e);
-      _setError(_formatErrorMessage(e));
-      _setSaving(false);
+      setError(_formatErrorMessage(e));
       return false;
     }
   }
@@ -178,32 +159,29 @@ class ConsentViewModel extends ChangeNotifier {
   /// Revoke all optional consents
   Future<bool> revokeAllOptional() async {
     try {
-      _setSaving(true);
-      _clearError();
+      return await executeNamedOperation('revoke', () async {
+        app_logger.AppLogger.info('[$_logTag] Revoking all optional consents');
 
-      app_logger.AppLogger.info('[$_logTag] Revoking all optional consents');
+        final success = await _consentService.revokeOptionalConsents();
 
-      final success = await _consentService.revokeOptionalConsents();
+        if (success) {
+          // Reset local state
+          _analytics = false;
+          _marketing = false;
+          _socialFeatures = false;
+          _pushNotifications = false;
 
-      if (success) {
-        // Reset local state
-        _analytics = false;
-        _marketing = false;
-        _socialFeatures = false;
-        _pushNotifications = false;
+          await loadConsent();
+          app_logger.AppLogger.success('[$_logTag] All optional consents revoked');
+        } else {
+          setError('Kunde inte återkalla samtycken. Försök igen.');
+        }
 
-        await loadConsent();
-        app_logger.AppLogger.success('[$_logTag] All optional consents revoked');
-      } else {
-        _setError('Kunde inte återkalla samtycken. Försök igen.');
-      }
-
-      _setSaving(false);
-      return success;
+        return success;
+      });
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to revoke consents', e);
-      _setError(_formatErrorMessage(e));
-      _setSaving(false);
+      setError(_formatErrorMessage(e));
       return false;
     }
   }
@@ -266,26 +244,6 @@ class ConsentViewModel extends ChangeNotifier {
   }
 
   // Private helper methods
-
-  void _setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
-  }
-
-  void _setSaving(bool value) {
-    _isSaving = value;
-    notifyListeners();
-  }
-
-  void _setError(String message) {
-    _errorMessage = message;
-    notifyListeners();
-  }
-
-  void _clearError() {
-    _errorMessage = null;
-    notifyListeners();
-  }
 
   String _formatErrorMessage(Object error) {
     final errorStr = error.toString();

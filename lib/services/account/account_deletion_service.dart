@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/services/auth_service.dart';
-import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/user_service.dart' as user_svc;
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/analytics_service.dart';
@@ -9,12 +9,21 @@ import 'package:butlery/services/account/account_deletion/content_deletion_opera
 import 'package:butlery/services/account/account_deletion/social_deletion_operations.dart';
 import 'package:butlery/services/account/account_deletion/profile_deletion_operations.dart';
 import 'package:butlery/services/account/account_deletion/storage_deletion_operations.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
+import 'package:butlery/repositories/firestore_repository.dart';
+import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 
 /// GDPR-compliant account deletion orchestrator delegating to focused deletion modules.
-class AccountDeletionService {
-  final FirebaseAuth _auth;
-  final FirebaseFirestore _firestore;
+///
+/// Uses repository pattern for database access to improve testability and maintain
+/// architectural consistency. Delegates to focused deletion operation modules for
+/// different data categories (content, social, profile, storage).
+class AccountDeletionService extends BaseService {
+  @override
+  String get serviceName => 'AccountDeletionService';
+  final auth_repo.AuthRepository _authRepository;
+  final FirestoreRepository _firestoreRepository;
   final AnalyticsService _analyticsService;
   static const String _logTag = 'AccountDeletionService';
 
@@ -24,21 +33,26 @@ class AccountDeletionService {
   late final StorageDeletionOperations _storageOps;
 
   AccountDeletionService({
-    required FirebaseAuth auth,
-    required FirebaseFirestore firestore,
+    required auth_repo.AuthRepository authRepository,
+    required FirestoreRepository firestoreRepository,
     required AuthService authService,
-    required UserService userService,
+    required user_svc.UserService userService,
     required UnifiedRecipeService recipeService,
     required OfflineService offlineService,
     required AnalyticsService analyticsService,
-  })  : _auth = auth,
-        _firestore = firestore,
+  })  : _authRepository = authRepository,
+        _firestoreRepository = firestoreRepository,
         _analyticsService = analyticsService {
-    _contentOps = ContentDeletionOperations(_firestore);
-    _socialOps = SocialDeletionOperations(_firestore);
-    _profileOps = ProfileDeletionOperations(_firestore);
-    _storageOps = StorageDeletionOperations(_firestore, offlineService);
+    // Initialize deletion operations with Firestore instance from repository
+    final firestore = _firestoreRepository.firestore;
+    _contentOps = ContentDeletionOperations(firestore);
+    _socialOps = SocialDeletionOperations(firestore);
+    _profileOps = ProfileDeletionOperations(firestore);
+    _storageOps = StorageDeletionOperations(firestore, offlineService);
   }
+
+  /// Access Firestore instance from repository
+  FirebaseFirestore get _firestore => _firestoreRepository.firestore;
 
   Future<Map<String, dynamic>> deleteUserAccount({
     required String reason,
@@ -53,7 +67,7 @@ class AccountDeletionService {
     };
 
     try {
-      final user = _auth.currentUser;
+      final user = _authRepository.currentUser;
       if (user == null) {
         throw Exception('No authenticated user found');
       }
@@ -139,21 +153,21 @@ class AccountDeletionService {
     required List<dynamic> deletedCollections,
     required List<dynamic> failedCollections,
   }) async {
-    try {
-      final auditDoc = await _firestore.collection('deletion_audit_logs').add({
-        'userId': userId,
-        'email': email,
-        'reason': reason,
-        'deletedCollections': deletedCollections,
-        'failedCollections': failedCollections,
-        'deletionTimestamp': FieldValue.serverTimestamp(),
-        'gdprCompliant': failedCollections.isEmpty,
-      });
-
-      return auditDoc.id;
-    } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to create audit log', e);
-      return 'error';
-    }
+    return await safeExecute(
+      () async {
+        final auditDoc = await _firestore.collection('deletion_audit_logs').add({
+          'userId': userId,
+          'email': email,
+          'reason': reason,
+          'deletedCollections': deletedCollections,
+          'failedCollections': failedCollections,
+          'deletionTimestamp': FieldValue.serverTimestamp(),
+          'gdprCompliant': failedCollections.isEmpty,
+        });
+        return auditDoc.id;
+      },
+      operationName: 'Create deletion audit log',
+      defaultValue: 'error',
+    ) ?? 'error';
   }
 }

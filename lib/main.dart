@@ -54,6 +54,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:butlery/firebase_options_real.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   // CRITICAL: Initialize Flutter bindings first - required for any Flutter services
@@ -88,13 +89,8 @@ Future<void> main() async {
         androidProvider: AndroidProvider.playIntegrity,
         appleProvider: AppleProvider.appAttest,
       );
-      
-      debugPrint('✅ Firebase App Check activated for production');
-    } else {
-      // In debug mode, optionally use debug provider with proper token
-      // For now, skip to avoid "Too many attempts" errors
-      debugPrint('⚠️ Firebase App Check skipped in debug mode to avoid rate limiting');
     }
+    // Firebase App Check configuration complete (production mode uses App Check, debug mode skips it)
 
     // Initialize modular system FIRST - this sets up the DI container and ServiceLocator
     await _initializeModularSystem();
@@ -221,15 +217,83 @@ class ButleryApp extends StatefulWidget {
   State<ButleryApp> createState() => _ButleryAppState();
 }
 
-class _ButleryAppState extends State<ButleryApp> {
+class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   FirebaseAnalyticsObserver? _analyticsObserver;
   final SnackbarRouteObserver _snackbarObserver = SnackbarRouteObserver();
+  DateTime? _sessionStartTime;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initializeUI();
+    _trackAppOpened();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.resumed) {
+      // App came to foreground
+      _trackAppOpened();
+    } else if (state == AppLifecycleState.paused) {
+      // App went to background
+      _trackAppBackgrounded();
+    }
+  }
+
+  /// Track app opened event with session count
+  Future<void> _trackAppOpened() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final sessionCount = (prefs.getInt('session_count') ?? 0) + 1;
+      await prefs.setInt('session_count', sessionCount);
+
+      _sessionStartTime = DateTime.now();
+
+      final bootstrap = ApplicationBootstrap();
+      if (bootstrap.isInitialized) {
+        final analyticsService = bootstrap.container.get<AnalyticsService>();
+        await analyticsService.logEvent(
+          name: 'app_opened',
+          parameters: {
+            'session_count': sessionCount,
+            'timestamp': DateTime.now().toIso8601String(),
+          },
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Failed to track app_opened', e);
+    }
+  }
+
+  /// Track app backgrounded event with session duration
+  Future<void> _trackAppBackgrounded() async {
+    try {
+      final bootstrap = ApplicationBootstrap();
+      if (bootstrap.isInitialized && _sessionStartTime != null) {
+        final sessionDuration = DateTime.now().difference(_sessionStartTime!).inSeconds;
+
+        final analyticsService = bootstrap.container.get<AnalyticsService>();
+        await analyticsService.logEvent(
+          name: 'app_backgrounded',
+          parameters: {
+            'session_duration_seconds': sessionDuration,
+            'timestamp': DateTime.now().toIso8601String(),
+          },
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Failed to track app_backgrounded', e);
+    }
   }
 
   Future<void> _initializeUI() async {

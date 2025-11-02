@@ -3,7 +3,8 @@
 import 'dart:io';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
+import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
@@ -37,15 +38,17 @@ import 'package:path/path.dart' as path;
 ///   onProgress: (progress) => print('Upload: $progress%'),
 /// );
 /// ```
-class MessagingMediaService {
+class MessagingMediaService extends BaseService {
+  @override
+  String get serviceName => 'MessagingMediaService';
   final ImageUploadService _uploadService;
   final MessagingService _messagingService;
-  final AuthRepository _authRepository;
+  final auth_repo.AuthRepository _authRepository;
   final ImagePicker _imagePicker;
 
   MessagingMediaService({
     required MessagingService messagingService,
-    required AuthRepository authRepository,
+    required auth_repo.AuthRepository authRepository,
     ImageUploadService? uploadService,
     ImagePicker? imagePicker,
   })  : _uploadService = uploadService ?? ImageUploadService(),

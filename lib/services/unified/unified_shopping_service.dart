@@ -12,6 +12,7 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/mixins/firebase_sync_mixin.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -33,7 +34,8 @@ class ShoppingFirebaseSync {
 }
 
 /// Unified shopping service implementing facade pattern for shopping list management.
-class UnifiedShoppingService extends ChangeNotifier with FirebaseSyncMixin<UnifiedShoppingList> {
+class UnifiedShoppingService extends ChangeNotifier
+    with FirebaseSyncMixin<UnifiedShoppingList>, ErrorHandlingMixin {
   // Dependencies
   final FirestoreRepository _firestoreRepository;
   final AuthRepository _authRepository;
@@ -354,14 +356,15 @@ class UnifiedShoppingService extends ChangeNotifier with FirebaseSyncMixin<Unifi
 
   /// Save active list ID to cache for persistence across app restarts
   Future<void> _saveActiveListId() async {
-    try {
-      const activeListKey = 'active_list_id';
-      await _cacheHelper.saveActiveId(activeListKey, _activeListId);
-      AppLogger.debug('💾 Saved active list ID: $_activeListId', 'ShoppingService');
-    } catch (e) {
-      AppLogger.error('Failed to save active list ID: $e', 'ShoppingService');
+    await safeExecute(
+      () async {
+        const activeListKey = 'active_list_id';
+        await _cacheHelper.saveActiveId(activeListKey, _activeListId);
+        AppLogger.debug('💾 Saved active list ID: $_activeListId', 'ShoppingService');
+      },
+      operationName: 'Save active list ID',
       // Don't rethrow - this is not critical for app functionality
-    }
+    );
   }
 
   // ===== ERROR HANDLING =====

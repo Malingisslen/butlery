@@ -47,6 +47,8 @@
 import 'package:butlery/utils/text/ingredient_preprocessor.dart';
 import 'package:butlery/utils/text/ingredient_parser.dart';
 import 'package:butlery/utils/text/ingredient_normalizer.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Result of complete ingredient processing with all pipeline stages
 class ProcessedIngredient {
@@ -328,5 +330,98 @@ class IngredientProcessor {
       'before': result.original,
       'after': result.cleaned,
     };
+  }
+
+  /// Auto-populate normalized ingredients for a recipe
+  ///
+  /// Takes a list of raw ingredient strings and returns normalized versions
+  /// ready for database storage in the ingredientsNormalized field.
+  ///
+  /// Uses Pattern B (Parse + Normalize) to extract core ingredient names
+  /// without preparation words, enabling better search, filtering, and
+  /// shopping list grouping.
+  ///
+  /// Handles failures gracefully - if an ingredient can't be normalized,
+  /// it uses the original ingredient as fallback to prevent data loss.
+  ///
+  /// Returns null if input is null (for backward compatibility).
+  /// Returns empty list if input is empty list.
+  ///
+  /// Example:
+  /// ```dart
+  /// final ingredients = ["2 dl hackad lök", "3 st stora ägg", "glutenfri pasta"];
+  /// final normalized = IngredientProcessor.normalizeIngredientsForRecipe(ingredients);
+  /// // Returns: ["lök", "ägg", "glutenfri pasta"]
+  /// // - "hackad" removed (preparation word)
+  /// // - "stora" removed (preparation word)
+  /// // - "glutenfri" preserved (diet descriptor)
+  /// ```
+  static List<String>? normalizeIngredientsForRecipe(List<String>? ingredients) {
+    if (ingredients == null) return null;
+    if (ingredients.isEmpty) return [];
+
+    final normalized = <String>[];
+
+    for (final ingredient in ingredients) {
+      if (ingredient.trim().isEmpty) continue;
+
+      try {
+        // Use Pattern B: Parse + Normalize for database ingredients
+        final processed = parseAndNormalize(ingredient);
+        normalized.add(processed.normalizedName);
+      } catch (e) {
+        // Log warning but continue processing with fallback
+        AppLogger.warning('Failed to normalize ingredient "$ingredient": $e');
+        // Fallback: use original ingredient to prevent data loss
+        normalized.add(ingredient.trim());
+      }
+    }
+
+    return normalized;
+  }
+
+  /// Check if recipe needs normalized ingredients populated
+  ///
+  /// Returns true if the recipe's ingredientsNormalized field needs to be
+  /// populated or refreshed. This happens when:
+  /// - ingredientsNormalized is null (never populated)
+  /// - Length mismatch between ingredients and normalized (edited without update)
+  ///
+  /// Returns false if:
+  /// - Both ingredients and normalized are empty (nothing to normalize)
+  /// - Lengths match (already normalized, may be up-to-date)
+  ///
+  /// Note: This is a basic check. For thorough validation, you could
+  /// compare the actual normalized values, but that's more expensive.
+  ///
+  /// Example:
+  /// ```dart
+  /// final recipe = Recipe(
+  ///   core: RecipeCore(
+  ///     ingredients: ["2 dl mjölk", "3 ägg"],
+  ///     ingredientsNormalized: null, // Not populated
+  ///   ),
+  /// );
+  ///
+  /// if (IngredientProcessor.needsNormalization(recipe)) {
+  ///   // Populate the field before saving
+  /// }
+  /// ```
+  static bool needsNormalization(Recipe recipe) {
+    final ingredients = recipe.core.ingredients;
+    final normalized = recipe.core.ingredientsNormalized;
+
+    // If normalized is null, definitely needs population
+    if (normalized == null) return true;
+
+    // If both empty, no normalization needed
+    if (ingredients.isEmpty && normalized.isEmpty) return false;
+
+    // If length mismatch, needs update
+    if (ingredients.length != normalized.length) return true;
+
+    // Lengths match - assume already normalized
+    // (Could add deeper validation here if needed)
+    return false;
   }
 }

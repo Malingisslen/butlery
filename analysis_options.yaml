@@ -48,7 +48,7 @@ linter:
     # avoid_relative_imports_for_files_in_lib: true # Not available in current Flutter SDK
     
     # Code quality rules
-    avoid_print: true
+    avoid_print: true  # Prevents print() in production - use AppLogger or wrap debugPrint in kDebugMode
     prefer_single_quotes: true
     prefer_const_constructors: true
     prefer_const_declarations: true

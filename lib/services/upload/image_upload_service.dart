@@ -18,6 +18,7 @@ import 'package:butlery/services/upload/upload_progress_tracker.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/base/base_service.dart';
 
 /// Result of an upload operation
 class UploadResult {
@@ -71,7 +72,10 @@ class UploadResult {
 ///   print('Uploaded to: ${result.url}');
 /// }
 /// ```
-class ImageUploadService {
+class ImageUploadService extends BaseService {
+  @override
+  String get serviceName => 'ImageUploadService';
+
   final UploadQueueManager _queueManager;
   final UploadRetryManager _retryManager;
   final UploadProgressTracker _progressTracker;
@@ -428,7 +432,8 @@ class ImageUploadService {
   }
 
   /// Dispose resources
-  void dispose() {
+  @override
+  Future<void> onDispose() async {
     _notificationController.close();
   }
 }

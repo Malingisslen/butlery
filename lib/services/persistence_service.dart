@@ -29,6 +29,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/base/base_service.dart';
 
 /// Local data persistence service providing comprehensive storage management and session continuity.
 ///
@@ -67,7 +68,10 @@ import 'package:butlery/core/utils/logger.dart';
 /// // Storage analytics
 /// final storageInfo = await persistenceService.getStorageInfo();
 /// ```
-class PersistenceService {
+class PersistenceService extends BaseService {
+  @override
+  String get serviceName => 'PersistenceService';
+
   /// Storage key for recipe collection data in SharedPreferences.
   static const String _recipesKey = 'butlery_recipes';
   

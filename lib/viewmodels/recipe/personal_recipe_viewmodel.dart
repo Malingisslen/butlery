@@ -5,7 +5,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
-import 'package:butlery/core/utils/logging_utils.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart' show RecipeOperationResult;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
@@ -48,27 +48,26 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
     if (nameError != null) return false;
 
     return await safeExecute(
-      () => LoggingUtils.loggedCreate(
-        'Personal Recipe',
-        () async {
-          final recipeId = await _recipeService.personal.createRecipe(
-            title: name.trim(),
-            description: description,
-            ingredients: ingredients,
-            instructions: instructions,
-            imageUrls: imageUrls,
-            mealType: mealType,
-            portions: portions,
-            timeMinutes: timeMinutes,
-            rating: rating,
-            tags: tags,
-            sourceUrl: sourceUrl,
-          );
+      () async {
+        final recipeId = await _recipeService.personal.createRecipe(
+          title: name.trim(),
+          description: description,
+          ingredients: ingredients,
+          instructions: instructions,
+          imageUrls: imageUrls,
+          mealType: mealType,
+          portions: portions,
+          timeMinutes: timeMinutes,
+          rating: rating,
+          tags: tags,
+          sourceUrl: sourceUrl,
+        );
 
-          return recipeId != null;
-        },
-        metadata: {'meal_type': mealType, 'ingredient_count': ingredients.length},
-      ),
+        if (recipeId != null) {
+          AppLogger.success('✅ Created personal recipe: ${name.trim()}');
+        }
+        return recipeId != null;
+      },
       operationName: 'Create Personal Recipe',
       defaultValue: false,
     ) ?? false;
@@ -79,12 +78,11 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
   Future<bool> updatePersonalRecipe(Recipe recipe) async {
     if (!recipe.isPersonal) return false;
 
-    return await LoggingUtils.loggedUpdate(
-      'Personal Recipe',
-      () => _recipeService.personal.updateRecipe(recipe),
-      itemId: recipe.id,
-      metadata: {'title': recipe.core.title},
-    );
+    final result = await _recipeService.personal.updateRecipe(recipe);
+    if (result) {
+      AppLogger.info('✅ Updated personal recipe: ${recipe.core.title}');
+    }
+    return result;
   }
 
   Future<bool> deletePersonalRecipe(String recipeId) async {
@@ -92,13 +90,12 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
 
     final recipe = getPersonalRecipeById(recipeId);
     if (recipe == null || !recipe.isPersonal) return false;
-    
-    return await LoggingUtils.loggedDelete(
-      'Personal Recipe',
-      () => _recipeService.personal.deleteRecipe(recipeId),
-      itemId: recipeId,
-      metadata: {'title': recipe.core.title},
-    );
+
+    final result = await _recipeService.personal.deleteRecipe(recipeId);
+    if (result) {
+      AppLogger.warning('🗑️ Deleted personal recipe: ${recipe.core.title}');
+    }
+    return result;
   }
 
   // ===== CONTENT EDITING =====
@@ -125,22 +122,21 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
       if (nameError != null) return false;
     }
     
-    return await LoggingUtils.loggedUpdate(
-      'Personal Recipe Content',
-      () => _recipeService.personal.updateRecipeContent(
-        recipeId: recipeId,
-        title: name,
-        description: description,
-        mealType: mealType,
-        portions: portions,
-        timeMinutes: timeMinutes,
-        rating: rating,
-        tags: tags,
-        sourceUrl: sourceUrl,
-      ),
-      itemId: recipeId,
-      metadata: {'recipe_title': recipe.core.title},
+    final result = await _recipeService.personal.updateRecipeContent(
+      recipeId: recipeId,
+      title: name,
+      description: description,
+      mealType: mealType,
+      portions: portions,
+      timeMinutes: timeMinutes,
+      rating: rating,
+      tags: tags,
+      sourceUrl: sourceUrl,
     );
+    if (result) {
+      AppLogger.info('✅ Updated recipe content: ${recipe.core.title}');
+    }
+    return result;
   }
 
   // ===== INGREDIENT MANAGEMENT =====
@@ -153,12 +149,11 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
     final recipe = getPersonalRecipeById(recipeId);
     if (recipe == null || !recipe.isPersonal) return false;
 
-    return await LoggingUtils.loggedUpdate(
-      'Personal Recipe Ingredient',
-      () => _recipeService.personal.addIngredient(recipeId, ingredient),
-      itemId: recipeId,
-      metadata: {'ingredient': ingredient},
-    );
+    final result = await _recipeService.personal.addIngredient(recipeId, ingredient);
+    if (result) {
+      AppLogger.info('✅ Added ingredient to personal recipe: ${recipe.core.title}');
+    }
+    return result;
   }
 
   Future<bool> updateIngredient(String recipeId, int index, String newIngredient) async {
@@ -168,13 +163,12 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
 
     final recipe = getPersonalRecipeById(recipeId);
     if (recipe == null || !recipe.isPersonal) return false;
-    
-    return await LoggingUtils.loggedUpdate(
-      'Personal Recipe Ingredient',
-      () => _recipeService.personal.updateIngredient(recipeId, index, newIngredient),
-      itemId: recipeId,
-      metadata: {'index': index, 'ingredient': newIngredient},
-    );
+
+    final result = await _recipeService.personal.updateIngredient(recipeId, index, newIngredient);
+    if (result) {
+      AppLogger.info('✅ Updated ingredient in personal recipe: ${recipe.core.title}');
+    }
+    return result;
   }
 
   Future<bool> removeIngredient(String recipeId, int index) async {
@@ -182,13 +176,12 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
 
     final recipe = getPersonalRecipeById(recipeId);
     if (recipe == null || !recipe.isPersonal) return false;
-    
-    return await LoggingUtils.loggedDelete(
-      'Personal Recipe Ingredient',
-      () => _recipeService.personal.removeIngredient(recipeId, index),
-      itemId: recipeId,
-      metadata: {'index': index},
-    );
+
+    final result = await _recipeService.personal.removeIngredient(recipeId, index);
+    if (result) {
+      AppLogger.info('🗑️ Removed ingredient from personal recipe: ${recipe.core.title}');
+    }
+    return result;
   }
 
   // ===== INSTRUCTION MANAGEMENT =====
@@ -243,11 +236,13 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
     }
 
     return await safeExecute(
-      () => LoggingUtils.loggedOperation(
-        'Add Legacy Personal Recipe',
-        () => _recipeService.personal.addLegacyRecipe(recipe),
-        metadata: {'recipe_title': recipe.core.title},
-      ),
+      () async {
+        final result = await _recipeService.personal.addLegacyRecipe(recipe);
+        if (result.isSuccess) {
+          AppLogger.success('✅ Added legacy personal recipe: ${recipe.core.title}');
+        }
+        return result;
+      },
       operationName: 'Add Legacy Personal Recipe',
       defaultValue: RecipeOperationResult.failure('Failed to add recipe'),
     ) ?? RecipeOperationResult.failure('Failed to add recipe');
@@ -259,11 +254,13 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
     }
 
     return await safeExecute(
-      () => LoggingUtils.loggedOperation(
-        'Update Legacy Personal Recipe',
-        () => _recipeService.personal.updateLegacyRecipe(recipe),
-        metadata: {'recipe_id': recipe.id, 'recipe_title': recipe.core.title},
-      ),
+      () async {
+        final result = await _recipeService.personal.updateLegacyRecipe(recipe);
+        if (result.isSuccess) {
+          AppLogger.info('✅ Updated legacy personal recipe: ${recipe.core.title}');
+        }
+        return result;
+      },
       operationName: 'Update Legacy Personal Recipe',
       defaultValue: RecipeOperationResult.failure('Failed to update recipe'),
     ) ?? RecipeOperationResult.failure('Failed to update recipe');

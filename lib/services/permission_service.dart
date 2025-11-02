@@ -2,14 +2,15 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/user_profile.dart' as models;
 import 'package:butlery/models/permissions/resource_permission.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_permission_helper.dart';
+import 'package:butlery/core/base/base_service.dart';
 
 // Permission modules
 import 'package:butlery/services/permissions/recipe_permission_module.dart';
@@ -17,9 +18,12 @@ import 'package:butlery/services/permissions/shopping_permission_module.dart';
 import 'package:butlery/services/permissions/group_permission_module.dart';
 
 /// Singleton permission service with modular domain-specific permission handling.
-class PermissionService {
+class PermissionService extends BaseService {
+  @override
+  String get serviceName => 'PermissionService';
+
   /// Repository handling all Firebase Auth communication and operations.
-  final AuthRepository _authRepository;
+  final auth_repo.AuthRepository _authRepository;
 
   /// Repository handling recipe data operations.
   final RecipeRepository? _recipeRepository;
@@ -34,7 +38,7 @@ class PermissionService {
 
   /// Factory constructor providing singleton access to the permission service.
   factory PermissionService(
-      {AuthRepository? authRepository, RecipeRepository? recipeRepository}) {
+      {auth_repo.AuthRepository? authRepository, RecipeRepository? recipeRepository}) {
     _instance ??= PermissionService._internal(
       authRepository ?? FirebaseAuthRepository(),
       recipeRepository,
@@ -96,12 +100,12 @@ class PermissionService {
   ///
   /// Returns the UserProfile for the currently authenticated user by converting
   /// from Firebase Auth User. Returns null if no user is authenticated.
-  UserProfile? get currentUser {
+  models.UserProfile? get currentUser {
     final firebaseUser = _authRepository.currentUser;
     if (firebaseUser == null) return null;
 
     // Convert Firebase Auth User to UserProfile
-    return UserProfile(
+    return models.UserProfile(
       uid: firebaseUser.uid,
       displayName: firebaseUser.displayName ?? 'User',
       email: firebaseUser.email ?? '',
@@ -146,7 +150,7 @@ class PermissionService {
   /// - Handle authentication errors and user not found scenarios
   /// - Provide cached user profiles for performance optimization
   /// - Support privacy settings and user visibility controls
-  Future<UserProfile?> getUserProfile(String userId) async {
+  Future<models.UserProfile?> getUserProfile(String userId) async {
     // Security: Validate user ID
     if (userId.isEmpty) return null;
 
@@ -158,7 +162,7 @@ class PermissionService {
     // For other users, this would query Firestore
     // For now, return a mock profile
     final now = DateTime.now();
-    return UserProfile(
+    return models.UserProfile(
       uid: userId,
       displayName: 'User $userId',
       email: 'user$userId@example.com',

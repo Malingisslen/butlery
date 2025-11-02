@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/base/base_service.dart';
 
 /// Service for repairing and migrating legacy recipe data with missing ownership information.
 ///
@@ -41,7 +42,10 @@ import 'package:butlery/core/utils/logger.dart';
 /// // Full migration scan
 /// await repairService.performLegacyMigration();
 /// ```
-class RecipeDataRepairService {
+class RecipeDataRepairService extends BaseService {
+  @override
+  String get serviceName => 'RecipeDataRepairService';
+
   final FirebaseFirestore _firestore;
   // ignore: unused_field
   final RecipeRepository _recipeRepository;

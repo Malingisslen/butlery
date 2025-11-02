@@ -381,7 +381,7 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
     for (final rating in ratings) {
       final stars = rating.rating.round().clamp(1, 5);
       distribution[stars] = (distribution[stars] ?? 0) + 1;
-      
+
       if (lastRatedAt == null || rating.createdAt.isAfter(lastRatedAt)) {
         lastRatedAt = rating.createdAt;
       }

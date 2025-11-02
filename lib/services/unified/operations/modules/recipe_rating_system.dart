@@ -2,24 +2,28 @@
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
+import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// Focused module for recipe rating system
-/// 
+///
 /// This module handles ONLY recipe rating operations:
 /// - Recipe rating creation and validation
 /// - User rating queries and management
 /// - Rating permission checking
 /// - Individual rating data operations
-/// 
+///
 /// ❌ DOES NOT CONTAIN: Statistics aggregation, social metrics, notifications, top-rated queries
 class RecipeRatingSystem {
   final RatingsRepository _ratingsRepository;
+  final AnalyticsService _analyticsService;
 
   RecipeRatingSystem({
     RatingsRepository? ratingsRepository,
-  }) : _ratingsRepository = ratingsRepository ?? ServiceLocator.get<RatingsRepository>();
+    AnalyticsService? analyticsService,
+  }) : _ratingsRepository = ratingsRepository ?? ServiceLocator.get<RatingsRepository>(),
+       _analyticsService = analyticsService ?? ServiceLocator.get<AnalyticsService>();
 
   // ===== RATING OPERATIONS =====
 
@@ -54,6 +58,9 @@ class RecipeRatingSystem {
         return false;
       }
 
+      // Get previous rating for analytics
+      final previousRating = await _ratingsRepository.getUserRating(recipeId, currentUserId);
+
       // Create or update rating using repository
       await _ratingsRepository.rateRecipe(
         recipeId: recipeId,
@@ -63,6 +70,14 @@ class RecipeRatingSystem {
       );
 
       AppLogger.success('✅ Recipe rated successfully');
+
+      // Track recipe rated analytics
+      await _analyticsService.logRecipeRated(
+        recipeId: recipeId,
+        rating: rating.round(),
+        previousRating: previousRating?.rating.round(),
+      );
+
       return true;
     } catch (e) {
       AppLogger.error('❌ Failed to rate recipe', e);

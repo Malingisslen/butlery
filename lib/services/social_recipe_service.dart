@@ -13,9 +13,10 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/interfaces/social_recipe_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/services/social/modules/social_participant_resolver_module.dart';
 
-class SocialRecipeService extends ChangeNotifier with StreamManagementMixin {
+class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
   final SocialRecipeRepository _repository;
   final UserService _userService;
   final UnifiedRecipeService _recipeService;

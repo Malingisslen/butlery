@@ -34,6 +34,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/image_picker_provider.dart';
+import 'package:butlery/core/base/base_service.dart';
 
 /// Image selection service providing comprehensive camera and gallery access with advanced permission management.
 ///
@@ -67,7 +68,10 @@ import 'package:butlery/services/image_picker_provider.dart';
 /// // Debug permission status
 /// await imageService.debugPermissions();
 /// ```
-class ImagePickerService {
+class ImagePickerService extends BaseService {
+  @override
+  String get serviceName => 'ImagePickerService';
+
   final ImagePickerProvider _imagePickerProvider;
   final PermissionProvider _permissionProvider;
   final ImageValidator _imageValidator;

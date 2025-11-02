@@ -296,10 +296,8 @@ mixin UrlImportMixin on ImportBaseViewModel {
       errorPrefix: 'Failed to fetch content from URL',
     );
 
-    if (extractedText != null) {
-      _extractedText = extractedText;
-      notifyListeners();
-    }
+    _extractedText = extractedText;
+    notifyListeners();
   }
 
   @override

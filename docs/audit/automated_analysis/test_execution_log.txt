@@ -1,0 +1,9 @@
+Failed to decode data using encoding 'utf-8', path = 'C:/Butlery/butlery/test/views/social/group_content_feed_view_test.dart'
+dart:io                                          _File.readAsStringSync
+package:test_core/src/runner/loader.dart 162:32  Loader.loadFile
+
+This is an unexpected error. Please file an issue at http://github.com/dart-lang/test
+with the stack trace and instructions for reproducing the error.
+00:00 +0: loading C:/Butlery/butlery/test/e2e/bootstrap_diagnostic_test.dart
+Waiting for current test(s) to finish.
+Press Control-C again to terminate immediately.

@@ -2,7 +2,8 @@
 
 import 'dart:async';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Presence states for users
@@ -88,9 +89,11 @@ class UserPresence {
 ///   - lastSeen: Timestamp
 ///   - typingIn: { conversationId: Timestamp }
 /// ```
-class PresenceService {
+class PresenceService extends BaseService {
+  @override
+  String get serviceName => 'PresenceService';
   final FirebaseFirestore _firestore;
-  final AuthRepository _authRepository;
+  final auth_repo.AuthRepository _authRepository;
 
   Timer? _heartbeatTimer;
   Timer? _typingCleanupTimer;
@@ -102,11 +105,12 @@ class PresenceService {
 
   PresenceService({
     required FirebaseFirestore firestore,
-    required AuthRepository authRepository,
+    required auth_repo.AuthRepository authRepository,
   })  : _firestore = firestore,
         _authRepository = authRepository;
 
   /// Initialize presence tracking for current user
+  @override
   Future<void> initialize() async {
     try {
       final currentUser = _authRepository.currentUser;
@@ -136,6 +140,7 @@ class PresenceService {
   }
 
   /// Clean up presence tracking
+  @override
   Future<void> dispose() async {
     _heartbeatTimer?.cancel();
     _typingCleanupTimer?.cancel();

@@ -5,7 +5,6 @@ import 'package:butlery/models/user_profile.dart' as model;
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
-import 'package:butlery/core/utils/logging_utils.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/services/user_service.dart' as user_svc;
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -48,13 +47,12 @@ class FriendsManagementOperations extends BaseService {
       return false;
     }
 
-    return await LoggingUtils.loggedCreate(
-      'Friend Request',
+    final result = await executeServiceOperation(
       () async {
         // Check authentication
         final currentUserId = _parent.currentUserId;
         final currentUserDisplayName = _parent.currentUserDisplayName;
-        
+
         if (ValidationUtils.isNullOrEmpty(currentUserId) || ValidationUtils.isNullOrEmpty(currentUserDisplayName)) {
           throw Exception(AppStrings.authenticationError);
         }
@@ -78,7 +76,7 @@ class FriendsManagementOperations extends BaseService {
         if (hasIncomingRequest(recipientId)) {
           throw Exception('This user has already sent you a friend request');
         }
-        
+
         final request = FriendRequest(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           fromUserId: currentUserId!,
@@ -100,8 +98,9 @@ class FriendsManagementOperations extends BaseService {
 
         return true;
       },
-      metadata: {'recipient_id': recipientId, 'has_message': message != null},
-    ) == true;
+      operationName: 'Send Friend Request',
+    );
+    return result == true;
   }
 
   Future<bool> acceptFriendRequest(String requestId) async {
@@ -109,8 +108,7 @@ class FriendsManagementOperations extends BaseService {
       return false;
     }
 
-    return await LoggingUtils.loggedUpdate(
-      'Friend Request',
+    final result = await executeServiceOperation(
       () async {
         final request = _parent.incomingRequests
             .where((r) => r.id == requestId)
@@ -131,7 +129,7 @@ class FriendsManagementOperations extends BaseService {
         if (userProfile == null) {
           throw Exception('Could not fetch user profile for friend request sender');
         }
-        
+
         final friend = userProfile;
 
         // Update local state
@@ -159,9 +157,9 @@ class FriendsManagementOperations extends BaseService {
 
         return true;
       },
-      itemId: requestId,
-      metadata: {'action': 'accept'},
-    ) == true;
+      operationName: 'Accept Friend Request',
+    );
+    return result == true;
   }
 
   Future<bool> rejectFriendRequest(String requestId) async {

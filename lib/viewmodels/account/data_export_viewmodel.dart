@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 
 /// ViewModel for managing user data export UI state and operations
 ///
@@ -8,18 +10,19 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 /// all their personal data in JSON format.
 ///
 /// **State Management:**
-/// - Export progress tracking
-/// - Loading states
-/// - Success/error handling
+/// - Export progress tracking with AsyncOperationMixin
+/// - Loading states managed automatically
+/// - Success/error handling via AsyncOperationMixin
 /// - Export result storage
 ///
 /// **User Flow:**
 /// 1. User requests data export
 /// 2. ViewModel triggers export via DataExportService
-/// 3. Shows loading state during export
+/// 3. Shows loading state during export (managed by AsyncOperationMixin)
 /// 4. On success: Stores JSON data for download/share
 /// 5. On error: Shows error message with retry option
-class DataExportViewModel extends ChangeNotifier {
+class DataExportViewModel extends ChangeNotifier
+    with StateNotifierMixin, AsyncOperationMixin {
   final DataExportService _exportService;
   static const String _logTag = 'DataExportViewModel';
 
@@ -28,18 +31,15 @@ class DataExportViewModel extends ChangeNotifier {
   }) : _exportService = exportService;
 
   // State
-  bool _isExporting = false;
   String? _exportedData;
-  String? _errorMessage;
   DateTime? _exportTimestamp;
 
   // Getters
-  bool get isExporting => _isExporting;
+  bool get isExporting => isLoading;  // Compatibility alias for UI
   String? get exportedData => _exportedData;
-  String? get errorMessage => _errorMessage;
+  String? get errorMessage => error;  // Compatibility alias for UI - StateNotifierMixin provides 'error'
   DateTime? get exportTimestamp => _exportTimestamp;
   bool get hasExportedData => _exportedData != null;
-  bool get hasError => _errorMessage != null;
 
   /// Estimated export size in KB (rough estimate)
   int get estimatedSizeKB {
@@ -78,41 +78,37 @@ class DataExportViewModel extends ChangeNotifier {
   /// Export all user data
   ///
   /// Returns true on success, false on failure.
-  /// Updates state to show loading, then success/error.
+  /// Loading state, error handling, and duplicate prevention managed by AsyncOperationMixin.
   Future<bool> exportData() async {
-    if (_isExporting) {
-      app_logger.AppLogger.warning('[$_logTag] Export already in progress');
-      return false;
-    }
-
     try {
-      _setExporting(true);
-      _clearError();
+      return await executeNamedOperation(
+        'export',  // Prevents duplicate concurrent exports
+        () async {
+          app_logger.AppLogger.info('[$_logTag] Starting data export');
 
-      app_logger.AppLogger.info('[$_logTag] Starting data export');
+          final jsonData = await _exportService.exportUserData();
 
-      final jsonData = await _exportService.exportUserData();
+          _exportedData = jsonData;
+          _exportTimestamp = DateTime.now();
 
-      _exportedData = jsonData;
-      _exportTimestamp = DateTime.now();
-      _setExporting(false);
+          app_logger.AppLogger.success(
+            '[$_logTag] Data export completed successfully ($exportSizeText)',
+          );
 
-      app_logger.AppLogger.success(
-        '[$_logTag] Data export completed successfully ($exportSizeText)',
+          return true;
+        },
       );
-
-      return true;
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Data export failed', e);
-      _setError(_formatErrorMessage(e));
-      _setExporting(false);
+      // executeNamedOperation already set loading=false and hasError=true
+      // Update error message to user-friendly format
+      setError(_formatErrorMessage(e));
       return false;
     }
   }
 
   /// Retry export after error
   Future<bool> retryExport() async {
-    _clearError();
+    clearError();  // AsyncOperationMixin provides clearError()
     return await exportData();
   }
 
@@ -120,7 +116,7 @@ class DataExportViewModel extends ChangeNotifier {
   void clearExportedData() {
     _exportedData = null;
     _exportTimestamp = null;
-    _clearError();
+    clearError();  // AsyncOperationMixin provides clearError()
     notifyListeners();
     app_logger.AppLogger.info('[$_logTag] Exported data cleared');
   }
@@ -129,28 +125,13 @@ class DataExportViewModel extends ChangeNotifier {
   void reset() {
     _exportedData = null;
     _exportTimestamp = null;
-    _errorMessage = null;
-    _isExporting = false;
+    clearError();  // AsyncOperationMixin provides clearError()
+    // isLoading automatically managed by AsyncOperationMixin
     notifyListeners();
     app_logger.AppLogger.info('[$_logTag] Export state reset');
   }
 
   // Private helper methods
-
-  void _setExporting(bool value) {
-    _isExporting = value;
-    notifyListeners();
-  }
-
-  void _setError(String message) {
-    _errorMessage = message;
-    notifyListeners();
-  }
-
-  void _clearError() {
-    _errorMessage = null;
-    notifyListeners();
-  }
 
   String _formatErrorMessage(Object error) {
     final errorStr = error.toString();

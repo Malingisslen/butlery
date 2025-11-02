@@ -2,12 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/backup_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/user_service.dart';
@@ -22,7 +23,6 @@ import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
 import 'package:butlery/views/account/data_export_view.dart';
 import 'package:butlery/views/account/consent_management_view.dart';
 import 'package:butlery/views/legal/privacy_policy_view.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:provider/provider.dart';
 
 /// Profile action handlers and UI components
@@ -648,8 +648,8 @@ class ProfileActions {
 
       // Create deletion service
       final deletionService = AccountDeletionService(
-        auth: auth,
-        firestore: FirebaseFirestore.instance,
+        authRepository: ServiceLocator.get<AuthRepository>(),
+        firestoreRepository: ServiceLocator.get<FirestoreRepository>(),
         authService: ServiceLocator.get<AuthService>(),
         userService: ServiceLocator.get<UserService>(),
         recipeService: ServiceLocator.get<UnifiedRecipeService>(),

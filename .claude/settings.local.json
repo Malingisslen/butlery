@@ -9,7 +9,9 @@
       "Bash(git add:*)",
       "Bash(tree:*)",
       "Bash(python -c:*)",
-      "Bash(.claude/hooks/skill-activation-prompt.sh)"
+      "Bash(.claude/hooks/skill-activation-prompt.sh)",
+      "Bash(awk:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

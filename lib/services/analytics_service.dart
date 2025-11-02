@@ -260,4 +260,474 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     );
   }
 
+  // ===== STANDARDIZED EVENT METHODS (Analytics Strategy Document) =====
+
+  /// Log a generic event with parameters
+  /// Use this for custom events not covered by specific methods
+  Future<void> logEvent({
+    required String name,
+    Map<String, Object>? parameters,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await executeServiceOperation(
+      () async {
+        await _repository.logEvent(
+          name: name,
+          parameters: parameters,
+        );
+      },
+      operationName: 'Log event: $name',
+      requiresAuth: false,
+      requiresNetwork: false,
+    );
+  }
+
+  /// Log screen view for navigation tracking
+  Future<void> logScreenView({
+    required String screenName,
+    Map<String, Object>? parameters,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await executeServiceOperation(
+      () async {
+        await _repository.logEvent(
+          name: 'screen_viewed',
+          parameters: {
+            'screen_name': screenName,
+            ...?parameters,
+          },
+        );
+      },
+      operationName: 'Log screen view',
+      requiresAuth: false,
+      requiresNetwork: false,
+    );
+  }
+
+  // ===== RECIPE EVENTS =====
+
+  /// Log recipe viewed (standardized event)
+  Future<void> logRecipeViewed({
+    required String recipeId,
+    required String recipeType,
+    String? source,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'recipe_viewed',
+      parameters: {
+        'recipe_id': recipeId,
+        'recipe_type': recipeType,
+        if (source != null) 'source': source,
+      },
+    );
+  }
+
+  /// Log recipe edited (standardized event)
+  Future<void> logRecipeEdited({
+    required String recipeId,
+    List<String>? fieldsChanged,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'recipe_edited',
+      parameters: {
+        'recipe_id': recipeId,
+        if (fieldsChanged != null && fieldsChanged.isNotEmpty)
+          'fields_changed': fieldsChanged.join(','),
+      },
+    );
+  }
+
+  /// Log recipe copied (standardized event)
+  Future<void> logRecipeCopied({
+    required String recipeId,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'recipe_copied',
+      parameters: {
+        'recipe_id': recipeId,
+      },
+    );
+  }
+
+  /// Log recipe image uploaded (standardized event)
+  Future<void> logRecipeImageUploaded({
+    required String recipeId,
+    required int imageCount,
+    String? uploadSource,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'recipe_image_uploaded',
+      parameters: {
+        'recipe_id': recipeId,
+        'image_count': imageCount,
+        if (uploadSource != null) 'upload_source': uploadSource,
+      },
+    );
+  }
+
+  /// Log recipe search performed (standardized event)
+  Future<void> logRecipeSearchPerformed({
+    required String searchQuery,
+    required int resultsCount,
+    List<String>? filtersApplied,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'recipe_search_performed',
+      parameters: {
+        'search_query': searchQuery,
+        'results_count': resultsCount,
+        if (filtersApplied != null && filtersApplied.isNotEmpty)
+          'filters_applied': filtersApplied.join(','),
+      },
+    );
+  }
+
+  // ===== MENU EVENTS =====
+
+  /// Log menu generation started (standardized event)
+  Future<void> logMenuGenerationStarted({
+    int? promptLength,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'menu_generation_started',
+      parameters: {
+        if (promptLength != null) 'prompt_length': promptLength,
+      },
+    );
+  }
+
+  /// Log menu generation failed (standardized event)
+  Future<void> logMenuGenerationFailed({
+    required String errorCode,
+    String? errorMessage,
+  }) async {
+    // Error events exempt from consent check (service operation tracking)
+    await logEvent(
+      name: 'menu_generation_failed',
+      parameters: {
+        'error_code': errorCode,
+        if (errorMessage != null) 'error_message': errorMessage,
+      },
+    );
+  }
+
+  /// Log menu saved (standardized event)
+  Future<void> logMenuSaved({
+    required String menuId,
+    required int recipeCount,
+    bool isShared = false,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'menu_saved',
+      parameters: {
+        'menu_id': menuId,
+        'recipe_count': recipeCount,
+        'is_shared': isShared,
+      },
+    );
+  }
+
+  /// Log menu loaded (standardized event)
+  Future<void> logMenuLoaded({
+    required String menuId,
+    bool isOwned = true,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'menu_loaded',
+      parameters: {
+        'menu_id': menuId,
+        'is_owned': isOwned,
+      },
+    );
+  }
+
+  /// Log menu shared (standardized event)
+  Future<void> logMenuShared({
+    required String menuId,
+    required int recipientCount,
+    String? shareMethod,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'menu_shared',
+      parameters: {
+        'menu_id': menuId,
+        'recipient_count': recipientCount,
+        if (shareMethod != null) 'share_method': shareMethod,
+      },
+    );
+  }
+
+  /// Log menu deleted (standardized event)
+  Future<void> logMenuDeleted({
+    required String menuId,
+    String? reason,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'menu_deleted',
+      parameters: {
+        'menu_id': menuId,
+        if (reason != null) 'reason': reason,
+      },
+    );
+  }
+
+  // ===== SHOPPING LIST EVENTS =====
+
+  /// Log shopping list created (standardized event)
+  Future<void> logShoppingListCreated({
+    required String listId,
+    required String listType,
+    int? initialItemCount,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'shopping_list_created',
+      parameters: {
+        'list_id': listId,
+        'list_type': listType,
+        if (initialItemCount != null) 'initial_item_count': initialItemCount,
+      },
+    );
+  }
+
+  /// Log shopping list item added (standardized event)
+  Future<void> logShoppingListItemAdded({
+    required String listId,
+    String? source,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'shopping_list_item_added',
+      parameters: {
+        'list_id': listId,
+        if (source != null) 'source': source,
+      },
+    );
+  }
+
+  /// Log shopping list item checked (standardized event)
+  Future<void> logShoppingListItemChecked({
+    required String listId,
+    required int itemCount,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'shopping_list_item_checked',
+      parameters: {
+        'list_id': listId,
+        'item_count': itemCount,
+      },
+    );
+  }
+
+  /// Log shopping list shared (standardized event)
+  Future<void> logShoppingListShared({
+    required String listId,
+    required int recipientCount,
+    String? shareMethod,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'shopping_list_shared',
+      parameters: {
+        'list_id': listId,
+        'recipient_count': recipientCount,
+        if (shareMethod != null) 'share_method': shareMethod,
+      },
+    );
+  }
+
+  /// Log shopping list completed (standardized event)
+  Future<void> logShoppingListCompleted({
+    required String listId,
+    required int itemCount,
+    int? timeToCompleteMinutes,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'shopping_list_completed',
+      parameters: {
+        'list_id': listId,
+        'item_count': itemCount,
+        if (timeToCompleteMinutes != null) 'time_to_complete_minutes': timeToCompleteMinutes,
+      },
+    );
+  }
+
+  // ===== SOCIAL EVENTS =====
+
+  /// Log friend request sent (standardized event)
+  Future<void> logFriendRequestSent({
+    required String recipientId,
+    String? source,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'friend_request_sent',
+      parameters: {
+        'recipient_id': recipientId,
+        if (source != null) 'source': source,
+      },
+    );
+  }
+
+  /// Log friend request accepted (standardized event)
+  Future<void> logFriendRequestAccepted({
+    required String senderId,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'friend_request_accepted',
+      parameters: {
+        'sender_id': senderId,
+      },
+    );
+  }
+
+  /// Log comment created (standardized event)
+  Future<void> logCommentCreated({
+    required String recipeId,
+    required int commentLength,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'comment_created',
+      parameters: {
+        'recipe_id': recipeId,
+        'comment_length': commentLength,
+      },
+    );
+  }
+
+  /// Log recipe rated (standardized event)
+  Future<void> logRecipeRated({
+    required String recipeId,
+    required int rating,
+    int? previousRating,
+  }) async {
+    // GDPR: Check analytics consent before logging
+    if (!await _hasAnalyticsConsent()) return;
+
+    await logEvent(
+      name: 'recipe_rated',
+      parameters: {
+        'recipe_id': recipeId,
+        'rating': rating,
+        if (previousRating != null) 'previous_rating': previousRating,
+      },
+    );
+  }
+
+  // ===== ERROR & PERFORMANCE EVENTS =====
+
+  /// Log error occurred (standardized event)
+  /// Error events exempt from consent check (service operation tracking)
+  Future<void> logErrorOccurred({
+    required String errorCode,
+    required String errorType,
+    String? userAction,
+    String? stackTrace,
+  }) async {
+    await executeServiceOperation(
+      () async {
+        await _repository.logEvent(
+          name: 'error_occurred',
+          parameters: {
+            'error_code': errorCode,
+            'error_type': errorType,
+            if (userAction != null) 'user_action': userAction,
+            if (stackTrace != null) 'stack_trace': stackTrace.substring(0, stackTrace.length > 500 ? 500 : stackTrace.length),
+          },
+        );
+      },
+      operationName: 'Log error',
+      requiresAuth: false,
+      requiresNetwork: false,
+    );
+  }
+
+  /// Log network error (standardized event)
+  /// Error events exempt from consent check (service operation tracking)
+  Future<void> logNetworkError({
+    required String endpoint,
+    required int statusCode,
+    String? errorMessage,
+  }) async {
+    await logEvent(
+      name: 'network_error',
+      parameters: {
+        'endpoint': endpoint,
+        'status_code': statusCode,
+        if (errorMessage != null) 'error_message': errorMessage,
+      },
+    );
+  }
+
+  /// Log slow operation (standardized event)
+  /// Performance events exempt from consent check (service operation tracking)
+  Future<void> logSlowOperation({
+    required String operationName,
+    required int durationMs,
+    int? thresholdMs,
+  }) async {
+    await logEvent(
+      name: 'slow_operation',
+      parameters: {
+        'operation_name': operationName,
+        'duration_ms': durationMs,
+        if (thresholdMs != null) 'threshold_ms': thresholdMs,
+      },
+    );
+  }
+
 }

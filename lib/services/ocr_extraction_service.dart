@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:butlery/core/base/base_service.dart';
 
 /// OCR processing result with comprehensive metadata and quality metrics
 class OCRResult {
@@ -113,11 +114,14 @@ class CircuitBreaker {
 }
 
 /// Comprehensive OCR extraction service with universal device compatibility
-class OCRExtractionService {
+class OCRExtractionService extends BaseService {
   static OCRExtractionService? _instance;
   static OCRExtractionService get instance => _instance ??= OCRExtractionService._();
   
   OCRExtractionService._();
+  
+  @override
+  String get serviceName => 'OCRExtractionService';
 
   // Circuit breakers
   final CircuitBreaker _ocrSpaceCircuitBreaker = CircuitBreaker();
@@ -134,6 +138,7 @@ class OCRExtractionService {
   String get _tesseractApiUrl => dotenv.env['TESSERACT_API_URL'] ?? '';
 
   /// Initialize OCR service
+  @override
   Future<void> initialize() async {
     try {
       debugPrint('✅ [OCR] Service initialized - Providers: OCR.space, Google Vision, Tesseract');
@@ -479,12 +484,12 @@ class OCRExtractionService {
   }
 
   /// Clear OCR cache
-  void clearCache() => _cache.clear();
 
   /// Clear cache for testing
-  static void clearCacheForTesting() => instance.clearCache();
+  static void clearCacheForTesting() => instance.clearAllCache();
 
   /// Dispose OCR service
+  @override
   Future<void> dispose() async {
     _cache.clear();
   }

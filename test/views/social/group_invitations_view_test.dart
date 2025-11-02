@@ -67,10 +67,12 @@ class TestGroupInvitationsViewModel implements GroupInvitationsViewModel {
   }
 
   // Test helper methods
+  @override
   void setLoading(bool loading) {
     _isLoading = loading;
   }
 
+  @override
   void setError(String? error) {
     _error = error;
   }

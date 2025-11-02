@@ -10,8 +10,15 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/viewmodels/add_members_to_group/member_search_manager.dart';
 import 'package:butlery/viewmodels/add_members_to_group/member_selection_manager.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 
-class AddMembersToGroupViewModel extends ChangeNotifier {
+/// ViewModel managing group member addition with friend search, selection, and invitation sending.
+///
+/// Uses AsyncOperationMixin for general loading state while maintaining operation-specific
+/// _isSendingInvitations state for distinct UI treatment during invitation sending.
+class AddMembersToGroupViewModel extends ChangeNotifier
+    with StateNotifierMixin, AsyncOperationMixin {
   final UnifiedFriendsService _friendsService;
 
   late final MemberSearchManager _searchManager;
@@ -22,12 +29,10 @@ class AddMembersToGroupViewModel extends ChangeNotifier {
 
   List<UserProfile> _availableFriends = [];
 
-  bool _isSendingInvitations = false;
-  String? _invitationError;
+  /// isLoading, error, hasError provided by StateNotifierMixin
+  bool _isSendingInvitations = false;  // Operation-specific invitation sending state
+  String? _invitationError;  // Operation-specific invitation error
   final Map<String, String> _invitationStatus = {};
-
-  bool _isLoading = false;
-  String? _error;
 
   AddMembersToGroupViewModel({
     required this.groupId,
@@ -69,38 +74,32 @@ class AddMembersToGroupViewModel extends ChangeNotifier {
   String? get invitationError => _invitationError;
   Map<String, String> get invitationStatus => Map.unmodifiable(_invitationStatus);
 
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-  bool get hasError => _error != null;
+  /// isLoading, error, hasError provided by StateNotifierMixin
 
   bool get canSendInvitations => hasSelectedFriends && !_isSendingInvitations;
-  bool get showEmptyState => _searchManager.filteredFriends.isEmpty && !_isLoading;
+  bool get showEmptyState => _searchManager.filteredFriends.isEmpty && !isLoading;
 
   // ===== INITIALIZATION =====
 
   Future<void> _initializeData() async {
     try {
-      _setLoading(true);
-      _clearError();
+      await executeNamedOperation('initializeData', () async {
+        // Hämta gruppinformation
+        _group = _friendsService.categories.getCategoryById(groupId);
+        if (_group == null) {
+          throw Exception('Gruppen hittades inte');
+        }
 
-      // Hämta gruppinformation
-      _group = _friendsService.categories.getCategoryById(groupId);
-      if (_group == null) {
-        _setError('Gruppen hittades inte');
-        return;
-      }
+        // Hämta tillgängliga vänner (som inte redan är medlemmar)
+        await _loadAvailableFriends();
 
-      // Hämta tillgängliga vänner (som inte redan är medlemmar)
-      await _loadAvailableFriends();
-
-      AppLogger.success(
-          '✅ AddMembersToGroupViewModel initialiserad för "${_group!.name}"');
+        AppLogger.success(
+            '✅ AddMembersToGroupViewModel initialiserad för "${_group!.name}"');
+      });
     } catch (e) {
       AppLogger.error(
           '❌ Fel vid initialisering av AddMembersToGroupViewModel', e);
-      _setError('Kunde inte ladda data: $e');
-    } finally {
-      _setLoading(false);
+      setError('Kunde inte ladda data: $e');
     }
   }
 
@@ -275,20 +274,7 @@ class AddMembersToGroupViewModel extends ChangeNotifier {
   }
 
   // ===== PRIVATE HELPERS =====
-
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
-  }
-
-  void _setError(String message) {
-    _error = message;
-    notifyListeners();
-  }
-
-  void _clearError() {
-    _error = null;
-  }
+  /// setLoading, setError, clearError provided by StateNotifierMixin
 
   void _setInvitationError(String message) {
     _invitationError = message;
@@ -299,11 +285,11 @@ class AddMembersToGroupViewModel extends ChangeNotifier {
     _invitationError = null;
   }
 
-  /// Rensa fel
+  /// Rensa fel - overrides StateNotifierMixin to also clear invitation error
+  @override
   void clearError() {
-    _clearError();
+    super.clearError();
     _clearInvitationError();
-    notifyListeners();
   }
 
   @override
