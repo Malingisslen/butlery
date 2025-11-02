@@ -8,8 +8,11 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
 
-class ConversationsViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
+class ConversationsViewModel extends ChangeNotifier
+    with StreamManagementMixin, ErrorHandlingMixin, StateNotifierMixin, AsyncOperationMixin {
   final MessagingService _messagingService;
   final AuthRepository _authRepository;
 
@@ -17,12 +20,10 @@ class ConversationsViewModel extends ChangeNotifier with StreamManagementMixin, 
   bool _isDisposed = false;
   List<Conversation> _allConversations = [];
   List<Conversation> _filteredConversations = [];
-  bool _isLoading = true;
-  String? _error;
+  bool _isLoadingConversations = true;
+  String? _conversationsError;
   String _searchQuery = '';
   final bool _isSearching = false;
-  bool _isCreatingConversation = false;
-  String? _conversationCreationError;
   StreamSubscription<List<Conversation>>? _conversationsSubscription;
 
   ConversationsViewModel({
@@ -35,18 +36,17 @@ class ConversationsViewModel extends ChangeNotifier with StreamManagementMixin, 
 
   // Getters
   List<Conversation> get conversations => _filteredConversations;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
+  bool get isLoadingConversations => _isLoadingConversations;
+  String? get conversationsError => _conversationsError;
   String get searchQuery => _searchQuery;
   bool get isSearching => _isSearching;
-  bool get isCreatingConversation => _isCreatingConversation;
-  String? get conversationCreationError => _conversationCreationError;
+  // isLoading and errorMessage provided by AsyncOperationMixin
   bool get hasConversations => _filteredConversations.isNotEmpty;
   String? get currentUserId => _authRepository.currentUserId;
 
   void _initializeConversations() {
     if (_isDisposed) return;
-    
+
     try {
       _conversationsSubscription = _messagingService
           .getMyConversations()
@@ -56,30 +56,30 @@ class ConversationsViewModel extends ChangeNotifier with StreamManagementMixin, 
           );
     } catch (e) {
       AppLogger.error('Failed to initialize conversations', e);
-      _setError('Kunde inte ladda konversationer');
+      _setConversationsError('Kunde inte ladda konversationer');
     }
   }
 
   void _onConversationsUpdate(List<Conversation> conversations) {
     if (_isDisposed) return;
-    
+
     _allConversations = conversations;
     _applySearch();
-    _isLoading = false;
-    _error = null;
+    _isLoadingConversations = false;
+    _conversationsError = null;
     _safeNotifyListeners();
   }
 
   void _onConversationsError(dynamic error) {
     if (_isDisposed) return;
-    
+
     AppLogger.error('Conversations stream error', error);
-    _setError('Kunde inte ladda konversationer');
+    _setConversationsError('Kunde inte ladda konversationer');
   }
 
-  void _setError(String error) {
-    _error = error;
-    _isLoading = false;
+  void _setConversationsError(String error) {
+    _conversationsError = error;
+    _isLoadingConversations = false;
     _safeNotifyListeners();
   }
 
@@ -119,30 +119,20 @@ class ConversationsViewModel extends ChangeNotifier with StreamManagementMixin, 
     String? otherUserAvatarUrl,
   }) async {
     if (_isDisposed) return null;
-    
-    _isCreatingConversation = true;
-    _conversationCreationError = null;
-    _safeNotifyListeners();
 
-    try {
-      final conversationId = await _messagingService.startDirectConversation(
-        otherUserId: otherUserId,
-        otherUserDisplayName: otherUserDisplayName,
-        otherUserAvatarUrl: otherUserAvatarUrl,
-      );
+    return await executeAsync<String?>(
+      () async {
+        final conversationId = await _messagingService.startDirectConversation(
+          otherUserId: otherUserId,
+          otherUserDisplayName: otherUserDisplayName,
+          otherUserAvatarUrl: otherUserAvatarUrl,
+        );
 
-      _isCreatingConversation = false;
-      _safeNotifyListeners();
-      
-      AppLogger.success('Direct conversation started: $conversationId');
-      return conversationId;
-    } catch (e) {
-      AppLogger.error('Failed to start direct conversation', e);
-      _conversationCreationError = 'Kunde inte starta konversation: ${e.toString()}';
-      _isCreatingConversation = false;
-      _safeNotifyListeners();
-      return null;
-    }
+        AppLogger.success('Direct conversation started: $conversationId');
+        return conversationId;
+      },
+      errorPrefix: 'Kunde inte starta konversation',
+    );
   }
 
   Future<String?> createGroupConversation({
@@ -152,31 +142,21 @@ class ConversationsViewModel extends ChangeNotifier with StreamManagementMixin, 
     required String title,
   }) async {
     if (_isDisposed) return null;
-    
-    _isCreatingConversation = true;
-    _conversationCreationError = null;
-    _safeNotifyListeners();
 
-    try {
-      final conversationId = await _messagingService.createGroupConversation(
-        participantIds: participantIds,
-        participantDisplayNames: participantDisplayNames,
-        participantAvatarUrls: participantAvatarUrls,
-        title: title,
-      );
+    return await executeAsync<String?>(
+      () async {
+        final conversationId = await _messagingService.createGroupConversation(
+          participantIds: participantIds,
+          participantDisplayNames: participantDisplayNames,
+          participantAvatarUrls: participantAvatarUrls,
+          title: title,
+        );
 
-      _isCreatingConversation = false;
-      _safeNotifyListeners();
-      
-      AppLogger.success('Group conversation created: $conversationId');
-      return conversationId;
-    } catch (e) {
-      AppLogger.error('Failed to create group conversation', e);
-      _conversationCreationError = 'Kunde inte skapa gruppchatt: ${e.toString()}';
-      _isCreatingConversation = false;
-      _safeNotifyListeners();
-      return null;
-    }
+        AppLogger.success('Group conversation created: $conversationId');
+        return conversationId;
+      },
+      errorPrefix: 'Kunde inte skapa gruppchatt',
+    );
   }
 
   Future<void> markConversationAsRead(String conversationId) async {
@@ -220,11 +200,11 @@ class ConversationsViewModel extends ChangeNotifier with StreamManagementMixin, 
     await Future.delayed(const Duration(milliseconds: 500));
   }
 
-  void clearError() {
+  void clearAllErrors() {
     if (_isDisposed) return;
-    
-    _error = null;
-    _conversationCreationError = null;
+
+    _conversationsError = null;
+    clearError(); // Clear operation errors from StateNotifierMixin
     _safeNotifyListeners();
   }
 

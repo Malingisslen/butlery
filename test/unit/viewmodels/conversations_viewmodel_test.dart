@@ -10,6 +10,10 @@ import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/mocks/service_mocks.dart';
 
+// NOTE: After AsyncOperationMixin migration:
+// - isLoading → isLoading
+// - error → error
+
 // Test data builders
 class ConversationBuilder {
   static Conversation build({
@@ -239,14 +243,14 @@ void main() {
     group('Initialization', () {
       test('should initialize with loading state', () {
         // Assert initial state
-        expect(viewModel.isLoading, isTrue);
+        expect(viewModel.isLoadingConversations, isTrue);
         expect(viewModel.conversations, isEmpty);
-        expect(viewModel.error, isNull);
+        expect(viewModel.conversationsError, isNull);
         expect(viewModel.hasConversations, isFalse);
         expect(viewModel.searchQuery, isEmpty);
         expect(viewModel.isSearching, isFalse);
-        expect(viewModel.isCreatingConversation, isFalse);
-        expect(viewModel.conversationCreationError, isNull);
+        expect(viewModel.isLoadingConversations, isFalse);
+        expect(viewModel.conversationsError, isNull);
       });
 
       test('should setup stream subscription on initialization', () {
@@ -266,8 +270,8 @@ void main() {
         );
         
         // Assert
-        expect(errorViewModel.error, equals('Kunde inte ladda konversationer'));
-        expect(errorViewModel.isLoading, isFalse);
+        expect(errorViewModel.conversationsError, equals('Kunde inte ladda konversationer'));
+        expect(errorViewModel.isLoadingConversations, isFalse);
         
         // Cleanup
         errorViewModel.dispose();
@@ -491,8 +495,8 @@ void main() {
         
         // Assert
         expect(conversationId, equals('new_conv_direct'));
-        expect(viewModel.isCreatingConversation, isFalse);
-        expect(viewModel.conversationCreationError, isNull);
+        expect(viewModel.isLoading, isFalse);
+        expect(viewModel.error, isNull);
         
         verify(() => mockMessagingService.startDirectConversation(
           otherUserId: 'other_user_123',
@@ -534,16 +538,16 @@ void main() {
         
         // Assert
         expect(conversationId, isNull);
-        expect(viewModel.conversationCreationError, 
+        expect(viewModel.error, 
                contains('Kunde inte starta konversation'));
-        expect(viewModel.isCreatingConversation, isFalse);
+        expect(viewModel.isLoading, isFalse);
       });
 
       test('should set loading state during creation', () async {
         // Arrange
         bool wasCreating = false;
         viewModel.addListener(() {
-          if (viewModel.isCreatingConversation) wasCreating = true;
+          if (viewModel.isLoading) wasCreating = true;
         });
         
         // Act
@@ -554,7 +558,7 @@ void main() {
         
         // Assert
         expect(wasCreating, isTrue);
-        expect(viewModel.isCreatingConversation, isFalse);
+        expect(viewModel.isLoading, isFalse);
       });
 
       test('should not create when disposed', () async {
@@ -592,7 +596,7 @@ void main() {
           otherUserId: 'user1',
           otherUserDisplayName: 'User 1',
         );
-        expect(viewModel.conversationCreationError, isNotNull);
+        expect(viewModel.error, isNotNull);
         
         // Reset mock for successful attempt
         when(() => mockMessagingService.startDirectConversation(
@@ -608,7 +612,7 @@ void main() {
         );
         
         // Assert
-        expect(viewModel.conversationCreationError, isNull);
+        expect(viewModel.error, isNull);
       });
     });
 
@@ -632,8 +636,8 @@ void main() {
         
         // Assert
         expect(conversationId, equals('new_conv_group'));
-        expect(viewModel.isCreatingConversation, isFalse);
-        expect(viewModel.conversationCreationError, isNull);
+        expect(viewModel.isLoading, isFalse);
+        expect(viewModel.error, isNull);
       });
 
       test('should handle multiple participants in group', () async {
@@ -714,16 +718,16 @@ void main() {
         
         // Assert
         expect(conversationId, isNull);
-        expect(viewModel.conversationCreationError, 
+        expect(viewModel.error, 
                contains('Kunde inte skapa gruppchatt'));
-        expect(viewModel.isCreatingConversation, isFalse);
+        expect(viewModel.isLoading, isFalse);
       });
 
       test('should manage loading state during creation', () async {
         // Arrange
         bool wasCreating = false;
         viewModel.addListener(() {
-          if (viewModel.isCreatingConversation) wasCreating = true;
+          if (viewModel.isLoading) wasCreating = true;
         });
         
         // Act
@@ -736,7 +740,7 @@ void main() {
         
         // Assert
         expect(wasCreating, isTrue);
-        expect(viewModel.isCreatingConversation, isFalse);
+        expect(viewModel.isLoading, isFalse);
       });
 
       test('should not create when disposed', () async {
@@ -932,13 +936,13 @@ void main() {
           otherUserId: 'user',
           otherUserDisplayName: 'User',
         );
-        expect(viewModel.conversationCreationError, isNotNull);
+        expect(viewModel.error, isNotNull);
         
         // Act
         viewModel.clearError();
         
         // Assert
-        expect(viewModel.conversationCreationError, isNull);
+        expect(viewModel.error, isNull);
       });
 
       test('should handle multiple error states', () async {
@@ -960,14 +964,14 @@ void main() {
         
         // Both errors should be set
         expect(viewModel.error, isNotNull);
-        expect(viewModel.conversationCreationError, isNotNull);
+        expect(viewModel.error, isNotNull);
         
         // Clear all errors
         viewModel.clearError();
         
         // Both should be cleared
         expect(viewModel.error, isNull);
-        expect(viewModel.conversationCreationError, isNull);
+        expect(viewModel.error, isNull);
       });
     });
 
