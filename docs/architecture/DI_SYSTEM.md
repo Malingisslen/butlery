@@ -397,7 +397,7 @@ container.registerLazySingleton<RecipeService>(
 - ✅ Cross-module dependencies that create circular refs
 - ✅ Late initialization patterns
 
-**Example:** ViewModel Usage
+**Example 1:** ViewModel Late Initialization
 ```dart
 class RecipeViewModel extends ChangeNotifier {
   // Late initialization to avoid circular dependencies
@@ -410,6 +410,30 @@ class RecipeViewModel extends ChangeNotifier {
   }
 }
 ```
+
+**Example 2:** Lazy Getter Pattern (Operation Modules)
+```dart
+class UnifiedShoppingService {
+  // Lazy getter with ??= for on-demand initialization
+  ShoppingShareOperations? __shareOps;
+  ShoppingShareOperations get _shareOps =>
+      __shareOps ??= ShoppingShareOperations(
+        firestoreRepository: _firestoreRepository,
+        permissionService: ServiceLocator.get<PermissionService>(), // Lazy!
+      );
+
+  // Operation only initialized when first accessed
+  Future<void> shareList(String listId, String friendId) async {
+    await _shareOps.shareWithFriend(listId, friendId); // Creates on first call
+  }
+}
+```
+
+**Why Lazy Getter Pattern?**
+- Avoids circular dependency errors during DI module initialization
+- Operation modules only created when actually needed (performance optimization)
+- Used extensively in UnifiedRecipeService, UnifiedShoppingService, UnifiedMenuService
+- **383 occurrences** of ServiceLocator.get<T>() across codebase (pervasive pattern)
 
 **Current Usage in Codebase:**
 - **Constructor Injection**: 39 services (DI module registration)
