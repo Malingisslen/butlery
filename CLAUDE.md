@@ -17,12 +17,12 @@
 ## Architecture & Standards
 - **Pattern**: MVVM + Repository Pattern (Views → ViewModels → Services → Repositories → Firebase)
 - **File Size Target**: 500 lines (use facade/module pattern for larger files)
-  - **Current Status**: 48 files >500 lines (verified Jan 2025)
+  - **Current Status**: 58 files >500 lines (verified Jan 2025)
   - **Acceptable Exceptions**: 18-20 well-architected facades using proper modularization
     - ✅ **Exemplary Pattern**: `recipe_form_viewmodel.dart` (905 lines) - facade with 6 focused managers
     - ✅ **Accepted**: Extracted modules like `recipe_image_manager.dart`, separate widgets like `editable_image_widget.dart`
     - ✅ **Facade Pattern Celebrated**: Large files with clear module extraction and single responsibility are acceptable
-  - **True Violations**: 20-30 files requiring refactoring (monolithic files without modularization)
+  - **True Violations**: 38-43 files requiring refactoring (monolithic files without modularization)
   - **Refactoring Strategy**: Extract modules for monolithic >500 line files (see unified services pattern)
   - **Priority**: New code must follow 500-line limit OR use facade pattern; legacy monoliths refactored as touched
 - **Dependency Injection**: Modular DI system with domain-driven modules (see below)
@@ -145,8 +145,8 @@ await shoppingService.share.shareListWithFriend(listId, friendId);
 2. **AsyncOperationMixin** (`lib/core/mixins/async_operation_mixin.dart`)
    - 458 lines of infrastructure eliminating ~250-280 lines of boilerplate
    - **Initiative Status**: ✅ COMPLETE (Jan 2025)
-   - **Adoption**: 48% (22 of 46 ViewModels using it actively)
-   - **Key Learning**: Many ViewModels have well-architected custom state management (streams, manager patterns); AsyncOperationMixin is ideal for simple loading/error state patterns
+   - **Adoption**: 24% (21/89 ViewModels using it actively)
+   - **Key Learning**: 24% adoption is expected and appropriate - only ViewModels with simple loading/error state patterns benefit. Many ViewModels have well-architected custom state management (streams, manager patterns) that should not be replaced
    - Automatic loading/error/success states for ViewModels
    - Named operations preventing duplicate concurrent executions
    - Debouncing & throttling for search/input operations
@@ -154,14 +154,14 @@ await shoppingService.share.shareListWithFriend(listId, friendId);
    - Batch and sequential operation execution
    - Usage: `with StateNotifierMixin, AsyncOperationMixin` in ViewModels
    - **Migration Patterns**: Full migration (2), Partial migration (10), Deferred (well-architected custom state)
-   - **Key Learning**: Only 12-15 of 97 ViewModels benefit from migration; many have well-architected custom state management
+   - **Total ViewModels**: 89 ViewModels across the codebase (21 using AsyncOperationMixin = 24% adoption)
 
 3. **BaseService** (`lib/core/base/base_service.dart`)
    - 495 lines of infrastructure eliminating ~500-600 lines of boilerplate
    - **Initiative Status**: ⚠️ IN PROGRESS (Jan 2025)
    - **Adoption**: 20% (39/195 services)
    - **Opportunity**: 144 services could benefit from BaseService adoption
-   - **Key Learning**: Only instance-based services benefit; ChangeNotifier services (9) and static utilities (2) intentionally use different patterns
+   - **Key Learning**: Only instance-based services benefit; ChangeNotifier services (12) and static utilities (2) intentionally use different patterns
    - Includes ErrorHandlingMixin automatically
    - Pre-flight checks (auth, network, permissions)
    - Built-in caching with expiry management
