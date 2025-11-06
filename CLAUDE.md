@@ -17,32 +17,21 @@
 ## Architecture & Standards
 - **Pattern**: MVVM + Repository Pattern (Views → ViewModels → Services → Repositories → Firebase)
 - **File Size Target**: 500 lines (use facade/module pattern for larger files)
-  - **Current Status**: 58 files >500 lines (verified Jan 2025)
-  - **Acceptable Exceptions**: 18-20 well-architected facades using proper modularization
-    - ✅ **Exemplary Pattern**: `recipe_form_viewmodel.dart` (905 lines) - facade with 6 focused managers
-    - ✅ **Accepted**: Extracted modules like `recipe_image_manager.dart`, separate widgets like `editable_image_widget.dart`
-    - ✅ **Facade Pattern Celebrated**: Large files with clear module extraction and single responsibility are acceptable
-  - **True Violations**: 38-43 files requiring refactoring (monolithic files without modularization)
-  - **Refactoring Strategy**: Extract modules for monolithic >500 line files (see unified services pattern)
-  - **Priority**: New code must follow 500-line limit OR use facade pattern; legacy monoliths refactored as touched
+  - **Facade Pattern**: For complex features >500 lines, use facade with focused managers
+    - ✅ **Exemplary**: `recipe_form_viewmodel.dart` - facade delegates to 6 focused managers
+    - ✅ **Pattern**: Extract modules (`recipe_image_manager.dart`), separate widgets (`editable_image_widget.dart`)
+  - **Refactoring Strategy**: Extract modules for monolithic >500 line files
+  - **Priority**: New code must follow 500-line limit OR use facade pattern; refactor monoliths as touched
 - **Dependency Injection**: Modular DI system with domain-driven modules (see below)
 - **Notifications**: Complete FCM system with development logging approach
-- **Social Features**: 85-92% infrastructure complete (verified 2025-01)
-  - ✅ Complete: Friends, sharing, comments, ratings, groups, collaborative lists
-  - ✅ Repositories: All 4 social repos with security & audit logging
-  - ✅ Services: 13 DI-registered services with business logic
-  - ✅ UI: 61 social views/components with real-time streams
-  - ⚠️ Remaining: Navigation wiring verification, test coverage expansion, UI polish
+- **Social Features**: Complete infrastructure for collaborative features
+  - ✅ Friends, sharing, comments, ratings, groups, collaborative lists
+  - ✅ Repositories with security & audit logging
+  - ✅ DI-registered services with business logic
+  - ✅ Real-time streams and UI components
 - **Test Coverage & Infrastructure**:
-  - **Current Status**: ~35-40% coverage (services and repositories prioritized)
-  - **Test Dashboard**: See `/docs/testing/TESTING_DASHBOARD.md` for detailed status
+  - **Test Dashboard**: See `/docs/testing/TESTING_DASHBOARD.md` for current metrics
   - **Test Patterns**: See `/docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md` for essential patterns
-  - **Coverage by Layer**:
-    - ✅ Repositories: 50-60% (critical paths covered, permission validation tested)
-    - ✅ Services: 40-50% (core business logic covered)
-    - ⚠️ ViewModels: 20-30% (partial coverage, needs expansion)
-    - ⚠️ Widgets/Views: 10-15% (UI testing minimal)
-    - ✅ Models: 60-70% (data models well tested)
   - **Test Strategy**: Bottom-up (repositories → services → viewmodels → integration)
   - **CI/CD**: Tests run on every commit (GitHub Actions)
   - **Priority Areas**: Security validation, GDPR compliance, data integrity
@@ -125,16 +114,11 @@ await shoppingService.share.shareListWithFriend(listId, friendId);
 - Services expose layers via public getters: `.personal`, `.social`/`.collaborative`, `.realtime`, `.share`
 
 ### Code Deduplication Infrastructure
-**Status:** Comprehensive infrastructure in place (Jan 2025)
-**Impact:** 3,000-4,000 lines of duplication eliminated
-**Adoption:** Partial (20-48% - varies by component, needs expansion)
-**Documentation:** See `/docs/architecture/DEDUPLICATION_PATTERNS.md`
-**Last Verified:** January 2025
+**Documentation:** See `/docs/architecture/DEDUPLICATION_PATTERNS.md` for current adoption metrics
 
 **Available Infrastructure:**
 
 1. **ErrorHandlingMixin** (`lib/core/mixins/error_handling_mixin.dart`)
-   - 669 lines eliminating 1,100-1,400 lines of duplicate error handling
    - Comprehensive async/sync error handling patterns
    - Network operations with retry logic (max 3 retries)
    - CRUD operation wrappers (safeCreate, safeUpdate, safeDelete, safeLoad)
@@ -143,52 +127,37 @@ await shoppingService.share.shareListWithFriend(listId, friendId);
    - Usage: `with ErrorHandlingMixin` or extend `BaseService`
 
 2. **AsyncOperationMixin** (`lib/core/mixins/async_operation_mixin.dart`)
-   - 458 lines of infrastructure eliminating ~250-280 lines of boilerplate
-   - **Initiative Status**: ✅ COMPLETE (Jan 2025)
-   - **Adoption**: 24% (21/89 ViewModels using it actively)
-   - **Key Learning**: 24% adoption is expected and appropriate - only ViewModels with simple loading/error state patterns benefit. Many ViewModels have well-architected custom state management (streams, manager patterns) that should not be replaced
    - Automatic loading/error/success states for ViewModels
    - Named operations preventing duplicate concurrent executions
    - Debouncing & throttling for search/input operations
    - Caching with automatic expiry
    - Batch and sequential operation execution
    - Usage: `with StateNotifierMixin, AsyncOperationMixin` in ViewModels
-   - **Migration Patterns**: Full migration (2), Partial migration (10), Deferred (well-architected custom state)
-   - **Total ViewModels**: 89 ViewModels across the codebase (21 using AsyncOperationMixin = 24% adoption)
+   - **When to use**: ViewModels with simple loading/error state patterns
+   - **When NOT to use**: ViewModels with well-architected custom state management (streams, manager patterns)
 
 3. **BaseService** (`lib/core/base/base_service.dart`)
-   - 495 lines of infrastructure eliminating ~500-600 lines of boilerplate
-   - **Initiative Status**: ⚠️ IN PROGRESS (Jan 2025)
-   - **Adoption**: 20% (39/195 services)
-   - **Opportunity**: 144 services could benefit from BaseService adoption
-   - **Key Learning**: Only instance-based services benefit; ChangeNotifier services (12) and static utilities (2) intentionally use different patterns
    - Includes ErrorHandlingMixin automatically
    - Pre-flight checks (auth, network, permissions)
    - Built-in caching with expiry management
    - Batch operations and lifecycle hooks (onInitialize, onDispose)
-   - **Recent Migrations** (Jan 2025): PermissionService, PerformanceMonitoringService, ImageUploadService, RecipeDiscoveryService
    - Usage: `extends BaseService` for all new instance-based services
+   - **When to use**: Instance-based services (not ChangeNotifier or static utilities)
 
 4. **BaseFirebaseRepository** (`lib/repositories/base/`)
-   - ~400 lines eliminating 2,000-2,500 lines of CRUD duplication
    - Standard CRUD operations with permission validation
    - Audit logging (GDPR Article 30 compliance)
    - Streaming support with real-time updates
-   - **Adoption**: 25% (17/68 repositories)
-   - **Opportunity**: 51 repositories could benefit from BaseFirebaseRepository
-   - Usage: `extends BaseFirebaseRepository<T>` (standard pattern)
+   - Usage: `extends BaseFirebaseRepository<T>` (standard pattern for new repositories)
 
 5. **SerializationUtils** (`lib/core/utils/serialization_utils.dart`)
-   - 371 lines eliminating 600-800 lines of manual parsing
    - Safe data extraction with null handling and type conversion
    - Firebase Timestamp handling (DateTime, String, int, Timestamp)
    - Nested object and list parsing with converters
    - Enum serialization/deserialization
-   - **Current Adoption: 1.5% (12 files) - Growing adoption in models and repositories**
    - Usage: `SerializationUtils.safeString(data, 'field')` or extension methods
 
 6. **ValidationUtils** (`lib/core/utils/validation_utils.dart`)
-   - 384 lines eliminating 1,600-2,400 lines of validation code
    - Null/empty/whitespace validation for strings, lists, maps
    - String length and format validation (email, etc.)
    - Business rule validation (recipe names, amounts, etc.)
@@ -197,11 +166,9 @@ await shoppingService.share.shareListWithFriend(listId, friendId);
    - Usage: `ValidationUtils.validateRequired(value)` or `value.isNullOrEmpty`
 
 7. **Default Value Extensions** (`lib/core/extensions/default_value_extensions.dart`)
-   - ~350 lines eliminating 400+ lines of null coalescing
    - String, List, Map, DateTime, Int, Double, Bool extensions
    - Clean null-safe default values: `.orEmpty()`, `.orZero()`, `.orNow()`
    - Null checking helpers: `.isNullOrEmpty`, `.hasValue`, `.hasItems`
-   - **Current Adoption: 3.7% (30 files) - Actively used in ViewModels, models, and repositories**
    - Usage: Replace `value ?? default` with `value.orDefault()`
 
 8. **Test Helpers** (`test/helpers/`)
