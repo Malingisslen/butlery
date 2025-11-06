@@ -2,7 +2,8 @@
 
 **Status**: Comprehensive infrastructure in place (Jan 2025)
 **Impact**: 3,000-4,000 lines of duplication already eliminated
-**Adoption**: Partial (20-30% of codebase actively using patterns)
+**Adoption**: Partial (20-48% varies by component - actively growing)
+**Last Verified**: January 2025
 
 ---
 
@@ -195,7 +196,7 @@ abstract class BaseService with ErrorHandlingMixin {
 
 **Lines of Code**: 458 lines
 **Eliminates**: 800-1,000 lines of loading state management
-**Current Adoption**: ~5% (used in 2 base ViewModels only)
+**Current Adoption**: 48% (22 of 46 ViewModels actively using it)
 
 ### Pattern Overview
 
@@ -374,7 +375,7 @@ if (viewModel.isOperationActive('save_recipe')) {
 
 **Lines of Code**: 495 lines
 **Eliminates**: 1,500-2,000 lines of service boilerplate
-**Current Adoption**: ~40% (storage, messaging, recommendation services)
+**Current Adoption**: 20% (39/195 services - opportunity for expansion)
 
 ### Pattern Overview
 
@@ -534,7 +535,7 @@ class SocialService extends BaseService with NotificationMixin {
 
 **Lines of Code**: ~400 lines
 **Eliminates**: 2,000-2,500 lines of CRUD duplication
-**Current Adoption**: 90%+ (27 repositories)
+**Current Adoption**: 25% (17/68 repositories - significant expansion opportunity)
 
 ### Pattern Overview
 
@@ -626,7 +627,7 @@ class RecipeRepository extends BaseFirebaseRepository<Recipe> {
 
 **Lines of Code**: 371 lines
 **Eliminates**: 600-800 lines of manual parsing
-**Current Adoption**: 0% (opportunity!)
+**Current Adoption**: 1.5% (12 files) - Growing adoption in models and repositories
 
 ### Pattern Overview
 

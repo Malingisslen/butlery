@@ -128,8 +128,9 @@ await shoppingService.share.shareListWithFriend(listId, friendId);
 ### Code Deduplication Infrastructure
 **Status:** Comprehensive infrastructure in place (Jan 2025)
 **Impact:** 3,000-4,000 lines of duplication eliminated
-**Adoption:** Partial (21-46% - varies by component, needs expansion)
+**Adoption:** Partial (20-48% - varies by component, needs expansion)
 **Documentation:** See `/docs/architecture/DEDUPLICATION_PATTERNS.md`
+**Last Verified:** January 2025
 
 **Available Infrastructure:**
 
@@ -145,8 +146,8 @@ await shoppingService.share.shareListWithFriend(listId, friendId);
 2. **AsyncOperationMixin** (`lib/core/mixins/async_operation_mixin.dart`)
    - 458 lines of infrastructure eliminating ~250-280 lines of boilerplate
    - **Initiative Status**: ✅ COMPLETE (Jan 2025)
-   - **Adoption**: 80-100% of viable candidates (12-15 of 97 ViewModels migrated)
-   - **Key Learning**: Only 12-15 of 97 ViewModels benefit from migration; many have well-architected custom state management that should not be replaced
+   - **Adoption**: 48% (22 of 46 ViewModels using it actively)
+   - **Key Learning**: Many ViewModels have well-architected custom state management (streams, manager patterns); AsyncOperationMixin is ideal for simple loading/error state patterns
    - Automatic loading/error/success states for ViewModels
    - Named operations preventing duplicate concurrent executions
    - Debouncing & throttling for search/input operations
@@ -154,13 +155,13 @@ await shoppingService.share.shareListWithFriend(listId, friendId);
    - Batch and sequential operation execution
    - Usage: `with StateNotifierMixin, AsyncOperationMixin` in ViewModels
    - **Migration Patterns**: Full migration (2), Partial migration (10), Deferred (well-architected custom state)
-   - **Documentation**: See `/ASYNCOPERATION_FINAL_REPORT.md` and `/docs/architecture/WEEK3_MIGRATION_SUCCESS.md`
+   - **Key Learning**: Only 12-15 of 97 ViewModels benefit from migration; many have well-architected custom state management
 
 3. **BaseService** (`lib/core/base/base_service.dart`)
    - 495 lines of infrastructure eliminating ~500-600 lines of boilerplate
    - **Initiative Status**: ⚠️ IN PROGRESS (Jan 2025)
-   - **Adoption**: 21% (39/186 services)
-   - **Opportunity**: 147 services could benefit from BaseService adoption
+   - **Adoption**: 20% (39/195 services)
+   - **Opportunity**: 144 services could benefit from BaseService adoption
    - **Key Learning**: Only instance-based services benefit; ChangeNotifier services (9) and static utilities (2) intentionally use different patterns
    - Includes ErrorHandlingMixin automatically
    - Pre-flight checks (auth, network, permissions)
@@ -174,8 +175,8 @@ await shoppingService.share.shareListWithFriend(listId, friendId);
    - Standard CRUD operations with permission validation
    - Audit logging (GDPR Article 30 compliance)
    - Streaming support with real-time updates
-   - **Adoption**: 46.6% (27/58 repositories)
-   - **Opportunity**: 31 repositories could benefit from BaseFirebaseRepository
+   - **Adoption**: 25% (17/68 repositories)
+   - **Opportunity**: 51 repositories could benefit from BaseFirebaseRepository
    - Usage: `extends BaseFirebaseRepository<T>` (standard pattern)
 
 5. **SerializationUtils** (`lib/core/utils/serialization_utils.dart`)
@@ -184,7 +185,7 @@ await shoppingService.share.shareListWithFriend(listId, friendId);
    - Firebase Timestamp handling (DateTime, String, int, Timestamp)
    - Nested object and list parsing with converters
    - Enum serialization/deserialization
-   - **Current Adoption: 0% - High opportunity!**
+   - **Current Adoption: 1.5% (12 files) - Growing adoption in models and repositories**
    - Usage: `SerializationUtils.safeString(data, 'field')` or extension methods
 
 6. **ValidationUtils** (`lib/core/utils/validation_utils.dart`)
@@ -201,7 +202,7 @@ await shoppingService.share.shareListWithFriend(listId, friendId);
    - String, List, Map, DateTime, Int, Double, Bool extensions
    - Clean null-safe default values: `.orEmpty()`, `.orZero()`, `.orNow()`
    - Null checking helpers: `.isNullOrEmpty`, `.hasValue`, `.hasItems`
-   - **Current Adoption: 0% (newly created)**
+   - **Current Adoption: 3.7% (30 files) - Actively used in ViewModels, models, and repositories**
    - Usage: Replace `value ?? default` with `value.orDefault()`
 
 8. **Test Helpers** (`test/helpers/`)
@@ -229,7 +230,6 @@ await shoppingService.share.shareListWithFriend(listId, friendId);
 - ✅ Apply to ViewModels when refactoring IF they have simple loading/error patterns
 - ✅ Use decision framework: Full migration vs. Partial migration vs. Defer
 - ✅ Respect well-architected custom state management (streams, manager patterns)
-- ✅ See `/ASYNCOPERATION_FINAL_REPORT.md` for migration guidelines
 
 **Examples:**
 
