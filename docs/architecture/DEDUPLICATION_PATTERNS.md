@@ -4,14 +4,14 @@
 
 **Status**: Comprehensive infrastructure in place (Jan 2025)
 **Impact**: 3,000-4,000 lines of duplication eliminated
-**Adoption**: Partial (20-48% - varies by component, needs expansion)
+**Adoption**: Partial (20-24% - varies by component, needs expansion)
 **Last Verified**: January 2025
 
 ---
 
 ## Executive Summary
 
-The Butlery codebase has **excellent deduplication infrastructure** already implemented. These patterns exist but are **underutilized** (20-48% adoption). This guide provides quick reference to existing patterns.
+The Butlery codebase has **excellent deduplication infrastructure** already implemented. These patterns exist but are **underutilized** (20-24% adoption). This guide provides quick reference to existing patterns.
 
 **For complete documentation and examples**, see the **code-deduplication-utilities skill** in `.claude/skills/`.
 
@@ -67,7 +67,9 @@ class MyService extends BaseService {
 
 **Location**: `lib/core/mixins/async_operation_mixin.dart`
 **Initiative Status**: ✅ COMPLETE (Jan 2025)
-**Adoption**: 48% (22 of 46 ViewModels)
+**Adoption**: 24% (21/89 ViewModels)
+
+**Why 24% is Expected**: This adoption rate is appropriate and intentional. Only ViewModels with simple loading/error state patterns benefit from AsyncOperationMixin. Many ViewModels have well-architected custom state management (streams, manager patterns) that should NOT be replaced.
 
 **When to use:**
 - ViewModels with simple loading/error patterns
@@ -94,7 +96,7 @@ class MyViewModel extends ChangeNotifier
 }
 ```
 
-**Key Learning**: Only 12-15 of 97 ViewModels benefit; many have well-architected custom state management that should not be replaced.
+**Key Learning**: Of the 89 total ViewModels in the codebase, only 21 (24%) benefit from AsyncOperationMixin. The remaining ViewModels have well-architected custom state management that should not be replaced.
 
 ---
 
@@ -294,7 +296,7 @@ class MyRepositoryTest extends RepositoryTestBase {
 | Pattern | Adoption | Files Using | Opportunity |
 |---------|----------|-------------|-------------|
 | ErrorHandlingMixin | ~15% | Via BaseService | 144 services |
-| AsyncOperationMixin | 48% | 22/46 ViewModels | Initiative complete |
+| AsyncOperationMixin | 24% | 21/89 ViewModels | Expected rate (simple patterns only) |
 | BaseService | 20% | 39/195 services | 144 services |
 | BaseFirebaseRepository | 25% | 17/68 repositories | 51 repositories |
 | SerializationUtils | 1.5% | 12 files | High! |
@@ -343,9 +345,9 @@ class MyRepositoryTest extends RepositoryTestBase {
 
 ### AsyncOperationMixin Initiative (Complete - Jan 2025)
 
-- ✅ 22 ViewModels migrated
+- ✅ 21 ViewModels migrated (24% of 89 total ViewModels)
 - ✅ 250-280 lines eliminated per ViewModel
-- ✅ Key learning: Only simple patterns benefit
+- ✅ Key learning: Only ViewModels with simple loading/error patterns benefit - 24% adoption is expected and appropriate
 
 ### BaseService Migrations (Jan 2025)
 
@@ -412,7 +414,7 @@ Butlery has **excellent deduplication infrastructure** that can eliminate 3,000-
 - Respect well-architected custom solutions
 - See code-deduplication-utilities skill for full documentation
 
-**Impact**: 20-48% adoption → Target 60-80% adoption for massive codebase reduction.
+**Impact**: Current 20-24% adoption (varies by component). Target 40-60% adoption for additional codebase reduction where patterns fit well.
 
 ---
 
