@@ -78,7 +78,7 @@ The Butlery application is a **comprehensive recipe management and meal planning
 | **Production Ready** | 85% | High Confidence |
 | **Codebase Size** | 669 Dart files | Well-organized |
 
-> **📊 See [PROJECT_STATUS.md](../PROJECT_STATUS.md) for detailed metrics and current status**
+> **📊 See [testing/TESTING_DASHBOARD.md](../testing/TESTING_DASHBOARD.md) for detailed metrics and current status**
 
 ---
 
@@ -387,6 +387,147 @@ class RecipeViewModel extends ChangeNotifier {
 - 60 ViewModels in codebase
 - 86.7% test coverage (52/60 tested)
 - Grade: A
+
+#### Manager Delegation Pattern (For Complex ViewModels)
+
+For ViewModels exceeding 500 lines or managing multiple concerns, use the **Manager Delegation Pattern** to maintain Single Responsibility Principle:
+
+**Pattern**: Facade ViewModel delegates to specialized manager classes
+
+**When to Use:**
+- ✅ ViewModel >500 lines with distinct concerns
+- ✅ Complex state management (forms, search, caching, real-time)
+- ✅ Multiple feature areas in one ViewModel
+- ✅ Need to test individual concerns in isolation
+
+**Examples in Codebase:**
+- **FriendsViewModel** (15+ ViewModels use this pattern)
+  - Delegates to: `FriendsSearchManager`, `FriendsProfileCacheManager`, `FriendsSelectionManager`
+- **RecipeFormViewModel** (905 lines - exemplary facade)
+  - Delegates to 6 managers: Image, Ingredient, Instruction, Tag, Validation, AutoSave
+- **CollaborativeShoppingViewModel**
+  - Delegates to: List management, item management, member management, sync management
+
+**Implementation Pattern:**
+```dart
+// Facade ViewModel coordinates managers
+class FriendsViewModel extends ChangeNotifier {
+  // Specialized managers handle distinct concerns
+  late final FriendsSearchManager _searchManager;
+  late final FriendsProfileCacheManager _profileCacheManager;
+  late final FriendsSelectionManager _selectionManager;
+
+  FriendsViewModel({
+    required UserService userService,
+    required FriendsService friendsService,
+  }) {
+    // Initialize managers with dependencies
+    _searchManager = FriendsSearchManager(friendsService);
+    _profileCacheManager = FriendsProfileCacheManager(userService);
+    _selectionManager = FriendsSelectionManager();
+  }
+
+  // Expose manager functionality through facade
+  Future<void> searchFriends(String query) async {
+    final results = await _searchManager.search(query);
+    notifyListeners();
+  }
+
+  UserProfile? getCachedProfile(String userId) {
+    return _profileCacheManager.getProfile(userId);
+  }
+
+  void selectFriend(String friendId) {
+    _selectionManager.select(friendId);
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _searchManager.dispose();
+    _profileCacheManager.dispose();
+    _selectionManager.dispose();
+    super.dispose();
+  }
+}
+
+// Manager classes are focused and testable
+class FriendsSearchManager {
+  final FriendsService _friendsService;
+
+  FriendsSearchManager(this._friendsService);
+
+  List<UserProfile> _searchResults = [];
+  bool _isSearching = false;
+  String? _searchError;
+
+  List<UserProfile> get results => _searchResults;
+  bool get isSearching => _isSearching;
+  String? get error => _searchError;
+
+  Future<List<UserProfile>> search(String query) async {
+    _isSearching = true;
+    _searchError = null;
+
+    try {
+      _searchResults = await _friendsService.searchUsers(query);
+      return _searchResults;
+    } catch (e) {
+      _searchError = 'Search failed: $e';
+      return [];
+    } finally {
+      _isSearching = false;
+    }
+  }
+
+  void dispose() {
+    _searchResults = [];
+  }
+}
+```
+
+**Benefits:**
+- ✅ Each manager stays <500 lines (testable, maintainable)
+- ✅ Clear separation of concerns
+- ✅ Managers are independently testable
+- ✅ ViewModel facade coordinates without bloat
+- ✅ Easy to add new managers without modifying existing code
+
+**Testing Pattern:**
+```dart
+// Test managers in isolation
+test('FriendsSearchManager handles search correctly', () async {
+  final mockService = MockFriendsService();
+  final manager = FriendsSearchManager(mockService);
+
+  when(mockService.searchUsers(any))
+      .thenAnswer((_) async => [testUserProfile]);
+
+  final results = await manager.search('John');
+
+  expect(results, hasLength(1));
+  expect(manager.isSearching, false);
+  expect(manager.error, isNull);
+});
+
+// Test ViewModel coordination
+test('FriendsViewModel coordinates managers', () {
+  final viewModel = FriendsViewModel(
+    userService: mockUserService,
+    friendsService: mockFriendsService,
+  );
+
+  // Verify facade delegates correctly
+  viewModel.searchFriends('query');
+  verify(mockFriendsService.searchUsers('query')).called(1);
+});
+```
+
+**Anti-Patterns to Avoid:**
+- ❌ Don't create managers for simple ViewModels (<500 lines)
+- ❌ Don't make managers depend on each other (keep them independent)
+- ❌ Don't leak manager implementations to Views (expose through facade only)
+- ❌ Don't use this pattern prematurely (start simple, refactor when needed)
 
 ### View Layer
 
@@ -2331,10 +2472,10 @@ class MyService extends ChangeNotifier {
 - [../security/FIREBASE_SECURITY_RULES.md](../security/FIREBASE_SECURITY_RULES.md) - Security rules documentation
 
 ### Project
-- [../PROJECT_STATUS.md](../PROJECT_STATUS.md) - Current project status
+- [../testing/TESTING_DASHBOARD.md](../testing/TESTING_DASHBOARD.md) - Current project metrics and status
 - [../CLAUDE.md](../CLAUDE.md) - Development standards
-- [../DEVELOPMENT_GUIDE.md](../DEVELOPMENT_GUIDE.md) - Development guide
-- [../ROADMAP.md](../ROADMAP.md) - Future roadmap
+- [../development_guide.md](../development_guide.md) - Development guide
+- [../audit/REMEDIATION_ROADMAP.md](../audit/REMEDIATION_ROADMAP.md) - Technical roadmap
 
 ---
 
