@@ -845,6 +845,189 @@ Widget build(BuildContext context) {
 - Access DI container directly: `GetIt.instance.get<T>()` ❌
 - Use legacy pattern: `sl<T>()` ❌ (completely removed)
 
+### Service Pattern Decision Matrix
+
+Two critical architectural decisions when creating services:
+
+#### Decision 1: BaseService vs ChangeNotifier
+
+**Use BaseService when:**
+- ✅ Service performs stateless operations (CRUD, API calls)
+- ✅ Need error handling with retry logic
+- ✅ Need pre-flight checks (auth, network, permissions)
+- ✅ Need built-in caching with expiry
+- ✅ Service doesn't need to notify listeners
+- ✅ Service is utility/helper focused
+
+**Example:** `RecipeService`, `StorageService`, `AnalyticsService`
+```dart
+class RecipeDiscoveryService extends BaseService {
+  @override
+  String get serviceName => 'RecipeDiscoveryService';
+
+  Future<List<Recipe>> discoverRecipes() async {
+    return await executeServiceOperation(
+      () => _repository.fetchTrending(),
+      operationName: 'Discover recipes',
+      requiresAuth: true,
+    );
+  }
+}
+```
+
+**Use ChangeNotifier when:**
+- ✅ Service manages reactive state
+- ✅ ViewModels need to listen to service changes
+- ✅ Service coordinates real-time data (Firebase streams)
+- ✅ Service manages app-wide state (auth, user session)
+- ✅ Need to notify multiple listeners on state changes
+
+**Example:** `UnifiedRecipeService`, `AuthService`, `UserService`
+```dart
+class UnifiedRecipeService extends ChangeNotifier with ErrorHandlingMixin {
+  List<Recipe> _recipes = [];
+  bool _isLoading = false;
+
+  List<Recipe> get recipes => _recipes;
+  bool get isLoading => _isLoading;
+
+  Future<void> loadRecipes() async {
+    _isLoading = true;
+    notifyListeners(); // Notify listeners of state change
+
+    try {
+      _recipes = await _repository.fetchRecipes();
+    } catch (e) {
+      handleError(e);
+    } finally {
+      _isLoading = false;
+      notifyListeners(); // Notify listeners
+    }
+  }
+}
+```
+
+**Current Usage in Codebase:**
+- **BaseService**: 39 services (20%) - Stateless operations
+- **ChangeNotifier**: 12 services - Reactive state management
+- **Other**: 144 services - Standalone utilities, wrappers
+
+**Decision Matrix:**
+
+| Service Characteristic | BaseService | ChangeNotifier |
+|------------------------|-------------|----------------|
+| Has reactive state | ❌ | ✅ |
+| Needs listeners | ❌ | ✅ |
+| Stateless operations | ✅ | ❌ |
+| Error handling with retry | ✅ | ⚠️ Manual |
+| Pre-flight checks | ✅ | ⚠️ Manual |
+| Built-in caching | ✅ | ❌ |
+| Real-time data coordination | ❌ | ✅ |
+
+#### Decision 2: Constructor Injection vs ServiceLocator.get<T>()
+
+**Use Constructor Injection when:**
+- ✅ Registering services in DI modules
+- ✅ Core dependencies (won't create circular refs)
+- ✅ Need explicit dependency tracking
+- ✅ Maximum testability (easy constructor mocks)
+
+**Example:** DI Module Registration
+```dart
+// In content_module.dart
+container.registerLazySingleton<RecipeService>(
+  () => RecipeService(
+    repository: container<RecipeRepository>(), // Constructor injection
+    authService: container<AuthService>(),
+    storageService: container<StorageService>(),
+  ),
+);
+```
+
+**Use ServiceLocator.get<T>() when:**
+- ✅ In ViewModels and widgets
+- ✅ Lazy dependencies (avoid circular deps during DI setup)
+- ✅ Runtime dependency resolution
+- ✅ Cross-module dependencies that create circular refs
+- ✅ Late initialization patterns
+
+**Example:** ViewModel Usage
+```dart
+class RecipeViewModel extends ChangeNotifier {
+  // Late initialization to avoid circular dependencies
+  late final PermissionService _permissionService;
+  late final UnifiedRecipeService _recipeService;
+
+  RecipeViewModel() {
+    _permissionService = ServiceLocator.get<PermissionService>();
+    _recipeService = ServiceLocator.get<UnifiedRecipeService>();
+  }
+}
+```
+
+**Current Usage in Codebase:**
+- **Constructor Injection**: 39 services (DI module registration)
+- **ServiceLocator.get<T>()**: 178 files (ViewModels, widgets, late initialization)
+
+**Decision Matrix:**
+
+| Use Case | Constructor Injection | ServiceLocator.get<T>() |
+|----------|----------------------|-------------------------|
+| DI module registration | ✅ ALWAYS | ❌ NEVER |
+| Service → Service deps | ✅ Preferred | ⚠️ If circular ref |
+| ViewModel deps | ❌ | ✅ ALWAYS |
+| Widget deps | ❌ | ✅ ALWAYS |
+| Late initialization | ❌ | ✅ ALWAYS |
+| Testing | ✅ Easier mocking | ⚠️ Requires DI setup |
+
+**Anti-Patterns to Avoid:**
+
+❌ **Don't mix patterns in same constructor:**
+```dart
+// BAD: Mixing constructor injection and ServiceLocator
+class BadService {
+  final AuthService _authService; // Constructor injection
+
+  BadService({required AuthService authService})
+    : _authService = authService {
+    final otherService = ServiceLocator.get<OtherService>(); // Mixed!
+  }
+}
+```
+
+❌ **Don't use ServiceLocator.get<T>() in DI modules:**
+```dart
+// BAD: Using ServiceLocator in module registration
+container.registerLazySingleton<RecipeService>(
+  () => RecipeService(
+    repository: ServiceLocator.get<RecipeRepository>(), // WRONG!
+  ),
+);
+
+// GOOD: Use container<T>()
+container.registerLazySingleton<RecipeService>(
+  () => RecipeService(
+    repository: container<RecipeRepository>(), // CORRECT
+  ),
+);
+```
+
+❌ **Don't use constructor injection in ViewModels:**
+```dart
+// BAD: ViewModels shouldn't use constructor injection
+class BadViewModel extends ChangeNotifier {
+  final RecipeService _recipeService;
+
+  BadViewModel({required RecipeService recipeService}) // Tight coupling!
+    : _recipeService = recipeService;
+}
+
+// GOOD: Use ServiceLocator
+class GoodViewModel extends ChangeNotifier {
+  final _recipeService = ServiceLocator.get<UnifiedRecipeService>();
+}
+```
+
 ### Testing with DI
 
 **Test Setup Pattern:**
