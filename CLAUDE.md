@@ -37,7 +37,6 @@
   - **Current Status**: ~35-40% coverage (services and repositories prioritized)
   - **Test Dashboard**: See `/docs/testing/TESTING_DASHBOARD.md` for detailed status
   - **Test Patterns**: See `/docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md` for essential patterns
-  - **Test Templates**: Use `/test/templates/` for consistent test structure
   - **Coverage by Layer**:
     - ✅ Repositories: 50-60% (critical paths covered, permission validation tested)
     - ✅ Services: 40-50% (core business logic covered)
@@ -209,7 +208,6 @@ await shoppingService.share.shareListWithFriend(listId, friendId);
    - RepositoryTestBase: Common repository test setup (FakeFirestore, mocks)
    - ServiceTestBase: Common service test setup (auth, utilities)
    - TestDataFactory: Consistent test data generation
-   - **Current Adoption: 0% (newly created)**
    - Usage: `extends RepositoryTestBase` in repository tests
 
 **Adoption Guidelines:**
@@ -429,7 +427,6 @@ await ApplicationBootstrap.initialize();
 - **Complete Guide**: See `/docs/testing/TEST_GUIDE.md`
 - **Quick Patterns**: See `/docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md`
 - **Current Status**: See `/docs/testing/TESTING_DASHBOARD.md`
-- **Templates**: Use `/test/templates/` for consistent test creation
 
 ## Critical Rules
 - **NEVER BE LAZY** - you are a senior developer
