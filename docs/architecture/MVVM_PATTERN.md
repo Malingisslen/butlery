@@ -255,8 +255,8 @@ class RecipeViewModel extends ChangeNotifier {
 
 ### ViewModel Statistics
 
-- **60 ViewModels** in codebase
-- **86.7% test coverage** (52/60 tested)
+- **89 ViewModels** in codebase
+- **69% test coverage** (61/89 tested - better than documented!)
 - **Grade**: A
 
 ---
