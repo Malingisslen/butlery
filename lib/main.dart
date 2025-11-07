@@ -48,10 +48,11 @@ import 'package:butlery/views/mina_recept_view.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'dart:async';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:butlery/firebase_options_real.dart';
+import 'package:butlery/firebase_options.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -67,18 +68,41 @@ Future<void> main() async {
 
     // Load environment variables first - required for Firebase configuration
     await dotenv.load(fileName: '.env');
-    
+
     if (kDebugMode) {
       debugPrint('✅ Environment variables loaded');
     }
 
-    // Initialize Firebase with real configuration
+    // Initialize Firebase with configuration from .env
     await Firebase.initializeApp(
-      options: RealFirebaseOptions.currentPlatform,
+      options: DefaultFirebaseOptions.currentPlatform,
     );
-    
+
     if (kDebugMode) {
       debugPrint('✅ Firebase initialized successfully');
+    }
+
+    // Initialize Firebase Crashlytics for production error tracking
+    await FirebaseCrashlytics.instance
+        .setCrashlyticsCollectionEnabled(!kDebugMode);
+
+    // Pass all Flutter errors to Crashlytics
+    FlutterError.onError = (errorDetails) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+      // Also log to console in debug mode
+      if (kDebugMode) {
+        FlutterError.presentError(errorDetails);
+      }
+    };
+
+    // Pass all platform dispatcher errors to Crashlytics
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+
+    if (kDebugMode) {
+      debugPrint('✅ Crashlytics initialized (collection: ${!kDebugMode})');
     }
 
     // Initialize Firebase App Check
@@ -98,8 +122,17 @@ Future<void> main() async {
     // Skip startup optimization manager - it conflicts with the modular bootstrap system
     // The modular system already handles all initialization properly
 
-    // Start the application
-    runApp(const ButleryApp());
+    // Start the application with zone error handling for async errors
+    runZonedGuarded(
+      () => runApp(const ButleryApp()),
+      (error, stack) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        if (kDebugMode) {
+          debugPrint('❌ Uncaught async error: $error');
+          debugPrint('Stack trace: $stack');
+        }
+      },
+    );
   } catch (e, stackTrace) {
     if (kDebugMode) {
       debugPrint('❌ Application startup failed: $e');
@@ -107,7 +140,8 @@ Future<void> main() async {
     }
 
     // Show error app with more details
-    runApp(_ErrorApp('Application failed to initialize: $e\n\nStack trace:\n$stackTrace'));
+    runApp(_ErrorApp(
+        'Application failed to initialize: $e\n\nStack trace:\n$stackTrace'));
   }
 }
 
@@ -142,7 +176,7 @@ Future<void> _initializeModularSystem() async {
     modules: modules,
     stages: stages,
   );
-  
+
   // ServiceLocator is now initialized by ApplicationBootstrap
   // Performance services are handled by the PerformanceModule if registered
 
@@ -153,7 +187,7 @@ Future<void> _initializeModularSystem() async {
 
 class _ErrorApp extends StatelessWidget {
   final String message;
-  
+
   const _ErrorApp(this.message);
 
   @override
@@ -188,7 +222,8 @@ class _ErrorApp extends StatelessWidget {
                   child: SingleChildScrollView(
                     child: Text(
                       message,
-                      style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                      style: const TextStyle(
+                          fontSize: 12, fontFamily: 'monospace'),
                       textAlign: TextAlign.left,
                     ),
                   ),
@@ -280,7 +315,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     try {
       final bootstrap = ApplicationBootstrap();
       if (bootstrap.isInitialized && _sessionStartTime != null) {
-        final sessionDuration = DateTime.now().difference(_sessionStartTime!).inSeconds;
+        final sessionDuration =
+            DateTime.now().difference(_sessionStartTime!).inSeconds;
 
         final analyticsService = bootstrap.container.get<AnalyticsService>();
         await analyticsService.logEvent(
@@ -310,7 +346,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     } catch (e) {
       if (kDebugMode) {
         debugPrint('⚠️ UI initialization error (non-critical): $e');
-        debugPrint('💡 Note: Deep links may not work on all platforms (e.g., web)');
+        debugPrint(
+            '💡 Note: Deep links may not work on all platforms (e.g., web)');
       }
     }
   }
@@ -323,7 +360,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         if (kDebugMode) {
           debugPrint('⏳ Waiting for modular system to initialize...');
         }
-        
+
         // Wait for initialization with timeout
         var attempts = 0;
         while (!bootstrap.isInitialized && attempts < 50) {
@@ -334,8 +371,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
 
       if (bootstrap.isInitialized) {
         final analyticsService = bootstrap.container.get<AnalyticsService>();
-        _analyticsObserver = analyticsService.observer as FirebaseAnalyticsObserver?;
-        
+        _analyticsObserver =
+            analyticsService.observer as FirebaseAnalyticsObserver?;
+
         if (kDebugMode) {
           debugPrint('✅ Modular analytics observer setup');
         }
@@ -354,7 +392,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
 
   Widget _buildModularApp() {
     final bootstrap = ApplicationBootstrap();
-    
+
     if (!bootstrap.isInitialized) {
       return _buildLoadingApp('Initializing modular system...');
     }
@@ -415,7 +453,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
                 height: AppDimensions.iconSizeHero,
                 decoration: BoxDecoration(
                   color: AppColors.primaryBlue,
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusL),
                 ),
                 child: const Icon(
                   Icons.restaurant_menu,
@@ -454,8 +493,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
 
 class InitializationWrapper extends StatelessWidget {
   // CRITICAL: Use GlobalKey to prevent AuthWrapper recreation
-  static final GlobalKey<_AuthWrapperState> _authWrapperKey = GlobalKey<_AuthWrapperState>();
-  
+  static final GlobalKey<_AuthWrapperState> _authWrapperKey =
+      GlobalKey<_AuthWrapperState>();
+
   const InitializationWrapper({super.key});
 
   @override
@@ -474,112 +514,30 @@ class AuthWrapper extends StatefulWidget {
 class _AuthWrapperState extends State<AuthWrapper> {
   User? _currentUser;
   StreamSubscription<User?>? _authSubscription;
-  StreamSubscription<User?>? _backupAuthSubscription; // ULTRATHINK: Backup auth listener
-  Timer? _periodicCheck;
-  bool _ignoreInitialNull = false; // ULTRATHINK: Guard against Firebase initialization NULL events
-  // DateTime? _lastSuccessfulLogin; // ULTRATHINK: Track successful logins - unused for now
 
   @override
   void initState() {
     super.initState();
-    
-    // 🔍 IMMEDIATE FIREBASE AUTH STATE CHECK
+
+    // Get initial Firebase auth state
     _currentUser = FirebaseAuth.instance.currentUser;
-    
-    // ULTRATHINK: If user is logged in at startup, ignore initial NULL events from Firebase
-    _ignoreInitialNull = (_currentUser != null);
     if (_currentUser != null) {
-      AppLogger.debug('AuthWrapper: User logged in at startup: ${_currentUser!.email}');
+      AppLogger.debug(
+          'AuthWrapper: User logged in at startup: ${_currentUser!.email}');
     }
-    
-    // 🔧 EXPLICIT AUTH STATE SUBSCRIPTION with initialization protection
-    
-    _authSubscription = FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      // ULTRATHINK: Critical Firebase initialization race condition guard
-      if (_ignoreInitialNull && user == null) {
-        AppLogger.debug('AuthWrapper: Blocking initial NULL event - preserving authenticated state');
-        _ignoreInitialNull = false; // Only ignore the first NULL
-        return;
-      }
-      
-      _ignoreInitialNull = false; // Reset flag after first real event
-      
-      // ULTRATHINK: AGGRESSIVE LOGIN NAVIGATION - Force immediate UI navigation on login
-      if (user != null && (_currentUser == null || _currentUser!.uid != user.uid)) {
-        AppLogger.debug('AuthWrapper: LOGIN SUCCESS DETECTED - User: ${user.email}');
-        
-        // Record successful login timestamp (commented out for now)
-        // _lastSuccessfulLogin = DateTime.now();
-        
-        // TRIPLE setState() calls to ensure UI navigation
-        if (mounted) {
-          setState(() => _currentUser = user);
-          
-          // Force additional rebuilds with different timing
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) setState(() {});
-            
-            // Even more aggressive - third rebuild
-            Future.delayed(const Duration(milliseconds: 50), () {
-              if (mounted) setState(() {});
-            });
-          });
-        }
-      } else if (mounted) {
+
+    // Single clean auth listener - no redundancy, no battery drain
+    _authSubscription =
+        FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (mounted) {
         setState(() {
           _currentUser = user;
         });
-      }
-    });
-    
-    // 🔧 ULTRATHINK: BACKUP AUTH SUBSCRIPTION - Different stream listener as fallback
-    _backupAuthSubscription = FirebaseAuth.instance.idTokenChanges().listen((User? user) {
-      // If we detect a login via token changes and main subscription missed it
-      if (user != null && _currentUser == null) {
-        AppLogger.debug('AuthWrapper: BACKUP DETECTED LOGIN - Main subscription missed: ${user.email}');
-        
-        if (mounted) {
-          setState(() => _currentUser = user);
-          
-          // Triple force rebuild
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) setState(() {});
-            
-            Future.delayed(const Duration(milliseconds: 16), () {
-              if (mounted) setState(() {});
-            });
-          });
-        }
-      }
-    });
-    
-    // 🔧 ULTRATHINK PERIODIC CHECK - ULTRA-AGGRESSIVE UI navigation enforcement
-    _periodicCheck = Timer.periodic(const Duration(milliseconds: 200), (timer) {
-      if (mounted) {
-        final currentFirebaseUser = FirebaseAuth.instance.currentUser;
-        final currentStateUser = _currentUser;
-        
-        // Check for mismatch between Firebase and widget state
-        if ((currentFirebaseUser?.uid != currentStateUser?.uid)) {
-          // ULTRATHINK: Multiple setState calls for login navigation
-          if (currentFirebaseUser != null && currentStateUser == null) {
-            AppLogger.debug('AuthWrapper: LOGIN NAVIGATION FAILURE DETECTED - Forcing UI update');
-            
-            // Multiple rebuilds to force navigation
-            setState(() => _currentUser = currentFirebaseUser);
-            
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) setState(() {});
-              
-              Future.delayed(const Duration(milliseconds: 100), () {
-                if (mounted) setState(() {});
-              });
-            });
-          } else {
-            setState(() {
-              _currentUser = currentFirebaseUser;
-            });
-          }
+
+        if (user != null) {
+          AppLogger.debug('AuthWrapper: User authenticated: ${user.email}');
+        } else {
+          AppLogger.debug('AuthWrapper: User signed out');
         }
       }
     });
@@ -587,10 +545,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
   @override
   void dispose() {
-    AppLogger.debug('AuthWrapper: Disposing wrapper for user: ${_currentUser?.email ?? 'NULL'}');
+    AppLogger.debug(
+        'AuthWrapper: Disposing wrapper for user: ${_currentUser?.email ?? 'NULL'}');
     _authSubscription?.cancel();
-    _backupAuthSubscription?.cancel();
-    _periodicCheck?.cancel();
     super.dispose();
   }
 
@@ -598,19 +555,20 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Widget build(BuildContext context) {
     // 🔧 ULTRATHINK: AGGRESSIVE LOGIN NAVIGATION - Always sync with Firebase on every build
     final firebaseUser = FirebaseAuth.instance.currentUser;
-    if (firebaseUser != null && (_currentUser == null || _currentUser!.uid != firebaseUser.uid)) {
+    if (firebaseUser != null &&
+        (_currentUser == null || _currentUser!.uid != firebaseUser.uid)) {
       _currentUser = firebaseUser;
-      
+
       // ULTRA-AGGRESSIVE: Force multiple rebuilds with different mechanisms
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() {});
-          
+
           // Second rebuild with delay
           Future.delayed(const Duration(milliseconds: 16), () {
             if (mounted) setState(() {});
           });
-          
+
           // Third rebuild with longer delay
           Future.delayed(const Duration(milliseconds: 100), () {
             if (mounted) setState(() {});
@@ -618,18 +576,17 @@ class _AuthWrapperState extends State<AuthWrapper> {
         }
       });
     }
-    
+
     // 🔧 DIRECT STATE-BASED RENDERING (No StreamBuilder)
     final user = _currentUser;
 
     if (user != null) {
-      AppLogger.debug('AuthWrapper: NAVIGATION SUCCESS - User logged in: ${user.email}');
+      AppLogger.debug(
+          'AuthWrapper: NAVIGATION SUCCESS - User logged in: ${user.email}');
       return MinaReceptView(key: ValueKey(user.uid));
     }
 
     AppLogger.debug('AuthWrapper: No user logged in, showing auth view');
     return const AuthView();
   }
-
-
 }
