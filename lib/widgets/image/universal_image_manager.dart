@@ -662,20 +662,5 @@ class ImageManager {
     );
   }
 
-  /// Quick access to image picker
-  static Future<void> showImagePicker({
-    required BuildContext context,
-    bool showCamera = true,
-    bool showGallery = true,
-    String? title,
-    Function(dynamic)? onSourceSelected,
-  }) async {
-    return ImageFactory.showImagePicker(
-      context: context,
-      showCamera: showCamera,
-      showGallery: showGallery,
-      title: title,
-      onSourceSelected: onSourceSelected,
-    );
-  }
+  // showImagePicker removed - ImageFactory.showImagePicker was dead code
 }

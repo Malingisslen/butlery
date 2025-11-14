@@ -80,12 +80,16 @@ void main() {
       ];
     }
 
-    /// Create a SharedShoppingList with count fields (Issue #014 - arrays removed).
+    /// Create a SharedShoppingList with count fields (Issue #014 - arrays removed, Issue #015 - items in subcollection).
+    ///
+    /// **Issue #015**: Items no longer stored in model. Pass `items` to calculate itemCount,
+    /// or pass `itemCount` directly. Items will be seeded to subcollection via `seedSharedShoppingList()`.
     SharedShoppingList createSharedShoppingList({
       String? id,
       String? sharedByUserId,
       String? sharedByDisplayName,
-      List<UnifiedShoppingItem>? listItems,
+      List<UnifiedShoppingItem>? items,
+      int? itemCount,
       String? listName,
       String? listDescription,
       String? shareMessage,
@@ -95,6 +99,9 @@ void main() {
       int? engagementCount,
       int? dismissalCount,
     }) {
+      // Calculate itemCount from items list if not provided
+      final finalItemCount = itemCount ?? items?.length ?? createTestItems().length;
+
       return SharedShoppingList(
         id: id ?? testListId,
         sharedByUserId: sharedByUserId ?? testUserId,
@@ -103,7 +110,7 @@ void main() {
         sharedAt: DateTime(2025, 1, 15),
         listName: listName ?? 'Veckohandling',
         listDescription: listDescription,
-        listItems: listItems ?? createTestItems(),
+        itemCount: finalItemCount,
         originalOwnerId: originalOwnerId ?? sharedByUserId ?? testUserId,
         originalOwnerDisplayName:
             originalOwnerDisplayName ?? sharedByDisplayName ?? 'Test User',
@@ -113,7 +120,9 @@ void main() {
       );
     }
 
-    /// Seed a SharedShoppingList into FakeFirestore with optional subcollection data (Issue #014).
+    /// Seed a SharedShoppingList into FakeFirestore with optional subcollection data (Issue #014, #015).
+    ///
+    /// **Issue #015**: Items parameter added to seed items subcollection.
     Future<void> seedSharedShoppingList(
       SharedShoppingList sharedList, {
       List<String>? memberUserIds,
@@ -121,6 +130,7 @@ void main() {
       List<String>? engagedByUserIds,
       List<String>? dismissedByUserIds,
       List<String>? collaboratorUserIds,
+      List<UnifiedShoppingItem>? items,
     }) async {
       // Create main document
       await fakeFirestore
@@ -182,6 +192,13 @@ void main() {
             'userId': userId,
             'dismissedAt': DateTime.now(),
           });
+        }
+      }
+
+      // Seed items subcollection (Issue #015)
+      if (items != null) {
+        for (final item in items) {
+          await listRef.collection('items').doc(item.id).set(item.toFirestore());
         }
       }
     }
@@ -579,7 +596,7 @@ void main() {
       test('should handle shopping list with empty items', () async {
         // Arrange
         final sharedList = createSharedShoppingList(
-          listItems: [], // Empty items
+          items: [], // Empty items
           sharedByUserId: testUserId,
         );
 
@@ -587,6 +604,300 @@ void main() {
         await repository.createSharedShoppingList(
           sharedList,
           recipientIds: [testFriendId],
+        );
+      });
+    });
+
+    // ===== ISSUE #015: ITEMS SUBCOLLECTION CRUD TESTS =====
+
+    group('Items Subcollection CRUD (Issue #015)', () {
+      setUp(() async {
+        // Seed a shopping list for item operations
+        final sharedList = createSharedShoppingList(items: [], itemCount: 0);
+        await seedSharedShoppingList(
+          sharedList,
+          memberUserIds: [testFriendId],
+        );
+      });
+
+      test('addItem should add item to subcollection and increment count', () async {
+        // Arrange
+        final item = createTestItem('Mjölk');
+
+        // Act
+        await repository.addItem(testListId, item);
+
+        // Assert - Verify item in subcollection
+        final itemDoc = await fakeFirestore
+            .collection('shared_shopping_lists')
+            .doc(testListId)
+            .collection('items')
+            .doc(item.id)
+            .get();
+        expect(itemDoc.exists, isTrue);
+        expect(itemDoc.data()?['name'], equals('Mjölk'));
+
+        // Assert - Verify itemCount incremented
+        final listDoc = await fakeFirestore
+            .collection('shared_shopping_lists')
+            .doc(testListId)
+            .get();
+        expect(listDoc.data()?['itemCount'], equals(1));
+      });
+
+      test('addItemsBatch should add multiple items atomically', () async {
+        // Arrange
+        final items = [
+          createTestItem('Mjölk'),
+          createTestItem('Bröd'),
+          createTestItem('Ost'),
+        ];
+
+        // Act
+        await repository.addItemsBatch(testListId, items);
+
+        // Assert - Verify all items in subcollection
+        final itemsSnapshot = await fakeFirestore
+            .collection('shared_shopping_lists')
+            .doc(testListId)
+            .collection('items')
+            .get();
+        expect(itemsSnapshot.docs.length, equals(3));
+
+        // Assert - Verify itemCount updated
+        final listDoc = await fakeFirestore
+            .collection('shared_shopping_lists')
+            .doc(testListId)
+            .get();
+        expect(listDoc.data()?['itemCount'], equals(3));
+      });
+
+      test('getItems should load all items from subcollection', () async {
+        // Arrange - Seed items
+        final testItems = createTestItems();
+        await seedSharedShoppingList(
+          createSharedShoppingList(itemCount: testItems.length),
+          items: testItems,
+        );
+
+        // Act
+        final items = await repository.getItems(testListId);
+
+        // Assert
+        expect(items.length, equals(testItems.length));
+        expect(items.map((i) => i.name), contains('Mjölk'));
+        expect(items.map((i) => i.name), contains('Bröd'));
+      });
+
+      test('getItem should get specific item by ID', () async {
+        // Arrange
+        final testItem = createTestItem('Mjölk');
+        await seedSharedShoppingList(
+          createSharedShoppingList(itemCount: 1),
+          items: [testItem],
+        );
+
+        // Act
+        final item = await repository.getItem(testListId, testItem.id);
+
+        // Assert
+        expect(item, isNotNull);
+        expect(item!.name, equals('Mjölk'));
+      });
+
+      test('getItem should return null if item not found', () async {
+        // Act
+        final item = await repository.getItem(testListId, 'non-existent-id');
+
+        // Assert
+        expect(item, isNull);
+      });
+
+      test('updateItem should update item in subcollection', () async {
+        // Arrange
+        final testItem = createTestItem('Mjölk');
+        await seedSharedShoppingList(
+          createSharedShoppingList(itemCount: 1),
+          items: [testItem],
+        );
+
+        final updatedItem = testItem.copyWith(name: 'Yoghurt', amount: 2.0);
+
+        // Act
+        await repository.updateItem(testListId, updatedItem);
+
+        // Assert
+        final item = await repository.getItem(testListId, testItem.id);
+        expect(item!.name, equals('Yoghurt'));
+        expect(item.amount, equals(2.0));
+      });
+
+      test('removeItem should delete item and decrement count', () async {
+        // Arrange
+        final testItem = createTestItem('Mjölk');
+        await seedSharedShoppingList(
+          createSharedShoppingList(itemCount: 1),
+          items: [testItem],
+        );
+
+        // Act
+        await repository.removeItem(testListId, testItem.id);
+
+        // Assert - Verify item deleted
+        final item = await repository.getItem(testListId, testItem.id);
+        expect(item, isNull);
+
+        // Assert - Verify itemCount decremented
+        final listDoc = await fakeFirestore
+            .collection('shared_shopping_lists')
+            .doc(testListId)
+            .get();
+        expect(listDoc.data()?['itemCount'], equals(0));
+      });
+
+      test('toggleItemBought should update bought status with metadata', () async {
+        // Arrange
+        final testItem = createTestItem('Mjölk');
+        await seedSharedShoppingList(
+          createSharedShoppingList(itemCount: 1),
+          items: [testItem],
+        );
+
+        // Act - Mark as bought
+        await repository.toggleItemBought(testListId, testItem.id, true);
+
+        // Assert
+        final itemData = (await fakeFirestore
+            .collection('shared_shopping_lists')
+            .doc(testListId)
+            .collection('items')
+            .doc(testItem.id)
+            .get()).data();
+
+        expect(itemData?['bought'], isTrue);
+        expect(itemData?['purchasedByUserId'], equals(testUserId));
+        expect(itemData?['purchasedAt'], isNotNull);
+
+        // Act - Unmark
+        await repository.toggleItemBought(testListId, testItem.id, false);
+
+        // Assert - Metadata cleared
+        final updatedData = (await fakeFirestore
+            .collection('shared_shopping_lists')
+            .doc(testListId)
+            .collection('items')
+            .doc(testItem.id)
+            .get()).data();
+
+        expect(updatedData?['bought'], isFalse);
+        expect(updatedData?['purchasedByUserId'], isNull);
+      });
+
+      test('clearCompletedItems should remove bought items and recalculate count', () async {
+        // Arrange
+        final items = [
+          createTestItem('Mjölk').copyWith(bought: true),
+          createTestItem('Bröd').copyWith(bought: false),
+          createTestItem('Ost').copyWith(bought: true),
+        ];
+        await seedSharedShoppingList(
+          createSharedShoppingList(itemCount: items.length),
+          items: items,
+        );
+
+        // Act
+        final deletedCount = await repository.clearCompletedItems(testListId);
+
+        // Assert
+        expect(deletedCount, equals(2)); // 2 bought items
+
+        final remainingItems = await repository.getItems(testListId);
+        expect(remainingItems.length, equals(1));
+        expect(remainingItems.first.name, equals('Bröd'));
+
+        // Assert - itemCount recalculated
+        final listDoc = await fakeFirestore
+            .collection('shared_shopping_lists')
+            .doc(testListId)
+            .get();
+        expect(listDoc.data()?['itemCount'], equals(1));
+      });
+
+      test('clearCompletedItems should return 0 if no completed items', () async {
+        // Arrange - All items unbought
+        final items = [
+          createTestItem('Mjölk').copyWith(bought: false),
+          createTestItem('Bröd').copyWith(bought: false),
+        ];
+        await seedSharedShoppingList(
+          createSharedShoppingList(itemCount: items.length),
+          items: items,
+        );
+
+        // Act
+        final deletedCount = await repository.clearCompletedItems(testListId);
+
+        // Assert
+        expect(deletedCount, equals(0));
+      });
+
+      test('uncheckAllItems should set all items to bought=false', () async {
+        // Arrange
+        final items = [
+          createTestItem('Mjölk').copyWith(bought: true),
+          createTestItem('Bröd').copyWith(bought: true),
+          createTestItem('Ost').copyWith(bought: false),
+        ];
+        await seedSharedShoppingList(
+          createSharedShoppingList(itemCount: items.length),
+          items: items,
+        );
+
+        // Act
+        final uncheckedCount = await repository.uncheckAllItems(testListId);
+
+        // Assert
+        expect(uncheckedCount, equals(2)); // 2 bought items
+
+        final allItems = await repository.getItems(testListId);
+        for (final item in allItems) {
+          expect(item.bought, isFalse);
+        }
+      });
+
+      test('streamItems should emit real-time updates', () async {
+        // Arrange
+        final testItems = createTestItems();
+        await seedSharedShoppingList(
+          createSharedShoppingList(itemCount: testItems.length),
+          items: testItems,
+        );
+
+        // Act
+        final stream = repository.streamItems(testListId);
+
+        // Assert - First emission
+        await expectLater(
+          stream,
+          emits(predicate<List<UnifiedShoppingItem>>(
+            (items) => items.length == testItems.length,
+          )),
+        );
+      });
+
+      test('validateListAccess should throw for non-member', () async {
+        // Arrange - other user is not a member
+        final otherUserId = 'other-user';
+        mockAuthRepo.setAuthState(
+          user: null,
+          userId: otherUserId,
+          isAuthenticated: true,
+        );
+
+        // Act & Assert
+        expect(
+          () => repository.getItems(testListId),
+          throwsA(isA<PermissionDeniedException>()),
         );
       });
     });
