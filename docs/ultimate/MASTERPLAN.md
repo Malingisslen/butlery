@@ -150,11 +150,14 @@
       → Impact: Firestore 100-element limit causes failures at scale, viral content breaks
       → Dependencies: Requires data migration
 
-- [ ] **#015** Shopping list items array `SCALABILITY:DataStructures:2` **24 hrs**
-      → Files: shared_shopping_lists.items
-      → Fix: Migrate to subcollection like personal lists
-      → Impact: Large lists (200+ items) exceed Firestore limits
-      → Dependencies: Requires data migration
+- [x] **#015** Shopping list items array `SCALABILITY:DataStructures:2` **24 hrs** ✅ COMPLETE
+      → Files: lib/models/shared_shopping_list.dart, lib/repositories/firebase/firebase_shared_shopping_repository.dart, lib/services/unified/modules/social_shopping/social_shopping_coordinator.dart, firestore.rules, test/unit/repositories/firebase_shared_shopping_repository_test.dart
+      → Fix: ✅ Migrated listItems array to items subcollection (shared_shopping_lists/{id}/items/{itemId}) + itemCount field
+      → Impact: Eliminated 100-element limit - lists can now have 200+ items without Firestore failures
+      → **Implementation**: Complete 6-phase migration following Issue #014 pattern - Model update (listItems → itemCount), Repository CRUD (11 new methods: addItem, addItemsBatch, getItems, getItem, updateItem, removeItem, toggleItemBought, clearCompletedItems, uncheckAllItems, streamItems, validateListAccess), Security rules (items subcollection with member access), Service layer updates, Migration script (tools/migrate_shopping_list_items_to_subcollection.dart with dry-run mode), Test coverage (13 new tests + updated helpers)
+      → **Migration Status**: Code complete, migration script ready for execution on production data
+      → **Documentation**: See docs/issue_015_architecture.md for full technical specification
+      → Dependencies: Requires data migration (script ready)
 
 - [ ] **#016** BaseService adoption gaps (13 services) `CODE_QUALITY:Architecture:1.3` **40 hrs**
       → Files: auth_service, user_service, 4 unified services, 7 specialized services

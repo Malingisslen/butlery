@@ -572,24 +572,9 @@ class MockFactory {
     );
     return mock;
   }
-  
-  /// Create mock activity service
-  static production.MockActivityService createActivityService({
-    bool isLoading = false,
-    String? error,
-    List? activities,
-    bool hasMore = true,
-  }) {
-    final mock = production.MockActivityService();
-    mock.setActivityState(
-      isLoading: isLoading,
-      error: error,
-      activities: activities ?? [],
-      hasMore: hasMore,
-    );
-    return mock;
-  }
-  
+
+  // createActivityService removed - ActivityService was dead code
+
   /// Create mock recipe form viewmodel
   static widget.MockRecipeFormViewModel createRecipeFormViewModel() {
     return widget.MockRecipeFormViewModel();
