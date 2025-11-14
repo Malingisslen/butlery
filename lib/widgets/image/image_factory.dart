@@ -372,23 +372,5 @@ class ImageFactory {
     );
   }
 
-  /// Create image picker bottom sheet
-  static Future<void> showImagePicker({
-    required BuildContext context,
-    bool showCamera = true,
-    bool showGallery = true,
-    String? title,
-    Function(dynamic)? onSourceSelected,
-  }) async {
-    final source = await ImagePickerBottomSheet.show(
-      context,
-      showCamera: showCamera,
-      showGallery: showGallery,
-      title: title,
-    );
-    
-    if (source != null) {
-      onSourceSelected?.call(source);
-    }
-  }
+  // showImagePicker removed - ImagePickerBottomSheet was dead code
 }

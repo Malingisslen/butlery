@@ -39,7 +39,7 @@ import 'package:mocktail/mocktail.dart';
 
 // Production code imports
 import 'package:butlery/views/lagg_till_recept_view.dart';
-import 'package:butlery/services/dialog_service.dart';
+// DialogService removed - dead code
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -64,20 +64,21 @@ void main() {
 
     // ==================== MOCK SETUP ====================
 
-    late MockDialogService mockDialogService;
+    // MockDialogService removed - DialogService was dead code
+    // late MockDialogService mockDialogService;
 
     setUp(() {
       // Initialize mocks with clean state
-      mockDialogService = MockDialogService();
+      // mockDialogService = MockDialogService();
 
       // Configure default mock behaviors
-      when(() => mockDialogService.showExitDialogAndExit(any()))
-          .thenAnswer((_) async {});
+      // when(() => mockDialogService.showExitDialogAndExit(any()))
+      //     .thenAnswer((_) async {});
     });
 
     tearDown(() {
       // Clean up resources
-      reset(mockDialogService);
+      // reset(mockDialogService);
     });
 
     // ==================== HELPER METHODS ====================
@@ -523,6 +524,6 @@ void main() {
 // ==================== MOCK CLASSES ====================
 
 /// Mock classes extending existing test infrastructure
-class MockDialogService extends Mock implements DialogService {}
+// MockDialogService removed - DialogService was dead code
 
 class FakeBuildContext extends Fake implements BuildContext {}

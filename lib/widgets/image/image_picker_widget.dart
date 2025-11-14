@@ -13,8 +13,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 
-// Re-export source picker widgets for convenience
-export 'package:butlery/widgets/image/image_source_picker.dart';
+// Re-export removed - image_source_picker.dart was dead code
+// export 'package:butlery/widgets/image/image_source_picker.dart';
 
 /// Image picker widget for selecting images
 class ImagePickerWidget extends StatefulWidget {

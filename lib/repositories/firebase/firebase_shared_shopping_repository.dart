@@ -54,6 +54,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/firebase/base_shared_content_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
@@ -347,7 +348,7 @@ class FirebaseSharedShoppingRepository
     try {
       await validateListAccess(listId);
 
-      final itemRef = _firestore
+      final itemRef = firestore
           .collection('shared_shopping_lists')
           .doc(listId)
           .collection('items')
@@ -382,8 +383,8 @@ class FirebaseSharedShoppingRepository
     try {
       await validateListAccess(listId);
 
-      final batch = _firestore.batch();
-      final listRef = _firestore.collection('shared_shopping_lists').doc(listId);
+      final batch = firestore.batch();
+      final listRef = firestore.collection('shared_shopping_lists').doc(listId);
 
       // Add all items to subcollection
       for (final item in items) {
@@ -419,7 +420,7 @@ class FirebaseSharedShoppingRepository
     try {
       await validateListAccess(listId);
 
-      final snapshot = await _firestore
+      final snapshot = await firestore
           .collection('shared_shopping_lists')
           .doc(listId)
           .collection('items')
@@ -452,7 +453,7 @@ class FirebaseSharedShoppingRepository
     try {
       await validateListAccess(listId);
 
-      final doc = await _firestore
+      final doc = await firestore
           .collection('shared_shopping_lists')
           .doc(listId)
           .collection('items')
@@ -481,7 +482,7 @@ class FirebaseSharedShoppingRepository
     try {
       await validateListAccess(listId);
 
-      await _firestore
+      await firestore
           .collection('shared_shopping_lists')
           .doc(listId)
           .collection('items')
@@ -508,7 +509,7 @@ class FirebaseSharedShoppingRepository
     try {
       await validateListAccess(listId);
 
-      await _firestore
+      await firestore
           .collection('shared_shopping_lists')
           .doc(listId)
           .collection('items')
@@ -543,11 +544,11 @@ class FirebaseSharedShoppingRepository
 
       final updateData = {
         'bought': bought,
-        'purchasedByUserId': bought ? _authRepository.currentUserId : null,
+        'purchasedByUserId': bought ? authRepository.currentUserId : null,
         'purchasedAt': bought ? FieldValue.serverTimestamp() : null,
       };
 
-      await _firestore
+      await firestore
           .collection('shared_shopping_lists')
           .doc(listId)
           .collection('items')
@@ -579,7 +580,7 @@ class FirebaseSharedShoppingRepository
       await validateListAccess(listId);
 
       // Query all completed items
-      final snapshot = await _firestore
+      final snapshot = await firestore
           .collection('shared_shopping_lists')
           .doc(listId)
           .collection('items')
@@ -589,7 +590,7 @@ class FirebaseSharedShoppingRepository
       if (snapshot.docs.isEmpty) return 0;
 
       // Batch delete all completed items
-      final batch = _firestore.batch();
+      final batch = firestore.batch();
       for (final doc in snapshot.docs) {
         batch.delete(doc.reference);
       }
@@ -626,7 +627,7 @@ class FirebaseSharedShoppingRepository
       await validateListAccess(listId);
 
       // Query all bought items
-      final snapshot = await _firestore
+      final snapshot = await firestore
           .collection('shared_shopping_lists')
           .doc(listId)
           .collection('items')
@@ -636,7 +637,7 @@ class FirebaseSharedShoppingRepository
       if (snapshot.docs.isEmpty) return 0;
 
       // Batch update all items to bought=false
-      final batch = _firestore.batch();
+      final batch = firestore.batch();
       for (final doc in snapshot.docs) {
         batch.update(doc.reference, {
           'bought': false,
@@ -670,7 +671,7 @@ class FirebaseSharedShoppingRepository
   Stream<List<UnifiedShoppingItem>> streamItems(String listId) {
     try {
       // Note: Access validation happens on first stream event
-      return _firestore
+      return firestore
           .collection('shared_shopping_lists')
           .doc(listId)
           .collection('items')
@@ -710,7 +711,7 @@ class FirebaseSharedShoppingRepository
     bool recalculate = false,
   }) async {
     try {
-      final listRef = _firestore.collection('shared_shopping_lists').doc(listId);
+      final listRef = firestore.collection('shared_shopping_lists').doc(listId);
 
       if (recalculate) {
         // Recalculate from subcollection (for bulk operations)
@@ -741,14 +742,14 @@ class FirebaseSharedShoppingRepository
   /// - [RepositoryException] if validation fails
   Future<void> validateListAccess(String listId) async {
     try {
-      final userId = _authRepository.currentUserId;
+      final userId = authRepository.currentUserId;
       if (userId == null) {
         throw PermissionDeniedException(
             'User must be authenticated to access shopping list');
       }
 
       // Check if user is owner
-      final listDoc = await _firestore
+      final listDoc = await firestore
           .collection('shared_shopping_lists')
           .doc(listId)
           .get();
@@ -765,7 +766,7 @@ class FirebaseSharedShoppingRepository
       }
 
       // Check if user is a member
-      final memberDoc = await _firestore
+      final memberDoc = await firestore
           .collection('shared_shopping_lists')
           .doc(listId)
           .collection('members')

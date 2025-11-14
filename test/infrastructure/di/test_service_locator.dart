@@ -47,7 +47,7 @@ import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_vie
 import 'package:butlery/viewmodels/group_content_viewmodel.dart';
 
 // Service imports for Phase 4
-import 'package:butlery/services/social/activity_service.dart';
+// (ActivityService removed - dead code)
 
 // View testing specific imports
 // TODO: Fix import path - temporarily disabled
@@ -525,10 +525,7 @@ class TestServiceLocator {
       () => MockFactory.createGroupContentViewModel(),
     );
 
-    // Activity Service
-    getIt.registerFactory<ActivityService>(
-      () => MockFactory.createActivityService(),
-    );
+    // Activity Service removed - dead code
   }
 
   /// Register utility services
