@@ -26,7 +26,7 @@
 /// comprehensive access to the consolidated design system that replaces hundreds
 /// of duplicate styling implementations throughout the application codebase.
 
-export 'styled_container.dart';
+// styled_container.dart removed - dead code
 export 'styled_button.dart';
 export 'styled_card.dart';
 export 'styled_input.dart';

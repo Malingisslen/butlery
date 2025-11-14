@@ -27,13 +27,13 @@ import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/notifications/notification_repository.dart'
     as legacy;
-import 'package:butlery/repositories/interfaces/activity_repository.dart';
+// ActivityRepository removed - dead code
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/social_recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/social_sharing_repository.dart';
 import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
 import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
-import 'package:butlery/repositories/interfaces/reactions_repository.dart';
+// ReactionsRepository removed - dead code
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
@@ -81,7 +81,7 @@ import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
 import 'package:butlery/viewmodels/realtime/optimistic_update_manager.dart';
-import 'package:butlery/services/social/activity_service.dart';
+// ActivityService removed - dead code
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
@@ -741,10 +741,7 @@ class MockDeepLinkRepository extends Mock implements DeepLinkRepository {
   // All methods left without implementation to allow stubbing with when()
 }
 
-/// Mock implementation of ActivityRepository
-class MockActivityRepository extends Mock implements ActivityRepository {
-  // All methods left without implementation to allow stubbing with when()
-}
+// MockActivityRepository removed - dead code
 
 /// Mock implementation of MessagingRepository
 class MockMessagingRepository extends Mock implements MessagingRepository {
@@ -845,10 +842,7 @@ class MockMessagingRepository extends Mock implements MessagingRepository {
   // All other methods left without implementation to allow stubbing with when()
 }
 
-/// Mock implementation of ReactionsRepository
-class MockReactionsRepository extends Mock implements ReactionsRepository {
-  // All methods left without implementation to allow stubbing with when()
-}
+// MockReactionsRepository removed - dead code
 
 /// Mock implementation of FriendsRepository
 class MockFriendsRepository extends Mock implements FriendsRepository {
@@ -4647,35 +4641,7 @@ class MockSharedContentCoordinatorViewModel extends Mock
   // All methods left without implementation to allow stubbing with when()
 }
 
-/// Mock implementation of ActivityService
-class MockActivityService extends Mock implements ActivityService {
-  // Configuration state
-  bool _isLoading = false;
-  String? _error;
-  List<dynamic> _activities = [];
-  bool _hasMore = true;
-
-  /// Configure mock state for tests
-  void setActivityState({
-    bool isLoading = false,
-    String? error,
-    List<dynamic>? activities,
-    bool hasMore = true,
-  }) {
-    _isLoading = isLoading;
-    _error = error;
-    _activities = activities ?? [];
-    _hasMore = hasMore;
-  }
-
-  // Getters for configured state (tests can access)
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-  List<dynamic> get activities => _activities;
-  bool get hasMore => _hasMore;
-
-  // All methods left without implementation to allow stubbing with when()
-}
+// MockActivityService removed - dead code
 
 /// Mock implementation of ParticipantTracker
 class MockParticipantTracker extends Mock implements ParticipantTracker {
