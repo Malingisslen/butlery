@@ -52,7 +52,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 /// final ratingsRepo = FirebaseRatingsRepository(
 ///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
-/// 
+///
 /// // Rate a recipe
 /// await ratingsRepo.rateRecipe(
 ///   recipeId: recipeId,
@@ -60,13 +60,13 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 ///   rating: 4.5,
 ///   review: 'Delicious and easy to make!',
 /// );
-/// 
+///
 /// // Get real-time statistics
 /// ratingsRepo.getRatingStatisticsStream(recipeId).listen((stats) {
 ///   updateRatingDisplay(stats.averageRating);
 ///   updateDistributionChart(stats.ratingDistribution);
 /// });
-/// 
+///
 /// // Bulk statistics for recipe list
 /// final bulkStats = await ratingsRepo.getBulkRatingStatistics(recipeIds);
 /// for (final entry in bulkStats.entries) {
@@ -75,7 +75,6 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 /// ```
 class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
     implements RatingsRepository {
-  
   FirebaseRatingsRepository({
     super.firestore,
     required super.authRepository,
@@ -98,25 +97,29 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
   // ===== PERMISSION VALIDATION IMPLEMENTATION =====
 
   @override
-  Future<bool> validateCreatePermission(String userId, RecipeRating entity) async {
+  Future<bool> validateCreatePermission(
+      String userId, RecipeRating entity) async {
     // Users can only create ratings for themselves
     return entity.userId == userId;
   }
 
   @override
-  Future<bool> validateReadPermission(String userId, String resourceId, RecipeRating? entity) async {
+  Future<bool> validateReadPermission(
+      String userId, String resourceId, RecipeRating? entity) async {
     // All authenticated users can read ratings (public social feature)
     return true;
   }
 
   @override
-  Future<bool> validateUpdatePermission(String userId, String resourceId, RecipeRating entity) async {
+  Future<bool> validateUpdatePermission(
+      String userId, String resourceId, RecipeRating entity) async {
     // Users can only update their own ratings
     return entity.userId == userId;
   }
 
   @override
-  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+  Future<bool> validateDeletePermission(
+      String userId, String resourceId) async {
     // Users can only delete their own ratings
     try {
       final rating = await read(resourceId);
@@ -143,7 +146,7 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
       targetUserId: userId,
       operation: 'rate recipe',
     );
-    
+
     // Validate rating range
     if (rating < 1 || rating > 5) {
       throw SecurityViolationException(
@@ -151,7 +154,7 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
         details: 'Rating was: $rating',
       );
     }
-    
+
     final ratingId = '${recipeId}_$userId';
     await collection.doc(ratingId).set({
       'recipeId': recipeId,
@@ -164,7 +167,7 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
 
     // Update recipe statistics
     await _updateRecipeRatingStatistics(recipeId);
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'recipe_rating',
@@ -188,7 +191,7 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
       targetUserId: userId,
       operation: 'update rating',
     );
-    
+
     // Validate rating range
     if (rating < 1 || rating > 5) {
       throw SecurityViolationException(
@@ -196,16 +199,16 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
         details: 'Rating was: $rating',
       );
     }
-    
+
     final ratingId = '${recipeId}_$userId';
-    
+
     // Verify rating exists
     final doc = await getDocumentWithPermissionCheck(
       docRef: collection.doc(ratingId),
       currentUserId: currentUser,
       resourceType: 'recipe_rating',
     );
-    
+
     if (!doc.exists) {
       throw ResourceNotFoundException(
         'Rating not found',
@@ -213,7 +216,7 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
         resourceId: ratingId,
       );
     }
-    
+
     await collection.doc(ratingId).update({
       'rating': rating,
       'review': review,
@@ -222,7 +225,7 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
 
     // Update recipe statistics
     await _updateRecipeRatingStatistics(recipeId);
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'recipe_rating',
@@ -241,16 +244,16 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
       targetUserId: userId,
       operation: 'remove rating',
     );
-    
+
     final ratingId = '${recipeId}_$userId';
-    
+
     // Verify rating exists
     final doc = await getDocumentWithPermissionCheck(
       docRef: collection.doc(ratingId),
       currentUserId: currentUser,
       resourceType: 'recipe_rating',
     );
-    
+
     if (!doc.exists) {
       throw ResourceNotFoundException(
         'Rating not found',
@@ -258,12 +261,12 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
         resourceId: ratingId,
       );
     }
-    
+
     await collection.doc(ratingId).delete();
 
     // Update recipe statistics
     await _updateRecipeRatingStatistics(recipeId);
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'recipe_rating',
@@ -277,50 +280,59 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
   Future<RecipeRating?> getUserRating(String recipeId, String userId) async {
     final ratingId = '${recipeId}_$userId';
     final doc = await collection.doc(ratingId).get();
-    
+
     if (!doc.exists) return null;
     return fromFirestore(doc);
   }
 
   @override
-  Future<List<RecipeRating>> getRecipeRatings(String recipeId) async {
-    final querySnapshot = await collection
+  Future<List<RecipeRating>> getRecipeRatings(
+    String recipeId, {
+    int limit = 100,
+    DocumentSnapshot? startAfter,
+  }) async {
+    // Enforce maximum limit to prevent abuse (Issue #007 fix)
+    final safeLimit = limit.clamp(1, 1000);
+
+    var query = collection
         .where('recipeId', isEqualTo: recipeId)
         .orderBy('createdAt', descending: true)
-        .get();
+        .limit(safeLimit);
 
-    return querySnapshot.docs
-        .map((doc) => fromFirestore(doc))
-        .toList();
+    // Apply cursor-based pagination if provided
+    if (startAfter != null) {
+      query = query.startAfterDocument(startAfter);
+    }
+
+    final querySnapshot = await query.get();
+
+    return querySnapshot.docs.map((doc) => fromFirestore(doc)).toList();
   }
 
   @override
   Future<RatingStatistics> getRatingStatistics(String recipeId) async {
-    final ratingsQuery = await collection
-        .where('recipeId', isEqualTo: recipeId)
-        .get();
+    final ratingsQuery =
+        await collection.where('recipeId', isEqualTo: recipeId).get();
 
-    final ratings = ratingsQuery.docs
-        .map((doc) => fromFirestore(doc))
-        .toList();
+    final ratings = ratingsQuery.docs.map((doc) => fromFirestore(doc)).toList();
 
     return _calculateRatingStatistics(recipeId, ratings);
   }
 
   @override
-  Future<Map<String, RatingStatistics>> getBulkRatingStatistics(List<String> recipeIds) async {
+  Future<Map<String, RatingStatistics>> getBulkRatingStatistics(
+      List<String> recipeIds) async {
     final Map<String, RatingStatistics> results = {};
 
     // Process in batches of 10 (Firestore limit for 'in' queries)
     for (int i = 0; i < recipeIds.length; i += 10) {
       final batch = recipeIds.skip(i).take(10).toList();
-      
-      final ratingsQuery = await collection
-          .where('recipeId', whereIn: batch)
-          .get();
+
+      final ratingsQuery =
+          await collection.where('recipeId', whereIn: batch).get();
 
       final ratingsByRecipe = <String, List<RecipeRating>>{};
-      
+
       for (final doc in ratingsQuery.docs) {
         final rating = fromFirestore(doc);
         ratingsByRecipe.putIfAbsent(rating.recipeId, () => []).add(rating);
@@ -341,11 +353,9 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
         .where('recipeId', isEqualTo: recipeId)
         .snapshots()
         .map((snapshot) {
-          final ratings = snapshot.docs
-              .map((doc) => fromFirestore(doc))
-              .toList();
-          return _calculateRatingStatistics(recipeId, ratings);
-        });
+      final ratings = snapshot.docs.map((doc) => fromFirestore(doc)).toList();
+      return _calculateRatingStatistics(recipeId, ratings);
+    });
   }
 
   @override
@@ -355,14 +365,13 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
         .orderBy('createdAt', descending: true)
         .get();
 
-    return querySnapshot.docs
-        .map((doc) => fromFirestore(doc))
-        .toList();
+    return querySnapshot.docs.map((doc) => fromFirestore(doc)).toList();
   }
 
   // ===== PRIVATE HELPER METHODS =====
 
-  RatingStatistics _calculateRatingStatistics(String recipeId, List<RecipeRating> ratings) {
+  RatingStatistics _calculateRatingStatistics(
+      String recipeId, List<RecipeRating> ratings) {
     if (ratings.isEmpty) {
       return RatingStatistics(
         recipeId: recipeId,
@@ -372,7 +381,8 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
       );
     }
 
-    final totalRating = ratings.fold<double>(0, (total, rating) => total + rating.rating);
+    final totalRating =
+        ratings.fold<double>(0, (total, rating) => total + rating.rating);
     final averageRating = totalRating / ratings.length;
 
     final Map<int, int> distribution = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};

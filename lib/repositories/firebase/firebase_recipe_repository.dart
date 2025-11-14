@@ -51,21 +51,21 @@ import 'package:butlery/utils/text/ingredient_processor.dart';
 /// final recipeRepo = FirebaseRecipeRepository(
 ///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
-/// 
+///
 /// // Create with validation
 /// final newRecipe = Recipe(title: 'Pasta', createdBy: userId);
 /// await recipeRepo.create(newRecipe);
-/// 
-/// // Stream with performance limits  
+///
+/// // Stream with performance limits
 /// recipeRepo.watchRecipes(userId).listen((recipes) {
 ///   // Receives max 50 most recent recipes
 /// });
-/// 
+///
 /// // Search with scope limits
 /// final results = await recipeRepo.searchRecipes('chicken');
 /// // Searches within 200 most recent recipes
 /// ```
-class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe> 
+class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     with StreamManagementMixin, UserScopedFirebaseRepository<Recipe>
     implements RecipeRepository {
   // ignore: use_super_parameters
@@ -100,12 +100,14 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   Future<bool> validateCreatePermission(String userId, Recipe entity) async {
     // Users can only create recipes in their own collection
     // Validate ownerId matches the authenticated user
-    final ownerId = (entity.socialData?.ownerId ?? entity.createdBy).orDefault(userId);
+    final ownerId =
+        (entity.socialData?.ownerId ?? entity.createdBy).orDefault(userId);
     return ownerId == userId;
   }
 
   @override
-  Future<bool> validateReadPermission(String userId, String resourceId, Recipe? entity) async {
+  Future<bool> validateReadPermission(
+      String userId, String resourceId, Recipe? entity) async {
     if (entity == null) return false;
 
     // Owner can always read their own recipes
@@ -113,14 +115,16 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     if (ownerId == userId) return true;
 
     // Check if user is a collaborator/member with permissions (for collaborative recipes)
-    if (entity.isCollaborative && entity.socialData?.memberPermissions != null) {
+    if (entity.isCollaborative &&
+        entity.socialData?.memberPermissions != null) {
       if (entity.socialData!.memberPermissions!.containsKey(userId)) {
         return true;
       }
     }
 
     // For now, allow guest viewing on collaborative recipes if enabled
-    if (entity.isCollaborative && (entity.socialData?.allowGuestViewing).orFalse()) {
+    if (entity.isCollaborative &&
+        (entity.socialData?.allowGuestViewing).orFalse()) {
       return true;
     }
 
@@ -128,13 +132,15 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   }
 
   @override
-  Future<bool> validateUpdatePermission(String userId, String resourceId, Recipe entity) async {
+  Future<bool> validateUpdatePermission(
+      String userId, String resourceId, Recipe entity) async {
     // Owner can always update
     final ownerId = (entity.socialData?.ownerId ?? entity.createdBy).orEmpty();
     if (ownerId == userId) return true;
 
     // For collaborative recipes, check if user has write permission
-    if (entity.isCollaborative && entity.socialData?.memberPermissions != null) {
+    if (entity.isCollaborative &&
+        entity.socialData?.memberPermissions != null) {
       if (entity.socialData!.memberPermissions!.containsKey(userId)) {
         // For now, allow all members with permissions to edit collaborative recipes
         return true;
@@ -145,14 +151,16 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   }
 
   @override
-  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+  Future<bool> validateDeletePermission(
+      String userId, String resourceId) async {
     // Only the owner can delete recipes
     // Note: We need to fetch the recipe to check ownership
     try {
       final recipe = await read(resourceId);
       if (recipe == null) return false;
 
-      final ownerId = (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty();
+      final ownerId =
+          (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty();
       return ownerId == userId;
     } catch (e) {
       AppLogger.error('Failed to validate delete permission: $e');
@@ -164,121 +172,164 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
   @override
   Future<Recipe> create(Recipe entity) async {
-    // Validate user owns the recipe they're creating
-    final currentUser = requireCurrentUserId();
+    return await FirebasePerformanceService.traceOperation(
+      'recipe_create',
+      (trace) async {
+        // Validate user owns the recipe they're creating
+        final currentUser = requireCurrentUserId();
 
-    // For personal recipes, createdBy should match current user
-    final ownerId = (entity.socialData?.ownerId ?? entity.createdBy).orDefault(currentUser);
-    await validateSelfOperation(
-      currentUserId: currentUser,
-      targetUserId: ownerId,
-      operation: 'create recipe',
+        // For personal recipes, createdBy should match current user
+        final ownerId = (entity.socialData?.ownerId ?? entity.createdBy)
+            .orDefault(currentUser);
+        await validateSelfOperation(
+          currentUserId: currentUser,
+          targetUserId: ownerId,
+          operation: 'create recipe',
+        );
+
+        // Validate required fields - extract core data for validation
+        final firestoreData = entity.toFirestore();
+        final coreData =
+            (firestoreData['core'] as Map<String, dynamic>?).orEmpty();
+
+        // Check for required fields in core data
+        validateRequiredFields(
+          data: coreData,
+          requiredFields: ['title', 'createdBy', 'createdAt', 'updatedAt'],
+          resourceType: 'recipe',
+        );
+
+        // MODUL1 Phase 3: Auto-populate normalized ingredients for advanced features
+        Recipe recipeToSave = entity;
+        if (IngredientProcessor.needsNormalization(entity)) {
+          final normalizedIngredients =
+              IngredientProcessor.normalizeIngredientsForRecipe(
+            entity.core.ingredients,
+          );
+
+          recipeToSave = entity.copyWith(
+            ingredientsNormalized: normalizedIngredients,
+          );
+        }
+
+        final result = await super.create(recipeToSave);
+
+        // Add performance metrics
+        trace.setMetric('ingredient_count', entity.core.ingredients.length);
+        trace.putAttribute(
+            'has_image', entity.imageUrls.isNotEmpty ? 'true' : 'false');
+        trace.putAttribute(
+            'is_collaborative', entity.isCollaborative ? 'true' : 'false');
+
+        return result;
+      },
     );
-
-    // Validate required fields - extract core data for validation
-    final firestoreData = entity.toFirestore();
-    final coreData = (firestoreData['core'] as Map<String, dynamic>?).orEmpty();
-
-    // Check for required fields in core data
-    validateRequiredFields(
-      data: coreData,
-      requiredFields: ['title', 'createdBy', 'createdAt', 'updatedAt'],
-      resourceType: 'recipe',
-    );
-
-    // MODUL1 Phase 3: Auto-populate normalized ingredients for advanced features
-    Recipe recipeToSave = entity;
-    if (IngredientProcessor.needsNormalization(entity)) {
-      final normalizedIngredients =
-          IngredientProcessor.normalizeIngredientsForRecipe(
-        entity.core.ingredients,
-      );
-
-      recipeToSave = entity.copyWith(
-        ingredientsNormalized: normalizedIngredients,
-      );
-    }
-
-    return await super.create(recipeToSave);
   }
 
   @override
   Future<void> update(Recipe entity) async {
-    // Validate user owns the recipe they're updating
-    final currentUser = requireCurrentUserId();
+    return await FirebasePerformanceService.traceOperation(
+      'recipe_update',
+      (trace) async {
+        // Validate user owns the recipe they're updating
+        final currentUser = requireCurrentUserId();
 
-    // First check if recipe exists and user owns it
-    final existing = await read(entity.id);
-    if (existing == null) {
-      throw ResourceNotFoundException(
-        'Recipe not found',
-        resourceType: 'recipe',
-        resourceId: entity.id,
-      );
-    }
+        // First check if recipe exists and user owns it
+        final existing = await read(entity.id);
+        if (existing == null) {
+          throw ResourceNotFoundException(
+            'Recipe not found',
+            resourceType: 'recipe',
+            resourceId: entity.id,
+          );
+        }
 
-    await validateOwnership(
-      currentUserId: currentUser,
-      resourceOwnerId: (existing.socialData?.ownerId ?? existing.createdBy).orEmpty(),
-      resourceType: 'recipe',
-      resourceId: entity.id,
+        await validateOwnership(
+          currentUserId: currentUser,
+          resourceOwnerId:
+              (existing.socialData?.ownerId ?? existing.createdBy).orEmpty(),
+          resourceType: 'recipe',
+          resourceId: entity.id,
+        );
+
+        // MODUL1 Phase 3: Auto-populate normalized ingredients for advanced features
+        Recipe recipeToSave = entity;
+        if (IngredientProcessor.needsNormalization(entity)) {
+          final normalizedIngredients =
+              IngredientProcessor.normalizeIngredientsForRecipe(
+            entity.core.ingredients,
+          );
+
+          recipeToSave = entity.copyWith(
+            ingredientsNormalized: normalizedIngredients,
+          );
+        }
+
+        await super.update(recipeToSave);
+
+        // Add performance metrics
+        trace.setMetric('ingredient_count', entity.core.ingredients.length);
+        trace.putAttribute(
+            'has_image', entity.imageUrls.isNotEmpty ? 'true' : 'false');
+        trace.putAttribute(
+            'is_collaborative', entity.isCollaborative ? 'true' : 'false');
+        trace.putAttribute('ingredients_normalized',
+            IngredientProcessor.needsNormalization(entity) ? 'true' : 'false');
+      },
     );
-
-    // MODUL1 Phase 3: Auto-populate normalized ingredients for advanced features
-    Recipe recipeToSave = entity;
-    if (IngredientProcessor.needsNormalization(entity)) {
-      final normalizedIngredients =
-          IngredientProcessor.normalizeIngredientsForRecipe(
-        entity.core.ingredients,
-      );
-
-      recipeToSave = entity.copyWith(
-        ingredientsNormalized: normalizedIngredients,
-      );
-    }
-
-    return await super.update(recipeToSave);
   }
 
   @override
   Future<void> delete(String id) async {
-    // Validate user owns the recipe they're deleting
-    final currentUser = requireCurrentUserId();
-    
-    // First check if recipe exists and user owns it
-    final existing = await read(id);
-    if (existing == null) {
-      throw ResourceNotFoundException(
-        'Recipe not found',
-        resourceType: 'recipe',
-        resourceId: id,
-      );
-    }
-    
-    // ULTRATHINK FIX: Enhanced ownership validation with legacy recipe support
-    final isLegacyRecipe = _isLegacyRecipe(existing);
-    final canDelete = await _validateRecipeDeletionWithLegacySupport(
-      existing, 
-      currentUser, 
-      id,
-      isLegacyRecipe,
+    return await FirebasePerformanceService.traceOperation(
+      'recipe_delete',
+      (trace) async {
+        // Validate user owns the recipe they're deleting
+        final currentUser = requireCurrentUserId();
+
+        // First check if recipe exists and user owns it
+        final existing = await read(id);
+        if (existing == null) {
+          throw ResourceNotFoundException(
+            'Recipe not found',
+            resourceType: 'recipe',
+            resourceId: id,
+          );
+        }
+
+        // ULTRATHINK FIX: Enhanced ownership validation with legacy recipe support
+        final isLegacyRecipe = _isLegacyRecipe(existing);
+        final canDelete = await _validateRecipeDeletionWithLegacySupport(
+          existing,
+          currentUser,
+          id,
+          isLegacyRecipe,
+        );
+
+        if (!canDelete) {
+          throw PermissionDeniedException(
+            'User does not have permission to delete this recipe',
+            resource: 'recipe',
+            operation: 'delete',
+            userId: currentUser,
+          );
+        }
+
+        // If it's a legacy recipe, repair its data before/after deletion for audit purposes
+        if (isLegacyRecipe) {
+          await _logLegacyRecipeDeletion(existing, currentUser);
+        }
+
+        await super.delete(id);
+
+        // Add performance metrics
+        trace.putAttribute('is_legacy', isLegacyRecipe ? 'true' : 'false');
+        trace.putAttribute(
+            'is_collaborative', existing.isCollaborative ? 'true' : 'false');
+        trace.putAttribute(
+            'had_image', existing.imageUrls.isNotEmpty ? 'true' : 'false');
+      },
     );
-    
-    if (!canDelete) {
-      throw PermissionDeniedException(
-        'User does not have permission to delete this recipe',
-        resource: 'recipe',
-        operation: 'delete',
-        userId: currentUser,
-      );
-    }
-    
-    // If it's a legacy recipe, repair its data before/after deletion for audit purposes
-    if (isLegacyRecipe) {
-      await _logLegacyRecipeDeletion(existing, currentUser);
-    }
-    
-    return await super.delete(id);
   }
 
   @override
@@ -290,7 +341,8 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       // PERFORMANCE FIX: Added limit to prevent loading all recipes at once
       final snapshot = await ref
           .orderBy('core.updatedAt', descending: true)
-          .limit(100) // Limit to 100 most recent recipes to prevent app freezing
+          .limit(
+              100) // Limit to 100 most recent recipes to prevent app freezing
           .get();
       return snapshot.docs.map(fromFirestore).toList();
     } catch (e) {
@@ -398,10 +450,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   @override
   Future<Recipe> fetchArchiveRecipe(String id) async {
     // Archive recipes are stored in a global collection, not user-scoped
-    final doc = await firestore
-        .collection('butlery_archive')
-        .doc(id)
-        .get();
+    final doc = await firestore.collection('butlery_archive').doc(id).get();
     if (!doc.exists) {
       throw Exception('Archive recipe not found');
     }
@@ -457,19 +506,19 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   Future<List<Recipe>> findByIngredient(String ingredient) async {
     final userId = currentUserId;
     if (userId == null) return [];
-    
+
     // Note: Firestore doesn't support array-contains with case-insensitive search
     // This is a basic implementation - for production, consider using Algolia or similar
     final snap = await getCollectionForUser(userId)
         .orderBy('core.updatedAt', descending: true)
         .limit(200)
         .get();
-    
+
     final lowerIngredient = ingredient.toLowerCase();
     return snap.docs
         .map(fromFirestore)
-        .where((recipe) => recipe.ingredients.any(
-            (recipeIngredient) => recipeIngredient.toLowerCase().contains(lowerIngredient)))
+        .where((recipe) => recipe.ingredients.any((recipeIngredient) =>
+            recipeIngredient.toLowerCase().contains(lowerIngredient)))
         .toList();
   }
 
@@ -477,13 +526,13 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   Future<List<Recipe>> searchByTitle(String title) async {
     final userId = currentUserId;
     if (userId == null) return [];
-    
+
     final lowerTitle = title.toLowerCase();
     final snap = await getCollectionForUser(userId)
         .orderBy('core.updatedAt', descending: true)
         .limit(200)
         .get();
-    
+
     return snap.docs
         .map(fromFirestore)
         .where((recipe) => recipe.title.toLowerCase().contains(lowerTitle))
@@ -497,19 +546,21 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     try {
       final recipe = await read(recipeId);
       if (recipe == null) return false;
-      
+
       // User can read if:
       // 1. They own the recipe
-      final ownerId = (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty();
+      final ownerId =
+          (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty();
       if (ownerId == userId) return true;
-      
+
       // 2. Recipe is shared with them (check member permissions)
-      final memberPermissions = (recipe.socialData?.memberPermissions).orEmpty();
+      final memberPermissions =
+          (recipe.socialData?.memberPermissions).orEmpty();
       if (memberPermissions.containsKey(userId)) return true;
-      
+
       // 3. Recipe is public (future feature)
       // if (recipe.socialData?.isPublic ?? false) return true;
-      
+
       return false;
     } catch (e) {
       return false;
@@ -521,21 +572,23 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     try {
       final recipe = await read(recipeId);
       if (recipe == null) return false;
-      
+
       // User can write if:
       // 1. They own the recipe
-      final ownerId = (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty();
+      final ownerId =
+          (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty();
       if (ownerId == userId) return true;
-      
+
       // 2. They are a member with write permissions
-      final memberPermissions = (recipe.socialData?.memberPermissions).orEmpty();
+      final memberPermissions =
+          (recipe.socialData?.memberPermissions).orEmpty();
       final userPermission = memberPermissions[userId];
       if (userPermission != null) {
         // Check if user has write or admin permission
-        return userPermission == ResourcePermission.admin || 
-               userPermission == ResourcePermission.editor;
+        return userPermission == ResourcePermission.admin ||
+            userPermission == ResourcePermission.editor;
       }
-      
+
       return false;
     } catch (e) {
       return false;
@@ -547,9 +600,10 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     try {
       final recipe = await read(recipeId);
       if (recipe == null) return false;
-      
+
       // User can delete if they own the recipe
-      final ownerId = (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty();
+      final ownerId =
+          (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty();
       return ownerId == userId;
     } catch (e) {
       return false;
@@ -557,7 +611,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   }
 
   // ===== LEGACY RECIPE SUPPORT METHODS =====
-  
+
   /// Check if a recipe is a legacy recipe with missing ownership data
   bool _isLegacyRecipe(Recipe recipe) {
     // Legacy indicators:
@@ -565,34 +619,37 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     // 2. Empty or null createdBy field
     // 3. Created before social data structure was implemented (before 2022-06-01)
     final hasNoSocialData = recipe.socialData == null;
-    final hasEmptyCreatedBy = recipe.createdBy == null || recipe.createdBy!.isEmpty;
+    final hasEmptyCreatedBy =
+        recipe.createdBy == null || recipe.createdBy!.isEmpty;
     final isOldRecipe = recipe.createdAt.isBefore(DateTime(2022, 6, 1));
-    
+
     final isLegacy = hasNoSocialData || hasEmptyCreatedBy || isOldRecipe;
-    
+
     if (isLegacy) {
-      AppLogger.info('🕰️ Legacy recipe detected: ${recipe.id} - NoSocialData: $hasNoSocialData, EmptyCreatedBy: $hasEmptyCreatedBy, OldRecipe: $isOldRecipe');
+      AppLogger.info(
+          '🕰️ Legacy recipe detected: ${recipe.id} - NoSocialData: $hasNoSocialData, EmptyCreatedBy: $hasEmptyCreatedBy, OldRecipe: $isOldRecipe');
     }
-    
+
     return isLegacy;
   }
-  
+
   /// Enhanced deletion validation with legacy recipe support
   Future<bool> _validateRecipeDeletionWithLegacySupport(
-    Recipe recipe, 
-    String currentUserId, 
+    Recipe recipe,
+    String currentUserId,
     String recipeId,
     bool isLegacyRecipe,
   ) async {
     try {
       if (!isLegacyRecipe) {
         // Standard validation for modern recipes
-        final ownerId = (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty();
+        final ownerId =
+            (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty();
         if (ownerId.isEmpty) {
           AppLogger.warning('⚠️ Modern recipe missing owner data: $recipeId');
           return false;
         }
-        
+
         await validateOwnership(
           currentUserId: currentUserId,
           resourceOwnerId: ownerId,
@@ -602,84 +659,89 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         return true;
       } else {
         // Legacy recipe validation with fallback strategies
-        return await _validateLegacyRecipeDeletion(recipe, currentUserId, recipeId);
+        return await _validateLegacyRecipeDeletion(
+            recipe, currentUserId, recipeId);
       }
     } catch (e) {
       AppLogger.error('❌ Recipe deletion validation failed: $e');
       return false;
     }
   }
-  
+
   /// Validate deletion for legacy recipes using multiple strategies
   Future<bool> _validateLegacyRecipeDeletion(
-    Recipe recipe, 
-    String currentUserId, 
+    Recipe recipe,
+    String currentUserId,
     String recipeId,
   ) async {
     AppLogger.info('🔍 Validating legacy recipe deletion: $recipeId');
-    
+
     // Strategy 1: Check document path for ownership
     // If recipe is in user's personal collection, they own it
     try {
-      final userRecipeDoc = await getCollectionForUser(currentUserId)
-          .doc(recipeId)
-          .get();
-          
+      final userRecipeDoc =
+          await getCollectionForUser(currentUserId).doc(recipeId).get();
+
       if (userRecipeDoc.exists) {
-        AppLogger.success('✅ Legacy recipe found in user collection - ownership confirmed');
+        AppLogger.success(
+            '✅ Legacy recipe found in user collection - ownership confirmed');
         return true;
       }
     } catch (e) {
       AppLogger.error('❌ Error checking user collection: $e');
     }
-    
+
     // Strategy 2: For personal recipes, if user can access it, they likely own it
     if (recipe.isPersonal) {
-      AppLogger.warning('🔧 Legacy personal recipe - inferring ownership from access');
+      AppLogger.warning(
+          '🔧 Legacy personal recipe - inferring ownership from access');
       return true; // If they can load a personal recipe, they likely own it
     }
-    
+
     // Strategy 3: Check for any ownership hints in the recipe data
     final hasAnyOwnershipHint = _hasOwnershipHints(recipe, currentUserId);
     if (hasAnyOwnershipHint) {
       AppLogger.warning('🔧 Legacy recipe ownership inferred from hints');
       return true;
     }
-    
+
     // Strategy 4: Check creation metadata (if available)
     if (await _checkCreationMetadata(recipe, currentUserId)) {
       AppLogger.warning('🔧 Legacy recipe ownership confirmed via metadata');
       return true;
     }
-    
-    AppLogger.error('❌ Could not validate ownership for legacy recipe: $recipeId');
+
+    AppLogger.error(
+        '❌ Could not validate ownership for legacy recipe: $recipeId');
     return false;
   }
-  
+
   /// Check for ownership hints in legacy recipe data
   bool _hasOwnershipHints(Recipe recipe, String currentUserId) {
     // Look for any field that might indicate ownership
-    
+
     // Check if imageUrls contain user-specific paths
     if (recipe.imageUrls.isNotEmpty) {
-      final hasUserPath = recipe.imageUrls.any((url) => url.contains(currentUserId));
+      final hasUserPath =
+          recipe.imageUrls.any((url) => url.contains(currentUserId));
       if (hasUserPath) {
         AppLogger.debug('🔍 Found user ID in image paths');
         return true;
       }
     }
-    
+
     // Check if recipe metadata contains user references
     if (recipe.realtimeData?.lastEditedByUserId == currentUserId) {
       AppLogger.debug('🔍 Found user as last editor');
       return true;
     }
-    
+
     return false;
   }
-  
+
   /// Check Firebase document creation metadata for ownership clues
-  Future<bool> _checkCreationMetadata(Recipe recipe, String currentUserId) async {
+  Future<bool> _checkCreationMetadata(
+      Recipe recipe, String currentUserId) async {
     try {
       // This is a future enhancement - checking Firebase document metadata
       // for now, return false as we don't have access to creation metadata
@@ -688,9 +750,10 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       return false;
     }
   }
-  
+
   /// Log legacy recipe deletion for audit purposes
-  Future<void> _logLegacyRecipeDeletion(Recipe recipe, String currentUserId) async {
+  Future<void> _logLegacyRecipeDeletion(
+      Recipe recipe, String currentUserId) async {
     try {
       final auditData = {
         'action': 'legacy_recipe_deletion',
@@ -700,20 +763,22 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         'createdAt': recipe.createdAt.toIso8601String(),
         'legacyReasons': {
           'hasNoSocialData': recipe.socialData == null,
-          'hasEmptyCreatedBy': recipe.createdBy == null || recipe.createdBy!.isEmpty,
+          'hasEmptyCreatedBy':
+              recipe.createdBy == null || recipe.createdBy!.isEmpty,
           'isOldRecipe': recipe.createdAt.isBefore(DateTime(2022, 6, 1)),
         },
         'deletedAt': DateTime.now().toIso8601String(),
       };
-      
+
       // Log to Firebase audit collection for tracking
       await firestore
           .collection('audit_logs')
           .doc('legacy_recipe_deletions')
           .collection('deletions')
           .add(auditData);
-          
-      AppLogger.info('📋 Legacy recipe deletion logged for audit: ${recipe.id}');
+
+      AppLogger.info(
+          '📋 Legacy recipe deletion logged for audit: ${recipe.id}');
     } catch (e) {
       AppLogger.error('❌ Failed to log legacy recipe deletion: $e');
       // Don't fail deletion due to logging issues
@@ -725,7 +790,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   /// Add a collaborator to a recipe
   Future<void> addCollaborator(String recipeId, String userId) async {
     final currentUser = requireCurrentUserId();
-    
+
     // First verify current user owns the recipe
     final recipe = await read(recipeId);
     if (recipe == null) {
@@ -735,27 +800,32 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         resourceId: recipeId,
       );
     }
-    
+
     await validateOwnership(
       currentUserId: currentUser,
-      resourceOwnerId: (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty(),
+      resourceOwnerId:
+          (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty(),
       resourceType: 'recipe',
       resourceId: recipeId,
     );
-    
+
     // Add member with editor permission
     final currentMembers = (recipe.socialData?.memberPermissions).orEmpty();
     if (!currentMembers.containsKey(userId)) {
-      final updatedMembers = {...currentMembers, userId: ResourcePermission.editor};
-      
+      final updatedMembers = {
+        ...currentMembers,
+        userId: ResourcePermission.editor
+      };
+
       final updatedRecipe = recipe.copyWith(
         socialData: recipe.socialData?.copyWith(
-          memberPermissions: updatedMembers,
-        ) ?? RecipeSocialData(
-          memberPermissions: updatedMembers,
-        ),
+              memberPermissions: updatedMembers,
+            ) ??
+            RecipeSocialData(
+              memberPermissions: updatedMembers,
+            ),
       );
-      
+
       await update(updatedRecipe);
     }
   }
@@ -763,7 +833,7 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
   /// Remove a collaborator from a recipe
   Future<void> removeCollaborator(String recipeId, String userId) async {
     final currentUser = requireCurrentUserId();
-    
+
     // First verify current user owns the recipe
     final recipe = await read(recipeId);
     if (recipe == null) {
@@ -773,26 +843,28 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         resourceId: recipeId,
       );
     }
-    
+
     await validateOwnership(
       currentUserId: currentUser,
-      resourceOwnerId: (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty(),
+      resourceOwnerId:
+          (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty(),
       resourceType: 'recipe',
       resourceId: recipeId,
     );
-    
+
     // Remove member from the recipe
     final currentMembers = (recipe.socialData?.memberPermissions).orEmpty();
     if (currentMembers.containsKey(userId)) {
-      final updatedMembers = Map<String, ResourcePermission>.from(currentMembers);
+      final updatedMembers =
+          Map<String, ResourcePermission>.from(currentMembers);
       updatedMembers.remove(userId);
-      
+
       final updatedRecipe = recipe.copyWith(
         socialData: recipe.socialData?.copyWith(
           memberPermissions: updatedMembers,
         ),
       );
-      
+
       await update(updatedRecipe);
     }
   }

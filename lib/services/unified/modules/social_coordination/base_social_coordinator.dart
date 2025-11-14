@@ -21,16 +21,17 @@
 /// class SocialRecipeCoordinator extends BaseSocialCoordinator<Recipe, SharedRecipe> {
 ///   @override
 ///   String get contentTypeName => 'recipe';
-///   
+///
 ///   @override
 ///   String getContentTitle(Recipe content) => content.title;
-///   
+///
 ///   @override
 ///   BaseSharedContentRepository<SharedRecipe> get sharedRepository => _sharedRecipeRepository;
 /// }
 /// ```
 
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -38,11 +39,11 @@ import 'package:butlery/repositories/firebase/base_shared_content_repository.dar
 import 'package:butlery/services/user_service.dart' as user_service;
 
 /// Abstract base coordinator for social content operations
-/// 
+///
 /// Provides common patterns for invitation creation, content sharing,
 /// import operations, and notification coordination across all content types.
-abstract class BaseSocialCoordinator<TContent, TSharedContent> extends BaseService with UserContextMixin {
-
+abstract class BaseSocialCoordinator<TContent, TSharedContent>
+    extends BaseService with UserContextMixin {
   // Core dependencies
   final String? Function() _getCurrentUserId;
   final String? Function() _getCurrentUserDisplayName;
@@ -54,11 +55,10 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent> extends BaseServi
     required String? Function() getCurrentUserDisplayName,
     required void Function(String) setError,
     required void Function() notifyListeners,
-  }) : _getCurrentUserId = getCurrentUserId,
-       _getCurrentUserDisplayName = getCurrentUserDisplayName,
-       _setError = setError,
-       _notifyListeners = notifyListeners {
-    
+  })  : _getCurrentUserId = getCurrentUserId,
+        _getCurrentUserDisplayName = getCurrentUserDisplayName,
+        _setError = setError,
+        _notifyListeners = notifyListeners {
     // Set the user ID provider for the mixin
     setUserIdProvider(getCurrentUserId);
   }
@@ -109,17 +109,20 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent> extends BaseServi
   }) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
-      AppLogger.error('Cannot create $contentTypeName invitation: No authenticated user');
+      AppLogger.error(
+          'Cannot create $contentTypeName invitation: No authenticated user');
       return null;
     }
 
     try {
-      AppLogger.info('📨 Creating $contentTypeName invitation for $contentId to ${inviteeUserIds.length} users');
+      AppLogger.info(
+          '📨 Creating $contentTypeName invitation for $contentId to ${inviteeUserIds.length} users');
 
       // Get the content to create snapshot
       final content = await getContentById(contentId);
       if (content == null) {
-        AppLogger.error('${_capitalize(contentTypeName)} not found: $contentId');
+        AppLogger.error(
+            '${_capitalize(contentTypeName)} not found: $contentId');
         return null;
       }
 
@@ -143,10 +146,13 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent> extends BaseServi
       );
 
       // Save invitation to Firebase
-      final invitationId = await sharedRepository.createSharedContent(sharedContent);
+      final invitationId =
+          await sharedRepository.createSharedContent(sharedContent);
 
-      AppLogger.success('✅ ${_capitalize(contentTypeName)} invitation created successfully: $invitationId');
-      AppLogger.info('📥 Recipients will see invitation in "Delat med mig" view');
+      AppLogger.success(
+          '✅ ${_capitalize(contentTypeName)} invitation created successfully: $invitationId');
+      AppLogger.info(
+          '📥 Recipients will see invitation in "Delat med mig" view');
 
       // Send notifications (placeholder for future implementation)
       await sendInvitationNotifications(contentId, inviteeUserIds);
@@ -176,26 +182,39 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent> extends BaseServi
     return invitationId != null;
   }
 
-  /// Get invitations received by current user
-  Future<List<TSharedContent>> getReceivedInvitations() async {
+  /// Get invitations received by current user with pagination
+  ///
+  /// [limit] Maximum number of invitations to return (default: 25)
+  /// [startAfter] Document snapshot to start after for cursor-based pagination
+  Future<List<TSharedContent>> getReceivedInvitations({
+    int limit = 25,
+    DocumentSnapshot? startAfter,
+  }) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
-      AppLogger.warning('Cannot get received invitations: No authenticated user');
+      AppLogger.warning(
+          'Cannot get received invitations: No authenticated user');
       return [];
     }
 
     try {
-      AppLogger.info('📥 Getting received $contentTypeName invitations for user $currentUserId');
-      return await sharedRepository.getSharedContentForUser(currentUserId);
+      AppLogger.info(
+          '📥 Getting received $contentTypeName invitations for user $currentUserId (limit: $limit)');
+      return await sharedRepository.getSharedContentForUser(
+        currentUserId,
+        limit: limit,
+        startAfter: startAfter,
+      );
     } catch (e) {
-      AppLogger.error('Failed to get received $contentTypeName invitations: $e');
+      AppLogger.error(
+          'Failed to get received $contentTypeName invitations: $e');
       _setError('Failed to get received $contentTypeName invitations: $e');
       return [];
     }
   }
 
   /// Join shared content for viewing (true copy-on-write pattern)
-  /// 
+  ///
   /// This method implements TRUE copy-on-write:
   /// - Initially joins as viewer of original content (no copy created)
   /// - Copy-on-write is triggered later when user attempts first edit
@@ -210,7 +229,8 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent> extends BaseServi
     }
 
     try {
-      AppLogger.info('📥 Joining shared $contentTypeName $sharedContentId for viewing');
+      AppLogger.info(
+          '📥 Joining shared $contentTypeName $sharedContentId for viewing');
 
       // Get shared content
       final sharedContent = await sharedRepository.read(sharedContentId);
@@ -221,12 +241,15 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent> extends BaseServi
 
       // For true copy-on-write: Just mark as joined/imported (viewer status)
       // No actual copy is created until first edit attempt
-      await sharedRepository.markAsImportedOrJoined(sharedContentId, currentUserId);
+      await sharedRepository.markAsImportedOrJoined(
+          sharedContentId, currentUserId);
 
-      AppLogger.success('✅ Joined shared $contentTypeName as viewer (copy-on-write ready)');
-      AppLogger.info('💡 Copy will be created when you first edit the $contentTypeName');
+      AppLogger.success(
+          '✅ Joined shared $contentTypeName as viewer (copy-on-write ready)');
+      AppLogger.info(
+          '💡 Copy will be created when you first edit the $contentTypeName');
       _notifyListeners();
-      
+
       // Return the shared content ID (user views original until CoW triggers)
       return sharedContentId;
     } catch (e) {
@@ -237,7 +260,7 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent> extends BaseServi
   }
 
   /// Trigger copy-on-write when user attempts first edit
-  /// 
+  ///
   /// This method implements the CoW trigger logic:
   /// 1. Creates static copy for original owner
   /// 2. Converts shared version to collaborative mode
@@ -247,7 +270,8 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent> extends BaseServi
     required String editingUserId,
   }) async {
     try {
-      AppLogger.info('🔄 Triggering copy-on-write for shared $contentTypeName $sharedContentId');
+      AppLogger.info(
+          '🔄 Triggering copy-on-write for shared $contentTypeName $sharedContentId');
 
       // Get current shared content
       final sharedContent = await sharedRepository.read(sharedContentId);
@@ -259,10 +283,8 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent> extends BaseServi
       // Create static copy for original owner
       final originalContent = getOriginalContentFromShared(sharedContent);
       final staticCopyId = await createStaticCopyForOwner(
-        originalContent, 
-        getSharedByUserId(sharedContent)
-      );
-      
+          originalContent, getSharedByUserId(sharedContent));
+
       if (staticCopyId == null) {
         AppLogger.error('Failed to create static copy for original owner');
         return null;
@@ -274,7 +296,7 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent> extends BaseServi
         editingUserId: editingUserId,
         staticCopyId: staticCopyId,
       );
-      
+
       if (collaborativeVersion == null) {
         AppLogger.error('Failed to create collaborative version');
         return null;
@@ -284,10 +306,11 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent> extends BaseServi
       await updateSharedContent(collaborativeVersion);
 
       AppLogger.success('✅ Copy-on-write triggered successfully');
-      AppLogger.info('📄 Static copy created for original owner: $staticCopyId');
+      AppLogger.info(
+          '📄 Static copy created for original owner: $staticCopyId');
       AppLogger.info('👥 Shared version is now collaborative');
       _notifyListeners();
-      
+
       return sharedContentId; // Return collaborative version ID
     } catch (e) {
       AppLogger.error('Failed to trigger copy-on-write: $e');
@@ -302,7 +325,8 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent> extends BaseServi
   dynamic getOriginalContentFromShared(TSharedContent sharedContent);
 
   /// Create static copy for original owner when CoW triggers
-  Future<String?> createStaticCopyForOwner(dynamic originalContent, String ownerId);
+  Future<String?> createStaticCopyForOwner(
+      dynamic originalContent, String ownerId);
 
   /// Get shared by user ID from shared content (content-specific)
   String getSharedByUserId(TSharedContent sharedContent);
@@ -363,13 +387,15 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent> extends BaseServi
   Future<bool> markAsViewed(String sharedContentId) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
-      AppLogger.error('Cannot mark $contentTypeName as viewed: No authenticated user');
+      AppLogger.error(
+          'Cannot mark $contentTypeName as viewed: No authenticated user');
       return false;
     }
 
     try {
       await sharedRepository.markAsViewed(sharedContentId, currentUserId);
-      AppLogger.info('👁️ Marked shared $contentTypeName $sharedContentId as viewed');
+      AppLogger.info(
+          '👁️ Marked shared $contentTypeName $sharedContentId as viewed');
       _notifyListeners();
       return true;
     } catch (e) {
@@ -397,15 +423,19 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent> extends BaseServi
   // ===== NOTIFICATION SYSTEM (PLACEHOLDER) =====
 
   /// Send invitation notifications (placeholder for future implementation)
-  Future<void> sendInvitationNotifications(String contentId, List<String> inviteeUserIds) async {
-    AppLogger.info('📧 Sending $contentTypeName invitation notifications to ${inviteeUserIds.length} users for $contentId');
+  Future<void> sendInvitationNotifications(
+      String contentId, List<String> inviteeUserIds) async {
+    AppLogger.info(
+        '📧 Sending $contentTypeName invitation notifications to ${inviteeUserIds.length} users for $contentId');
     // Note: Notification system implementation would be integrated here
     // when NotificationService dependency is available in coordinators
   }
 
   /// Send sharing notifications (placeholder for future implementation)
-  Future<void> sendSharingNotifications(String contentId, List<String> sharedWithUserIds) async {
-    AppLogger.info('📧 Sending $contentTypeName sharing notifications to ${sharedWithUserIds.length} users for $contentId');
+  Future<void> sendSharingNotifications(
+      String contentId, List<String> sharedWithUserIds) async {
+    AppLogger.info(
+        '📧 Sending $contentTypeName sharing notifications to ${sharedWithUserIds.length} users for $contentId');
     // Note: Notification system implementation would be integrated here
     // when NotificationService dependency is available in coordinators
   }

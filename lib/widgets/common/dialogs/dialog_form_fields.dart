@@ -20,6 +20,7 @@ import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/utils/validation_utils.dart';
 
 /// Common form field factory that eliminates duplicate form field patterns.
 ///
@@ -64,25 +65,15 @@ class DialogFormFields {
         keyboardType: keyboardType,
         inputFormatters: inputFormatters,
         validator: customValidator ??
-            (value) {
-              // Use centralized validation from FormValidators
-              if (required) {
-                final requiredResult =
-                    FormValidators.required(labelText)(value);
-                if (requiredResult != null) return requiredResult;
-              }
-
-              if (value != null && value.isNotEmpty) {
-                if (value.trim().length < minLength) {
-                  return AppStrings.fieldTooShort(labelText, minLength);
-                }
-                if (value.trim().length > maxLengthLimit) {
-                  return AppStrings.fieldTooLong(labelText, maxLengthLimit);
-                }
-              }
-
-              return null;
-            },
+            FormValidators.combine([
+              if (required)
+                (value) => ValidationUtils.validateRequired(value,
+                    fieldName: labelText),
+              (value) => ValidationUtils.validateLength(value,
+                  minLength: minLength,
+                  maxLength: maxLengthLimit,
+                  fieldName: labelText),
+            ]),
       ),
     );
   }

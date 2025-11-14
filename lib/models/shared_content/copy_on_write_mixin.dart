@@ -24,9 +24,9 @@
 ///
 /// **Usage:**
 /// ```dart
-/// class SharedRecipe extends BaseSharedContentModel<Recipe> 
+/// class SharedRecipe extends BaseSharedContentModel<Recipe>
 ///     with SharedContentStatusMixin, CopyOnWriteSupport {
-///   
+///
 ///   // CoW functionality automatically available
 ///   final collaborative = recipe.triggerCopyOnWrite(
 ///     editingUserId: userId,
@@ -40,98 +40,80 @@
 import 'package:butlery/models/shared_content/base_shared_content_model.dart';
 
 /// Mixin providing copy-on-write collaboration support for shared content.
-/// 
+///
 /// Implements TRUE copy-on-write where users view original content until first edit
 /// triggers creation of a static copy for the owner and collaborative version for others.
 mixin CopyOnWriteSupport<TContent> on BaseSharedContentModel<TContent> {
-  
   // ===== COPY-ON-WRITE FIELDS =====
-  
+
   /// Indicates if this shared content still references the original content.
-  /// 
+  ///
   /// When true, users view the original content until first edit triggers copy creation.
   /// When false, this represents a collaborative version that has been copied.
   bool get isOriginalReference;
-  
+
   /// Indicates if copy-on-write has been triggered for this shared content.
-  /// 
+  ///
   /// When true, a static copy has been created for the original owner and this
   /// shared version is now collaborative.
   bool get copyOnWriteTriggered;
-  
+
   /// ID of the static copy created for the original owner when CoW triggered.
-  /// 
+  ///
   /// This copy preserves the original content state for the owner while the shared
   /// version becomes collaborative.
   String? get originalOwnerStaticCopyId;
-  
-  /// List of user IDs actively collaborating on this shared content.
-  /// 
-  /// Only populated after copy-on-write is triggered and users join collaboration.
-  List<String> get activeCollaboratorIds;
+
+  /// Count of users actively collaborating on this shared content.
+  ///
+  /// Note (Issue #014): Changed from `List<String>` to int to eliminate 100-element array limit.
+  /// Use repository.getCollaborators(contentId) to get full list when needed.
+  int get activeCollaboratorCount;
+
+  /// Note (Issue #015): Shopping list items changed from `List<UnifiedShoppingItem>` listItems
+  /// to int itemCount to eliminate 100-element array limit. Items now stored in Firestore
+  /// subcollection: shared_shopping_lists/{id}/items/{itemId}
+  /// Use repository.getItems(listId) to load items from subcollection when needed.
 
   // ===== COPY-ON-WRITE OPERATIONS =====
-  
+
   /// Triggers copy-on-write for this shared content.
-  /// 
+  ///
   /// This method converts the shared content from original reference mode to
   /// collaborative mode by:
   /// 1. Creating a static copy for the original owner
   /// 2. Marking the shared version as collaborative
   /// 3. Adding the editing user as an active collaborator
-  /// 
+  ///
   /// [editingUserId] User who triggered the copy-on-write
   /// [staticCopyId] ID of the static copy created for original owner
-  /// 
+  ///
   /// Returns updated content in collaborative mode.
   BaseSharedContentModel<TContent> triggerCopyOnWrite({
     required String editingUserId,
     required String staticCopyId,
   });
-  
+
   /// Adds a user as an active collaborator to this shared content.
-  /// 
-  /// This method adds a new user to the active collaborators list for
-  /// collaborative editing. Prevents duplicate entries.
-  /// 
+  ///
+  /// Note (Issue #014): This method now increments the collaborator count.
+  /// The actual collaborator list is managed in Firestore subcollection.
+  ///
   /// [userId] User to add as collaborator
-  /// 
-  /// Returns updated content with new collaborator added.
+  ///
+  /// Returns updated content with incremented collaborator count.
   BaseSharedContentModel<TContent> addActiveCollaborator(String userId);
-  
-  /// Checks if a user can edit this shared content.
-  /// 
-  /// Edit permissions are granted to:
-  /// - Original owner (always can edit)
-  /// - Active collaborators (after CoW is triggered)
-  /// - Shared recipients (if collaboration is allowed and CoW not triggered)
-  /// 
-  /// [userId] User to check edit permissions for
-  /// 
-  /// Returns true if user can edit the content.
-  bool canBeEditedBy(String userId) {
-    // Original owner can always edit
-    if (sharedByUserId == userId) return true;
-    
-    // If CoW is triggered, only active collaborators can edit
-    if (copyOnWriteTriggered) {
-      return activeCollaboratorIds.contains(userId);
-    }
-    
-    // Before CoW, check if content allows collaboration and user is recipient
-    return _allowsCollaboration() && sharedToUserIds.contains(userId);
-  }
 
   // ===== COPY-ON-WRITE STATUS METHODS =====
-  
+
   /// Returns true if this content is in collaborative mode.
-  /// 
+  ///
   /// A content is collaborative if copy-on-write has been triggered,
   /// indicating that active collaboration is taking place.
   bool get isCollaborative => copyOnWriteTriggered;
-  
+
   /// Returns the current editing mode for this shared content.
-  /// 
+  ///
   /// - Original reference: Users view original until first edit
   /// - Collaborative: Users collaborate on shared version after CoW
   String get editingMode {
@@ -143,20 +125,14 @@ mixin CopyOnWriteSupport<TContent> on BaseSharedContentModel<TContent> {
       return 'unknown';
     }
   }
-  
-  /// Check if user is an active collaborator
-  bool isActiveCollaborator(String userId) {
-    return activeCollaboratorIds.contains(userId);
-  }
-  
-  /// Get count of active collaborators
-  int get activeCollaboratorCount => activeCollaboratorIds.length;
-  
+
   /// Check if content has any active collaborators
-  bool get hasActiveCollaborators => activeCollaboratorIds.isNotEmpty;
+  ///
+  /// Note (Issue #014): Uses count field instead of checking array.
+  bool get hasActiveCollaborators => activeCollaboratorCount > 0;
 
   // ===== COLLABORATION ANALYTICS =====
-  
+
   /// Get collaboration statistics for this content
   Map<String, dynamic> getCollaborationAnalytics() {
     return {
@@ -168,17 +144,17 @@ mixin CopyOnWriteSupport<TContent> on BaseSharedContentModel<TContent> {
       'isOriginalReference': isOriginalReference,
     };
   }
-  
+
   /// Get collaboration status summary for UI display
   String getCollaborationSummary() {
     if (!_allowsCollaboration()) {
       return 'Ingen kollaboration tillåten';
     }
-    
+
     if (!copyOnWriteTriggered) {
       return 'Redo för kollaboration';
     }
-    
+
     if (activeCollaboratorCount == 0) {
       return 'Kollaborativ version skapad';
     } else if (activeCollaboratorCount == 1) {
@@ -188,88 +164,98 @@ mixin CopyOnWriteSupport<TContent> on BaseSharedContentModel<TContent> {
     }
   }
 
-  // ===== COPY-ON-WRITE SERIALIZATION HELPERS =====
-  
+  // ===== COPY-ON-WRITE SERIALIZATION HELPERS (ISSUE #014 - Array Removed) =====
+
   /// Get copy-on-write fields for Firestore serialization
+  ///
+  /// Note: activeCollaboratorIds array removed, now using count + subcollection.
   Map<String, dynamic> getCopyOnWriteFirestoreFields() {
     return {
       'isOriginalReference': isOriginalReference,
       'copyOnWriteTriggered': copyOnWriteTriggered,
       'originalOwnerStaticCopyId': originalOwnerStaticCopyId,
-      'activeCollaboratorIds': activeCollaboratorIds,
+      'activeCollaboratorCount': activeCollaboratorCount,
     };
   }
-  
+
   /// Get copy-on-write fields for JSON serialization
+  ///
+  /// Note: activeCollaboratorIds array removed, now using count + subcollection.
   Map<String, dynamic> getCopyOnWriteJsonFields() {
     return {
       'isOriginalReference': isOriginalReference,
       'copyOnWriteTriggered': copyOnWriteTriggered,
       'originalOwnerStaticCopyId': originalOwnerStaticCopyId,
-      'activeCollaboratorIds': activeCollaboratorIds,
+      'activeCollaboratorCount': activeCollaboratorCount,
     };
   }
-  
+
   /// Parse copy-on-write fields from Firestore data
-  static Map<String, dynamic> parseCopyOnWriteFieldsFromFirestore(Map<String, dynamic> data) {
+  ///
+  /// Note: activeCollaboratorIds array removed, now using count.
+  static Map<String, dynamic> parseCopyOnWriteFieldsFromFirestore(
+      Map<String, dynamic> data) {
     return {
       'isOriginalReference': data['isOriginalReference'] as bool? ?? true,
       'copyOnWriteTriggered': data['copyOnWriteTriggered'] as bool? ?? false,
       'originalOwnerStaticCopyId': data['originalOwnerStaticCopyId'] as String?,
-      'activeCollaboratorIds': List<String>.from(data['activeCollaboratorIds'] ?? []),
+      'activeCollaboratorCount': data['activeCollaboratorCount'] as int? ?? 0,
     };
   }
-  
+
   /// Parse copy-on-write fields from JSON data
-  static Map<String, dynamic> parseCopyOnWriteFieldsFromJson(Map<String, dynamic> json) {
+  ///
+  /// Note: activeCollaboratorIds array removed, now using count.
+  static Map<String, dynamic> parseCopyOnWriteFieldsFromJson(
+      Map<String, dynamic> json) {
     return {
       'isOriginalReference': json['isOriginalReference'] as bool? ?? true,
       'copyOnWriteTriggered': json['copyOnWriteTriggered'] as bool? ?? false,
       'originalOwnerStaticCopyId': json['originalOwnerStaticCopyId'] as String?,
-      'activeCollaboratorIds': List<String>.from(json['activeCollaboratorIds'] ?? []),
+      'activeCollaboratorCount': json['activeCollaboratorCount'] as int? ?? 0,
     };
   }
 
   // ===== ABSTRACT METHODS FOR CONTENT-SPECIFIC CUSTOMIZATION =====
-  
+
   /// Check if this content type allows collaboration.
-  /// 
+  ///
   /// Override in specific content models to control collaboration behavior:
   /// - SharedRecipe/SharedMenu: Usually true (supports CoW)
   /// - SharedShoppingList: Could be true or false based on list type
   bool _allowsCollaboration();
 
   // ===== CONVENIENCE METHODS =====
-  
+
   /// Check if copy-on-write can be triggered for this content
-  bool canTriggerCopyOnWrite(String userId) {
+  ///
+  /// Note (Issue #014): Simplified to check only CoW state and collaboration setting.
+  /// Permission checking now handled by repository layer.
+  bool canTriggerCopyOnWrite() {
     // CoW can only be triggered if:
     // 1. Not already triggered
-    // 2. User has edit permissions
-    // 3. Content allows collaboration
-    return !copyOnWriteTriggered && 
-           canBeEditedBy(userId) && 
-           _allowsCollaboration();
+    // 2. Content allows collaboration
+    return !copyOnWriteTriggered && _allowsCollaboration();
   }
-  
+
   /// Get next action user should take for collaboration
+  ///
+  /// Note (Issue #014): Simplified version using counts instead of arrays.
+  /// For precise collaborator checks, use repository.isCollaborator(contentId, userId).
   String getNextCollaborationAction(String userId) {
     if (!_allowsCollaboration()) {
       return 'view'; // Can only view non-collaborative content
     }
-    
+
     if (sharedByUserId == userId) {
       return copyOnWriteTriggered ? 'edit_collaborative' : 'edit_original';
     }
-    
+
     if (!copyOnWriteTriggered) {
       return 'trigger_collaboration'; // First edit will trigger CoW
     }
-    
-    if (activeCollaboratorIds.contains(userId)) {
-      return 'edit_collaborative';
-    }
-    
-    return 'join_collaboration';
+
+    // If CoW triggered and has collaborators, assume user may join
+    return hasActiveCollaborators ? 'join_collaboration' : 'edit_collaborative';
   }
 }

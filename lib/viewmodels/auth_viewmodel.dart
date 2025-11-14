@@ -30,13 +30,13 @@
 /// ```dart
 /// // Basic authentication flow
 /// final authViewModel = AuthViewModel();
-/// 
+///
 /// // Sign in with comprehensive validation
 /// final success = await authViewModel.signIn(
 ///   email: 'erik.svensson@example.com',
 ///   password: 'säkertLösenord123',
 /// );
-/// 
+///
 /// // Registration with complete validation
 /// if (authViewModel.isLoginMode == false) {
 ///   final registered = await authViewModel.register(
@@ -45,15 +45,15 @@
 ///     displayName: 'Anna Andersson',
 ///   );
 /// }
-/// 
+///
 /// // Mode switching with state management
 /// authViewModel.toggleAuthMode(); // Switch between login/register
-/// 
+///
 /// // Password reset functionality
 /// final resetSent = await authViewModel.sendPasswordReset(
 ///   'erik.svensson@example.com',
 /// );
-/// 
+///
 /// // Reactive state monitoring
 /// if (authViewModel.isLoading) {
 ///   // Show loading spinner
@@ -66,15 +66,17 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/auth_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
 
 /// Comprehensive authentication ViewModel providing advanced user authentication and state management for Flutter applications.
 ///
 /// Serves as the presentation layer coordinator for all authentication flows, providing reactive state management,
 /// comprehensive input validation, and seamless integration with AuthService while maintaining clean MVVM architecture
 /// separation between authentication business logic and UI presentation concerns.
-class AuthViewModel extends ChangeNotifier {
-  final AuthService _authService = ServiceLocator.get<AuthService>();
+class AuthViewModel extends ChangeNotifier
+    with StateNotifierMixin, AsyncOperationMixin {
+  final AuthService _authService;
 
   // ===== AUTHENTICATION STATE MANAGEMENT =====
 
@@ -91,19 +93,23 @@ class AuthViewModel extends ChangeNotifier {
   String? _validationError;
 
   /// Loading state inherited from AuthService indicating active authentication operations.
-  /// 
-  /// Automatically reflects AuthService loading state for seamless UI loading indicator
-  /// coordination and user interaction management during authentication operations.
+  ///
+  /// Delegates to AuthService loading state since the service manages the actual
+  /// authentication operations. AsyncOperationMixin's loading state is not used
+  /// for AuthViewModel to maintain consistency with service state.
+  @override
   bool get isLoading => _authService.isLoading;
 
-  /// Error message combining validation and service errors for comprehensive user feedback.
-  /// 
+  /// Error message combining validation, mixin, and service errors for comprehensive user feedback.
+  ///
   /// Provides localized error messages from authentication operations, validation failures,
   /// and service errors for direct display to users in authentication UI components.
-  String? get errorMessage => _validationError ?? _authService.errorMessage;
+  /// Priority: validation errors > mixin errors > service errors.
+  String? get errorMessage =>
+      _validationError ?? error ?? _authService.errorMessage;
 
   /// Authentication state indicating current user authentication status from AuthService.
-  /// 
+  ///
   /// Reflects real-time authentication state for UI conditional rendering and
   /// navigation flow control based on user authentication status.
   bool get isAuthenticated => _authService.isAuthenticated;
@@ -111,23 +117,27 @@ class AuthViewModel extends ChangeNotifier {
   // ===== UI STATE ACCESSORS =====
 
   /// Current authentication mode for UI flow control and form field management.
-  /// 
+  ///
   /// Controls whether authentication UI displays login or registration form
   /// with appropriate fields and validation for the selected authentication mode.
   bool get isLoginMode => _isLoginMode;
 
   /// Password field visibility state for improved user experience during credential entry.
-  /// 
+  ///
   /// Controls password field visibility toggle allowing users to verify password
   /// input while maintaining security best practices for credential handling.
   bool get isPasswordVisible => _isPasswordVisible;
 
   /// Initializes authentication ViewModel with reactive AuthService integration and state synchronization.
-  /// 
+  ///
   /// Establishes comprehensive listener connection to AuthService ensuring automatic state synchronization
   /// for authentication status, loading indicators, and error messages to maintain reactive UI updates
   /// and consistent user experience across all authentication operations.
-  AuthViewModel() {
+  ///
+  /// [authService] The authentication service for handling auth operations
+  AuthViewModel({
+    required AuthService authService,
+  }) : _authService = authService {
     // Clear any existing errors on initialization
     _validationError = null;
     _authService.clearError();
@@ -136,7 +146,7 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   /// Toggles authentication mode between login and registration with comprehensive state management.
-  /// 
+  ///
   /// Switches UI context between login and registration flows while clearing existing error messages
   /// to provide clean user experience and proper state transitions during authentication mode changes.
   /// Essential for dual-mode authentication UI with seamless mode switching.
@@ -148,7 +158,7 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   /// Toggles password field visibility for enhanced user experience during credential entry.
-  /// 
+  ///
   /// Provides password visibility control allowing users to verify credential input
   /// while maintaining security best practices and improving authentication usability.
   void togglePasswordVisibility() {
@@ -157,19 +167,19 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   /// Authenticates user with comprehensive credential validation and service coordination.
-  /// 
+  ///
   /// [email] User's email address for authentication
   /// [password] User's password for authentication
-  /// 
+  ///
   /// Returns true if authentication succeeds, false if validation fails or authentication errors occur.
   /// Performs comprehensive input validation before delegating to AuthService for actual authentication,
   /// ensuring data integrity and providing immediate feedback for validation errors with Swedish localization.
-  /// 
+  ///
   /// **Validation Features:**
   /// - Email format validation with Unicode support for international characters
   /// - Password strength validation with minimum length requirements
   /// - Automatic error message management with user-friendly feedback
-  /// 
+  ///
   /// **Usage Example:**
   /// ```dart
   /// final success = await authViewModel.signIn(
@@ -193,6 +203,7 @@ class AuthViewModel extends ChangeNotifier {
     }
 
     // Delegate to AuthService for authentication
+    // Note: Loading and error state managed by AuthService, not AsyncOperationMixin
     return await _authService.signInWithEmail(
       email: email.trim(),
       password: password,
@@ -200,21 +211,21 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   /// Registers new user account with comprehensive validation and profile creation coordination.
-  /// 
+  ///
   /// [email] User's email address for account creation
   /// [password] Secure password meeting minimum requirements
   /// [displayName] User's display name for profile creation
-  /// 
+  ///
   /// Returns true if registration succeeds, false if validation fails or registration errors occur.
   /// Performs comprehensive validation on all input fields before creating account through AuthService,
   /// ensuring complete data integrity and optimal user experience during account registration.
-  /// 
+  ///
   /// **Validation Coverage:**
   /// - Email format validation with international character support
   /// - Password strength validation with security requirements
   /// - Display name validation with minimum length requirements
   /// - Automatic error feedback with Swedish localized messages
-  /// 
+  ///
   /// **Usage Example:**
   /// ```dart
   /// final registered = await authViewModel.register(
@@ -247,6 +258,7 @@ class AuthViewModel extends ChangeNotifier {
     }
 
     // Delegate to AuthService for account creation
+    // Note: Loading and error state managed by AuthService, not AsyncOperationMixin
     return await _authService.registerWithEmail(
       email: email.trim(),
       password: password,
@@ -255,7 +267,7 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   /// Performs comprehensive user sign out with complete session cleanup and state management.
-  /// 
+  ///
   /// Coordinates with AuthService to perform secure user logout including session termination,
   /// token cleanup, and authentication state reset for complete user session management.
   /// Essential for secure authentication flows and proper user session lifecycle management.
@@ -264,13 +276,13 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   /// Sends password reset email with comprehensive validation and service coordination.
-  /// 
+  ///
   /// [email] User's email address for password reset delivery
-  /// 
+  ///
   /// Returns true if password reset email is sent successfully, false if validation fails.
   /// Performs email validation before delegating to AuthService for password reset email delivery,
   /// ensuring valid email addresses and providing proper user feedback for password recovery flows.
-  /// 
+  ///
   /// **Usage Example:**
   /// ```dart
   /// final resetSent = await authViewModel.sendPasswordReset(
@@ -287,15 +299,17 @@ class AuthViewModel extends ChangeNotifier {
       return false;
     }
 
+    // Delegate to AuthService for password reset
+    // Note: Loading and error state managed by AuthService, not AsyncOperationMixin
     return await _authService.sendPasswordResetEmail(email.trim());
   }
 
   // ===== ADVANCED INPUT VALIDATION =====
 
   /// Validates email format with comprehensive internationalization support and user feedback.
-  /// 
+  ///
   /// [email] Email address to validate
-  /// 
+  ///
   /// Returns true if email format is valid, false otherwise with automatic error message setting.
   /// Performs comprehensive email validation including empty check and international character support
   /// using Unicode-aware regex patterns for global user base compatibility.
@@ -306,7 +320,9 @@ class AuthViewModel extends ChangeNotifier {
     }
 
     // Email validation with Unicode support for international characters
-    final emailRegex = RegExp(r'^[\p{L}\p{N}._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$', unicode: true);
+    final emailRegex = RegExp(
+        r'^[\p{L}\p{N}._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$',
+        unicode: true);
     if (!emailRegex.hasMatch(email)) {
       _setError('Ogiltig e-postadress');
       return false;
@@ -316,9 +332,9 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   /// Validates password strength with security requirements and Swedish localized feedback.
-  /// 
+  ///
   /// [password] Password to validate
-  /// 
+  ///
   /// Returns true if password meets security requirements, false otherwise with error feedback.
   /// Enforces minimum password length requirements and provides immediate user feedback
   /// for password security compliance during authentication flows.
@@ -337,9 +353,9 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   /// Validates display name format with user experience requirements and Swedish localization.
-  /// 
+  ///
   /// [displayName] Display name to validate
-  /// 
+  ///
   /// Returns true if display name meets requirements, false otherwise with user feedback.
   /// Ensures minimum display name length for proper user identification and profile creation
   /// with immediate validation feedback for optimal user registration experience.
@@ -360,9 +376,9 @@ class AuthViewModel extends ChangeNotifier {
   // ===== COMPREHENSIVE ERROR MANAGEMENT =====
 
   /// Manages local validation error state with automatic UI notification and consistency patterns.
-  /// 
+  ///
   /// [message] Error message for user display and validation feedback
-  /// 
+  ///
   /// Handles validation error state management locally in the ViewModel layer,
   /// keeping validation errors separate from service-level authentication errors.
   void _setError(String message) {
@@ -372,7 +388,7 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   /// Handles reactive state synchronization from AuthService state changes with automatic UI updates.
-  /// 
+  ///
   /// Provides seamless state synchronization between AuthService and ViewModel ensuring
   /// all authentication state changes are immediately reflected in UI components
   /// for consistent user experience and real-time authentication status updates.
@@ -381,18 +397,20 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   /// Clears existing error messages with service coordination and clean state management.
-  /// 
-  /// Provides comprehensive error state cleanup by clearing both local validation errors
-  /// and service-level authentication errors for consistent state management across
-  /// the entire authentication system and clean user experience during flow transitions.
+  ///
+  /// Provides comprehensive error state cleanup by clearing validation errors,
+  /// mixin errors, and service-level authentication errors for consistent state management
+  /// across the entire authentication system and clean user experience during flow transitions.
+  @override
   void clearError() {
     _validationError = null;
+    super.clearError(); // Clear mixin error from StateNotifierMixin
     _authService.clearError();
     notifyListeners();
   }
 
   /// Performs comprehensive ViewModel disposal with listener cleanup and memory management.
-  /// 
+  ///
   /// Removes AuthService listener connections and performs complete resource cleanup
   /// to prevent memory leaks and ensure proper ViewModel lifecycle management
   /// in dynamic authentication UI scenarios with ViewModel creation and disposal.

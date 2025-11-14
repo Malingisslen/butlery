@@ -6,6 +6,7 @@ import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/core/utils/validation_utils.dart';
 
 /// Shopping item dialogs for adding and editing items
 class ShoppingItemDialogs {
@@ -122,12 +123,8 @@ class _AddItemDialogState extends State<_AddItemDialog> {
               controller: _nameController,
               label: 'Varunamn',
               hint: 'T.ex. Mjölk',
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Varunamn krävs';
-                }
-                return null;
-              },
+              validator: (value) =>
+                  ValidationUtils.validateShoppingItemName(value),
             ),
             const SizedBox(height: AppDimensions.spacingM),
             Row(
@@ -221,11 +218,13 @@ class _EditItemDialogState extends State<_EditItemDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.item.name);
-    _amountController = TextEditingController(text: widget.item.amount.toString());
+    _amountController =
+        TextEditingController(text: widget.item.amount.toString());
     _unitController = TextEditingController(text: widget.item.unit);
     _categoryController = TextEditingController(text: widget.item.category);
     _noteController = TextEditingController(text: widget.item.note ?? '');
-    _priceController = TextEditingController(text: widget.item.estimatedPrice?.toString() ?? '');
+    _priceController = TextEditingController(
+        text: widget.item.estimatedPrice?.toString() ?? '');
   }
 
   @override
@@ -252,12 +251,8 @@ class _EditItemDialogState extends State<_EditItemDialog> {
               controller: _nameController,
               label: 'Varunamn',
               hint: 'T.ex. Mjölk',
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Varunamn krävs';
-                }
-                return null;
-              },
+              validator: (value) =>
+                  ValidationUtils.validateShoppingItemName(value),
             ),
             const SizedBox(height: AppDimensions.spacingM),
             Row(
@@ -321,7 +316,9 @@ class _EditItemDialogState extends State<_EditItemDialog> {
         category: _categoryController.text.trim().isEmpty
             ? 'Övrigt'
             : _categoryController.text.trim(),
-        note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+        note: _noteController.text.trim().isEmpty
+            ? null
+            : _noteController.text.trim(),
         estimatedPrice: _priceController.text.trim().isEmpty
             ? null
             : double.tryParse(_priceController.text),

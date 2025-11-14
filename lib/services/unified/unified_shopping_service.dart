@@ -42,18 +42,19 @@ class UnifiedShoppingService extends ChangeNotifier
   final ShoppingRepository _shoppingRepository;
   late final JsonCacheHelper _cacheHelper;
   FirebaseFirestore get _firestore => _firestoreRepository.firestore;
-  
+
   // Feature interfaces
   late final PersonalShoppingOperations _personalOps;
   late final CollaborativeShoppingOperations _collaborativeOps;
 
   // Lazy getter to avoid circular dependency during DI initialization
-  ShoppingShareOperations get _shareOps => __shareOps ??= ShoppingShareOperations(
-    firestore: _firestore,
-    permissionService: ServiceLocator.get<PermissionService>(),
-  );
+  ShoppingShareOperations get _shareOps =>
+      __shareOps ??= ShoppingShareOperations(
+        firestoreRepository: _firestoreRepository,
+        permissionService: ServiceLocator.get<PermissionService>(),
+      );
   ShoppingShareOperations? __shareOps;
-  
+
   // Feature modules
   late final ShoppingInitializationModule _initialization;
   late final ShoppingListManagementModule _listManagement;
@@ -64,9 +65,9 @@ class UnifiedShoppingService extends ChangeNotifier
     required FirestoreRepository firestoreRepository,
     required AuthRepository authRepository,
     required ShoppingRepository shoppingRepository,
-  }) : _firestoreRepository = firestoreRepository,
-       _authRepository = authRepository,
-       _shoppingRepository = shoppingRepository {
+  })  : _firestoreRepository = firestoreRepository,
+        _authRepository = authRepository,
+        _shoppingRepository = shoppingRepository {
     _initializeModules();
   }
 
@@ -123,7 +124,7 @@ class UnifiedShoppingService extends ChangeNotifier
   PersonalShoppingOperations get personal => _personalOps;
   CollaborativeShoppingOperations get collaborative => _collaborativeOps;
   ShoppingShareOperations get share => _shareOps;
-  
+
   /// Compatibility getter for legacy code
   ShoppingShareOperations get sharing => _shareOps;
 
@@ -135,16 +136,18 @@ class UnifiedShoppingService extends ChangeNotifier
     final deduplicated = _lists.where((list) {
       // Skip if we've already seen this ID
       if (seen.contains(list.id)) {
-        AppLogger.warning('DUPLICATE SAFETY: Removing duplicate list with ID: ${list.id} (${list.name})');
+        AppLogger.warning(
+            'DUPLICATE SAFETY: Removing duplicate list with ID: ${list.id} (${list.name})');
         return false;
       }
-      
+
       seen.add(list.id);
       return true;
     }).toList();
-    
+
     return List.unmodifiable(deduplicated);
   }
+
   List<UnifiedShoppingList> get personalLists =>
       lists.where((l) => l.isPersonal).toList();
   List<UnifiedShoppingList> get collaborativeLists =>
@@ -157,9 +160,10 @@ class UnifiedShoppingService extends ChangeNotifier
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
-  
+
   @override
-  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
+  String? get currentUserId =>
+      ServiceLocator.get<PermissionService>().currentUserId;
   String? get currentUserDisplayName =>
       _authRepository.getCurrentUser()?.displayName ?? 'Du';
 
@@ -360,7 +364,8 @@ class UnifiedShoppingService extends ChangeNotifier
       () async {
         const activeListKey = 'active_list_id';
         await _cacheHelper.saveActiveId(activeListKey, _activeListId);
-        AppLogger.debug('💾 Saved active list ID: $_activeListId', 'ShoppingService');
+        AppLogger.debug(
+            '💾 Saved active list ID: $_activeListId', 'ShoppingService');
       },
       operationName: 'Save active list ID',
       // Don't rethrow - this is not critical for app functionality
@@ -369,12 +374,10 @@ class UnifiedShoppingService extends ChangeNotifier
 
   // ===== ERROR HANDLING =====
 
-
   void clearError() {
     _error = null;
     notifyListeners();
   }
-
 
   @override
   void dispose() {

@@ -40,11 +40,51 @@ You: "I want users to see what they cooked last week"
 
 ---
 
+## Communication Styles Supported
+
+The skill activation system supports **two distinct communication styles**:
+
+### 1. Product Owner Style (User-Focused)
+**For**: Describing end-user features and functionality
+**Example**: "I want users to save their favorite recipes"
+
+Use when talking about what users will do with the application.
+
+### 2. Developer Command Style (Direct Instructions)
+**For**: Giving direct technical work instructions to Claude
+**Example**: "plan for implementing the quick fixes"
+
+Use when giving me direct commands about code changes, refactoring, documentation, etc.
+
+**Both styles work equally well!** Choose whichever feels natural to you.
+
+---
+
 ## Natural Language Pattern Guide
 
 ### 🏗️ Architecture & Features (butlery-architecture)
 
 **Use when**: Asking for any new feature or functionality
+
+#### Developer Command Phrases (NEW)
+```
+✓ "plan for..."
+✓ "set up a plan for..."
+✓ "implement the fixes..."
+✓ "remaining fixes..."
+✓ "continue with..."
+✓ "next work..."
+✓ "update documentation..."
+✓ "explain what..."
+```
+
+**Examples**:
+- "plan for implementing the authentication system"
+- "set up a plan for the remaining code fixes"
+- "implement the quick fixes we discussed"
+- "continue with the next work in the refactoring plan"
+- "update the relevant documentation"
+- "explain what the issue is"
 
 #### User-Focused Phrases
 ```
@@ -374,6 +414,22 @@ You: "I want users to see what they cooked last week"
 
 **Use when**: Asking about quality, correctness, or verification
 
+#### Developer Command Phrases (NEW)
+```
+✓ "do a full investigation..."
+✓ "do investigation..."
+✓ "make sure that..."
+✓ "test the architecture..."
+✓ "verify the architecture..."
+✓ "check the architecture..."
+```
+
+**Examples**:
+- "do a full investigation to make sure the test tests the actual architecture"
+- "make sure that the files follow the original architecture"
+- "test the architecture compliance"
+- "verify that all tests are passing"
+
 #### Verification Requests
 ```
 ✓ "Make sure it works"
@@ -524,7 +580,20 @@ You: "I want users to see what they cooked last week"
 
 ## Quick Reference: Common Phrases
 
-### I Want To Add Features
+### Developer Command Style (NEW)
+| **Say This** | **Skills Activated** |
+|-------------|---------------------|
+| "plan for X" | architecture, testing |
+| "implement the fixes" | architecture |
+| "analyze remaining suggestions" | code-deduplication, architecture |
+| "continue with the work" | architecture |
+| "update documentation" | architecture |
+| "do a full investigation" | testing, architecture |
+| "set up a plan" | architecture, testing |
+
+### Product Owner Style (User-Focused)
+
+#### I Want To Add Features
 | **Say This** | **Skills Activated** |
 |-------------|---------------------|
 | "I want users to save recipes" | architecture, firebase-repository |
@@ -533,7 +602,7 @@ You: "I want users to see what they cooked last week"
 | "Make it work offline" | offline-first, architecture |
 | "Let users delete their account" | gdpr-compliance, architecture |
 
-### I Have Problems
+#### I Have Problems
 | **Say This** | **Skills Activated** |
 |-------------|---------------------|
 | "It's too slow" | performance-optimization |
@@ -542,7 +611,7 @@ You: "I want users to see what they cooked last week"
 | "Data isn't saving" | firebase-repository, state-management |
 | "It doesn't work offline" | offline-first-patterns |
 
-### I Need To...
+#### I Need To...
 | **Say This** | **Skills Activated** |
 |-------------|---------------------|
 | "...save user data" | firebase-repository, architecture |
@@ -624,7 +693,7 @@ When multiple patterns match, skills are ordered by **priority**:
 
 | Skill | Keywords | Intent Patterns | Total Triggers |
 |-------|----------|----------------|----------------|
-| butlery-architecture | 13 | 25 | 38 |
+| butlery-architecture | 20 (+7) | 38 (+13) | 58 ✨ |
 | firebase-repository-patterns | 12 | 18 | 30 |
 | flutter-widget-guidelines | 14 | 15 | 29 |
 | performance-optimization | 10 | 12 | 22 |
@@ -633,22 +702,30 @@ When multiple patterns match, skills are ordered by **priority**:
 | realtime-collaboration | 6 | 10 | 16 |
 | state-management-patterns | 7 | 8 | 15 |
 | navigation-routing | 6 | 10 | 16 |
-| testing-patterns | 9 | 5 | 14 |
+| testing-patterns | 11 (+2) | 12 (+7) | 23 ✨ |
 | dependency-injection-patterns | 6 | 5 | 11 |
-| code-deduplication-utilities | 7 | 7 | 14 |
+| code-deduplication-utilities | 12 (+5) | 15 (+8) | 27 ✨ |
 
-**Total Natural Language Triggers**: ~240 patterns across all 12 skills
+**Total Natural Language Triggers**: ~282 patterns across all 12 skills (+42 new developer command patterns)
 
 ---
 
 ## Tips for Best Results
 
-### ✅ DO Use Natural Language
+### ✅ DO Use Natural Language - Both Styles Work!
 
+**Product Owner Style:**
 - ✅ "I want users to save recipes"
 - ✅ "Make the app faster"
 - ✅ "Let them work offline"
 - ✅ "Show a loading spinner"
+
+**Developer Command Style (NEW):**
+- ✅ "plan for implementing X"
+- ✅ "analyze the remaining suggestions"
+- ✅ "continue with the next work"
+- ✅ "update the documentation"
+- ✅ "do a full investigation"
 
 ### ❌ DON'T Worry About Technical Terms
 
@@ -657,7 +734,7 @@ When multiple patterns match, skills are ordered by **priority**:
 - ❌ You don't need to say "Firebase Firestore"
 - ❌ You don't need to say "AsyncOperationMixin"
 
-**Just describe what you want in plain English!**
+**Just describe what you want - in YOUR natural style!**
 
 ### 💡 Be Specific About User Actions
 
@@ -701,18 +778,26 @@ echo "your natural language request" | .claude/hooks/skill-activation-prompt.sh
 
 ## Conclusion
 
-You can now request features in **natural, everyday language** without knowing any technical terminology. The skill activation system understands:
+You can now request features in **natural, everyday language** without knowing any technical terminology. The skill activation system understands **two communication styles**:
 
+### Product Owner Style
 - How non-technical users describe features
-- Common complaints and issues
 - User-focused language ("I want users to...", "Let them...")
+- Common complaints and issues
 - Action-oriented phrases ("save", "show", "make it...")
 
-**Just describe what you want, and the right architectural patterns will be applied automatically!**
+### Developer Command Style (NEW - Feb 2025)
+- Direct technical instructions ("plan for X", "implement Y")
+- Refactoring requests ("analyze remaining suggestions")
+- Documentation updates ("update the docs")
+- Investigation commands ("do a full investigation")
+
+**Just describe what you want - in YOUR natural style - and the right architectural patterns will be applied automatically!**
 
 ---
 
 **Created**: 2025-02-01
-**Pattern Count**: ~240 natural language triggers
+**Last Updated**: 2025-02-03 (Added developer command patterns)
+**Pattern Count**: ~282 natural language triggers (+42 developer commands)
 **Skills Covered**: All 12 Butlery architecture skills
 **Maintained By**: Butlery Development Team

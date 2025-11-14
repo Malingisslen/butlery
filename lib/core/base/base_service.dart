@@ -12,7 +12,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/permission_service.dart' as permission;
+import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 
 /// Abstract base class for all services in the Butlery application.
 ///
@@ -26,12 +26,11 @@ import 'package:butlery/services/permission_service.dart' as permission;
 /// - [onInitialize] method for custom initialization logic (optional)
 /// - [onDispose] method for custom cleanup logic (optional)
 abstract class BaseService with ErrorHandlingMixin {
-  
   // ===== COMMON SERVICE DEPENDENCIES =====
   // Service access patterns moved to ServiceLocator helper to avoid circular dependencies
 
   // ===== SERVICE INITIALIZATION =====
-  
+
   /// Unique name identifier for this service.
   ///
   /// Used in logging, debugging, and error reporting to identify which service
@@ -40,7 +39,7 @@ abstract class BaseService with ErrorHandlingMixin {
   ///
   /// Example: 'RecipeService', 'AuthService', 'NotificationService'
   String get serviceName;
-  
+
   /// Initializes the service with standardized logging.
   ///
   /// This method should be called once during service creation, typically
@@ -54,7 +53,7 @@ abstract class BaseService with ErrorHandlingMixin {
     await onInitialize();
     AppLogger.info('✅ $serviceName initialized successfully');
   }
-  
+
   /// Hook method for custom service initialization logic.
   ///
   /// Subclasses should override this method to perform service-specific
@@ -69,7 +68,7 @@ abstract class BaseService with ErrorHandlingMixin {
   Future<void> onInitialize() async {
     // Default implementation - override in subclasses
   }
-  
+
   /// Disposes service resources with standardized logging.
   ///
   /// This method should be called when the service is no longer needed,
@@ -83,7 +82,7 @@ abstract class BaseService with ErrorHandlingMixin {
     await onDispose();
     AppLogger.info('✅ $serviceName disposed successfully');
   }
-  
+
   /// Hook method for custom service cleanup logic.
   ///
   /// Subclasses should override this method to perform service-specific
@@ -101,7 +100,7 @@ abstract class BaseService with ErrorHandlingMixin {
   }
 
   // ===== COMMON SERVICE OPERATIONS =====
-  
+
   /// Executes a service operation with comprehensive error handling and validation.
   ///
   /// This method provides a standardized wrapper for all service operations,
@@ -142,25 +141,25 @@ abstract class BaseService with ErrorHandlingMixin {
     String? requiredPermission,
   }) async {
     final opName = operationName ?? 'Service operation';
-    
+
     // Pre-flight checks
     if (requiresAuth && !await _isAuthenticated()) {
       _handleUserError(AppStrings.authenticationError);
       return defaultValue;
     }
-    
+
     if (requiresNetwork && !await _isNetworkAvailable()) {
-      _handleUserError(AppStrings.networkError);  
+      _handleUserError(AppStrings.networkError);
       return defaultValue;
     }
-    
+
     if (requiresPermission && requiredPermission != null) {
       if (!await _hasPermission(requiredPermission)) {
         _handleUserError(AppStrings.permissionDenied);
         return defaultValue;
       }
     }
-    
+
     // Execute operation with error handling
     return await safeExecute(
       operation,
@@ -170,28 +169,29 @@ abstract class BaseService with ErrorHandlingMixin {
   }
 
   // ===== BATCH OPERATIONS =====
-  
+
   /// Execute multiple operations in batch with error handling
   Future<List<T>> executeBatchOperation<T>(
     List<Future<T> Function()> operations,
     String operationName, {
     bool continueOnError = true,
     bool requiresAuth = true,
-    bool requiresNetwork = false,  
+    bool requiresNetwork = false,
   }) async {
-    AppLogger.info('🔄 Starting batch operation: $operationName (${operations.length} items)');
-    
+    AppLogger.info(
+        '🔄 Starting batch operation: $operationName (${operations.length} items)');
+
     // Pre-flight checks
     if (requiresAuth && !await _isAuthenticated()) {
       _handleUserError(AppStrings.authenticationError);
       return [];
     }
-    
+
     if (requiresNetwork && !await _isNetworkAvailable()) {
       _handleUserError(AppStrings.networkError);
       return [];
     }
-    
+
     return await safeBatchOperation(
       operations,
       '$serviceName: $operationName',
@@ -200,10 +200,10 @@ abstract class BaseService with ErrorHandlingMixin {
   }
 
   // ===== CACHING PATTERNS =====
-  
+
   final Map<String, dynamic> _cache = {};
   final Map<String, DateTime> _cacheTimestamps = {};
-  
+
   /// Get cached value or execute operation and cache result
   /// Consolidates caching patterns found across services
   Future<T?> getCachedOrExecute<T>(
@@ -216,26 +216,26 @@ abstract class BaseService with ErrorHandlingMixin {
       AppLogger.debug('📋 Cache hit for $cacheKey');
       return _cache[cacheKey] as T?;
     }
-    
+
     AppLogger.debug('🔄 Cache miss for $cacheKey, executing operation');
     final result = await executeServiceOperation(operation);
-    
+
     if (result != null) {
       _cache[cacheKey] = result;
       _cacheTimestamps[cacheKey] = DateTime.now();
       AppLogger.debug('💾 Cached result for $cacheKey');
     }
-    
+
     return result;
   }
-  
+
   /// Clear cache for specific key
   void clearCache(String cacheKey) {
     _cache.remove(cacheKey);
     _cacheTimestamps.remove(cacheKey);
     AppLogger.debug('🗑️ Cleared cache for $cacheKey');
   }
-  
+
   /// Clear all cache
   void clearAllCache() {
     _cache.clear();
@@ -244,20 +244,21 @@ abstract class BaseService with ErrorHandlingMixin {
   }
 
   // ===== PERMISSION PATTERNS =====
-  
+
   /// Check permission with caching
   Future<bool> checkPermission(String permission) async {
     return await getCachedOrExecute(
-      'permission_$permission',
-      () async {
-        // SECURITY: Must integrate with actual permission service
-        // For now, require authentication at minimum
-        return await _isAuthenticated();
-      },
-      cacheDuration: const Duration(minutes: 1),
-    ) ?? false;
+          'permission_$permission',
+          () async {
+            // SECURITY: Must integrate with actual permission service
+            // For now, require authentication at minimum
+            return await _isAuthenticated();
+          },
+          cacheDuration: const Duration(minutes: 1),
+        ) ??
+        false;
   }
-  
+
   /// Execute operation with permission check
   Future<T?> executeWithPermission<T>(
     String permission,
@@ -269,7 +270,7 @@ abstract class BaseService with ErrorHandlingMixin {
       _handleUserError(AppStrings.permissionDenied);
       return defaultValue;
     }
-    
+
     return await executeServiceOperation(
       operation,
       operationName: operationName,
@@ -279,7 +280,7 @@ abstract class BaseService with ErrorHandlingMixin {
   }
 
   // ===== VALIDATION PATTERNS =====
-  
+
   /// Validate input parameters before operation
   bool validateInput(Map<String, dynamic> inputs, List<String> requiredFields) {
     for (final field in requiredFields) {
@@ -291,7 +292,7 @@ abstract class BaseService with ErrorHandlingMixin {
     }
     return true;
   }
-  
+
   /// Execute operation with input validation
   Future<T?> executeWithValidation<T>(
     Map<String, dynamic> inputs,
@@ -303,7 +304,7 @@ abstract class BaseService with ErrorHandlingMixin {
     if (!validateInput(inputs, requiredFields)) {
       return defaultValue;
     }
-    
+
     return await executeServiceOperation(
       operation,
       operationName: operationName,
@@ -312,19 +313,19 @@ abstract class BaseService with ErrorHandlingMixin {
   }
 
   // ===== HELPER METHODS =====
-  
+
   /// Check if user is authenticated
   Future<bool> _isAuthenticated() async {
     try {
-      // Use actual permission service for authentication validation
-      final permissionService = ServiceLocator.get<permission.PermissionService>();
-      return permissionService.isAuthenticated;
+      // Use AuthRepository directly for authentication validation
+      final authRepository = ServiceLocator.get<auth.AuthRepository>();
+      return authRepository.currentUserId != null;
     } catch (e) {
       AppLogger.error('Auth check failed: $e');
       return false;
     }
   }
-  
+
   /// Check if network is available
   Future<bool> _isNetworkAvailable() async {
     try {
@@ -334,7 +335,7 @@ abstract class BaseService with ErrorHandlingMixin {
       return false;
     }
   }
-  
+
   /// Check if user has permission
   Future<bool> _hasPermission(String permission) async {
     try {
@@ -344,17 +345,17 @@ abstract class BaseService with ErrorHandlingMixin {
       return false;
     }
   }
-  
+
   /// Check if cache is valid
   bool _isCacheValid(String cacheKey, Duration duration) {
     final timestamp = _cacheTimestamps[cacheKey];
     if (timestamp == null) return false;
-    
+
     return DateTime.now().difference(timestamp) < duration;
   }
 
   // ===== ERROR HANDLING IMPLEMENTATION =====
-  
+
   void _handleUserError(String message) {
     AppLogger.error('[$serviceName] User error: $message');
     // Services can override this to provide user feedback
@@ -365,16 +366,15 @@ abstract class BaseService with ErrorHandlingMixin {
 /// Mixin for services that need user context
 /// Eliminates duplicate user access patterns
 mixin UserContextMixin on BaseService {
-  
   /// Function to get the current user ID
   /// This should be provided by the service using this mixin
   String? Function()? _getUserIdProvider;
-  
+
   /// Set the user ID provider function
   void setUserIdProvider(String? Function() provider) {
     _getUserIdProvider = provider;
   }
-  
+
   /// Get current user ID with error handling
   Future<String?> getCurrentUserId() async {
     return await safeExecute<String?>(
@@ -389,7 +389,7 @@ mixin UserContextMixin on BaseService {
       operationName: 'Get current user ID',
     );
   }
-  
+
   /// Execute operation that requires user context
   Future<T?> executeAsUser<T>(
     Future<T> Function(String userId) operation, {
@@ -398,10 +398,10 @@ mixin UserContextMixin on BaseService {
   }) async {
     final userId = await getCurrentUserId();
     if (userId == null) {
-      _handleUserError(AppStrings.authenticationError);  
+      _handleUserError(AppStrings.authenticationError);
       return defaultValue;
     }
-    
+
     return await executeServiceOperation(
       () => operation(userId),
       operationName: operationName,
@@ -414,7 +414,6 @@ mixin UserContextMixin on BaseService {
 /// Mixin for services that need notification capabilities
 /// Eliminates duplicate notification patterns
 mixin NotificationMixin on BaseService {
-  
   /// Send notification with error handling
   Future<bool> sendNotification({
     required String title,
@@ -431,10 +430,10 @@ mixin NotificationMixin on BaseService {
       operationName: 'Send notification',
       defaultValue: false,
     );
-    
+
     return result ?? false;
   }
-  
+
   /// Send success notification
   Future<void> notifySuccess(String message, {String? userId}) async {
     await sendNotification(
@@ -443,7 +442,7 @@ mixin NotificationMixin on BaseService {
       userId: userId,
     );
   }
-  
+
   /// Send error notification
   Future<void> notifyError(String message, {String? userId}) async {
     await sendNotification(

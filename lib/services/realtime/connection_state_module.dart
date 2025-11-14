@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
-import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Module handling connection state management and notifications for realtime sync.
@@ -55,7 +55,8 @@ class ConnectionStateModule {
   }
 
   /// Start monitoring Firebase connection state
-  void startConnectionMonitoring(Function(SyncErrorType, String, {dynamic originalError}) handleError) {
+  void startConnectionMonitoring(
+      Function(SyncErrorType, String, {dynamic originalError}) handleError) {
     // Listen to Firebase connection state via Firestore connectivity
     firestoreRepository.connectivityStream().listen(
       (snapshot) {

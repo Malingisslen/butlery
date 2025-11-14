@@ -31,7 +31,7 @@ import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/models/recommendation.dart';
-import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/realtime/realtime_types.dart';
 
 // Repository type imports
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';

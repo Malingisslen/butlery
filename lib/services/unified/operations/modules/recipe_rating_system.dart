@@ -22,8 +22,10 @@ class RecipeRatingSystem {
   RecipeRatingSystem({
     RatingsRepository? ratingsRepository,
     AnalyticsService? analyticsService,
-  }) : _ratingsRepository = ratingsRepository ?? ServiceLocator.get<RatingsRepository>(),
-       _analyticsService = analyticsService ?? ServiceLocator.get<AnalyticsService>();
+  })  : _ratingsRepository =
+            ratingsRepository ?? ServiceLocator.get<RatingsRepository>(),
+        _analyticsService =
+            analyticsService ?? ServiceLocator.get<AnalyticsService>();
 
   // ===== RATING OPERATIONS =====
 
@@ -59,7 +61,8 @@ class RecipeRatingSystem {
       }
 
       // Get previous rating for analytics
-      final previousRating = await _ratingsRepository.getUserRating(recipeId, currentUserId);
+      final previousRating =
+          await _ratingsRepository.getUserRating(recipeId, currentUserId);
 
       // Create or update rating using repository
       await _ratingsRepository.rateRecipe(
@@ -98,13 +101,24 @@ class RecipeRatingSystem {
     }
   }
 
-  /// Get all ratings for a recipe
+  /// Get ratings for a recipe with pagination support
+  ///
+  /// **Issue #007 Fix:** Adds pagination to prevent timeouts with 10K+ ratings
+  /// - [limit] Maximum ratings to return (default: 100)
+  /// - [startAfter] Cursor for pagination (from last document)
   Future<List<RecipeRating>> getRecipeRatings({
     required String recipeId,
+    int limit = 100,
+    dynamic startAfter,
   }) async {
     try {
-      AppLogger.debug('📊 Getting ratings for recipe $recipeId');
-      return await _ratingsRepository.getRecipeRatings(recipeId);
+      AppLogger.debug(
+          '📊 Getting ratings for recipe $recipeId (limit: $limit)');
+      return await _ratingsRepository.getRecipeRatings(
+        recipeId,
+        limit: limit,
+        startAfter: startAfter,
+      );
     } catch (e) {
       AppLogger.error('❌ Failed to get recipe ratings', e);
       return [];
@@ -127,7 +141,8 @@ class RecipeRatingSystem {
       }
 
       // Check if rating exists
-      final existingRating = await _ratingsRepository.getUserRating(recipeId, userId);
+      final existingRating =
+          await _ratingsRepository.getUserRating(recipeId, userId);
       if (existingRating == null) {
         AppLogger.error('❌ Cannot update: Rating not found');
         return false;
@@ -204,11 +219,11 @@ class RecipeRatingSystem {
     try {
       AppLogger.debug('📊 Getting ratings given by user $userId');
       final ratings = await _ratingsRepository.getUserRatings(userId);
-      
+
       if (limit != null && ratings.length > limit) {
         return ratings.take(limit).toList();
       }
-      
+
       AppLogger.debug('📋 Found ${ratings.length} ratings given by user');
       return ratings;
     } catch (e) {
@@ -223,7 +238,8 @@ class RecipeRatingSystem {
     int? limit,
   }) async {
     try {
-      AppLogger.debug('📊 Getting ratings received for ${userRecipeIds.length} recipes');
+      AppLogger.debug(
+          '📊 Getting ratings received for ${userRecipeIds.length} recipes');
 
       final allRatings = <RecipeRating>[];
 
@@ -231,7 +247,7 @@ class RecipeRatingSystem {
       const batchSize = 10;
       for (int i = 0; i < userRecipeIds.length; i += batchSize) {
         final batch = userRecipeIds.skip(i).take(batchSize).toList();
-        
+
         for (final recipeId in batch) {
           final ratings = await _ratingsRepository.getRecipeRatings(recipeId);
           allRatings.addAll(ratings);
@@ -242,9 +258,8 @@ class RecipeRatingSystem {
       allRatings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
       // Apply limit if specified
-      final result = limit != null 
-          ? allRatings.take(limit).toList()
-          : allRatings;
+      final result =
+          limit != null ? allRatings.take(limit).toList() : allRatings;
 
       AppLogger.debug('📋 Found ${result.length} ratings received');
       return result;
@@ -273,7 +288,7 @@ class RecipeRatingSystem {
     if (review == null) return null;
     final trimmed = review.trim();
     if (trimmed.isEmpty) return null;
-    
+
     // Basic sanitization - remove excessive whitespace
     return trimmed.replaceAll(RegExp(r'\s+'), ' ');
   }
@@ -296,7 +311,8 @@ class RecipeRatingSystem {
 
     // For collaborative recipes, must be a member
     if (recipe.isCollaborative) {
-      return recipe.socialData?.memberPermissions?.containsKey(currentUserId) ?? false;
+      return recipe.socialData?.memberPermissions?.containsKey(currentUserId) ??
+          false;
     }
 
     return false;
@@ -318,7 +334,8 @@ class RecipeRatingSystem {
 
     // For collaborative recipes, members have access
     if (recipe.isCollaborative) {
-      return recipe.socialData?.memberPermissions?.containsKey(currentUserId) ?? false;
+      return recipe.socialData?.memberPermissions?.containsKey(currentUserId) ??
+          false;
     }
 
     return false;
@@ -343,12 +360,12 @@ class RecipeRatingSystem {
   static String getStarRepresentation(double rating) {
     final fullStars = rating.floor();
     final hasHalfStar = (rating - fullStars) >= 0.5;
-    
+
     String stars = '⭐' * fullStars;
     if (hasHalfStar && fullStars < 5) {
       stars += '✨'; // Half star representation
     }
-    
+
     return stars;
   }
 
@@ -365,10 +382,10 @@ class RecipeRatingSystem {
   /// Check if rating is recent
   static bool isRecentRating(DateTime? createdAt, {int daysThreshold = 7}) {
     if (createdAt == null) return false;
-    
+
     final now = DateTime.now();
     final daysDifference = now.difference(createdAt).inDays;
-    
+
     return daysDifference <= daysThreshold;
   }
 

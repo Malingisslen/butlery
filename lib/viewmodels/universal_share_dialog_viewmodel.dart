@@ -316,17 +316,6 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
 
       // Handle collaborative sharing for realtime mode - USE INVITATION SYSTEM
       if (shareMode == ShareMode.realtime) {
-        AppLogger.info('🚀 REALTIME DEBUG: ✅ CONFIRMED - Using realtime sharing mode');
-        AppLogger.info('🚀 REALTIME DEBUG: This SHOULD use invitation system, not direct addition');
-        AppLogger.info('🚀 INVITATION DEBUG: Starting realtime sharing flow');
-        AppLogger.info('🚀 INVITATION DEBUG: List ID: ${shoppingList.id}');
-        AppLogger.info('🚀 INVITATION DEBUG: List name: "${shoppingList.name}"');
-        AppLogger.info('🚀 INVITATION DEBUG: Original friends: $friendUserIds');
-        AppLogger.info('🚀 INVITATION DEBUG: Filtered friends (new): $filteredFriendUserIds');
-        AppLogger.info('🚀 INVITATION DEBUG: List type: ${shoppingList.type}');
-        AppLogger.info('🚀 INVITATION DEBUG: List is collaborative: ${shoppingList.isCollaborative}');
-        AppLogger.info('🚀 INVITATION DEBUG: List collaborators: ${shoppingList.collaborators}');
-        
         // ULTRATHINK FIX: Use invitation system with filtered friends
         final success = await SocialContentFeatures.shareContentWithFriends(
           shoppingList.id,
@@ -337,8 +326,6 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
         );
 
         if (success) {
-          AppLogger.success('✅ INVITATION DEBUG: Inköpslista inbjudningar skickade framgångsrikt');
-          AppLogger.info('🚀 INVITATION DEBUG: Recipients should see invitations in "delat med mig" view');
           
           // Set success message that includes info about skipped friends
           if (validationResult.hasExistingCollaborators) {
@@ -349,17 +336,10 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
           
           return true;
         } else {
-          AppLogger.error('❌ INVITATION DEBUG: Failed to send invitations');
           throw Exception('Kunde inte skicka inbjudningar');
         }
       } else {
         // Handle traditional copy-based sharing with filtered friends
-        AppLogger.warning('⚠️ COPY MODE DEBUG: Using static copy mode instead of realtime!');
-        AppLogger.info('📋 COPY MODE DEBUG: Share mode: $shareMode');
-        AppLogger.info('📋 COPY MODE DEBUG: Content type: ${shareMode == ShareMode.staticCopy ? "STATIC COPY" : "OTHER"}');
-        AppLogger.warning('🚨 COPY MODE FIX: The old copy mode was broken - just returned true without doing anything!');
-        AppLogger.info('✅ COPY MODE FIX: Now using invitation system for copy mode too');
-        
         // ULTRATHINK FIX: Use invitation system for copy mode too instead of broken shareListWithFriend
         final success = await SocialContentFeatures.shareContentWithFriends(
           shoppingList.id,

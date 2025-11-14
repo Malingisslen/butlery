@@ -18,7 +18,6 @@ import 'package:butlery/widgets/common/layout/bordered_container.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 
-
 class UserProfileEditView extends StatelessWidget {
   const UserProfileEditView({super.key});
 
@@ -52,15 +51,18 @@ class _UserProfileEditViewContentState
     super.initState();
 
     // Listen for focus changes to check display name availability
-    _displayNameFocusNode.addListener(() {
-      if (!_displayNameFocusNode.hasFocus) {
-        _checkDisplayNameAvailability();
-      }
-    });
+    _displayNameFocusNode.addListener(_onFocusChanged);
+  }
+
+  void _onFocusChanged() {
+    if (!_displayNameFocusNode.hasFocus) {
+      _checkDisplayNameAvailability();
+    }
   }
 
   @override
   void dispose() {
+    _displayNameFocusNode.removeListener(_onFocusChanged);
     _displayNameController.dispose();
     _displayNameFocusNode.dispose();
     super.dispose();
@@ -140,7 +142,8 @@ class _UserProfileEditViewContentState
         // Navigate back after successful save
         Navigator.pop(context);
       } else {
-        SnackBarUtils.showError(context, viewModel.error ?? 'Kunde inte spara profil');
+        SnackBarUtils.showError(
+            context, viewModel.error ?? 'Kunde inte spara profil');
       }
     }
   }
@@ -208,7 +211,9 @@ class _UserProfileEditViewContentState
         body: FormScaffold(
           title: 'Redigera profil',
           form: _buildForm(viewModel),
-          onSave: viewModel.isLoading || !viewModel.isFormValid ? null : _saveProfile,
+          onSave: viewModel.isLoading || !viewModel.isFormValid
+              ? null
+              : _saveProfile,
           isLoading: viewModel.isLoading,
           showSaveButton: false,
           showCancelButton: false,
@@ -309,7 +314,8 @@ class _UserProfileEditViewContentState
                       ? null
                       : () {
                           viewModel.removeAvatar();
-                          SnackBarUtils.showSuccess(context, 'Avatar borttagen');
+                          SnackBarUtils.showSuccess(
+                              context, 'Avatar borttagen');
                         },
                 ),
             ],
@@ -360,8 +366,8 @@ class _UserProfileEditViewContentState
           Text(
             viewModel.displayNameError!,
             style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.error,
-                ),
+              color: AppColors.error,
+            ),
           ),
         ],
       ],
@@ -446,7 +452,8 @@ class _UserProfileEditViewContentState
             decoration: BoxDecoration(
               color: AppColors.warning.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+              border:
+                  Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
             ),
             child: const Row(
               children: [

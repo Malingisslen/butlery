@@ -8,7 +8,6 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
-import 'package:butlery/core/utils/logger.dart';
 
 // Import focused components
 import 'package:butlery/widgets/common/share_dialog/share_dialog_header.dart';
@@ -162,19 +161,9 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
     
     // Set default share mode - collaborative for shopping lists, static copy for others
     _selectedMode = (widget.contentType == ShareContentType.shoppingList && _supportsRealtimeSharing) 
-        ? ShareMode.realtime 
+        ? ShareMode.realtime
         : ShareMode.staticCopy;
-    
-    // ULTRATHINK FIX: Add debug logging to track mode selection
-    AppLogger.info('🎯 MODE SELECTION DEBUG: Content type: ${widget.contentType}');
-    AppLogger.info('🎯 MODE SELECTION DEBUG: Supports realtime: $_supportsRealtimeSharing');
-    AppLogger.info('🎯 MODE SELECTION DEBUG: Selected default mode: $_selectedMode');
-    if (widget.content is UnifiedShoppingList) {
-      final list = widget.content as UnifiedShoppingList;
-      AppLogger.info('🎯 MODE SELECTION DEBUG: List "${list.name}" is collaborative: ${list.isCollaborative}');
-      AppLogger.info('🎯 MODE SELECTION DEBUG: List type: ${list.type}');
-    }
-    
+
     // Kontrollera om vi har vänner eller grupper
     _hasFriends = (widget.availableFriends?.isNotEmpty ?? false) || 
                   (widget.availableGroups?.isNotEmpty ?? false);
@@ -365,15 +354,6 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
       final friendIds = _selectedFriendIds.toList();
       final groupIds = _selectedGroupIds.toList();
       final allowCollaboration = _selectedMode == ShareMode.realtime;
-
-      // ULTRATHINK FIX: Add debug logging to track actual sharing mode
-      AppLogger.info('🚀 SHARE ACTION DEBUG: Starting share action');
-      AppLogger.info('🚀 SHARE ACTION DEBUG: Content type: ${widget.contentType}');
-      AppLogger.info('🚀 SHARE ACTION DEBUG: Selected mode: $_selectedMode');
-      AppLogger.info('🚀 SHARE ACTION DEBUG: Allow collaboration: $allowCollaboration');
-      AppLogger.info('🚀 SHARE ACTION DEBUG: Friends selected: ${friendIds.length} - $friendIds');
-      AppLogger.info('🚀 SHARE ACTION DEBUG: Groups selected: ${groupIds.length} - $groupIds');
-      AppLogger.info('🚀 SHARE ACTION DEBUG: Message: "${message.isEmpty ? 'None' : message}"');
 
       switch (widget.contentType) {
         case ShareContentType.recipe:

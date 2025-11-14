@@ -8,6 +8,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
+import 'package:butlery/core/rate_limiting/rate_limiter.dart';
 
 /// Personal recipe CRUD operations module handling recipe creation, updates, import/export, and local storage.
 class PersonalRecipeModule {
@@ -19,6 +20,7 @@ class PersonalRecipeModule {
   final void Function(String) _setError;
   final void Function() _notifyListeners;
   final RecipeServiceAdapter Function() _getServiceAdapter;
+  final RateLimiter _rateLimiter = RateLimiter();
 
   PersonalRecipeModule({
     required RecipeRepository recipeRepository,
@@ -63,38 +65,48 @@ class PersonalRecipeModule {
     }
 
     try {
-      final newRecipe = Recipe.personal(
-        title: title.trim(),
-        description: description,
-        ingredients: ingredients,
-        instructions: instructions,
-        mealType: mealType,
-        createdBy: currentUserId,
-        portions: portions,
-        timeMinutes: timeMinutes,
-        rating: rating,
-        tags: tags,
-        sourceUrl: sourceUrl,
-        imageUrls: imageUrls,
-      );
+      // Rate limit check for recipe creation (DoS prevention)
+      return await _rateLimiter.executeWithLimit(
+        RateLimitOperation.createRecipe,
+        () async {
+          final newRecipe = Recipe.personal(
+            title: title.trim(),
+            description: description,
+            ingredients: ingredients,
+            instructions: instructions,
+            mealType: mealType,
+            createdBy: currentUserId,
+            portions: portions,
+            timeMinutes: timeMinutes,
+            rating: rating,
+            tags: tags,
+            sourceUrl: sourceUrl,
+            imageUrls: imageUrls,
+          );
 
-      // ULTRATHINK FIX: Optimistic update - save to cache immediately and return success
-      await _saveToCache(newRecipe);
-      
-      // Increment user's public recipe count
-      try {
-        await _userRepository.incrementPublicRecipeCount(currentUserId);
-        AppLogger.debug('✅ Incremented public recipe count for user $currentUserId');
-      } catch (e) {
-        AppLogger.warning('⚠️ Failed to increment recipe count: $e');
-        // Continue anyway - don't fail recipe creation for counter issues
-      }
-      
-      // Start background database sync without waiting
-      _startBackgroundRecipeSync(newRecipe, 'create');
-      
-      AppLogger.success('✅ Personal recipe "$title" created (syncing in background)');
-      return newRecipe.id;
+          // ULTRATHINK FIX: Optimistic update - save to cache immediately and return success
+          await _saveToCache(newRecipe);
+
+          // Increment user's public recipe count
+          try {
+            await _userRepository.incrementPublicRecipeCount(currentUserId);
+            AppLogger.debug('✅ Incremented public recipe count for user $currentUserId');
+          } catch (e) {
+            AppLogger.warning('⚠️ Failed to increment recipe count: $e');
+            // Continue anyway - don't fail recipe creation for counter issues
+          }
+
+          // Start background database sync without waiting
+          _startBackgroundRecipeSync(newRecipe, 'create');
+
+          AppLogger.success('✅ Personal recipe "$title" created (syncing in background)');
+          return newRecipe.id;
+        },
+      );
+    } on RateLimitException catch (e) {
+      AppLogger.warning('⚠️ Rate limit exceeded for recipe creation: $e');
+      _setError('För många receptskapanden. Försök igen om ${e.retryAfter?.inSeconds ?? 60} sekunder.');
+      return null;
     } catch (e) {
       AppLogger.error('❌ Could not create personal recipe: $e');
       _setError('Kunde inte skapa recept: $e');
@@ -115,19 +127,29 @@ class PersonalRecipeModule {
     }
 
     try {
-      final editedRecipe = updatedRecipe.copyWith(
-        lastEditedByUserId: currentUserId,
-        lastEditedByDisplayName: _getCurrentUserDisplayName(),
-      );
+      // Rate limit check for recipe updates (DoS prevention)
+      return await _rateLimiter.executeWithLimit(
+        RateLimitOperation.updateRecipe,
+        () async {
+          final editedRecipe = updatedRecipe.copyWith(
+            lastEditedByUserId: currentUserId,
+            lastEditedByDisplayName: _getCurrentUserDisplayName(),
+          );
 
-      // ULTRATHINK FIX: Optimistic update - save to cache immediately and return success
-      await _saveToCache(editedRecipe);
-      
-      // Start background database sync without waiting
-      _startBackgroundRecipeSync(editedRecipe, 'update');
-      
-      AppLogger.success('✅ Personal recipe "${editedRecipe.title}" updated (syncing in background)');
-      return true;
+          // ULTRATHINK FIX: Optimistic update - save to cache immediately and return success
+          await _saveToCache(editedRecipe);
+
+          // Start background database sync without waiting
+          _startBackgroundRecipeSync(editedRecipe, 'update');
+
+          AppLogger.success('✅ Personal recipe "${editedRecipe.title}" updated (syncing in background)');
+          return true;
+        },
+      );
+    } on RateLimitException catch (e) {
+      AppLogger.warning('⚠️ Rate limit exceeded for recipe update: $e');
+      _setError('För många uppdateringar. Försök igen om ${e.retryAfter?.inSeconds ?? 60} sekunder.');
+      return false;
     } catch (e) {
       AppLogger.error('❌ Could not update personal recipe: $e');
       _setError('Kunde inte uppdatera recept: $e');
@@ -143,27 +165,37 @@ class PersonalRecipeModule {
     }
 
     try {
-      // Remove from cache
-      await _removeFromCache(recipeId);
+      // Rate limit check for recipe deletion (DoS prevention)
+      return await _rateLimiter.executeWithLimit(
+        RateLimitOperation.deleteRecipe,
+        () async {
+          // Remove from cache
+          await _removeFromCache(recipeId);
 
-      // Delete from Firebase using repository pattern
-      final deleteSuccess = await _getServiceAdapter().deleteRecipe(recipeId);
-      if (deleteSuccess) {
-        // Decrement user's public recipe count
-        try {
-          await _userRepository.decrementPublicRecipeCount(currentUserId);
-          AppLogger.debug('✅ Decremented public recipe count for user $currentUserId');
-        } catch (e) {
-          AppLogger.warning('⚠️ Failed to decrement recipe count: $e');
-          // Continue anyway - don't fail recipe deletion for counter issues
-        }
-        
-        AppLogger.success('✅ Personal recipe deleted');
-      } else {
-        _setError('Kunde inte ta bort recept från servern');
-        return false;
-      }
-      return true;
+          // Delete from Firebase using repository pattern
+          final deleteSuccess = await _getServiceAdapter().deleteRecipe(recipeId);
+          if (deleteSuccess) {
+            // Decrement user's public recipe count
+            try {
+              await _userRepository.decrementPublicRecipeCount(currentUserId);
+              AppLogger.debug('✅ Decremented public recipe count for user $currentUserId');
+            } catch (e) {
+              AppLogger.warning('⚠️ Failed to decrement recipe count: $e');
+              // Continue anyway - don't fail recipe deletion for counter issues
+            }
+
+            AppLogger.success('✅ Personal recipe deleted');
+          } else {
+            _setError('Kunde inte ta bort recept från servern');
+            return false;
+          }
+          return true;
+        },
+      );
+    } on RateLimitException catch (e) {
+      AppLogger.warning('⚠️ Rate limit exceeded for recipe deletion: $e');
+      _setError('För många borttagningar. Försök igen om ${e.retryAfter?.inSeconds ?? 60} sekunder.');
+      return false;
     } catch (e) {
       AppLogger.error('❌ Could not delete personal recipe: $e');
       _setError('Kunde inte ta bort recept: $e');

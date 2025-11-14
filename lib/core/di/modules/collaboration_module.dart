@@ -30,6 +30,9 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_menu_collaboration_repository.dart';
 
+// Recipe presence repository
+import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart';
+
 // Shopping repository
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shopping_repository.dart';
@@ -68,27 +71,29 @@ class CollaborationModule implements DIModule {
 
   @override
   List<Type> get provides => [
-    RealtimeSyncService,
-    RealtimeRecipeService,
-    RealtimeMenuService,
-    UnifiedShoppingService,
-    PermissionService,
-    MenuCollaborationRepository,
-    FirebaseSharedShoppingRepository,
-  ];
+        RealtimeSyncService,
+        RealtimeRecipeService,
+        RealtimeMenuService,
+        UnifiedShoppingService,
+        PermissionService,
+        MenuCollaborationRepository,
+        FirebaseSharedShoppingRepository,
+      ];
 
   @override
-  int get priority => 40; // After Core (1), Content (10), Social (20), Messaging (30)
+  int get priority =>
+      40; // After Core (1), Content (10), Social (20), Messaging (30)
 
   @override
   Future<void> configure(GetIt container) async {
     if (kDebugMode) {
-      debugPrint('🔧 [CollaborationModule] Configuring collaboration services...');
+      debugPrint(
+          '🔧 [CollaborationModule] Configuring collaboration services...');
     }
 
     try {
       // ==================== REALTIME SYNC FOUNDATION ====================
-      
+
       // RealtimeSyncService - enables collaborative editing of recipes and menus
       container.registerSingleton<RealtimeSyncService>(
         RealtimeSyncService(
@@ -98,7 +103,7 @@ class CollaborationModule implements DIModule {
       );
 
       // ==================== MENU COLLABORATION REPOSITORY ====================
-      
+
       // MenuCollaborationRepository - Firebase implementation for collaborative menus
       container.registerLazySingleton<MenuCollaborationRepository>(
         () => FirebaseMenuCollaborationRepository(
@@ -106,8 +111,17 @@ class CollaborationModule implements DIModule {
         ),
       );
 
+      // ==================== RECIPE PRESENCE REPOSITORY ====================
+
+      // FirebaseRecipePresenceRepository - recipe presence tracking for collaborative editing
+      container.registerLazySingleton<FirebaseRecipePresenceRepository>(
+        () => FirebaseRecipePresenceRepository(
+          firestoreRepository: container<FirestoreRepository>(),
+        ),
+      );
+
       // ==================== COLLABORATIVE SERVICES ====================
-      
+
       // RealtimeMenuService - collaborative meal planning
       container.registerLazySingleton<RealtimeMenuService>(
         () => RealtimeMenuService(
@@ -117,7 +131,7 @@ class CollaborationModule implements DIModule {
       );
 
       // ==================== SHOPPING REPOSITORY ====================
-      
+
       // ShoppingRepository - Firebase shopping list data access
       container.registerLazySingleton<ShoppingRepository>(
         () => FirebaseShoppingRepository(
@@ -126,7 +140,7 @@ class CollaborationModule implements DIModule {
       );
 
       // ==================== SHARED SHOPPING REPOSITORY ====================
-      
+
       // FirebaseSharedShoppingRepository - unified shared shopping list management
       container.registerLazySingleton<FirebaseSharedShoppingRepository>(
         () => FirebaseSharedShoppingRepository(
@@ -135,7 +149,7 @@ class CollaborationModule implements DIModule {
       );
 
       // ==================== UNIFIED SHOPPING SYSTEM ====================
-      
+
       // UnifiedShoppingService - collaborative shopping lists
       container.registerLazySingleton<UnifiedShoppingService>(
         () => UnifiedShoppingService(
@@ -146,7 +160,7 @@ class CollaborationModule implements DIModule {
       );
 
       // ==================== PERMISSION SYSTEM ====================
-      
+
       // PermissionService - comprehensive authorization system
       // Now includes RecipeRepository for proper ownership validation
       container.registerLazySingleton<PermissionService>(
@@ -157,7 +171,7 @@ class CollaborationModule implements DIModule {
       );
 
       // ==================== REALTIME RECIPE SERVICE ====================
-      
+
       // RealtimeRecipeService - collaborative recipe editing
       // Note: This depends on PermissionService, so it's registered as lazy singleton
       container.registerLazySingleton<RealtimeRecipeService>(
@@ -168,7 +182,8 @@ class CollaborationModule implements DIModule {
       );
 
       if (kDebugMode) {
-        debugPrint('✅ [CollaborationModule] Configured 6 services (Realtime sync, Shopping, Shared shopping, Permissions)');
+        debugPrint(
+            '✅ [CollaborationModule] Configured 6 services (Realtime sync, Shopping, Shared shopping, Permissions)');
       }
     } catch (e) {
       throw DIModuleException(
@@ -195,15 +210,15 @@ class CollaborationModule implements DIModule {
 
       // Validate other services are accessible (lazy singletons will be created on first access)
       final permissionService = container<PermissionService>();
-      permissionService.toString(); // Basic validation - this creates the lazy singleton
+      permissionService
+          .toString(); // Basic validation - this creates the lazy singleton
 
       // Validate realtime services
       final realtimeMenuService = container<RealtimeMenuService>();
       realtimeMenuService.toString(); // Basic validation
-      
+
       final realtimeRecipeService = container<RealtimeRecipeService>();
       realtimeRecipeService.toString(); // Basic validation
-
     } catch (e) {
       throw DIModuleException(
         name,
@@ -232,24 +247,26 @@ class CollaborationModule implements DIModule {
         services['RealtimeRecipeService'] = container<RealtimeRecipeService>();
       } catch (e) {
         if (kDebugMode) {
-          debugPrint('⚠️ [CollaborationModule] Could not access lazy singletons: $e');
+          debugPrint(
+              '⚠️ [CollaborationModule] Could not access lazy singletons: $e');
         }
       }
 
       // Perform health checks on services that support it
       for (final entry in services.entries) {
         final service = entry.value;
-        
+
         if (service is HealthCheckable) {
           final isHealthy = await service.healthCheck();
           if (!isHealthy) {
             if (kDebugMode) {
-              debugPrint('❌ [CollaborationModule] Health check failed for ${entry.key}');
+              debugPrint(
+                  '❌ [CollaborationModule] Health check failed for ${entry.key}');
             }
             return false;
           }
         }
-        
+
         // Basic validation - service is not null
         if (service == null) {
           if (kDebugMode) {
@@ -259,7 +276,6 @@ class CollaborationModule implements DIModule {
         }
       }
 
-      
       return true;
     } catch (e) {
       if (kDebugMode) {
@@ -274,7 +290,7 @@ class CollaborationModule implements DIModule {
 class CollaborationModuleFactory {
   /// Create a new CollaborationModule instance.
   static CollaborationModule create() => CollaborationModule();
-  
+
   /// Create CollaborationModule with custom configuration.
   static CollaborationModule createWithConfig({
     bool enableRealtimeSync = true,

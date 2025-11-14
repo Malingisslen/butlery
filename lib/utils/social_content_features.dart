@@ -128,76 +128,26 @@ class SocialContentFeatures {
     String message,
     dynamic service,
   ) async {
-    AppLogger.info('🚀 INVITATION DEBUG: INVITATION CREATION START');
-    AppLogger.info(
-        '📋 INVITATION DEBUG: Sharing content: "$contentId" (type: $contentType)');
-    AppLogger.info(
-        '📋 INVITATION DEBUG: Target friends: ${friendIds.length} friends: $friendIds');
-    AppLogger.info(
-        '📋 INVITATION DEBUG: Message: "${message.isEmpty ? 'None' : message}"');
-    AppLogger.info('📋 INVITATION DEBUG: Service type: ${service.runtimeType}');
-
     try {
       if (contentType == 'shopping_list' && service is UnifiedShoppingService) {
-        AppLogger.info(
-            '✅ INVITATION DEBUG: Confirmed shopping list sharing workflow - USING INVITATION SYSTEM');
-
         // Get the shopping list
-        AppLogger.info(
-            '🔄 INVITATION DEBUG: Looking up shopping list with ID: $contentId');
         final shoppingList =
             service.lists.firstWhere((list) => list.id == contentId);
-        AppLogger.info(
-            '✅ INVITATION DEBUG: Found shopping list: "${shoppingList.name}" with ${shoppingList.items.length} items');
-        AppLogger.info(
-            '📊 INVITATION DEBUG: List details - Type: ${shoppingList.type}, Collaborative: ${shoppingList.isCollaborative}, Owner: ${shoppingList.ownerId}');
-
-        // CRITICAL CHECK: Verify this is not already a collaborative list being shared incorrectly
-        if (shoppingList.isCollaborative) {
-          AppLogger.warning(
-              '⚠️ INVITATION DEBUG: WARNING - Attempting to share an already collaborative list!');
-          AppLogger.info(
-              '📋 INVITATION DEBUG: Current collaborators: ${shoppingList.collaborators}');
-          AppLogger.info(
-              '📋 INVITATION DEBUG: Member permissions: ${shoppingList.memberPermissions}');
-          AppLogger.info(
-              '🤔 INVITATION DEBUG: This might explain why recipients are auto-added!');
-
-          // Check if any target friends are already in collaborators vs removed from permissions
-          for (final friendId in friendIds) {
-            final isCurrentCollaborator = shoppingList.collaborators.contains(friendId);
-            final hasPermission = shoppingList.memberPermissions.containsKey(friendId);
-            AppLogger.info('👤 INVITATION DEBUG: Friend $friendId - InCollaborators: $isCurrentCollaborator, HasPermission: $hasPermission');
-            if (!isCurrentCollaborator && !hasPermission) {
-              AppLogger.info('✅ INVITATION DEBUG: Friend $friendId is truly new (removed or never added)');
-            }
-          }
-        }
 
         // PHASE 1 FIX: Create proper invitation instead of direct conversion
-        AppLogger.info(
-            '🔄 INVITATION DEBUG: Creating SharedShoppingList invitation for "Delat med mig" workflow');
         final success = await _createSharedShoppingListInvitation(
             shoppingList, friendIds, message, service);
 
         if (!success) {
-          AppLogger.error(
-              '❌ INVITATION DEBUG: Failed to create shopping list invitation');
           return false;
         }
 
-        AppLogger.success(
-            '🎉 INVITATION DEBUG: Shopping list invitation created successfully - should appear in "Delat med mig"!');
         return true;
       }
 
       // RECIPE INVITATION ROUTING
       if (contentType == 'recipe' && service is SocialRecipeService) {
-        AppLogger.info(
-            '✅ INVITATION DEBUG: Confirmed recipe sharing workflow - USING INVITATION SYSTEM');
-
         // Use SocialRecipeCoordinator to create recipe invitation
-        AppLogger.info('🔄 INVITATION DEBUG: Creating recipe invitation via SocialRecipeCoordinator');
         final coordinator = ServiceLocator.get<SocialRecipeCoordinator>();
         final invitationId = await coordinator.createRecipeInvitation(
           recipeId: contentId,
@@ -207,30 +157,21 @@ class SocialContentFeatures {
         );
 
         if (invitationId == null) {
-          AppLogger.error('❌ INVITATION DEBUG: Failed to create recipe invitation');
           return false;
         }
 
-        AppLogger.success(
-            '🎉 INVITATION DEBUG: Recipe invitation created successfully - should appear in "Delat med mig"!');
         return true;
       }
 
       // MENU INVITATION ROUTING
       if (contentType == 'menu' && service is UnifiedMenuService) {
-        AppLogger.info(
-            '✅ INVITATION DEBUG: Confirmed menu sharing workflow - USING INVITATION SYSTEM');
-
         // Get the menu data
-        AppLogger.info('🔄 INVITATION DEBUG: Looking up menu with ID: $contentId');
         final menu = service.getMenuById(contentId);
         if (menu == null) {
-          AppLogger.error('❌ INVITATION DEBUG: Menu not found: $contentId');
           return false;
         }
 
         // Use UnifiedMenuService to create menu invitation
-        AppLogger.info('🔄 INVITATION DEBUG: Creating menu invitation via UnifiedMenuService');
         final invitationId = await service.createMenuInvitation(
           menuTitle: menu.menuTitle,
           menuSnapshot: menu.menuSnapshot,
@@ -240,18 +181,13 @@ class SocialContentFeatures {
         );
 
         if (invitationId == null) {
-          AppLogger.error('❌ INVITATION DEBUG: Failed to create menu invitation');
           return false;
         }
 
-        AppLogger.success(
-            '🎉 INVITATION DEBUG: Menu invitation created successfully - should appear in "Delat med mig"!');
         return true;
       }
 
       // Unknown content type or service mismatch
-      AppLogger.error(
-          '❌ INVITATION DEBUG: Unknown content type "$contentType" or service mismatch: ${service.runtimeType}');
       return false;
     } catch (e) {
       AppLogger.error('Failed to share content: $e');
@@ -298,39 +234,23 @@ class SocialContentFeatures {
     UnifiedShoppingService service,
   ) async {
     try {
-      AppLogger.info(
-          '🔄 INVITATION CREATION: Creating SharedShoppingList invitation for "${shoppingList.name}"');
-      AppLogger.info(
-          '🔄 INVITATION CREATION: Target friends: ${friendIds.length}, Message: "${message.isEmpty ? 'None' : message}"');
-
       // Get current user information
       final currentUserId = service.currentUserId;
       final userService = ServiceLocator.get<UserService>();
       final currentUserProfile = userService.currentUserProfile;
 
       if (currentUserId == null || currentUserProfile == null) {
-        AppLogger.error(
-            '❌ INVITATION CREATION: Cannot get current user information');
         return false;
       }
 
-      AppLogger.info(
-          '✅ INVITATION CREATION: Current user: ${currentUserProfile.displayName} ($currentUserId)');
-
-      AppLogger.info(
-          '🔄 INVITATION CREATION: Creating SharedShoppingList invitation...');
-
       // PHASE 3 FIX: Validate share targets to prevent duplicate invitations
-      final validationResult = await _validateShareTargets(shoppingList, friendIds, service);
+      final validationResult =
+          await _validateShareTargets(shoppingList, friendIds, service);
       if (!validationResult.isValid) {
-        AppLogger.warning(
-            '⚠️ PHASE 3 FIX: Share validation failed: ${validationResult.message}');
         return false;
       }
 
       final validFriendIds = validationResult.validTargets;
-      AppLogger.info(
-          '✅ PHASE 3 FIX: Validated ${validFriendIds.length}/${friendIds.length} share targets');
 
       // Create SharedShoppingList invitation with validated targets
       final validatedSharedShoppingList = SharedShoppingList.create(
@@ -344,18 +264,17 @@ class SocialContentFeatures {
       );
 
       // Persist invitation via repository
-      final sharedShoppingRepository = ServiceLocator.get<FirebaseSharedShoppingRepository>();
-      final invitationId = await sharedShoppingRepository.createSharedShoppingList(validatedSharedShoppingList);
-
-      AppLogger.success(
-          '🎉 INVITATION CREATION: SharedShoppingList invitation saved with ID: $invitationId');
-      AppLogger.info(
-          '✅ INVITATION CREATION: Invitation will appear in recipients "Delat med mig" view');
+      final sharedShoppingRepository =
+          ServiceLocator.get<FirebaseSharedShoppingRepository>();
+      // Note (Issue #014): Pass recipientIds separately since arrays removed from model
+      await sharedShoppingRepository.createSharedShoppingList(
+        validatedSharedShoppingList,
+        recipientIds: validFriendIds,
+      );
 
       return true;
     } catch (e) {
-      AppLogger.error(
-          '❌ INVITATION CREATION: Failed to create shopping list invitation: $e');
+      AppLogger.error('Failed to create shopping list invitation: $e');
       return false;
     }
   }
@@ -368,58 +287,38 @@ class SocialContentFeatures {
     UnifiedShoppingService service,
   ) async {
     try {
-      AppLogger.info(
-          '🔄 SHARE VALIDATION: Validating ${friendIds.length} share targets for "${shoppingList.name}"');
-
       // Check if there's already a collaborative version of this list
-      final collaborativeVersions = service.lists.where((list) =>
-          list.type == ListType.collaborative &&
-          list.name == shoppingList.name &&
-          list.ownerId == shoppingList.ownerId).toList();
+      final collaborativeVersions = service.lists
+          .where((list) =>
+              list.type == ListType.collaborative &&
+              list.name == shoppingList.name &&
+              list.ownerId == shoppingList.ownerId)
+          .toList();
 
       if (collaborativeVersions.isEmpty) {
-        AppLogger.info(
-            '✅ SHARE VALIDATION: No collaborative version exists - all targets valid');
         return ShareTargetValidationResult.valid(friendIds);
       }
-
-      AppLogger.info(
-          '🔍 SHARE VALIDATION: Found ${collaborativeVersions.length} collaborative version(s), checking members');
 
       // Get existing members from all collaborative versions
       final existingMembers = <String>{};
       for (final collaborativeList in collaborativeVersions) {
         existingMembers.addAll(collaborativeList.collaborators);
-        AppLogger.info(
-            '🔍 SHARE VALIDATION: Collaborative list "${collaborativeList.id}" has members: ${collaborativeList.collaborators}');
       }
 
       // Filter out targets who are already members
-      final validTargets = friendIds.where((friendId) => !existingMembers.contains(friendId)).toList();
-      final duplicateTargets = friendIds.where((friendId) => existingMembers.contains(friendId)).toList();
-
-      AppLogger.info(
-          '📊 SHARE VALIDATION: Valid targets: ${validTargets.length}, Already members: ${duplicateTargets.length}');
-
-      if (duplicateTargets.isNotEmpty) {
-        AppLogger.warning(
-            '⚠️ SHARE VALIDATION: Found duplicate targets - these users already have access: $duplicateTargets');
-      }
+      final validTargets = friendIds
+          .where((friendId) => !existingMembers.contains(friendId))
+          .toList();
 
       if (validTargets.isEmpty) {
-        AppLogger.warning(
-            '⚠️ SHARE VALIDATION: No valid targets - all selected users already have access');
         return ShareTargetValidationResult.invalid(
             'All selected users already have access to this list');
       }
 
       return ShareTargetValidationResult.valid(validTargets);
-
     } catch (e) {
-      AppLogger.error('❌ SHARE VALIDATION: Validation failed: $e');
+      AppLogger.error('Share validation failed: $e');
       // On error, allow all targets to avoid blocking sharing
-      AppLogger.warning(
-          '⚠️ SHARE VALIDATION: Falling back to allowing all targets due to validation error');
       return ShareTargetValidationResult.valid(friendIds);
     }
   }

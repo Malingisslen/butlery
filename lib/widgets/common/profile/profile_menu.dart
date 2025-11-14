@@ -5,10 +5,10 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/services/auth_service.dart';
-import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_recipe_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/widgets/common/profile/profile_actions.dart';
 /// Profile menu display components
@@ -70,16 +70,10 @@ class _ProfileMenuState extends State<ProfileMenu> {
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
       final groupInvitations = friendsService.invitations.pendingReceivedInvitations.length;
 
-      final socialService = ServiceLocator.get<SocialRecipeService>();
-      final currentUserId = ServiceLocator.get<AuthService>().currentUser?.uid;
-      final newSharedItems = currentUserId == null
-          ? 0
-          : socialService.recipesSharedWithMe
-                  .where((r) => !r.isDismissedBy(currentUserId))
-                  .length +
-              socialService.menusSharedWithMe
-                  .where((m) => !m.isDismissedBy(currentUserId))
-                  .length;
+      // Use ViewModels instead - they already filter dismissed items
+      final recipeViewModel = ServiceLocator.get<SharedRecipeViewModel>();
+      final menuViewModel = ServiceLocator.get<SharedMenuViewModel>();
+      final newSharedItems = recipeViewModel.content.length + menuViewModel.content.length;
 
       if (mounted) {
         setState(() {
@@ -197,11 +191,15 @@ class _ProfileMenuState extends State<ProfileMenu> {
                   ],
                 ),
               ),
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(
-                  Icons.close,
-                  size: AppDimensions.iconSizeAction,
+              Semantics(
+                label: 'Stäng profilmeny',
+                button: true,
+                child: IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(
+                    Icons.close,
+                    size: AppDimensions.iconSizeAction,
+                  ),
                 ),
               ),
             ],

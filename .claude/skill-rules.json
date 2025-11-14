@@ -15,10 +15,9 @@
         "layer",
         "separation",
         "service locator",
-        "feature",
-        "functionality",
-        "ability",
-        "capability"
+        "BaseService",
+        "BaseFirebaseRepository",
+        "ServiceLocator"
       ],
       "intentPatterns": [
         "create.*service",
@@ -29,51 +28,11 @@
         "dependency.*injection",
         "how.*architecture",
         "layer.*violation",
-        "add.*feature",
-        "implement.*feature",
-        "new.*feature",
-        "build.*feature",
-        "want.*to.*add",
-        "need.*to.*add",
-        "can.*you.*add",
-        "i.*want.*users.*to",
-        "let.*users",
-        "allow.*users.*to",
-        "enable.*users.*to",
-        "make.*it.*so.*users",
-        "users.*should.*be.*able",
-        "users.*need.*to",
-        "give.*users.*ability",
-        "save.*data",
-        "store.*data",
-        "keep.*track",
-        "remember.*when",
-        "record.*information",
-        "persist.*information",
-        "save.*information",
-        "store.*information",
-        "build.*functionality",
-        "create.*functionality",
-        "add.*ability",
-        "implement.*capability"
-      ]
-    },
-    "fileTriggers": {
-      "pathPatterns": [
-        "lib/services/**/*.dart",
-        "lib/repositories/**/*.dart",
-        "lib/viewmodels/**/*.dart",
-        "lib/core/di/**/*.dart"
-      ],
-      "contentPatterns": [
-        "class.*Service",
-        "class.*Repository",
-        "class.*ViewModel",
-        "extends BaseService",
-        "extends BaseFirebaseRepository",
-        "ServiceLocator\\.get",
-        "FirebaseFirestore\\.instance",
-        "sl<"
+        "violat(e|ion|ing).*layer",
+        "bypass.*(repository|service|layer)",
+        "\\bBaseService\\b",
+        "\\bBaseFirebaseRepository\\b",
+        "mvvm.*(pattern|architecture|compliance)"
       ]
     }
   },
@@ -94,7 +53,9 @@
         "test factory",
         "verify",
         "ensure",
-        "check"
+        "check",
+        "investigation",
+        "investigate"
       ],
       "intentPatterns": [
         "write.*test",
@@ -112,25 +73,14 @@
         "test.*if",
         "does.*it.*work",
         "is.*it.*working",
-        "validate.*that"
-      ]
-    },
-    "fileTriggers": {
-      "pathPatterns": [
-        "test/unit/**/*_test.dart",
-        "test/integration/**/*_test.dart",
-        "test/widget/**/*_test.dart",
-        "lib/**/*.dart"
-      ],
-      "contentPatterns": [
-        "void main\\(\\)",
-        "group\\(",
-        "test\\(",
-        "testWidgets\\(",
-        "@visibleForTesting",
-        "FakeFirebaseFirestore",
-        "Mock.*Repository",
-        "Mock.*Service"
+        "validate.*that",
+        "do.*investigation",
+        "do.*full.*investigation",
+        "make.*sure.*that",
+        "test.*tests.*the",
+        "test.*architecture",
+        "verify.*architecture",
+        "check.*architecture"
       ]
     }
   },
@@ -186,22 +136,6 @@
         "delete.*data",
         "remove.*saved"
       ]
-    },
-    "fileTriggers": {
-      "pathPatterns": [
-        "lib/repositories/firebase/**/*.dart",
-        "lib/repositories/interfaces/**/*.dart"
-      ],
-      "contentPatterns": [
-        "class.*Repository",
-        "extends BaseFirebaseRepository",
-        "implements.*Repository",
-        "FirebaseFirestore\\.instance",
-        "validateCreatePermission",
-        "validateUpdatePermission",
-        "fromFirestore",
-        "toFirestore"
-      ]
     }
   },
   "state-management-patterns": {
@@ -242,21 +176,6 @@
         "if.*something.*goes.*wrong",
         "error.*message"
       ]
-    },
-    "fileTriggers": {
-      "pathPatterns": [
-        "lib/viewmodels/**/*.dart",
-        "lib/views/**/*.dart"
-      ],
-      "contentPatterns": [
-        "extends ChangeNotifier",
-        "with AsyncOperationMixin",
-        "with StateNotifierMixin",
-        "notifyListeners\\(",
-        "ChangeNotifierProvider",
-        "Provider\\.of",
-        "Consumer<"
-      ]
     }
   },
   "code-deduplication-utilities": {
@@ -266,12 +185,28 @@
     "promptTriggers": {
       "keywords": [
         "serialization",
+        "SerializationUtils",
         "error handling",
+        "ErrorHandlingMixin",
         "null coalescing",
         "validation",
+        "ValidationUtils",
         "try catch",
         "default value",
-        "parsing"
+        "default value extensions",
+        "parsing",
+        "analyze",
+        "analysis",
+        "migration",
+        "refactoring",
+        "duplication",
+        "utilities",
+        "extensions",
+        "helpers",
+        "BaseService",
+        "orEmpty",
+        "orZero",
+        "hasItems"
       ],
       "intentPatterns": [
         "serialize.*data",
@@ -280,23 +215,16 @@
         "null.*check",
         "validation",
         "default.*value",
-        "try.*catch"
-      ]
-    },
-    "fileTriggers": {
-      "pathPatterns": [
-        "lib/models/**/*.dart",
-        "lib/services/**/*.dart",
-        "lib/repositories/**/*.dart"
-      ],
-      "contentPatterns": [
-        "as String\\? \\?\\? ''",
-        "as int\\? \\?\\? 0",
-        "as List\\?.*\\?\\? \\[\\]",
-        "try \\{",
-        "catch \\(",
-        "fromFirestore",
-        "Timestamp.*toDate"
+        "try.*catch",
+        "analyze.*remaining",
+        "analyze.*suggestions",
+        "analyze.*migration",
+        "suggestions.*for.*migration",
+        "remaining.*suggestions",
+        "refactoring",
+        "avoid.*duplication",
+        "create.*duplication",
+        "findings.*on"
       ]
     }
   },
@@ -354,27 +282,12 @@
         "improve.*look",
         "better.*design"
       ]
-    },
-    "fileTriggers": {
-      "pathPatterns": [
-        "lib/widgets/**/*.dart",
-        "lib/views/**/*.dart"
-      ],
-      "contentPatterns": [
-        "extends StatelessWidget",
-        "extends StatefulWidget",
-        "Widget build\\(",
-        "const.*Widget",
-        "Theme\\.of",
-        "MediaQuery\\.of",
-        "TextEditingController"
-      ]
     }
   },
   "gdpr-compliance": {
     "type": "domain",
     "enforcement": "suggest",
-    "priority": "medium",
+    "priority": "high",
     "promptTriggers": {
       "keywords": [
         "gdpr",
@@ -415,22 +328,6 @@
         "control.*their.*data",
         "manage.*their.*data",
         "users.*own.*data"
-      ]
-    },
-    "fileTriggers": {
-      "pathPatterns": [
-        "lib/services/account/**/*.dart",
-        "lib/repositories/firebase/firebase_audit_repository.dart"
-      ],
-      "contentPatterns": [
-        "ConsentService",
-        "DataExportService",
-        "AccountDeletionService",
-        "AuditRepository",
-        "grantConsent",
-        "exportAllUserData",
-        "deleteAllUserData",
-        "logAuditEvent"
       ]
     }
   },
@@ -473,20 +370,6 @@
         "see.*what.*others.*are.*doing",
         "show.*who.*is.*editing"
       ]
-    },
-    "fileTriggers": {
-      "pathPatterns": [
-        "lib/services/realtime/**/*.dart",
-        "lib/services/unified/modules/realtime_*.dart"
-      ],
-      "contentPatterns": [
-        "RealtimeService",
-        "conflictResolution",
-        "presenceTracking",
-        "Stream<.*>",
-        "snapshots\\(\\)",
-        "concurrent.*edit"
-      ]
     }
   },
   "offline-first-patterns": {
@@ -528,20 +411,6 @@
         "upload.*when.*connected",
         "send.*when.*online"
       ]
-    },
-    "fileTriggers": {
-      "pathPatterns": [
-        "lib/services/offline_service.dart",
-        "lib/services/unified/modules/*_sync_*.dart"
-      ],
-      "contentPatterns": [
-        "Hive",
-        "Box<",
-        "OfflineService",
-        "syncWhenOnline",
-        "queueForSync",
-        "ConnectivityMonitoring"
-      ]
     }
   },
   "navigation-routing": {
@@ -581,57 +450,38 @@
         "navigate.*back",
         "go.*back"
       ]
-    },
-    "fileTriggers": {
-      "pathPatterns": [
-        "lib/core/router/**/*.dart",
-        "lib/views/**/*.dart"
-      ],
-      "contentPatterns": [
-        "AppRouter",
-        "generateRoute",
-        "Routes\\.",
-        "Navigator\\.pushNamed",
-        "Navigator\\.of",
-        "RouteSettings",
-        "DeepLinkHandler"
-      ]
     }
   },
   "dependency-injection-patterns": {
     "type": "domain",
     "enforcement": "enforce",
-    "priority": "high",
+    "priority": "critical",
     "promptTriggers": {
       "keywords": [
         "dependency injection",
         "di",
         "service locator",
+        "ServiceLocator",
         "getit",
         "module",
-        "registration"
+        "registration",
+        "singleton",
+        "lazy singleton",
+        "ApplicationProvider",
+        "ApplicationBootstrap",
+        "circular dependency"
       ],
       "intentPatterns": [
         "register.*service",
         "di.*module",
         "service.*locator",
         "dependency.*injection",
-        "container.*register"
-      ]
-    },
-    "fileTriggers": {
-      "pathPatterns": [
-        "lib/core/di/**/*.dart",
-        "lib/core/bootstrap/**/*.dart"
-      ],
-      "contentPatterns": [
-        "DIModule",
-        "GetIt",
-        "ServiceLocator\\.get",
-        "registerSingleton",
-        "registerLazySingleton",
-        "ApplicationBootstrap",
-        "sl<"
+        "container.*register",
+        "\\bregister\\s+.*?\\b(service|repository|viewmodel)\\b",
+        "\\bcircular\\s+dependency\\b",
+        "\\bsl<\\b",
+        "\\bServiceLocator\\.get\\b",
+        "\\bFirebaseFirestore\\.instance\\b"
       ]
     }
   },
@@ -672,20 +522,41 @@
         "choppy",
         "jerky"
       ]
-    },
-    "fileTriggers": {
-      "pathPatterns": [
-        "lib/services/performance/**/*.dart",
-        "lib/widgets/**/*.dart",
-        "lib/services/upload/**/*.dart"
+    }
+  },
+  "skill-developer": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "medium",
+    "promptTriggers": {
+      "keywords": [
+        "skill",
+        "skills",
+        "create skill",
+        "add skill",
+        "new skill",
+        "skill rules",
+        "skill-rules.json",
+        "trigger patterns",
+        "skill activation",
+        "hook",
+        "hooks",
+        "skill system",
+        "skill mechanism",
+        "progressive disclosure",
+        "500-line rule",
+        "yaml frontmatter",
+        "skill structure",
+        "intentPatterns",
+        "pathPatterns",
+        "contentPatterns"
       ],
-      "contentPatterns": [
-        "const.*Widget",
-        "CachedNetworkImage",
-        "ImageOptimization",
-        "LazyLoad",
-        "PerformanceMonitoring",
-        "CacheService"
+      "intentPatterns": [
+        "(create|add|build|make).*?(skill)",
+        "(modify|update|change).*?(skill rules|skill-rules.json)",
+        "(understand|how|explain).*?(skill activation|skill system|hook)",
+        "(debug|troubleshoot|fix).*?(skill.*activation)",
+        "skill.*?(not.*?activating|not.*?working|not.*?triggering)"
       ]
     }
   }

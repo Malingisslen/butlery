@@ -14,13 +14,9 @@ class MenuBuilder {
   String _menuTitle = 'Veckomeny';
   String _sharedByUserId = 'test_user_123';
   String _sharedByDisplayName = 'Test User';
-  List<String> _sharedToUserIds = [];
   DateTime _sharedAt = DateTime.now();
   String? _shareMessage = 'Här är min veckomeny!';
   Map<String, List<Recipe>> _menuSnapshot = {};
-  List<String> _viewedByUserIds = [];
-  List<String> _importedByUserIds = [];
-  List<String> _dismissedByUserIds = [];
   bool _allowCollaboration = false;
   
   MenuBuilder();
@@ -43,13 +39,7 @@ class MenuBuilder {
     _sharedByDisplayName = displayName;
     return this;
   }
-  
-  /// Set shared to user IDs
-  MenuBuilder sharedTo(List<String> userIds) {
-    _sharedToUserIds = userIds;
-    return this;
-  }
-  
+
   /// Set share message
   MenuBuilder withMessage(String? message) {
     _shareMessage = message;
@@ -159,14 +149,10 @@ class MenuBuilder {
       id: _id,
       sharedByUserId: _sharedByUserId,
       sharedByDisplayName: _sharedByDisplayName,
-      sharedToUserIds: _sharedToUserIds,
       sharedAt: _sharedAt,
       shareMessage: _shareMessage,
       menuTitle: _menuTitle,
       menuSnapshot: _menuSnapshot,
-      viewedByUserIds: _viewedByUserIds,
-      engagedByUserIds: _importedByUserIds,
-      dismissedByUserIds: _dismissedByUserIds,
       allowCollaboration: _allowCollaboration,
     );
   }

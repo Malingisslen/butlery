@@ -298,21 +298,25 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                     ),
                   ),
                   const Spacer(),
-                  IconButton(
-                    onPressed: () {
-                      if (mounted) {
-                        setState(() {
-                          _state = _state.copyWith(
-                            replyingToCommentId: null,
-                            replyingToUserName: null,
-                          );
-                        });
-                      }
-                    },
-                    icon: const Icon(
-                      Icons.close,
-                      color: AppColors.primaryBlue,
-                      size: AppDimensions.iconSizeM,
+                  Semantics(
+                    label: 'Avbryt svar',
+                    button: true,
+                    child: IconButton(
+                      onPressed: () {
+                        if (mounted) {
+                          setState(() {
+                            _state = _state.copyWith(
+                              replyingToCommentId: null,
+                              replyingToUserName: null,
+                            );
+                          });
+                        }
+                      },
+                      icon: const Icon(
+                        Icons.close,
+                        color: AppColors.primaryBlue,
+                        size: AppDimensions.iconSizeM,
+                      ),
                     ),
                   ),
                 ],
@@ -343,24 +347,29 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingM),
-              IconButton(
-                onPressed: socialViewModel.isPostingComment
-                    ? null
-                    : () => _postComment(socialViewModel),
-                icon: socialViewModel.isPostingComment
-                    ? const SizedBox(
-                        width: AppDimensions.iconSizeAction,
-                        height: AppDimensions.iconSizeAction,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
+              Semantics(
+                label: 'Skicka kommentar',
+                button: true,
+                enabled: !socialViewModel.isPostingComment,
+                child: IconButton(
+                  onPressed: socialViewModel.isPostingComment
+                      ? null
+                      : () => _postComment(socialViewModel),
+                  icon: socialViewModel.isPostingComment
+                      ? const SizedBox(
+                          width: AppDimensions.iconSizeAction,
+                          height: AppDimensions.iconSizeAction,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.primaryBlue,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.send,
                           color: AppColors.primaryBlue,
+                          size: AppDimensions.iconSizeAction,
                         ),
-                      )
-                    : const Icon(
-                        Icons.send,
-                        color: AppColors.primaryBlue,
-                        size: AppDimensions.iconSizeAction,
-                      ),
+                ),
               ),
             ],
           ),
@@ -509,33 +518,41 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 ),
               ),
               // Reply button (now enabled for all comments)
-              IconButton(
-                onPressed: () {
-                  if (mounted) {
-                    setState(() {
-                      _state = _state.copyWith(
-                        replyingToCommentId: comment.id,
-                        replyingToUserName: _getAuthorDisplayName(
-                          comment.authorId,
-                          socialViewModel,
-                        ),
-                      );
-                    });
-                  }
-                },
-                icon: const Icon(
-                  Icons.reply,
-                  color: AppColors.textMedium,
-                  size: AppDimensions.iconSizeM,
+              Semantics(
+                label: 'Svara på kommentar',
+                button: true,
+                child: IconButton(
+                  onPressed: () {
+                    if (mounted) {
+                      setState(() {
+                        _state = _state.copyWith(
+                          replyingToCommentId: comment.id,
+                          replyingToUserName: _getAuthorDisplayName(
+                            comment.authorId,
+                            socialViewModel,
+                          ),
+                        );
+                      });
+                    }
+                  },
+                  icon: const Icon(
+                    Icons.reply,
+                    color: AppColors.textMedium,
+                    size: AppDimensions.iconSizeM,
+                  ),
                 ),
               ),
               // Like button
-              IconButton(
-                onPressed: () => _toggleLike(comment, socialViewModel),
-                icon: Icon(
-                  comment.isLiked ? Icons.favorite : Icons.favorite_border,
-                  color: comment.isLiked ? AppColors.error : AppColors.textMedium,
-                  size: AppDimensions.iconSizeM,
+              Semantics(
+                label: comment.isLiked ? 'Ta bort gilla-markering' : 'Gilla kommentar',
+                button: true,
+                child: IconButton(
+                  onPressed: () => _toggleLike(comment, socialViewModel),
+                  icon: Icon(
+                    comment.isLiked ? Icons.favorite : Icons.favorite_border,
+                    color: comment.isLiked ? AppColors.error : AppColors.textMedium,
+                    size: AppDimensions.iconSizeM,
+                  ),
                 ),
               ),
             ],

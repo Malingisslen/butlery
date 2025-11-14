@@ -1,6 +1,7 @@
 /// Comprehensive unit tests for FirebaseSharedRecipeRepository.
 ///
-/// Tests shared recipe operations including create, read, status management (viewed/imported/dismissed),
+/// Tests shared recipe operations with subcollection-based status tracking (Issue #014).
+/// Validates create, read, status management (viewed/imported/dismissed via subcollections),
 /// permission validation, and copy-on-write collaboration support.
 library;
 
@@ -16,7 +17,7 @@ import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
-  group('FirebaseSharedRecipeRepository - Shared Recipe Management', () {
+  group('FirebaseSharedRecipeRepository - Subcollection Architecture', () {
     late FirebaseSharedRecipeRepository repository;
     late FakeFirebaseFirestore fakeFirestore;
     late MockAuthRepository mockAuthRepo;
@@ -84,13 +85,12 @@ void main() {
       String? originalRecipeId,
       String? sharedByUserId,
       String? sharedByDisplayName,
-      List<String>? sharedToUserIds,
       Recipe? recipeSnapshot,
       String? shareMessage,
-      List<String>? viewedByUserIds,
-      List<String>? engagedByUserIds,
-      List<String>? dismissedByUserIds,
       bool allowCollaboration = false,
+      int? viewCount,
+      int? engagementCount,
+      int? dismissalCount,
     }) {
       final recipe = recipeSnapshot ??
           createTestRecipe(originalRecipeId ?? testOriginalRecipeId,
@@ -102,35 +102,96 @@ void main() {
         recipeSnapshot: recipe,
         sharedByUserId: sharedByUserId ?? testUserId,
         sharedByDisplayName: sharedByDisplayName ?? 'Test User',
-        sharedToUserIds: sharedToUserIds ?? [testOtherUserId],
         shareMessage: shareMessage,
         sharedAt: DateTime(2025, 1, 15),
-        viewedByUserIds: viewedByUserIds ?? [],
-        engagedByUserIds: engagedByUserIds ?? [],
-        dismissedByUserIds: dismissedByUserIds ?? [],
         allowCollaboration: allowCollaboration,
+        viewCount: viewCount ?? 0,
+        engagementCount: engagementCount ?? 0,
+        dismissalCount: dismissalCount ?? 0,
       );
     }
 
-    Future<void> seedSharedRecipe(SharedRecipe sharedRecipe) async {
+    Future<void> seedSharedRecipe(
+      SharedRecipe sharedRecipe, {
+      List<String>? memberUserIds,
+      List<String>? viewedByUserIds,
+      List<String>? engagedByUserIds,
+      List<String>? dismissedByUserIds,
+    }) async {
+      // Create main document
       await fakeFirestore
           .collection('shared_recipes')
           .doc(sharedRecipe.id)
           .set(sharedRecipe.toFirestore());
+
+      // Create subcollection documents (Issue #014)
+      final recipeRef = fakeFirestore.collection('shared_recipes').doc(sharedRecipe.id);
+
+      // Seed members subcollection
+      if (memberUserIds != null) {
+        for (final userId in memberUserIds) {
+          await recipeRef.collection('members').doc(userId).set({
+            'userId': userId,
+            'addedBy': sharedRecipe.sharedByUserId,
+            'addedAt': DateTime.now(),
+            'role': 'member',
+          });
+        }
+      }
+
+      // Seed views subcollection
+      if (viewedByUserIds != null) {
+        for (final userId in viewedByUserIds) {
+          await recipeRef.collection('views').doc(userId).set({
+            'userId': userId,
+            'viewedAt': DateTime.now(),
+          });
+        }
+      }
+
+      // Seed engagements subcollection
+      if (engagedByUserIds != null) {
+        for (final userId in engagedByUserIds) {
+          await recipeRef.collection('engagements').doc(userId).set({
+            'userId': userId,
+            'action': 'import',
+            'engagedAt': DateTime.now(),
+          });
+        }
+      }
+
+      // Seed dismissals subcollection
+      if (dismissedByUserIds != null) {
+        for (final userId in dismissedByUserIds) {
+          await recipeRef.collection('dismissals').doc(userId).set({
+            'userId': userId,
+            'dismissedAt': DateTime.now(),
+          });
+        }
+      }
     }
 
     // ===== PERMISSION VALIDATION TESTS =====
 
     group('Permission Validation', () {
-      test('should allow user to create shared recipe as themselves', () async {
+      test('should allow user to create shared recipe with recipients', () async {
         // Arrange
-        final sharedRecipe = createSharedRecipe(
-          sharedByUserId: testUserId,
-          sharedToUserIds: [testFriendId],
-        );
+        final sharedRecipe = createSharedRecipe(sharedByUserId: testUserId);
 
         // Act & Assert - Should not throw
-        await repository.createSharedRecipe(sharedRecipe);
+        final recipeId = await repository.createSharedRecipe(
+          sharedRecipe,
+          recipientIds: [testFriendId],
+        );
+
+        // Verify members subcollection created (Issue #014)
+        final memberDoc = await fakeFirestore
+            .collection('shared_recipes')
+            .doc(recipeId)
+            .collection('members')
+            .doc(testFriendId)
+            .get();
+        expect(memberDoc.exists, isTrue);
       });
 
       test('should reject user from creating shared recipe as another user',
@@ -138,37 +199,39 @@ void main() {
         // Arrange
         final sharedRecipe = createSharedRecipe(
           sharedByUserId: testOtherUserId, // Different from authenticated user
-          sharedToUserIds: [testFriendId],
         );
 
         // Act & Assert
         expect(
-          () => repository.createSharedRecipe(sharedRecipe),
+          () => repository.createSharedRecipe(
+            sharedRecipe,
+            recipientIds: [testFriendId],
+          ),
           throwsA(isA<PermissionDeniedException>()),
         );
       });
 
       test('should reject shared recipe with no recipients', () async {
         // Arrange
-        final sharedRecipe = createSharedRecipe(
-          sharedByUserId: testUserId,
-          sharedToUserIds: [], // Empty list
-        );
+        final sharedRecipe = createSharedRecipe(sharedByUserId: testUserId);
 
         // Act & Assert
         expect(
-          () => repository.createSharedRecipe(sharedRecipe),
+          () => repository.createSharedRecipe(
+            sharedRecipe,
+            recipientIds: [], // Empty list
+          ),
           throwsA(isA<ArgumentError>()),
         );
       });
 
-      test('should allow user to view shared recipe sent to them', () async {
+      test('should allow user to view shared recipe they are member of', () async {
         // Arrange
-        final sharedRecipe = createSharedRecipe(
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId], // Current user is recipient
+        final sharedRecipe = createSharedRecipe(sharedByUserId: testOtherUserId);
+        await seedSharedRecipe(
+          sharedRecipe,
+          memberUserIds: [testUserId], // Current user is member
         );
-        await seedSharedRecipe(sharedRecipe);
 
         // Act
         final result = await repository.getSharedRecipe(testRecipeId);
@@ -178,14 +241,14 @@ void main() {
         expect(result!.id, testRecipeId);
       });
 
-      test('should reject user from viewing shared recipe not sent to them',
+      test('should reject user from viewing shared recipe not member of',
           () async {
         // Arrange
-        final sharedRecipe = createSharedRecipe(
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testFriendId], // Current user not in list
+        final sharedRecipe = createSharedRecipe(sharedByUserId: testOtherUserId);
+        await seedSharedRecipe(
+          sharedRecipe,
+          memberUserIds: [testFriendId], // Current user not in members
         );
-        await seedSharedRecipe(sharedRecipe);
 
         // Act & Assert
         expect(
@@ -198,51 +261,58 @@ void main() {
     // ===== CRUD OPERATIONS =====
 
     group('CRUD Operations', () {
-      test('should create shared recipe successfully', () async {
+      test('should create shared recipe with members subcollection', () async {
         // Arrange
         final sharedRecipe = createSharedRecipe(
-          id: 'new-recipe',
           sharedByUserId: testUserId,
-          sharedToUserIds: [testFriendId, testOtherUserId],
           shareMessage: 'Check out this amazing recipe!',
         );
 
         // Act
-        final recipeId = await repository.createSharedRecipe(sharedRecipe);
+        final recipeId = await repository.createSharedRecipe(
+          sharedRecipe,
+          recipientIds: [testFriendId, testOtherUserId],
+        );
 
-        // Assert
-        expect(recipeId, 'new-recipe');
+        // Assert - Check auto-generated ID was returned
+        expect(recipeId, isNotEmpty);
 
         final doc = await fakeFirestore
             .collection('shared_recipes')
-            .doc('new-recipe')
+            .doc(recipeId)
             .get();
         expect(doc.exists, isTrue);
         expect(doc.data()?['sharedByUserId'], testUserId);
-        expect(doc.data()?['sharedToUserIds'], [testFriendId, testOtherUserId]);
+
+        // Verify members subcollection (Issue #014)
+        final membersSnapshot = await fakeFirestore
+            .collection('shared_recipes')
+            .doc(recipeId)
+            .collection('members')
+            .get();
+        expect(membersSnapshot.docs.length, 2);
+        expect(membersSnapshot.docs.any((d) => d.id == testFriendId), isTrue);
+        expect(membersSnapshot.docs.any((d) => d.id == testOtherUserId), isTrue);
       });
 
-      test('should get all shared recipes for user', () async {
+      test('should get all shared recipes for user via members subcollection', () async {
         // Arrange - Create multiple shared recipes
         final recipe1 = createSharedRecipe(
           id: 'recipe-1',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
         );
         final recipe2 = createSharedRecipe(
           id: 'recipe-2',
           sharedByUserId: testFriendId,
-          sharedToUserIds: [testUserId],
         );
         final recipe3 = createSharedRecipe(
           id: 'recipe-3',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testFriendId], // Not for current user
         );
 
-        await seedSharedRecipe(recipe1);
-        await seedSharedRecipe(recipe2);
-        await seedSharedRecipe(recipe3);
+        await seedSharedRecipe(recipe1, memberUserIds: [testUserId]);
+        await seedSharedRecipe(recipe2, memberUserIds: [testUserId]);
+        await seedSharedRecipe(recipe3, memberUserIds: [testFriendId]); // Not for current user
 
         // Act
         final recipes = await repository.getSharedRecipesForUser(testUserId);
@@ -256,11 +326,8 @@ void main() {
 
       test('should get specific shared recipe by ID', () async {
         // Arrange
-        final sharedRecipe = createSharedRecipe(
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-        );
-        await seedSharedRecipe(sharedRecipe);
+        final sharedRecipe = createSharedRecipe(sharedByUserId: testOtherUserId);
+        await seedSharedRecipe(sharedRecipe, memberUserIds: [testUserId]);
 
         // Act
         final result = await repository.getSharedRecipe(testRecipeId);
@@ -281,11 +348,8 @@ void main() {
 
       test('should delete shared recipe by creator', () async {
         // Arrange
-        final sharedRecipe = createSharedRecipe(
-          sharedByUserId: testUserId, // Creator
-          sharedToUserIds: [testFriendId],
-        );
-        await seedSharedRecipe(sharedRecipe);
+        final sharedRecipe = createSharedRecipe(sharedByUserId: testUserId); // Creator
+        await seedSharedRecipe(sharedRecipe, memberUserIds: [testFriendId]);
 
         // Act
         await repository.deleteSharedRecipe(testRecipeId);
@@ -299,125 +363,159 @@ void main() {
       });
     });
 
-    // ===== STATUS MANAGEMENT =====
+    // ===== STATUS MANAGEMENT (SUBCOLLECTIONS) =====
 
-    group('Status Management', () {
-      test('should mark shared recipe as viewed', () async {
+    group('Status Management - Subcollections', () {
+      test('should add view to views subcollection', () async {
         // Arrange
-        final sharedRecipe = createSharedRecipe(
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          viewedByUserIds: [], // Not yet viewed
-        );
-        await seedSharedRecipe(sharedRecipe);
+        final sharedRecipe = createSharedRecipe(sharedByUserId: testOtherUserId);
+        await seedSharedRecipe(sharedRecipe, memberUserIds: [testUserId]);
 
         // Act
         await repository.markAsViewed(testRecipeId, testUserId);
 
-        // Assert
-        final doc = await fakeFirestore
+        // Assert - Check views subcollection (Issue #014)
+        final viewDoc = await fakeFirestore
             .collection('shared_recipes')
             .doc(testRecipeId)
+            .collection('views')
+            .doc(testUserId)
             .get();
-        final viewedByUserIds =
-            List<String>.from(doc.data()?['viewedByUserIds'] ?? []);
-        expect(viewedByUserIds, contains(testUserId));
+        expect(viewDoc.exists, isTrue);
+        expect(viewDoc.data()?['userId'], testUserId);
       });
 
-      test('should mark shared recipe as imported', () async {
+      test('should add engagement to engagements subcollection', () async {
         // Arrange
-        final sharedRecipe = createSharedRecipe(
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          engagedByUserIds: [], // Not yet imported
-        );
-        await seedSharedRecipe(sharedRecipe);
+        final sharedRecipe = createSharedRecipe(sharedByUserId: testOtherUserId);
+        await seedSharedRecipe(sharedRecipe, memberUserIds: [testUserId]);
 
         // Act
         await repository.markAsImported(testRecipeId, testUserId);
 
-        // Assert
-        final doc = await fakeFirestore
+        // Assert - Check engagements subcollection (Issue #014)
+        final engagementDoc = await fakeFirestore
             .collection('shared_recipes')
             .doc(testRecipeId)
+            .collection('engagements')
+            .doc(testUserId)
             .get();
-        final importedByUserIds =
-            List<String>.from(doc.data()?['importedByUserIds'] ?? []);
-        expect(importedByUserIds, contains(testUserId));
+        expect(engagementDoc.exists, isTrue);
+        expect(engagementDoc.data()?['userId'], testUserId);
+        expect(engagementDoc.data()?['action'], 'import');
       });
 
-      test('should mark shared recipe as dismissed', () async {
+      test('should add dismissal to dismissals subcollection', () async {
         // Arrange
-        final sharedRecipe = createSharedRecipe(
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          dismissedByUserIds: [],
-        );
-        await seedSharedRecipe(sharedRecipe);
+        final sharedRecipe = createSharedRecipe(sharedByUserId: testOtherUserId);
+        await seedSharedRecipe(sharedRecipe, memberUserIds: [testUserId]);
 
         // Act
         await repository.markAsDismissed(testRecipeId, testUserId);
 
-        // Assert
-        final doc = await fakeFirestore
+        // Assert - Check dismissals subcollection (Issue #014)
+        final dismissalDoc = await fakeFirestore
             .collection('shared_recipes')
             .doc(testRecipeId)
+            .collection('dismissals')
+            .doc(testUserId)
             .get();
-        final dismissedByUserIds =
-            List<String>.from(doc.data()?['dismissedByUserIds'] ?? []);
-        expect(dismissedByUserIds, contains(testUserId));
+        expect(dismissalDoc.exists, isTrue);
+        expect(dismissalDoc.data()?['userId'], testUserId);
       });
 
-      test('should undismiss shared recipe', () async {
+      test('should remove dismissal from dismissals subcollection', () async {
         // Arrange
-        final sharedRecipe = createSharedRecipe(
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
+        final sharedRecipe = createSharedRecipe(sharedByUserId: testOtherUserId);
+        await seedSharedRecipe(
+          sharedRecipe,
+          memberUserIds: [testUserId],
           dismissedByUserIds: [testUserId], // Already dismissed
         );
-        await seedSharedRecipe(sharedRecipe);
 
         // Act
         await repository.undismiss(testRecipeId, testUserId);
 
-        // Assert
-        final doc = await fakeFirestore
+        // Assert - Check dismissals subcollection (Issue #014)
+        final dismissalDoc = await fakeFirestore
             .collection('shared_recipes')
             .doc(testRecipeId)
+            .collection('dismissals')
+            .doc(testUserId)
             .get();
-        final dismissedByUserIds =
-            List<String>.from(doc.data()?['dismissedByUserIds'] ?? []);
-        expect(dismissedByUserIds, isNot(contains(testUserId)));
+        expect(dismissalDoc.exists, isFalse);
+      });
+
+      test('should check if user has viewed via hasViewed()', () async {
+        // Arrange
+        final sharedRecipe = createSharedRecipe(sharedByUserId: testOtherUserId);
+        await seedSharedRecipe(
+          sharedRecipe,
+          memberUserIds: [testUserId],
+          viewedByUserIds: [testUserId],
+        );
+
+        // Act
+        final hasViewed = await repository.hasViewed(testRecipeId, testUserId);
+
+        // Assert
+        expect(hasViewed, isTrue);
+      });
+
+      test('should check if user has engaged via hasEngaged()', () async {
+        // Arrange
+        final sharedRecipe = createSharedRecipe(sharedByUserId: testOtherUserId);
+        await seedSharedRecipe(
+          sharedRecipe,
+          memberUserIds: [testUserId],
+          engagedByUserIds: [testUserId],
+        );
+
+        // Act
+        final hasEngaged = await repository.hasEngaged(testRecipeId, testUserId);
+
+        // Assert
+        expect(hasEngaged, isTrue);
+      });
+
+      test('should check if user has dismissed via hasDismissed()', () async {
+        // Arrange
+        final sharedRecipe = createSharedRecipe(sharedByUserId: testOtherUserId);
+        await seedSharedRecipe(
+          sharedRecipe,
+          memberUserIds: [testUserId],
+          dismissedByUserIds: [testUserId],
+        );
+
+        // Act
+        final hasDismissed = await repository.hasDismissed(testRecipeId, testUserId);
+
+        // Assert
+        expect(hasDismissed, isTrue);
       });
     });
 
     // ===== QUERY OPERATIONS =====
 
     group('Query Operations', () {
-      test('should get unread count for user', () async {
+      test('should get unread count using views subcollection', () async {
         // Arrange - Create recipes, some viewed, some not
         final recipe1 = createSharedRecipe(
           id: 'recipe-1',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          viewedByUserIds: [], // Unread
         );
         final recipe2 = createSharedRecipe(
           id: 'recipe-2',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          viewedByUserIds: [testUserId], // Read
         );
         final recipe3 = createSharedRecipe(
           id: 'recipe-3',
           sharedByUserId: testFriendId,
-          sharedToUserIds: [testUserId],
-          viewedByUserIds: [], // Unread
         );
 
-        await seedSharedRecipe(recipe1);
-        await seedSharedRecipe(recipe2);
-        await seedSharedRecipe(recipe3);
+        await seedSharedRecipe(recipe1, memberUserIds: [testUserId]); // Unread
+        await seedSharedRecipe(recipe2, memberUserIds: [testUserId], viewedByUserIds: [testUserId]); // Read
+        await seedSharedRecipe(recipe3, memberUserIds: [testUserId]); // Unread
 
         // Act
         final unreadCount = await repository.getUnreadCountForUser(testUserId);
@@ -426,23 +524,19 @@ void main() {
         expect(unreadCount, 2); // recipe-1 and recipe-3 are unread
       });
 
-      test('should get imported recipes for user', () async {
+      test('should get imported recipes using engagements subcollection', () async {
         // Arrange
         final recipe1 = createSharedRecipe(
           id: 'recipe-1',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          engagedByUserIds: [testUserId], // Imported
         );
         final recipe2 = createSharedRecipe(
           id: 'recipe-2',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          engagedByUserIds: [], // Not imported
         );
 
-        await seedSharedRecipe(recipe1);
-        await seedSharedRecipe(recipe2);
+        await seedSharedRecipe(recipe1, memberUserIds: [testUserId], engagedByUserIds: [testUserId]); // Imported
+        await seedSharedRecipe(recipe2, memberUserIds: [testUserId]); // Not imported
 
         // Act
         final importedRecipes =
@@ -453,23 +547,19 @@ void main() {
         expect(importedRecipes.first.id, 'recipe-1');
       });
 
-      test('should filter out dismissed recipes from user query', () async {
+      test('should filter out dismissed recipes using dismissals subcollection', () async {
         // Arrange
         final recipe1 = createSharedRecipe(
           id: 'recipe-1',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          dismissedByUserIds: [], // Not dismissed
         );
         final recipe2 = createSharedRecipe(
           id: 'recipe-2',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          dismissedByUserIds: [testUserId], // Dismissed
         );
 
-        await seedSharedRecipe(recipe1);
-        await seedSharedRecipe(recipe2);
+        await seedSharedRecipe(recipe1, memberUserIds: [testUserId]); // Not dismissed
+        await seedSharedRecipe(recipe2, memberUserIds: [testUserId], dismissedByUserIds: [testUserId]); // Dismissed
 
         // Act
         final recipes = await repository.getSharedRecipesForUser(testUserId);
@@ -496,7 +586,10 @@ void main() {
 
         // Act & Assert
         expect(
-          () => repository.createSharedRecipe(sharedRecipe),
+          () => repository.createSharedRecipe(
+            sharedRecipe,
+            recipientIds: [testFriendId],
+          ),
           throwsA(isA<PermissionDeniedException>()),
         );
       });

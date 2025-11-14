@@ -25,6 +25,7 @@ dependencies:
   firebase_app_check: ^0.4.0
   firebase_messaging: ^16.0.0  # For push notifications
   firebase_performance: ^0.11.0  # For performance monitoring
+  firebase_crashlytics: ^5.0.0  # For crash reporting and error tracking
 
   # ==================== STATE MANAGEMENT ====================
   provider: ^6.1.2

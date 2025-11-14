@@ -1,0 +1,23 @@
+# Compiled JavaScript files
+lib/
+*.js
+*.js.map
+
+# Node dependencies
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment and secrets
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

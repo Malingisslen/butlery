@@ -124,12 +124,18 @@ class FirebaseSharedMenuRepository
 
   @override
   bool shouldShowToUser(SharedMenu content, String userId) {
-    return content.canBeViewedBy(userId) && !content.isDismissedBy(userId);
+    // Note (Issue #014): Array-based status methods removed.
+    // Actual dismissed/viewed filtering happens via subcollection queries.
+    // This method now only checks basic permission (owner or collaboration allowed).
+    return content.sharedByUserId == userId || content.isCollaborative;
   }
 
   @override
   bool isViewedByUser(SharedMenu content, String userId) {
-    return content.isViewedBy(userId);
+    // Note (Issue #014): Array-based status removed.
+    // Use hasViewed() repository method for actual viewed status.
+    // This sync method defaults to false; call hasViewed() for accurate status.
+    return false;
   }
 
   @override
@@ -140,7 +146,13 @@ class FirebaseSharedMenuRepository
   // ===== SHARED MENU OPERATIONS =====
 
   /// Create new shared menu with comprehensive validation
-  Future<String> createSharedMenu(SharedMenu sharedMenu) async {
+  ///
+  /// Note (Issue #014): recipientIds must be passed separately as sharedToUserIds
+  /// is no longer stored in the model (tracked in Firestore subcollections instead).
+  Future<String> createSharedMenu(
+    SharedMenu sharedMenu, {
+    required List<String> recipientIds,
+  }) async {
     final uid = requireCurrentUserId();
 
     // Menu-specific validations
@@ -149,33 +161,51 @@ class FirebaseSharedMenuRepository
           'Cannot create shared menu for another user');
     }
 
-    if (sharedMenu.sharedToUserIds.isEmpty) {
+    if (recipientIds.isEmpty) {
       throw ArgumentError('Must specify at least one recipient');
     }
 
-    // Delegate to base class method with all validation and creation logic
-    return await createSharedContent(sharedMenu);
+    // Create the shared menu document
+    final menuId = await createSharedContent(sharedMenu);
+
+    // Add all recipients to members subcollection (Issue #014: Unlimited sharing)
+    for (final recipientId in recipientIds) {
+      await addMember(menuId, recipientId, addedBy: uid);
+    }
+
+    AppLogger.success(
+        '✅ Created shared menu with ${recipientIds.length} members in subcollection');
+
+    return menuId;
   }
 
   /// Get all shared menus for a specific user
   Future<List<SharedMenu>> getSharedMenusForUser(String userId) async {
-    // Delegate to base class method with all validation and query logic
-    return await getSharedContentForUser(userId);
+    // Use subcollection-based query (Issue #014: Unlimited sharing support)
+    return await getSharedContentForUserViaSubcollection(userId);
   }
 
   /// Get specific shared menu by ID
   Future<SharedMenu?> getSharedMenu(String menuId) async {
     final uid = requireCurrentUserId();
 
-    // Use base class method for retrieval
-    final sharedMenu = await read(menuId);
-    
-    if (sharedMenu == null) {
+    // Fetch document directly without base class permission check (Issue #014)
+    // We need to check members subcollection, which requires async call
+    final doc = await getCollectionRef().doc(menuId).get();
+
+    if (!doc.exists) {
       return null;
     }
 
-    // Menu-specific permission validation
-    if (!sharedMenu.canBeViewedBy(uid)) {
+    final sharedMenu = fromFirestore(doc);
+
+    // Menu-specific permission validation (Issue #014)
+    // Check if user is owner or member via subcollection
+    final isOwner = sharedMenu.sharedByUserId == uid;
+    final isMember = await this.isMember(menuId, uid);
+    final canAccess = isOwner || isMember || sharedMenu.isCollaborative;
+
+    if (!canAccess) {
       throw PermissionDeniedException('Cannot access this shared menu');
     }
 
@@ -191,33 +221,33 @@ class FirebaseSharedMenuRepository
     return sharedMenu;
   }
 
-  // ===== STATUS MANAGEMENT (DELEGATED TO BASE CLASS) =====
+  // ===== STATUS MANAGEMENT (SUBCOLLECTION-BASED) =====
 
   /// Mark shared menu as viewed by user
   @override
   Future<void> markAsViewed(String menuId, String userId) async {
-    // Delegate to base class method
-    return await super.markAsViewed(menuId, userId);
+    // Use subcollection method (Issue #014: Unlimited views support)
+    return await addView(menuId, userId);
   }
 
   /// Mark shared menu as imported by user (copy-on-write)
   Future<void> markAsImported(String menuId, String userId) async {
-    // Delegate to base class method with unified import/join handling
-    return await markAsImportedOrJoined(menuId, userId);
+    // Use subcollection method (Issue #014: Unlimited imports support)
+    return await addEngagement(menuId, userId, action: 'import');
   }
 
   /// Mark shared menu as dismissed by user
   @override
   Future<void> markAsDismissed(String menuId, String userId) async {
-    // Delegate to base class method
-    return await super.markAsDismissed(menuId, userId);
+    // Use subcollection method (Issue #014: Unlimited dismissals support)
+    return await addDismissal(menuId, userId);
   }
 
   /// Remove dismissal status for user (restore visibility)
   @override
   Future<void> undismiss(String menuId, String userId) async {
-    // Delegate to base class method
-    return await super.undismiss(menuId, userId);
+    // Use subcollection method (Issue #014)
+    return await removeDismissal(menuId, userId);
   }
 
   /// Delete shared menu (only by creator)
@@ -245,10 +275,42 @@ class FirebaseSharedMenuRepository
     }
 
     try {
-      final allSharedMenus = await getSharedMenusForUser(userId);
+      // Query engagements subcollection (Issue #014: Unlimited imports support)
+      final engagementsSnapshot = await firestore
+          .collectionGroup('engagements')
+          .where('userId', isEqualTo: userId)
+          .where('action', isEqualTo: 'import')
+          .get();
 
-      final importedMenus =
-          allSharedMenus.where((menu) => menu.isImportedBy(userId)).toList();
+      if (engagementsSnapshot.docs.isEmpty) {
+        AppLogger.info('📋 User $userId has no imported menus');
+        return [];
+      }
+
+      // Extract menu IDs from engagement documents
+      final menuIds = <String>{};
+      for (final engagementDoc in engagementsSnapshot.docs) {
+        final menuId = engagementDoc.reference.parent.parent?.id;
+        if (menuId != null) {
+          menuIds.add(menuId);
+        }
+      }
+
+      // Batch fetch menu documents (max 10 per query)
+      final importedMenus = <SharedMenu>[];
+      final menuIdList = menuIds.toList();
+      for (var i = 0; i < menuIdList.length; i += 10) {
+        final end = (i + 10 < menuIdList.length) ? i + 10 : menuIdList.length;
+        final batch = menuIdList.sublist(i, end);
+
+        final batchSnapshot = await getCollectionRef()
+            .where(FieldPath.documentId, whereIn: batch)
+            .get();
+
+        importedMenus.addAll(
+          batchSnapshot.docs.map((doc) => fromFirestore(doc)),
+        );
+      }
 
       AppLogger.info(
           '📋 User $userId has imported ${importedMenus.length} shared menus');

@@ -7,7 +7,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/viewmodels/realtime_menu/realtime_menu_state.dart';
 import 'package:butlery/services/realtime/modules/menu_operations.dart';
-import 'package:butlery/services/realtime_sync_service.dart' as sync_service;
+import 'package:butlery/services/realtime/realtime_types.dart' as sync_service;
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';

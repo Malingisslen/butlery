@@ -1,43 +1,57 @@
 {
   "permissions": {
     "allow": [
-      "Bash(find:*)",
-      "Bash(flutter analyze:*)",
-      "Bash(for skill in butlery-architecture code-deduplication-utilities dependency-injection-patterns firebase-repository-patterns flutter-widget-guidelines gdpr-compliance navigation-routing offline-first-patterns performance-optimization realtime-collaboration state-management-patterns testing-patterns)",
-      "Bash(do echo \"=== $skill ===\")",
-      "Bash(done)",
-      "Bash(git add:*)",
-      "Bash(tree:*)",
-      "Bash(python -c:*)",
-      "Bash(.claude/hooks/skill-activation-prompt.sh)",
-      "Bash(awk:*)",
-      "Bash(git commit:*)"
+      "Bash(HOOK_DEBUG=1 echo:*)",
+      "Bash(export HOOK_DEBUG=1)",
+      "Bash(python -m json.tool:*)",
+      "Bash(/tmp/latest-log.json)",
+      "Bash(.claude/cache/prompt-logs/2025-11-06.jsonl)",
+      "Bash(sort:*)",
+      "Bash(nul)",
+      "Bash(dir:*)",
+      "Bash(xargs -I {} sh -c \"echo \"\"=== {} ===\"\" && grep -c \"\"try\"\" {} && grep -c \"\"await\"\" {}\")",
+      "mcp__playwright__*",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git rm:*)",
+      "Bash(test:*)",
+      "Bash(xargs -I {} sh -c 'echo \"\"\"\"$(basename {}): $(find {} -name \"\"\"\"*.dart\"\"\"\" | wc -l) files\"\"\"\"')",
+      "Bash(while read dir)",
+      "Bash(mkdir:*)",
+      "Bash({)",
+      "Bash(})",
+      "Bash(phase2c_models_extensions_analysis.md)",
+      "Bash(mv:*)",
+      "Bash(c:/Butlery/butlery/.claude/analysis/phase2d_repositories_services_analysis.md)",
+      "Bash(phase2e_test.txt)",
+      "Bash(powershell -NoProfile -Command \"\n$content = @''\n# Phase 2e: Low-Usage ViewModels & Widgets Analysis\n**Generated**: 2025-11-13  \n**Analyzer**: Claude (Sonnet 4.5)  \n**Scope**: 410 files with 1-3 dependencies (121 ViewModels, 289 Views/Widgets)\n\n## Executive Summary\n\n### Overview\n- **Total Files Analyzed**: 410 files (53.8% of codebase)\n- **Total Lines of Code**: ~105,000 LOC (47.6% of codebase)\n- **ViewModels**: 121 files (~28,400 LOC)\n- **Views/Widgets**: 289 files (~76,600 LOC)\n\n### Key Findings\n\n**ViewModels**:\n- **Screen ViewModels** (1:1 with Views): 47 files - **KEEP ALL** (correct MVVM architecture)\n- **Facade Pattern Managers**: 41 files - **KEEP ALL** (exemplary architecture per CLAUDE.md)\n- **Shared ViewModels**: 20 files - **KEEP ALL** (appropriately shared)\n- **DI-Registered ViewModels**: 13 files - **KEEP ALL** (core infrastructure)\n\n**Widgets/Views**:\n- **Screen Views** (1:1 with routes): 52 files - **KEEP ALL** (correct architecture)\n- **View-Specific Components**: 187 files - **HIGH CONSOLIDATION POTENTIAL**\n- **Inline Candidates** (<100 LOC, 1 usage): 89 files (~5,800 LOC)\n- **Merge Opportunities**: 14 groups (~8,400 LOC to ~4,200 LOC after merge)\n- **Dead Feature Widgets**: 6 files (~1,700 LOC) - Cross-referenced with Phase 2a\n\n### Consolidation Potential\n\n**High-Impact Opportunities**:\n- **Inline Single-Use Widgets**: 89 files, ~5,800 LOC reduction\n- **Merge View Component Groups**: 14 groups, ~4,200 LOC reduction  \n- **Remove Dead Feature Widgets**: 6 files, ~1,700 LOC reduction\n- **Total Estimated Reduction**: ~11,700 LOC (11.1% of analyzed code)\n\n**Zero Reduction Areas** (Correct Architecture):\n- Screen ViewModels: 47 files (1:1 with views = correct MVVM)\n- Facade Pattern Managers: 41 files (exemplary per CLAUDE.md)\n- Screen Views: 52 files (1:1 with routes = correct)\n\n### Effort Estimation\n- **High-Priority Inline**: 40 files × 0.5 hrs = 20 hrs\n- **Medium-Priority Inline**: 49 files × 0.3 hrs = 15 hrs\n- **Merge Groups**: 14 groups × 2 hrs = 28 hrs\n- **Dead Feature Removal**: 6 files × 1 hr = 6 hrs\n- **Testing & Verification**: 10 hrs\n- **Total Estimated Effort**: **79 hours (~2 weeks)**\n''@\nSet-Content -Path ''.claude\\analysis\\phase2e_viewmodels_widgets_analysis.md'' -Value $content -Encoding UTF8\nWrite-Output ''Part 1 written''\n\")",
+      "Bash(powershell -NoProfile -Command \"\n$content = Get-Content ''.claude\\analysis\\phase2e_viewmodels_widgets_analysis.md''\n$content += @''\n\n---\n\n## 1. ViewModel Analysis\n\n### 1.1 Screen ViewModels (1:1 with Views) - KEEP ALL ✅\n\nThese ViewModels follow correct MVVM architecture (1 ViewModel per View).  \n**Recommendation**: **KEEP ALL** - This is the correct pattern.\n\n**Key Screen ViewModels** (47 files, ~16,000 LOC):\n- add_members_to_group_viewmodel.dart (304 LOC) - 1 usage ✅\n- archive_import_viewmodel.dart (125 LOC) - 2 usages (DI + view) ✅\n- chat_viewmodel.dart (463 LOC) - 2 usages ✅\n- collaborative_shopping_viewmodel.dart (~300 LOC) - 1 usage ✅\n- conversations_viewmodel.dart (232 LOC) - 1 usage (DI) ✅\n- create_group_conversation_viewmodel.dart (279 LOC) - 1 usage ✅\n- create_group_viewmodel.dart (472 LOC) - 1 usage (DI) ✅\n- create_shared_list_viewmodel.dart (260 LOC) - 2 usages ✅\n- discovery_dashboard_viewmodel.dart (~600 LOC) - 1 usage ✅\n- friends_viewmodel.dart (~450 LOC) - 1 usage ✅\n- group_detail_viewmodel.dart (446 LOC) - 1 usage (messaging variant) ✅\n- photo_import_viewmodel.dart (467 LOC) - 2 usages (DI + view) ✅\n- recipe_form_viewmodel.dart (~700 LOC) - 1 usage (uses facade pattern) ✅\n- shopping_share_viewmodel.dart (473 LOC) - 1 usage (DI) ✅\n- social_group_detail_viewmodel.dart (395 LOC) - 1 usage (social variant) ✅\n- text_import_viewmodel.dart (461 LOC) - 2 usages ✅\n- url_import_viewmodel.dart (497 LOC) - 2 usages ✅\n- auth_viewmodel.dart (423 LOC) - 3 usages (DI + views) ✅\n- Plus 29 more screen ViewModels...\n\n**Analysis**: All 47 screen ViewModels exhibit correct 1:1 relationship with their views.  \n**Recommendation**: **KEEP ALL** - This is exemplary MVVM architecture.\n\n---\n\n### 1.2 Facade Pattern Managers - KEEP ALL ✅ (Exemplary Architecture)\n\nThese manager modules follow CLAUDE.md''s recipe_form_viewmodel example.  \n**Recommendation**: **KEEP ALL** - This is the exemplary pattern for complex ViewModels.\n\n**Facade Groups** (41 manager files, ~12,400 LOC):\n\n1. **Archive Import Facade** (4 files, 409 LOC):\n   - archive_import_operations_manager.dart (100 LOC)\n   - archive_search_manager.dart (127 LOC)\n   - archive_selection_manager.dart (57 LOC)\n   - archive_import_viewmodel.dart (125 LOC) - facade\n\n2. **Collaborative Shopping Facade** (4 files, ~528 LOC):\n   - shopping_display_manager.dart (84 LOC)\n   - shopping_item_operations_manager.dart (112 LOC)\n   - shopping_permission_manager.dart (32 LOC)\n   - collaborative_shopping_viewmodel.dart (~300 LOC) - facade\n\n3. **Discovery Dashboard Facade** (4 files, 943 LOC):\n   - discovery_content_manager.dart (251 LOC)\n   - discovery_friend_activity_manager.dart (167 LOC)\n   - discovery_recommendations_manager.dart (274 LOC)\n   - discovery_dashboard_viewmodel.dart (~251 LOC) - facade\n\n4. **Friends Facade** (4 files, 543 LOC):\n   - friends_profile_cache_manager.dart (126 LOC)\n   - friends_search_manager.dart (143 LOC)\n   - friends_selection_manager.dart (74 LOC)\n   - friends_viewmodel.dart (~200 LOC) - facade\n\n5. **Realtime Menu Facade** (6 files, 1,829 LOC):\n   - connection_monitor.dart (194 LOC)\n   - realtime_menu_operations.dart (380 LOC)\n   - realtime_menu_state.dart (235 LOC)\n   - realtime_participant_manager.dart (381 LOC)\n   - realtime_stream_manager.dart (225 LOC)\n   - optimistic_update_manager.dart (96 LOC)\n   - realtime_menu_viewmodel.dart (424 LOC) - facade\n\n6. **Recipe Form Facade** (10 files, 2,915 LOC):\n   - image_upload_coordinator.dart (448 LOC)\n   - image_upload_notification_manager.dart (185 LOC)\n   - image_upload_validator.dart (173 LOC)\n   - upload_queue_summary_calculator.dart (223 LOC)\n   - recipe_backward_compatibility_mixin.dart (283 LOC)\n   - recipe_form_coordinator.dart (192 LOC)\n   - recipe_persistence_manager.dart (431 LOC)\n   - recipe_auto_save_manager.dart (431 LOC)\n   - recipe_collaborative_manager.dart (365 LOC)\n   - recipe_form_viewmodel.dart (~200 LOC) - **EXEMPLARY FACADE** per CLAUDE.md\n\n7. **Plus 5 more facade groups** (Shared Content, Shopping, Social Recipe, Menu, Recipe)\n\n**Analysis**: All 41 managers follow the facade pattern to keep ViewModels under 500 LOC.  \n**Recommendation**: **KEEP ALL** - This is the exemplary pattern documented in CLAUDE.md.\n\n---\n\n### 1.3 ViewModel Summary\n\n| Category | Files | LOC | Recommendation | Rationale |\n|----------|-------|-----|----------------|-----------|\n| Screen ViewModels (1:1) | 47 | ~16,000 | **KEEP ALL ✅** | Correct MVVM architecture |\n| Facade Pattern Managers | 41 | ~12,400 | **KEEP ALL ✅** | Exemplary per CLAUDE.md |\n| Shared/Base ViewModels | 2 | ~809 | **KEEP ALL ✅** | Shared infrastructure |\n| **TOTAL VIEWMODELS** | **121** | **~28,400** | **KEEP ALL ✅** | **No consolidation needed** |\n\n**Key Finding**: **100% of ViewModels follow correct architecture** - No consolidation opportunities.\n\n---\n\n## 2. Widget/View Analysis\n\n### 2.1 Screen Views (1:1 with Routes) - KEEP ALL ✅\n\nTop-level views registered with app router.  \n**Recommendation**: **KEEP ALL** - Core navigation infrastructure.\n\n**Screen Views** (52 files, ~12,000 LOC):\n- Import screens (7 files): edit_recipe_view, file_import_view, photo_import_view, etc.\n- Social screens (14 files): discovery_dashboard_view, friends_list_view, group_detail_view, etc.\n- Messaging screens (3 files): conversations_list_view, create_group_conversation_view, etc.\n- Recipe/Shopping screens (4 files): recipe_detail_view, unified_shopping_view, etc.\n- Account/Legal screens (3 files): consent_management_view, data_export_view, privacy_policy_view\n\n**Recommendation**: **KEEP ALL** - Correct architecture (1:1 with routes).\n\n---\n\n### 2.2 View-Specific Components - HIGH CONSOLIDATION POTENTIAL\n\n#### 2.2.1 Edit Recipe Components - INLINE ALL (9 files, 730 LOC)\n\n**All components used only by edit_recipe_view.dart**:\n- edit_recipe_actions.dart (63 LOC) - Helper class, inline ✅\n- edit_recipe_app_bar.dart (49 LOC) - Single-use widget ✅\n- edit_recipe_banners.dart (81 LOC) - View-specific ✅\n- edit_recipe_bottom_bar.dart (52 LOC) - View-specific ✅\n- edit_recipe_form_fields.dart (188 LOC) - View-specific ✅\n- edit_recipe_dynamic_list.dart (70 LOC) - Used by form_fields ✅\n- edit_recipe_image_picker.dart (77 LOC) - Used by form_fields ✅\n- edit_recipe_dynamic_list.dart + edit_recipe_image_picker.dart → inline into edit_recipe_form_fields.dart first\n- Then inline edit_recipe_form_fields.dart into edit_recipe_view.dart\n\n**Action**: Inline all 9 files into edit_recipe_view.dart  \n**LOC Reduction**: 730 LOC → 0 (absorbed into parent)  \n**Effort**: 3.5 hours  \n**Priority**: HIGH\n\n---\n\n#### 2.2.2 Recipe Detail Components - INLINE MOST (7 files, 1,435 LOC)\n\n| File | LOC | Parent | Recommendation | Effort |\n|------|-----|--------|----------------|--------|\n| recipe_detail_actions.dart | 203 | recipe_detail_view.dart | INLINE ✅ | 1 hr |\n| recipe_detail_content.dart | 311 | recipe_detail_view.dart | INLINE ✅ | 1.5 hrs |\n| recipe_detail_metadata.dart | 419 | recipe_detail_view.dart | INLINE ✅ | 2 hrs |\n| recipe_management_handler.dart | 104 | recipe_detail_actions.dart | INLINE ✅ | 0.5 hrs |\n| recipe_shopping_handler.dart | 176 | recipe_detail_actions.dart | INLINE ✅ | 1 hr |\n| recipe_social_handler.dart | 122 | recipe_detail_actions.dart | INLINE ✅ | 0.5 hrs |\n| recipe_detail_comments.dart | 758 | recipe_detail_view.dart | **KEEP** ❌ | - |\n\n**Action**: Inline 6 files (677 LOC), keep recipe_detail_comments.dart (too large, complex)  \n**LOC Reduction**: ~650 LOC  \n**Effort**: 6.5 hours  \n**Priority**: HIGH\n\n---\n\n#### 2.2.3 Collaborative Shopping Components - INLINE ALL (3 files, 881 LOC)\n\n| File | LOC | Parent | Effort |\n|------|-----|--------|--------|\n| collaborative_shopping_actions.dart | 386 | collaborative_shopping_view.dart | 2 hrs |\n| collaborative_shopping_header.dart | 247 | collaborative_shopping_view.dart | 1 hr |\n| collaborative_shopping_items.dart | 248 | collaborative_shopping_view.dart | 1 hr |\n\n**Action**: Inline all 3 into collaborative_shopping_view.dart  \n**LOC Reduction**: ~850 LOC  \n**Effort**: 4 hours  \n**Priority**: HIGH\n\n---\n\n#### 2.2.4 Friend Requests Components - INLINE ALL (4 files, 758 LOC)\n\n| File | LOC | Parent | Effort |\n|------|-----|--------|--------|\n| friend_request_actions_refactored.dart | 441 | friend_requests_view.dart | 2 hrs |\n| friend_requests_header.dart | 131 | friend_requests_view.dart | 0.5 hrs |\n| incoming_requests_tab.dart | 93 | friend_requests_view.dart | 0.5 hrs |\n| sent_requests_tab.dart | 93 | friend_requests_view.dart | 0.5 hrs |\n\n**Action**: Inline all 4 into friend_requests_view.dart  \n**LOC Reduction**: ~750 LOC  \n**Effort**: 3.5 hours  \n**Priority**: HIGH\n\n---\n\n#### 2.2.5 Group Detail Components - INLINE MOST (7 files, 1,091 LOC)\n\n| File | LOC | Recommendation | Effort |\n|------|-----|----------------|--------|\n| group_detail_app_bar.dart | 122 | INLINE ✅ | 0.5 hrs |\n| group_detail_header.dart | 164 | INLINE ✅ | 1 hr |\n| group_detail_stats.dart | 78 | INLINE ✅ | 0.3 hrs |\n| group_members_list.dart | 123 | INLINE ✅ | 0.5 hrs |\n| group_member_card.dart | 158 | INLINE ✅ | 0.5 hrs |\n| group_invitation_card.dart | 179 | INLINE ✅ | 0.5 hrs |\n| group_detail_actions.dart | 267 | **KEEP** (complex) | - |\n\n**Action**: Inline 6 files (824 LOC) into group_detail_view.dart  \n**LOC Reduction**: ~800 LOC  \n**Effort**: 3.3 hours  \n**Priority**: HIGH\n\n''@\nSet-Content -Path ''.claude\\analysis\\phase2e_viewmodels_widgets_analysis.md'' -Value $content -Encoding UTF8\nWrite-Output ''Part 2 written''\n\")",
+      "Bash(cp:*)",
+      "Bash(temp_report_base.txt)",
+      "Bash(phase6_circular_dependency_check.md)",
+      "Bash(printf:*)",
+      "Bash(PHASE6_SUMMARY.md)",
+      "Bash(git restore:*)",
+      "Bash(phase2b_summary.txt )",
+      "Bash(phase2e_old.md )",
+      "Bash(phase2e_summary.txt )",
+      "Bash(phase2e_detailed_inline_candidates.csv )",
+      "Bash(phase3_summary.txt )",
+      "Bash(phase4_test.txt )",
+      "Bash(phase5_summary.txt )",
+      "Bash(phase6_results.txt )",
+      "Bash(temp_small_files.csv )",
+      "Bash(temp_small_files_with_dir.csv )",
+      "Bash(temp_viewmodels_low_usage.txt )",
+      "Bash(temp_widgets_low_usage.txt )",
+      "Bash(zero_usage_files.txt )",
+      "Bash(analyze_dependencies.sh )",
+      "Bash(generate_report.py )",
+      "Bash(generate_summary_stats.py)",
+      "Bash(.gitignore)"
     ],
     "deny": [],
     "ask": []
-  },
-  "hooks": {
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell.exe -c \"(New-Object Media.SoundPlayer 'C:\\\\Windows\\\\Media\\\\tada.wav').PlaySync()\""
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell.exe -c \"(New-Object Media.SoundPlayer 'C:\\\\Windows\\\\Media\\\\tada.wav').PlaySync()\""
-          }
-        ]
-      }
-    ]
   }
 }

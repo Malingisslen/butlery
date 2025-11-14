@@ -1,0 +1,15 @@
+{
+  "name": "butlery-claude-hooks",
+  "version": "1.0.0",
+  "description": "TypeScript hooks for Butlery Claude Code integration",
+  "type": "module",
+  "scripts": {
+    "test": "npx tsx skill-injector.ts < test-input.json"
+  },
+  "dependencies": {
+    "tsx": "^4.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0"
+  }
+}

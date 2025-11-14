@@ -67,7 +67,8 @@ class CircuitBreaker {
   final int failureThreshold;
   final Duration timeout;
   final Duration retryTimeout;
-  
+  final DateTime Function()? _timeProvider;
+
   int _failureCount = 0;
   DateTime? _lastFailureTime;
   CircuitBreakerState _state = CircuitBreakerState.closed;
@@ -76,14 +77,17 @@ class CircuitBreaker {
     this.failureThreshold = 5,
     this.timeout = const Duration(seconds: 30),
     this.retryTimeout = const Duration(minutes: 2),
-  });
+    DateTime Function()? timeProvider,
+  }) : _timeProvider = timeProvider;
+
+  DateTime get _now => _timeProvider?.call() ?? DateTime.now();
 
   bool get canExecute {
     switch (_state) {
       case CircuitBreakerState.closed:
         return true;
       case CircuitBreakerState.open:
-        final now = DateTime.now();
+        final now = _now;
         if (_lastFailureTime != null &&
             now.difference(_lastFailureTime!) > retryTimeout) {
           _state = CircuitBreakerState.halfOpen;
@@ -102,8 +106,8 @@ class CircuitBreaker {
 
   void recordFailure() {
     _failureCount++;
-    _lastFailureTime = DateTime.now();
-    
+    _lastFailureTime = _now;
+
     if (_failureCount >= failureThreshold) {
       _state = CircuitBreakerState.open;
     }
@@ -116,59 +120,302 @@ class CircuitBreaker {
 /// Comprehensive OCR extraction service with universal device compatibility
 class OCRExtractionService extends BaseService {
   static OCRExtractionService? _instance;
-  static OCRExtractionService get instance => _instance ??= OCRExtractionService._();
-  
-  OCRExtractionService._();
-  
+  static OCRExtractionService get instance =>
+      _instance ??= OCRExtractionService._();
+
+  // Test dependencies (injected for testing only)
+  final http.Client? _testHttpClient;
+  final String? _testOcrApiKey;
+  final String? _testGoogleVisionKey;
+  final String? _testTesseractApiUrl;
+  final DateTime Function()? _testTimeProvider;
+
+  OCRExtractionService._({
+    http.Client? testHttpClient,
+    String? testOcrApiKey,
+    String? testGoogleVisionKey,
+    String? testTesseractApiUrl,
+    DateTime Function()? testTimeProvider,
+  })  : _testHttpClient = testHttpClient,
+        _testOcrApiKey = testOcrApiKey,
+        _testGoogleVisionKey = testGoogleVisionKey,
+        _testTesseractApiUrl = testTesseractApiUrl,
+        _testTimeProvider = testTimeProvider {
+    // Initialize circuit breakers with time provider
+    _ocrSpaceCircuitBreaker = CircuitBreaker(timeProvider: testTimeProvider);
+    _googleVisionCircuitBreaker =
+        CircuitBreaker(timeProvider: testTimeProvider);
+    _tesseractCircuitBreaker = CircuitBreaker(timeProvider: testTimeProvider);
+  }
+
+  /// Create OCR service for testing with injectable dependencies
+  @visibleForTesting
+  static OCRExtractionService createForTesting({
+    http.Client? testHttpClient,
+    String? testOcrApiKey,
+    String? testGoogleVisionKey,
+    String? testTesseractApiUrl,
+    DateTime Function()? testTimeProvider,
+  }) {
+    return OCRExtractionService._(
+      testHttpClient: testHttpClient,
+      testOcrApiKey: testOcrApiKey,
+      testGoogleVisionKey: testGoogleVisionKey,
+      testTesseractApiUrl: testTesseractApiUrl,
+      testTimeProvider: testTimeProvider,
+    );
+  }
+
+  /// Reset singleton for testing (clears instance state)
+  @visibleForTesting
+  static void resetForTesting() {
+    _instance?.dispose();
+    _instance = null;
+  }
+
   @override
   String get serviceName => 'OCRExtractionService';
 
-  // Circuit breakers
-  final CircuitBreaker _ocrSpaceCircuitBreaker = CircuitBreaker();
-  final CircuitBreaker _googleVisionCircuitBreaker = CircuitBreaker();
-  final CircuitBreaker _tesseractCircuitBreaker = CircuitBreaker();
+  // Circuit breakers (late initialized with time provider)
+  late final CircuitBreaker _ocrSpaceCircuitBreaker;
+  late final CircuitBreaker _googleVisionCircuitBreaker;
+  late final CircuitBreaker _tesseractCircuitBreaker;
   final Map<String, OCRResult> _cache = {};
   static const int _maxCacheSize = 100;
   static const Duration _cacheExpiry = Duration(hours: 24);
   static const int _maxImageSize = 10 * 1024 * 1024;
   static const double _minConfidenceThreshold = 0.6;
-  String get _ocrApiKey => dotenv.env['OCR_API_KEY'] ?? '';
-  String get _ocrApiUrl => dotenv.env['OCR_API_URL'] ?? 'https://api.ocr.space/parse/image';
-  String get _googleVisionKey => dotenv.env['GOOGLE_VISION_API_KEY'] ?? '';
-  String get _tesseractApiUrl => dotenv.env['TESSERACT_API_URL'] ?? '';
+
+  // Getters with test dependency injection support
+  http.Client get _httpClient => _testHttpClient ?? http.Client();
+  String get _ocrApiKey {
+    if (_testOcrApiKey != null) return _testOcrApiKey;
+    try {
+      return dotenv.env['OCR_API_KEY'] ?? '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  String get _ocrApiUrl {
+    try {
+      return dotenv.env['OCR_API_URL'] ?? 'https://api.ocr.space/parse/image';
+    } catch (_) {
+      return 'https://api.ocr.space/parse/image';
+    }
+  }
+
+  String get _googleVisionKey {
+    if (_testGoogleVisionKey != null) return _testGoogleVisionKey;
+    try {
+      return dotenv.env['GOOGLE_VISION_API_KEY'] ?? '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  String get _tesseractApiUrl {
+    if (_testTesseractApiUrl != null) return _testTesseractApiUrl;
+    try {
+      return dotenv.env['TESSERACT_API_URL'] ?? '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  DateTime get _now => _testTimeProvider?.call() ?? DateTime.now();
+
+  // Usage tracking
+  int _dailyRequestCount = 0;
+  int _monthlyRequestCount = 0;
+  DateTime? _lastRequestDate;
+  DateTime? _monthStartDate;
+  final Map<String, int> _providerUsage = {
+    'ocr_space': 0,
+    'google_vision': 0,
+    'tesseract': 0,
+    'cache_hits': 0,
+  };
+
+  // Usage limits
+  static const int _freeMonthlyLimit = 25000; // OCR.space free tier
+  static const double _warningThreshold = 0.8; // 80% of limit
 
   /// Initialize OCR service
   @override
   Future<void> initialize() async {
     try {
-      debugPrint('✅ [OCR] Service initialized - Providers: OCR.space, Google Vision, Tesseract');
-      if (_ocrApiKey.isEmpty) debugPrint('⚠️ [OCR] OCR.space API key not configured');
-      if (_googleVisionKey.isEmpty) debugPrint('⚠️ [OCR] Google Vision API key not configured');
-      if (_tesseractApiUrl.isEmpty) debugPrint('⚠️ [OCR] Tesseract API URL not configured');
+      _monthStartDate ??= _now;
+      debugPrint(
+          '✅ [OCR] Service initialized - Providers: OCR.space, Google Vision, Tesseract');
+      if (_ocrApiKey.isEmpty) {
+        debugPrint('⚠️ [OCR] OCR.space API key not configured');
+      }
+      if (_googleVisionKey.isEmpty) {
+        debugPrint('⚠️ [OCR] Google Vision API key not configured');
+      }
+      if (_tesseractApiUrl.isEmpty) {
+        debugPrint('⚠️ [OCR] Tesseract API URL not configured');
+      }
     } catch (e) {
       debugPrint('❌ [OCR] Init failed: $e');
       rethrow;
     }
   }
 
+  /// Record OCR usage for tracking and cost monitoring
+  void _recordUsage(String provider) {
+    final now = _now;
+
+    // Reset daily count if new day
+    if (_lastRequestDate == null ||
+        _lastRequestDate!.day != now.day ||
+        _lastRequestDate!.month != now.month ||
+        _lastRequestDate!.year != now.year) {
+      _dailyRequestCount = 0;
+      _lastRequestDate = now;
+    }
+
+    // Reset monthly count if new month
+    if (_monthStartDate == null ||
+        _monthStartDate!.month != now.month ||
+        _monthStartDate!.year != now.year) {
+      _monthlyRequestCount = 0;
+      _monthStartDate = now;
+      debugPrint('📊 [OCR] New month started - usage counters reset');
+    }
+
+    // Increment counters
+    _dailyRequestCount++;
+    _monthlyRequestCount++;
+    _providerUsage[provider] = (_providerUsage[provider] ?? 0) + 1;
+
+    // Log usage and check warnings
+    _logUsageStats();
+    _checkUsageWarnings();
+  }
+
+  /// Log current usage statistics
+  void _logUsageStats() {
+    if (kDebugMode) {
+      final total = _providerUsage.values.reduce((a, b) => a + b);
+      debugPrint(
+          '📊 [OCR Usage] Today: $_dailyRequestCount | Month: $_monthlyRequestCount/$_freeMonthlyLimit');
+      debugPrint(
+          '📊 [OCR Providers] OCR.space: ${_providerUsage['ocr_space']} | '
+          'Google Vision: ${_providerUsage['google_vision']} | '
+          'Tesseract: ${_providerUsage['tesseract']} | '
+          'Cache hits: ${_providerUsage['cache_hits']} (${(((_providerUsage['cache_hits'] ?? 0) / total) * 100).toInt()}%)');
+    }
+  }
+
+  /// Check and warn about approaching usage limits
+  void _checkUsageWarnings() {
+    if (_monthlyRequestCount >= _freeMonthlyLimit) {
+      debugPrint(
+          '🚨 [OCR] EXCEEDED FREE TIER! Monthly usage: $_monthlyRequestCount/$_freeMonthlyLimit');
+      debugPrint(
+          '💡 [OCR] Action required: Upgrade to paid tier (\$19/month) or add fallback provider');
+    } else if (_monthlyRequestCount >=
+        (_freeMonthlyLimit * _warningThreshold)) {
+      debugPrint(
+          '⚠️ [OCR] Approaching limit: $_monthlyRequestCount/$_freeMonthlyLimit (${((_monthlyRequestCount / _freeMonthlyLimit) * 100).toInt()}%)');
+      debugPrint('💡 [OCR] Consider: Upgrade soon or optimize caching');
+    }
+  }
+
+  /// Get usage statistics (for monitoring dashboard)
+  Map<String, dynamic> getUsageStats() {
+    final total = _providerUsage.values.reduce((a, b) => a + b);
+    final cacheHitRate =
+        total > 0 ? (_providerUsage['cache_hits'] ?? 0) / total : 0.0;
+
+    return {
+      'daily_count': _dailyRequestCount,
+      'monthly_count': _monthlyRequestCount,
+      'monthly_limit': _freeMonthlyLimit,
+      'usage_percentage': (_monthlyRequestCount / _freeMonthlyLimit) * 100,
+      'remaining': _freeMonthlyLimit - _monthlyRequestCount,
+      'provider_usage': Map.from(_providerUsage),
+      'cache_hit_rate': cacheHitRate,
+      'estimated_monthly_cost': _estimateMonthlyCost(),
+      'warnings': _getUsageWarnings(),
+    };
+  }
+
+  /// Estimate monthly cost based on current usage
+  double _estimateMonthlyCost() {
+    if (_monthlyRequestCount <= _freeMonthlyLimit) {
+      return 0.0; // Free tier
+    }
+
+    // OCR.space paid tier: $19/month for 100k requests
+    if (_monthlyRequestCount <= 100000) {
+      return 19.0;
+    }
+
+    // Google Vision overflow: $1.50 per 1000 after 100k
+    final overflow = _monthlyRequestCount - 100000;
+    final googleVisionCost = (overflow / 1000) * 1.50;
+    return 19.0 + googleVisionCost;
+  }
+
+  /// Get usage warnings
+  List<String> _getUsageWarnings() {
+    final warnings = <String>[];
+
+    if (_monthlyRequestCount >= _freeMonthlyLimit) {
+      warnings.add('Exceeded free tier - upgrade to paid tier or add fallback');
+    } else if (_monthlyRequestCount >=
+        (_freeMonthlyLimit * _warningThreshold)) {
+      warnings.add(
+          'Approaching monthly limit (${((_monthlyRequestCount / _freeMonthlyLimit) * 100).toInt()}%)');
+    }
+
+    if (_providerUsage['ocr_space'] == 0 && _monthlyRequestCount > 0) {
+      warnings.add('OCR.space not being used - check API key configuration');
+    }
+
+    final cacheHitRate = _calculateCacheHitRate();
+    if (cacheHitRate < 0.2 && _monthlyRequestCount > 100) {
+      warnings.add(
+          'Low cache hit rate (${(cacheHitRate * 100).toInt()}%) - many duplicate requests');
+    }
+
+    return warnings;
+  }
+
+  /// Calculate cache hit rate
+  double _calculateCacheHitRate() {
+    final total = _providerUsage.values.reduce((a, b) => a + b);
+    return total > 0 ? (_providerUsage['cache_hits'] ?? 0) / total : 0.0;
+  }
+
   /// Extract text from image using multi-tier OCR strategy
   Future<OCRResult> extractText(Uint8List imageBytes) async {
     final imageHash = _generateImageHash(imageBytes);
-    
+
     final cachedResult = _getCachedResult(imageHash);
-    if (cachedResult != null) return cachedResult;
+    if (cachedResult != null) {
+      _recordUsage('cache_hits');
+      return cachedResult;
+    }
     final qualityAssessment = await _assessImageQuality(imageBytes);
     if (!qualityAssessment.isGoodQuality) {
-      debugPrint('⚠️ [OCR] Poor quality: ${qualityAssessment.issues.join(', ')}');
+      debugPrint(
+          '⚠️ [OCR] Poor quality: ${qualityAssessment.issues.join(', ')}');
     }
-    final preprocessedImage = await _preprocessImage(imageBytes, qualityAssessment);
+    final preprocessedImage =
+        await _preprocessImage(imageBytes, qualityAssessment);
     OCRResult result;
 
     if (_ocrSpaceCircuitBreaker.canExecute && _ocrApiKey.isNotEmpty) {
       try {
         result = await _extractWithOCRSpace(preprocessedImage);
-        if (result.isSuccessful && result.confidence >= _minConfidenceThreshold) {
+        if (result.isSuccessful &&
+            result.confidence >= _minConfidenceThreshold) {
           _ocrSpaceCircuitBreaker.recordSuccess();
+          _recordUsage('ocr_space');
           _cacheResult(imageHash, result);
           return result;
         }
@@ -180,8 +427,10 @@ class OCRExtractionService extends BaseService {
     if (_googleVisionCircuitBreaker.canExecute && _googleVisionKey.isNotEmpty) {
       try {
         result = await _extractWithGoogleVision(preprocessedImage);
-        if (result.isSuccessful && result.confidence >= _minConfidenceThreshold) {
+        if (result.isSuccessful &&
+            result.confidence >= _minConfidenceThreshold) {
           _googleVisionCircuitBreaker.recordSuccess();
+          _recordUsage('google_vision');
           _cacheResult(imageHash, result);
           return result;
         }
@@ -193,8 +442,10 @@ class OCRExtractionService extends BaseService {
     if (_tesseractCircuitBreaker.canExecute && _tesseractApiUrl.isNotEmpty) {
       try {
         result = await _extractWithTesseract(preprocessedImage);
-        if (result.isSuccessful && result.confidence >= _minConfidenceThreshold) {
+        if (result.isSuccessful &&
+            result.confidence >= _minConfidenceThreshold) {
           _tesseractCircuitBreaker.recordSuccess();
+          _recordUsage('tesseract');
           _cacheResult(imageHash, result);
           return result;
         }
@@ -224,7 +475,7 @@ class OCRExtractionService extends BaseService {
   /// Extract text using OCR.space API (Primary - Universal compatibility)
   Future<OCRResult> _extractWithOCRSpace(Uint8List imageBytes) async {
     final base64Image = base64Encode(imageBytes);
-    
+
     final request = http.MultipartRequest('POST', Uri.parse(_ocrApiUrl));
     request.fields['apikey'] = _ocrApiKey;
     request.fields['OCREngine'] = '2'; // Best for Swedish text
@@ -239,11 +490,12 @@ class OCRExtractionService extends BaseService {
 
     if (response.statusCode == 200) {
       final json = jsonDecode(responseBody);
-      
+
       if (json['IsErroredOnProcessing'] == false) {
         final parsedResults = json['ParsedResults'] as List?;
-        final extractedText = parsedResults?.first['ParsedText'] as String? ?? '';
-        
+        final extractedText =
+            parsedResults?.first['ParsedText'] as String? ?? '';
+
         return OCRResult(
           text: extractedText,
           confidence: _calculateConfidenceFromText(extractedText),
@@ -251,15 +503,16 @@ class OCRExtractionService extends BaseService {
           metadata: {
             'engine': '2',
             'language': 'swedish',
-            'processing_time': DateTime.now().millisecondsSinceEpoch,
+            'processing_time': _now.millisecondsSinceEpoch,
             'response_size': responseBody.length,
           },
-          timestamp: DateTime.now(),
+          timestamp: _now,
         );
       } else {
         // API responded with success but processing failed
         final errorMessages = json['ErrorMessage'] as List?;
-        final errorDetails = errorMessages?.join(', ') ?? 'OCR processing failed';
+        final errorDetails =
+            errorMessages?.join(', ') ?? 'OCR processing failed';
         throw Exception('OCR.space processing error: $errorDetails');
       }
     }
@@ -270,7 +523,7 @@ class OCRExtractionService extends BaseService {
   /// Extract text using Google Vision API (Secondary fallback)
   Future<OCRResult> _extractWithGoogleVision(Uint8List imageBytes) async {
     final base64Image = base64Encode(imageBytes);
-    
+
     final requestBody = jsonEncode({
       'requests': [
         {
@@ -285,47 +538,52 @@ class OCRExtractionService extends BaseService {
       ]
     });
 
-    final response = await http.post(
-      Uri.parse('https://vision.googleapis.com/v1/images:annotate?key=$_googleVisionKey'),
-      headers: {'Content-Type': 'application/json'},
-      body: requestBody,
-    ).timeout(const Duration(seconds: 30));
+    final response = await _httpClient
+        .post(
+          Uri.parse(
+              'https://vision.googleapis.com/v1/images:annotate?key=$_googleVisionKey'),
+          headers: {'Content-Type': 'application/json'},
+          body: requestBody,
+        )
+        .timeout(const Duration(seconds: 30));
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
       final responses = json['responses'] as List?;
-      
+
       if (responses != null && responses.isNotEmpty) {
         final textAnnotations = responses.first['textAnnotations'] as List?;
-        
+
         if (textAnnotations != null && textAnnotations.isNotEmpty) {
-          final extractedText = textAnnotations.first['description'] as String? ?? '';
-          
+          final extractedText =
+              textAnnotations.first['description'] as String? ?? '';
+
           return OCRResult(
             text: extractedText,
             confidence: _calculateConfidenceFromText(extractedText),
             processingMethod: 'google_vision',
             metadata: {
               'language_hints': ['sv', 'en'],
-              'processing_time': DateTime.now().millisecondsSinceEpoch,
+              'processing_time': _now.millisecondsSinceEpoch,
               'annotations_count': textAnnotations.length,
             },
-            timestamp: DateTime.now(),
+            timestamp: _now,
           );
         }
       }
     }
 
-    throw Exception('Google Vision API processing failed: ${response.statusCode}');
+    throw Exception(
+        'Google Vision API processing failed: ${response.statusCode}');
   }
 
   /// Extract text using Tesseract API (Tertiary fallback)
   Future<OCRResult> _extractWithTesseract(Uint8List imageBytes) async {
     // This would connect to a hosted Tesseract service
     // For now, return a basic implementation
-    
+
     final base64Image = base64Encode(imageBytes);
-    
+
     final requestBody = jsonEncode({
       'image': base64Image,
       'language': 'swe+eng', // Swedish + English
@@ -336,16 +594,18 @@ class OCRExtractionService extends BaseService {
     });
 
     try {
-      final response = await http.post(
-        Uri.parse(_tesseractApiUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: requestBody,
-      ).timeout(const Duration(seconds: 45));
+      final response = await _httpClient
+          .post(
+            Uri.parse(_tesseractApiUrl),
+            headers: {'Content-Type': 'application/json'},
+            body: requestBody,
+          )
+          .timeout(const Duration(seconds: 45));
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
         final extractedText = json['text'] as String? ?? '';
-        
+
         return OCRResult(
           text: extractedText,
           confidence: _calculateConfidenceFromText(extractedText),
@@ -353,9 +613,9 @@ class OCRExtractionService extends BaseService {
           metadata: {
             'language': 'swe+eng',
             'psm': '6',
-            'processing_time': DateTime.now().millisecondsSinceEpoch,
+            'processing_time': _now.millisecondsSinceEpoch,
           },
-          timestamp: DateTime.now(),
+          timestamp: _now,
         );
       }
     } catch (e) {
@@ -365,12 +625,25 @@ class OCRExtractionService extends BaseService {
   }
 
   /// Assess image quality for OCR optimization
-  Future<ImageQualityAssessment> _assessImageQuality(Uint8List imageBytes) async {
+  Future<ImageQualityAssessment> _assessImageQuality(
+      Uint8List imageBytes) async {
     final issues = <String>[], recommendations = <String>[];
     double qualityScore = 1.0;
-    if (imageBytes.length > _maxImageSize) { issues.add('Bilden är för stor'); recommendations.add('Komprimera bilden'); qualityScore -= 0.2; }
-    if (imageBytes.length < 50 * 1024) { issues.add('Bilden är för liten'); recommendations.add('Använd högre upplösning'); qualityScore -= 0.3; }
-    if (!_isValidImageFormat(imageBytes)) { issues.add('Bildformat stöds inte optimalt'); recommendations.add('Använd JPEG eller PNG'); qualityScore -= 0.1; }
+    if (imageBytes.length > _maxImageSize) {
+      issues.add('Bilden är för stor');
+      recommendations.add('Komprimera bilden');
+      qualityScore -= 0.2;
+    }
+    if (imageBytes.length < 50 * 1024) {
+      issues.add('Bilden är för liten');
+      recommendations.add('Använd högre upplösning');
+      qualityScore -= 0.3;
+    }
+    if (!_isValidImageFormat(imageBytes)) {
+      issues.add('Bildformat stöds inte optimalt');
+      recommendations.add('Använd JPEG eller PNG');
+      qualityScore -= 0.1;
+    }
     return ImageQualityAssessment(
       isGoodQuality: qualityScore >= 0.6 && issues.isEmpty,
       qualityScore: math.max(0.0, qualityScore),
@@ -380,7 +653,8 @@ class OCRExtractionService extends BaseService {
   }
 
   /// Preprocess image for optimal OCR results
-  Future<Uint8List> _preprocessImage(Uint8List imageBytes, ImageQualityAssessment assessment) async {
+  Future<Uint8List> _preprocessImage(
+      Uint8List imageBytes, ImageQualityAssessment assessment) async {
     // Future: orientation correction, contrast enhancement, noise reduction
     return imageBytes;
   }
@@ -388,20 +662,29 @@ class OCRExtractionService extends BaseService {
   /// Calculate confidence score from extracted text (universal method)
   double _calculateConfidenceFromText(String text) {
     if (text.isEmpty) return 0.0;
-    
+
     final textLength = text.trim().length;
-    final lineCount = text.split('\n').where((line) => line.trim().isNotEmpty).length;
-    
+    final lineCount =
+        text.split('\n').where((line) => line.trim().isNotEmpty).length;
+
     if (textLength == 0) return 0.0;
     if (textLength < 10) return 0.3;
     if (textLength < 30) return 0.5;
     if (textLength < 100) return 0.7;
-    
+
     const baseConfidence = 0.8;
     final structureBonus = math.min(0.2, lineCount * 0.03);
-    
-    const keywords = ['ingrediens', 'tillsätt', 'vispa', 'stek', 'portioner', 'minut'];
-    final keywordMatches = keywords.where((k) => text.toLowerCase().contains(k)).length;
+
+    const keywords = [
+      'ingrediens',
+      'tillsätt',
+      'vispa',
+      'stek',
+      'portioner',
+      'minut'
+    ];
+    final keywordMatches =
+        keywords.where((k) => text.toLowerCase().contains(k)).length;
     final keywordBonus = math.min(0.15, keywordMatches * 0.03);
     return math.min(1.0, baseConfidence + structureBonus + keywordBonus);
   }
@@ -416,7 +699,7 @@ class OCRExtractionService extends BaseService {
   OCRResult? _getCachedResult(String imageHash) {
     final cached = _cache[imageHash];
     if (cached != null) {
-      final age = DateTime.now().difference(cached.timestamp);
+      final age = _now.difference(cached.timestamp);
       if (age <= _cacheExpiry) {
         return cached;
       } else {
@@ -446,15 +729,15 @@ class OCRExtractionService extends BaseService {
     if (bytes[0] == 0xFF && bytes[1] == 0xD8) {
       return true;
     }
-    
+
     // Check PNG
-    if (bytes[0] == 0x89 && 
-        bytes[1] == 0x50 && 
-        bytes[2] == 0x4E && 
+    if (bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
         bytes[3] == 0x47) {
       return true;
     }
-    
+
     return false;
   }
 
@@ -464,9 +747,21 @@ class OCRExtractionService extends BaseService {
       'timestamp': DateTime.now().toIso8601String(),
       'cache_size': _cache.length,
       'circuit_breakers': {
-        'ocr_space': {'state': _ocrSpaceCircuitBreaker.state.name, 'failures': _ocrSpaceCircuitBreaker.failures, 'can_execute': _ocrSpaceCircuitBreaker.canExecute},
-        'google_vision': {'state': _googleVisionCircuitBreaker.state.name, 'failures': _googleVisionCircuitBreaker.failures, 'can_execute': _googleVisionCircuitBreaker.canExecute},
-        'tesseract': {'state': _tesseractCircuitBreaker.state.name, 'failures': _tesseractCircuitBreaker.failures, 'can_execute': _tesseractCircuitBreaker.canExecute},
+        'ocr_space': {
+          'state': _ocrSpaceCircuitBreaker.state.name,
+          'failures': _ocrSpaceCircuitBreaker.failures,
+          'can_execute': _ocrSpaceCircuitBreaker.canExecute
+        },
+        'google_vision': {
+          'state': _googleVisionCircuitBreaker.state.name,
+          'failures': _googleVisionCircuitBreaker.failures,
+          'can_execute': _googleVisionCircuitBreaker.canExecute
+        },
+        'tesseract': {
+          'state': _tesseractCircuitBreaker.state.name,
+          'failures': _tesseractCircuitBreaker.failures,
+          'can_execute': _tesseractCircuitBreaker.canExecute
+        },
       },
       'device_compatibility': 'universal_ios_android',
       'api_keys_configured': {

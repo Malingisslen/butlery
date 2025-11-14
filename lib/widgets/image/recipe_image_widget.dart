@@ -209,15 +209,19 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
     }
 
     if (widget.onTap != null || widget.onImageTap != null) {
-      image = GestureDetector(
-        onTap: () {
-          if (widget.config.enableHapticFeedback) {
-            HapticFeedback.lightImpact();
-          }
-          widget.onTap?.call();
-          widget.onImageTap?.call(0);
-        },
-        child: image,
+      image = Semantics(
+        label: 'Visa fullstorlek av bild',
+        button: true,
+        child: GestureDetector(
+          onTap: () {
+            if (widget.config.enableHapticFeedback) {
+              HapticFeedback.lightImpact();
+            }
+            widget.onTap?.call();
+            widget.onImageTap?.call(0);
+          },
+          child: image,
+        ),
       );
     }
 
@@ -240,19 +244,23 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
           final imageUrl = widget.imageUrls[index];
           return RepaintBoundary(
             key: ValueKey('recipe_image_$imageUrl'),
-            child: GestureDetector(
-              onTap: () {
-                if (widget.config.enableHapticFeedback) {
-                  HapticFeedback.lightImpact();
-                }
-                widget.onTap?.call();
-                widget.onImageTap?.call(index);
-              },
-              child: OptimizedImageLoader.recipeDetail(
-                key: ValueKey('optimized_loader_$imageUrl'),
-                imageUrl: imageUrl,
-                config: widget.config,
-                onTap: null,
+            child: Semantics(
+              label: 'Visa fullstorlek av bild ${index + 1} av ${widget.imageUrls.length}',
+              button: true,
+              child: GestureDetector(
+                onTap: () {
+                  if (widget.config.enableHapticFeedback) {
+                    HapticFeedback.lightImpact();
+                  }
+                  widget.onTap?.call();
+                  widget.onImageTap?.call(index);
+                },
+                child: OptimizedImageLoader.recipeDetail(
+                  key: ValueKey('optimized_loader_$imageUrl'),
+                  imageUrl: imageUrl,
+                  config: widget.config,
+                  onTap: null,
+                ),
               ),
             ),
           );
@@ -265,12 +273,16 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
     return ImageComponents.buildPlaceholder(
       config: widget.config,
       child: widget.onTap != null
-          ? GestureDetector(
-              onTap: widget.onTap,
-              child: const Center(
-                child: Icon(
-                  Icons.add_photo_alternate_outlined,
-                  size: AppDimensions.iconSizeXxl,
+          ? Semantics(
+              label: 'Lägg till bild',
+              button: true,
+              child: GestureDetector(
+                onTap: widget.onTap,
+                child: const Center(
+                  child: Icon(
+                    Icons.add_photo_alternate_outlined,
+                    size: AppDimensions.iconSizeXxl,
+                  ),
                 ),
               ),
             )
@@ -351,22 +363,26 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
               },
               itemCount: widget.imageUrls.length,
               itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () {
-                    if (widget.config.enableHapticFeedback) {
-                      HapticFeedback.lightImpact();
-                    }
-                    widget.onImageTap?.call(index);
-                  },
-                  child: ImageComponents.buildOptimizedCachedImage(
-                    imageUrl: widget.imageUrls[index],
-                    config: widget.config,
-                    fit: BoxFit.cover,
-                    placeholder: ImageComponents.buildLoadingPlaceholder(
+                return Semantics(
+                  label: 'Byt till bild ${index + 1} av ${widget.imageUrls.length}',
+                  button: true,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (widget.config.enableHapticFeedback) {
+                        HapticFeedback.lightImpact();
+                      }
+                      widget.onImageTap?.call(index);
+                    },
+                    child: ImageComponents.buildOptimizedCachedImage(
+                      imageUrl: widget.imageUrls[index],
                       config: widget.config,
-                    ),
-                    errorWidget: ImageComponents.buildErrorPlaceholder(
-                      config: widget.config,
+                      fit: BoxFit.cover,
+                      placeholder: ImageComponents.buildLoadingPlaceholder(
+                        config: widget.config,
+                      ),
+                      errorWidget: ImageComponents.buildErrorPlaceholder(
+                        config: widget.config,
+                      ),
                     ),
                   ),
                 );

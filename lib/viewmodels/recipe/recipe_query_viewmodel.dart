@@ -9,13 +9,26 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
 
 /// Recipe Query ViewModel
-/// 
+///
 /// Handles ONLY recipe querying, filtering, searching, and analytics operations.
 /// This includes search functionality, filtering by various criteria, and providing insights.
-class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, StreamManagementMixin {
-  final UnifiedRecipeService _recipeService = ServiceLocator.get<UnifiedRecipeService>();
+///
+/// Performance optimizations:
+/// - Debounced search (300ms) to prevent excessive filtering
+/// - Result caching to avoid redundant computations
+/// - Cache invalidation on filter changes
+class RecipeQueryViewModel extends ChangeNotifier
+    with
+        ErrorHandlingMixin,
+        StreamManagementMixin,
+        StateNotifierMixin,
+        AsyncOperationMixin {
+  final UnifiedRecipeService _recipeService =
+      ServiceLocator.get<UnifiedRecipeService>();
 
   String get serviceName => 'RecipeQueryViewModel';
 
@@ -24,6 +37,13 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, Strea
   String? _selectedMealType;
   String? _selectedTag;
   RecipeType? _selectedType;
+
+  // Performance optimization: Cache filtered results
+  List<Recipe>? _cachedFilteredRecipes;
+  String _lastSearchQuery = '';
+  String? _lastMealType;
+  String? _lastTag;
+  RecipeType? _lastType;
 
   // ===== GETTERS =====
 
@@ -78,23 +98,50 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, Strea
           recipe.instructions.any((instruction) =>
               instruction.toLowerCase().contains(lowercaseQuery)) ||
           (recipe.tags
-                  ?.any((tag) => tag.toLowerCase().contains(lowercaseQuery))).orFalse();
+                  ?.any((tag) => tag.toLowerCase().contains(lowercaseQuery)))
+              .orFalse();
     }).toList();
   }
 
-  void updateSearchQuery(String query) {
-    _searchQuery = query;
-    notifyListeners();
+  /// Update search query with debouncing (300ms)
+  /// Prevents excessive filtering during typing
+  Future<void> updateSearchQuery(String query) async {
+    await executeDebounced(
+      'recipeSearch',
+      () async {
+        _searchQuery = query;
+        _invalidateCache();
+        notifyListeners();
+      },
+      const Duration(milliseconds: 300),
+    );
   }
 
   void clearSearch() {
     _searchQuery = '';
+    _invalidateCache();
     notifyListeners();
+  }
+
+  /// Invalidate the filtered results cache
+  void _invalidateCache() {
+    _cachedFilteredRecipes = null;
   }
 
   // ===== FILTERING =====
 
+  /// Get filtered recipes with caching to prevent redundant computations
   List<Recipe> get filteredRecipes {
+    // Check if cache is valid
+    if (_cachedFilteredRecipes != null &&
+        _lastSearchQuery == _searchQuery &&
+        _lastMealType == _selectedMealType &&
+        _lastTag == _selectedTag &&
+        _lastType == _selectedType) {
+      return _cachedFilteredRecipes!;
+    }
+
+    // Cache is invalid, recompute filtered results
     List<Recipe> recipes = allRecipes;
 
     // Apply search filter
@@ -109,7 +156,9 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, Strea
 
     // Apply tag filter
     if (_selectedTag != null) {
-      recipes = recipes.where((r) => (r.tags?.contains(_selectedTag)).orFalse()).toList();
+      recipes = recipes
+          .where((r) => (r.tags?.contains(_selectedTag)).orFalse())
+          .toList();
     }
 
     // Apply type filter
@@ -117,21 +166,31 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, Strea
       recipes = recipes.where((r) => r.type == _selectedType).toList();
     }
 
+    // Update cache
+    _cachedFilteredRecipes = recipes;
+    _lastSearchQuery = _searchQuery;
+    _lastMealType = _selectedMealType;
+    _lastTag = _selectedTag;
+    _lastType = _selectedType;
+
     return recipes;
   }
 
   void setMealTypeFilter(String? mealType) {
     _selectedMealType = mealType;
+    _invalidateCache();
     notifyListeners();
   }
 
   void setTagFilter(String? tag) {
     _selectedTag = tag;
+    _invalidateCache();
     notifyListeners();
   }
 
   void setTypeFilter(RecipeType? type) {
     _selectedType = type;
+    _invalidateCache();
     notifyListeners();
   }
 
@@ -139,18 +198,20 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, Strea
     _selectedMealType = null;
     _selectedTag = null;
     _selectedType = null;
+    _invalidateCache();
     notifyListeners();
   }
 
   void clearAllFiltersAndSearch() {
     _searchQuery = '';
+    _invalidateCache();
     clearFilters();
   }
 
-  bool get hasActiveFilters => 
-      _searchQuery.isNotEmpty || 
-      _selectedMealType != null || 
-      _selectedTag != null || 
+  bool get hasActiveFilters =>
+      _searchQuery.isNotEmpty ||
+      _selectedMealType != null ||
+      _selectedTag != null ||
       _selectedType != null;
 
   // ===== SPECIALIZED QUERIES =====
@@ -165,88 +226,88 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, Strea
         // Check if user has edit permissions for collaborative recipe
         final permissions = recipe.socialData?.memberPermissions;
         if (permissions == null) return false;
-        
+
         final userPermission = permissions[currentUserId];
-        return userPermission == ResourcePermission.admin || 
-               userPermission == ResourcePermission.editor;
+        return userPermission == ResourcePermission.admin ||
+            userPermission == ResourcePermission.editor;
       }
     }).toList();
   }
 
   List<Recipe> getRecentlyCookedRecipes({int daysBack = 7}) {
     final cutoffDate = DateTime.now().subtract(Duration(days: daysBack));
-    return allRecipes.where((recipe) => 
-      recipe.lastCookedAt != null &&
-      recipe.lastCookedAt!.isAfter(cutoffDate)
-    ).toList();
+    return allRecipes
+        .where((recipe) =>
+            recipe.lastCookedAt != null &&
+            recipe.lastCookedAt!.isAfter(cutoffDate))
+        .toList();
   }
 
   List<Recipe> getRecentlyCreatedRecipes({int daysBack = 7}) {
     final cutoffDate = DateTime.now().subtract(Duration(days: daysBack));
-    return allRecipes.where((recipe) => 
-      recipe.createdAt.isAfter(cutoffDate)
-    ).toList();
+    return allRecipes
+        .where((recipe) => recipe.createdAt.isAfter(cutoffDate))
+        .toList();
   }
 
   List<Recipe> getRecentlyEditedRecipes({int daysBack = 7}) {
     final cutoffDate = DateTime.now().subtract(Duration(days: daysBack));
-    return allRecipes.where((recipe) => 
-      recipe.updatedAt.isAfter(cutoffDate)
-    ).toList();
+    return allRecipes
+        .where((recipe) => recipe.updatedAt.isAfter(cutoffDate))
+        .toList();
   }
 
   List<Recipe> getFavoriteRecipes() {
     // For now, consider recipes with rating >= 4.5 as favorites
     // In the future, this would be based on user-specific favorite flags
-    return allRecipes.where((recipe) =>
-      recipe.rating != null && recipe.rating! >= 4.5
-    ).toList()..sort((a, b) => (b.rating).orZero().compareTo((a.rating).orZero()));
+    return allRecipes
+        .where((recipe) => recipe.rating != null && recipe.rating! >= 4.5)
+        .toList()
+      ..sort((a, b) => (b.rating).orZero().compareTo((a.rating).orZero()));
   }
 
   List<Recipe> getHighRatedRecipes({double minRating = 4.0}) {
-    return allRecipes.where((recipe) => 
-      recipe.rating != null && recipe.rating! >= minRating
-    ).toList();
+    return allRecipes
+        .where((recipe) => recipe.rating != null && recipe.rating! >= minRating)
+        .toList();
   }
 
   List<Recipe> getRecipesWithImages() {
-    return allRecipes.where((recipe) => 
-      recipe.imageUrls.isNotEmpty
-    ).toList();
+    return allRecipes.where((recipe) => recipe.imageUrls.isNotEmpty).toList();
   }
 
   List<Recipe> getRecipesWithoutImages() {
-    return allRecipes.where((recipe) => 
-      recipe.imageUrls.isEmpty
-    ).toList();
+    return allRecipes.where((recipe) => recipe.imageUrls.isEmpty).toList();
   }
 
   // ===== SOCIAL QUERIES =====
 
   List<Recipe> getSharedWithMe() {
     if (currentUserId == null) return [];
-    
-    return collaborativeRecipes.where((recipe) => 
-      recipe.isShared && 
-      recipe.socialData?.ownerId != currentUserId
-    ).toList();
+
+    return collaborativeRecipes
+        .where((recipe) =>
+            recipe.isShared && recipe.socialData?.ownerId != currentUserId)
+        .toList();
   }
 
   List<Recipe> getSharedByMe() {
     if (currentUserId == null) return [];
-    
-    return collaborativeRecipes.where((recipe) => 
-      recipe.isShared && 
-      recipe.socialData?.ownerId == currentUserId
-    ).toList();
+
+    return collaborativeRecipes
+        .where((recipe) =>
+            recipe.isShared && recipe.socialData?.ownerId == currentUserId)
+        .toList();
   }
 
   List<Recipe> getRecipesWithCollaborator(String userId) {
     if (ValidationUtils.isNullOrEmpty(userId)) return [];
-    
-    return collaborativeRecipes.where((recipe) =>
-      (recipe.socialData?.memberPermissions?.containsKey(userId)).orFalse()
-    ).toList();
+
+    return collaborativeRecipes
+        .where((recipe) =>
+            (recipe.socialData?.memberPermissions?.containsKey(userId))
+                .orFalse())
+        .toList();
   }
 
   // ===== GROUPING AND ORGANIZATION =====
@@ -308,7 +369,8 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, Strea
   // ===== METADATA AND OPTIONS =====
 
   List<String> get usedMealTypes {
-    final mealTypes = allRecipes.map<String>((recipe) => recipe.mealType).toSet().toList();
+    final mealTypes =
+        allRecipes.map<String>((recipe) => recipe.mealType).toSet().toList();
     mealTypes.sort();
     return mealTypes;
   }
@@ -385,13 +447,16 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, Strea
 
     for (final recipe in allRecipes) {
       if (recipe.rating != null) {
-        mealTypeRatings.putIfAbsent(recipe.mealType, () => []).add(recipe.rating!);
+        mealTypeRatings
+            .putIfAbsent(recipe.mealType, () => [])
+            .add(recipe.rating!);
       }
     }
 
     final averages = <String, double>{};
     mealTypeRatings.forEach((mealType, ratings) {
-      averages[mealType] = ratings.reduce((a, b) => a + b) / ratings.length.toDouble();
+      averages[mealType] =
+          ratings.reduce((a, b) => a + b) / ratings.length.toDouble();
     });
 
     return averages;
@@ -402,18 +467,21 @@ class RecipeQueryViewModel extends ChangeNotifier with ErrorHandlingMixin, Strea
 
     for (final recipe in allRecipes) {
       if (recipe.lastCookedAt != null) {
-        cookingCounts[recipe.mealType] = (cookingCounts[recipe.mealType]).orZero() + 1;
+        cookingCounts[recipe.mealType] =
+            (cookingCounts[recipe.mealType]).orZero() + 1;
       }
     }
 
     return cookingCounts;
   }
+
   @override
   void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions  
-    // Dispose of resources
+    // Cancel all timers and debounced operations
+    cancelAllOperations(); // From AsyncOperationMixin
+    // Cancel all stream subscriptions
     disposeStreamResources(); // From StreamManagementMixin
+    // Dispose of resources
     super.dispose();
   }
 }

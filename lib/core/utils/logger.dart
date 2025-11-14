@@ -29,19 +29,19 @@
 /// ```dart
 /// // Success operations
 /// AppLogger.success('Recipe created successfully');
-/// 
+///
 /// // General information
 /// AppLogger.info('Loading user preferences');
-/// 
+///
 /// // Warning conditions
 /// AppLogger.warning('Network connection unstable');
-/// 
+///
 /// // Error handling
 /// AppLogger.error('Failed to save recipe', error);
-/// 
+///
 /// // Debug information (debug builds only)
 /// AppLogger.debug('Processing validation rules');
-/// 
+///
 /// // Contextual logging
 /// AppLogger.service('User authentication completed');
 /// AppLogger.viewModel('Recipe list updated');
@@ -49,8 +49,7 @@
 /// ```
 
 import 'dart:developer' as developer;
-import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/analytics_service.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 /// Application logging utility providing structured, production-safe logging with hierarchical severity levels.
 ///
@@ -64,6 +63,37 @@ import 'package:butlery/services/analytics_service.dart';
 /// This design ensures consistent logging behavior and optimal performance with minimal memory overhead
 /// while maintaining compatibility with Flutter's logging infrastructure and external monitoring systems.
 class AppLogger {
+  /// Optional analytics callback for error tracking (configured during app initialization)
+  static Future<void> Function(String errorCode, String errorType,
+      String userAction, String? stackTrace)? _analyticsCallback;
+
+  /// Configures the analytics callback for error tracking.
+  ///
+  /// This should be called during app initialization after AnalyticsService is available.
+  /// Using a callback pattern avoids circular dependency with the DI system.
+  ///
+  /// [callback] Function to call when errors are logged, typically AnalyticsService.logErrorOccurred
+  ///
+  /// **Usage Example:**
+  /// ```dart
+  /// // In ApplicationBootstrap after DI setup:
+  /// AppLogger.configureAnalytics((errorCode, errorType, userAction, stackTrace) {
+  ///   return ServiceLocator.get<AnalyticsService>().logErrorOccurred(
+  ///     errorCode: errorCode,
+  ///     errorType: errorType,
+  ///     userAction: userAction,
+  ///     stackTrace: stackTrace,
+  ///   );
+  /// });
+  /// ```
+  static void configureAnalytics(
+    Future<void> Function(String errorCode, String errorType, String userAction,
+            String? stackTrace)
+        callback,
+  ) {
+    _analyticsCallback = callback;
+  }
+
   /// Logs successful operations and completed tasks with success-level priority and visual identification.
   ///
   /// This method records successful completion of operations, achievements, and positive outcomes using
@@ -148,50 +178,87 @@ class AppLogger {
   /// **Analytics Integration:** Automatically tracks errors to Firebase Analytics for production monitoring
   /// (if AnalyticsService is available and initialized). This enables error rate tracking and crash analysis.
   ///
+  /// **Crashlytics Integration:** Automatically sends non-fatal errors to Firebase Crashlytics for
+  /// production error tracking and monitoring. This enables comprehensive error tracking and debugging.
+  ///
   /// [message] Descriptive error message explaining what went wrong
   /// [error] Optional error object providing additional context, stack traces, and debugging information
   /// [name] Optional logger name for contextual categorization (defaults to 'Butlery')
+  /// [stackTrace] Optional stack trace for detailed debugging context (named parameter for backwards compatibility)
   ///
   /// **Usage Examples:**
   /// ```dart
   /// AppLogger.error('Failed to save recipe');
   /// AppLogger.error('Database connection failed', exception);
   /// AppLogger.error('Authentication error occurred', authError, 'Auth');
+  /// AppLogger.error('API error', exception, 'API', stackTrace: trace);
   /// ```
   ///
   /// **Log Level:** 1000 (Error) - Highest priority for critical issues requiring attention
-  static void error(String message, [Object? error, String? name]) {
+  static void error(String message,
+      [Object? error, String? name, StackTrace? stackTrace]) {
     developer.log(
       '❌ $message',
       name: name ?? 'Butlery',
       level: 1000, // Error level
       error: error,
+      stackTrace: stackTrace,
     );
+
+    // Log to Crashlytics for production error tracking
+    _logToCrashlytics(message, error, stackTrace);
 
     // Track error analytics (if service is available and initialized)
     _trackErrorAnalytics(message, error, name);
   }
 
-  /// Tracks error analytics to Firebase (safe to call even if service not initialized)
-  static void _trackErrorAnalytics(String message, Object? error, String? name) {
+  /// Logs message and error to Firebase Crashlytics (safe to call even if not initialized)
+  static void _logToCrashlytics(
+      String message, Object? error, StackTrace? stackTrace) {
+    try {
+      // Log the message to Crashlytics
+      FirebaseCrashlytics.instance.log(message);
+
+      // If there's an error object, record it as a non-fatal error
+      if (error != null) {
+        FirebaseCrashlytics.instance.recordError(
+          error,
+          stackTrace,
+          reason: message,
+          fatal: false,
+        );
+      }
+    } catch (e) {
+      // Silently fail if Crashlytics not initialized
+      // This prevents errors during app initialization
+    }
+  }
+
+  /// Tracks error analytics to Firebase (safe to call even if callback not configured)
+  static void _trackErrorAnalytics(
+      String message, Object? error, String? name) {
+    // Only track if analytics callback is configured
+    if (_analyticsCallback == null) {
+      return;
+    }
+
     try {
       // Use Future.microtask to avoid blocking the error logging
       Future.microtask(() async {
         try {
-          final analyticsService = ServiceLocator.get<AnalyticsService>();
-          await analyticsService.logErrorOccurred(
-            errorCode: name ?? 'app_error',
-            errorType: error?.runtimeType.toString() ?? 'unknown',
-            userAction: message,
-            stackTrace: error?.toString(),
+          await _analyticsCallback!(
+            name ?? 'app_error',
+            error?.runtimeType.toString() ?? 'unknown',
+            message,
+            error?.toString(),
           );
         } catch (e) {
-          // Silently fail if analytics service not available
+          // Silently fail if analytics callback throws
           // This prevents errors during app initialization
         }
       });
     } catch (e) {
-      // Silently fail if ServiceLocator not initialized
+      // Silently fail if callback invocation fails
       // This prevents errors during app initialization
     }
   }
@@ -288,5 +355,75 @@ class AppLogger {
   /// **Categorization:** 'ViewModel' - Enables filtering of UI state management operations
   static void viewModel(String message) {
     info(message, 'ViewModel');
+  }
+
+  /// Sets user identifier in Crashlytics for better crash debugging and user tracking.
+  ///
+  /// This method associates crash reports with specific users to help identify user-specific issues
+  /// and track crash rates per user. Should be called when a user logs in.
+  ///
+  /// [userId] The unique identifier for the logged-in user
+  ///
+  /// **Usage Example:**
+  /// ```dart
+  /// // In auth service after successful login
+  /// AppLogger.setUserIdentifier(user.uid);
+  /// ```
+  static void setUserIdentifier(String userId) {
+    try {
+      FirebaseCrashlytics.instance.setUserIdentifier(userId);
+    } catch (e) {
+      // Silently fail if Crashlytics not initialized
+    }
+  }
+
+  /// Clears user identifier in Crashlytics when user logs out.
+  ///
+  /// This method removes user association from crash reports to respect user privacy
+  /// after logout. Should be called when a user logs out.
+  ///
+  /// **Usage Example:**
+  /// ```dart
+  /// // In auth service after logout
+  /// AppLogger.clearUserIdentifier();
+  /// ```
+  static void clearUserIdentifier() {
+    try {
+      FirebaseCrashlytics.instance.setUserIdentifier('');
+    } catch (e) {
+      // Silently fail if Crashlytics not initialized
+    }
+  }
+
+  /// Sets a custom key-value pair in Crashlytics for additional crash context.
+  ///
+  /// This method adds custom data to crash reports for better debugging context.
+  /// Useful for tracking app state, feature flags, or user settings at crash time.
+  ///
+  /// [key] The key name for the custom value
+  /// [value] The value to associate with the key
+  ///
+  /// **Usage Examples:**
+  /// ```dart
+  /// AppLogger.setCrashlyticsKey('recipe_count', userRecipeCount);
+  /// AppLogger.setCrashlyticsKey('subscription_type', 'premium');
+  /// AppLogger.setCrashlyticsKey('app_version', packageInfo.version);
+  /// ```
+  static void setCrashlyticsKey(String key, Object value) {
+    try {
+      if (value is String) {
+        FirebaseCrashlytics.instance.setCustomKey(key, value);
+      } else if (value is int) {
+        FirebaseCrashlytics.instance.setCustomKey(key, value);
+      } else if (value is double) {
+        FirebaseCrashlytics.instance.setCustomKey(key, value);
+      } else if (value is bool) {
+        FirebaseCrashlytics.instance.setCustomKey(key, value);
+      } else {
+        FirebaseCrashlytics.instance.setCustomKey(key, value.toString());
+      }
+    } catch (e) {
+      // Silently fail if Crashlytics not initialized
+    }
   }
 }

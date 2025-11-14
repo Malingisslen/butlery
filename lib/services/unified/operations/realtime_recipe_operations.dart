@@ -14,6 +14,8 @@ import 'package:butlery/services/unified/operations/realtime_recipe/shared/realt
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 
 /// Realtime recipe operations coordinator.
 ///
@@ -32,7 +34,7 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
   // Focused single-responsibility modules
   late final RealtimeWatchingModule _watchingModule;
   late final RealtimeEditingModule _editingModule;
-  late final CollaborationManagementModule _collaborationModule; 
+  late final CollaborationManagementModule _collaborationModule;
   late final PresenceTrackingModule _presenceModule;
   late final RealtimeNotificationModule _notificationModule;
 
@@ -40,11 +42,17 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     // Initialize focused modules
     _watchingModule = RealtimeWatchingModule(_parent, _realtimeSyncService);
     _editingModule = RealtimeEditingModule(_parent, _realtimeSyncService);
-    _collaborationModule = CollaborationManagementModule(_parent, _realtimeSyncService);
-    _presenceModule = PresenceTrackingModule(_parent, _realtimeSyncService);
+    _collaborationModule =
+        CollaborationManagementModule(_parent, _realtimeSyncService);
+    _presenceModule = PresenceTrackingModule(
+      _parent,
+      _realtimeSyncService,
+      ServiceLocator.get<FirebaseRecipePresenceRepository>(),
+    );
     _notificationModule = RealtimeNotificationModule(_parent);
 
-    AppLogger.info('RealtimeRecipeOperations initialized with modular architecture');
+    AppLogger.info(
+        'RealtimeRecipeOperations initialized with modular architecture');
   }
 
   /// Execute operation with notification on success
@@ -76,7 +84,8 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
   }
 
   /// Watch recipe with automatic retry on connection failure
-  Stream<Recipe> watchRecipeWithRetry(String recipeId, {
+  Stream<Recipe> watchRecipeWithRetry(
+    String recipeId, {
     int maxRetries = 3,
     Duration retryDelay = const Duration(seconds: 2),
   }) {
@@ -96,7 +105,8 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
   }
 
   /// Watch multiple recipes with individual error handling
-  Stream<Map<String, Recipe?>> watchMultipleRecipesIndividually(List<String> recipeIds) {
+  Stream<Map<String, Recipe?>> watchMultipleRecipesIndividually(
+      List<String> recipeIds) {
     return _watchingModule.watchMultipleRecipesIndividually(recipeIds);
   }
 
@@ -107,7 +117,8 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
   Stream<bool> get connectionStream => _watchingModule.connectionStream;
 
   /// Wait for connection to be established
-  Future<bool> waitForConnection({Duration timeout = const Duration(seconds: 10)}) {
+  Future<bool> waitForConnection(
+      {Duration timeout = const Duration(seconds: 10)}) {
     return _watchingModule.waitForConnection(timeout: timeout);
   }
 
@@ -118,12 +129,12 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
 
   /// Start watching recipe with callback
   StreamSubscription<Recipe> startWatchingRecipe(
-    String recipeId, 
+    String recipeId,
     void Function(Recipe) onRecipeUpdated, {
     void Function(dynamic)? onError,
   }) {
     return _watchingModule.startWatchingRecipe(
-      recipeId, 
+      recipeId,
       onRecipeUpdated,
       onError: onError,
     );
@@ -202,7 +213,8 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
         changes: changes,
         editDescription: editDescription,
       ),
-      (recipe) => _notificationModule.sendRealtimeEditNotification(recipe, changes, editDescription),
+      (recipe) => _notificationModule.sendRealtimeEditNotification(
+          recipe, changes, editDescription),
     );
   }
 
@@ -219,7 +231,8 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
         changeList: changeList,
         batchDescription: batchDescription,
       ),
-      (recipe) => _notificationModule.sendBatchEditNotification(recipe, changeList, batchDescription),
+      (recipe) => _notificationModule.sendBatchEditNotification(
+          recipe, changeList, batchDescription),
     );
   }
 
@@ -244,8 +257,10 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
         resolution: resolution,
       ),
       (recipe) {
-        final affectedUsers = recipe.socialData?.memberPermissions?.keys.toList() ?? [];
-        return _notificationModule.sendConflictResolvedNotification(recipe, resolution, affectedUsers);
+        final affectedUsers =
+            recipe.socialData?.memberPermissions?.keys.toList() ?? [];
+        return _notificationModule.sendConflictResolvedNotification(
+            recipe, resolution, affectedUsers);
       },
     );
   }
@@ -286,11 +301,14 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
   }
 
   /// Enable collaborative editing for a personal recipe
-  Future<bool> enableCollaborativeEditing(String recipeId, List<String> memberIds) async {
+  Future<bool> enableCollaborativeEditing(
+      String recipeId, List<String> memberIds) async {
     return _executeWithNotification(
       recipeId,
-      () => _collaborationModule.enableCollaborativeEditing(recipeId, memberIds),
-      (recipe) => _notificationModule.sendCollaborationEnabledNotification(recipe, memberIds),
+      () =>
+          _collaborationModule.enableCollaborativeEditing(recipeId, memberIds),
+      (recipe) => _notificationModule.sendCollaborationEnabledNotification(
+          recipe, memberIds),
     );
   }
 
@@ -318,22 +336,27 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
     return _executeWithNotification(
       recipeId,
       () => _collaborationModule.addCollaborators(recipeId, memberIds),
-      (recipe) => _notificationModule.sendMembersAddedNotification(recipe, memberIds),
+      (recipe) =>
+          _notificationModule.sendMembersAddedNotification(recipe, memberIds),
     );
   }
 
   /// Remove members from collaborative recipe
-  Future<bool> removeCollaborators(String recipeId, List<String> memberIds) async {
+  Future<bool> removeCollaborators(
+      String recipeId, List<String> memberIds) async {
     return _executeWithNotification(
       recipeId,
       () => _collaborationModule.removeCollaborators(recipeId, memberIds),
-      (recipe) => _notificationModule.sendMembersRemovedNotification(recipe, memberIds),
+      (recipe) =>
+          _notificationModule.sendMembersRemovedNotification(recipe, memberIds),
     );
   }
 
   /// Update member permissions in collaborative recipe
-  Future<bool> updateMemberPermissions(String recipeId, Map<String, String> memberPermissions) {
-    return _collaborationModule.updateMemberPermissions(recipeId, memberPermissions);
+  Future<bool> updateMemberPermissions(
+      String recipeId, Map<String, String> memberPermissions) {
+    return _collaborationModule.updateMemberPermissions(
+        recipeId, memberPermissions);
   }
 
   /// Transfer ownership of collaborative recipe
@@ -379,7 +402,8 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
 
   /// Check collaboration limits
   bool isWithinCollaborationLimits(String recipeId, int additionalMembers) {
-    return _collaborationModule.isWithinCollaborationLimits(recipeId, additionalMembers);
+    return _collaborationModule.isWithinCollaborationLimits(
+        recipeId, additionalMembers);
   }
 
   /// Get collaboration status for recipe
@@ -409,8 +433,7 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
 
   /// Get presence for multiple recipes
   Future<Map<String, List<Map<String, dynamic>>>> getMultipleRecipePresence(
-    List<String> recipeIds
-  ) {
+      List<String> recipeIds) {
     return _presenceModule.getMultipleRecipePresence(recipeIds);
   }
 
@@ -431,8 +454,7 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
 
   /// Stream of presence updates for multiple recipes
   Stream<Map<String, List<Map<String, dynamic>>>> watchMultipleRecipePresence(
-    List<String> recipeIds
-  ) {
+      List<String> recipeIds) {
     return _presenceModule.watchMultipleRecipePresence(recipeIds);
   }
 
@@ -454,8 +476,7 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
 
   /// Bulk update presence for multiple recipes
   Future<void> updateMultipleRecipePresence(
-    Map<String, bool> recipePresenceMap
-  ) {
+      Map<String, bool> recipePresenceMap) {
     return _presenceModule.updateMultipleRecipePresence(recipePresenceMap);
   }
 
@@ -485,7 +506,8 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
 
     // Get active editors from presence module
     final currentUserId = _parent.currentUserId;
-    if (currentUserId != null && _presenceModule.isUserPresent(recipeId, currentUserId)) {
+    if (currentUserId != null &&
+        _presenceModule.isUserPresent(recipeId, currentUserId)) {
       return [currentUserId];
     }
 
@@ -521,7 +543,7 @@ class RealtimeRecipeOperations extends BaseService with StreamManagementMixin {
       },
       operationName: 'Dispose RealtimeRecipeOperations',
     );
-    
+
     // Dispose stream resources
     await disposeStreamResources();
   }

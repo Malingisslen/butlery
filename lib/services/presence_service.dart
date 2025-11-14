@@ -3,7 +3,9 @@
 import 'dart:async';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
+import 'package:butlery/repositories/interfaces/auth_repository.dart'
+    as auth_repo;
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Presence states for users
@@ -92,22 +94,26 @@ class UserPresence {
 class PresenceService extends BaseService {
   @override
   String get serviceName => 'PresenceService';
-  final FirebaseFirestore _firestore;
+  final FirestoreRepository _firestoreRepository;
   final auth_repo.AuthRepository _authRepository;
 
   Timer? _heartbeatTimer;
   Timer? _typingCleanupTimer;
   final Map<String, Timer> _typingDebounceTimers = {};
 
-  static const Duration _heartbeatInterval = Duration(minutes: 1);
+  static const Duration _heartbeatInterval =
+      Duration(minutes: 2); // Optimized: 50% write reduction
   static const Duration _typingTimeout = Duration(seconds: 5);
   static const Duration _typingDebounce = Duration(milliseconds: 500);
 
   PresenceService({
-    required FirebaseFirestore firestore,
+    required FirestoreRepository firestoreRepository,
     required auth_repo.AuthRepository authRepository,
-  })  : _firestore = firestore,
+  })  : _firestoreRepository = firestoreRepository,
         _authRepository = authRepository;
+
+  /// Access Firestore instance via repository
+  FirebaseFirestore get _firestore => _firestoreRepository.firestore;
 
   /// Initialize presence tracking for current user
   @override
@@ -170,7 +176,8 @@ class PresenceService extends BaseService {
   }
 
   /// Get presence for multiple users
-  Stream<Map<String, UserPresence>> getMultiplePresenceStream(List<String> userIds) {
+  Stream<Map<String, UserPresence>> getMultiplePresenceStream(
+      List<String> userIds) {
     if (userIds.isEmpty) {
       return Stream.value({});
     }
@@ -215,10 +222,7 @@ class PresenceService extends BaseService {
       _typingDebounceTimers[conversationId]?.cancel();
 
       // Set typing status
-      await _firestore
-          .collection('presence')
-          .doc(currentUser.uid)
-          .set({
+      await _firestore.collection('presence').doc(currentUser.uid).set({
         'typingIn.$conversationId': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
@@ -240,10 +244,7 @@ class PresenceService extends BaseService {
       _typingDebounceTimers[conversationId]?.cancel();
       _typingDebounceTimers.remove(conversationId);
 
-      await _firestore
-          .collection('presence')
-          .doc(currentUser.uid)
-          .set({
+      await _firestore.collection('presence').doc(currentUser.uid).set({
         'typingIn.$conversationId': FieldValue.delete(),
       }, SetOptions(merge: true));
     } catch (e) {
@@ -252,7 +253,8 @@ class PresenceService extends BaseService {
   }
 
   /// Get typing users in a conversation
-  Stream<List<String>> getTypingUsersStream(String conversationId, List<String> participantIds) {
+  Stream<List<String>> getTypingUsersStream(
+      String conversationId, List<String> participantIds) {
     if (participantIds.isEmpty) {
       return Stream.value([]);
     }
@@ -274,10 +276,8 @@ class PresenceService extends BaseService {
   /// Check if user is currently online
   Future<bool> isUserOnline(String userId) async {
     try {
-      final snapshot = await _firestore
-          .collection('presence')
-          .doc(userId)
-          .get();
+      final snapshot =
+          await _firestore.collection('presence').doc(userId).get();
 
       if (!snapshot.exists) return false;
 
@@ -300,10 +300,7 @@ class PresenceService extends BaseService {
       final currentUser = _authRepository.currentUser;
       if (currentUser == null) return;
 
-      await _firestore
-          .collection('presence')
-          .doc(currentUser.uid)
-          .set({
+      await _firestore.collection('presence').doc(currentUser.uid).set({
         'status': status.name,
         'lastSeen': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
@@ -345,10 +342,8 @@ class PresenceService extends BaseService {
       final currentUser = _authRepository.currentUser;
       if (currentUser == null) return;
 
-      final snapshot = await _firestore
-          .collection('presence')
-          .doc(currentUser.uid)
-          .get();
+      final snapshot =
+          await _firestore.collection('presence').doc(currentUser.uid).get();
 
       if (!snapshot.exists) return;
 

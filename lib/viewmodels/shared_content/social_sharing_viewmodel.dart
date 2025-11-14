@@ -15,6 +15,8 @@ import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coo
 import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart';
 import 'package:butlery/services/unified/modules/social_shopping/social_shopping_coordinator.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/mixins/state_notifier_mixin.dart';
+import 'package:butlery/core/mixins/async_operation_mixin.dart';
 
 /// Enumeration for shareable content types
 enum ShareableContentType {
@@ -28,25 +30,25 @@ class SharingResult {
   final bool success;
   final String? invitationId;
   final String? errorMessage;
-  
+
   const SharingResult({
     required this.success,
     this.invitationId,
     this.errorMessage,
   });
-  
+
   factory SharingResult.success({String? invitationId}) {
     return SharingResult(success: true, invitationId: invitationId);
   }
-  
+
   factory SharingResult.failure(String errorMessage) {
     return SharingResult(success: false, errorMessage: errorMessage);
   }
 }
 
 /// Social sharing ViewModel for unified friend selection and content sharing
-class SocialSharingViewModel extends ChangeNotifier {
-  
+class SocialSharingViewModel extends ChangeNotifier
+    with StateNotifierMixin, AsyncOperationMixin {
   final UnifiedFriendsService _friendsService;
   final SocialRecipeCoordinator _recipeCoordinator;
   final SocialMenuCoordinator _menuCoordinator;
@@ -56,22 +58,18 @@ class SocialSharingViewModel extends ChangeNotifier {
 
   /// Available friends for sharing
   List<UserProfile> _availableFriends = [];
-  
+
   /// Selected friend IDs for sharing
   final Set<String> _selectedFriendIds = <String>{};
-  
+
   /// Custom share message
   String _shareMessage = '';
-  
-  /// Loading friends state
-  bool _isLoadingFriends = false;
-  
-  /// Sharing in progress state
+
+  // isLoading and error provided by AsyncOperationMixin
+
+  /// Sharing in progress state (operation-specific)
   bool _isSharing = false;
-  
-  /// Error message for sharing operations
-  String? _error;
-  
+
   /// Last sharing result
   SharingResult? _lastSharingResult;
 
@@ -88,56 +86,50 @@ class SocialSharingViewModel extends ChangeNotifier {
         _shoppingCoordinator = shoppingCoordinator,
         _menuService = menuService,
         _shoppingService = shoppingService {
-    
-    AppLogger.info('SocialSharingViewModel initialized for unified social sharing');
+    AppLogger.info(
+        'SocialSharingViewModel initialized for unified social sharing');
     _initialize();
   }
 
   /// Available friends
-  List<UserProfile> get availableFriends => List.unmodifiable(_availableFriends);
-  
+  List<UserProfile> get availableFriends =>
+      List.unmodifiable(_availableFriends);
+
   /// Selected friend IDs
   Set<String> get selectedFriendIds => Set.unmodifiable(_selectedFriendIds);
-  
+
   /// Selected friends profiles
   List<UserProfile> get selectedFriends {
     return _availableFriends
         .where((friend) => _selectedFriendIds.contains(friend.uid))
         .toList();
   }
-  
+
   /// Share message
   String get shareMessage => _shareMessage;
-  
-  /// Loading friends state
-  bool get isLoadingFriends => _isLoadingFriends;
-  
-  /// Sharing in progress state
+
+  // isLoading and error getters provided by AsyncOperationMixin
+
+  /// Sharing in progress state (operation-specific)
   bool get isSharing => _isSharing;
-  
-  /// Error state
-  String? get error => _error;
-  
-  /// Has error
-  bool get hasError => _error != null;
-  
+
   /// Last sharing result
   SharingResult? get lastSharingResult => _lastSharingResult;
-  
+
   /// Has friends available
   bool get hasFriends => _availableFriends.isNotEmpty;
-  
+
   /// Has selected friends
   bool get hasSelectedFriends => _selectedFriendIds.isNotEmpty;
-  
+
   /// Selected friends count
   int get selectedFriendsCount => _selectedFriendIds.length;
-  
+
   /// Can share (has selected friends and not currently sharing)
   bool get canShare => hasSelectedFriends && !_isSharing;
-  
+
   /// Friends loading or sharing in progress
-  bool get isBusy => _isLoadingFriends || _isSharing;
+  bool get isBusy => isLoading || _isSharing;
 
   Future<void> _initialize() async {
     await loadFriends();
@@ -146,10 +138,8 @@ class SocialSharingViewModel extends ChangeNotifier {
   /// Load available friends for sharing
   Future<void> loadFriends() async {
     AppLogger.info('🔄 Loading friends for social sharing...');
-    _setLoadingFriends(true);
-    _clearError();
-    
-    try {
+
+    await executeAsync(() async {
       // Initialize friends service if not already initialized
       if (!_friendsService.isInitialized) {
         await _friendsService.initialize();
@@ -157,21 +147,15 @@ class SocialSharingViewModel extends ChangeNotifier {
       final friends = _friendsService.friends; // Using friends getter
       _availableFriends = friends;
       AppLogger.success('✅ Loaded ${friends.length} friends for sharing');
-    } catch (e) {
-      _setError('Failed to load friends: $e');
-      AppLogger.error('Failed to load friends: $e');
-      _availableFriends = [];
-    } finally {
-      _setLoadingFriends(false);
-    }
+    }, errorPrefix: 'Failed to load friends');
   }
-  
+
   /// Refresh friends list
   Future<void> refreshFriends() async {
     AppLogger.info('🔄 Refreshing friends list...');
     await loadFriends();
   }
-  
+
   /// Toggle friend selection
   void toggleFriendSelection(String friendId) {
     if (_selectedFriendIds.contains(friendId)) {
@@ -181,21 +165,21 @@ class SocialSharingViewModel extends ChangeNotifier {
       _selectedFriendIds.add(friendId);
       AppLogger.info('➕ Selected friend: $friendId');
     }
-    
+
     notifyListeners();
   }
-  
+
   /// Select all friends
   void selectAllFriends() {
     final previousCount = _selectedFriendIds.length;
     _selectedFriendIds.addAll(_availableFriends.map((friend) => friend.uid));
-    
+
     if (_selectedFriendIds.length != previousCount) {
       AppLogger.info('✅ Selected all ${_availableFriends.length} friends');
       notifyListeners();
     }
   }
-  
+
   /// Clear friend selection
   void clearFriendSelection() {
     if (_selectedFriendIds.isNotEmpty) {
@@ -204,7 +188,7 @@ class SocialSharingViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   /// Check if friend is selected
   bool isFriendSelected(String friendId) {
     return _selectedFriendIds.contains(friendId);
@@ -214,31 +198,33 @@ class SocialSharingViewModel extends ChangeNotifier {
   void updateShareMessage(String message) {
     if (_shareMessage != message) {
       _shareMessage = message;
-      AppLogger.info('💬 Share message updated: "${message.isEmpty ? 'EMPTY' : message}"');
+      AppLogger.info(
+          '💬 Share message updated: "${message.isEmpty ? 'EMPTY' : message}"');
       notifyListeners();
     }
   }
-  
+
   /// Clear share message
   void clearShareMessage() {
     updateShareMessage('');
   }
-  
+
   /// Get suggested message for content type
-  String getSuggestedMessage(ShareableContentType contentType, {String? contentTitle}) {
+  String getSuggestedMessage(ShareableContentType contentType,
+      {String? contentTitle}) {
     switch (contentType) {
       case ShareableContentType.recipe:
         if (contentTitle != null) {
           return 'Kolla in detta recept: "$contentTitle"! 👩‍🍳';
         }
         return 'Jag hittade ett fantastiskt recept som jag ville dela med dig! 👩‍🍳';
-        
+
       case ShareableContentType.menu:
         if (contentTitle != null) {
           return 'Här är min veckomeny: "$contentTitle" 📋';
         }
         return 'Här är min veckomeny som kanske kan inspirera dig! 📋';
-        
+
       case ShareableContentType.shoppingList:
         if (contentTitle != null) {
           return 'Vill du hjälpa mig med inköpslistan: "$contentTitle"? 🛒';
@@ -254,22 +240,24 @@ class SocialSharingViewModel extends ChangeNotifier {
     String? customMessage,
   }) async {
     if (!canShare) {
-      final error = 'Cannot share: ${!hasSelectedFriends ? 'no friends selected' : 'sharing in progress'}';
+      final error =
+          'Cannot share: ${!hasSelectedFriends ? 'no friends selected' : 'sharing in progress'}';
       AppLogger.error(error);
       return SharingResult.failure(error);
     }
-    
+
     final message = customMessage ?? _shareMessage;
     final friendIds = _selectedFriendIds.toList();
-    
-    AppLogger.info('🚀 Starting content sharing: $contentType $contentId to ${friendIds.length} friends');
-    
+
+    AppLogger.info(
+        '🚀 Starting content sharing: $contentType $contentId to ${friendIds.length} friends');
+
     _setSharing(true);
-    _clearError();
-    
+    clearError(); // From StateNotifierMixin
+
     try {
       SharingResult result;
-      
+
       switch (contentType) {
         case ShareableContentType.recipe:
           result = await _shareRecipe(contentId, friendIds, message);
@@ -281,23 +269,25 @@ class SocialSharingViewModel extends ChangeNotifier {
           result = await _shareShoppingList(contentId, friendIds, message);
           break;
       }
-      
+
       _lastSharingResult = result;
-      
+
       if (result.success) {
-        AppLogger.success('✅ Content shared successfully: ${result.invitationId}');
+        AppLogger.success(
+            '✅ Content shared successfully: ${result.invitationId}');
         // Clear selections after successful sharing
         clearFriendSelection();
         clearShareMessage();
       } else {
-        _setError(result.errorMessage ?? 'Sharing failed');
+        setError(
+            result.errorMessage ?? 'Sharing failed'); // From StateNotifierMixin
         AppLogger.error('❌ Content sharing failed: ${result.errorMessage}');
       }
-      
+
       return result;
     } catch (e) {
       final error = 'Sharing failed: $e';
-      _setError(error);
+      setError(error); // From StateNotifierMixin
       AppLogger.error('❌ Content sharing failed: $e');
       final result = SharingResult.failure(error);
       _lastSharingResult = result;
@@ -306,9 +296,10 @@ class SocialSharingViewModel extends ChangeNotifier {
       _setSharing(false);
     }
   }
-  
+
   /// Share recipe with friends
-  Future<SharingResult> _shareRecipe(String id, List<String> friendIds, String message) async {
+  Future<SharingResult> _shareRecipe(
+      String id, List<String> friendIds, String message) async {
     AppLogger.info('📖 Sharing recipe $id with ${friendIds.length} friends');
     return await _shareWithCoordinator(
       () async => await _recipeCoordinator.createRecipeInvitation(
@@ -322,7 +313,8 @@ class SocialSharingViewModel extends ChangeNotifier {
   }
 
   /// Share menu with friends
-  Future<SharingResult> _shareMenu(String id, List<String> friendIds, String message) async {
+  Future<SharingResult> _shareMenu(
+      String id, List<String> friendIds, String message) async {
     AppLogger.info('📋 Sharing menu $id with ${friendIds.length} friends');
     if (_menuService.getMenuById(id) == null) {
       return SharingResult.failure('Menu not found: $id');
@@ -339,9 +331,12 @@ class SocialSharingViewModel extends ChangeNotifier {
   }
 
   /// Share shopping list with friends
-  Future<SharingResult> _shareShoppingList(String id, List<String> friendIds, String message) async {
-    AppLogger.info('🛒 Sharing shopping list $id with ${friendIds.length} friends');
-    if (_shoppingService.lists.where((list) => list.id == id).firstOrNull == null) {
+  Future<SharingResult> _shareShoppingList(
+      String id, List<String> friendIds, String message) async {
+    AppLogger.info(
+        '🛒 Sharing shopping list $id with ${friendIds.length} friends');
+    if (_shoppingService.lists.where((list) => list.id == id).firstOrNull ==
+        null) {
       return SharingResult.failure('Shopping list not found: $id');
     }
     return await _shareWithCoordinator(
@@ -364,7 +359,7 @@ class SocialSharingViewModel extends ChangeNotifier {
         ? SharingResult.success(invitationId: invitationId)
         : SharingResult.failure('Failed to create $contentTypeName invitation');
   }
-  
+
   /// Quick share with default message
   Future<SharingResult> quickShare({
     required String contentId,
@@ -374,12 +369,12 @@ class SocialSharingViewModel extends ChangeNotifier {
     if (!hasSelectedFriends) {
       return SharingResult.failure('No friends selected for sharing');
     }
-    
+
     // Use suggested message if no custom message set
-    final message = _shareMessage.isEmpty 
+    final message = _shareMessage.isEmpty
         ? getSuggestedMessage(contentType, contentTitle: contentTitle)
         : _shareMessage;
-    
+
     return await shareContent(
       contentId: contentId,
       contentType: contentType,
@@ -398,52 +393,30 @@ class SocialSharingViewModel extends ChangeNotifier {
       'lastResult': _lastSharingResult?.success,
     };
   }
-  
+
   /// Get friend selection summary
   String getFriendSelectionSummary() {
     if (_selectedFriendIds.isEmpty) {
       return 'Inga vänner valda';
     }
-    
+
     if (_selectedFriendIds.length == 1) {
       final friend = selectedFriends.first;
       return '1 vän vald: ${friend.displayName}';
     }
-    
+
     if (_selectedFriendIds.length <= 3) {
       final names = selectedFriends.map((f) => f.displayName).join(', ');
       return '${_selectedFriendIds.length} vänner valda: $names';
     }
-    
+
     return '${_selectedFriendIds.length} vänner valda';
   }
 
-  /// Set loading friends state
-  void _setLoadingFriends(bool loading) {
-    if (_isLoadingFriends != loading) {
-      _isLoadingFriends = loading;
-      notifyListeners();
-    }
-  }
-  
-  /// Set sharing state
+  /// Set sharing state (operation-specific)
   void _setSharing(bool sharing) {
     if (_isSharing != sharing) {
       _isSharing = sharing;
-      notifyListeners();
-    }
-  }
-  
-  /// Set error message
-  void _setError(String errorMessage) {
-    _error = errorMessage;
-    notifyListeners();
-  }
-  
-  /// Clear error state
-  void _clearError() {
-    if (_error != null) {
-      _error = null;
       notifyListeners();
     }
   }
@@ -452,12 +425,12 @@ class SocialSharingViewModel extends ChangeNotifier {
   void resetSharingState() {
     clearFriendSelection();
     clearShareMessage();
-    _clearError();
+    clearError(); // From StateNotifierMixin
     _lastSharingResult = null;
     AppLogger.info('🧹 Sharing state reset');
     notifyListeners();
   }
-  
+
   /// Prepare for sharing specific content
   void prepareForSharing({
     required ShareableContentType contentType,
@@ -466,7 +439,7 @@ class SocialSharingViewModel extends ChangeNotifier {
   }) {
     // Reset previous state
     resetSharingState();
-    
+
     // Pre-select suggested friends if provided
     if (suggestedFriends != null) {
       for (final friendId in suggestedFriends) {
@@ -475,12 +448,14 @@ class SocialSharingViewModel extends ChangeNotifier {
         }
       }
     }
-    
+
     // Set suggested message
-    final suggestedMessage = getSuggestedMessage(contentType, contentTitle: contentTitle);
+    final suggestedMessage =
+        getSuggestedMessage(contentType, contentTitle: contentTitle);
     updateShareMessage(suggestedMessage);
-    
-    AppLogger.info('🎯 Prepared for sharing $contentType${contentTitle != null ? ' "$contentTitle"' : ''}');
+
+    AppLogger.info(
+        '🎯 Prepared for sharing $contentType${contentTitle != null ? ' "$contentTitle"' : ''}');
   }
 
   @override

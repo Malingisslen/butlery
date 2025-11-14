@@ -50,7 +50,7 @@ class UnifiedRecipeService extends ChangeNotifier
   final CommentsRepository? _commentsRepository;
   final RatingsRepository? _ratingsRepository;
   final NotificationsRepository? _notificationsRepository;
-  final FirestoreRepository? _firestoreRepository;
+  final FirestoreRepository _firestoreRepository;
 
   // Focused modules
   late final PersonalRecipeModule _personalModule;
@@ -89,23 +89,25 @@ class UnifiedRecipeService extends ChangeNotifier
   String? _error;
 
   UnifiedRecipeService({
-    FirebaseFirestore? firestore,
     FirebaseAuthRepository? authRepository,
     RecipeRepository? recipeRepository,
     CommentsRepository? commentsRepository,
     RatingsRepository? ratingsRepository,
     NotificationsRepository? notificationsRepository,
     FirestoreRepository? firestoreRepository,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+  })  : _firestoreRepository =
+            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
+        _firestore =
+            (firestoreRepository ?? ServiceLocator.get<FirestoreRepository>())
+                .firestore,
         _authRepository = authRepository ?? FirebaseAuthRepository(),
         _recipeRepository = recipeRepository,
         _commentsRepository = commentsRepository,
         _ratingsRepository = ratingsRepository,
-        _notificationsRepository = notificationsRepository,
-        _firestoreRepository = firestoreRepository {
+        _notificationsRepository = notificationsRepository {
     // Initialize legacy interfaces immediately for backward compatibility
     _initializeLegacyInterfaces();
-    
+
     // Delay module initialization to avoid circular dependencies
     Future.microtask(() {
       _initializeModules();
@@ -114,6 +116,11 @@ class UnifiedRecipeService extends ChangeNotifier
     AppLogger.info(
         '✅ UnifiedRecipeService initialized with focused modules and legacy interfaces');
   }
+
+  // ===== FIREBASE SERVICE MIXIN IMPLEMENTATION =====
+
+  @override
+  FirestoreRepository get firestoreRepository => _firestoreRepository;
 
   // ===== DEPENDENCY HELPERS =====
 
@@ -134,8 +141,8 @@ class UnifiedRecipeService extends ChangeNotifier
           _commentsRepository ?? ServiceLocator.tryGet<CommentsRepository>(),
       ratingsRepository:
           _ratingsRepository ?? ServiceLocator.tryGet<RatingsRepository>(),
-      notificationsRepository:
-          _notificationsRepository ?? ServiceLocator.tryGet<NotificationsRepository>(),
+      notificationsRepository: _notificationsRepository ??
+          ServiceLocator.tryGet<NotificationsRepository>(),
     );
     return _serviceAdapter!;
   }
@@ -187,7 +194,8 @@ class UnifiedRecipeService extends ChangeNotifier
     _contentOps = RecipeContentOperations(
       personalModule: _personalModule,
       realtimeModule: _realtimeModule,
-      isInRealtimeSession: (recipeId) => _realtimeModule.isInRealtimeEditingSession(recipeId),
+      isInRealtimeSession: (recipeId) =>
+          _realtimeModule.isInRealtimeEditingSession(recipeId),
     );
 
     _authHandler = RecipeAuthStateHandler(
@@ -333,16 +341,14 @@ class UnifiedRecipeService extends ChangeNotifier
       _isLoading = true;
       notifyListeners();
 
-      // Configure Firestore settings
-      if (kDebugMode) {
-        try {
-          _firestore.settings = const Settings(
-            persistenceEnabled: true,
-            cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
-          );
-        } catch (e) {
-          AppLogger.debug('Firestore settings already configured');
-        }
+      // Configure Firestore settings (PRODUCTION: Persistence enabled for offline capability)
+      try {
+        _firestore.settings = const Settings(
+          persistenceEnabled: true,
+          cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+        );
+      } catch (e) {
+        AppLogger.debug('Firestore settings already configured');
       }
 
       // Wait for modules to be initialized if not already
@@ -353,7 +359,7 @@ class UnifiedRecipeService extends ChangeNotifier
           _initializeModules();
         }
       }
-      
+
       // Initialize cache and load cached recipes
       final cachedRecipes = await _cacheModule.initializeCache();
       _recipes.clear();
@@ -395,19 +401,20 @@ class UnifiedRecipeService extends ChangeNotifier
     double? rating,
     List<String>? tags,
     String? sourceUrl,
-  }) async => _personalCrud.createPersonalRecipe(
-    title: title,
-    description: description,
-    ingredients: ingredients,
-    instructions: instructions,
-    imageUrls: imageUrls,
-    mealType: mealType,
-    portions: portions,
-    timeMinutes: timeMinutes,
-    rating: rating,
-    tags: tags,
-    sourceUrl: sourceUrl,
-  );
+  }) async =>
+      _personalCrud.createPersonalRecipe(
+        title: title,
+        description: description,
+        ingredients: ingredients,
+        instructions: instructions,
+        imageUrls: imageUrls,
+        mealType: mealType,
+        portions: portions,
+        timeMinutes: timeMinutes,
+        rating: rating,
+        tags: tags,
+        sourceUrl: sourceUrl,
+      );
 
   Future<bool> updateRecipe(Recipe updatedRecipe) async =>
       _personalCrud.updateRecipe(updatedRecipe);
@@ -509,29 +516,31 @@ class UnifiedRecipeService extends ChangeNotifier
     double? rating,
     List<String>? tags,
     String? sourceUrl,
-  }) async => _utilityOps.updateRecipeContent(
-    recipeId: recipeId,
-    currentUserId: currentUserId,
-    currentUserDisplayName: currentUserDisplayName,
-    updateRecipe: updateRecipe,
-    title: title,
-    description: description,
-    ingredients: ingredients,
-    instructions: instructions,
-    imageUrls: imageUrls,
-    mealType: mealType,
-    portions: portions,
-    timeMinutes: timeMinutes,
-    rating: rating,
-    tags: tags,
-    sourceUrl: sourceUrl,
-  );
+  }) async =>
+      _utilityOps.updateRecipeContent(
+        recipeId: recipeId,
+        currentUserId: currentUserId,
+        currentUserDisplayName: currentUserDisplayName,
+        updateRecipe: updateRecipe,
+        title: title,
+        description: description,
+        ingredients: ingredients,
+        instructions: instructions,
+        imageUrls: imageUrls,
+        mealType: mealType,
+        portions: portions,
+        timeMinutes: timeMinutes,
+        rating: rating,
+        tags: tags,
+        sourceUrl: sourceUrl,
+      );
 
   // Ingredient operations (delegated to content helper)
   Future<bool> addIngredient(String recipeId, String ingredient) async =>
       _contentOps.addIngredient(recipeId, ingredient);
 
-  Future<bool> updateIngredient(String recipeId, int index, String newIngredient) async =>
+  Future<bool> updateIngredient(
+          String recipeId, int index, String newIngredient) async =>
       _contentOps.updateIngredient(recipeId, index, newIngredient);
 
   Future<bool> removeIngredient(String recipeId, int index) async =>
@@ -541,7 +550,8 @@ class UnifiedRecipeService extends ChangeNotifier
   Future<bool> addInstruction(String recipeId, String instruction) async =>
       _contentOps.addInstruction(recipeId, instruction);
 
-  Future<bool> updateInstruction(String recipeId, int index, String newInstruction) async =>
+  Future<bool> updateInstruction(
+          String recipeId, int index, String newInstruction) async =>
       _contentOps.updateInstruction(recipeId, index, newInstruction);
 
   Future<bool> removeInstruction(String recipeId, int index) async =>
@@ -629,8 +639,12 @@ class UnifiedRecipeService extends ChangeNotifier
       'recipeCount': _recipes.length,
       'personalCount': personalRecipes.length,
       'collaborativeCount': collaborativeRecipes.length,
-      'cacheStatus': _areModulesInitialized() ? _cacheModule.getSyncStatus() : 'not initialized',
-      'realtimeStatus': _areModulesInitialized() ? _realtimeModule.getRealtimeStatus() : 'not initialized',
+      'cacheStatus': _areModulesInitialized()
+          ? _cacheModule.getSyncStatus()
+          : 'not initialized',
+      'realtimeStatus': _areModulesInitialized()
+          ? _realtimeModule.getRealtimeStatus()
+          : 'not initialized',
     };
   }
 

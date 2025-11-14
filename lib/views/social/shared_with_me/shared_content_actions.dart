@@ -185,14 +185,9 @@ class SharedContentActions {
     SharedContentCoordinatorViewModel viewModel,
     SharedShoppingList sharedShoppingList,
   ) async {
-    AppLogger.info('🚀 AUTO-NAV DEBUG: Starting SharedContentActions.joinShoppingList');
-    AppLogger.info('🚀 AUTO-NAV DEBUG: Joining shared list: "${sharedShoppingList.listName}"');
-
     final collaborativeListId = await viewModel.shoppingViewModel.joinSharedShoppingList(sharedShoppingList);
-    AppLogger.info('🔄 AUTO-NAV DEBUG: joinSharedShoppingList returned: $collaborativeListId');
 
     if (collaborativeListId != null && context.mounted) {
-      AppLogger.success('✅ AUTO-NAV DEBUG: Got valid collaborative list ID, proceeding with navigation');
       
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
@@ -203,18 +198,12 @@ class SharedContentActions {
         ),
       );
 
-      // AUTO-NAVIGATION: Set collaborative list as active and navigate to unified interface  
-      AppLogger.info('🚀 AUTO-NAV DEBUG: ULTRATHINK FIX - Using unified shopping interface for collaborative list: $collaborativeListId');
-      
-      // ULTRATHINK FIX: Set collaborative list as active and navigate to main shopping interface
-      AppLogger.info('🔄 AUTO-NAV DEBUG: Setting collaborative list as active before navigation');
-      
+      // AUTO-NAVIGATION: Set collaborative list as active and navigate to unified interface
       try {
         // First, set the collaborative list as the active list in the shopping service
         final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
         await shoppingService.setActiveList(collaborativeListId);
-        AppLogger.success('✅ AUTO-NAV DEBUG: Successfully set collaborative list as active: $collaborativeListId');
-        
+
         // Navigate to the main unified shopping interface instead of separate collaborative view
         if (context.mounted) {
           await AppRouter.navigateTo(
@@ -222,12 +211,10 @@ class SharedContentActions {
             Routes.inkopslista, // Use main shopping interface for collaborative lists
           );
         }
-        AppLogger.success('✅ AUTO-NAV DEBUG: Successfully navigated to unified shopping interface with collaborative list active');
       } catch (e) {
-        AppLogger.error('❌ AUTO-NAV DEBUG: Failed to set active list or navigate to unified shopping: $e');
-        
+        AppLogger.error('Failed to set active list or navigate to unified shopping: $e');
+
         // FALLBACK: Still try to navigate to shopping interface without setting active list
-        AppLogger.info('🔄 AUTO-NAV DEBUG: Attempting fallback navigation to unified shopping view');
         try {
           if (context.mounted) {
             await AppRouter.navigateTo(
@@ -235,7 +222,6 @@ class SharedContentActions {
               Routes.inkopslista,
             );
           }
-          AppLogger.success('✅ AUTO-NAV DEBUG: Fallback navigation to unified shopping view succeeded');
           
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -247,8 +233,8 @@ class SharedContentActions {
             );
           }
         } catch (fallbackError) {
-          AppLogger.error('❌ AUTO-NAV DEBUG: Fallback navigation also failed: $fallbackError');
-          
+          AppLogger.error('Fallback navigation also failed: $fallbackError');
+
           // Show error to user since both navigation attempts failed
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -262,10 +248,7 @@ class SharedContentActions {
         }
       }
     } else if (collaborativeListId == null && context.mounted) {
-      AppLogger.error('❌ AUTO-NAV DEBUG: joinSharedShoppingList returned null - join failed');
-
       if (viewModel.shoppingViewModel.hasError) {
-        AppLogger.error('❌ AUTO-NAV DEBUG: ViewModel has error: ${viewModel.shoppingViewModel.error}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(viewModel.shoppingViewModel.error ?? 'Kunde inte gå med i listan'),
@@ -273,7 +256,6 @@ class SharedContentActions {
           ),
         );
       } else {
-        AppLogger.error('❌ AUTO-NAV DEBUG: No specific error in ViewModel - showing generic message');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Kunde inte gå med i listan. Försök igen.'),
@@ -281,8 +263,6 @@ class SharedContentActions {
           ),
         );
       }
-    } else if (!context.mounted) {
-      AppLogger.warning('⚠️ AUTO-NAV DEBUG: Context not mounted, skipping UI updates');
     }
   }
 

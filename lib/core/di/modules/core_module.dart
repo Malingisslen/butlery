@@ -30,6 +30,7 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 // Account/GDPR services
 import 'package:butlery/services/account/account_deletion_service.dart';
@@ -57,19 +58,19 @@ class CoreModule implements DIModule {
 
   @override
   List<Type> get provides => [
-    SharedPreferences,
-    AuthRepository,
-    AuthService,
-    FirebaseAuditRepository,
-    FirebaseConsentRepository,
-    FirestoreRepository,
-    PersistenceService,
-    AnalyticsRepository,
-    AnalyticsService,
-    AccountDeletionService,
-    DataExportService,
-    ConsentService,
-  ];
+        SharedPreferences,
+        AuthRepository,
+        AuthService,
+        FirebaseAuditRepository,
+        FirebaseConsentRepository,
+        FirestoreRepository,
+        PersistenceService,
+        AnalyticsRepository,
+        AnalyticsService,
+        AccountDeletionService,
+        DataExportService,
+        ConsentService,
+      ];
 
   @override
   int get priority => 1; // Highest priority - initialize first
@@ -108,7 +109,7 @@ class CoreModule implements DIModule {
       container.registerSingleton<FirestoreRepository>(FirestoreRepository());
 
       // ==================== CORE SERVICES ====================
-      
+
       // Authentication service is critical and needed by many other services
       container.registerSingleton<AuthService>(
         AuthService(authRepository: container<AuthRepository>()),
@@ -127,6 +128,9 @@ class CoreModule implements DIModule {
         AnalyticsService(repository: container<AnalyticsRepository>()),
       );
 
+      // Configure logger with analytics callback to avoid circular dependency
+      _configureLogger(container);
+
       // ==================== ACCOUNT/GDPR SERVICES ====================
 
       // Account deletion service for GDPR Article 17 (Right to Erasure)
@@ -135,9 +139,9 @@ class CoreModule implements DIModule {
           authRepository: container<AuthRepository>(),
           firestoreRepository: container<FirestoreRepository>(),
           authService: container<AuthService>(),
-          userService: container(),  // Will be provided by content module
-          recipeService: container(),  // Will be provided by content module
-          offlineService: container(),  // Will be provided by content module
+          userService: container(), // Will be provided by content module
+          recipeService: container(), // Will be provided by content module
+          offlineService: container(), // Will be provided by content module
           analyticsService: container<AnalyticsService>(),
         ),
       );
@@ -159,7 +163,8 @@ class CoreModule implements DIModule {
       );
 
       if (kDebugMode) {
-        debugPrint('✅ [CoreModule] Configured 12 core services (Auth, Audit, Consent, Storage, Analytics, Persistence, GDPR)');
+        debugPrint(
+            '✅ [CoreModule] Configured 12 core services (Auth, Audit, Consent, Storage, Analytics, Persistence, GDPR)');
       }
     } catch (e) {
       throw DIModuleException(
@@ -168,6 +173,28 @@ class CoreModule implements DIModule {
         'Failed to configure core services',
         e,
       );
+    }
+  }
+
+  /// Configures the logger with analytics callback to avoid circular dependency.
+  ///
+  /// This method sets up the AppLogger to use AnalyticsService for error tracking
+  /// without creating a circular dependency by using a callback pattern.
+  void _configureLogger(GetIt container) {
+    final analyticsService = container<AnalyticsService>();
+
+    AppLogger.configureAnalytics(
+        (errorCode, errorType, userAction, stackTrace) {
+      return analyticsService.logErrorOccurred(
+        errorCode: errorCode,
+        errorType: errorType,
+        userAction: userAction,
+        stackTrace: stackTrace,
+      );
+    });
+
+    if (kDebugMode) {
+      debugPrint('✅ [CoreModule] Configured logger with analytics callback');
     }
   }
 
@@ -187,7 +214,6 @@ class CoreModule implements DIModule {
       // Note: AnalyticsService might not need explicit initialization
       // but we validate it's accessible
       analyticsService.toString(); // Basic validation
-
     } catch (e) {
       throw DIModuleException(
         name,
@@ -217,7 +243,7 @@ class CoreModule implements DIModule {
       // Perform health checks on services that support it
       for (final entry in services.entries) {
         final service = entry.value;
-        
+
         if (service is HealthCheckable) {
           final isHealthy = await service.healthCheck();
           if (!isHealthy) {
@@ -227,7 +253,7 @@ class CoreModule implements DIModule {
             return false;
           }
         }
-        
+
         // Basic validation - service is not null
         if (service == null) {
           if (kDebugMode) {
@@ -237,7 +263,6 @@ class CoreModule implements DIModule {
         }
       }
 
-      
       return true;
     } catch (e) {
       if (kDebugMode) {
@@ -252,7 +277,7 @@ class CoreModule implements DIModule {
 class CoreModuleFactory {
   /// Create a new CoreModule instance.
   static CoreModule create() => CoreModule();
-  
+
   /// Create CoreModule with custom configuration.
   static CoreModule createWithConfig({
     bool enableAnalytics = true,

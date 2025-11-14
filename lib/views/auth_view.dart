@@ -236,14 +236,21 @@ class _AuthViewState extends State<AuthView> {
       obscureText: !viewModel.isPasswordVisible,
       enabled: !viewModel.isLoading,
       validator: FormValidators.authPassword(isSignUp: !viewModel.isLoginMode),
-      suffixIcon: IconButton(
-        icon: Icon(
-          viewModel.isPasswordVisible
-              ? Icons.visibility_off_outlined
-              : Icons.visibility_outlined,
-          size: AppDimensions.iconSizeAction,
+      suffixIcon: Semantics(
+        label: viewModel.isPasswordVisible
+            ? 'Dölj lösenord'
+            : 'Visa lösenord',
+        button: true,
+        enabled: !viewModel.isLoading,
+        child: IconButton(
+          icon: Icon(
+            viewModel.isPasswordVisible
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
+            size: AppDimensions.iconSizeAction,
+          ),
+          onPressed: viewModel.togglePasswordVisibility,
         ),
-        onPressed: viewModel.togglePasswordVisibility,
       ),
     );
   }

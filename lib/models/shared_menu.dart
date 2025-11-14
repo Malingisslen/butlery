@@ -6,7 +6,7 @@
 ///
 /// **Key Features:**
 /// - **Unified Status Management**: Uses SharedContentStatusMixin for consistent view/import/dismiss tracking
-/// - **Copy-on-Write Collaboration**: Uses CopyOnWriteSupport for collaborative editing features  
+/// - **Copy-on-Write Collaboration**: Uses CopyOnWriteSupport for collaborative editing features
 /// - **Menu-Specific Logic**: Maintains menu snapshots, categories, and import attribution
 /// - **Consistent Serialization**: Leverages base class patterns for Firestore and JSON operations
 ///
@@ -22,7 +22,7 @@
 ///   menuSnapshot: menuData,
 ///   allowCollaboration: true,
 /// );
-/// 
+///
 /// // Status tracking (via mixins)
 /// final viewedMenu = sharedMenu.markViewedBy(userId);
 /// final importedMenu = viewedMenu.markImportedBy(userId);
@@ -44,49 +44,52 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     with SharedContentStatusMixin, CopyOnWriteSupport {
   // ===== MENU-SPECIFIC FIELDS =====
-  
+
   /// Title of the shared menu for identification and display.
   final String menuTitle;
-  
+
   /// Complete snapshot of the menu with all recipes organized by category.
   final Map<String, List<Recipe>> menuSnapshot;
-  
+
   /// Cached total recipe count for quick statistics and UI display.
   final int totalRecipeCount;
-  
+
   /// List of category names present in the menu snapshot.
   final List<String> categories;
-  
+
   /// Flag indicating whether collaborative editing is allowed.
   final bool allowCollaboration;
 
   // ===== COPY-ON-WRITE FIELDS =====
-  
+
   /// Flag indicating whether this is an original reference or collaborative version.
   final bool _isOriginalReference;
-  
+
   /// Flag indicating whether copy-on-write has been triggered for this content.
   final bool _copyOnWriteTriggered;
-  
+
   /// ID of the static copy created for the original owner when CoW is triggered.
   final String? _originalOwnerStaticCopyId;
-  
-  /// List of user IDs actively collaborating on this content.
-  final List<String> _activeCollaboratorIds;
+
+  /// Count of users actively collaborating on this content (Issue #014).
+  ///
+  /// Note: Actual collaborator list now stored in Firestore subcollection to eliminate
+  /// 100-element array limit. Use repository.getCollaborators(menuId) for full list.
+  final int _activeCollaboratorCount;
 
   /// Creates a new shared menu with all required metadata.
+  ///
+  /// Note (Issue #014): sharedToUserIds removed from model. Repository layer handles adding
+  /// members to Firestore subcollection after creation.
   SharedMenu({
     required super.id,
     required super.sharedByUserId,
     required super.sharedByDisplayName,
-    required super.sharedToUserIds,
     DateTime? sharedAt,
     super.shareMessage,
     super.viewCount = 0,
     super.engagementCount = 0,
-    super.viewedByUserIds = const [],
-    super.engagedByUserIds = const [],
-    super.dismissedByUserIds = const [],
+    super.dismissalCount = 0,
     required this.menuTitle,
     required this.menuSnapshot,
     this.allowCollaboration = false,
@@ -94,11 +97,11 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     bool isOriginalReference = true,
     bool copyOnWriteTriggered = false,
     String? originalOwnerStaticCopyId,
-    List<String> activeCollaboratorIds = const [],
+    int activeCollaboratorCount = 0,
   })  : _isOriginalReference = isOriginalReference,
         _copyOnWriteTriggered = copyOnWriteTriggered,
         _originalOwnerStaticCopyId = originalOwnerStaticCopyId,
-        _activeCollaboratorIds = activeCollaboratorIds,
+        _activeCollaboratorCount = activeCollaboratorCount,
         totalRecipeCount = menuSnapshot.values.fold(
           0,
           (totalCount, recipes) => totalCount + recipes.length,
@@ -107,10 +110,13 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
         super(sharedAt: sharedAt ?? DateTime.now());
 
   /// Factory constructor for creating new shared menus with auto-generated ID.
+  ///
+  /// Note (Issue #014): sharedToUserIds still accepted for backward compatibility but not stored in model.
+  /// Repository layer handles adding members to Firestore subcollection after creation.
   factory SharedMenu.create({
     required String sharedByUserId,
     required String sharedByDisplayName,
-    required List<String> sharedToUserIds,
+    required List<String> sharedToUserIds, // Still accept for repository layer
     String? shareMessage,
     String? menuTitle,
     required Map<String, List<Recipe>> menuSnapshot,
@@ -122,197 +128,152 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
       id: const Uuid().v4(),
       sharedByUserId: sharedByUserId,
       sharedByDisplayName: sharedByDisplayName,
-      sharedToUserIds: sharedToUserIds,
       shareMessage: shareMessage,
       menuTitle: title,
       menuSnapshot: menuSnapshot,
       allowCollaboration: allowCollaboration,
-    );
+    ); // Note: sharedToUserIds NOT passed to constructor
   }
 
   // ===== BASE CLASS IMPLEMENTATIONS =====
-  
+
   @override
   String get contentTypeName => 'menu';
-  
+
   @override
   Map<String, List<Recipe>> get contentSnapshot => menuSnapshot;
-  
+
   @override
   String getContentTitle() => menuTitle;
-  
+
   @override
   String getContentDescription() => menuSummary;
-  
+
   @override
   BaseSharedContentModel<Map<String, List<Recipe>>> copyWithStatus({
     int? viewCount,
     int? engagementCount,
-    List<String>? viewedByUserIds,
-    List<String>? engagedByUserIds,
-    List<String>? dismissedByUserIds,
+    int? dismissalCount,
   }) {
     return copyWith(
       viewCount: viewCount,
       importCount: engagementCount,
-      viewedByUserIds: viewedByUserIds,
-      importedByUserIds: engagedByUserIds,
-      dismissedByUserIds: dismissedByUserIds,
+      dismissalCount: dismissalCount,
     );
   }
-  
+
   /// Creates a copy of this shared menu with updated values.
+  ///
+  /// Note (Issue #014): Array parameters removed. Status now tracked in Firestore subcollections.
   SharedMenu copyWith({
     int? viewCount,
     int? importCount,
-    List<String>? viewedByUserIds,
-    List<String>? importedByUserIds,
-    List<String>? dismissedByUserIds,
+    int? dismissalCount,
     bool? allowCollaboration,
     bool? isOriginalReference,
     bool? copyOnWriteTriggered,
     String? originalOwnerStaticCopyId,
-    List<String>? activeCollaboratorIds,
+    int? activeCollaboratorCount,
   }) {
     return SharedMenu(
       id: id,
       sharedByUserId: sharedByUserId,
       sharedByDisplayName: sharedByDisplayName,
-      sharedToUserIds: sharedToUserIds,
       shareMessage: shareMessage,
       sharedAt: sharedAt,
       viewCount: viewCount ?? this.viewCount,
       engagementCount: importCount ?? engagementCount,
-      viewedByUserIds: viewedByUserIds ?? this.viewedByUserIds,
-      engagedByUserIds: importedByUserIds ?? engagedByUserIds,
-      dismissedByUserIds: dismissedByUserIds ?? this.dismissedByUserIds,
+      dismissalCount: dismissalCount ?? this.dismissalCount,
       menuTitle: menuTitle,
       menuSnapshot: menuSnapshot,
       allowCollaboration: allowCollaboration ?? this.allowCollaboration,
       isOriginalReference: isOriginalReference ?? this.isOriginalReference,
       copyOnWriteTriggered: copyOnWriteTriggered ?? this.copyOnWriteTriggered,
-      originalOwnerStaticCopyId: originalOwnerStaticCopyId ?? this.originalOwnerStaticCopyId,
-      activeCollaboratorIds: activeCollaboratorIds ?? this.activeCollaboratorIds,
+      originalOwnerStaticCopyId:
+          originalOwnerStaticCopyId ?? this.originalOwnerStaticCopyId,
+      activeCollaboratorCount:
+          activeCollaboratorCount ?? this.activeCollaboratorCount,
     );
   }
 
   // ===== COPY-ON-WRITE IMPLEMENTATIONS =====
-  
+
   /// Copy-on-write getter implementations from CopyOnWriteSupport mixin.
   @override
   bool get isOriginalReference => _isOriginalReference;
-  
+
   @override
   bool get copyOnWriteTriggered => _copyOnWriteTriggered;
-  
+
   @override
   String? get originalOwnerStaticCopyId => _originalOwnerStaticCopyId;
-  
+
   @override
-  List<String> get activeCollaboratorIds => _activeCollaboratorIds;
-  
-  
+  int get activeCollaboratorCount => _activeCollaboratorCount;
+
   @override
   SharedMenu triggerCopyOnWrite({
     required String editingUserId,
     required String staticCopyId,
   }) {
-    return copyWith(
-      isOriginalReference: false,
-      copyOnWriteTriggered: true,
-      originalOwnerStaticCopyId: staticCopyId,
-      activeCollaboratorIds: [editingUserId],
-    );
-  }
-  
-  @override
-  SharedMenu addActiveCollaborator(String userId) {
-    if (activeCollaboratorIds.contains(userId)) {
+    if (copyOnWriteTriggered || editingUserId == sharedByUserId) {
       return this;
     }
 
     return copyWith(
-      activeCollaboratorIds: [...activeCollaboratorIds, userId],
+      isOriginalReference: false,
+      copyOnWriteTriggered: true,
+      originalOwnerStaticCopyId: staticCopyId,
+      activeCollaboratorCount: 1, // First collaborator
     );
   }
 
+  @override
+  SharedMenu addActiveCollaborator(String userId) {
+    if (!copyOnWriteTriggered) {
+      return this;
+    }
 
+    // Increment count (actual list managed in Firestore subcollection)
+    return copyWith(
+      activeCollaboratorCount: activeCollaboratorCount + 1,
+    );
+  }
 
   // ===== MENU-SPECIFIC PROPERTIES =====
-  
-  // ===== TYPE-SAFE WRAPPER METHODS =====
-  
-  /// Type-safe wrapper methods that return SharedMenu instead of BaseSharedContentModel with Map generic type
-  /// These methods delegate to mixin implementations but provide concrete return types.
-  
-  @override
-  SharedMenu markViewedBy(String userId) {
-    final updated = super.markViewedBy(userId);
-    if (updated == this) return this;
-    return copyWith(
-      viewCount: updated.viewCount,
-      viewedByUserIds: updated.viewedByUserIds,
-    );
-  }
-  
-  @override
-  SharedMenu markEngagedBy(String userId) {
-    final updated = super.markEngagedBy(userId);
-    if (updated == this) return this;
-    return copyWith(
-      importCount: updated.engagementCount,
-      importedByUserIds: updated.engagedByUserIds,
-    );
-  }
-  
-  @override
-  SharedMenu markDismissedBy(String userId) {
-    final updated = super.markDismissedBy(userId);
-    if (updated == this) return this;
-    return copyWith(
-      dismissedByUserIds: updated.dismissedByUserIds,
-    );
-  }
-  
-  @override
-  SharedMenu undismissBy(String userId) {
-    final updated = super.undismissBy(userId);
-    if (updated == this) return this;
-    return copyWith(
-      dismissedByUserIds: updated.dismissedByUserIds,
-    );
-  }
+
+  // ===== TYPE-SAFE WRAPPER METHODS (REMOVED - ISSUE #014) =====
+  //
+  // Note: Status-checking methods (markViewedBy, markEngagedBy, etc.) removed from base class.
+  // Status tracking now handled by repository layer using Firestore subcollections.
+  // Use repository methods instead:
+  //   - repository.addView(menuId, userId)
+  //   - repository.addEngagement(menuId, userId, action: 'import')
+  //   - repository.addDismissal(menuId, userId)
+  //   - repository.removeDismissal(menuId, userId)
 
   /// Import count getter for backward compatibility.
   int get importCount => engagementCount;
-  
-  /// Imported by user IDs getter for backward compatibility.
-  List<String> get importedByUserIds => engagedByUserIds;
-  
-  /// Backward compatibility methods with old terminology.
-  @override
-  SharedMenu markImportedBy(String userId) => markEngagedBy(userId);
-  @override
-  bool isImportedBy(String userId) => isEngagedBy(userId);
-  
+
   /// Creates an imported menu with proper attribution from this shared menu.
   Map<String, List<Recipe>> createImportMenu({required String newOwnerId}) {
     final importedMenu = <String, List<Recipe>>{};
-    
+
     menuSnapshot.forEach((category, recipes) {
       importedMenu[category] = recipes.map((recipe) {
-        final attribution = '\n\n📋 Importerat från ${sharedByDisplayName}s meny "$menuTitle"';
+        final attribution =
+            '\n\n📋 Importerat från ${sharedByDisplayName}s meny "$menuTitle"';
         final newDescription = recipe.description.isNotEmpty
             ? '${recipe.description}$attribution'
             : 'Importerat recept$attribution';
-        
+
         return recipe.copyWith(
           description: newDescription,
           lastCookedAt: null,
         );
       }).toList();
     });
-    
+
     return importedMenu;
   }
 
@@ -371,28 +332,14 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     if (viewCount == 0) return 0.0;
     return (importCount / viewCount) * 100.0;
   }
-  
-  /// Gets the total number of unique users who have interacted with the menu.
-  ///
-  /// Provides engagement reach metrics by counting all users who have viewed,
-  /// imported, or dismissed the menu for comprehensive interaction analysis.
-  @override
-  int get totalInteractions {
-    final allInteractors = <String>{
-      ...viewedByUserIds,
-      ...importedByUserIds,
-      ...dismissedByUserIds,
-    };
-    return allInteractors.length;
-  }
-  
+
   /// Checks if the menu has any recipe content available for sharing.
   ///
   /// Provides validation for menu sharing eligibility based on content availability.
   ///
   /// Returns true if the menu contains at least one recipe in any category.
   bool get hasContent => totalRecipeCount > 0;
-  
+
   /// Gets the most popular category based on recipe count.
   ///
   /// Provides menu analysis by identifying the category with the most recipes
@@ -401,17 +348,17 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   /// Returns the category name with the highest recipe count, or null if empty.
   String? get mostPopularCategory {
     if (menuSnapshot.isEmpty) return null;
-    
+
     String? topCategory;
     int maxCount = 0;
-    
+
     for (final entry in menuSnapshot.entries) {
       if (entry.value.length > maxCount) {
         maxCount = entry.value.length;
         topCategory = entry.key;
       }
     }
-    
+
     return topCategory;
   }
 
@@ -433,13 +380,17 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
 
         // Ersätt eventuella serverTimestamp med DateTime.now() för nested objects
         if (recipeData['createdAt'] is DateTime) {
-          recipeData['createdAt'] = AppTimestamp.fromDateTime(recipe.createdAt).toFirestore();
+          recipeData['createdAt'] =
+              AppTimestamp.fromDateTime(recipe.createdAt).toFirestore();
         }
         if (recipeData['updatedAt'] is DateTime) {
-          recipeData['updatedAt'] = AppTimestamp.fromDateTime(recipe.updatedAt).toFirestore();
+          recipeData['updatedAt'] =
+              AppTimestamp.fromDateTime(recipe.updatedAt).toFirestore();
         }
-        if (recipeData['lastCookedAt'] is DateTime && recipe.lastCookedAt != null) {
-          recipeData['lastCookedAt'] = AppTimestamp.fromDateTime(recipe.lastCookedAt!).toFirestore();
+        if (recipeData['lastCookedAt'] is DateTime &&
+            recipe.lastCookedAt != null) {
+          recipeData['lastCookedAt'] =
+              AppTimestamp.fromDateTime(recipe.lastCookedAt!).toFirestore();
         }
 
         return recipeData;
@@ -447,25 +398,13 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     }
 
     return {
-      'sharedByUserId': sharedByUserId,
-      'sharedByDisplayName': sharedByDisplayName,
-      'sharedToUserIds': sharedToUserIds,
-      'sharedAt': AppTimestamp.fromDateTime(sharedAt).toFirestore(),
-      'shareMessage': shareMessage,
+      ...getCommonFirestoreFields(),
+      ...getCopyOnWriteFirestoreFields(),
       'menuTitle': menuTitle,
       'menuSnapshot': menuData,
       'totalRecipeCount': totalRecipeCount,
       'categories': categories,
-      'viewCount': viewCount,
-      'importCount': importCount,
-      'viewedByUserIds': viewedByUserIds,
-      'importedByUserIds': importedByUserIds,
-      'dismissedByUserIds': dismissedByUserIds, // 🆕 Spara dismiss data
-      'allowCollaboration': allowCollaboration, // 🆕 LÄGG TILL DENNA RAD
-      'isOriginalReference': isOriginalReference, // CoW: Original reference status
-      'copyOnWriteTriggered': copyOnWriteTriggered, // CoW: Trigger status
-      'originalOwnerStaticCopyId': originalOwnerStaticCopyId, // CoW: Static copy ID
-      'activeCollaboratorIds': activeCollaboratorIds, // CoW: Active collaborators
+      'allowCollaboration': allowCollaboration,
     };
   }
 
@@ -485,11 +424,12 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   factory SharedMenu.fromFirestore(Map<String, dynamic> data, String id) {
     return SharedMenu.fromMap(id, data);
   }
-  
+
   factory SharedMenu.fromMap(String id, Map<String, dynamic> data) {
     try {
       // 🔧 FIXED: Reconstruct menu snapshot utan MockDocumentSnapshot type cast
-      final menuData = (data['menuSnapshot'] as Map<String, dynamic>?).orEmpty();
+      final menuData =
+          (data['menuSnapshot'] as Map<String, dynamic>?).orEmpty();
       final reconstructedMenu = <String, List<Recipe>>{};
 
       for (final entry in menuData.entries) {
@@ -503,20 +443,37 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
             final recipe = Recipe(
               core: RecipeCore(
                 id: utils.SerializationUtils.safeString(recipeMap, 'id'),
-                title: utils.SerializationUtils.safeString(recipeMap, 'title', defaultValue: 'Untitled Recipe'),
-                description: utils.SerializationUtils.safeString(recipeMap, 'description'),
-                ingredients: utils.SerializationUtils.safeStringList(recipeMap, 'ingredients'),
-                instructions: utils.SerializationUtils.safeStringList(recipeMap, 'instructions'),
-                imageUrls: utils.SerializationUtils.safeStringList(recipeMap, 'imageUrls'),
-                mealType: utils.SerializationUtils.safeString(recipeMap, 'mealType', defaultValue: 'Middag'),
-                portions: utils.SerializationUtils.safeNullableInt(recipeMap, 'portions'),
-                timeMinutes: utils.SerializationUtils.safeNullableInt(recipeMap, 'timeMinutes'),
-                rating: utils.SerializationUtils.safeNullableDouble(recipeMap, 'rating'),
-                tags: utils.SerializationUtils.safeStringList(recipeMap, 'tags'),
-                sourceUrl: utils.SerializationUtils.safeNullableString(recipeMap, 'sourceUrl'),
-                createdAt: utils.SerializationUtils.safeDateTime(recipeMap, 'createdAt').orNow(),
-                updatedAt: utils.SerializationUtils.safeDateTime(recipeMap, 'updatedAt').orNow(),
-                lastCookedAt: utils.SerializationUtils.safeDateTime(recipeMap, 'lastCookedAt'),
+                title: utils.SerializationUtils.safeString(recipeMap, 'title',
+                    defaultValue: 'Untitled Recipe'),
+                description: utils.SerializationUtils.safeString(
+                    recipeMap, 'description'),
+                ingredients: utils.SerializationUtils.safeStringList(
+                    recipeMap, 'ingredients'),
+                instructions: utils.SerializationUtils.safeStringList(
+                    recipeMap, 'instructions'),
+                imageUrls: utils.SerializationUtils.safeStringList(
+                    recipeMap, 'imageUrls'),
+                mealType: utils.SerializationUtils.safeString(
+                    recipeMap, 'mealType',
+                    defaultValue: 'Middag'),
+                portions: utils.SerializationUtils.safeNullableInt(
+                    recipeMap, 'portions'),
+                timeMinutes: utils.SerializationUtils.safeNullableInt(
+                    recipeMap, 'timeMinutes'),
+                rating: utils.SerializationUtils.safeNullableDouble(
+                    recipeMap, 'rating'),
+                tags:
+                    utils.SerializationUtils.safeStringList(recipeMap, 'tags'),
+                sourceUrl: utils.SerializationUtils.safeNullableString(
+                    recipeMap, 'sourceUrl'),
+                createdAt: utils.SerializationUtils.safeDateTime(
+                        recipeMap, 'createdAt')
+                    .orNow(),
+                updatedAt: utils.SerializationUtils.safeDateTime(
+                        recipeMap, 'updatedAt')
+                    .orNow(),
+                lastCookedAt: utils.SerializationUtils.safeDateTime(
+                    recipeMap, 'lastCookedAt'),
               ),
               type: RecipeType.shared, // Mark as shared menu recipe
             );
@@ -532,25 +489,31 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
         reconstructedMenu[entry.key] = recipeList;
       }
 
+      final commonFields =
+          BaseSharedContentModel.parseCommonFieldsFromFirestore(data);
+      final cowFields =
+          CopyOnWriteSupport.parseCopyOnWriteFieldsFromFirestore(data);
+
       return SharedMenu(
         id: id,
-        sharedByUserId: utils.SerializationUtils.safeString(data, 'sharedByUserId'),
-        sharedByDisplayName: utils.SerializationUtils.safeString(data, 'sharedByDisplayName'),
-        sharedToUserIds: utils.SerializationUtils.safeStringList(data, 'sharedToUserIds'),
-        sharedAt: utils.SerializationUtils.safeDateTime(data, 'sharedAt').orNow(),
-        shareMessage: utils.SerializationUtils.safeNullableString(data, 'shareMessage'),
-        menuTitle: utils.SerializationUtils.safeString(data, 'menuTitle', defaultValue: 'Delad meny'),
+        sharedByUserId: commonFields['sharedByUserId'] as String,
+        sharedByDisplayName: commonFields['sharedByDisplayName'] as String,
+        sharedAt: commonFields['sharedAt'] as DateTime,
+        shareMessage: commonFields['shareMessage'] as String?,
+        viewCount: commonFields['viewCount'] as int,
+        engagementCount: commonFields['engagementCount'] as int,
+        dismissalCount: commonFields['dismissalCount'] as int,
+        menuTitle: utils.SerializationUtils.safeString(data, 'menuTitle',
+            defaultValue: 'Delad meny'),
         menuSnapshot: reconstructedMenu,
-        viewCount: utils.SerializationUtils.safeInt(data, 'viewCount'),
-        engagementCount: utils.SerializationUtils.safeInt(data, 'importCount'),
-        viewedByUserIds: utils.SerializationUtils.safeStringList(data, 'viewedByUserIds'),
-        engagedByUserIds: utils.SerializationUtils.safeStringList(data, 'importedByUserIds'),
-        dismissedByUserIds: utils.SerializationUtils.safeStringList(data, 'dismissedByUserIds'),
-        allowCollaboration: utils.SerializationUtils.safeBool(data, 'allowCollaboration', defaultValue: false),
-        isOriginalReference: utils.SerializationUtils.safeBool(data, 'isOriginalReference', defaultValue: true),
-        copyOnWriteTriggered: utils.SerializationUtils.safeBool(data, 'copyOnWriteTriggered', defaultValue: false),
-        originalOwnerStaticCopyId: utils.SerializationUtils.safeNullableString(data, 'originalOwnerStaticCopyId'),
-        activeCollaboratorIds: utils.SerializationUtils.safeStringList(data, 'activeCollaboratorIds'),
+        allowCollaboration: utils.SerializationUtils.safeBool(
+            data, 'allowCollaboration',
+            defaultValue: false),
+        isOriginalReference: cowFields['isOriginalReference'] as bool,
+        copyOnWriteTriggered: cowFields['copyOnWriteTriggered'] as bool,
+        originalOwnerStaticCopyId:
+            cowFields['originalOwnerStaticCopyId'] as String?,
+        activeCollaboratorCount: cowFields['activeCollaboratorCount'] as int,
       );
     } catch (e, stackTrace) {
       if (kDebugMode) {
@@ -571,27 +534,13 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     }
 
     return {
-      'id': id,
-      'sharedByUserId': sharedByUserId,
-      'sharedByDisplayName': sharedByDisplayName,
-      'sharedToUserIds': sharedToUserIds,
-      'sharedAt': sharedAt.toIso8601String(),
-      'shareMessage': shareMessage,
+      ...getCommonJsonFields(),
+      ...getCopyOnWriteJsonFields(),
       'menuTitle': menuTitle,
       'menuSnapshot': menuData,
       'totalRecipeCount': totalRecipeCount,
       'categories': categories,
-      'viewCount': viewCount,
-      'importCount': importCount,
-      'viewedByUserIds': viewedByUserIds,
-      'importedByUserIds': importedByUserIds,
-      'dismissedByUserIds': dismissedByUserIds, // 🆕 JSON support för dismiss
-      'allowCollaboration':
-          allowCollaboration, // 🆕 JSON support för collaboration
-      'isOriginalReference': isOriginalReference, // CoW: JSON support
-      'copyOnWriteTriggered': copyOnWriteTriggered, // CoW: JSON support
-      'originalOwnerStaticCopyId': originalOwnerStaticCopyId, // CoW: JSON support
-      'activeCollaboratorIds': activeCollaboratorIds, // CoW: JSON support
+      'allowCollaboration': allowCollaboration,
     };
   }
 
@@ -615,25 +564,26 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
       reconstructedMenu[entry.key] = recipeList;
     }
 
+    final commonFields = BaseSharedContentModel.parseCommonFieldsFromJson(json);
+    final cowFields = CopyOnWriteSupport.parseCopyOnWriteFieldsFromJson(json);
+
     return SharedMenu(
-      id: json['id'] as String,
-      sharedByUserId: (json['sharedByUserId'] as String?).orEmpty(),
-      sharedByDisplayName: (json['sharedByDisplayName'] as String?).orEmpty(),
-      sharedToUserIds: List<String>.from((json['sharedToUserIds'] as List?).orEmpty()),
-      sharedAt: DateTime.parse(json['sharedAt'] as String),
-      shareMessage: json['shareMessage'] as String?,
+      id: commonFields['id'] as String,
+      sharedByUserId: commonFields['sharedByUserId'] as String,
+      sharedByDisplayName: commonFields['sharedByDisplayName'] as String,
+      sharedAt: commonFields['sharedAt'] as DateTime,
+      shareMessage: commonFields['shareMessage'] as String?,
+      viewCount: commonFields['viewCount'] as int,
+      engagementCount: commonFields['engagementCount'] as int,
+      dismissalCount: commonFields['dismissalCount'] as int,
       menuTitle: (json['menuTitle'] as String?).orDefault('Delad meny'),
       menuSnapshot: reconstructedMenu,
-      viewCount: (json['viewCount'] as int?).orZero(),
-      engagementCount: (json['importCount'] as int?).orZero(),
-      viewedByUserIds: List<String>.from((json['viewedByUserIds'] as List?).orEmpty()),
-      engagedByUserIds: List<String>.from((json['importedByUserIds'] as List?).orEmpty()),
-      dismissedByUserIds: List<String>.from((json['dismissedByUserIds'] as List?).orEmpty()),
       allowCollaboration: (json['allowCollaboration'] as bool?).orFalse(),
-      isOriginalReference: (json['isOriginalReference'] as bool?).orTrue(),
-      copyOnWriteTriggered: (json['copyOnWriteTriggered'] as bool?).orFalse(),
-      originalOwnerStaticCopyId: json['originalOwnerStaticCopyId'] as String?,
-      activeCollaboratorIds: List<String>.from((json['activeCollaboratorIds'] as List?).orEmpty()),
+      isOriginalReference: cowFields['isOriginalReference'] as bool,
+      copyOnWriteTriggered: cowFields['copyOnWriteTriggered'] as bool,
+      originalOwnerStaticCopyId:
+          cowFields['originalOwnerStaticCopyId'] as String?,
+      activeCollaboratorCount: cowFields['activeCollaboratorCount'] as int,
     );
   }
 
