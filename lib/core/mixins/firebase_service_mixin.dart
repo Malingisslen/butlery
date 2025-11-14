@@ -43,12 +43,18 @@ import 'package:firebase_core/firebase_core.dart';
 import 'dart:io';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 
 /// Mixin for standardizing Firebase operations across services.
 ///
 /// Built on top of [ErrorHandlingMixin] to provide Firebase-specific error
 /// handling and operation patterns. This mixin should be used by all services
 /// that interact with Firebase services (Firestore, Auth, Storage, etc.).
+///
+/// **Repository Pattern Integration:**
+/// Services using this mixin must provide a [firestoreRepository] getter to inject
+/// FirestoreRepository dependency. This follows the repository pattern and ensures
+/// proper testability and abstraction.
 ///
 /// Provides these Firebase operation types:
 /// - [executeFirebaseOperation] - Standard Firebase operations with error handling
@@ -57,15 +63,35 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 /// - [executeFirebaseTransaction] - Atomic transaction operations
 /// - [executeFirebaseQuery] - Query operations with pagination support
 mixin FirebaseServiceMixin on ErrorHandlingMixin {
-  
   // ===== FIREBASE INSTANCE MANAGEMENT =====
-  
+
+  /// FirestoreRepository for dependency injection.
+  ///
+  /// Services using this mixin must override this getter to provide their
+  /// FirestoreRepository instance. This enables proper dependency injection
+  /// and testability while following the repository pattern.
+  ///
+  /// Example:
+  /// ```dart
+  /// class MyService extends BaseService with FirebaseServiceMixin {
+  ///   final FirestoreRepository _firestoreRepository;
+  ///
+  ///   MyService({required FirestoreRepository firestoreRepository})
+  ///       : _firestoreRepository = firestoreRepository;
+  ///
+  ///   @override
+  ///   FirestoreRepository get firestoreRepository => _firestoreRepository;
+  /// }
+  /// ```
+  FirestoreRepository get firestoreRepository;
+
   /// Centralized Firestore instance for all Firebase operations.
   ///
-  /// Provides access to the Firebase Firestore instance with proper initialization
-  /// checking. This replaces individual firestore instances scattered across services.
-  FirebaseFirestore get firestore => FirebaseFirestore.instance;
-  
+  /// Provides access to the Firebase Firestore instance through the repository pattern.
+  /// This follows the architectural pattern of accessing Firebase via repository getter
+  /// as documented in CLAUDE.md.
+  FirebaseFirestore get firestore => firestoreRepository.firestore;
+
   /// Checks whether Firebase has been properly initialized.
   ///
   /// Returns true if Firebase apps are available, false otherwise.
@@ -78,7 +104,7 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       return false;
     }
   }
-  
+
   /// Ensures Firebase is initialized before executing operations.
   ///
   /// Attempts to initialize Firebase if it hasn't been initialized yet.
@@ -108,9 +134,9 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     }
     return true;
   }
-  
+
   // ===== FIREBASE OPERATION EXECUTION =====
-  
+
   /// Executes a Firebase operation with comprehensive error handling.
   ///
   /// This method provides standardized execution of Firebase operations with
@@ -152,7 +178,7 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
             message: 'Firebase not initialized',
           );
         }
-        
+
         // Execute the operation
         return await operation();
       },
@@ -161,7 +187,7 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       customErrorMessage: 'Firebase operation failed',
     );
   }
-  
+
   /// Executes a Firebase operation with automatic retry logic and DNS resilience.
   ///
   /// This enhanced method automatically retries Firebase operations that fail due to
@@ -246,27 +272,29 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     int maxDNSRetries = 2,
   }) async {
     final opName = operationName ?? 'Firebase operation with DNS resilience';
-    
+
     // First attempt with standard operation
     final result = await executeFirebaseOperation(
       operation,
       operationName: opName,
       defaultValue: defaultValue,
     );
-    
+
     if (result != null) {
       return result;
     }
-    
+
     // If operation failed and DNS failover is enabled, attempt DNS resilience strategies
     if (enableDNSFailover) {
-      AppLogger.warning('Firebase operation failed, attempting DNS resilience for: $opName');
-      
+      AppLogger.warning(
+          'Firebase operation failed, attempting DNS resilience for: $opName');
+
       // Check if DNS failover might help
       final hasEnhancedDNS = await _checkEnhancedDNSConnectivity();
       if (hasEnhancedDNS) {
-        AppLogger.info('Enhanced DNS connectivity available, retrying operation: $opName');
-        
+        AppLogger.info(
+            'Enhanced DNS connectivity available, retrying operation: $opName');
+
         // Retry the operation with enhanced DNS awareness
         return await executeFirebaseOperationWithRetry(
           operation,
@@ -279,12 +307,12 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
         AppLogger.warning('Enhanced DNS connectivity unavailable for: $opName');
       }
     }
-    
+
     return defaultValue;
   }
-  
+
   // ===== FIRESTORE DOCUMENT OPERATIONS =====
-  
+
   /// Safe document read with proper error handling
   Future<DocumentSnapshot?> getDocument(
     String path, {
@@ -295,7 +323,7 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       operationName: 'Get document: $path',
     );
   }
-  
+
   /// Safe document write with proper error handling
   Future<bool> setDocument(
     String path,
@@ -310,10 +338,10 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       operationName: 'Set document: $path',
       defaultValue: false,
     );
-    
+
     return result ?? false;
   }
-  
+
   /// Safe document update with proper error handling
   Future<bool> updateDocument(
     String path,
@@ -327,10 +355,10 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       operationName: 'Update document: $path',
       defaultValue: false,
     );
-    
+
     return result ?? false;
   }
-  
+
   /// Safe document delete with proper error handling
   Future<bool> deleteDocument(String path) async {
     final result = await executeFirebaseOperation(
@@ -341,12 +369,12 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       operationName: 'Delete document: $path',
       defaultValue: false,
     );
-    
+
     return result ?? false;
   }
-  
+
   // ===== FIRESTORE COLLECTION OPERATIONS =====
-  
+
   /// Safe collection query with proper error handling
   Future<QuerySnapshot?> queryCollection(
     String path, {
@@ -356,7 +384,7 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     return await executeFirebaseOperation(
       () async {
         Query query = firestore.collection(path);
-        
+
         if (constraints != null) {
           for (final constraint in constraints) {
             query = query.where(
@@ -375,13 +403,13 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
             );
           }
         }
-        
+
         return await query.get(GetOptions(source: source));
       },
       operationName: 'Query collection: $path',
     );
   }
-  
+
   /// Safe collection add with proper error handling
   Future<DocumentReference?> addToCollection(
     String path,
@@ -392,9 +420,9 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       operationName: 'Add to collection: $path',
     );
   }
-  
+
   // ===== FIRESTORE BATCH OPERATIONS =====
-  
+
   /// Execute Firebase batch operations with proper error handling
   /// Consolidates batch patterns found in 12+ services
   Future<bool> executeFirebaseBatchOperation(
@@ -402,11 +430,11 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     String? operationName,
   }) async {
     if (operations.isEmpty) return true;
-    
+
     final result = await executeFirebaseOperation(
       () async {
         final batch = firestore.batch();
-        
+
         for (final operation in operations) {
           switch (operation.type) {
             case BatchOperationType.set:
@@ -424,19 +452,20 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
               break;
           }
         }
-        
+
         await batch.commit();
         return true;
       },
-      operationName: operationName ?? 'Batch operation (${operations.length} ops)',
+      operationName:
+          operationName ?? 'Batch operation (${operations.length} ops)',
       defaultValue: false,
     );
-    
+
     return result ?? false;
   }
-  
+
   // ===== FIRESTORE TRANSACTION OPERATIONS =====
-  
+
   /// Execute transaction with proper error handling
   Future<T?> executeTransaction<T>(
     Future<T> Function(Transaction transaction) operation, {
@@ -449,9 +478,9 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       defaultValue: defaultValue,
     );
   }
-  
+
   // ===== FIRESTORE REAL-TIME OPERATIONS =====
-  
+
   /// Create document stream with proper error handling
   Stream<DocumentSnapshot> watchDocument(
     String path, {
@@ -465,7 +494,7 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       handleCategorizedError(error, 'Watch document: $path');
     });
   }
-  
+
   /// Create collection stream with proper error handling
   Stream<QuerySnapshot> watchCollection(
     String path, {
@@ -473,7 +502,7 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     bool includeMetadataChanges = false,
   }) {
     Query query = firestore.collection(path);
-    
+
     if (constraints != null) {
       for (final constraint in constraints) {
         query = query.where(
@@ -492,7 +521,7 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
         );
       }
     }
-    
+
     return query
         .snapshots(includeMetadataChanges: includeMetadataChanges)
         .handleError((error) {
@@ -500,10 +529,9 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       handleCategorizedError(error, 'Watch collection: $path');
     });
   }
-  
+
   // ===== FIREBASE ERROR HANDLING =====
-  
-  
+
   /// Check if error is retryable with DNS-aware error classification.
   ///
   /// This enhanced method provides intelligent error classification that distinguishes
@@ -529,12 +557,12 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
         'internal',
       ].contains(error.code);
     }
-    
+
     // Check for DNS resolution errors
     if (error is SocketException) {
       return true; // Network issues are generally retryable
     }
-    
+
     // Check error message for DNS-related issues
     final errorMessage = error.toString().toLowerCase();
     if (errorMessage.contains('resolve') ||
@@ -545,7 +573,7 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
         errorMessage.contains('connection timeout')) {
       return true; // DNS and network issues are retryable
     }
-    
+
     return false;
   }
 
@@ -576,7 +604,7 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       }
       return FirebaseErrorType.serviceError;
     }
-    
+
     // Check error message for DNS-related issues FIRST (before generic SocketException handling)
     final errorMessage = error.toString().toLowerCase();
     if (errorMessage.contains('resolve') ||
@@ -586,23 +614,23 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
         errorMessage.contains('name resolution failed')) {
       return FirebaseErrorType.dnsResolution;
     }
-    
+
     // Handle SocketException after DNS check
     if (error is SocketException) {
       return FirebaseErrorType.networkConnectivity;
     }
-    
+
     if (errorMessage.contains('network') ||
         errorMessage.contains('connection') ||
         errorMessage.contains('timeout')) {
       return FirebaseErrorType.networkConnectivity;
     }
-    
+
     return FirebaseErrorType.unknown;
   }
-  
+
   // ===== FIREBASE CONNECTION STATE =====
-  
+
   /// Check Firebase connectivity with DNS resilience and enhanced error handling.
   ///
   /// This enhanced method provides comprehensive Firebase connectivity testing with
@@ -629,19 +657,22 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     } on FirebaseException catch (e) {
       // Firebase-specific errors might indicate DNS or service issues
       if (e.code == 'unavailable' || e.message?.contains('resolve') == true) {
-        AppLogger.warning('🔥 Firebase connectivity failed (possible DNS issue): ${e.message}');
+        AppLogger.warning(
+            '🔥 Firebase connectivity failed (possible DNS issue): ${e.message}');
       } else {
-        AppLogger.warning('🔥 Firebase connectivity failed (service issue): ${e.code} - ${e.message}');
+        AppLogger.warning(
+            '🔥 Firebase connectivity failed (service issue): ${e.code} - ${e.message}');
       }
       return false;
     } catch (e) {
       // Check if error message indicates DNS resolution failure
       final errorMessage = e.toString().toLowerCase();
-      if (errorMessage.contains('resolve') || 
-          errorMessage.contains('dns') || 
+      if (errorMessage.contains('resolve') ||
+          errorMessage.contains('dns') ||
           errorMessage.contains('host') ||
           errorMessage.contains('address associated with hostname')) {
-        AppLogger.warning('🔥 Firebase connectivity failed (DNS resolution issue): $e');
+        AppLogger.warning(
+            '🔥 Firebase connectivity failed (DNS resolution issue): $e');
       } else {
         AppLogger.warning('🔥 Firebase connectivity check failed: $e');
       }
@@ -677,9 +708,9 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     const enhancedDnsServers = [
       'google.com',
       'cloudflare.com',
-      '1.1.1.1',      // Cloudflare DNS
-      '8.8.8.8',      // Google DNS
-      '9.9.9.9',      // Quad9 DNS
+      '1.1.1.1', // Cloudflare DNS
+      '8.8.8.8', // Google DNS
+      '9.9.9.9', // Quad9 DNS
     ];
 
     for (final server in enhancedDnsServers) {
@@ -695,7 +726,7 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     }
     return false;
   }
-  
+
   /// Enable/disable Firebase persistence
   Future<void> configureFirebasePersistence({
     bool enablePersistence = true,
@@ -729,7 +760,7 @@ class QueryConstraint {
   final List<dynamic>? whereIn;
   final List<dynamic>? whereNotIn;
   final bool? isNull;
-  
+
   const QueryConstraint({
     required this.field,
     this.isEqualTo,
@@ -744,23 +775,23 @@ class QueryConstraint {
     this.whereNotIn,
     this.isNull,
   });
-  
+
   /// Helper constructors for common constraints
   factory QueryConstraint.equals(String field, dynamic value) =>
       QueryConstraint(field: field, isEqualTo: value);
-  
+
   factory QueryConstraint.notEquals(String field, dynamic value) =>
       QueryConstraint(field: field, isNotEqualTo: value);
-  
+
   factory QueryConstraint.lessThan(String field, dynamic value) =>
       QueryConstraint(field: field, isLessThan: value);
-  
+
   factory QueryConstraint.greaterThan(String field, dynamic value) =>
       QueryConstraint(field: field, isGreaterThan: value);
-  
+
   factory QueryConstraint.arrayContainsValue(String field, dynamic value) =>
       QueryConstraint(field: field, arrayContains: value);
-  
+
   factory QueryConstraint.whereInList(String field, List<dynamic> values) =>
       QueryConstraint(field: field, whereIn: values);
 }
@@ -771,14 +802,14 @@ class BatchOperation {
   final String path;
   final Map<String, dynamic>? data;
   final SetOptions? setOptions;
-  
+
   const BatchOperation({
     required this.type,
     required this.path,
     this.data,
     this.setOptions,
   });
-  
+
   /// Helper constructors
   factory BatchOperation.set(
     String path,
@@ -791,16 +822,15 @@ class BatchOperation {
         data: data,
         setOptions: options,
       );
-  
+
   factory BatchOperation.update(String path, Map<String, dynamic> data) =>
       BatchOperation(
         type: BatchOperationType.update,
         path: path,
         data: data,
       );
-  
-  factory BatchOperation.delete(String path) =>
-      BatchOperation(
+
+  factory BatchOperation.delete(String path) => BatchOperation(
         type: BatchOperationType.delete,
         path: path,
       );
@@ -831,25 +861,25 @@ enum FirebaseErrorType {
   /// This error type indicates issues resolving Firebase domain names to IP addresses,
   /// which can be addressed through DNS failover and direct IP connection strategies.
   dnsResolution,
-  
+
   /// Network connectivity issues affecting Firebase communication.
   ///
   /// This error type indicates broader network connectivity problems that may require
   /// retry strategies, connection quality assessment, or offline mode activation.
   networkConnectivity,
-  
+
   /// Firebase authentication and permission errors.
   ///
   /// This error type indicates authentication failures or insufficient permissions
   /// that require user authentication or permission elevation.
   authentication,
-  
+
   /// Firebase service-specific errors and API issues.
   ///
   /// This error type indicates actual Firebase service problems, API limitations,
   /// or service-specific errors that require service-level handling.
   serviceError,
-  
+
   /// Unclassified errors requiring conservative handling.
   ///
   /// This error type indicates errors that cannot be clearly classified and

@@ -3,34 +3,42 @@
 import 'dart:async';
 // ignore: unused_import
 import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent.recipes
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
+import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart';
 
 /// Presence tracking module
-/// 
+///
 /// This module handles ONLY user presence tracking:
 /// - Show/hide user presence in recipes
 /// - Track who's viewing/editing recipes
 /// - Manage presence status updates
 /// - Stream presence changes to UI
-/// 
+///
 /// ❌ DOES NOT CONTAIN: Watching, editing, collaboration management, notifications
 class PresenceTrackingModule {
   final UnifiedRecipeService _parent;
   final RealtimeSyncService? _realtimeSyncService;
+  final FirebaseRecipePresenceRepository _presenceRepository;
 
   // Local presence tracking
-  final Map<String, Set<String>> _recipePresence = {}; // recipeId -> Set<userId>
-  final Map<String, DateTime> _presenceTimestamps = {}; // userId_recipeId -> timestamp
-  final StreamController<Map<String, List<Map<String, dynamic>>>> _presenceController =
+  final Map<String, Set<String>> _recipePresence =
+      {}; // recipeId -> Set<userId>
+  final Map<String, DateTime> _presenceTimestamps =
+      {}; // userId_recipeId -> timestamp
+  final StreamController<Map<String, List<Map<String, dynamic>>>>
+      _presenceController =
       StreamController<Map<String, List<Map<String, dynamic>>>>.broadcast();
 
-  PresenceTrackingModule(this._parent, [this._realtimeSyncService]) {
+  PresenceTrackingModule(
+    this._parent,
+    this._realtimeSyncService,
+    this._presenceRepository,
+  ) {
     _startPresenceCleanup();
   }
 
@@ -39,34 +47,30 @@ class PresenceTrackingModule {
   /// Show user presence in recipe (user starts viewing/editing)
   Future<bool> showPresence(String recipeId) async {
     try {
-      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return false;
-      
+      if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
+        return false;
+      }
+
       final currentUser = ServiceLocator.get<PermissionService>().currentUser;
       if (currentUser == null) return false;
 
       final currentUserId = currentUser.uid;
-      
+
       // Update local presence tracking
       _updateLocalPresence(recipeId, currentUserId, true);
-      
+
       // Update Firebase presence
       if (_realtimeSyncService != null) {
-        await FirebaseFirestore.instance
-            .collection('recipePresence')
-            .doc(recipeId)
-            .collection('activeUsers')
-            .doc(currentUserId)
-            .set({
-          'userId': currentUserId,
-          'displayName': currentUser.displayName,
-          'avatarUrl': currentUser.avatarUrl,
-          'joinedAt': FieldValue.serverTimestamp(),
-          'lastSeen': FieldValue.serverTimestamp(),
-          'isActive': true,
-        }, SetOptions(merge: true));
+        await _presenceRepository.setUserPresence(
+          recipeId: recipeId,
+          userId: currentUserId,
+          displayName: currentUser.displayName,
+          avatarUrl: currentUser.avatarUrl,
+        );
       }
 
-      AppLogger.info('Showing presence for ${currentUser.displayName} in recipe: $recipeId');
+      AppLogger.info(
+          'Showing presence for ${currentUser.displayName} in recipe: $recipeId');
       _notifyPresenceChange(recipeId);
       return true;
     } catch (e) {
@@ -78,30 +82,28 @@ class PresenceTrackingModule {
   /// Hide user presence in recipe (user stops viewing/editing)
   Future<bool> hidePresence(String recipeId) async {
     try {
-      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return false;
-      
+      if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
+        return false;
+      }
+
       final currentUser = ServiceLocator.get<PermissionService>().currentUser;
       if (currentUser == null) return false;
 
       final currentUserId = currentUser.uid;
-      
+
       // Update local presence tracking
       _updateLocalPresence(recipeId, currentUserId, false);
-      
+
       // Update Firebase presence
       if (_realtimeSyncService != null) {
-        await FirebaseFirestore.instance
-            .collection('recipePresence')
-            .doc(recipeId)
-            .collection('activeUsers')
-            .doc(currentUserId)
-            .update({
-          'isActive': false,
-          'leftAt': FieldValue.serverTimestamp(),
-        });
+        await _presenceRepository.markUserInactive(
+          recipeId: recipeId,
+          userId: currentUserId,
+        );
       }
 
-      AppLogger.info('Hiding presence for ${currentUser.displayName} in recipe: $recipeId');
+      AppLogger.info(
+          'Hiding presence for ${currentUser.displayName} in recipe: $recipeId');
       _notifyPresenceChange(recipeId);
       return true;
     } catch (e) {
@@ -113,27 +115,27 @@ class PresenceTrackingModule {
   /// Update presence heartbeat (keep user active)
   Future<bool> updatePresenceHeartbeat(String recipeId) async {
     try {
-      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return false;
-      
-      final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+      if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
+        return false;
+      }
+
+      final currentUserId =
+          ServiceLocator.get<PermissionService>().currentUserId;
       if (currentUserId == null) return false;
 
       // Update local timestamp
       _presenceTimestamps['${currentUserId}_$recipeId'] = DateTime.now();
-      
+
       // Update Firebase presence
       if (_realtimeSyncService != null) {
-        await FirebaseFirestore.instance
-            .collection('recipePresence')
-            .doc(recipeId)
-            .collection('activeUsers')
-            .doc(currentUserId)
-            .update({
-          'lastSeen': FieldValue.serverTimestamp(),
-        });
+        await _presenceRepository.updatePresenceHeartbeat(
+          recipeId: recipeId,
+          userId: currentUserId,
+        );
       }
 
-      AppLogger.debug('Updated presence heartbeat for user: $currentUserId in recipe: $recipeId');
+      AppLogger.debug(
+          'Updated presence heartbeat for user: $currentUserId in recipe: $recipeId');
       return true;
     } catch (e) {
       AppLogger.error('Failed to update presence heartbeat', e);
@@ -150,17 +152,17 @@ class PresenceTrackingModule {
       if (recipe == null || !recipe.isCollaborative) return [];
 
       final presence = <Map<String, dynamic>>[];
-      
+
       // Get local presence data
       final activeUserIds = _recipePresence[recipeId] ?? <String>{};
-      
+
       for (final userId in activeUserIds) {
         final timestampKey = '${userId}_$recipeId';
         final lastSeen = _presenceTimestamps[timestampKey] ?? DateTime.now();
-        
+
         // Check if user is still active (within last 2 minutes)
         final isActive = DateTime.now().difference(lastSeen).inMinutes < 2;
-        
+
         if (isActive) {
           final member = recipe.socialData?.memberPermissions?[userId];
           if (member != null) {
@@ -168,7 +170,8 @@ class PresenceTrackingModule {
               'userId': userId,
               'displayName': _getUserDisplayName(userId),
               'avatarUrl': _getUserAvatarUrl(userId),
-              'isEditing': RealtimeRecipeUtils.isUserActivelyViewing(userId, recipeId),
+              'isEditing':
+                  RealtimeRecipeUtils.isUserActivelyViewing(userId, recipeId),
               'permission': member.toString().split('.').last,
               'lastSeen': lastSeen,
               'joinedAt': lastSeen, // Simplified - would track actual join time
@@ -178,7 +181,8 @@ class PresenceTrackingModule {
       }
 
       // Add active editors from recipe metadata
-      final activeEditors = RealtimeRecipeUtils.getActiveEditorsFromRecipe(recipe);
+      final activeEditors =
+          RealtimeRecipeUtils.getActiveEditorsFromRecipe(recipe);
       for (final editorId in activeEditors) {
         if (!presence.any((p) => p['userId'] == editorId)) {
           final member = recipe.socialData?.memberPermissions?[editorId];
@@ -196,7 +200,8 @@ class PresenceTrackingModule {
         }
       }
 
-      AppLogger.debug('Recipe presence for $recipeId: ${presence.length} active users');
+      AppLogger.debug(
+          'Recipe presence for $recipeId: ${presence.length} active users');
       return presence;
     } catch (e) {
       AppLogger.error('Failed to get recipe presence', e);
@@ -206,14 +211,13 @@ class PresenceTrackingModule {
 
   /// Get presence for multiple recipes
   Future<Map<String, List<Map<String, dynamic>>>> getMultipleRecipePresence(
-    List<String> recipeIds
-  ) async {
+      List<String> recipeIds) async {
     final presenceMap = <String, List<Map<String, dynamic>>>{};
-    
+
     for (final recipeId in recipeIds) {
       presenceMap[recipeId] = await getRecipePresence(recipeId);
     }
-    
+
     return presenceMap;
   }
 
@@ -221,19 +225,21 @@ class PresenceTrackingModule {
   bool isUserPresent(String recipeId, String userId) {
     final activeUsers = _recipePresence[recipeId] ?? <String>{};
     if (!activeUsers.contains(userId)) return false;
-    
+
     // Check timestamp
     final timestampKey = '${userId}_$recipeId';
     final lastSeen = _presenceTimestamps[timestampKey];
     if (lastSeen == null) return false;
-    
+
     return DateTime.now().difference(lastSeen).inMinutes < 2;
   }
 
   /// Get presence count for recipe
   int getPresenceCount(String recipeId) {
     final activeUsers = _recipePresence[recipeId] ?? <String>{};
-    return activeUsers.where((userId) => isUserPresent(recipeId, userId)).length;
+    return activeUsers
+        .where((userId) => isUserPresent(recipeId, userId))
+        .length;
   }
 
   // ===== PRESENCE STREAMS =====
@@ -247,23 +253,19 @@ class PresenceTrackingModule {
 
   /// Stream of presence updates for multiple recipes
   Stream<Map<String, List<Map<String, dynamic>>>> watchMultipleRecipePresence(
-    List<String> recipeIds
-  ) {
-    return _presenceController.stream
-        .map((presenceMap) {
-          final filtered = <String, List<Map<String, dynamic>>>{};
-          for (final recipeId in recipeIds) {
-            filtered[recipeId] = presenceMap[recipeId] ?? [];
-          }
-          return filtered;
-        })
-        .distinct();
+      List<String> recipeIds) {
+    return _presenceController.stream.map((presenceMap) {
+      final filtered = <String, List<Map<String, dynamic>>>{};
+      for (final recipeId in recipeIds) {
+        filtered[recipeId] = presenceMap[recipeId] ?? [];
+      }
+      return filtered;
+    }).distinct();
   }
 
   /// Stream of presence count for recipe
   Stream<int> watchPresenceCount(String recipeId) {
-    return watchRecipePresence(recipeId)
-        .map((presence) => presence.length);
+    return watchRecipePresence(recipeId).map((presence) => presence.length);
   }
 
   // ===== PRESENCE UTILITIES =====
@@ -273,18 +275,16 @@ class PresenceTrackingModule {
     String recipeId, {
     Duration heartbeatInterval = const Duration(seconds: 30),
   }) {
-    return Stream.periodic(heartbeatInterval)
-        .listen((_) async {
-          if (isUserPresent(recipeId, _parent.currentUserId ?? '')) {
-            await updatePresenceHeartbeat(recipeId);
-          }
-        });
+    return Stream.periodic(heartbeatInterval).listen((_) async {
+      if (isUserPresent(recipeId, _parent.currentUserId ?? '')) {
+        await updatePresenceHeartbeat(recipeId);
+      }
+    });
   }
 
   /// Bulk update presence for multiple recipes
   Future<void> updateMultipleRecipePresence(
-    Map<String, bool> recipePresenceMap
-  ) async {
+      Map<String, bool> recipePresenceMap) async {
     for (final entry in recipePresenceMap.entries) {
       if (entry.value) {
         await showPresence(entry.key);
@@ -301,7 +301,7 @@ class PresenceTrackingModule {
       if (currentUserId == null) return;
 
       final recipesToClear = <String>[];
-      
+
       // Find all recipes where user is present
       for (final entry in _recipePresence.entries) {
         if (entry.value.contains(currentUserId)) {
@@ -325,11 +325,9 @@ class PresenceTrackingModule {
   /// Get presence statistics
   Map<String, dynamic> getPresenceStatistics() {
     final totalActiveRecipes = _recipePresence.keys.length;
-    final totalActiveUsers = _recipePresence.values
-        .expand((users) => users)
-        .toSet()
-        .length;
-    
+    final totalActiveUsers =
+        _recipePresence.values.expand((users) => users).toSet().length;
+
     final presenceByRecipe = <String, int>{};
     for (final entry in _recipePresence.entries) {
       presenceByRecipe[entry.key] = entry.value.length;
@@ -344,8 +342,8 @@ class PresenceTrackingModule {
     return {
       'totalActiveRecipes': totalActiveRecipes,
       'totalActiveUsers': totalActiveUsers,
-      'averageUsersPerRecipe': totalActiveRecipes > 0 
-          ? (totalActiveUsers / totalActiveRecipes).round() 
+      'averageUsersPerRecipe': totalActiveRecipes > 0
+          ? (totalActiveUsers / totalActiveRecipes).round()
           : 0,
       'mostActiveRecipeId': mostActiveRecipe,
       'presenceByRecipe': presenceByRecipe,
@@ -355,7 +353,7 @@ class PresenceTrackingModule {
   /// Get user's presence history
   List<Map<String, dynamic>> getUserPresenceHistory(String userId) {
     final history = <Map<String, dynamic>>[];
-    
+
     for (final entry in _presenceTimestamps.entries) {
       final parts = entry.key.split('_');
       if (parts.length == 2 && parts[0] == userId) {
@@ -369,8 +367,9 @@ class PresenceTrackingModule {
     }
 
     // Sort by timestamp (newest first)
-    history.sort((a, b) => (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime));
-    
+    history.sort((a, b) =>
+        (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime));
+
     return history;
   }
 
@@ -384,7 +383,7 @@ class PresenceTrackingModule {
     } else {
       _recipePresence[recipeId]?.remove(userId);
       _presenceTimestamps.remove('${userId}_$recipeId');
-      
+
       // Clean up empty recipe presence
       if (_recipePresence[recipeId]?.isEmpty == true) {
         _recipePresence.remove(recipeId);
@@ -401,11 +400,11 @@ class PresenceTrackingModule {
   Future<void> _updatePresenceStream() async {
     try {
       final presenceMap = <String, List<Map<String, dynamic>>>{};
-      
+
       for (final recipeId in _recipePresence.keys) {
         presenceMap[recipeId] = await getRecipePresence(recipeId);
       }
-      
+
       _presenceController.add(presenceMap);
     } catch (e) {
       AppLogger.error('Failed to update presence stream', e);
@@ -424,31 +423,32 @@ class PresenceTrackingModule {
     final now = DateTime.now();
     const staleThreshold = Duration(minutes: 5);
     final keysToRemove = <String>[];
-    
+
     for (final entry in _presenceTimestamps.entries) {
       if (now.difference(entry.value) > staleThreshold) {
         keysToRemove.add(entry.key);
       }
     }
-    
+
     for (final key in keysToRemove) {
       _presenceTimestamps.remove(key);
-      
+
       // Remove from recipe presence
       final parts = key.split('_');
       if (parts.length == 2) {
         final userId = parts[0];
         final recipeId = parts[1];
         _recipePresence[recipeId]?.remove(userId);
-        
+
         if (_recipePresence[recipeId]?.isEmpty == true) {
           _recipePresence.remove(recipeId);
         }
       }
     }
-    
+
     if (keysToRemove.isNotEmpty) {
-      AppLogger.debug('Cleaned up ${keysToRemove.length} stale presence entries');
+      AppLogger.debug(
+          'Cleaned up ${keysToRemove.length} stale presence entries');
       _updatePresenceStream();
     }
   }

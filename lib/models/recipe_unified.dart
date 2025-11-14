@@ -6,7 +6,6 @@ import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
-import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -27,25 +26,25 @@ part 'recipe_unified.g.dart';
 /// - [shared] - Recipe shared with others in read-only mode
 /// - [collaborative] - Recipe that can be edited by multiple users
 /// - [realtime] - Recipe with live collaborative editing capabilities
-enum RecipeType { 
+enum RecipeType {
   /// Private recipe accessible only to the owner.
   ///
   /// Personal recipes are stored in the user's private collection and
   /// cannot be accessed by other users unless explicitly shared.
   personal,
-  
+
   /// Recipe shared with others in read-only mode.
   ///
   /// Shared recipes allow other users to view and copy the recipe
   /// but not modify the original. The owner retains full control.
   shared,
-  
+
   /// Recipe that can be collaboratively edited by multiple users.
   ///
   /// Collaborative recipes allow designated users to modify the recipe
   /// content with proper conflict resolution and change tracking.
   collaborative,
-  
+
   /// Recipe with real-time collaborative editing capabilities.
   ///
   /// Realtime recipes support simultaneous editing by multiple users
@@ -187,6 +186,39 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
   @HiveField(17)
   List<String>? ingredientsNormalized;
 
+  /// Total number of ratings this recipe has received.
+  ///
+  /// Denormalized aggregate maintained by Cloud Function on rating changes.
+  /// Used for sorting by popularity and displaying rating counts in UI.
+  /// Null for recipes without any ratings.
+  @HiveField(18)
+  int? ratingCount;
+
+  /// Average rating value (1.0-5.0).
+  ///
+  /// Denormalized aggregate calculated from all ratings by Cloud Function.
+  /// Provides instant access to recipe rating without querying all rating documents.
+  /// Null for recipes without any ratings.
+  @HiveField(19)
+  double? averageRating;
+
+  /// Distribution of ratings across star levels.
+  ///
+  /// Map structure: {1: count, 2: count, 3: count, 4: count, 5: count}
+  /// Example: {1: 2, 2: 5, 3: 18, 4: 45, 5: 86} = 156 total ratings
+  /// Denormalized for instant rating histogram display.
+  /// Null for recipes without any ratings.
+  @HiveField(20)
+  Map<int, int>? ratingDistribution;
+
+  /// Timestamp of the most recent rating.
+  ///
+  /// Used for cache freshness detection and sorting by recently rated.
+  /// Updated by Cloud Function on every rating change.
+  /// Null for recipes that have never been rated.
+  @HiveField(21)
+  DateTime? lastRatedAt;
+
   RecipeCore({
     String? id,
     required this.title,
@@ -206,10 +238,14 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
     this.isPublic = false,
     this.lastCookedAt,
     this.ingredientsNormalized,
-  }) : id = id ?? const Uuid().v4(),
-       imageUrls = imageUrls ?? [],
-       createdAt = createdAt ?? DateTime.now(),
-       updatedAt = updatedAt ?? DateTime.now();
+    this.ratingCount,
+    this.averageRating,
+    this.ratingDistribution,
+    this.lastRatedAt,
+  })  : id = id ?? const Uuid().v4(),
+        imageUrls = imageUrls ?? [],
+        createdAt = createdAt ?? DateTime.now(),
+        updatedAt = updatedAt ?? DateTime.now();
 
   /// Create copy with updated values
   RecipeCore copyWith({
@@ -229,6 +265,10 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
     bool? isPublic,
     DateTime? lastCookedAt,
     List<String>? ingredientsNormalized,
+    int? ratingCount,
+    double? averageRating,
+    Map<int, int>? ratingDistribution,
+    DateTime? lastRatedAt,
   }) {
     return RecipeCore(
       id: id,
@@ -248,15 +288,21 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
       createdBy: createdBy ?? this.createdBy,
       isPublic: isPublic ?? this.isPublic,
       lastCookedAt: lastCookedAt ?? this.lastCookedAt,
-      ingredientsNormalized: ingredientsNormalized ?? this.ingredientsNormalized,
+      ingredientsNormalized:
+          ingredientsNormalized ?? this.ingredientsNormalized,
+      ratingCount: ratingCount ?? this.ratingCount,
+      averageRating: averageRating ?? this.averageRating,
+      ratingDistribution: ratingDistribution ?? this.ratingDistribution,
+      lastRatedAt: lastRatedAt ?? this.lastRatedAt,
     );
   }
 
   // Helper getters
   bool get hasImages => imageUrls.isNotEmpty;
   String? get primaryImageUrl => imageUrls.isNotEmpty ? imageUrls.first : null;
-  String get cookTimeText => timeMinutes != null ? '${timeMinutes!} minuter' : '–';
-  
+  String get cookTimeText =>
+      timeMinutes != null ? '${timeMinutes!} minuter' : '–';
+
   String? get lastCookedText {
     if (lastCookedAt == null) return null;
     final now = DateTime.now();
@@ -268,67 +314,91 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
 
   @override
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'title': title,
-    'description': description,
-    'portions': portions,
-    'timeMinutes': timeMinutes,
-    'ingredients': ingredients,
-    'instructions': instructions,
-    'tags': tags,
-    'rating': rating,
-    'mealType': mealType,
-    'sourceUrl': sourceUrl,
-    'imageUrls': imageUrls,
-    'createdAt': createdAt.toIso8601String(),
-    'updatedAt': updatedAt.toIso8601String(),
-    'createdBy': createdBy,
-    'isPublic': isPublic,
-    'lastCookedAt': lastCookedAt?.toIso8601String(),
-    'ingredientsNormalized': ingredientsNormalized,
-  };
+        'id': id,
+        'title': title,
+        'description': description,
+        'portions': portions,
+        'timeMinutes': timeMinutes,
+        'ingredients': ingredients,
+        'instructions': instructions,
+        'tags': tags,
+        'rating': rating,
+        'mealType': mealType,
+        'sourceUrl': sourceUrl,
+        'imageUrls': imageUrls,
+        'createdAt': createdAt.toIso8601String(),
+        'updatedAt': updatedAt.toIso8601String(),
+        'createdBy': createdBy,
+        'isPublic': isPublic,
+        'lastCookedAt': lastCookedAt?.toIso8601String(),
+        'ingredientsNormalized': ingredientsNormalized,
+        'ratingCount': ratingCount,
+        'averageRating': averageRating,
+        'ratingDistribution': ratingDistribution,
+        'lastRatedAt': lastRatedAt?.toIso8601String(),
+      };
 
   Map<String, dynamic> toFirestore() => {
-    'id': id,
-    'title': title,
-    'description': description,
-    'portions': portions,
-    'timeMinutes': timeMinutes,
-    'ingredients': ingredients,
-    'instructions': instructions,
-    'tags': tags,
-    'rating': rating,
-    'mealType': mealType,
-    'sourceUrl': sourceUrl,
-    'imageUrls': imageUrls,
-    'createdAt': Timestamp.fromDate(createdAt),
-    'updatedAt': Timestamp.fromDate(updatedAt),
-    'createdBy': createdBy,
-    'isPublic': isPublic,
-    'lastCookedAt': lastCookedAt != null ? Timestamp.fromDate(lastCookedAt!) : null,
-    'ingredientsNormalized': ingredientsNormalized,
-  };
+        'id': id,
+        'title': title,
+        'description': description,
+        'portions': portions,
+        'timeMinutes': timeMinutes,
+        'ingredients': ingredients,
+        'instructions': instructions,
+        'tags': tags,
+        'rating': rating,
+        'mealType': mealType,
+        'sourceUrl': sourceUrl,
+        'imageUrls': imageUrls,
+        'createdAt': Timestamp.fromDate(createdAt),
+        'updatedAt': Timestamp.fromDate(updatedAt),
+        'createdBy': createdBy,
+        'isPublic': isPublic,
+        'lastCookedAt':
+            lastCookedAt != null ? Timestamp.fromDate(lastCookedAt!) : null,
+        'ingredientsNormalized': ingredientsNormalized,
+        'ratingCount': ratingCount,
+        'averageRating': averageRating,
+        'ratingDistribution': ratingDistribution,
+        'lastRatedAt':
+            lastRatedAt != null ? Timestamp.fromDate(lastRatedAt!) : null,
+      };
 
   factory RecipeCore.fromJson(Map<String, dynamic> json) => RecipeCore(
-    id: json['id'] as String,
-    title: json['title'] as String,
-    description: json['description'] as String,
-    portions: json['portions'] as int?,
-    timeMinutes: json['timeMinutes'] as int?,
-    ingredients: List<String>.from((json['ingredients'] as List?).orEmpty()),
-    instructions: List<String>.from((json['instructions'] as List?).orEmpty()),
-    tags: json['tags'] != null ? List<String>.from(json['tags']) : null,
-    rating: (json['rating'] as num?)?.toDouble(),
-    mealType: json['mealType'] as String,
-    sourceUrl: json['sourceUrl'] as String?,
-    imageUrls: List<String>.from((json['imageUrls'] as List?).orEmpty()),
-    createdAt: DateTime.parse(json['createdAt'] as String),
-    updatedAt: DateTime.parse(json['updatedAt'] as String),
-    createdBy: json['createdBy'] as String?,
-    isPublic: (json['isPublic'] as bool?).orFalse(),
-    lastCookedAt: json['lastCookedAt'] != null ? DateTime.parse(json['lastCookedAt'] as String) : null,
-    ingredientsNormalized: json['ingredientsNormalized'] != null ? List<String>.from(json['ingredientsNormalized']) : null,
-  );
+        id: json['id'] as String,
+        title: json['title'] as String,
+        description: json['description'] as String,
+        portions: json['portions'] as int?,
+        timeMinutes: json['timeMinutes'] as int?,
+        ingredients:
+            List<String>.from((json['ingredients'] as List?).orEmpty()),
+        instructions:
+            List<String>.from((json['instructions'] as List?).orEmpty()),
+        tags: json['tags'] != null ? List<String>.from(json['tags']) : null,
+        rating: (json['rating'] as num?)?.toDouble(),
+        mealType: json['mealType'] as String,
+        sourceUrl: json['sourceUrl'] as String?,
+        imageUrls: List<String>.from((json['imageUrls'] as List?).orEmpty()),
+        createdAt: DateTime.parse(json['createdAt'] as String),
+        updatedAt: DateTime.parse(json['updatedAt'] as String),
+        createdBy: json['createdBy'] as String?,
+        isPublic: (json['isPublic'] as bool?).orFalse(),
+        lastCookedAt: json['lastCookedAt'] != null
+            ? DateTime.parse(json['lastCookedAt'] as String)
+            : null,
+        ingredientsNormalized: json['ingredientsNormalized'] != null
+            ? List<String>.from(json['ingredientsNormalized'])
+            : null,
+        ratingCount: json['ratingCount'] as int?,
+        averageRating: (json['averageRating'] as num?)?.toDouble(),
+        ratingDistribution: json['ratingDistribution'] != null
+            ? Map<int, int>.from(json['ratingDistribution'])
+            : null,
+        lastRatedAt: json['lastRatedAt'] != null
+            ? DateTime.parse(json['lastRatedAt'] as String)
+            : null,
+      );
 
   /// Create from repository data map (removes Firebase dependency)
   factory RecipeCore.fromMap(String id, Map<String, dynamic> data) {
@@ -337,24 +407,41 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
       title: utils.SerializationUtils.safeString(data, 'title'),
       description: utils.SerializationUtils.safeString(data, 'description'),
       portions: utils.SerializationUtils.safeNullableInt(data, 'portions'),
-      timeMinutes: utils.SerializationUtils.safeNullableInt(data, 'timeMinutes'),
+      timeMinutes:
+          utils.SerializationUtils.safeNullableInt(data, 'timeMinutes'),
       ingredients: utils.SerializationUtils.safeStringList(data, 'ingredients'),
-      instructions: utils.SerializationUtils.safeStringList(data, 'instructions'),
+      instructions:
+          utils.SerializationUtils.safeStringList(data, 'instructions'),
       tags: utils.SerializationUtils.safeStringList(data, 'tags').isNotEmpty
           ? utils.SerializationUtils.safeStringList(data, 'tags')
           : null,
       rating: utils.SerializationUtils.safeNullableDouble(data, 'rating'),
-      mealType: utils.SerializationUtils.safeString(data, 'mealType', defaultValue: 'Middag'),
+      mealType: utils.SerializationUtils.safeString(data, 'mealType',
+          defaultValue: 'Middag'),
       sourceUrl: utils.SerializationUtils.safeNullableString(data, 'sourceUrl'),
       imageUrls: utils.SerializationUtils.safeStringList(data, 'imageUrls'),
-      createdAt: utils.SerializationUtils.safeDateTime(data, 'createdAt').orNow(),
-      updatedAt: utils.SerializationUtils.safeDateTime(data, 'updatedAt').orNow(),
+      createdAt:
+          utils.SerializationUtils.safeDateTime(data, 'createdAt').orNow(),
+      updatedAt:
+          utils.SerializationUtils.safeDateTime(data, 'updatedAt').orNow(),
       createdBy: utils.SerializationUtils.safeNullableString(data, 'createdBy'),
-      isPublic: utils.SerializationUtils.safeBool(data, 'isPublic', defaultValue: false),
+      isPublic: utils.SerializationUtils.safeBool(data, 'isPublic',
+          defaultValue: false),
       lastCookedAt: utils.SerializationUtils.safeDateTime(data, 'lastCookedAt'),
-      ingredientsNormalized: utils.SerializationUtils.safeStringList(data, 'ingredientsNormalized').isNotEmpty
-          ? utils.SerializationUtils.safeStringList(data, 'ingredientsNormalized')
+      ingredientsNormalized:
+          utils.SerializationUtils.safeStringList(data, 'ingredientsNormalized')
+                  .isNotEmpty
+              ? utils.SerializationUtils.safeStringList(
+                  data, 'ingredientsNormalized')
+              : null,
+      ratingCount:
+          utils.SerializationUtils.safeNullableInt(data, 'ratingCount'),
+      averageRating:
+          utils.SerializationUtils.safeNullableDouble(data, 'averageRating'),
+      ratingDistribution: data['ratingDistribution'] != null
+          ? Map<int, int>.from(data['ratingDistribution'] as Map)
           : null,
+      lastRatedAt: utils.SerializationUtils.safeDateTime(data, 'lastRatedAt'),
     );
   }
 
@@ -384,28 +471,32 @@ class RecipeSocialData {
   });
 
   Map<String, dynamic> toJson() => {
-    'ownerId': ownerId,
-    'ownerDisplayName': ownerDisplayName,
-    'memberPermissions': memberPermissions?.map((k, v) => MapEntry(k, v.index)),
-    'allowGuestViewing': allowGuestViewing,
-    'allowMemberInvites': allowMemberInvites,
-    'categoryIds': categoryIds,
-    'descriptionCollaborative': descriptionCollaborative,
-  };
+        'ownerId': ownerId,
+        'ownerDisplayName': ownerDisplayName,
+        'memberPermissions':
+            memberPermissions?.map((k, v) => MapEntry(k, v.index)),
+        'allowGuestViewing': allowGuestViewing,
+        'allowMemberInvites': allowMemberInvites,
+        'categoryIds': categoryIds,
+        'descriptionCollaborative': descriptionCollaborative,
+      };
 
-  factory RecipeSocialData.fromJson(Map<String, dynamic> json) => RecipeSocialData(
-    ownerId: json['ownerId'] as String?,
-    ownerDisplayName: json['ownerDisplayName'] as String?,
-    memberPermissions: json['memberPermissions'] != null
-        ? Map<String, ResourcePermission>.from(
-            (json['memberPermissions'] as Map).map((k, v) => MapEntry(k, ResourcePermission.values[v]))
-          )
-        : null,
-    allowGuestViewing: (json['allowGuestViewing'] as bool?).orFalse(),
-    allowMemberInvites: (json['allowMemberInvites'] as bool?).orTrue(),
-    categoryIds: json['categoryIds'] != null ? List<String>.from(json['categoryIds']) : null,
-    descriptionCollaborative: json['descriptionCollaborative'] as String?,
-  );
+  factory RecipeSocialData.fromJson(Map<String, dynamic> json) =>
+      RecipeSocialData(
+        ownerId: json['ownerId'] as String?,
+        ownerDisplayName: json['ownerDisplayName'] as String?,
+        memberPermissions: json['memberPermissions'] != null
+            ? Map<String, ResourcePermission>.from(
+                (json['memberPermissions'] as Map)
+                    .map((k, v) => MapEntry(k, ResourcePermission.values[v])))
+            : null,
+        allowGuestViewing: (json['allowGuestViewing'] as bool?).orFalse(),
+        allowMemberInvites: (json['allowMemberInvites'] as bool?).orTrue(),
+        categoryIds: json['categoryIds'] != null
+            ? List<String>.from(json['categoryIds'])
+            : null,
+        descriptionCollaborative: json['descriptionCollaborative'] as String?,
+      );
 
   RecipeSocialData copyWith({
     String? ownerId,
@@ -423,7 +514,8 @@ class RecipeSocialData {
       allowGuestViewing: allowGuestViewing ?? this.allowGuestViewing,
       allowMemberInvites: allowMemberInvites ?? this.allowMemberInvites,
       categoryIds: categoryIds ?? this.categoryIds,
-      descriptionCollaborative: descriptionCollaborative ?? this.descriptionCollaborative,
+      descriptionCollaborative:
+          descriptionCollaborative ?? this.descriptionCollaborative,
     );
   }
 }
@@ -449,28 +541,33 @@ class RecipeRealtimeData {
   });
 
   Map<String, dynamic> toJson() => {
-    'activeEditorIds': activeEditorIds,
-    'lastSeenAt': lastSeenAt?.map((k, v) => MapEntry(k, v.toIso8601String())),
-    'lastEditedByUserId': lastEditedByUserId,
-    'lastEditedByDisplayName': lastEditedByDisplayName,
-    'lastEditedAt': lastEditedAt?.toIso8601String(),
-    'editCount': editCount,
-    'isActive': isActive,
-  };
+        'activeEditorIds': activeEditorIds,
+        'lastSeenAt':
+            lastSeenAt?.map((k, v) => MapEntry(k, v.toIso8601String())),
+        'lastEditedByUserId': lastEditedByUserId,
+        'lastEditedByDisplayName': lastEditedByDisplayName,
+        'lastEditedAt': lastEditedAt?.toIso8601String(),
+        'editCount': editCount,
+        'isActive': isActive,
+      };
 
-  factory RecipeRealtimeData.fromJson(Map<String, dynamic> json) => RecipeRealtimeData(
-    activeEditorIds: json['activeEditorIds'] != null ? List<String>.from(json['activeEditorIds']) : null,
-    lastSeenAt: json['lastSeenAt'] != null
-        ? Map<String, DateTime>.from(
-            (json['lastSeenAt'] as Map).map((k, v) => MapEntry(k, DateTime.parse(v)))
-          )
-        : null,
-    lastEditedByUserId: json['lastEditedByUserId'] as String?,
-    lastEditedByDisplayName: json['lastEditedByDisplayName'] as String?,
-    lastEditedAt: json['lastEditedAt'] != null ? DateTime.parse(json['lastEditedAt']) : null,
-    editCount: (json['editCount'] as int?).orZero(),
-    isActive: (json['isActive'] as bool?).orTrue(),
-  );
+  factory RecipeRealtimeData.fromJson(Map<String, dynamic> json) =>
+      RecipeRealtimeData(
+        activeEditorIds: json['activeEditorIds'] != null
+            ? List<String>.from(json['activeEditorIds'])
+            : null,
+        lastSeenAt: json['lastSeenAt'] != null
+            ? Map<String, DateTime>.from((json['lastSeenAt'] as Map)
+                .map((k, v) => MapEntry(k, DateTime.parse(v))))
+            : null,
+        lastEditedByUserId: json['lastEditedByUserId'] as String?,
+        lastEditedByDisplayName: json['lastEditedByDisplayName'] as String?,
+        lastEditedAt: json['lastEditedAt'] != null
+            ? DateTime.parse(json['lastEditedAt'])
+            : null,
+        editCount: (json['editCount'] as int?).orZero(),
+        isActive: (json['isActive'] as bool?).orTrue(),
+      );
 }
 
 /// Offline sync metadata
@@ -488,23 +585,28 @@ class RecipeOfflineData {
   bool get needsSync => isModifiedOffline || lastSyncedAt == null;
 
   Map<String, dynamic> toJson() => {
-    'lastSyncedAt': lastSyncedAt?.toIso8601String(),
-    'isModifiedOffline': isModifiedOffline,
-    'pendingChanges': pendingChanges,
-  };
+        'lastSyncedAt': lastSyncedAt?.toIso8601String(),
+        'isModifiedOffline': isModifiedOffline,
+        'pendingChanges': pendingChanges,
+      };
 
-  factory RecipeOfflineData.fromJson(Map<String, dynamic> json) => RecipeOfflineData(
-    lastSyncedAt: json['lastSyncedAt'] != null ? DateTime.parse(json['lastSyncedAt']) : null,
-    isModifiedOffline: (json['isModifiedOffline'] as bool?).orFalse(),
-    pendingChanges: json['pendingChanges'] != null ? List<String>.from(json['pendingChanges']) : null,
-  );
+  factory RecipeOfflineData.fromJson(Map<String, dynamic> json) =>
+      RecipeOfflineData(
+        lastSyncedAt: json['lastSyncedAt'] != null
+            ? DateTime.parse(json['lastSyncedAt'])
+            : null,
+        isModifiedOffline: (json['isModifiedOffline'] as bool?).orFalse(),
+        pendingChanges: json['pendingChanges'] != null
+            ? List<String>.from(json['pendingChanges'])
+            : null,
+      );
 }
 
 /// Clean facade for unified recipe using focused modules
 ///
 /// This facade provides a unified API that delegates to focused modules:
 /// - RecipeOperations: Content manipulation (ingredients, instructions, etc.)
-/// - RecipeFactory: Construction and conversion methods  
+/// - RecipeFactory: Construction and conversion methods
 /// - RecipeSerialization: JSON/Firestore serialization
 ///
 /// ❌ DOES NOT CONTAIN: Complex business logic, direct implementation details
@@ -547,7 +649,7 @@ class Recipe {
   String? get primaryImageUrl => core.primaryImageUrl;
   String get cookTimeText => core.cookTimeText;
   String? get lastCookedText => core.lastCookedText;
-  
+
   /// Check if recipe was cooked recently (within last 7 days)
   bool get wasCookedRecently {
     if (lastCookedAt == null) return false;
@@ -743,10 +845,13 @@ class Recipe {
 
   Map<String, dynamic> toJson() => RecipeSerialization.toJson(this);
   Map<String, dynamic> toFirestore() => RecipeSerialization.toFirestore(this);
-  
-  factory Recipe.fromJson(Map<String, dynamic> json) => RecipeSerialization.fromJson(json);
-  factory Recipe.fromMap(String id, Map<String, dynamic> data) => RecipeSerialization.fromMap(id, data);
-  factory Recipe.fromFirestore(DocumentSnapshot doc) => RecipeSerialization.fromFirestore(doc);
+
+  factory Recipe.fromJson(Map<String, dynamic> json) =>
+      RecipeSerialization.fromJson(json);
+  factory Recipe.fromMap(String id, Map<String, dynamic> data) =>
+      RecipeSerialization.fromMap(id, data);
+  factory Recipe.fromFirestore(DocumentSnapshot doc) =>
+      RecipeSerialization.fromFirestore(doc);
 
   // ===== CORE COPY METHOD =====
 
@@ -795,8 +900,8 @@ class Recipe {
       ),
       type: type ?? this.type,
       // When converting to personal recipe, clear social data
-      socialData: (type == RecipeType.personal && type != this.type) 
-          ? null 
+      socialData: (type == RecipeType.personal && type != this.type)
+          ? null
           : (socialData ?? this.socialData),
       realtimeData: realtimeData ?? this.realtimeData,
       offlineData: offlineData ?? this.offlineData,

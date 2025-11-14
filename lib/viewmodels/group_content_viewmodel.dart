@@ -351,18 +351,15 @@ class GroupContentViewModel extends ChangeNotifier
         type: RecipeType.shared,
       );
 
+      // Note (Issue #014): Array parameters removed, now tracked in Firestore subcollections
       return SharedRecipe(
         id: content.id,
         originalRecipeId: content.contentId,
         sharedByUserId: content.ownerId,
         sharedByDisplayName: (content.metadata['ownerDisplayName'] as String?).orDefault('Okänd användare'),
-        sharedToUserIds: content.sharedWithUserIds,
         sharedAt: content.sharedAt,
         shareMessage: content.metadata['shareMessage'] as String?,
         allowImport: true,
-        viewedByUserIds: content.viewedBy.keys.toList(),
-        engagedByUserIds: content.acceptedBy.keys.toList(),
-        dismissedByUserIds: content.declinedBy.keys.toList(),
         recipeSnapshot: recipeSnapshot,
       );
     } catch (e) {
@@ -417,18 +414,15 @@ class GroupContentViewModel extends ChangeNotifier
         reconstructedMenu[entry.key] = recipeList;
       }
       
+      // Note (Issue #014): Array parameters removed, now tracked in Firestore subcollections
       return SharedMenu(
         id: content.id,
         sharedByUserId: content.ownerId,
         sharedByDisplayName: (content.metadata['ownerDisplayName'] as String?).orDefault('Okänd användare'),
-        sharedToUserIds: content.sharedWithUserIds,
         sharedAt: content.sharedAt,
         shareMessage: content.metadata['shareMessage'] as String?,
         menuTitle: (content.metadata['title'] as String?).orDefault('Namnlös meny'),
         menuSnapshot: reconstructedMenu,
-        viewedByUserIds: content.viewedBy.keys.toList(),
-        engagedByUserIds: content.acceptedBy.keys.toList(),
-        dismissedByUserIds: content.declinedBy.keys.toList(),
       );
     } catch (e) {
       AppLogger.error('Failed to convert SharedContent to SharedMenu', e);

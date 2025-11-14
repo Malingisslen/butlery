@@ -6,15 +6,33 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// Shared components for group dialogs
-/// 
+///
 /// Contains reusable UI components that are used across multiple group dialog types
 /// to reduce code duplication and maintain consistency.
 
 /// Available emoji icons for groups
 class GroupEmojiConstants {
   static const List<String> availableEmojis = [
-    '👥', '🏠', '💼', '🎯', '⚽', '🎮', '📚', '🎵', '🍕', '☕',
-    '💪', '🌟', '🔥', '💎', '🚀', '🎉', '💡', '🎨', '🌈', '⭐'
+    '👥',
+    '🏠',
+    '💼',
+    '🎯',
+    '⚽',
+    '🎮',
+    '📚',
+    '🎵',
+    '🍕',
+    '☕',
+    '💪',
+    '🌟',
+    '🔥',
+    '💎',
+    '🚀',
+    '🎉',
+    '💡',
+    '🎨',
+    '🌈',
+    '⭐'
   ];
 }
 
@@ -56,7 +74,7 @@ class EmojiSelector extends StatelessWidget {
             itemBuilder: (context, index) {
               final emoji = GroupEmojiConstants.availableEmojis[index];
               final isSelected = emoji == selectedEmoji;
-              
+
               return GestureDetector(
                 onTap: () => onEmojiSelected(emoji),
                 child: Container(
@@ -69,7 +87,8 @@ class EmojiSelector extends StatelessWidget {
                     color: isSelected
                         ? Theme.of(context).colorScheme.primaryContainer
                         : null,
-                    borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadius8),
                     border: isSelected
                         ? Border.all(
                             color: Theme.of(context).colorScheme.primary,
@@ -270,7 +289,8 @@ class DialogFooter extends StatelessWidget {
               style: primaryActionColor != null
                   ? FilledButton.styleFrom(
                       backgroundColor: primaryActionColor,
-                      foregroundColor: primaryActionForegroundColor ?? Colors.white,
+                      foregroundColor:
+                          primaryActionForegroundColor ?? Colors.white,
                     )
                   : null,
               icon: isLoading
@@ -279,7 +299,7 @@ class DialogFooter extends StatelessWidget {
                       height: 16,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: primaryActionForegroundColor ?? 
+                        color: primaryActionForegroundColor ??
                             Theme.of(context).colorScheme.onPrimary,
                       ),
                     )
@@ -290,21 +310,5 @@ class DialogFooter extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-/// Group name validation utilities
-class GroupValidationUtils {
-  static String? validateGroupName(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Ange ett gruppnamn';
-    }
-    if (value.trim().length < 2) {
-      return 'Gruppnamnet måste vara minst 2 tecken';
-    }
-    if (value.trim().length > 50) {
-      return 'Gruppnamnet får vara max 50 tecken';
-    }
-    return null;
   }
 }

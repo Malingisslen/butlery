@@ -21,21 +21,22 @@
 /// ```dart
 /// final menuViewModel = SharedMenuViewModel();
 /// await menuViewModel.loadContent();
-/// 
+///
 /// // Search functionality
 /// menuViewModel.updateSearchQuery('veckomeny');
 /// final searchResults = menuViewModel.filteredContent;
-/// 
+///
 /// // Menu operations
 /// await menuViewModel.importSharedMenu(sharedMenu);
 /// await menuViewModel.dismissSharedMenu(sharedMenu);
-/// 
+///
 /// // Copy-on-write collaboration
 /// await menuViewModel.joinSharedMenu(sharedMenu);
 /// ```
 
 // lib/viewmodels/shared_content/shared_menu_viewmodel.dart
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart';
@@ -44,108 +45,203 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Specialized ViewModel for shared menu management and operations.
+///
+/// Note (Issue #014): Uses status caching for synchronous filtering/counting.
+/// Status loaded from Firestore subcollections and cached for performance.
 class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
-  
   // ===== DEPENDENCIES =====
-  
+
   late final FirebaseSharedMenuRepository _sharedMenuRepository;
   late final SocialMenuCoordinator _socialMenuCoordinator;
 
+  // ===== STATUS CACHING (ISSUE #014) =====
+
+  /// Cached viewed status (menuId → bool)
+  final Map<String, bool> _viewedStatusCache = {};
+
+  /// Cached imported status (menuId → bool)
+  final Map<String, bool> _importedStatusCache = {};
+
+  /// Cached dismissed status (menuId → bool)
+  final Map<String, bool> _dismissedStatusCache = {};
+
   // ===== CONSTRUCTOR =====
-  
+
   SharedMenuViewModel({
     FirebaseSharedMenuRepository? sharedMenuRepository,
     SocialMenuCoordinator? socialMenuCoordinator,
   }) {
-    _sharedMenuRepository = sharedMenuRepository ?? FirebaseSharedMenuRepository();
-    _socialMenuCoordinator = socialMenuCoordinator ?? ServiceLocator.get<SocialMenuCoordinator>();
-    
-    AppLogger.info('SharedMenuViewModel initialized with copy-on-write support');
+    _sharedMenuRepository =
+        sharedMenuRepository ?? FirebaseSharedMenuRepository();
+    _socialMenuCoordinator =
+        socialMenuCoordinator ?? ServiceLocator.get<SocialMenuCoordinator>();
+
+    AppLogger.info(
+        'SharedMenuViewModel initialized with copy-on-write support');
+  }
+
+  /// Load status for a menu from repository and cache it
+  Future<void> _loadStatusForMenu(String menuId, String userId) async {
+    try {
+      final viewed = await _sharedMenuRepository.hasViewed(menuId, userId);
+      final imported = await _sharedMenuRepository.hasEngaged(menuId, userId);
+      final dismissed = await _sharedMenuRepository.hasDismissed(menuId, userId);
+
+      _viewedStatusCache[menuId] = viewed;
+      _importedStatusCache[menuId] = imported;
+      _dismissedStatusCache[menuId] = dismissed;
+    } catch (e) {
+      AppLogger.error('Failed to load status for menu $menuId', e);
+    }
+  }
+
+  /// Load status for all menus in bulk
+  Future<void> _loadStatusForAllMenus(List<SharedMenu> menus, String userId) async {
+    for (final menu in menus) {
+      await _loadStatusForMenu(menu.id, userId);
+    }
+  }
+
+  /// Check if menu is dismissed using cache (falls back to false if not cached)
+  bool _isDismissed(String menuId) {
+    return _dismissedStatusCache[menuId] ?? false;
+  }
+
+  /// Check if menu is viewed using cache (falls back to false if not cached)
+  bool _isViewed(String menuId) {
+    return _viewedStatusCache[menuId] ?? false;
+  }
+
+  /// Check if menu is imported using cache (falls back to false if not cached)
+  bool _isImported(String menuId) {
+    return _importedStatusCache[menuId] ?? false;
   }
 
   // ===== BASE CLASS IMPLEMENTATIONS =====
-  
+
   @override
   String get contentTypeName => 'menu';
-  
+
   @override
   Future<List<SharedMenu>> loadContentFromRepository() async {
     final userId = currentUserId;
     if (userId == null) {
       throw Exception('No authenticated user found');
     }
-    
+
     AppLogger.info('🔄 Loading shared menus from repository for user: $userId');
     final menus = await _sharedMenuRepository.getSharedMenusForUser(userId);
-    
-    // Filter out dismissed menus for main content view
-    final visibleMenus = menus.where((menu) => !menu.isDismissedBy(userId)).toList();
-    
-    AppLogger.info('✅ Loaded ${menus.length} shared menus (${visibleMenus.length} visible)');
+
+    // Load status for all menus to populate cache (Issue #014)
+    await _loadStatusForAllMenus(menus, userId);
+
+    // Filter out dismissed menus for main content view using cache
+    final visibleMenus =
+        menus.where((menu) => !_isDismissed(menu.id)).toList();
+
+    AppLogger.info(
+        '✅ Loaded ${menus.length} shared menus (${visibleMenus.length} visible)');
     return visibleMenus;
   }
-  
+
   @override
   String getContentTitle(SharedMenu content) {
     return content.menuTitle;
   }
-  
+
   @override
   bool contentMatchesSearch(SharedMenu content, String searchQuery) {
     final query = searchQuery.toLowerCase();
-    
+
     return content.menuTitle.toLowerCase().contains(query) ||
-           content.sharedByDisplayName.toLowerCase().contains(query) ||
-           content.categories.any((category) => category.toLowerCase().contains(query)) ||
-           (content.shareMessage?.toLowerCase().contains(query) ?? false);
+        content.sharedByDisplayName.toLowerCase().contains(query) ||
+        content.categories
+            .any((category) => category.toLowerCase().contains(query)) ||
+        (content.shareMessage?.toLowerCase().contains(query) ?? false);
+  }
+
+  @override
+  Future<List<SharedMenu>> loadContentWithPagination({
+    int limit = 25,
+    DocumentSnapshot? startAfter,
+  }) async {
+    final userId = currentUserId;
+    if (userId == null) {
+      throw Exception('No authenticated user found');
+    }
+
+    AppLogger.info(
+        '🔄 Loading shared menus with pagination (limit: $limit, cursor: ${startAfter != null})');
+    final menus = await _sharedMenuRepository.getSharedContentForUser(
+      userId,
+      limit: limit,
+      startAfter: startAfter,
+    );
+
+    // Load status for all menus to populate cache (Issue #014)
+    await _loadStatusForAllMenus(menus, userId);
+
+    // Filter out dismissed menus for main content view using cache
+    final visibleMenus =
+        menus.where((menu) => !_isDismissed(menu.id)).toList();
+
+    AppLogger.info(
+        '✅ Loaded ${menus.length} shared menus (${visibleMenus.length} visible)');
+    return visibleMenus;
+  }
+
+  @override
+  DocumentSnapshot? getLastDocumentFromContent(List<SharedMenu> content) {
+    return null; // Will be enhanced when repository returns document snapshots
   }
 
   // ===== MENU-SPECIFIC GETTERS =====
-  
-  /// Get unread menus count
+
+  /// Get unread menus count (using cache - Issue #014)
   int get unreadCount {
     final userId = currentUserId;
     if (userId == null) return 0;
-    
-    return content.where((menu) => !menu.isViewedBy(userId)).length;
+
+    return content.where((menu) => !_isViewed(menu.id)).length;
   }
-  
+
   /// Get menus shared by current user
   List<SharedMenu> get sharedByCurrentUser {
     final userId = currentUserId;
     if (userId == null) return [];
-    
+
     return content.where((menu) => menu.sharedByUserId == userId).toList();
   }
-  
-  /// Get menus that can be imported
+
+  /// Get menus that can be imported (using cache - Issue #014)
   List<SharedMenu> get importableMenus {
     final userId = currentUserId;
     if (userId == null) return [];
-    
-    return content.where((menu) => 
-        !menu.isImportedBy(userId) && 
-        menu.sharedByUserId != userId
-    ).toList();
+
+    return content
+        .where((menu) =>
+            !_isImported(menu.id) && menu.sharedByUserId != userId)
+        .toList();
   }
-  
+
   /// Get menus by recipe count
   List<SharedMenu> get menusWithContent {
     return content.where((menu) => menu.hasContent).toList();
   }
-  
+
   /// Get total recipes across all menus
   int get totalRecipesInMenus {
-    return content.fold(0, (sum, menu) => sum + menu.totalRecipeCount);
+    return content.fold(0, (total, menu) => total + menu.totalRecipeCount);
   }
 
   // ===== MENU OPERATIONS =====
-  
+
   /// Import shared menu using copy-on-write pattern
-  /// 
+  ///
   /// For new copy-on-write behavior, this joins as viewer until first edit.
   /// For legacy compatibility, creates immediate copy with attribution.
-  Future<String?> importSharedMenu(SharedMenu sharedMenu, {String? newTitle, bool legacyMode = false}) async {
+  Future<String?> importSharedMenu(SharedMenu sharedMenu,
+      {String? newTitle, bool legacyMode = false}) async {
     return await executeOperation(
       'Import menu "${getContentTitle(sharedMenu)}"',
       () async {
@@ -165,9 +261,9 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
       },
     );
   }
-  
+
   /// Start collaborative editing (triggers copy-on-write)
-  /// 
+  ///
   /// This method triggers copy-on-write when user attempts first edit.
   /// Creates static copy for original owner and enables collaboration.
   Future<String?> startCollaborativeEditing(SharedMenu sharedMenu) async {
@@ -180,7 +276,7 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
       },
     );
   }
-  
+
   /// Dismiss shared menu from user's list
   Future<bool> dismissSharedMenu(SharedMenu sharedMenu) async {
     final result = await executeOperation(
@@ -190,20 +286,20 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
         if (userId == null) {
           throw Exception('No authenticated user');
         }
-        
+
         await _sharedMenuRepository.markAsDismissed(sharedMenu.id, userId);
         return true;
       },
     );
-    
+
     if (result == true) {
       // Remove from local collection
       removeContent(sharedMenu);
     }
-    
+
     return result ?? false;
   }
-  
+
   /// Restore dismissed menu to user's list
   Future<bool> undismissSharedMenu(SharedMenu sharedMenu) async {
     final result = await executeOperation(
@@ -213,23 +309,25 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
         if (userId == null) {
           throw Exception('No authenticated user');
         }
-        
+
         await _sharedMenuRepository.undismiss(sharedMenu.id, userId);
         return true;
       },
     );
-    
+
     if (result == true) {
       // Add back to local collection if not already present
       if (!content.any((m) => m.id == sharedMenu.id)) {
         addContent(sharedMenu);
       }
     }
-    
+
     return result ?? false;
   }
-  
+
   /// Mark menu as viewed/read
+  ///
+  /// Note (Issue #014): Updates cache instead of local model state.
   Future<bool> markAsViewed(SharedMenu sharedMenu) async {
     final result = await executeOperation(
       'Mark menu as viewed "${getContentTitle(sharedMenu)}"',
@@ -238,77 +336,82 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
         if (userId == null) {
           throw Exception('No authenticated user');
         }
-        
-        // Check if already viewed to avoid unnecessary operations
-        if (sharedMenu.isViewedBy(userId)) {
+
+        // Check if already viewed to avoid unnecessary operations (using cache)
+        if (_isViewed(sharedMenu.id)) {
           return true;
         }
-        
+
         await _sharedMenuRepository.markAsViewed(sharedMenu.id, userId);
-        
-        // Update local state
-        final updatedMenu = sharedMenu.markViewedBy(userId);
-        updateContent(sharedMenu, updatedMenu);
-        
+
+        // Update cache (Issue #014)
+        _viewedStatusCache[sharedMenu.id] = true;
+        notifyListeners(); // Notify UI to refresh
+
         return true;
       },
     );
-    
+
     return result ?? false;
   }
 
   // ===== STATUS CHECKING METHODS =====
-  
-  /// Check if menu is viewed by current user
+
+  /// Check if menu is viewed by current user (using cache - Issue #014)
   bool isMenuViewed(SharedMenu menu) {
     final userId = currentUserId;
     if (userId == null) return false;
-    return menu.isViewedBy(userId);
+    return _isViewed(menu.id);
   }
-  
-  /// Check if menu is imported by current user
+
+  /// Check if menu is imported by current user (using cache - Issue #014)
   bool isMenuImported(SharedMenu menu) {
     final userId = currentUserId;
     if (userId == null) return false;
-    return menu.isImportedBy(userId);
+    return _isImported(menu.id);
   }
-  
-  /// Check if menu is dismissed by current user
+
+  /// Check if menu is dismissed by current user (using cache - Issue #014)
   bool isMenuDismissed(SharedMenu menu) {
     final userId = currentUserId;
     if (userId == null) return false;
-    return menu.isDismissedBy(userId);
+    return _isDismissed(menu.id);
   }
-  
+
   /// Check if menu can be edited by current user
   bool canEditMenu(SharedMenu menu) {
     final userId = currentUserId;
     if (userId == null) return false;
-    return menu.canBeEditedBy(userId);
+
+    // Owner can always edit
+    if (menu.sharedByUserId == userId) return true;
+
+    // Check if collaboration is allowed
+    return menu.isCollaborative;
   }
-  
+
   /// Check if menu is in collaborative mode
   bool isMenuCollaborative(SharedMenu menu) {
     return menu.isCollaborative;
   }
 
   // ===== MENU-SPECIFIC OPERATIONS =====
-  
+
   /// Get menu summary for display
   String getMenuSummary(SharedMenu menu) {
     return menu.menuSummary; // Uses the model's built-in Swedish summary
   }
-  
+
   /// Get time ago text for menu
   String getMenuTimeAgo(SharedMenu menu) {
     return menu.timeAgoText; // Uses the model's built-in Swedish time format
   }
-  
+
   /// Get menu categories as display text
   String getMenuCategories(SharedMenu menu) {
     if (menu.categories.isEmpty) return 'Inga kategorier';
     if (menu.categories.length == 1) return menu.categories.first;
-    
+
     if (menu.categories.length <= 3) {
       return menu.categories.join(', ');
     } else {
@@ -317,45 +420,54 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
   }
 
   // ===== BULK OPERATIONS =====
-  
+
   /// Mark all menus as viewed
+  ///
+  /// Note (Issue #014): Uses cache to identify unviewed menus, then updates cache after marking.
   Future<void> markAllAsViewed() async {
     final userId = currentUserId;
     if (userId == null) return;
-    
+
     await executeOperation(
       'Mark all menus as viewed',
       () async {
-        final unviewedMenus = content.where((menu) => !menu.isViewedBy(userId)).toList();
-        
+        final unviewedMenus =
+            content.where((menu) => !_isViewed(menu.id)).toList();
+
         for (final menu in unviewedMenus) {
           await _sharedMenuRepository.markAsViewed(menu.id, userId);
+          // Update cache (Issue #014)
+          _viewedStatusCache[menu.id] = true;
         }
-        
-        // Refresh content to update local state
-        await loadContent();
+
+        // Notify UI to refresh
+        notifyListeners();
       },
       useOperatingState: false, // Use loading state for bulk operations
     );
   }
-  
-  /// Get menus by sharing status
+
+  /// Get menus by sharing status (using cache - Issue #014)
   List<SharedMenu> getMenusByStatus({
     bool? isViewed,
-    bool? isImported, 
+    bool? isImported,
     bool? isDismissed,
   }) {
     final userId = currentUserId;
     if (userId == null) return [];
-    
+
     return content.where((menu) {
-      if (isViewed != null && menu.isViewedBy(userId) != isViewed) return false;
-      if (isImported != null && menu.isImportedBy(userId) != isImported) return false;
-      if (isDismissed != null && menu.isDismissedBy(userId) != isDismissed) return false;
+      if (isViewed != null && _isViewed(menu.id) != isViewed) return false;
+      if (isImported != null && _isImported(menu.id) != isImported) {
+        return false;
+      }
+      if (isDismissed != null && _isDismissed(menu.id) != isDismissed) {
+        return false;
+      }
       return true;
     }).toList();
   }
-  
+
   /// Get menus by collaboration status
   List<SharedMenu> getMenusByCollaborationStatus({
     bool collaborativeOnly = false,
@@ -369,35 +481,34 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
   }
 
   // ===== ANALYTICS =====
-  
-  /// Get menu engagement statistics
+
+  /// Get menu engagement statistics (using cache - Issue #014)
   Map<String, int> getEngagementStats() {
     final userId = currentUserId;
     if (userId == null) return {};
-    
+
     return {
       'total': content.length,
-      'unread': content.where((m) => !m.isViewedBy(userId)).length,
-      'imported': content.where((m) => m.isImportedBy(userId)).length,
+      'unread': content.where((m) => !_isViewed(m.id)).length,
+      'imported': content.where((m) => _isImported(m.id)).length,
       'collaborative': content.where((m) => m.isCollaborative).length,
       'sharedByMe': content.where((m) => m.sharedByUserId == userId).length,
       'totalRecipes': totalRecipesInMenus,
       'withContent': content.where((m) => m.hasContent).length,
     };
   }
-  
+
   /// Get category distribution statistics
   Map<String, int> getCategoryStats() {
     final categoryCount = <String, int>{};
-    
+
     for (final menu in content) {
       for (final category in menu.categories) {
         categoryCount[category] = (categoryCount[category] ?? 0) + 1;
       }
     }
-    
-    return Map.fromEntries(
-      categoryCount.entries.toList()..sort((a, b) => b.value.compareTo(a.value))
-    );
+
+    return Map.fromEntries(categoryCount.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value)));
   }
 }

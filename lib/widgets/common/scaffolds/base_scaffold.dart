@@ -77,10 +77,14 @@ class BaseScaffold extends StatelessWidget {
   Widget? _buildLeading(BuildContext context) {
     if (leading != null) return leading;
     if (showBackButton && Navigator.canPop(context)) {
-      return IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: onBackPressed ?? () => Navigator.pop(context),
-        tooltip: AppStrings.backButton,
+      return Semantics(
+        label: 'Gå tillbaka',
+        button: true,
+        child: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: onBackPressed ?? () => Navigator.pop(context),
+          tooltip: AppStrings.backButton,
+        ),
       );
     }
     return null;

@@ -5,7 +5,7 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
-import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/realtime/realtime_types.dart';
 
 /// Module handling resource parsing and fetching for realtime sync.
 ///
@@ -40,12 +40,10 @@ class ResourceParserModule {
     switch (type) {
       case RealtimeResourceType.recipe:
         return RealtimeRecipe.fromMap(
-                snapshot.id, snapshot.data()! as Map<String, dynamic>)
-            as T;
+            snapshot.id, snapshot.data()! as Map<String, dynamic>) as T;
       case RealtimeResourceType.menu:
         return RealtimeMenu.fromMap(
-                snapshot.id, snapshot.data()! as Map<String, dynamic>)
-            as T;
+            snapshot.id, snapshot.data()! as Map<String, dynamic>) as T;
       case RealtimeResourceType.shoppingList:
         // return RealtimeShoppingList.fromFirestore(snapshot) as T;
         throw SyncError(

@@ -52,6 +52,13 @@ import 'package:butlery/services/backup_service.dart';
 // Import core module for dependencies
 import 'package:butlery/core/di/modules/core_module.dart';
 
+// Site parsers for URL import
+import 'package:butlery/services/extraction/site_parsers/site_parser_registry.dart';
+import 'package:butlery/services/extraction/site_parsers/ica_recipe_parser.dart';
+import 'package:butlery/services/extraction/site_parsers/arla_recipe_parser.dart';
+import 'package:butlery/services/extraction/site_parsers/koket_recipe_parser.dart';
+import 'package:butlery/services/extraction/site_parsers/recept_recipe_parser.dart';
+
 /// Content module providing recipe and menu management services.
 ///
 /// This module handles all content-related functionality and depends on
@@ -71,21 +78,21 @@ class ContentModule implements DIModule {
 
   @override
   List<Type> get provides => [
-    RecipeRepository,
-    UnifiedRecipeService,
-    UnifiedMenuService,
-    ImportManager,
-    MenuService,
-    SearchService,
-    ShareService,
-    StorageRepository,
-    StorageService,
-    ImagePickerService,
-    OfflineService,
-    CollaborativeRecipeRepository,
-    RecommendationService,
-    BackupService,
-  ];
+        RecipeRepository,
+        UnifiedRecipeService,
+        UnifiedMenuService,
+        ImportManager,
+        MenuService,
+        SearchService,
+        ShareService,
+        StorageRepository,
+        StorageService,
+        ImagePickerService,
+        OfflineService,
+        CollaborativeRecipeRepository,
+        RecommendationService,
+        BackupService,
+      ];
 
   @override
   int get priority => 10; // After Core Module (priority 1)
@@ -98,7 +105,7 @@ class ContentModule implements DIModule {
 
     try {
       // ==================== RECIPE REPOSITORIES ====================
-      
+
       // Recipe repository - depends on Auth from Core Module
       container.registerSingleton<RecipeRepository>(
         FirebaseRecipeRepository(authRepository: container<AuthRepository>()),
@@ -110,21 +117,22 @@ class ContentModule implements DIModule {
       );
 
       // ==================== UNIFIED RECIPE SYSTEM ====================
-      
+
       // UnifiedRecipeService - core recipe management
       // Note: We use lazy singleton to ensure social dependencies are available
-      container.registerLazySingleton<UnifiedRecipeService>(() => UnifiedRecipeService(
-        // Using FirestoreRepository for standardized Firestore access
-        firestore: container<FirestoreRepository>().firestore,
-        authRepository: container<AuthRepository>() as FirebaseAuthRepository,
-        // Include social dependencies if available (from SocialModule)
-        ratingsRepository: container.isRegistered<RatingsRepository>() 
-            ? container<RatingsRepository>() 
-            : null,
-        firestoreRepository: container.isRegistered<FirestoreRepository>()
-            ? container<FirestoreRepository>()
-            : null,
-      ));
+      container.registerLazySingleton<UnifiedRecipeService>(
+          () => UnifiedRecipeService(
+                authRepository:
+                    container<AuthRepository>() as FirebaseAuthRepository,
+                // Include social dependencies if available (from SocialModule)
+                ratingsRepository: container.isRegistered<RatingsRepository>()
+                    ? container<RatingsRepository>()
+                    : null,
+                firestoreRepository:
+                    container.isRegistered<FirestoreRepository>()
+                        ? container<FirestoreRepository>()
+                        : null,
+              ));
 
       // Import manager for various content import methods
       container.registerLazySingleton<ImportManager>(
@@ -138,7 +146,7 @@ class ContentModule implements DIModule {
 
       // Unified menu service for collaborative menu planning
       container.registerSingleton<UnifiedMenuService>(UnifiedMenuService(
-        firestore: container<FirestoreRepository>().firestore,
+        firestoreRepository: container<FirestoreRepository>(),
       ));
 
       // Search service for content discovery
@@ -172,13 +180,15 @@ class ContentModule implements DIModule {
       );
 
       // Recommendation service for AI-powered content recommendations
-      container.registerSingleton<RecommendationService>(RecommendationService());
+      container
+          .registerSingleton<RecommendationService>(RecommendationService());
 
       // Backup service for recipe data export and import
       container.registerSingleton<BackupService>(BackupService());
 
       if (kDebugMode) {
-        debugPrint('✅ [ContentModule] Configured 13 services (Recipes, Menus, Import, Storage, Offline, Backup)');
+        debugPrint(
+            '✅ [ContentModule] Configured 13 services (Recipes, Menus, Import, Storage, Offline, Backup)');
       }
     } catch (e) {
       throw DIModuleException(
@@ -222,6 +232,8 @@ class ContentModule implements DIModule {
         service.toString();
       }
 
+      // Register site-specific recipe parsers for URL import
+      _registerSiteParsers();
     } catch (e) {
       throw DIModuleException(
         name,
@@ -248,7 +260,8 @@ class ContentModule implements DIModule {
         'StorageService': container<StorageService>(),
         'ImagePickerService': container<ImagePickerService>(),
         'OfflineService': container<OfflineService>(),
-        'CollaborativeRecipeRepository': container<CollaborativeRecipeRepository>(),
+        'CollaborativeRecipeRepository':
+            container<CollaborativeRecipeRepository>(),
         'RecommendationService': container<RecommendationService>(),
         'BackupService': container<BackupService>(),
       };
@@ -256,17 +269,18 @@ class ContentModule implements DIModule {
       // Perform health checks on services that support it
       for (final entry in services.entries) {
         final service = entry.value;
-        
+
         if (service is HealthCheckable) {
           final isHealthy = await service.healthCheck();
           if (!isHealthy) {
             if (kDebugMode) {
-              debugPrint('❌ [ContentModule] Health check failed for ${entry.key}');
+              debugPrint(
+                  '❌ [ContentModule] Health check failed for ${entry.key}');
             }
             return false;
           }
         }
-        
+
         // Basic validation - service is not null
         if (service == null) {
           if (kDebugMode) {
@@ -276,7 +290,6 @@ class ContentModule implements DIModule {
         }
       }
 
-      
       return true;
     } catch (e) {
       if (kDebugMode) {
@@ -285,13 +298,35 @@ class ContentModule implements DIModule {
       return false;
     }
   }
+
+  /// Register site-specific recipe parsers for URL import.
+  ///
+  /// This method registers parsers for Swedish recipe websites (ICA.se, Arla.se, Köket.se, Recept.se)
+  /// that are used by UrlImportStrategy to extract recipes with site-specific enhancements.
+  void _registerSiteParsers() {
+    if (kDebugMode) {
+      debugPrint(
+          '🔧 [ContentModule] Registering site-specific recipe parsers...');
+    }
+
+    // Register Swedish recipe site parsers
+    SiteParserRegistry.register(IcaRecipeParser());
+    SiteParserRegistry.register(ArlaRecipeParser());
+    SiteParserRegistry.register(KoketRecipeParser());
+    SiteParserRegistry.register(ReceptRecipeParser());
+
+    if (kDebugMode) {
+      debugPrint(
+          '✅ [ContentModule] Registered 4 site parsers (ICA.se, Arla.se, Köket.se, Recept.se)');
+    }
+  }
 }
 
 /// Content module factory for easy instantiation.
 class ContentModuleFactory {
   /// Create a new ContentModule instance.
   static ContentModule create() => ContentModule();
-  
+
   /// Create ContentModule with custom configuration.
   static ContentModule createWithConfig({
     bool enableOfflineSync = true,

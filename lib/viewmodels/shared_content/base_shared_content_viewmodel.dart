@@ -20,12 +20,12 @@
 /// class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
 ///   @override
 ///   String get contentTypeName => 'recipe';
-///   
+///
 ///   @override
 ///   Future<List<SharedRecipe>> loadContentFromRepository() async {
 ///     return await _sharedRecipeRepository.getSharedRecipesForUser(currentUserId);
 ///   }
-///   
+///
 ///   @override
 ///   String getContentTitle(SharedRecipe content) => content.recipeSnapshot.title;
 /// }
@@ -33,114 +33,157 @@
 
 // lib/viewmodels/shared_content/base_shared_content_viewmodel.dart
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
 
 /// Abstract base ViewModel for shared content management.
-/// 
+///
 /// Provides common patterns for loading, filtering, state management,
 /// and operations while allowing content-specific customization.
 abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
-  
   // ===== STATE VARIABLES =====
-  
+
   /// Content collection loaded from repositories
   List<TContent> _content = [];
-  
+
   /// Search query for filtering content
   String _searchQuery = '';
-  
+
   /// Loading state indicator
   bool _isLoading = false;
-  
+
   /// Error message, null if no error
   String? _error;
-  
+
   /// Import/operation in progress indicator
   bool _isOperating = false;
 
+  /// Pagination state
+  bool _isLoadingMore = false;
+  bool _hasMoreContent = true;
+  DocumentSnapshot? _lastDocument;
+  static const int _pageSize = 25;
+
   // ===== CONSTRUCTOR =====
-  
+
   BaseSharedContentViewModel() {
     AppLogger.info('${contentTypeName}ViewModel initialized');
     _initialize();
   }
 
   // ===== ABSTRACT METHODS FOR CUSTOMIZATION =====
-  
+
   /// Content type name for logging (e.g., 'recipe', 'menu', 'shopping_list')
   String get contentTypeName;
-  
-  /// Load content from repository/service
+
+  /// Load content from repository/service (initial load)
   Future<List<TContent>> loadContentFromRepository();
-  
+
+  /// Load content with pagination support
+  /// [limit] Number of items to load (default: 25)
+  /// [startAfter] Document to start after for pagination
+  Future<List<TContent>> loadContentWithPagination({
+    int limit = 25,
+    DocumentSnapshot? startAfter,
+  });
+
+  /// Get the last document snapshot from the latest query
+  /// Used for pagination cursor
+  DocumentSnapshot? getLastDocumentFromContent(List<TContent> content);
+
   /// Get display title from content for logging/UI
   String getContentTitle(TContent content);
-  
+
   /// Check if content matches search query
   bool contentMatchesSearch(TContent content, String searchQuery);
-  
+
   /// Get current user ID for operations
-  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
+  String? get currentUserId =>
+      ServiceLocator.get<PermissionService>().currentUserId;
 
   // ===== GETTERS =====
-  
+
   /// Current search query
   String get searchQuery => _searchQuery;
-  
+
   /// Loading state
   bool get isLoading => _isLoading;
-  
+
   /// Error state
   String? get error => _error;
-  
+
   /// Has error flag
   bool get hasError => _error != null;
-  
+
   /// Operation in progress state
   bool get isOperating => _isOperating;
-  
+
   /// All loaded content
   List<TContent> get content => List.unmodifiable(_content);
-  
+
   /// Filtered content based on search query
   List<TContent> get filteredContent {
     if (_searchQuery.isEmpty) return content;
-    return _content.where((item) => contentMatchesSearch(item, _searchQuery)).toList();
+    return _content
+        .where((item) => contentMatchesSearch(item, _searchQuery))
+        .toList();
   }
-  
+
   /// Content count
   int get totalCount => _content.length;
-  
+
   /// Filtered content count
   int get filteredCount => filteredContent.length;
-  
+
   /// Has any content
   bool get hasContent => _content.isNotEmpty;
-  
+
   /// Has filtered content
   bool get hasFilteredContent => filteredContent.isNotEmpty;
 
+  /// Loading more content (pagination)
+  bool get isLoadingMore => _isLoadingMore;
+
+  /// Has more content to load
+  bool get hasMoreContent => _hasMoreContent;
+
   // ===== INITIALIZATION =====
-  
+
   Future<void> _initialize() async {
     await loadContent();
   }
 
   // ===== CONTENT OPERATIONS (TEMPLATE METHODS) =====
-  
-  /// Load content from repository with error handling
+
+  /// Load initial content from repository with pagination
   Future<void> loadContent() async {
-    AppLogger.info('🔄 Loading $contentTypeName content...');
+    AppLogger.info(
+        '🔄 Loading $contentTypeName content (page 1, limit: $_pageSize)...');
     _setLoading(true);
-    
+
     try {
-      final loadedContent = await loadContentFromRepository();
+      // Reset pagination state for fresh load
+      _lastDocument = null;
+      _hasMoreContent = true;
+
+      // Load first page
+      final loadedContent = await loadContentWithPagination(
+        limit: _pageSize,
+        startAfter: null,
+      );
+
       _content = loadedContent;
+
+      // Update pagination state
+      _lastDocument = getLastDocumentFromContent(loadedContent);
+      _hasMoreContent = loadedContent.length >= _pageSize;
+
       _clearError();
-      AppLogger.success('✅ Loaded ${_content.length} $contentTypeName(s)');
+      AppLogger.success(
+          '✅ Loaded ${_content.length} $contentTypeName(s) (hasMore: $_hasMoreContent)');
     } catch (e) {
       _setError('Failed to load $contentTypeName content: $e');
       AppLogger.error('Failed to load $contentTypeName content: $e');
@@ -148,13 +191,53 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
       _setLoading(false);
     }
   }
-  
+
+  /// Load more content (pagination)
+  Future<void> loadMoreContent() async {
+    // Don't load if already loading or no more content
+    if (_isLoadingMore || !_hasMoreContent || _lastDocument == null) {
+      AppLogger.info(
+          '⏭️ Skipping load more: isLoadingMore=$_isLoadingMore, hasMore=$_hasMoreContent, lastDoc=${_lastDocument != null}');
+      return;
+    }
+
+    AppLogger.info(
+        '🔄 Loading more $contentTypeName content (limit: $_pageSize)...');
+    _isLoadingMore = true;
+    notifyListeners();
+
+    try {
+      // Load next page
+      final loadedContent = await loadContentWithPagination(
+        limit: _pageSize,
+        startAfter: _lastDocument,
+      );
+
+      // Append to existing content
+      _content.addAll(loadedContent);
+
+      // Update pagination state
+      _lastDocument = getLastDocumentFromContent(loadedContent);
+      _hasMoreContent = loadedContent.length >= _pageSize;
+
+      _clearError();
+      AppLogger.success(
+          '✅ Loaded ${loadedContent.length} more $contentTypeName(s) (total: ${_content.length}, hasMore: $_hasMoreContent)');
+    } catch (e) {
+      _setError('Failed to load more $contentTypeName: $e');
+      AppLogger.error('Failed to load more $contentTypeName: $e');
+    } finally {
+      _isLoadingMore = false;
+      notifyListeners();
+    }
+  }
+
   /// Refresh content from repository
   Future<void> refreshContent() async {
     AppLogger.info('🔄 Refreshing $contentTypeName content...');
     await loadContent();
   }
-  
+
   /// Update search query and notify listeners
   void updateSearchQuery(String query) {
     if (_searchQuery != query) {
@@ -163,14 +246,14 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   /// Clear search query
   void clearSearch() {
     updateSearchQuery('');
   }
 
   // ===== PROTECTED STATE MANAGEMENT METHODS =====
-  
+
   /// Set loading state and notify listeners
   void _setLoading(bool loading) {
     if (_isLoading != loading) {
@@ -178,21 +261,21 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
-  /// Set operating state and notify listeners  
+
+  /// Set operating state and notify listeners
   void _setOperating(bool operating) {
     if (_isOperating != operating) {
       _isOperating = operating;
       notifyListeners();
     }
   }
-  
+
   /// Set error message and notify listeners
   void _setError(String errorMessage) {
     _error = errorMessage;
     notifyListeners();
   }
-  
+
   /// Clear error state and notify listeners
   void _clearError() {
     if (_error != null) {
@@ -202,14 +285,14 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
   }
 
   // ===== CONTENT MANAGEMENT TEMPLATE METHODS =====
-  
+
   /// Add content to local collection
   void addContent(TContent content) {
     _content.add(content);
     AppLogger.info('➕ Added $contentTypeName: ${getContentTitle(content)}');
     notifyListeners();
   }
-  
+
   /// Remove content from local collection
   void removeContent(TContent content) {
     if (_content.remove(content)) {
@@ -217,26 +300,28 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   /// Update content in local collection
   void updateContent(TContent oldContent, TContent newContent) {
     final index = _content.indexOf(oldContent);
     if (index != -1) {
       _content[index] = newContent;
-      AppLogger.info('🔄 Updated $contentTypeName: ${getContentTitle(newContent)}');
+      AppLogger.info(
+          '🔄 Updated $contentTypeName: ${getContentTitle(newContent)}');
       notifyListeners();
     }
   }
-  
+
   /// Replace entire content collection
   void replaceContent(List<TContent> newContent) {
     _content = List.from(newContent);
-    AppLogger.info('🔄 Replaced $contentTypeName collection with ${_content.length} items');
+    AppLogger.info(
+        '🔄 Replaced $contentTypeName collection with ${_content.length} items');
     notifyListeners();
   }
 
   // ===== UTILITY METHODS =====
-  
+
   /// Execute operation with loading state and error handling
   Future<T?> executeOperation<T>(
     String operationName,
@@ -244,13 +329,13 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
     bool useOperatingState = true,
   }) async {
     AppLogger.info('🔄 Starting $operationName for $contentTypeName...');
-    
+
     if (useOperatingState) {
       _setOperating(true);
     } else {
       _setLoading(true);
     }
-    
+
     try {
       final result = await operation();
       _clearError();
@@ -270,7 +355,7 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
   }
 
   // ===== CLEANUP =====
-  
+
   @override
   void dispose() {
     AppLogger.info('Disposing ${contentTypeName}ViewModel');

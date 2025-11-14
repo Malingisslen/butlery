@@ -3,17 +3,10 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/viewmodels/create_group_viewmodel.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
-import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
-
-// Using local mock patterns that follow centralized architecture 
-// TODO: Resolve import issue with centralized mocks in future cleanup
-class MockFriendCategoriesOperations extends Mock implements FriendsCategoriesOperations {}
-class MockFriendsInvitationsOperations extends Mock implements FriendsInvitationsOperations {}
 
 // Test data builders
 class FriendCategoryBuilder {
@@ -77,32 +70,32 @@ void main() {
     late MockFriendCategoriesOperations mockCategoriesOps;
     late MockFriendsManagementOperations mockManagementOps;
     late MockFriendsInvitationsOperations mockInvitationsOps;
-    
+
     // Test data
     final testFriend1 = UserProfileBuilder.build(
       uid: 'friend_123',
       displayName: 'Anna Andersson',
       email: 'anna@example.com',
     );
-    
+
     final testFriend2 = UserProfileBuilder.build(
       uid: 'friend_456',
       displayName: 'Erik Svensson',
       email: 'erik@example.com',
     );
-    
+
     final testFriend3 = UserProfileBuilder.build(
       uid: 'friend_789',
       displayName: 'Maria Öberg',
       email: '', // No email for testing edge case
     );
-    
+
     final existingCategory = FriendCategoryBuilder.build(
       id: 'existing_category',
       name: 'Existerande Grupp',
       description: 'En grupp som redan finns',
     );
-    
+
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(FriendCategoryBuilder.build());
@@ -111,45 +104,45 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
-      
+
       // Create centralized mocks
       mockFriendsService = MockUnifiedFriendsService();
       mockCategoriesOps = MockFriendCategoriesOperations();
       mockManagementOps = MockFriendsManagementOperations();
       mockInvitationsOps = MockFriendsInvitationsOperations();
-      
+
       // Configure mock service operations using enhanced setFriendsState()
       mockFriendsService.setFriendsState(
         error: null,
         management: mockManagementOps,
+        categories: mockCategoriesOps,
+        invitations: mockInvitationsOps,
         categoriesList: [],
         friends: [],
         incomingRequests: [],
         outgoingRequests: [],
       );
-      
+
       // Configure default mock behavior
-      when(() => mockCategoriesOps.getCategoryByName(any()))
-          .thenReturn(null);
-      
+      when(() => mockCategoriesOps.getCategoryByName(any())).thenReturn(null);
+
       when(() => mockCategoriesOps.getAllCategories())
           .thenReturn([existingCategory]);
-      
+
       when(() => mockCategoriesOps.createCategory(
-        name: any(named: 'name'),
-        description: any(named: 'description'),
-        icon: any(named: 'icon'),
-        initialMemberIds: any(named: 'initialMemberIds'),
-      )).thenAnswer((_) async => 'new_category_123');
-      
-      when(() => mockManagementOps.getFriendById(any()))
-          .thenReturn(null);
-      
+            name: any(named: 'name'),
+            description: any(named: 'description'),
+            icon: any(named: 'icon'),
+            initialMemberIds: any(named: 'initialMemberIds'),
+          )).thenAnswer((_) async => 'new_category_123');
+
+      when(() => mockManagementOps.getFriendById(any())).thenReturn(null);
+
       when(() => mockInvitationsOps.sendEmailInvitation(
-        email: any(named: 'email'),
-        customMessage: any(named: 'customMessage'),
-      )).thenAnswer((_) async => true);
-      
+            email: any(named: 'email'),
+            customMessage: any(named: 'customMessage'),
+          )).thenAnswer((_) async => true);
+
       // Create viewModel
       viewModel = CreateGroupViewModel(
         friendsService: mockFriendsService,
@@ -173,7 +166,7 @@ void main() {
         expect(viewModel.emoji, equals('👥'));
         expect(viewModel.selectedFriendIds, isEmpty);
         expect(viewModel.selectedFriendsCount, equals(0));
-        expect(viewModel.isCreating, isFalse);
+        expect(viewModel.isLoading, isFalse);
         expect(viewModel.error, isNull);
         expect(viewModel.nameError, isNull);
         expect(viewModel.isValid, isFalse);
@@ -184,7 +177,7 @@ void main() {
       test('should update name and validate', () {
         // Act
         viewModel.updateName('Receptgruppen');
-        
+
         // Assert
         expect(viewModel.name, equals('Receptgruppen'));
         expect(viewModel.nameError, isNull);
@@ -194,15 +187,16 @@ void main() {
       test('should update description', () {
         // Act
         viewModel.updateDescription('En grupp för vegetariska recept');
-        
+
         // Assert
-        expect(viewModel.description, equals('En grupp för vegetariska recept'));
+        expect(
+            viewModel.description, equals('En grupp för vegetariska recept'));
       });
 
       test('should update emoji', () {
         // Act
         viewModel.updateEmoji('🥗');
-        
+
         // Assert
         expect(viewModel.emoji, equals('🥗'));
       });
@@ -210,14 +204,14 @@ void main() {
       test('should toggle friend selection', () {
         // Act - First toggle selects
         viewModel.toggleFriend('friend_123');
-        
+
         // Assert
         expect(viewModel.selectedFriendIds.contains('friend_123'), isTrue);
         expect(viewModel.selectedFriendsCount, equals(1));
-        
+
         // Act - Second toggle deselects
         viewModel.toggleFriend('friend_123');
-        
+
         // Assert
         expect(viewModel.selectedFriendIds.contains('friend_123'), isFalse);
         expect(viewModel.selectedFriendsCount, equals(0));
@@ -228,23 +222,24 @@ void main() {
         viewModel.toggleFriend('friend_123');
         viewModel.toggleFriend('friend_456');
         viewModel.toggleFriend('friend_789');
-        
+
         // Assert
         expect(viewModel.selectedFriendsCount, equals(3));
-        expect(viewModel.selectedFriendIds, containsAll(['friend_123', 'friend_456', 'friend_789']));
+        expect(viewModel.selectedFriendIds,
+            containsAll(['friend_123', 'friend_456', 'friend_789']));
       });
 
       test('should notify listeners on input changes', () {
         // Arrange
         int notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act
         viewModel.updateName('Test');
         viewModel.updateDescription('Description');
         viewModel.updateEmoji('🎉');
         viewModel.toggleFriend('friend_123');
-        
+
         // Assert
         expect(notificationCount, equals(4));
       });
@@ -254,7 +249,7 @@ void main() {
       test('should require non-empty name', () {
         // Act
         viewModel.updateName('');
-        
+
         // Assert
         expect(viewModel.nameError, equals('Gruppnamn krävs'));
         expect(viewModel.isValid, isFalse);
@@ -263,7 +258,7 @@ void main() {
       test('should reject whitespace-only name', () {
         // Act
         viewModel.updateName('   ');
-        
+
         // Assert
         expect(viewModel.nameError, equals('Gruppnamn krävs'));
         expect(viewModel.isValid, isFalse);
@@ -273,10 +268,10 @@ void main() {
         // Arrange
         when(() => mockCategoriesOps.getCategoryByName('Existerande Grupp'))
             .thenReturn(existingCategory);
-        
+
         // Act
         viewModel.updateName('Existerande Grupp');
-        
+
         // Assert
         expect(viewModel.nameError, equals('Det här gruppnamnet finns redan'));
         expect(viewModel.isValid, isFalse);
@@ -285,7 +280,7 @@ void main() {
       test('should trim name for validation', () {
         // Act
         viewModel.updateName('  Ny Grupp  ');
-        
+
         // Assert
         expect(viewModel.name, equals('  Ny Grupp  '));
         expect(viewModel.nameError, isNull);
@@ -295,7 +290,7 @@ void main() {
       test('should handle Swedish characters in name', () {
         // Act
         viewModel.updateName('Åsa Ängströms Örter');
-        
+
         // Assert
         expect(viewModel.name, equals('Åsa Ängströms Örter'));
         expect(viewModel.nameError, isNull);
@@ -306,10 +301,10 @@ void main() {
         // Arrange - First set an error
         viewModel.updateName('');
         expect(viewModel.nameError, isNotNull);
-        
+
         // Act
         viewModel.updateName('Valid Name');
-        
+
         // Assert
         expect(viewModel.nameError, isNull);
         expect(viewModel.isValid, isTrue);
@@ -332,119 +327,124 @@ void main() {
           description: 'En grupp för recept',
           emoji: '🍳',
         );
-        
+
         when(() => mockCategoriesOps.getAllCategories())
             .thenReturn([existingCategory, newCategory]);
-        
+
         // Act
         final result = await viewModel.createGroup();
-        
+
         // Assert
         expect(result, isTrue);
         expect(viewModel.error, isNull);
-        expect(viewModel.isCreating, isFalse);
-        
+        expect(viewModel.isLoading, isFalse);
+
         verify(() => mockCategoriesOps.createCategory(
-          name: 'Receptgruppen',
-          description: 'En grupp för recept',
-          icon: '🍳',
-          initialMemberIds: null,
-        )).called(1);
+              name: 'Receptgruppen',
+              description: 'En grupp för recept',
+              icon: '🍳',
+              initialMemberIds: null,
+            )).called(1);
       });
 
       test('should not create group with invalid form', () async {
         // Arrange
         viewModel.updateName(''); // Invalid name
-        
+
         // Act
         final result = await viewModel.createGroup();
-        
+
         // Assert
         expect(result, isFalse);
         expect(viewModel.error, isNull);
-        
+
         verifyNever(() => mockCategoriesOps.createCategory(
-          name: any(named: 'name'),
-          description: any(named: 'description'),
-          icon: any(named: 'icon'),
-          initialMemberIds: any(named: 'initialMemberIds'),
-        ));
+              name: any(named: 'name'),
+              description: any(named: 'description'),
+              icon: any(named: 'icon'),
+              initialMemberIds: any(named: 'initialMemberIds'),
+            ));
       });
 
       test('should handle group creation failure', () async {
         // Arrange
         when(() => mockCategoriesOps.createCategory(
-          name: any(named: 'name'),
-          description: any(named: 'description'),
-          icon: any(named: 'icon'),
-          initialMemberIds: any(named: 'initialMemberIds'),
-        )).thenAnswer((_) async => null);
-        
+              name: any(named: 'name'),
+              description: any(named: 'description'),
+              icon: any(named: 'icon'),
+              initialMemberIds: any(named: 'initialMemberIds'),
+            )).thenAnswer((_) async => null);
+
         // Set error state on the mock service
         mockFriendsService.setFriendsState(error: 'Network error');
-        
+
         // Act
         final result = await viewModel.createGroup();
-        
+
         // Assert
         expect(result, isFalse);
-        // The error is wrapped as "Exception: Network error" by the production code
-        expect(viewModel.error, equals('Exception: Network error'));
-        expect(viewModel.isCreating, isFalse);
+        // The error is prefixed by executeAsync's errorPrefix parameter
+        expect(viewModel.error,
+            equals('Kunde inte skapa grupp: Exception: Network error'));
+        expect(viewModel.isLoading, isFalse);
       });
 
       test('should handle missing created group', () async {
         // Arrange - Group creation returns ID but group not found
         when(() => mockCategoriesOps.getAllCategories())
             .thenReturn([existingCategory]); // New group not in list
-        
+
         // Act
         final result = await viewModel.createGroup();
-        
+
         // Assert
         expect(result, isFalse);
-        expect(viewModel.error, contains('Kunde inte hitta den skapade gruppen'));
+        // The error is prefixed by executeAsync's errorPrefix parameter
+        expect(
+            viewModel.error,
+            equals(
+                'Kunde inte skapa grupp: Exception: Kunde inte hitta den skapade gruppen'));
       });
 
       test('should set loading state during creation', () async {
         // Arrange
         bool wasCreating = false;
         viewModel.addListener(() {
-          if (viewModel.isCreating) wasCreating = true;
+          if (viewModel.isLoading) wasCreating = true;
         });
-        
+
         final newCategory = FriendCategoryBuilder.build(
           id: 'new_category_123',
           name: 'Receptgruppen',
         );
-        
+
         when(() => mockCategoriesOps.getAllCategories())
             .thenReturn([existingCategory, newCategory]);
-        
+
         // Act
         await viewModel.createGroup();
-        
+
         // Assert
         expect(wasCreating, isTrue);
-        expect(viewModel.isCreating, isFalse);
+        expect(viewModel.isLoading, isFalse);
       });
 
       test('should handle exception during creation', () async {
         // Arrange
         when(() => mockCategoriesOps.createCategory(
-          name: any(named: 'name'),
-          description: any(named: 'description'),
-          icon: any(named: 'icon'),
-          initialMemberIds: any(named: 'initialMemberIds'),
-        )).thenThrow(Exception('Database error'));
-        
+              name: any(named: 'name'),
+              description: any(named: 'description'),
+              icon: any(named: 'icon'),
+              initialMemberIds: any(named: 'initialMemberIds'),
+            )).thenThrow(Exception('Database error'));
+
         // Act
         final result = await viewModel.createGroup();
-        
+
         // Assert
         expect(result, isFalse);
         expect(viewModel.error, contains('Database error'));
-        expect(viewModel.isCreating, isFalse);
+        expect(viewModel.isLoading, isFalse);
       });
     });
 
@@ -455,7 +455,7 @@ void main() {
         viewModel.toggleFriend('friend_123');
         viewModel.toggleFriend('friend_456');
         viewModel.toggleFriend('friend_789');
-        
+
         // Configure friend lookup
         when(() => mockManagementOps.getFriendById('friend_123'))
             .thenReturn(testFriend1);
@@ -471,76 +471,78 @@ void main() {
           id: 'new_category_123',
           name: 'Receptgruppen',
         );
-        
+
         when(() => mockCategoriesOps.getAllCategories())
             .thenReturn([existingCategory, newCategory]);
-        
+
         // Act
         final result = await viewModel.createGroup();
-        
+
         // Assert
         expect(result, isTrue);
-        
+
         // Verify invitations sent to friends with valid emails
         verify(() => mockInvitationsOps.sendEmailInvitation(
-          email: 'anna@example.com',
-          customMessage: any(named: 'customMessage'),
-        )).called(1);
-        
+              email: 'anna@example.com',
+              customMessage: any(named: 'customMessage'),
+            )).called(1);
+
         verify(() => mockInvitationsOps.sendEmailInvitation(
-          email: 'erik@example.com',
-          customMessage: any(named: 'customMessage'),
-        )).called(1);
-        
+              email: 'erik@example.com',
+              customMessage: any(named: 'customMessage'),
+            )).called(1);
+
         // Friend without email should not receive invitation
         verifyNever(() => mockInvitationsOps.sendEmailInvitation(
-          email: '',
-          customMessage: any(named: 'customMessage'),
-        ));
+              email: '',
+              customMessage: any(named: 'customMessage'),
+            ));
       });
 
       test('should include personalized message in invitations', () async {
         // Arrange
         viewModel.updateName('Vegetariska Recept');
-        viewModel.toggleFriend('friend_456'); // Deselect to only have friend_123
-        viewModel.toggleFriend('friend_789'); // Deselect to only have friend_123
-        
+        viewModel
+            .toggleFriend('friend_456'); // Deselect to only have friend_123
+        viewModel
+            .toggleFriend('friend_789'); // Deselect to only have friend_123
+
         final newCategory = FriendCategoryBuilder.build(
           id: 'new_category_123',
           name: 'Vegetariska Recept',
         );
-        
+
         when(() => mockCategoriesOps.getAllCategories())
             .thenReturn([existingCategory, newCategory]);
-        
+
         // Act
         await viewModel.createGroup();
-        
+
         // Assert
         verify(() => mockInvitationsOps.sendEmailInvitation(
-          email: 'anna@example.com',
-          customMessage: any(named: 'customMessage'),
-        )).called(1);
+              email: 'anna@example.com',
+              customMessage: any(named: 'customMessage'),
+            )).called(1);
       });
 
       test('should handle invitation sending failures', () async {
         // Arrange
         when(() => mockInvitationsOps.sendEmailInvitation(
-          email: any(named: 'email'),
-          customMessage: any(named: 'customMessage'),
-        )).thenAnswer((_) async => false);
-        
+              email: any(named: 'email'),
+              customMessage: any(named: 'customMessage'),
+            )).thenAnswer((_) async => false);
+
         final newCategory = FriendCategoryBuilder.build(
           id: 'new_category_123',
           name: 'Receptgruppen',
         );
-        
+
         when(() => mockCategoriesOps.getAllCategories())
             .thenReturn([existingCategory, newCategory]);
-        
+
         // Act
         final result = await viewModel.createGroup();
-        
+
         // Assert - Group creation should still succeed even if invitations fail
         expect(result, isTrue);
         expect(viewModel.error, isNull);
@@ -550,54 +552,55 @@ void main() {
         // Arrange
         when(() => mockManagementOps.getFriendById(any()))
             .thenReturn(null); // Friends not found
-        
+
         final newCategory = FriendCategoryBuilder.build(
           id: 'new_category_123',
           name: 'Receptgruppen',
         );
-        
+
         when(() => mockCategoriesOps.getAllCategories())
             .thenReturn([existingCategory, newCategory]);
-        
+
         // Act
         final result = await viewModel.createGroup();
-        
+
         // Assert
         expect(result, isTrue); // Group creation should still succeed
-        
+
         // No invitations should be sent
         verifyNever(() => mockInvitationsOps.sendEmailInvitation(
-          email: any(named: 'email'),
-          customMessage: any(named: 'customMessage'),
-        ));
+              email: any(named: 'email'),
+              customMessage: any(named: 'customMessage'),
+            ));
       });
 
-      test('should create group without invitations if no friends selected', () async {
+      test('should create group without invitations if no friends selected',
+          () async {
         // Arrange - Clear friend selection
         viewModel.toggleFriend('friend_123');
         viewModel.toggleFriend('friend_456');
         viewModel.toggleFriend('friend_789');
         expect(viewModel.selectedFriendsCount, equals(0));
-        
+
         final newCategory = FriendCategoryBuilder.build(
           id: 'new_category_123',
           name: 'Receptgruppen',
         );
-        
+
         when(() => mockCategoriesOps.getAllCategories())
             .thenReturn([existingCategory, newCategory]);
-        
+
         // Act
         final result = await viewModel.createGroup();
-        
+
         // Assert
         expect(result, isTrue);
-        
+
         // No invitations should be sent
         verifyNever(() => mockInvitationsOps.sendEmailInvitation(
-          email: any(named: 'email'),
-          customMessage: any(named: 'customMessage'),
-        ));
+              email: any(named: 'email'),
+              customMessage: any(named: 'customMessage'),
+            ));
       });
     });
 
@@ -605,10 +608,10 @@ void main() {
       test('should handle very long group name', () {
         // Arrange
         final longName = 'A' * 200;
-        
+
         // Act
         viewModel.updateName(longName);
-        
+
         // Assert
         expect(viewModel.name, equals(longName));
         expect(viewModel.nameError, isNull);
@@ -618,10 +621,10 @@ void main() {
       test('should handle very long description', () {
         // Arrange
         final longDescription = 'B' * 500;
-        
+
         // Act
         viewModel.updateDescription(longDescription);
-        
+
         // Assert
         expect(viewModel.description, equals(longDescription));
       });
@@ -631,7 +634,7 @@ void main() {
         viewModel.updateName('🎉 Party Group 🎊');
         viewModel.updateDescription('A fun group for parties 🥳🍾');
         viewModel.updateEmoji('🎈');
-        
+
         // Assert
         expect(viewModel.name, equals('🎉 Party Group 🎊'));
         expect(viewModel.description, equals('A fun group for parties 🥳🍾'));
@@ -644,7 +647,7 @@ void main() {
         for (int i = 0; i < 10; i++) {
           viewModel.toggleFriend('friend_123');
         }
-        
+
         // Assert - Should end up not selected (even number of toggles)
         expect(viewModel.selectedFriendIds.contains('friend_123'), isFalse);
       });
@@ -656,7 +659,7 @@ void main() {
         final testViewModel = CreateGroupViewModel(
           friendsService: mockFriendsService,
         );
-        
+
         // Act & Assert - Should not throw
         expect(() => testViewModel.dispose(), returnsNormally);
       });
@@ -666,30 +669,28 @@ void main() {
         final testViewModel = CreateGroupViewModel(
           friendsService: mockFriendsService,
         );
-        
+
         testViewModel.dispose();
-        
+
         // Act - Operations after dispose should throw FlutterError
         expect(() {
           testViewModel.updateName('Test');
         }, throwsFlutterError);
-        
+
         expect(() {
           testViewModel.updateDescription('Test');
         }, throwsFlutterError);
-        
+
         expect(() {
           testViewModel.updateEmoji('🎉');
         }, throwsFlutterError);
-        
+
         expect(() {
           testViewModel.toggleFriend('friend_123');
         }, throwsFlutterError);
-        
-        // Creating group after dispose should also throw since it calls notifyListeners
-        expect(() async {
-          await testViewModel.createGroup();
-        }, throwsFlutterError);
+
+        // Creating group after dispose should return false (caught by outer try-catch)
+        expect(testViewModel.createGroup(), completion(isFalse));
       });
     });
   });

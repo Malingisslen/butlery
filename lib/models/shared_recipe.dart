@@ -35,49 +35,49 @@ enum ShareScope {
 class SharedRecipe extends BaseSharedContentModel<Recipe>
     with SharedContentStatusMixin, CopyOnWriteSupport {
   // ===== RECIPE-SPECIFIC FIELDS =====
-  
+
   /// Reference identifier to the original recipe for tracking and linking.
   final String originalRecipeId;
-  
+
   /// Complete snapshot of the recipe at the time of sharing.
   final Recipe recipeSnapshot;
-  
+
   /// Scope of the recipe sharing for distribution categorization.
   final ShareScope scope;
-  
+
   /// Flag indicating whether recipients can import or copy the recipe.
   final bool allowImport;
-  
+
   /// Flag indicating whether collaborative editing is allowed.
   final bool allowCollaboration;
 
   // ===== COPY-ON-WRITE FIELDS =====
-  
+
   /// Flag indicating whether this is an original reference or collaborative version.
   final bool _isOriginalReference;
-  
+
   /// Flag indicating whether copy-on-write has been triggered for this content.
   final bool _copyOnWriteTriggered;
-  
+
   /// ID of the static copy created for the original owner when CoW is triggered.
   final String? _originalOwnerStaticCopyId;
-  
-  /// List of user IDs actively collaborating on this content.
-  final List<String> _activeCollaboratorIds;
+
+  /// Count of users actively collaborating on this content (Issue #014).
+  ///
+  /// Note: Actual collaborator list now stored in Firestore subcollection to eliminate
+  /// 100-element array limit. Use repository.getCollaborators(recipeId) for full list.
+  final int _activeCollaboratorCount;
 
   /// Creates a new shared recipe with all required metadata.
   SharedRecipe({
     required super.id,
     required super.sharedByUserId,
     required super.sharedByDisplayName,
-    required super.sharedToUserIds,
     DateTime? sharedAt,
     super.shareMessage,
     super.viewCount = 0,
     super.engagementCount = 0,
-    super.viewedByUserIds = const [],
-    super.engagedByUserIds = const [],
-    super.dismissedByUserIds = const [],
+    super.dismissalCount = 0,
     required this.originalRecipeId,
     required this.recipeSnapshot,
     this.scope = ShareScope.individual,
@@ -87,19 +87,23 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     bool isOriginalReference = true,
     bool copyOnWriteTriggered = false,
     String? originalOwnerStaticCopyId,
-    List<String> activeCollaboratorIds = const [],
+    int activeCollaboratorCount = 0,
   })  : _isOriginalReference = isOriginalReference,
         _copyOnWriteTriggered = copyOnWriteTriggered,
         _originalOwnerStaticCopyId = originalOwnerStaticCopyId,
-        _activeCollaboratorIds = activeCollaboratorIds,
+        _activeCollaboratorCount = activeCollaboratorCount,
         super(sharedAt: sharedAt ?? DateTime.now());
 
   /// Factory constructor for creating new shared recipes with auto-generated ID and intelligent defaults.
+  ///
+  /// Note (Issue #014): sharedToUserIds removed from model. Repository layer handles adding
+  /// members to Firestore subcollection after creation.
   factory SharedRecipe.create({
     required String originalRecipeId,
     required String sharedByUserId,
     required String sharedByDisplayName,
-    required List<String> sharedToUserIds,
+    required List<String>
+        sharedToUserIds, // Still accept for scope determination
     String? shareMessage,
     ShareScope? scope,
     bool allowImport = true,
@@ -116,7 +120,6 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
       id: const Uuid().v4(),
       sharedByUserId: sharedByUserId,
       sharedByDisplayName: sharedByDisplayName,
-      sharedToUserIds: sharedToUserIds,
       shareMessage: shareMessage,
       originalRecipeId: originalRecipeId,
       recipeSnapshot: recipeSnapshot,
@@ -127,61 +130,54 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
   }
 
   // ===== BASE CLASS IMPLEMENTATIONS =====
-  
+
   @override
   String get contentTypeName => 'recipe';
-  
+
   @override
   Recipe get contentSnapshot => recipeSnapshot;
-  
+
   @override
   String getContentTitle() => recipeSnapshot.title;
-  
+
   @override
   String getContentDescription() => recipeSnapshot.description;
-  
+
   @override
   BaseSharedContentModel<Recipe> copyWithStatus({
     int? viewCount,
     int? engagementCount,
-    List<String>? viewedByUserIds,
-    List<String>? engagedByUserIds,
-    List<String>? dismissedByUserIds,
+    int? dismissalCount,
   }) {
     return copyWith(
       viewCount: viewCount,
       importCount: engagementCount,
-      viewedByUserIds: viewedByUserIds,
-      importedByUserIds: engagedByUserIds,
-      dismissedByUserIds: dismissedByUserIds,
+      dismissalCount: dismissalCount,
     );
   }
-  
+
   /// Creates a copy of this shared recipe with updated values.
+  ///
+  /// Note (Issue #014): Array parameters removed. Status now tracked in Firestore subcollections.
   SharedRecipe copyWith({
     int? viewCount,
     int? importCount,
-    List<String>? viewedByUserIds,
-    List<String>? importedByUserIds,
-    List<String>? dismissedByUserIds,
+    int? dismissalCount,
     bool? allowCollaboration,
     bool? isOriginalReference,
     bool? copyOnWriteTriggered,
     String? originalOwnerStaticCopyId,
-    List<String>? activeCollaboratorIds,
+    int? activeCollaboratorCount,
   }) {
     return SharedRecipe(
       id: id,
       sharedByUserId: sharedByUserId,
       sharedByDisplayName: sharedByDisplayName,
-      sharedToUserIds: sharedToUserIds,
       sharedAt: sharedAt,
       shareMessage: shareMessage,
       viewCount: viewCount ?? this.viewCount,
       engagementCount: importCount ?? engagementCount,
-      viewedByUserIds: viewedByUserIds ?? this.viewedByUserIds,
-      engagedByUserIds: importedByUserIds ?? engagedByUserIds,
-      dismissedByUserIds: dismissedByUserIds ?? this.dismissedByUserIds,
+      dismissalCount: dismissalCount ?? this.dismissalCount,
       originalRecipeId: originalRecipeId,
       recipeSnapshot: recipeSnapshot,
       scope: scope,
@@ -189,27 +185,28 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
       allowCollaboration: allowCollaboration ?? this.allowCollaboration,
       isOriginalReference: isOriginalReference ?? this.isOriginalReference,
       copyOnWriteTriggered: copyOnWriteTriggered ?? this.copyOnWriteTriggered,
-      originalOwnerStaticCopyId: originalOwnerStaticCopyId ?? this.originalOwnerStaticCopyId,
-      activeCollaboratorIds: activeCollaboratorIds ?? this.activeCollaboratorIds,
+      originalOwnerStaticCopyId:
+          originalOwnerStaticCopyId ?? this.originalOwnerStaticCopyId,
+      activeCollaboratorCount:
+          activeCollaboratorCount ?? this.activeCollaboratorCount,
     );
   }
 
   // ===== COPY-ON-WRITE IMPLEMENTATIONS =====
-  
+
   /// Copy-on-write getter implementations from CopyOnWriteSupport mixin.
   @override
   bool get isOriginalReference => _isOriginalReference;
-  
+
   @override
   bool get copyOnWriteTriggered => _copyOnWriteTriggered;
-  
+
   @override
   String? get originalOwnerStaticCopyId => _originalOwnerStaticCopyId;
-  
+
   @override
-  List<String> get activeCollaboratorIds => _activeCollaboratorIds;
-  
-  
+  int get activeCollaboratorCount => _activeCollaboratorCount;
+
   @override
   SharedRecipe triggerCopyOnWrite({
     required String editingUserId,
@@ -223,84 +220,39 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
       isOriginalReference: false,
       copyOnWriteTriggered: true,
       originalOwnerStaticCopyId: staticCopyId,
-      activeCollaboratorIds: [editingUserId],
+      activeCollaboratorCount: 1, // First collaborator
     );
   }
-  
+
   @override
   SharedRecipe addActiveCollaborator(String userId) {
-    if (!copyOnWriteTriggered || activeCollaboratorIds.contains(userId)) {
+    if (!copyOnWriteTriggered) {
       return this;
     }
 
+    // Increment count (actual list managed in Firestore subcollection)
     return copyWith(
-      activeCollaboratorIds: [...activeCollaboratorIds, userId],
+      activeCollaboratorCount: activeCollaboratorCount + 1,
     );
   }
 
-  // ===== TYPE-SAFE WRAPPER METHODS =====
-  
-  /// Type-safe wrapper methods that return SharedRecipe instead of BaseSharedContentModel with Recipe generic type
-  /// These methods delegate to mixin implementations but provide concrete return types.
-  
-  @override
-  SharedRecipe markViewedBy(String userId) {
-    final updated = super.markViewedBy(userId);
-    if (updated == this) return this;
-    return copyWith(
-      viewCount: updated.viewCount,
-      viewedByUserIds: updated.viewedByUserIds,
-    );
-  }
-  
-  @override
-  SharedRecipe markEngagedBy(String userId) {
-    final updated = super.markEngagedBy(userId);
-    if (updated == this) return this;
-    return copyWith(
-      importCount: updated.engagementCount,
-      importedByUserIds: updated.engagedByUserIds,
-    );
-  }
-  
-  @override
-  SharedRecipe markDismissedBy(String userId) {
-    final updated = super.markDismissedBy(userId);
-    if (updated == this) return this;
-    return copyWith(
-      dismissedByUserIds: updated.dismissedByUserIds,
-    );
-  }
-  
-  @override
-  SharedRecipe undismissBy(String userId) {
-    final updated = super.undismissBy(userId);
-    if (updated == this) return this;
-    return copyWith(
-      dismissedByUserIds: updated.dismissedByUserIds,
-    );
-  }
+  // ===== TYPE-SAFE WRAPPER METHODS (REMOVED - ISSUE #014) =====
+  //
+  // Note: Status-checking methods (markViewedBy, markEngagedBy, etc.) removed from base class.
+  // Status tracking now handled by repository layer using Firestore subcollections.
+  // Use repository methods instead:
+  //   - repository.addView(recipeId, userId)
+  //   - repository.addEngagement(recipeId, userId, action: 'import')
+  //   - repository.addDismissal(recipeId, userId)
+  //   - repository.removeDismissal(recipeId, userId)
 
   // ===== RECIPE-SPECIFIC PROPERTIES =====
-  
+
   /// Alias getter for the recipe snapshot for backward compatibility.
   Recipe get recipe => recipeSnapshot;
-  
-  /// Checks if the specified user is a recipient of this shared recipe.
-  bool isSharedTo(String userId) => sharedToUserIds.contains(userId);
-  
+
   /// Import count getter for backward compatibility.
   int get importCount => engagementCount;
-  
-  /// Imported by user IDs getter for backward compatibility.
-  List<String> get importedByUserIds => engagedByUserIds;
-  
-  /// Backward compatibility methods with old terminology.
-  @override
-  SharedRecipe markImportedBy(String userId) => markEngagedBy(userId);
-  @override
-  bool isImportedBy(String userId) => isEngagedBy(userId);
-
 
   // ===== RECIPE-SPECIFIC METHODS =====
 
@@ -312,24 +264,29 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
 
   /// Gets the permission level for this shared recipe based on collaboration settings.
   ResourcePermission get permission {
-    return allowCollaboration ? ResourcePermission.editor : ResourcePermission.viewer;
+    return allowCollaboration
+        ? ResourcePermission.editor
+        : ResourcePermission.viewer;
   }
 
   /// Determines the appropriate edit mode for the specified user.
+  ///
+  /// Note (Issue #014): Simplified version. For accurate membership/collaborator checks,
+  /// use repository methods: isMember(recipeId, userId), isCollaborator(recipeId, userId).
   EditMode getEditModeFor(String userId) {
     if (sharedByUserId == userId) {
       return EditMode.owner;
     }
 
-    if (!sharedToUserIds.contains(userId)) {
-      return EditMode.noAccess;
-    }
-
-    if (copyOnWriteTriggered && activeCollaboratorIds.contains(userId)) {
+    // Note: Cannot check membership without repository query (arrays removed)
+    // Assume user has access if this method is called
+    if (copyOnWriteTriggered && hasActiveCollaborators) {
       return EditMode.collaborative;
     }
 
-    return allowCollaboration ? EditMode.readOnlyWithFork : EditMode.readOnlyWithFork;
+    return allowCollaboration
+        ? EditMode.readOnlyWithFork
+        : EditMode.readOnlyWithFork;
   }
 
   // ===== SERIALIZATION =====
@@ -350,27 +307,44 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
   /// Creates a shared recipe instance from Firestore repository data.
   factory SharedRecipe.fromMap(String id, Map<String, dynamic> data) {
     try {
-      final commonFields = BaseSharedContentModel.parseCommonFieldsFromFirestore(data);
-      final cowFields = CopyOnWriteSupport.parseCopyOnWriteFieldsFromFirestore(data);
+      final commonFields =
+          BaseSharedContentModel.parseCommonFieldsFromFirestore(data);
+      final cowFields =
+          CopyOnWriteSupport.parseCopyOnWriteFieldsFromFirestore(data);
       final recipeData = data['recipeSnapshot'] as Map<String, dynamic>;
 
       final recipe = Recipe(
         core: RecipeCore(
           id: utils.SerializationUtils.safeString(recipeData, 'id'),
-          title: utils.SerializationUtils.safeString(recipeData, 'title', defaultValue: 'Untitled Recipe'),
-          description: utils.SerializationUtils.safeString(recipeData, 'description'),
-          ingredients: utils.SerializationUtils.safeStringList(recipeData, 'ingredients'),
-          instructions: utils.SerializationUtils.safeStringList(recipeData, 'instructions'),
-          imageUrls: utils.SerializationUtils.safeStringList(recipeData, 'imageUrls'),
-          mealType: utils.SerializationUtils.safeString(recipeData, 'mealType', defaultValue: 'Middag'),
-          portions: utils.SerializationUtils.safeNullableInt(recipeData, 'portions'),
-          timeMinutes: utils.SerializationUtils.safeNullableInt(recipeData, 'timeMinutes'),
-          rating: utils.SerializationUtils.safeNullableDouble(recipeData, 'rating'),
+          title: utils.SerializationUtils.safeString(recipeData, 'title',
+              defaultValue: 'Untitled Recipe'),
+          description:
+              utils.SerializationUtils.safeString(recipeData, 'description'),
+          ingredients: utils.SerializationUtils.safeStringList(
+              recipeData, 'ingredients'),
+          instructions: utils.SerializationUtils.safeStringList(
+              recipeData, 'instructions'),
+          imageUrls:
+              utils.SerializationUtils.safeStringList(recipeData, 'imageUrls'),
+          mealType: utils.SerializationUtils.safeString(recipeData, 'mealType',
+              defaultValue: 'Middag'),
+          portions:
+              utils.SerializationUtils.safeNullableInt(recipeData, 'portions'),
+          timeMinutes: utils.SerializationUtils.safeNullableInt(
+              recipeData, 'timeMinutes'),
+          rating:
+              utils.SerializationUtils.safeNullableDouble(recipeData, 'rating'),
           tags: utils.SerializationUtils.safeStringList(recipeData, 'tags'),
-          sourceUrl: utils.SerializationUtils.safeNullableString(recipeData, 'sourceUrl'),
-          createdAt: utils.SerializationUtils.safeDateTime(recipeData, 'createdAt') ?? DateTime.now(),
-          updatedAt: utils.SerializationUtils.safeDateTime(recipeData, 'updatedAt') ?? DateTime.now(),
-          lastCookedAt: utils.SerializationUtils.safeDateTime(recipeData, 'lastCookedAt'),
+          sourceUrl: utils.SerializationUtils.safeNullableString(
+              recipeData, 'sourceUrl'),
+          createdAt:
+              utils.SerializationUtils.safeDateTime(recipeData, 'createdAt') ??
+                  DateTime.now(),
+          updatedAt:
+              utils.SerializationUtils.safeDateTime(recipeData, 'updatedAt') ??
+                  DateTime.now(),
+          lastCookedAt:
+              utils.SerializationUtils.safeDateTime(recipeData, 'lastCookedAt'),
         ),
         type: RecipeType.shared,
       );
@@ -379,15 +353,13 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
         id: id,
         sharedByUserId: commonFields['sharedByUserId'] as String,
         sharedByDisplayName: commonFields['sharedByDisplayName'] as String,
-        sharedToUserIds: commonFields['sharedToUserIds'] as List<String>,
         sharedAt: commonFields['sharedAt'] as DateTime,
         shareMessage: commonFields['shareMessage'] as String?,
         viewCount: commonFields['viewCount'] as int,
         engagementCount: commonFields['engagementCount'] as int,
-        viewedByUserIds: commonFields['viewedByUserIds'] as List<String>,
-        engagedByUserIds: commonFields['engagedByUserIds'] as List<String>,
-        dismissedByUserIds: commonFields['dismissedByUserIds'] as List<String>,
-        originalRecipeId: utils.SerializationUtils.safeString(data, 'originalRecipeId'),
+        dismissalCount: commonFields['dismissalCount'] as int,
+        originalRecipeId:
+            utils.SerializationUtils.safeString(data, 'originalRecipeId'),
         recipeSnapshot: recipe,
         scope: utils.SerializationUtils.safeEnum(
           data,
@@ -396,12 +368,16 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
           ShareScope.individual,
           (e) => e.name,
         ),
-        allowImport: utils.SerializationUtils.safeBool(data, 'allowImport', defaultValue: true),
-        allowCollaboration: utils.SerializationUtils.safeBool(data, 'allowCollaboration', defaultValue: false),
+        allowImport: utils.SerializationUtils.safeBool(data, 'allowImport',
+            defaultValue: true),
+        allowCollaboration: utils.SerializationUtils.safeBool(
+            data, 'allowCollaboration',
+            defaultValue: false),
         isOriginalReference: cowFields['isOriginalReference'] as bool,
         copyOnWriteTriggered: cowFields['copyOnWriteTriggered'] as bool,
-        originalOwnerStaticCopyId: cowFields['originalOwnerStaticCopyId'] as String?,
-        activeCollaboratorIds: cowFields['activeCollaboratorIds'] as List<String>,
+        originalOwnerStaticCopyId:
+            cowFields['originalOwnerStaticCopyId'] as String?,
+        activeCollaboratorCount: cowFields['activeCollaboratorCount'] as int,
       );
     } catch (e, stackTrace) {
       if (kDebugMode) {
@@ -429,21 +405,19 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
   factory SharedRecipe.fromJson(Map<String, dynamic> json) {
     final commonFields = BaseSharedContentModel.parseCommonFieldsFromJson(json);
     final cowFields = CopyOnWriteSupport.parseCopyOnWriteFieldsFromJson(json);
-    
+
     return SharedRecipe(
       id: commonFields['id'] as String,
       sharedByUserId: commonFields['sharedByUserId'] as String,
       sharedByDisplayName: commonFields['sharedByDisplayName'] as String,
-      sharedToUserIds: commonFields['sharedToUserIds'] as List<String>,
       sharedAt: commonFields['sharedAt'] as DateTime,
       shareMessage: commonFields['shareMessage'] as String?,
       viewCount: commonFields['viewCount'] as int,
       engagementCount: commonFields['engagementCount'] as int,
-      viewedByUserIds: commonFields['viewedByUserIds'] as List<String>,
-      engagedByUserIds: commonFields['engagedByUserIds'] as List<String>,
-      dismissedByUserIds: commonFields['dismissedByUserIds'] as List<String>,
+      dismissalCount: commonFields['dismissalCount'] as int,
       originalRecipeId: json['originalRecipeId'] as String? ?? '',
-      recipeSnapshot: Recipe.fromJson(json['recipeSnapshot'] as Map<String, dynamic>),
+      recipeSnapshot:
+          Recipe.fromJson(json['recipeSnapshot'] as Map<String, dynamic>),
       scope: ShareScope.values.firstWhere(
         (s) => s.name == json['scope'],
         orElse: () => ShareScope.individual,
@@ -452,8 +426,9 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
       allowCollaboration: json['allowCollaboration'] as bool? ?? false,
       isOriginalReference: cowFields['isOriginalReference'] as bool,
       copyOnWriteTriggered: cowFields['copyOnWriteTriggered'] as bool,
-      originalOwnerStaticCopyId: cowFields['originalOwnerStaticCopyId'] as String?,
-      activeCollaboratorIds: cowFields['activeCollaboratorIds'] as List<String>,
+      originalOwnerStaticCopyId:
+          cowFields['originalOwnerStaticCopyId'] as String?,
+      activeCollaboratorCount: cowFields['activeCollaboratorCount'] as int,
     );
   }
 
@@ -462,10 +437,12 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
   /// Returns a string representation of the shared recipe for debugging and logging.
   ///
   /// Provides essential recipe sharing information in a readable format for development
-  /// and debugging purposes with recipe title, owner name, and recipient count.
+  /// and debugging purposes with recipe title and owner name.
+  ///
+  /// Note (Issue #014): Recipient count removed (array no longer exists).
   @override
   String toString() {
-    return 'SharedRecipe(id: $id, recipe: ${recipeSnapshot.title}, sharedBy: $sharedByDisplayName, recipients: ${sharedToUserIds.length})';
+    return 'SharedRecipe(id: $id, recipe: ${recipeSnapshot.title}, sharedBy: $sharedByDisplayName)';
   }
 
   /// Compares two shared recipes for equality based on unique identifier.

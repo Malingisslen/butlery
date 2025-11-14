@@ -34,13 +34,18 @@ class RecipeCoreAdapter extends TypeAdapter<RecipeCore> {
       createdBy: fields[14] as String?,
       isPublic: fields[15] as bool,
       lastCookedAt: fields[16] as DateTime?,
+      ingredientsNormalized: (fields[17] as List?)?.cast<String>(),
+      ratingCount: fields[18] as int?,
+      averageRating: fields[19] as double?,
+      ratingDistribution: (fields[20] as Map?)?.cast<int, int>(),
+      lastRatedAt: fields[21] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, RecipeCore obj) {
     writer
-      ..writeByte(17)
+      ..writeByte(22)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -74,7 +79,17 @@ class RecipeCoreAdapter extends TypeAdapter<RecipeCore> {
       ..writeByte(15)
       ..write(obj.isPublic)
       ..writeByte(16)
-      ..write(obj.lastCookedAt);
+      ..write(obj.lastCookedAt)
+      ..writeByte(17)
+      ..write(obj.ingredientsNormalized)
+      ..writeByte(18)
+      ..write(obj.ratingCount)
+      ..writeByte(19)
+      ..write(obj.averageRating)
+      ..writeByte(20)
+      ..write(obj.ratingDistribution)
+      ..writeByte(21)
+      ..write(obj.lastRatedAt);
   }
 
   @override

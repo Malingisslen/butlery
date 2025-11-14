@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -62,17 +63,18 @@ import 'package:butlery/services/unified/operations/collaborative_menu_operation
 ///   collaboratorIds: ['user1', 'user2'],
 /// );
 /// ```
-class UnifiedMenuService extends ChangeNotifier 
+class UnifiedMenuService extends ChangeNotifier
     with ErrorHandlingMixin, FirebaseServiceMixin {
   final FirebaseFirestore _firestore;
+  final FirestoreRepository _firestoreRepository;
 
   // Core services
   late final MenuService _menuService;
   late final FirebaseSharedMenuRepository _sharedMenuRepository;
-  
+
   // Operations modules
   CollaborativeMenuOperations? _collaborative;
-  
+
   /// Get collaborative operations with lazy initialization
   CollaborativeMenuOperations get collaborative {
     return _collaborative ??= _initializeCollaborativeOperations();
@@ -88,26 +90,33 @@ class UnifiedMenuService extends ChangeNotifier
   List<SharedMenu> get menus => List.unmodifiable(_menus);
 
   UnifiedMenuService({
-    FirebaseFirestore? firestore,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance {
+    FirestoreRepository? firestoreRepository,
+  })  : _firestoreRepository =
+            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
+        _firestore =
+            (firestoreRepository ?? ServiceLocator.get<FirestoreRepository>())
+                .firestore {
     // Initialize core menu service immediately
     _menuService = MenuService();
-    
+
     // Initialize SharedMenu repository
     _sharedMenuRepository = FirebaseSharedMenuRepository();
-    
+
     AppLogger.info(
         '✅ UnifiedMenuService created - collaborative operations will initialize on first use');
   }
+
+  // ===== FIREBASE SERVICE MIXIN IMPLEMENTATION =====
+
+  @override
+  FirestoreRepository get firestoreRepository => _firestoreRepository;
 
   // ===== INITIALIZATION =====
 
   CollaborativeMenuOperations _initializeCollaborativeOperations() {
     AppLogger.debug('Initializing collaborative menu operations');
     return CollaborativeMenuOperations(
-      this, 
-      ServiceLocator.get<MenuCollaborationRepository>()
-    );
+        this, ServiceLocator.get<MenuCollaborationRepository>());
   }
 
   // ===== PUBLIC API =====
@@ -126,7 +135,7 @@ class UnifiedMenuService extends ChangeNotifier
       try {
         // Load existing menus
         await _loadMenus();
-        
+
         _isInitialized = true;
         AppLogger.success('✅ UnifiedMenuService initialization complete');
       } catch (e) {
@@ -194,7 +203,7 @@ class UnifiedMenuService extends ChangeNotifier
   }
 
   // ===== PUBLIC NOTIFICATION METHOD =====
-  
+
   /// Trigger notification to listeners (for operations classes)
   void triggerNotification() {
     notifyListeners();
@@ -221,7 +230,7 @@ class UnifiedMenuService extends ChangeNotifier
     return await safeExecute(() async {
       final userId = currentUserId;
       final userDisplayName = currentUserDisplayName;
-      
+
       if (userId == null || userDisplayName == null) {
         AppLogger.error('Cannot create menu: User not authenticated');
         throw Exception('User not authenticated');
@@ -241,7 +250,7 @@ class UnifiedMenuService extends ChangeNotifier
       final createdMenu = SharedMenu.fromFirestore(menuData, docRef.id);
       _menus.add(createdMenu);
       notifyListeners();
-      
+
       AppLogger.success('Created menu: ${docRef.id}');
       return docRef.id;
     });
@@ -253,13 +262,13 @@ class UnifiedMenuService extends ChangeNotifier
       try {
         final menuData = menu.toFirestore();
         await _firestore.collection('menus').doc(menu.id).update(menuData);
-        
+
         final index = _menus.indexWhere((m) => m.id == menu.id);
         if (index != -1) {
           _menus[index] = menu;
           notifyListeners();
         }
-        
+
         AppLogger.success('Updated menu: ${menu.id}');
         return true;
       } catch (e) {
@@ -277,7 +286,7 @@ class UnifiedMenuService extends ChangeNotifier
         await _firestore.collection('menus').doc(menuId).delete();
         _menus.removeWhere((m) => m.id == menuId);
         notifyListeners();
-        
+
         AppLogger.success('Deleted menu: $menuId');
         return true;
       } catch (e) {
@@ -311,13 +320,15 @@ class UnifiedMenuService extends ChangeNotifier
 
     final result = await safeExecute<String?>(() async {
       try {
-        AppLogger.info('📨 Creating menu invitation "$menuTitle" for ${inviteeUserIds.length} users');
+        AppLogger.info(
+            '📨 Creating menu invitation "$menuTitle" for ${inviteeUserIds.length} users');
 
         // Get current user's display name
         final userService = ServiceLocator.get<UserService>();
         final currentUserProfile = userService.currentUserProfile;
         if (currentUserProfile == null) {
-          AppLogger.error('Cannot get current user profile for menu invitation');
+          AppLogger.error(
+              'Cannot get current user profile for menu invitation');
           return null;
         }
 
@@ -333,10 +344,16 @@ class UnifiedMenuService extends ChangeNotifier
         );
 
         // Save invitation to Firebase
-        final invitationId = await _sharedMenuRepository.createSharedMenu(sharedMenu);
+        // Note (Issue #014): Pass recipientIds separately since arrays removed from model
+        final invitationId = await _sharedMenuRepository.createSharedMenu(
+          sharedMenu,
+          recipientIds: inviteeUserIds,
+        );
 
-        AppLogger.success('✅ Menu invitation created successfully: $invitationId');
-        AppLogger.info('📥 Recipients will see invitation in "Delat med mig" view');
+        AppLogger.success(
+            '✅ Menu invitation created successfully: $invitationId');
+        AppLogger.info(
+            '📥 Recipients will see invitation in "Delat med mig" view');
 
         return invitationId;
       } catch (e) {
@@ -371,7 +388,8 @@ class UnifiedMenuService extends ChangeNotifier
   Future<List<SharedMenu>> getReceivedMenuInvitations() async {
     final userId = currentUserId;
     if (userId == null) {
-      AppLogger.warning('Cannot get received menu invitations: No authenticated user');
+      AppLogger.warning(
+          'Cannot get received menu invitations: No authenticated user');
       return [];
     }
 
@@ -404,7 +422,8 @@ class UnifiedMenuService extends ChangeNotifier
         AppLogger.info('📥 Importing shared menu $sharedMenuId');
 
         // Get shared menu
-        final sharedMenu = await _sharedMenuRepository.getSharedMenu(sharedMenuId);
+        final sharedMenu =
+            await _sharedMenuRepository.getSharedMenu(sharedMenuId);
         if (sharedMenu == null) {
           AppLogger.error('Shared menu not found: $sharedMenuId');
           return null;
@@ -412,21 +431,26 @@ class UnifiedMenuService extends ChangeNotifier
 
         // Create imported menu with attribution
         final menuTitle = newTitle ?? '${sharedMenu.menuTitle} (Importerad)';
-        final attributedMenu = Map<String, List<Recipe>>.from(sharedMenu.menuSnapshot);
-        
+        final attributedMenu =
+            Map<String, List<Recipe>>.from(sharedMenu.menuSnapshot);
+
         // Add attribution to menu description or first recipe
         if (attributedMenu.isNotEmpty) {
           final firstCategory = attributedMenu.keys.first;
           final recipes = attributedMenu[firstCategory]!;
           if (recipes.isNotEmpty) {
             final firstRecipe = recipes[0];
-            final attributionText = 'Inspirerat av meny från ${sharedMenu.sharedByDisplayName}';
+            final attributionText =
+                'Inspirerat av meny från ${sharedMenu.sharedByDisplayName}';
             final attributedRecipe = firstRecipe.copyWith(
               description: firstRecipe.description.isEmpty
                   ? attributionText
                   : '${firstRecipe.description}\n\n$attributionText',
             );
-            attributedMenu[firstCategory] = [attributedRecipe, ...recipes.skip(1)];
+            attributedMenu[firstCategory] = [
+              attributedRecipe,
+              ...recipes.skip(1)
+            ];
           }
         }
 
@@ -486,8 +510,10 @@ class UnifiedMenuService extends ChangeNotifier
   bool get hasError => _error != null;
 
   // From FirebaseServiceMixin
-  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
-  String? get currentUserDisplayName => ServiceLocator.get<PermissionService>().currentUserDisplayName;
+  String? get currentUserId =>
+      ServiceLocator.get<PermissionService>().currentUserId;
+  String? get currentUserDisplayName =>
+      ServiceLocator.get<PermissionService>().currentUserDisplayName;
 
   // ===== LIFECYCLE =====
 

@@ -25,14 +25,25 @@ abstract class RatingsRepository extends Repository<RecipeRating> {
   /// Get user's rating for a recipe
   Future<RecipeRating?> getUserRating(String recipeId, String userId);
 
-  /// Get all ratings for a recipe
-  Future<List<RecipeRating>> getRecipeRatings(String recipeId);
+  /// Get ratings for a recipe with pagination support
+  ///
+  /// **Pagination Support (Issue #007 Fix):**
+  /// - [limit] Maximum number of ratings to return (default: 100, max: 1000)
+  /// - [startAfter] Document snapshot to start after for cursor-based pagination
+  ///
+  /// **Performance:** O(limit) instead of O(N) - prevents timeouts at 10K+ ratings
+  Future<List<RecipeRating>> getRecipeRatings(
+    String recipeId, {
+    int limit = 100,
+    DocumentSnapshot? startAfter,
+  });
 
   /// Get rating statistics for a recipe
   Future<RatingStatistics> getRatingStatistics(String recipeId);
 
   /// Get rating statistics for multiple recipes
-  Future<Map<String, RatingStatistics>> getBulkRatingStatistics(List<String> recipeIds);
+  Future<Map<String, RatingStatistics>> getBulkRatingStatistics(
+      List<String> recipeIds);
 
   /// Get ratings stream for real-time updates
   Stream<RatingStatistics> getRatingStatisticsStream(String recipeId);
@@ -62,23 +73,26 @@ class RecipeRating {
   });
 
   Map<String, dynamic> toFirestore() => {
-    'recipeId': recipeId,
-    'userId': userId,
-    'rating': rating,
-    'review': review,
-    'createdAt': createdAt,
-    'updatedAt': updatedAt,
-  };
+        'recipeId': recipeId,
+        'userId': userId,
+        'rating': rating,
+        'review': review,
+        'createdAt': createdAt,
+        'updatedAt': updatedAt,
+      };
 
-  factory RecipeRating.fromFirestore(Map<String, dynamic> data, String id) => RecipeRating(
-    id: id,
-    recipeId: data['recipeId'] ?? '',
-    userId: data['userId'] ?? '',
-    rating: (data['rating'] ?? 0.0).toDouble(),
-    review: data['review'],
-    createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-    updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-  );
+  factory RecipeRating.fromFirestore(Map<String, dynamic> data, String id) =>
+      RecipeRating(
+        id: id,
+        recipeId: data['recipeId'] ?? '',
+        userId: data['userId'] ?? '',
+        rating: (data['rating'] ?? 0.0).toDouble(),
+        review: data['review'],
+        createdAt:
+            (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        updatedAt:
+            (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      );
 }
 
 /// Rating statistics for a recipe
@@ -100,9 +114,10 @@ class RatingStatistics {
   /// Get percentage distribution of ratings
   Map<int, double> get percentageDistribution {
     if (totalRatings == 0) return {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
-    
+
     return ratingDistribution.map(
-      (stars, ratingCount) => MapEntry(stars, (ratingCount / totalRatings) * 100),
+      (stars, ratingCount) =>
+          MapEntry(stars, (ratingCount / totalRatings) * 100),
     );
   }
 

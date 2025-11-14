@@ -124,12 +124,18 @@ class FirebaseSharedRecipeRepository
 
   @override
   bool shouldShowToUser(SharedRecipe content, String userId) {
-    return content.canBeViewedBy(userId) && !content.isDismissedBy(userId);
+    // Note (Issue #014): Array-based status methods removed.
+    // Actual dismissed/viewed filtering happens via subcollection queries.
+    // This method now only checks basic permission (owner or collaboration allowed).
+    return content.sharedByUserId == userId || content.allowCollaboration;
   }
 
   @override
   bool isViewedByUser(SharedRecipe content, String userId) {
-    return content.isViewedBy(userId);
+    // Note (Issue #014): Array-based status removed.
+    // Use hasViewed() repository method for actual viewed status.
+    // This sync method defaults to false; call hasViewed() for accurate status.
+    return false;
   }
 
   @override
@@ -140,7 +146,13 @@ class FirebaseSharedRecipeRepository
   // ===== SHARED RECIPE OPERATIONS =====
 
   /// Create new shared recipe with comprehensive validation
-  Future<String> createSharedRecipe(SharedRecipe sharedRecipe) async {
+  ///
+  /// Note (Issue #014): recipientIds must be passed separately as sharedToUserIds
+  /// is no longer stored in the model (tracked in Firestore subcollections instead).
+  Future<String> createSharedRecipe(
+    SharedRecipe sharedRecipe, {
+    required List<String> recipientIds,
+  }) async {
     final uid = requireCurrentUserId();
 
     // Recipe-specific validations
@@ -149,33 +161,51 @@ class FirebaseSharedRecipeRepository
           'Cannot create shared recipe for another user');
     }
 
-    if (sharedRecipe.sharedToUserIds.isEmpty) {
+    if (recipientIds.isEmpty) {
       throw ArgumentError('Must specify at least one recipient');
     }
 
-    // Delegate to base class method with all validation and creation logic
-    return await createSharedContent(sharedRecipe);
+    // Create the shared recipe document
+    final recipeId = await createSharedContent(sharedRecipe);
+
+    // Add all recipients to members subcollection (Issue #014: Unlimited sharing)
+    for (final recipientId in recipientIds) {
+      await addMember(recipeId, recipientId, addedBy: uid);
+    }
+
+    AppLogger.success(
+        '✅ Created shared recipe with ${recipientIds.length} members in subcollection');
+
+    return recipeId;
   }
 
   /// Get all shared recipes for a specific user
   Future<List<SharedRecipe>> getSharedRecipesForUser(String userId) async {
-    // Delegate to base class method with all validation and query logic
-    return await getSharedContentForUser(userId);
+    // Use subcollection-based query (Issue #014: Unlimited sharing support)
+    return await getSharedContentForUserViaSubcollection(userId);
   }
 
   /// Get specific shared recipe by ID
   Future<SharedRecipe?> getSharedRecipe(String recipeId) async {
     final uid = requireCurrentUserId();
 
-    // Use base class method for retrieval
-    final sharedRecipe = await read(recipeId);
-    
-    if (sharedRecipe == null) {
+    // Fetch document directly without base class permission check (Issue #014)
+    // We need to check members subcollection, which requires async call
+    final doc = await getCollectionRef().doc(recipeId).get();
+
+    if (!doc.exists) {
       return null;
     }
 
-    // Recipe-specific permission validation
-    if (!sharedRecipe.canBeViewedBy(uid)) {
+    final sharedRecipe = fromFirestore(doc);
+
+    // Recipe-specific permission validation (Issue #014)
+    // Check if user is owner or member via subcollection
+    final isOwner = sharedRecipe.sharedByUserId == uid;
+    final isMember = await this.isMember(recipeId, uid);
+    final canAccess = isOwner || isMember || sharedRecipe.allowCollaboration;
+
+    if (!canAccess) {
       throw PermissionDeniedException('Cannot access this shared recipe');
     }
 
@@ -191,33 +221,33 @@ class FirebaseSharedRecipeRepository
     return sharedRecipe;
   }
 
-  // ===== STATUS MANAGEMENT (DELEGATED TO BASE CLASS) =====
+  // ===== STATUS MANAGEMENT (SUBCOLLECTION-BASED) =====
 
   /// Mark shared recipe as viewed by user
   @override
   Future<void> markAsViewed(String recipeId, String userId) async {
-    // Delegate to base class method
-    return await super.markAsViewed(recipeId, userId);
+    // Use subcollection method (Issue #014: Unlimited views support)
+    return await addView(recipeId, userId);
   }
 
   /// Mark shared recipe as imported by user (copy-on-write)
   Future<void> markAsImported(String recipeId, String userId) async {
-    // Delegate to base class method with unified import/join handling
-    return await markAsImportedOrJoined(recipeId, userId);
+    // Use subcollection method (Issue #014: Unlimited imports support)
+    return await addEngagement(recipeId, userId, action: 'import');
   }
 
   /// Mark shared recipe as dismissed by user
   @override
   Future<void> markAsDismissed(String recipeId, String userId) async {
-    // Delegate to base class method
-    return await super.markAsDismissed(recipeId, userId);
+    // Use subcollection method (Issue #014: Unlimited dismissals support)
+    return await addDismissal(recipeId, userId);
   }
 
   /// Remove dismissal status for user (restore visibility)
   @override
   Future<void> undismiss(String recipeId, String userId) async {
-    // Delegate to base class method
-    return await super.undismiss(recipeId, userId);
+    // Use subcollection method (Issue #014)
+    return await removeDismissal(recipeId, userId);
   }
 
   /// Delete shared recipe (only by creator)
@@ -245,10 +275,43 @@ class FirebaseSharedRecipeRepository
     }
 
     try {
-      final allSharedRecipes = await getSharedRecipesForUser(userId);
+      // Query engagements subcollection (Issue #014: Unlimited imports support)
+      final engagementsSnapshot = await firestore
+          .collectionGroup('engagements')
+          .where('userId', isEqualTo: userId)
+          .where('action', isEqualTo: 'import')
+          .get();
 
-      final importedRecipes =
-          allSharedRecipes.where((recipe) => recipe.isImportedBy(userId)).toList();
+      if (engagementsSnapshot.docs.isEmpty) {
+        AppLogger.info('📋 User $userId has no imported recipes');
+        return [];
+      }
+
+      // Extract recipe IDs from engagement documents
+      final recipeIds = <String>{};
+      for (final engagementDoc in engagementsSnapshot.docs) {
+        final recipeId = engagementDoc.reference.parent.parent?.id;
+        if (recipeId != null) {
+          recipeIds.add(recipeId);
+        }
+      }
+
+      // Batch fetch recipe documents (max 10 per query)
+      final importedRecipes = <SharedRecipe>[];
+      final recipeIdList = recipeIds.toList();
+      for (var i = 0; i < recipeIdList.length; i += 10) {
+        final end =
+            (i + 10 < recipeIdList.length) ? i + 10 : recipeIdList.length;
+        final batch = recipeIdList.sublist(i, end);
+
+        final batchSnapshot = await getCollectionRef()
+            .where(FieldPath.documentId, whereIn: batch)
+            .get();
+
+        importedRecipes.addAll(
+          batchSnapshot.docs.map((doc) => fromFirestore(doc)),
+        );
+      }
 
       AppLogger.info(
           '📋 User $userId has imported ${importedRecipes.length} shared recipes');

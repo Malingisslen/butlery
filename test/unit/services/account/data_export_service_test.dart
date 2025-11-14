@@ -7,7 +7,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/account/data_export_service.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'dart:convert';
 
@@ -66,7 +65,8 @@ void main() {
 
     group('Authentication', () {
       test('should throw when user not authenticated', () async {
-        mockAuthRepository.setAuthState(user: null, userId: null, isAuthenticated: false);
+        mockAuthRepository.setAuthState(
+            user: null, userId: null, isAuthenticated: false);
         expect(() => service.exportUserData(), throwsA(isA<Exception>()));
       });
     });

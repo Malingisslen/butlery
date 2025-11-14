@@ -301,23 +301,30 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
           // Error indicator
           if (viewModel.hasError)
-            IconButton(
-              icon: const Icon(Icons.error, color: AppColors.error),
-              onPressed: () {
-                SnackBarUtils.showError(context, viewModel.error!);
-              },
-              tooltip: 'Visa fel',
+            Semantics(
+              label: 'Visa felmeddelande',
+              button: true,
+              child: IconButton(
+                icon: const Icon(Icons.error, color: AppColors.error),
+                onPressed: () {
+                  SnackBarUtils.showError(context, viewModel.error!);
+                },
+                tooltip: 'Visa fel',
+              ),
             ),
 
           // Sort menu
-          PopupMenuButton<SortCriteria>(
-            icon: Icon(
-              Icons.sort,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-            tooltip: 'Sortera',
-            onSelected: _onSortChanged,
-            itemBuilder: (context) => [
+          Semantics(
+            label: 'Sortera recept',
+            button: true,
+            child: PopupMenuButton<SortCriteria>(
+              icon: Icon(
+                Icons.sort,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+              tooltip: 'Sortera',
+              onSelected: _onSortChanged,
+              itemBuilder: (context) => [
               _buildSortMenuItem(
                 SortCriteria.title,
                 'Titel',
@@ -346,7 +353,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 viewModel.sortCriteria,
                 viewModel.sortAscending,
               ),
-            ],
+              ],
+            ),
           ),
         ],
         body: Column(

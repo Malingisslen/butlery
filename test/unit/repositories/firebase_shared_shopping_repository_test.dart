@@ -1,5 +1,7 @@
 /// Comprehensive unit tests for FirebaseSharedShoppingRepository.
 ///
+/// **Issue #014**: Migrated to subcollection-based status tracking (removed arrays).
+///
 /// Tests shared shopping list operations including create, read, status management (viewed/joined/dismissed),
 /// permission validation, and direct collaboration support.
 library;
@@ -78,60 +80,127 @@ void main() {
       ];
     }
 
+    /// Create a SharedShoppingList with count fields (Issue #014 - arrays removed).
     SharedShoppingList createSharedShoppingList({
       String? id,
       String? sharedByUserId,
       String? sharedByDisplayName,
-      List<String>? sharedToUserIds,
       List<UnifiedShoppingItem>? listItems,
       String? listName,
       String? listDescription,
       String? shareMessage,
-      List<String>? viewedByUserIds,
-      List<String>? engagedByUserIds,
-      List<String>? dismissedByUserIds,
       String? originalOwnerId,
       String? originalOwnerDisplayName,
+      int? viewCount,
+      int? engagementCount,
+      int? dismissalCount,
     }) {
       return SharedShoppingList(
         id: id ?? testListId,
         sharedByUserId: sharedByUserId ?? testUserId,
         sharedByDisplayName: sharedByDisplayName ?? 'Test User',
-        sharedToUserIds: sharedToUserIds ?? [testOtherUserId],
         shareMessage: shareMessage,
         sharedAt: DateTime(2025, 1, 15),
         listName: listName ?? 'Veckohandling',
         listDescription: listDescription,
         listItems: listItems ?? createTestItems(),
-        viewedByUserIds: viewedByUserIds ?? [],
-        engagedByUserIds: engagedByUserIds ?? [],
-        dismissedByUserIds: dismissedByUserIds ?? [],
         originalOwnerId: originalOwnerId ?? sharedByUserId ?? testUserId,
         originalOwnerDisplayName:
             originalOwnerDisplayName ?? sharedByDisplayName ?? 'Test User',
+        viewCount: viewCount ?? 0,
+        engagementCount: engagementCount ?? 0,
+        dismissalCount: dismissalCount ?? 0,
       );
     }
 
-    Future<void> seedSharedShoppingList(SharedShoppingList sharedList) async {
+    /// Seed a SharedShoppingList into FakeFirestore with optional subcollection data (Issue #014).
+    Future<void> seedSharedShoppingList(
+      SharedShoppingList sharedList, {
+      List<String>? memberUserIds,
+      List<String>? viewedByUserIds,
+      List<String>? engagedByUserIds,
+      List<String>? dismissedByUserIds,
+      List<String>? collaboratorUserIds,
+    }) async {
+      // Create main document
       await fakeFirestore
           .collection('shared_shopping_lists')
           .doc(sharedList.id)
           .set(sharedList.toFirestore());
+
+      // Create subcollection documents (Issue #014)
+      final listRef = fakeFirestore.collection('shared_shopping_lists').doc(sharedList.id);
+
+      // Seed members subcollection
+      if (memberUserIds != null) {
+        for (final userId in memberUserIds) {
+          await listRef.collection('members').doc(userId).set({
+            'userId': userId,
+            'addedBy': sharedList.sharedByUserId,
+            'addedAt': DateTime.now(),
+            'role': 'member',
+          });
+        }
+      }
+
+      // Seed collaborators subcollection (shopping lists allow real-time collaboration)
+      if (collaboratorUserIds != null) {
+        for (final userId in collaboratorUserIds) {
+          await listRef.collection('collaborators').doc(userId).set({
+            'userId': userId,
+            'joinedAt': DateTime.now(),
+            'isActive': true,
+          });
+        }
+      }
+
+      // Seed views subcollection
+      if (viewedByUserIds != null) {
+        for (final userId in viewedByUserIds) {
+          await listRef.collection('views').doc(userId).set({
+            'userId': userId,
+            'viewedAt': DateTime.now(),
+          });
+        }
+      }
+
+      // Seed engagements subcollection
+      if (engagedByUserIds != null) {
+        for (final userId in engagedByUserIds) {
+          await listRef.collection('engagements').doc(userId).set({
+            'userId': userId,
+            'action': 'join',
+            'engagedAt': DateTime.now(),
+          });
+        }
+      }
+
+      // Seed dismissals subcollection
+      if (dismissedByUserIds != null) {
+        for (final userId in dismissedByUserIds) {
+          await listRef.collection('dismissals').doc(userId).set({
+            'userId': userId,
+            'dismissedAt': DateTime.now(),
+          });
+        }
+      }
     }
 
     // ===== PERMISSION VALIDATION TESTS =====
 
     group('Permission Validation', () {
-      test('should allow user to create shared shopping list as themselves',
+      test('should allow user to create shared shopping list with recipients',
           () async {
         // Arrange
         final sharedList = createSharedShoppingList(
           sharedByUserId: testUserId,
-          sharedToUserIds: [testFriendId],
         );
 
         // Act & Assert - Should not throw
-        await repository.createSharedShoppingList(sharedList);
+        await repository.createSharedShoppingList(
+          sharedList,
+          recipientIds: [testFriendId], // Share with friend
+        );
       });
 
       test(
@@ -140,12 +209,14 @@ void main() {
         // Arrange
         final sharedList = createSharedShoppingList(
           sharedByUserId: testOtherUserId, // Different from authenticated user
-          sharedToUserIds: [testFriendId],
         );
 
         // Act & Assert
         expect(
-          () => repository.createSharedShoppingList(sharedList),
+          () => repository.createSharedShoppingList(
+            sharedList,
+            recipientIds: [testFriendId],
+          ),
           throwsA(isA<PermissionDeniedException>()),
         );
       });
@@ -154,12 +225,14 @@ void main() {
         // Arrange
         final sharedList = createSharedShoppingList(
           sharedByUserId: testUserId,
-          sharedToUserIds: [], // Empty list
         );
 
         // Act & Assert
         expect(
-          () => repository.createSharedShoppingList(sharedList),
+          () => repository.createSharedShoppingList(
+            sharedList,
+            recipientIds: [], // Empty list - should fail
+          ),
           throwsA(isA<ArgumentError>()),
         );
       });
@@ -169,7 +242,6 @@ void main() {
         // Arrange
         final sharedList = createSharedShoppingList(
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId], // Current user is recipient
         );
         await seedSharedShoppingList(sharedList);
 
@@ -187,7 +259,6 @@ void main() {
         // Arrange
         final sharedList = createSharedShoppingList(
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testFriendId], // Current user not in list
         );
         await seedSharedShoppingList(sharedList);
 
@@ -208,12 +279,14 @@ void main() {
           id: 'new-list',
           listName: 'My Weekly Shopping',
           sharedByUserId: testUserId,
-          sharedToUserIds: [testFriendId, testOtherUserId],
           shareMessage: 'Check out my shopping list!',
         );
 
         // Act
-        final listId = await repository.createSharedShoppingList(sharedList);
+        final listId = await repository.createSharedShoppingList(
+          sharedList,
+          recipientIds: [testFriendId],
+        );
 
         // Assert
         expect(listId, isNotEmpty);
@@ -233,19 +306,16 @@ void main() {
           id: 'list-1',
           listName: 'List 1',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
         );
         final list2 = createSharedShoppingList(
           id: 'list-2',
           listName: 'List 2',
           sharedByUserId: testFriendId,
-          sharedToUserIds: [testUserId],
         );
         final list3 = createSharedShoppingList(
           id: 'list-3',
           listName: 'List 3',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testFriendId], // Not for current user
         );
 
         await seedSharedShoppingList(list1);
@@ -268,7 +338,6 @@ void main() {
         final sharedList = createSharedShoppingList(
           listName: 'Weekly Shopping',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
         );
         await seedSharedShoppingList(sharedList);
 
@@ -294,7 +363,6 @@ void main() {
         // Arrange
         final sharedList = createSharedShoppingList(
           sharedByUserId: testUserId, // Creator
-          sharedToUserIds: [testFriendId],
         );
         await seedSharedShoppingList(sharedList);
 
@@ -317,74 +385,70 @@ void main() {
         // Arrange
         final sharedList = createSharedShoppingList(
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          viewedByUserIds: [], // Not yet viewed
         );
         await seedSharedShoppingList(sharedList);
 
         // Act
         await repository.markAsViewed(testListId, testUserId);
 
-        // Assert
-        final doc = await fakeFirestore
+        // Assert - Check views subcollection (Issue #014)
+        final viewDoc = await fakeFirestore
             .collection('shared_shopping_lists')
             .doc(testListId)
+            .collection('views')
+            .doc(testUserId)
             .get();
-        final viewedByUserIds =
-            List<String>.from(doc.data()?['viewedByUserIds'] ?? []);
-        expect(viewedByUserIds, contains(testUserId));
+        expect(viewDoc.exists, isTrue);
+        expect(viewDoc.data()?['userId'], testUserId);
       });
 
       test('should mark shared shopping list as joined', () async {
         // Arrange
         final sharedList = createSharedShoppingList(
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          engagedByUserIds: [], // Not yet joined
         );
         await seedSharedShoppingList(sharedList);
 
         // Act
         await repository.markAsJoined(testListId, testUserId);
 
-        // Assert
-        final doc = await fakeFirestore
+        // Assert - Check engagements subcollection (Issue #014)
+        final engagementDoc = await fakeFirestore
             .collection('shared_shopping_lists')
             .doc(testListId)
+            .collection('engagements')
+            .doc(testUserId)
             .get();
-        final joinedByUserIds =
-            List<String>.from(doc.data()?['joinedByUserIds'] ?? []);
-        expect(joinedByUserIds, contains(testUserId));
+        expect(engagementDoc.exists, isTrue);
+        expect(engagementDoc.data()?['userId'], testUserId);
+        expect(engagementDoc.data()?['action'], 'join');
       });
 
       test('should mark shared shopping list as dismissed', () async {
         // Arrange
         final sharedList = createSharedShoppingList(
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          dismissedByUserIds: [],
         );
         await seedSharedShoppingList(sharedList);
 
         // Act
         await repository.markAsDismissed(testListId, testUserId);
 
-        // Assert
-        final doc = await fakeFirestore
+        // Assert - Check dismissals subcollection (Issue #014)
+        final dismissalDoc = await fakeFirestore
             .collection('shared_shopping_lists')
             .doc(testListId)
+            .collection('dismissals')
+            .doc(testUserId)
             .get();
-        final dismissedByUserIds =
-            List<String>.from(doc.data()?['dismissedByUserIds'] ?? []);
-        expect(dismissedByUserIds, contains(testUserId));
+        expect(dismissalDoc.exists, isTrue);
+        expect(dismissalDoc.data()?['userId'], testUserId);
       });
 
       test('should undismiss shared shopping list', () async {
         // Arrange
         final sharedList = createSharedShoppingList(
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          dismissedByUserIds: [testUserId], // Already dismissed
         );
         await seedSharedShoppingList(sharedList);
 
@@ -410,20 +474,14 @@ void main() {
         final list1 = createSharedShoppingList(
           id: 'list-1',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          viewedByUserIds: [], // Unread
         );
         final list2 = createSharedShoppingList(
           id: 'list-2',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          viewedByUserIds: [testUserId], // Read
         );
         final list3 = createSharedShoppingList(
           id: 'list-3',
           sharedByUserId: testFriendId,
-          sharedToUserIds: [testUserId],
-          viewedByUserIds: [], // Unread
         );
 
         await seedSharedShoppingList(list1);
@@ -442,14 +500,10 @@ void main() {
         final list1 = createSharedShoppingList(
           id: 'list-1',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          engagedByUserIds: [testUserId], // Joined
         );
         final list2 = createSharedShoppingList(
           id: 'list-2',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          engagedByUserIds: [], // Not joined
         );
 
         await seedSharedShoppingList(list1);
@@ -470,14 +524,10 @@ void main() {
         final list1 = createSharedShoppingList(
           id: 'list-1',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          dismissedByUserIds: [], // Not dismissed
         );
         final list2 = createSharedShoppingList(
           id: 'list-2',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          dismissedByUserIds: [testUserId], // Dismissed
         );
 
         await seedSharedShoppingList(list1);
@@ -509,7 +559,10 @@ void main() {
 
         // Act & Assert
         expect(
-          () => repository.createSharedShoppingList(sharedList),
+          () => repository.createSharedShoppingList(
+            sharedList,
+            recipientIds: [testFriendId],
+          ),
           throwsA(isA<Exception>()), // AuthenticationException
         );
       });
@@ -528,11 +581,13 @@ void main() {
         final sharedList = createSharedShoppingList(
           listItems: [], // Empty items
           sharedByUserId: testUserId,
-          sharedToUserIds: [testFriendId],
         );
 
         // Act & Assert - Should still create successfully
-        await repository.createSharedShoppingList(sharedList);
+        await repository.createSharedShoppingList(
+          sharedList,
+          recipientIds: [testFriendId],
+        );
       });
     });
   });

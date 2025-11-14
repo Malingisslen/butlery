@@ -18,7 +18,7 @@
 import 'package:butlery/models/recipe_unified.dart';
 
 /// Base interface for recipe import strategies
-/// 
+///
 /// Implements the Strategy pattern for different import methods:
 /// - Text import (social media, manual text)
 /// - URL import (web scraping)
@@ -28,19 +28,19 @@ import 'package:butlery/models/recipe_unified.dart';
 abstract class ImportStrategy {
   /// The name of this import strategy
   String get strategyName;
-  
+
   /// Whether this strategy can handle the given input
   bool canHandle(String input);
-  
+
   /// Import recipe from the given input
   Future<ImportResult> import(String input, {Map<String, dynamic>? options});
-  
+
   /// Validate input format before attempting import
   bool validateInput(String input);
-  
+
   /// Get example input format for this strategy
   String get inputExample;
-  
+
   /// Get description of what this strategy handles
   String get description;
 }
@@ -71,36 +71,43 @@ mixin ImportValidationMixin {
   bool isValidRecipeName(String name) {
     return name.trim().isNotEmpty && name.trim().length >= 2;
   }
-  
+
   /// Validate ingredients list
   bool isValidIngredients(List<String> ingredients) {
-    return ingredients.isNotEmpty && 
-           ingredients.any((ingredient) => ingredient.trim().isNotEmpty);
+    return ingredients.isNotEmpty &&
+        ingredients.any((ingredient) => ingredient.trim().isNotEmpty);
   }
-  
+
   /// Validate instructions list
   bool isValidInstructions(List<String> instructions) {
-    return instructions.isNotEmpty && 
-           instructions.any((instruction) => instruction.trim().isNotEmpty);
+    return instructions.isNotEmpty &&
+        instructions.any((instruction) => instruction.trim().isNotEmpty);
   }
-  
-  /// Clean and normalize text input
+
+  /// Clean and normalize text input (preserves newlines for line-by-line parsing)
   String normalizeText(String input) {
+    // Remove emojis and normalize whitespace WHILE PRESERVING NEWLINES
     return input
-        .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '') // Remove emojis first
-        .replaceAll(RegExp(r'\s+'), ' ') // Then normalize whitespace
+        .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true),
+            '') // Remove emojis first
+        .split('\n') // Process line by line to preserve newlines
+        .map((line) => line
+            .replaceAll(RegExp(r'[ \t]+'), ' ')
+            .trim()) // Normalize spaces/tabs per line
+        .join('\n') // Rejoin with newlines
         .trim();
   }
-  
+
   /// Extract numeric value from text (for portions, time, etc.)
   int? extractNumber(String text) {
     final match = RegExp(r'\d+').firstMatch(text);
     return match != null ? int.tryParse(match.group(0)!) : null;
   }
-  
+
   /// Extract rating from text (1.0-5.0)
   double? extractRating(String text) {
-    final match = RegExp(r'(\d+(?:\.\d+)?)\s*(?:av\s*5|/5|\*|⭐)').firstMatch(text);
+    final match =
+        RegExp(r'(\d+(?:\.\d+)?)\s*(?:av\s*5|/5|\*|⭐)').firstMatch(text);
     if (match != null) {
       final rating = double.tryParse(match.group(1)!);
       return rating != null && rating >= 1.0 && rating <= 5.0 ? rating : null;

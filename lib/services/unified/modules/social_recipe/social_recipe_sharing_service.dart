@@ -1,17 +1,18 @@
 // lib/services/unified/modules/social_recipe/social_recipe_sharing_service.dart
 
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 
 /// Social Recipe Sharing Service
-/// 
+///
 /// Handles ONLY sharing and unsharing operations for recipes.
 /// This includes sharing with users, groups, and managing shared access.
 class SocialRecipeSharingService extends BaseService with UserContextMixin {
@@ -24,6 +25,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
   final Future<Recipe?> Function(String) _getRecipe;
   final Future<bool> Function(Recipe) _saveRecipe;
   final void Function() _notifyListeners;
+  final FirebaseSharedRecipeRepository _sharedRecipeRepository;
 
   SocialRecipeSharingService({
     required String? Function() getCurrentUserId,
@@ -32,19 +34,21 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
     required void Function() notifyListeners,
     required Future<Recipe?> Function(String) getRecipe,
     required Future<bool> Function(Recipe) saveRecipe,
-  }) : _getCurrentUserId = getCurrentUserId,
-       _getCurrentUserDisplayName = getCurrentUserDisplayName,
-       _setError = setError,
-       _notifyListeners = notifyListeners,
-       _getRecipe = getRecipe,
-       _saveRecipe = saveRecipe {
+    required FirebaseSharedRecipeRepository sharedRecipeRepository,
+  })  : _getCurrentUserId = getCurrentUserId,
+        _getCurrentUserDisplayName = getCurrentUserDisplayName,
+        _setError = setError,
+        _notifyListeners = notifyListeners,
+        _getRecipe = getRecipe,
+        _saveRecipe = saveRecipe,
+        _sharedRecipeRepository = sharedRecipeRepository {
     // Set the user ID provider for the mixin
     setUserIdProvider(getCurrentUserId);
   }
 
   /// Share a personal recipe with specific users
-  Future<bool> shareRecipeWithUsers(
-      String recipeId, List<String> userIds, ResourcePermission permission) async {
+  Future<bool> shareRecipeWithUsers(String recipeId, List<String> userIds,
+      ResourcePermission permission) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
       _setError('Du måste vara inloggad');
@@ -53,7 +57,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
 
     try {
       AppLogger.info('Sharing recipe $recipeId with ${userIds.length} users');
-      
+
       // 1. Loading the recipe
       final recipe = await _getRecipe(recipeId);
       if (recipe == null) {
@@ -62,7 +66,8 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
       }
 
       // Check if current user can share this recipe
-      if (recipe.createdBy != currentUserId && recipe.socialData?.ownerId != currentUserId) {
+      if (recipe.createdBy != currentUserId &&
+          recipe.socialData?.ownerId != currentUserId) {
         _setError('Du har inte behörighet att dela detta recept');
         return false;
       }
@@ -89,7 +94,8 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         );
       } else {
         // 3. Adding users with specified permissions to existing collaborative recipe
-        final updatedPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
+        final updatedPermissions = Map<String, ResourcePermission>.from(
+            recipe.socialData?.memberPermissions ?? {});
         for (final userId in userIds) {
           updatedPermissions[userId] = permission;
         }
@@ -110,26 +116,27 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
 
       // 6. ALSO write to shared_recipes collection for group content queries
       try {
-        // Ensure owner is included in sharedWithUserIds along with shared users
-        final allUserIds = {currentUserId, ...userIds}.toList();
+        // Create SharedRecipe entry for query purposes (Issue #014: members added via subcollection)
+        final sharedRecipe = SharedRecipe.create(
+          originalRecipeId: recipeId,
+          sharedByUserId: currentUserId,
+          sharedByDisplayName: _getCurrentUserDisplayName() ?? 'Unknown',
+          sharedToUserIds: userIds,
+          recipeSnapshot: updatedRecipe,
+          allowCollaboration: permission == ResourcePermission.admin ||
+                              permission == ResourcePermission.editor,
+        );
 
-        await FirebaseFirestore.instance
-            .collection('shared_recipes')
-            .doc(recipeId)
-            .set({
-          'sharedByUserId': currentUserId,
-          'sharedByDisplayName': _getCurrentUserDisplayName() ?? 'Unknown',
-          'sharedByAvatarUrl': null, // Can be populated later if needed
-          'sharedWithUserIds': allUserIds,
-          'sharedAt': FieldValue.serverTimestamp(),
-          'recipeId': recipeId,
-          'title': recipe.title,
-          'recipeSnapshot': updatedRecipe.toJson(),
-        }, SetOptions(merge: true));
+        // Note (Issue #014): Pass recipientIds separately since arrays removed from model
+        await _sharedRecipeRepository.createSharedRecipe(
+          sharedRecipe,
+          recipientIds: userIds,
+        );
 
         AppLogger.debug('✅ Recipe also written to shared_recipes collection');
       } catch (e) {
-        AppLogger.warning('Failed to write to shared_recipes collection (non-critical): $e');
+        AppLogger.warning(
+            'Failed to write to shared_recipes collection (non-critical): $e');
         // Don't fail the whole operation if this secondary write fails
       }
 
@@ -146,8 +153,8 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
   }
 
   /// Share recipe with friend categories/groups
-  Future<bool> shareRecipeWithGroups(
-      String recipeId, List<String> groupIds, ResourcePermission permission) async {
+  Future<bool> shareRecipeWithGroups(String recipeId, List<String> groupIds,
+      ResourcePermission permission) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
       _setError('Du måste vara inloggad');
@@ -156,33 +163,34 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
 
     try {
       AppLogger.info('Sharing recipe $recipeId with ${groupIds.length} groups');
-      
+
       // Resolve group IDs to member user IDs
       final allMemberIds = <String>{};
       final memberDisplayNames = <String, String>{};
-      
+
       for (final groupId in groupIds) {
         final groupMembers = await _resolveGroupMembers(groupId);
         allMemberIds.addAll(groupMembers.keys);
         memberDisplayNames.addAll(groupMembers);
       }
-      
+
       if (allMemberIds.isEmpty) {
         _setError('Inga gruppmedlemmar hittades');
         return false;
       }
-      
+
       // Use existing shareRecipeWithUsers method for actual sharing
       final success = await shareRecipeWithUsers(
         recipeId,
         allMemberIds.toList(),
         permission,
       );
-      
+
       if (success) {
-        AppLogger.success('✅ Recipe shared with ${allMemberIds.length} group members');
+        AppLogger.success(
+            '✅ Recipe shared with ${allMemberIds.length} group members');
       }
-      
+
       return success;
     } catch (e) {
       AppLogger.error('❌ Could not share recipe with groups: $e');
@@ -201,7 +209,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
 
     try {
       AppLogger.info('Unsharing recipe $recipeId');
-      
+
       // 1. Loading the recipe
       final recipe = await _getRecipe(recipeId);
       if (recipe == null) {
@@ -238,10 +246,10 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
 
       // Notify affected members (optional)
       // await sendUnshareNotifications(recipeId, memberIds);
-      
+
       // Notify UI of changes
       _notifyListeners();
-      
+
       AppLogger.success('Recipe $recipeId unshared');
       return true;
     } catch (e) {
@@ -269,7 +277,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
       if (recipe?.socialData?.memberPermissions == null) {
         return [];
       }
-      
+
       return recipe!.socialData!.memberPermissions!.keys.toList();
     } catch (e) {
       AppLogger.error('Failed to get shared users', e);
@@ -277,10 +285,10 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
     }
   }
 
-
   /// Create success result for operations
   RecipeOperationResult createSuccessResult([String? message]) {
-    return RecipeOperationResult.success(message ?? 'Operation completed successfully');
+    return RecipeOperationResult.success(
+        message ?? 'Operation completed successfully');
   }
 
   /// Create failure result for operations
@@ -289,12 +297,12 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
   }
 
   /// Resolve group IDs to member user IDs and display names
-  /// 
+  ///
   /// ✅ FIXED: Integrated with friends service for actual group member resolution
   Future<Map<String, String>> _resolveGroupMembers(String groupId) async {
     try {
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-      
+
       // Get the group (friend category) by ID
       final group = friendsService.getCategoryByIdInternal(groupId);
       if (group == null) {
@@ -302,12 +310,13 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
         return <String, String>{};
       }
 
-      AppLogger.debug('Resolving ${group.friendUserIds.length} members for group "${group.name}"');
-      
+      AppLogger.debug(
+          'Resolving ${group.friendUserIds.length} members for group "${group.name}"');
+
       // Get all friends to map user IDs to display names
       final allFriends = friendsService.friends;
       final memberMap = <String, String>{};
-      
+
       // Resolve each group member ID to display name
       for (final memberId in group.friendUserIds) {
         final friend = allFriends.where((f) => f.uid == memberId).firstOrNull;
@@ -319,8 +328,9 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
           AppLogger.warning('Friend $memberId not found in friends list');
         }
       }
-      
-      AppLogger.success('Resolved ${memberMap.length} group members for group "${group.name}"');
+
+      AppLogger.success(
+          'Resolved ${memberMap.length} group members for group "${group.name}"');
       return memberMap;
     } catch (e) {
       AppLogger.error('Error resolving group members for $groupId: $e');

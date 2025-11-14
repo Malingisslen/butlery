@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/rate_limiting/rate_limiter.dart';
 
 /// Firebase Authentication repository implementation providing secure user authentication.
 ///
@@ -33,14 +34,15 @@ import 'package:butlery/core/utils/logger.dart';
 /// ServiceLocator.registerLazySingleton<AuthRepository>(
 ///   () => FirebaseAuthRepository(),
 /// );
-/// 
+///
 /// // Use in ViewModels and services
 /// final authRepo = ServiceLocator.get<AuthRepository>();
 /// final user = await authRepo.login(email, password);
 /// ```
 class FirebaseAuthRepository implements AuthRepository {
   final FirebaseAuth _firebaseAuth;
-  
+  final RateLimiter _rateLimiter = RateLimiter();
+
   // ULTRATHINK: Cached auth state protection against Firebase NULL emissions
   User? _cachedUser;
   bool _ignoreInitialNull = false;
@@ -50,14 +52,16 @@ class FirebaseAuthRepository implements AuthRepository {
     // ULTRATHINK: Initialize cached state and setup protection
     _initializeAuthStateProtection();
   }
-  
+
   /// Initialize authentication state protection against Firebase NULL emissions
   void _initializeAuthStateProtection() {
     _cachedUser = _firebaseAuth.currentUser;
     _ignoreInitialNull = (_cachedUser != null);
-    
+
     if (_cachedUser != null) {
-      AppLogger.info('ULTRATHINK protection enabled for user: ${_cachedUser!.email}', 'AuthRepository');
+      AppLogger.info(
+          'ULTRATHINK protection enabled for user: ${_cachedUser!.email}',
+          'AuthRepository');
     }
   }
 
@@ -69,21 +73,23 @@ class FirebaseAuthRepository implements AuthRepository {
   @override
   User? get currentUser {
     final firebaseUser = _firebaseAuth.currentUser;
-    
+
     // ULTRATHINK: Critical Firebase initialization race condition guard
     if (_ignoreInitialNull && firebaseUser == null && _cachedUser != null) {
-      AppLogger.info('BLOCKING Firebase NULL emission - preserving cached user: ${_cachedUser!.email}', 'AuthRepository');
+      AppLogger.info(
+          'BLOCKING Firebase NULL emission - preserving cached user: ${_cachedUser!.email}',
+          'AuthRepository');
       _ignoreInitialNull = false; // Only ignore the first NULL
       return _cachedUser;
     }
-    
+
     _ignoreInitialNull = false; // Reset flag after first real event
-    
+
     // Update cached user with current state
     if (firebaseUser != null) {
       _cachedUser = firebaseUser;
     }
-    
+
     return firebaseUser;
   }
 
@@ -103,46 +109,70 @@ class FirebaseAuthRepository implements AuthRepository {
     required String email,
     required String password,
   }) async {
-    final credential = await _firebaseAuth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
+    // Rate limit check for login operations (DoS prevention)
+    return await _rateLimiter.executeWithLimit(
+      RateLimitOperation.login,
+      () async {
+        final credential = await _firebaseAuth.signInWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+
+        // ULTRATHINK: Update cached state immediately after successful login
+        _cachedUser = credential.user;
+        _ignoreInitialNull = false; // Reset protection flag
+        AppLogger.success(
+            'Login successful - cached user updated: ${_cachedUser!.email}',
+            'AuthRepository');
+      },
     );
-    
-    // ULTRATHINK: Update cached state immediately after successful login
-    _cachedUser = credential.user;
-    _ignoreInitialNull = false; // Reset protection flag
-    AppLogger.success('Login successful - cached user updated: ${_cachedUser!.email}', 'AuthRepository');
   }
 
   @override
   Future<UserCredential> login(String email, String password) async {
-    final credential = await _firebaseAuth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
+    // Rate limit check for login operations (DoS prevention)
+    return await _rateLimiter.executeWithLimit(
+      RateLimitOperation.login,
+      () async {
+        final credential = await _firebaseAuth.signInWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+
+        // ULTRATHINK: Update cached state immediately after successful login
+        _cachedUser = credential.user;
+        _ignoreInitialNull = false; // Reset protection flag
+        AppLogger.success(
+            'Login successful - cached user updated: ${_cachedUser!.email}',
+            'AuthRepository');
+
+        return credential;
+      },
     );
-    
-    // ULTRATHINK: Update cached state immediately after successful login
-    _cachedUser = credential.user;
-    _ignoreInitialNull = false; // Reset protection flag
-    AppLogger.success('Login successful - cached user updated: ${_cachedUser!.email}', 'AuthRepository');
-    
-    return credential;
   }
 
   /// Register a new account with email and password.
   @override
   Future<UserCredential> createUser(String email, String password) async {
-    final credential = await _firebaseAuth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
+    // Rate limit check for registration (prevents account spam/DoS)
+    return await _rateLimiter.executeWithLimit(
+      RateLimitOperation.register,
+      () async {
+        final credential = await _firebaseAuth.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+
+        // ULTRATHINK: Update cached state immediately after successful registration
+        _cachedUser = credential.user;
+        _ignoreInitialNull = false; // Reset protection flag
+        AppLogger.success(
+            'Registration successful - cached user updated: ${_cachedUser!.email}',
+            'AuthRepository');
+
+        return credential;
+      },
     );
-    
-    // ULTRATHINK: Update cached state immediately after successful registration
-    _cachedUser = credential.user;
-    _ignoreInitialNull = false; // Reset protection flag
-    AppLogger.success('Registration successful - cached user updated: ${_cachedUser!.email}', 'AuthRepository');
-    
-    return credential;
   }
 
   @override
@@ -152,15 +182,21 @@ class FirebaseAuthRepository implements AuthRepository {
 
   /// Send a password reset email to the given address.
   @override
-  Future<void> sendPasswordResetEmail(String email) {
-    return _firebaseAuth.sendPasswordResetEmail(email: email);
+  Future<void> sendPasswordResetEmail(String email) async {
+    // Rate limit check for password reset (prevents email spam/DoS)
+    return await _rateLimiter.executeWithLimit(
+      RateLimitOperation.passwordReset,
+      () async {
+        return await _firebaseAuth.sendPasswordResetEmail(email: email);
+      },
+    );
   }
 
   /// Sign out the current user.
   @override
   Future<void> signOut() async {
     await _firebaseAuth.signOut();
-    
+
     // ULTRATHINK: Clear cached state on logout
     _cachedUser = null;
     _ignoreInitialNull = false;
@@ -169,11 +205,12 @@ class FirebaseAuthRepository implements AuthRepository {
   @override
   Future<void> deleteCurrentUser() async {
     await _firebaseAuth.currentUser?.delete();
-    
+
     // ULTRATHINK: Clear cached state on account deletion
     _cachedUser = null;
     _ignoreInitialNull = false;
-    AppLogger.success('Account deleted - cached user cleared', 'AuthRepository');
+    AppLogger.success(
+        'Account deleted - cached user cleared', 'AuthRepository');
   }
 
   @override

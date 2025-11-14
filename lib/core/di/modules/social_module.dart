@@ -19,6 +19,8 @@ import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/social_recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_social_recipe_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_deeplink_repository.dart';
 import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
@@ -49,22 +51,22 @@ class SocialModule implements DIModule {
 
   @override
   List<Type> get provides => [
-    UserRepository,
-    UserService,
-    FriendsRepository,
-    UnifiedFriendsService,
-    CommentsRepository,
-    RatingsRepository,
-    SocialRecipeRepository,
-    SocialRecipeService,
-    DeepLinkRepository,
-    DeepLinkService,
-    ConnectivityRepository,
-    ConnectivityMonitoringService,
-    SocialSharingRepository,
-    SocialMenuOperations,
-    GroupSharedContentService,
-  ];
+        UserRepository,
+        UserService,
+        FriendsRepository,
+        UnifiedFriendsService,
+        CommentsRepository,
+        RatingsRepository,
+        SocialRecipeRepository,
+        SocialRecipeService,
+        DeepLinkRepository,
+        DeepLinkService,
+        ConnectivityRepository,
+        ConnectivityMonitoringService,
+        SocialSharingRepository,
+        SocialMenuOperations,
+        GroupSharedContentService,
+      ];
 
   @override
   int get priority => 20;
@@ -79,7 +81,7 @@ class SocialModule implements DIModule {
       container.registerSingleton<UserRepository>(
         FirebaseUserRepository(authRepository: container<AuthRepository>()),
       );
-      
+
       container.registerSingleton<UserService>(
         UserService(
           repository: container<UserRepository>(),
@@ -90,7 +92,7 @@ class SocialModule implements DIModule {
       container.registerSingleton<FriendsRepository>(
         FirebaseFriendsRepository(authRepository: container<AuthRepository>()),
       );
-      
+
       container.registerSingleton<UnifiedFriendsService>(
         UnifiedFriendsService(
           firestoreRepository: container<FirestoreRepository>(),
@@ -101,18 +103,30 @@ class SocialModule implements DIModule {
       container.registerSingleton<CommentsRepository>(
         FirebaseCommentsRepository(authRepository: container<AuthRepository>()),
       );
-      
+
       container.registerSingleton<RatingsRepository>(
         FirebaseRatingsRepository(authRepository: container<AuthRepository>()),
       );
 
       // ==================== SOCIAL RECIPE SYSTEM ====================
-      
+
       // Social recipe repository
       container.registerSingleton<SocialRecipeRepository>(
-        FirebaseSocialRecipeRepository(authRepository: container<AuthRepository>()),
+        FirebaseSocialRecipeRepository(
+            authRepository: container<AuthRepository>()),
       );
-      
+
+      // Phase 1 shared content repositories (Issue #014)
+      container.registerSingleton<FirebaseSharedRecipeRepository>(
+        FirebaseSharedRecipeRepository(
+            authRepository: container<AuthRepository>()),
+      );
+
+      container.registerSingleton<FirebaseSharedMenuRepository>(
+        FirebaseSharedMenuRepository(
+            authRepository: container<AuthRepository>()),
+      );
+
       // Note: SocialRecipeService registration is deferred to lazy singleton
       // because it depends on services from other modules that may not be available yet
       container.registerLazySingleton<SocialRecipeService>(
@@ -121,35 +135,39 @@ class SocialModule implements DIModule {
           userService: container<UserService>(),
           recipeService: container<UnifiedRecipeService>(),
           permissionService: container<PermissionService>(),
+          sharedRecipeRepository: container<FirebaseSharedRecipeRepository>(),
+          sharedMenuRepository: container<FirebaseSharedMenuRepository>(),
           shoppingService: container<UnifiedShoppingService>(),
         ),
       );
 
       // ==================== SHARING AND CONNECTIVITY ====================
-      
+
       // Deep link repository and service
       container.registerSingleton<DeepLinkRepository>(
         FirebaseDeepLinkRepository(authRepository: container<AuthRepository>()),
       );
-      
+
       container.registerSingleton<DeepLinkService>(DeepLinkService(
         deepLinkRepository: container<DeepLinkRepository>(),
       ));
-      
+
       // Connectivity repository and monitoring service
       container.registerSingleton<ConnectivityRepository>(
-        FirebaseConnectivityRepository(authRepository: container<AuthRepository>()),
+        FirebaseConnectivityRepository(
+            authRepository: container<AuthRepository>()),
       );
-      
+
       container.registerSingleton<ConnectivityMonitoringService>(
         ConnectivityMonitoringService(
           connectivityRepository: container<ConnectivityRepository>(),
         ),
       );
-      
+
       // Social sharing repository
       container.registerSingleton<SocialSharingRepository>(
-        FirebaseSocialSharingRepository(authRepository: container<AuthRepository>()),
+        FirebaseSocialSharingRepository(
+            authRepository: container<AuthRepository>()),
       );
 
       // ==================== SOCIAL OPERATIONS ====================
@@ -172,7 +190,8 @@ class SocialModule implements DIModule {
       );
 
       if (kDebugMode) {
-        debugPrint('✅ [SocialModule] Configured 13 services (Users, Friends, Social recipes, Comments, Ratings, Group content)');
+        debugPrint(
+            '✅ [SocialModule] Configured 13 services (Users, Friends, Social recipes, Comments, Ratings, Group content)');
       }
     } catch (e) {
       throw DIModuleException(
@@ -207,7 +226,6 @@ class SocialModule implements DIModule {
         // Basic validation - service is accessible
         service.toString();
       }
-
     } catch (e) {
       throw DIModuleException(
         name,
@@ -235,7 +253,8 @@ class SocialModule implements DIModule {
         'DeepLinkRepository': container<DeepLinkRepository>(),
         'DeepLinkService': container<DeepLinkService>(),
         'ConnectivityRepository': container<ConnectivityRepository>(),
-        'ConnectivityMonitoringService': container<ConnectivityMonitoringService>(),
+        'ConnectivityMonitoringService':
+            container<ConnectivityMonitoringService>(),
         'SocialSharingRepository': container<SocialSharingRepository>(),
         'GroupSharedContentService': container<GroupSharedContentService>(),
       };
@@ -243,17 +262,18 @@ class SocialModule implements DIModule {
       // Perform health checks on services that support it
       for (final entry in services.entries) {
         final service = entry.value;
-        
+
         if (service is HealthCheckable) {
           final isHealthy = await service.healthCheck();
           if (!isHealthy) {
             if (kDebugMode) {
-              debugPrint('❌ [SocialModule] Health check failed for ${entry.key}');
+              debugPrint(
+                  '❌ [SocialModule] Health check failed for ${entry.key}');
             }
             return false;
           }
         }
-        
+
         // Basic validation - service is not null
         if (service == null) {
           if (kDebugMode) {
@@ -263,7 +283,6 @@ class SocialModule implements DIModule {
         }
       }
 
-      
       return true;
     } catch (e) {
       if (kDebugMode) {
@@ -278,7 +297,7 @@ class SocialModule implements DIModule {
 class SocialModuleFactory {
   /// Create a new SocialModule instance.
   static SocialModule create() => SocialModule();
-  
+
   /// Create SocialModule with custom configuration.
   static SocialModule createWithConfig({
     bool enableSocialSharing = true,

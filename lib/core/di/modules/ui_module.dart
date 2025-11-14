@@ -60,7 +60,7 @@ import 'package:butlery/core/di/modules/collaboration_module.dart';
 import 'package:butlery/core/di/modules/messaging_module.dart';
 
 /// UI module providing ViewModels and UI services.
-/// 
+///
 /// This module registers all ViewModels that can be registered in DI.
 /// ViewModels requiring instance-specific data (like RecipeDetailViewModel)
 /// must be created manually in views.
@@ -70,58 +70,59 @@ class UIModule implements DIModule {
 
   @override
   List<Type> get dependencies => [
-    CoreModule, 
-    ContentModule, 
-    SocialModule,
-    CollaborationModule,
-    MessagingModule,
-  ];
+        CoreModule,
+        ContentModule,
+        SocialModule,
+        CollaborationModule,
+        MessagingModule,
+      ];
 
   @override
   List<Type> get provides => [
-    // Core ViewModels
-    AuthViewModel,
-    UserProfileViewModel,
-    
-    // Recipe ViewModels
-    RecipeListViewModel,
-    UnifiedRecipeViewModel,
-    SocialRecipeViewModel,
-    RecipeFormViewModel,
-    
-    // Menu ViewModels
-    MenuViewModel,
-    RealtimeMenuViewModel,
-    
-    // Shopping ViewModels
-    UnifiedShoppingViewModel,
-    CreateSharedListViewModel,
-    ShoppingShareViewModel,
-    
-    // Social ViewModels
-    FriendsViewModel,
-    SharedContentCoordinatorViewModel,
-    CreateGroupViewModel,
-    GroupInvitationsViewModel,
-    GroupContentViewModel,
-    
-    // Import ViewModels
-    TextImportViewModel,
-    UrlImportViewModel,
-    PhotoImportViewModel,
-    ArchiveImportViewModel,
-    
-    // Communication ViewModels
-    ConversationsViewModel,
-    
-    // Other ViewModels
-    CollaborativeStatusViewModel,
-    UniversalShareDialogViewModel,
-    DiscoveryDashboardViewModel,
-  ];
+        // Core ViewModels
+        AuthViewModel,
+        UserProfileViewModel,
+
+        // Recipe ViewModels
+        RecipeListViewModel,
+        UnifiedRecipeViewModel,
+        SocialRecipeViewModel,
+        RecipeFormViewModel,
+
+        // Menu ViewModels
+        MenuViewModel,
+        RealtimeMenuViewModel,
+
+        // Shopping ViewModels
+        UnifiedShoppingViewModel,
+        CreateSharedListViewModel,
+        ShoppingShareViewModel,
+
+        // Social ViewModels
+        FriendsViewModel,
+        SharedContentCoordinatorViewModel,
+        CreateGroupViewModel,
+        GroupInvitationsViewModel,
+        GroupContentViewModel,
+
+        // Import ViewModels
+        TextImportViewModel,
+        UrlImportViewModel,
+        PhotoImportViewModel,
+        ArchiveImportViewModel,
+
+        // Communication ViewModels
+        ConversationsViewModel,
+
+        // Other ViewModels
+        CollaborativeStatusViewModel,
+        UniversalShareDialogViewModel,
+        DiscoveryDashboardViewModel,
+      ];
 
   @override
-  int get priority => 100; // UI has lowest priority, runs after all other modules
+  int get priority =>
+      100; // UI has lowest priority, runs after all other modules
 
   @override
   Future<void> configure(GetIt container) async {
@@ -131,12 +132,14 @@ class UIModule implements DIModule {
 
     try {
       // ==================== CORE VIEWMODELS ====================
-      
-      // Auth ViewModel - Zero dependencies
+
+      // Auth ViewModel - Auth service dependency
       container.registerFactory<AuthViewModel>(
-        () => AuthViewModel(),
+        () => AuthViewModel(
+          authService: container<AuthService>(),
+        ),
       );
-      
+
       // User Profile ViewModel - Multiple services
       container.registerFactory<UserProfileViewModel>(
         () => UserProfileViewModel(
@@ -144,22 +147,21 @@ class UIModule implements DIModule {
           container<ImagePickerService>(),
         ),
       );
-      
 
       // ==================== RECIPE VIEWMODELS ====================
-      
+
       // Recipe List ViewModel
       container.registerFactory<RecipeListViewModel>(
         () => RecipeListViewModel(
           recipeService: container<UnifiedRecipeService>(),
         ),
       );
-      
+
       // Unified Recipe ViewModel - Zero dependencies (creates internal ViewModels)
       container.registerFactory<UnifiedRecipeViewModel>(
         () => UnifiedRecipeViewModel(),
       );
-      
+
       // Social Recipe ViewModel - requires UnifiedFriendsService, UnifiedRecipeService, and UserService
       container.registerFactory<SocialRecipeViewModel>(
         () => SocialRecipeViewModel(
@@ -168,20 +170,19 @@ class UIModule implements DIModule {
           userService: container<UserService>(),
         ),
       );
-      
+
       // Recipe Form ViewModel - Optional services
       container.registerFactory<RecipeFormViewModel>(
         () => RecipeFormViewModel(),
       );
-      
 
       // ==================== MENU VIEWMODELS ====================
-      
+
       // Menu ViewModel - Factory for proper lifecycle management
       container.registerFactory<MenuViewModel>(
         () => MenuViewModel(),
       );
-      
+
       // Realtime Menu ViewModel - requires specific services
       container.registerFactory<RealtimeMenuViewModel>(
         () => RealtimeMenuViewModel(
@@ -190,20 +191,19 @@ class UIModule implements DIModule {
           authService: container<AuthService>(),
         ),
       );
-      
 
       // ==================== SHOPPING VIEWMODELS ====================
-      
+
       // Unified Shopping ViewModel - Zero dependencies
       container.registerFactory<UnifiedShoppingViewModel>(
         () => UnifiedShoppingViewModel(),
       );
-      
+
       // Create Shared List ViewModel
       container.registerFactory<CreateSharedListViewModel>(
         () => CreateSharedListViewModel(),
       );
-      
+
       // Shopping Share ViewModel - only requires shopping and friends services
       container.registerFactory<ShoppingShareViewModel>(
         () => ShoppingShareViewModel(
@@ -211,10 +211,9 @@ class UIModule implements DIModule {
           friendsService: container<UnifiedFriendsService>(),
         ),
       );
-      
 
       // ==================== SOCIAL VIEWMODELS ====================
-      
+
       // Friends ViewModel
       container.registerFactory<FriendsViewModel>(
         () => FriendsViewModel(
@@ -222,65 +221,63 @@ class UIModule implements DIModule {
           userService: container<UserService>(),
         ),
       );
-      
+
       // Shared Content Coordinator ViewModel - modular architecture
       container.registerFactory<SharedContentCoordinatorViewModel>(
         () => SharedContentCoordinatorViewModel(
-          // ViewModels created internally if not provided
-        ),
+            // ViewModels created internally if not provided
+            ),
       );
-      
+
       // Create Group ViewModel
       container.registerFactory<CreateGroupViewModel>(
         () => CreateGroupViewModel(),
       );
-      
+
       // Group Invitations ViewModel
       container.registerFactory<GroupInvitationsViewModel>(
         () => GroupInvitationsViewModel(
           friendsService: container<UnifiedFriendsService>(),
         ),
       );
-      
+
       // Group Content ViewModel - requires SocialSharingRepository
       container.registerFactory<GroupContentViewModel>(
         () => GroupContentViewModel(
           sharingRepository: container<SocialSharingRepository>(),
         ),
       );
-      
 
       // ==================== IMPORT VIEWMODELS ====================
-      
+
       // Text Import ViewModel
       container.registerFactory<TextImportViewModel>(
         () => TextImportViewModel(
           importManager: container<ImportManager>(),
         ),
       );
-      
+
       // URL Import ViewModel
       container.registerFactory<UrlImportViewModel>(
         () => UrlImportViewModel(
           importManager: container<ImportManager>(),
         ),
       );
-      
+
       // Photo Import ViewModel
       container.registerFactory<PhotoImportViewModel>(
         () => PhotoImportViewModel(
           importManager: container<ImportManager>(),
         ),
       );
-      
+
       // Archive Import ViewModel
       container.registerFactory<ArchiveImportViewModel>(
         () => ArchiveImportViewModel(),
       );
-      
 
       // ==================== COMMUNICATION VIEWMODELS ====================
-      
+
       // Conversations ViewModel
       container.registerFactory<ConversationsViewModel>(
         () => ConversationsViewModel(
@@ -288,15 +285,14 @@ class UIModule implements DIModule {
           authRepository: container<AuthRepository>(),
         ),
       );
-      
 
       // ==================== OTHER VIEWMODELS ====================
-      
+
       // Collaborative Status ViewModel
       container.registerFactory<CollaborativeStatusViewModel>(
         () => CollaborativeStatusViewModel(),
       );
-      
+
       // Universal Share Dialog ViewModel - requires social and shopping services
       container.registerFactory<UniversalShareDialogViewModel>(
         () => UniversalShareDialogViewModel(
@@ -304,15 +300,15 @@ class UIModule implements DIModule {
           shoppingService: container<UnifiedShoppingService>(),
         ),
       );
-      
+
       // Discovery Dashboard ViewModel
       container.registerFactory<DiscoveryDashboardViewModel>(
         () => DiscoveryDashboardViewModel(),
       );
-      
 
       if (kDebugMode) {
-        debugPrint('✅ [UIModule] Configured 21 ViewModels (Auth, Recipe, Menu, Shopping, Social, Import)');
+        debugPrint(
+            '✅ [UIModule] Configured 21 ViewModels (Auth, Recipe, Menu, Shopping, Social, Import)');
       }
     } catch (e) {
       throw DIModuleException(
@@ -328,7 +324,6 @@ class UIModule implements DIModule {
   Future<void> initialize() async {
     try {
       // ViewModels are created on demand, no initialization needed
-      
     } catch (e) {
       throw DIModuleException(
         name,
@@ -356,7 +351,6 @@ class UIModule implements DIModule {
         }
       }
 
-      
       return true;
     } catch (e) {
       if (kDebugMode) {

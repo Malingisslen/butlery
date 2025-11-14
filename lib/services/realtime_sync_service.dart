@@ -13,39 +13,10 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 // Realtime modules
+import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime/connection_state_module.dart';
 import 'package:butlery/services/realtime/resource_parser_module.dart';
 import 'package:butlery/services/realtime/conflict_resolution_module.dart';
-
-/// Synchronization error types for error handling and recovery.
-enum SyncErrorType {
-  connectionLost,
-  permissionDenied,
-  conflictResolution,
-  documentNotFound,
-  firestoreError,
-  unknown,
-}
-
-/// Synchronization error with contextual information.
-class SyncError {
-  final SyncErrorType type;
-  final String message;
-  final String? resourceId;
-  final RealtimeResourceType? resourceType;
-  final dynamic originalError;
-
-  SyncError({
-    required this.type,
-    required this.message,
-    this.resourceId,
-    this.resourceType,
-    this.originalError,
-  });
-
-  @override
-  String toString() => 'SyncError($type): $message';
-}
 
 /// Real-time synchronization service with modular connection, parsing, and conflict resolution.
 class RealtimeSyncService extends BaseService with StreamManagementMixin {
@@ -65,8 +36,10 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   })  : _firestoreRepository = firestoreRepository,
         _authRepository = authRepository {
     // Initialize StreamControllers using StreamManagementMixin
-    _connectionController = createBroadcastController<bool>(name: 'connection_state');
-    _errorController = createBroadcastController<SyncError>(name: 'sync_errors');
+    _connectionController =
+        createBroadcastController<bool>(name: 'connection_state');
+    _errorController =
+        createBroadcastController<SyncError>(name: 'sync_errors');
 
     // Initialize modules
     _initializeModules();
@@ -247,11 +220,13 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       final docRef = _parserModule.getResourceDocRef(resource.id);
 
       // Check if conflict resolution is needed
-      final shouldResolveConflict = await _conflictModule.shouldResolveConflict(resource);
+      final shouldResolveConflict =
+          await _conflictModule.shouldResolveConflict(resource);
 
       if (shouldResolveConflict) {
         final remote = await _parserModule.getLatestResource<T>(resource.id);
-        final resolvedResource = await _conflictModule.resolveConflict<T>(resource, remote);
+        final resolvedResource =
+            await _conflictModule.resolveConflict<T>(resource, remote);
         await _conflictModule.performUpdate(docRef, resolvedResource);
       } else {
         await _conflictModule.performUpdate(docRef, resource);
@@ -296,7 +271,8 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
 
     try {
       // Fetch resource to check permissions
-      final resource = await _parserModule.getLatestResource<RealtimeResource>(resourceId);
+      final resource =
+          await _parserModule.getLatestResource<RealtimeResource>(resourceId);
 
       if (!resource.canUserDelete(_currentUserId!)) {
         throw SyncError(
@@ -387,7 +363,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     _activeListeners.clear();
     AppLogger.info('🔒 Alla listeners stängda');
   }
-  
 
   /// Hantera fel och notifiera lyssnare
   void _handleError(

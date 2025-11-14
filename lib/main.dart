@@ -29,6 +29,7 @@ import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
 
 // Route observers
 import 'package:butlery/core/observers/snackbar_route_observer.dart';
+import 'package:butlery/core/observers/performance_navigator_observer.dart';
 
 // Performance optimization - handled by modular system
 
@@ -49,6 +50,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_performance/firebase_performance.dart';
 import 'dart:async';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -170,12 +172,27 @@ Future<void> _initializeModularSystem() async {
     UIStage(),
   ];
 
+  // Start Firebase Performance trace for app startup
+  final startupTrace = FirebasePerformance.instance.newTrace('app_startup');
+  await startupTrace.start();
+
+  if (kDebugMode) {
+    debugPrint('📊 Performance: Started app startup trace');
+  }
+
   // Initialize with modules and stages
   // This also initializes the ServiceLocator internally
   await ApplicationBootstrap.initialize(
     modules: modules,
     stages: stages,
   );
+
+  // Stop startup trace after initialization complete
+  await startupTrace.stop();
+
+  if (kDebugMode) {
+    debugPrint('📊 Performance: Stopped app startup trace');
+  }
 
   // ServiceLocator is now initialized by ApplicationBootstrap
   // Performance services are handled by the PerformanceModule if registered
@@ -256,6 +273,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   FirebaseAnalyticsObserver? _analyticsObserver;
   final SnackbarRouteObserver _snackbarObserver = SnackbarRouteObserver();
+  final PerformanceNavigatorObserver _performanceObserver =
+      PerformanceNavigatorObserver();
   DateTime? _sessionStartTime;
 
   @override
@@ -408,8 +427,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   }
 
   Widget _buildMainApp() {
-    // Build navigator observers list with snackbar observer and optional analytics
+    // Build navigator observers list with performance, snackbar, and optional analytics observers
     final observers = <NavigatorObserver>[
+      _performanceObserver, // Track screen performance with Firebase Performance
       _snackbarObserver,
       if (_analyticsObserver != null) _analyticsObserver!,
     ];

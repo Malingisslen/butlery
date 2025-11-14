@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:butlery/repositories/interfaces/storage_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
@@ -9,7 +10,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart' as permission;
 
 // Re-export StorageInfo from repository interface
-export 'package:butlery/repositories/interfaces/storage_repository.dart' show StorageInfo;
+export 'package:butlery/repositories/interfaces/storage_repository.dart'
+    show StorageInfo;
 
 /// Storage service for image upload and management
 ///
@@ -17,24 +19,36 @@ export 'package:butlery/repositories/interfaces/storage_repository.dart' show St
 /// maintaining the singleton pattern and existing API. The repository pattern
 /// allows for easy mocking in tests and switching between different storage
 /// providers if needed.
-class StorageService extends BaseService 
+class StorageService extends BaseService
     with FirebaseServiceMixin, SingletonServiceMixin<StorageService> {
   final StorageRepository _repository;
-  
-  StorageService._internal(this._repository);
-  
+  final FirestoreRepository _firestoreRepository;
+
+  StorageService._internal(this._repository, this._firestoreRepository);
+
   /// Factory constructor with dependency injection support.
   ///
-  /// Requires [repository] parameter to be provided from DI container.
+  /// Requires [repository] and [firestoreRepository] parameters from DI container.
   /// Use `ServiceLocator.get<StorageService>()` to obtain instance.
-  factory StorageService({required StorageRepository repository}) =>
-    SingletonServiceMixin.createSingletonWithDependencies(
-      () => StorageService._internal(repository),
-      dependencies: [repository],
+  factory StorageService({
+    required StorageRepository repository,
+    FirestoreRepository? firestoreRepository,
+  }) {
+    final actualFirestoreRepo =
+        firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
+    return SingletonServiceMixin.createSingletonWithDependencies(
+      () => StorageService._internal(repository, actualFirestoreRepo),
+      dependencies: [repository, actualFirestoreRepo],
     );
-  
+  }
+
   @override
   String get serviceName => 'StorageService';
+
+  // ===== FIREBASE SERVICE MIXIN IMPLEMENTATION =====
+
+  @override
+  FirestoreRepository get firestoreRepository => _firestoreRepository;
 
   /// Upload an image file to storage
   Future<String?> uploadImageFile(
@@ -50,19 +64,19 @@ class StorageService extends BaseService
           prefix: 'recipe',
         );
         final path = 'users/$userId/recipes/$fileName';
-        
+
         final url = await _repository.uploadImage(
           imageFile: imageFile,
           userId: userId,
           path: path,
           onProgress: onProgress,
         );
-        
+
         if (url != null) {
           // Create thumbnail in background
           _createThumbnailInBackground(imageFile, userId, path);
         }
-        
+
         return url;
       },
       operationName: 'Upload image file',
@@ -85,21 +99,21 @@ class StorageService extends BaseService
         // Use provided prefix or default to avatar
         final imagePrefix = prefix ?? 'avatar';
         final pathFolder = imagePrefix == 'avatar' ? 'avatars' : 'recipes';
-        
+
         // Generate unique filename if not provided
         final uniqueFileName = _repository.generateFileName(
           originalPath: fileName,
           prefix: imagePrefix,
         );
         final path = 'users/$userId/$pathFolder/$uniqueFileName';
-        
+
         final url = await _repository.uploadImageData(
           imageData: imageBytes,
           userId: userId,
           path: path,
           onProgress: onProgress,
         );
-        
+
         return url;
       },
       operationName: 'Upload image bytes',
@@ -171,15 +185,18 @@ class StorageService extends BaseService
     Function(double)? onProgress,
   }) async {
     // Get authenticated user ID from permission service
-    final permissionService = ServiceLocator.get<permission.PermissionService>();
+    final permissionService =
+        ServiceLocator.get<permission.PermissionService>();
     final userId = permissionService.currentUserId;
-    
+
     if (userId == null) {
-      AppLogger.error('🚫 STORAGE_SERVICE: No authenticated user for image upload');
+      AppLogger.error(
+          '🚫 STORAGE_SERVICE: No authenticated user for image upload');
       return null;
     }
-    
-    AppLogger.info('🎯 STORAGE_SERVICE: Uploading recipe image for user: $userId');
+
+    AppLogger.info(
+        '🎯 STORAGE_SERVICE: Uploading recipe image for user: $userId');
     return await uploadImageFile(imageFile, userId, onProgress: onProgress);
   }
 

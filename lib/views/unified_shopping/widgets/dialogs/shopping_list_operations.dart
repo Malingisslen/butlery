@@ -9,6 +9,7 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/core/utils/validation_utils.dart';
 
 /// List management operations for shopping lists
 class ShoppingListOperations {
@@ -41,7 +42,8 @@ class ShoppingListOperations {
     final confirmed = await DialogFactory.showConfirmation(
       context,
       title: 'Töm inhandlade varor',
-      message: 'Vill du ta bort alla ${viewModel.boughtItems} inhandlade varor från listan?',
+      message:
+          'Vill du ta bort alla ${viewModel.boughtItems} inhandlade varor från listan?',
       confirmText: 'Töm',
       isDangerous: true,
     );
@@ -84,16 +86,11 @@ class ShoppingListOperations {
                 label: 'Nytt namn',
                 hint: 'Ange det nya namnet för listan',
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Namn får inte vara tomt';
-                  }
-                  if (value.trim().length < 2) {
-                    return 'Namnet måste vara minst 2 tecken';
-                  }
-                  if (value.trim().length > 50) {
-                    return 'Namnet får inte vara längre än 50 tecken';
-                  }
-                  return null;
+                  final requiredCheck = ValidationUtils.validateRequired(value,
+                      fieldName: 'Namn');
+                  if (requiredCheck != null) return requiredCheck;
+                  return ValidationUtils.validateLength(value,
+                      minLength: 2, maxLength: 50, fieldName: 'Namnet');
                 },
                 maxLength: 50,
               ),

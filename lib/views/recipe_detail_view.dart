@@ -108,12 +108,12 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 pinned: true,
                 backgroundColor: Theme.of(context).colorScheme.surface,
                 foregroundColor: AppColors.textDark,
-                iconTheme: IconThemeData(
-                  color: Theme.of(context).colorScheme.primary,
+                iconTheme: const IconThemeData(
+                  color: AppColors.cardWhite,
                   size: AppDimensions.iconSizeL,
                 ),
-                actionsIconTheme: IconThemeData(
-                  color: Theme.of(context).colorScheme.primary,
+                actionsIconTheme: const IconThemeData(
+                  color: AppColors.cardWhite,
                   size: AppDimensions.iconSizeL,
                 ),
                 flexibleSpace: FlexibleSpaceBar(
@@ -184,21 +184,32 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 ),
                 actions: [
                   // Internal sharing with friends and groups
-                  IconButton(
-                    icon: const Icon(Icons.people_outline),
-                    onPressed: () => _actions.showSocialShareDialog(context),
-                    tooltip: 'Dela med vänner',
+                  Semantics(
+                    label: 'Dela recept med vänner och grupper',
+                    button: true,
+                    child: IconButton(
+                      icon: const Icon(Icons.people_outline),
+                      onPressed: () => _actions.showSocialShareDialog(context),
+                      tooltip: 'Dela med vänner',
+                    ),
                   ),
                   // External sharing
-                  IconButton(
-                    icon: const Icon(Icons.share),
-                    onPressed: () => _actions.shareRecipe(context),
-                    tooltip: 'Dela externt',
+                  Semantics(
+                    label: 'Dela recept externt',
+                    button: true,
+                    child: IconButton(
+                      icon: const Icon(Icons.share),
+                      onPressed: () => _actions.shareRecipe(context),
+                      tooltip: 'Dela externt',
+                    ),
                   ),
                   // More actions menu
-                  PopupMenuButton(
-                    icon: const Icon(Icons.more_vert),
-                    itemBuilder: (context) => [
+                  Semantics(
+                    label: 'Fler receptåtgärder',
+                    button: true,
+                    child: PopupMenuButton(
+                      icon: const Icon(Icons.more_vert),
+                      itemBuilder: (context) => [
                       const PopupMenuItem(
                         value: 'edit',
                         child: Row(
@@ -213,7 +224,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         value: 'fork',
                         child: Row(
                           children: [
-                            Icon(Icons.content_copy, size: AppDimensions.iconSizeM),
+                            Icon(Icons.content_copy,
+                                size: AppDimensions.iconSizeM),
                             SizedBox(width: AppDimensions.spacingM),
                             Text('Make Copy'),
                           ],
@@ -223,7 +235,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         value: 'generate_shopping_list',
                         child: Row(
                           children: [
-                            Icon(Icons.shopping_cart, size: AppDimensions.iconSizeM),
+                            Icon(Icons.shopping_cart,
+                                size: AppDimensions.iconSizeM),
                             SizedBox(width: AppDimensions.spacingM),
                             Text('Skapa inköpslista'),
                           ],
@@ -234,7 +247,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         child: Row(
                           children: [
                             Icon(Icons.delete,
-                                size: AppDimensions.iconSizeM, color: AppColors.error),
+                                size: AppDimensions.iconSizeM,
+                                color: AppColors.error),
                             SizedBox(width: AppDimensions.spacingM),
                             Text('Delete Recipe',
                                 style: TextStyle(color: AppColors.error)),
@@ -253,9 +267,10 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             ],
                           ),
                         ),
-                    ],
-                    onSelected: (value) =>
-                        _handleMenuAction(context, value, viewModel, recipe),
+                      ],
+                      onSelected: (value) =>
+                          _handleMenuAction(context, value, viewModel, recipe),
+                    ),
                   ),
                 ],
               ),

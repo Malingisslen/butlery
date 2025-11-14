@@ -11,6 +11,8 @@ import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/interfaces/social_recipe_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
@@ -22,6 +24,8 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
   final UnifiedRecipeService _recipeService;
   final UnifiedShoppingService? _shoppingService;
   final PermissionService _permissionService;
+  final FirebaseSharedRecipeRepository _sharedRecipeRepository;
+  final FirebaseSharedMenuRepository _sharedMenuRepository;
 
   // Modules
   late final SocialParticipantResolverModule _participantResolver;
@@ -37,16 +41,22 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
     required UserService userService,
     required UnifiedRecipeService recipeService,
     required PermissionService permissionService,
+    required FirebaseSharedRecipeRepository sharedRecipeRepository,
+    required FirebaseSharedMenuRepository sharedMenuRepository,
     UnifiedShoppingService? shoppingService,
   })  : _repository = repository,
         _userService = userService,
         _recipeService = recipeService,
         _shoppingService = shoppingService,
-        _permissionService = permissionService {
+        _permissionService = permissionService,
+        _sharedRecipeRepository = sharedRecipeRepository,
+        _sharedMenuRepository = sharedMenuRepository {
     _participantResolver = SocialParticipantResolverModule(
       userService: _userService,
       getSharedRecipes: () => _sharedRecipes,
       getSharedMenus: () => _sharedMenus,
+      sharedRecipeRepository: _sharedRecipeRepository,
+      sharedMenuRepository: _sharedMenuRepository,
       shoppingService: _shoppingService,
     );
   }
@@ -98,26 +108,31 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
     notifyListeners();
   }
 
-  // Get visible shared recipes (excluding dismissed ones)
+  // Get visible shared recipes (already filtered by repository - no dismissed items)
+  ///
+  /// Note (Issue #014): Repository queries already filter out dismissed items using
+  /// subcollection-based shouldShowToUser() checks. No additional filtering needed.
   List<SharedRecipe> getVisibleSharedRecipes(String currentUserId) {
-    return _sharedRecipes.where((recipe) => !recipe.isDismissedBy(currentUserId)).toList();
+    return _sharedRecipes;
   }
 
-  // Get visible shared menus (excluding dismissed ones)
+  // Get visible shared menus (already filtered by repository - no dismissed items)
+  ///
+  /// Note (Issue #014): Repository queries already filter out dismissed items using
+  /// subcollection-based shouldShowToUser() checks. No additional filtering needed.
   List<SharedMenu> getVisibleSharedMenus(String currentUserId) {
-    return _sharedMenus.where((menu) => !menu.isDismissedBy(currentUserId)).toList();
+    return _sharedMenus;
   }
 
   // Mark shared recipe as viewed
+  ///
+  /// Note (Issue #014): Repository handles status tracking in subcollections.
+  /// Local state update removed - status now managed server-side only.
   Future<bool> markSharedRecipeAsViewed(String recipeId, String userId) async {
     try {
       await _repository.markSharedRecipeAsViewed(recipeId, userId);
-      // Update local state
-      final index = _sharedRecipes.indexWhere((r) => r.id == recipeId);
-      if (index >= 0) {
-        _sharedRecipes[index] = _sharedRecipes[index].markViewedBy(userId);
-        notifyListeners();
-      }
+      // Status tracking now handled by repository subcollections (Issue #014)
+      // Optionally refresh to get updated viewCount, or rely on next load
       return true;
     } catch (e) {
       AppLogger.error('Failed to mark recipe as viewed', e);
@@ -126,15 +141,14 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
   }
 
   // Mark shared menu as viewed
+  ///
+  /// Note (Issue #014): Repository handles status tracking in subcollections.
+  /// Local state update removed - status now managed server-side only.
   Future<bool> markSharedMenuAsViewed(String menuId, String userId) async {
     try {
       await _repository.markSharedMenuAsViewed(menuId, userId);
-      // Update local state
-      final index = _sharedMenus.indexWhere((m) => m.id == menuId);
-      if (index >= 0) {
-        _sharedMenus[index] = _sharedMenus[index].markViewedBy(userId);
-        notifyListeners();
-      }
+      // Status tracking now handled by repository subcollections (Issue #014)
+      // Optionally refresh to get updated viewCount, or rely on next load
       return true;
     } catch (e) {
       AppLogger.error('Failed to mark menu as viewed', e);

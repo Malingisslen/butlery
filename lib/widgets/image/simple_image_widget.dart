@@ -146,24 +146,28 @@ class SimpleImageWidget extends StatelessWidget {
 
     // Add tap handlers
     if (onTap != null || onLongPress != null) {
-      image = GestureDetector(
-        onTap: onTap != null
-            ? () {
-                if (config.enableHapticFeedback) {
-                  HapticFeedback.lightImpact();
+      image = Semantics(
+        label: 'Visa fullstorlek av bild',
+        button: true,
+        child: GestureDetector(
+          onTap: onTap != null
+              ? () {
+                  if (config.enableHapticFeedback) {
+                    HapticFeedback.lightImpact();
+                  }
+                  onTap!();
                 }
-                onTap!();
-              }
-            : null,
-        onLongPress: onLongPress != null
-            ? () {
-                if (config.enableHapticFeedback) {
-                  HapticFeedback.mediumImpact();
+              : null,
+          onLongPress: onLongPress != null
+              ? () {
+                  if (config.enableHapticFeedback) {
+                    HapticFeedback.mediumImpact();
+                  }
+                  onLongPress!();
                 }
-                onLongPress!();
-              }
-            : null,
-        child: image,
+              : null,
+          child: image,
+        ),
       );
     }
 
@@ -176,12 +180,16 @@ class SimpleImageWidget extends StatelessWidget {
         ImageComponents.buildPlaceholder(
           config: config,
           child: onTap != null
-              ? GestureDetector(
-                  onTap: onTap,
-                  child: const Center(
-                    child: Icon(
-                      Icons.add_photo_alternate_outlined,
-                      size: AppDimensions.iconSizeXl,
+              ? Semantics(
+                  label: 'Lägg till bild',
+                  button: true,
+                  child: GestureDetector(
+                    onTap: onTap,
+                    child: const Center(
+                      child: Icon(
+                        Icons.add_photo_alternate_outlined,
+                        size: AppDimensions.iconSizeXl,
+                      ),
                     ),
                   ),
                 )
@@ -261,24 +269,28 @@ class NetworkImageWidget extends StatelessWidget {
 
     // Add tap handlers
     if (onTap != null || onLongPress != null) {
-      image = GestureDetector(
-        onTap: onTap != null
-            ? () {
-                if (enableHapticFeedback) {
-                  HapticFeedback.lightImpact();
+      image = Semantics(
+        label: 'Visa fullstorlek av bild',
+        button: true,
+        child: GestureDetector(
+          onTap: onTap != null
+              ? () {
+                  if (enableHapticFeedback) {
+                    HapticFeedback.lightImpact();
+                  }
+                  onTap!();
                 }
-                onTap!();
-              }
-            : null,
-        onLongPress: onLongPress != null
-            ? () {
-                if (enableHapticFeedback) {
-                  HapticFeedback.mediumImpact();
+              : null,
+          onLongPress: onLongPress != null
+              ? () {
+                  if (enableHapticFeedback) {
+                    HapticFeedback.mediumImpact();
+                  }
+                  onLongPress!();
                 }
-                onLongPress!();
-              }
-            : null,
-        child: image,
+              : null,
+          child: image,
+        ),
       );
     }
 
@@ -342,20 +354,24 @@ class _ExpandableImageWidgetState extends State<ExpandableImageWidget>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _toggleExpansion,
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: SimpleImageWidget(
-              imageUrl: widget.imageUrl,
-              config: widget.config,
-              onTap: widget.onTap,
-            ),
-          );
-        },
+    return Semantics(
+      label: _isExpanded ? 'Förminska bild' : 'Förstora bild',
+      button: true,
+      child: GestureDetector(
+        onTap: _toggleExpansion,
+        child: AnimatedBuilder(
+          animation: _scaleAnimation,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _scaleAnimation.value,
+              child: SimpleImageWidget(
+                imageUrl: widget.imageUrl,
+                config: widget.config,
+                onTap: widget.onTap,
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -416,18 +432,22 @@ class _LazyImageWidgetState extends State<LazyImageWidget> {
   @override
   Widget build(BuildContext context) {
     if (!_shouldLoad) {
-      return GestureDetector(
-        onTap: _loadImage,
-        child: ImageComponents.buildPlaceholder(
-          config: widget.config,
-          child: const Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.image_outlined, size: AppDimensions.iconSizeXl),
-                SizedBox(height: AppDimensions.spacingSm),
-                Text('Tap to load'),
-              ],
+      return Semantics(
+        label: 'Ladda bild',
+        button: true,
+        child: GestureDetector(
+          onTap: _loadImage,
+          child: ImageComponents.buildPlaceholder(
+            config: widget.config,
+            child: const Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.image_outlined, size: AppDimensions.iconSizeXl),
+                  SizedBox(height: AppDimensions.spacingSm),
+                  Text('Tap to load'),
+                ],
+              ),
             ),
           ),
         ),

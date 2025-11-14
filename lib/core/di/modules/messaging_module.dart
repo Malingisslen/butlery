@@ -32,8 +32,8 @@ import 'package:butlery/repositories/firebase/firebase_messaging_repository.dart
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/presence_service.dart';
 
-// Firestore
-import 'package:cloud_firestore/cloud_firestore.dart';
+// Firestore repository
+import 'package:butlery/repositories/firestore_repository.dart';
 
 // Import dependency modules
 import 'package:butlery/core/di/modules/core_module.dart';
@@ -58,11 +58,11 @@ class MessagingModule implements DIModule {
 
   @override
   List<Type> get provides => [
-    MessagingRepository,
-    MessagingService,
-    PresenceService,
-    NotificationsRepository, // Also provides notifications repository
-  ];
+        MessagingRepository,
+        MessagingService,
+        PresenceService,
+        NotificationsRepository, // Also provides notifications repository
+      ];
 
   @override
   int get priority => 30; // After Core (1), Content (10), and Social (20)
@@ -75,7 +75,7 @@ class MessagingModule implements DIModule {
 
     try {
       // ==================== MESSAGING REPOSITORIES ====================
-      
+
       // Messaging repository for direct messages and conversations
       container.registerSingleton<MessagingRepository>(
         FirebaseMessagingRepository(),
@@ -84,7 +84,8 @@ class MessagingModule implements DIModule {
       // Notifications repository (if not already registered by Social Module)
       if (!container.isRegistered<NotificationsRepository>()) {
         container.registerSingleton<NotificationsRepository>(
-          FirebaseNotificationsRepository(authRepository: container<AuthRepository>()),
+          FirebaseNotificationsRepository(
+              authRepository: container<AuthRepository>()),
         );
       }
 
@@ -98,12 +99,13 @@ class MessagingModule implements DIModule {
 
       // PresenceService - handles online/offline status and typing indicators
       container.registerSingleton<PresenceService>(PresenceService(
-        firestore: FirebaseFirestore.instance,
+        firestoreRepository: container<FirestoreRepository>(),
         authRepository: container<AuthRepository>(),
       ));
 
       if (kDebugMode) {
-        debugPrint('✅ [MessagingModule] Configured messaging, presence and notifications services');
+        debugPrint(
+            '✅ [MessagingModule] Configured messaging, presence and notifications services');
       }
     } catch (e) {
       throw DIModuleException(
@@ -136,7 +138,6 @@ class MessagingModule implements DIModule {
       if (kDebugMode) {
         debugPrint('✅ [MessagingModule] Initialized presence tracking');
       }
-
     } catch (e) {
       throw DIModuleException(
         name,
@@ -161,23 +162,25 @@ class MessagingModule implements DIModule {
 
       // Include NotificationsRepository if it was registered by this module
       if (container.isRegistered<NotificationsRepository>()) {
-        services['NotificationsRepository'] = container<NotificationsRepository>();
+        services['NotificationsRepository'] =
+            container<NotificationsRepository>();
       }
 
       // Perform health checks on services that support it
       for (final entry in services.entries) {
         final service = entry.value;
-        
+
         if (service is HealthCheckable) {
           final isHealthy = await service.healthCheck();
           if (!isHealthy) {
             if (kDebugMode) {
-              debugPrint('❌ [MessagingModule] Health check failed for ${entry.key}');
+              debugPrint(
+                  '❌ [MessagingModule] Health check failed for ${entry.key}');
             }
             return false;
           }
         }
-        
+
         // Basic validation - service is not null
         if (service == null) {
           if (kDebugMode) {
@@ -187,7 +190,6 @@ class MessagingModule implements DIModule {
         }
       }
 
-      
       return true;
     } catch (e) {
       if (kDebugMode) {
@@ -202,7 +204,7 @@ class MessagingModule implements DIModule {
 class MessagingModuleFactory {
   /// Create a new MessagingModule instance.
   static MessagingModule create() => MessagingModule();
-  
+
   /// Create MessagingModule with custom configuration.
   static MessagingModule createWithConfig({
     bool enablePushNotifications = true,

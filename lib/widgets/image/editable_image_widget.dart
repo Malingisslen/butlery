@@ -567,23 +567,27 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
     return Stack(
       children: [
         // Main image with stable key
-        GestureDetector(
-          key: ValueKey('gesture_$imageUrl'),
-          onTap: () {
-            if (widget.config.enableHapticFeedback) {
-              HapticFeedback.lightImpact();
-            }
-            widget.onImageTap?.call(index);
-          },
-          child: ImageComponents.buildAdaptiveImage(
-            pathOrUrl: imageUrl, // Now handles both file paths and URLs
-            config: widget.config,
-            fit: BoxFit.cover,
-            placeholder: ImageComponents.buildLoadingPlaceholder(
+        Semantics(
+          label: 'Visa fullstorlek av bild',
+          button: true,
+          child: GestureDetector(
+            key: ValueKey('gesture_$imageUrl'),
+            onTap: () {
+              if (widget.config.enableHapticFeedback) {
+                HapticFeedback.lightImpact();
+              }
+              widget.onImageTap?.call(index);
+            },
+            child: ImageComponents.buildAdaptiveImage(
+              pathOrUrl: imageUrl, // Now handles both file paths and URLs
               config: widget.config,
-            ),
-            errorWidget: ImageComponents.buildErrorPlaceholder(
-              config: widget.config,
+              fit: BoxFit.cover,
+              placeholder: ImageComponents.buildLoadingPlaceholder(
+                config: widget.config,
+              ),
+              errorWidget: ImageComponents.buildErrorPlaceholder(
+                config: widget.config,
+              ),
             ),
           ),
         ),
@@ -1075,10 +1079,13 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
     final imageUrl = widget.imageUrls[index];
     final isPrimary = index == widget.primaryIndex;
 
-    return GestureDetector(
-      // Move GestureDetector to the outermost level for better touch detection
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
+    return Semantics(
+      label: isPrimary ? 'Primär bild, tryck för att visa fullstorlek' : 'Välj som primär bild',
+      button: true,
+      child: GestureDetector(
+        // Move GestureDetector to the outermost level for better touch detection
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
         AppLogger.debug('👆 TOUCH: Image $index tapped! isPrimary: $isPrimary');
 
         if (widget.config.enableHapticFeedback) {
@@ -1182,22 +1189,27 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
             Positioned(
               bottom: AppDimensions.spacingXs,
               right: AppDimensions.spacingXs,
-              child: GestureDetector(
-                onTap: () {
-                  AppLogger.debug(
-                      '🗑️ DELETE: Delete button tapped for image $index');
-                  _removeImageAtIndex(index);
-                },
-                child: _buildGridActionButton(
-                  icon: Icons.close,
-                  onTap: () {}, // Empty since we handle tap above
-                  tooltip: 'Ta bort bild',
-                  isDestructive: true,
+              child: Semantics(
+                label: 'Ta bort bild',
+                button: true,
+                child: GestureDetector(
+                  onTap: () {
+                    AppLogger.debug(
+                        '🗑️ DELETE: Delete button tapped for image $index');
+                    _removeImageAtIndex(index);
+                  },
+                  child: _buildGridActionButton(
+                    icon: Icons.close,
+                    onTap: () {}, // Empty since we handle tap above
+                    tooltip: 'Ta bort bild',
+                    isDestructive: true,
+                  ),
                 ),
               ),
             ),
         ],
       ),
+    ),
     );
   }
 
@@ -1235,60 +1247,65 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
 
   /// Build add image button for grid layout
   Widget _buildAddImageButton() {
-    return GestureDetector(
-      onTap: (_isAddingImage || widget.isLoading) ? null : _addImage,
-      child: Container(
-        height: AppDimensions.buttonHeight,
-        decoration: BoxDecoration(
-          borderRadius: widget.config.effectiveBorderRadius,
-          border: Border.all(
-            color: AppColors.primaryBlue.withValues(alpha: 0.3),
-            width: AppDimensions.borderWidthThin,
+    return Semantics(
+      label: 'Lägg till bild',
+      button: true,
+      enabled: !(_isAddingImage || widget.isLoading),
+      child: GestureDetector(
+        onTap: (_isAddingImage || widget.isLoading) ? null : _addImage,
+        child: Container(
+          height: AppDimensions.buttonHeight,
+          decoration: BoxDecoration(
+            borderRadius: widget.config.effectiveBorderRadius,
+            border: Border.all(
+              color: AppColors.primaryBlue.withValues(alpha: 0.3),
+              width: AppDimensions.borderWidthThin,
+            ),
+            color: AppColors.primaryBlue.withValues(alpha: 0.05),
           ),
-          color: AppColors.primaryBlue.withValues(alpha: 0.05),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (_isAddingImage || widget.isLoading) ...[
-              const SizedBox(
-                width: AppDimensions.iconSizeM,
-                height: AppDimensions.iconSizeM,
-                child: CircularProgressIndicator(
-                  strokeWidth: AppDimensions.borderWidthThin,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
-                ),
-              ),
-              const SizedBox(width: AppDimensions.spacingSm),
-              Flexible(
-                child: Text(
-                  'Lägger till...',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.primaryBlue,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (_isAddingImage || widget.isLoading) ...[
+                const SizedBox(
+                  width: AppDimensions.iconSizeM,
+                  height: AppDimensions.iconSizeM,
+                  child: CircularProgressIndicator(
+                    strokeWidth: AppDimensions.borderWidthThin,
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ] else ...[
-              const Icon(
-                Icons.add_photo_alternate_outlined,
-                color: AppColors.primaryBlue,
-                size: AppDimensions.iconSizeM,
-              ),
-              const SizedBox(width: AppDimensions.spacingSm),
-              Flexible(
-                child: Text(
-                  'Lägg till (${widget.config.maxImages - widget.imageUrls.length})',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.w500,
+                const SizedBox(width: AppDimensions.spacingSm),
+                Flexible(
+                  child: Text(
+                    'Lägger till...',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.primaryBlue,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
+              ] else ...[
+                const Icon(
+                  Icons.add_photo_alternate_outlined,
+                  color: AppColors.primaryBlue,
+                  size: AppDimensions.iconSizeM,
+                ),
+                const SizedBox(width: AppDimensions.spacingSm),
+                Flexible(
+                  child: Text(
+                    'Lägg till (${widget.config.maxImages - widget.imageUrls.length})',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.primaryBlue,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

@@ -1,5 +1,7 @@
 /// Comprehensive unit tests for FirebaseSharedMenuRepository.
 ///
+/// **Issue #014**: Migrated to subcollection-based status tracking (removed arrays).
+///
 /// Tests shared menu operations including create, read, status management (viewed/imported/dismissed),
 /// permission validation, and copy-on-write collaboration support.
 library;
@@ -86,18 +88,18 @@ void main() {
       };
     }
 
+    /// Create a SharedMenu with count fields (Issue #014 - arrays removed).
     SharedMenu createSharedMenu({
       String? id,
       String? menuTitle,
       String? sharedByUserId,
       String? sharedByDisplayName,
-      List<String>? sharedToUserIds,
       Map<String, List<Recipe>>? menuSnapshot,
       String? shareMessage,
-      List<String>? viewedByUserIds,
-      List<String>? engagedByUserIds,
-      List<String>? dismissedByUserIds,
       bool allowCollaboration = false,
+      int? viewCount,
+      int? engagementCount,
+      int? dismissalCount,
     }) {
       return SharedMenu(
         id: id ?? testMenuId,
@@ -105,35 +107,100 @@ void main() {
         menuSnapshot: menuSnapshot ?? createMenuSnapshot(),
         sharedByUserId: sharedByUserId ?? testUserId,
         sharedByDisplayName: sharedByDisplayName ?? 'Test User',
-        sharedToUserIds: sharedToUserIds ?? [testOtherUserId],
         shareMessage: shareMessage,
         sharedAt: DateTime(2025, 1, 15),
-        viewedByUserIds: viewedByUserIds ?? [],
-        engagedByUserIds: engagedByUserIds ?? [],
-        dismissedByUserIds: dismissedByUserIds ?? [],
         allowCollaboration: allowCollaboration,
+        viewCount: viewCount ?? 0,
+        engagementCount: engagementCount ?? 0,
+        dismissalCount: dismissalCount ?? 0,
       );
     }
 
-    Future<void> seedSharedMenu(SharedMenu sharedMenu) async {
+    /// Seed a SharedMenu into FakeFirestore with optional subcollection data (Issue #014).
+    ///
+    /// This helper creates the main document and populates subcollections for testing.
+    /// Use this instead of passing array parameters to createSharedMenu().
+    Future<void> seedSharedMenu(
+      SharedMenu sharedMenu, {
+      List<String>? memberUserIds,
+      List<String>? viewedByUserIds,
+      List<String>? engagedByUserIds,
+      List<String>? dismissedByUserIds,
+    }) async {
+      // Create main document
       await fakeFirestore
           .collection('shared_menus')
           .doc(sharedMenu.id)
           .set(sharedMenu.toFirestore());
+
+      // Create subcollection documents (Issue #014)
+      final menuRef = fakeFirestore.collection('shared_menus').doc(sharedMenu.id);
+
+      // Seed members subcollection
+      if (memberUserIds != null) {
+        for (final userId in memberUserIds) {
+          await menuRef.collection('members').doc(userId).set({
+            'userId': userId,
+            'addedBy': sharedMenu.sharedByUserId,
+            'addedAt': DateTime.now(),
+            'role': 'member',
+          });
+        }
+      }
+
+      // Seed views subcollection
+      if (viewedByUserIds != null) {
+        for (final userId in viewedByUserIds) {
+          await menuRef.collection('views').doc(userId).set({
+            'userId': userId,
+            'viewedAt': DateTime.now(),
+          });
+        }
+      }
+
+      // Seed engagements subcollection
+      if (engagedByUserIds != null) {
+        for (final userId in engagedByUserIds) {
+          await menuRef.collection('engagements').doc(userId).set({
+            'userId': userId,
+            'action': 'import',
+            'engagedAt': DateTime.now(),
+          });
+        }
+      }
+
+      // Seed dismissals subcollection
+      if (dismissedByUserIds != null) {
+        for (final userId in dismissedByUserIds) {
+          await menuRef.collection('dismissals').doc(userId).set({
+            'userId': userId,
+            'dismissedAt': DateTime.now(),
+          });
+        }
+      }
     }
 
     // ===== PERMISSION VALIDATION TESTS =====
 
     group('Permission Validation', () {
-      test('should allow user to create shared menu as themselves', () async {
+      test('should allow user to create shared menu with recipients', () async {
         // Arrange
-        final sharedMenu = createSharedMenu(
-          sharedByUserId: testUserId,
-          sharedToUserIds: [testFriendId],
-        );
+        final sharedMenu = createSharedMenu(sharedByUserId: testUserId);
 
         // Act & Assert - Should not throw
-        await repository.createSharedMenu(sharedMenu);
+        final menuId = await repository.createSharedMenu(
+          sharedMenu,
+          recipientIds: [testFriendId],
+        );
+
+        // Verify members subcollection created (Issue #014)
+        final memberDoc = await fakeFirestore
+            .collection('shared_menus')
+            .doc(menuId)
+            .collection('members')
+            .doc(testFriendId)
+            .get();
+        expect(memberDoc.exists, isTrue);
       });
 
       test('should reject user from creating shared menu as another user',
@@ -141,12 +208,14 @@ void main() {
         // Arrange
         final sharedMenu = createSharedMenu(
           sharedByUserId: testOtherUserId, // Different from authenticated user
-          sharedToUserIds: [testFriendId],
         );
 
         // Act & Assert
         expect(
-          () => repository.createSharedMenu(sharedMenu),
+          () => repository.createSharedMenu(
+            sharedMenu,
+            recipientIds: [testFriendId],
+          ),
           throwsA(isA<PermissionDeniedException>()),
         );
       });
@@ -154,13 +223,15 @@ void main() {
       test('should reject shared menu with no recipients', () async {
         // Arrange
         final sharedMenu = createSharedMenu(
-          sharedByUserId: testUserId,
-          sharedToUserIds: [], // Empty list
+          sharedByUserId: testUserId, // Empty list
         );
 
         // Act & Assert
         expect(
-          () => repository.createSharedMenu(sharedMenu),
+          () => repository.createSharedMenu(
+            sharedMenu,
+            recipientIds: [], // Empty list
+          ),
           throwsA(isA<ArgumentError>()),
         );
       });
@@ -168,10 +239,9 @@ void main() {
       test('should allow user to view shared menu sent to them', () async {
         // Arrange
         final sharedMenu = createSharedMenu(
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId], // Current user is recipient
+          sharedByUserId: testOtherUserId, // Current user is recipient
         );
-        await seedSharedMenu(sharedMenu);
+        await seedSharedMenu(sharedMenu, memberUserIds: [testUserId]); // Current user is recipient
 
         // Act
         final result = await repository.getSharedMenu(testMenuId);
@@ -185,10 +255,9 @@ void main() {
           () async {
         // Arrange
         final sharedMenu = createSharedMenu(
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testFriendId], // Current user not in list
+          sharedByUserId: testOtherUserId, // Current user not in list
         );
-        await seedSharedMenu(sharedMenu);
+        await seedSharedMenu(sharedMenu, memberUserIds: [testFriendId]); // Current user not in list
 
         // Act & Assert
         expect(
@@ -207,21 +276,31 @@ void main() {
           id: 'new-menu',
           menuTitle: 'My Weekly Plan',
           sharedByUserId: testUserId,
-          sharedToUserIds: [testFriendId, testOtherUserId],
           shareMessage: 'Check out my menu!',
         );
 
         // Act
-        await repository.createSharedMenu(sharedMenu);
+        final menuId = await repository.createSharedMenu(
+          sharedMenu,
+          recipientIds: [testFriendId, testOtherUserId],
+        );
 
-        // Assert
+        // Assert - Check main document
         final doc = await fakeFirestore
             .collection('shared_menus')
-            .doc('new-menu')
+            .doc(menuId)
             .get();
         expect(doc.exists, isTrue);
         expect(doc.data()?['sharedByUserId'], testUserId);
         expect(doc.data()?['menuTitle'], 'My Weekly Plan');
+
+        // Assert - Check members subcollection (Issue #014)
+        final membersSnapshot = await fakeFirestore
+            .collection('shared_menus')
+            .doc(menuId)
+            .collection('members')
+            .get();
+        expect(membersSnapshot.docs.length, 2);
       });
 
       test('should get all shared menus for user', () async {
@@ -230,22 +309,19 @@ void main() {
           id: 'menu-1',
           menuTitle: 'Menu 1',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
         );
         final menu2 = createSharedMenu(
           id: 'menu-2',
           menuTitle: 'Menu 2',
           sharedByUserId: testFriendId,
-          sharedToUserIds: [testUserId],
         );
         final menu3 = createSharedMenu(
           id: 'menu-3',
           menuTitle: 'Menu 3',
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testFriendId], // Not for current user
+          sharedByUserId: testOtherUserId, // Not for current user
         );
 
-        await seedSharedMenu(menu1);
+        await seedSharedMenu(menu1, memberUserIds: [testUserId]);
         await seedSharedMenu(menu2);
         await seedSharedMenu(menu3);
 
@@ -264,9 +340,8 @@ void main() {
         final sharedMenu = createSharedMenu(
           menuTitle: 'Weekly Plan',
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
         );
-        await seedSharedMenu(sharedMenu);
+        await seedSharedMenu(sharedMenu, memberUserIds: [testUserId]);
 
         // Act
         final result = await repository.getSharedMenu(testMenuId);
@@ -289,9 +364,8 @@ void main() {
         // Arrange
         final sharedMenu = createSharedMenu(
           sharedByUserId: testUserId, // Creator
-          sharedToUserIds: [testFriendId],
         );
-        await seedSharedMenu(sharedMenu);
+        await seedSharedMenu(sharedMenu, memberUserIds: [testFriendId]);
 
         // Act
         await repository.deleteSharedMenu(testMenuId);
@@ -308,92 +382,87 @@ void main() {
     // ===== STATUS MANAGEMENT =====
 
     group('Status Management', () {
-      test('should mark shared menu as viewed', () async {
+      test('should add view to subcollection', () async {
         // Arrange
         final sharedMenu = createSharedMenu(
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          viewedByUserIds: [], // Not yet viewed
+          sharedByUserId: testOtherUserId, // Not yet viewed
         );
         await seedSharedMenu(sharedMenu);
 
         // Act
-        await repository.markAsViewed(testMenuId, testUserId);
+        await repository.addView(testMenuId, testUserId);
 
-        // Assert
-        final doc = await fakeFirestore
+        // Assert - Check views subcollection (Issue #014)
+        final viewDoc = await fakeFirestore
             .collection('shared_menus')
             .doc(testMenuId)
+            .collection('views')
+            .doc(testUserId)
             .get();
-        final viewedByUserIds =
-            List<String>.from(doc.data()?['viewedByUserIds'] ?? []);
-        expect(viewedByUserIds, contains(testUserId));
+        expect(viewDoc.exists, isTrue);
+        expect(viewDoc.data()?['userId'], testUserId);
       });
 
-      test('should mark shared menu as imported', () async {
+      test('should add engagement to subcollection', () async {
         // Arrange
         final sharedMenu = createSharedMenu(
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          engagedByUserIds: [], // Not yet imported
+          sharedByUserId: testOtherUserId, // Not yet imported
         );
         await seedSharedMenu(sharedMenu);
 
         // Act
-        await repository.markAsImported(testMenuId, testUserId);
+        await repository.addEngagement(testMenuId, testUserId, action: 'import');
 
-        // Assert
-        final doc = await fakeFirestore
+        // Assert - Check engagements subcollection (Issue #014)
+        final engagementDoc = await fakeFirestore
             .collection('shared_menus')
             .doc(testMenuId)
+            .collection('engagements')
+            .doc(testUserId)
             .get();
-        final importedByUserIds =
-            List<String>.from(doc.data()?['importedByUserIds'] ?? []);
-        expect(importedByUserIds, contains(testUserId));
+        expect(engagementDoc.exists, isTrue);
+        expect(engagementDoc.data()?['userId'], testUserId);
       });
 
-      test('should mark shared menu as dismissed', () async {
+      test('should add dismissal to subcollection', () async {
         // Arrange
         final sharedMenu = createSharedMenu(
           sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          dismissedByUserIds: [],
         );
         await seedSharedMenu(sharedMenu);
 
         // Act
-        await repository.markAsDismissed(testMenuId, testUserId);
+        await repository.addDismissal(testMenuId, testUserId);
 
-        // Assert
-        final doc = await fakeFirestore
+        // Assert - Check dismissals subcollection (Issue #014)
+        final dismissalDoc = await fakeFirestore
             .collection('shared_menus')
             .doc(testMenuId)
+            .collection('dismissals')
+            .doc(testUserId)
             .get();
-        final dismissedByUserIds =
-            List<String>.from(doc.data()?['dismissedByUserIds'] ?? []);
-        expect(dismissedByUserIds, contains(testUserId));
+        expect(dismissalDoc.exists, isTrue);
+        expect(dismissalDoc.data()?['userId'], testUserId);
       });
 
-      test('should undismiss shared menu', () async {
+      test('should remove dismissal from subcollection', () async {
         // Arrange
         final sharedMenu = createSharedMenu(
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          dismissedByUserIds: [testUserId], // Already dismissed
+          sharedByUserId: testOtherUserId, // Already dismissed
         );
         await seedSharedMenu(sharedMenu);
 
         // Act
-        await repository.undismiss(testMenuId, testUserId);
+        await repository.removeDismissal(testMenuId, testUserId);
 
-        // Assert
-        final doc = await fakeFirestore
+        // Assert - Check dismissals subcollection (Issue #014)
+        final dismissalDoc = await fakeFirestore
             .collection('shared_menus')
             .doc(testMenuId)
+            .collection('dismissals')
+            .doc(testUserId)
             .get();
-        final dismissedByUserIds =
-            List<String>.from(doc.data()?['dismissedByUserIds'] ?? []);
-        expect(dismissedByUserIds, isNot(contains(testUserId)));
+        expect(dismissalDoc.exists, isFalse);
       });
     });
 
@@ -404,21 +473,15 @@ void main() {
         // Arrange - Create menus, some viewed, some not
         final menu1 = createSharedMenu(
           id: 'menu-1',
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          viewedByUserIds: [], // Unread
+          sharedByUserId: testOtherUserId, // Unread
         );
         final menu2 = createSharedMenu(
           id: 'menu-2',
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          viewedByUserIds: [testUserId], // Read
+          sharedByUserId: testOtherUserId, // Read
         );
         final menu3 = createSharedMenu(
           id: 'menu-3',
-          sharedByUserId: testFriendId,
-          sharedToUserIds: [testUserId],
-          viewedByUserIds: [], // Unread
+          sharedByUserId: testFriendId, // Unread
         );
 
         await seedSharedMenu(menu1);
@@ -436,15 +499,11 @@ void main() {
         // Arrange
         final menu1 = createSharedMenu(
           id: 'menu-1',
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          engagedByUserIds: [testUserId], // Imported
+          sharedByUserId: testOtherUserId, // Imported
         );
         final menu2 = createSharedMenu(
           id: 'menu-2',
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          engagedByUserIds: [], // Not imported
+          sharedByUserId: testOtherUserId, // Not imported
         );
 
         await seedSharedMenu(menu1);
@@ -463,15 +522,11 @@ void main() {
         // Arrange
         final menu1 = createSharedMenu(
           id: 'menu-1',
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          dismissedByUserIds: [], // Not dismissed
+          sharedByUserId: testOtherUserId, // Not dismissed
         );
         final menu2 = createSharedMenu(
           id: 'menu-2',
-          sharedByUserId: testOtherUserId,
-          sharedToUserIds: [testUserId],
-          dismissedByUserIds: [testUserId], // Dismissed
+          sharedByUserId: testOtherUserId, // Dismissed
         );
 
         await seedSharedMenu(menu1);
@@ -502,7 +557,10 @@ void main() {
 
         // Act & Assert
         expect(
-          () => repository.createSharedMenu(sharedMenu),
+          () => repository.createSharedMenu(
+            sharedMenu,
+            recipientIds: [testFriendId],
+          ),
           throwsA(isA<Exception>()), // AuthenticationException
         );
       });
@@ -520,11 +578,13 @@ void main() {
         final sharedMenu = createSharedMenu(
           menuSnapshot: {}, // Empty snapshot
           sharedByUserId: testUserId,
-          sharedToUserIds: [testFriendId],
         );
 
         // Act & Assert - Should still create successfully
-        await repository.createSharedMenu(sharedMenu);
+        await repository.createSharedMenu(
+          sharedMenu,
+          recipientIds: [testFriendId],
+        );
       });
     });
   });

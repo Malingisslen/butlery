@@ -2,6 +2,7 @@
 
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -10,21 +11,34 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/core/utils/validation_utils.dart';
 
 /// User profile service with 30-min caching, social discovery, auth monitoring, and privacy controls.
 /// ```dart
 /// final svc = UserService(repository: ServiceLocator.get(), authRepository: ServiceLocator.get());
 /// await svc.initialize(); // Monitor auth state
 /// await svc.createOrUpdateProfile(displayName: 'John', isSearchable: true);
-class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServiceMixin, StreamManagementMixin {
+class UserService extends ChangeNotifier
+    with ErrorHandlingMixin, FirebaseServiceMixin, StreamManagementMixin {
   final UserRepository _repository;
   final AuthRepository _authRepository;
+  final FirestoreRepository _firestoreRepository;
 
   UserService({
     required UserRepository repository,
     required AuthRepository authRepository,
+    FirestoreRepository? firestoreRepository,
   })  : _repository = repository,
-        _authRepository = authRepository;
+        _authRepository = authRepository,
+        _firestoreRepository =
+            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
+
+  // ===== FIREBASE SERVICE MIXIN IMPLEMENTATION =====
+
+  @override
+  FirestoreRepository get firestoreRepository => _firestoreRepository;
+
+  // ===== STATE AND CACHE =====
 
   // Cache för prestanda (30 minuter)
   UserProfile? _currentUserProfile;
@@ -43,8 +57,8 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
-  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
-
+  String? get currentUserId =>
+      ServiceLocator.get<PermissionService>().currentUserId;
 
   /// Initialize service och ladda current user profile
   Future<void> initialize() async {
@@ -122,7 +136,7 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
 
       // Save via repository
       await _repository.saveProfile(profile);
-      
+
       // Update cache
       _currentUserProfile = profile;
       _profileCache[user.uid] = profile;
@@ -142,11 +156,11 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
 
   /// Search users by display name or email - OPTIMERAD VERSION
   Future<List<UserProfile>> searchUsers(String query) async {
-    if (query.trim().isEmpty) return [];
+    if (ValidationUtils.isNullOrWhitespace(query)) return [];
 
     _setLoading(true);
     _clearError();
-    
+
     try {
       final results = await _repository.searchProfiles(query);
 
@@ -191,7 +205,7 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
       },
       operationName: 'Get user profile',
     );
-    
+
     return profile;
   }
 
@@ -293,7 +307,7 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
 
   /// Check if display name is available
   Future<bool> isDisplayNameAvailable(String displayName) async {
-    if (displayName.trim().isEmpty) return false;
+    if (ValidationUtils.isNullOrWhitespace(displayName)) return false;
 
     try {
       return await _repository.isDisplayNameAvailable(displayName);
@@ -303,7 +317,7 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
     }
   }
 
-   /// Private methods - UPPDATERAD med auto-create
+  /// Private methods - UPPDATERAD med auto-create
   Future<void> _loadCurrentUserProfile() async {
     final user = _authRepository.currentUser;
     if (user == null) return;
@@ -358,7 +372,7 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
   Future<void> _ensureBaseUserDocument(String userId) async {
     try {
       await _repository.ensureBaseUserDocument(userId);
-      
+
       AppLogger.info('✅ Base user document ensured for: $userId');
     } catch (e) {
       AppLogger.warning('⚠️ Could not ensure base user document: $e');
@@ -405,7 +419,7 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
 
     try {
       AppLogger.info('🔔 Updating FCM token for user: $userId');
-      
+
       // Update in repository
       await _repository.updateFCMToken(userId, token);
 
@@ -429,13 +443,14 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
   Future<void> updateNotificationSettings(bool enabled) async {
     final userId = currentUserId;
     if (userId == null || _currentUserProfile == null) {
-      AppLogger.warning('⚠️ Cannot update notification settings - no current user');
+      AppLogger.warning(
+          '⚠️ Cannot update notification settings - no current user');
       return;
     }
 
     try {
       AppLogger.info('🔔 Updating notification settings for user: $userId');
-      
+
       // Update in repository
       await _repository.updateNotificationSettings(userId, enabled);
 
@@ -461,7 +476,7 @@ class UserService extends ChangeNotifier with ErrorHandlingMixin, FirebaseServic
 
     try {
       AppLogger.info('🔔 Clearing FCM token for user: $userId');
-      
+
       await _repository.clearFCMToken(userId);
 
       if (_currentUserProfile != null) {

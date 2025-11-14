@@ -9,16 +9,22 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
+import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart';
 import '../../../../../test_support/base_unit_test.dart';
 import '../../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../../infrastructure/mocks/production_mocks.dart';
 import '../../../../../infrastructure/builders/recipe_builder.dart';
+
+// Mock for FirebaseRecipePresenceRepository
+class MockFirebaseRecipePresenceRepository extends Mock
+    implements FirebaseRecipePresenceRepository {}
 
 void main() {
   group('PresenceTrackingModule', () {
     late MockUnifiedRecipeService mockParentService;
     late MockRealtimeSyncService mockRealtimeSyncService;
     late MockPermissionService mockPermissionService;
+    late MockFirebaseRecipePresenceRepository mockPresenceRepository;
     late PresenceTrackingModule presenceModule;
     late UserProfile testUser;
     late Recipe testRecipe;
@@ -66,6 +72,23 @@ void main() {
       // Create mocks
       mockParentService = MockUnifiedRecipeService();
       mockRealtimeSyncService = MockRealtimeSyncService();
+      mockPresenceRepository = MockFirebaseRecipePresenceRepository();
+
+      // Configure presence repository mock to succeed by default
+      when(() => mockPresenceRepository.setUserPresence(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            displayName: any(named: 'displayName'),
+            avatarUrl: any(named: 'avatarUrl'),
+          )).thenAnswer((_) async => {});
+      when(() => mockPresenceRepository.markUserInactive(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+          )).thenAnswer((_) async => {});
+      when(() => mockPresenceRepository.updatePresenceHeartbeat(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+          )).thenAnswer((_) async => {});
 
       // Configure parent service using centralized mock method
       mockParentService.setRecipeState(
@@ -92,8 +115,11 @@ void main() {
       mockRealtimeSyncService.setConnectionState(true);
 
       // Create presence module instance
-      presenceModule =
-          PresenceTrackingModule(mockParentService, mockRealtimeSyncService);
+      presenceModule = PresenceTrackingModule(
+        mockParentService,
+        mockRealtimeSyncService,
+        mockPresenceRepository,
+      );
     });
 
     tearDown(() async {

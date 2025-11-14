@@ -28,10 +28,10 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
 
-// Import minimal service dependencies  
+// Import minimal service dependencies
 import 'package:butlery/services/auth_service.dart';
 
-// Import required models 
+// Import required models
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/shared_recipe.dart';
@@ -89,8 +89,7 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
   /// RESILIENT APPROACH: Ensure ServiceLocator always initializes successfully
   Future<void> _initializeE2EServices() async {
     if (kDebugMode) {
-      debugPrint(
-          '🔧 E2E: Using resilient mock ServiceLocator initialization');
+      debugPrint('🔧 E2E: Using resilient mock ServiceLocator initialization');
     }
 
     try {
@@ -99,7 +98,7 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
         await Firebase.initializeApp(
           options: const FirebaseOptions(
             apiKey: 'mock-api-key',
-            appId: 'mock-app-id', 
+            appId: 'mock-app-id',
             messagingSenderId: 'mock-sender-id',
             projectId: 'mock-project-id',
           ),
@@ -108,7 +107,7 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
           debugPrint('✅ E2E Firebase mock initialization successful');
         }
       }
-      
+
       // Reset ServiceLocator to ensure clean state
       ServiceLocator.reset();
 
@@ -117,7 +116,7 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
 
       // ALWAYS initialize ServiceLocator first, even with empty container
       ServiceLocator.initialize(container);
-      
+
       if (kDebugMode) {
         debugPrint('✅ E2E ServiceLocator base initialization successful');
       }
@@ -129,14 +128,13 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
       if (kDebugMode) {
         debugPrint('✅ E2E Mock services registered successfully');
       }
-
     } catch (e) {
       if (kDebugMode) {
         debugPrint('⚠️ E2E Service registration error: $e');
         debugPrint('   ServiceLocator base initialization still successful');
       }
     }
-    
+
     // ALWAYS mark as initialized - ServiceLocator itself is working
     setState(() {
       _isInitialized = true;
@@ -148,7 +146,7 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
   Future<void> _registerE2EMockServicesDirect(DIContainer container) async {
     final getIt = container.container;
     int successCount = 0;
-    
+
     // 🔐 Authentication Services
     try {
       final mockAuthService = _MockAuthService();
@@ -157,7 +155,7 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
     } catch (e) {
       if (kDebugMode) debugPrint('⚠️ Failed to register AuthService: $e');
     }
-    
+
     try {
       final mockAuthViewModel = _MockAuthViewModel();
       getIt.registerSingleton<AuthViewModel>(mockAuthViewModel);
@@ -165,16 +163,19 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
     } catch (e) {
       if (kDebugMode) debugPrint('⚠️ Failed to register AuthViewModel: $e');
     }
-    
+
     // 🍳 Recipe Management Services (for Recipe Lifecycle E2E)
     try {
-      final mockRecipeListViewModel = _E2EStubFactory.createRecipeListViewModel();
+      final mockRecipeListViewModel =
+          _E2EStubFactory.createRecipeListViewModel();
       getIt.registerSingleton<RecipeListViewModel>(mockRecipeListViewModel);
       successCount++;
     } catch (e) {
-      if (kDebugMode) debugPrint('⚠️ Failed to register RecipeListViewModel: $e');
+      if (kDebugMode) {
+        debugPrint('⚠️ Failed to register RecipeListViewModel: $e');
+      }
     }
-      
+
     try {
       final mockUserService = _E2EStubFactory.createUserService();
       getIt.registerSingleton<UserService>(mockUserService);
@@ -182,7 +183,7 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
     } catch (e) {
       if (kDebugMode) debugPrint('⚠️ Failed to register UserService: $e');
     }
-      
+
     try {
       final mockFriendsViewModel = _E2EStubFactory.createFriendsViewModel();
       getIt.registerSingleton<FriendsViewModel>(mockFriendsViewModel);
@@ -190,31 +191,40 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
     } catch (e) {
       if (kDebugMode) debugPrint('⚠️ Failed to register FriendsViewModel: $e');
     }
-      
+
     try {
-      final mockSharedContentCoordinator = _E2EStubFactory.createSharedContentCoordinator();
-      getIt.registerSingleton<SharedContentCoordinatorViewModel>(mockSharedContentCoordinator);
+      final mockSharedContentCoordinator =
+          _E2EStubFactory.createSharedContentCoordinator();
+      getIt.registerSingleton<SharedContentCoordinatorViewModel>(
+          mockSharedContentCoordinator);
       successCount++;
     } catch (e) {
-      if (kDebugMode) debugPrint('⚠️ Failed to register SharedContentCoordinatorViewModel: $e');
+      if (kDebugMode) {
+        debugPrint(
+            '⚠️ Failed to register SharedContentCoordinatorViewModel: $e');
+      }
     }
-      
+
     try {
       final mockOfflineService = _E2EStubFactory.createOfflineService();
-      getIt.registerSingleton<offline_service.OfflineService>(mockOfflineService);
+      getIt.registerSingleton<offline_service.OfflineService>(
+          mockOfflineService);
       successCount++;
     } catch (e) {
       if (kDebugMode) debugPrint('⚠️ Failed to register OfflineService: $e');
     }
-      
+
     try {
-      final mockUnifiedRecipeService = _E2EStubFactory.createUnifiedRecipeService();
+      final mockUnifiedRecipeService =
+          _E2EStubFactory.createUnifiedRecipeService();
       getIt.registerSingleton<UnifiedRecipeService>(mockUnifiedRecipeService);
       successCount++;
     } catch (e) {
-      if (kDebugMode) debugPrint('⚠️ Failed to register UnifiedRecipeService: $e');
+      if (kDebugMode) {
+        debugPrint('⚠️ Failed to register UnifiedRecipeService: $e');
+      }
     }
-      
+
     try {
       final mockAnalyticsService = _E2EStubFactory.createAnalyticsService();
       getIt.registerSingleton<AnalyticsService>(mockAnalyticsService);
@@ -222,13 +232,13 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
     } catch (e) {
       if (kDebugMode) debugPrint('⚠️ Failed to register AnalyticsService: $e');
     }
-    
+
     if (kDebugMode) {
-      debugPrint('🔧 E2E: Successfully registered $successCount/9 mock services');
+      debugPrint(
+          '🔧 E2E: Successfully registered $successCount/9 mock services');
       debugPrint('   📊 Service registration resilience test completed');
     }
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -352,7 +362,6 @@ class E2EMockUser {
   static const String chefUserEmail = 'chef@butlery.se';
 }
 
-
 /// Mock AuthService for E2E testing
 ///
 /// Provides minimal mock implementation that AuthViewModel depends on
@@ -439,6 +448,8 @@ class _MockAuthService extends AuthService {
 ///
 /// Provides minimal mock implementation that AuthView expects
 class _MockAuthViewModel extends AuthViewModel {
+  _MockAuthViewModel() : super(authService: _MockAuthService());
+
   bool _isLoginMode = true;
   bool _isPasswordVisible = false;
   String? _validationError;
@@ -525,7 +536,7 @@ class _MockAuthViewModel extends AuthViewModel {
 // =============================================================================
 // ULTRA-SIMPLE E2E TEST - Focus on Basic App Loading
 // =============================================================================
-// 
+//
 // GOLD STANDARD APPROACH: Test incrementally, don't over-engineer
 // 1. First get the app to load without crashing
 // 2. Then add functionality as needed
@@ -534,7 +545,6 @@ class _MockAuthViewModel extends AuthViewModel {
 /// GOLD STANDARD: Centralized factory for all E2E stub services
 /// Focus: Manage complex dependencies in one place, enable workflow testing
 class _E2EStubFactory {
-  
   /// Create RecipeListViewModel stub - handles all constructor dependencies
   static RecipeListViewModel createRecipeListViewModel() {
     if (kDebugMode) {
@@ -543,7 +553,7 @@ class _E2EStubFactory {
     // Return basic instance that won't crash UI - let production class handle defaults
     return RecipeListViewModel();
   }
-  
+
   /// Create UserService stub - simplified mock approach
   static dynamic createUserService() {
     if (kDebugMode) {
@@ -552,7 +562,7 @@ class _E2EStubFactory {
     // Create a simplified mock that provides basic functionality without Firebase complexity
     return _E2EUserServiceMock();
   }
-  
+
   /// Create FriendsViewModel stub - simplified mock approach
   static dynamic createFriendsViewModel() {
     if (kDebugMode) {
@@ -561,16 +571,17 @@ class _E2EStubFactory {
     // Create a simplified mock that provides basic functionality without complex dependencies
     return _E2EFriendsViewModelMock();
   }
-  
+
   /// Create SharedContentCoordinatorViewModel stub - simplified mock approach
   static dynamic createSharedContentCoordinator() {
     if (kDebugMode) {
-      debugPrint('✅ E2E Factory: Creating simplified SharedContentCoordinatorViewModel mock');
+      debugPrint(
+          '✅ E2E Factory: Creating simplified SharedContentCoordinatorViewModel mock');
     }
     // Create a simplified mock that provides basic functionality without complex dependencies
     return _E2ESharedContentCoordinatorMock();
   }
-  
+
   /// Create OfflineService stub - simplified mock approach
   static dynamic createOfflineService() {
     if (kDebugMode) {
@@ -579,16 +590,17 @@ class _E2EStubFactory {
     // Create a simplified mock that provides basic functionality
     return _E2EOfflineServiceMock();
   }
-  
+
   /// Create UnifiedRecipeService stub - simplified mock approach
   static dynamic createUnifiedRecipeService() {
     if (kDebugMode) {
-      debugPrint('✅ E2E Factory: Creating simplified UnifiedRecipeService mock');
+      debugPrint(
+          '✅ E2E Factory: Creating simplified UnifiedRecipeService mock');
     }
     // Create a simplified mock that provides basic functionality
     return _E2EUnifiedRecipeServiceMock();
   }
-  
+
   /// Create AnalyticsService stub - simplified mock approach
   static dynamic createAnalyticsService() {
     if (kDebugMode) {
@@ -614,25 +626,27 @@ class _E2EUserServiceMock extends ChangeNotifier {
     joinedAt: DateTime.now(),
     lastActiveAt: DateTime.now(),
   );
-  
+
   UserProfile get currentUserProfile => _currentProfile;
   bool get isLoading => false;
   String? get error => null;
   bool get hasError => false;
-  
+
   Future<List<UserProfile>> getUserProfiles(List<String> userIds) async {
     final now = DateTime.now();
-    return userIds.map((id) => UserProfile(
-      uid: id,
-      displayName: 'E2E User $id',
-      email: 'user$id@butlery.se',
-      isSearchable: true,
-      allowEmailSearch: false,
-      joinedAt: now,
-      lastActiveAt: now,
-    )).toList();
+    return userIds
+        .map((id) => UserProfile(
+              uid: id,
+              displayName: 'E2E User $id',
+              email: 'user$id@butlery.se',
+              isSearchable: true,
+              allowEmailSearch: false,
+              joinedAt: now,
+              lastActiveAt: now,
+            ))
+        .toList();
   }
-  
+
   void clearError() {}
 }
 
@@ -646,7 +660,7 @@ class _E2EFriendsViewModelMock extends ChangeNotifier {
   bool get isLoading => false;
   String? get error => null;
   bool get hasError => false;
-  
+
   Future<void> refresh() async {}
   void clearError() {}
 }
@@ -685,7 +699,7 @@ class _E2EOfflineServiceMock extends ChangeNotifier {
   bool get isOffline => false;
   bool get isSyncing => false;
   String? get syncStatus => 'online';
-  
+
   Future<void> syncNow() async {}
 }
 
@@ -694,17 +708,17 @@ class _E2EUnifiedRecipeServiceMock extends ChangeNotifier {
   List<dynamic> get recipes => [];
   List<dynamic> get personalRecipes => [];
   List<dynamic> get collaborativeRecipes => [];
-  
+
   bool get hasRecipes => false;
   bool get isInitialized => true;
   bool get isLoading => false;
   String? get error => null;
   bool get hasError => false;
   bool get isSyncing => false;
-  
+
   String? get currentUserId => 'e2e_test_user_123';
   String? get currentUserDisplayName => 'E2E Test User';
-  
+
   Future<void> initialize() async {}
   void clearError() {}
   dynamic getRecipeById(String id) => null;

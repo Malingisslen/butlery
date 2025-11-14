@@ -10,6 +10,7 @@ import 'dart:io';
 
 import 'package:butlery/core/mixins/firebase_service_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/repositories/firestore_repository.dart';
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 
@@ -17,11 +18,16 @@ import '../../infrastructure/di/test_service_locator.dart';
 class TestFirebaseService with ErrorHandlingMixin, FirebaseServiceMixin {
   bool shouldFirebaseInitSucceed;
   bool shouldConnectivitySucceed;
+  final FirestoreRepository _firestoreRepository;
 
   TestFirebaseService({
+    required FirestoreRepository firestoreRepository,
     this.shouldFirebaseInitSucceed = true,
     this.shouldConnectivitySucceed = true,
-  });
+  }) : _firestoreRepository = firestoreRepository;
+
+  @override
+  FirestoreRepository get firestoreRepository => _firestoreRepository;
 
   @override
   void handleUserError(String message) {
@@ -42,16 +48,21 @@ class TestFirebaseService with ErrorHandlingMixin, FirebaseServiceMixin {
 
 // Mock classes
 class MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
+class MockFirestoreRepository extends Mock implements FirestoreRepository {}
 
 void main() {
   group('Enhanced FirebaseServiceMixin Tests', () {
     late TestFirebaseService testService;
+    late MockFirestoreRepository mockFirestoreRepository;
 
     setUp(() async {
       await BaseUnitTest.setupUnit();
       await TestServiceLocator.initialize();
-      
-      testService = TestFirebaseService();
+
+      mockFirestoreRepository = MockFirestoreRepository();
+      testService = TestFirebaseService(
+        firestoreRepository: mockFirestoreRepository,
+      );
     });
 
     tearDown(() async {

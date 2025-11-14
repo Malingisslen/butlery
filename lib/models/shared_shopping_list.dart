@@ -8,13 +8,13 @@
 /// **Single Responsibility Focus:**
 /// This model exclusively handles shared shopping list management and tracking:
 /// - **Shopping List Snapshots**: Complete list preservation with all items for independent sharing and preview
-/// - **Status Tracking**: Unified read/unread, joined/not-joined, dismissed/visible status management  
+/// - **Status Tracking**: Unified read/unread, joined/not-joined, dismissed/visible status management
 /// - **Attribution Preservation**: Proper shopping list attribution with source acknowledgment
 /// - **Consistent User Interaction**: View/Join/Dismiss actions matching recipe and menu patterns
 ///
 /// **What This Model Does NOT Handle:**
 /// - Shopping list creation and editing operations (handled by shopping services)
-/// - Collaborative list management (handled by collaborative shopping system)  
+/// - Collaborative list management (handled by collaborative shopping system)
 /// - UI concerns and presentation logic (handled by ViewModels and UI components)
 /// - Shopping list persistence and storage operations (handled by repositories and services)
 ///
@@ -37,20 +37,20 @@
 ///   listDescription: 'Familjehandling för hela veckan',
 ///   listItems: groceryItems,
 /// );
-/// 
-/// // Track user engagement  
+///
+/// // Track user engagement
 /// final viewedList = sharedShoppingList.markViewedBy(userId);
 /// final joinedList = viewedList.markJoinedBy(userId);
-/// 
+///
 /// // Handle user dismissal
 /// final dismissedList = sharedShoppingList.markDismissedBy(userId);
 /// final restoredList = dismissedList.undismissBy(userId);
-/// 
+///
 /// // Check status and permissions
 /// final canView = sharedShoppingList.canBeViewedBy(userId);
 /// final isJoined = sharedShoppingList.isJoinedBy(userId);
 /// final shouldShow = sharedShoppingList.shouldBeShownTo(userId);
-/// 
+///
 /// // Get list summary for preview
 /// final summary = sharedShoppingList.itemSummary; // '8 artiklar (mjölk, bröd, äpplen...)'
 /// final timeAgo = sharedShoppingList.timeAgoText; // '2 dagar sedan'
@@ -70,320 +70,308 @@ import 'package:butlery/models/shared_content/shared_content_status_mixin.dart';
 /// This model extends BaseSharedContentModel and uses SharedContentStatusMixin for status management,
 /// eliminating duplicate code while maintaining shopping list-specific features and direct collaboration.
 /// Unlike recipes/menus, shopping lists use direct collaboration (not copy-on-write) and "joined" terminology.
-class SharedShoppingList extends BaseSharedContentModel<List<UnifiedShoppingItem>>
+class SharedShoppingList
+    extends BaseSharedContentModel<List<UnifiedShoppingItem>>
     with SharedContentStatusMixin {
-  
   // ===== SHOPPING LIST-SPECIFIC FIELDS =====
-  
+
   /// Name of the shared shopping list for identification and display.
   final String listName;
-  
+
   /// Optional description providing additional context for the shopping list.
   final String? listDescription;
-  
-  /// Complete snapshot of the shopping list items at the time of sharing.
-  final List<UnifiedShoppingItem> listItems;
+
+  /// Number of items in the shopping list.
+  ///
+  /// **Issue #015**: Cached from items subcollection for UI performance.
+  /// Items now stored in Firestore subcollection: shared_shopping_lists/{id}/items/{itemId}
+  /// This count is maintained via atomic FieldValue.increment/decrement operations.
+  final int itemCount;
 
   // ===== ATTRIBUTION =====
-  
+
   /// User identifier of the original shopping list owner.
   final String originalOwnerId;
-  
+
   /// Cached display name of the original owner for UI performance.
   final String originalOwnerDisplayName;
 
   /// Creates a new shared shopping list with all required metadata.
+  ///
+  /// **Issue #014**: sharedToUserIds removed from model. Repository layer handles adding
+  /// members to Firestore subcollection after creation.
+  ///
+  /// **Issue #015**: listItems array removed. Items stored in Firestore subcollection.
+  /// itemCount parameter required for caching item count from subcollection.
   SharedShoppingList({
     required super.id,
     required super.sharedByUserId,
     required super.sharedByDisplayName,
-    required super.sharedToUserIds,
     DateTime? sharedAt,
     super.shareMessage,
     super.viewCount = 0,
     super.engagementCount = 0,
-    super.viewedByUserIds = const [],
-    super.engagedByUserIds = const [],
-    super.dismissedByUserIds = const [],
+    super.dismissalCount = 0,
     required this.listName,
     this.listDescription,
-    required this.listItems,
+    required this.itemCount,
     required this.originalOwnerId,
     required this.originalOwnerDisplayName,
   }) : super(sharedAt: sharedAt ?? DateTime.now());
 
   // ===== BASE CLASS IMPLEMENTATIONS =====
-  
+
   @override
   String get contentTypeName => 'shopping_list';
-  
+
   @override
-  List<UnifiedShoppingItem> get contentSnapshot => listItems;
-  
+  List<UnifiedShoppingItem> get contentSnapshot => [];
+
   @override
   String getContentTitle() => listName;
-  
+
   @override
-  String getContentDescription() => listDescription ?? itemSummary;
-  
+  String getContentDescription() => listDescription ?? '$itemCount artiklar';
+
   @override
   BaseSharedContentModel<List<UnifiedShoppingItem>> copyWithStatus({
     int? viewCount,
     int? engagementCount,
-    List<String>? viewedByUserIds,
-    List<String>? engagedByUserIds,
-    List<String>? dismissedByUserIds,
+    int? dismissalCount,
   }) {
     return copyWith(
       viewCount: viewCount,
       joinedCount: engagementCount,
-      viewedByUserIds: viewedByUserIds,
-      joinedByUserIds: engagedByUserIds,
-      dismissedByUserIds: dismissedByUserIds,
+      dismissalCount: dismissalCount,
     );
   }
 
   // ===== SHOPPING LIST-SPECIFIC PROPERTIES =====
-  
+
   /// Join count getter for backward compatibility (maps to engagement count).
   int get joinCount => engagementCount;
-  
-  /// Joined by user IDs getter for backward compatibility (maps to engaged user IDs).
-  List<String> get joinedByUserIds => engagedByUserIds;
 
   // ===== FACTORY CONSTRUCTORS =====
 
   /// Factory constructor for creating new shared shopping lists with auto-generated ID and intelligent defaults.
+  ///
+  /// **Issue #014**: sharedToUserIds still accepted for repository layer but NOT passed to constructor.
+  /// Repository handles adding members to Firestore subcollection after creation.
+  ///
+  /// **Issue #015**: listItems parameter DEPRECATED. Items stored in subcollection.
+  /// Pass either itemCount OR listItems (will calculate count from list for migration compatibility).
   factory SharedShoppingList.create({
     required String sharedByUserId,
     required String sharedByDisplayName,
-    required List<String> sharedToUserIds,
+    required List<String>
+        sharedToUserIds, // Still accept but don't pass to constructor
     required String shareMessage,
     required String listName,
     String? listDescription,
-    required List<UnifiedShoppingItem> listItems,
+    List<UnifiedShoppingItem>? listItems, // DEPRECATED - for migration compatibility only
+    int? itemCount,
   }) {
     return SharedShoppingList(
       id: const Uuid().v4(),
       sharedByUserId: sharedByUserId,
       sharedByDisplayName: sharedByDisplayName,
-      sharedToUserIds: sharedToUserIds,
       shareMessage: shareMessage,
       listName: listName,
       listDescription: listDescription,
-      listItems: listItems,
+      itemCount: itemCount ?? listItems?.length ?? 0,
       originalOwnerId: sharedByUserId,
       originalOwnerDisplayName: sharedByDisplayName,
     );
   }
 
   /// Creates a shared shopping list instance from Firestore repository data with robust error handling.
-  factory SharedShoppingList.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  ///
+  /// **Issue #014**: Arrays removed. Uses parseCommonFieldsFromFirestore() for base fields.
+  /// **Issue #015**: listItems array removed. Now reads itemCount from document.
+  /// For migration compatibility, falls back to calculating from listItems array if itemCount missing.
+  factory SharedShoppingList.fromFirestore(
+      DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
+    final commonFields =
+        BaseSharedContentModel.parseCommonFieldsFromFirestore(data);
+
+    // Migration compatibility: read itemCount or calculate from deprecated listItems array
+    final itemCount = data['itemCount'] as int? ??
+        (data['listItems'] as List<dynamic>?)?.length ??
+        0;
 
     return SharedShoppingList(
       id: doc.id,
-      sharedByUserId: (data['sharedByUserId'] as String?).orEmpty(),
-      sharedByDisplayName: (data['sharedByDisplayName'] as String?).orDefault('Unknown User'),
-      sharedToUserIds: List<String>.from((data['sharedToUserIds'] as List?).orEmpty()),
-      sharedAt: (data['sharedAt'] as Timestamp?)?.toDate().orNow(),
-      shareMessage: (data['shareMessage'] as String?).orEmpty(),
-      viewCount: (data['viewCount'] as int?).orZero(),
-      engagementCount: (data['joinedCount'] as int?).orZero(),
-      viewedByUserIds: List<String>.from((data['viewedByUserIds'] as List?).orEmpty()),
-      engagedByUserIds: List<String>.from((data['joinedByUserIds'] as List?).orEmpty()),
-      dismissedByUserIds: List<String>.from((data['dismissedByUserIds'] as List?).orEmpty()),
+      sharedByUserId: commonFields['sharedByUserId'] as String,
+      sharedByDisplayName: commonFields['sharedByDisplayName'] as String,
+      sharedAt: commonFields['sharedAt'] as DateTime,
+      shareMessage: commonFields['shareMessage'] as String?,
+      viewCount: commonFields['viewCount'] as int,
+      engagementCount:
+          data['joinedCount'] as int? ?? commonFields['engagementCount'] as int,
+      dismissalCount: commonFields['dismissalCount'] as int,
       listName: (data['listName'] as String?).orEmpty(),
       listDescription: data['listDescription'],
-      listItems: (data['listItems'] as List<dynamic>?)
-          ?.map((item) => UnifiedShoppingItem.fromFirestore(Map<String, dynamic>.from(item)))
-          .toList() ?? [],
+      itemCount: itemCount,
       originalOwnerId: data['originalOwnerId'] ?? data['sharedByUserId'] ?? '',
-      originalOwnerDisplayName: data['originalOwnerDisplayName'] ?? data['sharedByDisplayName'] ?? 'Unknown User',
+      originalOwnerDisplayName: data['originalOwnerDisplayName'] ??
+          data['sharedByDisplayName'] ??
+          'Unknown User',
     );
   }
-  
+
   /// Creates a shared shopping list instance from map data for compatibility.
+  ///
+  /// **Issue #014**: Arrays removed. Uses parseCommonFieldsFromFirestore() for base fields.
+  /// **Issue #015**: listItems array removed. Now reads itemCount from map.
+  /// For migration compatibility, falls back to calculating from listItems array if itemCount missing.
   factory SharedShoppingList.fromMap(String id, Map<String, dynamic> data) {
+    final commonFields =
+        BaseSharedContentModel.parseCommonFieldsFromFirestore(data);
+
+    // Migration compatibility: read itemCount or calculate from deprecated listItems array
+    final itemCount = SerializationUtils.safeInt(data, 'itemCount',
+        defaultValue: SerializationUtils.safeObjectList(
+          data,
+          'listItems',
+          (itemData) => UnifiedShoppingItem.fromFirestore(itemData),
+        ).length);
+
     return SharedShoppingList(
       id: id,
-      sharedByUserId: SerializationUtils.safeString(data, 'sharedByUserId'),
-      sharedByDisplayName: SerializationUtils.safeString(data, 'sharedByDisplayName', defaultValue: 'Unknown User'),
-      sharedToUserIds: SerializationUtils.safeStringList(data, 'sharedToUserIds'),
-      sharedAt: SerializationUtils.safeDateTime(data, 'sharedAt').orNow(),
-      shareMessage: SerializationUtils.safeString(data, 'shareMessage'),
-      viewCount: SerializationUtils.safeInt(data, 'viewCount'),
-      engagementCount: SerializationUtils.safeInt(data, 'joinedCount'),
-      viewedByUserIds: SerializationUtils.safeStringList(data, 'viewedByUserIds'),
-      engagedByUserIds: SerializationUtils.safeStringList(data, 'joinedByUserIds'),
-      dismissedByUserIds: SerializationUtils.safeStringList(data, 'dismissedByUserIds'),
+      sharedByUserId: commonFields['sharedByUserId'] as String,
+      sharedByDisplayName: commonFields['sharedByDisplayName'] as String,
+      sharedAt: commonFields['sharedAt'] as DateTime,
+      shareMessage: commonFields['shareMessage'] as String?,
+      viewCount: commonFields['viewCount'] as int,
+      engagementCount: SerializationUtils.safeInt(data, 'joinedCount',
+          defaultValue: commonFields['engagementCount'] as int),
+      dismissalCount: commonFields['dismissalCount'] as int,
       listName: SerializationUtils.safeString(data, 'listName'),
-      listDescription: SerializationUtils.safeNullableString(data, 'listDescription'),
-      listItems: SerializationUtils.safeObjectList(
-        data,
-        'listItems',
-        (itemData) => UnifiedShoppingItem.fromFirestore(itemData),
-      ),
+      listDescription:
+          SerializationUtils.safeNullableString(data, 'listDescription'),
+      itemCount: itemCount,
       originalOwnerId: SerializationUtils.safeString(data, 'originalOwnerId',
           defaultValue: SerializationUtils.safeString(data, 'sharedByUserId')),
-      originalOwnerDisplayName: SerializationUtils.safeString(data, 'originalOwnerDisplayName',
-          defaultValue: SerializationUtils.safeString(data, 'sharedByDisplayName', defaultValue: 'Unknown User')),
+      originalOwnerDisplayName: SerializationUtils.safeString(
+          data, 'originalOwnerDisplayName',
+          defaultValue: SerializationUtils.safeString(
+              data, 'sharedByDisplayName',
+              defaultValue: 'Unknown User')),
     );
   }
 
   // ===== SERIALIZATION =====
 
   /// Converts the shared shopping list to Firestore-compatible format for persistence.
+  ///
+  /// **Issue #014**: Arrays removed. Uses getCommonFirestoreFields() for base serialization.
+  /// **Issue #015**: listItems array removed. Now writes itemCount field.
+  /// Items stored in separate subcollection: shared_shopping_lists/{id}/items/{itemId}
   Map<String, dynamic> toFirestore() {
     return {
       ...getCommonFirestoreFields(),
       'listName': listName,
       'listDescription': listDescription,
-      'listItems': listItems.map((item) => item.toFirestore()).toList(),
+      'itemCount': itemCount,
       'originalOwnerId': originalOwnerId,
       'originalOwnerDisplayName': originalOwnerDisplayName,
-      'joinedCount': joinCount, // Map engagement to joined for shopping lists
-      'joinedByUserIds': joinedByUserIds, // Map engaged to joined for shopping lists
+      'joinedCount':
+          joinCount, // Map engagement count to joined count for shopping lists
     };
   }
-  
+
   /// Converts the shared shopping list to JSON format for caching and client-side storage.
+  ///
+  /// **Issue #014**: Arrays removed. Uses getCommonJsonFields() for base serialization.
+  /// **Issue #015**: listItems array removed. Now writes itemCount field.
   Map<String, dynamic> toJson() {
     return {
       ...getCommonJsonFields(),
       'listName': listName,
       'listDescription': listDescription,
-      'listItems': listItems.map((item) => item.toJson()).toList(),
+      'itemCount': itemCount,
       'originalOwnerId': originalOwnerId,
       'originalOwnerDisplayName': originalOwnerDisplayName,
-      'joinedCount': joinCount, // Map engagement to joined for shopping lists
-      'joinedByUserIds': joinedByUserIds, // Map engaged to joined for shopping lists
+      'joinedCount':
+          joinCount, // Map engagement count to joined count for shopping lists
     };
   }
-  
+
   /// Creates a shared shopping list instance from JSON data for caching and deserialization.
+  ///
+  /// **Issue #014**: Arrays removed. Uses parseCommonFieldsFromJson() for base fields.
+  /// **Issue #015**: listItems array removed. Now reads itemCount from JSON.
+  /// For migration compatibility, falls back to calculating from listItems array if itemCount missing.
   factory SharedShoppingList.fromJson(Map<String, dynamic> json) {
     final commonFields = BaseSharedContentModel.parseCommonFieldsFromJson(json);
-    
+
+    // Migration compatibility: read itemCount or calculate from deprecated listItems array
+    final itemCount = json['itemCount'] as int? ??
+        (json['listItems'] as List<dynamic>?)?.length ??
+        0;
+
     return SharedShoppingList(
       id: commonFields['id'] as String,
       sharedByUserId: commonFields['sharedByUserId'] as String,
       sharedByDisplayName: commonFields['sharedByDisplayName'] as String,
-      sharedToUserIds: commonFields['sharedToUserIds'] as List<String>,
       sharedAt: commonFields['sharedAt'] as DateTime,
       shareMessage: commonFields['shareMessage'] as String?,
       viewCount: commonFields['viewCount'] as int,
-      engagementCount: json['joinedCount'] as int? ?? commonFields['engagementCount'] as int,
-      viewedByUserIds: commonFields['viewedByUserIds'] as List<String>,
-      engagedByUserIds: List<String>.from(json['joinedByUserIds'] ?? commonFields['engagedByUserIds'] ?? []),
-      dismissedByUserIds: commonFields['dismissedByUserIds'] as List<String>,
+      engagementCount:
+          json['joinedCount'] as int? ?? commonFields['engagementCount'] as int,
+      dismissalCount: commonFields['dismissalCount'] as int,
       listName: json['listName'] as String,
       listDescription: json['listDescription'] as String?,
-      listItems: (json['listItems'] as List<dynamic>?)
-          ?.map((item) => UnifiedShoppingItem.fromJson(item as Map<String, dynamic>))
-          .toList() ?? [],
+      itemCount: itemCount,
       originalOwnerId: json['originalOwnerId'] as String,
       originalOwnerDisplayName: json['originalOwnerDisplayName'] as String,
     );
   }
 
-  // ===== TYPE-SAFE WRAPPER METHODS =====
-  
-  /// Type-safe wrapper methods that return SharedShoppingList instead of BaseSharedContentModel with List generic type
-  /// These methods delegate to mixin implementations but provide concrete return types.
-  
-  @override
-  SharedShoppingList markViewedBy(String userId) {
-    final updated = super.markViewedBy(userId);
-    if (updated == this) return this;
-    return copyWith(
-      viewCount: updated.viewCount,
-      viewedByUserIds: updated.viewedByUserIds,
-    );
-  }
-  
-  @override
-  SharedShoppingList markEngagedBy(String userId) {
-    final updated = super.markEngagedBy(userId);
-    if (updated == this) return this;
-    return copyWith(
-      joinedCount: updated.engagementCount,
-      joinedByUserIds: updated.engagedByUserIds,
-    );
-  }
-  
-  @override
-  SharedShoppingList markDismissedBy(String userId) {
-    final updated = super.markDismissedBy(userId);
-    if (updated == this) return this;
-    return copyWith(
-      dismissedByUserIds: updated.dismissedByUserIds,
-    );
-  }
-  
-  @override
-  SharedShoppingList undismissBy(String userId) {
-    final updated = super.undismissBy(userId);
-    if (updated == this) return this;
-    return copyWith(
-      dismissedByUserIds: updated.dismissedByUserIds,
-    );
-  }
+  // ===== TYPE-SAFE WRAPPER METHODS (REMOVED - ISSUE #014) =====
+  //
+  // Note: Status-checking methods (markViewedBy, markEngagedBy, markDismissedBy, undismissBy)
+  // removed from base class. Status tracking now handled by repository layer using Firestore
+  // subcollections.
+  //
+  // Use repository methods instead:
+  //   - repository.addView(listId, userId)
+  //   - repository.addEngagement(listId, userId, action: 'join')
+  //   - repository.addDismissal(listId, userId)
+  //   - repository.removeDismissal(listId, userId)
 
-  // ===== SHOPPING LIST-SPECIFIC STATUS MANAGEMENT =====
-
-  /// Check if shopping list has been joined by user (maps to engaged status).
-  @override
-  bool isJoinedBy(String userId) => isEngagedBy(userId);
-
-  /// Check if shopping list can be viewed by user.
-  @override
-  bool canBeViewedBy(String userId) {
-    return sharedToUserIds.contains(userId) || sharedByUserId == userId;
-  }
-
-  /// Check if shopping list should be shown to user.
-  @override
-  bool shouldBeShownTo(String userId) {
-    return canBeViewedBy(userId) && !isDismissedBy(userId);
-  }
-
-  /// Mark shopping list as joined by user (maps to engaged status) - delegates to type-safe wrapper.
-  @override
-  SharedShoppingList markJoinedBy(String userId) => markEngagedBy(userId);
-
-  /// Remove join status for user (maps to un-engaged status).
-  SharedShoppingList unjoinBy(String userId) {
-    if (!isJoinedBy(userId)) return this;
-    
-    final updatedEngagedByUserIds = engagedByUserIds.where((id) => id != userId).toList();
-    return copyWith(
-      engagementCount: updatedEngagedByUserIds.length,
-      engagedByUserIds: updatedEngagedByUserIds,
-    );
-  }
-
-  /// Remove dismissal for user (restore visibility) - delegates to mixin implementation.
+  // ===== SHOPPING LIST-SPECIFIC STATUS MANAGEMENT (REMOVED - ISSUE #014) =====
+  //
+  // Note: Status-checking methods removed as arrays no longer exist in model.
+  // Use repository methods for status checks:
+  //   - repository.isMember(listId, userId) - Check if user is a member
+  //   - repository.hasViewed(listId, userId) - Check if user has viewed
+  //   - repository.hasEngaged(listId, userId) - Check if user has joined
+  //   - repository.hasDismissed(listId, userId) - Check if user has dismissed
+  //
+  // Methods removed:
+  //   - isJoinedBy(userId) - Use repository.hasEngaged(listId, userId)
+  //   - canBeViewedBy(userId) - Use repository.isMember(listId, userId)
+  //   - shouldBeShownTo(userId) - Use repository.shouldShow(listId, userId)
+  //   - markJoinedBy(userId) - Use repository.addEngagement(listId, userId)
+  //   - unjoinBy(userId) - Use repository.removeEngagement(listId, userId)
 
   // ===== DISPLAY PROPERTIES =====
 
-  /// Get shopping list item summary for preview
+  /// Get shopping list item summary for preview.
+  ///
+  /// **Issue #015**: Items stored in subcollection, so we only have itemCount.
+  /// Cannot display individual item names without loading subcollection.
+  /// Use itemCountText instead or load items separately if needed.
+  @Deprecated('Use itemCountText instead. Items stored in subcollection (Issue #015).')
   String get itemSummary {
-    if (listItems.isEmpty) return 'Tom lista';
-    
-    if (listItems.length <= 3) {
-      return listItems.map((item) => item.name).join(', ');
-    } else {
-      final firstThree = listItems.take(3).map((item) => item.name).join(', ');
-      final remaining = listItems.length - 3;
-      return '$firstThree... (+$remaining till)';
-    }
+    return itemCountText;
   }
 
   /// Get formatted item count
   String get itemCountText {
-    final count = listItems.length;
-    return count == 1 ? '1 artikel' : '$count artiklar';
+    return itemCount == 1 ? '1 artikel' : '$itemCount artiklar';
   }
 
   /// Get time ago text in Swedish
@@ -396,29 +384,29 @@ class SharedShoppingList extends BaseSharedContentModel<List<UnifiedShoppingItem
   /// Get sharing context text
   String get sharingContextText => 'Delad av $sharedByDisplayName';
 
-  /// Get attribution text for joined lists  
-  String get attributionText => 'Ursprungligen delad av $originalOwnerDisplayName';
+  /// Get attribution text for joined lists
+  String get attributionText =>
+      'Ursprungligen delad av $originalOwnerDisplayName';
 
   // ===== UTILITY METHODS =====
 
   /// Creates a copy of this shared shopping list with updated values.
+  ///
+  /// **Issue #014**: Array parameters removed. Only counts can be updated.
+  /// **Issue #015**: listItems parameter removed. Use itemCount instead.
   SharedShoppingList copyWith({
     String? id,
     String? sharedByUserId,
     String? sharedByDisplayName,
-    List<String>? sharedToUserIds,
     String? shareMessage,
     DateTime? sharedAt,
     int? viewCount,
     int? engagementCount,
     int? joinedCount,
-    List<String>? viewedByUserIds,
-    List<String>? engagedByUserIds,
-    List<String>? joinedByUserIds,
-    List<String>? dismissedByUserIds,
+    int? dismissalCount,
     String? listName,
     String? listDescription,
-    List<UnifiedShoppingItem>? listItems,
+    int? itemCount,
     String? originalOwnerId,
     String? originalOwnerDisplayName,
   }) {
@@ -426,24 +414,23 @@ class SharedShoppingList extends BaseSharedContentModel<List<UnifiedShoppingItem
       id: id ?? this.id,
       sharedByUserId: sharedByUserId ?? this.sharedByUserId,
       sharedByDisplayName: sharedByDisplayName ?? this.sharedByDisplayName,
-      sharedToUserIds: sharedToUserIds ?? this.sharedToUserIds,
       shareMessage: shareMessage ?? this.shareMessage,
       sharedAt: sharedAt ?? this.sharedAt,
       viewCount: viewCount ?? this.viewCount,
       engagementCount: joinedCount ?? engagementCount ?? this.engagementCount,
-      viewedByUserIds: viewedByUserIds ?? this.viewedByUserIds,
-      engagedByUserIds: joinedByUserIds ?? engagedByUserIds ?? this.engagedByUserIds,
-      dismissedByUserIds: dismissedByUserIds ?? this.dismissedByUserIds,
+      dismissalCount: dismissalCount ?? this.dismissalCount,
       listName: listName ?? this.listName,
       listDescription: listDescription ?? this.listDescription,
-      listItems: listItems ?? this.listItems,
+      itemCount: itemCount ?? this.itemCount,
       originalOwnerId: originalOwnerId ?? this.originalOwnerId,
-      originalOwnerDisplayName: originalOwnerDisplayName ?? this.originalOwnerDisplayName,
+      originalOwnerDisplayName:
+          originalOwnerDisplayName ?? this.originalOwnerDisplayName,
     );
   }
 
   @override
-  String toString() => 'SharedShoppingList(id: $id, listName: $listName, sharedBy: $sharedByDisplayName)';
+  String toString() =>
+      'SharedShoppingList(id: $id, listName: $listName, sharedBy: $sharedByDisplayName)';
 
   @override
   bool operator ==(Object other) =>

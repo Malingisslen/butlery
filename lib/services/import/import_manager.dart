@@ -8,6 +8,8 @@ import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/archive_import_strategy.dart';
 import 'package:butlery/services/import/file_import_strategy.dart';
+import 'package:butlery/services/import/url_import_strategy.dart';
+import 'package:butlery/services/import/photo_import_strategy.dart';
 
 /// Import manager coordinating multiple import strategies with auto-selection, fallback, and batch processing.
 class ImportManager {
@@ -19,31 +21,33 @@ class ImportManager {
   }
 
   void _initializeStrategies() {
-    // Register available import strategies
+    // Register available import strategies in priority order
     _strategies.addAll([
-      ArchiveImportStrategy(),
-      TextImportStrategy(),
-      FileImportStrategy(),
-      // Add more strategies here as they are implemented:
-      // UrlImportStrategy(),
-      // PhotoImportStrategy(),
+      ArchiveImportStrategy(), // 1. Try archive first (fast, pre-validated)
+      UrlImportStrategy(), // 2. Try URL import (web scraping)
+      TextImportStrategy(), // 3. Try text parsing (fallback for plain text)
+      FileImportStrategy(), // 4. File import (explicit file selection)
+      PhotoImportStrategy(), // 5. Photo import (OCR extraction)
     ]);
   }
 
   /// Get all available import strategies
-  List<ImportStrategy> get availableStrategies => List.unmodifiable(_strategies);
+  List<ImportStrategy> get availableStrategies =>
+      List.unmodifiable(_strategies);
 
   /// Auto-detects strategy and parses recipe WITHOUT saving (for preview/validation).
   /// ```dart
   /// final r = await im.autoParseOnly(text); if (r.isSuccess) showPreview(r.recipe!);
-  Future<ImportManagerResult> autoParseOnly(String input, {
+  Future<ImportManagerResult> autoParseOnly(
+    String input, {
     ImportStrategy? preferredStrategy,
     Map<String, dynamic>? options,
   }) async {
     try {
       // Try preferred strategy first if provided
       if (preferredStrategy != null && preferredStrategy.canHandle(input)) {
-        final result = await _parseWithStrategy(preferredStrategy, input, options);
+        final result =
+            await _parseWithStrategy(preferredStrategy, input, options);
         if (result.isSuccess) {
           return result;
         }
@@ -75,14 +79,16 @@ class ImportManager {
   /// Auto-detects strategy and imports recipe with fallback (tries all compatible strategies).
   /// ```dart
   /// final r = await im.autoImport(content, preferredStrategy: textStrategy);
-  Future<ImportManagerResult> autoImport(String input, {
+  Future<ImportManagerResult> autoImport(
+    String input, {
     ImportStrategy? preferredStrategy,
     Map<String, dynamic>? options,
   }) async {
     try {
       // Try preferred strategy first if provided
       if (preferredStrategy != null && preferredStrategy.canHandle(input)) {
-        final result = await _importWithStrategy(preferredStrategy, input, options);
+        final result =
+            await _importWithStrategy(preferredStrategy, input, options);
         if (result.isSuccess) {
           return result;
         }
@@ -117,9 +123,8 @@ class ImportManager {
     String input, {
     Map<String, dynamic>? options,
   }) async {
-    final strategy = _strategies
-        .where((s) => s.strategyName == strategyName)
-        .firstOrNull;
+    final strategy =
+        _strategies.where((s) => s.strategyName == strategyName).firstOrNull;
 
     if (strategy == null) {
       return ImportManagerResult.failure(
@@ -165,16 +170,16 @@ class ImportManager {
   /// ```dart
   /// // Batch import with progress tracking
   /// final batchResult = await importManager.batchImport(recipeTexts);
-  /// 
+  ///
   /// // Display batch results
   /// print('Imported ${batchResult.successCount}/${batchResult.totalProcessed} recipes');
   /// print('Success rate: ${(batchResult.successRate * 100).toInt()}%');
-  /// 
+  ///
   /// // Handle successful imports
   /// for (final recipe in batchResult.successfulRecipes) {
   ///   addToRecipeCollection(recipe);
   /// }
-  /// 
+  ///
   /// // Handle errors with detailed feedback
   /// if (batchResult.hasErrors) {
   ///   showBatchErrors(batchResult.errors);
@@ -252,14 +257,13 @@ class ImportManager {
 
   /// Get text import strategy for direct usage
   TextImportStrategy getTextImportStrategy() {
-    final textStrategy = _strategies
-        .whereType<TextImportStrategy>()
-        .firstOrNull;
-    
+    final textStrategy =
+        _strategies.whereType<TextImportStrategy>().firstOrNull;
+
     if (textStrategy == null) {
       throw StateError('TextImportStrategy not found in available strategies');
     }
-    
+
     return textStrategy;
   }
 
@@ -314,7 +318,8 @@ class ImportManager {
       }
 
       // Save recipe using PersonalRecipeOperations
-      final saveResult = await _personalOperations.addUnifiedRecipe(importResult.recipe!);
+      final saveResult =
+          await _personalOperations.addUnifiedRecipe(importResult.recipe!);
 
       if (!saveResult.isSuccess) {
         return ImportManagerResult.failure(
@@ -381,17 +386,17 @@ class ImportManager {
   double _calculateConfidence(ImportStrategy strategy, String input) {
     // Basic confidence calculation - can be enhanced
     if (!strategy.canHandle(input)) return 0.0;
-    
+
     // Archive import has highest confidence for known IDs
     if (strategy is ArchiveImportStrategy) {
       return 0.9;
     }
-    
+
     // Text import is flexible but lower confidence
     if (strategy is TextImportStrategy) {
       return 0.6;
     }
-    
+
     return 0.5; // Default confidence
   }
 }
@@ -426,7 +431,7 @@ class ImportManagerResult {
 
   bool get hasWarnings => warnings != null && warnings!.isNotEmpty;
   bool get hasMetadata => metadata != null && metadata!.isNotEmpty;
-  
+
   // Compatibility getters for ViewModels
   List<Recipe> get importedRecipes => recipe != null ? [recipe!] : [];
   String? get error => errorMessage;
@@ -450,7 +455,8 @@ class BatchImportResult {
     required this.failureCount,
   });
 
-  double get successRate => totalProcessed > 0 ? successCount / totalProcessed : 0.0;
+  double get successRate =>
+      totalProcessed > 0 ? successCount / totalProcessed : 0.0;
   bool get hasErrors => errors.isNotEmpty;
   bool get allSuccessful => successCount == totalProcessed;
 }

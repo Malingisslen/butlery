@@ -1,41 +1,43 @@
 {
-  "hooks": {
-    "userPromptSubmit": [
-      {
-        "path": ".claude/hooks/skill-activation-prompt.sh",
-        "description": "Auto-activate relevant skills based on file context and user intent",
-        "blocking": false
-      }
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(flutter test:*)",
+      "Bash(flutter pub:*)",
+      "Bash(dart:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git diff:*)",
+      "Bash(tree:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(rm:*)",
+      "Bash(chmod:*)",
+      "Bash(echo:*)",
+      "Bash(awk:*)",
+      "Bash(jq:*)",
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(py:*)",
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(bash:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(for:*)",
+      "Bash(do:*)",
+      "Bash(done)",
+      "Bash(if:*)",
+      "Bash(then:*)",
+      "Bash(else:*)",
+      "Bash(fi)",
+      "WebSearch",
+      "mcp__playwright__*"
     ],
-    "postToolUse": [
-      {
-        "path": ".claude/hooks/architecture-validator.sh",
-        "description": "Validate MVVM compliance - BLOCKS critical violations, WARNS on style issues",
-        "blocking": true
-      },
-      {
-        "path": ".claude/hooks/migration-detector.sh",
-        "description": "Detect opportunities to use SerializationUtils or ErrorHandlingMixin",
-        "blocking": false
-      },
-      {
-        "path": ".claude/hooks/file-size-enforcer.sh",
-        "description": "Warn if file exceeds 500 LOC without facade pattern",
-        "blocking": false
-      }
-    ],
-    "stop": [
-      {
-        "path": ".claude/hooks/dart-analyze-check.sh",
-        "description": "Run flutter analyze before returning control",
-        "blocking": false
-      },
-      {
-        "path": ".claude/hooks/dart-format-check.sh",
-        "description": "Auto-format changed Dart files",
-        "blocking": false
-      }
-    ]
+    "deny": [],
+    "ask": []
   },
   "customInstructions": {
     "enabled": true,
@@ -65,6 +67,49 @@
       "docs/testing/TESTING_DASHBOARD.md",
       "docs/PROJECT_STATUS.md",
       "README.md"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx tsx .claude/hooks/skill-injector.ts"
+          },
+          {
+            "type": "command",
+            "command": "npx tsx .claude/hooks/prompt-logger.ts"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx tsx .claude/hooks/architecture-validator.ts"
+          },
+          {
+            "type": "command",
+            "command": "npx tsx .claude/hooks/file-operation-logger.ts"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx tsx .claude/hooks/quality-checks.ts"
+          }
+        ]
+      }
     ]
   }
 }

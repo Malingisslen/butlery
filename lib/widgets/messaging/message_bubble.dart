@@ -87,10 +87,13 @@ class _MessageBubbleState extends State<MessageBubble>
       return _buildSystemMessage(context);
     }
 
-    return GestureDetector(
-      onHorizontalDragUpdate: widget.onReply != null ? _handleDragUpdate : null,
-      onHorizontalDragEnd: widget.onReply != null ? _handleDragEnd : null,
-      child: AnimatedBuilder(
+    return Semantics(
+      label: 'Meddelande, svep för att svara',
+      container: true,
+      child: GestureDetector(
+        onHorizontalDragUpdate: widget.onReply != null ? _handleDragUpdate : null,
+        onHorizontalDragEnd: widget.onReply != null ? _handleDragEnd : null,
+        child: AnimatedBuilder(
         animation: _swipeAnimation,
         builder: (context, child) {
           return Transform.translate(
@@ -155,6 +158,7 @@ class _MessageBubbleState extends State<MessageBubble>
           );
         },
       ),
+    ),
     );
   }
 
@@ -280,27 +284,31 @@ class _MessageBubbleState extends State<MessageBubble>
   }
 
   Widget _buildMessageCard(BuildContext context) {
-    return GestureDetector(
-      onTap: widget.onTap,
-      onLongPress: widget.onLongPress,
-      child: StyledCard(
-        backgroundColor: _isFromCurrentUser
-            ? AppColors.primaryBlue
-            : AppColors.cardWhite,
-        borderRadius: AppDimensions.borderRadiusM,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingS,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (widget.message.isReply && widget.replyToMessage != null)
-              _buildReplyPreview(context),
-            _buildMessageContent(context),
-            if (_isFromCurrentUser)
-              _buildMessageStatus(context),
-          ],
+    return Semantics(
+      label: 'Meddelandeinnehåll, långtryck för alternativ',
+      button: true,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        onLongPress: widget.onLongPress,
+        child: StyledCard(
+          backgroundColor: _isFromCurrentUser
+              ? AppColors.primaryBlue
+              : AppColors.cardWhite,
+          borderRadius: AppDimensions.borderRadiusM,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingM,
+            vertical: AppDimensions.paddingS,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (widget.message.isReply && widget.replyToMessage != null)
+                _buildReplyPreview(context),
+              _buildMessageContent(context),
+              if (_isFromCurrentUser)
+                _buildMessageStatus(context),
+            ],
+          ),
         ),
       ),
     );
@@ -600,11 +608,14 @@ class _MessageBubbleState extends State<MessageBubble>
         mainAxisSize: MainAxisSize.min,
         children: [
           // Image with tap to fullscreen
-          GestureDetector(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => FullscreenImageViewer(
+          Semantics(
+            label: 'Bildmeddelande, tryck för fullstorlek',
+            button: true,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => FullscreenImageViewer(
                     imageUrl: imageUrl,
                     caption: widget.message.content.isNotEmpty ? widget.message.content : null,
                   ),
@@ -659,6 +670,7 @@ class _MessageBubbleState extends State<MessageBubble>
                 ),
               ),
             ),
+          ),
           ),
 
           // Caption if available

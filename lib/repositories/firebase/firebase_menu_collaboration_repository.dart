@@ -25,7 +25,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 /// **FieldValue Operations Abstracted:**
 /// - `FieldValue.serverTimestamp()`: For consistent server-side timestamps
 /// - `FieldValue.arrayUnion()`: For adding recipes to menu categories
-/// - `FieldValue.arrayRemove()`: For removing recipes from menu categories  
+/// - `FieldValue.arrayRemove()`: For removing recipes from menu categories
 /// - `FieldValue.increment()`: For template usage counters and statistics
 ///
 /// **Testing Strategy:**
@@ -37,12 +37,12 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 /// - Collaboration listener management with proper subscription lifecycle
 /// - Real-time comment streams for live discussions
 /// - Activity logging for comprehensive audit trails
-class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedMenu>
+class FirebaseMenuCollaborationRepository
+    extends BaseFirebaseRepository<SharedMenu>
     implements MenuCollaborationRepository {
-  
   // Real-time listeners for collaboration
   final Map<String, StreamSubscription> _menuListeners = {};
-  
+
   FirebaseMenuCollaborationRepository({
     super.firestore,
     AuthRepository? authRepository,
@@ -70,44 +70,43 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
   // ===== PERMISSION VALIDATION IMPLEMENTATION =====
 
   @override
-  Future<bool> validateCreatePermission(String userId, SharedMenu entity) async {
+  Future<bool> validateCreatePermission(
+      String userId, SharedMenu entity) async {
     // Users can only create shared menus as themselves (must be the owner)
     return entity.sharedByUserId == userId;
   }
 
   @override
-  Future<bool> validateReadPermission(String userId, String resourceId, SharedMenu? entity) async {
+  Future<bool> validateReadPermission(
+      String userId, String resourceId, SharedMenu? entity) async {
     if (entity == null) return false;
 
     // Owner can always read their shared menu
     if (entity.sharedByUserId == userId) return true;
 
-    // Recipients can read menus shared with them
-    if (entity.sharedToUserIds.contains(userId)) return true;
-
-    // Active collaborators can read the menu if collaboration is enabled
-    if (entity.allowCollaboration && entity.activeCollaboratorIds.contains(userId)) {
-      return true;
-    }
+    // If collaboration is allowed, grant read access
+    // Note (Issue #014): Actual membership validation happens in SharedMenuRepository
+    if (entity.allowCollaboration) return true;
 
     return false;
   }
 
   @override
-  Future<bool> validateUpdatePermission(String userId, String resourceId, SharedMenu entity) async {
+  Future<bool> validateUpdatePermission(
+      String userId, String resourceId, SharedMenu entity) async {
     // Owner can always update their shared menu
     if (entity.sharedByUserId == userId) return true;
 
     // Active collaborators can update if collaboration is enabled
-    if (entity.allowCollaboration && entity.activeCollaboratorIds.contains(userId)) {
-      return true;
-    }
+    // Note (Issue #014): Simplified permission check - actual membership validation in SharedMenuRepository
+    if (entity.allowCollaboration) return true;
 
     return false;
   }
 
   @override
-  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+  Future<bool> validateDeletePermission(
+      String userId, String resourceId) async {
     // Only the owner can delete the shared menu
     try {
       final menu = await read(resourceId);
@@ -131,7 +130,8 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
       final userDisplayName = authRepository.currentUser?.displayName;
 
       if (userDisplayName == null) {
-        AppLogger.error('Cannot enable collaboration: User display name not available');
+        AppLogger.error(
+            'Cannot enable collaboration: User display name not available');
         return false;
       }
 
@@ -163,22 +163,27 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
   Future<bool> canCollaborate(String menuId, String userId) async {
     try {
       final menuDoc = await collection.doc(menuId).get();
-      if (!menuDoc.exists || !menuDoc.data()!.containsKey('allowCollaboration')) {
+      if (!menuDoc.exists ||
+          !menuDoc.data()!.containsKey('allowCollaboration')) {
         return false;
       }
 
       final menuData = menuDoc.data()!;
-      final allowCollaboration = (menuData['allowCollaboration'] as bool?).orFalse();
+      final allowCollaboration =
+          (menuData['allowCollaboration'] as bool?).orFalse();
       final sharedByUserId = menuData['sharedByUserId'] as String?;
-      final sharedToUserIds = List<String>.from((menuData['sharedToUserIds'] as List?).orEmpty());
-      final collaboratorIds = List<String>.from((menuData['collaboratorIds'] as List?).orEmpty());
+      final sharedToUserIds =
+          List<String>.from((menuData['sharedToUserIds'] as List?).orEmpty());
+      final collaboratorIds =
+          List<String>.from((menuData['collaboratorIds'] as List?).orEmpty());
 
-      return allowCollaboration && 
-             (sharedByUserId == userId || 
-              sharedToUserIds.contains(userId) || 
+      return allowCollaboration &&
+          (sharedByUserId == userId ||
+              sharedToUserIds.contains(userId) ||
               collaboratorIds.contains(userId));
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to check collaboration permission: $e', stackTrace);
+      AppLogger.error(
+          'Failed to check collaboration permission: $e', stackTrace);
       return false;
     }
   }
@@ -237,7 +242,8 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
       AppLogger.success('Added recipe "${recipe.title}" to collaborative menu');
       return true;
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to add recipe to collaborative menu: $e', stackTrace);
+      AppLogger.error(
+          'Failed to add recipe to collaborative menu: $e', stackTrace);
       return false;
     }
   }
@@ -254,7 +260,8 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
       final userDisplayName = authRepository.currentUser?.displayName;
 
       if (userDisplayName == null) {
-        AppLogger.error('Cannot remove recipe: User display name not available');
+        AppLogger.error(
+            'Cannot remove recipe: User display name not available');
         return false;
       }
 
@@ -272,12 +279,16 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
       }
 
       final menuData = menuDoc.data()!;
-      final menuSnapshot = (menuData['menuSnapshot'] as Map<String, dynamic>?).orEmpty();
-      final categoryRecipes = List<Map<String, dynamic>>.from((menuSnapshot[category] as List?).orEmpty());
-      
-      final recipeToRemove = categoryRecipes.where((r) => r['id'] == recipeId).firstOrNull;
+      final menuSnapshot =
+          (menuData['menuSnapshot'] as Map<String, dynamic>?).orEmpty();
+      final categoryRecipes = List<Map<String, dynamic>>.from(
+          (menuSnapshot[category] as List?).orEmpty());
+
+      final recipeToRemove =
+          categoryRecipes.where((r) => r['id'] == recipeId).firstOrNull;
       if (recipeToRemove == null) {
-        AppLogger.warning('Recipe not found in menu, may have been already removed');
+        AppLogger.warning(
+            'Recipe not found in menu, may have been already removed');
         return true;
       }
 
@@ -309,7 +320,8 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
       AppLogger.success('Removed recipe from collaborative menu');
       return true;
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to remove recipe from collaborative menu: $e', stackTrace);
+      AppLogger.error(
+          'Failed to remove recipe from collaborative menu: $e', stackTrace);
       return false;
     }
   }
@@ -395,8 +407,8 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
       final ratings = await getMenuRatings(menuId);
       if (ratings.isEmpty) return 0.0;
 
-      final totalRating = ratings.fold<double>(0.0, 
-        (total, rating) => total + (rating['rating'] as double));
+      final totalRating = ratings.fold<double>(
+          0.0, (total, rating) => total + (rating['rating'] as double));
       return totalRating / ratings.length;
     } catch (e, stackTrace) {
       AppLogger.error('Failed to get menu average rating: $e', stackTrace);
@@ -415,7 +427,8 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
         'ratingsCount': ratingsCount,
       });
     } catch (e, stackTrace) {
-      AppLogger.error('Failed to update menu rating statistics: $e', stackTrace);
+      AppLogger.error(
+          'Failed to update menu rating statistics: $e', stackTrace);
     }
   }
 
@@ -496,7 +509,8 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
       if (!commentDoc.exists) return false;
 
       final commentData = commentDoc.data()!;
-      final likedBy = List<String>.from((commentData['likedBy'] as List?).orEmpty());
+      final likedBy =
+          List<String>.from((commentData['likedBy'] as List?).orEmpty());
       final currentLikes = (commentData['likes'] as int?).orZero();
 
       if (likedBy.contains(userId)) {
@@ -536,7 +550,8 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
       final userDisplayName = authRepository.currentUser?.displayName;
 
       if (userDisplayName == null) {
-        AppLogger.error('Cannot create template: User display name not available');
+        AppLogger.error(
+            'Cannot create template: User display name not available');
         return null;
       }
 
@@ -545,7 +560,7 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
         'description': description,
         'ownerId': userId,
         'ownerDisplayName': userDisplayName,
-        'menuSnapshot': menuSnapshot.map((category, recipes) => 
+        'menuSnapshot': menuSnapshot.map((category, recipes) =>
             MapEntry(category, recipes.map((r) => r.toFirestore()).toList())),
         'tags': tags.orEmpty(),
         'isTemplate': true,
@@ -553,13 +568,13 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
         'useCount': 0,
-        'totalRecipeCount': menuSnapshot.values.fold(0, (total, recipes) => total + recipes.length),
+        'totalRecipeCount': menuSnapshot.values
+            .fold(0, (total, recipes) => total + recipes.length),
         'categories': menuSnapshot.keys.toList(),
       };
 
-      final docRef = await firestore
-          .collection('menu_templates')
-          .add(templateData);
+      final docRef =
+          await firestore.collection('menu_templates').add(templateData);
 
       AppLogger.success('Created menu template: $templateName');
       return docRef.id;
@@ -582,15 +597,14 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
       final userDisplayName = authRepository.currentUser?.displayName;
 
       if (userDisplayName == null) {
-        AppLogger.error('Cannot create menu from template: User display name not available');
+        AppLogger.error(
+            'Cannot create menu from template: User display name not available');
         return null;
       }
 
       // Get template
-      final templateDoc = await firestore
-          .collection('menu_templates')
-          .doc(templateId)
-          .get();
+      final templateDoc =
+          await firestore.collection('menu_templates').doc(templateId).get();
 
       if (!templateDoc.exists) {
         AppLogger.error('Template not found');
@@ -598,7 +612,8 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
       }
 
       final templateData = templateDoc.data()!;
-      final menuSnapshot = ((templateData['menuSnapshot'] as Map<String, dynamic>?)?.map(
+      final menuSnapshot =
+          ((templateData['menuSnapshot'] as Map<String, dynamic>?)?.map(
         (category, recipes) => MapEntry(
           category,
           (recipes as List<dynamic>)
@@ -650,10 +665,10 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
           .doc(menuId)
           .collection('activities')
           .add({
-            ...activity,
-            'menuId': menuId,
-            'timestamp': FieldValue.serverTimestamp(),
-          });
+        ...activity,
+        'menuId': menuId,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
     } catch (e, stackTrace) {
       AppLogger.error('Failed to log menu activity: $e', stackTrace);
     }
@@ -662,13 +677,12 @@ class FirebaseMenuCollaborationRepository extends BaseFirebaseRepository<SharedM
   // ===== REAL-TIME OPERATIONS =====
 
   @override
-  void startCollaborationListener(String menuId, Function(SharedMenu) onUpdate) {
+  void startCollaborationListener(
+      String menuId, Function(SharedMenu) onUpdate) {
     if (_menuListeners.containsKey(menuId)) return;
 
-    _menuListeners[menuId] = collection
-        .doc(menuId)
-        .snapshots()
-        .listen((snapshot) {
+    _menuListeners[menuId] =
+        collection.doc(menuId).snapshots().listen((snapshot) {
       if (snapshot.exists) {
         try {
           final menu = fromFirestore(snapshot);

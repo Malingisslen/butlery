@@ -30,14 +30,27 @@ class SharedContentLists {
       );
     }
 
+    // Calculate item count: recipes + load more button (if applicable)
+    final hasMoreContent = viewModel.recipeViewModel.hasMoreContent;
+    final itemCount = recipes.length + (hasMoreContent ? 1 : 0);
+
     return RefreshIndicator(
       onRefresh: viewModel.refreshAllContent,
       child: ListView.separated(
         padding: AppDimensions.screenPadding,
-        itemCount: recipes.length,
+        itemCount: itemCount,
         separatorBuilder: (context, index) =>
             const SizedBox(height: AppDimensions.spacingS),
         itemBuilder: (context, index) {
+          // Load more button at the end
+          if (index == recipes.length) {
+            return _buildLoadMoreButton(
+              context,
+              isLoading: viewModel.recipeViewModel.isLoadingMore,
+              onPressed: () => viewModel.recipeViewModel.loadMoreContent(),
+            );
+          }
+
           final sharedRecipe = recipes[index];
           return SharedRecipeCard.build(
             context,
@@ -67,14 +80,27 @@ class SharedContentLists {
       );
     }
 
+    // Calculate item count: menus + load more button (if applicable)
+    final hasMoreContent = viewModel.menuViewModel.hasMoreContent;
+    final itemCount = menus.length + (hasMoreContent ? 1 : 0);
+
     return RefreshIndicator(
       onRefresh: viewModel.refreshAllContent,
       child: ListView.separated(
         padding: AppDimensions.screenPadding,
-        itemCount: menus.length,
+        itemCount: itemCount,
         separatorBuilder: (context, index) =>
             const SizedBox(height: AppDimensions.spacingS),
         itemBuilder: (context, index) {
+          // Load more button at the end
+          if (index == menus.length) {
+            return _buildLoadMoreButton(
+              context,
+              isLoading: viewModel.menuViewModel.isLoadingMore,
+              onPressed: () => viewModel.menuViewModel.loadMoreContent(),
+            );
+          }
+
           final sharedMenu = menus[index];
           return SharedMenuCard.build(
             context,
@@ -104,14 +130,27 @@ class SharedContentLists {
       );
     }
 
+    // Calculate item count: shopping lists + load more button (if applicable)
+    final hasMoreContent = viewModel.shoppingViewModel.hasMoreContent;
+    final itemCount = sharedShoppingLists.length + (hasMoreContent ? 1 : 0);
+
     return RefreshIndicator(
       onRefresh: viewModel.refreshAllContent,
       child: ListView.separated(
         padding: AppDimensions.screenPadding,
-        itemCount: sharedShoppingLists.length,
+        itemCount: itemCount,
         separatorBuilder: (context, index) =>
             const SizedBox(height: AppDimensions.spacingS),
         itemBuilder: (context, index) {
+          // Load more button at the end
+          if (index == sharedShoppingLists.length) {
+            return _buildLoadMoreButton(
+              context,
+              isLoading: viewModel.shoppingViewModel.isLoadingMore,
+              onPressed: () => viewModel.shoppingViewModel.loadMoreContent(),
+            );
+          }
+
           final sharedShoppingList = sharedShoppingLists[index];
           return SharedShoppingListCard.build(
             context,
@@ -119,6 +158,32 @@ class SharedContentLists {
             sharedShoppingList,
           );
         },
+      ),
+    );
+  }
+
+  /// Build load more button
+  static Widget _buildLoadMoreButton(
+    BuildContext context, {
+    required bool isLoading,
+    required VoidCallback onPressed,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingM),
+      child: Center(
+        child: isLoading
+            ? const CircularProgressIndicator()
+            : ElevatedButton.icon(
+                onPressed: onPressed,
+                icon: const Icon(Icons.expand_more),
+                label: const Text('Visa fler'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacingL,
+                    vertical: AppDimensions.spacingM,
+                  ),
+                ),
+              ),
       ),
     );
   }
