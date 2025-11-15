@@ -51,8 +51,9 @@ import 'package:butlery/core/utils/logger.dart';
 class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
   // ===== DEPENDENCIES =====
 
-  late final FirebaseSharedMenuRepository _sharedMenuRepository;
   late final SocialMenuCoordinator _socialMenuCoordinator;
+  late final FirebaseSharedMenuRepository
+      _sharedMenuRepository; // TODO: Remove in Phase 3 - still used for status cache loading
 
   // ===== STATUS CACHING (ISSUE #014) =====
 
@@ -68,13 +69,14 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
   // ===== CONSTRUCTOR =====
 
   SharedMenuViewModel({
-    FirebaseSharedMenuRepository? sharedMenuRepository,
     SocialMenuCoordinator? socialMenuCoordinator,
+    FirebaseSharedMenuRepository?
+        sharedMenuRepository, // TODO: Remove in Phase 3
   }) {
-    _sharedMenuRepository =
-        sharedMenuRepository ?? FirebaseSharedMenuRepository();
     _socialMenuCoordinator =
         socialMenuCoordinator ?? ServiceLocator.get<SocialMenuCoordinator>();
+    _sharedMenuRepository = sharedMenuRepository ??
+        FirebaseSharedMenuRepository(); // TODO: Remove in Phase 3
 
     AppLogger.info(
         'SharedMenuViewModel initialized with copy-on-write support');
@@ -85,7 +87,8 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     try {
       final viewed = await _sharedMenuRepository.hasViewed(menuId, userId);
       final imported = await _sharedMenuRepository.hasEngaged(menuId, userId);
-      final dismissed = await _sharedMenuRepository.hasDismissed(menuId, userId);
+      final dismissed =
+          await _sharedMenuRepository.hasDismissed(menuId, userId);
 
       _viewedStatusCache[menuId] = viewed;
       _importedStatusCache[menuId] = imported;
@@ -96,7 +99,8 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
   }
 
   /// Load status for all menus in bulk
-  Future<void> _loadStatusForAllMenus(List<SharedMenu> menus, String userId) async {
+  Future<void> _loadStatusForAllMenus(
+      List<SharedMenu> menus, String userId) async {
     for (final menu in menus) {
       await _loadStatusForMenu(menu.id, userId);
     }
@@ -136,8 +140,7 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     await _loadStatusForAllMenus(menus, userId);
 
     // Filter out dismissed menus for main content view using cache
-    final visibleMenus =
-        menus.where((menu) => !_isDismissed(menu.id)).toList();
+    final visibleMenus = menus.where((menu) => !_isDismissed(menu.id)).toList();
 
     AppLogger.info(
         '✅ Loaded ${menus.length} shared menus (${visibleMenus.length} visible)');
@@ -182,8 +185,7 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     await _loadStatusForAllMenus(menus, userId);
 
     // Filter out dismissed menus for main content view using cache
-    final visibleMenus =
-        menus.where((menu) => !_isDismissed(menu.id)).toList();
+    final visibleMenus = menus.where((menu) => !_isDismissed(menu.id)).toList();
 
     AppLogger.info(
         '✅ Loaded ${menus.length} shared menus (${visibleMenus.length} visible)');
@@ -219,8 +221,7 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     if (userId == null) return [];
 
     return content
-        .where((menu) =>
-            !_isImported(menu.id) && menu.sharedByUserId != userId)
+        .where((menu) => !_isImported(menu.id) && menu.sharedByUserId != userId)
         .toList();
   }
 
@@ -282,12 +283,7 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     final result = await executeOperation(
       'Dismiss menu "${getContentTitle(sharedMenu)}"',
       () async {
-        final userId = currentUserId;
-        if (userId == null) {
-          throw Exception('No authenticated user');
-        }
-
-        await _sharedMenuRepository.markAsDismissed(sharedMenu.id, userId);
+        await _socialMenuCoordinator.dismissSharedMenu(sharedMenu.id);
         return true;
       },
     );
@@ -305,12 +301,7 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     final result = await executeOperation(
       'Restore menu "${getContentTitle(sharedMenu)}"',
       () async {
-        final userId = currentUserId;
-        if (userId == null) {
-          throw Exception('No authenticated user');
-        }
-
-        await _sharedMenuRepository.undismiss(sharedMenu.id, userId);
+        await _socialMenuCoordinator.restoreSharedMenu(sharedMenu.id);
         return true;
       },
     );
@@ -332,17 +323,12 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     final result = await executeOperation(
       'Mark menu as viewed "${getContentTitle(sharedMenu)}"',
       () async {
-        final userId = currentUserId;
-        if (userId == null) {
-          throw Exception('No authenticated user');
-        }
-
         // Check if already viewed to avoid unnecessary operations (using cache)
         if (_isViewed(sharedMenu.id)) {
           return true;
         }
 
-        await _sharedMenuRepository.markAsViewed(sharedMenu.id, userId);
+        await _socialMenuCoordinator.markMenuAsViewed(sharedMenu.id);
 
         // Update cache (Issue #014)
         _viewedStatusCache[sharedMenu.id] = true;

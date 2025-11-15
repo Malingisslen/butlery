@@ -15,7 +15,6 @@ import 'package:butlery/widgets/messaging/chat_app_bar.dart';
 import 'package:butlery/widgets/messaging/typing_indicator.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/presence_service.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// Clean ChatView facade coordinating specialized components
