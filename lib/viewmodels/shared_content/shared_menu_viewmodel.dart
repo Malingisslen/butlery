@@ -413,6 +413,19 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     }).toList();
   }
 
+  /// Get specific shared menu by ID
+  ///
+  /// Week 2 Task 1 Completion: Loads a single SharedMenu from the coordinator.
+  /// Useful for deep links and view operations where we need the full menu object.
+  Future<SharedMenu?> getSharedMenuById(String menuId) async {
+    return await executeOperation(
+      'Load shared menu $menuId',
+      () async {
+        return await _socialMenuCoordinator.getSharedMenuById(menuId);
+      },
+    );
+  }
+
   // ===== ANALYTICS =====
 
   /// Get menu engagement statistics (using cache - Issue #014)

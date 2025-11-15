@@ -28,6 +28,7 @@ import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/archive_import_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
@@ -103,6 +104,7 @@ class UIModule implements DIModule {
         // Social ViewModels
         FriendsViewModel,
         SharedContentCoordinatorViewModel,
+        SharedMenuViewModel,
         CreateGroupViewModel,
         GroupInvitationsViewModel,
         GroupContentViewModel,
@@ -240,6 +242,11 @@ class UIModule implements DIModule {
             ),
       );
 
+      // Shared Menu ViewModel - Week 2 Task 1 Completion
+      container.registerFactory<SharedMenuViewModel>(
+        () => SharedMenuViewModel(),
+      );
+
       // Create Group ViewModel
       container.registerFactory<CreateGroupViewModel>(
         () => CreateGroupViewModel(),
@@ -318,7 +325,7 @@ class UIModule implements DIModule {
 
       if (kDebugMode) {
         debugPrint(
-            '✅ [UIModule] Configured 22 ViewModels (Auth, Profile, Recipe, Menu, Shopping, Social, Import)');
+            '✅ [UIModule] Configured 23 ViewModels (Auth, Profile, Recipe, Menu, Shopping, Social, Import)');
       }
     } catch (e) {
       throw DIModuleException(
