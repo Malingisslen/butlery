@@ -4,7 +4,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/services/messaging_service.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
@@ -14,7 +15,6 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 class ConversationsViewModel extends ChangeNotifier
     with StreamManagementMixin, ErrorHandlingMixin, StateNotifierMixin, AsyncOperationMixin {
   final MessagingService _messagingService;
-  final AuthRepository _authRepository;
 
   // State
   bool _isDisposed = false;
@@ -28,9 +28,7 @@ class ConversationsViewModel extends ChangeNotifier
 
   ConversationsViewModel({
     required MessagingService messagingService,
-    required AuthRepository authRepository,
-  }) : _messagingService = messagingService,
-       _authRepository = authRepository {
+  }) : _messagingService = messagingService {
     _initializeConversations();
   }
 
@@ -42,7 +40,7 @@ class ConversationsViewModel extends ChangeNotifier
   bool get isSearching => _isSearching;
   // isLoading and errorMessage provided by AsyncOperationMixin
   bool get hasConversations => _filteredConversations.isNotEmpty;
-  String? get currentUserId => _authRepository.currentUserId;
+  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
 
   void _initializeConversations() {
     if (_isDisposed) return;

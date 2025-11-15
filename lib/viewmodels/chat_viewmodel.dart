@@ -6,14 +6,14 @@ import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/presence_service.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
   final MessagingService _messagingService;
-  final AuthRepository _authRepository;
   final PresenceService? _presenceService;
 
   final String conversationId;
@@ -42,12 +42,10 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
 
   ChatViewModel({
     required MessagingService messagingService,
-    required AuthRepository authRepository,
     required this.conversationId,
     Conversation? initialConversation,
     PresenceService? presenceService,
   })  : _messagingService = messagingService,
-        _authRepository = authRepository,
         _presenceService = presenceService,
         _conversation = initialConversation {
     _initializeChat();
@@ -63,7 +61,7 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
   List<String> get currentTypingUsers => typingUserNames;
   bool get hasTypingUsers => typingUserNames.isNotEmpty;
   bool get hasMessages => _messages.isNotEmpty;
-  String? get currentUserId => _authRepository.currentUserId;
+  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
   Message? get replyToMessage => _replyToMessage;
   bool get hasReplyTarget => _replyToMessage != null;
   

@@ -118,7 +118,6 @@ void main() {
         conversationId: testConversationId,
         messagingService: mockMessagingService,
         friendsService: mockFriendsService,
-        authRepository: mockAuthRepository,
       );
     }
 

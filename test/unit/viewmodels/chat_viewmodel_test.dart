@@ -212,7 +212,6 @@ void main() {
       
       viewModel = ChatViewModel(
         messagingService: mockMessagingService,
-        authRepository: mockAuthRepository,
         conversationId: testConversationId,
         initialConversation: initialConversation,
       );
@@ -260,7 +259,6 @@ void main() {
         // Act - create viewModel without initial conversation
         final newViewModel = ChatViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
           conversationId: testConversationId,
         );
         await Future.delayed(const Duration(milliseconds: 100));
@@ -283,7 +281,6 @@ void main() {
         // Act
         final newViewModel = ChatViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
           conversationId: testConversationId,
           initialConversation: initialConversation,
         );
@@ -328,7 +325,6 @@ void main() {
         );
         final vmWithConversation = ChatViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
           conversationId: testConversationId,
           initialConversation: conversation,
         );
@@ -344,7 +340,6 @@ void main() {
         // Arrange - create viewModel without initial conversation
         final vmWithoutConversation = ChatViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
           conversationId: testConversationId,
         );
         
@@ -360,7 +355,6 @@ void main() {
         final groupConversation = ConversationBuilder.buildGroupConversation();
         final vmWithGroup = ChatViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
           conversationId: testConversationId,
           initialConversation: groupConversation,
         );
@@ -765,7 +759,6 @@ void main() {
         // Act
         final newViewModel = ChatViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
           conversationId: 'invalid_id',
         );
         await Future.delayed(const Duration(milliseconds: 100));
@@ -792,7 +785,6 @@ void main() {
         final conversation = ConversationBuilder.build();
         final vmWithConversation = ChatViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
           conversationId: testConversationId,
           initialConversation: conversation,
         );
@@ -808,7 +800,6 @@ void main() {
         // Arrange - create viewModel without initial conversation
         final vmWithoutConversation = ChatViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
           conversationId: testConversationId,
         );
         
@@ -838,7 +829,6 @@ void main() {
             
         final testViewModel = ChatViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
           conversationId: testConversationId,
           initialConversation: testConversation,
         );
@@ -855,7 +845,6 @@ void main() {
         // Arrange
         final testViewModel = ChatViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
           conversationId: testConversationId,
         );
         
@@ -874,7 +863,6 @@ void main() {
         // Arrange
         final testViewModel = ChatViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
           conversationId: testConversationId,
         );
         var notificationCount = 0;
