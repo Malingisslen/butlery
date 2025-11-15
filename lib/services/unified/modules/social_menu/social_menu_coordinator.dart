@@ -105,6 +105,17 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
   final Future<Map<String, List<Recipe>>?> Function(String) _getMenu;
   final Future<String?> Function(Map<String, List<Recipe>>) _saveMenu;
 
+  // ===== STATUS CACHING (ISSUE #014) =====
+
+  /// Cached viewed status (menuId → bool)
+  final Map<String, bool> _viewedStatusCache = {};
+
+  /// Cached imported status (menuId → bool)
+  final Map<String, bool> _importedStatusCache = {};
+
+  /// Cached dismissed status (menuId → bool)
+  final Map<String, bool> _dismissedStatusCache = {};
+
   SocialMenuCoordinator({
     required super.getCurrentUserId,
     required super.getCurrentUserDisplayName,
@@ -332,6 +343,61 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
       AppLogger.error('Failed to load shared menus for user $userId', e);
       return [];
     }
+  }
+
+  // ===== STATUS CACHE METHODS (PHASE 3 SESSION 2) =====
+
+  /// Load status for a menu from repository and cache it
+  ///
+  /// Phase 3 Session 2: Status caching method for ViewModel migration.
+  /// Loads viewed, imported, and dismissed status from repository and caches locally.
+  Future<void> loadStatusForMenu(String menuId, String userId) async {
+    try {
+      final viewed = await _sharedMenuRepository.hasViewed(menuId, userId);
+      final imported = await _sharedMenuRepository.hasEngaged(menuId, userId);
+      final dismissed = await _sharedMenuRepository.hasDismissed(menuId, userId);
+
+      _viewedStatusCache[menuId] = viewed;
+      _importedStatusCache[menuId] = imported;
+      _dismissedStatusCache[menuId] = dismissed;
+    } catch (e) {
+      AppLogger.error('Failed to load status for menu $menuId', e);
+    }
+  }
+
+  /// Load status for all menus in bulk
+  ///
+  /// Phase 3 Session 2: Bulk status loading method for ViewModel migration.
+  /// Loads status for multiple menus to populate cache efficiently.
+  Future<void> loadStatusForAllMenus(
+      List<SharedMenu> menus, String userId) async {
+    for (final menu in menus) {
+      await loadStatusForMenu(menu.id, userId);
+    }
+  }
+
+  /// Check if menu is dismissed using cache
+  ///
+  /// Phase 3 Session 2: Status checking method for ViewModel migration.
+  /// Falls back to false if not cached.
+  bool isMenuDismissed(String menuId) {
+    return _dismissedStatusCache[menuId] ?? false;
+  }
+
+  /// Check if menu is viewed using cache
+  ///
+  /// Phase 3 Session 2: Status checking method for ViewModel migration.
+  /// Falls back to false if not cached.
+  bool isMenuViewed(String menuId) {
+    return _viewedStatusCache[menuId] ?? false;
+  }
+
+  /// Check if menu is imported using cache
+  ///
+  /// Phase 3 Session 2: Status checking method for ViewModel migration.
+  /// Falls back to false if not cached.
+  bool isMenuImported(String menuId) {
+    return _importedStatusCache[menuId] ?? false;
   }
 
   /// Dismiss shared menu from user's list

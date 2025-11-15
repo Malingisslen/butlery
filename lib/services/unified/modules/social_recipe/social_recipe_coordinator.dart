@@ -43,6 +43,17 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   /// Notification service for social notifications (temporarily disabled)
   // late final notif.NotificationService? _notificationService;
 
+  // ===== STATUS CACHING (ISSUE #014) =====
+
+  /// Cached viewed status (recipeId → bool)
+  final Map<String, bool> _viewedStatusCache = {};
+
+  /// Cached imported status (recipeId → bool)
+  final Map<String, bool> _importedStatusCache = {};
+
+  /// Cached dismissed status (recipeId → bool)
+  final Map<String, bool> _dismissedStatusCache = {};
+
   SocialRecipeCoordinator({
     required JsonCacheHelper cacheHelper,
     required String? Function() getCurrentUserId,
@@ -347,6 +358,61 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
       AppLogger.error('Failed to load shared recipes for user $userId', e);
       return [];
     }
+  }
+
+  // ===== STATUS CACHE METHODS (PHASE 3 SESSION 2) =====
+
+  /// Load status for a recipe from repository and cache it
+  ///
+  /// Phase 3 Session 2: Status caching method for ViewModel migration.
+  /// Loads viewed, imported, and dismissed status from repository and caches locally.
+  Future<void> loadStatusForRecipe(String recipeId, String userId) async {
+    try {
+      final viewed = await _sharedRecipeRepository.hasViewed(recipeId, userId);
+      final imported = await _sharedRecipeRepository.hasEngaged(recipeId, userId);
+      final dismissed = await _sharedRecipeRepository.hasDismissed(recipeId, userId);
+
+      _viewedStatusCache[recipeId] = viewed;
+      _importedStatusCache[recipeId] = imported;
+      _dismissedStatusCache[recipeId] = dismissed;
+    } catch (e) {
+      AppLogger.error('Failed to load status for recipe $recipeId', e);
+    }
+  }
+
+  /// Load status for all recipes in bulk
+  ///
+  /// Phase 3 Session 2: Bulk status loading method for ViewModel migration.
+  /// Loads status for multiple recipes to populate cache efficiently.
+  Future<void> loadStatusForAllRecipes(
+      List<SharedRecipe> recipes, String userId) async {
+    for (final recipe in recipes) {
+      await loadStatusForRecipe(recipe.id, userId);
+    }
+  }
+
+  /// Check if recipe is dismissed using cache
+  ///
+  /// Phase 3 Session 2: Status checking method for ViewModel migration.
+  /// Falls back to false if not cached.
+  bool isRecipeDismissed(String recipeId) {
+    return _dismissedStatusCache[recipeId] ?? false;
+  }
+
+  /// Check if recipe is viewed using cache
+  ///
+  /// Phase 3 Session 2: Status checking method for ViewModel migration.
+  /// Falls back to false if not cached.
+  bool isRecipeViewed(String recipeId) {
+    return _viewedStatusCache[recipeId] ?? false;
+  }
+
+  /// Check if recipe is imported using cache
+  ///
+  /// Phase 3 Session 2: Status checking method for ViewModel migration.
+  /// Falls back to false if not cached.
+  bool isRecipeImported(String recipeId) {
+    return _importedStatusCache[recipeId] ?? false;
   }
 
   /// Join shared recipe for viewing with true copy-on-write (copy created on first edit).
