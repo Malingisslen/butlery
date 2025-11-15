@@ -58,9 +58,10 @@ class SharedShoppingViewModel
     extends BaseSharedContentViewModel<SharedShoppingList> {
   // ===== DEPENDENCIES =====
 
-  late final FirebaseSharedShoppingRepository _sharedShoppingRepository;
   late final SocialShoppingCoordinator _socialShoppingCoordinator;
   late final UnifiedShoppingService _shoppingService;
+  late final FirebaseSharedShoppingRepository
+      _sharedShoppingRepository; // TODO: Remove in Phase 3 - still used for status cache loading
 
   // ===== STATUS CACHING (ISSUE #014) =====
 
@@ -76,16 +77,18 @@ class SharedShoppingViewModel
   // ===== CONSTRUCTOR =====
 
   SharedShoppingViewModel({
-    FirebaseSharedShoppingRepository? sharedShoppingRepository,
     SocialShoppingCoordinator? socialShoppingCoordinator,
     UnifiedShoppingService? shoppingService,
+    FirebaseSharedShoppingRepository?
+        sharedShoppingRepository, // TODO: Remove in Phase 3
   }) {
-    _sharedShoppingRepository = sharedShoppingRepository ??
-        ServiceLocator.get<FirebaseSharedShoppingRepository>();
     _socialShoppingCoordinator = socialShoppingCoordinator ??
         ServiceLocator.get<SocialShoppingCoordinator>();
     _shoppingService =
         shoppingService ?? ServiceLocator.get<UnifiedShoppingService>();
+    _sharedShoppingRepository = sharedShoppingRepository ??
+        ServiceLocator.get<
+            FirebaseSharedShoppingRepository>(); // TODO: Remove in Phase 3
 
     AppLogger.info(
         'SharedShoppingViewModel initialized with direct collaboration support');
@@ -295,12 +298,8 @@ class SharedShoppingViewModel
     final result = await executeOperation(
       'Dismiss shopping list "${getContentTitle(sharedList)}"',
       () async {
-        final userId = currentUserId;
-        if (userId == null) {
-          throw Exception('No authenticated user');
-        }
-
-        await _sharedShoppingRepository.markAsDismissed(sharedList.id, userId);
+        await _socialShoppingCoordinator
+            .dismissSharedShoppingList(sharedList.id);
         return true;
       },
     );
@@ -319,12 +318,8 @@ class SharedShoppingViewModel
     final result = await executeOperation(
       'Restore shopping list "${getContentTitle(sharedList)}"',
       () async {
-        final userId = currentUserId;
-        if (userId == null) {
-          throw Exception('No authenticated user');
-        }
-
-        await _sharedShoppingRepository.undismiss(sharedList.id, userId);
+        await _socialShoppingCoordinator
+            .restoreSharedShoppingList(sharedList.id);
         return true;
       },
     );
@@ -346,17 +341,13 @@ class SharedShoppingViewModel
     final result = await executeOperation(
       'Mark shopping list as viewed "${getContentTitle(sharedList)}"',
       () async {
-        final userId = currentUserId;
-        if (userId == null) {
-          throw Exception('No authenticated user');
-        }
-
         // Check if already viewed to avoid unnecessary operations (using cache)
         if (_isViewed(sharedList.id)) {
           return true;
         }
 
-        await _sharedShoppingRepository.markAsViewed(sharedList.id, userId);
+        await _socialShoppingCoordinator
+            .markShoppingListAsViewed(sharedList.id);
 
         // Update cache (Issue #014)
         _viewedStatusCache[sharedList.id] = true;

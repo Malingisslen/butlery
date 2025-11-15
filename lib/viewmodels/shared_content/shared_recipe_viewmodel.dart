@@ -51,8 +51,9 @@ import 'package:butlery/core/utils/logger.dart';
 class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   // ===== DEPENDENCIES =====
 
-  late final FirebaseSharedRecipeRepository _sharedRecipeRepository;
   late final SocialRecipeCoordinator _socialRecipeCoordinator;
+  late final FirebaseSharedRecipeRepository
+      _sharedRecipeRepository; // TODO: Remove in Phase 3 - still used for status cache loading
 
   // ===== STATUS CACHING (ISSUE #014) =====
 
@@ -68,13 +69,14 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   // ===== CONSTRUCTOR =====
 
   SharedRecipeViewModel({
-    FirebaseSharedRecipeRepository? sharedRecipeRepository,
     SocialRecipeCoordinator? socialRecipeCoordinator,
+    FirebaseSharedRecipeRepository?
+        sharedRecipeRepository, // TODO: Remove in Phase 3
   }) {
-    _sharedRecipeRepository =
-        sharedRecipeRepository ?? FirebaseSharedRecipeRepository();
     _socialRecipeCoordinator = socialRecipeCoordinator ??
         ServiceLocator.get<SocialRecipeCoordinator>();
+    _sharedRecipeRepository = sharedRecipeRepository ??
+        FirebaseSharedRecipeRepository(); // TODO: Remove in Phase 3
 
     AppLogger.info(
         'SharedRecipeViewModel initialized with copy-on-write support');
@@ -84,8 +86,10 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   Future<void> _loadStatusForRecipe(String recipeId, String userId) async {
     try {
       final viewed = await _sharedRecipeRepository.hasViewed(recipeId, userId);
-      final imported = await _sharedRecipeRepository.hasEngaged(recipeId, userId);
-      final dismissed = await _sharedRecipeRepository.hasDismissed(recipeId, userId);
+      final imported =
+          await _sharedRecipeRepository.hasEngaged(recipeId, userId);
+      final dismissed =
+          await _sharedRecipeRepository.hasDismissed(recipeId, userId);
 
       _viewedStatusCache[recipeId] = viewed;
       _importedStatusCache[recipeId] = imported;
@@ -96,7 +100,8 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   }
 
   /// Load status for all recipes in bulk
-  Future<void> _loadStatusForAllRecipes(List<SharedRecipe> recipes, String userId) async {
+  Future<void> _loadStatusForAllRecipes(
+      List<SharedRecipe> recipes, String userId) async {
     for (final recipe in recipes) {
       await _loadStatusForRecipe(recipe.id, userId);
     }
@@ -278,12 +283,7 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     final result = await executeOperation(
       'Dismiss recipe "${getContentTitle(sharedRecipe)}"',
       () async {
-        final userId = currentUserId;
-        if (userId == null) {
-          throw Exception('No authenticated user');
-        }
-
-        await _sharedRecipeRepository.markAsDismissed(sharedRecipe.id, userId);
+        await _socialRecipeCoordinator.dismissSharedRecipe(sharedRecipe.id);
         return true;
       },
     );
