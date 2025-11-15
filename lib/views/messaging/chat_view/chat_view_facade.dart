@@ -52,7 +52,6 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
     // Initialize ChatViewModel
     _viewModel = ChatViewModel(
       messagingService: ServiceLocator.get<MessagingService>(),
-      authRepository: ServiceLocator.get<AuthRepository>(),
       conversationId: widget.conversationId,
       initialConversation: widget.conversation,
       presenceService: presenceService,

@@ -51,7 +51,6 @@ import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/social_sharing_repository.dart';
 
 // Dependencies from other modules
@@ -294,7 +293,6 @@ class UIModule implements DIModule {
       container.registerFactory<ConversationsViewModel>(
         () => ConversationsViewModel(
           messagingService: container<MessagingService>(),
-          authRepository: container<AuthRepository>(),
         ),
       );
 

@@ -225,7 +225,6 @@ void main() {
       // Create viewModel
       viewModel = ConversationsViewModel(
         messagingService: mockMessagingService,
-        authRepository: mockAuthRepository,
       );
     });
 
@@ -268,7 +267,6 @@ void main() {
         // Act
         final errorViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
         );
         
         // Assert
@@ -366,7 +364,6 @@ void main() {
         // Arrange - Create a separate viewModel for this test
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
         );
         
         // Load initial data
@@ -567,7 +564,6 @@ void main() {
         // Arrange - Create a separate viewModel for this test
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
         );
         testViewModel.dispose();
         
@@ -749,7 +745,6 @@ void main() {
         // Arrange - Create a separate viewModel for this test
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
         );
         testViewModel.dispose();
         
@@ -810,7 +805,6 @@ void main() {
         // Arrange - Create a separate viewModel for this test
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
         );
         testViewModel.dispose();
         
@@ -886,7 +880,6 @@ void main() {
         // Arrange - Create a separate viewModel for this test
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
         );
         testViewModel.dispose();
         
@@ -982,7 +975,6 @@ void main() {
         // Arrange
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
         );
         
         // Act & Assert - Should not throw on first dispose
@@ -993,7 +985,6 @@ void main() {
         // Arrange - Create a separate viewModel for this test
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
         );
         testViewModel.dispose();
         
@@ -1007,7 +998,6 @@ void main() {
         // Arrange - Create a separate viewModel for this test
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
         );
         
         // Act - First dispose should work
@@ -1021,7 +1011,6 @@ void main() {
         // Arrange - Create a separate viewModel for this test
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
-          authRepository: mockAuthRepository,
         );
         testViewModel.dispose();
         

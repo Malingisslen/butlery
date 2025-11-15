@@ -32,7 +32,6 @@ class GroupDetailView extends StatelessWidget {
         conversationId: conversationId,
         messagingService: ServiceLocator.get(),
         friendsService: ServiceLocator.get(),
-        authRepository: ServiceLocator.get(),
       ),
       child: Consumer<GroupDetailViewModel>(
         builder: (context, viewModel, child) {

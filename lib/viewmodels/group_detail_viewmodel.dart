@@ -6,7 +6,8 @@ import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -60,7 +61,6 @@ class GroupDetailViewModel extends ChangeNotifier
   final String _conversationId;
   final MessagingService _messagingService;
   final UnifiedFriendsService _friendsService;
-  final AuthRepository _authRepository;
 
   // State
   bool _isDisposed = false;
@@ -77,11 +77,9 @@ class GroupDetailViewModel extends ChangeNotifier
     required String conversationId,
     required MessagingService messagingService,
     required UnifiedFriendsService friendsService,
-    required AuthRepository authRepository,
   })  : _conversationId = conversationId,
         _messagingService = messagingService,
-        _friendsService = friendsService,
-        _authRepository = authRepository {
+        _friendsService = friendsService {
     _initializeConversationStream();
   }
 
@@ -94,7 +92,7 @@ class GroupDetailViewModel extends ChangeNotifier
   bool get isLeavingGroup => _isLeavingGroup;
   bool get isUpdatingTitle => _isUpdatingTitle;
   bool get hasConversation => _conversation != null;
-  String? get currentUserId => _authRepository.currentUserId;
+  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
 
   /// Check if current user is group admin/creator
   bool get isAdmin {
