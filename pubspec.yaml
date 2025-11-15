@@ -97,7 +97,7 @@ dev_dependencies:
   fake_cloud_firestore: ^4.0.0
   firebase_auth_mocks: ^0.15.0
   firebase_storage_mocks: ^0.8.0+1
-  google_sign_in_mocks: ^0.3.0
+  google_sign_in_mocks: ^0.4.1
   
   # ==================== TEST DATA GENERATION ====================
   faker: ^2.2.0
