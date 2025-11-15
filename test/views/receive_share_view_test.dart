@@ -841,7 +841,7 @@ class TestSocialMediaExtractor implements SocialMediaExtractor {
   }
   
   @override
-  void dispose() {
+  Future<void> dispose() async {
     // Mock disposal - no action needed
   }
 }
