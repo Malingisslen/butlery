@@ -335,6 +335,20 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     }
   }
 
+  /// Get all shared recipes for a specific user
+  ///
+  /// Phase 3 Session 1: Content loading method for ViewModel migration.
+  /// Wraps repository call with error handling and logging.
+  Future<List<SharedRecipe>> getSharedRecipesForUser(String userId) async {
+    try {
+      AppLogger.info('📥 Loading shared recipes for user $userId');
+      return await _sharedRecipeRepository.getSharedRecipesForUser(userId);
+    } catch (e) {
+      AppLogger.error('Failed to load shared recipes for user $userId', e);
+      return [];
+    }
+  }
+
   /// Join shared recipe for viewing with true copy-on-write (copy created on first edit).
   Future<String?> joinSharedRecipe({
     required String sharedRecipeId,

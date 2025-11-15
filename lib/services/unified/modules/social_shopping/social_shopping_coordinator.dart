@@ -317,6 +317,20 @@ class SocialShoppingCoordinator extends BaseSocialCoordinator<UnifiedShoppingLis
     return await getReceivedInvitations();
   }
 
+  /// Get all shared shopping lists for a specific user
+  ///
+  /// Phase 3 Session 1: Content loading method for ViewModel migration.
+  /// Wraps repository call with error handling and logging.
+  Future<List<SharedShoppingList>> getSharedShoppingListsForUser(String userId) async {
+    try {
+      AppLogger.info('📥 Loading shared shopping lists for user $userId');
+      return await _sharedShoppingRepository.getSharedContentForUser(userId);
+    } catch (e) {
+      AppLogger.error('Failed to load shared shopping lists for user $userId', e);
+      return [];
+    }
+  }
+
   /// Dismiss shared shopping list from user's list
   Future<bool> dismissSharedShoppingList(String sharedShoppingListId) async {
     return await dismissSharedContent(sharedShoppingListId);

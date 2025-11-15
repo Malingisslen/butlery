@@ -320,6 +320,20 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
     return await getReceivedInvitations();
   }
 
+  /// Get all shared menus for a specific user
+  ///
+  /// Phase 3 Session 1: Content loading method for ViewModel migration.
+  /// Wraps repository call with error handling and logging.
+  Future<List<SharedMenu>> getSharedMenusForUser(String userId) async {
+    try {
+      AppLogger.info('📥 Loading shared menus for user $userId');
+      return await _sharedMenuRepository.getSharedContentForUser(userId);
+    } catch (e) {
+      AppLogger.error('Failed to load shared menus for user $userId', e);
+      return [];
+    }
+  }
+
   /// Dismiss shared menu from user's list
   Future<bool> dismissSharedMenu(String sharedMenuId) async {
     return await dismissSharedContent(sharedMenuId);
