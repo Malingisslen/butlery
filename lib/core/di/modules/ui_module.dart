@@ -17,6 +17,7 @@ import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/unified_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
+import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/viewmodels/conversations_viewmodel.dart';
 import 'package:butlery/viewmodels/create_group_viewmodel.dart';
 import 'package:butlery/viewmodels/group_invitations_viewmodel.dart';
@@ -48,6 +49,7 @@ import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/social_sharing_repository.dart';
@@ -82,6 +84,7 @@ class UIModule implements DIModule {
         // Core ViewModels
         AuthViewModel,
         UserProfileViewModel,
+        ProfileViewModel,
 
         // Recipe ViewModels
         RecipeListViewModel,
@@ -145,6 +148,15 @@ class UIModule implements DIModule {
         () => UserProfileViewModel(
           container<UserService>(),
           container<ImagePickerService>(),
+        ),
+      );
+
+      // Profile ViewModel - Auth, User, and Account Deletion services
+      container.registerFactory<ProfileViewModel>(
+        () => ProfileViewModel(
+          authService: container<AuthService>(),
+          userService: container<UserService>(),
+          accountDeletionService: container<AccountDeletionService>(),
         ),
       );
 
@@ -308,7 +320,7 @@ class UIModule implements DIModule {
 
       if (kDebugMode) {
         debugPrint(
-            '✅ [UIModule] Configured 21 ViewModels (Auth, Recipe, Menu, Shopping, Social, Import)');
+            '✅ [UIModule] Configured 22 ViewModels (Auth, Profile, Recipe, Menu, Shopping, Social, Import)');
       }
     } catch (e) {
       throw DIModuleException(

@@ -23,12 +23,12 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/models/user_profile.dart';
 
 /// Conversations list view showing all user's messaging conversations
-/// 
+///
 /// Provides comprehensive conversation management including:
 /// - Real-time conversation list with previews
 /// - Search functionality for conversations
@@ -47,10 +47,10 @@ class ConversationsListView extends StatefulWidget {
 class _ConversationsListViewState extends State<ConversationsListView> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
-  
+
   late final MessagingService _messagingService;
-  late final AuthRepository _authRepository;
-  
+  late final AuthService _authService;
+
   String? _currentUserId;
   List<Conversation> _allConversations = [];
   List<Conversation> _filteredConversations = [];
@@ -61,9 +61,9 @@ class _ConversationsListViewState extends State<ConversationsListView> {
   void initState() {
     super.initState();
     _messagingService = ServiceLocator.get<MessagingService>();
-    _authRepository = ServiceLocator.get<AuthRepository>();
-    _currentUserId = _authRepository.currentUserId;
-    
+    _authService = ServiceLocator.get<AuthService>();
+    _currentUserId = _authService.currentUserId;
+
     _setupListeners();
     _loadConversations();
   }
@@ -107,11 +107,13 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       _filteredConversations = List.from(_allConversations);
     } else {
       _filteredConversations = _allConversations.where((conversation) {
-        final title = conversation.getDisplayTitle(_currentUserId ?? '').toLowerCase();
-        final lastMessageContent = conversation.lastMessage?.content.toLowerCase() ?? '';
-        
-        return title.contains(_searchQuery) || 
-               lastMessageContent.contains(_searchQuery);
+        final title =
+            conversation.getDisplayTitle(_currentUserId ?? '').toLowerCase();
+        final lastMessageContent =
+            conversation.lastMessage?.content.toLowerCase() ?? '';
+
+        return title.contains(_searchQuery) ||
+            lastMessageContent.contains(_searchQuery);
       }).toList();
     }
   }
@@ -140,7 +142,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         onConversationCreated: (conversationId) {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => ChatViewFacade(conversationId: conversationId),
+              builder: (context) =>
+                  ChatViewFacade(conversationId: conversationId),
             ),
           );
         },
@@ -213,7 +216,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           variant: EmptyStateVariant.generic,
           icon: Icons.chat_bubble_outline,
           title: 'Inga konversationer än',
-          subtitle: 'Starta din första konversation genom att trycka på meddelande-knappen',
+          subtitle:
+              'Starta din första konversation genom att trycka på meddelande-knappen',
           customAction: StyledButton.primary(
             text: 'Ny konversation',
             onPressed: _showNewConversationDialog,
@@ -234,7 +238,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         ),
         itemBuilder: (context, index) {
           final conversation = _filteredConversations[index];
-          
+
           return ConversationListItem(
             key: ValueKey(conversation.id),
             conversation: conversation,
@@ -253,7 +257,6 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       child: ModalContentContainer(
         children: [
           ModalHeaderText(conversation.getDisplayTitle(_currentUserId ?? '')),
-          
           ListTile(
             leading: const Icon(Icons.mark_chat_read),
             title: const Text('Markera som läst'),
@@ -262,7 +265,6 @@ class _ConversationsListViewState extends State<ConversationsListView> {
               _markAsRead(conversation);
             },
           ),
-          
           if (conversation.isGroup) ...[
             ListTile(
               leading: const Icon(Icons.info_outline),
@@ -290,7 +292,6 @@ class _ConversationsListViewState extends State<ConversationsListView> {
               },
             ),
           ],
-          
           ErrorListTile(
             icon: Icons.delete_outline,
             title: 'Radera konversation',
@@ -313,7 +314,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Lämna grupp'),
-        content: Text('Är du säker på att du vill lämna "${conversation.title}"?'),
+        content:
+            Text('Är du säker på att du vill lämna "${conversation.title}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -356,7 +358,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Radera konversation'),
-        content: const Text('Är du säker på att du vill radera denna konversation? Alla meddelanden kommer att försvinna.'),
+        content: const Text(
+            'Är du säker på att du vill radera denna konversation? Alla meddelanden kommer att försvinna.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -373,7 +376,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       ),
     );
   }
-  
+
   void _navigateToGroupInfo(BuildContext context, Conversation conversation) {
     // Navigate to group detail using existing routes
     Navigator.pushNamed(
@@ -382,24 +385,26 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       arguments: {'groupId': conversation.id},
     );
   }
-  
-  Future<void> _navigateToUserProfile(BuildContext context, Conversation conversation) async {
+
+  Future<void> _navigateToUserProfile(
+      BuildContext context, Conversation conversation) async {
     // For direct conversations, get the other participant's profile
     try {
       // Get the other participant's ID (not the current user)
-      final otherParticipantId = conversation.participantIds
-          .firstWhere((id) => id != _currentUserId, orElse: () => conversation.participantIds.first);
-      
+      final otherParticipantId = conversation.participantIds.firstWhere(
+          (id) => id != _currentUserId,
+          orElse: () => conversation.participantIds.first);
+
       // Try to get the UserProfile from friends service
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
       final friends = friendsService.friends;
-      
+
       // Find the friend profile
       final UserProfile friendProfile = friends.firstWhere(
         (friend) => friend.uid == otherParticipantId,
         orElse: () => throw Exception('Friend not found'),
       );
-      
+
       // Navigate to friend profile with UserProfile object
       Navigator.pushNamed(
         context,
@@ -418,19 +423,19 @@ class _ConversationsListViewState extends State<ConversationsListView> {
       }
     }
   }
-  
+
   Future<void> _performConversationDeletion(Conversation conversation) async {
     final messenger = ScaffoldMessenger.of(context);
     try {
       // Get messaging service from DI for conversation deletion
       final messagingService = ServiceLocator.get<MessagingService>();
-      
+
       // Attempt to delete the conversation
       await messagingService.deleteConversation(conversation.id);
-      
+
       // Refresh the conversations list after successful deletion
       await _refreshConversations();
-      
+
       if (mounted) {
         messenger.showSnackBar(
           SnackBar(

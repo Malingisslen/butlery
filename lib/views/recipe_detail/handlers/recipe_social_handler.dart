@@ -2,13 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -54,15 +54,17 @@ class RecipeSocialHandler {
     BuildContext context, {
     required String commentText,
     required String recipeId,
-    required void Function(String message, {Color? backgroundColor}) showSnackBar,
+    required void Function(String message, {Color? backgroundColor})
+        showSnackBar,
   }) async {
     if (!context.mounted || commentText.trim().isEmpty) return;
 
     final socialViewModel = context.read<SocialRecipeViewModel>();
+    final authService = ServiceLocator.get<AuthService>();
     final userService = ServiceLocator.get<UserService>();
-    final currentUser = FirebaseAuthRepository().currentUser;
+    final currentUserId = authService.currentUserId;
 
-    if (currentUser == null) {
+    if (currentUserId == null) {
       showSnackBar(
         'Du måste vara inloggad för att kommentera',
         backgroundColor: AppColors.error,
@@ -72,7 +74,7 @@ class RecipeSocialHandler {
 
     try {
       // Get user profile
-      final userProfile = await userService.getUserProfile(currentUser.uid);
+      final userProfile = await userService.getUserProfile(currentUserId);
       if (userProfile == null) {
         if (context.mounted) {
           showSnackBar(
@@ -90,25 +92,32 @@ class RecipeSocialHandler {
       showSnackBar('Kommentar postad', backgroundColor: AppColors.success);
     } catch (e) {
       if (!context.mounted) return;
-      showSnackBar('Kunde inte posta kommentar', backgroundColor: AppColors.error);
+      showSnackBar('Kunde inte posta kommentar',
+          backgroundColor: AppColors.error);
     }
   }
 
   /// Create user profile if missing
   static Future<void> createUserProfile(
     BuildContext context, {
-    required void Function(String message, {Color? backgroundColor}) showSnackBar,
+    required void Function(String message, {Color? backgroundColor})
+        showSnackBar,
   }) async {
     if (!context.mounted) return;
 
+    final authService = ServiceLocator.get<AuthService>();
     final userService = ServiceLocator.get<UserService>();
-    final currentUser = FirebaseAuthRepository().currentUser;
+    final currentUserId = authService.currentUserId;
 
-    if (currentUser == null) return;
+    if (currentUserId == null) return;
+
+    // Get display name from UserService's current user profile or use a default
+    final displayName =
+        userService.currentUserProfile?.displayName ?? 'Användare';
 
     try {
       await userService.createOrUpdateProfile(
-        displayName: currentUser.displayName ?? currentUser.email ?? 'Användare',
+        displayName: displayName,
         isSearchable: true,
         allowEmailSearch: false,
       );
@@ -116,7 +125,8 @@ class RecipeSocialHandler {
       showSnackBar('Användarprofil skapad', backgroundColor: AppColors.success);
     } catch (e) {
       if (!context.mounted) return;
-      showSnackBar('Kunde inte skapa användarprofil', backgroundColor: AppColors.error);
+      showSnackBar('Kunde inte skapa användarprofil',
+          backgroundColor: AppColors.error);
     }
   }
 }

@@ -9,7 +9,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/widgets/common/profile/profile_actions.dart';
 /// Profile menu display components
 ///
@@ -156,7 +156,8 @@ class _ProfileMenuState extends State<ProfileMenu> {
 
   /// Profile header with user info
   Widget _buildProfileHeader(BuildContext context) {
-    final user = ServiceLocator.get<AuthRepository>().currentUser;
+    final profileViewModel = ServiceLocator.get<ProfileViewModel>();
+    final user = profileViewModel.currentUser;
 
     return Container(
       width: double.infinity,

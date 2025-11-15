@@ -7,15 +7,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
-import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/backup_service.dart';
-import 'package:butlery/services/auth_service.dart';
-import 'package:butlery/services/user_service.dart';
-import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/offline_service.dart';
-import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/services/account/account_deletion_service.dart';
+import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/viewmodels/account/data_export_viewmodel.dart';
@@ -497,7 +490,8 @@ class ProfileActions {
   /// Perform logout
   static Future<void> _performLogout(BuildContext context) async {
     try {
-      await ServiceLocator.get<AuthRepository>().signOut();
+      final profileViewModel = ServiceLocator.get<ProfileViewModel>();
+      await profileViewModel.logout();
       if (context.mounted) {
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -646,27 +640,16 @@ class ProfileActions {
       );
       await user.reauthenticateWithCredential(credential);
 
-      // Create deletion service
-      final deletionService = AccountDeletionService(
-        authRepository: ServiceLocator.get<AuthRepository>(),
-        firestoreRepository: ServiceLocator.get<FirestoreRepository>(),
-        authService: ServiceLocator.get<AuthService>(),
-        userService: ServiceLocator.get<UserService>(),
-        recipeService: ServiceLocator.get<UnifiedRecipeService>(),
-        offlineService: ServiceLocator.get<OfflineService>(),
-        analyticsService: ServiceLocator.get<AnalyticsService>(),
-      );
-
-      // Perform deletion
-      final result = await deletionService.deleteUserAccount(
+      // Perform deletion using ProfileViewModel
+      final profileViewModel = ServiceLocator.get<ProfileViewModel>();
+      final success = await profileViewModel.deleteAccount(
         reason: 'User requested account deletion',
-        createAuditLog: true,
       );
 
       if (context.mounted) {
         Navigator.pop(context); // Close loading indicator
 
-        if (result['success'] == true) {
+        if (success) {
           // Account deleted successfully
           Navigator.pushNamedAndRemoveUntil(
             context,
@@ -681,7 +664,7 @@ class ProfileActions {
           );
         } else {
           // Deletion failed
-          _showDeletionErrorDialog(context, result);
+          _showErrorDialog(context, 'Kontot kunde inte raderas helt. Kontakta support.');
         }
       }
     } catch (e) {
@@ -773,41 +756,6 @@ class ProfileActions {
               backgroundColor: AppColors.error,
             ),
             child: const Text('Bekräfta'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Show deletion error dialog
-  static void _showDeletionErrorDialog(
-    BuildContext context,
-    Map<String, dynamic> result,
-  ) {
-    final failedCollections = result['failedCollections'] as List<dynamic>?;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Radering misslyckades delvis'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Följande data kunde inte raderas:'),
-            const SizedBox(height: 8),
-            if (failedCollections != null)
-              ...failedCollections.map((collection) => Text('• $collection')),
-            const SizedBox(height: 16),
-            const Text(
-              'Kontakta support för hjälp.',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
           ),
         ],
       ),

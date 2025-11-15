@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/social_components.dart';
@@ -98,7 +97,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Save reference to ViewModel for safe disposal
-    _socialViewModel ??= Provider.of<SocialRecipeViewModel>(context, listen: false);
+    _socialViewModel ??=
+        Provider.of<SocialRecipeViewModel>(context, listen: false);
   }
 
   @override
@@ -121,7 +121,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
               onTap: () {
                 if (mounted) {
                   setState(() {
-                    _state = _state.copyWith(isCommentsExpanded: !_state.isCommentsExpanded);
+                    _state = _state.copyWith(
+                        isCommentsExpanded: !_state.isCommentsExpanded);
                   });
 
                   // Start or stop real-time comment streaming based on expansion
@@ -139,7 +140,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
                   color: AppColors.cardWhite,
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusL),
                   border: Border.all(color: AppColors.divider),
                 ),
                 child: Row(
@@ -202,7 +204,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
         children: [
           // Comment form
           _buildCommentForm(socialViewModel),
-          
+
           // Comments list
           if (socialViewModel.isLoadingComments)
             StateWidget.loading(message: 'Laddar kommentarer...')
@@ -245,8 +247,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   }
 
   Widget _buildCommentForm(SocialRecipeViewModel socialViewModel) {
-    final currentUser = FirebaseAuthRepository().currentUser;
-    
+    final currentUser = socialViewModel.currentUser;
+
     if (currentUser == null) {
       return Container(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -281,7 +283,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
                 color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusM),
               ),
               child: Row(
                 children: [
@@ -335,11 +338,14 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                     hintText: _state.replyingToCommentId != null
                         ? 'Skriv ditt svar...'
                         : 'Skriv en kommentar...',
-                    hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
+                    hintStyle: AppTextStyles.bodyMedium
+                        .copyWith(color: AppColors.textTertiary),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.borderRadiusM),
                     ),
-                    contentPadding: const EdgeInsets.all(AppDimensions.paddingM),
+                    contentPadding:
+                        const EdgeInsets.all(AppDimensions.paddingM),
                   ),
                   style: AppTextStyles.bodyLarge,
                   maxLines: 3,
@@ -451,12 +457,14 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 ),
               ),
               child: Column(
-                children: replies.map((reply) => _buildCommentWithReplies(
-                  reply,
-                  socialViewModel,
-                  depth: depth + 1,
-                  maxDepth: maxDepth,
-                )).toList(),
+                children: replies
+                    .map((reply) => _buildCommentWithReplies(
+                          reply,
+                          socialViewModel,
+                          depth: depth + 1,
+                          maxDepth: maxDepth,
+                        ))
+                    .toList(),
               ),
             ),
           ),
@@ -544,13 +552,17 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
               ),
               // Like button
               Semantics(
-                label: comment.isLiked ? 'Ta bort gilla-markering' : 'Gilla kommentar',
+                label: comment.isLiked
+                    ? 'Ta bort gilla-markering'
+                    : 'Gilla kommentar',
                 button: true,
                 child: IconButton(
                   onPressed: () => _toggleLike(comment, socialViewModel),
                   icon: Icon(
                     comment.isLiked ? Icons.favorite : Icons.favorite_border,
-                    color: comment.isLiked ? AppColors.error : AppColors.textMedium,
+                    color: comment.isLiked
+                        ? AppColors.error
+                        : AppColors.textMedium,
                     size: AppDimensions.iconSizeM,
                   ),
                 ),
@@ -593,7 +605,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       return;
     }
 
-    final currentUser = FirebaseAuthRepository().currentUser;
+    final currentUser = socialViewModel.currentUser;
     if (currentUser == null) {
       _showSnackBarSafely(
         'Du måste vara inloggad för att kommentera',
@@ -646,7 +658,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     dynamic comment,
     SocialRecipeViewModel socialViewModel,
   ) async {
-    final currentUser = FirebaseAuthRepository().currentUser;
+    final currentUser = socialViewModel.currentUser;
     if (currentUser == null) {
       _showSnackBarSafely(
         'Du måste vara inloggad för att gilla kommentarer',
@@ -666,7 +678,8 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
   }
 
   /// Show dialog with list of users who liked a comment
-  void _showLikesDialog(dynamic comment, SocialRecipeViewModel socialViewModel) {
+  void _showLikesDialog(
+      dynamic comment, SocialRecipeViewModel socialViewModel) {
     if (!mounted) return;
 
     showModalBottomSheet(
@@ -695,8 +708,10 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                   itemCount: comment.likedByUserIds?.length ?? 0,
                   itemBuilder: (context, index) {
                     final userId = comment.likedByUserIds[index];
-                    final displayName = _getAuthorDisplayName(userId, socialViewModel);
-                    final avatarUrl = _getAuthorAvatarUrl(userId, socialViewModel);
+                    final displayName =
+                        _getAuthorDisplayName(userId, socialViewModel);
+                    final avatarUrl =
+                        _getAuthorAvatarUrl(userId, socialViewModel);
 
                     return ListTile(
                       key: ValueKey(userId),

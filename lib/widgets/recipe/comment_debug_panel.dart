@@ -1,7 +1,6 @@
 // lib/widgets/recipe/comment_debug_panel.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -23,7 +22,7 @@ class CommentDebugPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userService = ServiceLocator.get<UserService>();
-    final authUser = FirebaseAuthRepository().currentUser;
+    final authUser = socialViewModel.currentUser;
 
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingS),
@@ -37,15 +36,17 @@ class CommentDebugPanel extends StatelessWidget {
               'SocialViewModel.currentUser: ${socialViewModel.currentUser?.displayName ?? "NULL"}'),
           Text(
               'UserService.currentUserProfile: ${userService.currentUserProfile?.displayName ?? "NULL"}'),
-          Text('FirebaseAuth.currentUser: ${authUser?.email ?? "NULL"}'),
+          Text(
+              'SocialViewModel.currentUser.email: ${authUser?.email ?? "NULL"}'),
           Text('UserService loading: ${userService.isLoading}'),
           Text('UserService error: ${userService.error ?? "none"}'),
           const SizedBox(height: AppDimensions.spacingM),
           if (authUser != null && userService.currentUserProfile == null)
             ElevatedButton(
               onPressed: () async {
-                final displayName =
-                    authUser.displayName ?? authUser.email!.split('@')[0];
+                final displayName = authUser.displayName.isNotEmpty
+                    ? authUser.displayName
+                    : (authUser.email.split('@')[0]);
 
                 final profile = await userService.createOrUpdateProfile(
                   displayName: displayName,
