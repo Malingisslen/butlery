@@ -146,9 +146,9 @@ class SharedShoppingViewModel
     }
 
     AppLogger.info(
-        '🔄 Loading shared shopping lists from repository for user: $userId');
+        '🔄 Loading shared shopping lists from coordinator for user: $userId');
     final shoppingLists =
-        await _sharedShoppingRepository.getSharedShoppingListsForUser(userId);
+        await _socialShoppingCoordinator.getSharedShoppingListsForUser(userId);
 
     // Load status for all lists to populate cache (Issue #014)
     await _loadStatusForAllLists(shoppingLists, userId);

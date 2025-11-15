@@ -6,10 +6,11 @@
 /// intelligent platform-specific optimization and comprehensive error handling.
 ///
 /// **Architecture Integration:**
-/// - Uses [SingletonServiceMixin] for standardized singleton pattern with proper lifecycle management
+/// - Extends [BaseService] for standardized error handling, logging, and lifecycle management
 /// - Coordinates [PlatformDetector] for intelligent platform recognition and URL optimization
 /// - Manages [WebScraper] for headless browser-based content extraction and parsing
 /// - Integrates with [ExtractionResult] for structured result management and error reporting
+/// - Registered as singleton in DI container for consistent instance management
 ///
 /// **Extraction Pipeline:**
 /// - **URL Conversion**: Intelligent URL conversion for platform-specific optimization (e.g., Instagram app URLs to web URLs)
@@ -26,10 +27,10 @@
 /// **Usage Examples:**
 /// ```dart
 /// final extractionManager = ExtractionManager();
-/// 
+///
 /// // Extract recipe from Instagram post
 /// final result = await extractionManager.extractFromUrl('https://instagram.com/p/recipe-post');
-/// 
+///
 /// if (result.success) {
 ///   final recipeText = result.extractedText;
 ///   final platform = result.metadata['platform'];
@@ -37,29 +38,32 @@
 /// } else {
 ///   handleExtractionError(result.error);
 /// }
-/// 
+///
 /// // Clean up resources when done
 /// extractionManager.dispose();
 /// ```
 
 import 'package:flutter/material.dart';
 import 'package:butlery/services/social_media_extractor.dart';
-import 'package:butlery/core/mixins/singleton_service_mixin.dart';
+import 'package:butlery/core/base/base_service.dart';
 
 /// Central extraction coordinator managing multi-platform content extraction with intelligent pipeline orchestration.
 ///
 /// This service orchestrates the complete content extraction process from platform detection through
 /// content parsing, providing a unified interface for extracting recipe content from diverse sources
 /// with platform-specific optimization and comprehensive error handling capabilities.
-class ExtractionManager with SingletonServiceMixin<ExtractionManager> {
-  // Private constructor for singleton
-  ExtractionManager._internal();
-  
-  // Factory constructor using SingletonServiceMixin
-  factory ExtractionManager() => SingletonServiceMixin.createSingleton(() => ExtractionManager._internal());
+class ExtractionManager extends BaseService {
+  final PlatformDetector _platformDetector;
+  final WebScraper _webScraper;
 
-  final PlatformDetector _platformDetector = PlatformDetector();
-  final WebScraper _webScraper = WebScraper();
+  ExtractionManager({
+    PlatformDetector? platformDetector,
+    WebScraper? webScraper,
+  })  : _platformDetector = platformDetector ?? PlatformDetector(),
+        _webScraper = webScraper ?? WebScraper();
+
+  @override
+  String get serviceName => 'ExtractionManager';
 
   /// Extracts recipe content from URL using comprehensive multi-stage extraction pipeline with platform optimization.
   ///
@@ -94,10 +98,10 @@ class ExtractionManager with SingletonServiceMixin<ExtractionManager> {
   /// ```dart
   /// // Extract from Instagram recipe post
   /// final instagramResult = await manager.extractFromUrl('https://instagram.com/p/recipe123');
-  /// 
+  ///
   /// // Extract from cooking website
   /// final websiteResult = await manager.extractFromUrl('https://cooking-site.com/recipe');
-  /// 
+  ///
   /// // Handle results with error checking
   /// if (result.success && result.extractedText != null) {
   ///   createRecipeFromExtraction(result.extractedText!, result.metadata);
@@ -106,35 +110,48 @@ class ExtractionManager with SingletonServiceMixin<ExtractionManager> {
   /// }
   /// ```
   Future<ExtractionResult> extractFromUrl(String url) async {
-    debugPrint('🌐 Starting extraction from: $url');
+    final result = await executeServiceOperation<ExtractionResult>(
+      () async {
+        debugPrint('🌐 Starting extraction from: $url');
 
-    // Step 1: Convert URLs and detect platform
-    final webUrl = _platformDetector.convertToWebUrl(url);
-    if (webUrl != url) {
-      debugPrint('📸 Converted Instagram link to: $webUrl');
-    }
+        // Step 1: Convert URLs and detect platform
+        final webUrl = _platformDetector.convertToWebUrl(url);
+        if (webUrl != url) {
+          debugPrint('📸 Converted Instagram link to: $webUrl');
+        }
 
-    // Step 2: Detect platform
-    final platform = _platformDetector.detectPlatform(webUrl);
+        // Step 2: Detect platform
+        final platform = _platformDetector.detectPlatform(webUrl);
 
-    if (!_platformDetector.isSupportedPlatform(platform)) {
-      return ExtractionResult(
-        success: false,
-        error: 'Unknown platform for URL: $webUrl',
-      );
-    }
+        if (!_platformDetector.isSupportedPlatform(platform)) {
+          return ExtractionResult(
+            success: false,
+            error: 'Unknown platform for URL: $webUrl',
+          );
+        }
 
-    // Step 3: Perform extraction
-    final result = await _webScraper.performExtraction(webUrl, platform);
+        // Step 3: Perform extraction
+        final result = await _webScraper.performExtraction(webUrl, platform);
 
-    return result;
+        return result;
+      },
+      operationName: 'Extract from URL',
+    );
+
+    // executeServiceOperation returns nullable, provide fallback error result
+    return result ??
+        ExtractionResult(
+          success: false,
+          error: 'Extraction operation failed',
+          metadata: {'url': url},
+        );
   }
 
-  /// Disposes extraction resources and cleans up browser instances for proper resource management.
+  /// Custom cleanup logic for extraction resources called by BaseService.dispose().
   ///
   /// This method ensures comprehensive cleanup of all extraction resources including headless browser
-  /// instances, platform detection caches, and web scraping resources. It should be called when the
-  /// extraction manager is no longer needed to prevent memory leaks and resource exhaustion.
+  /// instances, platform detection caches, and web scraping resources. Called automatically by the
+  /// BaseService disposal lifecycle.
   ///
   /// **Resource Cleanup:**
   /// - Terminates headless browser instances and WebDriver connections
@@ -143,22 +160,11 @@ class ExtractionManager with SingletonServiceMixin<ExtractionManager> {
   /// - Cancels any pending extraction operations and background processes
   ///
   /// **Usage Guidelines:**
-  /// - Call dispose() when extraction operations are complete
-  /// - Essential for applications with limited extraction usage
-  /// - Automatically managed by singleton lifecycle in long-running applications
-  /// - Should be called during application shutdown for proper resource management
-  ///
-  /// **Example:**
-  /// ```dart
-  /// final manager = ExtractionManager();
-  /// try {
-  ///   final result = await manager.extractFromUrl(recipeUrl);
-  ///   processExtractionResult(result);
-  /// } finally {
-  ///   manager.dispose(); // Ensure proper cleanup
-  /// }
-  /// ```
-  void dispose() {
+  /// - Called automatically by BaseService.dispose()
+  /// - Part of standardized service lifecycle management
+  /// - No direct calls needed - use inherited dispose() method instead
+  @override
+  Future<void> onDispose() async {
     _webScraper.dispose();
   }
 }

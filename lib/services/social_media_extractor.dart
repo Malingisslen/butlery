@@ -26,10 +26,10 @@
 /// **Usage Examples:**
 /// ```dart
 /// final extractor = SocialMediaExtractor();
-/// 
+///
 /// // Extract recipe from social media URL
 /// final result = await extractor.extractFromUrl('https://instagram.com/p/recipe-post');
-/// 
+///
 /// if (result.success) {
 ///   final recipeText = result.extractedText;
 ///   final platform = result.metadata['platform'];
@@ -37,14 +37,13 @@
 /// } else {
 ///   showError(result.error ?? 'Extraction failed');
 /// }
-/// 
+///
 /// // Clean up resources
 /// extractor.dispose();
 /// ```
 
 import 'package:butlery/services/extraction/extraction_manager.dart';
-import 'package:butlery/core/mixins/singleton_service_mixin.dart';
-import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/core/base/base_service.dart';
 
 // Export extraction components for external usage
 export 'extraction/platform_detector.dart';
@@ -74,7 +73,7 @@ export 'extraction/extraction_manager.dart';
 /// **Usage Examples:**
 /// ```dart
 /// final result = await extractor.extractFromUrl(url);
-/// 
+///
 /// if (result.success && result.extractedText != null) {
 ///   processRecipeText(result.extractedText!);
 ///   logAnalytics('extraction_success', result.metadata);
@@ -116,42 +115,45 @@ class ExtractionResult {
 /// - Comprehensive documentation guides migration strategy for enhanced functionality
 /// - Testing compatibility ensures no breaking changes in existing integrations
 ///
-/// **Singleton Architecture:**
-/// - Uses [SingletonServiceMixin] for standardized singleton pattern implementation
-/// - Ensures consistent extraction service instance across application lifecycle
+/// **BaseService Architecture:**
+/// - Extends [BaseService] for standardized error handling, logging, and lifecycle management
+/// - Registered as singleton in DI container for consistent instance management
 /// - Provides proper resource management and cleanup capabilities
-/// - Thread-safe singleton creation with proper initialization handling
+/// - Part of Content Module dependency injection system
 ///
 /// **Migration Guide:**
 /// ```dart
-/// // Current approach (continues to work)
-/// final extractor = SocialMediaExtractor();
+/// // Get from DI (recommended)
+/// final extractor = ServiceLocator.get<SocialMediaExtractor>();
 /// final result = await extractor.extractFromUrl(url);
-/// 
+///
 /// // Enhanced approach (for new implementations)
 /// final manager = ExtractionManager();
 /// final result = await manager.extractFromUrl(url);
-/// 
+///
 /// // Advanced usage (direct component access)
 /// final detector = PlatformDetector();
 /// final platform = detector.detectPlatform(url);
 /// final scraper = WebScraper();
 /// final content = await scraper.scrapeContent(url, platform);
 /// ```
-class SocialMediaExtractor with SingletonServiceMixin<SocialMediaExtractor>, ErrorHandlingMixin {
-  // Private constructor for singleton
-  SocialMediaExtractor._internal();
-  
-  // Factory constructor using SingletonServiceMixin
-  factory SocialMediaExtractor() => SingletonServiceMixin.createSingleton(() => SocialMediaExtractor._internal());
+class SocialMediaExtractor extends BaseService {
+  final ExtractionManager _manager;
 
-  final ExtractionManager _manager = ExtractionManager();
+  SocialMediaExtractor({
+    ExtractionManager? manager,
+  }) : _manager = manager ?? ExtractionManager();
+
+  @override
+  String get serviceName => 'SocialMediaExtractor';
 
   /// Extracts recipe content from social media URL with comprehensive platform support and error handling.
   ///
   /// This method provides the primary extraction functionality by delegating to the ExtractionManager
   /// while maintaining a simplified API surface. It handles platform detection, content scraping,
   /// and result formatting automatically while providing detailed error information for debugging.
+  ///
+  /// Uses BaseService's [executeServiceOperation] for standardized error handling, logging, and retry logic.
   ///
   /// [url] Social media or cooking website URL to extract recipe content from
   /// Returns [ExtractionResult] with success status, extracted content, and comprehensive metadata
@@ -175,10 +177,10 @@ class SocialMediaExtractor with SingletonServiceMixin<SocialMediaExtractor>, Err
   /// ```dart
   /// // Extract from Instagram recipe post
   /// final instagramResult = await extractor.extractFromUrl('https://instagram.com/p/recipe123');
-  /// 
+  ///
   /// // Extract from cooking website
   /// final websiteResult = await extractor.extractFromUrl('https://cooking-site.com/recipe');
-  /// 
+  ///
   /// // Handle extraction results
   /// if (result.success) {
   ///   final recipeText = result.extractedText!;
@@ -187,15 +189,24 @@ class SocialMediaExtractor with SingletonServiceMixin<SocialMediaExtractor>, Err
   /// }
   /// ```
   Future<ExtractionResult> extractFromUrl(String url) async {
-    return _manager.extractFromUrl(url);
+    final result = await executeServiceOperation(
+      () => _manager.extractFromUrl(url),
+      operationName: 'Extract from URL',
+    );
+
+    // executeServiceOperation returns nullable, provide fallback error result
+    return result ??
+        ExtractionResult(
+          success: false,
+          error: 'Extraction operation failed',
+          metadata: {'url': url},
+        );
   }
 
-
-  /// Disposes extraction resources and cleans up browser instances for proper resource management.
+  /// Custom cleanup logic for extraction resources called by BaseService.dispose().
   ///
   /// This method ensures proper cleanup of all extraction resources including headless browser instances,
-  /// network connections, and cached content. It should be called when the extraction service is no longer
-  /// needed to prevent memory leaks and resource exhaustion in long-running applications.
+  /// network connections, and cached content. Called automatically by the BaseService disposal lifecycle.
   ///
   /// **Resource Cleanup:**
   /// - Closes headless browser instances and WebDriver connections
@@ -204,22 +215,11 @@ class SocialMediaExtractor with SingletonServiceMixin<SocialMediaExtractor>, Err
   /// - Releases platform-specific extraction resources and native integrations
   ///
   /// **Usage Guidelines:**
-  /// - Call dispose() when extraction service is no longer needed
-  /// - Recommended for applications with limited extraction usage
-  /// - Not necessary for long-running applications with frequent extractions
-  /// - Automatically called during application shutdown if singleton lifecycle is managed
-  ///
-  /// **Example:**
-  /// ```dart
-  /// final extractor = SocialMediaExtractor();
-  /// try {
-  ///   final result = await extractor.extractFromUrl(url);
-  ///   processResult(result);
-  /// } finally {
-  ///   extractor.dispose(); // Ensure proper cleanup
-  /// }
-  /// ```
-  void dispose() {
+  /// - Called automatically by BaseService.dispose()
+  /// - Part of standardized service lifecycle management
+  /// - No direct calls needed - use inherited dispose() method instead
+  @override
+  Future<void> onDispose() async {
     _manager.dispose();
   }
 }
