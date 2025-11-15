@@ -41,7 +41,7 @@ dependencies:
 
   # ==================== NETWORKING ====================
   http: ^1.2.2
-  connectivity_plus: ^6.1.0
+  connectivity_plus: ^7.0.0
 
   # ==================== IMAGE HANDLING ====================
   image_picker: ^1.1.2
