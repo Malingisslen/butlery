@@ -95,7 +95,8 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
       default:
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Visa ${item.title} (funktionalitet ej implementerad än)'),
+            content:
+                Text('Visa ${item.title} (funktionalitet ej implementerad än)'),
             backgroundColor: AppColors.info,
           ),
         );
@@ -117,7 +118,8 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
       default:
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Importera ${item.title} (funktionalitet ej implementerad än)'),
+            content: Text(
+                'Importera ${item.title} (funktionalitet ej implementerad än)'),
             backgroundColor: AppColors.warning,
           ),
         );
@@ -126,8 +128,10 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
 
   Future<void> _showMenuDetailsDialog(SharedContentItem item) async {
     // Fetch the full SharedMenu object from Firebase to enable collaborative editing
+    // TODO: Refactor to use ViewModel method instead of direct repository access
     try {
-      final sharedMenuRepository = ServiceLocator.get<FirebaseSharedMenuRepository>();
+      final sharedMenuRepository =
+          ServiceLocator.get<FirebaseSharedMenuRepository>();
       final sharedMenu = await sharedMenuRepository.getSharedMenu(item.id);
 
       if (sharedMenu == null) {
@@ -224,7 +228,8 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                 final recipes = recipesSnapshot.data ?? [];
                 final menus = menusSnapshot.data ?? [];
                 final shoppingLists = shoppingListsSnapshot.data ?? [];
-                final totalItems = _getTotalItems(recipes, menus, shoppingLists);
+                final totalItems =
+                    _getTotalItems(recipes, menus, shoppingLists);
 
                 // Show loading if any stream is still loading
                 final isLoading = !recipesSnapshot.hasData ||
@@ -260,9 +265,10 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                              borderRadius:
-                                  BorderRadius.circular(AppDimensions.borderRadiusS),
+                              color:
+                                  AppColors.primaryBlue.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(
+                                  AppDimensions.borderRadiusS),
                             ),
                             child: Text(
                               totalItems.toString(),
@@ -281,7 +287,8 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
                     DecoratedBox(
                       decoration: BoxDecoration(
                         color: AppColors.cardWhite,
-                        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.borderRadiusM),
                       ),
                       child: TabBar(
                         controller: _tabController,
