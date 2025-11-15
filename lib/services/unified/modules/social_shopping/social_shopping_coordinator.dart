@@ -101,6 +101,17 @@ class SocialShoppingCoordinator extends BaseSocialCoordinator<UnifiedShoppingLis
   final Future<UnifiedShoppingList?> Function(String) _getShoppingList;
   final Future<String?> Function(UnifiedShoppingList) _saveShoppingList;
 
+  // ===== STATUS CACHING (ISSUE #014) =====
+
+  /// Cached viewed status (shoppingListId → bool)
+  final Map<String, bool> _viewedStatusCache = {};
+
+  /// Cached imported status (shoppingListId → bool)
+  final Map<String, bool> _importedStatusCache = {};
+
+  /// Cached dismissed status (shoppingListId → bool)
+  final Map<String, bool> _dismissedStatusCache = {};
+
   SocialShoppingCoordinator({
     required super.getCurrentUserId,
     required super.getCurrentUserDisplayName,
@@ -329,6 +340,61 @@ class SocialShoppingCoordinator extends BaseSocialCoordinator<UnifiedShoppingLis
       AppLogger.error('Failed to load shared shopping lists for user $userId', e);
       return [];
     }
+  }
+
+  // ===== STATUS CACHE METHODS (PHASE 3 SESSION 2) =====
+
+  /// Load status for a shopping list from repository and cache it
+  ///
+  /// Phase 3 Session 2: Status caching method for ViewModel migration.
+  /// Loads viewed, imported, and dismissed status from repository and caches locally.
+  Future<void> loadStatusForShoppingList(String shoppingListId, String userId) async {
+    try {
+      final viewed = await _sharedShoppingRepository.hasViewed(shoppingListId, userId);
+      final imported = await _sharedShoppingRepository.hasEngaged(shoppingListId, userId);
+      final dismissed = await _sharedShoppingRepository.hasDismissed(shoppingListId, userId);
+
+      _viewedStatusCache[shoppingListId] = viewed;
+      _importedStatusCache[shoppingListId] = imported;
+      _dismissedStatusCache[shoppingListId] = dismissed;
+    } catch (e) {
+      AppLogger.error('Failed to load status for shopping list $shoppingListId', e);
+    }
+  }
+
+  /// Load status for all shopping lists in bulk
+  ///
+  /// Phase 3 Session 2: Bulk status loading method for ViewModel migration.
+  /// Loads status for multiple shopping lists to populate cache efficiently.
+  Future<void> loadStatusForAllShoppingLists(
+      List<SharedShoppingList> shoppingLists, String userId) async {
+    for (final shoppingList in shoppingLists) {
+      await loadStatusForShoppingList(shoppingList.id, userId);
+    }
+  }
+
+  /// Check if shopping list is dismissed using cache
+  ///
+  /// Phase 3 Session 2: Status checking method for ViewModel migration.
+  /// Falls back to false if not cached.
+  bool isShoppingListDismissed(String shoppingListId) {
+    return _dismissedStatusCache[shoppingListId] ?? false;
+  }
+
+  /// Check if shopping list is viewed using cache
+  ///
+  /// Phase 3 Session 2: Status checking method for ViewModel migration.
+  /// Falls back to false if not cached.
+  bool isShoppingListViewed(String shoppingListId) {
+    return _viewedStatusCache[shoppingListId] ?? false;
+  }
+
+  /// Check if shopping list is imported using cache
+  ///
+  /// Phase 3 Session 2: Status checking method for ViewModel migration.
+  /// Falls back to false if not cached.
+  bool isShoppingListImported(String shoppingListId) {
+    return _importedStatusCache[shoppingListId] ?? false;
   }
 
   /// Dismiss shared shopping list from user's list

@@ -48,6 +48,8 @@ import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/recommendation_service.dart';
 import 'package:butlery/services/backup_service.dart';
+import 'package:butlery/services/social_media_extractor.dart';
+import 'package:butlery/services/extraction/extraction_manager.dart';
 
 // Import core module for dependencies
 import 'package:butlery/core/di/modules/core_module.dart';
@@ -92,6 +94,8 @@ class ContentModule implements DIModule {
         CollaborativeRecipeRepository,
         RecommendationService,
         BackupService,
+        SocialMediaExtractor,
+        ExtractionManager,
       ];
 
   @override
@@ -186,9 +190,15 @@ class ContentModule implements DIModule {
       // Backup service for recipe data export and import
       container.registerSingleton<BackupService>(BackupService());
 
+      // Social media extractor for content extraction from social platforms
+      container.registerSingleton<SocialMediaExtractor>(SocialMediaExtractor());
+
+      // Extraction manager for multi-platform content extraction pipeline
+      container.registerSingleton<ExtractionManager>(ExtractionManager());
+
       if (kDebugMode) {
         debugPrint(
-            '✅ [ContentModule] Configured 13 services (Recipes, Menus, Import, Storage, Offline, Backup)');
+            '✅ [ContentModule] Configured 15 services (Recipes, Menus, Import, Storage, Offline, Backup, Extraction)');
       }
     } catch (e) {
       throw DIModuleException(
@@ -264,6 +274,8 @@ class ContentModule implements DIModule {
             container<CollaborativeRecipeRepository>(),
         'RecommendationService': container<RecommendationService>(),
         'BackupService': container<BackupService>(),
+        'SocialMediaExtractor': container<SocialMediaExtractor>(),
+        'ExtractionManager': container<ExtractionManager>(),
       };
 
       // Perform health checks on services that support it
