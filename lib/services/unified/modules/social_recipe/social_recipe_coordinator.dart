@@ -369,8 +369,10 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   Future<void> loadStatusForRecipe(String recipeId, String userId) async {
     try {
       final viewed = await _sharedRecipeRepository.hasViewed(recipeId, userId);
-      final imported = await _sharedRecipeRepository.hasEngaged(recipeId, userId);
-      final dismissed = await _sharedRecipeRepository.hasDismissed(recipeId, userId);
+      final imported =
+          await _sharedRecipeRepository.hasEngaged(recipeId, userId);
+      final dismissed =
+          await _sharedRecipeRepository.hasDismissed(recipeId, userId);
 
       _viewedStatusCache[recipeId] = viewed;
       _importedStatusCache[recipeId] = imported;
@@ -584,6 +586,44 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
       return true;
     } catch (e) {
       AppLogger.error('Failed to dismiss shared recipe: $e');
+      return false;
+    }
+  }
+
+  /// Restore dismissed shared recipe to user's list
+  Future<bool> undismissSharedRecipe(String sharedRecipeId) async {
+    final currentUserId = _getCurrentUserId();
+    if (currentUserId == null) {
+      AppLogger.error('Cannot undismiss recipe: No authenticated user');
+      return false;
+    }
+
+    try {
+      AppLogger.info('↩️ Restoring shared recipe $sharedRecipeId');
+      await _sharedRecipeRepository.undismiss(sharedRecipeId, currentUserId);
+      AppLogger.success(' Shared recipe restored');
+      return true;
+    } catch (e) {
+      AppLogger.error('Failed to restore shared recipe: $e');
+      return false;
+    }
+  }
+
+  /// Mark shared recipe as viewed by current user
+  Future<bool> markRecipeAsViewed(String sharedRecipeId) async {
+    final currentUserId = _getCurrentUserId();
+    if (currentUserId == null) {
+      AppLogger.error('Cannot mark recipe as viewed: No authenticated user');
+      return false;
+    }
+
+    try {
+      AppLogger.info('👁️ Marking shared recipe $sharedRecipeId as viewed');
+      await _sharedRecipeRepository.markAsViewed(sharedRecipeId, currentUserId);
+      AppLogger.success(' Shared recipe marked as viewed');
+      return true;
+    } catch (e) {
+      AppLogger.error('Failed to mark recipe as viewed: $e');
       return false;
     }
   }

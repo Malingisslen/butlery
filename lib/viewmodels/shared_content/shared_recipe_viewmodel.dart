@@ -38,7 +38,6 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/shared_recipe.dart';
-import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/viewmodels/shared_content/base_shared_content_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -52,20 +51,14 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   // ===== DEPENDENCIES =====
 
   late final SocialRecipeCoordinator _socialRecipeCoordinator;
-  late final FirebaseSharedRecipeRepository
-      _sharedRecipeRepository; // TODO: Remove in Phase 3 - still used for status cache loading
 
   // ===== CONSTRUCTOR =====
 
   SharedRecipeViewModel({
     SocialRecipeCoordinator? socialRecipeCoordinator,
-    FirebaseSharedRecipeRepository?
-        sharedRecipeRepository, // TODO: Remove in Phase 3
   }) {
     _socialRecipeCoordinator = socialRecipeCoordinator ??
         ServiceLocator.get<SocialRecipeCoordinator>();
-    _sharedRecipeRepository = sharedRecipeRepository ??
-        FirebaseSharedRecipeRepository(); // TODO: Remove in Phase 3
 
     AppLogger.info(
         'SharedRecipeViewModel initialized with copy-on-write support');
@@ -92,8 +85,10 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     await _socialRecipeCoordinator.loadStatusForAllRecipes(recipes, userId);
 
     // Filter out dismissed recipes for main content view using cache
-    final visibleRecipes =
-        recipes.where((recipe) => !_socialRecipeCoordinator.isRecipeDismissed(recipe.id)).toList();
+    final visibleRecipes = recipes
+        .where(
+            (recipe) => !_socialRecipeCoordinator.isRecipeDismissed(recipe.id))
+        .toList();
 
     AppLogger.info(
         '✅ Loaded ${recipes.length} shared recipes (${visibleRecipes.length} visible)');
@@ -127,24 +122,13 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
       throw Exception('No authenticated user found');
     }
 
-    AppLogger.info(
-        '🔄 Loading shared recipes with pagination (limit: $limit, cursor: ${startAfter != null})');
-    final recipes = await _sharedRecipeRepository.getSharedContentForUser(
-      userId,
-      limit: limit,
-      startAfter: startAfter,
-    );
+    AppLogger.info('🔄 Loading shared recipes (pagination not used for MVP)');
+    // Use existing coordinator method - pagination not needed for MVP
+    final recipes =
+        await _socialRecipeCoordinator.getSharedRecipesForUser(userId);
 
-    // Load status for all recipes to populate cache (Issue #014)
-    await _socialRecipeCoordinator.loadStatusForAllRecipes(recipes, userId);
-
-    // Filter out dismissed recipes for main content view using cache
-    final visibleRecipes =
-        recipes.where((recipe) => !_socialRecipeCoordinator.isRecipeDismissed(recipe.id)).toList();
-
-    AppLogger.info(
-        '✅ Loaded ${recipes.length} shared recipes (${visibleRecipes.length} visible)');
-    return visibleRecipes;
+    AppLogger.info('✅ Loaded ${recipes.length} shared recipes');
+    return recipes;
   }
 
   @override
@@ -162,7 +146,9 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     final userId = currentUserId;
     if (userId == null) return 0;
 
-    return content.where((recipe) => !_socialRecipeCoordinator.isRecipeViewed(recipe.id)).length;
+    return content
+        .where((recipe) => !_socialRecipeCoordinator.isRecipeViewed(recipe.id))
+        .length;
   }
 
   /// Get recipes shared by current user
@@ -180,7 +166,8 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
 
     return content
         .where((recipe) =>
-            !_socialRecipeCoordinator.isRecipeImported(recipe.id) && recipe.sharedByUserId != userId)
+            !_socialRecipeCoordinator.isRecipeImported(recipe.id) &&
+            recipe.sharedByUserId != userId)
         .toList();
   }
 
@@ -250,13 +237,8 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     final result = await executeOperation(
       'Restore recipe "${getContentTitle(sharedRecipe)}"',
       () async {
-        final userId = currentUserId;
-        if (userId == null) {
-          throw Exception('No authenticated user');
-        }
-
-        await _sharedRecipeRepository.undismiss(sharedRecipe.id, userId);
-        return true;
+        return await _socialRecipeCoordinator
+            .undismissSharedRecipe(sharedRecipe.id);
       },
     );
 
@@ -287,10 +269,11 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
           return true;
         }
 
-        await _sharedRecipeRepository.markAsViewed(sharedRecipe.id, userId);
+        await _socialRecipeCoordinator.markRecipeAsViewed(sharedRecipe.id);
 
         // Reload status to update coordinator's cache (Issue #014)
-        await _socialRecipeCoordinator.loadStatusForRecipe(sharedRecipe.id, userId);
+        await _socialRecipeCoordinator.loadStatusForRecipe(
+            sharedRecipe.id, userId);
         notifyListeners(); // Notify UI to refresh
 
         return true;
@@ -355,11 +338,13 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     await executeOperation(
       'Mark all recipes as viewed',
       () async {
-        final unviewedRecipes =
-            content.where((recipe) => !_socialRecipeCoordinator.isRecipeViewed(recipe.id)).toList();
+        final unviewedRecipes = content
+            .where(
+                (recipe) => !_socialRecipeCoordinator.isRecipeViewed(recipe.id))
+            .toList();
 
         for (final recipe in unviewedRecipes) {
-          await _sharedRecipeRepository.markAsViewed(recipe.id, userId);
+          await _socialRecipeCoordinator.markRecipeAsViewed(recipe.id);
           // Reload status to update coordinator's cache (Issue #014)
           await _socialRecipeCoordinator.loadStatusForRecipe(recipe.id, userId);
         }
@@ -381,13 +366,17 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     if (userId == null) return [];
 
     return content.where((recipe) {
-      if (isViewed != null && _socialRecipeCoordinator.isRecipeViewed(recipe.id) != isViewed) {
+      if (isViewed != null &&
+          _socialRecipeCoordinator.isRecipeViewed(recipe.id) != isViewed) {
         return false;
       }
-      if (isImported != null && _socialRecipeCoordinator.isRecipeImported(recipe.id) != isImported) {
+      if (isImported != null &&
+          _socialRecipeCoordinator.isRecipeImported(recipe.id) != isImported) {
         return false;
       }
-      if (isDismissed != null && _socialRecipeCoordinator.isRecipeDismissed(recipe.id) != isDismissed) {
+      if (isDismissed != null &&
+          _socialRecipeCoordinator.isRecipeDismissed(recipe.id) !=
+              isDismissed) {
         return false;
       }
       return true;
@@ -403,8 +392,12 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
 
     return {
       'total': content.length,
-      'unread': content.where((r) => !_socialRecipeCoordinator.isRecipeViewed(r.id)).length,
-      'imported': content.where((r) => _socialRecipeCoordinator.isRecipeImported(r.id)).length,
+      'unread': content
+          .where((r) => !_socialRecipeCoordinator.isRecipeViewed(r.id))
+          .length,
+      'imported': content
+          .where((r) => _socialRecipeCoordinator.isRecipeImported(r.id))
+          .length,
       'collaborative': content.where((r) => r.isCollaborative).length,
       'sharedByMe': content.where((r) => r.sharedByUserId == userId).length,
     };

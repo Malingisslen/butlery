@@ -38,7 +38,6 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/shared_menu.dart';
-import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart';
 import 'package:butlery/viewmodels/shared_content/base_shared_content_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -52,20 +51,14 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
   // ===== DEPENDENCIES =====
 
   late final SocialMenuCoordinator _socialMenuCoordinator;
-  late final FirebaseSharedMenuRepository
-      _sharedMenuRepository; // TODO: Remove in Phase 3 - still used for status cache loading
 
   // ===== CONSTRUCTOR =====
 
   SharedMenuViewModel({
     SocialMenuCoordinator? socialMenuCoordinator,
-    FirebaseSharedMenuRepository?
-        sharedMenuRepository, // TODO: Remove in Phase 3
   }) {
     _socialMenuCoordinator =
         socialMenuCoordinator ?? ServiceLocator.get<SocialMenuCoordinator>();
-    _sharedMenuRepository = sharedMenuRepository ??
-        FirebaseSharedMenuRepository(); // TODO: Remove in Phase 3
 
     AppLogger.info(
         'SharedMenuViewModel initialized with copy-on-write support');
@@ -126,25 +119,12 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
       throw Exception('No authenticated user found');
     }
 
-    AppLogger.info(
-        '🔄 Loading shared menus with pagination (limit: $limit, cursor: ${startAfter != null})');
-    final menus = await _sharedMenuRepository.getSharedContentForUser(
-      userId,
-      limit: limit,
-      startAfter: startAfter,
-    );
+    AppLogger.info('🔄 Loading shared menus (pagination not used for MVP)');
+    // Use existing coordinator method - pagination not needed for MVP
+    final menus = await _socialMenuCoordinator.getSharedMenusForUser(userId);
 
-    // Load status for all menus to populate cache (Issue #014)
-    await _socialMenuCoordinator.loadStatusForAllMenus(menus, userId);
-
-    // Filter out dismissed menus for main content view using cache
-    final visibleMenus = menus
-        .where((menu) => !_socialMenuCoordinator.isMenuDismissed(menu.id))
-        .toList();
-
-    AppLogger.info(
-        '✅ Loaded ${menus.length} shared menus (${visibleMenus.length} visible)');
-    return visibleMenus;
+    AppLogger.info('✅ Loaded ${menus.length} shared menus');
+    return menus;
   }
 
   @override
@@ -384,7 +364,7 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
             .toList();
 
         for (final menu in unviewedMenus) {
-          await _sharedMenuRepository.markAsViewed(menu.id, userId);
+          await _socialMenuCoordinator.markMenuAsViewed(menu.id);
           // Reload status to update coordinator's cache (Issue #014)
           await _socialMenuCoordinator.loadStatusForMenu(menu.id, userId);
         }

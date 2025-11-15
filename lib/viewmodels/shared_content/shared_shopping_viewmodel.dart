@@ -40,7 +40,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
-import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart';
 import 'package:butlery/services/unified/modules/social_shopping/social_shopping_coordinator.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/viewmodels/shared_content/base_shared_content_viewmodel.dart';
@@ -60,24 +59,17 @@ class SharedShoppingViewModel
 
   late final SocialShoppingCoordinator _socialShoppingCoordinator;
   late final UnifiedShoppingService _shoppingService;
-  late final FirebaseSharedShoppingRepository
-      _sharedShoppingRepository; // TODO: Remove in Phase 3 - still used for status cache loading
 
   // ===== CONSTRUCTOR =====
 
   SharedShoppingViewModel({
     SocialShoppingCoordinator? socialShoppingCoordinator,
     UnifiedShoppingService? shoppingService,
-    FirebaseSharedShoppingRepository?
-        sharedShoppingRepository, // TODO: Remove in Phase 3
   }) {
     _socialShoppingCoordinator = socialShoppingCoordinator ??
         ServiceLocator.get<SocialShoppingCoordinator>();
     _shoppingService =
         shoppingService ?? ServiceLocator.get<UnifiedShoppingService>();
-    _sharedShoppingRepository = sharedShoppingRepository ??
-        ServiceLocator.get<
-            FirebaseSharedShoppingRepository>(); // TODO: Remove in Phase 3
 
     AppLogger.info(
         'SharedShoppingViewModel initialized with direct collaboration support');
@@ -142,27 +134,13 @@ class SharedShoppingViewModel
     }
 
     AppLogger.info(
-        '🔄 Loading shared shopping lists with pagination (limit: $limit, cursor: ${startAfter != null})');
+        '🔄 Loading shared shopping lists (pagination not used for MVP)');
+    // Use existing coordinator method - pagination not needed for MVP
     final shoppingLists =
-        await _sharedShoppingRepository.getSharedContentForUser(
-      userId,
-      limit: limit,
-      startAfter: startAfter,
-    );
+        await _socialShoppingCoordinator.getSharedShoppingListsForUser(userId);
 
-    // Load status for all lists to populate cache (Issue #014)
-    await _socialShoppingCoordinator.loadStatusForAllShoppingLists(
-        shoppingLists, userId);
-
-    // Filter out dismissed shopping lists for main content view using cache
-    final visibleLists = shoppingLists
-        .where((list) =>
-            !_socialShoppingCoordinator.isShoppingListDismissed(list.id))
-        .toList();
-
-    AppLogger.info(
-        '✅ Loaded ${shoppingLists.length} shared shopping lists (${visibleLists.length} visible)');
-    return visibleLists;
+    AppLogger.info('✅ Loaded ${shoppingLists.length} shared shopping lists');
+    return shoppingLists;
   }
 
   @override
@@ -431,7 +409,7 @@ class SharedShoppingViewModel
             .toList();
 
         for (final list in unviewedLists) {
-          await _sharedShoppingRepository.markAsViewed(list.id, userId);
+          await _socialShoppingCoordinator.markShoppingListAsViewed(list.id);
           // Reload status to update coordinator's cache (Issue #014)
           await _socialShoppingCoordinator.loadStatusForShoppingList(
               list.id, userId);
