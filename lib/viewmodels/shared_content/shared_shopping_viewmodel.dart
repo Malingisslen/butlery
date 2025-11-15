@@ -63,17 +63,6 @@ class SharedShoppingViewModel
   late final FirebaseSharedShoppingRepository
       _sharedShoppingRepository; // TODO: Remove in Phase 3 - still used for status cache loading
 
-  // ===== STATUS CACHING (ISSUE #014) =====
-
-  /// Cached viewed status (listId → bool)
-  final Map<String, bool> _viewedStatusCache = {};
-
-  /// Cached joined status (listId → bool)
-  final Map<String, bool> _joinedStatusCache = {};
-
-  /// Cached dismissed status (listId → bool)
-  final Map<String, bool> _dismissedStatusCache = {};
-
   // ===== CONSTRUCTOR =====
 
   SharedShoppingViewModel({
@@ -94,45 +83,6 @@ class SharedShoppingViewModel
         'SharedShoppingViewModel initialized with direct collaboration support');
   }
 
-  /// Load status for a shopping list from repository and cache it
-  Future<void> _loadStatusForList(String listId, String userId) async {
-    try {
-      final viewed = await _sharedShoppingRepository.hasViewed(listId, userId);
-      final joined = await _sharedShoppingRepository.hasEngaged(listId, userId);
-      final dismissed =
-          await _sharedShoppingRepository.hasDismissed(listId, userId);
-
-      _viewedStatusCache[listId] = viewed;
-      _joinedStatusCache[listId] = joined;
-      _dismissedStatusCache[listId] = dismissed;
-    } catch (e) {
-      AppLogger.error('Failed to load status for list $listId', e);
-    }
-  }
-
-  /// Load status for all shopping lists in bulk
-  Future<void> _loadStatusForAllLists(
-      List<SharedShoppingList> lists, String userId) async {
-    for (final list in lists) {
-      await _loadStatusForList(list.id, userId);
-    }
-  }
-
-  /// Check if list is dismissed using cache (falls back to false if not cached)
-  bool _isDismissed(String listId) {
-    return _dismissedStatusCache[listId] ?? false;
-  }
-
-  /// Check if list is viewed using cache (falls back to false if not cached)
-  bool _isViewed(String listId) {
-    return _viewedStatusCache[listId] ?? false;
-  }
-
-  /// Check if list is joined using cache (falls back to false if not cached)
-  bool _isJoined(String listId) {
-    return _joinedStatusCache[listId] ?? false;
-  }
-
   // ===== BASE CLASS IMPLEMENTATIONS =====
 
   @override
@@ -151,11 +101,14 @@ class SharedShoppingViewModel
         await _socialShoppingCoordinator.getSharedShoppingListsForUser(userId);
 
     // Load status for all lists to populate cache (Issue #014)
-    await _loadStatusForAllLists(shoppingLists, userId);
+    await _socialShoppingCoordinator.loadStatusForAllShoppingLists(
+        shoppingLists, userId);
 
     // Filter out dismissed shopping lists for main content view using cache
-    final visibleLists =
-        shoppingLists.where((list) => !_isDismissed(list.id)).toList();
+    final visibleLists = shoppingLists
+        .where((list) =>
+            !_socialShoppingCoordinator.isShoppingListDismissed(list.id))
+        .toList();
 
     AppLogger.info(
         '✅ Loaded ${shoppingLists.length} shared shopping lists (${visibleLists.length} visible)');
@@ -198,11 +151,14 @@ class SharedShoppingViewModel
     );
 
     // Load status for all lists to populate cache (Issue #014)
-    await _loadStatusForAllLists(shoppingLists, userId);
+    await _socialShoppingCoordinator.loadStatusForAllShoppingLists(
+        shoppingLists, userId);
 
     // Filter out dismissed shopping lists for main content view using cache
-    final visibleLists =
-        shoppingLists.where((list) => !_isDismissed(list.id)).toList();
+    final visibleLists = shoppingLists
+        .where((list) =>
+            !_socialShoppingCoordinator.isShoppingListDismissed(list.id))
+        .toList();
 
     AppLogger.info(
         '✅ Loaded ${shoppingLists.length} shared shopping lists (${visibleLists.length} visible)');
@@ -222,7 +178,10 @@ class SharedShoppingViewModel
     final userId = currentUserId;
     if (userId == null) return 0;
 
-    return content.where((list) => !_isViewed(list.id)).length;
+    return content
+        .where(
+            (list) => !_socialShoppingCoordinator.isShoppingListViewed(list.id))
+        .length;
   }
 
   /// Get shopping lists shared by current user
@@ -239,7 +198,9 @@ class SharedShoppingViewModel
     if (userId == null) return [];
 
     return content
-        .where((list) => !_isJoined(list.id) && list.sharedByUserId != userId)
+        .where((list) =>
+            !_socialShoppingCoordinator.isShoppingListImported(list.id) &&
+            list.sharedByUserId != userId)
         .toList();
   }
 
@@ -248,7 +209,10 @@ class SharedShoppingViewModel
     final userId = currentUserId;
     if (userId == null) return [];
 
-    return content.where((list) => _isJoined(list.id)).toList();
+    return content
+        .where((list) =>
+            _socialShoppingCoordinator.isShoppingListImported(list.id))
+        .toList();
   }
 
   /// Get total items across all shopping lists
@@ -281,8 +245,12 @@ class SharedShoppingViewModel
         );
 
         if (collaborativeListId != null) {
-          // Update cache to reflect joined status (Issue #014)
-          _joinedStatusCache[sharedList.id] = true;
+          // Reload status to update coordinator's cache (Issue #014)
+          final userId = currentUserId;
+          if (userId != null) {
+            await _socialShoppingCoordinator.loadStatusForShoppingList(
+                sharedList.id, userId);
+          }
           notifyListeners(); // Notify UI to refresh
 
           AppLogger.success('✅ Joined shopping list for direct collaboration');
@@ -342,15 +310,19 @@ class SharedShoppingViewModel
       'Mark shopping list as viewed "${getContentTitle(sharedList)}"',
       () async {
         // Check if already viewed to avoid unnecessary operations (using cache)
-        if (_isViewed(sharedList.id)) {
+        if (_socialShoppingCoordinator.isShoppingListViewed(sharedList.id)) {
           return true;
         }
 
         await _socialShoppingCoordinator
             .markShoppingListAsViewed(sharedList.id);
 
-        // Update cache (Issue #014)
-        _viewedStatusCache[sharedList.id] = true;
+        // Reload status to update coordinator's cache (Issue #014)
+        final userId = currentUserId;
+        if (userId != null) {
+          await _socialShoppingCoordinator.loadStatusForShoppingList(
+              sharedList.id, userId);
+        }
         notifyListeners(); // Notify UI to refresh
 
         return true;
@@ -366,21 +338,21 @@ class SharedShoppingViewModel
   bool isShoppingListViewed(SharedShoppingList list) {
     final userId = currentUserId;
     if (userId == null) return false;
-    return _isViewed(list.id);
+    return _socialShoppingCoordinator.isShoppingListViewed(list.id);
   }
 
   /// Check if shopping list is joined by current user (using cache - Issue #014)
   bool isShoppingListJoined(SharedShoppingList list) {
     final userId = currentUserId;
     if (userId == null) return false;
-    return _isJoined(list.id);
+    return _socialShoppingCoordinator.isShoppingListImported(list.id);
   }
 
   /// Check if shopping list is dismissed by current user (using cache - Issue #014)
   bool isShoppingListDismissed(SharedShoppingList list) {
     final userId = currentUserId;
     if (userId == null) return false;
-    return _isDismissed(list.id);
+    return _socialShoppingCoordinator.isShoppingListDismissed(list.id);
   }
 
   // ===== SHOPPING LIST-SPECIFIC OPERATIONS =====
@@ -428,7 +400,7 @@ class SharedShoppingViewModel
     if (list.sharedByUserId == userId) return true;
 
     // Joined users can edit (direct collaboration)
-    return _isJoined(list.id);
+    return _socialShoppingCoordinator.isShoppingListImported(list.id);
   }
 
   /// Get collaborative shopping list from service
@@ -453,13 +425,16 @@ class SharedShoppingViewModel
     await executeOperation(
       'Mark all shopping lists as viewed',
       () async {
-        final unviewedLists =
-            content.where((list) => !_isViewed(list.id)).toList();
+        final unviewedLists = content
+            .where((list) =>
+                !_socialShoppingCoordinator.isShoppingListViewed(list.id))
+            .toList();
 
         for (final list in unviewedLists) {
           await _sharedShoppingRepository.markAsViewed(list.id, userId);
-          // Update cache (Issue #014)
-          _viewedStatusCache[list.id] = true;
+          // Reload status to update coordinator's cache (Issue #014)
+          await _socialShoppingCoordinator.loadStatusForShoppingList(
+              list.id, userId);
         }
 
         // Notify UI to refresh
@@ -479,9 +454,15 @@ class SharedShoppingViewModel
     if (userId == null) return [];
 
     return content.where((list) {
-      if (isViewed != null && _isViewed(list.id) != isViewed) return false;
-      if (isJoined != null && _isJoined(list.id) != isJoined) return false;
-      if (isDismissed != null && _isDismissed(list.id) != isDismissed) {
+      if (isViewed != null &&
+          _socialShoppingCoordinator.isShoppingListViewed(list.id) != isViewed)
+        return false;
+      if (isJoined != null &&
+          _socialShoppingCoordinator.isShoppingListImported(list.id) !=
+              isJoined) return false;
+      if (isDismissed != null &&
+          _socialShoppingCoordinator.isShoppingListDismissed(list.id) !=
+              isDismissed) {
         return false;
       }
       return true;
@@ -497,8 +478,12 @@ class SharedShoppingViewModel
 
     return {
       'total': content.length,
-      'unread': content.where((l) => !_isViewed(l.id)).length,
-      'joined': content.where((l) => _isJoined(l.id)).length,
+      'unread': content
+          .where((l) => !_socialShoppingCoordinator.isShoppingListViewed(l.id))
+          .length,
+      'joined': content
+          .where((l) => _socialShoppingCoordinator.isShoppingListImported(l.id))
+          .length,
       'sharedByMe': content.where((l) => l.sharedByUserId == userId).length,
       'totalItems': totalItemsInLists,
       'withItems': content.where((l) => l.itemCount > 0).length,
