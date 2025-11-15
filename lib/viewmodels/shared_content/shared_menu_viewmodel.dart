@@ -133,8 +133,8 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
       throw Exception('No authenticated user found');
     }
 
-    AppLogger.info('🔄 Loading shared menus from repository for user: $userId');
-    final menus = await _sharedMenuRepository.getSharedMenusForUser(userId);
+    AppLogger.info('🔄 Loading shared menus from coordinator for user: $userId');
+    final menus = await _socialMenuCoordinator.getSharedMenusForUser(userId);
 
     // Load status for all menus to populate cache (Issue #014)
     await _loadStatusForAllMenus(menus, userId);
