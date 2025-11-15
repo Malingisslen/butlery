@@ -96,7 +96,8 @@ class SharedShoppingViewModel
     try {
       final viewed = await _sharedShoppingRepository.hasViewed(listId, userId);
       final joined = await _sharedShoppingRepository.hasEngaged(listId, userId);
-      final dismissed = await _sharedShoppingRepository.hasDismissed(listId, userId);
+      final dismissed =
+          await _sharedShoppingRepository.hasDismissed(listId, userId);
 
       _viewedStatusCache[listId] = viewed;
       _joinedStatusCache[listId] = joined;
@@ -107,7 +108,8 @@ class SharedShoppingViewModel
   }
 
   /// Load status for all shopping lists in bulk
-  Future<void> _loadStatusForAllLists(List<SharedShoppingList> lists, String userId) async {
+  Future<void> _loadStatusForAllLists(
+      List<SharedShoppingList> lists, String userId) async {
     for (final list in lists) {
       await _loadStatusForList(list.id, userId);
     }
@@ -169,9 +171,8 @@ class SharedShoppingViewModel
     return content.listName.toLowerCase().contains(query) ||
         content.sharedByDisplayName.toLowerCase().contains(query) ||
         (content.shareMessage?.toLowerCase().contains(query) ?? false) ||
-        (content.listDescription?.toLowerCase().contains(query) ?? false) ||
-        content.listItems
-            .any((item) => item.name.toLowerCase().contains(query));
+        (content.listDescription?.toLowerCase().contains(query) ?? false);
+    // Note (Issue #015): Items now in subcollection, can't search without loading all items
   }
 
   @override
@@ -235,8 +236,7 @@ class SharedShoppingViewModel
     if (userId == null) return [];
 
     return content
-        .where(
-            (list) => !_isJoined(list.id) && list.sharedByUserId != userId)
+        .where((list) => !_isJoined(list.id) && list.sharedByUserId != userId)
         .toList();
   }
 
@@ -249,13 +249,15 @@ class SharedShoppingViewModel
   }
 
   /// Get total items across all shopping lists
+  /// Issue #015: Uses itemCount field (items in subcollection)
   int get totalItemsInLists {
-    return content.fold(0, (total, list) => total + list.listItems.length);
+    return content.fold(0, (total, list) => total + list.itemCount);
   }
 
   /// Get shopping lists with items
+  /// Issue #015: Uses itemCount field (items in subcollection)
   List<SharedShoppingList> get listsWithItems {
-    return content.where((list) => list.listItems.isNotEmpty).toList();
+    return content.where((list) => list.itemCount > 0).toList();
   }
 
   // ===== SHOPPING LIST OPERATIONS =====
@@ -393,10 +395,12 @@ class SharedShoppingViewModel
   // ===== SHOPPING LIST-SPECIFIC OPERATIONS =====
 
   /// Get shopping list summary for display
+  /// Issue #015: Items in subcollection - can't determine checked/unchecked without loading items
   String getShoppingListSummary(SharedShoppingList list) {
-    final totalItems = list.listItems.length;
-    final checkedItems = list.listItems.where((item) => item.bought).length;
-    final remainingItems = totalItems - checkedItems;
+    final totalItems = list.itemCount;
+    // Note: Can't determine checkedItems without loading from repository.getItems()
+    const checkedItems = 0; // TODO: Load items if detailed stats needed
+    final remainingItems = totalItems;
 
     if (totalItems == 0) return 'Tom handlingslista';
     if (remainingItems == 0) return 'Alla $totalItems artiklar klara';
@@ -506,31 +510,38 @@ class SharedShoppingViewModel
       'joined': content.where((l) => _isJoined(l.id)).length,
       'sharedByMe': content.where((l) => l.sharedByUserId == userId).length,
       'totalItems': totalItemsInLists,
-      'withItems': content.where((l) => l.listItems.isNotEmpty).length,
+      'withItems': content.where((l) => l.itemCount > 0).length,
     };
   }
 
   /// Get item completion statistics across all lists
+  /// Issue #015: Items in subcollection - returns count-based stats only
+  /// For detailed completion stats, need to load items from repository.getItems()
   Map<String, int> getItemCompletionStats() {
     int totalItems = 0;
-    int completedItems = 0;
 
     for (final list in content) {
-      totalItems += list.listItems.length;
-      completedItems += list.listItems.where((item) => item.bought).length;
+      totalItems += list.itemCount;
     }
 
+    // Note: Can't determine completed vs remaining without loading all items
     return {
       'totalItems': totalItems,
-      'completedItems': completedItems,
-      'remainingItems': totalItems - completedItems,
-      'completionPercentage':
-          totalItems > 0 ? ((completedItems / totalItems) * 100).round() : 0,
+      'completedItems': 0, // TODO: Load items if completion tracking needed
+      'remainingItems': totalItems,
+      'completionPercentage': 0,
     };
   }
 
   /// Get most common items across shopping lists
+  /// Issue #015: Items in subcollection - not available without loading all items
+  /// This method would require calling repository.getItems() for each list
   Map<String, int> getMostCommonItems({int limit = 10}) {
+    // Note: Items now in subcollection, can't analyze without loading from repository
+    // TODO: If this feature is needed, implement async version that loads items
+    return {};
+
+    /* Original implementation (requires items to be loaded):
     final itemCount = <String, int>{};
 
     for (final list in content) {
@@ -544,5 +555,6 @@ class SharedShoppingViewModel
       ..sort((a, b) => b.value.compareTo(a.value));
 
     return Map.fromEntries(sortedItems.take(limit));
+    */
   }
 }

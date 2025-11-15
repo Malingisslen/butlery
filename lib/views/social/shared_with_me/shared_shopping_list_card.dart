@@ -24,11 +24,14 @@ class SharedShoppingListCard {
     SharedContentCoordinatorViewModel viewModel,
     SharedShoppingList sharedShoppingList,
   ) {
-    final isRead = viewModel.shoppingViewModel.isShoppingListViewed(sharedShoppingList);
-    final isJoined = viewModel.shoppingViewModel.isShoppingListJoined(sharedShoppingList);
+    final isRead =
+        viewModel.shoppingViewModel.isShoppingListViewed(sharedShoppingList);
+    final isJoined =
+        viewModel.shoppingViewModel.isShoppingListJoined(sharedShoppingList);
 
     return Material(
-      elevation: isRead ? AppDimensions.elevationLow : AppDimensions.elevationMedium,
+      elevation:
+          isRead ? AppDimensions.elevationLow : AppDimensions.elevationMedium,
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -102,15 +105,15 @@ class SharedShoppingListCard {
               Text(
                 'Delat av ${sharedShoppingList.sharedByDisplayName}',
                 style: AppTextStyles.bodySmall.copyWith(
-                      fontWeight: isRead ? FontWeight.normal : FontWeight.w600,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                  fontWeight: isRead ? FontWeight.normal : FontWeight.w600,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
               Text(
                 sharedShoppingList.timeAgoText,
                 style: AppTextStyles.bodySmall.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -133,7 +136,8 @@ class SharedShoppingListCard {
               padding: const EdgeInsets.all(AppDimensions.spacingXs),
               constraints: const BoxConstraints(
                 minWidth: AppDimensions.iconSizeAction + AppDimensions.spacingS,
-                minHeight: AppDimensions.iconSizeAction + AppDimensions.spacingS,
+                minHeight:
+                    AppDimensions.iconSizeAction + AppDimensions.spacingS,
               ),
               child: Icon(
                 Icons.close,
@@ -197,11 +201,11 @@ class SharedShoppingListCard {
               const SizedBox(height: AppDimensions.spacingXs),
               // Item summary preview
               Text(
-                sharedShoppingList.itemSummary,
+                sharedShoppingList.itemCountText,
                 style: AppTextStyles.bodySmall.copyWith(
-                      fontStyle: FontStyle.italic,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  fontStyle: FontStyle.italic,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -249,8 +253,8 @@ class SharedShoppingListCard {
       child: Text(
         '"$message"',
         style: AppTextStyles.bodySmall.copyWith(
-              fontStyle: FontStyle.italic,
-            ),
+          fontStyle: FontStyle.italic,
+        ),
       ),
     );
   }
@@ -326,7 +330,8 @@ class SharedShoppingListCard {
     SharedShoppingList sharedShoppingList,
     ScrollController scrollController,
   ) {
-    final isJoined = viewModel.shoppingViewModel.isShoppingListJoined(sharedShoppingList);
+    final isJoined =
+        viewModel.shoppingViewModel.isShoppingListJoined(sharedShoppingList);
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -363,8 +368,8 @@ class SharedShoppingListCard {
                 Text(
                   sharedShoppingList.sharingContextText,
                   style: AppTextStyles.bodyMedium.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 if (sharedShoppingList.shareMessage?.isNotEmpty ?? false) ...[
                   const SizedBox(height: AppDimensions.spacingS),
@@ -380,18 +385,17 @@ class SharedShoppingListCard {
               controller: scrollController,
               padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.paddingL),
-              itemCount: sharedShoppingList.listItems.length,
+              // Issue #015: Items in subcollection - show placeholder
+              itemCount: 1,
               itemBuilder: (context, index) {
-                final item = sharedShoppingList.listItems[index];
+                // Note: Items need to be loaded from repository.getItems() for display
                 return ListTile(
-                  leading: const Icon(Icons.shopping_basket_outlined, size: AppDimensions.iconSizeM),
-                  title: Text(item.name),
-                  subtitle:
-                      item.note?.isNotEmpty == true ? Text(item.note!) : null,
-                  trailing: Text(
-                    '${item.quantity}${item.unit}',
-                    style: AppTextStyles.bodySmall,
-                  ),
+                  leading: const Icon(Icons.shopping_basket_outlined,
+                      size: AppDimensions.iconSizeM),
+                  title: Text('${sharedShoppingList.itemCount} artiklar'),
+                  subtitle: const Text('Tryck för att se alla artiklar'),
+                  trailing: const Icon(Icons.arrow_forward_ios,
+                      size: AppDimensions.iconSizeS),
                 );
               },
             ),
@@ -416,16 +420,17 @@ class SharedShoppingListCard {
                     label: isJoined ? 'Redan medlem' : 'Gå med i lista',
                     icon: isJoined ? Icons.check : Icons.add_shopping_cart,
                     isLoading: viewModel.shoppingViewModel.isOperating,
-                    onPressed: isJoined || viewModel.shoppingViewModel.isOperating
-                        ? null
-                        : () {
-                            SharedContentActions.joinShoppingList(
-                              context,
-                              viewModel,
-                              sharedShoppingList,
-                            );
-                            Navigator.pop(context);
-                          },
+                    onPressed:
+                        isJoined || viewModel.shoppingViewModel.isOperating
+                            ? null
+                            : () {
+                                SharedContentActions.joinShoppingList(
+                                  context,
+                                  viewModel,
+                                  sharedShoppingList,
+                                );
+                                Navigator.pop(context);
+                              },
                   ),
                 ),
               ],
