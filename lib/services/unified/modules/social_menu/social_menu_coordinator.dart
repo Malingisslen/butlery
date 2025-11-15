@@ -345,6 +345,21 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
     }
   }
 
+  /// Get specific shared menu by ID
+  ///
+  /// Week 2 Task 1 Completion: Menu fetching method for View/ViewModel access.
+  /// Wraps repository read call with error handling and logging.
+  /// Used for deep links and view operations where we need the full menu object.
+  Future<SharedMenu?> getSharedMenuById(String menuId) async {
+    try {
+      AppLogger.info('📥 Loading shared menu by ID: $menuId');
+      return await _sharedMenuRepository.read(menuId);
+    } catch (e) {
+      AppLogger.error('Failed to load shared menu $menuId', e);
+      return null;
+    }
+  }
+
   // ===== STATUS CACHE METHODS (PHASE 3 SESSION 2) =====
 
   /// Load status for a menu from repository and cache it

@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
-import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
+import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
 import 'package:butlery/views/veckomeny_view.dart';
 import 'package:butlery/widgets/social/groups/shared_content_card.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -127,12 +127,11 @@ class _GroupSharedContentSectionState extends State<GroupSharedContentSection>
   }
 
   Future<void> _showMenuDetailsDialog(SharedContentItem item) async {
-    // Fetch the full SharedMenu object from Firebase to enable collaborative editing
-    // TODO: Refactor to use ViewModel method instead of direct repository access
+    // Fetch the full SharedMenu object to enable collaborative editing
+    // Week 2 Task 1 Completion: Use ViewModel method instead of direct repository access
     try {
-      final sharedMenuRepository =
-          ServiceLocator.get<FirebaseSharedMenuRepository>();
-      final sharedMenu = await sharedMenuRepository.getSharedMenu(item.id);
+      final sharedMenuViewModel = ServiceLocator.get<SharedMenuViewModel>();
+      final sharedMenu = await sharedMenuViewModel.getSharedMenuById(item.id);
 
       if (sharedMenu == null) {
         if (!mounted) return;
