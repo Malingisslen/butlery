@@ -135,9 +135,9 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     }
 
     AppLogger.info(
-        '🔄 Loading shared recipes from repository for user: $userId');
+        '🔄 Loading shared recipes from coordinator for user: $userId');
     final recipes =
-        await _sharedRecipeRepository.getSharedRecipesForUser(userId);
+        await _socialRecipeCoordinator.getSharedRecipesForUser(userId);
 
     // Load status for all recipes to populate cache (Issue #014)
     await _loadStatusForAllRecipes(recipes, userId);
