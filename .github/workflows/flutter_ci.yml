@@ -300,7 +300,7 @@ jobs:
           
       - name: ☕ Setup Java (Android only)
         if: matrix.target == 'Android'
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
