@@ -54,7 +54,8 @@ class SearchResult {
   final bool isImported;
   final bool isDismissed;
   final bool isCollaborative;
-  final dynamic content; // Actual content object (SharedRecipe, SharedMenu, etc.)
+  final dynamic
+      content; // Actual content object (SharedRecipe, SharedMenu, etc.)
   final double relevanceScore;
 
   const SearchResult({
@@ -75,38 +76,37 @@ class SearchResult {
 
 /// Unified search ViewModel for all shared content types
 class SharedContentSearchViewModel extends ChangeNotifier {
-  
   final SharedRecipeViewModel _recipeViewModel;
   final SharedMenuViewModel _menuViewModel;
   final SharedShoppingViewModel _shoppingViewModel;
 
   /// Current search query
   String _searchQuery = '';
-  
+
   /// Content type filter
   ContentType _contentTypeFilter = ContentType.all;
-  
+
   /// Status filter
   ContentStatus _statusFilter = ContentStatus.all;
-  
+
   /// Date range filter
   DateRange _dateFilter = DateRange.all;
-  
+
   /// Search debounce timer
   Timer? _searchDebounceTimer;
-  
+
   /// Search in progress indicator
   bool _isSearching = false;
-  
+
   /// Cached search results
   List<SearchResult> _allResults = [];
-  
+
   /// Search query history
   List<String> _searchHistory = [];
-  
+
   /// Maximum search history items
   static const int _maxHistoryItems = 10;
-  
+
   /// Search debounce duration
   static const Duration _debounceDuration = Duration(milliseconds: 300);
 
@@ -117,51 +117,53 @@ class SharedContentSearchViewModel extends ChangeNotifier {
   })  : _recipeViewModel = recipeViewModel,
         _menuViewModel = menuViewModel,
         _shoppingViewModel = shoppingViewModel {
-    
     // Listen to content changes from specialized ViewModels
     _recipeViewModel.addListener(_onContentChanged);
     _menuViewModel.addListener(_onContentChanged);
     _shoppingViewModel.addListener(_onContentChanged);
-    
-    AppLogger.info('SharedContentSearchViewModel initialized for unified search');
+
+    AppLogger.info(
+        'SharedContentSearchViewModel initialized for unified search');
   }
 
   /// Current search query
   String get searchQuery => _searchQuery;
-  
+
   /// Content type filter
   ContentType get contentTypeFilter => _contentTypeFilter;
-  
-  /// Status filter  
+
+  /// Status filter
   ContentStatus get statusFilter => _statusFilter;
-  
+
   /// Date range filter
   DateRange get dateFilter => _dateFilter;
-  
+
   /// Search in progress
   bool get isSearching => _isSearching;
-  
+
   /// Has active search query
   bool get hasSearchQuery => _searchQuery.isNotEmpty;
-  
+
   /// Has active filters
-  bool get hasActiveFilters => 
+  bool get hasActiveFilters =>
       _contentTypeFilter != ContentType.all ||
       _statusFilter != ContentStatus.all ||
       _dateFilter != DateRange.all;
-  
+
   /// All search results (unfiltered except by query)
   List<SearchResult> get allResults => List.unmodifiable(_allResults);
-  
+
   /// Filtered search results based on active filters
   List<SearchResult> get filteredResults {
     var results = _allResults;
-    
+
     // Apply content type filter
     if (_contentTypeFilter != ContentType.all) {
-      results = results.where((result) => result.contentType == _contentTypeFilter).toList();
+      results = results
+          .where((result) => result.contentType == _contentTypeFilter)
+          .toList();
     }
-    
+
     // Apply status filter
     if (_statusFilter != ContentStatus.all) {
       results = results.where((result) {
@@ -179,7 +181,7 @@ class SharedContentSearchViewModel extends ChangeNotifier {
         }
       }).toList();
     }
-    
+
     // Apply date filter
     if (_dateFilter != DateRange.all) {
       final now = DateTime.now();
@@ -187,75 +189,83 @@ class SharedContentSearchViewModel extends ChangeNotifier {
         switch (_dateFilter) {
           case DateRange.today:
             return result.sharedAt.day == now.day &&
-                   result.sharedAt.month == now.month &&
-                   result.sharedAt.year == now.year;
+                result.sharedAt.month == now.month &&
+                result.sharedAt.year == now.year;
           case DateRange.thisWeek:
             final weekStart = now.subtract(Duration(days: now.weekday - 1));
             return result.sharedAt.isAfter(weekStart);
           case DateRange.lastWeek:
-            final lastWeekStart = now.subtract(Duration(days: now.weekday - 1 + 7));
+            final lastWeekStart =
+                now.subtract(Duration(days: now.weekday - 1 + 7));
             final lastWeekEnd = now.subtract(Duration(days: now.weekday - 1));
-            return result.sharedAt.isAfter(lastWeekStart) && result.sharedAt.isBefore(lastWeekEnd);
+            return result.sharedAt.isAfter(lastWeekStart) &&
+                result.sharedAt.isBefore(lastWeekEnd);
           case DateRange.thisMonth:
-            return result.sharedAt.month == now.month && result.sharedAt.year == now.year;
+            return result.sharedAt.month == now.month &&
+                result.sharedAt.year == now.year;
           case DateRange.lastMonth:
             final lastMonth = DateTime(now.year, now.month - 1);
-            return result.sharedAt.month == lastMonth.month && result.sharedAt.year == lastMonth.year;
+            return result.sharedAt.month == lastMonth.month &&
+                result.sharedAt.year == lastMonth.year;
           case DateRange.all:
             return true;
         }
       }).toList();
     }
-    
+
     // Sort by relevance score (highest first) then by date (newest first)
     results.sort((a, b) {
       final scoreCompare = b.relevanceScore.compareTo(a.relevanceScore);
       if (scoreCompare != 0) return scoreCompare;
       return b.sharedAt.compareTo(a.sharedAt);
     });
-    
+
     return results;
   }
-  
+
   /// Search results grouped by content type
   Map<ContentType, List<SearchResult>> get resultsByType {
     final results = filteredResults;
     final groupedResults = <ContentType, List<SearchResult>>{};
-    
+
     for (final result in results) {
       groupedResults[result.contentType] ??= [];
       groupedResults[result.contentType]!.add(result);
     }
-    
+
     return groupedResults;
   }
-  
+
   /// Result counts by type
   Map<ContentType, int> get resultCounts {
     final counts = <ContentType, int>{};
     final results = filteredResults;
-    
+
     counts[ContentType.all] = results.length;
-    counts[ContentType.recipes] = results.where((r) => r.contentType == ContentType.recipes).length;
-    counts[ContentType.menus] = results.where((r) => r.contentType == ContentType.menus).length;
-    counts[ContentType.shoppingLists] = results.where((r) => r.contentType == ContentType.shoppingLists).length;
-    
+    counts[ContentType.recipes] =
+        results.where((r) => r.contentType == ContentType.recipes).length;
+    counts[ContentType.menus] =
+        results.where((r) => r.contentType == ContentType.menus).length;
+    counts[ContentType.shoppingLists] =
+        results.where((r) => r.contentType == ContentType.shoppingLists).length;
+
     return counts;
   }
-  
+
   /// Search history
   List<String> get searchHistory => List.unmodifiable(_searchHistory);
-  
+
   /// Has search results
   bool get hasResults => filteredResults.isNotEmpty;
 
   /// Update search query with debouncing
   void updateSearchQuery(String query) {
     if (_searchQuery == query) return;
-    
+
     _searchQuery = query;
-    AppLogger.info('🔍 Search query updated: "${query.isEmpty ? 'EMPTY' : query}"');
-    
+    AppLogger.info(
+        '🔍 Search query updated: "${query.isEmpty ? 'EMPTY' : query}"');
+
     // Add to history if not empty and not already present
     if (query.isNotEmpty && !_searchHistory.contains(query)) {
       _searchHistory.insert(0, query);
@@ -263,16 +273,16 @@ class SharedContentSearchViewModel extends ChangeNotifier {
         _searchHistory = _searchHistory.take(_maxHistoryItems).toList();
       }
     }
-    
+
     // Cancel previous debounce timer
     _searchDebounceTimer?.cancel();
-    
+
     // Set up new debounce timer
     _searchDebounceTimer = Timer(_debounceDuration, _performSearch);
-    
+
     notifyListeners();
   }
-  
+
   /// Clear search query and results
   void clearSearch() {
     _searchQuery = '';
@@ -281,7 +291,7 @@ class SharedContentSearchViewModel extends ChangeNotifier {
     AppLogger.info('🧹 Search cleared');
     notifyListeners();
   }
-  
+
   /// Perform the actual search across all content types
   Future<void> _performSearch() async {
     if (_searchQuery.isEmpty) {
@@ -294,53 +304,64 @@ class SharedContentSearchViewModel extends ChangeNotifier {
 
     try {
       _allResults = [
-        ...await _searchContent<SharedRecipe>(_recipeViewModel, ContentType.recipes, _searchQuery,
+        ...await _searchContent<SharedRecipe>(
+            _recipeViewModel,
+            ContentType.recipes,
+            _searchQuery,
             (SharedRecipe r) => SearchResult(
-              id: r.id,
-              title: r.recipeSnapshot.title,
-              description: r.recipeSnapshot.description,
-              contentType: ContentType.recipes,
-              sharedAt: r.sharedAt,
-              sharedByDisplayName: r.sharedByDisplayName,
-              isUnread: !_recipeViewModel.isRecipeViewed(r),
-              isImported: _recipeViewModel.isRecipeImported(r),
-              isDismissed: _recipeViewModel.isRecipeDismissed(r),
-              isCollaborative: _recipeViewModel.isRecipeCollaborative(r),
-              content: r,
-              relevanceScore: _calculateRecipeRelevance(r, _searchQuery),
-            )),
-        ...await _searchContent<SharedMenu>(_menuViewModel, ContentType.menus, _searchQuery,
+                  id: r.id,
+                  title: r.recipeSnapshot.title,
+                  description: r.recipeSnapshot.description,
+                  contentType: ContentType.recipes,
+                  sharedAt: r.sharedAt,
+                  sharedByDisplayName: r.sharedByDisplayName,
+                  isUnread: !_recipeViewModel.isRecipeViewed(r),
+                  isImported: _recipeViewModel.isRecipeImported(r),
+                  isDismissed: _recipeViewModel.isRecipeDismissed(r),
+                  isCollaborative: _recipeViewModel.isRecipeCollaborative(r),
+                  content: r,
+                  relevanceScore: _calculateRecipeRelevance(r, _searchQuery),
+                )),
+        ...await _searchContent<SharedMenu>(
+            _menuViewModel,
+            ContentType.menus,
+            _searchQuery,
             (SharedMenu m) => SearchResult(
-              id: m.id,
-              title: m.menuTitle,
-              description: _menuViewModel.getMenuSummary(m),
-              contentType: ContentType.menus,
-              sharedAt: m.sharedAt,
-              sharedByDisplayName: m.sharedByDisplayName,
-              isUnread: !_menuViewModel.isMenuViewed(m),
-              isImported: _menuViewModel.isMenuImported(m),
-              isDismissed: _menuViewModel.isMenuDismissed(m),
-              isCollaborative: _menuViewModel.isMenuCollaborative(m),
-              content: m,
-              relevanceScore: _calculateMenuRelevance(m, _searchQuery),
-            )),
-        ...await _searchContent<SharedShoppingList>(_shoppingViewModel, ContentType.shoppingLists, _searchQuery,
+                  id: m.id,
+                  title: m.menuTitle,
+                  description: _menuViewModel.getMenuSummary(m),
+                  contentType: ContentType.menus,
+                  sharedAt: m.sharedAt,
+                  sharedByDisplayName: m.sharedByDisplayName,
+                  isUnread: !_menuViewModel.isMenuViewed(m),
+                  isImported: _menuViewModel.isMenuImported(m),
+                  isDismissed: _menuViewModel.isMenuDismissed(m),
+                  isCollaborative: _menuViewModel.isMenuCollaborative(m),
+                  content: m,
+                  relevanceScore: _calculateMenuRelevance(m, _searchQuery),
+                )),
+        ...await _searchContent<SharedShoppingList>(
+            _shoppingViewModel,
+            ContentType.shoppingLists,
+            _searchQuery,
             (SharedShoppingList l) => SearchResult(
-              id: l.id,
-              title: l.listName,
-              description: _shoppingViewModel.getShoppingListSummary(l),
-              contentType: ContentType.shoppingLists,
-              sharedAt: l.sharedAt,
-              sharedByDisplayName: l.sharedByDisplayName,
-              isUnread: !_shoppingViewModel.isShoppingListViewed(l),
-              isImported: false,
-              isDismissed: _shoppingViewModel.isShoppingListDismissed(l),
-              isCollaborative: _shoppingViewModel.isShoppingListJoined(l),
-              content: l,
-              relevanceScore: _calculateShoppingListRelevance(l, _searchQuery),
-            )),
+                  id: l.id,
+                  title: l.listName,
+                  description: _shoppingViewModel.getShoppingListSummary(l),
+                  contentType: ContentType.shoppingLists,
+                  sharedAt: l.sharedAt,
+                  sharedByDisplayName: l.sharedByDisplayName,
+                  isUnread: !_shoppingViewModel.isShoppingListViewed(l),
+                  isImported: false,
+                  isDismissed: _shoppingViewModel.isShoppingListDismissed(l),
+                  isCollaborative: _shoppingViewModel.isShoppingListJoined(l),
+                  content: l,
+                  relevanceScore:
+                      _calculateShoppingListRelevance(l, _searchQuery),
+                )),
       ];
-      AppLogger.info('🔍 Search completed: ${_allResults.length} results for "$_searchQuery"');
+      AppLogger.info(
+          '🔍 Search completed: ${_allResults.length} results for "$_searchQuery"');
     } catch (e) {
       AppLogger.error('Search failed: $e');
       _allResults.clear();
@@ -376,7 +397,7 @@ class SharedContentSearchViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   /// Set status filter
   void setStatusFilter(ContentStatus filter) {
     if (_statusFilter != filter) {
@@ -385,7 +406,7 @@ class SharedContentSearchViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   /// Set date range filter
   void setDateFilter(DateRange filter) {
     if (_dateFilter != filter) {
@@ -394,26 +415,26 @@ class SharedContentSearchViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   /// Clear all filters
   void clearFilters() {
     var hasChanges = false;
-    
+
     if (_contentTypeFilter != ContentType.all) {
       _contentTypeFilter = ContentType.all;
       hasChanges = true;
     }
-    
+
     if (_statusFilter != ContentStatus.all) {
       _statusFilter = ContentStatus.all;
       hasChanges = true;
     }
-    
+
     if (_dateFilter != DateRange.all) {
       _dateFilter = DateRange.all;
       hasChanges = true;
     }
-    
+
     if (hasChanges) {
       AppLogger.info('🧹 All filters cleared');
       notifyListeners();
@@ -439,31 +460,48 @@ class SharedContentSearchViewModel extends ChangeNotifier {
   /// Calculate relevance score for recipe search results
   double _calculateRecipeRelevance(SharedRecipe recipe, String query) {
     return _scoreTitleMatch(recipe.recipeSnapshot.title, query) +
-           (recipe.recipeSnapshot.description.toLowerCase().contains(query.toLowerCase()) ? 5.0 : 0.0) +
-           recipe.recipeSnapshot.ingredients.where((i) => i.toLowerCase().contains(query.toLowerCase())).length * 3.0 +
-           _sharedByNameScore(recipe.sharedByDisplayName, query) +
-           _recencyBonus(recipe.sharedAt);
+        (recipe.recipeSnapshot.description
+                .toLowerCase()
+                .contains(query.toLowerCase())
+            ? 5.0
+            : 0.0) +
+        recipe.recipeSnapshot.ingredients
+                .where((i) => i.toLowerCase().contains(query.toLowerCase()))
+                .length *
+            3.0 +
+        _sharedByNameScore(recipe.sharedByDisplayName, query) +
+        _recencyBonus(recipe.sharedAt);
   }
 
   /// Calculate relevance score for menu search results
   double _calculateMenuRelevance(SharedMenu menu, String query) {
     return _scoreTitleMatch(menu.menuTitle, query) +
-           menu.categories.where((c) => c.toLowerCase().contains(query.toLowerCase())).length * 4.0 +
-           _sharedByNameScore(menu.sharedByDisplayName, query) +
-           menu.totalRecipeCount * 0.5 +
-           _recencyBonus(menu.sharedAt);
+        menu.categories
+                .where((c) => c.toLowerCase().contains(query.toLowerCase()))
+                .length *
+            4.0 +
+        _sharedByNameScore(menu.sharedByDisplayName, query) +
+        menu.totalRecipeCount * 0.5 +
+        _recencyBonus(menu.sharedAt);
   }
 
   /// Calculate relevance score for shopping list search results
-  double _calculateShoppingListRelevance(SharedShoppingList list, String query) {
+  double _calculateShoppingListRelevance(
+      SharedShoppingList list, String query) {
+    // Issue #015: Items now in subcollection, can't search without loading
+    // Simplified scoring without item-level search
     final lowerQuery = query.toLowerCase();
     return _scoreTitleMatch(list.listName, query) +
-           list.listItems.where((i) => i.name.toLowerCase().contains(lowerQuery)).length * 3.0 +
-           (list.listDescription?.toLowerCase().contains(lowerQuery) == true ? 4.0 : 0.0) +
-           (list.shareMessage?.toLowerCase().contains(lowerQuery) == true ? 2.0 : 0.0) +
-           _sharedByNameScore(list.sharedByDisplayName, query) +
-           list.listItems.length * 0.3 +
-           _recencyBonus(list.sharedAt);
+        // Note: Can't search item names without loading from repository.getItems()
+        (list.listDescription?.toLowerCase().contains(lowerQuery) == true
+            ? 4.0
+            : 0.0) +
+        (list.shareMessage?.toLowerCase().contains(lowerQuery) == true
+            ? 2.0
+            : 0.0) +
+        _sharedByNameScore(list.sharedByDisplayName, query) +
+        list.itemCount * 0.3 +
+        _recencyBonus(list.sharedAt);
   }
 
   /// Set searching state
@@ -473,7 +511,7 @@ class SharedContentSearchViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   /// Handle content changes from specialized ViewModels
   void _onContentChanged() {
     // Re-perform search if we have an active query
