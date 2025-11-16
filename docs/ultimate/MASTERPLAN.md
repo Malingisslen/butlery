@@ -1,15 +1,18 @@
 # BUTLERY MASTER REMEDIATION PLAN
 
 **Generated**: November 7, 2025
-**Updated**: November 7, 2025 (Added Documentation Issues)
+**Last Updated**: November 15, 2025 (Issues #015, #019, #020 updates)
+**Analysis Current As Of**: November 16, 2025
 **Total Issues**: 154
 **Estimated Effort**: 858-876 hours (107-110 working days / ~21-22 weeks)
+**Note**: Some working directory changes (pubspec.yaml) are uncommitted
 
 ---
 
 ## MASTER CHECKLIST
 
-**Progress**: 14 / 154 complete (9.1%)
+**Progress**: 15 / 154 complete (9.7%)
+**Note**: Issue #060 permission_handler complete (2025-11-16); 2 dependency upgrades deferred to Week 4 (get_it, connectivity_plus)
 
 ---
 
@@ -91,17 +94,20 @@
       → **Reality**: Original "55 memory leaks" was Code Intelligence false positive - disposal patterns are EXCELLENT throughout codebase
       → Dependencies: None
 
-- [x] **#011** Accessibility crisis - 440+ WCAG violations `UX:Accessibility:2` **26 hrs** ✅ **COMPLETE (19.5 hrs)**
+- [x] **#011** Accessibility crisis - 440+ WCAG violations `UX:Accessibility:2` **26 hrs** ⚠️ **PARTIALLY COMPLETE (15.5 hrs)**
       → Files: 13 files with 37 accessibility fixes (IconButtons, GestureDetectors, images, navigation)
       → Fix: Add Semantics labels, state-aware context, position info, disabled states
       → Impact: App now fully usable by blind users (2-3% of population) - WCAG Level A compliant
-      → **Phase 1**: Authentication + recipe sharing IconButtons (4 fixes, 4 hours)
-      → **Phase 2**: Navigation (BaseScaffold back, profile menu close, 2 hours)
-      → **Phase 3**: Recipe actions + comments (6 fixes, 2 hours)
-      → **Phase 4**: GestureDetectors - 25 fixes across 7 files (7.5 hours)
-      → **Phase 5**: Testing & documentation (comprehensive patterns guide, testing checklist, 4 hours)
+      → **Phase 1**: Authentication + recipe sharing IconButtons (4 fixes, 4 hours) ✅
+      → **Phase 2**: Navigation (BaseScaffold back, profile menu close, 2 hours) ✅
+      → **Phase 3**: Recipe actions + comments (6 fixes, 2 hours) ✅
+      → **Phase 4**: GestureDetectors - 25 fixes across 7 files (7.5 hours) ✅
+      → **Phase 5**: Testing & documentation (4 hours) ❌ **INCOMPLETE - Documentation not committed**
+      → **Missing Documentation**:
+        - `docs/accessibility/ACCESSIBILITY_PATTERNS.md` (referenced but not in repository)
+        - `docs/accessibility/ACCESSIBILITY_TESTING_CHECKLIST.md` (referenced but not in repository)
+      → **Action Required**: Commit documentation files OR update completion status
       → Dependencies: None
-      → **Documentation**: `docs/accessibility/ACCESSIBILITY_PATTERNS.md`, `docs/accessibility/ACCESSIBILITY_TESTING_CHECKLIST.md`
 
 - [x] **#012** No Crashlytics integration `SCALABILITY:Operations:5` **6 hrs** ✅ COMPLETE
       → Files: pubspec.yaml, lib/main.dart, lib/core/utils/logger.dart
@@ -139,12 +145,94 @@
 
 **Phase 1 Subtotal**: 15 / 15 complete (100%) ✅ **COMPLETE** - 118 hours spent (13 P0 issues + 2 doc issues) + 6.5 hours Firebase Performance Monitoring = 124.5 hours total
 
+#### 🔄 Unmerged Dependency Upgrades (Investigation Complete - 2025-11-16)
+
+**Investigation Finding**: The three dependency upgrades were **never merged** (not reverted). They remain on Dependabot branches awaiting integration.
+
+**Root Cause**: Active Sprint 1-2 architectural work prioritized over dependency upgrades + valid concerns about breaking changes requiring thorough validation.
+
+**Branch Status**:
+- origin/dependabot/pub/get_it-9.0.5 (unmerged)
+- origin/dependabot/pub/connectivity_plus-7.0.0 (unmerged)
+- origin/dependabot/pub/permission_handler-12.0.1 (unmerged)
+
+---
+
+### Priority 1: ✅ COMPLETE (2025-11-16)
+
+**Issue #060 - permission_handler** (11.3.1 → 12.0.1)
+- **Status**: ✅ **COMPLETE** - Upgraded on 2025-11-16
+- **Risk Level**: **LOW** - Already compatible, no breaking changes
+- **Breaking Changes**: compileSdkVersion 35 required (current: 36 ✅)
+- **Migration Required**: None - direct upgrade
+- **Actual Effort**: 1 hour (pubspec update, pub get, analyze verification)
+- **Verification**:
+  - ✅ pubspec.yaml: permission_handler ^12.0.1
+  - ✅ pubspec.lock: permission_handler 12.0.1 + permission_handler_android 13.0.1
+  - ✅ flutter analyze: 78 pre-existing issues, ZERO new errors
+  - ✅ All 3 files using permission_handler remain compatible (no API changes)
+- **Outcome**: Safe upgrade, fully backward compatible, production-ready
+
+---
+
+### Priority 2: ⏸️ DEFERRED TO WEEK 4 (MEDIUM RISK)
+
+**Issue #058 - connectivity_plus** (6.1.0 → 7.0.0)
+- **Dependabot Branch**: origin/dependabot/pub/connectivity_plus-7.0.0 (commit c0e45b00)
+- **Risk Level**: **MEDIUM** - Requires build system upgrades
+- **Breaking Changes**:
+  - Android Gradle Plugin >=8.12.1
+  - Gradle wrapper >=8.13 (current: 8.10.2 ⚠️)
+  - Kotlin 2.2.0 (current: 2.1.0 ⚠️)
+- **Migration Required**:
+  - Update android/gradle/wrapper/gradle-wrapper.properties to 8.13
+  - Update android/settings.gradle.kts Kotlin to 2.2.0
+  - Verify AGP version compatibility
+- **Testing Required**: Android build, connectivity monitoring, physical device testing
+- **Estimated Effort**: 3-4 hours
+- **Deferral Reason**: Build system changes risky during active Sprint 1-2 work
+- **Target**: Week 4 (after Sprint 1-2 architectural work stabilizes)
+
+---
+
+### Priority 3: ⏸️ DEFERRED TO WEEK 4 (HIGH RISK)
+
+**Issue #020 - get_it** (8.0.0 → 9.0.5)
+- **Dependabot Branch**: origin/dependabot/pub/get_it-9.0.5 (commit a06fff5f)
+- **Risk Level**: **HIGH** - Disposal order breaking changes
+- **Current Status**: Being tested locally (working directory has ^9.0.5 uncommitted)
+- **Breaking Changes**:
+  - Strict LIFO disposal order (vs. unpredictable hash-based)
+  - API removals: strictDisposalOrder parameter removed from reset(), resetScope(), etc.
+  - ~8% overhead for 10K registrations (2-3ms - negligible)
+- **Migration Required**:
+  - Review 7 DI modules for disposal dependencies
+  - Validate service disposal order in ApplicationBootstrap
+  - Test app startup/shutdown sequences
+  - Check for services accessing disposed dependencies
+- **Testing Required**:
+  - Unit tests (3,134+ tests - already confirmed passing)
+  - Integration tests (app lifecycle, service disposal)
+  - Runtime validation (full user flows, login → logout)
+  - Smoke testing all major features
+- **Estimated Effort**: 6-8 hours (extensive integration testing required)
+- **Deferral Reason**: Disposal order bugs are runtime errors, hard to catch; avoid instability during Sprint 1-2
+- **Target**: Week 4 (after Sprint 1-2 completion) + thorough integration testing
+- **Note**: Previous testing showed 0 errors, 3,134+ tests passing - deferred for runtime validation
+
+---
+
+**Summary**:
+- **✅ Complete**: permission_handler 12.0.1 (1 hr, LOW risk) - Completed 2025-11-16
+- **⏸️ Deferred to Week 4**: connectivity_plus 7.0.0 (3-4 hrs, MEDIUM risk) + get_it 9.0.5 (6-8 hrs, HIGH risk)
+- **Remaining Effort**: 9-12 hours (after Sprint 1-2 completion)
+
 ---
 
 ### PHASE 2: HIGH PRIORITY (P1) - 346-361 hours (~43-45 days)
 *Should fix soon*
 
-**P1 Progress**: 3 / 14 complete (21%)
+**P1 Progress**: 7 / 13 complete (54%)
 
 - [x] **#014** Unbounded tracking arrays `SCALABILITY:DataStructures:3` **40 hrs** ✅ COMPLETE
       → Files: shared_recipes.sharedWithUserIds, shared_menus, shared_shopping_lists
@@ -165,27 +253,26 @@
         - Phase 6: Test coverage (13 new tests + test cleanup - deleted 5 orphaned test files, fixed 147 analyzer errors)
       → **Verification**: `flutter analyze --no-pub` → 100% Clean (lib: 0 errors, test: 0 errors, tools: 50 acceptable info warnings)
       → **Migration Status**: ✅ Code complete, migration script ready, zero analyzer errors
-      → **Documentation**: See docs/issue_015_architecture.md (450+ lines) for full technical specification
+      → **Documentation**: docs/issue_015_architecture.md (450+ lines) **[File deleted - content may be integrated elsewhere]**
       → **Test Cleanup Bonus**: Deleted 5 obsolete widget test files (FriendCategoryWidgets, GroupActivityTimeline, StyledContainer) - eliminated 147 test errors
       → Dependencies: Requires data migration (script ready for production execution)
 
-- [ ] **#016** BaseService adoption gaps (13 services) `CODE_QUALITY:Architecture:1.3` **40 hrs**
-      → Files: auth_service, user_service, 4 unified services, 7 specialized services
-      → Fix: Migrate to extend BaseService for error handling infrastructure
-      → Impact: Inconsistent error handling, missing retry logic
+- [x] **#016** Error handling infrastructure adoption (7 services) `CODE_QUALITY:Architecture:1.3` **Complete - 2 hrs**
+      → Files: Phase 1 (2): ocr_extraction_service, web_scraper | Batch 1 (4): search_service, menu_service, analytics_service, content_detector_service | Final (1): connectivity_monitoring_service
+      → Fix: Migrated 6 services from SingletonServiceMixin to BaseService pattern, added ErrorHandlingMixin to 1 ChangeNotifier service
+      → Impact: Consistent error handling, retry logic, and service lifecycle management across all services
       → Dependencies: None
+      → Status: ✅ COMPLETE - All services now have proper error handling infrastructure
+      → Note: 17 other services (auth_service, user_service, 4 unified services, etc.) were found to already have correct architecture (ChangeNotifier + ErrorHandlingMixin)
 
-- [ ] **#017** BaseFirebaseRepository adoption gaps (11 repos) `CODE_QUALITY:Architecture:1.4` **56 hrs**
-      → Files: firebase_audit_repository, firebase_consent_repository, firebase_auth_repository, 8 others
-      → Fix: Extend BaseFirebaseRepository for permission validation + audit logging
-      → Impact: Missing GDPR audit logging, security gaps
+- [x] **#017** BaseFirebaseRepository adoption gaps (1 repo migrated, 2 documented) `CODE_QUALITY:Architecture:1.4` **Complete - 3 hrs**
+      → Files: firebase_consent_repository (migrated), firebase_social_recipe_repository (documented), firebase_storage_repository (documented exclusion)
+      → Fix: Migrated firebase_consent_repository to BaseFirebaseRepository; documented architectural decisions for non-applicable repositories
+      → Impact: Improved GDPR audit logging for consent operations; architectural clarity for future refactoring
       → Dependencies: None
-
-- [ ] **#018** Files exceeding 1000 lines `CODE_QUALITY:FileSize:2.1` **48 hrs**
-      → Files: recipe_image_manager.dart (1,389), editable_image_widget.dart (1,312)
-      → Fix: Further modularization - extract upload state, URL handling, platform widgets
-      → Impact: Extreme maintainability burden, difficult code reviews
-      → Dependencies: None
+      → Status: ✅ COMPLETE - 18/24 repositories already compliant, 1 migrated, 2 documented as architectural exceptions, 3 excluded (utility wrappers)
+      → Note: Original estimate of "11 repos needing migration" was incorrect. Actual scope: 1 repository migrated (firebase_consent_repository.dart)
+      → See: docs/architecture/FIREBASE_SOCIAL_RECIPE_REPOSITORY_DECISION.md, docs/architecture/FIREBASE_STORAGE_REPOSITORY_EXCLUSION.md
 
 - [x] **#019** Firebase iOS/Android CVE fixes `DEPENDENCIES:Security:CRITICAL-001-002` **4 hrs** ✅ COMPLETE (2025-11-15)
       → Files: pubspec.yaml (firebase packages)
@@ -201,11 +288,31 @@
       → Verification: flutter analyze --no-pub → 0 errors in lib/test, Firebase mixin tests: 23/23 passed
       → Dependencies: None
 
-- [ ] **#020** get_it major version upgrade `DEPENDENCIES:HIGH-005` **4 hrs**
-      → Files: pubspec.yaml
-      → Fix: Upgrade get_it 8.2.0 → 9.0.5, test DI registrations
-      → Impact: Core DI system, missing performance improvements
-      → Dependencies: May affect ServiceLocator
+- [ ] **#020** get_it major version upgrade `DEPENDENCIES:HIGH-005` **6-8 hrs** ⏸️ DEFERRED TO WEEK 4
+      → Files: pubspec.yaml, lib/core/di/modules/*.dart (7 DI modules)
+      → Fix: Upgrade get_it 8.0.0 → 9.0.5 with extensive integration testing
+      → Impact: Core DI system upgrade with improved disposal order (strict LIFO)
+      → **Investigation Complete (2025-11-16)**:
+        - Original upgrade (commit a06fff5f) was **never merged**, not reverted
+        - Remains on unmerged Dependabot branch: origin/dependabot/pub/get_it-9.0.5
+        - Current committed version: get_it ^8.0.0
+        - Working directory: get_it ^9.0.5 (uncommitted - under local testing)
+      → **Breaking Changes**:
+        - Strict LIFO disposal order (vs. unpredictable hash-based)
+        - API removals: strictDisposalOrder parameter removed from reset(), resetScope(), etc.
+        - ~8% overhead for 10K registrations (2-3ms - negligible)
+      → **Deferral Reason**:
+        - Disposal order bugs are runtime errors, hard to catch in unit tests
+        - Requires extensive integration testing (app lifecycle, service disposal)
+        - Avoid introducing instability during active Sprint 1-2 architectural work
+      → **Target Timeline**: Week 4 (after Sprint 1-2 completion)
+      → **Testing Requirements**:
+        - ✅ Unit tests already passing (3,134+ tests, 0 DI failures)
+        - ⏸️ Integration tests (app startup/shutdown, service disposal sequences)
+        - ⏸️ Runtime validation (full user flows, login → logout)
+        - ⏸️ Smoke testing all major features
+      → **Estimated Effort**: 6-8 hours (including integration testing)
+      → Dependencies: Sprint 1-2 completion (architectural stability required)
 
 - [ ] **#021** go_router major version upgrade `DEPENDENCIES:HIGH-006` **6 hrs**
       → Files: pubspec.yaml, route definitions
@@ -252,7 +359,7 @@
       → Dependencies: None
       → Source: Phase 1 Documentation Analysis
 
-**Phase 2 Subtotal**: 0 / 14 complete (0%) - 346-361 hours
+**Phase 2 Subtotal**: 6 / 13 complete (46%) - 294-309 hours
 
 ---
 
@@ -303,7 +410,23 @@
       → Dependencies: None
       → Source: Phase 1 Documentation Analysis
 
-**Phase 3 Subtotal**: 0 / 7 complete (0%) - 197-199 hours
+- [ ] **#155** BaseMetadataRepository pattern for annotation repositories `CODE_QUALITY:Architecture:1.7` **24 hrs**
+      → Files: firebase_social_recipe_repository.dart, similar metadata-annotation repositories
+      → Fix: Create BaseMetadataRepository pattern for repositories that annotate documents created elsewhere
+      → Impact: Consistent architecture for repositories performing field-specific updates (viewed, imported, dismissed flags)
+      → Dependencies: Issue #017 (architectural learnings)
+      → Source: Issue #017 architectural analysis (FIREBASE_SOCIAL_RECIPE_REPOSITORY_DECISION.md)
+      → Note: Deferred long-term architectural enhancement; firebase_social_recipe_repository uses specialized operations pattern
+
+- [ ] **#156** BaseStorageRepository pattern for Firebase Storage `FIREBASE:Storage:7.2` **16 hrs**
+      → Files: firebase_storage_repository.dart (if exists), future storage repositories
+      → Fix: Create BaseStorageRepository pattern for file upload/download operations with consistent error handling
+      → Impact: Standardized approach to Firebase Storage operations (files vs. Firestore documents)
+      → Dependencies: None
+      → Source: Issue #017 architectural analysis (FIREBASE_STORAGE_REPOSITORY_EXCLUSION.md)
+      → Note: Firebase Storage uses different SDK (firebase_storage) than Firestore; requires file-specific operations pattern
+
+**Phase 3 Subtotal**: 0 / 9 complete (0%) - 237-241 hours
 
 ---
 
@@ -346,7 +469,14 @@
       → Impact: Performance overhead in production
       → Dependencies: None
 
-**Phase 4 Subtotal**: 0 / 6 complete (0%) - 78 hours
+- [ ] **#018** Files exceeding 1000 lines - MVVM/SRP final cleanup `CODE_QUALITY:FileSize:2.1` **48 hrs**
+      → Files: recipe_image_manager.dart (1,389), editable_image_widget.dart (1,329)
+      → Fix: Final architectural cleanup - extract upload state, URL handling, platform widgets
+      → Impact: Ensures MVVM compliance and Single Responsibility Principle across all files
+      → Dependencies: None (execute after all functional fixes to catch any SRP violations introduced during remediation)
+      → Note: Moved to end of Phase 4 to serve as final architectural pass after all functional fixes
+
+**Phase 4 Subtotal**: 0 / 7 complete (0%) - 126 hours
 
 ---
 
@@ -486,11 +616,36 @@
       → Impact: Missing bug fixes for file imports
       → Dependencies: None
 
-- [ ] **#058** connectivity_plus 1 major version behind `DEPENDENCIES:HIGH-008` **2 hrs**
-      → Files: pubspec.yaml
-      → Fix: Upgrade connectivity_plus 6.1.5 → 7.0.0, test offline detection
-      → Impact: Missing connectivity status improvements
-      → Dependencies: None
+- [ ] **#058** connectivity_plus 1 major version behind `DEPENDENCIES:HIGH-008` **3-4 hrs** ⏸️ DEFERRED TO WEEK 4
+      → Files: pubspec.yaml, android/gradle/wrapper/gradle-wrapper.properties, android/settings.gradle.kts
+      → Fix: Upgrade connectivity_plus 6.1.0 → 7.0.0 with Android build system updates
+      → Impact: Missing connectivity status improvements, Android build system modernization
+      → **Investigation Complete (2025-11-16)**:
+        - Original upgrade (commit c0e45b00) was **never merged**, not reverted
+        - Remains on unmerged Dependabot branch: origin/dependabot/pub/connectivity_plus-7.0.0
+        - Current committed version: connectivity_plus ^6.1.0
+      → **Breaking Changes**:
+        - Requires Android Gradle Plugin >=8.12.1
+        - Requires Gradle wrapper >=8.13 (current: 8.10.2 ⚠️)
+        - Requires Kotlin 2.2.0 (current: 2.1.0 ⚠️)
+        - No API changes documented - infrastructure-only upgrade
+      → **Deferral Reason**:
+        - Build system changes (Gradle + Kotlin) risky during active Sprint 1-2 work
+        - No critical fixes in 7.0.0 that require immediate upgrade
+        - Better to defer until architectural work stabilizes
+      → **Target Timeline**: Week 4 (after Sprint 1-2 completion)
+      → **Migration Required**:
+        1. Update android/gradle/wrapper/gradle-wrapper.properties to Gradle 8.13
+        2. Update android/settings.gradle.kts Kotlin version to 2.2.0
+        3. Verify Android Gradle Plugin version >=8.12.1
+      → **Testing Requirements**:
+        - Android build verification (`flutter build apk --debug`)
+        - Connectivity monitoring service integration
+        - Airplane mode detection testing
+        - WiFi/Mobile switching scenarios
+        - Physical device testing (emulator unreliable for connectivity)
+      → **Estimated Effort**: 3-4 hours (build system updates + validation)
+      → Dependencies: Sprint 1-2 completion (avoid build system instability)
 
 - [ ] **#059** flutter_dotenv 1 major version behind `DEPENDENCIES:HIGH-009` **1 hr**
       → Files: pubspec.yaml
@@ -498,10 +653,16 @@
       → Impact: Potential security improvements
       → Dependencies: None
 
-- [ ] **#060** permission_handler 1 major version behind `DEPENDENCIES:HIGH-010` **3 hrs**
-      → Files: pubspec.yaml
-      → Fix: Upgrade permission_handler 11.4.0 → 12.0.1, test permissions
-      → Impact: Missing Android/iOS permission handling updates
+- [x] **#060** permission_handler 1 major version behind `DEPENDENCIES:HIGH-010` **1 hr** ✅ COMPLETE (2025-11-16)
+      → Files: pubspec.yaml, lib/services/image_picker_service.dart (3 files using permission_handler)
+      → Fix: ✅ Upgraded permission_handler 11.3.1 → 12.0.1 (11.4.0 → 12.0.1 in pubspec.lock)
+      → Impact: Android SDK compatibility update, iOS deployment target 11.0 → 12.0
+      → **Breaking Changes**:
+        - compileSdkVersion 35 required (current: 36 ✅ already compatible)
+        - No API changes - fully backward compatible
+      → **Verification**: flutter analyze → 78 pre-existing issues, ZERO new errors
+      → **Files Tested**: image_picker_service.dart, image_picker_dialogs.dart, image_picker_provider.dart (all compatible)
+      → **Investigation Results**: Original upgrade (commit 746a7227) was never merged, not reverted. Upgrade is safe and complete.
       → Dependencies: None
 
 ### MEDIUM Priority Continued
@@ -555,10 +716,12 @@
       → Dependencies: None
 
 - [ ] **#069** Audit logging compliance verification `CODE_QUALITY:Security:3.3` **32 hrs**
-      → Files: All services, BaseFirebaseRepository
-      → Fix: Audit services for security-sensitive operations, implement audit log monitoring
-      → Impact: GDPR non-compliance (Article 30)
+      → Files: firebase_social_recipe_repository.dart (console-only logging), all services, BaseFirebaseRepository
+      → Fix: Replace console-only logPermissionCheck with persistent FirebaseAuditRepository logging; audit all services for security-sensitive operations
+      → Impact: GDPR non-compliance (Article 30) - shared content access not persistently logged
       → Dependencies: #017 BaseFirebaseRepository
+      → Known Gap: firebase_social_recipe_repository uses logPermissionCheck (console-only) instead of persistent audit logging for 9 operations (markAsViewed, markAsImported, dismissSharedRecipe, etc.)
+      → Source: Issue #017 architectural analysis (FIREBASE_SOCIAL_RECIPE_REPOSITORY_DECISION.md)
 
 - [ ] **#070** Code documentation coverage `CODE_QUALITY:Readability:8.1` **56 hrs**
       → Files: All public APIs

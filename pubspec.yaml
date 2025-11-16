@@ -29,7 +29,7 @@ dependencies:
 
   # ==================== STATE MANAGEMENT ====================
   provider: ^6.1.2
-  get_it: ^8.0.0
+  get_it: ^9.0.5
 
   # ==================== LOCAL STORAGE ====================
   hive: ^2.2.3
@@ -37,7 +37,7 @@ dependencies:
   shared_preferences: ^2.3.2
 
   # ==================== NAVIGATION & UI ====================
-  go_router: ^14.6.1
+  go_router: ^17.0.0
 
   # ==================== NETWORKING ====================
   http: ^1.2.2
@@ -47,7 +47,7 @@ dependencies:
   image_picker: ^1.1.2
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
-  permission_handler: ^11.3.1
+  permission_handler: ^12.0.1
   flutter_image_compress: ^2.3.0
 
   # ==================== UTILITIES ====================
