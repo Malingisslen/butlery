@@ -37,7 +37,7 @@
 ///   title: 'Mina Recept',
 ///   actions: [IconButton(icon: Icon(Icons.search))],
 /// );
-/// 
+///
 /// // Profile menu with social features
 /// LayoutComponents.showProfileMenu(
 ///   context,
@@ -45,7 +45,7 @@
 ///   email: 'anna@example.com',
 ///   showSocialOptions: true,
 /// );
-/// 
+///
 /// // Menu persistence dialog
 /// await LayoutComponents.showSaveMenuDialog(
 ///   context,
@@ -98,7 +98,7 @@ class LayoutComponents {
   /// [title] Optional title text for the app bar display
   /// [actions] Optional list of action widgets for the app bar (typically IconButtons)
   /// [floatingActionButton] Optional floating action button for primary actions
-  /// 
+  ///
   /// Returns configured main layout scaffold with navigation and app bar features
   ///
   /// **Layout Features:**
@@ -159,7 +159,7 @@ class LayoutComponents {
   /// [title] Optional title text for the app bar display
   /// [actions] Optional list of action widgets for the app bar
   /// [appBar] Optional custom app bar for advanced customization scenarios
-  /// 
+  ///
   /// Returns clean layout scaffold optimized for detail views and modal content
   ///
   /// **Layout Features:**
@@ -198,12 +198,14 @@ class LayoutComponents {
     String? title,
     List<Widget>? actions,
     PreferredSizeWidget? appBar,
+    Widget? floatingActionButton,
   }) {
     return LayoutScaffolds.simpleLayout(
       body: body,
       title: title,
       actions: actions,
       appBar: appBar,
+      floatingActionButton: floatingActionButton,
     );
   }
 
@@ -219,6 +221,7 @@ class LayoutComponents {
     VoidCallback? onViewShared,
     VoidCallback? onViewFriends,
     VoidCallback? onViewNotifications,
+    VoidCallback? onViewMessages,
     bool showBackupOptions = true,
     bool showSocialOptions = true,
     BuildContext? rootContext,
@@ -231,6 +234,7 @@ class LayoutComponents {
       onViewShared: onViewShared,
       onViewFriends: onViewFriends,
       onViewNotifications: onViewNotifications,
+      onViewMessages: onViewMessages,
       showBackupOptions: showBackupOptions,
       showSocialOptions: showSocialOptions,
       rootContext: rootContext,
@@ -247,12 +251,13 @@ class LayoutComponents {
     VoidCallback? onViewShared,
     VoidCallback? onViewFriends,
     VoidCallback? onViewNotifications,
+    VoidCallback? onViewMessages,
     bool showBackupOptions = true,
     bool showSocialOptions = true,
   }) {
     // Store the root context to use for notifications
     final rootContext = context;
-    
+
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -265,6 +270,7 @@ class LayoutComponents {
         onViewShared: onViewShared,
         onViewFriends: onViewFriends,
         onViewNotifications: onViewNotifications,
+        onViewMessages: onViewMessages,
         showBackupOptions: showBackupOptions,
         showSocialOptions: showSocialOptions,
         rootContext: rootContext, // Pass the original context for notifications
@@ -330,11 +336,13 @@ class LayoutComponents {
   /// Optimized button grid with ARKIV row (2-2-2-1 layout) for recipe upload view
   static Widget recipeUploadButtonGrid(
     BuildContext context, {
-    required List<Map<String, dynamic>> buttons, // [{'label': 'Instagram', 'icon': Icons.camera, 'onPressed': () => ...}]
+    required List<Map<String, dynamic>>
+        buttons, // [{'label': 'Instagram', 'icon': Icons.camera, 'onPressed': () => ...}]
     required Map<String, dynamic> archiveButton, // Archive button config
   }) {
     if (buttons.length != 6) {
-      throw ArgumentError('recipeUploadButtonGrid requires exactly 6 main buttons');
+      throw ArgumentError(
+          'recipeUploadButtonGrid requires exactly 6 main buttons');
     }
 
     return Expanded(
@@ -343,30 +351,34 @@ class LayoutComponents {
           // Calculate responsive button size that fits the available space
           const minButtonSize = 80.0; // Minimum usable size
           const maxButtonSize = AppDimensions.gridButtonSize; // Optimal size
-          const buttonSpacing = AppDimensions.gridButtonSpacing;  
+          const buttonSpacing = AppDimensions.gridButtonSpacing;
           const rowSpacing = AppDimensions.gridRowSpacing;
-          
+
           // Leave some margin for the layout
           final availableWidth = constraints.maxWidth * 0.9;
           final availableHeight = constraints.maxHeight * 0.9;
-          
+
           // Calculate maximum button size that fits
           final maxWidthForTwoButtons = (availableWidth - buttonSpacing) / 2;
           final maxHeightForFourRows = (availableHeight - (rowSpacing * 3)) / 4;
-          
+
           // Use the smallest constraint to ensure everything fits
-          final buttonSize = [maxWidthForTwoButtons, maxHeightForFourRows, maxButtonSize]
-              .reduce((a, b) => a < b ? a : b)
-              .clamp(minButtonSize, maxButtonSize);
-          
+          final buttonSize = [
+            maxWidthForTwoButtons,
+            maxHeightForFourRows,
+            maxButtonSize
+          ].reduce((a, b) => a < b ? a : b).clamp(minButtonSize, maxButtonSize);
+
           // Calculate actual layout dimensions
           final layoutWidth = (buttonSize * 2) + buttonSpacing;
           final layoutHeight = (buttonSize * 4) + (rowSpacing * 3);
-          
+
           // Center the layout
-          final horizontalPadding = ((constraints.maxWidth - layoutWidth) / 2).clamp(0.0, double.infinity);
-          final topPadding = ((constraints.maxHeight - layoutHeight) / 2).clamp(0.0, double.infinity);
-          
+          final horizontalPadding = ((constraints.maxWidth - layoutWidth) / 2)
+              .clamp(0.0, double.infinity);
+          final topPadding = ((constraints.maxHeight - layoutHeight) / 2)
+              .clamp(0.0, double.infinity);
+
           return Padding(
             padding: EdgeInsets.only(
               left: horizontalPadding,
@@ -377,17 +389,20 @@ class LayoutComponents {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Row 1 - First two buttons
-                _buildButtonRow(context, [buttons[0], buttons[1]], buttonSize, layoutWidth, buttonSpacing),
+                _buildButtonRow(context, [buttons[0], buttons[1]], buttonSize,
+                    layoutWidth, buttonSpacing),
                 const SizedBox(height: rowSpacing),
-                
-                // Row 2 - Second two buttons  
-                _buildButtonRow(context, [buttons[2], buttons[3]], buttonSize, layoutWidth, buttonSpacing),
+
+                // Row 2 - Second two buttons
+                _buildButtonRow(context, [buttons[2], buttons[3]], buttonSize,
+                    layoutWidth, buttonSpacing),
                 const SizedBox(height: rowSpacing),
-                
+
                 // Row 3 - Third two buttons
-                _buildButtonRow(context, [buttons[4], buttons[5]], buttonSize, layoutWidth, buttonSpacing),
+                _buildButtonRow(context, [buttons[4], buttons[5]], buttonSize,
+                    layoutWidth, buttonSpacing),
                 const SizedBox(height: rowSpacing),
-                
+
                 // Row 4 - Archive button (full width)
                 SizedBox(
                   height: buttonSize,
@@ -420,18 +435,20 @@ class LayoutComponents {
       width: layoutWidth,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: buttonConfigs.map((config) => 
-          SizedBox(
-            width: buttonSize,
-            height: buttonSize,
-            child: UtilityComponents.squareButton(
-              context,
-              label: config['label'],
-              icon: config['icon'],
-              onPressed: config['onPressed'],
-            ),
-          ),
-        ).toList(),
+        children: buttonConfigs
+            .map(
+              (config) => SizedBox(
+                width: buttonSize,
+                height: buttonSize,
+                child: UtilityComponents.squareButton(
+                  context,
+                  label: config['label'],
+                  icon: config['icon'],
+                  onPressed: config['onPressed'],
+                ),
+              ),
+            )
+            .toList(),
       ),
     );
   }

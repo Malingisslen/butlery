@@ -6,11 +6,13 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/widgets/common/profile/profile_actions.dart';
+
 /// Profile menu display components
 ///
 /// This module provides the main profile menu widget with user information
@@ -23,6 +25,7 @@ class ProfileMenu extends StatefulWidget {
   final VoidCallback? onViewShared;
   final VoidCallback? onViewFriends;
   final VoidCallback? onViewNotifications;
+  final VoidCallback? onViewMessages;
   final bool showBackupOptions;
   final bool showSocialOptions;
   final BuildContext? rootContext;
@@ -36,6 +39,7 @@ class ProfileMenu extends StatefulWidget {
     this.onViewShared,
     this.onViewFriends,
     this.onViewNotifications,
+    this.onViewMessages,
     this.showBackupOptions = true,
     this.showSocialOptions = true,
     this.rootContext,
@@ -49,6 +53,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
   int _pendingRequestsCount = 0;
   int _pendingGroupInvitationsCount = 0;
   int _sharedItemsCount = 0;
+  int _unreadMessagesCount = 0;
 
   @override
   void initState() {
@@ -68,18 +73,26 @@ class _ProfileMenuState extends State<ProfileMenu> {
       await friendsViewModel.refresh();
 
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-      final groupInvitations = friendsService.invitations.pendingReceivedInvitations.length;
+      final groupInvitations =
+          friendsService.invitations.pendingReceivedInvitations.length;
 
       // Use ViewModels instead - they already filter dismissed items
       final recipeViewModel = ServiceLocator.get<SharedRecipeViewModel>();
       final menuViewModel = ServiceLocator.get<SharedMenuViewModel>();
-      final newSharedItems = recipeViewModel.content.length + menuViewModel.content.length;
+      final newSharedItems =
+          recipeViewModel.content.length + menuViewModel.content.length;
+
+      // Load unread messages count
+      final messagingService = ServiceLocator.get<MessagingService>();
+      final unreadMessages =
+          await messagingService.getUnreadConversationsCount();
 
       if (mounted) {
         setState(() {
           _pendingRequestsCount = friendsViewModel.pendingRequestsCount;
           _pendingGroupInvitationsCount = groupInvitations;
           _sharedItemsCount = newSharedItems;
+          _unreadMessagesCount = unreadMessages;
         });
       }
     } catch (e) {
@@ -107,7 +120,8 @@ class _ProfileMenuState extends State<ProfileMenu> {
           Container(
             width: 48,
             height: AppDimensions.spacingXs,
-            margin: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+            margin:
+                const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
             decoration: BoxDecoration(
               color: Theme.of(context)
                   .colorScheme
@@ -134,7 +148,8 @@ class _ProfileMenuState extends State<ProfileMenu> {
 
                   // Data & Backup section
                   if (widget.showBackupOptions) ...[
-                    ProfileActions.buildDataBackupSection(context, rootContext: widget.rootContext),
+                    ProfileActions.buildDataBackupSection(context,
+                        rootContext: widget.rootContext),
                     const SizedBox(height: AppDimensions.spacingXl),
                   ],
 
@@ -270,13 +285,14 @@ class _ProfileMenuState extends State<ProfileMenu> {
   /// Get initials from name
   String _getInitials(String name) {
     if (name.isEmpty) return '?';
-    
+
     final words = name.trim().split(' ');
     if (words.length == 1) {
       return words[0].substring(0, 1).toUpperCase();
     }
-    
-    return '${words[0].substring(0, 1)}${words[1].substring(0, 1)}'.toUpperCase();
+
+    return '${words[0].substring(0, 1)}${words[1].substring(0, 1)}'
+        .toUpperCase();
   }
 
   /// User basic info
@@ -307,7 +323,6 @@ class _ProfileMenuState extends State<ProfileMenu> {
     return const SizedBox.shrink();
   }
 
-
   /// Social section
   Widget _buildSocialSection(BuildContext context) {
     return Container(
@@ -320,7 +335,6 @@ class _ProfileMenuState extends State<ProfileMenu> {
             style: AppTextStyles.headlineSmall,
           ),
           const SizedBox(height: AppDimensions.spacingXl),
-          
           ProfileActions.buildMenuItem(
             context,
             title: 'Redigera profil',
@@ -328,7 +342,6 @@ class _ProfileMenuState extends State<ProfileMenu> {
             icon: Icons.edit,
             onTap: widget.onEditProfile,
           ),
-          
           ProfileActions.buildNotificationMenuItem(
             context,
             title: 'Vänner och grupper',
@@ -337,7 +350,6 @@ class _ProfileMenuState extends State<ProfileMenu> {
             onTap: widget.onViewFriends,
             count: _pendingRequestsCount + _pendingGroupInvitationsCount,
           ),
-          
           ProfileActions.buildNotificationMenuItem(
             context,
             title: 'Delat med mig',
@@ -345,6 +357,14 @@ class _ProfileMenuState extends State<ProfileMenu> {
             icon: Icons.share,
             onTap: widget.onViewShared,
             count: _sharedItemsCount,
+          ),
+          ProfileActions.buildNotificationMenuItem(
+            context,
+            title: 'Meddelanden',
+            subtitle: 'Dina konversationer och meddelanden',
+            icon: Icons.message,
+            onTap: widget.onViewMessages,
+            count: _unreadMessagesCount,
           ),
         ],
       ),
@@ -354,7 +374,7 @@ class _ProfileMenuState extends State<ProfileMenu> {
   @override
   void dispose() {
     // Cancel all timers
-    // Cancel all stream subscriptions  
+    // Cancel all stream subscriptions
     // Dispose of resources
     super.dispose();
   }

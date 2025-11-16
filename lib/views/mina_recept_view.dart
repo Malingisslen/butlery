@@ -48,6 +48,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+
 /// Personal recipe management view with multi-provider architecture.
 class MinaReceptView extends StatelessWidget {
   const MinaReceptView({super.key});
@@ -63,9 +64,11 @@ class MinaReceptView extends StatelessWidget {
         // User profile and authentication service
         ChangeNotifierProvider.value(value: ServiceLocator.get<UserService>()),
         // Social relationship and friend management
-        ChangeNotifierProvider.value(value: ServiceLocator.get<FriendsViewModel>()),
+        ChangeNotifierProvider.value(
+            value: ServiceLocator.get<FriendsViewModel>()),
         // Shared content and notification management (modular coordinator)
-        ChangeNotifierProvider.value(value: ServiceLocator.get<SharedContentCoordinatorViewModel>()),
+        ChangeNotifierProvider.value(
+            value: ServiceLocator.get<SharedContentCoordinatorViewModel>()),
         // Offline functionality and synchronization service
         ChangeNotifierProvider.value(
             value: ServiceLocator.get<offline_service.OfflineService>()),
@@ -213,8 +216,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
   /// Build user avatar with aggregated notification badges from multiple sources.
   Widget _buildUserAvatarWithBadge() {
-    return Consumer3<UserService, FriendsViewModel, SharedContentCoordinatorViewModel>(
-      builder: (context, userService, friendsViewModel, sharedContentViewModel, child) {
+    return Consumer3<UserService, FriendsViewModel,
+        SharedContentCoordinatorViewModel>(
+      builder: (context, userService, friendsViewModel, sharedContentViewModel,
+          child) {
         // ✅ SAFETY: Hantera disposed ViewModels gracefully
         int pendingFriendRequests = 0;
         int pendingGroupInvitations = 0;
@@ -224,7 +229,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         try {
           final friendsService = ServiceLocator.get<UnifiedFriendsService>();
           pendingFriendRequests = friendsViewModel.pendingRequestsCount;
-          pendingGroupInvitations = friendsService.invitations.pendingReceivedInvitations.length;
+          pendingGroupInvitations =
+              friendsService.invitations.pendingReceivedInvitations.length;
           unreadRecipes = sharedContentViewModel.recipeViewModel.unreadCount;
           unreadMenus = sharedContentViewModel.menuViewModel.unreadCount;
         } catch (e) {
@@ -233,8 +239,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           // Fallback till 0 om ViewModels är disposed
         }
 
-        final totalNotifications =
-            pendingFriendRequests + pendingGroupInvitations + unreadRecipes + unreadMenus;
+        final totalNotifications = pendingFriendRequests +
+            pendingGroupInvitations +
+            unreadRecipes +
+            unreadMenus;
 
         return Stack(
           children: [
@@ -255,6 +263,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 onViewShared: () => Navigator.pushNamed(context, Routes.shared),
                 onViewNotifications: () =>
                     Navigator.pushNamed(context, Routes.friendRequests),
+                onViewMessages: () =>
+                    Navigator.pushNamed(context, Routes.messages),
               ),
             ),
             // ✅ TOTAL NOTIFICATION BADGE - Positioned on edge of avatar circle
@@ -294,10 +304,10 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
 
           // ✅ UPPDATERAD: USER AVATAR med notification badge
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
+            padding:
+                const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
             child: _buildUserAvatarWithBadge(),
           ),
-
 
           // Error indicator
           if (viewModel.hasError)
@@ -325,34 +335,34 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               tooltip: 'Sortera',
               onSelected: _onSortChanged,
               itemBuilder: (context) => [
-              _buildSortMenuItem(
-                SortCriteria.title,
-                'Titel',
-                Icons.title,
-                viewModel.sortCriteria,
-                viewModel.sortAscending,
-              ),
-              _buildSortMenuItem(
-                SortCriteria.time,
-                'Tid',
-                Icons.access_time,
-                viewModel.sortCriteria,
-                viewModel.sortAscending,
-              ),
-              _buildSortMenuItem(
-                SortCriteria.rating,
-                'Betyg',
-                Icons.star,
-                viewModel.sortCriteria,
-                viewModel.sortAscending,
-              ),
-              _buildSortMenuItem(
-                SortCriteria.mealType,
-                'Måltidstyp',
-                Icons.restaurant,
-                viewModel.sortCriteria,
-                viewModel.sortAscending,
-              ),
+                _buildSortMenuItem(
+                  SortCriteria.title,
+                  'Titel',
+                  Icons.title,
+                  viewModel.sortCriteria,
+                  viewModel.sortAscending,
+                ),
+                _buildSortMenuItem(
+                  SortCriteria.time,
+                  'Tid',
+                  Icons.access_time,
+                  viewModel.sortCriteria,
+                  viewModel.sortAscending,
+                ),
+                _buildSortMenuItem(
+                  SortCriteria.rating,
+                  'Betyg',
+                  Icons.star,
+                  viewModel.sortCriteria,
+                  viewModel.sortAscending,
+                ),
+                _buildSortMenuItem(
+                  SortCriteria.mealType,
+                  'Måltidstyp',
+                  Icons.restaurant,
+                  viewModel.sortCriteria,
+                  viewModel.sortAscending,
+                ),
               ],
             ),
           ),
@@ -424,7 +434,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
                   color: AppColors.error.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusM),
                   border: Border.all(color: AppColors.error),
                 ),
                 child: Text(
@@ -480,7 +491,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           // Om offline, bara refresh från lokal cache
           await viewModel.refresh();
           if (mounted) {
-            SnackBarUtils.showWarning(context, 'Offline-läge - visar lokala recept');
+            SnackBarUtils.showWarning(
+                context, 'Offline-läge - visar lokala recept');
           }
         }
       },
@@ -490,7 +502,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             child: ListView.builder(
               padding: EdgeInsets.zero, // Remove all ListView padding
               itemCount: recipes.length,
-              cacheExtent: 500, // PERFORMANCE FIX: Limit cached items for better memory usage
+              cacheExtent:
+                  500, // PERFORMANCE FIX: Limit cached items for better memory usage
               itemBuilder: (context, index) {
                 final recipe = recipes[index];
 
@@ -539,17 +552,21 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     return PopupMenuItem(
       value: criteria,
       child: Row(
-        mainAxisSize: MainAxisSize.min, // ✅ FIX: Prevent infinite width expansion
+        mainAxisSize:
+            MainAxisSize.min, // ✅ FIX: Prevent infinite width expansion
         children: [
           Icon(
             icon,
             color: isSelected ? Theme.of(context).colorScheme.primary : null,
           ),
           const SizedBox(width: AppDimensions.spacingS),
-          Flexible( // ✅ FIX: Allow text to shrink on small screens
+          Flexible(
+            // ✅ FIX: Allow text to shrink on small screens
             child: Text(label),
           ),
-          const SizedBox(width: AppDimensions.spacingM), // ✅ FIX: Replace Spacer with fixed spacing
+          const SizedBox(
+              width: AppDimensions
+                  .spacingM), // ✅ FIX: Replace Spacer with fixed spacing
           if (isSelected)
             Icon(
               sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
@@ -560,6 +577,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       ),
     );
   }
+
   @override
   void dispose() {
     super.dispose();

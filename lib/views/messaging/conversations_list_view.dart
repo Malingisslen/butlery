@@ -148,8 +148,7 @@ class _ConversationsListViewState extends State<ConversationsListView> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutComponents.mainMenu(
-      currentIndex: 4, // Messaging tab
+    return LayoutComponents.simpleLayout(
       title: 'Meddelanden',
       actions: [
         IconButton(
