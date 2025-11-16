@@ -3,13 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/widgets/messaging/conversation_list_item.dart';
-import 'package:butlery/widgets/messaging/search_bar_container.dart';
 import 'package:butlery/widgets/messaging/new_conversation_dialog.dart';
-import 'package:butlery/widgets/messaging/styled_modal_bottom_sheet.dart';
-import 'package:butlery/widgets/messaging/modal_content_container.dart';
-import 'package:butlery/widgets/messaging/modal_header_text.dart';
-import 'package:butlery/widgets/messaging/error_text.dart';
-import 'package:butlery/widgets/messaging/error_list_tile.dart';
+import 'package:butlery/widgets/messaging/messaging_ui_components.dart';
 import 'package:butlery/widgets/common/loading/loading_widgets.dart';
 import 'package:butlery/widgets/common/state/empty_states.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
