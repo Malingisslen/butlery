@@ -19,9 +19,9 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/widgets/common/dialogs/draft_recovery_dialog.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/widgets/common/layout/bottom_action_container.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/layout/layout_containers.dart';
 
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
@@ -58,10 +58,10 @@ class _SkrivSjalvReceptViewContent extends StatefulWidget {
 class _SkrivSjalvReceptViewContentState
     extends State<_SkrivSjalvReceptViewContent> {
   final _formKey = GlobalKey<FormState>();
-  
+
   // CRITICAL FIX: Track save operation to prevent navigation race conditions
   bool _isSaving = false;
-  
+
   // Enhanced upload notification system
   StreamSubscription<UploadNotificationEvent>? _uploadNotificationSubscription;
 
@@ -69,31 +69,34 @@ class _SkrivSjalvReceptViewContentState
   void initState() {
     super.initState();
     _setupUploadNotifications();
-    
+
     // Check for draft recovery after widget build
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _checkAndShowDraftRecovery();
     });
   }
-  
+
   /// Setup upload notification listener for background events
   void _setupUploadNotifications() {
-    _uploadNotificationSubscription = RecipeFormViewModel.uploadNotificationStream.listen(
+    _uploadNotificationSubscription =
+        RecipeFormViewModel.uploadNotificationStream.listen(
       (event) {
         if (!mounted) return;
-        
+
         _handleUploadNotification(event);
       },
       onError: (error) {
-        AppLogger.error('🔔 NOTIFICATION: Error in upload notification stream: $error');
+        AppLogger.error(
+            '🔔 NOTIFICATION: Error in upload notification stream: $error');
       },
     );
   }
-  
+
   /// Handle upload notification events with appropriate UI feedback
   void _handleUploadNotification(UploadNotificationEvent event) {
-    AppLogger.info('🔔 NOTIFICATION: Received ${event.trigger.name}: ${event.message}');
-    
+    AppLogger.info(
+        '🔔 NOTIFICATION: Received ${event.trigger.name}: ${event.message}');
+
     // Show snackbar notification based on priority
     switch (event.priority) {
       case NotificationPriority.critical:
@@ -112,32 +115,35 @@ class _SkrivSjalvReceptViewContentState
         break;
     }
   }
-  
+
   /// Check for available drafts and show recovery dialog if needed
   Future<void> _checkAndShowDraftRecovery() async {
     if (!mounted) return;
-    
+
     final viewModel = context.read<RecipeFormViewModel>();
-    
+
     // Only check for drafts when creating new recipes (not editing existing ones)
     if (viewModel.isEditMode) {
-      AppLogger.debug('🔄 DRAFT_RECOVERY: Skipping draft check - editing existing recipe');
+      AppLogger.debug(
+          '🔄 DRAFT_RECOVERY: Skipping draft check - editing existing recipe');
       return;
     }
-    
+
     try {
       final availableDrafts = await viewModel.getAvailableDrafts();
-      
+
       if (availableDrafts.isEmpty) {
         AppLogger.debug('🔄 DRAFT_RECOVERY: No drafts available');
         return;
       }
-      
-      AppLogger.info('🔄 DRAFT_RECOVERY: Found ${availableDrafts.length} available drafts');
-      
+
+      AppLogger.info(
+          '🔄 DRAFT_RECOVERY: Found ${availableDrafts.length} available drafts');
+
       if (mounted) {
-        final selectedDraftId = await context.showDraftRecovery(availableDrafts);
-        
+        final selectedDraftId =
+            await context.showDraftRecovery(availableDrafts);
+
         if (selectedDraftId != null && mounted) {
           await _restoreDraft(selectedDraftId);
         } else {
@@ -149,15 +155,15 @@ class _SkrivSjalvReceptViewContentState
       // Don't show error to user - draft recovery is optional functionality
     }
   }
-  
+
   /// Restore draft with user feedback
   Future<void> _restoreDraft(String draftId) async {
     if (!mounted) return;
-    
+
     try {
       // Show loading state
       SnackBarUtils.showLoading(context, AppStrings.restoringDraft);
-      
+
       final viewModel = context.read<RecipeFormViewModel>();
       final success = await viewModel.loadFromDraft(draftId);
       if (mounted) {
@@ -165,25 +171,27 @@ class _SkrivSjalvReceptViewContentState
           // Show success feedback with field count
           final formData = viewModel.serializeCurrentFormData();
           final fieldCount = _countRestoredFields(formData);
-          
+
           UtilityComponents.showSuccessSnackbar(
             context,
             AppStrings.draftRestoredWithCount(fieldCount),
           );
-          
-          AppLogger.info('🔄 DRAFT_RECOVERY: Draft restored successfully - $fieldCount fields loaded');
+
+          AppLogger.info(
+              '🔄 DRAFT_RECOVERY: Draft restored successfully - $fieldCount fields loaded');
         } else {
           UtilityComponents.showErrorSnackbar(
             context,
             AppStrings.couldNotRestoreDraft,
           );
-          
-          AppLogger.error('🔄 DRAFT_RECOVERY: Failed to restore draft: $draftId');
+
+          AppLogger.error(
+              '🔄 DRAFT_RECOVERY: Failed to restore draft: $draftId');
         }
       }
     } catch (e) {
       AppLogger.error('🔄 DRAFT_RECOVERY: Error restoring draft: $e');
-      
+
       if (mounted) {
         UtilityComponents.showErrorSnackbar(
           context,
@@ -192,35 +200,35 @@ class _SkrivSjalvReceptViewContentState
       }
     }
   }
-  
+
   /// Count non-empty fields in restored form data for user feedback
   int _countRestoredFields(Map<String, dynamic> formData) {
     int count = 0;
-    
+
     // Core fields
     if (_isNotEmpty(formData['title'])) count++;
     if (_isNotEmpty(formData['description'])) count++;
     if (formData['portions'] != null && formData['portions'] > 0) count++;
     if (formData['timeMinutes'] != null && formData['timeMinutes'] > 0) count++;
     if (_isNotEmpty(formData['sourceUrl'])) count++;
-    
+
     // Dynamic lists
     final ingredients = formData['ingredients'] as List<String>? ?? [];
     count += ingredients.where((i) => i.trim().isNotEmpty).length;
-    
+
     final instructions = formData['instructions'] as List<String>? ?? [];
     count += instructions.where((i) => i.trim().isNotEmpty).length;
-    
+
     final tags = formData['tags'] as List<String>? ?? [];
     count += tags.where((t) => t.trim().isNotEmpty).length;
-    
+
     // Images
     final imageUrls = formData['imageUrls'] as List<String>? ?? [];
     count += imageUrls.length;
-    
+
     return count;
   }
-  
+
   /// Helper method for checking non-empty values
   bool _isNotEmpty(dynamic value) {
     return value != null && value.toString().trim().isNotEmpty;
@@ -232,7 +240,7 @@ class _SkrivSjalvReceptViewContentState
       AppLogger.warning('Save already in progress, ignoring duplicate request');
       return;
     }
-    
+
     // CRITICAL FIX: Safe form validation to prevent null pointer crashes
     final currentState = _formKey.currentState;
     if (currentState == null || !currentState.validate()) return;
@@ -252,7 +260,8 @@ class _SkrivSjalvReceptViewContentState
           UtilityComponents.showSuccessSnackbar(context, 'Recept sparat!');
           // MEDIUM PRIORITY FIX: Better navigation that preserves user context
           // Navigate to recipe detail or back to recipes list instead of clearing entire stack
-          Navigator.of(context).pop(savedRecipe); // Return to previous screen with saved recipe
+          Navigator.of(context)
+              .pop(savedRecipe); // Return to previous screen with saved recipe
         } else {
           // ✅ MIGRERAD: Använd UtilityComponents.showErrorSnackbar
           UtilityComponents.showErrorSnackbar(
@@ -272,7 +281,7 @@ class _SkrivSjalvReceptViewContentState
   // FÖRENKLAD SMART BILDVÄLJARE
   Future<void> _pickImage(RecipeFormViewModel viewModel) async {
     AppLogger.info('🎯 BUTTON_TAP: _pickImage called');
-    
+
     final choice = await showModalBottomSheet<String>(
       context: context,
       builder: (context) => SafeArea(
@@ -323,9 +332,10 @@ class _SkrivSjalvReceptViewContentState
     );
 
     AppLogger.info('🎯 BUTTON_TAP: User choice: $choice');
-    
+
     if (choice == null || !mounted) {
-      AppLogger.info('🎯 BUTTON_TAP: Choice was null or not mounted, returning');
+      AppLogger.info(
+          '🎯 BUTTON_TAP: Choice was null or not mounted, returning');
       return;
     }
 
@@ -333,16 +343,21 @@ class _SkrivSjalvReceptViewContentState
     try {
       switch (choice) {
         case 'camera':
-          AppLogger.info('🎯 BUTTON_TAP: Calling viewModel.pickImageFromCamera (direct)');
+          AppLogger.info(
+              '🎯 BUTTON_TAP: Calling viewModel.pickImageFromCamera (direct)');
           await viewModel.pickImageFromCamera(context);
           break;
         case 'gallery':
           // HIGH PRIORITY FIX: Use canAddMoreImages and proper limit checking instead of hardcoded 4
-          if (viewModel.canAddMoreImages && (RecipeFormViewModel.maxImages - viewModel.imageUrls.length) > 1) {
-            AppLogger.info('🎯 BUTTON_TAP: Calling viewModel.pickMultipleImagesFromGallery (direct)');
+          if (viewModel.canAddMoreImages &&
+              (RecipeFormViewModel.maxImages - viewModel.imageUrls.length) >
+                  1) {
+            AppLogger.info(
+                '🎯 BUTTON_TAP: Calling viewModel.pickMultipleImagesFromGallery (direct)');
             await viewModel.pickMultipleImagesFromGallery(context);
           } else {
-            AppLogger.info('🎯 BUTTON_TAP: Calling viewModel.pickImageFromGallery (direct single)');
+            AppLogger.info(
+                '🎯 BUTTON_TAP: Calling viewModel.pickImageFromGallery (direct single)');
             await viewModel.pickImageFromGallery(context);
           }
           break;
@@ -350,10 +365,8 @@ class _SkrivSjalvReceptViewContentState
     } catch (e) {
       AppLogger.error('🎯 BUTTON_TAP: Error during image selection: $e');
       if (mounted) {
-        UtilityComponents.showErrorSnackbar(
-          context, 
-          'Kunde inte välja bild. Kontrollera att appen har behörighet att använda kamera/galleri.'
-        );
+        UtilityComponents.showErrorSnackbar(context,
+            'Kunde inte välja bild. Kontrollera att appen har behörighet att använda kamera/galleri.');
       }
     }
   }
@@ -363,15 +376,17 @@ class _SkrivSjalvReceptViewContentState
     // Consider form as having unsaved changes if any field has content
     // IMMEDIATE FIX: Safe null checking to prevent crashes
     return viewModel.title.isNotEmpty ||
-           viewModel.description.isNotEmpty ||
-           viewModel.ingredients.any((ingredient) => ingredient.trim().isNotEmpty) ||
-           viewModel.instructions.any((instruction) => instruction.trim().isNotEmpty) ||
-           viewModel.tags.any((tag) => tag.trim().isNotEmpty) ||
-           viewModel.imageUrls.isNotEmpty ||
-           (viewModel.portions ?? 0) > 0 ||
-           (viewModel.timeMinutes ?? 0) > 0 ||
-           (viewModel.rating ?? 0) > 0 ||
-           (viewModel.sourceUrl?.isNotEmpty ?? false);
+        viewModel.description.isNotEmpty ||
+        viewModel.ingredients
+            .any((ingredient) => ingredient.trim().isNotEmpty) ||
+        viewModel.instructions
+            .any((instruction) => instruction.trim().isNotEmpty) ||
+        viewModel.tags.any((tag) => tag.trim().isNotEmpty) ||
+        viewModel.imageUrls.isNotEmpty ||
+        (viewModel.portions ?? 0) > 0 ||
+        (viewModel.timeMinutes ?? 0) > 0 ||
+        (viewModel.rating ?? 0) > 0 ||
+        (viewModel.sourceUrl?.isNotEmpty ?? false);
   }
 
   // Show confirmation dialog for unsaved changes
@@ -380,7 +395,8 @@ class _SkrivSjalvReceptViewContentState
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Osparade ändringar'),
-        content: const Text('Du har osparade ändringar. Vill du verkligen lämna utan att spara?'),
+        content: const Text(
+            'Du har osparade ändringar. Vill du verkligen lämna utan att spara?'),
         actions: [
           ActionButtons.secondaryButton(
             context,
@@ -402,33 +418,34 @@ class _SkrivSjalvReceptViewContentState
     final viewModel = context.watch<RecipeFormViewModel>();
 
     return PopScope(
-      canPop: !_isSaving && !viewModel.isSaving, // CRITICAL FIX: Prevent navigation during save operations (check both states)
+      canPop: !_isSaving &&
+          !viewModel
+              .isSaving, // CRITICAL FIX: Prevent navigation during save operations (check both states)
       onPopInvokedWithResult: (bool didPop, Object? result) async {
         if (!didPop) {
           // CRITICAL FIX: Block navigation if save is in progress (check both states)
           if (_isSaving || viewModel.isSaving) {
             if (context.mounted) {
               UtilityComponents.showWarningSnackbar(
-                context, 
-                'Vänta medan receptet sparas...'
-              );
+                  context, 'Vänta medan receptet sparas...');
             }
             return;
           }
-          
+
           if (_hasUnsavedChanges(viewModel)) {
             final shouldPop = await _showUnsavedChangesDialog(context) ?? false;
-            
+
             // CRITICAL FIX: Re-check save state after dialog to prevent race conditions
-            if (shouldPop && context.mounted && !_isSaving && !viewModel.isSaving) {
+            if (shouldPop &&
+                context.mounted &&
+                !_isSaving &&
+                !viewModel.isSaving) {
               Navigator.of(context).pop();
             } else if (shouldPop && (_isSaving || viewModel.isSaving)) {
               // Show warning if save started during dialog
               if (context.mounted) {
-                UtilityComponents.showWarningSnackbar(
-                  context, 
-                  'En sparning påbörjades under valet. Vänta medan receptet sparas...'
-                );
+                UtilityComponents.showWarningSnackbar(context,
+                    'En sparning påbörjades under valet. Vänta medan receptet sparas...');
               }
             }
           } else {
@@ -437,243 +454,259 @@ class _SkrivSjalvReceptViewContentState
         }
       },
       child: Scaffold(
-      appBar: AppBar(
-        title: Text(
-          viewModel.isEditMode ? 'Redigera recept' : 'Skriv nytt recept',
-        ),
-        backgroundColor: AppColors.backgroundBeige,
-        foregroundColor: AppColors.textDark,
-        iconTheme: const IconThemeData(
-          color: AppColors.primaryBlue,
-          size: AppDimensions.iconSizeL,
-        ),
-        actionsIconTheme: const IconThemeData(
-          color: AppColors.primaryBlue,
-          size: AppDimensions.iconSizeL,
-        ),
-      ),
-      body: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppDimensions.paddingL,
-              AppDimensions.spacingXl, // More top padding for dropdown label
-              AppDimensions.paddingL,
-              AppDimensions.paddingL,
-            ),
-            child: Form(
-              key: _formKey,
-              child: ListView(
-                children: [
-                  // Måltidstyp - Custom layout to fix text cutoff
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Måltidstyp',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 4.0), // Minimal gap between label and dropdown
-                      DropdownButtonFormField<String>(
-                        initialValue: viewModel.mealType,
-                        isExpanded: true,
-                        decoration: const InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: AppDimensions.paddingL,
-                            vertical: AppDimensions.paddingM,
-                          ),
-                          border: OutlineInputBorder(),
-                        ),
-                        style: AppTextStyles.bodyMedium,
-                        items: RecipeFormViewModel.mealTypes
-                            .map(
-                              (mt) => DropdownMenuItem(value: mt, child: Text(mt)),
-                            )
-                            .toList(),
-                        onChanged: (value) {
-                          if (value != null) viewModel.setMealType(value);
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXl),
-
-                  // Bildhantering med UniversalImageManager
-                  UniversalImageManager.recipeEdit(
-                    imageUrls: viewModel.imageUrls,
-                    onRemoveImage: viewModel.removeImageAt,
-                    onSetPrimary: (index) {
-                      AppLogger.debug('🌟 RECIPE_VIEW: onSetPrimary called with index $index, imageUrls length: ${viewModel.imageUrls.length}');
-                      if (index < viewModel.imageUrls.length) {
-                        final imageUrl = viewModel.imageUrls[index];
-                        AppLogger.debug('🌟 RECIPE_VIEW: Setting primary image to: $imageUrl');
-                        viewModel.setPrimaryImage(imageUrl);
-                      } else {
-                        AppLogger.warning('⚠️ RECIPE_VIEW: Index $index out of bounds for imageUrls (length: ${viewModel.imageUrls.length})');
-                      }
-                    },
-                    userId:
-                        ServiceLocator.get<PermissionService>().currentUserId ??
-                            '',
-                    onPickImage: () => _pickImage(viewModel),
-                    maxImages: 5,
-                    isLoading: viewModel.isUploadingImage, // Add loading indicator
-                    // Enhanced Upload Progress Parameters
-                    uploadStatuses: viewModel.imageUploadStatuses,
-                    onRetryUpload: viewModel.retryImageUpload,
-                    onCancelUpload: viewModel.cancelImageUpload,
-                    uploadQueueStatus: viewModel.uploadQueueStatusText,
-                    // Bulk Upload Management Parameters
-                    uploadManagementSummary: viewModel.uploadManagementSummary,
-                    onRetryAllFailed: viewModel.retryAllFailedUploads,
-                    onCancelAllActive: viewModel.cancelAllActiveUploads,
-                    onClearAllFailed: viewModel.clearAllFailedUploads,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXl),
-
-                  // Titel
-                  StyledInput(
-                    controller: TextEditingController(text: viewModel.title),
-                    label: 'Titel',
-                    textInputAction: TextInputAction.next,
-                    onChanged: viewModel.setTitle,
-                    validator: FormValidators.combine([
-                      FormValidators.required('Titel'),
-                      FormValidators.maxLength(100, 'Titel'),
-                    ]),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXl),
-
-                  // Beskrivning
-                  StyledInput(
-                    controller: TextEditingController(text: viewModel.description),
-                    label: 'Beskrivning',
-                    maxLines: 2,
-                    minLines: 2,
-                    textInputAction: TextInputAction.next,
-                    onChanged: viewModel.setDescription,
-                    validator: FormValidators.maxLength(500, 'Beskrivning'),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXl),
-
-                  // Portioner
-                  StyledInput(
-                    controller: TextEditingController(text: viewModel.portions?.toString() ?? ''),
-                    label: 'Portioner',
-                    keyboardType: TextInputType.number,
-                    textInputAction: TextInputAction.next,
-                    onChanged: (value) =>
-                        viewModel.setPortions(int.tryParse(value)),
-                    validator: FormValidators.portions(),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXl),
-
-                  // Tid
-                  StyledInput(
-                    controller: TextEditingController(text: viewModel.timeMinutes?.toString() ?? ''),
-                    label: 'Tid (min)',
-                    keyboardType: TextInputType.number,
-                    textInputAction: TextInputAction.next,
-                    onChanged: (value) =>
-                        viewModel.setTimeMinutes(int.tryParse(value)),
-                    validator: FormValidators.cookingTime(),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXl),
-
-                  // Ingredienser
-                  _buildDynamicList(
-                    label: 'Ingrediens',
-                    controllers: viewModel.ingredientControllers,
-                    onUpdate: viewModel.updateIngredient,
-                    onAdd: viewModel.addIngredient,
-                    onRemove: viewModel.removeIngredient,
-                    viewModel: viewModel,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXl),
-
-                  // Instruktioner
-                  _buildDynamicList(
-                    label: 'Instruktion',
-                    controllers: viewModel.instructionControllers,
-                    onUpdate: viewModel.updateInstruction,
-                    onAdd: viewModel.addInstruction,
-                    onRemove: viewModel.removeInstruction,
-                    viewModel: viewModel,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXl),
-
-                  // Taggar
-                  _buildDynamicList(
-                    label: 'Tagg',
-                    controllers: viewModel.tagControllers,
-                    onUpdate: viewModel.updateTag,
-                    onAdd: viewModel.addTag,
-                    onRemove: viewModel.removeTag,
-                    viewModel: viewModel,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXl),
-
-                  // Betyg
-                  StyledInput(
-                    controller: TextEditingController(text: viewModel.rating?.toString() ?? ''),
-                    label: 'Betyg (0–5)',
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    textInputAction: TextInputAction.next,
-                    onChanged: (value) =>
-                        viewModel.setRating(double.tryParse(value)),
-                    validator: FormValidators.rating(),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXl),
-
-                  // Source URL-fält
-                  StyledInput(
-                    controller: TextEditingController(text: viewModel.sourceUrl ?? ''),
-                    label: 'Källa (URL)',
-                    hint: 'Valfritt: länk till originalreceptet',
-                    helperText: viewModel.sourceUrl == 'Delad från annan app'
-                        ? 'Importerat från delning'
-                        : 'Länk till originalreceptet',
-                    prefixIcon: const Icon(
-                      Icons.link,
-                      size: AppDimensions.iconSizeAction,
-                    ),
-                    keyboardType: TextInputType.url,
-                    onChanged: viewModel.setSourceUrl,
-                    validator: FormValidators.recipeSourceUrl(),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXl),
-                ],
-              ),
-            ),
+        appBar: AppBar(
+          title: Text(
+            viewModel.isEditMode ? 'Redigera recept' : 'Skriv nytt recept',
           ),
+          backgroundColor: AppColors.backgroundBeige,
+          foregroundColor: AppColors.textDark,
+          iconTheme: const IconThemeData(
+            color: AppColors.primaryBlue,
+            size: AppDimensions.iconSizeL,
+          ),
+          actionsIconTheme: const IconThemeData(
+            color: AppColors.primaryBlue,
+            size: AppDimensions.iconSizeL,
+          ),
+        ),
+        body: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppDimensions.paddingL,
+                AppDimensions.spacingXl, // More top padding for dropdown label
+                AppDimensions.paddingL,
+                AppDimensions.paddingL,
+              ),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  children: [
+                    // Måltidstyp - Custom layout to fix text cutoff
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Måltidstyp',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(
+                            height:
+                                4.0), // Minimal gap between label and dropdown
+                        DropdownButtonFormField<String>(
+                          initialValue: viewModel.mealType,
+                          isExpanded: true,
+                          decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: AppDimensions.paddingL,
+                              vertical: AppDimensions.paddingM,
+                            ),
+                            border: OutlineInputBorder(),
+                          ),
+                          style: AppTextStyles.bodyMedium,
+                          items: RecipeFormViewModel.mealTypes
+                              .map(
+                                (mt) => DropdownMenuItem(
+                                    value: mt, child: Text(mt)),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            if (value != null) viewModel.setMealType(value);
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXl),
 
-          // CRITICAL FIX: Loading overlay for both local and ViewModel saving states
-          if (_isSaving || viewModel.isSaving)
-            ColoredBox(
-              color: AppColors.backgroundBeige.withValues(alpha: 0.8),
-              child: Center(
-                child: StateWidget.loading(
-                  message: 'Sparar recept...',
+                    // Bildhantering med UniversalImageManager
+                    UniversalImageManager.recipeEdit(
+                      imageUrls: viewModel.imageUrls,
+                      onRemoveImage: viewModel.removeImageAt,
+                      onSetPrimary: (index) {
+                        AppLogger.debug(
+                            '🌟 RECIPE_VIEW: onSetPrimary called with index $index, imageUrls length: ${viewModel.imageUrls.length}');
+                        if (index < viewModel.imageUrls.length) {
+                          final imageUrl = viewModel.imageUrls[index];
+                          AppLogger.debug(
+                              '🌟 RECIPE_VIEW: Setting primary image to: $imageUrl');
+                          viewModel.setPrimaryImage(imageUrl);
+                        } else {
+                          AppLogger.warning(
+                              '⚠️ RECIPE_VIEW: Index $index out of bounds for imageUrls (length: ${viewModel.imageUrls.length})');
+                        }
+                      },
+                      userId: ServiceLocator.get<PermissionService>()
+                              .currentUserId ??
+                          '',
+                      onPickImage: () => _pickImage(viewModel),
+                      maxImages: 5,
+                      isLoading:
+                          viewModel.isUploadingImage, // Add loading indicator
+                      // Enhanced Upload Progress Parameters
+                      uploadStatuses: viewModel.imageUploadStatuses,
+                      onRetryUpload: viewModel.retryImageUpload,
+                      onCancelUpload: viewModel.cancelImageUpload,
+                      uploadQueueStatus: viewModel.uploadQueueStatusText,
+                      // Bulk Upload Management Parameters
+                      uploadManagementSummary:
+                          viewModel.uploadManagementSummary,
+                      onRetryAllFailed: viewModel.retryAllFailedUploads,
+                      onCancelAllActive: viewModel.cancelAllActiveUploads,
+                      onClearAllFailed: viewModel.clearAllFailedUploads,
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXl),
+
+                    // Titel
+                    StyledInput(
+                      controller: TextEditingController(text: viewModel.title),
+                      label: 'Titel',
+                      textInputAction: TextInputAction.next,
+                      onChanged: viewModel.setTitle,
+                      validator: FormValidators.combine([
+                        FormValidators.required('Titel'),
+                        FormValidators.maxLength(100, 'Titel'),
+                      ]),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXl),
+
+                    // Beskrivning
+                    StyledInput(
+                      controller:
+                          TextEditingController(text: viewModel.description),
+                      label: 'Beskrivning',
+                      maxLines: 2,
+                      minLines: 2,
+                      textInputAction: TextInputAction.next,
+                      onChanged: viewModel.setDescription,
+                      validator: FormValidators.maxLength(500, 'Beskrivning'),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXl),
+
+                    // Portioner
+                    StyledInput(
+                      controller: TextEditingController(
+                          text: viewModel.portions?.toString() ?? ''),
+                      label: 'Portioner',
+                      keyboardType: TextInputType.number,
+                      textInputAction: TextInputAction.next,
+                      onChanged: (value) =>
+                          viewModel.setPortions(int.tryParse(value)),
+                      validator: FormValidators.portions(),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXl),
+
+                    // Tid
+                    StyledInput(
+                      controller: TextEditingController(
+                          text: viewModel.timeMinutes?.toString() ?? ''),
+                      label: 'Tid (min)',
+                      keyboardType: TextInputType.number,
+                      textInputAction: TextInputAction.next,
+                      onChanged: (value) =>
+                          viewModel.setTimeMinutes(int.tryParse(value)),
+                      validator: FormValidators.cookingTime(),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXl),
+
+                    // Ingredienser
+                    _buildDynamicList(
+                      label: 'Ingrediens',
+                      controllers: viewModel.ingredientControllers,
+                      onUpdate: viewModel.updateIngredient,
+                      onAdd: viewModel.addIngredient,
+                      onRemove: viewModel.removeIngredient,
+                      viewModel: viewModel,
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXl),
+
+                    // Instruktioner
+                    _buildDynamicList(
+                      label: 'Instruktion',
+                      controllers: viewModel.instructionControllers,
+                      onUpdate: viewModel.updateInstruction,
+                      onAdd: viewModel.addInstruction,
+                      onRemove: viewModel.removeInstruction,
+                      viewModel: viewModel,
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXl),
+
+                    // Taggar
+                    _buildDynamicList(
+                      label: 'Tagg',
+                      controllers: viewModel.tagControllers,
+                      onUpdate: viewModel.updateTag,
+                      onAdd: viewModel.addTag,
+                      onRemove: viewModel.removeTag,
+                      viewModel: viewModel,
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXl),
+
+                    // Betyg
+                    StyledInput(
+                      controller: TextEditingController(
+                          text: viewModel.rating?.toString() ?? ''),
+                      label: 'Betyg (0–5)',
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      textInputAction: TextInputAction.next,
+                      onChanged: (value) =>
+                          viewModel.setRating(double.tryParse(value)),
+                      validator: FormValidators.rating(),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXl),
+
+                    // Source URL-fält
+                    StyledInput(
+                      controller: TextEditingController(
+                          text: viewModel.sourceUrl ?? ''),
+                      label: 'Källa (URL)',
+                      hint: 'Valfritt: länk till originalreceptet',
+                      helperText: viewModel.sourceUrl == 'Delad från annan app'
+                          ? 'Importerat från delning'
+                          : 'Länk till originalreceptet',
+                      prefixIcon: const Icon(
+                        Icons.link,
+                        size: AppDimensions.iconSizeAction,
+                      ),
+                      keyboardType: TextInputType.url,
+                      onChanged: viewModel.setSourceUrl,
+                      validator: FormValidators.recipeSourceUrl(),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXl),
+                  ],
                 ),
               ),
             ),
-        ],
-      ),
 
-      bottomNavigationBar: BottomActionContainer(
-        child: UtilityComponents.primaryButton(
-          context,
-          label: 'Spara recept',
-          icon: Icons.save,
-          onPressed: (_isSaving || viewModel.isSaving || !viewModel.isValid) ? null : _saveRecipe,
-          isLoading: _isSaving || viewModel.isSaving,
-          loadingText: 'Sparar...',
-          isExpanded: true,
+            // CRITICAL FIX: Loading overlay for both local and ViewModel saving states
+            if (_isSaving || viewModel.isSaving)
+              ColoredBox(
+                color: AppColors.backgroundBeige.withValues(alpha: 0.8),
+                child: Center(
+                  child: StateWidget.loading(
+                    message: 'Sparar recept...',
+                  ),
+                ),
+              ),
+          ],
+        ),
+        bottomNavigationBar: BottomActionContainer(
+          child: UtilityComponents.primaryButton(
+            context,
+            label: 'Spara recept',
+            icon: Icons.save,
+            onPressed: (_isSaving || viewModel.isSaving || !viewModel.isValid)
+                ? null
+                : _saveRecipe,
+            isLoading: _isSaving || viewModel.isSaving,
+            loadingText: 'Sparar...',
+            isExpanded: true,
+          ),
         ),
       ),
-    ),
     );
   }
 
@@ -706,9 +739,10 @@ class _SkrivSjalvReceptViewContentState
                       onChanged: (value) {
                         onUpdate(index, value);
                         // Add new field when typing in the last field and it becomes non-empty
-                        if (index == controllers.length - 1 && 
-                            value.trim().isNotEmpty && 
-                            value.length == 1) { // Only on first character to prevent duplicates
+                        if (index == controllers.length - 1 &&
+                            value.trim().isNotEmpty &&
+                            value.length == 1) {
+                          // Only on first character to prevent duplicates
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             onAdd();
                           });
@@ -741,7 +775,8 @@ class _SkrivSjalvReceptViewContentState
     // HIGH PRIORITY FIX: Proper resource disposal to prevent memory leaks
     // Cancel upload notification subscription to prevent memory leaks
     _uploadNotificationSubscription?.cancel();
-    AppLogger.debug('SkrivSjalvReceptView disposed - notification subscription cancelled');
+    AppLogger.debug(
+        'SkrivSjalvReceptView disposed - notification subscription cancelled');
     super.dispose();
   }
 }

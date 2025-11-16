@@ -18,11 +18,11 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/branding/app_logo.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/core/validators/form_validators.dart';
-import 'package:butlery/widgets/common/layout/auth_form_card.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/views/mina_recept_view.dart'; // ULTRATHINK: Direct navigation import
 import 'package:butlery/core/utils/logger.dart'; // For AppLogger
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/layout/layout_containers.dart';
 
 ///
 ///
@@ -36,7 +36,6 @@ class AuthView extends StatefulWidget {
 
 ///
 class _AuthViewState extends State<AuthView> {
-
   ///
   final _formKey = GlobalKey<FormState>();
 
@@ -48,7 +47,6 @@ class _AuthViewState extends State<AuthView> {
 
   ///
   final _nameController = TextEditingController();
-
 
   ///
   final _emailFocus = FocusNode();
@@ -237,9 +235,7 @@ class _AuthViewState extends State<AuthView> {
       enabled: !viewModel.isLoading,
       validator: FormValidators.authPassword(isSignUp: !viewModel.isLoginMode),
       suffixIcon: Semantics(
-        label: viewModel.isPasswordVisible
-            ? 'Dölj lösenord'
-            : 'Visa lösenord',
+        label: viewModel.isPasswordVisible ? 'Dölj lösenord' : 'Visa lösenord',
         button: true,
         enabled: !viewModel.isLoading,
         child: IconButton(
@@ -353,8 +349,9 @@ class _AuthViewState extends State<AuthView> {
 
     if (success && mounted) {
       // ULTRATHINK DIRECT: Force immediate navigation to main app using Navigator
-      AppLogger.debug('AuthView: LOGIN SUCCESS - Direct navigation to main app');
-      
+      AppLogger.debug(
+          'AuthView: LOGIN SUCCESS - Direct navigation to main app');
+
       // Import the main view
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
@@ -416,7 +413,8 @@ class _AuthViewState extends State<AuthView> {
       // ignore: use_build_context_synchronously
       final messenger = ScaffoldMessenger.of(context);
       // ignore: use_build_context_synchronously
-      final primaryColor = Theme.of(context).colorScheme.primary.withValues(alpha: 0.8);
+      final primaryColor =
+          Theme.of(context).colorScheme.primary.withValues(alpha: 0.8);
       // ignore: use_build_context_synchronously
       final errorColor = Theme.of(context).colorScheme.error;
 

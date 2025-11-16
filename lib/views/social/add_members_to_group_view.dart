@@ -24,12 +24,12 @@ import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/add_members_to_group_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/layout/bottom_action_container.dart';
 import 'package:butlery/widgets/common/cards/selection_card.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/layout/layout_containers.dart';
 
 /// A view for adding new members to an existing social group.
 ///
@@ -229,7 +229,8 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
     return ListView.separated(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: viewModel.filteredFriends.length,
-      separatorBuilder: (context, index) => const SizedBox(height: AppDimensions.spacingM),
+      separatorBuilder: (context, index) =>
+          const SizedBox(height: AppDimensions.spacingM),
       itemBuilder: (context, index) {
         final friend = viewModel.filteredFriends[index];
         return _buildFriendTile(friend, viewModel);
@@ -322,69 +323,71 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
 
     return BottomActionContainer(
       child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (viewModel.invitationError != null) ...[
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppDimensions.paddingL),
-                decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                  border: Border.all(color: AppColors.error),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      color: AppColors.error,
-                      size: 20,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingM),
-                    Expanded(
-                      child: Text(
-                        viewModel.invitationError!,
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          color: AppColors.error,
-                        ),
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (viewModel.invitationError != null) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.1),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusM),
+                border: Border.all(color: AppColors.error),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    color: AppColors.error,
+                    size: 20,
+                  ),
+                  const SizedBox(width: AppDimensions.spacingM),
+                  Expanded(
+                    child: Text(
+                      viewModel.invitationError!,
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        color: AppColors.error,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(height: AppDimensions.spacingM),
-            ],
-            ActionButtons.primaryButton(
-              context,
-              label: 'Skicka ${viewModel.selectedCount} inbjudningar',
-              onPressed: viewModel.isSendingInvitations
-                  ? null
-                  : () async {
-                      // ✅ FIXED: Capture count BEFORE sending (sendInvitations clears selection)
-                      final invitationCount = viewModel.selectedCount;
-                      final success = await viewModel.sendInvitations();
-
-                      if (mounted && success) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '$invitationCount inbjudningar skickade! 📨',
-                            ),
-                            backgroundColor: AppColors.success,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                            ),
-                          ),
-                        );
-                      }
-                    },
-              isLoading: viewModel.isSendingInvitations,
-              loadingText: 'Skickar...',
-              isExpanded: true,
             ),
+            const SizedBox(height: AppDimensions.spacingM),
           ],
-        ),
+          ActionButtons.primaryButton(
+            context,
+            label: 'Skicka ${viewModel.selectedCount} inbjudningar',
+            onPressed: viewModel.isSendingInvitations
+                ? null
+                : () async {
+                    // ✅ FIXED: Capture count BEFORE sending (sendInvitations clears selection)
+                    final invitationCount = viewModel.selectedCount;
+                    final success = await viewModel.sendInvitations();
+
+                    if (mounted && success) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            '$invitationCount inbjudningar skickade! 📨',
+                          ),
+                          backgroundColor: AppColors.success,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                                AppDimensions.borderRadiusM),
+                          ),
+                        ),
+                      );
+                    }
+                  },
+            isLoading: viewModel.isSendingInvitations,
+            loadingText: 'Skickar...',
+            isExpanded: true,
+          ),
+        ],
+      ),
     );
   }
 

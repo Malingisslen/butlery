@@ -14,8 +14,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/widgets/common/indicators/status_badge.dart';
-import 'package:butlery/widgets/common/layout/category_header.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/layout/layout_containers.dart';
 
 /// ✅ MenuPreviewView - Visa delad meny med alla recept
 class MenuPreviewView extends StatelessWidget {

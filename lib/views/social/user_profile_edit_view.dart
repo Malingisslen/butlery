@@ -14,9 +14,9 @@ import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/indicators/progress_overlay.dart';
-import 'package:butlery/widgets/common/layout/bordered_container.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
+import 'package:butlery/widgets/common/layout/layout_containers.dart';
 
 class UserProfileEditView extends StatelessWidget {
   const UserProfileEditView({super.key});
