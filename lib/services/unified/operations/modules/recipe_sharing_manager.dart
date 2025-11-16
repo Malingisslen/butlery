@@ -4,6 +4,7 @@
 import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynamic _parent fields
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/notification_helper.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -30,12 +31,13 @@ class RecipeSharingManager {
     this._parent,
     this._notificationService, {
     FirestoreRepository? firestoreRepository,
-  }) : _firestoreRepository = firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
+  }) : _firestoreRepository =
+            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
 
   // ===== RECIPE SHARING CONVERSION =====
 
   /// Share a personal recipe with other users (convert to collaborative)
-  /// 
+  ///
   /// Main entry point for recipe sharing - converts personal recipe to collaborative format
   Future<String?> shareRecipe({
     required String recipeId,
@@ -55,8 +57,8 @@ class RecipeSharingManager {
 
       try {
         // Try personal recipe first
-        recipeToShare = _parent.recipes
-            .firstWhere((r) => r.id == recipeId && r.isPersonal);
+        recipeToShare =
+            _parent.recipes.firstWhere((r) => r.id == recipeId && r.isPersonal);
         AppLogger.info('📋 Found personal recipe: ${recipeToShare.title}');
       } catch (e) {
         // If not personal, try collaborative
@@ -64,7 +66,8 @@ class RecipeSharingManager {
           recipeToShare = _parent.recipes
               .firstWhere((r) => r.id == recipeId && r.isCollaborative);
           isAlreadyCollaborative = true;
-          AppLogger.info('📋 Found collaborative recipe: ${recipeToShare.title}');
+          AppLogger.info(
+              '📋 Found collaborative recipe: ${recipeToShare.title}');
         } catch (e2) {
           AppLogger.error('❌ Recipe not found: $recipeId');
           return null;
@@ -85,23 +88,24 @@ class RecipeSharingManager {
       } else {
         // Create collaborative version for personal recipes
         finalRecipeId = await _parent.createCollaborativeRecipe(
-          title: recipeToShare.title,
-          memberIds: memberIds,
-          description: recipeToShare.description,
-          ingredients: recipeToShare.ingredients,
-          instructions: recipeToShare.instructions,
-          imageUrls: recipeToShare.imageUrls,
-          mealType: recipeToShare.mealType,
-          portions: recipeToShare.portions,
-          timeMinutes: recipeToShare.timeMinutes,
-          rating: recipeToShare.rating,
-          tags: recipeToShare.tags,
-          sourceUrl: recipeToShare.sourceUrl,
-          descriptionCollaborative: collaborativeDescription,
-          allowGuestViewing: allowGuestViewing,
-          allowMemberInvites: allowMemberInvites,
-          categoryIds: categoryIds,
-        ) ?? '';
+              title: recipeToShare.title,
+              memberIds: memberIds,
+              description: recipeToShare.description,
+              ingredients: recipeToShare.ingredients,
+              instructions: recipeToShare.instructions,
+              imageUrls: recipeToShare.imageUrls,
+              mealType: recipeToShare.mealType,
+              portions: recipeToShare.portions,
+              timeMinutes: recipeToShare.timeMinutes,
+              rating: recipeToShare.rating,
+              tags: recipeToShare.tags,
+              sourceUrl: recipeToShare.sourceUrl,
+              descriptionCollaborative: collaborativeDescription,
+              allowGuestViewing: allowGuestViewing,
+              allowMemberInvites: allowMemberInvites,
+              categoryIds: categoryIds,
+            ) ??
+            '';
 
         if (finalRecipeId.isEmpty) {
           AppLogger.error('❌ Failed to create collaborative recipe');
@@ -136,26 +140,29 @@ class RecipeSharingManager {
   }
 
   /// Convert collaborative recipe back to personal format
-  /// 
+  ///
   /// Allows users to take ownership of collaborative recipes as personal copies
   Future<String?> makeRecipePersonal({
     required String collaborativeRecipeId,
     String? newTitle,
   }) async {
     try {
-      AppLogger.info('🔄 Converting collaborative recipe to personal: $collaborativeRecipeId');
+      AppLogger.info(
+          '🔄 Converting collaborative recipe to personal: $collaborativeRecipeId');
 
       // Find the collaborative recipe
       dynamic collaborativeRecipe;
       try {
-        collaborativeRecipe = _parent.recipes
-            .firstWhere((r) => r.id == collaborativeRecipeId && r.isCollaborative);
+        collaborativeRecipe = _parent.recipes.firstWhere(
+            (r) => r.id == collaborativeRecipeId && r.isCollaborative);
       } catch (e) {
-        AppLogger.error('❌ Cannot convert recipe: Collaborative recipe not found');
+        AppLogger.error(
+            '❌ Cannot convert recipe: Collaborative recipe not found');
         return null;
       }
 
-      AppLogger.info('📋 Found collaborative recipe: ${collaborativeRecipe.title}');
+      AppLogger.info(
+          '📋 Found collaborative recipe: ${collaborativeRecipe.title}');
 
       // Create personal copy with new title if provided
       final personalRecipeId = await _parent.createPersonalRecipe(
@@ -194,7 +201,7 @@ class RecipeSharingManager {
   }
 
   /// Duplicate personal recipe for sharing (creates copy before conversion)
-  /// 
+  ///
   /// Useful when user wants to keep original personal recipe and share a copy
   Future<String?> duplicateAndShareRecipe({
     required String recipeId,
@@ -245,41 +252,32 @@ class RecipeSharingManager {
     required List<String> memberIds,
     required Map<String, String> memberDisplayNames,
   }) async {
-    if (_notificationService == null) {
-      AppLogger.warning('⚠️ No notification service available, skipping sharing notifications');
-      return;
-    }
+    AppLogger.info(
+        '📬 Sending sharing notifications to ${memberIds.length} members');
 
-    try {
-      AppLogger.info('📬 Sending sharing notifications to ${memberIds.length} members');
+    // Get current user display name for notification
+    final currentUserId = _parent.currentUserId;
+    final currentUserName = _parent.currentUserDisplayName ?? 'En vän';
 
-      // Get current user display name for notification
-      final currentUserId = _parent.currentUserId;
-      final currentUserName = _parent.currentUserDisplayName ?? 'En vän';
-
-      // Send notifications to all invited members
-      await _notificationService.sendImmediateNotification(
-        targetUserIds: memberIds,
-        strategy: NotificationStrategy.recipeShared,
-        variables: {
-          'senderName': currentUserName,
-          'recipeName': recipeTitle,
-        },
-        additionalData: {
-          'collaborativeRecipeId': collaborativeRecipeId,
-          'action': 'recipe_shared',
-          'senderUserId': currentUserId,
-        },
-        actions: [
-          NotificationAction.viewRecipe,
-        ],
-      );
-
-      AppLogger.success('✅ Sharing notifications sent successfully');
-    } catch (e) {
-      AppLogger.error('❌ Failed to send sharing notifications', e);
-      // Don't rethrow - sharing succeeded even if notifications failed
-    }
+    // Send notifications to all invited members using safe helper
+    await NotificationHelper.sendImmediateSafely(
+      notificationService: _notificationService,
+      operationName: 'Send recipe sharing notifications',
+      targetUserIds: memberIds,
+      strategy: NotificationStrategy.recipeShared,
+      variables: {
+        'senderName': currentUserName,
+        'recipeName': recipeTitle,
+      },
+      additionalData: {
+        'collaborativeRecipeId': collaborativeRecipeId,
+        'action': 'recipe_shared',
+        'senderUserId': currentUserId,
+      },
+      actions: [
+        NotificationAction.viewRecipe,
+      ],
+    );
   }
 
   /// Send notification when recipe sharing is enabled for existing recipe
@@ -288,28 +286,22 @@ class RecipeSharingManager {
     required String recipeTitle,
     required List<String> memberIds,
   }) async {
-    if (_notificationService == null) return;
+    final currentUserName = _parent.currentUserDisplayName ?? 'En användare';
 
-    try {
-      final currentUserName = _parent.currentUserDisplayName ?? 'En användare';
-
-      await _notificationService.sendImmediateNotification(
-        targetUserIds: memberIds,
-        strategy: NotificationStrategy.collaborationEnabled,
-        variables: {
-          'enablerName': currentUserName,
-          'recipeTitle': recipeTitle,
-        },
-        additionalData: {
-          'recipeId': recipeId,
-          'action': 'collaboration_enabled',
-        },
-      );
-
-      AppLogger.info('📬 Sent collaboration enabled notifications');
-    } catch (e) {
-      AppLogger.error('❌ Failed to send collaboration enabled notification', e);
-    }
+    await NotificationHelper.sendImmediateSafely(
+      notificationService: _notificationService,
+      operationName: 'Send collaboration enabled notification',
+      targetUserIds: memberIds,
+      strategy: NotificationStrategy.collaborationEnabled,
+      variables: {
+        'enablerName': currentUserName,
+        'recipeTitle': recipeTitle,
+      },
+      additionalData: {
+        'recipeId': recipeId,
+        'action': 'collaboration_enabled',
+      },
+    );
   }
 
   // ===== HELPER METHODS =====
@@ -322,8 +314,8 @@ class RecipeSharingManager {
     try {
       dynamic originalRecipe;
       try {
-        originalRecipe = _parent.recipes
-            .firstWhere((r) => r.id == recipeId && r.isPersonal);
+        originalRecipe =
+            _parent.recipes.firstWhere((r) => r.id == recipeId && r.isPersonal);
       } catch (e) {
         AppLogger.error('❌ Cannot duplicate: Recipe not found');
         return null;
@@ -388,13 +380,17 @@ class RecipeSharingManager {
       AppLogger.info('🔄 Syncing collaborative recipe to shared collection');
 
       // Get existing members from recipe permissions
-      final existingMembers = recipe.socialData?.memberPermissions?.keys.toList() ?? [];
+      final existingMembers =
+          recipe.socialData?.memberPermissions?.keys.toList() ?? [];
 
       // Write to shared_recipes collection with all members included
       await _writeToSharedRecipesCollection(
         recipeId: recipe.id,
         recipeTitle: recipe.title,
-        memberIds: [...existingMembers, ...memberIds], // Combine existing + new members
+        memberIds: [
+          ...existingMembers,
+          ...memberIds
+        ], // Combine existing + new members
         recipeData: recipe,
       );
 
@@ -428,21 +424,26 @@ class RecipeSharingManager {
   /// Get sharing statistics for current user
   Map<String, dynamic> getSharingStats() {
     try {
-      final userRecipes = _parent.recipes.where((r) => 
-          r.createdBy == _parent.currentUserId).toList();
+      final userRecipes = _parent.recipes
+          .where((r) => r.createdBy == _parent.currentUserId)
+          .toList();
 
       final personalRecipes = userRecipes.where((r) => r.isPersonal).length;
-      final collaborativeRecipes = userRecipes.where((r) => r.isCollaborative).length;
-      final sharedRecipes = userRecipes.where((r) => 
-          r.isCollaborative && (r.socialData?.memberPermissions?.isNotEmpty ?? false)).length;
+      final collaborativeRecipes =
+          userRecipes.where((r) => r.isCollaborative).length;
+      final sharedRecipes = userRecipes
+          .where((r) =>
+              r.isCollaborative &&
+              (r.socialData?.memberPermissions?.isNotEmpty ?? false))
+          .length;
 
       return {
         'total_recipes': userRecipes.length,
         'personal_recipes': personalRecipes,
         'collaborative_recipes': collaborativeRecipes,
         'shared_recipes': sharedRecipes,
-        'sharing_ratio': userRecipes.isNotEmpty 
-            ? (sharedRecipes / userRecipes.length * 100).round() 
+        'sharing_ratio': userRecipes.isNotEmpty
+            ? (sharedRecipes / userRecipes.length * 100).round()
             : 0,
       };
     } catch (e) {
@@ -464,28 +465,36 @@ class RecipeSharingManager {
 
       final currentUserId = permissionService.currentUserId;
       if (currentUserId == null) {
-        AppLogger.warning('Cannot write to shared_recipes: No authenticated user');
+        AppLogger.warning(
+            'Cannot write to shared_recipes: No authenticated user');
         return;
       }
 
       // Ensure owner is included in sharedWithUserIds along with members
       final allUserIds = {currentUserId, ...memberIds}.toList();
 
-      await _firestoreRepository.collection('shared_recipes').doc(recipeId).set({
+      await _firestoreRepository
+          .collection('shared_recipes')
+          .doc(recipeId)
+          .set({
         'recipeId': recipeId,
         'title': recipeTitle,
         'description': recipeData.description ?? '',
         'sharedByUserId': currentUserId,
-        'sharedByDisplayName': permissionService.currentUser?.displayName ?? 'Unknown',
+        'sharedByDisplayName':
+            permissionService.currentUser?.displayName ?? 'Unknown',
         'sharedByAvatarUrl': permissionService.currentUser?.avatarUrl,
         'sharedWithUserIds': allUserIds,
         'sharedAt': FieldValue.serverTimestamp(),
         'isActive': true,
-        'imageUrl': recipeData.imageUrls?.isNotEmpty == true ? recipeData.imageUrls.first : null,
+        'imageUrl': recipeData.imageUrls?.isNotEmpty == true
+            ? recipeData.imageUrls.first
+            : null,
         'mealType': recipeData.mealType ?? '',
       }, SetOptions(merge: true));
 
-      AppLogger.debug('✅ Recipe written to shared_recipes collection for group discovery');
+      AppLogger.debug(
+          '✅ Recipe written to shared_recipes collection for group discovery');
     } catch (e) {
       AppLogger.warning('Failed to write to shared_recipes collection: $e');
       // Don't fail the whole sharing operation if this fails
