@@ -3,9 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_colors.dart';
-import 'package:butlery/services/messaging_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/widgets/common/indicators/notification_badge.dart';
 
 /// Layout scaffold components for main navigation and simple layouts
 ///
@@ -37,12 +34,14 @@ class LayoutScaffolds {
     String? title,
     List<Widget>? actions,
     PreferredSizeWidget? appBar,
+    Widget? floatingActionButton,
   }) {
     return _SimpleLayout(
       body: body,
       title: title,
       actions: actions,
       appBar: appBar,
+      floatingActionButton: floatingActionButton,
     );
   }
 }
@@ -68,28 +67,6 @@ class _MainMenuLayout extends StatefulWidget {
 }
 
 class _MainMenuLayoutState extends State<_MainMenuLayout> {
-  int _unreadMessagesCount = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUnreadCount();
-  }
-
-  Future<void> _loadUnreadCount() async {
-    try {
-      final messagingService = ServiceLocator.get<MessagingService>();
-      final count = await messagingService.getUnreadConversationsCount();
-      if (mounted) {
-        setState(() {
-          _unreadMessagesCount = count;
-        });
-      }
-    } catch (e) {
-      // Messaging service might not be available yet, that's okay
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -138,30 +115,10 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
           activeIcon: Icon(Icons.shopping_cart),
           label: 'Inköpslista',
         ),
-        BottomNavigationBarItem(
-          icon: _buildMessagesIcon(false),
-          activeIcon: _buildMessagesIcon(true),
-          label: 'Meddelanden',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMessagesIcon(bool isActive) {
-    if (_unreadMessagesCount == 0) {
-      return Icon(isActive ? Icons.message : Icons.message_outlined);
-    }
-
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Icon(isActive ? Icons.message : Icons.message_outlined),
-        Positioned(
-          top: -4,
-          right: -4,
-          child: NotificationBadge(
-            count: _unreadMessagesCount,
-          ),
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.explore_outlined),
+          activeIcon: Icon(Icons.explore),
+          label: 'Upptäck',
         ),
       ],
     );
@@ -188,7 +145,7 @@ class _MainMenuLayoutState extends State<_MainMenuLayout> {
         route = '/inkopslista';
         break;
       case 4:
-        route = '/messages';
+        route = '/discovery';
         break;
       default:
         return;
@@ -205,12 +162,14 @@ class _SimpleLayout extends StatelessWidget {
   final String? title;
   final List<Widget>? actions;
   final PreferredSizeWidget? appBar;
+  final Widget? floatingActionButton;
 
   const _SimpleLayout({
     required this.body,
     this.title,
     this.actions,
     this.appBar,
+    this.floatingActionButton,
   });
 
   @override
@@ -227,6 +186,7 @@ class _SimpleLayout extends StatelessWidget {
                 )
               : null),
       body: body,
+      floatingActionButton: floatingActionButton,
     );
   }
 }
