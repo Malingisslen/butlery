@@ -6,6 +6,7 @@ import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/permission_helper.dart';
+import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
@@ -61,7 +62,7 @@ class PersonalRecipeModule {
     );
     if (currentUserId == null) return null;
 
-    if (title.trim().isEmpty) {
+    if (ValidationUtils.isNullOrWhitespace(title)) {
       _setError('Receptnamn kan inte vara tomt');
       return null;
     }
@@ -360,7 +361,7 @@ class PersonalRecipeModule {
     required List<String> ingredients,
     required List<String> instructions,
   }) {
-    if (title.trim().isEmpty) {
+    if (ValidationUtils.isNullOrWhitespace(title)) {
       _setError('Receptnamn kan inte vara tomt');
       return false;
     }

@@ -30,6 +30,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/shopping/shopping_analytics_manager.dart';
 import 'package:butlery/viewmodels/shopping/shopping_item_operations_manager.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/validation_utils.dart';
 
 /// Unified shopping ViewModel coordinating shopping operations through service delegation.
 class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin {
@@ -140,7 +141,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
 
   /// Creates personal shopping list with validation
   Future<bool> createPersonalList(String name) async {
-    if (name.trim().isEmpty) return false;
+    if (ValidationUtils.isNullOrWhitespace(name)) return false;
 
     final listId = await _shoppingService.createPersonalList(name.trim());
     return listId != null;
@@ -157,7 +158,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
     bool allowGuestEditing = true,
     bool autoRemoveCompleted = false,
   }) async {
-    if (name.trim().isEmpty) return false;
+    if (ValidationUtils.isNullOrWhitespace(name)) return false;
 
     final listId = await _shoppingService.createCollaborativeList(
       name: name.trim(),
@@ -175,7 +176,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
 
   /// Renames active shopping list
   Future<bool> renameActiveList(String newName) async {
-    if (activeList == null || newName.trim().isEmpty) return false;
+    if (activeList == null || ValidationUtils.isNullOrWhitespace(newName)) return false;
     return await _shoppingService.renameList(activeList!.id, newName.trim());
   }
 
@@ -235,7 +236,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
     double? estimatedPrice,
     int priority = 3,
   }) async {
-    if (name.trim().isEmpty) {
+    if (ValidationUtils.isNullOrWhitespace(name)) {
       return false;
     }
     
