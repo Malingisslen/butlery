@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/views/social/friends_list/group_card.dart';
+import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
 
 /// GroupSearchTab - Group search tab component
 ///
