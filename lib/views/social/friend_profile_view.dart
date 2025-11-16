@@ -61,7 +61,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/navigation_components.dart';
-import 'package:butlery/widgets/common/layout/card_content.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -69,6 +68,7 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
+import 'package:butlery/widgets/common/layout/layout_containers.dart';
 
 /// Comprehensive friend profile view providing detailed friend information and social interaction through advanced profile architecture.
 ///

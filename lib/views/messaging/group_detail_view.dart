@@ -7,7 +7,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/group_detail_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
-import 'package:butlery/widgets/common/layout/card_content.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -15,6 +14,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/common/layout/layout_containers.dart';
 
 /// Group conversation details view with member management, add/remove operations, and admin controls.
 class GroupDetailView extends StatelessWidget {
@@ -44,7 +44,8 @@ class GroupDetailView extends StatelessWidget {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context, GroupDetailViewModel viewModel) {
+  PreferredSizeWidget _buildAppBar(
+      BuildContext context, GroupDetailViewModel viewModel) {
     return AppBar(
       title: const Text(
         'Gruppinformation',
@@ -106,7 +107,8 @@ class GroupDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildGroupInfoCard(BuildContext context, GroupDetailViewModel viewModel) {
+  Widget _buildGroupInfoCard(
+      BuildContext context, GroupDetailViewModel viewModel) {
     final createdAt = viewModel.createdAt;
     final createdDateStr = createdAt != null
         ? DateFormat('d MMM yyyy, HH:mm', 'sv_SE').format(createdAt)
@@ -199,7 +201,8 @@ class GroupDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildMembersSection(BuildContext context, GroupDetailViewModel viewModel) {
+  Widget _buildMembersSection(
+      BuildContext context, GroupDetailViewModel viewModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -231,7 +234,8 @@ class GroupDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildMemberItem(BuildContext context, GroupDetailViewModel viewModel, String memberId) {
+  Widget _buildMemberItem(
+      BuildContext context, GroupDetailViewModel viewModel, String memberId) {
     final displayName = viewModel.getMemberDisplayName(memberId);
     final avatarUrl = viewModel.getMemberAvatarUrl(memberId);
     final isCurrentUser = memberId == viewModel.currentUserId;

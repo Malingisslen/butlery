@@ -6,14 +6,13 @@ import 'package:butlery/viewmodels/create_shared_list_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
-import 'package:butlery/widgets/common/layout/bordered_container.dart';
-import 'package:butlery/widgets/common/layout/bottom_action_container.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
+import 'package:butlery/widgets/common/layout/layout_containers.dart';
 
 /// ✨ MIGRERAD CREATE SHARED SHOPPING LIST VY - Nu med UtilityComponents
 class CreateSharedShoppingListView extends StatefulWidget {

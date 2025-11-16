@@ -12,9 +12,11 @@
 // lib/views/receive_share_view.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/services/content_detector_service.dart' as content_detector;
+import 'package:butlery/services/content_detector_service.dart'
+    as content_detector;
 import 'package:butlery/services/social_media_extractor.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -44,10 +46,11 @@ class ReceiveShareView extends StatefulWidget {
 }
 
 /// State class managing content analysis, extraction, and import routing.
-class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingMixin {
-  final content_detector.ContentDetectorService _detector = content_detector.ContentDetectorService();
-  final SocialMediaExtractor _extractor = SocialMediaExtractor();
-  final AnalyticsService _analytics = AnalyticsService();
+class _ReceiveShareViewState extends State<ReceiveShareView>
+    with ErrorHandlingMixin {
+  late final content_detector.ContentDetectorService _detector;
+  late final SocialMediaExtractor _extractor;
+  late final AnalyticsService _analytics;
 
   late content_detector.ContentDetectionResult _detectionResult;
   bool _isProcessing = true;
@@ -57,6 +60,9 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
   @override
   void initState() {
     super.initState();
+    _detector = ServiceLocator.get<content_detector.ContentDetectorService>();
+    _extractor = ServiceLocator.get<SocialMediaExtractor>();
+    _analytics = ServiceLocator.get<AnalyticsService>();
     _analyzeContent();
   }
 
@@ -169,7 +175,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
 
             _analytics.logExtractionError(
               url: _detectionResult.extractedUrl!,
-              platform: _detectionResult.platform ?? content_detector.SourcePlatform.unknown,
+              platform: _detectionResult.platform ??
+                  content_detector.SourcePlatform.unknown,
               error: errorMessage,
               errorType: result.metadata['reason'] as String?,
             );
@@ -192,7 +199,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
         // Logga oväntat fel
         _analytics.logExtractionError(
           url: _detectionResult.extractedUrl!,
-          platform: _detectionResult.platform ?? content_detector.SourcePlatform.unknown,
+          platform: _detectionResult.platform ??
+              content_detector.SourcePlatform.unknown,
           error: e.toString(),
           errorType: 'exception',
         );
@@ -211,7 +219,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
   void _handleManualCopy() {
     // Logga att användaren valde manuell kopiering
     _analytics.logManualCopyFallback(
-      platform: _detectionResult.platform ?? content_detector.SourcePlatform.unknown,
+      platform:
+          _detectionResult.platform ?? content_detector.SourcePlatform.unknown,
       reason: _extractionError != null ? 'after_error' : 'user_choice',
     );
 
@@ -219,8 +228,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
       context,
       title: 'Manuell kopiering',
       message: '1. Gå tillbaka till ${_getPlatformName()}\n'
-               '2. Kopiera recepttexten från inlägget\n'
-               '3. Kom tillbaka hit och välj "Klistra in text"',
+          '2. Kopiera recepttexten från inlägget\n'
+          '3. Kom tillbaka hit och välj "Klistra in text"',
       confirmText: 'Klistra in text',
       cancelText: 'Avbryt',
     ).then((confirmed) {
@@ -239,18 +248,15 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
         loadingMessage: 'Analyserar innehåll...',
       );
     }
-    
+
     if (_isExtracting) {
       return LoadingScaffold(
         title: 'Importera recept',
         loadingMessage: 'Hämtar recept från ${_getPlatformName()}...',
       );
     }
-    
-    return BaseScaffold(
-      title: 'Importera recept',
-      body: _buildContentView(),
-    );
+
+    return BaseScaffold(title: 'Importera recept', body: _buildContentView());
   }
 
   /// Build content view with detection header, preview, and action buttons.
@@ -301,10 +307,7 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
 
     return Row(
       children: [
-        StatusIndicator(
-          icon: icon,
-          color: color,
-        ),
+        StatusIndicator(icon: icon, color: color),
         const SizedBox(width: AppDimensions.spacingL),
         Expanded(
           child: Column(
@@ -316,8 +319,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
                 Text(
                   _detectionResult.extractedUrl!,
                   style: AppTextStyles.bodySmall.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -357,7 +360,9 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 decoration: BoxDecoration(
                   color: AppColors.error.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusM,
+                  ),
                   border: Border.all(color: AppColors.error),
                 ),
                 child: Row(
@@ -368,8 +373,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
                       child: Text(
                         _extractionError!,
                         style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.error,
-                            ),
+                          color: AppColors.error,
+                        ),
                       ),
                     ),
                   ],
@@ -427,7 +432,9 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
                 color: AppColors.success.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                borderRadius: BorderRadius.circular(
+                  AppDimensions.borderRadiusM,
+                ),
                 border: Border.all(color: AppColors.divider),
               ),
               child: Row(
@@ -438,8 +445,8 @@ class _ReceiveShareViewState extends State<ReceiveShareView> with ErrorHandlingM
                     child: Text(
                       'Recepttext detekterad! Vi kan importera detta.',
                       style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.success,
-                          ),
+                        color: AppColors.success,
+                      ),
                     ),
                   ),
                 ],

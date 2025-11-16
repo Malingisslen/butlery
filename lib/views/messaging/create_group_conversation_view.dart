@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/create_group_conversation_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/layout/bottom_action_container.dart';
 import 'package:butlery/widgets/common/cards/selection_card.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -15,6 +14,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/common/layout/layout_containers.dart';
 
 /// View for creating new group conversations with friend selection.
 ///
@@ -181,7 +181,8 @@ class _CreateGroupConversationViewState
     );
   }
 
-  Widget _buildSelectedMembersPreview(CreateGroupConversationViewModel viewModel) {
+  Widget _buildSelectedMembersPreview(
+      CreateGroupConversationViewModel viewModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -213,7 +214,8 @@ class _CreateGroupConversationViewState
                 size: ImageSize.small,
               ),
               label: Text(member.displayName),
-              deleteIcon: const Icon(Icons.close, size: AppDimensions.iconSizeS),
+              deleteIcon:
+                  const Icon(Icons.close, size: AppDimensions.iconSizeS),
               onDeleted: () => viewModel.toggleMemberSelection(member.uid),
             );
           }).toList(),
@@ -278,7 +280,8 @@ class _CreateGroupConversationViewState
                 Text(
                   friend.displayName,
                   style: AppTextStyles.bodyLarge.copyWith(
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
                 if (friend.email.isNotEmpty)
