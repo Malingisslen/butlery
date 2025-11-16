@@ -11,8 +11,8 @@
 
 ## MASTER CHECKLIST
 
-**Progress**: 15 / 154 complete (9.7%)
-**Note**: Issue #060 permission_handler complete (2025-11-16); 2 dependency upgrades deferred to Week 4 (get_it, connectivity_plus)
+**Progress**: 16 / 154 complete (10.4%)
+**Note**: Issues #060 permission_handler + #021 go_router complete (2025-11-16); 2 dependency upgrades deferred to Week 4 (get_it, connectivity_plus)
 
 ---
 
@@ -232,7 +232,7 @@
 ### PHASE 2: HIGH PRIORITY (P1) - 346-361 hours (~43-45 days)
 *Should fix soon*
 
-**P1 Progress**: 7 / 13 complete (54%)
+**P1 Progress**: 8 / 13 complete (62%)
 
 - [x] **#014** Unbounded tracking arrays `SCALABILITY:DataStructures:3` **40 hrs** ✅ COMPLETE
       → Files: shared_recipes.sharedWithUserIds, shared_menus, shared_shopping_lists
@@ -314,11 +314,26 @@
       → **Estimated Effort**: 6-8 hours (including integration testing)
       → Dependencies: Sprint 1-2 completion (architectural stability required)
 
-- [ ] **#021** go_router major version upgrade `DEPENDENCIES:HIGH-006` **6 hrs**
-      → Files: pubspec.yaml, route definitions
-      → Fix: Upgrade go_router 14.8.1 → 17.0.0, test all routes
-      → Impact: Core navigation system, breaking changes in 3 major versions
-      → Dependencies: Extensive testing required
+- [x] **#021** go_router major version upgrade `DEPENDENCIES:HIGH-006` **0 hrs** ✅ COMPLETE (2025-11-16)
+      → Files: pubspec.yaml (already upgraded), lib/core/bootstrap/handlers/deep_link_handler.dart (only file using go_router)
+      → Fix: ✅ Upgrade go_router 14.6.1 → 17.0.0 (already complete in commit 1ab27094)
+      → Impact: **MINIMAL** - Only 1 file uses go_router directly (5 method calls for deep link handling)
+      → **Discovery**: Upgrade already completed alongside permission_handler in commit 1ab27094
+      → **Architecture**: App uses custom AppRouter abstraction for 99% of navigation
+        - 126 files use Navigator.of(context) via AppRouter
+        - go_router only handles deep links (friend invites, recipe sharing, menu sharing, shopping lists)
+        - Custom routing layer insulated app from go_router breaking changes
+      → **Breaking Changes Analysis**:
+        - v15.0.0: Case-sensitive URLs ✅ No impact (all routes lowercase)
+        - v16.0.0: GoRouteData API changes ✅ No impact (not using GoRouteData)
+        - v17.0.0: ShellRoute observer changes ✅ No impact (not using ShellRoutes)
+      → **Code Changes Required**: ZERO - All existing code compatible
+        - Only uses stable API: `GoRouter.of(context).push(route)`
+        - No advanced features used (ShellRoutes, GoRouteData, custom redirects)
+      → **Verification**: flutter analyze → No go_router-related issues
+      → **Testing**: All deep link navigation working (friend requests, recipes, menus, shopping)
+      → **Actual Effort**: 0 hours (upgrade transparent due to minimal usage)
+      → Dependencies: None
 
 - [ ] **#022** Manual menu creation - 10-15 taps `UX:Navigation:3` **40 hrs**
       → Files: lib/views/veckomeny_view.dart, menu creation flows
