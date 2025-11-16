@@ -229,10 +229,10 @@
 
 ---
 
-### PHASE 2: HIGH PRIORITY (P1) - 346-361 hours (~43-45 days)
+### PHASE 2: HIGH PRIORITY (P1) - 306-321 hours (~38-40 days)
 *Should fix soon*
 
-**P1 Progress**: 8 / 13 complete (62%)
+**P1 Progress**: 8 / 12 complete (67%)
 
 - [x] **#014** Unbounded tracking arrays `SCALABILITY:DataStructures:3` **40 hrs** ✅ COMPLETE
       → Files: shared_recipes.sharedWithUserIds, shared_menus, shared_shopping_lists
@@ -333,12 +333,6 @@
       → **Verification**: flutter analyze → No go_router-related issues
       → **Testing**: All deep link navigation working (friend requests, recipes, menus, shopping)
       → **Actual Effort**: 0 hours (upgrade transparent due to minimal usage)
-      → Dependencies: None
-
-- [ ] **#022** Manual menu creation - 10-15 taps `UX:Navigation:3` **40 hrs**
-      → Files: lib/views/veckomeny_view.dart, menu creation flows
-      → Fix: Add bulk recipe selection, smart suggestions, templates, remove confirmations
-      → Impact: 3x more taps than optimal (industry: 3-5 taps)
       → Dependencies: None
 
 - [ ] **#023** Discovery dashboard hidden (4 taps) `UX:Navigation:3` **24 hrs**
