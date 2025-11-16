@@ -5,6 +5,7 @@ import 'package:collection/collection.dart'; // Needed for .firstOrNull on dynam
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/notification_helper.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -26,7 +27,9 @@ class RecipeMemberManager {
     try {
       permission ??= ResourcePermission.viewer;
       AppLogger.info('Adding member $memberId to recipe $recipeId');
-      final recipe = _parent.recipes.where((r) => r.id == recipeId && r.isCollaborative).firstOrNull;
+      final recipe = _parent.recipes
+          .where((r) => r.id == recipeId && r.isCollaborative)
+          .firstOrNull;
       if (recipe == null) {
         AppLogger.error('Cannot add member: Recipe not found');
         return false;
@@ -39,8 +42,9 @@ class RecipeMemberManager {
         AppLogger.error('No permission to invite');
         return false;
       }
-      final currentPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
-      currentPermissions[memberId] = permission;  
+      final currentPermissions = Map<String, ResourcePermission>.from(
+          recipe.socialData?.memberPermissions ?? {});
+      currentPermissions[memberId] = permission;
       final updatedSocialData = RecipeSocialData(
         ownerId: recipe.socialData?.ownerId,
         ownerDisplayName: recipe.socialData?.ownerDisplayName,
@@ -50,7 +54,7 @@ class RecipeMemberManager {
         categoryIds: recipe.socialData?.categoryIds,
         descriptionCollaborative: recipe.socialData?.descriptionCollaborative,
       );
-      
+
       final updatedRecipe = Recipe(
         core: recipe.core,
         type: recipe.type,
@@ -102,7 +106,8 @@ class RecipeMemberManager {
           .firstOrNull;
 
       if (recipe == null) {
-        AppLogger.error('Cannot remove member: Recipe not found or not collaborative');
+        AppLogger.error(
+            'Cannot remove member: Recipe not found or not collaborative');
         return false;
       }
 
@@ -118,11 +123,13 @@ class RecipeMemberManager {
       }
 
       if (!_canManageMembers(recipe)) {
-        AppLogger.error('Current user does not have permission to remove members');
+        AppLogger.error(
+            'Current user does not have permission to remove members');
         return false;
       }
 
-      final currentPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
+      final currentPermissions = Map<String, ResourcePermission>.from(
+          recipe.socialData?.memberPermissions ?? {});
       currentPermissions.remove(memberId);
 
       final updatedSocialData = RecipeSocialData(
@@ -134,7 +141,7 @@ class RecipeMemberManager {
         categoryIds: recipe.socialData?.categoryIds,
         descriptionCollaborative: recipe.socialData?.descriptionCollaborative,
       );
-      
+
       final updatedRecipe = Recipe(
         core: recipe.core,
         type: recipe.type,
@@ -177,14 +184,16 @@ class RecipeMemberManager {
     required ResourcePermission newPermission,
   }) async {
     try {
-      AppLogger.info('Updating permission for member $memberId in recipe $recipeId to ${newPermission.name}');
+      AppLogger.info(
+          'Updating permission for member $memberId in recipe $recipeId to ${newPermission.name}');
 
       final recipe = _parent.recipes
           .where((r) => r.id == recipeId && r.isCollaborative)
           .firstOrNull;
 
       if (recipe == null) {
-        AppLogger.error('Cannot update permission: Recipe not found or not collaborative');
+        AppLogger.error(
+            'Cannot update permission: Recipe not found or not collaborative');
         return false;
       }
 
@@ -194,7 +203,8 @@ class RecipeMemberManager {
       }
 
       if (!_canManageMembers(recipe)) {
-        AppLogger.error('Current user does not have permission to manage member permissions');
+        AppLogger.error(
+            'Current user does not have permission to manage member permissions');
         return false;
       }
 
@@ -204,7 +214,8 @@ class RecipeMemberManager {
         return false;
       }
 
-      final currentPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
+      final currentPermissions = Map<String, ResourcePermission>.from(
+          recipe.socialData?.memberPermissions ?? {});
       final oldPermission = currentPermissions[memberId];
 
       if (oldPermission == newPermission) {
@@ -223,7 +234,7 @@ class RecipeMemberManager {
         categoryIds: recipe.socialData?.categoryIds,
         descriptionCollaborative: recipe.socialData?.descriptionCollaborative,
       );
-      
+
       final updatedRecipe = Recipe(
         core: recipe.core,
         type: recipe.type,
@@ -272,7 +283,8 @@ class RecipeMemberManager {
       final members = <Map<String, dynamic>>[];
       final permissions = recipe.socialData?.memberPermissions ?? {};
       final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
-      final ownerDisplayName = recipe.socialData?.ownerDisplayName ?? 'Okänd användare';
+      final ownerDisplayName =
+          recipe.socialData?.ownerDisplayName ?? 'Okänd användare';
 
       if (ownerId != null) {
         members.add({
@@ -312,9 +324,9 @@ class RecipeMemberManager {
       final recipe = _parent.recipes
           .where((r) => r.id == recipeId && r.isCollaborative)
           .firstOrNull;
-      
+
       if (recipe == null) return false;
-      
+
       return _canInviteMembers(recipe);
     } catch (e) {
       AppLogger.error('❌ Failed to check invitation permissions', e);
@@ -328,7 +340,7 @@ class RecipeMemberManager {
       final recipe = _parent.recipes
           .where((r) => r.id == recipeId && r.isCollaborative)
           .firstOrNull;
-      
+
       if (recipe == null) {
         return {'error': 'Recipe not found'};
       }
@@ -344,8 +356,10 @@ class RecipeMemberManager {
       return {
         'total_members': permissions.length + 1, // +1 for owner
         'permission_breakdown': permissionCounts,
-        'has_editors': permissions.values.any((p) => p == ResourcePermission.editor),
-        'has_admins': permissions.values.any((p) => p == ResourcePermission.admin),
+        'has_editors':
+            permissions.values.any((p) => p == ResourcePermission.editor),
+        'has_admins':
+            permissions.values.any((p) => p == ResourcePermission.admin),
         'allow_member_invites': recipe.socialData?.allowMemberInvites ?? true,
       };
     } catch (e) {
@@ -362,32 +376,26 @@ class RecipeMemberManager {
     required String newMemberName,
     required ResourcePermission permission,
   }) async {
-    if (_notificationService == null) return;
+    final currentUserName = _parent.currentUserDisplayName ?? 'En användare';
 
-    try {
-      final currentUserName = _parent.currentUserDisplayName ?? 'En användare';
-
-      await _notificationService.sendImmediateNotification(
-        targetUserIds: [newMemberId],
-        strategy: NotificationStrategy.collaborationInvite,
-        variables: {
-          'senderName': currentUserName,
-          'resourceName': recipeTitle,
-        },
-        additionalData: {
-          'recipeId': recipeId,
-          'action': 'member_added',
-          'permission': permission.name,
-        },
-        actions: [
-          NotificationAction.viewRecipe,
-        ],
-      );
-
-      AppLogger.info('Sent member added notification to $newMemberId');
-    } catch (e) {
-      AppLogger.error('Failed to send member added notification', e);
-    }
+    await NotificationHelper.sendImmediateSafely(
+      notificationService: _notificationService,
+      operationName: 'Send member added notification to $newMemberId',
+      targetUserIds: [newMemberId],
+      strategy: NotificationStrategy.collaborationInvite,
+      variables: {
+        'senderName': currentUserName,
+        'resourceName': recipeTitle,
+      },
+      additionalData: {
+        'recipeId': recipeId,
+        'action': 'member_added',
+        'permission': permission.name,
+      },
+      actions: [
+        NotificationAction.viewRecipe,
+      ],
+    );
   }
 
   /// Send notification when member is removed from recipe
@@ -396,25 +404,19 @@ class RecipeMemberManager {
     required String recipeTitle,
     required String removedMemberId,
   }) async {
-    if (_notificationService == null) return;
+    final currentUserName = _parent.currentUserDisplayName ?? 'En användare';
 
-    try {
-      final currentUserName = _parent.currentUserDisplayName ?? 'En användare';
-
-      await _notificationService.sendSilentNotification(
-        targetUserIds: [removedMemberId],
-        data: {
-          'type': 'member_removed',
-          'recipeId': recipeId,
-          'recipeTitle': recipeTitle,
-          'removedBy': currentUserName,
-        },
-      );
-
-      AppLogger.info('Sent member removed notification to $removedMemberId');
-    } catch (e) {
-      AppLogger.error('Failed to send member removed notification', e);
-    }
+    await NotificationHelper.sendSilentSafely(
+      notificationService: _notificationService,
+      operationName: 'Send member removed notification to $removedMemberId',
+      targetUserIds: [removedMemberId],
+      data: {
+        'type': 'member_removed',
+        'recipeId': recipeId,
+        'recipeTitle': recipeTitle,
+        'removedBy': currentUserName,
+      },
+    );
   }
 
   /// Check if current user can invite members to recipe
@@ -428,8 +430,11 @@ class RecipeMemberManager {
     final allowMemberInvites = recipe.socialData?.allowMemberInvites ?? true;
     if (!allowMemberInvites) return false;
 
-    final userPermission = recipe.socialData?.memberPermissions?[currentUserId] ?? ResourcePermission.viewer;
-    return userPermission == ResourcePermission.admin || userPermission == ResourcePermission.editor;
+    final userPermission =
+        recipe.socialData?.memberPermissions?[currentUserId] ??
+            ResourcePermission.viewer;
+    return userPermission == ResourcePermission.admin ||
+        userPermission == ResourcePermission.editor;
   }
 
   /// Check if current user can manage members (add/remove/change permissions)
@@ -440,7 +445,9 @@ class RecipeMemberManager {
     final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
     if (ownerId == currentUserId) return true;
 
-    final userPermission = recipe.socialData?.memberPermissions?[currentUserId] ?? ResourcePermission.viewer;
+    final userPermission =
+        recipe.socialData?.memberPermissions?[currentUserId] ??
+            ResourcePermission.viewer;
     return userPermission == ResourcePermission.admin;
   }
 

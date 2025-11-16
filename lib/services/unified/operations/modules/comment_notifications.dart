@@ -3,20 +3,20 @@
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/notification_helper.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 
 /// Focused module for comment notification system
-/// 
+///
 /// This module handles ONLY comment-related notifications:
 /// - New comment notifications to recipe members
 /// - Mention notifications in comments
 /// - Reply notifications to parent comment authors
 /// - Notification targeting and batching
-/// 
+///
 /// ❌ DOES NOT CONTAIN: Comment content, likes, CRUD operations, statistics
 class CommentNotifications {
-
   // ===== COMMENT NOTIFICATION SENDING =====
 
   /// Send notifications for new comments
@@ -26,45 +26,39 @@ class CommentNotifications {
     required RecipeComment comment,
     List<String>? mentions,
   }) async {
-    if (notificationService == null) {
-      AppLogger.debug('📋 No notification service available');
+    // Collect notification targets (recipe members excluding commenter)
+    final targetUserIds = _collectNotificationTargets(
+      recipe: recipe,
+      comment: comment,
+      mentions: mentions,
+    );
+
+    if (targetUserIds.isEmpty) {
+      AppLogger.debug('📋 No users to notify for comment');
       return;
     }
 
-    try {
-      // Collect notification targets (recipe members excluding commenter)
-      final targetUserIds = _collectNotificationTargets(
-        recipe: recipe,
-        comment: comment,
-        mentions: mentions,
-      );
+    AppLogger.info(
+        '📬 Sending comment notifications to ${targetUserIds.length} users');
 
-      if (targetUserIds.isEmpty) {
-        AppLogger.debug('📋 No users to notify for comment');
-        return;
-      }
-
-      // Send comment notification (batchable to prevent spam)
-      await notificationService.sendBatchableNotification(
-        targetUserIds: targetUserIds,
-        strategy: NotificationStrategy.recipeComment,
-        variables: {
-          'commenterName': comment.authorDisplayName,
-          'recipeName': recipe.title,
-          'commentPreview': _truncateComment(comment.text),
-        },
-        additionalData: {
-          'recipeId': recipe.id,
-          'commentId': comment.id,
-          'action': 'comment_added',
-          'commenterId': comment.authorId,
-        },
-      );
-
-      AppLogger.info('📬 Sent comment notifications to ${targetUserIds.length} users');
-    } catch (e) {
-      AppLogger.error('❌ Failed to send comment notifications', e);
-    }
+    // Send comment notification (batchable to prevent spam)
+    await NotificationHelper.sendBatchableSafely(
+      notificationService: notificationService,
+      operationName: 'Send comment notifications',
+      targetUserIds: targetUserIds,
+      strategy: NotificationStrategy.recipeComment,
+      variables: {
+        'commenterName': comment.authorDisplayName,
+        'recipeName': recipe.title,
+        'commentPreview': _truncateComment(comment.text),
+      },
+      additionalData: {
+        'recipeId': recipe.id,
+        'commentId': comment.id,
+        'action': 'comment_added',
+        'commenterId': comment.authorId,
+      },
+    );
   }
 
   /// Send notifications for comment replies
@@ -74,41 +68,34 @@ class CommentNotifications {
     required RecipeComment reply,
     required RecipeComment parentComment,
   }) async {
-    if (notificationService == null) {
-      AppLogger.debug('📋 No notification service available');
+    // Don't notify if replying to own comment
+    if (reply.authorId == parentComment.authorId) {
+      AppLogger.debug(
+          '📋 Skipping reply notification (replying to own comment)');
       return;
     }
 
-    try {
-      // Don't notify if replying to own comment
-      if (reply.authorId == parentComment.authorId) {
-        AppLogger.debug('📋 Skipping reply notification (replying to own comment)');
-        return;
-      }
-
-      // Send reply notification to parent comment author
-      await notificationService.sendBatchableNotification(
-        targetUserIds: [parentComment.authorId],
-        strategy: NotificationStrategy.recipeComment,
-        variables: {
-          'replierName': reply.authorDisplayName,
-          'recipeName': recipe.title,
-          'replyPreview': _truncateComment(reply.text),
-          'originalCommentPreview': _truncateComment(parentComment.text),
-        },
-        additionalData: {
-          'recipeId': recipe.id,
-          'commentId': reply.id,
-          'parentCommentId': parentComment.id,
-          'action': 'comment_reply',
-          'replierId': reply.authorId,
-        },
-      );
-
-      AppLogger.info('📬 Sent reply notification to ${parentComment.authorDisplayName}');
-    } catch (e) {
-      AppLogger.error('❌ Failed to send reply notifications', e);
-    }
+    // Send reply notification to parent comment author
+    await NotificationHelper.sendBatchableSafely(
+      notificationService: notificationService,
+      operationName:
+          'Send reply notification to ${parentComment.authorDisplayName}',
+      targetUserIds: [parentComment.authorId],
+      strategy: NotificationStrategy.recipeComment,
+      variables: {
+        'replierName': reply.authorDisplayName,
+        'recipeName': recipe.title,
+        'replyPreview': _truncateComment(reply.text),
+        'originalCommentPreview': _truncateComment(parentComment.text),
+      },
+      additionalData: {
+        'recipeId': recipe.id,
+        'commentId': reply.id,
+        'parentCommentId': parentComment.id,
+        'action': 'comment_reply',
+        'replierId': reply.authorId,
+      },
+    );
   }
 
   /// Send notifications for comment mentions
@@ -118,42 +105,40 @@ class CommentNotifications {
     required RecipeComment comment,
     required List<String> mentionedUserIds,
   }) async {
-    if (notificationService == null || mentionedUserIds.isEmpty) {
+    if (mentionedUserIds.isEmpty) {
       return;
     }
 
-    try {
-      // Filter out the commenter from mentions
-      final targetUserIds = mentionedUserIds
-          .where((userId) => userId != comment.authorId)
-          .toList();
+    // Filter out the commenter from mentions
+    final targetUserIds =
+        mentionedUserIds.where((userId) => userId != comment.authorId).toList();
 
-      if (targetUserIds.isEmpty) {
-        AppLogger.debug('📋 No users to notify for mentions');
-        return;
-      }
-
-      // Send mention notifications
-      await notificationService.sendBatchableNotification(
-        targetUserIds: targetUserIds,
-        strategy: NotificationStrategy.recipeComment,
-        variables: {
-          'mentionerName': comment.authorDisplayName,
-          'recipeName': recipe.title,
-          'commentPreview': _truncateComment(comment.text),
-        },
-        additionalData: {
-          'recipeId': recipe.id,
-          'commentId': comment.id,
-          'action': 'comment_mention',
-          'mentionerId': comment.authorId,
-        },
-      );
-
-      AppLogger.info('📬 Sent mention notifications to ${targetUserIds.length} users');
-    } catch (e) {
-      AppLogger.error('❌ Failed to send mention notifications', e);
+    if (targetUserIds.isEmpty) {
+      AppLogger.debug('📋 No users to notify for mentions');
+      return;
     }
+
+    AppLogger.info(
+        '📬 Sending mention notifications to ${targetUserIds.length} users');
+
+    // Send mention notifications
+    await NotificationHelper.sendBatchableSafely(
+      notificationService: notificationService,
+      operationName: 'Send mention notifications',
+      targetUserIds: targetUserIds,
+      strategy: NotificationStrategy.recipeComment,
+      variables: {
+        'mentionerName': comment.authorDisplayName,
+        'recipeName': recipe.title,
+        'commentPreview': _truncateComment(comment.text),
+      },
+      additionalData: {
+        'recipeId': recipe.id,
+        'commentId': comment.id,
+        'action': 'comment_mention',
+        'mentionerId': comment.authorId,
+      },
+    );
   }
 
   /// Send notifications for comment likes
@@ -164,38 +149,30 @@ class CommentNotifications {
     required String likerUserId,
     required String likerDisplayName,
   }) async {
-    if (notificationService == null) {
+    // Don't notify if liking own comment
+    if (likerUserId == comment.authorId) {
+      AppLogger.debug('📋 Skipping like notification (liking own comment)');
       return;
     }
 
-    try {
-      // Don't notify if liking own comment
-      if (likerUserId == comment.authorId) {
-        AppLogger.debug('📋 Skipping like notification (liking own comment)');
-        return;
-      }
-
-      // Send like notification to comment author
-      await notificationService.sendBatchableNotification(
-        targetUserIds: [comment.authorId],
-        strategy: NotificationStrategy.recipeComment,
-        variables: {
-          'likerName': likerDisplayName,
-          'recipeName': recipe.title,
-          'commentPreview': _truncateComment(comment.text),
-        },
-        additionalData: {
-          'recipeId': recipe.id,
-          'commentId': comment.id,
-          'action': 'comment_like',
-          'likerId': likerUserId,
-        },
-      );
-
-      AppLogger.info('📬 Sent like notification to ${comment.authorDisplayName}');
-    } catch (e) {
-      AppLogger.error('❌ Failed to send like notifications', e);
-    }
+    // Send like notification to comment author
+    await NotificationHelper.sendBatchableSafely(
+      notificationService: notificationService,
+      operationName: 'Send like notification to ${comment.authorDisplayName}',
+      targetUserIds: [comment.authorId],
+      strategy: NotificationStrategy.recipeComment,
+      variables: {
+        'likerName': likerDisplayName,
+        'recipeName': recipe.title,
+        'commentPreview': _truncateComment(comment.text),
+      },
+      additionalData: {
+        'recipeId': recipe.id,
+        'commentId': comment.id,
+        'action': 'comment_like',
+        'likerId': likerUserId,
+      },
+    );
   }
 
   // ===== NOTIFICATION TARGETING =====
@@ -207,13 +184,13 @@ class CommentNotifications {
     List<String>? mentions,
   }) {
     final targetUserIds = <String>[];
-    
+
     // Add recipe owner
     final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
     if (ownerId != null && ownerId != comment.authorId) {
       targetUserIds.add(ownerId);
     }
-    
+
     // Add recipe members
     final memberIds = recipe.socialData?.memberPermissions?.keys ?? [];
     for (final memberId in memberIds) {
@@ -225,7 +202,8 @@ class CommentNotifications {
     // Add mentioned users
     if (mentions != null) {
       for (final mentionedUserId in mentions) {
-        if (mentionedUserId != comment.authorId && !targetUserIds.contains(mentionedUserId)) {
+        if (mentionedUserId != comment.authorId &&
+            !targetUserIds.contains(mentionedUserId)) {
           targetUserIds.add(mentionedUserId);
         }
       }
@@ -241,7 +219,8 @@ class CommentNotifications {
       'allowReplyNotifications': true,
       'allowMentionNotifications': true,
       'allowLikeNotifications': recipe.isCollaborative,
-      'batchNotifications': recipe.isCollaborative, // Batch for collaborative recipes
+      'batchNotifications':
+          recipe.isCollaborative, // Batch for collaborative recipes
     };
   }
 
@@ -280,7 +259,7 @@ class CommentNotifications {
     required String recipeName,
   }) {
     if (comments.isEmpty) return '';
-    
+
     if (comments.length == 1) {
       final comment = comments.first;
       return '${comment.authorDisplayName} kommenterade på "$recipeName"';
@@ -333,7 +312,7 @@ class CommentNotifications {
       case 'comment':
         return 300; // 5 minutes
       case 'reply':
-        return 60;  // 1 minute
+        return 60; // 1 minute
       default:
         return 0;
     }

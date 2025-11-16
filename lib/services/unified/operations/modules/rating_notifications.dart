@@ -2,20 +2,20 @@
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/notification_helper.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 
 /// Focused module for rating notifications
-/// 
+///
 /// This module handles ONLY rating-related notifications:
 /// - Rating notifications to recipe owners
 /// - Rating milestone notifications
 /// - Rating summary notifications
 /// - Notification formatting and targeting
-/// 
+///
 /// ❌ DOES NOT CONTAIN: Rating operations, statistics, social metrics, engagement calculations
 class RatingNotifications {
-
   // ===== RATING NOTIFICATIONS =====
 
   /// Send notification when recipe receives a rating
@@ -26,44 +26,34 @@ class RatingNotifications {
     required String raterName,
     String? review,
   }) async {
-    if (notificationService == null) {
-      AppLogger.debug('📋 No notification service available');
-      return;
-    }
+    final stars = '⭐' * rating.round();
+    final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
 
-    try {
-      final stars = '⭐' * rating.round();
-      final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
-
-      if (ownerId != null) {
-        await notificationService.sendImmediateNotification(
-          targetUserIds: [ownerId],
-          strategy: NotificationStrategy.recipeComment, // Reuse comment strategy for ratings
-          variables: {
-            'commenterName': raterName,
-            'recipeName': recipe.core.title,
-            'commentPreview': review?.isNotEmpty == true && review != null
-                ? (review.length > 50 
-                    ? '${review.substring(0, 50)}...'
-                    : review)
-                : 'Betygsatte ditt recept $stars',
-          },
-          additionalData: {
-            'recipeId': recipe.id,
-            'action': 'recipe_rated',
-            'rating': rating,
-            'hasReview': review?.isNotEmpty ?? false,
-            'raterName': raterName,
-          },
-          actions: [
-            NotificationAction.viewRecipe,
-          ],
-        );
-
-        AppLogger.info('📬 Sent rating notification to recipe owner');
-      }
-    } catch (e) {
-      AppLogger.error('❌ Failed to send rating notification', e);
+    if (ownerId != null) {
+      await NotificationHelper.sendImmediateSafely(
+        notificationService: notificationService,
+        operationName: 'Send rating notification to recipe owner',
+        targetUserIds: [ownerId],
+        strategy: NotificationStrategy
+            .recipeComment, // Reuse comment strategy for ratings
+        variables: {
+          'commenterName': raterName,
+          'recipeName': recipe.core.title,
+          'commentPreview': review?.isNotEmpty == true && review != null
+              ? (review.length > 50 ? '${review.substring(0, 50)}...' : review)
+              : 'Betygsatte ditt recept $stars',
+        },
+        additionalData: {
+          'recipeId': recipe.id,
+          'action': 'recipe_rated',
+          'rating': rating,
+          'hasReview': review?.isNotEmpty ?? false,
+          'raterName': raterName,
+        },
+        actions: [
+          NotificationAction.viewRecipe,
+        ],
+      );
     }
   }
 
@@ -74,40 +64,34 @@ class RatingNotifications {
     required int totalRatings,
     required double averageRating,
   }) async {
-    if (notificationService == null) return;
+    final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
+    if (ownerId == null) return;
 
-    try {
-      final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
-      if (ownerId == null) return;
+    // Check if this is a milestone worth celebrating
+    final milestone = _getRatingMilestone(totalRatings, averageRating);
+    if (milestone == null) return;
 
-      // Check if this is a milestone worth celebrating
-      final milestone = _getRatingMilestone(totalRatings, averageRating);
-      if (milestone == null) return;
-
-      await notificationService.sendImmediateNotification(
-        targetUserIds: [ownerId],
-        strategy: NotificationStrategy.recipeComment, // Reuse comment strategy
-        variables: {
-          'commenterName': 'Butlery',
-          'recipeName': recipe.core.title,
-          'commentPreview': milestone['message'] as String,
-        },
-        additionalData: {
-          'recipeId': recipe.id,
-          'action': 'rating_milestone',
-          'milestone_type': milestone['type'],
-          'total_ratings': totalRatings,
-          'average_rating': averageRating,
-        },
-        actions: [
-          NotificationAction.viewRecipe,
-        ],
-      );
-
-      AppLogger.info('📬 Sent rating milestone notification: ${milestone['type']}');
-    } catch (e) {
-      AppLogger.error('❌ Failed to send rating milestone notification', e);
-    }
+    await NotificationHelper.sendImmediateSafely(
+      notificationService: notificationService,
+      operationName: 'Send rating milestone notification: ${milestone['type']}',
+      targetUserIds: [ownerId],
+      strategy: NotificationStrategy.recipeComment, // Reuse comment strategy
+      variables: {
+        'commenterName': 'Butlery',
+        'recipeName': recipe.core.title,
+        'commentPreview': milestone['message'] as String,
+      },
+      additionalData: {
+        'recipeId': recipe.id,
+        'action': 'rating_milestone',
+        'milestone_type': milestone['type'],
+        'total_ratings': totalRatings,
+        'average_rating': averageRating,
+      },
+      actions: [
+        NotificationAction.viewRecipe,
+      ],
+    );
   }
 
   /// Send rating summary notification (weekly/monthly)
@@ -117,41 +101,36 @@ class RatingNotifications {
     required List<Map<String, dynamic>> recipeRatingSummaries,
     required String period, // 'weekly' or 'monthly'
   }) async {
-    if (notificationService == null || recipeRatingSummaries.isEmpty) return;
+    if (recipeRatingSummaries.isEmpty) return;
 
-    try {
-      final totalNewRatings = recipeRatingSummaries.fold<int>(
-        0, (sum, summary) => sum + (summary['newRatings'] as int)
-      );
+    final totalNewRatings = recipeRatingSummaries.fold<int>(
+        0, (sum, summary) => sum + (summary['newRatings'] as int));
 
-      if (totalNewRatings == 0) return;
+    if (totalNewRatings == 0) return;
 
-      final topRecipe = recipeRatingSummaries.first;
-      final summary = _generateRatingSummaryText(recipeRatingSummaries, period);
+    final topRecipe = recipeRatingSummaries.first;
+    final summary = _generateRatingSummaryText(recipeRatingSummaries, period);
 
-      await notificationService.sendImmediateNotification(
-        targetUserIds: [userId],
-        strategy: NotificationStrategy.recipeComment, // Reuse comment strategy
-        variables: {
-          'commenterName': 'Butlery',
-          'recipeName': topRecipe['recipeName'] as String,
-          'commentPreview': summary,
-        },
-        additionalData: {
-          'action': 'rating_summary',
-          'period': period,
-          'total_new_ratings': totalNewRatings,
-          'recipes_count': recipeRatingSummaries.length,
-        },
-        actions: [
-          NotificationAction.viewRecipe,
-        ],
-      );
-
-      AppLogger.info('📬 Sent $period rating summary notification');
-    } catch (e) {
-      AppLogger.error('❌ Failed to send rating summary notification', e);
-    }
+    await NotificationHelper.sendImmediateSafely(
+      notificationService: notificationService,
+      operationName: 'Send $period rating summary notification',
+      targetUserIds: [userId],
+      strategy: NotificationStrategy.recipeComment,
+      variables: {
+        'commenterName': 'Butlery',
+        'recipeName': topRecipe['recipeName'] as String,
+        'commentPreview': summary,
+      },
+      additionalData: {
+        'action': 'rating_summary',
+        'period': period,
+        'total_new_ratings': totalNewRatings,
+        'recipes_count': recipeRatingSummaries.length,
+      },
+      actions: [
+        NotificationAction.viewRecipe,
+      ],
+    );
   }
 
   /// Send notification for first rating received
@@ -162,47 +141,42 @@ class RatingNotifications {
     required String raterName,
     String? review,
   }) async {
-    if (notificationService == null) return;
+    final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
+    if (ownerId == null) return;
 
-    try {
-      final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
-      if (ownerId == null) return;
+    final stars = '⭐' * rating.round();
+    final message = review?.isNotEmpty == true
+        ? 'Fick sin första recension från $raterName: "${_truncateReview(review!)}"'
+        : 'Fick sitt första betyg från $raterName: $stars';
 
-      final stars = '⭐' * rating.round();
-      final message = review?.isNotEmpty == true
-          ? 'Fick sin första recension från $raterName: "${_truncateReview(review!)}"'
-          : 'Fick sitt första betyg från $raterName: $stars';
-
-      await notificationService.sendImmediateNotification(
-        targetUserIds: [ownerId],
-        strategy: NotificationStrategy.recipeComment,
-        variables: {
-          'commenterName': 'Butlery',
-          'recipeName': recipe.core.title,
-          'commentPreview': '🎉 Grattis! Ditt recept "$message"',
-        },
-        additionalData: {
-          'recipeId': recipe.id,
-          'action': 'first_rating',
-          'rating': rating,
-          'raterName': raterName,
-          'hasReview': review?.isNotEmpty ?? false,
-        },
-        actions: [
-          NotificationAction.viewRecipe,
-        ],
-      );
-
-      AppLogger.info('📬 Sent first rating notification');
-    } catch (e) {
-      AppLogger.error('❌ Failed to send first rating notification', e);
-    }
+    await NotificationHelper.sendImmediateSafely(
+      notificationService: notificationService,
+      operationName: 'Send first rating notification',
+      targetUserIds: [ownerId],
+      strategy: NotificationStrategy.recipeComment,
+      variables: {
+        'commenterName': 'Butlery',
+        'recipeName': recipe.core.title,
+        'commentPreview': '🎉 Grattis! Ditt recept "$message"',
+      },
+      additionalData: {
+        'recipeId': recipe.id,
+        'action': 'first_rating',
+        'rating': rating,
+        'raterName': raterName,
+        'hasReview': review?.isNotEmpty ?? false,
+      },
+      actions: [
+        NotificationAction.viewRecipe,
+      ],
+    );
   }
 
   // ===== NOTIFICATION HELPERS =====
 
   /// Get rating milestone information
-  static Map<String, dynamic>? _getRatingMilestone(int totalRatings, double averageRating) {
+  static Map<String, dynamic>? _getRatingMilestone(
+      int totalRatings, double averageRating) {
     // Rating count milestones
     if (totalRatings == 5) {
       return {
@@ -231,12 +205,14 @@ class RatingNotifications {
       if (averageRating >= 4.8) {
         return {
           'type': 'excellent_rating',
-          'message': '⭐ Enastående! Ditt recept har ${averageRating.toStringAsFixed(1)} i genomsnittsbetyg!',
+          'message':
+              '⭐ Enastående! Ditt recept har ${averageRating.toStringAsFixed(1)} i genomsnittsbetyg!',
         };
       } else if (averageRating >= 4.5) {
         return {
           'type': 'great_rating',
-          'message': '🌟 Fantastiskt! Ditt recept har ${averageRating.toStringAsFixed(1)} i genomsnittsbetyg!',
+          'message':
+              '🌟 Fantastiskt! Ditt recept har ${averageRating.toStringAsFixed(1)} i genomsnittsbetyg!',
         };
       }
     }
@@ -245,12 +221,13 @@ class RatingNotifications {
   }
 
   /// Generate rating summary text
-  static String _generateRatingSummaryText(List<Map<String, dynamic>> summaries, String period) {
+  static String _generateRatingSummaryText(
+      List<Map<String, dynamic>> summaries, String period) {
     final totalNewRatings = summaries.fold<int>(
-      0, (sum, summary) => sum + (summary['newRatings'] as int)
-    );
+        0, (sum, summary) => sum + (summary['newRatings'] as int));
 
-    final recipesWithRatings = summaries.where((s) => (s['newRatings'] as int) > 0).length;
+    final recipesWithRatings =
+        summaries.where((s) => (s['newRatings'] as int) > 0).length;
 
     if (recipesWithRatings == 1) {
       final recipe = summaries.first;
@@ -287,7 +264,7 @@ class RatingNotifications {
       // Send batched notifications for each recipe
       for (final entry in ratingsByRecipe.entries) {
         final ratings = entry.value;
-        
+
         if (ratings.length == 1) {
           // Single rating - send individual notification
           final rating = ratings.first;
@@ -309,7 +286,8 @@ class RatingNotifications {
         }
       }
 
-      AppLogger.info('📬 Sent ${ratingsByRecipe.length} batched rating notifications');
+      AppLogger.info(
+          '📬 Sent ${ratingsByRecipe.length} batched rating notifications');
     } catch (e) {
       AppLogger.error('❌ Failed to send batched rating notifications', e);
     }
@@ -317,44 +295,40 @@ class RatingNotifications {
 
   /// Send notification for multiple ratings on same recipe
   static Future<void> _sendBatchRatingNotification({
-    required NotificationService notificationService,
+    required NotificationService? notificationService,
     required String userId,
     required Recipe recipe,
     required List<Map<String, dynamic>> ratings,
   }) async {
-    try {
-      final ratingCount = ratings.length;
-      final averageRating = ratings.fold<double>(
-        0.0, (sum, r) => sum + (r['rating'] as double)
-      ) / ratingCount.toDouble();
+    final ratingCount = ratings.length;
+    final averageRating =
+        ratings.fold<double>(0.0, (sum, r) => sum + (r['rating'] as double)) /
+            ratingCount.toDouble();
 
-      final message = ratingCount == 2 
-          ? 'Ditt recept fick 2 nya betyg!'
-          : 'Ditt recept fick $ratingCount nya betyg! Genomsnitt: ${averageRating.toStringAsFixed(1)} ⭐';
+    final message = ratingCount == 2
+        ? 'Ditt recept fick 2 nya betyg!'
+        : 'Ditt recept fick $ratingCount nya betyg! Genomsnitt: ${averageRating.toStringAsFixed(1)} ⭐';
 
-      await notificationService.sendImmediateNotification(
-        targetUserIds: [userId],
-        strategy: NotificationStrategy.recipeComment,
-        variables: {
-          'commenterName': 'Butlery',
-          'recipeName': recipe.core.title,
-          'commentPreview': message,
-        },
-        additionalData: {
-          'recipeId': recipe.id,
-          'action': 'batch_ratings',
-          'rating_count': ratingCount,
-          'average_rating': averageRating,
-        },
-        actions: [
-          NotificationAction.viewRecipe,
-        ],
-      );
-
-      AppLogger.info('📬 Sent batch rating notification for $ratingCount ratings');
-    } catch (e) {
-      AppLogger.error('❌ Failed to send batch rating notification', e);
-    }
+    await NotificationHelper.sendImmediateSafely(
+      notificationService: notificationService,
+      operationName: 'Send batch rating notification for $ratingCount ratings',
+      targetUserIds: [userId],
+      strategy: NotificationStrategy.recipeComment,
+      variables: {
+        'commenterName': 'Butlery',
+        'recipeName': recipe.core.title,
+        'commentPreview': message,
+      },
+      additionalData: {
+        'recipeId': recipe.id,
+        'action': 'batch_ratings',
+        'rating_count': ratingCount,
+        'average_rating': averageRating,
+      },
+      actions: [
+        NotificationAction.viewRecipe,
+      ],
+    );
   }
 
   // ===== NOTIFICATION PREFERENCES =====
@@ -365,18 +339,19 @@ class RatingNotifications {
     required String raterUserId,
   }) {
     final ownerId = recipe.socialData?.ownerId ?? recipe.core.createdBy;
-    
+
     // Don't notify if rating own recipe
     if (ownerId == raterUserId) return false;
-    
+
     // Don't notify for personal recipes from non-members
     if (recipe.isPersonal) return false;
-    
+
     // For collaborative recipes, check if rater is a member
     if (recipe.isCollaborative) {
-      return recipe.socialData?.memberPermissions?.containsKey(raterUserId) ?? false;
+      return recipe.socialData?.memberPermissions?.containsKey(raterUserId) ??
+          false;
     }
-    
+
     return false;
   }
 
@@ -387,7 +362,7 @@ class RatingNotifications {
   }) {
     // Send first ratings immediately
     if (isFirstRating) return Duration.zero;
-    
+
     // Batch notifications for popular recipes
     if (recipe.isCollaborative) {
       final memberCount = recipe.socialData?.memberPermissions?.length ?? 0;
@@ -397,7 +372,7 @@ class RatingNotifications {
         return const Duration(minutes: 15); // Batch for 15 minutes
       }
     }
-    
+
     // Send personal recipe ratings after short delay
     return const Duration(minutes: 5);
   }
