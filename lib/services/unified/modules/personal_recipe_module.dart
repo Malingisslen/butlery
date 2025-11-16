@@ -5,6 +5,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/permission_helper.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
@@ -53,11 +54,12 @@ class PersonalRecipeModule {
     List<String>? tags,
     String? sourceUrl,
   }) async {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) {
-      _setError('Du måste vara inloggad');
-      return null;
-    }
+    final currentUserId = PermissionHelper.requireAuthWithError(
+      getCurrentUserId: _getCurrentUserId,
+      setError: _setError,
+      operationName: 'Create personal recipe',
+    );
+    if (currentUserId == null) return null;
 
     if (title.trim().isEmpty) {
       _setError('Receptnamn kan inte vara tomt');
@@ -90,7 +92,8 @@ class PersonalRecipeModule {
           // Increment user's public recipe count
           try {
             await _userRepository.incrementPublicRecipeCount(currentUserId);
-            AppLogger.debug('✅ Incremented public recipe count for user $currentUserId');
+            AppLogger.debug(
+                '✅ Incremented public recipe count for user $currentUserId');
           } catch (e) {
             AppLogger.warning('⚠️ Failed to increment recipe count: $e');
             // Continue anyway - don't fail recipe creation for counter issues
@@ -99,13 +102,15 @@ class PersonalRecipeModule {
           // Start background database sync without waiting
           _startBackgroundRecipeSync(newRecipe, 'create');
 
-          AppLogger.success('✅ Personal recipe "$title" created (syncing in background)');
+          AppLogger.success(
+              '✅ Personal recipe "$title" created (syncing in background)');
           return newRecipe.id;
         },
       );
     } on RateLimitException catch (e) {
       AppLogger.warning('⚠️ Rate limit exceeded for recipe creation: $e');
-      _setError('För många receptskapanden. Försök igen om ${e.retryAfter?.inSeconds ?? 60} sekunder.');
+      _setError(
+          'För många receptskapanden. Försök igen om ${e.retryAfter?.inSeconds ?? 60} sekunder.');
       return null;
     } catch (e) {
       AppLogger.error('❌ Could not create personal recipe: $e');
@@ -115,11 +120,12 @@ class PersonalRecipeModule {
   }
 
   Future<bool> updatePersonalRecipe(Recipe updatedRecipe) async {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) {
-      _setError('Du måste vara inloggad');
-      return false;
-    }
+    final currentUserId = PermissionHelper.requireAuthWithError(
+      getCurrentUserId: _getCurrentUserId,
+      setError: _setError,
+      operationName: 'Update personal recipe',
+    );
+    if (currentUserId == null) return false;
 
     if (!updatedRecipe.isPersonal) {
       _setError('Kan bara uppdatera personliga recept');
@@ -142,13 +148,15 @@ class PersonalRecipeModule {
           // Start background database sync without waiting
           _startBackgroundRecipeSync(editedRecipe, 'update');
 
-          AppLogger.success('✅ Personal recipe "${editedRecipe.title}" updated (syncing in background)');
+          AppLogger.success(
+              '✅ Personal recipe "${editedRecipe.title}" updated (syncing in background)');
           return true;
         },
       );
     } on RateLimitException catch (e) {
       AppLogger.warning('⚠️ Rate limit exceeded for recipe update: $e');
-      _setError('För många uppdateringar. Försök igen om ${e.retryAfter?.inSeconds ?? 60} sekunder.');
+      _setError(
+          'För många uppdateringar. Försök igen om ${e.retryAfter?.inSeconds ?? 60} sekunder.');
       return false;
     } catch (e) {
       AppLogger.error('❌ Could not update personal recipe: $e');
@@ -158,11 +166,12 @@ class PersonalRecipeModule {
   }
 
   Future<bool> deletePersonalRecipe(String recipeId) async {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) {
-      _setError('Du måste vara inloggad');
-      return false;
-    }
+    final currentUserId = PermissionHelper.requireAuthWithError(
+      getCurrentUserId: _getCurrentUserId,
+      setError: _setError,
+      operationName: 'Delete personal recipe',
+    );
+    if (currentUserId == null) return false;
 
     try {
       // Rate limit check for recipe deletion (DoS prevention)
@@ -173,12 +182,14 @@ class PersonalRecipeModule {
           await _removeFromCache(recipeId);
 
           // Delete from Firebase using repository pattern
-          final deleteSuccess = await _getServiceAdapter().deleteRecipe(recipeId);
+          final deleteSuccess =
+              await _getServiceAdapter().deleteRecipe(recipeId);
           if (deleteSuccess) {
             // Decrement user's public recipe count
             try {
               await _userRepository.decrementPublicRecipeCount(currentUserId);
-              AppLogger.debug('✅ Decremented public recipe count for user $currentUserId');
+              AppLogger.debug(
+                  '✅ Decremented public recipe count for user $currentUserId');
             } catch (e) {
               AppLogger.warning('⚠️ Failed to decrement recipe count: $e');
               // Continue anyway - don't fail recipe deletion for counter issues
@@ -194,7 +205,8 @@ class PersonalRecipeModule {
       );
     } on RateLimitException catch (e) {
       AppLogger.warning('⚠️ Rate limit exceeded for recipe deletion: $e');
-      _setError('För många borttagningar. Försök igen om ${e.retryAfter?.inSeconds ?? 60} sekunder.');
+      _setError(
+          'För många borttagningar. Försök igen om ${e.retryAfter?.inSeconds ?? 60} sekunder.');
       return false;
     } catch (e) {
       AppLogger.error('❌ Could not delete personal recipe: $e');
@@ -204,11 +216,12 @@ class PersonalRecipeModule {
   }
 
   Future<bool> markRecipeAsCooked(String recipeId) async {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) {
-      _setError('Du måste vara inloggad');
-      return false;
-    }
+    final currentUserId = PermissionHelper.requireAuthWithError(
+      getCurrentUserId: _getCurrentUserId,
+      setError: _setError,
+      operationName: 'Mark recipe as cooked',
+    );
+    if (currentUserId == null) return false;
 
     try {
       // This would need to be implemented with recipe loading first
@@ -223,11 +236,12 @@ class PersonalRecipeModule {
   }
 
   Future<bool> addIngredient(String recipeId, String ingredient) async {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) {
-      _setError('Du måste vara inloggad');
-      return false;
-    }
+    final currentUserId = PermissionHelper.requireAuthWithError(
+      getCurrentUserId: _getCurrentUserId,
+      setError: _setError,
+      operationName: 'Add ingredient',
+    );
+    if (currentUserId == null) return false;
 
     try {
       // This would need recipe loading implementation
@@ -240,16 +254,19 @@ class PersonalRecipeModule {
     }
   }
 
-  Future<bool> updateIngredient(String recipeId, int index, String newIngredient) async {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) {
-      _setError('Du måste vara inloggad');
-      return false;
-    }
+  Future<bool> updateIngredient(
+      String recipeId, int index, String newIngredient) async {
+    final currentUserId = PermissionHelper.requireAuthWithError(
+      getCurrentUserId: _getCurrentUserId,
+      setError: _setError,
+      operationName: 'Update ingredient',
+    );
+    if (currentUserId == null) return false;
 
     try {
       // This would need recipe loading implementation
-      AppLogger.info('Ingredient updated in recipe $recipeId at index $index: $newIngredient');
+      AppLogger.info(
+          'Ingredient updated in recipe $recipeId at index $index: $newIngredient');
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not update ingredient: $e');
@@ -259,15 +276,17 @@ class PersonalRecipeModule {
   }
 
   Future<bool> removeIngredient(String recipeId, int index) async {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) {
-      _setError('Du måste vara inloggad');
-      return false;
-    }
+    final currentUserId = PermissionHelper.requireAuthWithError(
+      getCurrentUserId: _getCurrentUserId,
+      setError: _setError,
+      operationName: 'Remove ingredient',
+    );
+    if (currentUserId == null) return false;
 
     try {
       // This would need recipe loading implementation
-      AppLogger.info('Ingredient removed from recipe $recipeId at index $index');
+      AppLogger.info(
+          'Ingredient removed from recipe $recipeId at index $index');
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not remove ingredient: $e');
@@ -277,11 +296,12 @@ class PersonalRecipeModule {
   }
 
   Future<bool> addInstruction(String recipeId, String instruction) async {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) {
-      _setError('Du måste vara inloggad');
-      return false;
-    }
+    final currentUserId = PermissionHelper.requireAuthWithError(
+      getCurrentUserId: _getCurrentUserId,
+      setError: _setError,
+      operationName: 'Add instruction',
+    );
+    if (currentUserId == null) return false;
 
     try {
       // This would need recipe loading implementation
@@ -294,16 +314,19 @@ class PersonalRecipeModule {
     }
   }
 
-  Future<bool> updateInstruction(String recipeId, int index, String newInstruction) async {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) {
-      _setError('Du måste vara inloggad');
-      return false;
-    }
+  Future<bool> updateInstruction(
+      String recipeId, int index, String newInstruction) async {
+    final currentUserId = PermissionHelper.requireAuthWithError(
+      getCurrentUserId: _getCurrentUserId,
+      setError: _setError,
+      operationName: 'Update instruction',
+    );
+    if (currentUserId == null) return false;
 
     try {
       // This would need recipe loading implementation
-      AppLogger.info('Instruction updated in recipe $recipeId at index $index: $newInstruction');
+      AppLogger.info(
+          'Instruction updated in recipe $recipeId at index $index: $newInstruction');
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not update instruction: $e');
@@ -313,15 +336,17 @@ class PersonalRecipeModule {
   }
 
   Future<bool> removeInstruction(String recipeId, int index) async {
-    final currentUserId = _getCurrentUserId();
-    if (currentUserId == null) {
-      _setError('Du måste vara inloggad');
-      return false;
-    }
+    final currentUserId = PermissionHelper.requireAuthWithError(
+      getCurrentUserId: _getCurrentUserId,
+      setError: _setError,
+      operationName: 'Remove instruction',
+    );
+    if (currentUserId == null) return false;
 
     try {
       // This would need recipe loading implementation
-      AppLogger.info('Instruction removed from recipe $recipeId at index $index');
+      AppLogger.info(
+          'Instruction removed from recipe $recipeId at index $index');
       return true;
     } catch (e) {
       AppLogger.error('❌ Could not remove instruction: $e');
@@ -424,7 +449,8 @@ class PersonalRecipeModule {
     }
   }
 
-  Future<List<String>> importRecipesFromData(List<Map<String, dynamic>> recipesData) async {
+  Future<List<String>> importRecipesFromData(
+      List<Map<String, dynamic>> recipesData) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) {
       _setError('Du måste vara inloggad för att importera recept');
@@ -437,7 +463,7 @@ class PersonalRecipeModule {
       for (final recipeData in recipesData) {
         try {
           final recipe = Recipe.fromJson(recipeData);
-          
+
           // Convert to personal recipe
           final personalRecipe = recipe.copyWith(
             createdBy: currentUserId,
@@ -447,7 +473,7 @@ class PersonalRecipeModule {
 
           await _saveToCache(personalRecipe);
           await _getServiceAdapter().createRecipe(personalRecipe);
-          
+
           importedIds.add(personalRecipe.id);
           AppLogger.info('Imported recipe: ${personalRecipe.title}');
         } catch (e) {
@@ -457,7 +483,8 @@ class PersonalRecipeModule {
 
       if (importedIds.isNotEmpty) {
         _notifyListeners();
-        AppLogger.success('✅ ${importedIds.length} recipes imported successfully');
+        AppLogger.success(
+            '✅ ${importedIds.length} recipes imported successfully');
       }
 
       return importedIds;
@@ -471,8 +498,9 @@ class PersonalRecipeModule {
   Future<List<Map<String, dynamic>>> exportPersonalRecipes() async {
     try {
       final cachedRecipes = await loadCachedPersonalRecipes();
-      final exportData = cachedRecipes.map((recipe) => recipe.toJson()).toList();
-      
+      final exportData =
+          cachedRecipes.map((recipe) => recipe.toJson()).toList();
+
       AppLogger.success('✅ ${exportData.length} recipes exported');
       return exportData;
     } catch (e) {
@@ -498,8 +526,9 @@ class PersonalRecipeModule {
     // Use Future.microtask to ensure this runs asynchronously without blocking
     Future.microtask(() async {
       try {
-        AppLogger.info('🔄 Starting background $operation for recipe: ${recipe.title}');
-        
+        AppLogger.info(
+            '🔄 Starting background $operation for recipe: ${recipe.title}');
+
         bool success = false;
         if (operation == 'create') {
           final createdId = await _getServiceAdapter().createRecipe(recipe);
@@ -507,16 +536,19 @@ class PersonalRecipeModule {
         } else if (operation == 'update') {
           success = await _getServiceAdapter().updateRecipe(recipe);
         }
-        
+
         if (success) {
-          AppLogger.success('✅ Background $operation completed for: ${recipe.title}');
+          AppLogger.success(
+              '✅ Background $operation completed for: ${recipe.title}');
         } else {
-          AppLogger.error('❌ Background $operation failed for: ${recipe.title}');
+          AppLogger.error(
+              '❌ Background $operation failed for: ${recipe.title}');
           // Recipe is still in cache for retry later
           _scheduleRetrySync(recipe, operation);
         }
       } catch (e) {
-        AppLogger.error('❌ Background $operation error for ${recipe.title}: $e');
+        AppLogger.error(
+            '❌ Background $operation error for ${recipe.title}: $e');
         _scheduleRetrySync(recipe, operation);
       }
     });
