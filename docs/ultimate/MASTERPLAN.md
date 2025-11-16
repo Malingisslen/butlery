@@ -229,10 +229,10 @@
 
 ---
 
-### PHASE 2: HIGH PRIORITY (P1) - 306-321 hours (~38-40 days)
+### PHASE 2: HIGH PRIORITY (P1) - 274-289 hours (~34-36 days)
 *Should fix soon*
 
-**P1 Progress**: 8 / 12 complete (67%)
+**P1 Progress**: 8 / 11 complete (73%)
 
 - [x] **#014** Unbounded tracking arrays `SCALABILITY:DataStructures:3` **40 hrs** ✅ COMPLETE
       → Files: shared_recipes.sharedWithUserIds, shared_menus, shared_shopping_lists
@@ -335,16 +335,41 @@
       → **Actual Effort**: 0 hours (upgrade transparent due to minimal usage)
       → Dependencies: None
 
-- [ ] **#023** Discovery dashboard hidden (4 taps) `UX:Navigation:3` **24 hrs**
-      → Files: lib/views/social/discovery_dashboard_view.dart, navigation structure
-      → Fix: Add "Discover" tab to bottom nav, add onboarding tour
-      → Impact: Social features invisible, poor discoverability
-      → Dependencies: None
-
-- [ ] **#024** Missing date/time pickers `UX:Forms:6` **32 hrs**
-      → Files: lib/views/veckomeny_view.dart, menu planning screens
-      → Fix: Implement showDatePicker for menu planning, showTimePicker for cooking times
-      → Impact: Critical feature gap, users can't select meal dates
+- [ ] **#023** Discovery dashboard hidden (4 taps) `UX:Navigation:3` **12 hrs** 📋 PLANNED
+      → Files: lib/widgets/common/layout/layout_scaffolds.dart, lib/widgets/common/profile/profile_menu.dart
+      → Fix: Replace Messages tab with Discovery tab, move Messages to profile menu
+      → Impact: Fully-implemented Discovery Dashboard is completely hidden - NO UI access point exists
+      → **Current State**:
+        - Discovery Dashboard fully built (ViewModel, 3 managers, comprehensive tests)
+        - Features hidden: Trending recipes, friend activity, personalized recommendations, social search
+        - Bottom nav at 5-tab capacity (optimal UX limit)
+        - Route `/discovery` exists but orphaned from UI
+      → **Recommended Solution**: Replace "Meddelanden" tab with "Upptäck/Social" tab
+        - Messages tab is newest (least established, easier to relocate)
+        - Move Messages to profile menu (2-tap access, keeps notification badges)
+        - Gives Discovery the 1-tap visibility it deserves
+        - Maintains 5-tab navigation limit (UX best practice)
+      → **Implementation Plan**:
+        - Phase 1: Update bottom navigation (4h)
+          - Replace index 4 tab: Meddelanden → Upptäck
+          - Icon: Icons.explore (outlined + filled)
+          - Route to /discovery
+        - Phase 2: Add Messages to profile menu (2h)
+          - Add menu item in social section
+          - Include unread badge
+          - Route to /messages
+        - Phase 3: Testing (4h)
+          - Widget tests for nav changes
+          - Integration tests for flows
+          - Manual QA (iOS/Android, accessibility)
+        - Phase 4: User communication (2h)
+          - Optional: First-launch tooltip
+      → **Alternative Considered**: FAB for "Lägg till" (13h) - More complex, not recommended
+      → **Success Metrics**:
+        - Discovery DAU: 60%+ within first week
+        - Social engagement: 40%+ weekly
+        - Recipe sharing: 2x increase
+      → **Estimated Effort**: 12 hours (reduced from 24h - onboarding tour optional)
       → Dependencies: None
 
 - [ ] **#150** Poor API documentation (69% undocumented) `DOCUMENTATION:High:1` **36-50 hrs**
@@ -368,7 +393,7 @@
       → Dependencies: None
       → Source: Phase 1 Documentation Analysis
 
-**Phase 2 Subtotal**: 6 / 13 complete (46%) - 294-309 hours
+**Phase 2 Subtotal**: 8 / 11 complete (73%) - 274-289 hours
 
 ---
 
