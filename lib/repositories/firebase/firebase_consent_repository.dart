@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
-import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
+import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -26,71 +26,98 @@ import 'package:butlery/core/utils/logger.dart';
 /// ```
 /// users/{userId}/consent/current
 /// ```
-class FirebaseConsentRepository with PermissionValidationMixin {
-  final FirebaseFirestore _firestore;
-  final AuthRepository _authRepository;
-  final FirebaseAuditRepository? _auditRepository;
-
+class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
   static const String _collectionPath = 'users';
   static const String _consentSubcollection = 'consent';
   static const String _currentConsentDoc = 'current';
+
+  // Local reference to audit repository for custom methods
+  final FirebaseAuditRepository? _localAuditRepository;
 
   FirebaseConsentRepository({
     FirebaseFirestore? firestore,
     required AuthRepository authRepository,
     FirebaseAuditRepository? auditRepository,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _authRepository = authRepository,
-        _auditRepository = auditRepository;
+  })  : _localAuditRepository = auditRepository,
+        super(
+          firestore: firestore,
+          authRepository: authRepository,
+          auditRepository: auditRepository,
+        );
 
-  /// Get current authenticated user ID
-  String? _getCurrentUserId() {
-    return _authRepository.currentUser?.uid;
+  // ===== BASEFIREB ASEREPOSITORY ABSTRACT METHODS =====
+
+  @override
+  String get collectionName => _consentSubcollection;
+
+  @override
+  UserConsent fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+    return UserConsent.fromFirestore(doc);
+  }
+
+  @override
+  Map<String, dynamic> toFirestore(UserConsent entity) {
+    return entity.toFirestore();
+  }
+
+  @override
+  String getId(UserConsent entity) {
+    // Consent uses fixed "current" document ID
+    return _currentConsentDoc;
+  }
+
+  // ===== PERMISSION VALIDATION METHODS =====
+  // Users can only access their own consent data (self-access only)
+
+  @override
+  Future<bool> validateCreatePermission(
+    String userId,
+    UserConsent entity,
+  ) async {
+    // User can only create consent for themselves
+    return userId == entity.userId;
+  }
+
+  @override
+  Future<bool> validateReadPermission(
+    String userId,
+    String resourceId,
+    UserConsent? entity,
+  ) async {
+    // User can only read their own consent
+    if (entity != null) {
+      return userId == entity.userId;
+    }
+    // If entity not provided, check if resourceId matches userId (for subcollection pattern)
+    return true; // Will be validated in getUserConsent method
+  }
+
+  @override
+  Future<bool> validateUpdatePermission(
+    String userId,
+    String resourceId,
+    UserConsent entity,
+  ) async {
+    // User can only update their own consent
+    return userId == entity.userId;
+  }
+
+  @override
+  Future<bool> validateDeletePermission(
+    String userId,
+    String resourceId,
+  ) async {
+    // User can only delete their own consent
+    // resourceId in this case is the userId from the subcollection path
+    return true; // Will be validated in deleteConsent method
   }
 
   /// Validate user is accessing their own consent
   Future<void> _validateSelfAccess(String userId, String operation) async {
-    final currentUserId = _getCurrentUserId();
-
-    if (currentUserId == null) {
-      await logPermissionCheck(
-        userId: 'anonymous',
-        resource: 'consent/$userId',
-        operation: operation,
-        granted: false,
-        auditRepository: _auditRepository,
-      );
-      throw PermissionDeniedException(
-        'User must be authenticated',
-        resource: 'consent',
-        operation: operation,
-      );
-    }
-
-    if (currentUserId != userId) {
-      await logPermissionCheck(
-        userId: currentUserId,
-        resource: 'consent/$userId',
-        operation: operation,
-        granted: false,
-        details: 'User attempted to access another user\'s consent',
-        auditRepository: _auditRepository,
-      );
-      throw PermissionDeniedException(
-        'Users can only access their own consent',
-        resource: 'consent',
-        operation: operation,
-        userId: currentUserId,
-      );
-    }
-
-    // Log successful permission check
-    await logPermissionCheck(
-      userId: currentUserId,
-      resource: 'consent/$userId',
+    await validateSelfOperation(
+      currentUserId: requireCurrentUserId(),
+      targetUserId: userId,
       operation: operation,
-      granted: true,
-      auditRepository: _auditRepository,
     );
   }
 
@@ -104,7 +131,7 @@ class FirebaseConsentRepository with PermissionValidationMixin {
       // Validate permission
       await _validateSelfAccess(userId, 'read');
 
-      final doc = await _firestore
+      final doc = await firestore
           .collection(_collectionPath)
           .doc(userId)
           .collection(_consentSubcollection)
@@ -117,7 +144,9 @@ class FirebaseConsentRepository with PermissionValidationMixin {
       }
 
       final consent = UserConsent.fromFirestore(doc);
-      AppLogger.info('✅ Retrieved consent for user $userId (version: ${consent.consentVersion})');
+      AppLogger.info(
+        '✅ Retrieved consent for user $userId (version: ${consent.consentVersion})',
+      );
       return consent;
     } catch (e) {
       if (e is PermissionDeniedException) {
@@ -139,11 +168,13 @@ class FirebaseConsentRepository with PermissionValidationMixin {
 
       // Validate consent belongs to the correct user
       if (consent.userId != userId) {
-        AppLogger.error('Consent userId mismatch: expected $userId, got ${consent.userId}');
+        AppLogger.error(
+          'Consent userId mismatch: expected $userId, got ${consent.userId}',
+        );
         return false;
       }
 
-      await _firestore
+      await firestore
           .collection(_collectionPath)
           .doc(userId)
           .collection(_consentSubcollection)
@@ -151,7 +182,7 @@ class FirebaseConsentRepository with PermissionValidationMixin {
           .set(consent.toFirestore());
 
       // Additional audit log for consent changes (GDPR requirement)
-      await _auditRepository?.logPermissionCheck(
+      await _localAuditRepository?.logPermissionCheck(
         userId: userId,
         operation: 'consent_updated',
         resourceType: 'user_consent',
@@ -164,7 +195,9 @@ class FirebaseConsentRepository with PermissionValidationMixin {
         },
       );
 
-      AppLogger.success('✅ Consent saved for user $userId (version: ${consent.consentVersion})');
+      AppLogger.success(
+        '✅ Consent saved for user $userId (version: ${consent.consentVersion})',
+      );
       return true;
     } catch (e) {
       if (e is PermissionDeniedException) {
@@ -184,7 +217,7 @@ class FirebaseConsentRepository with PermissionValidationMixin {
       // Validate permission
       await _validateSelfAccess(userId, 'delete');
 
-      await _firestore
+      await firestore
           .collection(_collectionPath)
           .doc(userId)
           .collection(_consentSubcollection)
@@ -192,15 +225,13 @@ class FirebaseConsentRepository with PermissionValidationMixin {
           .delete();
 
       // Audit log for consent deletion
-      await _auditRepository?.logPermissionCheck(
+      await _localAuditRepository?.logPermissionCheck(
         userId: userId,
         operation: 'consent_deleted',
         resourceType: 'user_consent',
         resourceId: userId,
         granted: true,
-        metadata: {
-          'timestamp': DateTime.now().toIso8601String(),
-        },
+        metadata: {'timestamp': DateTime.now().toIso8601String()},
       );
 
       AppLogger.success('✅ Consent deleted for user $userId');
@@ -218,12 +249,15 @@ class FirebaseConsentRepository with PermissionValidationMixin {
   ///
   /// **Security:** Users can only access their own consent history
   /// **GDPR:** Article 15 (Right of Access)
-  Future<List<UserConsent>> getConsentHistory(String userId, {int limit = 10}) async {
+  Future<List<UserConsent>> getConsentHistory(
+    String userId, {
+    int limit = 10,
+  }) async {
     try {
       // Validate permission
       await _validateSelfAccess(userId, 'read');
 
-      final snapshot = await _firestore
+      final snapshot = await firestore
           .collection(_collectionPath)
           .doc(userId)
           .collection(_consentSubcollection)
@@ -231,11 +265,12 @@ class FirebaseConsentRepository with PermissionValidationMixin {
           .limit(limit)
           .get();
 
-      final history = snapshot.docs
-          .map((doc) => UserConsent.fromFirestore(doc))
-          .toList();
+      final history =
+          snapshot.docs.map((doc) => UserConsent.fromFirestore(doc)).toList();
 
-      AppLogger.info('Retrieved ${history.length} consent history entries for user $userId');
+      AppLogger.info(
+        'Retrieved ${history.length} consent history entries for user $userId',
+      );
       return history;
     } catch (e) {
       if (e is PermissionDeniedException) {

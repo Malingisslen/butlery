@@ -9,7 +9,8 @@ import 'package:butlery/services/account/account_deletion/content_deletion_opera
 import 'package:butlery/services/account/account_deletion/social_deletion_operations.dart';
 import 'package:butlery/services/account/account_deletion/profile_deletion_operations.dart';
 import 'package:butlery/services/account/account_deletion/storage_deletion_operations.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
+import 'package:butlery/repositories/interfaces/auth_repository.dart'
+    as auth_repo;
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
@@ -24,7 +25,8 @@ class AccountDeletionService extends BaseService {
   String get serviceName => 'AccountDeletionService';
   final auth_repo.AuthRepository _authRepository;
   final FirestoreRepository _firestoreRepository;
-  final AnalyticsService _analyticsService;
+  final AnalyticsService?
+      _analyticsService; // Optional - may not be available on web
   static const String _logTag = 'AccountDeletionService';
 
   late final ContentDeletionOperations _contentOps;
@@ -39,7 +41,8 @@ class AccountDeletionService extends BaseService {
     required user_svc.UserService userService,
     required UnifiedRecipeService recipeService,
     required OfflineService offlineService,
-    required AnalyticsService analyticsService,
+    AnalyticsService?
+        analyticsService, // Optional - may not be available on web
   })  : _authRepository = authRepository,
         _firestoreRepository = firestoreRepository,
         _analyticsService = analyticsService {
@@ -75,7 +78,9 @@ class AccountDeletionService extends BaseService {
       final userId = user.uid;
       final userEmail = user.email ?? 'unknown';
 
-      app_logger.AppLogger.info('[$_logTag] Starting account deletion for user: $userId');
+      app_logger.AppLogger.info(
+        '[$_logTag] Starting account deletion for user: $userId',
+      );
 
       final deletionTasks = <String, Future<bool>>{
         'recipes': _contentOps.deleteRecipes(userId),
@@ -105,7 +110,10 @@ class AccountDeletionService extends BaseService {
         } catch (e) {
           result['failedCollections'].add(entry.key);
           result['errors'].add('${entry.key}: ${e.toString()}');
-          app_logger.AppLogger.error('[$_logTag] Failed to delete ${entry.key}', e);
+          app_logger.AppLogger.error(
+            '[$_logTag] Failed to delete ${entry.key}',
+            e,
+          );
         }
       }
 
@@ -119,7 +127,8 @@ class AccountDeletionService extends BaseService {
         );
       }
 
-      await _analyticsService.logAccountDeleted({
+      // Log analytics if available (may not be on web)
+      await _analyticsService?.logAccountDeleted({
         'reason': reason,
         'collections_deleted': result['deletedCollections'].length,
         'collections_failed': result['failedCollections'].length,
@@ -128,9 +137,13 @@ class AccountDeletionService extends BaseService {
       if (result['failedCollections'].isEmpty) {
         await user.delete();
         result['success'] = true;
-        app_logger.AppLogger.info('[$_logTag] Account deletion completed successfully for user: $userId');
+        app_logger.AppLogger.info(
+          '[$_logTag] Account deletion completed successfully for user: $userId',
+        );
       } else {
-        app_logger.AppLogger.warning('[$_logTag] Account deletion incomplete - some collections failed');
+        app_logger.AppLogger.warning(
+          '[$_logTag] Account deletion incomplete - some collections failed',
+        );
       }
 
       return result;
@@ -154,20 +167,22 @@ class AccountDeletionService extends BaseService {
     required List<dynamic> failedCollections,
   }) async {
     return await safeExecute(
-      () async {
-        final auditDoc = await _firestore.collection('deletion_audit_logs').add({
-          'userId': userId,
-          'email': email,
-          'reason': reason,
-          'deletedCollections': deletedCollections,
-          'failedCollections': failedCollections,
-          'deletionTimestamp': FieldValue.serverTimestamp(),
-          'gdprCompliant': failedCollections.isEmpty,
-        });
-        return auditDoc.id;
-      },
-      operationName: 'Create deletion audit log',
-      defaultValue: 'error',
-    ) ?? 'error';
+          () async {
+            final auditDoc =
+                await _firestore.collection('deletion_audit_logs').add({
+              'userId': userId,
+              'email': email,
+              'reason': reason,
+              'deletedCollections': deletedCollections,
+              'failedCollections': failedCollections,
+              'deletionTimestamp': FieldValue.serverTimestamp(),
+              'gdprCompliant': failedCollections.isEmpty,
+            });
+            return auditDoc.id;
+          },
+          operationName: 'Create deletion audit log',
+          defaultValue: 'error',
+        ) ??
+        'error';
   }
 }

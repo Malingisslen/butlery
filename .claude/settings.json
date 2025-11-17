@@ -34,7 +34,7 @@
       "Bash(else:*)",
       "Bash(fi)",
       "WebSearch",
-      "mcp__playwright__*"
+      "mcp__*"
     ],
     "deny": [],
     "ask": []

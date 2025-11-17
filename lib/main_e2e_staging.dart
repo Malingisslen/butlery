@@ -1,9 +1,9 @@
 /// E2E Staging Main Entry Point - Production-Like Testing
-/// 
+///
 /// This main entry point is designed for E2E tests that require production-like
 /// Firebase operations using a dedicated staging Firebase project. This provides
 /// the highest fidelity testing for critical user journeys.
-/// 
+///
 /// ULTRATHINK ANALYSIS:
 /// - Production main.dart initializes Firebase with production config
 /// - Staging E2E tests need production-like Firebase operations
@@ -42,21 +42,21 @@ import 'package:butlery/core/di/modules/ui_module.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// E2E Staging Application Entry Point
-/// 
+///
 /// This entry point provides complete Butlery app functionality for E2E testing
 /// with production-like Firebase integration using a staging project. Perfect for
 /// testing critical user journeys, payment flows, and external integrations.
-/// 
+///
 /// REQUIREMENTS:
 /// - Staging Firebase project configured
 /// - Staging environment variables (.env.staging)
 /// - Valid Firebase App Check configuration for staging
-/// 
+///
 /// USAGE:
 /// ```dart
 /// // In E2E tests (typically CI/CD only):
 /// import 'package:butlery/main_e2e_staging.dart' as staging_app;
-/// 
+///
 /// testWidgets('production-like test', (tester) async {
 ///   staging_app.main();
 ///   await tester.pumpAndSettle();
@@ -81,7 +81,7 @@ Future<void> main() async {
       // For now, using default options with staging project ID
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    
+
     if (kDebugMode) {
       debugPrint('✅ Firebase initialized for E2E staging testing');
     }
@@ -94,7 +94,7 @@ Future<void> main() async {
 
     // Start the application
     runApp(const ButleryApp());
-    
+
     if (kDebugMode) {
       debugPrint('✅ E2E Staging system started successfully');
     }
@@ -105,19 +105,20 @@ Future<void> main() async {
     }
 
     // Show error app with E2E-specific message
-    runApp(_E2EStagingErrorApp('E2E Staging initialization failed: $e\n\nStack trace:\n$stackTrace'));
+    runApp(_E2EStagingErrorApp(
+        'E2E Staging initialization failed: $e\n\nStack trace:\n$stackTrace'));
   }
 }
 
 /// Load staging environment variables
-/// 
+///
 /// This loads environment configuration specific to staging testing,
 /// including staging Firebase project settings and API keys.
 Future<void> _loadStagingEnvironment() async {
   try {
     // Load staging-specific environment file
     await dotenv.load(fileName: '.env.staging');
-    
+
     if (kDebugMode) {
       debugPrint('✅ Staging environment variables loaded');
     }
@@ -130,7 +131,7 @@ Future<void> _loadStagingEnvironment() async {
 }
 
 /// Initialize Firebase App Check for staging environment
-/// 
+///
 /// This sets up App Check with staging-appropriate configuration,
 /// typically more lenient than production but more secure than debug.
 Future<void> _initializeStagingAppCheck() async {
@@ -143,11 +144,11 @@ Future<void> _initializeStagingAppCheck() async {
     // In a real staging environment, you might use actual providers
     await FirebaseAppCheck.instance.activate(
       // Use debug provider for staging environment
-      webProvider: ReCaptchaV3Provider('staging_recaptcha_key'),
-      androidProvider: AndroidProvider.debug,
-      appleProvider: AppleProvider.debug,
+      providerWeb: ReCaptchaV3Provider('staging_recaptcha_key'),
+      providerAndroid: const AndroidDebugProvider(),
+      providerApple: const AppleDebugProvider(),
     );
-    
+
     if (kDebugMode) {
       debugPrint('✅ Firebase App Check activated for staging');
     }
@@ -161,7 +162,7 @@ Future<void> _initializeStagingAppCheck() async {
 }
 
 /// Initialize the modular system for E2E staging testing
-/// 
+///
 /// This creates the same modular system as production configured for
 /// staging environment with production-like Firebase integration.
 Future<void> _initializeE2EStagingSystem() async {
@@ -204,7 +205,7 @@ Future<void> _initializeE2EStagingSystem() async {
 /// Error app widget for E2E staging initialization failures
 class _E2EStagingErrorApp extends StatelessWidget {
   final String message;
-  
+
   const _E2EStagingErrorApp(this.message);
 
   @override

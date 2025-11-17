@@ -27,7 +27,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 
 /// Enumeration defining the types of content that can be detected and classified by the content detection system.
 ///
@@ -43,16 +42,16 @@ import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 enum ContentType {
   /// Direct recipe text content (copied from apps or notes).
   recipeText,
-  
+
   /// URL links to recipe websites requiring standard web scraping.
   recipeUrl,
-  
+
   /// Social media URLs requiring WebView-based content extraction.
   socialMediaUrl,
-  
+
   /// Regular text content without recipe-related information.
   plainText,
-  
+
   /// Unidentifiable content requiring manual handling or fallback processing.
   unknown,
 }
@@ -69,24 +68,24 @@ enum ContentType {
 /// - [youtube] YouTube videos and YouTube Shorts with video content processing
 /// - [website] General recipe websites supporting standard web scraping
 /// - [unknown] Unidentified platforms requiring fallback processing strategies
-enum SourcePlatform { 
+enum SourcePlatform {
   /// Instagram posts and reels requiring WebView extraction.
-  instagram, 
-  
+  instagram,
+
   /// Facebook posts and videos with specialized parsing needs.
-  facebook, 
-  
+  facebook,
+
   /// TikTok videos requiring mobile-optimized content extraction.
-  tiktok, 
-  
+  tiktok,
+
   /// YouTube videos and YouTube Shorts with video content processing.
-  youtube, 
-  
+  youtube,
+
   /// General recipe websites supporting standard web scraping.
-  website, 
-  
+  website,
+
   /// Unidentified platforms requiring fallback processing strategies.
-  unknown 
+  unknown,
 }
 
 /// Comprehensive result data structure containing detailed content analysis and classification information.
@@ -112,16 +111,16 @@ enum SourcePlatform {
 class ContentDetectionResult {
   /// Content type classification enabling appropriate processing workflows.
   final ContentType type;
-  
+
   /// Source platform identification for platform-specific processing strategies.
   final SourcePlatform? platform;
-  
+
   /// Clean URL extraction for content fetching and validation.
   final String? extractedUrl;
-  
+
   /// Complete original content preservation for fallback processing.
   final String originalContent;
-  
+
   /// Detailed metadata including detected keywords, processing hints, and analysis insights.
   final Map<String, dynamic> metadata;
 
@@ -171,14 +170,14 @@ class ContentDetectionResult {
 /// **Usage Examples:**
 /// ```dart
 /// final detector = ContentDetectorService();
-/// 
+///
 /// // Analyze shared content
 /// final result = await detector.detectContent('https://instagram.com/p/ABC123');
 /// if (result.type == ContentType.socialMediaUrl) {
 ///   // Handle social media content with WebView extraction
 ///   processSocialMediaContent(result);
 /// }
-/// 
+///
 /// // Analyze recipe text
 /// final textResult = await detector.detectContent('Ingredients: 2 cups flour...');
 /// if (textResult.type == ContentType.recipeText) {
@@ -186,13 +185,9 @@ class ContentDetectionResult {
 ///   processRecipeText(textResult);
 /// }
 /// ```
-class ContentDetectorService extends BaseService with SingletonServiceMixin<ContentDetectorService> {
-  /// Private constructor for singleton pattern implementation.
-  ContentDetectorService._internal();
-  
-  /// Factory constructor using SingletonServiceMixin for standardized singleton creation.
-  factory ContentDetectorService() => SingletonServiceMixin.createSingleton(() => ContentDetectorService._internal());
-  
+class ContentDetectorService extends BaseService {
+  ContentDetectorService();
+
   @override
   String get serviceName => 'ContentDetectorService';
 
@@ -268,19 +263,20 @@ class ContentDetectorService extends BaseService with SingletonServiceMixin<Cont
   /// - Service operation management through BaseService integration
   Future<ContentDetectionResult> detectContent(String content) async {
     return await executeServiceOperation(
-      () async {
-        return _detectContentInternal(content);
-      },
-      operationName: 'Detect content type',
-      defaultValue: ContentDetectionResult(
-        type: ContentType.unknown,
-        originalContent: content,
-      ),
-      requiresAuth: false,
-    ) ?? ContentDetectionResult(
-      type: ContentType.unknown,
-      originalContent: content,
-    );
+          () async {
+            return _detectContentInternal(content);
+          },
+          operationName: 'Detect content type',
+          defaultValue: ContentDetectionResult(
+            type: ContentType.unknown,
+            originalContent: content,
+          ),
+          requiresAuth: false,
+        ) ??
+        ContentDetectionResult(
+          type: ContentType.unknown,
+          originalContent: content,
+        );
   }
 
   ContentDetectionResult _detectContentInternal(String content) {

@@ -84,36 +84,43 @@ Future<void> main() async {
       debugPrint('✅ Firebase initialized successfully');
     }
 
-    // Initialize Firebase Crashlytics for production error tracking
-    await FirebaseCrashlytics.instance
-        .setCrashlyticsCollectionEnabled(!kDebugMode);
+    // Initialize Firebase Crashlytics for production error tracking (mobile only - not supported on web)
+    if (!kIsWeb) {
+      await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
+        !kDebugMode,
+      );
 
-    // Pass all Flutter errors to Crashlytics
-    FlutterError.onError = (errorDetails) {
-      FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-      // Also log to console in debug mode
+      // Pass all Flutter errors to Crashlytics
+      FlutterError.onError = (errorDetails) {
+        FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+        // Also log to console in debug mode
+        if (kDebugMode) {
+          FlutterError.presentError(errorDetails);
+        }
+      };
+
+      // Pass all platform dispatcher errors to Crashlytics
+      PlatformDispatcher.instance.onError = (error, stack) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        return true;
+      };
+
       if (kDebugMode) {
-        FlutterError.presentError(errorDetails);
+        debugPrint('✅ Crashlytics initialized (collection: ${!kDebugMode})');
       }
-    };
-
-    // Pass all platform dispatcher errors to Crashlytics
-    PlatformDispatcher.instance.onError = (error, stack) {
-      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-      return true;
-    };
-
-    if (kDebugMode) {
-      debugPrint('✅ Crashlytics initialized (collection: ${!kDebugMode})');
+    } else {
+      if (kDebugMode) {
+        debugPrint('⚠️ Crashlytics skipped (not supported on web)');
+      }
     }
 
     // Initialize Firebase App Check
     // Skip App Check in debug mode to avoid rate limiting during development
     if (!kDebugMode) {
       await FirebaseAppCheck.instance.activate(
-        webProvider: ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
-        androidProvider: AndroidProvider.playIntegrity,
-        appleProvider: AppleProvider.appAttest,
+        providerWeb: ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
+        providerAndroid: const AndroidPlayIntegrityProvider(),
+        providerApple: const AppleDeviceCheckProvider(),
       );
     }
     // Firebase App Check configuration complete (production mode uses App Check, debug mode skips it)
@@ -125,16 +132,16 @@ Future<void> main() async {
     // The modular system already handles all initialization properly
 
     // Start the application with zone error handling for async errors
-    runZonedGuarded(
-      () => runApp(const ButleryApp()),
-      (error, stack) {
+    runZonedGuarded(() => runApp(const ButleryApp()), (error, stack) {
+      // Log to Crashlytics (mobile only)
+      if (!kIsWeb) {
         FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-        if (kDebugMode) {
-          debugPrint('❌ Uncaught async error: $error');
-          debugPrint('Stack trace: $stack');
-        }
-      },
-    );
+      }
+      if (kDebugMode) {
+        debugPrint('❌ Uncaught async error: $error');
+        debugPrint('Stack trace: $stack');
+      }
+    });
   } catch (e, stackTrace) {
     if (kDebugMode) {
       debugPrint('❌ Application startup failed: $e');
@@ -142,8 +149,11 @@ Future<void> main() async {
     }
 
     // Show error app with more details
-    runApp(_ErrorApp(
-        'Application failed to initialize: $e\n\nStack trace:\n$stackTrace'));
+    runApp(
+      _ErrorApp(
+        'Application failed to initialize: $e\n\nStack trace:\n$stackTrace',
+      ),
+    );
   }
 }
 
@@ -182,10 +192,7 @@ Future<void> _initializeModularSystem() async {
 
   // Initialize with modules and stages
   // This also initializes the ServiceLocator internally
-  await ApplicationBootstrap.initialize(
-    modules: modules,
-    stages: stages,
-  );
+  await ApplicationBootstrap.initialize(modules: modules, stages: stages);
 
   // Stop startup trace after initialization complete
   await startupTrace.stop();
@@ -228,10 +235,7 @@ class _ErrorApp extends StatelessWidget {
                 const SizedBox(height: AppDimensions.spacingXl),
                 const Text(
                   'Application Error',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: AppDimensions.spacingM),
                 Container(
@@ -240,7 +244,9 @@ class _ErrorApp extends StatelessWidget {
                     child: Text(
                       message,
                       style: const TextStyle(
-                          fontSize: 12, fontFamily: 'monospace'),
+                        fontSize: 12,
+                        fontFamily: 'monospace',
+                      ),
                       textAlign: TextAlign.left,
                     ),
                   ),
@@ -366,7 +372,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       if (kDebugMode) {
         debugPrint('⚠️ UI initialization error (non-critical): $e');
         debugPrint(
-            '💡 Note: Deep links may not work on all platforms (e.g., web)');
+          '💡 Note: Deep links may not work on all platforms (e.g., web)',
+        );
       }
     }
   }
@@ -473,8 +480,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
                 height: AppDimensions.iconSizeHero,
                 decoration: BoxDecoration(
                   color: AppColors.primaryBlue,
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusL),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.borderRadiusL,
+                  ),
                 ),
                 child: const Icon(
                   Icons.restaurant_menu,
@@ -543,12 +551,14 @@ class _AuthWrapperState extends State<AuthWrapper> {
     _currentUser = FirebaseAuth.instance.currentUser;
     if (_currentUser != null) {
       AppLogger.debug(
-          'AuthWrapper: User logged in at startup: ${_currentUser!.email}');
+        'AuthWrapper: User logged in at startup: ${_currentUser!.email}',
+      );
     }
 
     // Single clean auth listener - no redundancy, no battery drain
-    _authSubscription =
-        FirebaseAuth.instance.authStateChanges().listen((User? user) {
+    _authSubscription = FirebaseAuth.instance.authStateChanges().listen((
+      User? user,
+    ) {
       if (mounted) {
         setState(() {
           _currentUser = user;
@@ -566,7 +576,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
   @override
   void dispose() {
     AppLogger.debug(
-        'AuthWrapper: Disposing wrapper for user: ${_currentUser?.email ?? 'NULL'}');
+      'AuthWrapper: Disposing wrapper for user: ${_currentUser?.email ?? 'NULL'}',
+    );
     _authSubscription?.cancel();
     super.dispose();
   }
@@ -602,7 +613,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
     if (user != null) {
       AppLogger.debug(
-          'AuthWrapper: NAVIGATION SUCCESS - User logged in: ${user.email}');
+        'AuthWrapper: NAVIGATION SUCCESS - User logged in: ${user.email}',
+      );
       return MinaReceptView(key: ValueKey(user.uid));
     }
 

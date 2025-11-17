@@ -182,19 +182,23 @@ void main() {
         print('   🔧 Testing service instantiation...');
 
         final stopwatch4 = Stopwatch()..start();
-        AuthService(authRepository: container<AuthRepository>());
+        final analyticsService =
+            AnalyticsService(repository: container<AnalyticsRepository>());
         print(
-            '   ✅ AuthService created in ${stopwatch4.elapsedMilliseconds}ms');
+            '   ✅ AnalyticsService created in ${stopwatch4.elapsedMilliseconds}ms');
 
         final stopwatch5 = Stopwatch()..start();
-        PersistenceService();
+        AuthService(
+          authRepository: container<AuthRepository>(),
+          analyticsService: analyticsService,
+        );
         print(
-            '   ✅ PersistenceService created in ${stopwatch5.elapsedMilliseconds}ms');
+            '   ✅ AuthService created in ${stopwatch5.elapsedMilliseconds}ms');
 
         final stopwatch6 = Stopwatch()..start();
-        AnalyticsService(repository: container<AnalyticsRepository>());
+        PersistenceService();
         print(
-            '   ✅ AnalyticsService created in ${stopwatch6.elapsedMilliseconds}ms');
+            '   ✅ PersistenceService created in ${stopwatch6.elapsedMilliseconds}ms');
 
         print('   🎉 ALL SERVICES CREATED SUCCESSFULLY');
       } catch (e) {
@@ -232,32 +236,35 @@ void main() {
         print(
             '   ✅ Step 3 completed in ${step3Stopwatch.elapsedMilliseconds}ms');
 
-        print('   📦 Step 4: AuthService registration...');
+        print('   📦 Step 4: AnalyticsRepository registration...');
         final step4Stopwatch = Stopwatch()..start();
-        container.registerSingleton<AuthService>(
-          AuthService(authRepository: container<AuthRepository>()),
-        );
-        print(
-            '   ✅ Step 4 completed in ${step4Stopwatch.elapsedMilliseconds}ms');
-
-        print('   📦 Step 5: PersistenceService registration...');
-        final step5Stopwatch = Stopwatch()..start();
-        container.registerSingleton<PersistenceService>(PersistenceService());
-        print(
-            '   ✅ Step 5 completed in ${step5Stopwatch.elapsedMilliseconds}ms');
-
-        print('   📦 Step 6: AnalyticsRepository registration...');
-        final step6Stopwatch = Stopwatch()..start();
         container.registerSingleton<AnalyticsRepository>(
             FirebaseAnalyticsRepository());
         print(
-            '   ✅ Step 6 completed in ${step6Stopwatch.elapsedMilliseconds}ms');
+            '   ✅ Step 4 completed in ${step4Stopwatch.elapsedMilliseconds}ms');
 
-        print('   📦 Step 7: AnalyticsService registration...');
-        final step7Stopwatch = Stopwatch()..start();
+        print('   📦 Step 5: AnalyticsService registration...');
+        final step5Stopwatch = Stopwatch()..start();
         container.registerSingleton<AnalyticsService>(
           AnalyticsService(repository: container<AnalyticsRepository>()),
         );
+        print(
+            '   ✅ Step 5 completed in ${step5Stopwatch.elapsedMilliseconds}ms');
+
+        print('   📦 Step 6: AuthService registration...');
+        final step6Stopwatch = Stopwatch()..start();
+        container.registerSingleton<AuthService>(
+          AuthService(
+            authRepository: container<AuthRepository>(),
+            analyticsService: container<AnalyticsService>(),
+          ),
+        );
+        print(
+            '   ✅ Step 6 completed in ${step6Stopwatch.elapsedMilliseconds}ms');
+
+        print('   📦 Step 7: PersistenceService registration...');
+        final step7Stopwatch = Stopwatch()..start();
+        container.registerSingleton<PersistenceService>(PersistenceService());
         print(
             '   ✅ Step 7 completed in ${step7Stopwatch.elapsedMilliseconds}ms');
 

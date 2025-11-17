@@ -37,7 +37,13 @@ import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/group_shared_content_service.dart';
+import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
+import 'package:butlery/services/unified/modules/social_menu/social_menu_coordinator.dart';
+import 'package:butlery/services/unified/modules/social_shopping/social_shopping_coordinator.dart';
+import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart';
+import 'package:butlery/core/cache/json_cache_helper.dart';
 
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
@@ -66,6 +72,10 @@ class SocialModule implements DIModule {
         SocialSharingRepository,
         SocialMenuOperations,
         GroupSharedContentService,
+        // Social coordinators for shared content (Issue #014)
+        SocialRecipeCoordinator,
+        SocialMenuCoordinator,
+        SocialShoppingCoordinator,
       ];
 
   @override
@@ -127,6 +137,11 @@ class SocialModule implements DIModule {
             authRepository: container<AuthRepository>()),
       );
 
+      container.registerSingleton<FirebaseSharedShoppingRepository>(
+        FirebaseSharedShoppingRepository(
+            authRepository: container<AuthRepository>()),
+      );
+
       // Note: SocialRecipeService registration is deferred to lazy singleton
       // because it depends on services from other modules that may not be available yet
       container.registerLazySingleton<SocialRecipeService>(
@@ -139,6 +154,90 @@ class SocialModule implements DIModule {
           sharedMenuRepository: container<FirebaseSharedMenuRepository>(),
           shoppingService: container<UnifiedShoppingService>(),
         ),
+      );
+
+      // ==================== SOCIAL COORDINATORS (ISSUE #014) ====================
+
+      // Social coordinators for shared content operations
+      // These provide facade coordination for social recipe/menu/shopping features
+      container.registerLazySingleton<SocialRecipeCoordinator>(
+        () {
+          final authRepo = container<AuthRepository>();
+          final userService = container<UserService>();
+          final recipeService = container<UnifiedRecipeService>();
+
+          return SocialRecipeCoordinator(
+            cacheHelper: container<JsonCacheHelper>(),
+            getCurrentUserId: () => authRepo.currentUserId,
+            getCurrentUserDisplayName: () =>
+                userService.currentUserProfile?.displayName ?? 'Unknown User',
+            setError: (error) =>
+                AppLogger.error('SocialRecipeCoordinator error: $error'),
+            notifyListeners: () {}, // Coordinators are services, not ViewModels
+            getRecipe: (id) async => recipeService.getRecipeById(id),
+            saveRecipe: (recipe) async {
+              return await recipeService.updateRecipe(recipe);
+            },
+          );
+        },
+      );
+
+      container.registerLazySingleton<SocialMenuCoordinator>(
+        () {
+          final authRepo = container<AuthRepository>();
+          final userService = container<UserService>();
+
+          return SocialMenuCoordinator(
+            getCurrentUserId: () => authRepo.currentUserId,
+            getCurrentUserDisplayName: () =>
+                userService.currentUserProfile?.displayName ?? 'Unknown User',
+            setError: (error) =>
+                AppLogger.error('SocialMenuCoordinator error: $error'),
+            notifyListeners: () {}, // Coordinators are services, not ViewModels
+            getMenu: (id) async {
+              // TODO: Implement menu retrieval when UnifiedMenuService has getById
+              AppLogger.warning(
+                  'SocialMenuCoordinator.getMenu not yet implemented');
+              return null;
+            },
+            saveMenu: (menu) async {
+              // TODO: Implement menu saving when UnifiedMenuService has save method
+              AppLogger.warning(
+                  'SocialMenuCoordinator.saveMenu not yet implemented');
+              return null;
+            },
+            cacheHelper: container<JsonCacheHelper>(),
+          );
+        },
+      );
+
+      container.registerLazySingleton<SocialShoppingCoordinator>(
+        () {
+          final authRepo = container<AuthRepository>();
+          final userService = container<UserService>();
+
+          return SocialShoppingCoordinator(
+            getCurrentUserId: () => authRepo.currentUserId,
+            getCurrentUserDisplayName: () =>
+                userService.currentUserProfile?.displayName ?? 'Unknown User',
+            setError: (error) =>
+                AppLogger.error('SocialShoppingCoordinator error: $error'),
+            notifyListeners: () {}, // Coordinators are services, not ViewModels
+            getShoppingList: (id) async {
+              // TODO: Implement shopping list retrieval when UnifiedShoppingService has getById
+              AppLogger.warning(
+                  'SocialShoppingCoordinator.getShoppingList not yet implemented');
+              return null;
+            },
+            saveShoppingList: (list) async {
+              // TODO: Implement shopping list saving when UnifiedShoppingService has save method
+              AppLogger.warning(
+                  'SocialShoppingCoordinator.saveShoppingList not yet implemented');
+              return null;
+            },
+            cacheHelper: container<JsonCacheHelper>(),
+          );
+        },
       );
 
       // ==================== SHARING AND CONNECTIVITY ====================
@@ -191,7 +290,7 @@ class SocialModule implements DIModule {
 
       if (kDebugMode) {
         debugPrint(
-            '✅ [SocialModule] Configured 13 services (Users, Friends, Social recipes, Comments, Ratings, Group content)');
+            '✅ [SocialModule] Configured 16 services (Users, Friends, Social recipes, Comments, Ratings, Group content, Social coordinators)');
       }
     } catch (e) {
       throw DIModuleException(
