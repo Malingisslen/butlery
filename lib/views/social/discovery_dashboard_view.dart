@@ -12,6 +12,7 @@ import 'package:butlery/theme/component_themes.dart';
 
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/state/loading_states.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 // Import focused components
 import 'package:butlery/views/social/discovery_dashboard/discovery_app_bar.dart';
@@ -114,31 +115,44 @@ class _DiscoveryDashboardViewContentState
     return SliverToBoxAdapter(
       child: ColoredBox(
         color: AppColors.surface,
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceVariant.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          ),
-          child: TabBar(
-            controller: _tabController,
-            tabs: [
-              _buildTab('Upptäck', Icons.explore, viewModel.trendingContentCount),
-              _buildTab('Aktivitet', Icons.timeline, viewModel.friendActivityCount),
-              _buildTab('För dig', Icons.recommend, viewModel.recommendationsCount),
-            ],
-            labelColor: Theme.of(context).colorScheme.primary,
-            unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
-            labelStyle: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
-            unselectedLabelStyle: AppTextStyles.bodyMedium,
-            indicator: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+        // ✅ RESPONSIVE: Center and constrain tab bar on large screens
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: LayoutComponents.valueFor(
+                context: context,
+                mobile: double.infinity,
+                tablet: 900,
+                desktop: 1200,
+              ),
             ),
-            indicatorSize: TabBarIndicatorSize.tab,
-            dividerColor: Colors.transparent,
-            overlayColor: WidgetStateProperty.all(
-              AppColors.primary.withValues(alpha: 0.05),
+            child: Container(
+              margin: AppDimensions.responsiveHorizontalPadding(context),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                tabs: [
+                  _buildTab('Upptäck', Icons.explore, viewModel.trendingContentCount),
+                  _buildTab('Aktivitet', Icons.timeline, viewModel.friendActivityCount),
+                  _buildTab('För dig', Icons.recommend, viewModel.recommendationsCount),
+                ],
+                labelColor: Theme.of(context).colorScheme.primary,
+                unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
+                labelStyle: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                unselectedLabelStyle: AppTextStyles.bodyMedium,
+                indicator: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                ),
+                indicatorSize: TabBarIndicatorSize.tab,
+                dividerColor: Colors.transparent,
+                overlayColor: WidgetStateProperty.all(
+                  AppColors.primary.withValues(alpha: 0.05),
+                ),
+              ),
             ),
           ),
         ),
@@ -233,50 +247,95 @@ class _DiscoveryDashboardViewContentState
       return _buildSearchResults(context, viewModel);
     }
 
+    // ✅ RESPONSIVE: Center and constrain content on large screens
     return SingleChildScrollView(
-      padding: AppDimensions.screenPadding,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          DiscoveryCategories.build(context, viewModel),
-          const SizedBox(height: AppDimensions.spacingL),
-          TrendingContentSection.build(context, viewModel),
-          const SizedBox(height: AppDimensions.spacingL),
-          _buildPopularWithFriendsSection(context, viewModel),
-          const SizedBox(height: AppDimensions.spacingL),
-          _buildRecentlySharedSection(context, viewModel),
-        ],
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: LayoutComponents.valueFor(
+              context: context,
+              mobile: double.infinity,
+              tablet: 900,
+              desktop: 1200,
+            ),
+          ),
+          child: Padding(
+            padding: AppDimensions.responsiveContentPadding(context),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DiscoveryCategories.build(context, viewModel),
+                const SizedBox(height: AppDimensions.spacingL),
+                TrendingContentSection.build(context, viewModel),
+                const SizedBox(height: AppDimensions.spacingL),
+                _buildPopularWithFriendsSection(context, viewModel),
+                const SizedBox(height: AppDimensions.spacingL),
+                _buildRecentlySharedSection(context, viewModel),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildActivityTab(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+    // ✅ RESPONSIVE: Center and constrain content on large screens
     return SingleChildScrollView(
-      padding: AppDimensions.screenPadding,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          FriendActivitySection.build(context, viewModel),
-        ],
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: LayoutComponents.valueFor(
+              context: context,
+              mobile: double.infinity,
+              tablet: 900,
+              desktop: 1200,
+            ),
+          ),
+          child: Padding(
+            padding: AppDimensions.responsiveContentPadding(context),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FriendActivitySection.build(context, viewModel),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildRecommendationsTab(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+    // ✅ RESPONSIVE: Center and constrain content on large screens
     return SingleChildScrollView(
-      padding: AppDimensions.screenPadding,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RecommendationsSection.build(context, viewModel),
-        ],
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: LayoutComponents.valueFor(
+              context: context,
+              mobile: double.infinity,
+              tablet: 900,
+              desktop: 1200,
+            ),
+          ),
+          child: Padding(
+            padding: AppDimensions.responsiveContentPadding(context),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                RecommendationsSection.build(context, viewModel),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildSearchResults(BuildContext context, DiscoveryDashboardViewModel viewModel) {
     final searchResults = viewModel.searchResults;
-    
+
     if (searchResults.isEmpty) {
       return StateWidget.noSearchResults(
         actionLabel: 'Rensa sökning',
@@ -287,14 +346,27 @@ class _DiscoveryDashboardViewContentState
       );
     }
 
-    return ListView.separated(
-      padding: AppDimensions.screenPadding,
-      itemCount: searchResults.length,
-      separatorBuilder: (context, index) => const SizedBox(height: AppDimensions.spacingS),
-      itemBuilder: (context, index) {
-        final item = searchResults[index];
-        return _buildSearchResultCard(context, item);
-      },
+    // ✅ RESPONSIVE: Center and constrain search results on large screens
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: LayoutComponents.valueFor(
+            context: context,
+            mobile: double.infinity,
+            tablet: 900,
+            desktop: 1200,
+          ),
+        ),
+        child: ListView.separated(
+          padding: AppDimensions.responsiveContentPadding(context),
+          itemCount: searchResults.length,
+          separatorBuilder: (context, index) => const SizedBox(height: AppDimensions.spacingS),
+          itemBuilder: (context, index) {
+            final item = searchResults[index];
+            return _buildSearchResultCard(context, item);
+          },
+        ),
+      ),
     );
   }
 

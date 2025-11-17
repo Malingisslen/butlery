@@ -135,32 +135,45 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
         ),
         body: Consumer<UnifiedShoppingViewModel>(
           builder: (context, viewModel, child) {
-            return Column(
-              children: [
-                // Collaborative offline indicator for connection awareness
-                if (!viewModel.isOnline) LayoutComponents.offlineIndicator(),
-
-                // Shopping list header with statistics and bulk operations
-                ShoppingListHeader.build(
-                  context,
-                  viewModel,
-                  () => _clearBoughtItemsWithConfirmation(viewModel),
-                  () => _uncheckAllItems(viewModel),
-                  () => _showRenameListDialog(viewModel),
-                  () => _showDeleteListConfirmation(viewModel),
-                ),
-
-                // Main shopping list content with item management
-                Expanded(
-                  child: ShoppingListContent.build(
-                    context,
-                    viewModel,
-                    _onItemTap,
-                    _onEditItem,
-                    _onDeleteItem,
+            // ✅ RESPONSIVE: Center and constrain content on large screens
+            return Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: LayoutComponents.valueFor(
+                    context: context,
+                    mobile: double.infinity,
+                    tablet: 800,
+                    desktop: 900,
                   ),
                 ),
-              ],
+                child: Column(
+                  children: [
+                    // Collaborative offline indicator for connection awareness
+                    if (!viewModel.isOnline) LayoutComponents.offlineIndicator(),
+
+                    // Shopping list header with statistics and bulk operations
+                    ShoppingListHeader.build(
+                      context,
+                      viewModel,
+                      () => _clearBoughtItemsWithConfirmation(viewModel),
+                      () => _uncheckAllItems(viewModel),
+                      () => _showRenameListDialog(viewModel),
+                      () => _showDeleteListConfirmation(viewModel),
+                    ),
+
+                    // Main shopping list content with item management
+                    Expanded(
+                      child: ShoppingListContent.build(
+                        context,
+                        viewModel,
+                        _onItemTap,
+                        _onEditItem,
+                        _onDeleteItem,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             );
           },
         ),
