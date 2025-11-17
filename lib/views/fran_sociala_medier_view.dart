@@ -61,6 +61,7 @@ import 'package:butlery/views/skriv_sjalv_recept_view.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/source_url_display.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -245,11 +246,23 @@ class _FranSocialaMedierViewContentState extends State<_FranSocialaMedierViewCon
 
     return Scaffold(
       appBar: AppBar(title: const Text('Från sociala medier')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+      body: SafeArea(
+        // ✅ RESPONSIVE: Center and constrain content on large screens
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: LayoutComponents.valueFor(
+                context: context,
+                mobile: double.infinity,
+                tablet: 700,
+                desktop: 800,
+              ),
+            ),
+            child: SingleChildScrollView(
+              padding: AppDimensions.responsiveContentPadding(context),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
             // Instruktionstext
             _buildInstructions(context),
             const SizedBox(height: AppDimensions.spacingXl),
@@ -284,7 +297,10 @@ class _FranSocialaMedierViewContentState extends State<_FranSocialaMedierViewCon
                 message: viewModel.error!,
               ),
             ],
-          ],
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

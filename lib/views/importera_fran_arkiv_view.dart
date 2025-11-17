@@ -9,6 +9,7 @@ import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/bottom_action_bar.dart';
 import 'package:butlery/widgets/common/filter_status_chip.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -73,19 +74,31 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
             ),
         ],
       ),
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              // Filter-sektion i en scrollbar container
-              Container(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.35,
-                ),
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppDimensions.paddingL),
-                    child: Column(
+      body: SafeArea(
+        // ✅ RESPONSIVE: Center and constrain content on large screens (Wide layout for batch processing)
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: LayoutComponents.valueFor(
+                context: context,
+                mobile: double.infinity,
+                tablet: 900,
+                desktop: 1200,
+              ),
+            ),
+            child: Stack(
+              children: [
+                Column(
+                  children: [
+                    // Filter-sektion i en scrollbar container
+                    Container(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.35,
+                      ),
+                      child: SingleChildScrollView(
+                        child: Padding(
+                          padding: AppDimensions.responsiveContentPadding(context),
+                          child: Column(
                     children: [
                       SearchFilterWidget.searchOnly(
                         searchQuery: viewModel.searchQuery,
@@ -157,7 +170,10 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
               isLoading: true,
               loadingMessage: 'Importerar recept...',
             ),
-        ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
