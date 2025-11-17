@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 
 /// Layout scaffold components for main navigation and simple layouts
 ///
@@ -46,8 +46,8 @@ class LayoutScaffolds {
   }
 }
 
-/// Main menu layout with bottom navigation
-class _MainMenuLayout extends StatefulWidget {
+/// Main menu layout with adaptive navigation (BottomNav on mobile, NavigationRail on tablet/desktop)
+class _MainMenuLayout extends StatelessWidget {
   final Widget body;
   final int? currentIndex;
   final String? title;
@@ -63,96 +63,16 @@ class _MainMenuLayout extends StatefulWidget {
   });
 
   @override
-  State<_MainMenuLayout> createState() => _MainMenuLayoutState();
-}
-
-class _MainMenuLayoutState extends State<_MainMenuLayout> {
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: widget.title != null
-          ? AppBar(
-              title: Text(
-                widget.title!,
-                style: AppTextStyles.headlineSmall,
-              ),
-              actions: widget.actions,
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              foregroundColor: AppColors.textDark,
-              automaticallyImplyLeading: false,
-            )
-          : null,
-      body: widget.body,
-      floatingActionButton: widget.floatingActionButton,
-      bottomNavigationBar: _buildBottomNavigation(context),
+    // Use ButleryAdaptiveNavigation which automatically switches between
+    // BottomNavigationBar (mobile) and NavigationRail (tablet/desktop)
+    return ButleryAdaptiveNavigation(
+      currentIndex: currentIndex ?? 0,
+      body: body,
+      title: title,
+      actions: actions,
+      floatingActionButton: floatingActionButton,
     );
-  }
-
-  Widget _buildBottomNavigation(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: widget.currentIndex ?? 0,
-      onTap: (index) => _handleNavigation(context, index),
-      type: BottomNavigationBarType.fixed, // Important for 5 items
-      // Remove ALL custom styling - let theme handle everything
-      items: [
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.book_outlined),
-          activeIcon: Icon(Icons.book),
-          label: 'Mina recept',
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.add_outlined),
-          activeIcon: Icon(Icons.add),
-          label: 'Lägg till',
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_today_outlined),
-          activeIcon: Icon(Icons.calendar_today),
-          label: 'Veckomeny',
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.shopping_cart_outlined),
-          activeIcon: Icon(Icons.shopping_cart),
-          label: 'Inköpslista',
-        ),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.explore_outlined),
-          activeIcon: Icon(Icons.explore),
-          label: 'Upptäck',
-        ),
-      ],
-    );
-  }
-
-  void _handleNavigation(BuildContext context, int index) {
-    // Check if we're already on that page
-    if (widget.currentIndex == index) {
-      return; // Do nothing if we're already on the page
-    }
-
-    String route;
-    switch (index) {
-      case 0:
-        route = '/';
-        break;
-      case 1:
-        route = '/laggTill';
-        break;
-      case 2:
-        route = '/veckomeny';
-        break;
-      case 3:
-        route = '/inkopslista';
-        break;
-      case 4:
-        route = '/discovery';
-        break;
-      default:
-        return;
-    }
-
-    // Use pushReplacementNamed to avoid stacking up views
-    Navigator.pushReplacementNamed(context, route);
   }
 }
 

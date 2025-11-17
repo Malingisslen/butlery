@@ -66,6 +66,12 @@ import 'package:butlery/widgets/common/menu_persistence/menu_save_dialog.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_load_dialog.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 
+// Import responsive infrastructure
+import 'package:butlery/core/responsive/breakpoints.dart';
+import 'package:butlery/core/responsive/responsive_builder.dart';
+import 'package:butlery/widgets/common/responsive/responsive_grid.dart';
+import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
+
 /// Comprehensive layout components facade implementing unified interface for application-wide layout and navigation structures.
 ///
 /// This class serves as the central access point for all layout-related functionality throughout the application,
@@ -328,6 +334,218 @@ class LayoutComponents {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) => LoadMenuBottomSheet(viewModel: viewModel),
+    );
+  }
+
+  // ===== RESPONSIVE LAYOUTS =====
+
+  /// Adaptive navigation scaffold that switches between BottomNav (mobile), NavigationRail (tablet/desktop)
+  ///
+  /// Automatically adapts navigation based on screen width:
+  /// - Mobile (< 600px): BottomNavigationBar
+  /// - Tablet (600-1024px): NavigationRail (compact)
+  /// - Desktop (>= 1024px): NavigationRail (extended with labels)
+  ///
+  /// **Usage Example:**
+  /// ```dart
+  /// LayoutComponents.adaptiveNavigation(
+  ///   currentIndex: 0,
+  ///   items: [
+  ///     AdaptiveNavigationItem(
+  ///       label: 'Home',
+  ///       icon: Icons.home_outlined,
+  ///       activeIcon: Icons.home,
+  ///       route: '/',
+  ///     ),
+  ///   ],
+  ///   body: HomeView(),
+  /// );
+  /// ```
+  static Widget adaptiveNavigation({
+    required int currentIndex,
+    required List<AdaptiveNavigationItem> items,
+    required Widget body,
+    String? title,
+    List<Widget>? actions,
+    Widget? floatingActionButton,
+    ValueChanged<int>? onNavigationChanged,
+    bool extendedRailOnDesktop = true,
+    PreferredSizeWidget? appBar,
+  }) {
+    return AdaptiveNavigationScaffold(
+      currentIndex: currentIndex,
+      items: items,
+      body: body,
+      title: title,
+      actions: actions,
+      floatingActionButton: floatingActionButton,
+      onNavigationChanged: onNavigationChanged,
+      extendedRailOnDesktop: extendedRailOnDesktop,
+      appBar: appBar,
+    );
+  }
+
+  /// Convenience wrapper for Butlery's standard adaptive navigation
+  ///
+  /// Uses predefined navigation items (Mina recept, Lägg till, Veckomeny, Inköpslista, Upptäck)
+  ///
+  /// **Usage Example:**
+  /// ```dart
+  /// LayoutComponents.butleryAdaptiveNavigation(
+  ///   currentIndex: 0,
+  ///   body: RecipeListView(),
+  ///   title: 'Mina Recept',
+  /// );
+  /// ```
+  static Widget butleryAdaptiveNavigation({
+    required int currentIndex,
+    required Widget body,
+    String? title,
+    List<Widget>? actions,
+    Widget? floatingActionButton,
+  }) {
+    return ButleryAdaptiveNavigation(
+      currentIndex: currentIndex,
+      body: body,
+      title: title,
+      actions: actions,
+      floatingActionButton: floatingActionButton,
+    );
+  }
+
+  /// Responsive builder that switches layouts based on screen size
+  ///
+  /// **Usage Example:**
+  /// ```dart
+  /// LayoutComponents.responsiveBuilder(
+  ///   mobile: (context) => MobileLayout(),
+  ///   tablet: (context) => TabletLayout(),
+  ///   desktop: (context) => DesktopLayout(),
+  /// );
+  /// ```
+  static Widget responsiveBuilder({
+    required ResponsiveWidgetBuilder mobile,
+    ResponsiveWidgetBuilder? tablet,
+    ResponsiveWidgetBuilder? desktop,
+  }) {
+    return ResponsiveBuilder(
+      mobile: mobile,
+      tablet: tablet,
+      desktop: desktop,
+    );
+  }
+
+  /// Responsive grid with auto-adjusting column count
+  ///
+  /// **Column counts:**
+  /// - Mobile: 1 column
+  /// - Tablet: 2 columns
+  /// - Desktop: 3 columns
+  /// - Large Desktop: 4 columns
+  ///
+  /// **Usage Example:**
+  /// ```dart
+  /// LayoutComponents.responsiveGrid(
+  ///   children: recipeCards,
+  ///   mobileColumns: 1,
+  ///   tabletColumns: 2,
+  ///   desktopColumns: 3,
+  /// );
+  /// ```
+  static Widget responsiveGrid({
+    required List<Widget> children,
+    double? spacing,
+    int? mobileColumns,
+    int? tabletColumns,
+    int? desktopColumns,
+    double? childAspectRatio,
+    double? mainAxisSpacing,
+    double? crossAxisSpacing,
+    EdgeInsetsGeometry? padding,
+    bool shrinkWrap = false,
+    ScrollPhysics? physics,
+  }) {
+    return ResponsiveGrid(
+      spacing: spacing,
+      mobileColumns: mobileColumns,
+      tabletColumns: tabletColumns,
+      desktopColumns: desktopColumns,
+      childAspectRatio: childAspectRatio,
+      mainAxisSpacing: mainAxisSpacing,
+      crossAxisSpacing: crossAxisSpacing,
+      padding: padding,
+      shrinkWrap: shrinkWrap,
+      physics: physics,
+      children: children,
+    );
+  }
+
+  /// Responsive list/grid that switches between ListView (mobile) and GridView (tablet/desktop)
+  ///
+  /// **Usage Example:**
+  /// ```dart
+  /// LayoutComponents.responsiveListGrid<Recipe>(
+  ///   items: recipes,
+  ///   itemBuilder: (context, recipe) => RecipeCard(recipe: recipe),
+  /// );
+  /// ```
+  static Widget responsiveListGrid<T>({
+    required List<T> items,
+    required Widget Function(BuildContext context, T item) itemBuilder,
+    double? gridBreakpoint,
+    int? tabletColumns,
+    int? desktopColumns,
+    double? spacing,
+    EdgeInsetsGeometry? padding,
+    bool shrinkWrap = false,
+    ScrollPhysics? physics,
+    double? gridChildAspectRatio,
+  }) {
+    return ResponsiveListGrid<T>(
+      items: items,
+      itemBuilder: itemBuilder,
+      gridBreakpoint: gridBreakpoint,
+      tabletColumns: tabletColumns,
+      desktopColumns: desktopColumns,
+      spacing: spacing,
+      padding: padding,
+      shrinkWrap: shrinkWrap,
+      physics: physics,
+      gridChildAspectRatio: gridChildAspectRatio,
+    );
+  }
+
+  /// Check if current screen is mobile (< 600px)
+  static bool isMobile(BuildContext context) => Breakpoints.isMobile(context);
+
+  /// Check if current screen is tablet (600-1024px)
+  static bool isTablet(BuildContext context) => Breakpoints.isTablet(context);
+
+  /// Check if current screen is desktop (>= 1024px)
+  static bool isDesktop(BuildContext context) => Breakpoints.isDesktop(context);
+
+  /// Get responsive value based on screen size
+  ///
+  /// **Usage Example:**
+  /// ```dart
+  /// final columns = LayoutComponents.valueFor(
+  ///   context: context,
+  ///   mobile: 1,
+  ///   tablet: 2,
+  ///   desktop: 3,
+  /// );
+  /// ```
+  static T valueFor<T>({
+    required BuildContext context,
+    required T mobile,
+    T? tablet,
+    T? desktop,
+  }) {
+    return Breakpoints.valueFor(
+      context: context,
+      mobile: mobile,
+      tablet: tablet,
+      desktop: desktop,
     );
   }
 
