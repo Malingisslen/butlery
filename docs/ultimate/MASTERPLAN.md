@@ -370,10 +370,19 @@
       → Dependencies: None
       → Source: Phase 1 Documentation Analysis
 
-- [ ] **#151** No Architectural Decision Records `DOCUMENTATION:High:2` **4-5 hrs**
-      → Files: docs/adr/ (missing)
-      → Fix: Create 5 core ADRs (Why MVVM? Why GetIt? Why Firebase? Why 7 DI modules? Why 500-line limit?)
-      → Impact: No historical context for major architectural choices
+- [x] **#151** No Architectural Decision Records `DOCUMENTATION:High:2` **4 hrs** ✅ COMPLETE (2025-11-17)
+      → Files: docs/adr/ (created with 6 files)
+      → Fix: ✅ Created 5 core ADRs documenting major architectural decisions
+      → Impact: Comprehensive historical context for all critical architecture choices
+      → **Implementation**: Created industry-standard ADRs (Context + Decision + Alternatives + Consequences):
+        - ADR-001: Use MVVM + Repository Pattern (4-layer architecture rationale)
+        - ADR-002: Use GetIt for Dependency Injection (service locator vs alternatives)
+        - ADR-003: Use Firebase as Backend Platform (vs Supabase, AWS, custom API)
+        - ADR-004: Organize DI into 7 Domain Modules (vs single module or 50+ modules)
+        - ADR-005: Enforce 500-Line File Size Limit (SRP enforcement, facade pattern)
+        - README.md: ADR index with quick reference table
+      → **Effort**: 4 hours (vs. 4-5 hours estimated = on budget)
+      → **Value**: Onboarding documentation, historical context, decision rationale
       → Dependencies: None
       → Source: Phase 1 Documentation Analysis
 
@@ -389,7 +398,7 @@
       → Dependencies: None
       → Source: Phase 1 Documentation Analysis
 
-**Phase 2 Subtotal**: 10 / 11 complete (91%) - 263-278 hours
+**Phase 2 Subtotal**: 11 / 11 complete (100%) ✅ - 259-273 hours (~33-34 days)
 
 ---
 
