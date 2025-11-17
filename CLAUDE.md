@@ -65,6 +65,42 @@
   - Use `UserService.currentUserProfile` for complete user data (settings, avatar, social features)
   - Use `PermissionService.currentUser` only for basic auth/permission checks
   - **Never mix data sources** - leads to settings not persisting and UI inconsistencies
+- **Responsive Design**: Complete system for tablet/desktop optimization (Issue #025)
+  - ✅ **Infrastructure**: Breakpoint system, responsive builders, adaptive navigation (Phase 1-2)
+  - ✅ **Tier 1 Views**: 10/10 highest-traffic views responsive (Phase 3)
+  - **Complete Guide**: See `/docs/RESPONSIVE_DESIGN_GUIDE.md` for comprehensive patterns
+  - **Primary Pattern**: Center + ConstrainedBox with responsive max width
+  - **Content Width Strategy**:
+    - Narrow (500-600px): Auth, dialogs, simple forms
+    - Medium (700-800px): Import, creation, detail views
+    - Wide (900-1200px): Complex layouts, discovery, planning
+    - Adaptive Grid: Lists/galleries with auto-adjusting columns
+  - **Quick Pattern**:
+    ```dart
+    Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: LayoutComponents.valueFor(
+            context: context,
+            mobile: double.infinity,  // Full width
+            tablet: 700,              // Constrained
+            desktop: 800,             // More constrained
+          ),
+        ),
+        child: Padding(
+          padding: AppDimensions.responsiveContentPadding(context),
+          child: /* content */,
+        ),
+      ),
+    )
+    ```
+  - **Required Imports**:
+    ```dart
+    import 'package:butlery/widgets/common/layout_components.dart';
+    import 'package:butlery/theme/app_dimensions.dart';
+    ```
+  - **Navigation**: Automatic bottom nav → rail on tablet/desktop
+  - **Testing**: Test on mobile (360-414px), tablet (768-1024px), desktop (1280-1920px)
 
 ### Layered Service Architecture (Unified Services)
 **Pattern**: Facade pattern with feature-specific operation layers
