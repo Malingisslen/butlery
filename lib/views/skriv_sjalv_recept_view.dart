@@ -22,6 +22,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
@@ -471,17 +472,23 @@ class _SkrivSjalvReceptViewContentState
         ),
         body: Stack(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppDimensions.paddingL,
-                AppDimensions.spacingXl, // More top padding for dropdown label
-                AppDimensions.paddingL,
-                AppDimensions.paddingL,
-              ),
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  children: [
+            // ✅ RESPONSIVE: Center and constrain form on large screens
+            Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: LayoutComponents.valueFor(
+                    context: context,
+                    mobile: double.infinity,
+                    tablet: 800,
+                    desktop: 900,
+                  ),
+                ),
+                child: Padding(
+                  padding: AppDimensions.responsiveContentPadding(context),
+                  child: Form(
+                    key: _formKey,
+                    child: ListView(
+                      children: [
                     // Måltidstyp - Custom layout to fix text cutoff
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -676,18 +683,31 @@ class _SkrivSjalvReceptViewContentState
                       validator: FormValidators.recipeSourceUrl(),
                     ),
                     const SizedBox(height: AppDimensions.spacingXl),
-                  ],
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
 
             // CRITICAL FIX: Loading overlay for both local and ViewModel saving states
+            // ✅ RESPONSIVE: Constrained loading overlay
             if (_isSaving || viewModel.isSaving)
               ColoredBox(
                 color: AppColors.backgroundBeige.withValues(alpha: 0.8),
                 child: Center(
-                  child: StateWidget.loading(
-                    message: 'Sparar recept...',
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: LayoutComponents.valueFor(
+                        context: context,
+                        mobile: double.infinity,
+                        tablet: 500,
+                        desktop: 600,
+                      ),
+                    ),
+                    child: StateWidget.loading(
+                      message: 'Sparar recept...',
+                    ),
                   ),
                 ),
               ),
