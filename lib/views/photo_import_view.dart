@@ -240,11 +240,23 @@ class _PhotoImportViewContent extends StatelessWidget {
     return LayoutComponents.mainMenu(
       currentIndex: null,
       title: 'Importera från foto',
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+      body: SafeArea(
+        // ✅ RESPONSIVE: Center and constrain content on large screens
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: LayoutComponents.valueFor(
+                context: context,
+                mobile: double.infinity,
+                tablet: 700,
+                desktop: 800,
+              ),
+            ),
+            child: SingleChildScrollView(
+              padding: AppDimensions.responsiveContentPadding(context),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
             // Information om funktionen
             Container(
               width: double.infinity,
@@ -315,7 +327,10 @@ class _PhotoImportViewContent extends StatelessWidget {
               // Add bottom padding for safe scrolling
               const SizedBox(height: AppDimensions.spacingXl),
             ],
-          ],
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

@@ -86,15 +86,21 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
       currentIndex: null,
       title: 'Import via URL',
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            AppDimensions.paddingL,
-            AppDimensions.paddingL, 
-            AppDimensions.paddingL,
-            AppDimensions.paddingL + MediaQuery.of(context).viewPadding.bottom,
-          ),
-          child: Column(
-            children: [
+        // ✅ RESPONSIVE: Center and constrain content on large screens
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: LayoutComponents.valueFor(
+                context: context,
+                mobile: double.infinity,
+                tablet: 700,
+                desktop: 800,
+              ),
+            ),
+            child: Padding(
+              padding: AppDimensions.responsiveContentPadding(context),
+              child: Column(
+                children: [
             // URL input
             StyledInput(
               controller: _urlController,
@@ -148,7 +154,9 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                 isExpanded: true,
               ),
             ],
-            ],
+                ],
+              ),
+            ),
           ),
         ),
       ),
