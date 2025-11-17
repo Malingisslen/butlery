@@ -58,7 +58,6 @@
     - FirebaseAuditRepository with persistent audit logging
     - Security event tracking for all sensitive operations
     - Compliant audit trail for regulatory review
-  - **Documentation**: See `/docs/gdpr/` for implementation details
   - **Firestore Rules**: 30+ security rules cover all GDPR requirements
 - **Type Safety**: Map-based data access replaced with proper model usage
 - **Flutter Color Syntax**: Use `withValues(alpha: 0.8)` instead of deprecated `withOpacity(0.8)`
