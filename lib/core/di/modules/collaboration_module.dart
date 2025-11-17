@@ -37,8 +37,7 @@ import 'package:butlery/repositories/firebase/firebase_recipe_presence_repositor
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shopping_repository.dart';
 
-// Shared shopping repository
-import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart';
+// Note: FirebaseSharedShoppingRepository is imported in SocialModule
 
 // Collaboration services
 import 'package:butlery/services/realtime_sync_service.dart';
@@ -77,7 +76,6 @@ class CollaborationModule implements DIModule {
         UnifiedShoppingService,
         PermissionService,
         MenuCollaborationRepository,
-        FirebaseSharedShoppingRepository,
       ];
 
   @override
@@ -88,7 +86,8 @@ class CollaborationModule implements DIModule {
   Future<void> configure(GetIt container) async {
     if (kDebugMode) {
       debugPrint(
-          '🔧 [CollaborationModule] Configuring collaboration services...');
+        '🔧 [CollaborationModule] Configuring collaboration services...',
+      );
     }
 
     try {
@@ -139,16 +138,8 @@ class CollaborationModule implements DIModule {
         ),
       );
 
-      // ==================== SHARED SHOPPING REPOSITORY ====================
-
-      // FirebaseSharedShoppingRepository - unified shared shopping list management
-      container.registerLazySingleton<FirebaseSharedShoppingRepository>(
-        () => FirebaseSharedShoppingRepository(
-          authRepository: container<AuthRepository>(),
-        ),
-      );
-
       // ==================== UNIFIED SHOPPING SYSTEM ====================
+      // Note: FirebaseSharedShoppingRepository is registered in SocialModule
 
       // UnifiedShoppingService - collaborative shopping lists
       container.registerLazySingleton<UnifiedShoppingService>(
@@ -183,7 +174,8 @@ class CollaborationModule implements DIModule {
 
       if (kDebugMode) {
         debugPrint(
-            '✅ [CollaborationModule] Configured 6 services (Realtime sync, Shopping, Shared shopping, Permissions)');
+          '✅ [CollaborationModule] Configured 6 services (Realtime sync, Shopping, Shared shopping, Permissions)',
+        );
       }
     } catch (e) {
       throw DIModuleException(
@@ -248,7 +240,8 @@ class CollaborationModule implements DIModule {
       } catch (e) {
         if (kDebugMode) {
           debugPrint(
-              '⚠️ [CollaborationModule] Could not access lazy singletons: $e');
+            '⚠️ [CollaborationModule] Could not access lazy singletons: $e',
+          );
         }
       }
 
@@ -261,7 +254,8 @@ class CollaborationModule implements DIModule {
           if (!isHealthy) {
             if (kDebugMode) {
               debugPrint(
-                  '❌ [CollaborationModule] Health check failed for ${entry.key}');
+                '❌ [CollaborationModule] Health check failed for ${entry.key}',
+              );
             }
             return false;
           }

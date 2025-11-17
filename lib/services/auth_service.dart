@@ -28,15 +28,16 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
+import 'package:butlery/repositories/interfaces/auth_repository.dart'
+    as auth_repo;
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
+
 /// Firebase authentication service with comprehensive state management and error handling.
 ///
 /// This service provides complete authentication functionality using Firebase Auth with sophisticated
@@ -53,14 +54,14 @@ import 'package:butlery/core/utils/logger.dart';
 /// **Usage Examples:**
 /// ```dart
 /// final authService = AuthService();
-/// 
+///
 /// // Register new user
 /// final success = await authService.registerWithEmail(
 ///   email: 'user@example.com',
 ///   password: 'securePassword',
 ///   displayName: 'John Doe',
 /// );
-/// 
+///
 /// // Listen to authentication state
 /// authService.addListener(() {
 ///   if (authService.isAuthenticated) {
@@ -70,7 +71,12 @@ import 'package:butlery/core/utils/logger.dart';
 ///   }
 /// });
 /// ```
-class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin, StreamManagementMixin, ErrorHandlingMixin {
+class AuthService extends ChangeNotifier
+    with
+        StateNotifierMixin,
+        AsyncOperationMixin,
+        StreamManagementMixin,
+        ErrorHandlingMixin {
   /// Repository handling all Firebase Auth communication and operations.
   final auth_repo.AuthRepository _authRepository;
 
@@ -82,13 +88,13 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
 
   /// Current authenticated user, null if not logged in.
   User? get currentUser => _currentUser;
-  
+
   /// Current error message from authentication operations.
   String? get errorMessage => error;
-  
+
   /// Whether a user is currently authenticated.
   bool get isAuthenticated => _currentUser != null;
-  
+
   /// Current user ID if authenticated, null otherwise.
   String? get currentUserId => _authRepository.currentUserId;
 
@@ -101,9 +107,9 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
   /// [analyticsService] Optional analytics service for dependency injection and testing
   AuthService({
     auth_repo.AuthRepository? authRepository,
-    AnalyticsService? analyticsService,
+    required AnalyticsService analyticsService,
   })  : _authRepository = authRepository ?? FirebaseAuthRepository(),
-        _analyticsService = analyticsService ?? ServiceLocator.get<AnalyticsService>() {
+        _analyticsService = analyticsService {
     // Listen to authentication state changes and update UI accordingly
     _authRepository.authStateChanges().listen(
       (User? user) {
@@ -130,7 +136,7 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
       // Clear any previous errors
       clearError();
       setLoading(true);
-      
+
       final UserCredential credential =
           await _authRepository.createUser(email, password);
 
@@ -183,11 +189,12 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
       // Clear any previous errors
       clearError();
       setLoading(true);
-      
-      AppLogger.debug('Attempting login for email: ${email.substring(0, 3)}...');
-      
+
+      AppLogger.debug(
+          'Attempting login for email: ${email.substring(0, 3)}...');
+
       await _authRepository.signIn(email: email, password: password);
-      
+
       // Verify login was successful
       _currentUser = _authRepository.currentUser;
       AppLogger.debug('Login result - User: ${_currentUser?.email ?? "null"}');
@@ -248,7 +255,7 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
       setError('Kunde inte logga ut: ${e.toString()}');
     });
   }
-  
+
   /// Force sign out (clears all cached credentials)
   Future<void> forceSignOut() async {
     try {
@@ -347,11 +354,11 @@ class AuthService extends ChangeNotifier with StateNotifierMixin, AsyncOperation
     // Use the mixin's clearError method to properly clear error state
     super.clearError();
   }
-  
+
   @override
   void dispose() {
     // Cancel all timers
-    // Cancel all stream subscriptions  
+    // Cancel all stream subscriptions
     // Dispose of resources
     disposeStreamResources(); // From StreamManagementMixin
     super.dispose();

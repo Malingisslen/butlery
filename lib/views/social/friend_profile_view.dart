@@ -36,14 +36,14 @@
 ///     ),
 ///   ),
 /// );
-/// 
+///
 /// // The view provides comprehensive friend profile functionality:
 /// // - Complete profile display with avatar and detailed friend information
 /// // - Social statistics dashboard with friend counts, recipe metrics, and activity insights
 /// // - Interactive social actions including messaging, recipe sharing, and relationship management
 /// // - Activity timeline with membership information and engagement tracking
 /// // - Relationship controls with friend removal confirmation and status management
-/// 
+///
 /// // Integration with specialized components:
 /// // - UserDisplayWidgets for avatar and profile information display
 /// // - CardContent for structured information presentation
@@ -84,15 +84,15 @@ import 'package:butlery/widgets/common/layout/layout_containers.dart';
 /// - Swedish localized friend experience with comprehensive user feedback and interactive guidance
 class FriendProfileView extends StatelessWidget {
   /// Friend profile data for comprehensive display and interaction coordination.
-  /// 
+  ///
   /// Contains complete friend information enabling profile display, social statistics,
   /// interaction management, and comprehensive friend functionality.
   final UserProfile friend;
 
   /// Creates comprehensive friend profile view with detailed information and social interaction coordination.
-  /// 
+  ///
   /// [friend] Friend profile data for comprehensive display and interaction coordination
-  /// 
+  ///
   /// Establishes friend profile interface with profile display, social statistics,
   /// interaction management, and comprehensive friend functionality through
   /// UserProfile integration and advanced social architecture.
@@ -114,99 +114,98 @@ class FriendProfileView extends StatelessWidget {
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: Column(
             children: [
-            // Avatar och grundläggande info
-            Center(
-              child: Column(
-                children: [
-                  UserDisplayWidgets.avatar(
-                    imageUrl: friend.avatarUrl,
-                    displayName: friend.displayName,
-                    size: ImageSize.extraLarge,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingL),
-                  Text(
-                    friend.displayName,
-                    style: AppTextStyles.headlineMedium.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: AppDimensions.spacingL),
-
-            // Statistik kort
-            CardContent.standard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Statistik',
-                    style: AppTextStyles.titleLarge.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingL),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildStatItem(
-                        context,
-                        'Vänner',
-                        '${friend.friendsCount}',
-                        Icons.people,
-                      ),
-                      _buildStatItem(
-                        context,
-                        'Recept',
-                        '${friend.publicRecipeCount}',
-                        Icons.restaurant_menu,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: AppDimensions.spacingL),
-
-
-            // Action buttons
-            Column(
-              children: [
-                Row(
+              // Avatar och grundläggande info
+              Center(
+                child: Column(
                   children: [
-                    Flexible(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _startConversation(context),
-                        icon: const Icon(Icons.message),
-                        label: const Text('Skicka meddelande'),
-                      ),
+                    UserDisplayWidgets.avatar(
+                      imageUrl: friend.avatarUrl,
+                      displayName: friend.displayName,
+                      size: ImageSize.extraLarge,
                     ),
-                    const SizedBox(width: AppDimensions.spacingL),
-                    Flexible(
-                      child: ElevatedButton.icon(
-                        onPressed: () => _showRecipeSelection(context),
-                        icon: const Icon(Icons.share),
-                        label: const Text('Dela recept'),
+                    const SizedBox(height: AppDimensions.spacingL),
+                    Text(
+                      friend.displayName,
+                      style: AppTextStyles.headlineMedium.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: AppDimensions.spacingM),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () => _showRemoveFriendDialog(context),
-                    style: ComponentThemes.deleteButtonStyle,
-                    icon: const Icon(Icons.person_remove),
-                    label: const Text('Ta bort vän'),
-                  ),
+              ),
+
+              const SizedBox(height: AppDimensions.spacingL),
+
+              // Statistik kort
+              CardContent.standard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Statistik',
+                      style: AppTextStyles.titleLarge.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingL),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildStatItem(
+                          context,
+                          'Vänner',
+                          '${friend.friendsCount}',
+                          Icons.people,
+                        ),
+                        _buildStatItem(
+                          context,
+                          'Recept',
+                          '${friend.publicRecipeCount}',
+                          Icons.restaurant_menu,
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ],
+              ),
+
+              const SizedBox(height: AppDimensions.spacingL),
+
+              // Action buttons
+              Column(
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _startConversation(context),
+                          icon: const Icon(Icons.message),
+                          label: const Text('Skicka meddelande'),
+                        ),
+                      ),
+                      const SizedBox(width: AppDimensions.spacingL),
+                      Flexible(
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showRecipeSelection(context),
+                          icon: const Icon(Icons.share),
+                          label: const Text('Dela recept'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppDimensions.spacingM),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showRemoveFriendDialog(context),
+                      style: ComponentThemes.deleteButtonStyle,
+                      icon: const Icon(Icons.person_remove),
+                      label: const Text('Ta bort vän'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -230,7 +229,8 @@ class FriendProfileView extends StatelessWidget {
       // Get messaging service
       final messagingService = ServiceLocator.get<MessagingService>();
 
-      AppLogger.info('🔍 [FriendProfileView] Starting conversation with friend: ${friend.uid} (${friend.displayName})');
+      AppLogger.info(
+          '🔍 [FriendProfileView] Starting conversation with friend: ${friend.uid} (${friend.displayName})');
 
       // Start or get existing direct conversation
       final conversationId = await messagingService.startDirectConversation(
@@ -239,8 +239,10 @@ class FriendProfileView extends StatelessWidget {
         otherUserAvatarUrl: friend.avatarUrl,
       );
 
-      AppLogger.success('✅ [FriendProfileView] Got conversationId: $conversationId');
-      AppLogger.debug('🔍 [FriendProfileView] Navigating to ChatViewFacade with conversationId: $conversationId');
+      AppLogger.success(
+          '✅ [FriendProfileView] Got conversationId: $conversationId');
+      AppLogger.debug(
+          '🔍 [FriendProfileView] Navigating to ChatViewFacade with conversationId: $conversationId');
 
       if (!context.mounted) return;
 
@@ -299,15 +301,15 @@ class FriendProfileView extends StatelessWidget {
         Text(
           value,
           style: AppTextStyles.headlineMedium.copyWith(
-                color: AppColors.primaryBlue,
-                fontWeight: FontWeight.bold,
-              ),
+            color: AppColors.primaryBlue,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         Text(
           label,
           style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textMedium,
-              ),
+            color: AppColors.textMedium,
+          ),
         ),
       ],
     );

@@ -69,6 +69,10 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     // Set the user ID provider for the mixin
     setUserIdProvider(getCurrentUserId);
 
+    // Initialize SharedRecipeRepository from DI
+    _sharedRecipeRepository =
+        ServiceLocator.get<FirebaseSharedRecipeRepository>();
+
     // Initialize focused services
     _creationService = SocialRecipeCreationService(
       getCurrentUserId: getCurrentUserId,
@@ -108,8 +112,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
       serviceAdapter: _serviceAdapter,
     );
 
-    // Initialize SharedRecipe repository
-    _sharedRecipeRepository = FirebaseSharedRecipeRepository();
+    // Note: _sharedRecipeRepository initialized from DI at line 73
 
     // _initializeNotificationService(); // Temporarily disabled
   }

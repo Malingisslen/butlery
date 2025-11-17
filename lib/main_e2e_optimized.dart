@@ -30,6 +30,9 @@ import 'package:butlery/viewmodels/auth_viewmodel.dart';
 
 // Import minimal service dependencies
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/analytics_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
 // Import required models
 import 'package:butlery/models/user_profile.dart';
@@ -362,10 +365,39 @@ class E2EMockUser {
   static const String chefUserEmail = 'chef@butlery.se';
 }
 
+/// Mock AuthRepository for E2E testing
+class _MockAuthRepository implements AuthRepository {
+  @override
+  String? get currentUserId => null;
+
+  @override
+  firebase_auth.User? get currentUser => null;
+
+  @override
+  Stream<firebase_auth.User?> authStateChanges() => Stream.value(null);
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// Mock AnalyticsRepository for E2E testing
+class _MockAnalyticsRepository implements AnalyticsRepository {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 /// Mock AuthService for E2E testing
 ///
 /// Provides minimal mock implementation that AuthViewModel depends on
 class _MockAuthService extends AuthService {
+  _MockAuthService()
+      : super(
+          authRepository: _MockAuthRepository(),
+          analyticsService: AnalyticsService(
+            repository: _MockAnalyticsRepository(),
+          ),
+        );
+
   bool _isLoading = false;
   String? _errorMessage;
 

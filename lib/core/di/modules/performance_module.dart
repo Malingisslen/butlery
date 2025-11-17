@@ -20,6 +20,7 @@ import 'package:butlery/services/performance/intelligent_cache_manager.dart';
 import 'package:butlery/services/performance/startup_optimization_manager.dart';
 import 'package:butlery/services/performance/performance_monitoring_service.dart';
 import 'package:butlery/services/performance/firebase_performance_service.dart';
+import 'package:butlery/core/cache/json_cache_helper.dart';
 
 // Dependencies from Core Module
 import 'package:butlery/core/di/modules/core_module.dart';
@@ -37,13 +38,15 @@ class PerformanceModule implements DIModule {
 
   @override
   List<Type> get provides => [
-    IntelligentCacheManager,
-    StartupOptimizationManager,
-    PerformanceMonitoringService,
-  ];
+        IntelligentCacheManager,
+        StartupOptimizationManager,
+        PerformanceMonitoringService,
+        JsonCacheHelper,
+      ];
 
   @override
-  int get priority => 100; // Low priority - loaded after other modules
+  int get priority =>
+      15; // Medium priority - cache infrastructure needed by Social module (priority 20)
 
   @override
   Future<void> configure(GetIt container) async {
@@ -52,6 +55,11 @@ class PerformanceModule implements DIModule {
     }
 
     try {
+      // JSON cache helper (singleton - shared cache infrastructure)
+      container.registerSingleton<JsonCacheHelper>(
+        JsonCacheFactory.recipeCache(), // Primary cache instance for recipes
+      );
+
       // Intelligent cache manager (lazy singleton - initialized on first use)
       container.registerLazySingleton<IntelligentCacheManager>(
         () => IntelligentCacheManager(),
@@ -68,7 +76,8 @@ class PerformanceModule implements DIModule {
       );
 
       if (kDebugMode) {
-        debugPrint('✅ [PerformanceModule] Configured 3 performance services (Cache, Startup, Monitoring)');
+        debugPrint(
+            '✅ [PerformanceModule] Configured 4 performance services (JSON Cache, Intelligent Cache, Startup, Monitoring)');
       }
     } catch (e) {
       throw DIModuleException(
@@ -98,7 +107,6 @@ class PerformanceModule implements DIModule {
 
       // Note: IntelligentCacheManager is lazy and will initialize on first use
       // StartupOptimizationManager is initialized early in main.dart
-
     } catch (e) {
       throw DIModuleException(
         name,
@@ -116,11 +124,12 @@ class PerformanceModule implements DIModule {
 
       // Check that all performance services are registered and accessible
       final services = <String, dynamic>{
+        'JsonCacheHelper': container<JsonCacheHelper>(),
         'IntelligentCacheManager': container<IntelligentCacheManager>(),
         'StartupOptimizationManager': container<StartupOptimizationManager>(),
-        'PerformanceMonitoringService': container<PerformanceMonitoringService>(),
+        'PerformanceMonitoringService':
+            container<PerformanceMonitoringService>(),
       };
-
 
       // Basic validation - services are not null
       for (final entry in services.entries) {
@@ -132,7 +141,6 @@ class PerformanceModule implements DIModule {
         }
       }
 
-      
       return true;
     } catch (e) {
       if (kDebugMode) {
@@ -147,7 +155,7 @@ class PerformanceModule implements DIModule {
 class PerformanceModuleFactory {
   /// Create a new PerformanceModule instance.
   static PerformanceModule create() => PerformanceModule();
-  
+
   /// Create PerformanceModule with custom configuration.
   static PerformanceModule createWithConfig({
     bool enableIntelligentCache = true,

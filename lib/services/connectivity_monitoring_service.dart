@@ -33,6 +33,7 @@ import 'package:butlery/core/utils/connectivity_check.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
+import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 /// Real-time connectivity monitoring service with comprehensive network and Firebase status management.
 ///
@@ -72,30 +73,35 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 /// // Check current connectivity status
 /// final status = await connectivityService.getCurrentConnectivity();
 /// ```
-class ConnectivityMonitoringService extends ChangeNotifier with StreamManagementMixin {
+class ConnectivityMonitoringService extends ChangeNotifier
+    with StreamManagementMixin, ErrorHandlingMixin {
   final ConnectivityRepository _connectivityRepository;
-  
+
   // For backwards compatibility, maintain singleton pattern
   static ConnectivityMonitoringService? _instance;
-  
-  factory ConnectivityMonitoringService({ConnectivityRepository? connectivityRepository}) {
+
+  factory ConnectivityMonitoringService({
+    ConnectivityRepository? connectivityRepository,
+  }) {
     if (connectivityRepository != null) {
-      _instance = ConnectivityMonitoringService._internal(connectivityRepository);
+      _instance = ConnectivityMonitoringService._internal(
+        connectivityRepository,
+      );
     }
     return _instance!;
   }
-  
+
   ConnectivityMonitoringService._internal(this._connectivityRepository);
 
   // State
   bool _isConnectedToInternet = true;
   bool _isConnectedToFirebase = true;
   String _connectionStatusText = 'Ansluten';
-  
+
   // Subscriptions
   StreamSubscription<bool>? _firebaseConnectionSubscription;
   Timer? _internetCheckTimer;
-  
+
   // Getters
   bool get isConnectedToInternet => _isConnectedToInternet;
   bool get isConnectedToFirebase => _isConnectedToFirebase;
@@ -120,10 +126,10 @@ class ConnectivityMonitoringService extends ChangeNotifier with StreamManagement
   /// - All monitoring operations are non-blocking and handle errors gracefully
   void startMonitoring() {
     AppLogger.info('🌐 Starting connectivity monitoring');
-    
+
     // Start Firebase connection monitoring
     _startFirebaseConnectionMonitoring();
-    
+
     // Start periodic internet connectivity checks
     _startInternetConnectivityMonitoring();
   }
@@ -140,7 +146,7 @@ class ConnectivityMonitoringService extends ChangeNotifier with StreamManagement
   /// - All active monitoring state cleanup
   void stopMonitoring() {
     AppLogger.info('🌐 Stopping connectivity monitoring');
-    
+
     _firebaseConnectionSubscription?.cancel();
     _internetCheckTimer?.cancel();
   }
@@ -195,21 +201,24 @@ class ConnectivityMonitoringService extends ChangeNotifier with StreamManagement
   // ===== PRIVATE METHODS =====
 
   void _startFirebaseConnectionMonitoring() {
-    _firebaseConnectionSubscription = _connectivityRepository
-        .monitorFirebaseConnection()
-        .listen(
+    _firebaseConnectionSubscription =
+        _connectivityRepository.monitorFirebaseConnection().listen(
       (isConnected) {
         final wasConnected = _isConnectedToFirebase;
         _isConnectedToFirebase = isConnected;
-        
+
         if (wasConnected != _isConnectedToFirebase) {
-          AppLogger.info('🌐 Firebase connection changed: $_isConnectedToFirebase');
+          AppLogger.info(
+            '🌐 Firebase connection changed: $_isConnectedToFirebase',
+          );
           _updateConnectionStatus();
           notifyListeners();
         }
       },
       onError: (error) {
-        AppLogger.warning('🌐 Firebase connection monitoring error: $error');
+        AppLogger.warning(
+          '🌐 Firebase connection monitoring error: $error',
+        );
         _isConnectedToFirebase = false;
         _updateConnectionStatus();
         notifyListeners();
@@ -220,7 +229,7 @@ class ConnectivityMonitoringService extends ChangeNotifier with StreamManagement
   void _startInternetConnectivityMonitoring() {
     // Check immediately
     _checkInternetConnectivity();
-    
+
     // Then check every 30 seconds
     _internetCheckTimer = Timer.periodic(
       const Duration(seconds: 30),
@@ -231,10 +240,13 @@ class ConnectivityMonitoringService extends ChangeNotifier with StreamManagement
   Future<void> _checkInternetConnectivity() async {
     try {
       final wasConnected = _isConnectedToInternet;
-      _isConnectedToInternet = await ConnectivityCheck.hasRobustInternetConnection();
-      
+      _isConnectedToInternet =
+          await ConnectivityCheck.hasRobustInternetConnection();
+
       if (wasConnected != _isConnectedToInternet) {
-        AppLogger.info('🌐 Internet connection changed: $_isConnectedToInternet');
+        AppLogger.info(
+          '🌐 Internet connection changed: $_isConnectedToInternet',
+        );
         _updateConnectionStatus();
         notifyListeners();
       }
@@ -264,4 +276,3 @@ class ConnectivityMonitoringService extends ChangeNotifier with StreamManagement
     super.dispose();
   }
 }
-

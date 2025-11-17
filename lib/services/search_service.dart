@@ -4,17 +4,12 @@
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Search service for recipe discovery with multi-criteria filtering and Swedish language support.
-class SearchService extends BaseService with SingletonServiceMixin<SearchService> {
-  // Private constructor for singleton
-  SearchService._internal();
-  
-  // Factory constructor using SingletonServiceMixin
-  factory SearchService() => SingletonServiceMixin.createSingleton(() => SearchService._internal());
-  
+class SearchService extends BaseService {
+  SearchService();
+
   @override
   String get serviceName => 'SearchService';
 
@@ -71,17 +66,15 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
     var filtered = recipes;
 
     if (minPortions != null) {
-      filtered =
-          filtered.where((recipe) {
-            return recipe.portions != null && recipe.portions! >= minPortions;
-          }).toList();
+      filtered = filtered.where((recipe) {
+        return recipe.portions != null && recipe.portions! >= minPortions;
+      }).toList();
     }
 
     if (maxPortions != null) {
-      filtered =
-          filtered.where((recipe) {
-            return recipe.portions != null && recipe.portions! <= maxPortions;
-          }).toList();
+      filtered = filtered.where((recipe) {
+        return recipe.portions != null && recipe.portions! <= maxPortions;
+      }).toList();
     }
 
     return filtered;
@@ -139,10 +132,9 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
     switch (criteria) {
       case SortCriteria.title:
         sorted.sort(
-          (a, b) =>
-              ascending
-                  ? a.title.toLowerCase().compareTo(b.title.toLowerCase())
-                  : b.title.toLowerCase().compareTo(a.title.toLowerCase()),
+          (a, b) => ascending
+              ? a.title.toLowerCase().compareTo(b.title.toLowerCase())
+              : b.title.toLowerCase().compareTo(a.title.toLowerCase()),
         );
         break;
 
@@ -176,10 +168,9 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
 
       case SortCriteria.mealType:
         sorted.sort(
-          (a, b) =>
-              ascending
-                  ? a.mealType.compareTo(b.mealType)
-                  : b.mealType.compareTo(a.mealType),
+          (a, b) => ascending
+              ? a.mealType.compareTo(b.mealType)
+              : b.mealType.compareTo(a.mealType),
         );
         break;
     }
@@ -215,7 +206,7 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
   /// // Real-time search suggestions
   /// final suggestions = searchService.getSearchSuggestions(recipes, 'kyck');
   /// // Returns: ['kyckling', 'kycklingbröst', 'kycklinglår', ...]
-  /// 
+  ///
   /// // Ingredient-based suggestions
   /// final ingredientSuggestions = searchService.getSearchSuggestions(recipes, 'tom');
   /// // Returns: ['tomat', 'tomatpuré', 'tomatkonserv', ...]
@@ -270,14 +261,10 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
 
       // Räkna vanliga ingredienser
       for (final ingredient in recipe.ingredients) {
-        final cleaned =
-            ingredient
-                .toLowerCase()
-                .replaceAll(
-                  RegExp(r'\d+|\s*(dl|g|kg|msk|tsk|st|burk|påse)\s*'),
-                  '',
-                )
-                .trim();
+        final cleaned = ingredient
+            .toLowerCase()
+            .replaceAll(RegExp(r'\d+|\s*(dl|g|kg|msk|tsk|st|burk|påse)\s*'), '')
+            .trim();
         if (cleaned.length > 3) {
           termFrequency[cleaned] = (termFrequency[cleaned]).orZero() + 1;
         }
@@ -285,9 +272,8 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
     }
 
     // Returnera de mest populära termerna
-    final sorted =
-        termFrequency.entries.toList()
-          ..sort((a, b) => b.value.compareTo(a.value));
+    final sorted = termFrequency.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
 
     return sorted.take(20).map((e) => e.key).toList();
   }
@@ -315,7 +301,9 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
     }
 
     // Taggar
-    if ((recipe.tags?.any((tag) => tag.toLowerCase().contains(query))).orFalse()) {
+    if ((recipe.tags?.any(
+      (tag) => tag.toLowerCase().contains(query),
+    )).orFalse()) {
       return true;
     }
 
@@ -326,7 +314,8 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
     final queryAsNumber = double.tryParse(query);
     if (queryAsNumber != null) {
       if ((recipe.portions?.toString().contains(query)).orFalse()) return true;
-      if ((recipe.timeMinutes?.toString().contains(query)).orFalse()) return true;
+      if ((recipe.timeMinutes?.toString().contains(query)).orFalse())
+        return true;
       if ((recipe.rating?.toString().contains(query)).orFalse()) return true;
     }
 
@@ -351,28 +340,28 @@ class SearchService extends BaseService with SingletonServiceMixin<SearchService
 /// ```dart
 /// // Sort by rating (highest first)
 /// final topRated = searchService.sortRecipes(recipes, SortCriteria.rating, ascending: false);
-/// 
+///
 /// // Sort by cooking time (quickest first)
 /// final quickMeals = searchService.sortRecipes(recipes, SortCriteria.time, ascending: true);
-/// 
+///
 /// // Alphabetical organization
 /// final alphabetical = searchService.sortRecipes(recipes, SortCriteria.title);
 /// ```
-enum SortCriteria { 
+enum SortCriteria {
   /// Alphabetical sorting by recipe name for browsing and organization.
-  title, 
-  
+  title,
+
   /// Cooking time sorting for meal planning and time-constrained cooking.
-  time, 
-  
+  time,
+
   /// Quality-based sorting for discovering highly-rated recipes.
-  rating, 
-  
+  rating,
+
   /// Serving size sorting for meal planning and group cooking.
-  portions, 
-  
+  portions,
+
   /// Category-based sorting for meal organization and discovery.
-  mealType 
+  mealType,
 }
 
 /// Comprehensive search parameters container for complex search operations and state management.
@@ -405,13 +394,13 @@ enum SortCriteria {
 ///   mealType: 'middag',
 ///   maxTime: 45,
 /// );
-/// 
+///
 /// // Update parameters immutably
 /// final updatedParams = params.copyWith(
 ///   minRating: 4.0,
 ///   tags: ['glutenfri'],
 /// );
-/// 
+///
 /// // Use with advanced search
 /// final results = searchService.advancedSearch(
 ///   recipes,

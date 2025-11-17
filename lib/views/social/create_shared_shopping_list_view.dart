@@ -86,7 +86,8 @@ class _CreateSharedShoppingListViewState
   PreferredSizeWidget _buildAppBar(
       BuildContext context, CreateSharedListViewModel viewModel) {
     return AppBar(
-      title: Text('${AppStrings.share} ${AppStrings.shoppingList.toLowerCase()}'),
+      title:
+          Text('${AppStrings.share} ${AppStrings.shoppingList.toLowerCase()}'),
       leading: IconButton(
         icon: const Icon(Icons.close),
         onPressed: () => Navigator.pop(context),
@@ -100,40 +101,43 @@ class _CreateSharedShoppingListViewState
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header info
-          _buildHeaderInfo(context),
-          const SizedBox(height: AppDimensions.spacingXl),
-
-          // Lista detaljer
-          _buildListDetails(context, viewModel),
-          const SizedBox(height: AppDimensions.spacingXl),
-
-          // Vän selection
-          _buildFriendSelection(context, viewModel),
-          const SizedBox(height: AppDimensions.spacingXl),
-
-          // Info om vad som händer
-          _buildInfoSection(context),
-
-          // Error display
-          if (viewModel.hasError) ...[
+          children: [
+            // Header info
+            _buildHeaderInfo(context),
             const SizedBox(height: AppDimensions.spacingXl),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
-              decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+
+            // Lista detaljer
+            _buildListDetails(context, viewModel),
+            const SizedBox(height: AppDimensions.spacingXl),
+
+            // Vän selection
+            _buildFriendSelection(context, viewModel),
+            const SizedBox(height: AppDimensions.spacingXl),
+
+            // Info om vad som händer
+            _buildInfoSection(context),
+
+            // Error display
+            if (viewModel.hasError) ...[
+              const SizedBox(height: AppDimensions.spacingXl),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.1),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusM),
+                  border:
+                      Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                ),
+                child: Text(
+                  viewModel.error!,
+                  style:
+                      AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+                ),
               ),
-              child: Text(
-                viewModel.error!,
-                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
-              ),
-            ),
+            ],
           ],
-        ],
         ),
       ),
     );

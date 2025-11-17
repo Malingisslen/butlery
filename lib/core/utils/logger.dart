@@ -49,6 +49,7 @@
 /// ```
 
 import 'dart:developer' as developer;
+import 'package:flutter/foundation.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 /// Application logging utility providing structured, production-safe logging with hierarchical severity levels.
@@ -64,8 +65,12 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 /// while maintaining compatibility with Flutter's logging infrastructure and external monitoring systems.
 class AppLogger {
   /// Optional analytics callback for error tracking (configured during app initialization)
-  static Future<void> Function(String errorCode, String errorType,
-      String userAction, String? stackTrace)? _analyticsCallback;
+  static Future<void> Function(
+    String errorCode,
+    String errorType,
+    String userAction,
+    String? stackTrace,
+  )? _analyticsCallback;
 
   /// Configures the analytics callback for error tracking.
   ///
@@ -87,9 +92,12 @@ class AppLogger {
   /// });
   /// ```
   static void configureAnalytics(
-    Future<void> Function(String errorCode, String errorType, String userAction,
-            String? stackTrace)
-        callback,
+    Future<void> Function(
+      String errorCode,
+      String errorType,
+      String userAction,
+      String? stackTrace,
+    ) callback,
   ) {
     _analyticsCallback = callback;
   }
@@ -195,8 +203,12 @@ class AppLogger {
   /// ```
   ///
   /// **Log Level:** 1000 (Error) - Highest priority for critical issues requiring attention
-  static void error(String message,
-      [Object? error, String? name, StackTrace? stackTrace]) {
+  static void error(
+    String message, [
+    Object? error,
+    String? name,
+    StackTrace? stackTrace,
+  ]) {
     developer.log(
       '❌ $message',
       name: name ?? 'Butlery',
@@ -214,7 +226,13 @@ class AppLogger {
 
   /// Logs message and error to Firebase Crashlytics (safe to call even if not initialized)
   static void _logToCrashlytics(
-      String message, Object? error, StackTrace? stackTrace) {
+    String message,
+    Object? error,
+    StackTrace? stackTrace,
+  ) {
+    // Crashlytics not supported on web
+    if (kIsWeb) return;
+
     try {
       // Log the message to Crashlytics
       FirebaseCrashlytics.instance.log(message);
@@ -236,7 +254,10 @@ class AppLogger {
 
   /// Tracks error analytics to Firebase (safe to call even if callback not configured)
   static void _trackErrorAnalytics(
-      String message, Object? error, String? name) {
+    String message,
+    Object? error,
+    String? name,
+  ) {
     // Only track if analytics callback is configured
     if (_analyticsCallback == null) {
       return;
@@ -370,6 +391,7 @@ class AppLogger {
   /// AppLogger.setUserIdentifier(user.uid);
   /// ```
   static void setUserIdentifier(String userId) {
+    if (kIsWeb) return; // Crashlytics not supported on web
     try {
       FirebaseCrashlytics.instance.setUserIdentifier(userId);
     } catch (e) {
@@ -388,6 +410,7 @@ class AppLogger {
   /// AppLogger.clearUserIdentifier();
   /// ```
   static void clearUserIdentifier() {
+    if (kIsWeb) return; // Crashlytics not supported on web
     try {
       FirebaseCrashlytics.instance.setUserIdentifier('');
     } catch (e) {
@@ -410,6 +433,7 @@ class AppLogger {
   /// AppLogger.setCrashlyticsKey('app_version', packageInfo.version);
   /// ```
   static void setCrashlyticsKey(String key, Object value) {
+    if (kIsWeb) return; // Crashlytics not supported on web
     try {
       if (value is String) {
         FirebaseCrashlytics.instance.setCustomKey(key, value);

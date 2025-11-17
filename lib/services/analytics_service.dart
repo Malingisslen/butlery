@@ -1,11 +1,9 @@
 /// Analytics service for tracking user interactions and app metrics
 
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_analytics_repository.dart';
 import 'package:butlery/services/content_detector_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 
 /// Analytics service that delegates to an AnalyticsRepository implementation.
@@ -19,23 +17,12 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 /// events as required by GDPR Article 7. Key methods include consent checks via
 /// `_hasAnalyticsConsent()`. Auth/security events (login, logout, account deletion)
 /// are exempt from consent requirements as they are necessary for service operation.
-class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsService> {
+class AnalyticsService extends BaseService {
   final AnalyticsRepository _repository;
   ConsentService? _consentService;
 
-  AnalyticsService._internal(this._repository);
-
-  /// Factory constructor with dependency injection support.
-  ///
-  /// Accepts an optional [repository] parameter for testing.
-  /// In production, uses FirebaseAnalyticsRepository by default.
-  factory AnalyticsService({AnalyticsRepository? repository}) =>
-    SingletonServiceMixin.createSingletonWithDependencies(
-      () => AnalyticsService._internal(
-        repository ?? FirebaseAnalyticsRepository(),
-      ),
-      dependencies: repository != null ? [repository] : [],
-    );
+  AnalyticsService({required AnalyticsRepository repository})
+      : _repository = repository;
 
   @override
   String get serviceName => 'AnalyticsService';
@@ -44,7 +31,9 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
   /// This should be called after ConsentService is initialized
   void setConsentService(ConsentService consentService) {
     _consentService = consentService;
-    app_logger.AppLogger.info('[AnalyticsService] Consent service configured for GDPR compliance');
+    app_logger.AppLogger.info(
+      '[AnalyticsService] Consent service configured for GDPR compliance',
+    );
   }
 
   /// Check if user has granted analytics consent
@@ -59,7 +48,9 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     try {
       return await _consentService!.hasConsent('analytics');
     } catch (e) {
-      app_logger.AppLogger.warning('[AnalyticsService] Failed to check consent, defaulting to false: $e');
+      app_logger.AppLogger.warning(
+        '[AnalyticsService] Failed to check consent, defaulting to false: $e',
+      );
       return false;
     }
   }
@@ -67,7 +58,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
   @override
   Future<void> initialize() async {
     await super.initialize();
-    
+
     await executeServiceOperation(
       () async {
         await _repository.initialize();
@@ -91,10 +82,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
 
     await executeServiceOperation(
       () async {
-        await _repository.logImportStarted(
-          source: source,
-          platform: platform,
-        );
+        await _repository.logImportStarted(source: source, platform: platform);
       },
       operationName: 'Log import started',
       requiresAuth: false,
@@ -152,22 +140,15 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     // GDPR: Check analytics consent before logging
     if (!await _hasAnalyticsConsent()) return;
 
-    await _repository.logRecipeCreated(
-      source: source,
-      hasImage: hasImage,
-    );
+    await _repository.logRecipeCreated(source: source, hasImage: hasImage);
   }
 
   /// Log recipe sharing
-  Future<void> logRecipeShared({
-    required String method,
-  }) async {
+  Future<void> logRecipeShared({required String method}) async {
     // GDPR: Check analytics consent before logging
     if (!await _hasAnalyticsConsent()) return;
 
-    await _repository.logRecipeShared(
-      method: method,
-    );
+    await _repository.logRecipeShared(method: method);
   }
 
   /// Log when recipe is marked as cooked
@@ -232,7 +213,6 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
     await _repository.logLogout();
   }
 
-
   /// Log account deletion event for GDPR compliance
   Future<void> logAccountDeleted(Map<String, dynamic> parameters) async {
     await executeServiceOperation(
@@ -273,10 +253,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
 
     await executeServiceOperation(
       () async {
-        await _repository.logEvent(
-          name: name,
-          parameters: parameters,
-        );
+        await _repository.logEvent(name: name, parameters: parameters);
       },
       operationName: 'Log event: $name',
       requiresAuth: false,
@@ -296,10 +273,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
       () async {
         await _repository.logEvent(
           name: 'screen_viewed',
-          parameters: {
-            'screen_name': screenName,
-            ...?parameters,
-          },
+          parameters: {'screen_name': screenName, ...?parameters},
         );
       },
       operationName: 'Log screen view',
@@ -348,18 +322,11 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
   }
 
   /// Log recipe copied (standardized event)
-  Future<void> logRecipeCopied({
-    required String recipeId,
-  }) async {
+  Future<void> logRecipeCopied({required String recipeId}) async {
     // GDPR: Check analytics consent before logging
     if (!await _hasAnalyticsConsent()) return;
 
-    await logEvent(
-      name: 'recipe_copied',
-      parameters: {
-        'recipe_id': recipeId,
-      },
-    );
+    await logEvent(name: 'recipe_copied', parameters: {'recipe_id': recipeId});
   }
 
   /// Log recipe image uploaded (standardized event)
@@ -404,17 +371,13 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
   // ===== MENU EVENTS =====
 
   /// Log menu generation started (standardized event)
-  Future<void> logMenuGenerationStarted({
-    int? promptLength,
-  }) async {
+  Future<void> logMenuGenerationStarted({int? promptLength}) async {
     // GDPR: Check analytics consent before logging
     if (!await _hasAnalyticsConsent()) return;
 
     await logEvent(
       name: 'menu_generation_started',
-      parameters: {
-        if (promptLength != null) 'prompt_length': promptLength,
-      },
+      parameters: {if (promptLength != null) 'prompt_length': promptLength},
     );
   }
 
@@ -462,10 +425,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
 
     await logEvent(
       name: 'menu_loaded',
-      parameters: {
-        'menu_id': menuId,
-        'is_owned': isOwned,
-      },
+      parameters: {'menu_id': menuId, 'is_owned': isOwned},
     );
   }
 
@@ -489,19 +449,13 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
   }
 
   /// Log menu deleted (standardized event)
-  Future<void> logMenuDeleted({
-    required String menuId,
-    String? reason,
-  }) async {
+  Future<void> logMenuDeleted({required String menuId, String? reason}) async {
     // GDPR: Check analytics consent before logging
     if (!await _hasAnalyticsConsent()) return;
 
     await logEvent(
       name: 'menu_deleted',
-      parameters: {
-        'menu_id': menuId,
-        if (reason != null) 'reason': reason,
-      },
+      parameters: {'menu_id': menuId, if (reason != null) 'reason': reason},
     );
   }
 
@@ -536,10 +490,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
 
     await logEvent(
       name: 'shopping_list_item_added',
-      parameters: {
-        'list_id': listId,
-        if (source != null) 'source': source,
-      },
+      parameters: {'list_id': listId, if (source != null) 'source': source},
     );
   }
 
@@ -553,10 +504,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
 
     await logEvent(
       name: 'shopping_list_item_checked',
-      parameters: {
-        'list_id': listId,
-        'item_count': itemCount,
-      },
+      parameters: {'list_id': listId, 'item_count': itemCount},
     );
   }
 
@@ -593,7 +541,8 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
       parameters: {
         'list_id': listId,
         'item_count': itemCount,
-        if (timeToCompleteMinutes != null) 'time_to_complete_minutes': timeToCompleteMinutes,
+        if (timeToCompleteMinutes != null)
+          'time_to_complete_minutes': timeToCompleteMinutes,
       },
     );
   }
@@ -618,17 +567,13 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
   }
 
   /// Log friend request accepted (standardized event)
-  Future<void> logFriendRequestAccepted({
-    required String senderId,
-  }) async {
+  Future<void> logFriendRequestAccepted({required String senderId}) async {
     // GDPR: Check analytics consent before logging
     if (!await _hasAnalyticsConsent()) return;
 
     await logEvent(
       name: 'friend_request_accepted',
-      parameters: {
-        'sender_id': senderId,
-      },
+      parameters: {'sender_id': senderId},
     );
   }
 
@@ -642,10 +587,7 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
 
     await logEvent(
       name: 'comment_created',
-      parameters: {
-        'recipe_id': recipeId,
-        'comment_length': commentLength,
-      },
+      parameters: {'recipe_id': recipeId, 'comment_length': commentLength},
     );
   }
 
@@ -686,7 +628,11 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
             'error_code': errorCode,
             'error_type': errorType,
             if (userAction != null) 'user_action': userAction,
-            if (stackTrace != null) 'stack_trace': stackTrace.substring(0, stackTrace.length > 500 ? 500 : stackTrace.length),
+            if (stackTrace != null)
+              'stack_trace': stackTrace.substring(
+                0,
+                stackTrace.length > 500 ? 500 : stackTrace.length,
+              ),
           },
         );
       },
@@ -729,5 +675,4 @@ class AnalyticsService extends BaseService with SingletonServiceMixin<AnalyticsS
       },
     );
   }
-
 }

@@ -29,7 +29,7 @@
 import 'dart:math';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/base/base_service.dart';
-import 'package:butlery/core/mixins/singleton_service_mixin.dart';
+
 /// Singleton menu generation service with advanced natural language processing for Swedish meal planning.
 ///
 /// This service provides comprehensive menu generation capabilities using sophisticated natural language
@@ -52,26 +52,22 @@ import 'package:butlery/core/mixins/singleton_service_mixin.dart';
 /// **Usage Examples:**
 /// ```dart
 /// final menuService = MenuService();
-/// 
+///
 /// // Generate menu from Swedish natural language
 /// final menu = await menuService.generateMenuFromPrompt(
 ///   'tre frukoster och två middagar',
 ///   availableRecipes,
 /// );
-/// 
+///
 /// // Complex meal planning
 /// final complexMenu = await menuService.generateMenuFromPrompt(
 ///   'fem frukoster, tre luncher och fyra middagar',
 ///   recipeCollection,
 /// );
 /// ```
-class MenuService extends BaseService with SingletonServiceMixin<MenuService> {
-  /// Private constructor for singleton pattern implementation.
-  MenuService._internal();
-  
-  /// Factory constructor using SingletonServiceMixin for standardized singleton creation.
-  factory MenuService() => SingletonServiceMixin.createSingleton(() => MenuService._internal());
-  
+class MenuService extends BaseService {
+  MenuService();
+
   @override
   String get serviceName => 'MenuService';
 
@@ -84,13 +80,13 @@ class MenuService extends BaseService with SingletonServiceMixin<MenuService> {
   /// [input] Swedish natural language meal planning instructions (e.g., "tre frukoster och två middagar")
   /// [allRecipes] Collection of available recipes to generate the menu from
   /// Returns a map of meal types to selected recipes, empty map if parsing fails
-  /// 
+  ///
   /// **Supported Input Formats:**
   /// - Numeric quantities: "3 frukoster, 2 middagar"
   /// - Swedish word numbers: "tre frukoster, två middagar"
   /// - Complex syntax: "fem frukoster och tre luncher, fyra middagar"
   /// - Multiple separators: commas, "och", "&", semicolons
-  /// 
+  ///
   /// **Example Usage:**
   /// ```dart
   /// final menu = await menuService.generateMenuFromPrompt(
@@ -104,13 +100,14 @@ class MenuService extends BaseService with SingletonServiceMixin<MenuService> {
     List<Recipe> allRecipes,
   ) async {
     return await executeServiceOperation(
-      () async {
-        return _generateMenuFromPromptInternal(input, allRecipes);
-      },
-      operationName: 'Generate menu from prompt',
-      defaultValue: <String, List<Recipe>>{},
-      requiresAuth: false,
-    ) ?? <String, List<Recipe>>{};
+          () async {
+            return _generateMenuFromPromptInternal(input, allRecipes);
+          },
+          operationName: 'Generate menu from prompt',
+          defaultValue: <String, List<Recipe>>{},
+          requiresAuth: false,
+        ) ??
+        <String, List<Recipe>>{};
   }
 
   Map<String, List<Recipe>> _generateMenuFromPromptInternal(
@@ -142,10 +139,10 @@ class MenuService extends BaseService with SingletonServiceMixin<MenuService> {
     // Enhanced parsing: Handle both explicit separators and space-separated patterns
     final counts = <String, int>{};
     final lowerInput = input.toLowerCase();
-    
+
     // First try explicit separators (kommatecken, 'och', '&' eller ';')
     final explicitParts = lowerInput.split(RegExp(r'[,&;]| och | & '));
-    
+
     if (explicitParts.length > 1) {
       // Use explicit separator parsing
       for (var part in explicitParts) {
@@ -159,7 +156,7 @@ class MenuService extends BaseService with SingletonServiceMixin<MenuService> {
       if (singlePart.isNotEmpty) {
         // Look for multiple quantity+meal patterns in the string
         final patterns = _extractMealPatterns(singlePart);
-        
+
         if (patterns.length > 1) {
           // Multiple patterns found - use pattern-based parsing
           for (final pattern in patterns) {
@@ -180,10 +177,11 @@ class MenuService extends BaseService with SingletonServiceMixin<MenuService> {
     final result = <String, List<Recipe>>{};
     counts.forEach((mealType, count) {
       // Aggregate recipes from all case variations of the same meal type
-      final bucket = allRecipes.where((r) => 
-        r.mealType.toLowerCase() == mealType.toLowerCase()
-      ).toList()..shuffle(rand);
-      
+      final bucket = allRecipes
+          .where((r) => r.mealType.toLowerCase() == mealType.toLowerCase())
+          .toList()
+        ..shuffle(rand);
+
       // Ta så många som önskat (eller färre om inte tillräckligt många finns)
       result[mealType] = bucket.take(min(count, bucket.length)).toList();
     });
@@ -223,33 +221,37 @@ class MenuService extends BaseService with SingletonServiceMixin<MenuService> {
   List<String> _extractMealPatterns(String input) {
     final patterns = <String>[];
     final words = input.split(RegExp(r'\s+'));
-    
+
     for (int i = 0; i < words.length - 1; i++) {
       final currentWord = words[i];
       final nextWord = words[i + 1];
-      
+
       // Kolla om nuvarande ord är ett nummer (siffra eller svenskt ord)
-      final isNumber = RegExp(r'^(\d+|en|ett|två|tre|fyra|fem|sex|sju|åtta|nio|tio)$').hasMatch(currentWord);
-      
+      final isNumber = RegExp(
+        r'^(\d+|en|ett|två|tre|fyra|fem|sex|sju|åtta|nio|tio)$',
+      ).hasMatch(currentWord);
+
       // Kolla om nästa ord ser ut som en måltidstyp
-      final isMealType = RegExp(r'^(frukost|lunch|middag|dessert|mellanmål|fika)', caseSensitive: false).hasMatch(nextWord);
-      
+      final isMealType = RegExp(
+        r'^(frukost|lunch|middag|dessert|mellanmål|fika)',
+        caseSensitive: false,
+      ).hasMatch(nextWord);
+
       if (isNumber && isMealType) {
         patterns.add('$currentWord $nextWord');
       }
     }
-    
+
     return patterns;
   }
 
   /// Normaliserar pluralformer och matchar mot tillgängliga typer
   String? _detectType(String input, Set<String> available) {
-    final norm =
-        input
-            .replaceAll(RegExp(r'\d+'), '')
-            .replaceAll(RegExp(r'(ar|er)$', unicode: true), '')
-            .trim();
-    
+    final norm = input
+        .replaceAll(RegExp(r'\d+'), '')
+        .replaceAll(RegExp(r'(ar|er)$', unicode: true), '')
+        .trim();
+
     for (var type in available) {
       final low = type.toLowerCase();
       if (low == norm || low.startsWith(norm)) return type;

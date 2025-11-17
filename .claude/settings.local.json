@@ -10,7 +10,7 @@
       "Bash(nul)",
       "Bash(dir:*)",
       "Bash(xargs -I {} sh -c \"echo \"\"=== {} ===\"\" && grep -c \"\"try\"\" {} && grep -c \"\"await\"\" {}\")",
-      "mcp__playwright__*",
+      "mcp__*",
       "Bash(git log:*)",
       "Bash(git show:*)",
       "Bash(git branch:*)",
@@ -52,7 +52,16 @@
       "Bash(.gitignore)",
       "Bash(tee:*)",
       "Bash(git checkout:*)",
-      "Bash(flutter clean:*)"
+      "Bash(flutter clean:*)",
+      "Bash(taskkill:*)",
+      "Bash(timeout /t 10 /nobreak)",
+      "Bash(flutter devices:*)",
+      "Bash(flutter build web --help:*)",
+      "Bash(flutter run:*)",
+      "Bash(timeout /t 60 /nobreak)",
+      "Bash(xargs -I {} sh -c 'wc -l \"\"\"\"c:/Butlery/butlery/lib/views/social/friends_list/{}\"\"\"\" 2>/dev/null')",
+      "Bash(timeout /t 30 /nobreak)",
+      "Bash(git merge:*)"
     ],
     "deny": [],
     "ask": []
