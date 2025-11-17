@@ -305,8 +305,6 @@ class FirebaseRecipeRepository with PermissionValidationMixin {
 }
 ```
 
-> **📖 See [../security/FIREBASE_SECURITY_RULES.md](../security/FIREBASE_SECURITY_RULES.md) for complete security documentation**
-
 ---
 
 ## Data Modeling
@@ -671,7 +669,6 @@ await FirebaseFirestore.instance.settings = Settings(
 
 ## Next Steps
 
-- **Learn Security Rules**: See [../security/FIREBASE_SECURITY_RULES.md](../security/FIREBASE_SECURITY_RULES.md)
 - **Understand MVVM**: See [MVVM_PATTERN.md](MVVM_PATTERN.md) for repository patterns
 - **Set up DI**: See [DI_SYSTEM.md](DI_SYSTEM.md) for service registration
 - **Best Practices**: See [BEST_PRACTICES.md](BEST_PRACTICES.md) for common scenarios
