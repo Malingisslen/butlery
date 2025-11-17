@@ -46,6 +46,7 @@ import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 /// Comprehensive recipe editing view with all components inlined.
 class EditRecipeView extends StatelessWidget {
@@ -112,33 +113,52 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         bottomNavigationBar: _buildBottomBar(context, viewModel),
         body: Stack(
           children: [
-            Column(
-              children: [
-                _buildSmartBanners(context, widget.recipe),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppDimensions.paddingL,
-                      AppDimensions.spacingXl,
-                      AppDimensions.paddingL,
-                      AppDimensions.paddingL,
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: ListView(
-                        children: _buildFormFields(context, viewModel),
-                      ),
-                    ),
+            // ✅ RESPONSIVE: Center and constrain content on large screens
+            Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: LayoutComponents.valueFor(
+                    context: context,
+                    mobile: double.infinity,
+                    tablet: 800,
+                    desktop: 900,
                   ),
                 ),
-              ],
+                child: Column(
+                  children: [
+                    _buildSmartBanners(context, widget.recipe),
+                    Expanded(
+                      child: Padding(
+                        padding: AppDimensions.responsiveContentPadding(context),
+                        child: Form(
+                          key: _formKey,
+                          child: ListView(
+                            children: _buildFormFields(context, viewModel),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
+            // ✅ RESPONSIVE: Loading overlay also constrained
             if (viewModel.isSaving)
               ColoredBox(
                 color: AppColors.backgroundBeige.withValues(alpha: 0.8),
                 child: Center(
-                  child: StateWidget.loading(
-                    message: 'Uppdaterar recept...',
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: LayoutComponents.valueFor(
+                        context: context,
+                        mobile: double.infinity,
+                        tablet: 500,
+                        desktop: 600,
+                      ),
+                    ),
+                    child: StateWidget.loading(
+                      message: 'Uppdaterar recept...',
+                    ),
                   ),
                 ),
               ),

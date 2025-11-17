@@ -15,6 +15,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 /// Recipe Detail View - Complete recipe display with metadata, actions, and social features
 ///
@@ -275,46 +276,61 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                 ],
               ),
 
-              // Recipe content
-              SliverPadding(
-                padding: AppDimensions.screenPadding,
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    // Recipe metadata
-                    RecipeDetailMetadata(
-                      viewModel: viewModel,
-                      currentPortions: _actions.currentPortions,
-                      isScaled:
-                          _actions.currentPortions != (recipe.portions ?? 1),
+              // Recipe content - ✅ RESPONSIVE: Center and constrain on large screens
+              SliverToBoxAdapter(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: LayoutComponents.valueFor(
+                        context: context,
+                        mobile: double.infinity,
+                        tablet: 800,
+                        desktop: 900,
+                      ),
                     ),
-                    const SizedBox(height: AppDimensions.spacingXl),
+                    child: Padding(
+                      padding: AppDimensions.responsiveContentPadding(context),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Recipe metadata
+                          RecipeDetailMetadata(
+                            viewModel: viewModel,
+                            currentPortions: _actions.currentPortions,
+                            isScaled:
+                                _actions.currentPortions != (recipe.portions ?? 1),
+                          ),
+                          const SizedBox(height: AppDimensions.spacingXl),
 
-                    // Recipe main content
-                    RecipeDetailContent(
-                      viewModel: viewModel,
-                      scaledIngredients: _actions.scaledIngredients,
-                      onPortionChanged: (portions, ingredients) {
-                        setState(() {
-                          _actions.onPortionChanged(portions, ingredients);
-                        });
-                      },
-                      onImageTap: (imageUrls, index) =>
-                          _showFullscreenImage(context, imageUrls, index),
+                          // Recipe main content
+                          RecipeDetailContent(
+                            viewModel: viewModel,
+                            scaledIngredients: _actions.scaledIngredients,
+                            onPortionChanged: (portions, ingredients) {
+                              setState(() {
+                                _actions.onPortionChanged(portions, ingredients);
+                              });
+                            },
+                            onImageTap: (imageUrls, index) =>
+                                _showFullscreenImage(context, imageUrls, index),
+                          ),
+                          const SizedBox(height: AppDimensions.spacingXl),
+
+                          // Recipe comments
+                          RecipeDetailComments(
+                            recipe: recipe,
+                            onCommentPosted: () {
+                              // Refresh recipe data after comment posted
+                              setState(() {});
+                            },
+                          ),
+
+                          // Bottom padding for safe area (Android gesture navigation)
+                          SizedBox(height: bottomPadding + AppDimensions.spacingXl),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: AppDimensions.spacingXl),
-
-                    // Recipe comments
-                    RecipeDetailComments(
-                      recipe: recipe,
-                      onCommentPosted: () {
-                        // Refresh recipe data after comment posted
-                        setState(() {});
-                      },
-                    ),
-
-                    // Bottom padding for safe area (Android gesture navigation)
-                    SizedBox(height: bottomPadding + AppDimensions.spacingXl),
-                  ]),
+                  ),
                 ),
               ),
             ],
