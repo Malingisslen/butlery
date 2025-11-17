@@ -23,6 +23,7 @@ import 'package:butlery/views/mina_recept_view.dart'; // ULTRATHINK: Direct navi
 import 'package:butlery/core/utils/logger.dart'; // For AppLogger
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 ///
 ///
@@ -82,20 +83,38 @@ class _AuthViewState extends State<AuthView> {
         backgroundColor: Theme.of(context).colorScheme.surface,
         body: Consumer<AuthViewModel>(
           builder: (context, viewModel, _) {
+            // ✅ RESPONSIVE: Center and constrain auth form on large screens
             return Center(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppDimensions.paddingL),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Logo/Header område
-                      _buildHeader(context),
-                      const SizedBox(height: AppDimensions.spacingXxl),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: LayoutComponents.valueFor(
+                    context: context,
+                    mobile: double.infinity,
+                    tablet: 500,
+                    desktop: 600,
+                  ),
+                ),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: AppDimensions.responsiveContentPadding(context),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Logo/Header område
+                        _buildHeader(context),
+                        SizedBox(
+                          height: LayoutComponents.valueFor(
+                            context: context,
+                            mobile: AppDimensions.spacingXxl,
+                            tablet: AppDimensions.spacingXxl * 1.5,
+                            desktop: AppDimensions.spacingXxl * 2,
+                          ),
+                        ),
 
-                      // Auth-kort
-                      _buildAuthCard(context, viewModel),
-                    ],
+                        // Auth-kort
+                        _buildAuthCard(context, viewModel),
+                      ],
+                    ),
                   ),
                 ),
               ),
