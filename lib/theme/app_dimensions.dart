@@ -1,6 +1,7 @@
 /// Dimension system providing unified spacing, sizing, and layout constants.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/responsive/breakpoints.dart';
 
 /// Central repository for spatial and sizing constants.
 class AppDimensions {
@@ -389,4 +390,261 @@ class AppDimensions {
   // ===== STANDARDIZED EDGE INSETS (FROM ORIGINAL APPTHEME) =====
 
 
+  // ===== RESPONSIVE DESIGN UTILITIES =====
+
+  /// Get responsive spacing based on screen size
+  ///
+  /// Automatically scales spacing:
+  /// - Mobile: base value
+  /// - Tablet: base * 1.25
+  /// - Desktop: base * 1.5
+  ///
+  /// Example:
+  /// ```dart
+  /// final padding = AppDimensions.responsiveSpacing(context, spacingMd);
+  /// // Mobile: 16px, Tablet: 20px, Desktop: 24px
+  /// ```
+  static double responsiveSpacing(BuildContext context, double base) {
+    return Breakpoints.valueFor(
+      context: context,
+      mobile: base,
+      tablet: base * 1.25,
+      desktop: base * 1.5,
+    );
+  }
+
+  /// Get responsive padding based on screen size
+  ///
+  /// Automatically scales padding values for different screen sizes.
+  ///
+  /// Example:
+  /// ```dart
+  /// final padding = AppDimensions.responsivePadding(context);
+  /// // Mobile: 16px, Tablet: 20px, Desktop: 24px
+  /// ```
+  static double responsivePadding(BuildContext context) {
+    return Breakpoints.valueFor(
+      context: context,
+      mobile: paddingL,
+      tablet: paddingXl,
+      desktop: spacingLg,
+    );
+  }
+
+  /// Get responsive icon size based on screen size
+  ///
+  /// Example:
+  /// ```dart
+  /// final iconSize = AppDimensions.responsiveIconSize(context, iconSizeL);
+  /// // Mobile: 24px, Tablet: 27.6px, Desktop: 30px
+  /// ```
+  static double responsiveIconSize(BuildContext context, double base) {
+    return Breakpoints.valueFor(
+      context: context,
+      mobile: base,
+      tablet: base * 1.15,
+      desktop: base * 1.25,
+    );
+  }
+
+  /// Get responsive content padding (horizontal screen padding)
+  ///
+  /// Returns EdgeInsets for screen content:
+  /// - Mobile: 16px
+  /// - Tablet: 24px
+  /// - Desktop: 32px
+  static EdgeInsets responsiveContentPadding(BuildContext context) {
+    final padding = Breakpoints.valueFor(
+      context: context,
+      mobile: spacingMd,
+      tablet: spacingLg,
+      desktop: spacingXl,
+    );
+    return EdgeInsets.all(padding);
+  }
+
+  /// Get responsive horizontal padding only
+  ///
+  /// Useful for list items and cards that need horizontal padding
+  static EdgeInsets responsiveHorizontalPadding(BuildContext context) {
+    final padding = Breakpoints.valueFor(
+      context: context,
+      mobile: spacingMd,
+      tablet: spacingLg,
+      desktop: spacingXl,
+    );
+    return EdgeInsets.symmetric(horizontal: padding);
+  }
+
+  /// Get responsive grid spacing based on screen size
+  ///
+  /// Returns spacing for grid layouts:
+  /// - Mobile: 16px
+  /// - Tablet: 20px
+  /// - Desktop: 24px
+  static double responsiveGridSpacing(BuildContext context) {
+    return Breakpoints.valueFor(
+      context: context,
+      mobile: spacingMd,
+      tablet: spacingLg - spacingXs,
+      desktop: spacingLg,
+    );
+  }
+
+  /// Get responsive card padding
+  ///
+  /// Returns padding for cards:
+  /// - Mobile: 16px
+  /// - Tablet: 20px
+  /// - Desktop: 24px
+  static EdgeInsets responsiveCardPadding(BuildContext context) {
+    final padding = Breakpoints.valueFor(
+      context: context,
+      mobile: spacingMd,
+      tablet: spacingLg - spacingXs,
+      desktop: spacingLg,
+    );
+    return EdgeInsets.all(padding);
+  }
+
+  /// Get responsive avatar size
+  ///
+  /// Returns avatar size based on screen:
+  /// - Mobile: 40px
+  /// - Tablet: 48px
+  /// - Desktop: 56px
+  static double responsiveAvatarSize(BuildContext context) {
+    return Breakpoints.valueFor(
+      context: context,
+      mobile: 40.0,
+      tablet: 48.0,
+      desktop: 56.0,
+    );
+  }
+
+  /// Get responsive button height
+  ///
+  /// Returns button height:
+  /// - Mobile: 48px (min touch target)
+  /// - Tablet: 52px
+  /// - Desktop: 56px
+  static double responsiveButtonHeight(BuildContext context) {
+    return Breakpoints.valueFor(
+      context: context,
+      mobile: minTouchTarget,
+      tablet: 52.0,
+      desktop: buttonHeight,
+    );
+  }
+
+  /// Get responsive image size for thumbnails
+  ///
+  /// Returns thumbnail size:
+  /// - Mobile: 80px
+  /// - Tablet: 96px
+  /// - Desktop: 120px
+  static double responsiveThumbnailSize(BuildContext context) {
+    return Breakpoints.valueFor(
+      context: context,
+      mobile: imageSizeThumbnail,
+      tablet: 96.0,
+      desktop: thumbnailLargeSize,
+    );
+  }
+
+  /// Get responsive recipe card image height
+  ///
+  /// Returns image height for recipe cards:
+  /// - Mobile: 160px
+  /// - Tablet: 200px
+  /// - Desktop: 240px
+  static double responsiveRecipeImageHeight(BuildContext context) {
+    return Breakpoints.valueFor(
+      context: context,
+      mobile: recipeImageHeight,
+      tablet: 200.0,
+      desktop: 240.0,
+    );
+  }
+
+  /// Get responsive grid cross-axis count
+  ///
+  /// Returns number of columns for grid:
+  /// - Mobile: 1 column
+  /// - Tablet: 2 columns
+  /// - Desktop: 3 columns
+  static int responsiveGridColumns(BuildContext context) {
+    return Breakpoints.getGridColumnCount(context);
+  }
+
+  /// Get responsive card grid columns
+  ///
+  /// Returns number of columns for card grid (more conservative):
+  /// - Mobile: 1 column
+  /// - Tablet: 2 columns
+  /// - Desktop: 2 columns
+  /// - Large Desktop: 3 columns
+  static int responsiveCardColumns(BuildContext context) {
+    return Breakpoints.getCardColumnCount(context);
+  }
+
+  /// Get maximum content width for readability
+  ///
+  /// Prevents content from being too wide on large screens:
+  /// - Mobile: No limit
+  /// - Tablet: 800px
+  /// - Desktop: 1200px
+  static double responsiveMaxContentWidth(BuildContext context) {
+    return Breakpoints.getMaxContentWidth(context);
+  }
+
+  /// Get maximum form width
+  ///
+  /// Forms should be centered and constrained on large screens:
+  /// - Mobile: No limit
+  /// - Tablet: 600px
+  /// - Desktop: 600px
+  static double responsiveMaxFormWidth(BuildContext context) {
+    return Breakpoints.getMaxFormWidth(context);
+  }
+
+  /// Get responsive dialog width
+  ///
+  /// Dialogs should be comfortable to read:
+  /// - Mobile: No limit (full width with padding)
+  /// - Tablet: 500px
+  /// - Desktop: 600px
+  static double responsiveDialogWidth(BuildContext context) {
+    return Breakpoints.getMaxDialogWidth(context);
+  }
+
+  /// Get responsive elevation for cards
+  ///
+  /// Subtle elevation on mobile, more prominent on larger screens:
+  /// - Mobile: 2.0
+  /// - Tablet: 4.0
+  /// - Desktop: 4.0
+  static double responsiveCardElevation(BuildContext context) {
+    return Breakpoints.valueFor(
+      context: context,
+      mobile: elevationLow,
+      tablet: elevationMedium,
+      desktop: elevationMedium,
+    );
+  }
+
+  /// Get sidebar/navigation rail width
+  ///
+  /// Returns:
+  /// - Mobile: 0 (no sidebar, uses bottom nav)
+  /// - Tablet: 72 (NavigationRail compact)
+  /// - Desktop: 256 (Drawer expanded)
+  static double responsiveSidebarWidth(BuildContext context) {
+    return Breakpoints.valueFor(
+      context: context,
+      mobile: 0,
+      tablet: 72,
+      desktop: 256,
+    );
+  }
 }
