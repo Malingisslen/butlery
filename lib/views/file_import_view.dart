@@ -6,6 +6,7 @@ import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 /// Consolidated state class for FileImportView to reduce setState calls
 class FileImportState {
@@ -141,11 +142,22 @@ class _FileImportViewState extends State<FileImportView> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingL),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+        // ✅ RESPONSIVE: Center and constrain content on large screens
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: LayoutComponents.valueFor(
+                context: context,
+                mobile: double.infinity,
+                tablet: 700,
+                desktop: 800,
+              ),
+            ),
+            child: Padding(
+              padding: AppDimensions.responsiveContentPadding(context),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
               // Instructions
               Card(
                 child: Padding(
@@ -252,7 +264,9 @@ class _FileImportViewState extends State<FileImportView> {
                     ),
                   ),
                 ),
-            ],
+                ],
+              ),
+            ),
           ),
         ),
       ),
