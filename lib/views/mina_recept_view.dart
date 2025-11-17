@@ -481,7 +481,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
             );
     }
 
-    // Receptlista med RefreshIndicator som synkar om online
+    // Responsive recipe list/grid with RefreshIndicator
     return RefreshIndicator(
       onRefresh: () async {
         // Om online, synka först
@@ -499,14 +499,16 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       child: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.zero, // Remove all ListView padding
-              itemCount: recipes.length,
-              cacheExtent:
-                  500, // PERFORMANCE FIX: Limit cached items for better memory usage
-              itemBuilder: (context, index) {
-                final recipe = recipes[index];
-
+            // ✅ RESPONSIVE: Automatically switches between ListView (mobile) and GridView (tablet/desktop)
+            child: LayoutComponents.responsiveListGrid(
+              items: recipes,
+              tabletColumns: 2, // 2 columns on tablet
+              desktopColumns: 3, // 3 columns on desktop
+              spacing: AppDimensions.responsiveGridSpacing(context),
+              padding: AppDimensions.responsiveContentPadding(context),
+              shrinkWrap: false,
+              gridChildAspectRatio: 0.75, // Recipe cards are taller than wide
+              itemBuilder: (context, recipe) {
                 return ContentCard(
                   key: ValueKey(recipe.id),
                   item: recipe,
@@ -528,7 +530,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           // PERFORMANCE FIX: Load More button for pagination
           if (viewModel.canLoadMore)
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: AppDimensions.responsiveContentPadding(context),
               child: ActionButtons.primaryButton(
                 context,
                 label: 'Visa fler recept',
