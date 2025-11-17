@@ -61,7 +61,8 @@
       "Bash(timeout /t 60 /nobreak)",
       "Bash(xargs -I {} sh -c 'wc -l \"\"\"\"c:/Butlery/butlery/lib/views/social/friends_list/{}\"\"\"\" 2>/dev/null')",
       "Bash(timeout /t 30 /nobreak)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
