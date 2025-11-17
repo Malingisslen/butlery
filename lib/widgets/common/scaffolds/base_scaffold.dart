@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/core/responsive/breakpoints.dart';
+import 'package:butlery/core/responsive/responsive_builder.dart';
 
 /// Scaffold templates eliminating duplicate patterns across 30+ view files (AppBar, FAB, drawer, loading, error, empty states).
 class BaseScaffold extends StatelessWidget {
@@ -108,6 +110,14 @@ class LoadingScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Responsive spacing: larger on tablet/desktop
+    final spacing = Breakpoints.valueFor(
+      context: context,
+      mobile: AppDimensions.spacingMd,
+      tablet: AppDimensions.spacingLg,
+      desktop: AppDimensions.spacingXl,
+    );
+
     return BaseScaffold(
       title: title,
       showBackButton: showBackButton,
@@ -117,7 +127,7 @@ class LoadingScaffold extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const CircularProgressIndicator(),
-            const SizedBox(height: AppDimensions.spacingMd),
+            SizedBox(height: spacing),
             Text(
               loadingMessage,
               style: AppTextStyles.bodyLarge,
@@ -148,29 +158,39 @@ class ErrorScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Responsive padding and icon size
+    final padding = AppDimensions.responsiveContentPadding(context);
+    final iconSize = AppDimensions.responsiveIconSize(context, 64);
+    final spacing = Breakpoints.valueFor(
+      context: context,
+      mobile: AppDimensions.spacingMd,
+      tablet: AppDimensions.spacingLg,
+      desktop: AppDimensions.spacingXl,
+    );
+
     return BaseScaffold(
       title: title,
       showBackButton: showBackButton,
       actions: actions,
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingMd),
+          padding: padding,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.error_outline,
-                size: 64,
+                size: iconSize,
                 color: Theme.of(context).colorScheme.error,
               ),
-              const SizedBox(height: AppDimensions.spacingMd),
+              SizedBox(height: spacing),
               Text(
                 errorMessage,
                 style: AppTextStyles.bodyLarge,
                 textAlign: TextAlign.center,
               ),
               if (onRetry != null) ...[
-                const SizedBox(height: AppDimensions.spacingLg),
+                SizedBox(height: spacing * 1.5),
                 ElevatedButton(
                   onPressed: onRetry,
                   child: const Text(AppStrings.retry),
@@ -207,23 +227,33 @@ class EmptyStateScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Responsive padding and icon size
+    final padding = AppDimensions.responsiveContentPadding(context);
+    final iconSize = AppDimensions.responsiveIconSize(context, 64);
+    final spacing = Breakpoints.valueFor(
+      context: context,
+      mobile: AppDimensions.spacingMd,
+      tablet: AppDimensions.spacingLg,
+      desktop: AppDimensions.spacingXl,
+    );
+
     return BaseScaffold(
       title: title,
       showBackButton: showBackButton,
       actions: actions,
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingMd),
+          padding: padding,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (emptyIcon != null) ...[
                 Icon(
                   emptyIcon,
-                  size: 64,
+                  size: iconSize,
                   color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
-                const SizedBox(height: AppDimensions.spacingMd),
+                SizedBox(height: spacing),
               ],
               Text(
                 emptyMessage,
@@ -231,7 +261,7 @@ class EmptyStateScaffold extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               if (onAction != null && actionText != null) ...[
-                const SizedBox(height: AppDimensions.spacingLg),
+                SizedBox(height: spacing * 1.5),
                 ElevatedButton(
                   onPressed: onAction,
                   child: Text(actionText!),
@@ -272,6 +302,10 @@ class FormScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Responsive form padding - constrain width on larger screens for better UX
+    final padding = AppDimensions.responsiveContentPadding(context);
+    final maxFormWidth = Breakpoints.getMaxFormWidth(context);
+
     return BaseScaffold(
       title: title,
       showBackButton: showBackButton,
@@ -279,9 +313,14 @@ class FormScaffold extends StatelessWidget {
       body: Column(
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppDimensions.spacingMd),
-              child: form,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxFormWidth),
+                child: SingleChildScrollView(
+                  padding: padding,
+                  child: form,
+                ),
+              ),
             ),
           ),
           if (showSaveButton || showCancelButton) _buildBottomButtons(context),
@@ -314,8 +353,18 @@ class FormScaffold extends StatelessWidget {
   }
 
   Widget _buildBottomButtons(BuildContext context) {
+    // Responsive button bar padding
+    final padding = AppDimensions.responsiveContentPadding(context);
+    final maxFormWidth = Breakpoints.getMaxFormWidth(context);
+    final buttonSpacing = Breakpoints.valueFor(
+      context: context,
+      mobile: AppDimensions.spacingMd,
+      tablet: AppDimensions.spacingLg,
+      desktop: AppDimensions.spacingLg,
+    );
+
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      padding: padding,
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
@@ -325,35 +374,40 @@ class FormScaffold extends StatelessWidget {
           ),
         ),
       ),
-      child: Row(
-        children: [
-          if (showCancelButton) ...[
-            Expanded(
-              child: OutlinedButton(
-                onPressed: isLoading ? null : (onCancel ?? () => Navigator.pop(context)),
-                child: const Text(AppStrings.cancel),
-              ),
-            ),
-            if (showSaveButton) const SizedBox(width: AppDimensions.spacingMd),
-          ],
-          if (showSaveButton) ...[
-            Expanded(
-              child: ElevatedButton(
-                onPressed: isLoading ? null : onSave,
-                child: isLoading 
-                    ? const SizedBox(
-                        height: 16,
-                        width: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const Text(AppStrings.save),
-              ),
-            ),
-          ],
-        ],
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxFormWidth),
+          child: Row(
+            children: [
+              if (showCancelButton) ...[
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: isLoading ? null : (onCancel ?? () => Navigator.pop(context)),
+                    child: const Text(AppStrings.cancel),
+                  ),
+                ),
+                if (showSaveButton) SizedBox(width: buttonSpacing),
+              ],
+              if (showSaveButton) ...[
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : onSave,
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 16,
+                            width: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text(AppStrings.save),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -478,24 +532,116 @@ class TabbedScaffold extends StatelessWidget {
   }
 }
 
-/// Responsive scaffold helper consolidating responsive patterns
+/// Enhanced responsive scaffold helper using comprehensive breakpoint system
+///
+/// Provides three builder variants:
+/// 1. Simple mobile/desktop boolean check (backward compatible)
+/// 2. Full mobile/tablet/desktop builder functions
+/// 3. Device category enum for fine-grained control
+///
+/// **Usage Examples:**
+/// ```dart
+/// // Simple mobile/desktop check (backward compatible)
+/// ResponsiveScaffoldBuilder(
+///   builder: (context, isMobile) => isMobile ? MobileView() : DesktopView(),
+/// );
+///
+/// // Full mobile/tablet/desktop builders
+/// ResponsiveScaffoldBuilder.full(
+///   mobile: (context) => MobileLayout(),
+///   tablet: (context) => TabletLayout(),
+///   desktop: (context) => DesktopLayout(),
+/// );
+///
+/// // Device category for fine-grained control
+/// ResponsiveScaffoldBuilder.category(
+///   builder: (context, category) {
+///     switch (category) {
+///       case DeviceCategory.mobile:
+///         return MobileLayout();
+///       case DeviceCategory.tablet:
+///         return TabletLayout();
+///       case DeviceCategory.desktop:
+///         return DesktopLayout();
+///       default:
+///         return DesktopLayout();
+///     }
+///   },
+/// );
+/// ```
 class ResponsiveScaffoldBuilder extends StatelessWidget {
-  final Widget Function(BuildContext context, bool isMobile) builder;
-  final double breakpoint;
+  final Widget Function(BuildContext context, bool isMobile)? builder;
+  final ResponsiveWidgetBuilder? mobile;
+  final ResponsiveWidgetBuilder? tablet;
+  final ResponsiveWidgetBuilder? desktop;
+  final Widget Function(BuildContext context, DeviceCategory category)? categoryBuilder;
 
+  /// Simple mobile/desktop boolean check (backward compatible)
+  ///
+  /// Uses 600px breakpoint: < 600px = mobile, >= 600px = desktop
   const ResponsiveScaffoldBuilder({
     super.key,
     required this.builder,
-    this.breakpoint = 600,
-  });
+  })  : mobile = null,
+        tablet = null,
+        desktop = null,
+        categoryBuilder = null;
+
+  /// Full mobile/tablet/desktop builder functions
+  ///
+  /// Breakpoints:
+  /// - Mobile: < 600px
+  /// - Tablet: 600-1024px
+  /// - Desktop: >= 1024px
+  ///
+  /// Graceful fallbacks: desktop → tablet → mobile
+  const ResponsiveScaffoldBuilder.full({
+    super.key,
+    required this.mobile,
+    this.tablet,
+    this.desktop,
+  })  : builder = null,
+        categoryBuilder = null;
+
+  /// Device category for fine-grained control
+  ///
+  /// Provides all 6 device categories:
+  /// - mobile, mobileLarge, tablet, tabletLarge, desktop, desktopLarge
+  const ResponsiveScaffoldBuilder.category({
+    super.key,
+    required this.categoryBuilder,
+  })  : builder = null,
+        mobile = null,
+        tablet = null,
+        desktop = null;
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < breakpoint;
-        return builder(context, isMobile);
-      },
-    );
+    // Category builder (most flexible)
+    if (categoryBuilder != null) {
+      final category = Breakpoints.getDeviceCategory(context);
+      return categoryBuilder!(context, category);
+    }
+
+    // Full builder (mobile/tablet/desktop)
+    if (mobile != null) {
+      return ResponsiveBuilder(
+        mobile: mobile!,
+        tablet: tablet,
+        desktop: desktop,
+      );
+    }
+
+    // Simple builder (backward compatible)
+    if (builder != null) {
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final isMobile = Breakpoints.isMobileWidth(constraints.maxWidth);
+          return builder!(context, isMobile);
+        },
+      );
+    }
+
+    throw StateError('ResponsiveScaffoldBuilder requires one of: builder, mobile, or categoryBuilder');
   }
 }
