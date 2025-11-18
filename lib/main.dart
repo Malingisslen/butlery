@@ -584,31 +584,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    // 🔧 ULTRATHINK: AGGRESSIVE LOGIN NAVIGATION - Always sync with Firebase on every build
-    final firebaseUser = FirebaseAuth.instance.currentUser;
-    if (firebaseUser != null &&
-        (_currentUser == null || _currentUser!.uid != firebaseUser.uid)) {
-      _currentUser = firebaseUser;
-
-      // ULTRA-AGGRESSIVE: Force multiple rebuilds with different mechanisms
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() {});
-
-          // Second rebuild with delay
-          Future.delayed(const Duration(milliseconds: 16), () {
-            if (mounted) setState(() {});
-          });
-
-          // Third rebuild with longer delay
-          Future.delayed(const Duration(milliseconds: 100), () {
-            if (mounted) setState(() {});
-          });
-        }
-      });
-    }
-
-    // 🔧 DIRECT STATE-BASED RENDERING (No StreamBuilder)
+    // State-based rendering - auth listener in initState maintains _currentUser
     final user = _currentUser;
 
     if (user != null) {
