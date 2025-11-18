@@ -109,9 +109,10 @@ class _AuthViewState extends State<AuthView> {
   }
   Widget _buildAuthCard(BuildContext context, AuthViewModel viewModel) {
     return AuthFormCard(
-      child: Form(
-        key: _formKey,
-        child: Column(
+      child: AutofillGroup(
+        child: Form(
+          key: _formKey,
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Rubrik
@@ -158,6 +159,7 @@ class _AuthViewState extends State<AuthView> {
           ],
         ),
       ),
+      ),
     );
   }
   Widget _buildNameField(AuthViewModel viewModel) {
@@ -174,6 +176,7 @@ class _AuthViewState extends State<AuthView> {
             Icon(Icons.person_outline, size: AppDimensions.iconSizeAction),
       ),
       validator: FormValidators.authName(),
+      autofillHints: const [AutofillHints.name],
       onFieldSubmitted: (_) {
         FocusScope.of(context).requestFocus(_emailFocus);
       },
