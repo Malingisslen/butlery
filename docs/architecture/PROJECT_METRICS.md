@@ -237,14 +237,14 @@ The Butlery application is a **comprehensive recipe management and meal planning
 - ✅ Default Value Extensions (~350 lines)
 - ✅ Test Helpers
 
-**Adoption Status:**
-- BaseService: 21% (39/186 services)
+**Adoption Status (Verified 2025-11-18):**
+- BaseService: 88% (38/43 services)
 - AsyncOperationMixin: 48% (22/46 ViewModels)
-- BaseFirebaseRepository: 46.6% (27/58 repositories)
-- SerializationUtils: 1.5% (12 files)
-- Extension methods: 3.7% (30 files)
+- BaseFirebaseRepository: 63% (17/27 Firebase repositories)
+- SerializationUtils: 12 files (models with Firestore parsing)
+- Extension methods: 30 files
 
-**Opportunity:** 147 services could benefit from BaseService adoption
+**Opportunity:** Increase SerializationUtils adoption in remaining models
 
 ---
 

@@ -4,14 +4,14 @@
 
 **Status**: Comprehensive infrastructure in place (Jan 2025)
 **Impact**: 3,000-4,000 lines of duplication eliminated
-**Adoption**: Partial (20-24% - varies by component, needs expansion)
-**Last Verified**: January 2025
+**Adoption**: High (48-88% - varies by component)
+**Last Verified**: November 2025
 
 ---
 
 ## Executive Summary
 
-The Butlery codebase has **excellent deduplication infrastructure** already implemented. These patterns exist but are **underutilized** (20-24% adoption). This guide provides quick reference to existing patterns.
+The Butlery codebase has **excellent deduplication infrastructure** already implemented. These patterns are **well adopted** (48-88% adoption). This guide provides quick reference to existing patterns.
 
 **For complete documentation and examples**, see the **code-deduplication-utilities skill** in `.claude/skills/`.
 
@@ -67,9 +67,9 @@ class MyService extends BaseService {
 
 **Location**: `lib/core/mixins/async_operation_mixin.dart`
 **Initiative Status**: ✅ COMPLETE (Jan 2025)
-**Adoption**: 24% (21/89 ViewModels)
+**Adoption**: 48% (22/46 ViewModels)
 
-**Why 24% is Expected**: This adoption rate is appropriate and intentional. Only ViewModels with simple loading/error state patterns benefit from AsyncOperationMixin. Many ViewModels have well-architected custom state management (streams, manager patterns) that should NOT be replaced.
+**Why 48% is Expected**: This adoption rate is appropriate and intentional. Only ViewModels with simple loading/error state patterns benefit from AsyncOperationMixin. Many ViewModels have well-architected custom state management (streams, manager patterns) that should NOT be replaced.
 
 **When to use:**
 - ViewModels with simple loading/error patterns
@@ -96,15 +96,15 @@ class MyViewModel extends ChangeNotifier
 }
 ```
 
-**Key Learning**: Of the 89 total ViewModels in the codebase, only 21 (24%) benefit from AsyncOperationMixin. The remaining ViewModels have well-architected custom state management that should not be replaced.
+**Key Learning**: Of the 46 total ViewModels in the codebase, 22 (48%) benefit from AsyncOperationMixin. The remaining ViewModels have well-architected custom state management that should not be replaced.
 
 ---
 
 ### 3. BaseService
 
 **Location**: `lib/core/base/base_service.dart`
-**Adoption**: 20% (39/195 services)
-**Opportunity**: 144 services could benefit
+**Adoption**: 88% (38/43 services)
+**Opportunity**: 5 remaining services could benefit
 
 **When to use:**
 - Instance-based services (NOT ChangeNotifier or static utilities)
@@ -135,8 +135,8 @@ class RecipeDiscoveryService extends BaseService {
 ### 4. BaseFirebaseRepository
 
 **Location**: `lib/repositories/base/`
-**Adoption**: 25% (17/68 repositories)
-**Opportunity**: 51 repositories could benefit
+**Adoption**: 63% (17/27 Firebase repositories)
+**Opportunity**: 10 repositories could benefit
 
 **When to use:**
 - New Firebase repositories
@@ -295,14 +295,14 @@ class MyRepositoryTest extends RepositoryTestBase {
 
 | Pattern | Adoption | Files Using | Opportunity |
 |---------|----------|-------------|-------------|
-| ErrorHandlingMixin | ~15% | Via BaseService | 144 services |
-| AsyncOperationMixin | 24% | 21/89 ViewModels | Expected rate (simple patterns only) |
-| BaseService | 20% | 39/195 services | 144 services |
-| BaseFirebaseRepository | 25% | 17/68 repositories | 51 repositories |
-| SerializationUtils | 1.5% | 12 files | High! |
-| Extension methods | 3.7% | 30 files | High! |
+| ErrorHandlingMixin | 88% | Via BaseService | 5 services |
+| AsyncOperationMixin | 48% | 22/46 ViewModels | Expected rate (simple patterns only) |
+| BaseService | 88% | 38/43 services | 5 services |
+| BaseFirebaseRepository | 63% | 17/27 repositories | 10 repositories |
+| SerializationUtils | 26% | 12 files | Expand to more models |
+| Extension methods | - | 30 files | High! |
 | ValidationUtils | Low | Few files | High! |
-| Test Helpers | 0% | New infrastructure | All new tests |
+| Test Helpers | Growing | New infrastructure | All new tests |
 
 ---
 
