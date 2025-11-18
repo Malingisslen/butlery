@@ -203,10 +203,22 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
         return LayoutComponents.mainMenu(
           currentIndex: null,
           title: 'Vänner & Grupper',
-          body: Column(
-            children: [
-              // TabBar with proper styling
-              ColoredBox(
+          body: SafeArea(
+            // ✅ RESPONSIVE: Center and constrain content on large screens
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: LayoutComponents.valueFor(
+                    context: context,
+                    mobile: double.infinity,
+                    tablet: 700,
+                    desktop: 800,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // TabBar with proper styling
+                    ColoredBox(
                 color: Theme.of(context).colorScheme.surface,
                 child: TabBar(
                   controller: _tabController,
@@ -309,6 +321,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                 ),
               ),
             ],
+                ),
+              ),
+            ),
           ),
           floatingActionButton: _currentTabIndex == 1
               ? FloatingActionButton(

@@ -126,11 +126,23 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
           () => _handleBatchReject(viewModel),
           () => _handleCancelSelected(viewModel),
         ),
-        body: Column(
-          children: [
-            _FriendRequestsHeaderBuilder.buildErrorDisplay(context, viewModel),
-            Expanded(
-              child: TabBarView(
+        body: SafeArea(
+          // ✅ RESPONSIVE: Center and constrain content on large screens
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: LayoutComponents.valueFor(
+                  context: context,
+                  mobile: double.infinity,
+                  tablet: 700,
+                  desktop: 800,
+                ),
+              ),
+              child: Column(
+                children: [
+                  _FriendRequestsHeaderBuilder.buildErrorDisplay(context, viewModel),
+                  Expanded(
+                    child: TabBarView(
                 controller: _tabController,
                 children: [
                   _IncomingRequestsTabBuilder.build(
@@ -151,6 +163,9 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
               ),
             ),
           ],
+              ),
+            ),
+          ),
         ),
         floatingActionButton: _actions.buildFloatingActionButton(
           context,
