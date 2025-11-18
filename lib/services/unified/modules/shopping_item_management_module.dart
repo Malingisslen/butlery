@@ -219,41 +219,50 @@ class ShoppingItemManagementModule {
     }
   }
 
-  /// Toggle item bought status in active shopping list with real Firebase integration
+  /// Toggle item bought status in active shopping list with optimistic updates
+  ///
+  /// Applies the state change immediately for instant UI feedback,
+  /// then syncs to Firebase in background. Rolls back on failure.
   Future<bool> toggleItemBought(String itemId) async {
     final activeListId = getActiveListId();
     if (activeListId == null) {
       return false;
     }
 
+    // Find the item in local state
+    final listIndex = lists.indexWhere((list) => list.id == activeListId);
+    if (listIndex == -1) {
+      return false;
+    }
+
+    final itemIndex = lists[listIndex].items.indexWhere((item) => item.id == itemId);
+    if (itemIndex == -1) {
+      return false;
+    }
+
+    final currentItem = lists[listIndex].items[itemIndex];
+    final updatedItem = currentItem.copyWith(bought: !currentItem.bought);
+
+    // OPTIMISTIC UPDATE: Apply state change immediately for instant UI feedback
+    final updatedItems = List<UnifiedShoppingItem>.from(lists[listIndex].items);
+    updatedItems[itemIndex] = updatedItem;
+    lists[listIndex] = lists[listIndex].copyWith(items: updatedItems);
+    notifyListeners();
+
+    // BACKGROUND SYNC: Update Firebase asynchronously
     try {
-      // Find the item in local state
-      final listIndex = lists.indexWhere((list) => list.id == activeListId);
-      if (listIndex == -1) {
-        return false;
-      }
-
-      final itemIndex = lists[listIndex].items.indexWhere((item) => item.id == itemId);
-      if (itemIndex == -1) {
-        return false;
-      }
-
-      final currentItem = lists[listIndex].items[itemIndex];
-      final updatedItem = currentItem.copyWith(bought: !currentItem.bought);
-
-      // Update in Firebase using removeItem + addItem pattern
       await repository.removeItem(activeListId, itemId);
       await repository.addItem(activeListId, updatedItem);
-
-      // Update local state
-      final updatedItems = List<UnifiedShoppingItem>.from(lists[listIndex].items);
-      updatedItems[itemIndex] = updatedItem;
-
-      lists[listIndex] = lists[listIndex].copyWith(items: updatedItems);
-      notifyListeners();
-
       return true;
     } catch (e) {
+      // ROLLBACK: Revert to original state on failure
+      final rollbackItems = List<UnifiedShoppingItem>.from(lists[listIndex].items);
+      final rollbackIndex = rollbackItems.indexWhere((item) => item.id == itemId);
+      if (rollbackIndex != -1) {
+        rollbackItems[rollbackIndex] = currentItem;
+        lists[listIndex] = lists[listIndex].copyWith(items: rollbackItems);
+        notifyListeners();
+      }
       return false;
     }
   }
