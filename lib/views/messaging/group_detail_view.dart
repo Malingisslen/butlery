@@ -15,6 +15,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 /// Group conversation details view with member management, add/remove operations, and admin controls.
 class GroupDetailView extends StatelessWidget {
@@ -37,7 +38,22 @@ class GroupDetailView extends StatelessWidget {
         builder: (context, viewModel, child) {
           return Scaffold(
             appBar: _buildAppBar(context, viewModel),
-            body: _buildBody(context, viewModel),
+            body: SafeArea(
+              // ✅ RESPONSIVE: Center and constrain content on large screens
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: LayoutComponents.valueFor(
+                      context: context,
+                      mobile: double.infinity,
+                      tablet: 700,
+                      desktop: 800,
+                    ),
+                  ),
+                  child: _buildBody(context, viewModel),
+                ),
+              ),
+            ),
           );
         },
       ),

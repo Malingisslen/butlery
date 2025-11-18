@@ -26,6 +26,7 @@ import 'package:butlery/widgets/common/indicators/status_indicator.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 /// Stateful widget for shared content reception with intelligent content routing.
 class ReceiveShareView extends StatefulWidget {
@@ -261,18 +262,31 @@ class _ReceiveShareViewState extends State<ReceiveShareView>
 
   /// Build content view with detection header, preview, and action buttons.
   Widget _buildContentView() {
-    return Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildDetectionHeader(),
-          const SizedBox(height: AppDimensions.spacingL),
-          _buildContentPreview(),
-          const Spacer(),
-          _buildActionButtons(),
-          const SizedBox(height: AppDimensions.spacingL),
-        ],
+    // ✅ RESPONSIVE: Center and constrain content on large screens
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: LayoutComponents.valueFor(
+            context: context,
+            mobile: double.infinity,
+            tablet: 700,
+            desktop: 800,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildDetectionHeader(),
+              const SizedBox(height: AppDimensions.spacingL),
+              _buildContentPreview(),
+              const Spacer(),
+              _buildActionButtons(),
+              const SizedBox(height: AppDimensions.spacingL),
+            ],
+          ),
+        ),
       ),
     );
   }

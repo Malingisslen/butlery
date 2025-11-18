@@ -13,6 +13,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 /// ✨ MIGRERAD CREATE SHARED SHOPPING LIST VY - Nu med UtilityComponents
 class CreateSharedShoppingListView extends StatefulWidget {
@@ -75,7 +76,22 @@ class _CreateSharedShoppingListViewState
         builder: (context, viewModel, child) {
           return Scaffold(
             appBar: _buildAppBar(context, viewModel),
-            body: _buildBody(context, viewModel),
+            body: SafeArea(
+              // ✅ RESPONSIVE: Center and constrain content on large screens
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: LayoutComponents.valueFor(
+                      context: context,
+                      mobile: double.infinity,
+                      tablet: 700,
+                      desktop: 800,
+                    ),
+                  ),
+                  child: _buildBody(context, viewModel),
+                ),
+              ),
+            ),
             bottomNavigationBar: _buildBottomBar(context, viewModel),
           );
         },
