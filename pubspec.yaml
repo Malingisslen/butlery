@@ -127,7 +127,7 @@ dev_dependencies:
   # ==================== ANALYZER FIX ====================
   analyzer: ^6.4.1  # Kompatibel med Flutter 3.24
   cli_util: ^0.4.0  # For CLI utilities
-  meta: ^1.11.0  # For annotations
+  meta: ^1.17.0  # For annotations
 
 flutter:
   uses-material-design: true
