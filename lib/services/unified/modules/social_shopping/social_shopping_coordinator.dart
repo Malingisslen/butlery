@@ -192,7 +192,7 @@ class SocialShoppingCoordinator
         newOwnerId: SharedListPermission.edit,
       },
       description: sharedContent.listDescription,
-      items: [], // TODO: Load items from repository.getItems(sharedContent.id) after creation
+      items: [], // Note: Items in subcollection - caller should load via repository.getItems()
       allowGuestEditing: false,
     );
   }
@@ -227,7 +227,7 @@ class SocialShoppingCoordinator
         sharedContent.sharedByUserId: SharedListPermission.admin,
       },
       description: sharedContent.listDescription,
-      items: [], // TODO: Load items from repository.getItems(sharedContent.id) after creation
+      items: [], // Note: Items in subcollection - caller should load via repository.getItems()
       allowGuestEditing: false,
     );
   }

@@ -340,7 +340,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
         );
 
         // Share to groups if any selected
-        // TODO(Phase 6 - Social Features): Implement group invitations for copy mode
+        // FIXME(Phase 6 - Social Features): Implement group invitations for copy mode
         //   - Extend invitation system to support group sharing
         //   - Add group member notification system
         //   - Update UI to show group share status

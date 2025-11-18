@@ -328,7 +328,7 @@ class SharedShoppingViewModel
   String getShoppingListSummary(SharedShoppingList list) {
     final totalItems = list.itemCount;
     // Note: Can't determine checkedItems without loading from repository.getItems()
-    const checkedItems = 0; // TODO: Load items if detailed stats needed
+    const checkedItems = 0; // Note: Would require loading items from subcollection
     final remainingItems = totalItems;
 
     if (totalItems == 0) return 'Tom handlingslista';
@@ -468,7 +468,7 @@ class SharedShoppingViewModel
     // Note: Can't determine completed vs remaining without loading all items
     return {
       'totalItems': totalItems,
-      'completedItems': 0, // TODO: Load items if completion tracking needed
+      'completedItems': 0, // Note: Would require loading items from subcollection
       'remainingItems': totalItems,
       'completionPercentage': 0,
     };
@@ -479,7 +479,7 @@ class SharedShoppingViewModel
   /// This method would require calling repository.getItems() for each list
   Map<String, int> getMostCommonItems({int limit = 10}) {
     // Note: Items now in subcollection, can't analyze without loading from repository
-    // TODO: If this feature is needed, implement async version that loads items
+    // FIXME(Issue #015): If needed, implement async version that loads items from subcollection
     return {};
 
     /* Original implementation (requires items to be loaded):
