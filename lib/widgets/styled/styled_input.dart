@@ -31,6 +31,7 @@ class StyledInput extends StatelessWidget {
   final Widget? suffixIcon;
   final EdgeInsetsGeometry? contentPadding;
   final FocusNode? focusNode;
+  final Iterable<String>? autofillHints;
 
   const StyledInput({
     super.key,
@@ -56,6 +57,7 @@ class StyledInput extends StatelessWidget {
     this.suffixIcon,
     this.contentPadding,
     this.focusNode,
+    this.autofillHints,
   });
 
   /// Standard text input
@@ -71,18 +73,19 @@ class StyledInput extends StatelessWidget {
     this.prefixIcon,
     this.suffixIcon,
     this.focusNode,
-  }) : onTap = null,
-       enabled = true,
-       readOnly = false,
-       obscureText = false,
-       autofocus = false,
-       maxLines = 1,
-       minLines = null,
-       maxLength = null,
-       keyboardType = TextInputType.text,
-       textInputAction = TextInputAction.next,
-       inputFormatters = null,
-       contentPadding = null;
+    this.autofillHints,
+  })  : onTap = null,
+        enabled = true,
+        readOnly = false,
+        obscureText = false,
+        autofocus = false,
+        maxLines = 1,
+        minLines = null,
+        maxLength = null,
+        keyboardType = TextInputType.text,
+        textInputAction = TextInputAction.next,
+        inputFormatters = null,
+        contentPadding = null;
 
   /// Password input with configurable obscured text
   const StyledInput.password({
@@ -98,17 +101,18 @@ class StyledInput extends StatelessWidget {
     this.focusNode,
     this.obscureText = true,
     this.enabled = true,
-  }) : onTap = null,
-       readOnly = false,
-       autofocus = false,
-       maxLines = 1,
-       minLines = null,
-       maxLength = null,
-       keyboardType = TextInputType.visiblePassword,
-       textInputAction = TextInputAction.done,
-       inputFormatters = null,
-       prefixIcon = const Icon(Icons.lock_outline),
-       contentPadding = null;
+  })  : onTap = null,
+        readOnly = false,
+        autofocus = false,
+        maxLines = 1,
+        minLines = null,
+        maxLength = null,
+        keyboardType = TextInputType.visiblePassword,
+        textInputAction = TextInputAction.done,
+        inputFormatters = null,
+        prefixIcon = const Icon(Icons.lock_outline),
+        contentPadding = null,
+        autofillHints = const [AutofillHints.password];
 
   /// Email input with validation
   const StyledInput.email({
@@ -121,20 +125,21 @@ class StyledInput extends StatelessWidget {
     this.onChanged,
     this.validator,
     this.focusNode,
-  }) : onTap = null,
-       enabled = true,
-       readOnly = false,
-       obscureText = false,
-       autofocus = false,
-       maxLines = 1,
-       minLines = null,
-       maxLength = null,
-       keyboardType = TextInputType.emailAddress,
-       textInputAction = TextInputAction.next,
-       inputFormatters = null,
-       prefixIcon = const Icon(Icons.email),
-       suffixIcon = null,
-       contentPadding = null;
+  })  : onTap = null,
+        enabled = true,
+        readOnly = false,
+        obscureText = false,
+        autofocus = false,
+        maxLines = 1,
+        minLines = null,
+        maxLength = null,
+        keyboardType = TextInputType.emailAddress,
+        textInputAction = TextInputAction.next,
+        inputFormatters = null,
+        prefixIcon = const Icon(Icons.email),
+        suffixIcon = null,
+        contentPadding = null,
+        autofillHints = const [AutofillHints.email];
 
   /// Phone number input
   const StyledInput.phone({
@@ -147,20 +152,21 @@ class StyledInput extends StatelessWidget {
     this.onChanged,
     this.validator,
     this.focusNode,
-  }) : onTap = null,
-       enabled = true,
-       readOnly = false,
-       obscureText = false,
-       autofocus = false,
-       maxLines = 1,
-       minLines = null,
-       maxLength = null,
-       keyboardType = TextInputType.phone,
-       textInputAction = TextInputAction.done,
-       inputFormatters = null,
-       prefixIcon = const Icon(Icons.phone),
-       suffixIcon = null,
-       contentPadding = null;
+  })  : onTap = null,
+        enabled = true,
+        readOnly = false,
+        obscureText = false,
+        autofocus = false,
+        maxLines = 1,
+        minLines = null,
+        maxLength = null,
+        keyboardType = TextInputType.phone,
+        textInputAction = TextInputAction.done,
+        inputFormatters = null,
+        prefixIcon = const Icon(Icons.phone),
+        suffixIcon = null,
+        contentPadding = null,
+        autofillHints = const [AutofillHints.telephoneNumber];
 
   /// Multi-line text input
   const StyledInput.multiline({
@@ -176,17 +182,18 @@ class StyledInput extends StatelessWidget {
     this.minLines = 3,
     this.maxLength,
     this.focusNode,
-  }) : onTap = null,
-       enabled = true,
-       readOnly = false,
-       obscureText = false,
-       autofocus = false,
-       keyboardType = TextInputType.multiline,
-       textInputAction = TextInputAction.newline,
-       inputFormatters = null,
-       prefixIcon = null,
-       suffixIcon = null,
-       contentPadding = null;
+  })  : onTap = null,
+        enabled = true,
+        readOnly = false,
+        obscureText = false,
+        autofocus = false,
+        keyboardType = TextInputType.multiline,
+        textInputAction = TextInputAction.newline,
+        inputFormatters = null,
+        prefixIcon = null,
+        suffixIcon = null,
+        contentPadding = null,
+        autofillHints = null;
 
   /// Number input
   const StyledInput.number({
@@ -199,20 +206,21 @@ class StyledInput extends StatelessWidget {
     this.onChanged,
     this.validator,
     this.focusNode,
-  }) : onTap = null,
-       enabled = true,
-       readOnly = false,
-       obscureText = false,
-       autofocus = false,
-       maxLines = 1,
-       minLines = null,
-       maxLength = null,
-       keyboardType = TextInputType.number,
-       textInputAction = TextInputAction.done,
-       inputFormatters = null,
-       prefixIcon = null,
-       suffixIcon = null,
-       contentPadding = null;
+  })  : onTap = null,
+        enabled = true,
+        readOnly = false,
+        obscureText = false,
+        autofocus = false,
+        maxLines = 1,
+        minLines = null,
+        maxLength = null,
+        keyboardType = TextInputType.number,
+        textInputAction = TextInputAction.done,
+        inputFormatters = null,
+        prefixIcon = null,
+        suffixIcon = null,
+        contentPadding = null,
+        autofillHints = null;
 
   /// Search input
   const StyledInput.search({
@@ -222,23 +230,24 @@ class StyledInput extends StatelessWidget {
     this.onChanged,
     this.suffixIcon,
     this.focusNode,
-  }) : label = null,
-       helperText = null,
-       errorText = null,
-       onTap = null,
-       enabled = true,
-       readOnly = false,
-       obscureText = false,
-       autofocus = false,
-       maxLines = 1,
-       minLines = null,
-       maxLength = null,
-       keyboardType = TextInputType.text,
-       textInputAction = TextInputAction.search,
-       inputFormatters = null,
-       validator = null,
-       prefixIcon = const Icon(Icons.search),
-       contentPadding = null;
+  })  : label = null,
+        helperText = null,
+        errorText = null,
+        onTap = null,
+        enabled = true,
+        readOnly = false,
+        obscureText = false,
+        autofocus = false,
+        maxLines = 1,
+        minLines = null,
+        maxLength = null,
+        keyboardType = TextInputType.text,
+        textInputAction = TextInputAction.search,
+        inputFormatters = null,
+        validator = null,
+        prefixIcon = const Icon(Icons.search),
+        contentPadding = null,
+        autofillHints = null;
 
   @override
   Widget build(BuildContext context) {
@@ -255,11 +264,13 @@ class StyledInput extends StatelessWidget {
       maxLength: maxLength,
       keyboardType: keyboardType,
       textInputAction: textInputAction,
-      inputFormatters: inputFormatters ?? (keyboardType == TextInputType.number 
-          ? [FilteringTextInputFormatter.digitsOnly]
-          : null),
+      inputFormatters: inputFormatters ??
+          (keyboardType == TextInputType.number
+              ? [FilteringTextInputFormatter.digitsOnly]
+              : null),
       validator: validator,
       focusNode: focusNode,
+      autofillHints: autofillHints,
       style: AppTextStyles.bodyMedium,
       decoration: InputDecoration(
         labelText: label,
@@ -268,10 +279,11 @@ class StyledInput extends StatelessWidget {
         errorText: errorText,
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
-        contentPadding: contentPadding ?? const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingMd,
-          vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
-        ),
+        contentPadding: contentPadding ??
+            const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingMd,
+              vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+            ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           borderSide: const BorderSide(),
@@ -312,7 +324,7 @@ class StyledInput extends StatelessWidget {
           ),
         ),
         filled: true,
-        fillColor: enabled 
+        fillColor: enabled
             ? AppColors.cardWhite
             : AppColors.cardWhite.withValues(alpha: 0.7),
       ),
