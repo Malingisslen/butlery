@@ -11,7 +11,7 @@
 
 ## MASTER CHECKLIST
 
-**Progress**: 24 / 154 complete (15.6%)
+**Progress**: 26 / 154 complete (16.9%)
 **Note**: Issue #027 triple setState fix complete (2025-11-18); Issue #153 comment bloat (4,787 lines removed from 503 files) complete (2025-11-18); Issue #154 inflated metrics fixed (2025-11-18); Issue #025 tablet/desktop optimization complete (2025-11-18); Issues #060 permission_handler + #021 go_router complete (2025-11-16); 2 dependency upgrades deferred to Week 4 (get_it, connectivity_plus)
 
 ---
@@ -351,11 +351,12 @@
       → Dependencies: None
       → **COMPLETE**: Line heights already defined in app_text_styles.dart
 
-- [ ] **#032** Shopping toggle waits for server `UX:Feedback:4` **2 hrs**
+- [x] **#032** Shopping toggle waits for server `UX:Feedback:4` **2 hrs** ✅
       → Files: lib/views/unified_shopping/widgets/dialogs/shopping_item_dialogs.dart
       → Fix: Implement optimistic update with OptimisticUpdateManager
       → Impact: Feels sluggish (300-500ms delay per checkbox)
       → Dependencies: None
+      → **COMPLETE**: Added optimistic updates - instant UI, background Firebase sync
 
 - [x] **#033** TODO comment cleanup (4 files) `CODE_QUALITY:Readability:8.2` **3 hrs** ✅
       → Files: universal_share_dialog_viewmodel.dart, friend_activity_section.dart, app_dimensions.dart, invitation_states.dart
@@ -364,11 +365,12 @@
       → Dependencies: None
       → **COMPLETE**: Converted 10 TODOs to Notes/FIXMEs with proper context
 
-- [ ] **#034** Dev dependency updates `DEPENDENCIES:LOW-001` **2 hrs**
+- [x] **#034** Dev dependency updates `DEPENDENCIES:LOW-001` **2 hrs** ✅
       → Files: pubspec.yaml
       → Fix: Upgrade flutter_lints 5.0.0→6.0.0, google_sign_in_mocks, firebase_auth_mocks, meta
       → Impact: Low (development/testing only)
       → Dependencies: None
+      → **COMPLETE**: flutter_lints 6.0.0, google_sign_in_mocks 0.4.1
 
 - [x] **#035** 50 print() statements (use debugPrint) `PERFORMANCE:Debug:9` **2 hrs** ✅
       → Files: Throughout codebase (50 files)
@@ -384,7 +386,7 @@
       → Dependencies: None (execute after all functional fixes to catch any SRP violations introduced during remediation)
       → Note: Moved to end of Phase 4 to serve as final architectural pass after all functional fixes
 
-**Phase 4 Subtotal**: 4 / 7 complete (57.1%) - 126 hours
+**Phase 4 Subtotal**: 6 / 7 complete (85.7%) - 126 hours
 
 ---
 
