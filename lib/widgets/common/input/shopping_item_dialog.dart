@@ -9,7 +9,6 @@ import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 
 /// Dialog for adding/editing unified shopping items
-///
 /// This dialog provides a form for creating or editing shopping items with
 /// fields for name, amount, unit, and category selection.
 class AddUnifiedShoppingItemDialog extends StatefulWidget {

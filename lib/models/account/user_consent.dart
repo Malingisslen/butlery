@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Model representing user consent for GDPR compliance (Article 7)
-///
 /// Tracks user consent for different data processing purposes with
 /// timestamps and version tracking as required by GDPR.
 class UserConsent {
@@ -84,7 +83,6 @@ class UserConsent {
 }
 
 /// Tracks consent for different data processing purposes
-///
 /// GDPR requires explicit consent for each purpose separately.
 class ConsentPurposes {
   final bool essentialServices; // Required for app functionality

@@ -1,8 +1,6 @@
 /// Generic image upload service with retry, progress tracking, and resilience.
-///
 /// Provides reusable upload infrastructure for all image uploads in the application:
 /// recipes, avatars, messaging, profile images, etc.
-///
 /// **Architecture:** Service Layer - Facade Pattern
 /// **Responsibility:** Upload coordination, retry management, progress tracking
 /// **Used By:** RecipeImageManager, UserProfileViewModel, MessagingMediaService
@@ -42,10 +40,8 @@ class UploadResult {
 }
 
 /// Generic image upload service with automatic retry, progress tracking, and resilience.
-///
 /// Provides reusable upload infrastructure that can be used across the application
 /// for recipes, avatars, messaging, and any other image upload needs.
-///
 /// **Features:**
 /// - Automatic retry with exponential backoff
 /// - Circuit breaker to prevent cascading failures
@@ -53,11 +49,9 @@ class UploadResult {
 /// - Upload queue management
 /// - Event stream for UI notifications
 /// - Support for single and batch uploads
-///
 /// **Usage Example:**
 /// ```dart
 /// final service = ImageUploadService();
-///
 /// // Single upload with progress tracking
 /// final result = await service.uploadImage(
 ///   file: imageFile,
@@ -67,7 +61,6 @@ class UploadResult {
 ///     print('Progress: ${status.progressPercentage}%');
 ///   },
 /// );
-///
 /// if (result.success) {
 ///   print('Uploaded to: ${result.url}');
 /// }
@@ -105,13 +98,11 @@ class ImageUploadService extends BaseService {
   // ===== PUBLIC API: SINGLE UPLOAD =====
 
   /// Upload a single image with automatic retry and progress tracking
-  ///
   /// [file] - Image file to upload
   /// [userId] - User ID for storage path
   /// [path] - Storage path for the image
   /// [maxRetryAttempts] - Maximum retry attempts (default 3)
   /// [onProgress] - Optional callback for progress updates
-  ///
   /// Returns UploadResult with success status and URL or error
   Future<UploadResult> uploadImage({
     required File file,
@@ -304,7 +295,6 @@ class ImageUploadService extends BaseService {
   }
 
   /// Handle upload failure and determine if retry should happen
-  ///
   /// Returns true if should retry, false otherwise
   bool _handleUploadFailure({
     required String filePath,

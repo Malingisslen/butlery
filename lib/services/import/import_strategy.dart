@@ -18,7 +18,6 @@
 import 'package:butlery/models/recipe_unified.dart';
 
 /// Base interface for recipe import strategies
-///
 /// Implements the Strategy pattern for different import methods:
 /// - Text import (social media, manual text)
 /// - URL import (web scraping)

@@ -1,35 +1,29 @@
 /// Firebase repository for shared recipe management with consistent invitation patterns.
-///
 /// This repository implements unified recipe sharing functionality following Single Responsibility Principle,
 /// matching the patterns established by SharedShoppingList repository for consistent API design.
 /// It provides complete shared recipe operations while maintaining clean separation from
 /// business logic and ensuring consistent behavior across all shared content types.
-///
 /// **Single Responsibility Focus:**
 /// This repository exclusively handles shared recipe data operations:
 /// - **Shared Recipe Storage**: Complete CRUD operations for shared recipes in Firestore
 /// - **Status Management**: Read/unread, imported/dismissed status tracking with atomic updates
 /// - **Permission Validation**: Comprehensive access control for shared recipe operations
 /// - **Query Operations**: Efficient retrieval of shared recipes with user-specific filtering
-///
 /// **What This Repository Does NOT Handle:**
 /// - UI concerns and presentation logic (handled by ViewModels and UI components)
 /// - Business logic and validation (handled by services and business layer)
 /// - Recipe creation and editing (handled by recipe services)
 /// - User authentication (handled by auth services)
-///
 /// **Shared Recipe Repository Features:**
 /// - **Consistent API**: Unified operations matching SharedShoppingList patterns
 /// - **Status Tracking**: Read/unread, imported/dismissed status with efficient batch updates
 /// - **Permission Security**: Comprehensive access validation with audit logging
 /// - **Query Optimization**: Efficient Firestore queries with user-specific filtering
 /// - **Error Handling**: Robust exception handling with meaningful error messages
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Initialize repository
 /// final sharedRecipeRepo = FirebaseSharedRecipeRepository();
-///
 /// // Create shared recipe
 /// final sharedRecipe = SharedRecipe.create(
 ///   originalRecipeId: recipeId,
@@ -40,10 +34,8 @@
 ///   recipeSnapshot: originalRecipe,
 /// );
 /// await sharedRecipeRepo.createSharedRecipe(sharedRecipe);
-///
 /// // Get shared recipes for user
 /// final sharedRecipes = await sharedRecipeRepo.getSharedRecipesForUser(userId);
-///
 /// // Update status
 /// await sharedRecipeRepo.markAsViewed(recipeId, userId);
 /// await sharedRecipeRepo.markAsImported(recipeId, userId);
@@ -146,7 +138,6 @@ class FirebaseSharedRecipeRepository
   // ===== SHARED RECIPE OPERATIONS =====
 
   /// Create new shared recipe with comprehensive validation
-  ///
   /// Note (Issue #014): recipientIds must be passed separately as sharedToUserIds
   /// is no longer stored in the model (tracked in Firestore subcollections instead).
   Future<String> createSharedRecipe(

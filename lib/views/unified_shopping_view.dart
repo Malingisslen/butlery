@@ -24,11 +24,9 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dar
 import 'package:butlery/views/unified_shopping/widgets/shopping_dialogs.dart';
 
 /// Comprehensive unified shopping view providing advanced shopping list management through facade pattern architecture.
-///
 /// Manages complete shopping list interface enabling item management, collaborative features, sharing functionality,
 /// and comprehensive shopping coordination while maintaining clean separation between UI presentation
 /// and business logic through MVVM architecture and focused component delegation.
-///
 /// **Core Responsibilities:**
 /// - Advanced shopping list presentation with item management and collaborative feature coordination
 /// - Facade pattern implementation with specialized component delegation and clean architecture
@@ -37,14 +35,12 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_dialogs.dart';
 /// - Swedish localized user feedback with success and error message management
 class UnifiedShoppingView extends StatefulWidget {
   /// Creates comprehensive unified shopping view with facade pattern architecture and component delegation.
-  /// 
   /// Establishes shopping list interface with focused component integration,
   /// event handling coordination, and comprehensive shopping functionality
   /// through clean architectural separation and responsive design coordination.
   const UnifiedShoppingView({super.key});
 
   /// Creates unified shopping view state with ViewModel integration and lifecycle management.
-  /// 
   /// Establishes stateful shopping interface enabling ViewModel initialization,
   /// event handling coordination, and comprehensive shopping functionality
   /// through proper state lifecycle and component management.
@@ -53,23 +49,19 @@ class UnifiedShoppingView extends StatefulWidget {
 }
 
 /// Unified shopping view state managing ViewModel integration, event handling, and component lifecycle coordination.
-///
 /// Handles complete shopping list state management including ViewModel initialization, event delegation,
 /// dialog coordination, and user interaction handling while maintaining clean facade pattern architecture
 /// and proper lifecycle management through comprehensive state coordination.
 class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   /// Unified shopping ViewModel for comprehensive shopping state management and business logic coordination.
-  /// 
   /// Manages shopping list operations, item management, collaborative features,
   /// and shopping functionality enabling complete shopping coordination through MVVM architecture.
   late UnifiedShoppingViewModel _viewModel;
 
   /// State initialization with ViewModel setup and shopping functionality preparation.
-  /// 
   /// Initializes shopping view state enabling ViewModel integration, shopping list loading,
   /// and comprehensive shopping functionality through proper dependency injection
   /// and state lifecycle management coordination.
-  /// 
   /// **Initialization Process:**
   /// - ViewModel acquisition through dependency injection and service locator
   /// - Asynchronous ViewModel initialization with shopping data loading
@@ -90,18 +82,15 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   /// - Main menu layout with navigation integration and consistent app structure
   /// - Collaborative features with offline indicators and synchronization status
   /// - Floating action button integration with item addition functionality
-  /// 
   /// **Component Integration:**
   /// - ShoppingAppBar for action management with create, share, and sync functionality
   /// - ShoppingListHeader for list statistics and bulk operations coordination
   /// - ShoppingListContent for item display, interaction, and management functionality
   /// - LayoutComponents for consistent app structure and navigation integration
-  /// 
   /// **Collaborative Features:**
   /// - Offline indicator with connection status and synchronization awareness
   /// - Real-time synchronization with collaborative editing and multi-user support
   /// - Sharing functionality with social integration and external distribution
-  /// 
   /// Returns complete shopping interface with comprehensive functionality and facade pattern architecture.
   @override
   Widget build(BuildContext context) {
@@ -184,12 +173,9 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   // ===== COMPREHENSIVE EVENT HANDLERS =====
 
   /// Advanced item tap handling with shopping status toggling and collaborative coordination.
-  /// 
   /// [item] Shopping item for status toggling and collaborative synchronization
-  /// 
   /// Handles item tap events enabling shopping status toggling, collaborative synchronization,
   /// and comprehensive item management through ViewModel integration and reactive state management.
-  /// 
   /// **Item Tap Features:**
   /// - Shopping status toggling with immediate visual feedback and state synchronization
   /// - Collaborative coordination with real-time synchronization and multi-user support
@@ -199,13 +185,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   }
 
   /// Comprehensive item editing with dialog presentation and validation coordination.
-  /// 
   /// [item] Shopping item for editing and validation coordination
-  /// 
   /// Handles item editing events enabling comprehensive item modification, validation,
   /// and user feedback through dialog management and ViewModel integration with
   /// success and error handling coordination.
-  /// 
   /// **Item Editing Features:**
   /// - Dialog-based editing with form validation and user-friendly interface
   /// - Comprehensive validation with Swedish localized error messages
@@ -221,12 +204,9 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   }
 
   /// Advanced item deletion with confirmation and collaborative synchronization coordination.
-  /// 
   /// [item] Shopping item for deletion and synchronization coordination
-  /// 
   /// Handles item deletion events enabling comprehensive item removal, collaborative synchronization,
   /// and user feedback through ViewModel integration with success and error handling coordination.
-  /// 
   /// **Item Deletion Features:**
   /// - Comprehensive item removal with collaborative synchronization and state management
   /// - Success and error feedback with Swedish localized messages and user guidance
@@ -241,11 +221,9 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   }
 
   /// Comprehensive item addition dialog with form validation and user feedback coordination.
-  /// 
   /// Presents item addition dialog enabling comprehensive item creation, validation,
   /// and user feedback through dialog management and ViewModel integration with
   /// success and error handling coordination.
-  /// 
   /// **Item Addition Features:**
   /// - Dialog-based item creation with comprehensive form validation and user interface
   /// - Swedish localized validation messages and user guidance
@@ -260,11 +238,9 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   }
 
   /// Advanced shopping list sharing dialog with collaborative features and friend selection coordination.
-  /// 
   /// Presents shopping sharing dialog enabling collaborative shopping list sharing,
   /// friend selection, and comprehensive sharing functionality through dialog management
   /// and ViewModel integration with social feature coordination.
-  /// 
   /// **Shopping Sharing Features:**
   /// - Collaborative sharing with friend selection and permission management
   /// - Social integration with sharing status tracking and delivery coordination
@@ -274,11 +250,9 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   }
 
   /// External shopping list sharing with system integration and content distribution coordination.
-  /// 
   /// Handles external sharing functionality enabling system share dialog presentation,
   /// content formatting, and platform integration through ShareService coordination
   /// with comprehensive sharing functionality and user experience optimization.
-  /// 
   /// **External Sharing Features:**
   /// - System share dialog integration with platform-specific sharing capabilities
   /// - Content formatting with readable shopping list presentation and user-friendly format
@@ -291,13 +265,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   }
 
   /// Comprehensive sharing status dialog with collaborative information and permission coordination.
-  /// 
   /// [viewModel] UnifiedShoppingViewModel instance for sharing status access and management
-  /// 
   /// Presents sharing status dialog enabling collaborative status display,
   /// member permissions, and comprehensive sharing management through
   /// dialog presentation and ViewModel integration.
-  /// 
   /// **Sharing Status Features:**
   /// - Collaborative sharing status with member information and permission level tracking
   /// - Real-time sharing information with member activity and permission management display
@@ -307,11 +278,9 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   }
 
   /// Advanced shopping list creation dialog with validation and collaborative setup coordination.
-  /// 
   /// Presents list creation dialog enabling comprehensive shopping list creation,
   /// validation, and collaborative setup through dialog management and ViewModel
   /// integration with success feedback and user experience optimization.
-  /// 
   /// **List Creation Features:**
   /// - Comprehensive list creation with form validation and Swedish localized interface
   /// - Collaborative setup with sharing options and participant management
@@ -325,13 +294,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   }
 
   /// Comprehensive completed items clearing with confirmation and collaborative synchronization coordination.
-  /// 
   /// [viewModel] UnifiedShoppingViewModel instance for completed items management and synchronization
-  /// 
   /// Handles completed items clearing with confirmation dialog, collaborative synchronization,
   /// and user feedback through dialog management and ViewModel integration with
   /// comprehensive bulk operation coordination.
-  /// 
   /// **Completed Items Clearing Features:**
   /// - Confirmation dialog with user safety and operation preview
   /// - Collaborative synchronization with real-time updates and multi-user coordination
@@ -345,13 +311,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   }
 
   /// Advanced bulk item unchecking with collaborative synchronization and user feedback coordination.
-  /// 
   /// [viewModel] UnifiedShoppingViewModel instance for bulk operation management and synchronization
-  /// 
   /// Handles bulk item unchecking enabling comprehensive status reset, collaborative synchronization,
   /// and user feedback through ViewModel integration with bulk operation management
   /// and Swedish localized success messaging.
-  /// 
   /// **Bulk Unchecking Features:**
   /// - Comprehensive status reset with all items unchecking and state synchronization
   /// - Collaborative coordination with real-time synchronization and multi-user support
@@ -398,13 +361,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   // ===== USER FEEDBACK AND LIFECYCLE MANAGEMENT =====
 
   /// Comprehensive error message presentation with user feedback and recovery coordination.
-  /// 
   /// [message] Swedish localized error message for user display and guidance
-  /// 
   /// Presents error messages enabling user feedback, error communication,
   /// and recovery guidance through snackbar integration and consistent
   /// error messaging with comprehensive user experience coordination.
-  /// 
   /// **Error Feedback Features:**
   /// - Swedish localized error messages with clear user communication
   /// - Consistent error styling with app design system integration
@@ -414,13 +374,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   }
 
   /// Comprehensive success message presentation with user feedback and confirmation coordination.
-  /// 
   /// [message] Swedish localized success message for user display and confirmation
-  /// 
   /// Presents success messages enabling user feedback, operation confirmation,
   /// and positive reinforcement through snackbar integration and consistent
   /// success messaging with comprehensive user experience coordination.
-  /// 
   /// **Success Feedback Features:**
   /// - Swedish localized success messages with positive user reinforcement
   /// - Consistent success styling with app design system integration
@@ -430,11 +387,9 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   }
 
   /// Comprehensive resource disposal with proper lifecycle management and cleanup coordination.
-  /// 
   /// Performs complete resource cleanup preventing memory leaks and ensuring proper
   /// lifecycle management through systematic disposal of state resources, event handlers,
   /// and ViewModel references with comprehensive cleanup coordination.
-  /// 
   /// **Disposal Features:**
   /// - State resource cleanup with proper lifecycle management
   /// - Memory leak prevention with comprehensive resource disposal

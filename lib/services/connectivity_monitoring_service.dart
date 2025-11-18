@@ -1,17 +1,14 @@
 /// Comprehensive connectivity monitoring service providing real-time network and Firebase status management.
-///
 /// This service provides sophisticated connectivity monitoring capabilities including real-time internet
 /// connection status, Firebase connectivity monitoring, and comprehensive status reporting for optimal
 /// user experience. It implements intelligent monitoring strategies, automatic reconnection detection,
 /// and localized status messages to keep users informed of connection state throughout the application.
-///
 /// **Architecture Integration:**
 /// - Extends [ChangeNotifier] for reactive UI updates with real-time connectivity state changes
 /// - Uses [ConnectivityRepository] interface for testable and flexible connectivity backends
 /// - Integrates with [ConnectivityCheck] utilities for robust internet connection validation
 /// - Implements singleton pattern with dependency injection support for consistent monitoring
 /// - Coordinates with application services requiring network connectivity awareness
-///
 /// **Connectivity Monitoring Features:**
 /// - **Real-time Internet Monitoring**: Continuous internet connectivity monitoring with periodic validation
 /// - **Firebase Connection Tracking**: Real-time Firebase database connectivity status monitoring
@@ -19,7 +16,6 @@
 /// - **Automatic Recovery Detection**: Intelligent reconnection detection with status updates
 /// - **Swedish Localization**: Localized connection status messages for authentic user experience
 /// - **Performance Optimization**: Efficient monitoring with configurable check intervals
-///
 /// **Status Reporting and UI Integration:**
 /// - **Reactive Updates**: Automatic UI notification through ChangeNotifier pattern
 /// - **Comprehensive Status Text**: User-friendly status messages describing connection state
@@ -36,31 +32,25 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 /// Real-time connectivity monitoring service with comprehensive network and Firebase status management.
-///
 /// This service provides complete connectivity monitoring functionality using sophisticated real-time
 /// monitoring strategies for both internet connectivity and Firebase database connections. It implements
 /// automatic status detection, intelligent recovery monitoring, and comprehensive user feedback through
 /// reactive state management and localized status reporting.
-///
 /// **Monitoring Architecture:**
 /// Uses dual-layer monitoring approach with independent status tracking:
 /// - Internet connectivity monitoring through periodic robust connection validation
 /// - Firebase connectivity monitoring through real-time database connection streams
 /// - Combined status reporting with intelligent status text generation
-///
 /// **Singleton Pattern with Dependency Injection:**
 /// Implements flexible singleton pattern supporting both default and injected repositories:
 /// - Maintains backwards compatibility with existing singleton usage
 /// - Supports dependency injection for testing and flexible connectivity backends
 /// - Ensures consistent monitoring instance across the entire application
-///
 /// **Usage Examples:**
 /// ```dart
 /// final connectivityService = ConnectivityMonitoringService();
-///
 /// // Start comprehensive connectivity monitoring
 /// connectivityService.startMonitoring();
-///
 /// // Listen to connectivity state changes
 /// connectivityService.addListener(() {
 ///   if (connectivityService.isFullyConnected) {
@@ -69,7 +59,6 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 ///     showOfflineMode();
 ///   }
 /// });
-///
 /// // Check current connectivity status
 /// final status = await connectivityService.getCurrentConnectivity();
 /// ```
@@ -109,17 +98,14 @@ class ConnectivityMonitoringService extends ChangeNotifier
   String get connectionStatusText => _connectionStatusText;
 
   /// Initiates comprehensive connectivity monitoring for both internet and Firebase connections.
-  ///
   /// This method starts the dual-layer connectivity monitoring system, establishing both periodic
   /// internet connectivity validation and real-time Firebase database connection monitoring.
   /// It ensures immediate status detection and continuous monitoring for optimal user experience.
-  ///
   /// **Monitoring Components Started:**
   /// - Firebase connection monitoring through real-time database streams
   /// - Periodic internet connectivity validation (30-second intervals)
   /// - Automatic status text generation and UI notifications
   /// - Error recovery and reconnection detection
-  ///
   /// **Performance Considerations:**
   /// - Internet checks are performed every 30 seconds to balance accuracy with performance
   /// - Firebase monitoring uses efficient stream subscriptions for real-time updates
@@ -135,11 +121,9 @@ class ConnectivityMonitoringService extends ChangeNotifier
   }
 
   /// Stops all connectivity monitoring and cleans up resources.
-  ///
   /// This method gracefully terminates both internet and Firebase connectivity monitoring,
   /// cancelling all active subscriptions and timers to prevent memory leaks and unnecessary
   /// background operations. Should be called when connectivity monitoring is no longer needed.
-  ///
   /// **Resources Cleaned Up:**
   /// - Firebase connection stream subscription cancellation
   /// - Internet connectivity periodic timer cancellation
@@ -152,16 +136,13 @@ class ConnectivityMonitoringService extends ChangeNotifier
   }
 
   /// Performs a one-time comprehensive connectivity check returning detailed status information.
-  ///
   /// This method executes an immediate connectivity validation without affecting the ongoing
   /// monitoring system. It provides detailed connectivity information including internet access,
   /// network type, and connection quality for applications requiring immediate status validation.
-  ///
   /// Returns [ConnectivityResult] containing comprehensive connectivity information including:
   /// - Internet connectivity status and validation results
   /// - Network type and connection quality metrics
   /// - Detailed connectivity analysis for troubleshooting
-  ///
   /// **Use Cases:**
   /// - Initial connectivity validation before starting network operations
   /// - Manual connectivity testing for troubleshooting purposes
@@ -171,20 +152,16 @@ class ConnectivityMonitoringService extends ChangeNotifier
   }
 
   /// Performs a dedicated Firebase connectivity test with comprehensive error handling.
-  ///
   /// This method executes a specific Firebase database connectivity validation independent
   /// of the ongoing monitoring system. It provides immediate Firebase connection status
   /// validation with detailed error handling and logging for troubleshooting purposes.
-  ///
   /// Returns boolean indicating Firebase database connectivity status:
   /// - `true` if Firebase database connection is successful and responsive
   /// - `false` if Firebase database is unreachable or connection fails
-  ///
   /// **Error Handling:**
   /// - Comprehensive exception handling with detailed logging
   /// - Graceful failure with informative warning messages
   /// - No impact on ongoing connectivity monitoring operations
-  ///
   /// **Use Cases:**
   /// - Pre-operation Firebase connectivity validation
   /// - Troubleshooting Firebase-specific connection issues

@@ -8,13 +8,11 @@ import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
 import 'package:butlery/viewmodels/menu/menu_storage.dart';
 
 /// Focused module for menu social features
-/// 
 /// This module handles ONLY social integration:
 /// - Social menu sharing and importing
 /// - Friend collaboration on menus
 /// - Social menu discovery and statistics
 /// - Imported menu management
-/// 
 /// ❌ DOES NOT CONTAIN: Core state management, local storage, menu generation
 class MenuSocialManager {
   final SocialMenuOperations _socialMenuOps;

@@ -5,7 +5,6 @@ import 'package:butlery/services/unified/operations/modules/recipe_discovery_ser
 import 'package:butlery/core/utils/logger.dart';
 
 /// Manages friend activity timeline for the discovery dashboard.
-/// 
 /// Handles loading and displaying social activity including shared recipes,
 /// collaborative cooking sessions, and friend interactions.
 class DiscoveryFriendActivityManager extends ChangeNotifier {

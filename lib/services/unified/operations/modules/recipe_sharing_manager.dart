@@ -13,14 +13,12 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
 /// Focused module for recipe sharing and collaboration setup
-///
 /// This module handles ONLY recipe sharing responsibilities:
 /// - Converting personal recipes to collaborative format
 /// - Converting collaborative recipes back to personal format
 /// - Share state management and validation
 /// - Basic sharing notifications and member alerts
 /// - Share metadata and collaboration settings
-///
 /// ❌ DOES NOT CONTAIN: Member management, comments, discovery, ratings, permissions
 class RecipeSharingManager {
   final UnifiedRecipeService _parent;
@@ -37,7 +35,6 @@ class RecipeSharingManager {
   // ===== RECIPE SHARING CONVERSION =====
 
   /// Share a personal recipe with other users (convert to collaborative)
-  ///
   /// Main entry point for recipe sharing - converts personal recipe to collaborative format
   Future<String?> shareRecipe({
     required String recipeId,
@@ -140,7 +137,6 @@ class RecipeSharingManager {
   }
 
   /// Convert collaborative recipe back to personal format
-  ///
   /// Allows users to take ownership of collaborative recipes as personal copies
   Future<String?> makeRecipePersonal({
     required String collaborativeRecipeId,
@@ -201,7 +197,6 @@ class RecipeSharingManager {
   }
 
   /// Duplicate personal recipe for sharing (creates copy before conversion)
-  ///
   /// Useful when user wants to keep original personal recipe and share a copy
   Future<String?> duplicateAndShareRecipe({
     required String recipeId,

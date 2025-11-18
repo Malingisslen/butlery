@@ -1,31 +1,25 @@
 /// Base class for shared content ViewModels providing common patterns and functionality.
-///
 /// This abstract base class implements the Template Method pattern for shared content
 /// ViewModels, providing consistent state management, error handling, and common
 /// operations while allowing specialized ViewModels to customize content-specific logic.
-///
 /// **Design Pattern**: Template Method + Strategy
 /// **Responsibility**: Common ViewModel patterns for all shared content types
 /// **Abstraction Level**: ViewModels coordinate between UI and Services/Repositories
-///
 /// **Key Features:**
 /// - **Consistent State Management**: Loading, error, and operation states
 /// - **Template Method Pattern**: Common algorithms with customizable steps
 /// - **Error Handling**: Standardized error management across content types
 /// - **Logging Integration**: Consistent logging patterns for debugging
 /// - **Change Notification**: Proper Flutter ChangeNotifier integration
-///
 /// **Usage Example:**
 /// ```dart
 /// class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
 ///   @override
 ///   String get contentTypeName => 'recipe';
-///
 ///   @override
 ///   Future<List<SharedRecipe>> loadContentFromRepository() async {
 ///     return await _sharedRecipeRepository.getSharedRecipesForUser(currentUserId);
 ///   }
-///
 ///   @override
 ///   String getContentTitle(SharedRecipe content) => content.recipeSnapshot.title;
 /// }
@@ -40,7 +34,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
 
 /// Abstract base ViewModel for shared content management.
-///
 /// Provides common patterns for loading, filtering, state management,
 /// and operations while allowing content-specific customization.
 abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {

@@ -1,21 +1,17 @@
 /// Photo Import Strategy - Extracts recipes from images using OCR technology.
-///
 /// Implements a comprehensive OCR-to-recipe workflow:
 /// 1. Extract image bytes from input or options parameter
 /// 2. Perform OCR text extraction (multi-provider fallback)
 /// 3. Parse extracted text to recipe structure using TextImportStrategy
 /// 4. Return recipe with OCR metadata and confidence tracking
-///
 /// **Multi-Provider OCR:**
 /// - Primary: OCR.space (free tier 25,000/month)
 /// - Secondary: Google Vision API (premium quality)
 /// - Tertiary: Tesseract (self-hosted fallback)
-///
 /// **Swedish Recipe Optimization:**
 /// - Swedish language hints enabled
 /// - Swedish keyword detection (ingredienser, portioner, etc.)
 /// - Swedish measurement units preserved (dl, msk, tsk, krm)
-///
 /// **Usage Examples:**
 /// ```dart
 /// // From PhotoImportViewModel
@@ -23,7 +19,6 @@
 ///   'imageBytes': imageBytes,
 ///   'sourceType': 'camera', // or 'gallery'
 /// });
-///
 /// if (result.isSuccess) {
 ///   final recipe = result.recipe!;
 ///   final ocrConfidence = result.metadata?['ocr_confidence'];
@@ -38,13 +33,11 @@ import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 
 /// Strategy for importing recipes from photos using OCR technology.
-///
 /// **Extraction Workflow:**
 /// 1. **Image Validation**: Check image data presence and format
 /// 2. **OCR Extraction**: Extract text using multi-provider system
 /// 3. **Text Parsing**: Convert OCR text to recipe structure
 /// 4. **Quality Assessment**: Evaluate confidence and provide warnings
-///
 /// **Supported Sources:**
 /// - Camera photos (recipe cards, cookbook pages)
 /// - Gallery images (saved recipes, screenshots)

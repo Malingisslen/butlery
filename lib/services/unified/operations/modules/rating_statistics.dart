@@ -5,7 +5,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for rating statistics and aggregation
-///
 /// Handles: Rating statistics, distribution analysis, top-rated queries, aggregates
 /// Excludes: Individual rating operations, social metrics, notifications, engagement scoring
 class RatingStatistics {
@@ -62,7 +61,6 @@ class RatingStatistics {
   }
 
   /// Get comprehensive recipe statistics with ratings
-  ///
   /// **Issue #007 Fix:** Uses denormalized rating fields for O(1) access
   /// - First tries denormalized fields in recipe document (Phase 1 implementation)
   /// - Falls back to calculation with pagination if denormalized data unavailable

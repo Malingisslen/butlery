@@ -8,7 +8,6 @@ import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 
 /// Dialog for saving a menu with name, comment and social sharing
-///
 /// This dialog allows users to save their generated menus with custom names,
 /// optional comments, and social sharing options.
 class SaveMenuDialog extends StatefulWidget {

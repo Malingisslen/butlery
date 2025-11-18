@@ -1,30 +1,25 @@
 /// Comprehensive user profile data model providing complete user information and social networking capabilities.
-///
 /// This model implements sophisticated user profile management following Single Responsibility Principle,
 /// handling all aspects of user data including basic profile information, social networking features, privacy settings,
 /// notification preferences, and activity tracking. It provides comprehensive user profile functionality while
 /// maintaining clean separation from authentication and permission management concerns.
-///
 /// **Single Responsibility Focus:**
 /// This model exclusively handles user profile data and operations:
 /// - **Core Profile Data**: Complete user information including display name, email, and avatar management
 /// - **Social Networking**: Social features including friend counts, searchability, and discovery preferences
 /// - **Privacy Controls**: Comprehensive privacy settings with search visibility and email search permissions
 /// - **Activity Tracking**: User activity monitoring with online status, last active tracking, and membership analytics
-///
 /// **What This Model Does NOT Handle:**
 /// - Authentication and session management (handled by authentication services)
 /// - Permission and authorization logic (handled by permission services)
 /// - Business logic and workflow management (handled by services and operations)
 /// - UI concerns and presentation logic (handled by ViewModels and UI components)
-///
 /// **User Profile Features:**
 /// - **Complete Profile Management**: Full user profile with display name, avatar, and contact information
 /// - **Social Networking Integration**: Friend connections, public recipe sharing, and social discovery features
 /// - **Privacy and Security**: Granular privacy controls with search visibility and email discovery settings
 /// - **Notification System**: FCM token management with notification preferences and delivery capabilities
 /// - **Activity Analytics**: User engagement tracking with online status, activity history, and membership statistics
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Create user profile
@@ -37,14 +32,12 @@
 ///   joinedAt: DateTime.now(),
 ///   lastActiveAt: DateTime.now(),
 /// );
-/// 
 /// // Update profile with notification settings
 /// final updatedProfile = profile.copyWith(
 ///   fcmToken: newFCMToken,
 ///   fcmTokenUpdatedAt: DateTime.now(),
 ///   notificationsEnabled: true,
 /// );
-/// 
 /// // Profile utilities and analytics
 /// final initials = profile.initials; // 'AA'
 /// final canNotify = profile.canReceiveNotifications;
@@ -60,7 +53,6 @@ import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Comprehensive user profile data model with social networking and notification capabilities.
-///
 /// Represents a complete user profile with all associated metadata including social features,
 /// privacy settings, activity tracking, and notification preferences.
 class UserProfile with JsonSerializableMixin {

@@ -1,10 +1,8 @@
 /// Color palette system for the Butlery cooking application.
-///
 /// **Naming Strategy:**
 /// - Primary names: Semantic and descriptive (e.g., `primaryBlue`, `success`, `backgroundBeige`)
 /// - Component-specific aliases: Allowed for semantic clarity (e.g., `sharedRecipeTextColor`)
 /// - Generic aliases: Being phased out in future versions
-///
 /// **Usage Guidelines:**
 /// - Prefer primary names for new code
 /// - Use Material 3 ColorScheme for theme-aware components

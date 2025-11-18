@@ -8,19 +8,16 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/social_components/social_formatters.dart';
 
 /// Social widget builders and helper components
-///
 /// This module handles ONLY social widget builders and utilities:
 /// - Social action buttons and interactive elements
 /// - Social statistics and metrics displays
 /// - Helper functions for formatting and utilities
 /// - Builder utilities for common social widget patterns
-///
 /// ❌ DOES NOT CONTAIN: Avatars, collaborative indicators, groups, invitations
 class SocialBuilderComponents {
   // ===== SOCIAL BUILDERS =====
 
   /// Build social action button
-  ///
   /// Standardized button for social actions
   static Widget socialActionButton({
     required String text,
@@ -45,7 +42,6 @@ class SocialBuilderComponents {
   }
 
   /// Build social stats widget
-  ///
   /// Display social statistics and metrics
   static Widget socialStats({
     required Map<String, dynamic> stats,
@@ -301,7 +297,6 @@ class SocialBuilderComponents {
   // ===== BUILDER UTILITIES =====
 
   /// Build social section header
-  ///
   /// Standardized header for social sections
   static Widget sectionHeader({
     required String title,
@@ -357,7 +352,6 @@ class SocialBuilderComponents {
   }
 
   /// Build social card wrapper
-  ///
   /// Consistent card styling for social content
   static Widget socialCard({
     required Widget child,
@@ -400,7 +394,6 @@ class SocialBuilderComponents {
   }
 
   /// Build social divider
-  ///
   /// Consistent divider for social content sections
   static Widget socialDivider({
     double? height,
@@ -419,7 +412,6 @@ class SocialBuilderComponents {
   }
 
   /// Build empty state wrapper
-  ///
   /// Consistent empty state styling
   static Widget emptyStateWrapper({
     required Widget child,
@@ -436,7 +428,6 @@ class SocialBuilderComponents {
   }
 
   /// Build loading state wrapper
-  ///
   /// Consistent loading state styling
   static Widget loadingStateWrapper({
     String? text,
@@ -470,7 +461,6 @@ class SocialBuilderComponents {
   static Map<String, Color> getSocialColorScheme() => SocialFormatters.getSocialColorScheme();
 
   /// Build responsive social layout
-  ///
   /// Adapts layout based on screen size
   static Widget responsiveSocialLayout({
     required Widget mobile,

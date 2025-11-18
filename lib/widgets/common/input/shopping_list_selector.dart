@@ -17,7 +17,6 @@ import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Shopping List Selector Widget
-/// 
 /// A comprehensive widget that allows users to:
 /// - Select from existing shopping lists
 /// - Create new shopping lists

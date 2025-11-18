@@ -1,30 +1,25 @@
 /// Comprehensive unified shopping item model providing advanced shopping list functionality with collaborative features.
-///
 /// This model implements sophisticated shopping item management following Single Responsibility Principle,
 /// handling all aspects of shopping list items including basic functionality, collaborative metadata,
 /// smart formatting, and comprehensive user interaction tracking. It provides complete unified shopping
 /// capabilities while maintaining clean separation from shopping list management and UI concerns.
-///
 /// **Single Responsibility Focus:**
 /// This model exclusively handles shopping item management and tracking:
 /// - **Basic Shopping Functionality**: Core item data with name, amount, unit, category, and purchase status
 /// - **Collaborative Metadata**: Complete user tracking for additions, modifications, and purchases with timestamps
 /// - **Smart Formatting**: Intelligent display formatting with Swedish unit mappings and amount optimization
 /// - **Priority Management**: Priority system with visual indicators and organizational capabilities
-///
 /// **What This Model Does NOT Handle:**
 /// - Shopping list composition and management (handled by UnifiedShoppingList and services)
 /// - UI concerns and presentation logic (handled by ViewModels and UI components)
 /// - Shopping list persistence and storage operations (handled by repositories and services)
 /// - User management and authentication (handled by user services and authentication systems)
-///
 /// **Unified Shopping Item Features:**
 /// - **Dual Mode Support**: Seamlessly handles both basic personal shopping and collaborative shared shopping
 /// - **Smart Formatting**: Intelligent display text generation with Swedish unit abbreviations and amount optimization
 /// - **Collaborative Tracking**: Complete user attribution for all item lifecycle events with timestamp precision
 /// - **Priority System**: Visual priority management with emoji indicators and organizational sorting support
 /// - **Migration Support**: Backward compatibility with legacy shopping item models for seamless upgrades
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Create basic shopping item for personal lists
@@ -34,7 +29,6 @@
 ///   unit: 'liter',
 ///   category: 'Mejeri',
 /// );
-/// 
 /// // Create collaborative item for shared lists
 /// final collabItem = UnifiedShoppingItem.collaborative(
 ///   name: 'Ägg',
@@ -47,18 +41,15 @@
 ///   estimatedPrice: 45.0,
 ///   priority: 4,
 /// );
-/// 
 /// // Smart formatting examples
 /// print(basicItem.displayText); // "1,5 l Mjölk"
 /// print(collabItem.displayText); // "12 st Ägg"
 /// print(collabItem.priorityEmoji); // "🟠" (high priority)
-/// 
 /// // Toggle purchase status with user tracking
 /// final purchasedItem = collabItem.togglePurchased(
 ///   userId: currentUserId,
 ///   userDisplayName: 'Erik Svensson',
 /// );
-/// 
 /// // Check collaborative features
 /// final isCollab = collabItem.isCollaborative; // true
 /// final isPurchased = purchasedItem.isPurchased; // true
@@ -70,7 +61,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 /// Comprehensive unified shopping item with dual-mode support and collaborative features.
-///
 /// Represents a complete shopping item with all associated metadata including basic shopping data,
 /// collaborative tracking information, smart formatting capabilities, and priority management.
 /// Supports both personal shopping lists and collaborative shared shopping experiences.
@@ -79,98 +69,79 @@ class UnifiedShoppingItem {
   final String id;
   
   /// Name of the shopping item for identification and display.
-  ///
   /// The primary identifier for the item that users see and interact with.
   final String name;
   
   /// Quantity amount for the shopping item with decimal precision support.
-  ///
   /// Supports both whole numbers and decimal quantities for precise shopping measurements.
   final double amount;
   
   /// Unit of measurement for the shopping item quantity.
-  ///
   /// Supports Swedish units with smart formatting and abbreviation mapping for optimal display.
   final String unit;
   
   /// Category classification for shopping item organization.
-  ///
   /// Used for grouping and organizing items within shopping lists with Swedish category names.
   final String category;
   
   /// Purchase status indicating whether the item has been bought.
-  ///
   /// Core shopping functionality for tracking completed purchases and list progress.
   final bool bought;
 
   /// Collaborative metadata for enhanced social shopping features (optional - null for basic lists).
 
   /// User identifier of the person who added this item to the shopping list.
-  ///
   /// Enables user attribution and collaborative tracking for shared shopping lists.
   final String? addedByUserId;
   
   /// Cached display name of the user who added this item for UI performance.
-  ///
   /// Stored locally to avoid additional user profile lookups during item display.
   final String? addedByDisplayName;
   
   /// Timestamp when the item was originally added to the shopping list.
-  ///
   /// Used for chronological tracking and collaborative audit trails.
   final DateTime? addedAt;
   
   /// User identifier of the person who purchased this item.
-  ///
   /// Tracks who completed the purchase for collaborative shopping accountability.
   final String? purchasedByUserId;
   
   /// Cached display name of the user who purchased this item for UI performance.
-  ///
   /// Stored locally to avoid additional user profile lookups during purchase display.
   final String? purchasedByDisplayName;
   
   /// Timestamp when the item was purchased.
-  ///
   /// Records when the purchase was completed for collaborative tracking and analytics.
   final DateTime? purchasedAt;
   
   /// User identifier of the person who last modified this item.
-  ///
   /// Tracks the most recent editor for collaborative change attribution.
   final String? lastModifiedByUserId;
   
   /// Cached display name of the user who last modified this item for UI performance.
-  ///
   /// Stored locally to avoid additional user profile lookups during modification display.
   final String? lastModifiedByDisplayName;
   
   /// Timestamp when the item was last modified.
-  ///
   /// Used for collaborative tracking and determining item freshness in shared lists.
   final DateTime? lastModifiedAt;
   
   /// Optional note or comment attached to the shopping item.
-  ///
   /// Allows for additional context, specifications, or collaborative communication about the item.
   final String? note;
   
   /// Estimated price for the shopping item for budget planning.
-  ///
   /// Optional pricing information for budget tracking and shopping cost estimation.
   final double? estimatedPrice;
   
   /// Priority level for the shopping item with range 1-5 where 5 is highest priority.
-  ///
   /// Used for item organization and visual prioritization with emoji indicators.
   final int priority;
 
   /// Creates a new unified shopping item with comprehensive metadata and automatic ID generation.
-  ///
   /// This constructor provides complete shopping item initialization with support for both basic
   /// personal shopping and collaborative shared shopping experiences. All collaborative metadata
   /// is optional and defaults to null for basic shopping list usage.
-  ///
   /// [id] Optional custom identifier, auto-generated UUID if not provided
   /// [name] Required item name for identification and display
   /// [amount] Required quantity amount with decimal precision support
@@ -213,17 +184,14 @@ class UnifiedShoppingItem {
   /// Factory constructors for simplified shopping item creation with specific use cases.
 
   /// Creates a basic shopping item optimized for personal shopping lists.
-  ///
   /// This factory provides simplified creation for non-collaborative shopping with minimal
   /// required parameters and no user attribution metadata. Ideal for personal shopping lists
   /// where collaborative tracking is not needed.
-  ///
   /// [name] Required item name for identification and display
   /// [amount] Required quantity amount with decimal precision support
   /// [unit] Unit of measurement, defaults to empty string for unitless items
   /// [category] Item category for organization, defaults to 'Övrigt' (Other)
   /// [bought] Purchase status, defaults to false for new items
-  ///
   /// Returns a new [UnifiedShoppingItem] with basic configuration and auto-generated ID.
   factory UnifiedShoppingItem.basic({
     required String name,
@@ -242,11 +210,9 @@ class UnifiedShoppingItem {
   }
 
   /// Creates a collaborative shopping item optimized for shared shopping lists.
-  ///
   /// This factory provides comprehensive creation for collaborative shopping with full
   /// user attribution, timestamps, and enhanced metadata. Automatically sets up proper
   /// collaborative tracking with current timestamp initialization.
-  ///
   /// [name] Required item name for identification and display
   /// [amount] Required quantity amount with decimal precision support
   /// [unit] Unit of measurement, defaults to empty string for unitless items
@@ -256,7 +222,6 @@ class UnifiedShoppingItem {
   /// [note] Optional note or comment for additional context and communication
   /// [estimatedPrice] Optional price estimation for collaborative budget planning
   /// [priority] Priority level 1-5 where 5 is highest, defaults to 3 (medium)
-  ///
   /// Returns a new [UnifiedShoppingItem] with collaborative configuration and current timestamps.
   factory UnifiedShoppingItem.collaborative({
     required String name,
@@ -288,13 +253,10 @@ class UnifiedShoppingItem {
   }
 
   /// Creates a unified shopping item from legacy shopping item models for migration support.
-  ///
   /// This factory provides backward compatibility with existing shopping item implementations
   /// by converting legacy models to the unified format. Safely handles missing fields with
   /// appropriate defaults for seamless migration.
-  ///
   /// [oldItem] Legacy shopping item object with dynamic typing for flexible migration
-  ///
   /// Returns a new [UnifiedShoppingItem] with basic configuration migrated from legacy data.
   factory UnifiedShoppingItem.fromShoppingItem(dynamic oldItem) {
     return UnifiedShoppingItem.basic(
@@ -309,38 +271,29 @@ class UnifiedShoppingItem {
   /// Smart formatting and utility methods for enhanced shopping item display and functionality.
 
   /// Checks if this shopping item has collaborative features enabled.
-  ///
   /// Determines if the item was created with collaborative metadata by checking
   /// for the presence of user attribution information.
-  ///
   /// Returns true if the item includes collaborative tracking data.
   bool get isCollaborative => addedByUserId != null;
   
   /// Checks if this shopping item has been purchased.
-  ///
   /// Provides convenient access to purchase status for shopping list completion tracking.
-  ///
   /// Returns true if the item has been marked as bought.
   bool get isPurchased => bought;
   
   /// Alias for purchase status for backward compatibility with legacy code.
-  ///
   /// Provides compatibility with existing code that uses 'isCompleted' terminology.
   bool get isCompleted => bought;
   
   /// Alias for amount property for backward compatibility with legacy code.
-  ///
   /// Provides compatibility with existing code that uses 'quantity' terminology.
   double get quantity => amount;
 
   /// Formats the item amount with intelligent decimal precision for optimal display.
-  ///
   /// Implements smart formatting that removes unnecessary decimal places for whole numbers
   /// while preserving decimal precision when needed. Optimizes display text for better
   /// user experience and cleaner shopping list appearance.
-  ///
   /// Returns formatted amount string without unnecessary decimal places.
-  ///
   /// **Examples:**
   /// - 2.0 → "2"
   /// - 1.5 → "1.5"
@@ -356,13 +309,10 @@ class UnifiedShoppingItem {
   }
 
   /// Formats the item unit with Swedish abbreviations and mappings for optimal display.
-  ///
   /// Implements intelligent unit formatting with comprehensive Swedish unit mapping system.
   /// Converts common long unit names to standard abbreviations while preserving
   /// user-friendly display for Swedish shopping contexts.
-  ///
   /// Returns formatted unit string with appropriate Swedish abbreviations.
-  ///
   /// **Swedish Unit Mappings:**
   /// - 'liter' → 'l'
   /// - 'styck'/'stycken' → 'st'
@@ -396,13 +346,10 @@ class UnifiedShoppingItem {
   }
 
   /// Generates optimized display text with intelligent formatting for Swedish shopping contexts.
-  ///
   /// Implements sophisticated display logic that handles all common Swedish shopping scenarios
   /// with proper formatting, unit abbreviations, and quantity optimization. Provides natural
   /// language display text that matches Swedish shopping list conventions.
-  ///
   /// Returns perfectly formatted display text for shopping list UI.
-  ///
   /// **Display Format Examples:**
   /// - With unit: "1,5 l Mjölk", "2 st Ägg"
   /// - Without unit (quantity): "3 Bananer"
@@ -431,13 +378,10 @@ class UnifiedShoppingItem {
   }
 
   /// Gets the emoji representation for the item's priority level.
-  ///
   /// Provides visual priority indicators with color-coded emoji system for quick
   /// priority identification in shopping lists. Maps priority numbers to intuitive
   /// emoji representations for enhanced user experience.
-  ///
   /// Returns priority emoji based on priority level (1-5 scale).
-  ///
   /// **Priority Emoji Mapping:**
   /// - 5 (Highest): 🔴 (Red circle)
   /// - 4 (High): 🟠 (Orange circle)
@@ -464,11 +408,9 @@ class UnifiedShoppingItem {
   /// Update methods for shopping item modification with collaborative tracking support.
 
   /// Creates a copy of this shopping item with updated values while preserving immutability.
-  ///
   /// Used for all item modifications while maintaining immutable data patterns and ensuring
   /// consistent state management for collaborative tracking. Automatically updates modification
   /// timestamps and user attribution when collaborative metadata is provided.
-  ///
   /// Returns a new [UnifiedShoppingItem] instance with updated values.
   UnifiedShoppingItem copyWith({
     String? name,
@@ -510,13 +452,10 @@ class UnifiedShoppingItem {
   }
 
   /// Toggles the purchased status of the shopping item with collaborative user tracking.
-  ///
   /// Implements purchase status toggle functionality with automatic collaborative metadata
   /// updates including user attribution and timestamp management for shared shopping lists.
-  ///
   /// [userId] Optional user ID for collaborative purchase attribution
   /// [userDisplayName] Optional display name for collaborative purchase tracking
-  ///
   /// Returns a new [UnifiedShoppingItem] with toggled purchase status and updated metadata.
   UnifiedShoppingItem togglePurchased({
     String? userId,
@@ -550,10 +489,8 @@ class UnifiedShoppingItem {
   /// Data persistence and serialization methods for Firestore and caching integration.
 
   /// Converts the shopping item to JSON format for caching and client-side storage.
-  ///
   /// Provides JSON serialization for client-side caching, local storage, and data transfer
   /// with ISO timestamp formatting and complete collaborative metadata serialization.
-  ///
   /// Returns a JSON-compatible map with all shopping item data properly formatted.
   Map<String, dynamic> toJson() {
     return {
@@ -579,10 +516,8 @@ class UnifiedShoppingItem {
   }
 
   /// Converts the shopping item to Firestore-compatible format for persistence.
-  ///
   /// Transforms all shopping item data into Firestore format with proper timestamp handling
   /// and collaborative metadata serialization for efficient database storage and retrieval.
-  ///
   /// Returns a map containing all shopping item data formatted for Firestore persistence.
   Map<String, dynamic> toFirestore() {
     return {
@@ -610,12 +545,9 @@ class UnifiedShoppingItem {
   }
 
   /// Creates a shopping item instance from JSON data for caching and deserialization.
-  ///
   /// Transforms JSON cache data into a complete [UnifiedShoppingItem] instance with proper
   /// type conversion and collaborative metadata deserialization for client-side caching support.
-  ///
   /// [json] JSON data containing all shopping item fields and collaborative metadata
-  ///
   /// Returns a new [UnifiedShoppingItem] instance with all data properly parsed from JSON.
   factory UnifiedShoppingItem.fromJson(Map<String, dynamic> json) {
     return UnifiedShoppingItem(
@@ -645,13 +577,10 @@ class UnifiedShoppingItem {
   }
 
   /// Creates a shopping item instance from Firestore repository data with robust parsing.
-  ///
   /// Transforms Firestore document data into a complete [UnifiedShoppingItem] instance with proper
   /// type conversion, timestamp parsing, and collaborative metadata deserialization for
   /// robust data recovery from database storage.
-  ///
   /// [data] Raw Firestore data containing all shopping item fields
-  ///
   /// Returns a new [UnifiedShoppingItem] instance with all data properly parsed from Firestore.
   factory UnifiedShoppingItem.fromFirestore(Map<String, dynamic> data) {
     return UnifiedShoppingItem(
@@ -679,14 +608,12 @@ class UnifiedShoppingItem {
   /// Standard object methods for debugging, comparison, and identity management.
 
   /// Returns the optimized display text for string representation.
-  ///
   /// Provides the formatted display text as the string representation for debugging
   /// and logging purposes, using the intelligent formatting system.
   @override
   String toString() => displayText;
 
   /// Compares two shopping items for equality based on unique identifier.
-  ///
   /// Uses item ID for equality comparison ensuring consistent object identity
   /// across different instances of the same shopping item data.
   @override
@@ -697,7 +624,6 @@ class UnifiedShoppingItem {
           id == other.id;
 
   /// Generates hash code based on unique shopping item identifier.
-  ///
   /// Provides consistent hash code generation for use in collections and
   /// data structures requiring hash-based operations and item identification.
   @override

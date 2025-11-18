@@ -6,13 +6,11 @@ import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:get_it/get_it.dart';
 
 /// Focused module for comment likes system
-/// 
 /// This module handles ONLY comment like functionality:
 /// - Like/unlike operations with user tracking
 /// - Like count management
 /// - Transaction-based like toggling
 /// - Like state queries
-/// 
 /// ❌ DOES NOT CONTAIN: Comment content, notifications, statistics, replies
 class CommentLikesSystem {
   static final CommentsRepository _commentsRepository = GetIt.instance<CommentsRepository>();

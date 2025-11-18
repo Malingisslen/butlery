@@ -41,66 +41,48 @@ class PreprocessingResult {
 }
 
 /// MODUL1 Stage 1: Preprocess raw recipe text before parsing
-///
 /// Cleans raw recipe strings to make them parser-ready.
 /// Runs BEFORE IngredientParser to handle real-world Swedish recipe edge cases.
-///
 /// # What Preprocessing Does
-///
 /// 1. **Removes approximations**: "ca 300 g" → "300 g"
 /// 2. **Normalizes ranges to MAX**: "3 - 5 dl" → "5 dl" ⚠️
 /// 3. **Removes optional markers**: "ev majsstärkelse" → "majsstärkelse"
 /// 4. **Removes instructions**: "smör till formen" → "smör"
 /// 5. **Removes parentheses**: "lime (saften)" → "lime"
 /// 6. **Normalizes whitespace**: Multiple spaces, etc.
-///
 /// # Critical: Range Handling
-///
 /// **Takes MAXIMUM value from ranges** (user decision):
 /// - "3 - 5 st" → "5 st"
 /// - "2-3 dl" → "3 dl"
 /// - "ca 3 - 5 g" → "5 g"
-///
 /// Rationale: Better to have too much than too little when shopping.
-///
 /// # Integration
-///
 /// ```dart
 /// // Step 1: Preprocess
 /// final preprocessed = IngredientPreprocessor.preprocess("ca 3 - 5 dl mjölk (kall)");
 /// // → PreprocessingResult(cleaned: "5 dl mjölk", ...)
-///
 /// // Step 2: Parse
 /// final parsed = IngredientParser.parseIngredient(preprocessed.cleaned);
 /// // → ParsedIngredient(5.0, "dl", "mjölk")
-///
 /// // Step 3: Normalize
 /// final normalized = IngredientNormalizer.normalize(parsed.name);
 /// // → NormalizationResult(normalized: "mjölk", ...)
 /// ```
-///
 /// # Real-World Examples (From Test Data)
-///
 /// ```dart
 /// preprocess("ca 300 g nachochips")
 /// // → "300 g nachochips"
-///
 /// preprocess("3 - 5 st hallon")
 /// // → "5 st hallon" (MAX value!)
-///
 /// preprocess("ev majsstärkelse")
 /// // → "majsstärkelse"
-///
 /// preprocess("lime (saften)")
 /// // → "lime"
-///
 /// preprocess("smör till formen")
 /// // → "smör"
-///
 /// preprocess("cirka 2-3 dl mjölk (kall)")
 /// // → "3 dl mjölk" (removes "cirka", takes max from "2-3", removes parentheses)
 /// ```
-///
 /// # Version
 /// 1.0.0 - Initial implementation based on real test data
 class IngredientPreprocessor {
@@ -108,7 +90,6 @@ class IngredientPreprocessor {
   IngredientPreprocessor._();
 
   /// Preprocess raw recipe text before parsing
-  ///
   /// Returns a [PreprocessingResult] with cleaned text and metadata flags.
   static PreprocessingResult preprocess(String rawText) {
     final original = rawText;
@@ -165,7 +146,6 @@ class IngredientPreprocessor {
   }
 
   /// Remove approximation words
-  ///
   /// Examples:
   /// - "ca 300 g" → "300 g"
   /// - "cirka 2 dl" → "2 dl"
@@ -198,15 +178,12 @@ class IngredientPreprocessor {
   }
 
   /// Normalize ranges to MAXIMUM value
-  ///
   /// **CRITICAL: Takes MAXIMUM value from ranges (user decision)**
-  ///
   /// Examples:
   /// - "3 - 5 st" → "5 st" (max: 5)
   /// - "2-3 dl" → "3 dl" (max: 3)
   /// - "1 - 2 kg" → "2 kg" (max: 2)
   /// - "2 1/2 - 3 dl" → "3 dl" (max: 3)
-  ///
   /// Patterns handled:
   /// - With spaces: "3 - 5"
   /// - Without spaces: "2-3"
@@ -247,7 +224,6 @@ class IngredientPreprocessor {
   }
 
   /// Remove optional markers
-  ///
   /// Examples:
   /// - "ev majsstärkelse" → "majsstärkelse"
   /// - "eventuellt salt" → "salt"
@@ -276,12 +252,10 @@ class IngredientPreprocessor {
   }
 
   /// Remove "till [noun]" instruction phrases
-  ///
   /// Examples:
   /// - "smör till formen" → "smör"
   /// - "ströbröd till formen" → "ströbröd"
   /// - "florsocker till garnering" → "florsocker"
-  ///
   /// Pattern: Remove "till" and everything after it
   static ({String text, bool modified}) _removeInstructionPhrases(String text) {
     // Match "till" followed by anything
@@ -296,12 +270,10 @@ class IngredientPreprocessor {
   }
 
   /// Remove all parenthetical content
-  ///
   /// Examples:
   /// - "lime (saften)" → "lime"
   /// - "majskorn (à 150 g)" → "majskorn"
   /// - "äpple (halva används i såsen)" → "äpple"
-  ///
   /// Removes everything between ( and ), including the parentheses
   static ({String text, bool modified}) _removeParentheses(String text) {
     // Match anything in parentheses
@@ -316,7 +288,6 @@ class IngredientPreprocessor {
   }
 
   /// Normalize whitespace
-  ///
   /// - Multiple spaces → single space
   /// - Leading/trailing spaces → removed
   static String _normalizeWhitespace(String text) {

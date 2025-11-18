@@ -1,24 +1,20 @@
 /// Firebase Firestore implementation for comprehensive friend request lifecycle and social connection management.
-///
 /// This repository provides sophisticated friend request functionality using Firebase Firestore as the
 /// backend, managing the complete lifecycle of friend requests from initiation through resolution.
 /// It implements advanced features like request validation, status tracking, duplicate prevention,
 /// and comprehensive security controls for safe social networking experiences.
-///
 /// **Architecture Integration:**
 /// - Extends [BaseFirebaseRepository] for consistent CRUD operations and error handling
 /// - Uses global `friend_requests` collection for centralized request management
 /// - Integrates with permission validation system for comprehensive security controls
 /// - Coordinates with friend relationship repository for seamless friendship establishment
 /// - Implements real-time streams for immediate request status updates
-///
 /// **Friend Request Lifecycle:**
 /// - **Request Creation**: Secure friend request initiation with validation and duplicate prevention
 /// - **Status Management**: Complete status tracking (pending, accepted, rejected, cancelled)
 /// - **Request Resolution**: Automatic cleanup and relationship establishment upon acceptance
 /// - **Security Validation**: Comprehensive checks to prevent abuse and unauthorized requests
 /// - **Real-time Updates**: Live streams for immediate request notifications and updates
-///
 /// **Security and Validation:**
 /// - **Self-operation Validation**: Ensures users can only send requests from their own accounts
 /// - **Duplicate Prevention**: Automatic detection and prevention of duplicate friend requests
@@ -32,49 +28,40 @@ import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 /// Firebase implementation for friend request management with comprehensive lifecycle and security controls.
-///
 /// This repository provides complete friend request functionality using Firebase Firestore with
 /// sophisticated request lifecycle management, security validation, and real-time updates. It handles
 /// the complete social connection workflow from initial request through friendship establishment.
-///
 /// **Request Management System:**
 /// Uses a centralized collection approach for efficient request management and discovery:
 /// - `friend_requests`: Global collection storing all friend requests with status tracking
 /// - Comprehensive indexing for efficient querying by sender, recipient, and status
 /// - Real-time streams for immediate request notifications and status updates
-///
 /// **Security and Validation:**
 /// - **Comprehensive Validation**: Multi-layer validation including self-operation checks
 /// - **Duplicate Prevention**: Automatic detection and prevention of duplicate requests
 /// - **Status Integrity**: Enforces valid status transitions and prevents invalid modifications
 /// - **Audit Logging**: Complete security audit trail for all request operations
-///
 /// **Usage Examples:**
 /// ```dart
 /// final requestRepo = FriendRequestRepository(
 ///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
-/// 
 /// // Send friend request
 /// final success = await requestRepo.sendFriendRequest(
 ///   targetUserId,
 ///   message: 'Would love to connect!',
 /// );
-/// 
 /// // Handle incoming requests
 /// requestRepo.incomingRequestsStream(userId).listen((requests) {
 ///   updateRequestsUI(requests);
 /// });
-/// 
 /// // Accept request and establish friendship
 /// await requestRepo.acceptFriendRequest(requestId);
-/// 
 /// // Get request statistics
 /// final stats = await requestRepo.getRequestStatistics(userId);
 /// ```
 class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
   /// Creates a friend request repository with dependency injection support.
-  ///
   /// [firestore] Optional Firestore instance for testing, defaults to production instance
   /// [authRepository] Optional authentication repository, defaults to FirebaseAuthRepository
   FriendRequestRepository({

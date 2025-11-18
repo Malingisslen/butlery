@@ -6,7 +6,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Consolidated messaging UI components
-///
 /// This file contains simple utility widgets for messaging UI:
 /// - ErrorText: Styled error text with consistent error color
 /// - ErrorListTile: ListTile for error actions with error theming
@@ -14,7 +13,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 /// - ModalContentContainer: Container wrapper for modal content
 /// - SearchBarContainer: Container for search bar in conversations view
 /// - StyledModalBottomSheet: Helper for showing modal bottom sheets
-///
 /// **Consolidation**: Merged from 6 separate files (146 LOC) for better maintainability
 
 // ===== ERROR COMPONENTS =====

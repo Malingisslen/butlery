@@ -5,7 +5,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 
 /// Layout scaffold components for main navigation and simple layouts
-///
 /// This module provides the core layout structures including
 /// main menu with bottom navigation and simple layout for detail views.
 class LayoutScaffolds {

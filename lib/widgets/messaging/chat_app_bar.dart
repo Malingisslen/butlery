@@ -1,5 +1,4 @@
 /// Nuclear Chat App Bar Component - Conversation Header Logic
-/// 
 /// Focused component handling ONLY chat app bar presentation and menu actions
 /// that was previously embedded within the massive ChatView architecture.
 /// Implements clean conversation header with action coordination.

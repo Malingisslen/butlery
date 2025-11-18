@@ -1,10 +1,8 @@
 /// Comprehensive collaborative shopping view providing real-time shared shopping list management for Flutter applications.
-///
 /// This module implements sophisticated collaborative shopping interface following Single Responsibility Principle,
 /// specializing in shared list management, real-time collaboration, item coordination, and comprehensive shopping functionality.
 /// It provides complete collaborative shopping interface while maintaining clean separation from business logic,
 /// data persistence, and state management through CollaborativeShoppingViewModel integration and modern component architecture.
-///
 /// **Single Responsibility Focus:**
 /// This module exclusively handles collaborative shopping UI presentation concerns through comprehensive shopping architecture:
 /// - **Real-Time Collaboration Excellence**: Advanced shared list management with live updates and participant coordination
@@ -12,20 +10,17 @@
 /// - **Facade Pattern Implementation**: Comprehensive component coordination with focused architecture and modular design
 /// - **Action System Coordination**: Advanced user interactions with menu actions, sharing functionality, and list management
 /// - **Swedish Localization Excellence**: Complete Swedish language support for collaborative operations and user feedback
-///
 /// **What This Module Does NOT Handle:**
 /// - Collaborative shopping business logic and data operations (handled by CollaborativeShoppingViewModel and shopping services)
 /// - Real-time synchronization algorithms (handled by shopping services and collaboration infrastructure)
 /// - Item persistence and state management (handled by shopping services and data management systems)
 /// - Sharing functionality implementation (handled by sharing services and social infrastructure)
-///
 /// **Collaborative Shopping View Architecture:**
 /// - **Facade Pattern Coordination**: Advanced component orchestration with focused architecture and clean separation
 /// - **Real-Time Collaboration System**: Comprehensive shared list management with live updates and participant tracking
 /// - **Modular Component Integration**: Sophisticated component coordination with header, items, and actions specialization
 /// - **Action Handler System**: Complete user interaction with menu actions, item operations, and sharing functionality
 /// - **Error Handling and States**: Advanced state management with loading, error, and empty state coordination
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Navigate to collaborative shopping view
@@ -36,14 +31,12 @@
 ///     ),
 ///   ),
 /// );
-/// 
 /// // The view provides comprehensive collaborative shopping functionality:
 /// // - Real-time shared list management with live updates and participant coordination
 /// // - Advanced item operations with completion tracking and collaborative editing
 /// // - Facade pattern architecture with focused component coordination
 /// // - Complete action system with menu actions, sharing, and list management
 /// // - Error handling with loading states, error recovery, and user guidance
-/// 
 /// // Integration with focused components (Phase 9 Refactored):
 /// // - CollaborativeShoppingHeader for header display and progress tracking
 /// // - CollaborativeShoppingItems for items list management and interaction
@@ -69,18 +62,15 @@ import 'package:butlery/views/social/collaborative_shopping/collaborative_shoppi
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_actions.dart';
 
 /// Comprehensive collaborative shopping view providing real-time shared shopping list management through advanced facade architecture.
-///
 /// Manages complete collaborative shopping interface enabling shared list management, real-time collaboration, item coordination,
 /// and comprehensive shopping functionality while maintaining clean separation between UI presentation
 /// and business logic through CollaborativeShoppingViewModel integration and focused component architecture.
-///
 /// **Core Responsibilities:**
 /// - Advanced facade pattern coordination with focused component orchestration and clean architectural separation
 /// - Real-time collaboration management with shared list coordination, live updates, and participant synchronization
 /// - Item management operations with completion tracking, collaborative editing, and comprehensive item functionality
 /// - Action system coordination with menu actions, sharing functionality, and comprehensive user interaction management
 /// - Swedish localized shopping experience with comprehensive user feedback and collaborative guidance
-///
 /// **Phase 9 Refactored Architecture:**
 /// This facade coordinates focused components maintaining 100% backward compatibility while providing clean modular architecture:
 /// - CollaborativeShoppingHeader: Header display and progress tracking
@@ -88,15 +78,12 @@ import 'package:butlery/views/social/collaborative_shopping/collaborative_shoppi
 /// - CollaborativeShoppingActions: Actions and user interactions coordination
 class CollaborativeShoppingView extends StatefulWidget {
   /// Shopping list identifier for collaborative management and real-time coordination.
-  /// 
   /// Contains shared list ID enabling collaborative management, real-time synchronization,
   /// participant coordination, and comprehensive shopping functionality.
   final String listId;
 
   /// Creates comprehensive collaborative shopping view with real-time shared list management coordination.
-  /// 
   /// [listId] Shopping list identifier for collaborative management and real-time coordination
-  /// 
   /// Establishes collaborative shopping interface with shared list management, real-time collaboration,
   /// item coordination, and comprehensive shopping functionality through
   /// CollaborativeShoppingViewModel integration and focused component architecture.

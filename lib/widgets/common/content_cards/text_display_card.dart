@@ -6,7 +6,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// Reusable text display card component
-/// 
 /// Provides consistent styling for displaying text content in a card format.
 /// Used for OCR results, previews, and other text content displays.
 class TextDisplayCard extends StatelessWidget {

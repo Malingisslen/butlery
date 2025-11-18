@@ -17,10 +17,8 @@ import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Manages group-shared content (recipes, menus, shopping lists) with filtering and activity tracking.
-///
 /// Uses AsyncOperationMixin for loading state management while maintaining
 /// operation-specific _isSharing state for distinct UI treatment.
-///
 /// ```dart
 /// final vm = GroupContentViewModel(sharingRepo: ServiceLocator.get()); await vm.initialize(group);
 class GroupContentViewModel extends ChangeNotifier
@@ -96,11 +94,9 @@ class GroupContentViewModel extends ChangeNotifier
   // ===== INITIALIZATION =====
 
   /// Initializes the ViewModel with a specific group and loads its content.
-  ///
   /// This method sets up the ViewModel to work with the specified group,
   /// loads all shared content for that group, and prepares the activity feed.
   /// Must be called before accessing any group content.
-  ///
   /// @param [group] The social group to manage content for
   /// @throws Exception if content loading fails
   Future<void> initialize(FriendCategory group) async {
@@ -112,14 +108,11 @@ class GroupContentViewModel extends ChangeNotifier
   // ===== CONTENT OPERATIONS =====
 
   /// Loads all content shared to the current group from the repository.
-  ///
   /// Fetches shared recipes, menus, and shopping lists from the social sharing
   /// repository, filters them by group membership, and organizes them by type.
   /// Also generates the group activity feed based on sharing timestamps.
-  ///
   /// The method handles authentication through the repository layer and
   /// provides comprehensive error handling with user-friendly messages.
-  ///
   /// @throws Exception if repository access fails or network issues occur
   Future<void> loadGroupContent() async {
     if (_group == null) {
@@ -238,11 +231,9 @@ class GroupContentViewModel extends ChangeNotifier
   // ===== GROUP SHARING OPERATIONS =====
 
   /// Shares content to the current group and refreshes the group content.
-  ///
   /// Adds the specified content to the group's shared content collection
   /// through the social sharing repository. Automatically refreshes the
   /// group content list to include the newly shared item.
-  ///
   /// @param [content] The content to share with the group
   /// @returns True if sharing succeeded, false otherwise
   /// @throws Exception if sharing fails due to permissions or network issues

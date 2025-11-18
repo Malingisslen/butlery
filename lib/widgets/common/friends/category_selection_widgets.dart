@@ -7,7 +7,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// Category Selection Widgets
-/// 
 /// Handles ONLY category selection UI components and interaction widgets.
 /// This includes category chips, selectors, and selection utilities.
 class CategorySelectionWidgets {

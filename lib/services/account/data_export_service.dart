@@ -6,7 +6,6 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 
 /// GDPR Compliance - Right to Data Portability (Article 20) and Right of Access (Article 15)
-///
 /// Exports all user data including:
 /// - Profile and authentication data
 /// - Recipes, menus, shopping lists
@@ -16,7 +15,6 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 /// - **Consent records (Article 7)** - User consent history
 /// - Notification data and preferences
 /// - All shared content
-///
 /// Uses repository pattern for database access to improve testability and maintain
 /// architectural consistency across the application.
 class DataExportService extends BaseService {
@@ -36,10 +34,8 @@ class DataExportService extends BaseService {
   FirebaseFirestore get _firestore => _firestoreRepository.firestore;
 
   /// Export all user data in GDPR-compliant JSON format
-  ///
   /// Returns a comprehensive JSON string containing all user personal data.
   /// This can be saved to a file or shared with the user.
-  ///
   /// Throws an exception if user is not authenticated or export fails.
   Future<String> exportUserData() async {
     final user = _authRepository.currentUser;
@@ -519,7 +515,6 @@ class DataExportService extends BaseService {
   }
 
   /// Export audit logs for GDPR Article 30 compliance
-  ///
   /// Provides complete audit trail of all permission checks and data
   /// processing activities performed on behalf of the user.
   Future<Map<String, dynamic>> _exportAuditLogs(String userId) async {
@@ -589,7 +584,6 @@ class DataExportService extends BaseService {
   }
 
   /// Export consent records for GDPR Article 7 compliance
-  ///
   /// Provides complete history of user consent decisions and purposes.
   Future<Map<String, dynamic>> _exportConsentRecords(String userId) async {
     try {
@@ -640,7 +634,6 @@ class DataExportService extends BaseService {
   }
 
   /// Export user notifications
-  ///
   /// Includes all notifications received by the user for transparency.
   Future<Map<String, dynamic>> _exportNotifications(String userId) async {
     try {
@@ -698,7 +691,6 @@ class DataExportService extends BaseService {
   }
 
   /// Export notification preferences
-  ///
   /// User's notification settings and preferences.
   Future<Map<String, dynamic>> _exportNotificationPreferences(String userId) async {
     try {

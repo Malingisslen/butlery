@@ -5,13 +5,11 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Focused module for recipe serialization
-/// 
 /// This module handles ONLY serialization concerns:
 /// - JSON serialization/deserialization
 /// - Firestore serialization/deserialization
 /// - Data format conversion
 /// - Serialization validation
-/// 
 /// ❌ DOES NOT CONTAIN: Recipe operations, factory methods, business logic
 class RecipeSerialization {
   

@@ -179,7 +179,6 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
   }
 
   /// Friends list with actual friends from the friends service
-  /// 
   /// ✅ FIXED: Integrated with existing friends system
   Widget _buildFriendsList() {
     if (_isLoading) {
@@ -266,7 +265,6 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
   }
 
   /// Create conversation with selected friends
-  /// 
   /// ✅ FIXED: Implemented actual conversation creation with friends system integration
   Future<void> _createConversation() async {
     if (_selectedFriendIds.isEmpty || _isCreating) return;

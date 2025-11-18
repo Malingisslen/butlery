@@ -1,5 +1,4 @@
 /// Comprehensive performance monitoring service for tracking app performance metrics.
-///
 /// This service provides real-time performance monitoring and reporting for:
 /// - Frame rendering performance
 /// - Network request timing

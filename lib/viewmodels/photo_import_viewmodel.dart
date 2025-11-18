@@ -1,11 +1,9 @@
 /// Photo import ViewModel with OCR processing for converting recipe images to Recipe objects.
-///
 /// **Features:** Camera/gallery capture, OCR.space API, multi-engine text extraction, auto-parsing, Swedish localization.
 /// ```dart
 /// final vm = PhotoImportViewModel(importManager: ServiceLocator.get<ImportManager>());
 /// await vm.pickImageFromCamera();
 /// if (vm.hasOcrResult && vm.hasParsedRecipe) { final recipe = vm.parsedRecipe; }
-/// 
 /// // Manual import processing if auto-parsing fails
 /// if (photoImportViewModel.hasOcrResult && !photoImportViewModel.hasParsedRecipe) {
 ///   await photoImportViewModel.performImport();
@@ -13,14 +11,12 @@
 ///     final recipe = photoImportViewModel.parsedRecipe;
 ///   }
 /// }
-/// 
 /// // State monitoring and processing status
 /// if (photoImportViewModel.isProcessing) {
 ///   // Show OCR processing indicator
 /// } else if (photoImportViewModel.canImport) {
 ///   // OCR complete and ready for recipe parsing
 /// }
-/// 
 /// // Photo data management and cleanup
 /// photoImportViewModel.clearPhoto();
 /// // All photo and OCR data cleared
@@ -34,11 +30,9 @@ import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 
 /// Comprehensive photo import ViewModel providing advanced OCR processing and image recognition through ImportManager coordination.
-///
 /// Specializes in photo-based recipe importing from camera captures and gallery images through OCR technology,
 /// image processing, and intelligent text extraction. Extends ImportBaseViewModel to provide complete photo import
 /// functionality with OCR coordination, image processing, and recipe parsing workflow management.
-///
 /// **Core Responsibilities:**
 /// - Advanced photo capture and processing with camera and gallery integration
 /// - OCR technology coordination with multi-engine support and fallback strategies
@@ -50,24 +44,19 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   // ===== PHOTO IMPORT STATE =====
   
   /// Raw image bytes from selected photo for OCR processing and display.
-  /// 
   /// Stores captured or selected image data enabling OCR processing
   /// and image preview functionality throughout photo import workflow.
   Uint8List? _imageBytes;
   
   /// Extracted text from OCR processing for recipe parsing and display.
-  /// 
   /// Stores OCR results enabling recipe parsing, text review,
   /// and manual editing throughout photo import functionality.
   String _ocrText = '';
 
   /// Initializes photo import ViewModel with comprehensive ImportManager integration and OCR preparation.
-  /// 
   /// [importManager] ImportManager instance for photo import strategy coordination and recipe parsing
-  /// 
   /// Establishes photo import infrastructure with ImportManager integration, enabling comprehensive
   /// photo-to-recipe functionality with OCR processing, image handling, and unified state management.
-  /// 
   /// **Initialization Process:**
   /// - ImportManager integration for photo import strategy execution
   /// - Universal OCR service preparation with multi-provider support
@@ -90,50 +79,41 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   // ===== STATE ACCESSORS =====
 
   /// Raw image bytes from selected photo for display and processing coordination.
-  /// 
   /// Provides access to captured or selected image data enabling image preview,
   /// OCR processing coordination, and photo import workflow management.
   Uint8List? get imageBytes => _imageBytes;
 
   /// Text extracted from OCR processing for review and recipe parsing.
-  /// 
   /// Provides access to OCR results enabling text review, manual editing,
   /// and recipe parsing coordination throughout photo import functionality.
   String get ocrText => _ocrText;
 
   /// Image selection status indicator for conditional UI rendering and workflow management.
-  /// 
   /// Indicates whether image has been captured or selected enabling
   /// UI state management and photo import workflow progression.
   bool get hasImage => _imageBytes != null;
 
   /// OCR processing results availability indicator for parsing and display coordination.
-  /// 
   /// Indicates whether OCR has produced text results enabling
   /// recipe parsing workflow and text review functionality.
   bool get hasOcrResult => _ocrText.isNotEmpty;
 
   /// OCR processing state indicator for UI progress indication and interaction control.
-  /// 
   /// Indicates active OCR processing operations for loading indicators
   /// and user interaction management during photo processing.
   bool get isProcessing => isLoading;
 
   /// Import readiness indicator based on OCR results availability.
-  /// 
   /// Determines whether photo import can proceed based on OCR text availability
   /// enabling proper import workflow validation and user guidance.
-  /// 
   /// **Override Implementation**: Extends ImportBaseViewModel canImport with OCR-specific validation.
   @override
   bool get canImport => hasOcrResult;
 
 
   /// Photo import type identifier for analytics tracking and logging coordination.
-  /// 
   /// Provides import type classification for analytics tracking, logging coordination,
   /// and import workflow identification throughout photo import operations.
-  /// 
   /// **Override Implementation**: Implements ImportBaseViewModel importType interface.
   @override
   String get importType => 'photo';
@@ -143,18 +123,15 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   // ===== PUBLIC OPERATIONS =====
 
   /// Captures photo from camera and processes with comprehensive OCR coordination.
-  /// 
   /// Performs camera photo capture with automatic OCR processing including
   /// image optimization, text extraction, and automatic recipe parsing coordination
   /// with comprehensive error handling and state management.
-  /// 
   /// **Camera Capture Process:**
   /// - Camera interface activation through ImagePicker
   /// - Image capture and bytes processing
   /// - Automatic OCR processing with multi-engine support
   /// - Intelligent recipe parsing from extracted text
   /// - State coordination and UI notification
-  /// 
   /// **Usage Example:**
   /// ```dart
   /// await photoImportViewModel.pickImageFromCamera();
@@ -167,18 +144,15 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   }
 
   /// Selects image from gallery and processes with comprehensive OCR coordination.
-  /// 
   /// Performs gallery image selection with automatic OCR processing including
   /// image optimization, text extraction, and automatic recipe parsing coordination
   /// with comprehensive error handling and state management.
-  /// 
   /// **Gallery Selection Process:**
   /// - Gallery interface activation through ImagePicker
   /// - Image selection and bytes processing
   /// - Automatic OCR processing with multi-engine support
   /// - Intelligent recipe parsing from extracted text
   /// - State coordination and UI notification
-  /// 
   /// **Usage Example:**
   /// ```dart
   /// await photoImportViewModel.pickImageFromGallery();
@@ -191,16 +165,13 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   }
 
   /// Clears all photo and OCR data with comprehensive state cleanup and memory management.
-  /// 
   /// Performs complete photo import state cleanup including image data, OCR results,
   /// and imported recipe data with disposal safety checks and memory management.
-  /// 
   /// **Cleanup Process:**
   /// - Image bytes disposal and memory cleanup
   /// - OCR text results clearing
   /// - Imported recipe data cleanup through base class
   /// - State coordination and UI notification
-  /// 
   /// **Usage Example:**
   /// ```dart
   /// photoImportViewModel.clearPhoto();
@@ -218,13 +189,10 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   }
 
   /// Alias for clearPhoto() to provide consistent API naming conventions.
-  /// 
   /// This method provides alternative naming for clearing all photo import data
   /// maintaining backward compatibility and consistent API patterns across ViewModels.
   /// Delegates to clearPhoto() for actual implementation.
-  /// 
   /// **Override Implementation**: Overrides ImportBaseViewModel clearAll() with photo-specific cleanup.
-  /// 
   /// **Usage Example:**
   /// ```dart
   /// photoImportViewModel.clearAll(); // Alternative to clearPhoto()
@@ -233,18 +201,14 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   void clearAll() => clearPhoto();
 
   /// Performs manual import operation with OCR text parsing and recipe generation.
-  /// 
   /// Performs manual recipe import from OCR text when automatic parsing fails or
   /// user initiates manual import, with comprehensive validation and error handling.
-  /// 
   /// **Manual Import Process:**
   /// - OCR text availability validation
   /// - Recipe parsing through ImportManager text parsing strategy
   /// - Parsed recipe state update and UI coordination
   /// - Comprehensive error handling with Swedish localized messages
-  /// 
   /// **Override Implementation**: Implements ImportBaseViewModel performImport interface with OCR-specific logic.
-  /// 
   /// **Usage Example:**
   /// ```dart
   /// if (photoImportViewModel.hasOcrResult) {
@@ -270,13 +234,10 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   // ===== PRIVATE OPERATIONS =====
 
   /// Performs unified image selection and OCR processing with comprehensive workflow coordination.
-  /// 
   /// [source] Image source for capture or selection (camera or gallery)
-  /// 
   /// Executes complete image selection and OCR workflow including image capture,
   /// bytes processing, validation, OCR execution, and automatic recipe parsing 
   /// with comprehensive error handling and state coordination.
-  /// 
   /// **Unified Processing Workflow:**
   /// - Import data cleanup and state preparation
   /// - Image selection through ImagePicker with source-specific handling
@@ -338,13 +299,10 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   }
 
   /// Performs comprehensive OCR processing using universal multi-provider OCR service.
-  /// 
   /// [imageBytes] Raw image data for OCR processing and text extraction
-  /// 
   /// Executes sophisticated OCR processing using the universal OCR service with
   /// multi-provider fallback strategy, image quality assessment, and automatic
   /// recipe parsing coordination ensuring optimal text extraction on all devices.
-  /// 
   /// **Universal OCR Processing Strategy:**
   /// 1. Image quality assessment and preprocessing
   /// 2. Multi-provider OCR processing (OCR.space → Google Vision → Tesseract)
@@ -352,7 +310,6 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// 4. Swedish language optimization and confidence scoring
   /// 5. Automatic recipe parsing from extracted text
   /// 6. Comprehensive error handling with user guidance
-  /// 
   /// **Throws**: Exception if no text can be extracted from image.
   Future<void> _performOcr(Uint8List imageBytes) async {
     final imageSizeKB = imageBytes.length / 1024;
@@ -391,13 +348,10 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   }
 
   /// Performs automatic recipe parsing from OCR text WITHOUT saving to storage.
-  /// 
   /// [text] Extracted OCR text for automatic recipe parsing and structure analysis
-  /// 
   /// Attempts automatic recipe parsing from OCR text using ImportManager parse-only functionality
   /// with intelligent structure recognition and recipe pattern detection. Creates recipe objects
   /// in memory only without persisting to storage, preventing unwanted auto-saving.
-  /// 
   /// **Parse-Only Process:**
   /// - OCR text analysis through ImportManager autoParseOnly
   /// - Recipe structure recognition and pattern detection
@@ -405,7 +359,6 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// - Graceful failure handling with manual parsing fallback
   /// - State update with parsed recipe if successful
   /// - NO SAVING TO STORAGE - recipe exists in memory only
-  /// 
   /// **Note**: Failures are handled gracefully - users can still manually parse OCR text.
   /// Recipes are NOT saved automatically and require explicit user action to save.
   Future<void> _autoParseOcrText(String text) async {
@@ -425,11 +378,9 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   // ===== DEBUGGING SUPPORT =====
 
   /// Provides comprehensive debugging state information for photo import development and troubleshooting.
-  /// 
   /// Returns map containing debug information including photo import state, OCR processing results,
   /// image data availability, and inherited debug state from ImportBaseViewModel for comprehensive
   /// development support and troubleshooting capabilities.
-  /// 
   /// **Debug Information Includes:**
   /// - Image selection and processing status
   /// - OCR results availability and text length metrics
@@ -448,16 +399,13 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   };
 
   /// Disposes photo import ViewModel with comprehensive cleanup and memory management.
-  /// 
   /// Performs complete resource cleanup including image data disposal, OCR text cleanup,
   /// and memory management ensuring proper photo import ViewModel lifecycle management.
-  /// 
   /// **Disposal Process:**
   /// - Image bytes disposal and memory cleanup
   /// - OCR text data cleanup and state reset
   /// - Parent disposal coordination through super.dispose()
   /// - Resource cleanup and memory management
-  /// 
   /// **Override Implementation**: Extends ImportBaseViewModel disposal with photo-specific cleanup.
   @override
   void dispose() {

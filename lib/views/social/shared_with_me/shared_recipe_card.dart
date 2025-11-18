@@ -11,7 +11,6 @@ import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart'
 import 'package:butlery/core/constants/routes.dart';
 
 /// SharedRecipeCard - Card for displaying shared recipes
-///
 /// Displays shared recipe information with action buttons.
 class SharedRecipeCard {
   static Widget build(

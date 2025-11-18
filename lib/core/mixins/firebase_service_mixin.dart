@@ -1,9 +1,7 @@
 /// Mixin providing standardized Firebase integration patterns for services.
-///
 /// This mixin eliminates 300+ lines of duplicate Firebase code found across 25+
 /// services by providing a comprehensive set of Firebase operation utilities with
 /// built-in error handling, connection management, and performance optimizations.
-///
 /// Key capabilities:
 /// - Centralized Firestore instance management with proper initialization
 /// - Standardized Firebase operation execution with comprehensive error handling
@@ -13,7 +11,6 @@
 /// - Batch operation support for efficient bulk operations
 /// - Connection state monitoring and offline handling
 /// - Performance monitoring and operation timing
-///
 /// Architecture benefits:
 /// - Eliminates inconsistent Firebase error handling across services
 /// - Provides centralized Firebase connection management
@@ -21,7 +18,6 @@
 /// - Simplifies testing with mockable Firebase operations
 /// - Improves performance through connection pooling and batching
 /// - Standardizes Firebase operation patterns across the app
-///
 /// Usage example:
 /// ```dart
 /// class RecipeService extends BaseService with FirebaseServiceMixin {
@@ -46,16 +42,13 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 
 /// Mixin for standardizing Firebase operations across services.
-///
 /// Built on top of [ErrorHandlingMixin] to provide Firebase-specific error
 /// handling and operation patterns. This mixin should be used by all services
 /// that interact with Firebase services (Firestore, Auth, Storage, etc.).
-///
 /// **Repository Pattern Integration:**
 /// Services using this mixin must provide a [firestoreRepository] getter to inject
 /// FirestoreRepository dependency. This follows the repository pattern and ensures
 /// proper testability and abstraction.
-///
 /// Provides these Firebase operation types:
 /// - [executeFirebaseOperation] - Standard Firebase operations with error handling
 /// - [executeFirebaseOperationWithRetry] - Operations with retry logic
@@ -66,19 +59,15 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
   // ===== FIREBASE INSTANCE MANAGEMENT =====
 
   /// FirestoreRepository for dependency injection.
-  ///
   /// Services using this mixin must override this getter to provide their
   /// FirestoreRepository instance. This enables proper dependency injection
   /// and testability while following the repository pattern.
-  ///
   /// Example:
   /// ```dart
   /// class MyService extends BaseService with FirebaseServiceMixin {
   ///   final FirestoreRepository _firestoreRepository;
-  ///
   ///   MyService({required FirestoreRepository firestoreRepository})
   ///       : _firestoreRepository = firestoreRepository;
-  ///
   ///   @override
   ///   FirestoreRepository get firestoreRepository => _firestoreRepository;
   /// }
@@ -86,14 +75,12 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
   FirestoreRepository get firestoreRepository;
 
   /// Centralized Firestore instance for all Firebase operations.
-  ///
   /// Provides access to the Firebase Firestore instance through the repository pattern.
   /// This follows the architectural pattern of accessing Firebase via repository getter
   /// as documented in CLAUDE.md.
   FirebaseFirestore get firestore => firestoreRepository.firestore;
 
   /// Checks whether Firebase has been properly initialized.
-  ///
   /// Returns true if Firebase apps are available, false otherwise.
   /// This check prevents Firebase operations from failing due to
   /// initialization issues.
@@ -106,14 +93,11 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
   }
 
   /// Ensures Firebase is initialized before executing operations.
-  ///
   /// Attempts to initialize Firebase if it hasn't been initialized yet.
   /// This method should be called before any Firebase operations to
   /// prevent initialization errors.
-  ///
   /// Returns true if Firebase is initialized (or was successfully initialized),
   /// false if initialization failed.
-  ///
   /// Example:
   /// ```dart
   /// if (await ensureFirebaseInitialized()) {
@@ -138,19 +122,15 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
   // ===== FIREBASE OPERATION EXECUTION =====
 
   /// Executes a Firebase operation with comprehensive error handling.
-  ///
   /// This method provides standardized execution of Firebase operations with
   /// automatic initialization checking, error handling, and logging. It replaces
   /// the try-catch patterns found in 20+ services across the codebase.
-  ///
   /// [operation] The Firebase operation to execute
   /// [operationName] Human-readable name for logging and error reporting
   /// [defaultValue] Value to return if the operation fails
   /// [requiresAuth] Whether the operation requires user authentication (default: true)
   /// [requiresNetwork] Whether the operation requires network connectivity (default: true)
-  ///
   /// Returns the operation result or [defaultValue] if the operation fails.
-  ///
   /// Example:
   /// ```dart
   /// final recipe = await executeFirebaseOperation(
@@ -189,24 +169,19 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
   }
 
   /// Executes a Firebase operation with automatic retry logic and DNS resilience.
-  ///
   /// This enhanced method automatically retries Firebase operations that fail due to
   /// network issues, DNS resolution failures, or temporary Firebase service unavailability.
   /// It uses exponential backoff and includes DNS-aware error handling for production resilience.
-  ///
   /// [operation] The Firebase operation to execute with retry logic
   /// [operationName] Human-readable name for logging and error reporting
   /// [defaultValue] Value to return if all retry attempts fail
   /// [maxRetries] Maximum number of retry attempts (default: 3)
   /// [enableDNSFailover] Whether to enable DNS failover for connection issues (default: true)
-  ///
   /// Returns the operation result or [defaultValue] if all retries fail.
-  ///
   /// **Enhanced Features:**
   /// - DNS-aware retry logic for resolution failures
   /// - Intelligent error classification for DNS vs network issues
   /// - Progressive retry strategy with DNS failover
-  ///
   /// Example:
   /// ```dart
   /// final data = await executeFirebaseOperationWithRetry(
@@ -234,26 +209,21 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
   }
 
   /// Executes Firebase operation with comprehensive DNS resilience and IP fallback.
-  ///
   /// This method provides industry-grade network resilience for Firebase operations by
   /// implementing DNS failover strategies, direct IP connections, and intelligent error
   /// handling. It's designed to handle production DNS resolution issues like the ones
   /// affecting firestore.googleapis.com connectivity.
-  ///
   /// [operation] The Firebase operation to execute with DNS resilience
   /// [operationName] Human-readable name for logging and error reporting
   /// [defaultValue] Value to return if operation fails
   /// [enableDNSFailover] Enable DNS failover and IP fallback (default: true)
   /// [maxDNSRetries] Maximum DNS resolution retry attempts (default: 2)
-  ///
   /// Returns the operation result or [defaultValue] if operation fails.
-  ///
   /// **DNS Resilience Features:**
   /// - Automatic DNS failover detection
   /// - Direct IP connection fallback
   /// - Progressive connection strategies
   /// - Comprehensive error categorization
-  ///
   /// Example:
   /// ```dart
   /// final result = await executeFirebaseOperationWithDNSResilience(
@@ -533,15 +503,11 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
   // ===== FIREBASE ERROR HANDLING =====
 
   /// Check if error is retryable with DNS-aware error classification.
-  ///
   /// This enhanced method provides intelligent error classification that distinguishes
   /// between DNS resolution issues, network problems, and actual Firebase service errors.
   /// It helps determine appropriate retry strategies for different error types.
-  ///
   /// [error] The error to classify for retry eligibility
-  ///
   /// Returns `true` if the error indicates a retryable condition
-  ///
   /// **Enhanced Error Classification:**
   /// - DNS resolution failure detection
   /// - Network connectivity issue identification
@@ -578,12 +544,9 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
   }
 
   /// Classifies error type for appropriate handling strategy.
-  ///
   /// This method provides detailed error classification to enable intelligent
   /// error handling strategies based on the specific type of connectivity issue.
-  ///
   /// [error] The error to classify
-  ///
   /// Returns [FirebaseErrorType] indicating the error category
   FirebaseErrorType classifyFirebaseError(dynamic error) {
     if (error is FirebaseException) {
@@ -632,14 +595,11 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
   // ===== FIREBASE CONNECTION STATE =====
 
   /// Check Firebase connectivity with DNS resilience and enhanced error handling.
-  ///
   /// This enhanced method provides comprehensive Firebase connectivity testing with
   /// DNS failover awareness and intelligent error classification. It helps identify
   /// whether connection failures are due to DNS resolution issues or actual service
   /// unavailability.
-  ///
   /// Returns `true` if Firebase is accessible, `false` if completely unavailable
-  ///
   /// **Enhanced Connectivity Testing:**
   /// - Standard Firebase connectivity test with server-only source
   /// - DNS-aware error handling and classification
@@ -681,11 +641,9 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
   }
 
   /// Enhanced DNS connectivity check using multiple strategies.
-  ///
   /// This internal method implements comprehensive DNS connectivity validation
   /// to determine if DNS resolution issues are affecting Firebase connectivity.
   /// It uses the enhanced connectivity checking from ConnectivityCheck.
-  ///
   /// Returns `true` if enhanced DNS connectivity is available
   Future<bool> _checkEnhancedDNSConnectivity() async {
     try {
@@ -698,11 +656,9 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
   }
 
   /// Tests enhanced DNS resolution using multiple DNS servers.
-  ///
   /// This method replicates the enhanced DNS resolution testing from
   /// ConnectivityCheck to provide consistent DNS health validation
   /// within the Firebase service context.
-  ///
   /// Returns `true` if any DNS server responds successfully
   Future<bool> _testEnhancedDNSResolution() async {
     const enhancedDnsServers = [
@@ -844,11 +800,9 @@ enum BatchOperationType {
 }
 
 /// Firebase error classification for intelligent error handling strategies.
-///
 /// This enumeration provides detailed error classification to enable appropriate
 /// handling strategies based on the specific type of connectivity or service issue.
 /// It helps distinguish between DNS problems, network issues, and actual Firebase errors.
-///
 /// **Error Categories:**
 /// - [dnsResolution] DNS resolution failures preventing connection to Firebase endpoints
 /// - [networkConnectivity] Network connectivity issues affecting Firebase communication
@@ -857,31 +811,26 @@ enum BatchOperationType {
 /// - [unknown] Unclassified errors requiring conservative handling
 enum FirebaseErrorType {
   /// DNS resolution failures preventing connection to Firebase endpoints.
-  ///
   /// This error type indicates issues resolving Firebase domain names to IP addresses,
   /// which can be addressed through DNS failover and direct IP connection strategies.
   dnsResolution,
 
   /// Network connectivity issues affecting Firebase communication.
-  ///
   /// This error type indicates broader network connectivity problems that may require
   /// retry strategies, connection quality assessment, or offline mode activation.
   networkConnectivity,
 
   /// Firebase authentication and permission errors.
-  ///
   /// This error type indicates authentication failures or insufficient permissions
   /// that require user authentication or permission elevation.
   authentication,
 
   /// Firebase service-specific errors and API issues.
-  ///
   /// This error type indicates actual Firebase service problems, API limitations,
   /// or service-specific errors that require service-level handling.
   serviceError,
 
   /// Unclassified errors requiring conservative handling.
-  ///
   /// This error type indicates errors that cannot be clearly classified and
   /// require conservative error handling and user communication.
   unknown,

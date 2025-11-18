@@ -1,5 +1,4 @@
 /// User profile ViewModel for form management, avatar upload, privacy settings, and real-time validation (Swedish).
-///
 /// ```dart
 /// final vm = UserProfileViewModel(userService, storageService, imagePickerService);
 /// vm.updateDisplayName('Erik');
@@ -67,9 +66,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== PROFILE FORM ACTIONS =====
 
   /// Updates display name with comprehensive validation and change tracking.
-  ///
   /// [value] New display name value for profile identification
-  ///
   /// Performs automatic trimming, validation, change detection, and UI notification
   /// for seamless display name management with real-time feedback and form coordination.
   void updateDisplayName(String value) {
@@ -80,9 +77,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Updates searchability privacy preference with change tracking and state coordination.
-  ///
   /// [value] New searchability preference for profile discovery control
-  ///
   /// Controls whether user profile can be discovered by other users through search functionality,
   /// providing comprehensive privacy preference management with automatic change detection.
   void updateIsSearchable(bool value) {
@@ -92,9 +87,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Updates email search privacy preference with comprehensive privacy control.
-  ///
   /// [value] New email search preference for email-based profile discovery control
-  ///
   /// Controls whether user profile can be discovered through email lookup functionality,
   /// providing granular privacy control with automatic change detection and state management.
   void updateAllowEmailSearch(bool value) {
@@ -106,17 +99,14 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== AVATAR MANAGEMENT OPERATIONS =====
 
   /// Uploads new avatar image with comprehensive progress tracking and service coordination.
-  ///
   /// Returns true if avatar upload succeeds, false if operation fails or user cancels.
   /// Manages complete avatar upload flow including image selection, processing, upload progress,
   /// and URL management with automatic change detection and comprehensive error handling.
-  ///
   /// **Upload Process:**
   /// - Image selection from device gallery through ImagePickerService
   /// - Secure upload to cloud storage with user-specific path structure
   /// - URL retrieval and local state update with change tracking
   /// - Progress indication and error handling with user feedback
-  ///
   /// **Usage Example:**
   /// ```dart
   /// final avatarUploaded = await profileViewModel.uploadAvatar();
@@ -182,7 +172,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Removes current avatar with immediate state update and change tracking.
-  ///
   /// Clears avatar URL from profile state and triggers change detection for unsaved changes management.
   /// Provides immediate avatar removal for user profile customization with automatic UI synchronization.
   void removeAvatar() {
@@ -194,17 +183,14 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== PROFILE PERSISTENCE OPERATIONS =====
 
   /// Saves profile changes with comprehensive validation and service coordination.
-  ///
   /// Returns true if profile save succeeds, false if validation fails or save operation errors.
   /// Performs complete profile save flow including validation, availability checking, service coordination,
   /// and state management with comprehensive error handling and user feedback.
-  ///
   /// **Save Process:**
   /// - Form validation including required fields and format checking
   /// - Display name availability verification for changed names
   /// - Service coordination for profile creation or update
   /// - State cleanup and change tracking reset upon success
-  ///
   /// **Usage Example:**
   /// ```dart
   /// final saved = await profileViewModel.saveProfile();
@@ -257,7 +243,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Resets form to current profile values with comprehensive state cleanup.
-  ///
   /// Reloads profile data from current user profile, clears unsaved changes flag,
   /// removes all validation errors, and synchronizes UI state for clean form reset.
   /// Essential for form cancellation and state restoration operations.
@@ -270,11 +255,9 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Checks display name availability with real-time validation feedback.
-  ///
   /// Returns true if display name is available, false if taken or validation fails.
   /// Performs real-time availability checking through UserService with automatic
   /// validation error management and immediate UI feedback for display name uniqueness.
-  ///
   /// **Usage Example:**
   /// ```dart
   /// final isAvailable = await profileViewModel.checkDisplayNameAvailability();
@@ -305,7 +288,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Clears all validation errors with comprehensive state cleanup and UI synchronization.
-  ///
   /// Removes all field-specific validation errors and notifies UI components
   /// for clean error state management and user experience improvement.
   void clearError() {
@@ -317,9 +299,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== ERROR HANDLING =====
 
   /// Handles user error messages with logging and potential UI feedback coordination.
-  ///
   /// [message] Error message for user notification and logging
-  ///
   /// Provides centralized user error handling with logging capability,
   /// designed for extension with UI notification systems for comprehensive user feedback.
   void _handleUserError(String message) {
@@ -330,7 +310,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== PRIVATE PROFILE MANAGEMENT METHODS =====
 
   /// Loads current profile data into form state with comprehensive default handling.
-  ///
   /// Initializes form fields from existing user profile or sets appropriate defaults
   /// for new profile creation, ensuring consistent form state initialization
   /// and proper change tracking setup for profile management operations.
@@ -357,7 +336,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== ADVANCED VALIDATION METHODS =====
 
   /// Validates display name format and requirements with comprehensive Swedish localized feedback.
-  ///
   /// Performs complete display name validation including emptiness check, length requirements,
   /// and character format validation with Unicode support for international names.
   /// Provides immediate Swedish localized error feedback for optimal user experience.
@@ -379,7 +357,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   // ===== CHANGE DETECTION AND STATE MANAGEMENT =====
 
   /// Detects form changes by comparing current form state with saved profile data.
-  ///
   /// Performs comprehensive comparison between form fields and existing profile data
   /// to accurately track unsaved changes for user prompting and navigation control.
   /// Handles both new profile creation and existing profile editing scenarios.
@@ -397,7 +374,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Checks if display name has changed from saved profile for availability validation.
-  ///
   /// Returns true if display name differs from saved profile, false otherwise.
   /// Used to determine when display name availability checking is required
   /// to avoid unnecessary validation calls during profile updates.
@@ -407,7 +383,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Handles reactive updates from UserService state changes with automatic UI synchronization.
-  ///
   /// Provides seamless state synchronization between UserService and ViewModel ensuring
   /// all profile state changes are immediately reflected in UI components
   /// for consistent user experience and real-time profile status updates.
@@ -421,7 +396,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Clears all field validation errors for clean validation state management.
-  ///
   /// Resets all validation error states to null for clean form validation state
   /// and proper error state cleanup during form operations and state transitions.
   void _clearValidationErrors() {
@@ -429,7 +403,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   /// Performs comprehensive ViewModel disposal with service listener cleanup and memory management.
-  ///
   /// Removes UserService listener connections and performs complete resource cleanup
   /// to prevent memory leaks and ensure proper ViewModel lifecycle management
   /// in dynamic profile editing scenarios with ViewModel creation and disposal.

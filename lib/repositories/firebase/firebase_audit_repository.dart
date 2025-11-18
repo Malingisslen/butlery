@@ -1,20 +1,16 @@
 /// Firebase repository for persistent audit logging (GDPR Article 30 compliance).
-///
 /// This repository manages the secure storage and retrieval of audit logs in Firestore,
 /// providing the persistent audit trail required for GDPR compliance. Audit logs record
 /// all permission checks and security events throughout the application.
-///
 /// **GDPR Compliance:**
 /// - Article 30: Records of Processing Activities (CRITICAL requirement)
 /// - Article 15: Right of Access by the Data Subject
 /// - Article 17: Right to Erasure (audit logs exempt per legal requirement)
-///
 /// **Security Model:**
 /// - Users CAN write their own audit logs (via authenticated requests)
 /// - Users CANNOT read their own audit logs (prevents tampering detection)
 /// - Only admins can read audit logs (via backend/admin tools)
 /// - Audit logs are immutable once created
-///
 /// **Design Principles:**
 /// - Fail gracefully: Audit logging failures do NOT break application operations
 /// - Write-only for users: Prevents users from knowing what's being audited
@@ -26,7 +22,6 @@ import 'package:butlery/models/audit_log.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Repository for persistent audit log storage and retrieval.
-///
 /// Manages the complete lifecycle of audit logs from creation through retrieval,
 /// with special handling for GDPR compliance and security monitoring requirements.
 class FirebaseAuditRepository {
@@ -41,10 +36,8 @@ class FirebaseAuditRepository {
       _firestore.collection('audit_logs');
 
   /// Log a permission check to persistent storage.
-  ///
   /// This is a fire-and-forget operation - failures are logged but don't throw.
   /// Application operations should NEVER fail due to audit logging issues.
-  ///
   /// **Usage:**
   /// ```dart
   /// await auditRepository.logPermissionCheck(
@@ -56,7 +49,6 @@ class FirebaseAuditRepository {
   ///   metadata: {'ip': '192.168.1.1', 'app_version': '1.0.0'},
   /// );
   /// ```
-  ///
   /// **Parameters:**
   /// - [userId]: User performing the operation
   /// - [operation]: Type of operation (read, write, delete, create)
@@ -103,24 +95,19 @@ class FirebaseAuditRepository {
   }
 
   /// Retrieve audit logs for a specific user (admin/GDPR request only).
-  ///
   /// This method is for GDPR data subject access requests and admin monitoring.
   /// Regular users CANNOT call this method - enforced by Firebase Security Rules.
-  ///
   /// **GDPR Article 15:** Right of Access by the Data Subject
   /// Users can request their audit logs via GDPR data export.
-  ///
   /// **Usage:**
   /// ```dart
   /// // GDPR data request
   /// final logs = await auditRepository.getUserAuditLogs('user123');
   /// ```
-  ///
   /// **Parameters:**
   /// - [userId]: User ID to retrieve logs for
   /// - [limit]: Maximum number of logs to retrieve (default 1000)
   /// - [startAfter]: Start after this timestamp (for pagination)
-  ///
   /// **Returns:** List of audit logs, newest first
   Future<List<AuditLog>> getUserAuditLogs(
     String userId, {
@@ -155,10 +142,8 @@ class FirebaseAuditRepository {
   }
 
   /// Retrieve audit logs for a specific resource (admin monitoring only).
-  ///
   /// Used for security monitoring and forensic investigation.
   /// Shows all access attempts (granted and denied) for a specific resource.
-  ///
   /// **Usage:**
   /// ```dart
   /// // Check who accessed a recipe
@@ -202,10 +187,8 @@ class FirebaseAuditRepository {
   }
 
   /// Get denied access attempts for security monitoring.
-  ///
   /// Returns all permission denials within a time window.
   /// Useful for detecting unauthorized access attempts and security threats.
-  ///
   /// **Usage:**
   /// ```dart
   /// // Check for unauthorized access in last 24 hours
@@ -245,10 +228,8 @@ class FirebaseAuditRepository {
   }
 
   /// Get audit log statistics for a user.
-  ///
   /// Returns summary statistics including total operations, denied attempts, etc.
   /// Useful for GDPR reports and user activity summaries.
-  ///
   /// **Usage:**
   /// ```dart
   /// final stats = await auditRepository.getUserAuditStats('user123');
@@ -277,10 +258,8 @@ class FirebaseAuditRepository {
   }
 
   /// Delete old audit logs (admin only, for data retention policy).
-  ///
   /// NOTE: Only delete logs older than legal retention requirements!
   /// Most jurisdictions require 1-7 year retention for audit logs.
-  ///
   /// **Usage:**
   /// ```dart
   /// // Delete logs older than 7 years (2555 days)

@@ -7,7 +7,6 @@ import 'package:butlery/services/unified/operations/modules/invitation_validatio
 import 'package:butlery/services/unified/operations/modules/invitation_statistics_module.dart';
 
 /// Friends invitations operations for multi-channel invitation management and tracking.
-///
 /// Handles friend invitation operations including sending, tracking, and analytics.
 class FriendsInvitationsOperations {
   final UnifiedFriendsService _parent;

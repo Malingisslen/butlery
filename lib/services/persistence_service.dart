@@ -1,22 +1,18 @@
 /// Comprehensive local data persistence service providing cross-platform storage management and session continuity.
-///
 /// This service manages all local data storage operations using SharedPreferences for reliable cross-platform
 /// persistence between application sessions. It provides comprehensive data serialization, error handling,
 /// and storage management for recipes, menus, and application metadata with intelligent caching strategies
 /// and robust error recovery mechanisms to ensure data integrity across device restarts and app updates.
-///
 /// **Architecture Integration:**
 /// - Uses [SharedPreferences] for cross-platform local storage with native platform optimization
 /// - Integrates with [Recipe] unified model system for comprehensive recipe data persistence
 /// - Implements [AppLogger] for detailed operation logging and debugging capabilities
 /// - Provides JSON serialization/deserialization for complex data structure persistence
-///
 /// **Data Persistence Categories:**
 /// - **Recipe Storage**: Complete recipe collection with metadata, images, and user customizations
 /// - **Menu Management**: Weekly menu planning with recipe associations and meal organization
 /// - **Metadata Tracking**: Last update timestamps, storage statistics, and application state information
 /// - **Batch Operations**: Efficient bulk data operations with atomic transaction-like behavior
-///
 /// **Storage Features:**
 /// - **Atomic Operations**: Transaction-like behavior ensuring data consistency during storage operations
 /// - **Error Recovery**: Comprehensive error handling with graceful degradation and data corruption protection
@@ -32,39 +28,31 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 
 /// Local data persistence service providing comprehensive storage management and session continuity.
-///
 /// This service handles all aspects of local data persistence using SharedPreferences as the underlying
 /// storage mechanism. It provides robust serialization, error handling, and data integrity management
 /// to ensure reliable data persistence across application sessions, device restarts, and system updates.
-///
 /// **Storage Architecture:**
 /// Implements a key-based storage system with:
 /// - Structured key naming conventions for organized data access
 /// - JSON serialization for complex data structure persistence  
 /// - Atomic operations ensuring data consistency during storage operations
 /// - Comprehensive error handling with graceful degradation strategies
-///
 /// **Data Categories:**
 /// Manages multiple categories of persistent data:
 /// - Recipe collections with complete metadata and user customizations
 /// - Menu planning data with weekly organization and meal associations
 /// - Application metadata including timestamps and storage statistics
 /// - User preferences and application state information
-///
 /// **Usage Examples:**
 /// ```dart
 /// final persistenceService = PersistenceService();
-/// 
 /// // Save recipe collection
 /// final success = await persistenceService.saveRecipes(recipeList);
-/// 
 /// // Load recipes on app startup
 /// final savedRecipes = await persistenceService.loadRecipes();
-/// 
 /// // Menu management
 /// await persistenceService.saveCurrentMenu(['recipe1', 'recipe2']);
 /// final menuIds = await persistenceService.loadCurrentMenu();
-/// 
 /// // Storage analytics
 /// final storageInfo = await persistenceService.getStorageInfo();
 /// ```
@@ -82,11 +70,9 @@ class PersistenceService extends BaseService {
   static const String _lastUpdatedKey = 'butlery_last_updated';
 
   /// Provides access to the SharedPreferences instance for cross-platform local storage operations.
-  ///
   /// This getter manages the SharedPreferences singleton instance providing the underlying
   /// storage mechanism for all persistence operations. It ensures consistent access to the
   /// platform-native storage system across Android and iOS with proper initialization handling.
-  ///
   /// Returns [SharedPreferences] instance for storage operations
   /// Throws [Exception] if SharedPreferences initialization fails
   Future<SharedPreferences> get _prefs async {
@@ -96,27 +82,22 @@ class PersistenceService extends BaseService {
   // ==================== RECEPT PERSISTENCE ====================
 
   /// Persists complete recipe collection to local storage with atomic operation handling.
-  ///
   /// This method serializes the entire recipe collection to JSON format and stores it atomically
   /// in SharedPreferences. It includes comprehensive error handling, data validation, and timestamp
   /// tracking to ensure data integrity and provide audit trail for storage operations.
-  ///
   /// [recipes] Complete list of recipes to persist to local storage
   /// Returns `true` if storage operation completed successfully, `false` on failure
-  ///
   /// **Storage Process:**
   /// 1. **Data Serialization**: Converts Recipe objects to JSON-serializable format
   /// 2. **JSON Encoding**: Transforms recipe data to JSON string for storage
   /// 3. **Atomic Storage**: Saves data atomically to prevent corruption during write operations
   /// 4. **Timestamp Update**: Records last update timestamp for data freshness tracking
   /// 5. **Success Validation**: Verifies storage operation completion and returns status
-  ///
   /// **Error Handling:**
   /// - Comprehensive exception catching with detailed error logging
   /// - Graceful degradation ensuring application stability on storage failures
   /// - Data integrity protection preventing partial writes or corruption
   /// - Swedish localized error messages for debugging and user feedback
-  ///
   /// **Performance Considerations:**
   /// - Efficient JSON serialization minimizing memory usage during conversion
   /// - Atomic write operations preventing data races in concurrent scenarios

@@ -1,5 +1,4 @@
 /// UI module for ViewModel registration and UI-related services.
-///
 /// This module handles all UI-related services including ViewModels,
 /// navigation, and UI state management. It registers all ViewModels
 /// comprehensively to avoid runtime registration errors.
@@ -62,7 +61,6 @@ import 'package:butlery/core/di/modules/collaboration_module.dart';
 import 'package:butlery/core/di/modules/messaging_module.dart';
 
 /// UI module providing ViewModels and UI services.
-///
 /// This module registers all ViewModels that can be registered in DI.
 /// ViewModels requiring instance-specific data (like RecipeDetailViewModel)
 /// must be created manually in views.

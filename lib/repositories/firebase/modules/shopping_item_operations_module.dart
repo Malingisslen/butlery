@@ -8,7 +8,6 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Module handling shopping item operations with dual storage support.
-///
 /// Supports two storage strategies:
 /// - Personal lists: Items in subcollection (/items)
 /// - Collaborative lists: Items inline in document

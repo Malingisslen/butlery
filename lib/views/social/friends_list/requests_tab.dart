@@ -10,7 +10,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
 
 /// RequestsTab - Friend discovery hub component
-///
 /// Primary social discovery tab with search encouragement and request management.
 /// Serves as the central hub for finding new friends and managing friend requests.
 class RequestsTab {

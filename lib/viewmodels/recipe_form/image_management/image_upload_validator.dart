@@ -6,14 +6,12 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 
 /// Validates upload safety and prevents data corruption from race conditions.
-///
 /// **Responsibilities:**
 /// - Upload safety checks (prevent saving with pending uploads)
 /// - Image format and size validation
 /// - Concurrent upload prevention
 /// - Upload completion monitoring
 /// - Cleanup of pending/failed uploads
-///
 /// **Used by:** RecipeImageManager for pre-save validation
 class ImageUploadValidator {
   /// Maximum image size in bytes (5MB)
@@ -29,7 +27,6 @@ class ImageUploadValidator {
   ];
 
   /// Check if it's safe to save recipe without losing pending uploads
-  ///
   /// HIGH PRIORITY FIX: Prevent data corruption from race conditions
   UploadSafetyResult checkUploadSafety(
       Map<String, ImageUploadStatus> imageStates) {
@@ -68,7 +65,6 @@ class ImageUploadValidator {
   }
 
   /// Wait for all pending uploads to complete or timeout
-  ///
   /// Returns true if all uploads completed successfully
   Future<bool> waitForUploadsToComplete({
     required Map<String, ImageUploadStatus> imageStates,
@@ -100,7 +96,6 @@ class ImageUploadValidator {
   }
 
   /// Get list of keys for images that should be removed (not completed)
-  ///
   /// Used when user chooses to save without pending/failed images
   List<String> getPendingAndFailedImageKeys(
       Map<String, ImageUploadStatus> imageStates) {
@@ -118,7 +113,6 @@ class ImageUploadValidator {
   }
 
   /// Validate image format
-  ///
   /// Returns true if the image URL has a valid image extension
   bool isValidImageFormat(String imageUrl) {
     final lowercaseUrl = imageUrl.toLowerCase();
@@ -126,7 +120,6 @@ class ImageUploadValidator {
   }
 
   /// Validate image size
-  ///
   /// Returns true if image is under maximum size (5MB)
   Future<bool> isValidImageSize(XFile imageFile) async {
     try {

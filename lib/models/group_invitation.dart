@@ -49,10 +49,8 @@ class GroupInvitation with JsonSerializableMixin {
         expiresAt = expiresAt ?? DateTime.now().add(const Duration(days: 7));
 
   /// Factory constructor for creating new group invitations with auto-generated ID.
-  ///
   /// Creates a new group invitation with automatic ID generation and default timing.
   /// The invitation will be set to pending status with a 7-day expiration period.
-  ///
   /// [groupId] Target group identifier
   /// [groupName] Group name for caching and UI performance
   /// [groupEmoji] Group emoji for visual identification
@@ -60,7 +58,6 @@ class GroupInvitation with JsonSerializableMixin {
   /// [fromUserName] Sender's name for caching and UI performance
   /// [toUserId] Recipient's user identifier
   /// [personalMessage] Optional custom message for personalized communication
-  ///
   /// Returns a new [GroupInvitation] instance with pending status and current timestamp.
   factory GroupInvitation.create({
     required String groupId,
@@ -84,13 +81,10 @@ class GroupInvitation with JsonSerializableMixin {
   }
 
   /// Creates a copy of this invitation with updated status and response time.
-  ///
   /// Used for immutable status transitions while preserving all other invitation data.
   /// Maintains immutability pattern for safe state management and tracking.
-  ///
   /// [status] New invitation status, if updating
   /// [respondedAt] Response timestamp, if updating
-  ///
   /// Returns a new [GroupInvitation] instance with updated values.
   GroupInvitation copyWith({
     GroupInvitationStatus? status,
@@ -113,10 +107,8 @@ class GroupInvitation with JsonSerializableMixin {
   }
 
   /// Accepts the group invitation and establishes group membership.
-  ///
   /// Transitions the invitation status to accepted and sets the response timestamp.
   /// This method should be called by the invitation recipient to join the group.
-  ///
   /// Returns a new [GroupInvitation] instance with accepted status and current timestamp.
   GroupInvitation accept() {
     return copyWith(
@@ -126,10 +118,8 @@ class GroupInvitation with JsonSerializableMixin {
   }
 
   /// Rejects the group invitation and declines group membership.
-  ///
   /// Transitions the invitation status to rejected and sets the response timestamp.
   /// This method should be called by the invitation recipient to decline joining.
-  ///
   /// Returns a new [GroupInvitation] instance with rejected status and current timestamp.
   GroupInvitation reject() {
     return copyWith(
@@ -139,10 +129,8 @@ class GroupInvitation with JsonSerializableMixin {
   }
 
   /// Cancels the group invitation before recipient response.
-  ///
   /// Transitions the invitation status to cancelled and sets the response timestamp.
   /// This method should only be called by the invitation sender to withdraw the invitation.
-  ///
   /// Returns a new [GroupInvitation] instance with cancelled status and current timestamp.
   GroupInvitation cancel() {
     return copyWith(
@@ -154,34 +142,28 @@ class GroupInvitation with JsonSerializableMixin {
   /// Status checker methods for invitation state validation and UI logic.
 
   /// Checks if the invitation is currently pending and not expired.
-  ///
   /// Returns true only when the invitation is in pending status AND has not expired.
   /// Used for determining if the invitation can still be responded to.
   bool get isPending => status == GroupInvitationStatus.pending && !isExpired;
   
   /// Checks if the invitation has been accepted by the recipient.
-  ///
   /// Returns true when the invitation status is accepted, indicating successful group membership.
   bool get isAccepted => status == GroupInvitationStatus.accepted;
   
   /// Checks if the invitation has been rejected by the recipient.
-  ///
   /// Returns true when the invitation status is rejected, indicating declined membership.
   bool get isRejected => status == GroupInvitationStatus.rejected;
   
   /// Checks if the invitation has been cancelled by the sender.
-  ///
   /// Returns true when the invitation status is cancelled, indicating sender withdrawal.
   bool get isCancelled => status == GroupInvitationStatus.cancelled;
   
   /// Checks if the invitation has been responded to with any action.
-  ///
   /// Returns true when respondedAt is not null, regardless of the response type.
   /// Used for determining if the invitation lifecycle is complete.
   bool get isCompleted => respondedAt != null;
   
   /// Checks if the invitation has expired beyond its validity period.
-  ///
   /// Returns true if the current time is past the expiration time OR if the status
   /// is explicitly set to expired. Used for automatic cleanup and UI state management.
   bool get isExpired =>
@@ -191,10 +173,8 @@ class GroupInvitation with JsonSerializableMixin {
   /// UI helper methods for Swedish-localized display and user experience optimization.
 
   /// Gets user-friendly Swedish text for how long ago the invitation was sent.
-  ///
   /// Provides localized time-ago display optimized for Swedish users with natural
   /// language formatting for improved user experience and temporal context.
-  ///
   /// Returns Swedish time format: 'Nu', '5 min sedan', '2 tim sedan', '3 dagar sedan', '2 veckor sedan'.
   String get timeAgoText {
     final now = DateTime.now();
@@ -214,10 +194,8 @@ class GroupInvitation with JsonSerializableMixin {
   }
 
   /// Gets user-friendly Swedish text for remaining time until expiration.
-  ///
   /// Provides localized expiration display with countdown formatting for Swedish users.
   /// Shows remaining time until invitation becomes invalid and requires renewal.
-  ///
   /// Returns Swedish countdown format: 'Utgången', '3 dagar kvar', '5 timmar kvar', 'Går ut snart'.
   String get expiresInText {
     if (isExpired) return 'Utgången';
@@ -237,10 +215,8 @@ class GroupInvitation with JsonSerializableMixin {
   }
 
   /// Gets formatted Swedish notification text for group invitation alerts.
-  ///
   /// Provides complete notification message including sender name, group information,
   /// and optional personal message for rich notification display and context.
-  ///
   /// Returns formatted Swedish notification with optional message inclusion.
   String get notificationText {
     if (personalMessage?.isNotEmpty == true) {
@@ -251,20 +227,16 @@ class GroupInvitation with JsonSerializableMixin {
   }
 
   /// Gets concise Swedish notification text for notification lists and summaries.
-  ///
   /// Provides abbreviated notification display optimized for list views and compact
   /// notification interfaces with essential information only.
-  ///
   /// Returns compact Swedish format: 'Sender → 👥 GroupName'.
   String get shortNotificationText {
     return '$fromUserName → $groupEmoji $groupName';
   }
 
   /// Gets UI color name for status-based styling and visual feedback.
-  ///
   /// Provides semantic color names for consistent UI styling based on invitation status.
   /// Used for theming, badges, and visual status indicators throughout the interface.
-  ///
   /// Returns color name: 'primary', 'success', 'error', or 'warning'.
   String get statusColorName {
     switch (status) {
@@ -281,10 +253,8 @@ class GroupInvitation with JsonSerializableMixin {
   }
 
   /// Gets localized Swedish status text for UI display and user communication.
-  ///
   /// Provides human-readable Swedish status descriptions for user interface display,
   /// status badges, and user communication with natural language formatting.
-  ///
   /// Returns Swedish status text: 'Väntande', 'Accepterad', 'Avvisad', 'Avbruten', 'Utgången'.
   String get statusText {
     switch (status) {
@@ -304,10 +274,8 @@ class GroupInvitation with JsonSerializableMixin {
   /// Data persistence and serialization methods for Firestore and caching integration.
 
   /// Converts the group invitation to Firestore-compatible format for persistence.
-  ///
   /// Transforms all invitation data into a format suitable for Firestore storage
   /// with proper timestamp handling and null value management for database efficiency.
-  ///
   /// Returns a map containing all invitation data formatted for Firestore persistence.
   Map<String, dynamic> toFirestore() {
     return {
@@ -327,13 +295,10 @@ class GroupInvitation with JsonSerializableMixin {
   }
 
   /// Creates a group invitation instance from Firestore repository data.
-  ///
   /// Transforms Firestore document data into a complete [GroupInvitation] instance
   /// with proper type conversion, timestamp parsing, and default value handling for robust data recovery.
-  ///
   /// [id] Document identifier from Firestore
   /// [data] Raw document data from Firestore with all invitation fields
-  ///
   /// Returns a new [GroupInvitation] instance with all data properly parsed and validated.
   factory GroupInvitation.fromMap(String id, Map<String, dynamic> data) {
     return GroupInvitation(
@@ -359,10 +324,8 @@ class GroupInvitation with JsonSerializableMixin {
   }
 
   /// Converts the group invitation to JSON format for local caching and serialization.
-  ///
   /// Transforms all invitation data into JSON-compatible format with proper DateTime
   /// serialization for local storage, caching, and data transfer operations.
-  ///
   /// Returns a JSON-compatible map with all invitation data properly serialized.
   @override
   Map<String, dynamic> toJson() {
@@ -383,12 +346,9 @@ class GroupInvitation with JsonSerializableMixin {
   }
 
   /// Creates a group invitation instance from JSON data for caching and deserialization.
-  ///
   /// Transforms JSON data into a complete [GroupInvitation] instance with proper
   /// type conversion and DateTime deserialization for cache recovery and data transfer.
-  ///
   /// [json] JSON map containing all invitation data with proper field names
-  ///
   /// Returns a new [GroupInvitation] instance with all data properly deserialized.
   factory GroupInvitation.fromJson(Map<String, dynamic> json) {
     return GroupInvitation(
@@ -416,7 +376,6 @@ class GroupInvitation with JsonSerializableMixin {
   /// Standard object methods for debugging, comparison, and identity management.
 
   /// Returns a string representation of the group invitation for debugging and logging.
-  ///
   /// Provides essential invitation information in a readable format for development
   /// and debugging purposes with key identifiers and status information.
   @override
@@ -425,7 +384,6 @@ class GroupInvitation with JsonSerializableMixin {
   }
 
   /// Compares two group invitations for equality based on unique identifier.
-  ///
   /// Uses invitation ID for equality comparison ensuring consistent object
   /// identity across different instances of the same invitation data.
   @override
@@ -435,7 +393,6 @@ class GroupInvitation with JsonSerializableMixin {
   }
 
   /// Generates hash code based on unique invitation identifier.
-  ///
   /// Provides consistent hash code generation for use in collections and
   /// data structures requiring hash-based operations and identity management.
   @override

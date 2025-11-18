@@ -1,35 +1,28 @@
 /// Shared Recipe ViewModel providing recipe-specific shared content management.
-///
 /// This specialized ViewModel handles all shared recipe operations including loading,
 /// importing, dismissing, and copy-on-write collaboration. It extends the base shared
 /// content ViewModel to provide recipe-specific functionality while maintaining
 /// consistent patterns with other content types.
-///
 /// **Responsibilities:**
 /// - **Recipe Loading**: Load shared recipes from repository with proper filtering
 /// - **Import Operations**: Handle recipe import with copy-on-write support
 /// - **Status Management**: Track read/unread status and dismissal state
 /// - **Collaboration**: Support copy-on-write collaboration for shared recipes
 /// - **Search Integration**: Implement recipe-specific search functionality
-///
 /// **Integration Points:**
 /// - **SocialRecipeCoordinator**: For invitation and sharing operations
 /// - **FirebaseSharedRecipeRepository**: For data persistence and retrieval
 /// - **SharedRecipe Model**: With full copy-on-write support
-///
 /// **Usage Example:**
 /// ```dart
 /// final recipeViewModel = SharedRecipeViewModel();
 /// await recipeViewModel.loadContent();
-///
 /// // Search functionality
 /// recipeViewModel.updateSearchQuery('pasta');
 /// final searchResults = recipeViewModel.filteredContent;
-///
 /// // Recipe operations
 /// await recipeViewModel.importSharedRecipe(sharedRecipe);
 /// await recipeViewModel.dismissSharedRecipe(sharedRecipe);
-///
 /// // Copy-on-write collaboration
 /// await recipeViewModel.joinSharedRecipe(sharedRecipe);
 /// ```
@@ -44,7 +37,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Specialized ViewModel for shared recipe management and operations.
-///
 /// Note (Issue #014): Uses status caching for synchronous filtering/counting.
 /// Status loaded from Firestore subcollections and cached for performance.
 class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
@@ -174,7 +166,6 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   // ===== RECIPE OPERATIONS =====
 
   /// Import shared recipe using copy-on-write pattern
-  ///
   /// For new copy-on-write behavior, this joins as viewer until first edit.
   /// For legacy compatibility, creates immediate copy with attribution.
   Future<String?> importSharedRecipe(SharedRecipe sharedRecipe,
@@ -200,7 +191,6 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   }
 
   /// Start collaborative editing (triggers copy-on-write)
-  ///
   /// This method triggers copy-on-write when user attempts first edit.
   /// Creates static copy for original owner and enables collaboration.
   Future<String?> startCollaborativeEditing(SharedRecipe sharedRecipe) async {
@@ -253,7 +243,6 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   }
 
   /// Mark recipe as viewed/read
-  ///
   /// Note (Issue #014): Updates cache instead of local model state.
   Future<bool> markAsViewed(SharedRecipe sharedRecipe) async {
     final result = await executeOperation(
@@ -307,7 +296,6 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   }
 
   /// Check if recipe can be edited by current user
-  ///
   /// Note (Issue #014): Simplified version. For accurate collaborator checks,
   /// use repository.isCollaborator(recipeId, userId).
   bool canEditRecipe(SharedRecipe recipe) {
@@ -329,7 +317,6 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   // ===== BULK OPERATIONS =====
 
   /// Mark all recipes as viewed
-  ///
   /// Note (Issue #014): Uses cache to identify unviewed recipes, then updates cache after marking.
   Future<void> markAllAsViewed() async {
     final userId = currentUserId;

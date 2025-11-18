@@ -3,7 +3,6 @@
 import 'package:butlery/services/upload/upload_models.dart';
 
 /// Calculates upload queue summaries and formatted display text for UI.
-///
 /// Pure calculator class with no state - all methods take parameters.
 class UploadQueueSummaryCalculator {
   /// Get enhanced upload queue summary for UI display with analytics

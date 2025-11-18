@@ -1,10 +1,8 @@
 /// Comprehensive app branding system providing consistent logo display and brand identity throughout the application.
-///
 /// This widget system consolidates branding and logo display patterns found throughout the application, providing
 /// consistent brand representation, sizing variants, and cultural adaptation. It eliminates design-in-views violations
 /// by centralizing branding logic and provides comprehensive logo variants for all contexts with proper theming
 /// support and brand consistency across the Swedish cooking application experience.
-///
 /// **Branding Consolidation Impact:**
 /// - **Logo Display**: Eliminates duplicate logo implementations found in 45+ files
 /// - **Brand Colors**: Consolidates brand color usage from 60+ branding contexts

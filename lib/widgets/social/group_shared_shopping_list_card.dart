@@ -16,7 +16,6 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:flutter/services.dart';
 
 /// Group Shared Shopping List Card - Card widget for shopping lists shared to groups
-/// 
 /// Displays shopping list information in a group context with:
 /// - List name and description
 /// - Item count and completion status

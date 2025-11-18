@@ -3,13 +3,11 @@
 import 'package:butlery/core/utils/logger.dart';
 
 /// Permission helper utilities for authentication and authorization checks
-///
 /// This helper provides safe permission checking patterns with:
 /// - Consistent null-safe auth validation
 /// - Automatic error logging
 /// - Resource ID validation
 /// - Clean, readable permission checks
-///
 /// **Usage:**
 /// ```dart
 /// // Check if user is authenticated
@@ -18,7 +16,6 @@ import 'package:butlery/core/utils/logger.dart';
 ///   operationName: 'Create recipe',
 /// );
 /// if (userId == null) return null;
-///
 /// // Validate resource ID
 /// if (!PermissionHelper.validateResourceId(recipeId, 'recipe')) {
 ///   return null;
@@ -26,15 +23,12 @@ import 'package:butlery/core/utils/logger.dart';
 /// ```
 class PermissionHelper {
   /// Require user authentication for an operation
-  ///
   /// Returns the current user ID if authenticated, null otherwise.
   /// Logs error if user is not authenticated.
-  ///
   /// **Parameters:**
   /// - [getCurrentUserId]: Function to get current user ID
   /// - [operationName]: Human-readable operation description for logging
   /// - [errorMessage]: Optional custom error message (default: 'Du måste vara inloggad')
-  ///
   /// **Returns:** User ID if authenticated, null otherwise
   static String? requireAuth({
     required String? Function() getCurrentUserId,
@@ -53,15 +47,12 @@ class PermissionHelper {
   }
 
   /// Require authentication and set error state in calling service
-  ///
   /// Similar to requireAuth but also calls setError callback.
-  ///
   /// **Parameters:**
   /// - [getCurrentUserId]: Function to get current user ID
   /// - [setError]: Callback to set error state in service
   /// - [operationName]: Human-readable operation description for logging
   /// - [errorMessage]: Optional custom error message
-  ///
   /// **Returns:** User ID if authenticated, null otherwise
   static String? requireAuthWithError({
     required String? Function() getCurrentUserId,
@@ -82,15 +73,12 @@ class PermissionHelper {
   }
 
   /// Validate resource ID (recipeId, menuId, etc.)
-  ///
   /// Checks if resource ID is not null and not empty.
   /// Logs error if validation fails.
-  ///
   /// **Parameters:**
   /// - [resourceId]: The resource ID to validate
   /// - [resourceType]: Human-readable resource type (e.g., 'recipe', 'menu')
   /// - [operationName]: Optional operation name for context
-  ///
   /// **Returns:** true if valid, false otherwise
   static bool validateResourceId(
     String? resourceId,
@@ -106,13 +94,11 @@ class PermissionHelper {
   }
 
   /// Check if user owns a resource
-  ///
   /// **Parameters:**
   /// - [currentUserId]: Current user ID
   /// - [ownerId]: Resource owner ID
   /// - [resourceType]: Human-readable resource type
   /// - [resourceId]: Resource ID for logging
-  ///
   /// **Returns:** true if user owns resource, false otherwise
   static bool isOwner({
     required String? currentUserId,
@@ -134,13 +120,11 @@ class PermissionHelper {
   }
 
   /// Check if user has specific permission on a resource
-  ///
   /// **Parameters:**
   /// - [hasPermission]: Function that checks if user has permission
   /// - [operationName]: Human-readable operation description
   /// - [resourceType]: Human-readable resource type
   /// - [resourceId]: Optional resource ID for logging
-  ///
   /// **Returns:** true if user has permission, false otherwise
   static bool checkPermission({
     required bool Function() hasPermission,
@@ -160,15 +144,12 @@ class PermissionHelper {
   }
 
   /// Combined auth + resource validation check
-  ///
   /// Convenience method that checks both authentication and resource ID.
-  ///
   /// **Parameters:**
   /// - [getCurrentUserId]: Function to get current user ID
   /// - [resourceId]: Resource ID to validate
   /// - [resourceType]: Human-readable resource type
   /// - [operationName]: Human-readable operation description
-  ///
   /// **Returns:** User ID if both checks pass, null otherwise
   static String? requireAuthAndResource({
     required String? Function() getCurrentUserId,
@@ -193,12 +174,9 @@ class PermissionHelper {
   }
 
   /// Check if user is authenticated (boolean version)
-  ///
   /// Simple boolean check without logging.
-  ///
   /// **Parameters:**
   /// - [getCurrentUserId]: Function to get current user ID
-  ///
   /// **Returns:** true if authenticated, false otherwise
   static bool isAuthenticated({
     required String? Function() getCurrentUserId,
@@ -207,11 +185,9 @@ class PermissionHelper {
   }
 
   /// Get authenticated user ID or default value
-  ///
   /// **Parameters:**
   /// - [getCurrentUserId]: Function to get current user ID
   /// - [defaultValue]: Default value if not authenticated
-  ///
   /// **Returns:** User ID or default value
   static String getAuthenticatedUserOrDefault({
     required String? Function() getCurrentUserId,

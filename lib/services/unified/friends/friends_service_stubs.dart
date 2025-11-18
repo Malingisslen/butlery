@@ -1,7 +1,6 @@
 // lib/services/unified/friends/friends_service_stubs.dart
 
 /// Consolidated friends service coordinator providing access to specialized friend services.
-///
 /// This coordinator is a simplified implementation providing access to sync, presence, and cache services.
 class FriendsServiceCoordinator {
   FriendsServiceCoordinator();

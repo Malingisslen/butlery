@@ -1,14 +1,11 @@
 /// Unified shopping ViewModel for comprehensive shopping list management.
-///
 /// Coordinates personal and collaborative shopping lists, item management,
 /// analytics, and export functionality. Delegates specialized operations
 /// to focused manager classes while maintaining clean MVVM architecture.
-///
 /// **Architecture:**
 /// - Main ViewModel: Service coordination, list management, error handling
 /// - ShoppingAnalyticsManager: Insights, statistics, export functionality
 /// - ShoppingItemOperationsManager: Search, grouping, bulk operations
-///
 /// **Usage:**
 /// ```dart
 /// final viewModel = UnifiedShoppingViewModel();

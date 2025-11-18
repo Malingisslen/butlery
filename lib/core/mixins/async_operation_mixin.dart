@@ -1,5 +1,4 @@
 /// Mixin for standardized async operations with loading states, error handling, debouncing, caching, and retry logic.
-///
 /// ```dart
 /// Future<void> loadData() => executeAsync(() async { _data = await _service.fetchData(); });
 

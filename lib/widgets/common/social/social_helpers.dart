@@ -6,7 +6,6 @@ import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 
 /// Consolidated Social Helper Functions
-/// 
 /// This class provides unified social utility methods, consolidating functionality
 /// from multiple social helper files to eliminate duplication.
 class SocialHelpers {

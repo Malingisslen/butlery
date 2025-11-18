@@ -6,7 +6,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// Shared components for group dialogs
-///
 /// Contains reusable UI components that are used across multiple group dialog types
 /// to reduce code duplication and maintain consistency.
 

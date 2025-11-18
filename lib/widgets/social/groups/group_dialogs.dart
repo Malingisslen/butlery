@@ -10,7 +10,6 @@ import 'package:butlery/widgets/social/groups/delete_group_dialog.dart';
 import 'package:butlery/widgets/social/groups/remove_member_dialog.dart';
 
 /// Group dialog show methods
-///
 /// This module provides methods for showing various group-related dialogs
 /// including create, edit, delete, and member management dialogs.
 class GroupDialogs {

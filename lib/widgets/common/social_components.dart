@@ -26,7 +26,6 @@ export 'social_components/social_builder_components.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
 
 /// 🚀 SocialComponents - The ultimate social widget API
-///
 /// Clean barrel export that consolidates all social-related widgets into a unified API 
 /// through delegation to focused single-responsibility modules:
 /// - ✅ Avatar widgets (delegates to SocialAvatarComponents)
@@ -36,18 +35,15 @@ import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
 /// - ✅ Social builders and helpers (delegates to SocialBuilderComponents)
 /// - ✅ 100% backward compatibility maintained
 /// - ✅ Clean modular architecture for maintainability
-///
 /// MIGRATION GUIDE:
 /// ```dart
 /// // Before:
 /// import '../../widgets/user/user_display_widgets.dart';
 /// UserDisplayWidgets.avatar(imageUrl: user.avatarUrl, displayName: user.displayName)
-///
 /// // After:
 /// import '../../widgets/common/social_components.dart';
 /// SocialComponents.avatar(user: user)
 /// ```
-///
 /// ARCHITECTURE:
 /// This file now serves as a clean facade that delegates to focused modules:
 /// - Each module has a single responsibility

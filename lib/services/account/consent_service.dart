@@ -7,7 +7,6 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 
 /// Service for managing user consent (GDPR Article 7)
-///
 /// Handles consent tracking, storage, and validation for GDPR compliance.
 /// Now uses FirebaseConsentRepository for secure, validated data access.
 class ConsentService extends BaseService {

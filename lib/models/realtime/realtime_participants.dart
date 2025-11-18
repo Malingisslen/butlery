@@ -3,13 +3,11 @@
 import 'package:butlery/models/permissions/resource_permission.dart';
 
 /// Focused module for realtime participant management
-/// 
 /// This module handles ONLY participant operations:
 /// - Participant permissions management
 /// - User access control
 /// - Permission validation and updates
 /// - Participant analytics and tracking
-/// 
 /// ❌ DOES NOT CONTAIN: Recipe content, metadata, serialization
 class RealtimeParticipants {
   

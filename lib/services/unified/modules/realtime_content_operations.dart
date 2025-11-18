@@ -6,13 +6,11 @@ import 'package:butlery/services/unified/modules/realtime_ingredient_operations.
 import 'package:butlery/services/unified/modules/realtime_instruction_operations.dart';
 
 /// Facade module for real-time content operations
-///
 /// This module provides a unified interface to all real-time editing operations
 /// by delegating to specialized modules:
 /// - RealtimeFieldOperations: Core field updates (title, description, etc.)
 /// - RealtimeIngredientOperations: Ingredient CRUD operations
 /// - RealtimeInstructionOperations: Instruction CRUD operations
-///
 /// **SRP Compliance:** This file follows the facade pattern - it delegates
 /// to specialized modules rather than implementing functionality directly.
 

@@ -23,7 +23,6 @@ import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/models/user_profile.dart';
 
 /// Conversations list view showing all user's messaging conversations
-///
 /// Provides comprehensive conversation management including:
 /// - Real-time conversation list with previews
 /// - Search functionality for conversations

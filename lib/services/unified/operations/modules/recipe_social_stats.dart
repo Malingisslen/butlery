@@ -15,13 +15,11 @@ import 'package:butlery/services/unified/operations/modules/rating_statistics.da
 import 'package:butlery/services/unified/operations/modules/rating_notifications.dart';
 
 /// Clean facade for recipe social statistics using focused modules
-///
 /// This facade provides a unified API that delegates to focused modules:
 /// - RecipeRatingSystem: Individual rating operations and validation
 /// - SocialEngagementMetrics: Engagement scoring and social statistics
 /// - RatingStatistics: Rating aggregation and top-rated queries
 /// - RatingNotifications: Rating notification management
-///
 /// ❌ DOES NOT CONTAIN: Complex implementation details, direct Firebase operations
 class RecipeSocialStats {
   final UnifiedRecipeService _parent;

@@ -8,10 +8,8 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 
 /// GDPR Article 20 - Right to Data Portability UI
-///
 /// User interface for exporting personal data in compliance with GDPR.
 /// Allows users to download all their data in JSON format.
-///
 /// **Features:**
 /// - One-click data export
 /// - Progress indication during export

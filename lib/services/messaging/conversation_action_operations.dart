@@ -7,7 +7,6 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
 /// Conversation action operations for the messaging service.
-///
 /// Handles conversation management actions including:
 /// - Pin/unpin conversations for quick access
 /// - Archive/unarchive conversations to organize inbox

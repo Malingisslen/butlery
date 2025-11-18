@@ -1,20 +1,15 @@
 /// Registry of known Swedish ingredients organized by category
-///
 /// Used by ingredient normalizer to validate normalized ingredient names
 /// and provide category information for tagging.
-///
 /// # Usage
-///
 /// ```dart
 /// // Check if ingredient is known
 /// if (KnownIngredients.isKnown('mjölk')) {
 ///   // Known ingredient
 /// }
-///
 /// // Get category
 /// final category = KnownIngredients.getCategory('mjölk');
 /// // → 'dairy'
-///
 /// // Check if compound name
 /// if (KnownIngredients.isCompoundName('vitpeppar')) {
 ///   // Don't split this compound name!
@@ -392,10 +387,8 @@ class KnownIngredients {
   };
 
   /// Compound ingredient names that should NOT be split
-  ///
   /// These are ingredient names where a color/descriptor is part of the
   /// actual ingredient name and should be kept together.
-  ///
   /// Examples:
   /// - "vitpeppar" (white pepper) - NOT "peppar"
   /// - "svartpeppar" (black pepper) - NOT "peppar"
@@ -476,7 +469,6 @@ class KnownIngredients {
   }
 
   /// Get category for ingredient
-  ///
   /// Returns category name or null if not found.
   static String? getCategory(String ingredient) {
     final lower = ingredient.toLowerCase();

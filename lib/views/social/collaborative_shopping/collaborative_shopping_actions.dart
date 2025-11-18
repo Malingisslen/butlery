@@ -8,13 +8,11 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Refactored CollaborativeShoppingActions using BaseActionHandler
-/// 
 /// This class handles ONLY action-related responsibilities:
 /// - Add item input section
 /// - App bar with menu actions
 /// - Action handlers and business logic coordination
 /// - User interaction management
-/// 
 /// ❌ DOES NOT CONTAIN: Items display, header display, state management
 class CollaborativeShoppingActions extends BaseActionHandler with ActionStateMixin {
   final CollaborativeShoppingViewModel viewModel;

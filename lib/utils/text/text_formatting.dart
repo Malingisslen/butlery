@@ -1,35 +1,28 @@
 /// Comprehensive text formatting system providing Swedish number formatting, text normalization, and cooking-specific text processing.
-///
 /// This utility class consolidates text formatting patterns found throughout the application, providing consistent
 /// Swedish language support for numbers, fractions, and cooking-related text processing. It eliminates duplicate
 /// formatting logic while ensuring proper Swedish cultural conventions for decimal notation, fraction display,
 /// and cooking measurement formatting.
-///
 /// **Architecture Integration:**
 /// - Provides foundation for ingredient parsing and recipe formatting
 /// - Supports Swedish decimal comma notation and fraction display
 /// - Integrates with cooking measurement systems for proper number formatting
 /// - Eliminates text formatting duplication across 180+ files in the codebase
 /// - Ensures consistent Swedish language conventions throughout the application
-///
 /// **Text Processing Capabilities:**
 /// - **Swedish Numbers**: Decimal comma formatting ("2,5" instead of "2.5")
 /// - **Fraction Display**: Unicode fraction notation (½, ¼, ¾) with mixed fractions
 /// - **Text Normalization**: Unicode cleanup and whitespace normalization
 /// - **Pattern Recognition**: Cooking-specific text pattern detection
 /// - **Cultural Adaptation**: Swedish language and formatting conventions
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Swedish decimal formatting
 /// TextFormatting.formatFractional(2.5); // Returns "2,5"
-/// 
 /// // Fraction notation
 /// TextFormatting.toSwedishHalfFraction(1.5); // Returns "1 ½"
-/// 
 /// // Text normalization
 /// TextFormatting.normalizeText("  fancy   text  "); // Returns "fancy text"
-/// 
 /// // Swedish number parsing
 /// TextFormatting.parseSwedishNumber("2,5"); // Returns 2.5
 /// ```
@@ -37,17 +30,14 @@
 import 'dart:core';
 
 /// Comprehensive text formatting utility class providing Swedish number formatting and cooking-specific text processing.
-///
 /// This class serves as the centralized text formatting engine for the Butlery cooking application, handling
 /// the complexity of Swedish language conventions, decimal formatting, fraction notation, and cooking-related
 /// text processing. It provides pure utility functions with optimal performance characteristics and comprehensive
 /// cultural adaptation for Swedish cooking applications.
-///
 /// **Swedish Cultural Integration:**
 /// The formatting system respects Swedish language conventions including decimal comma notation,
 /// traditional fraction display, and cooking measurement formatting standards commonly used in
 /// Swedish recipes and cooking applications.
-///
 /// **Static Utility Design:**
 /// - Private constructor prevents instantiation, ensuring pure utility function usage
 /// - All methods are static for convenient access without object creation overhead
@@ -57,21 +47,17 @@ class TextFormatting {
   /// Private constructor preventing instantiation to enforce static utility usage.
   TextFormatting._();
   /// Advanced Unicode text normalization with mathematical symbol cleanup and whitespace standardization
-  ///
   /// This method provides comprehensive text normalization by removing "fancy" Unicode characters
   /// (such as mathematical bold letters) and mapping them to standard Latin characters, followed
   /// by whitespace normalization. It ensures consistent text representation across different
   /// input sources and handles complex Unicode scenarios commonly found in recipe imports.
-  ///
   /// **Normalization Features:**
   /// - **Unicode Cleanup**: Removes mathematical Unicode symbols (U+1D400-U+1D7FF range)
   /// - **Character Mapping**: Maps fancy Unicode letters to standard Latin equivalents
   /// - **Whitespace Standardization**: Normalizes all whitespace to single spaces
   /// - **Edge Case Handling**: Robust handling of malformed Unicode sequences
-  ///
   /// [input] The text string to normalize
   /// Returns normalized text with standard characters and single-space whitespace
-  ///
   /// **Examples:**
   /// ```dart
   /// normalizeText("𝐀𝐁𝐂   text");  // Returns "ABC text"
@@ -113,22 +99,18 @@ class TextFormatting {
   }
 
   /// Pattern detection for cooking-specific text containing portion or time information
-  ///
   /// This method identifies text patterns that indicate portion sizes or cooking times,
   /// which is essential for recipe parsing and ingredient scaling. It uses sophisticated
   /// regex patterns to detect Swedish cooking terminology and numeric patterns commonly
   /// used in recipe instructions and ingredient lists.
-  ///
   /// **Detection Patterns:**
   /// - **Portion indicators**: "portioner", "port", "pers", "personer"
   /// - **Time indicators**: "min", "minuter"
   /// - **Count indicators**: "st", "stycken"
   /// - **Numeric ranges**: "4-6 portioner", "10-15 min"
   /// - **Mixed formats**: "2 pers", "30 minuter"
-  ///
   /// [text] The text to analyze for portion or time patterns
   /// Returns true if the text contains portion or time indicators
-  ///
   /// **Examples:**
   /// ```dart
   /// isPortionOrTimeLine("4 portioner");     // Returns true
@@ -146,21 +128,17 @@ class TextFormatting {
   }
 
   /// Swedish decimal formatting with cultural conventions and optimal precision display
-  ///
   /// This method formats double values according to Swedish cultural conventions, using
   /// decimal comma notation and intelligent precision handling. It automatically optimizes
   /// decimal places for readability while maintaining accuracy, making it ideal for
   /// cooking measurements and ingredient quantities.
-  ///
   /// **Formatting Features:**
   /// - **Swedish Notation**: Uses comma (",") as decimal separator instead of period
   /// - **Precision Optimization**: Removes trailing zeros and unnecessary decimal points
   /// - **Integer Detection**: Displays whole numbers without decimal notation
   /// - **Cooking Precision**: Limits to maximum 2 decimal places for cooking practicality
-  ///
   /// [value] The double value to format with Swedish conventions
   /// Returns formatted string with Swedish decimal comma notation
-  ///
   /// **Examples:**
   /// ```dart
   /// formatFractional(2.5);    // Returns "2,5"
@@ -187,21 +165,17 @@ class TextFormatting {
   }
 
   /// Swedish number parsing with comprehensive decimal separator support
-  ///
   /// This method provides robust parsing of Swedish number formats, supporting both
   /// traditional Swedish decimal comma notation and international decimal point notation.
   /// It includes comprehensive error handling and provides sensible defaults for
   /// cooking applications where invalid numbers should not break functionality.
-  ///
   /// **Parsing Features:**
   /// - **Dual Format Support**: Handles both "," and "." as decimal separators
   /// - **Whitespace Tolerance**: Automatically trims whitespace from input
   /// - **Error Recovery**: Returns 1.0 as default for invalid input (cooking-friendly)
   /// - **Culture Adaptive**: Normalizes Swedish format to Dart's expected format
-  ///
   /// [number] The number string to parse (Swedish or international format)
   /// Returns parsed double value, or 1.0 as safe default for invalid input
-  ///
   /// **Examples:**
   /// ```dart
   /// parseSwedishNumber("2,5");      // Returns 2.5
@@ -227,22 +201,18 @@ class TextFormatting {
   }
 
   /// Advanced Swedish fraction formatting with Unicode notation and mixed number support
-  ///
   /// This method provides sophisticated fraction formatting that converts decimal values to
   /// traditional Swedish fraction notation using Unicode symbols. It handles mixed numbers,
   /// quarter fractions, and provides intelligent fallback to decimal notation when fractions
   /// are not appropriate, making it ideal for cooking measurements and recipe display.
-  ///
   /// **Fraction Support:**
   /// - **Half fractions**: 0.5 -> "½", 1.5 -> "1 ½", 2.5 -> "2 ½"
   /// - **Quarter fractions**: 0.25 -> "¼", 0.75 -> "¾", 1.25 -> "1 ¼"
   /// - **Mixed numbers**: Combines whole numbers with fraction notation
   /// - **Precision handling**: Uses tolerance for floating-point comparison accuracy
   /// - **Fallback formatting**: Uses Swedish decimal notation for non-fraction values
-  ///
   /// [value] The decimal value to convert to Swedish fraction notation
   /// Returns formatted string with Unicode fractions or Swedish decimal format
-  ///
   /// **Examples:**
   /// ```dart
   /// toSwedishHalfFraction(0.5);   // Returns "½"
@@ -295,11 +265,9 @@ class TextFormatting {
 }
 
 /// Legacy function exports for backward compatibility during migration phase
-///
 /// These global functions provide backward compatibility for existing code that hasn't been
 /// updated to use the new TextFormatting class methods. They delegate to the corresponding
 /// static methods while maintaining the same function signatures and behavior.
-///
 /// **Migration Note:** New code should use `TextFormatting.methodName()` directly.
 /// These legacy exports will be removed in a future version once all code has been migrated.
 

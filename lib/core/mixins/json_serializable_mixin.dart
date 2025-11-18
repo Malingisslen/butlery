@@ -1,40 +1,32 @@
 /// Comprehensive JSON serialization mixins implementing standardized data transformation patterns for model layer architecture.
-///
 /// This mixin system serves as the foundational serialization infrastructure throughout the Butlery application,
 /// eliminating duplicate JSON and Firestore serialization patterns found across 24+ model files while providing
 /// advanced features including type-safe deserialization, comprehensive error handling, nested object support,
 /// and specialized mixins for common model patterns. It ensures consistent data transformation across all
 /// model classes while maintaining optimal performance and reliable error recovery for Swedish cooking
 /// application's complex data requirements.
-///
 /// ## Core Architecture Features
-/// 
 /// **Comprehensive Serialization Support**
 /// - JSON serialization with intelligent type conversion and null safety
 /// - Firestore integration with automatic Timestamp conversion and nested object handling
 /// - Specialized mixins for common model patterns (timestamped, identifiable, owned)
 /// - Utility functions for safe data extraction and validation
-/// 
 /// **Type-Safe Data Transformation**
 /// - Safe extraction methods for all primitive types with intelligent fallbacks
 /// - Enum serialization and deserialization with error recovery
 /// - List and map handling with type conversion and filtering
 /// - Deep copy operations for immutable data patterns
-/// 
 /// **Error Handling and Validation**
 /// - Comprehensive error logging with detailed failure information
 /// - Required field validation with missing field detection
 /// - Graceful degradation for malformed data with fallback values
 /// - Production-ready error recovery patterns for robust data processing
-/// 
 /// ## Eliminated Duplication Patterns
-/// 
 /// This mixin system consolidates serialization patterns found across 24+ model files:
 /// - **JSON Conversion**: Standardized toJson()/fromJson() patterns
 /// - **DateTime Handling**: ISO string conversion with null safety
 /// - **Type Safety**: Safe extraction with intelligent type conversion
 /// - **Firestore Integration**: Timestamp conversion and document mapping
-/// 
 /// **Before (duplicated across 24+ model files):**
 /// ```dart
 /// class MyModel {
@@ -46,7 +38,6 @@
 ///       'updatedAt': updatedAt?.toIso8601String(),
 ///     };
 ///   }
-///   
 ///   factory MyModel.fromJson(Map<String, dynamic> json) {
 ///     return MyModel(
 ///       id: json['id'] as String,
@@ -57,7 +48,6 @@
 ///   }
 /// }
 /// ```
-/// 
 /// **After (centralized pattern):**
 /// ```dart
 /// class MyModel with JsonSerializableMixin, TimestampedMixin, IdentifiableMixin {
@@ -69,7 +59,6 @@
 ///       'name': name,
 ///     };
 ///   }
-///   
 ///   factory MyModel.fromJson(Map<String, dynamic> json) {
 ///     final timestamps = MyModel().deserializeTimestamps(json);
 ///     return MyModel(
@@ -81,9 +70,7 @@
 ///   }
 /// }
 /// ```
-/// 
 /// ## Usage Examples
-/// 
 /// **Recipe Model Integration:**
 /// ```dart
 /// class Recipe with JsonSerializableMixin, TimestampedMixin, IdentifiableMixin, OwnedMixin {
@@ -98,7 +85,6 @@
 ///       'difficulty': serializeEnum(difficulty),
 ///     };
 ///   }
-///   
 ///   factory Recipe.fromJson(Map<String, dynamic> json) {
 ///     return Recipe(
 ///       id: Recipe().extractId(json),
@@ -109,7 +95,6 @@
 ///   }
 /// }
 /// ```
-/// 
 /// **Firestore Integration:**
 /// ```dart
 /// class ShoppingList with JsonSerializableMixin, FirestoreSerializableMixin {
@@ -117,14 +102,12 @@
 ///   Future<void> saveToFirestore() async {
 ///     await firestore.collection('shopping_lists').doc(id).set(toFirestore());
 ///   }
-///   
 ///   static ShoppingList fromFirestoreDoc(DocumentSnapshot doc) {
 ///     final data = FirestoreSerializableMixin.fromFirestore(doc);
 ///     return ShoppingList.fromJson(data);
 ///   }
 /// }
 /// ```
-/// 
 /// **Safe Data Extraction:**
 /// ```dart
 /// factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -141,21 +124,16 @@
 ///   );
 /// }
 /// ```
-/// 
 /// ## Performance Characteristics
-/// 
 /// - **Serialization Speed**: Optimized conversion methods with minimal object allocation
 /// - **Memory Efficiency**: Lazy evaluation and efficient type conversion patterns
 /// - **Error Recovery**: Graceful handling of malformed data without throwing exceptions
 /// - **Type Safety**: Compile-time type checking with runtime validation for robust data processing
-/// 
 /// ## Integration Patterns
-/// 
 /// - **Model Layer**: Direct integration with all data models for consistent serialization behavior
 /// - **Repository Pattern**: Seamless integration with Firebase and local storage repositories
 /// - **API Communication**: Standardized JSON format for network communication and caching
 /// - **Testing Support**: Reliable serialization patterns for unit testing and data mocking
-/// 
 /// This mixin system is essential for all data models in the Swedish cooking application,
 /// providing reliable, performant, and consistent serialization while eliminating code
 /// duplication and ensuring robust error handling across the entire data layer.
@@ -165,13 +143,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Base mixin for JSON serialization
-/// 
 /// This mixin provides common JSON serialization patterns found in 24+ model files:
 /// - Standardized toJson() implementation patterns
 /// - Common fromJson() constructor patterns
 /// - Date/DateTime handling
 /// - Null safety patterns
-/// 
 /// Pattern eliminated:
 /// ```dart
 /// // Before (duplicated in 24+ files):
@@ -185,7 +161,6 @@ import 'package:butlery/core/utils/logger.dart';
 ///       // ... more fields
 ///     };
 ///   }
-///   
 ///   factory MyModel.fromJson(Map<String, dynamic> json) {
 ///     return MyModel(
 ///       id: json['id'] as String,
@@ -196,7 +171,6 @@ import 'package:butlery/core/utils/logger.dart';
 ///     );
 ///   }
 /// }
-/// 
 /// // After (centralized):
 /// class MyModel with JsonSerializableMixin {
 ///   // Serialization methods provided by mixin

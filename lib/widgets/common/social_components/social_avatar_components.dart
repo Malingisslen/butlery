@@ -8,13 +8,11 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Social avatar and user display components
-/// 
 /// This module handles ONLY avatar and user display widgets:
 /// - User avatars with various sizes and styling options
 /// - User cards with avatar and user information
 /// - User list tiles for lists and selection interfaces
 /// - User display utilities and formatting
-/// 
 /// ❌ DOES NOT CONTAIN: Collaborative indicators, group management, invitations, builders
 class SocialAvatarComponents {
   
@@ -101,21 +99,18 @@ class SocialAvatarComponents {
   // ===== USER DISPLAY UTILITIES =====
 
   /// Format user display name consistently
-  /// 
   /// Provides standardized name formatting for user displays
   static String formatUserDisplayName(UserProfile? user) {
     return SocialFacade.formatUserDisplayName(user);
   }
 
   /// Check if user is currently online
-  /// 
   /// Returns online status for presence indicators
   static bool isUserOnline(UserProfile? user) {
     return SocialFacade.isUserOnline(user);
   }
 
   /// Get user avatar URL with fallbacks
-  /// 
   /// Returns the best available avatar URL for the user
   static String? getUserAvatarUrl(UserProfile? user) {
     return SocialFacade.getUserAvatarUrl(user);

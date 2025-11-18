@@ -80,11 +80,9 @@ class ShareValidationResult {
 }
 
 /// Comprehensive universal sharing dialog ViewModel providing advanced multi-content social distribution through service integration.
-///
 /// Manages universal sharing state enabling multi-content social distribution with recipe sharing, menu distribution,
 /// shopping list coordination, and recipient management while maintaining clean MVVM architecture separation between
 /// universal sharing business logic and UI presentation concerns through unified sharing interface.
-///
 /// **Core Responsibilities:**
 /// - Advanced multi-content sharing with unified interface for recipes, menus, and shopping lists
 /// - Comprehensive recipient management with friend and group targeting coordination
@@ -98,26 +96,21 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
   // ===== SHARING OPERATION STATE =====
 
   /// Share operation state for UI progress indication during sharing operations.
-  /// 
   /// Indicates active sharing operation for loading indicators and interaction
   /// control during content distribution and delivery processes.
   bool _isSharing = false;
   
   /// Error message for user feedback and comprehensive error state management.
-  /// 
   /// Provides localized error messages for user display and error recovery
   /// throughout universal sharing operations and content distribution.
   String? _errorMessage;
 
   /// Initializes universal share dialog ViewModel with comprehensive service integration and sharing preparation.
-  /// 
   /// [socialRecipeService] SocialRecipeService instance for recipe and menu sharing operations
   /// [shoppingService] UnifiedShoppingService instance for shopping list sharing coordination
-  /// 
   /// Establishes universal sharing infrastructure with multi-service integration, enabling comprehensive
   /// social content distribution functionality with recipe sharing, menu distribution, shopping list coordination,
   /// and recipient management through unified sharing interface and consistent operation patterns.
-  /// 
   /// **Service Integration:**
   /// - SocialRecipeService integration for recipe and menu sharing with social distribution
   /// - UnifiedShoppingService integration for shopping list sharing and collaborative coordination
@@ -132,19 +125,16 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
   // ===== SHARING STATE ACCESSORS =====
 
   /// Share operation state for UI progress indication and interaction control.
-  /// 
   /// Indicates whether sharing operation is in progress for loading indicators
   /// and user interaction management during sharing operations.
   bool get isSharing => _isSharing;
   
   /// Error message for user feedback and comprehensive error state management.
-  /// 
   /// Provides access to current error state enabling error display
   /// and recovery coordination throughout universal sharing operations.
   String? get errorMessage => _errorMessage;
   
   /// Error state indicator for UI conditional rendering and error handling.
-  /// 
   /// Indicates presence of errors for UI error display decisions
   /// and error state management throughout sharing operations.
   bool get hasError => _errorMessage != null;

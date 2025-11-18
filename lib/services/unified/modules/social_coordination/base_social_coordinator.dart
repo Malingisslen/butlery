@@ -1,30 +1,24 @@
 /// Base class for social content coordinators providing common invitation and sharing patterns.
-///
 /// This base class consolidates duplicate coordination patterns found across:
 /// - SocialRecipeCoordinator
 /// - SocialMenuCoordinator (to be implemented)
 /// - SocialShoppingCoordinator (to be implemented)
-///
 /// **Architectural Benefits:**
 /// - **Unified Invitation System**: Standardized invitation creation, import, and dismissal
 /// - **Consistent API**: Common patterns for all social content types
 /// - **Service Delegation**: Template method pattern for focused service coordination
 /// - **Repository Integration**: Unified shared content repository interactions
 /// - **Notification Coordination**: Standardized notification patterns
-///
 /// **Design Pattern:**
 /// Uses Template Method pattern where base class provides common algorithms
 /// and concrete subclasses customize behavior through abstract methods.
-///
 /// **Usage Example:**
 /// ```dart
 /// class SocialRecipeCoordinator extends BaseSocialCoordinator<Recipe, SharedRecipe> {
 ///   @override
 ///   String get contentTypeName => 'recipe';
-///
 ///   @override
 ///   String getContentTitle(Recipe content) => content.title;
-///
 ///   @override
 ///   BaseSharedContentRepository<SharedRecipe> get sharedRepository => _sharedRecipeRepository;
 /// }
@@ -39,7 +33,6 @@ import 'package:butlery/repositories/firebase/base_shared_content_repository.dar
 import 'package:butlery/services/user_service.dart' as user_service;
 
 /// Abstract base coordinator for social content operations
-///
 /// Provides common patterns for invitation creation, content sharing,
 /// import operations, and notification coordination across all content types.
 abstract class BaseSocialCoordinator<TContent, TSharedContent>
@@ -183,7 +176,6 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
   }
 
   /// Get invitations received by current user with pagination
-  ///
   /// [limit] Maximum number of invitations to return (default: 25)
   /// [startAfter] Document snapshot to start after for cursor-based pagination
   Future<List<TSharedContent>> getReceivedInvitations({
@@ -214,7 +206,6 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
   }
 
   /// Join shared content for viewing (true copy-on-write pattern)
-  ///
   /// This method implements TRUE copy-on-write:
   /// - Initially joins as viewer of original content (no copy created)
   /// - Copy-on-write is triggered later when user attempts first edit
@@ -260,7 +251,6 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
   }
 
   /// Trigger copy-on-write when user attempts first edit
-  ///
   /// This method implements the CoW trigger logic:
   /// 1. Creates static copy for original owner
   /// 2. Converts shared version to collaborative mode

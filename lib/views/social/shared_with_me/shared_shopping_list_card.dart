@@ -1,5 +1,4 @@
 /// Shared shopping list card component providing consistent UI patterns matching recipe/menu sharing design.
-///
 /// This component implements unified shared shopping list display following Single Responsibility Principle,
 /// matching the patterns established by SharedRecipeCard and SharedMenuCard for consistent user experience.
 /// It provides complete shopping list preview capabilities while maintaining clean separation from
@@ -15,7 +14,6 @@ import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart'
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// SharedShoppingListCard - Card for displaying shared shopping lists
-///
 /// Displays shared shopping list information with view/join/dismiss actions
 /// following consistent patterns established by recipe and menu cards.
 class SharedShoppingListCard {

@@ -7,12 +7,10 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 
 /// Analytics service that delegates to an AnalyticsRepository implementation.
-///
 /// This service now uses dependency injection for better testability while
 /// maintaining the singleton pattern and existing API. The repository pattern
 /// allows for easy mocking in tests and switching between different analytics
 /// providers if needed.
-///
 /// **GDPR Compliance**: This service checks user consent before logging analytics
 /// events as required by GDPR Article 7. Key methods include consent checks via
 /// `_hasAnalyticsConsent()`. Auth/security events (login, logout, account deletion)

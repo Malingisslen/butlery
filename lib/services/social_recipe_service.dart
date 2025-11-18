@@ -1,5 +1,4 @@
 /// Social recipe sharing service for collaborative cooking and meal planning.
-///
 /// Manages recipe/menu sharing, importing, dismissal, and participant tracking with reactive state management.
 
 import 'package:flutter/foundation.dart';
@@ -109,7 +108,6 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
   }
 
   // Get visible shared recipes (already filtered by repository - no dismissed items)
-  ///
   /// Note (Issue #014): Repository queries already filter out dismissed items using
   /// subcollection-based shouldShowToUser() checks. No additional filtering needed.
   List<SharedRecipe> getVisibleSharedRecipes(String currentUserId) {
@@ -117,7 +115,6 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
   }
 
   // Get visible shared menus (already filtered by repository - no dismissed items)
-  ///
   /// Note (Issue #014): Repository queries already filter out dismissed items using
   /// subcollection-based shouldShowToUser() checks. No additional filtering needed.
   List<SharedMenu> getVisibleSharedMenus(String currentUserId) {
@@ -125,7 +122,6 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
   }
 
   // Mark shared recipe as viewed
-  ///
   /// Note (Issue #014): Repository handles status tracking in subcollections.
   /// Local state update removed - status now managed server-side only.
   Future<bool> markSharedRecipeAsViewed(String recipeId, String userId) async {
@@ -141,7 +137,6 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
   }
 
   // Mark shared menu as viewed
-  ///
   /// Note (Issue #014): Repository handles status tracking in subcollections.
   /// Local state update removed - status now managed server-side only.
   Future<bool> markSharedMenuAsViewed(String menuId, String userId) async {

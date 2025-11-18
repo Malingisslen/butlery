@@ -195,8 +195,6 @@ class RealtimeRecipe extends RealtimeResource {
   Map<String, dynamic> serializeContent() {
     return RecipeSerialization.serializeRealtimeContent(recipe);
   }
-
-  /// 
   /// eliminating Firebase-specific types from the model layer.
   factory RealtimeRecipe.fromData({
     required String id,
@@ -227,8 +225,6 @@ class RealtimeRecipe extends RealtimeResource {
       recipe: recipe,
     );
   }
-
-  /// 
   /// @deprecated Use fromData() constructor instead. This maintains backward compatibility.
   factory RealtimeRecipe.fromMap(String id, Map<String, dynamic> data) {
     // Parse recipe data from the nested structure

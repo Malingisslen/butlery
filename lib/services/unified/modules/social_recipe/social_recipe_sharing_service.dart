@@ -12,7 +12,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_recipe_repository.dart';
 
 /// Social Recipe Sharing Service
-///
 /// Handles ONLY sharing and unsharing operations for recipes.
 /// This includes sharing with users, groups, and managing shared access.
 class SocialRecipeSharingService extends BaseService with UserContextMixin {
@@ -297,7 +296,6 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
   }
 
   /// Resolve group IDs to member user IDs and display names
-  ///
   /// ✅ FIXED: Integrated with friends service for actual group member resolution
   Future<Map<String, String>> _resolveGroupMembers(String groupId) async {
     try {

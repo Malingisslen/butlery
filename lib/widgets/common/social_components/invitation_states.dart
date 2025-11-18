@@ -5,13 +5,11 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Focused module for invitation target state widgets
-/// 
 /// This module handles ONLY state presentations:
 /// - Loading states (list, card, loading)
 /// - Error states with retry options
 /// - Empty states with actions
 /// - Success states with feedback
-/// 
 /// ❌ DOES NOT CONTAIN: Display widgets, selectors, actions, lists
 class InvitationStates {
 

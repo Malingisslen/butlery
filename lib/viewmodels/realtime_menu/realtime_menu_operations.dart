@@ -6,13 +6,11 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/viewmodels/realtime/optimistic_update_manager.dart';
 
 /// Focused module for realtime menu recipe operations
-/// 
 /// This module handles ONLY menu content operations:
 /// - Recipe CRUD operations in categories
 /// - Recipe movement between categories
 /// - Category management
 /// - Optimistic updates for better UX
-/// 
 /// ❌ DOES NOT CONTAIN: UI state, streaming, participant management
 class RealtimeMenuOperations {
   final RealtimeMenuService _menuService;
@@ -210,7 +208,6 @@ class RealtimeMenuOperations {
   }
 
   /// Regenerate category with AI (feature stub - not yet implemented)
-  /// 
   /// This is a placeholder for future AI-powered menu category regeneration.
   /// When implemented, this will use the MenuService to regenerate specific
   /// menu categories with AI-suggested recipes based on user preferences.

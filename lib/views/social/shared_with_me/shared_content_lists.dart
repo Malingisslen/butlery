@@ -9,7 +9,6 @@ import 'package:butlery/views/social/shared_with_me/shared_menu_card.dart';
 import 'package:butlery/views/social/shared_with_me/shared_shopping_list_card.dart';
 
 /// SharedContentLists - List builders for shared content
-///
 /// Handles building lists of shared recipes, menus, and shared shopping lists.
 class SharedContentLists {
   /// Build recipes list

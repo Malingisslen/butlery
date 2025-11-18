@@ -12,7 +12,6 @@ import 'package:butlery/viewmodels/recipe_form/recipe_collaborative_manager.dart
 import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
 
 /// Manages recipe persistence operations (save, fork, delete) with atomic coordination.
-///
 /// **Responsibilities:**
 /// - Atomic save operations with race condition protection
 /// - Recipe forking with data duplication
@@ -20,7 +19,6 @@ import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
 /// - Pending operation management
 /// - Image upload coordination during save
 /// - Collaborative state synchronization
-///
 /// **Dependencies:**
 /// - RecipeFormState: Form data and validation
 /// - UnifiedRecipeService: Recipe persistence
@@ -60,7 +58,6 @@ class RecipePersistenceManager with ErrorHandlingMixin {
   // ===== PUBLIC API =====
 
   /// CRITICAL FIX: Atomic save operation with comprehensive race condition protection and image consistency.
-  ///
   /// Returns saved Recipe instance if successful, null if validation fails or save errors occur.
   /// Implements atomic save coordination ensuring:
   /// - Single concurrent save operation per recipe
@@ -68,7 +65,6 @@ class RecipePersistenceManager with ErrorHandlingMixin {
   /// - Auto-save conflict prevention and coordination
   /// - State consistency throughout save operation
   /// - Comprehensive disposal protection
-  ///
   /// **Atomic Save Process:**
   /// - Save operation locking to prevent concurrent saves
   /// - Image upload completion coordination for consistency
@@ -294,11 +290,9 @@ class RecipePersistenceManager with ErrorHandlingMixin {
   }
 
   /// Forks recipe creating independent copy with comprehensive duplication and state management.
-  ///
   /// Returns forked Recipe instance if successful, null if operation fails.
   /// Performs complete recipe forking flow including data duplication, service coordination,
   /// and analytics tracking for comprehensive recipe copy functionality and user workflow support.
-  ///
   /// **Fork Process:**
   /// - Recipe data duplication with new unique identifier
   /// - Service-coordinated recipe creation with error handling
@@ -358,11 +352,9 @@ class RecipePersistenceManager with ErrorHandlingMixin {
   }
 
   /// Deletes recipe with comprehensive cleanup, permission validation, and collaborative coordination.
-  ///
   /// Returns true if deletion succeeds, false if operation fails or permission denied.
   /// Performs complete recipe deletion flow including permission validation, service coordination,
   /// collaborative cleanup, and resource management for comprehensive recipe removal and cleanup.
-  ///
   /// **Deletion Process:**
   /// - Permission validation for delete operation authorization
   /// - Service-coordinated recipe deletion with error handling

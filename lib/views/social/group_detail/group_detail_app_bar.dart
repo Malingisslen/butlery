@@ -7,7 +7,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// GroupDetailAppBar - App bar component
-///
 /// Provides group-specific app bar with menu actions based on permissions.
 class GroupDetailAppBar {
   static PreferredSizeWidget build(

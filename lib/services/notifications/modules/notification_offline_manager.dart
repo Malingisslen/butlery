@@ -6,12 +6,10 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Specialized offline notification queue management module providing comprehensive connectivity-aware notification handling.
-///
 /// This focused module implements sophisticated offline notification management following Single Responsibility Principle,
 /// handling all aspects of notification queuing, connectivity monitoring, and automatic processing when network access
 /// is restored. It provides comprehensive offline support ensuring reliable notification delivery regardless of
 /// network connectivity status while maintaining optimal user experience through intelligent retry strategies.
-///
 /// **Single Responsibility Focus:**
 /// This module exclusively handles offline notification management responsibilities:
 /// - **Offline Queuing**: Intelligent notification queuing when network connectivity is unavailable or unreliable
@@ -19,43 +17,35 @@ import 'package:butlery/core/utils/logger.dart';
 /// - **Automatic Processing**: Seamless queue processing when connectivity is restored with priority-based delivery
 /// - **Retry Logic**: Sophisticated retry mechanisms for failed notifications with exponential backoff strategies
 /// - **Queue Persistence**: Reliable queue storage and cleanup ensuring notifications survive app restarts
-///
 /// **What This Module Does NOT Handle:**
 /// - FCM token management and device registration (handled by FCMTokenManager)
 /// - Content generation and message templating (handled by NotificationContentManager)
 /// - User preferences and quiet hours (handled by NotificationPreferenceManager)
 /// - Delivery analytics and tracking (handled by NotificationAnalyticsManager)
-///
 /// **Offline Management Features:**
 /// - Intelligent notification queuing with priority-based ordering ensuring critical notifications are processed first
 /// - Real-time connectivity monitoring automatically detecting network state changes and triggering appropriate actions
 /// - Automatic queue processing with exponential backoff retry strategies preventing network congestion
 /// - Persistent queue storage ensuring queued notifications survive application restarts and system reboots
 /// - Smart cleanup mechanisms preventing queue overflow while preserving important notification delivery
-///
 /// **Connectivity Intelligence:**
 /// - Real-time network state monitoring with immediate response to connectivity changes
 /// - Adaptive retry strategies that adjust timing based on network stability and previous success rates
 /// - Priority-based queue management ensuring critical cooking and social notifications are delivered first
 /// - Background processing optimization minimizing battery usage while maintaining reliable delivery
 /// - Graceful degradation ensuring smooth user experience during network instability periods
-///
 /// **Usage Examples:**
 /// ```dart
 /// final offlineManager = NotificationOfflineManager(
 ///   userId: currentUserId,
 ///   sendNotificationCallback: deliveryService.sendNotification,
 /// );
-/// 
 /// // Queue notification when offline
 /// await offlineManager.queueNotification(pendingNotification);
-/// 
 /// // Update connectivity status
 /// offlineManager.updateConnectivityStatus(isOnline);
-/// 
 /// // Process queued notifications when online
 /// await offlineManager.processOfflineQueue();
-/// 
 /// // Get queue statistics
 /// final queueSize = offlineManager.getQueueSize();
 /// ```
@@ -90,7 +80,6 @@ class NotificationOfflineManager {
   // ===== QUEUE MANAGEMENT =====
 
   /// Queue notification for offline processing
-  /// 
   /// Called when a notification fails to send due to network issues
   void queueNotificationForOffline({
     required List<String> targetUserIds,
@@ -170,7 +159,6 @@ class NotificationOfflineManager {
   // ===== QUEUE PROCESSING =====
 
   /// Process offline notification queue
-  /// 
   /// Attempts to send all queued notifications when back online
   Future<void> processOfflineQueue({bool force = false}) async {
     if (_isProcessingQueue && !force) {

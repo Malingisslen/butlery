@@ -6,7 +6,6 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Module handling query operations for shopping lists.
-///
 /// Provides read operations and real-time streams for both personal and collaborative lists.
 class ShoppingRepositoryQueryModule {
   final FirebaseFirestore firestore;

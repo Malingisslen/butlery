@@ -6,7 +6,6 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// ActionButtons - Utility action buttons with loading support
-///
 /// Provides consistent button styling and loading states for the app.
 class ActionButtons {
   /// Standard action button med loading support och flera styles
@@ -296,15 +295,12 @@ class ActionButtons {
   }
 
   /// Standard cancel button that pops the dialog/screen with false result.
-  ///
   /// This convenience method eliminates duplication of the cancel button pattern across
   /// 9+ locations in the codebase. All cancel buttons now have consistent behavior,
   /// wording, and styling.
-  ///
   /// **Parameters:**
   /// - [label]: Custom label for the cancel button (defaults to 'Avbryt')
   /// - [result]: Value to return when cancel is pressed (defaults to false)
-  ///
   /// **Usage Example:**
   /// ```dart
   /// AlertDialog(
@@ -334,7 +330,6 @@ class ActionButtons {
 }
 
 /// Floating Action Button Widget
-/// 
 /// Provides consistent FAB styling across the app following design separation principles.
 class FloatingActionButtonWidget extends StatelessWidget {
   final VoidCallback? onPressed;

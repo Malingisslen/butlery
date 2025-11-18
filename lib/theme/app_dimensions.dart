@@ -39,14 +39,11 @@ class AppDimensions {
 
   /// **Spacing Scale Guide:**
   /// Use semantic names instead of numeric constants
-  ///
   /// Scale: Xs(4) → Sm(8) → Md(16) → Lg(24) → Xl(32) → Xxl(48)
-  ///
   /// For values between scale points, combine semantically:
   /// - 12px = spacingSm + spacingXs (8 + 4)
   /// - 20px = spacingMd + spacingXs (16 + 4)
   /// - 28px = spacingLg + spacingXs (24 + 4)
-  ///
   /// ❌ Don't: padding: spacing12
   /// ✅ Do: padding: spacingMd or combine: spacingSm + spacingXs
 
@@ -393,12 +390,10 @@ class AppDimensions {
   // ===== RESPONSIVE DESIGN UTILITIES =====
 
   /// Get responsive spacing based on screen size
-  ///
   /// Automatically scales spacing:
   /// - Mobile: base value
   /// - Tablet: base * 1.25
   /// - Desktop: base * 1.5
-  ///
   /// Example:
   /// ```dart
   /// final padding = AppDimensions.responsiveSpacing(context, spacingMd);
@@ -414,9 +409,7 @@ class AppDimensions {
   }
 
   /// Get responsive padding based on screen size
-  ///
   /// Automatically scales padding values for different screen sizes.
-  ///
   /// Example:
   /// ```dart
   /// final padding = AppDimensions.responsivePadding(context);
@@ -432,7 +425,6 @@ class AppDimensions {
   }
 
   /// Get responsive icon size based on screen size
-  ///
   /// Example:
   /// ```dart
   /// final iconSize = AppDimensions.responsiveIconSize(context, iconSizeL);
@@ -448,7 +440,6 @@ class AppDimensions {
   }
 
   /// Get responsive content padding (horizontal screen padding)
-  ///
   /// Returns EdgeInsets for screen content:
   /// - Mobile: 16px
   /// - Tablet: 24px
@@ -464,7 +455,6 @@ class AppDimensions {
   }
 
   /// Get responsive horizontal padding only
-  ///
   /// Useful for list items and cards that need horizontal padding
   static EdgeInsets responsiveHorizontalPadding(BuildContext context) {
     final padding = Breakpoints.valueFor(
@@ -477,7 +467,6 @@ class AppDimensions {
   }
 
   /// Get responsive grid spacing based on screen size
-  ///
   /// Returns spacing for grid layouts:
   /// - Mobile: 16px
   /// - Tablet: 20px
@@ -492,7 +481,6 @@ class AppDimensions {
   }
 
   /// Get responsive card padding
-  ///
   /// Returns padding for cards:
   /// - Mobile: 16px
   /// - Tablet: 20px
@@ -508,7 +496,6 @@ class AppDimensions {
   }
 
   /// Get responsive avatar size
-  ///
   /// Returns avatar size based on screen:
   /// - Mobile: 40px
   /// - Tablet: 48px
@@ -523,7 +510,6 @@ class AppDimensions {
   }
 
   /// Get responsive button height
-  ///
   /// Returns button height:
   /// - Mobile: 48px (min touch target)
   /// - Tablet: 52px
@@ -538,7 +524,6 @@ class AppDimensions {
   }
 
   /// Get responsive image size for thumbnails
-  ///
   /// Returns thumbnail size:
   /// - Mobile: 80px
   /// - Tablet: 96px
@@ -553,7 +538,6 @@ class AppDimensions {
   }
 
   /// Get responsive recipe card image height
-  ///
   /// Returns image height for recipe cards:
   /// - Mobile: 160px
   /// - Tablet: 200px
@@ -568,7 +552,6 @@ class AppDimensions {
   }
 
   /// Get responsive grid cross-axis count
-  ///
   /// Returns number of columns for grid:
   /// - Mobile: 1 column
   /// - Tablet: 2 columns
@@ -578,7 +561,6 @@ class AppDimensions {
   }
 
   /// Get responsive card grid columns
-  ///
   /// Returns number of columns for card grid (more conservative):
   /// - Mobile: 1 column
   /// - Tablet: 2 columns
@@ -589,7 +571,6 @@ class AppDimensions {
   }
 
   /// Get maximum content width for readability
-  ///
   /// Prevents content from being too wide on large screens:
   /// - Mobile: No limit
   /// - Tablet: 800px
@@ -599,7 +580,6 @@ class AppDimensions {
   }
 
   /// Get maximum form width
-  ///
   /// Forms should be centered and constrained on large screens:
   /// - Mobile: No limit
   /// - Tablet: 600px
@@ -609,7 +589,6 @@ class AppDimensions {
   }
 
   /// Get responsive dialog width
-  ///
   /// Dialogs should be comfortable to read:
   /// - Mobile: No limit (full width with padding)
   /// - Tablet: 500px
@@ -619,7 +598,6 @@ class AppDimensions {
   }
 
   /// Get responsive elevation for cards
-  ///
   /// Subtle elevation on mobile, more prominent on larger screens:
   /// - Mobile: 2.0
   /// - Tablet: 4.0
@@ -634,7 +612,6 @@ class AppDimensions {
   }
 
   /// Get sidebar/navigation rail width
-  ///
   /// Returns:
   /// - Mobile: 0 (no sidebar, uses bottom nav)
   /// - Tablet: 72 (NavigationRail compact)

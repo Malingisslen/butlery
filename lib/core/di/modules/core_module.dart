@@ -1,11 +1,9 @@
 /// Core module for foundational services.
-///
 /// This module handles the core application infrastructure including:
 /// - Authentication services and repositories
 /// - Local storage and persistence
 /// - Analytics and monitoring
 /// - Database repositories
-///
 /// This is the foundation module that other modules depend on.
 library;
 
@@ -42,7 +40,6 @@ import 'package:butlery/services/account/consent_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 /// Core module providing foundational application services.
-///
 /// This module is the foundation of the dependency injection system and
 /// must be initialized before all other modules. It provides:
 /// - SharedPreferences for local storage
@@ -245,10 +242,8 @@ class CoreModule implements DIModule {
   }
 
   /// Configures the logger with analytics callback to avoid circular dependency.
-  ///
   /// This method sets up the AppLogger to use AnalyticsService for error tracking
   /// without creating a circular dependency by using a callback pattern.
-  ///
   /// Note: This method should only be called when AnalyticsService is registered (!kIsWeb).
   void _configureLogger(GetIt container) {
     // Double-check that AnalyticsService is registered (safety check)

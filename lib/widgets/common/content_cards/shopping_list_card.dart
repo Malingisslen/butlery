@@ -8,14 +8,12 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 
 /// Focused module for shopping list card components
-/// 
 /// This module handles ONLY shopping list card display responsibilities:
 /// - Shopping list card rendering with list-specific data
 /// - Shopping list metadata display (item count, completion status)
 /// - Shopping list sharing status and collaborative indicators
 /// - Shopping list-specific styling and theming
 /// - Shopping list preview with item list
-/// 
 /// ❌ DOES NOT CONTAIN: Recipe cards, friend cards, menu cards, generic content logic
 class ShoppingListCard extends StatelessWidget {
   final UnifiedShoppingList shoppingList;

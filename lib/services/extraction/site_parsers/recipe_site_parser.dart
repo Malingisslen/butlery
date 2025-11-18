@@ -1,8 +1,6 @@
 /// Base class for site-specific recipe parsers
-///
 /// Provides a common interface for extracting recipes from specific recipe websites
 /// (ICA.se, Arla.se, Köket.se, etc.) with site-specific enhancements and fallbacks.
-///
 /// **Architecture:**
 /// - Primary: Extract JSON-LD/Microdata using RecipeScraper
 /// - Enhancement: Add site-specific fields (difficulty, tips, etc.)
@@ -21,13 +19,11 @@ abstract class RecipeSiteParser {
   String get siteName;
 
   /// Extract recipe from HTML using site-specific logic
-  ///
   /// **Extraction workflow:**
   /// 1. Try standard JSON-LD/Microdata extraction (via RecipeScraper)
   /// 2. If successful, enhance with site-specific fields
   /// 3. If failed, try site-specific CSS selector extraction
   /// 4. Validate quality and return result
-  ///
   /// Returns `null` if extraction fails or quality is too low.
   Map<String, dynamic>? parseRecipe(String html) {
     // Try standard schema.org extraction first
@@ -58,7 +54,6 @@ abstract class RecipeSiteParser {
   }
 
   /// Score recipe quality based on field completeness
-  ///
   /// Uses RecipeQualityScorer to calculate completeness percentage.
   /// Subclasses can override to add site-specific quality criteria.
   RecipeQualityScore scoreRecipe(Map<String, dynamic> recipe) {
@@ -66,14 +61,12 @@ abstract class RecipeSiteParser {
   }
 
   /// Enhance recipe with site-specific fields
-  ///
   /// Override this method to extract site-specific data like:
   /// - Difficulty level
   /// - Cooking tips
   /// - Equipment needed
   /// - Nutritional information
   /// - Tags/categories
-  ///
   /// **Example (ICA.se):**
   /// ```dart
   /// @override
@@ -92,20 +85,16 @@ abstract class RecipeSiteParser {
   }
 
   /// Extract recipe using site-specific CSS selectors (fallback method)
-  ///
   /// Override this method to implement CSS selector-based extraction
   /// for sites that don't use JSON-LD or have malformed structured data.
-  ///
   /// **Example:**
   /// ```dart
   /// @override
   /// Map<String, dynamic>? extractWithCssSelectors(String html) {
   ///   final doc = parse(html);
-  ///
   ///   final title = doc.querySelector('h1.recipe-title')?.text;
   ///   final ingredients = doc.querySelectorAll('.ingredient-list li')
   ///     .map((e) => e.text.trim()).toList();
-  ///
   ///   if (title != null && ingredients.isNotEmpty) {
   ///     return {
   ///       'name': title,
@@ -113,7 +102,6 @@ abstract class RecipeSiteParser {
   ///       // ... other fields
   ///     };
   ///   }
-  ///
   ///   return null;
   /// }
   /// ```
@@ -123,7 +111,6 @@ abstract class RecipeSiteParser {
   }
 
   /// Helper: Extract difficulty level from text
-  ///
   /// Common Swedish difficulty levels:
   /// - "Enkel" / "Lätt" (Easy/Simple)
   /// - "Medel" (Medium)
@@ -146,7 +133,6 @@ abstract class RecipeSiteParser {
   }
 
   /// Helper: Clean up Swedish text
-  ///
   /// Handles common Swedish formatting:
   /// - Removes extra whitespace
   /// - Preserves Swedish characters (Å, Ä, Ö)

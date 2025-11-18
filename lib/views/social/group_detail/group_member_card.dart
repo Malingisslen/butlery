@@ -11,7 +11,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/social/group_detail/group_detail_actions.dart';
 
 /// GroupMemberCard - Member card component
-///
 /// Displays individual group member information with actions.
 class GroupMemberCard {
   static Widget build(

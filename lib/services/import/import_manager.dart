@@ -137,49 +137,40 @@ class ImportManager {
   }
 
   /// Processes multiple recipe imports in batch with comprehensive progress tracking and error aggregation.
-  ///
   /// This method provides efficient batch processing for multiple recipe imports with individual strategy
   /// selection, comprehensive error collection, and detailed result reporting. It processes each input
   /// independently while aggregating results for comprehensive batch operation feedback and analytics.
-  ///
   /// [inputs] List of recipe content in various supported formats for batch processing
   /// [preferredStrategy] Optional strategy to prefer for all imports in the batch
   /// [options] Optional configuration parameters applied to all import operations
   /// Returns [BatchImportResult] with individual results, success statistics, and error aggregation
-  ///
   /// **Batch Processing Features:**
   /// - **Individual Processing**: Each input processed independently with optimal strategy selection
   /// - **Error Isolation**: Failed imports don't affect successful imports in the same batch
   /// - **Progress Tracking**: Detailed statistics on success/failure rates and processing progress
   /// - **Result Aggregation**: Comprehensive collection of successful recipes and error information
   /// - **Strategy Analytics**: Tracking of strategy usage and success rates across batch operations
-  ///
   /// **Performance Optimization:**
   /// - Sequential processing prevents resource contention and ensures stability
   /// - Memory-efficient processing with immediate result collection and cleanup
   /// - Strategy reuse across batch items for optimal performance
   /// - Comprehensive error handling prevents batch failure from individual errors
-  ///
   /// **Result Management:**
   /// - Separate collections for successful recipes and error messages
   /// - Detailed statistics including success rate and processing counts
   /// - Individual result preservation for detailed analysis and debugging
   /// - Strategy tracking for batch operation analytics and optimization
-  ///
   /// **Usage Examples:**
   /// ```dart
   /// // Batch import with progress tracking
   /// final batchResult = await importManager.batchImport(recipeTexts);
-  ///
   /// // Display batch results
   /// print('Imported ${batchResult.successCount}/${batchResult.totalProcessed} recipes');
   /// print('Success rate: ${(batchResult.successRate * 100).toInt()}%');
-  ///
   /// // Handle successful imports
   /// for (final recipe in batchResult.successfulRecipes) {
   ///   addToRecipeCollection(recipe);
   /// }
-  ///
   /// // Handle errors with detailed feedback
   /// if (batchResult.hasErrors) {
   ///   showBatchErrors(batchResult.errors);

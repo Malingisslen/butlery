@@ -10,14 +10,12 @@ import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:get_it/get_it.dart';
 
 /// Focused module for comment utilities and statistics
-/// 
 /// This module handles ONLY comment system utilities:
 /// - Permission checking and validation
 /// - Comment statistics and analytics
 /// - Stream management and cleanup
 /// - Reply count management
 /// - Comment content validation
-/// 
 /// ❌ DOES NOT CONTAIN: Comment CRUD, likes, notifications, content operations
 class CommentUtilities {
   static final CommentsRepository _commentsRepository = GetIt.instance<CommentsRepository>();

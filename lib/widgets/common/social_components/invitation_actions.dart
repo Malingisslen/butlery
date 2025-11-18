@@ -7,19 +7,16 @@ import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Focused module for invitation action widgets
-/// 
 /// This module handles ONLY action buttons and quick operations:
 /// - Quick selection buttons
 /// - Action buttons for invitation workflows
 /// - Bulk operations
-/// 
 /// ❌ DOES NOT CONTAIN: Display widgets, selectors, states, lists
 class InvitationActions {
 
   // ===== QUICK ACTIONS =====
 
   /// Build quick selection buttons
-  /// 
   /// Buttons for common target selection actions
   static Widget quickSelectionButtons({
     VoidCallback? onSelectAll,
@@ -41,7 +38,6 @@ class InvitationActions {
   }
 
   /// Build selection action bar
-  /// 
   /// Action bar for selected targets
   static Widget selectionActionBar({
     required int selectedCount,
@@ -96,7 +92,6 @@ class InvitationActions {
   }
 
   /// Build floating action buttons
-  /// 
   /// FAB for primary actions
   static Widget floatingActionButtons({
     VoidCallback? onAddTarget,
@@ -160,7 +155,6 @@ class InvitationActions {
   // ===== BULK OPERATIONS =====
 
   /// Build bulk operation buttons
-  /// 
   /// Buttons for bulk operations on targets
   static Widget bulkOperationButtons({
     required List<InvitationTarget> selectedTargets,
@@ -213,7 +207,6 @@ class InvitationActions {
   }
 
   /// Build batch action dialog
-  /// 
   /// Dialog for confirming batch operations
   static Widget batchActionDialog({
     required BuildContext context,
@@ -290,7 +283,6 @@ class InvitationActions {
   // ===== CONTEXT ACTIONS =====
 
   /// Build target context menu
-  /// 
   /// Context menu for individual targets
   static Widget targetContextMenu({
     required InvitationTarget target,
@@ -362,7 +354,6 @@ class InvitationActions {
   }
 
   /// Build swipe actions
-  /// 
   /// Swipe actions for list items
   static Widget swipeActions({
     required Widget child,

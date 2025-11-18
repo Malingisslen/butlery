@@ -9,7 +9,6 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// GroupInvitationCard - Group invitation card component
-///
 /// Displays group invitation with accept/reject actions.
 class GroupInvitationCard {
   static Widget build(

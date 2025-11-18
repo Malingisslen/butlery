@@ -6,13 +6,11 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/realtime/modules/menu_operations.dart';
 
 /// Focused module for menu participant management
-/// 
 /// This module handles ONLY participant-related operations:
 /// - Adding and removing participants
 /// - Managing participant permissions
 /// - Participant validation and utilities
 /// - Permission checking and enforcement
-/// 
 /// ❌ DOES NOT CONTAIN: Menu content operations, state management, synchronization
 class MenuParticipants {
 

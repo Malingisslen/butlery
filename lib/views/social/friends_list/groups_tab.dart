@@ -11,7 +11,6 @@ import 'package:butlery/views/social/friends_list/group_invitation_card.dart';
 import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
 
 /// GroupsTab - Groups tab component
-///
 /// Displays user's groups and pending group invitations.
 class GroupsTab {
   static Widget build(

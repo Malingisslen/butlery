@@ -1,17 +1,14 @@
 /// Firebase Firestore implementation for comprehensive friend relationship and social connection management.
-///
 /// This repository provides sophisticated friend relationship functionality using Firebase Firestore
 /// as the backend, managing mutual friendships, friend discovery, social connections, and relationship
 /// analytics. It implements advanced features like bidirectional relationship management, friend
 /// statistics, mutual friend discovery, and real-time relationship updates for social networking.
-///
 /// **Architecture Integration:**
 /// - Extends [BaseFirebaseRepository] for consistent CRUD operations and error handling
 /// - Uses dual-collection approach: `public_profiles` for user data and `users/{id}/friends` for relationships
 /// - Implements bidirectional friendship management ensuring data consistency across users
 /// - Integrates with permission validation for secure relationship operations
 /// - Coordinates with friend category system for comprehensive social organization
-///
 /// **Social Relationship Features:**
 /// - **Mutual Friendships**: Bidirectional relationship management with automatic consistency
 /// - **Friend Discovery**: Advanced search and discovery capabilities for social networking
@@ -19,7 +16,6 @@
 /// - **Real-time Updates**: Live streams for immediate friendship status changes
 /// - **Mutual Friend Detection**: Sophisticated algorithms for finding common connections
 /// - **Relationship History**: Temporal tracking of friendship formation and maintenance
-///
 /// **Data Consistency and Performance:**
 /// - **Bidirectional Updates**: Maintains friendship consistency across both users automatically
 /// - **Batch Operations**: Efficient bulk operations for relationship management
@@ -32,50 +28,40 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 /// Firebase implementation for friend relationship management with bidirectional consistency and analytics.
-///
 /// This repository provides comprehensive friend relationship functionality using Firebase Firestore
 /// with sophisticated bidirectional relationship management, social analytics, and real-time updates.
 /// It ensures data consistency across all friendship operations while providing advanced social
 /// networking features like mutual friend discovery and relationship statistics.
-///
 /// **Relationship Management System:**
 /// Uses a dual-collection architecture for efficient and consistent relationship management:
 /// - `public_profiles`: Stores user profile information and aggregate friend statistics
 /// - `users/{userId}/friends`: User-specific subcollections storing individual friend relationships
 /// - Bidirectional updates ensure relationship consistency across both users automatically
-///
 /// **Advanced Social Features:**
 /// - **Mutual Friend Discovery**: Sophisticated algorithms for finding common social connections
 /// - **Relationship Analytics**: Comprehensive statistics and temporal friendship analysis
 /// - **Real-time Streams**: Live updates for immediate social relationship changes
 /// - **Batch Processing**: Efficient bulk operations for profile fetching and relationship management
-///
 /// **Usage Examples:**
 /// ```dart
 /// final relationshipRepo = FriendRelationshipRepository(
 ///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
-/// 
 /// // Create mutual friendship  
 /// await relationshipRepo.addMutualFriends(userId1, userId2);
-/// 
 /// // Check friendship status
 /// final areFriends = await relationshipRepo.areFriends(userId1, userId2);
-/// 
 /// // Get friend profiles with real-time updates
 /// relationshipRepo.friendProfilesStream(userId).listen((friends) {
 ///   updateFriendsUI(friends);
 /// });
-/// 
 /// // Discover mutual connections
 /// final mutualFriends = await relationshipRepo.getMutualFriends(userId1, userId2);
-/// 
 /// // Get comprehensive social statistics
 /// final stats = await relationshipRepo.getFriendStatistics(userId);
 /// ```
 class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   /// Creates a friend relationship repository with dependency injection support.
-  ///
   /// [firestore] Optional Firestore instance for testing, defaults to production instance
   /// [authRepository] Optional authentication repository, defaults to FirebaseAuthRepository
   FriendRelationshipRepository({

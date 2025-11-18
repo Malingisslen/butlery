@@ -5,13 +5,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for real-time editing session management
-/// 
 /// This module handles ONLY session lifecycle operations:
 /// - Starting and stopping real-time editing sessions
 /// - Session state tracking and validation
 /// - Firebase stream subscription management
 /// - Session cleanup and resource management
-/// 
 /// ❌ DOES NOT CONTAIN: Content operations, conflict resolution, editor tracking, event handling
 class RealtimeSessionManager {
 

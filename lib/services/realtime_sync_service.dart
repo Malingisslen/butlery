@@ -1,5 +1,4 @@
 /// Real-time synchronization service for Firebase-based collaborative editing with conflict resolution.
-///
 /// Provides realtime document streams, intelligent conflict resolution, and connection management.
 
 import 'dart:async';

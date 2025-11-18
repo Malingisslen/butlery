@@ -42,7 +42,6 @@ class NotificationBatchManager {
   // ===== BATCH CREATION AND MANAGEMENT =====
 
   /// Add notification to appropriate batch queue
-  /// 
   /// This is the main entry point for batchable notifications
   Future<bool> addToBatch({
     required List<String> targetUserIds,

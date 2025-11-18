@@ -8,7 +8,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
 
 /// FriendsTab - Friends list tab component
-///
 /// Displays the user's friends list with search and actions.
 class FriendsTab {
   static Widget build(

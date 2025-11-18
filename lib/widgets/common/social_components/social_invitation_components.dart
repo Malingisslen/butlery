@@ -382,7 +382,6 @@ class SocialInvitationComponents {
   // ===== MANAGEMENT HELPERS (DELEGATE TO INVITATION_SELECTORS) =====
 
   /// Build target selection summary
-  /// 
   /// Shows summary of selected targets
   static Widget targetSelectionSummary({
     required List<InvitationTarget> selectedTargets,
@@ -405,7 +404,6 @@ class SocialInvitationComponents {
   }
 
   /// Build target filtering widget
-  /// 
   /// Complete filtering interface for targets
   static Widget targetFiltering({
     required List<InvitationTarget> allTargets,

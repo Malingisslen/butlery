@@ -5,7 +5,6 @@ class CommentTimeFormatter {
   CommentTimeFormatter._();
 
   /// Formats a DateTime into a human-readable relative time string.
-  ///
   /// Returns Swedish-formatted relative times:
   /// - "nu" for < 1 minute ago
   /// - "Xm" for X minutes ago

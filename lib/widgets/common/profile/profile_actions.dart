@@ -19,7 +19,6 @@ import 'package:butlery/views/legal/privacy_policy_view.dart';
 import 'package:provider/provider.dart';
 
 /// Profile action handlers and UI components
-///
 /// This module provides action handlers for profile operations like
 /// backup, restore, logout, and their corresponding UI components.
 class ProfileActions {

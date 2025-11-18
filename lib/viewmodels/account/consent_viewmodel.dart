@@ -6,16 +6,13 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 
 /// ViewModel for managing user consent UI state and operations (GDPR Article 7)
-///
 /// Handles consent management UI, allowing users to grant/revoke consent
 /// for different data processing purposes.
-///
 /// **State Management:**
 /// - Current consent state
 /// - Loading states managed by AsyncOperationMixin
 /// - Success/error handling via AsyncOperationMixin
 /// - Individual purpose toggles
-///
 /// **User Flow:**
 /// 1. User views current consent settings
 /// 2. User toggles consent purposes

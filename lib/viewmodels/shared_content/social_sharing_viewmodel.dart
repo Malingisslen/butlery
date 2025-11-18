@@ -1,5 +1,4 @@
 /// Unified friend selection and social sharing across recipes, menus, and shopping lists.
-///
 /// Handles friend management, sharing coordination, and social interaction tracking
 /// with content-specific delegation to Social Coordinators.
 

@@ -1,25 +1,20 @@
 /// Firebase repository for recipe presence tracking operations.
-///
 /// This repository handles Firebase operations for tracking which users are currently
 /// viewing or editing collaborative recipes. It provides a clean separation between
 /// presence tracking business logic and Firebase data operations.
-///
 /// **Collection Structure:**
 /// ```
 /// recipePresence/{recipeId}/activeUsers/{userId}
 /// ```
-///
 /// **What This Repository Handles:**
 /// - Setting user presence when they start viewing/editing
 /// - Updating presence heartbeat to keep users marked as active
 /// - Removing presence when users stop viewing/editing
 /// - Query operations for active users (future enhancement)
-///
 /// **What This Repository Does NOT Handle:**
 /// - Business logic for presence cleanup and expiry (handled by PresenceTrackingModule)
 /// - UI state management (handled by ViewModels)
 /// - Permission checks (presence is view-level, not permission-gated)
-///
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -37,16 +32,13 @@ class FirebaseRecipePresenceRepository {
   FirebaseFirestore get _firestore => _firestoreRepository.firestore;
 
   /// Set user presence in a recipe (user starts viewing/editing)
-  ///
   /// Creates or updates a presence document for the user in the recipe's active users collection.
   /// Uses merge: true to allow updating existing presence without overwriting all fields.
-  ///
   /// **Parameters:**
   /// - [recipeId]: ID of the recipe the user is viewing
   /// - [userId]: ID of the user
   /// - [displayName]: User's display name for UI
   /// - [avatarUrl]: User's avatar URL (optional)
-  ///
   /// **Throws:** FirebaseException if write fails
   Future<void> setUserPresence({
     required String recipeId,
@@ -77,14 +69,11 @@ class FirebaseRecipePresenceRepository {
   }
 
   /// Update user presence to inactive (user stops viewing/editing)
-  ///
   /// Marks the user as inactive and records when they left.
   /// Does not delete the document to maintain history.
-  ///
   /// **Parameters:**
   /// - [recipeId]: ID of the recipe
   /// - [userId]: ID of the user
-  ///
   /// **Throws:** FirebaseException if update fails
   Future<void> markUserInactive({
     required String recipeId,
@@ -109,14 +98,11 @@ class FirebaseRecipePresenceRepository {
   }
 
   /// Update presence heartbeat (keep user marked as active)
-  ///
   /// Updates the lastSeen timestamp to indicate the user is still actively viewing the recipe.
   /// Should be called periodically (e.g., every 30 seconds) while user is present.
-  ///
   /// **Parameters:**
   /// - [recipeId]: ID of the recipe
   /// - [userId]: ID of the user
-  ///
   /// **Throws:** FirebaseException if update fails
   Future<void> updatePresenceHeartbeat({
     required String recipeId,
@@ -140,13 +126,10 @@ class FirebaseRecipePresenceRepository {
   }
 
   /// Get active users in a recipe (future enhancement)
-  ///
   /// Query for all currently active users in a recipe.
   /// Can be used for real-time presence displays.
-  ///
   /// **Parameters:**
   /// - [recipeId]: ID of the recipe
-  ///
   /// **Returns:** List of active user presence documents
   Future<List<Map<String, dynamic>>> getActiveUsers(String recipeId) async {
     try {
@@ -165,12 +148,9 @@ class FirebaseRecipePresenceRepository {
   }
 
   /// Stream active users in a recipe (future enhancement)
-  ///
   /// Real-time stream of active users for live presence indicators.
-  ///
   /// **Parameters:**
   /// - [recipeId]: ID of the recipe
-  ///
   /// **Returns:** Stream of active user lists
   Stream<List<Map<String, dynamic>>> watchActiveUsers(String recipeId) {
     return _firestore
@@ -183,13 +163,10 @@ class FirebaseRecipePresenceRepository {
   }
 
   /// Delete all presence data for a recipe (cleanup operation)
-  ///
   /// Removes all presence documents for a recipe. Typically used when a recipe is deleted
   /// or for administrative cleanup.
-  ///
   /// **Parameters:**
   /// - [recipeId]: ID of the recipe
-  ///
   /// **Note:** This is a batch delete operation that may fail partially
   Future<void> deleteRecipePresence(String recipeId) async {
     try {

@@ -4,7 +4,6 @@ import 'package:butlery/repositories/interfaces/analytics_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase implementation of the AnalyticsRepository interface.
-///
 /// This repository provides Firebase Analytics functionality while maintaining
 /// the abstraction required for dependency injection and testability.
 /// It encapsulates all Firebase-specific analytics operations and can be
@@ -14,7 +13,6 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
   FirebaseAnalyticsObserver? _observer;
   
   /// Creates a FirebaseAnalyticsRepository with optional custom FirebaseAnalytics instance.
-  /// 
   /// If no instance is provided, it uses the default FirebaseAnalytics.instance.
   /// This allows for dependency injection in tests while maintaining production simplicity.
   FirebaseAnalyticsRepository({

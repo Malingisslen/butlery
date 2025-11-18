@@ -7,7 +7,6 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_permission_helper.dart';
 
 /// Module handling recipe-related permission checks and ownership validation.
-///
 /// Provides comprehensive permission validation for recipe access, editing, and collaboration.
 class RecipePermissionModule {
   final AuthRepository authRepository;
@@ -25,7 +24,6 @@ class RecipePermissionModule {
   });
 
   /// Asynchronously check if the current user owns a recipe.
-  ///
   /// This method queries the recipe repository to verify ownership,
   /// providing accurate ownership validation based on actual recipe data.
   Future<bool> isRecipeOwnerAsync(String recipeId) async {
@@ -54,9 +52,7 @@ class RecipePermissionModule {
   }
 
   /// Validates user permission to invite others to collaborate on a specific recipe.
-  ///
   /// Returns `true` if user can invite others to the recipe, `false` otherwise
-  ///
   /// **Permission Rules:**
   /// - Recipe owners can always invite collaborators
   /// - Users with editor permissions can invite if enabled by owner
@@ -86,9 +82,7 @@ class RecipePermissionModule {
   }
 
   /// Validates user permission to edit and modify a specific recipe.
-  ///
   /// Returns `true` if user can edit the recipe, `false` otherwise
-  ///
   /// **Edit Permission Hierarchy:**
   /// - Recipe owners have full edit permissions
   /// - Users with explicit editor role can modify recipe content
@@ -112,9 +106,7 @@ class RecipePermissionModule {
   }
 
   /// Validates user permission to edit and modify a specific menu.
-  ///
   /// Returns `true` if user can edit the menu, `false` otherwise
-  ///
   /// **Edit Permission Hierarchy:**
   /// - Menu owners have full edit permissions
   /// - Users with explicit editor role can modify menu content
@@ -139,9 +131,7 @@ class RecipePermissionModule {
   }
 
   /// Validates user permission to view and access a specific recipe.
-  ///
   /// Returns `true` if user can view the recipe, `false` otherwise
-  ///
   /// **View Permission Categories:**
   /// - Public recipes are viewable by all authenticated users
   /// - Private recipes require explicit sharing or collaboration
@@ -169,9 +159,7 @@ class RecipePermissionModule {
   }
 
   /// Retrieves the current user's permission level for a specific resource.
-  ///
   /// Returns [ResourcePermission] indicating the user's permission level for the resource
-  ///
   /// **Permission Levels:**
   /// - [ResourcePermission.owner] Full control including deletion and permission management
   /// - [ResourcePermission.editor] Can modify content but not manage permissions
@@ -202,9 +190,7 @@ class RecipePermissionModule {
   }
 
   /// Validates whether the current user has at least the specified permission level for a resource.
-  ///
   /// Returns `true` if user has at least the specified permission level, `false` otherwise
-  ///
   /// **Permission Hierarchy:**
   /// - Owner permissions include all editor and viewer capabilities
   /// - Editor permissions include all viewer capabilities
@@ -249,9 +235,7 @@ class RecipePermissionModule {
   }
 
   /// Validates whether the current user is the owner of a specific recipe.
-  ///
   /// Returns `true` if current user owns the recipe, `false` otherwise
-  ///
   /// **Owner Privileges:**
   /// - Full editing rights for all recipe content
   /// - Managing collaboration and sharing settings

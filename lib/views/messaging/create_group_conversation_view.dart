@@ -18,11 +18,9 @@ import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 
 /// View for creating new group conversations with friend selection.
-///
 /// Provides comprehensive interface for users to create group messaging conversations
 /// with multi-friend selection, group naming, and validation. Follows MVVM architecture
 /// with CreateGroupConversationViewModel handling business logic and state.
-///
 /// **Key Features:**
 /// - Friend discovery and multi-selection with checkboxes
 /// - Group name input with real-time validation
@@ -30,7 +28,6 @@ import 'package:butlery/widgets/common/layout_components.dart';
 /// - Search functionality for large friend lists
 /// - Real-time validation feedback (min 2 members required)
 /// - Navigation to created group chat
-///
 /// **Usage Example:**
 /// ```dart
 /// Navigator.of(context).push(

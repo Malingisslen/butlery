@@ -4,7 +4,6 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 
 /// Module handling shopping list permission checks and ownership validation.
-///
 /// Provides comprehensive permission validation for shopping list access, editing, and collaboration.
 class ShoppingPermissionModule {
   final UnifiedShoppingService shoppingService;
@@ -16,7 +15,6 @@ class ShoppingPermissionModule {
   });
 
   /// Validates whether the current user is the owner of a specific shopping list.
-  ///
   /// Returns `true` if current user owns the shopping list, `false` otherwise
   bool isShoppingListOwner(String listId) {
     // Security: Must be authenticated to own shopping lists
@@ -42,7 +40,6 @@ class ShoppingPermissionModule {
   }
 
   /// Validates user permission to view and access a specific shopping list.
-  ///
   /// Returns `true` if user can view the shopping list, `false` otherwise
   bool canViewShoppingList(String listId) {
     // Security: Must be authenticated to view shopping lists
@@ -77,7 +74,6 @@ class ShoppingPermissionModule {
   }
 
   /// Validates user permission to edit and modify items in a specific shopping list.
-  ///
   /// Returns `true` if user can edit the shopping list, `false` otherwise
   bool canEditShoppingList(String listId) {
     // Security: Must be authenticated to edit shopping lists
@@ -144,7 +140,6 @@ class ShoppingPermissionModule {
   }
 
   /// Validates user permission to manage sharing and collaboration settings for a shopping list.
-  ///
   /// Returns `true` if user can manage the shopping list, `false` otherwise
   bool canManageShoppingList(String listId) {
     // Security: Must be authenticated to manage shopping lists
@@ -179,7 +174,6 @@ class ShoppingPermissionModule {
   }
 
   /// Validates user permission to permanently delete a specific shopping list.
-  ///
   /// Returns `true` if user can delete the shopping list, `false` otherwise
   bool canDeleteShoppingList(String listId) {
     // Security: Must be authenticated to delete shopping lists
@@ -194,7 +188,6 @@ class ShoppingPermissionModule {
   }
 
   /// Validates user permission to send shopping list invitations.
-  ///
   /// Returns `true` if user can send invitations for this list, `false` otherwise
   bool canSendShoppingInvitation(String listId) {
     // Security: Must be authenticated to send invitations
@@ -209,7 +202,6 @@ class ShoppingPermissionModule {
   }
 
   /// Validates user permission to accept/decline shopping list invitations.
-  ///
   /// Returns `true` if current user can respond to this invitation, `false` otherwise
   bool canRespondToShoppingInvitation(String invitationRecipientId) {
     // Security: Must be authenticated to respond to invitations

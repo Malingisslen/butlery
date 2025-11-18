@@ -1,5 +1,4 @@
 /// Comprehensive realtime menu data providing pure data representation for collaborative meal planning infrastructure.
-///
 /// This class implements sophisticated menu data management following Single Responsibility Principle,
 /// handling all aspects of menu data representation including category-based recipe organization, temporal management,
 /// comprehensive serialization, and basic data access operations. It provides complete data infrastructure while
@@ -11,7 +10,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 
 /// Comprehensive realtime menu data with pure data representation and robust serialization for collaborative meal planning.
-///
 /// Represents complete menu data structure with category-based recipe organization, temporal management,
 /// and comprehensive metadata support through focused data responsibility and clean serialization patterns.
 /// This class serves as the foundation for all menu data operations and persistence functionality.

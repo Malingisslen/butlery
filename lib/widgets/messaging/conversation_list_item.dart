@@ -9,7 +9,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// List item widget for displaying conversation in conversations list
-/// 
 /// Provides comprehensive conversation preview including:
 /// - User/group avatar with appropriate fallbacks
 /// - Conversation title and last message preview

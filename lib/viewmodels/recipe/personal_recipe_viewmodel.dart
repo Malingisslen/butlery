@@ -11,7 +11,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Personal Recipe ViewModel
-/// 
 /// Handles ONLY personal recipe operations and management.
 /// This includes creation, editing, deletion, and content management for personal recipes.
 class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, StreamManagementMixin {

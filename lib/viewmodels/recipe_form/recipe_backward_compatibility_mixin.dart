@@ -12,11 +12,9 @@ import 'package:butlery/viewmodels/recipe_form/recipe_form_coordinator.dart';
 import 'package:butlery/utils/text/ingredient_processor.dart';
 
 /// Mixin providing backward compatibility methods for RecipeFormViewModel.
-///
 /// **Purpose:**
 /// Maintains existing API surface for views that haven't been migrated to new architecture.
 /// All methods delegate to appropriate managers while preserving legacy behavior.
-///
 /// **Categories:**
 /// - Legacy save/fork operations
 /// - Image picker convenience methods
@@ -24,7 +22,6 @@ import 'package:butlery/utils/text/ingredient_processor.dart';
 /// - List manipulation methods (ingredients, instructions, tags)
 /// - Permission getters
 /// - Function getters for callbacks
-///
 /// **Dependencies (required by classes using this mixin):**
 /// - RecipeFormState state
 /// - RecipeImageManager imageManager
@@ -136,12 +133,10 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   // ===== INGREDIENT MANAGEMENT =====
 
   /// Update ingredient at index with MODUL1 preprocessing
-  ///
   /// **MODUL1 Integration**: Processes raw user input through full pipeline:
   /// 1. Preprocessing: Removes approximations, ranges, parentheses, instructions
   /// 2. Parsing: Extracts quantity, unit, ingredient name
   /// 3. Normalization: Validates and normalizes ingredient name
-  ///
   /// Examples of preprocessing:
   /// - "ca 3-5 dl mjölk" → "5 dl mjölk" (max from range, removed approximation)
   /// - "2 dl hackad lök (gul)" → "2 dl hackad lök" (removed parentheses)

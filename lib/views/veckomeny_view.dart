@@ -64,35 +64,30 @@ class _VeckomenyViewContent extends StatefulWidget {
 }
 
 /// Weekly menu view content state managing prompt input and menu operations.
-///
 /// Handles prompt input control, service integration,
 /// menu generation coordination, and user interaction handling while maintaining clean state management
 /// and proper resource disposal through comprehensive lifecycle management.
 class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   /// Prompt input controller for AI-powered menu generation and user input management.
-  /// 
   /// Manages user prompt input enabling AI-powered menu generation, input validation,
   /// and user interaction coordination throughout menu creation workflows.
   final TextEditingController _promptController = TextEditingController();
-  
+
   /// Share service for external menu sharing and platform integration coordination.
-  /// 
   /// Enables external menu sharing with system integration, platform coordination,
   /// and comprehensive sharing functionality through ShareService integration.
   final ShareService _shareService = ServiceLocator.get<ShareService>();
-  
+
   /// Friends service for social features and collaborative menu functionality coordination.
-  /// 
   /// Manages social menu features enabling friend selection, collaborative sharing,
   /// and social integration throughout menu operations and sharing workflows.
-  final UnifiedFriendsService _friendsService = ServiceLocator.get<UnifiedFriendsService>();
+  final UnifiedFriendsService _friendsService =
+      ServiceLocator.get<UnifiedFriendsService>();
 
   /// State initialization with prompt input listener setup and lifecycle preparation.
-  /// 
   /// Initializes weekly menu state enabling prompt input monitoring, UI state management,
   /// and comprehensive menu functionality through proper listener setup and
   /// state lifecycle coordination.
-  /// 
   /// **Initialization Process:**
   /// - Prompt controller listener setup for reactive UI state management
   /// - State preparation for menu generation and user interaction coordination
@@ -104,11 +99,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   /// Comprehensive resource disposal with controller cleanup and listener management.
-  /// 
   /// Performs complete resource cleanup preventing memory leaks and ensuring proper
   /// lifecycle management through systematic disposal of controllers, listeners,
   /// and state resources with comprehensive cleanup coordination.
-  /// 
   /// **Disposal Process:**
   /// - Prompt controller listener cleanup with proper resource management
   /// - Controller disposal with memory leak prevention
@@ -121,25 +114,22 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   /// Prompt input change handling with reactive UI state management and button coordination.
-  /// 
   /// Handles prompt input changes enabling reactive UI updates, button state management,
   /// and user interface coordination through state management and UI responsiveness
   /// with comprehensive user experience optimization.
-  /// 
   /// **Change Handling Features:**
   /// - Reactive UI state updates with immediate visual feedback
   /// - Button state management with enabled/disabled coordination
   /// - User experience optimization with responsive interface coordination
   void _onPromptChanged() {
-    if (mounted) setState(() {}); // Update button enabled state based on prompt input
+    if (mounted)
+      setState(() {}); // Update button enabled state based on prompt input
   }
 
   /// AI-powered menu generation with prompt processing and intelligent recipe coordination.
-  /// 
   /// Handles menu generation triggering AI-powered meal planning, recipe recommendations,
   /// and comprehensive menu creation through MenuViewModel integration with
   /// prompt processing and intelligent content generation.
-  /// 
   /// **Generation Features:**
   /// - AI-powered menu creation with intelligent recipe recommendations
   /// - Prompt processing with user input analysis and menu customization
@@ -150,11 +140,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   /// Comprehensive menu clearing with state reset and input cleanup coordination.
-  /// 
   /// Handles complete menu clearing enabling state reset, input cleanup,
   /// and user interface coordination through MenuViewModel integration
   /// with comprehensive state management and UI synchronization.
-  /// 
   /// **Clearing Features:**
   /// - Complete menu state reset with comprehensive data cleanup
   /// - Input field clearing with user interface synchronization
@@ -166,11 +154,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   /// Comprehensive menu save dialog with validation and friend integration through migrated components.
-  /// 
   /// Presents menu save dialog enabling menu persistence, friend sharing setup,
   /// and comprehensive save functionality through LayoutComponents integration
   /// with validation and user feedback coordination.
-  /// 
   /// **Save Dialog Features:**
   /// - Menu validation with user guidance and error prevention
   /// - Friend integration with social sharing setup and collaborative features
@@ -180,7 +166,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     final viewModel = context.read<MenuViewModel>();
 
     if (!viewModel.hasMenu) {
-      SnackBarUtils.showWarning(context, 'Skapa en meny först innan du kan spara den');
+      SnackBarUtils.showWarning(
+          context, 'Skapa en meny först innan du kan spara den');
       return;
     }
 
@@ -192,11 +179,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   /// Advanced menu load dialog with menu selection and restoration through migrated components.
-  /// 
   /// Presents menu load dialog enabling saved menu selection, menu restoration,
   /// and comprehensive load functionality through LayoutComponents integration
   /// with menu browsing and selection coordination.
-  /// 
   /// **Load Dialog Features:**
   /// - Saved menu browsing with selection interface and preview functionality
   /// - Menu restoration with comprehensive data loading and state synchronization
@@ -212,11 +197,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   /// External menu sharing with system integration and platform distribution coordination.
-  /// 
   /// Handles external menu sharing enabling system share dialog presentation,
   /// platform integration, and comprehensive sharing functionality through
   /// ShareService coordination with success feedback and user experience optimization.
-  /// 
   /// **External Sharing Features:**
   /// - System share dialog integration with platform-specific sharing capabilities
   /// - Menu content formatting with readable presentation and user-friendly format
@@ -235,11 +218,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   /// Comprehensive social menu sharing dialog with friend selection and collaborative features coordination.
-  ///
   /// Presents social sharing dialog enabling friend selection, collaborative menu sharing,
   /// and comprehensive social functionality through UniversalShareDialog integration
   /// with validation, friend management, and user experience optimization.
-  ///
   /// **Social Sharing Features:**
   /// - Menu name capture with user input dialog
   /// - Menu validation with user guidance and error prevention
@@ -252,7 +233,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
     // Validate menu availability before sharing
     if (!menuViewModel.hasMenu) {
-      SnackBarUtils.showWarning(context, 'Skapa en meny först innan du kan dela den');
+      SnackBarUtils.showWarning(
+          context, 'Skapa en meny först innan du kan dela den');
       return;
     }
 
@@ -337,11 +319,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   /// Advanced shopping list creation from menu with ingredient extraction through migrated components.
-  /// 
   /// Handles shopping list creation enabling ingredient extraction, list selection,
   /// and comprehensive shopping integration through InputComponents coordination
   /// with validation, menu processing, and user experience optimization.
-  /// 
   /// **Shopping List Integration Features:**
   /// - Menu validation with user guidance and error prevention
   /// - Ingredient extraction with comprehensive recipe processing and content analysis
@@ -353,7 +333,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 
     // Validate menu availability before shopping list creation
     if (!viewModel.hasMenu || viewModel.menu.isEmpty) {
-      SnackBarUtils.showWarning(context, 'Skapa en meny först innan du kan skapa inköpslista');
+      SnackBarUtils.showWarning(
+          context, 'Skapa en meny först innan du kan skapa inköpslista');
       return;
     }
 
@@ -370,13 +351,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   /// Comprehensive application exit confirmation with user safety and navigation coordination.
-  /// 
   /// [context] Build context for dialog presentation and navigation coordination
-  /// 
   /// Presents exit confirmation dialog enabling user safety, confirmation workflow,
   /// and comprehensive application exit handling through dialog presentation
   /// with Swedish localized interface and user experience optimization.
-  /// 
   /// **Exit Dialog Features:**
   /// - User safety with confirmation dialog and accidental exit prevention
   /// - Swedish localized interface with clear confirmation messaging
@@ -409,27 +387,22 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   /// Comprehensive weekly menu interface construction with migrated components and advanced functionality.
-  /// 
   /// [context] Build context for theme access and component construction coordination
-  /// 
   /// Constructs complete weekly menu interface featuring AI-powered generation, social sharing,
   /// menu persistence, and shopping integration through migrated component architecture
   /// with comprehensive functionality and Swedish localized user experience.
-  /// 
   /// **Interface Architecture:**
   /// - Consumer-based state management with MenuViewModel reactive coordination
   /// - PopScope integration with exit confirmation and user safety features
   /// - Migrated LayoutComponents architecture with modern component integration
   /// - Comprehensive action toolbar with menu operations and social functionality
   /// - Floating action button integration with shopping list creation
-  /// 
   /// **Feature Integration:**
   /// - AI-powered menu generation with prompt input and intelligent recommendations
   /// - Social sharing with friend selection and collaborative features
   /// - Menu persistence with save and load functionality through modern dialogs
   /// - Shopping list integration with ingredient extraction and list creation
   /// - Loading overlay with generation progress and user feedback
-  /// 
   /// Returns complete weekly menu interface with comprehensive functionality and modern architecture.
   @override
   Widget build(BuildContext context) {
@@ -449,7 +422,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         actions: [
           // ✨ NY: Ladda meny-knapp
           IconButton(
-            icon: Icon(Icons.folder_open, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+            icon: Icon(Icons.folder_open,
+                size: AppDimensions.iconSizeAction,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.7)),
             onPressed: _showLoadMenuBottomSheet,
             tooltip: 'Ladda sparad meny',
           ),
@@ -457,7 +435,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           // ✨ NY: Spara meny-knapp (endast när meny finns)
           if (viewModel.hasMenu)
             IconButton(
-              icon: Icon(Icons.save, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+              icon: Icon(Icons.save,
+                  size: AppDimensions.iconSizeAction,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.7)),
               onPressed: _showSaveMenuDialog,
               tooltip: 'Spara meny',
             ),
@@ -465,7 +448,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           // ✨ NY: Enhanced social share ikon
           if (viewModel.hasMenu)
             IconButton(
-              icon: Icon(Icons.people_outline, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+              icon: Icon(Icons.people_outline,
+                  size: AppDimensions.iconSizeAction,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.7)),
               onPressed: _showSocialMenuShareDialog,
               tooltip: _friendsService.friends.isEmpty
                   ? 'Lägg till vänner för att dela'
@@ -475,7 +463,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           // BEFINTLIG: Regular share button
           if (viewModel.hasMenu)
             IconButton(
-              icon: Icon(Icons.share, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+              icon: Icon(Icons.share,
+                  size: AppDimensions.iconSizeAction,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.7)),
               onPressed: _shareMenu,
               tooltip: 'Dela veckomeny',
             ),
@@ -483,7 +476,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           // Clear menu button
           if (viewModel.hasMenu)
             IconButton(
-              icon: Icon(Icons.clear, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+              icon: Icon(Icons.clear,
+                  size: AppDimensions.iconSizeAction,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.7)),
               onPressed: _clearMenu,
               tooltip: 'Rensa meny',
             ),
@@ -500,58 +498,101 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         ],
         body: Stack(
           children: [
-            Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingL,
-                    vertical: AppDimensions.spacingS,
+            // ✅ RESPONSIVE: Center and constrain content on large screens
+            Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: LayoutComponents.valueFor(
+                    context: context,
+                    mobile: double.infinity,
+                    tablet: 900,
+                    desktop: 1200,
                   ),
-                  child: Column(
-                    children: [
-                      // Prompt-input
-                      _buildPromptInput(viewModel),
-                      const SizedBox(height: AppDimensions.spacingL),
+                ),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: AppDimensions.responsiveContentPadding(context),
+                      child: Column(
+                        children: [
+                          // Prompt-input
+                          _buildPromptInput(viewModel),
+                          SizedBox(
+                            height: LayoutComponents.valueFor(
+                              context: context,
+                              mobile: AppDimensions.spacingL,
+                              tablet: AppDimensions.spacingXl,
+                              desktop: AppDimensions.spacingXl,
+                            ),
+                          ),
 
-                      // Generera-knapp
-                      _buildGenerateButton(viewModel),
-                      const SizedBox(height: AppDimensions.spacingXl),
-                    ],
-                  ),
+                          // Generera-knapp
+                          _buildGenerateButton(viewModel),
+                          SizedBox(
+                            height: LayoutComponents.valueFor(
+                              context: context,
+                              mobile: AppDimensions.spacingXl,
+                              tablet: AppDimensions.spacingXl * 1.5,
+                              desktop: AppDimensions.spacingXxl,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Meny-innehåll
+                    Expanded(
+                      child: Padding(
+                        padding:
+                            AppDimensions.responsiveHorizontalPadding(context),
+                        child: _buildMenuContent(viewModel),
+                      ),
+                    ),
+                  ],
                 ),
-                // Meny-innehåll
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
-                    child: _buildMenuContent(viewModel),
-                  ),
-                ),
-              ],
+              ),
             ),
 
-            // Loading overlay
+            // Loading overlay - ✅ RESPONSIVE: Constrained width
             if (viewModel.isGenerating)
               ColoredBox(
                 color: AppColors.neutralDark.withValues(alpha: 0.4),
                 child: Center(
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(AppDimensions.paddingL),
-                    decoration: BoxDecoration(
-                      color: AppColors.cardWhite,
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                      border: Border.all(color: AppColors.divider),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: LayoutComponents.valueFor(
+                        context: context,
+                        mobile: double.infinity,
+                        tablet: 500,
+                        desktop: 600,
+                      ),
                     ),
-                    child: const Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: AppDimensions.spacingM),
-                        Text(
-                          'Genererar meny...',
-                          style: AppTextStyles.titleMedium,
-                        ),
-                      ],
+                    child: Container(
+                      padding: AppDimensions.responsiveContentPadding(context),
+                      margin: AppDimensions.responsiveContentPadding(context),
+                      decoration: BoxDecoration(
+                        color: AppColors.cardWhite,
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.borderRadiusM),
+                        border: Border.all(color: AppColors.divider),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const CircularProgressIndicator(),
+                          SizedBox(
+                            height: LayoutComponents.valueFor(
+                              context: context,
+                              mobile: AppDimensions.spacingM,
+                              tablet: AppDimensions.spacingL,
+                              desktop: AppDimensions.spacingL,
+                            ),
+                          ),
+                          const Text(
+                            'Genererar meny...',
+                            style: AppTextStyles.titleMedium,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -574,19 +615,15 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   /// Comprehensive prompt input construction with AI-powered generation interface and user guidance.
-  /// 
   /// [viewModel] MenuViewModel instance for generation state access and loading coordination
-  /// 
   /// Constructs AI-powered prompt input interface featuring user guidance, input validation,
   /// and generation preparation enabling intelligent menu creation with comprehensive
   /// user experience and Swedish localized interface coordination.
-  /// 
   /// **Prompt Input Features:**
   /// - AI-powered generation interface with user guidance and example prompts
   /// - Input validation with generation state coordination and interaction control
   /// - Swedish localized interface with clear instructions and user-friendly design
   /// - Visual design with consistent theming and modern interface elements
-  /// 
   /// Returns prompt input widget with AI-powered generation interface and user guidance.
   Widget _buildPromptInput(MenuViewModel viewModel) {
     return Container(
@@ -624,7 +661,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
             prefixIcon: const Icon(Icons.edit),
             suffixIcon: _promptController.text.isNotEmpty
                 ? IconButton(
-                    icon: Icon(Icons.clear, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+                    icon: Icon(Icons.clear,
+                        size: AppDimensions.iconSizeAction,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.7)),
                     onPressed: () {
                       _promptController.clear();
                       setState(() {}); // Update UI after clearing
@@ -643,19 +685,15 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   /// Comprehensive generation button construction with loading states and intelligent generation coordination.
-  /// 
   /// [viewModel] MenuViewModel instance for generation state management and loading coordination
-  /// 
   /// Constructs AI-powered generation button featuring loading indicators, state management,
   /// and intelligent generation triggering enabling menu creation with comprehensive
   /// user feedback and responsive button design through modern component styling.
-  /// 
   /// **Generation Button Features:**
   /// - AI-powered generation triggering with intelligent menu creation
   /// - Loading state integration with progress indicators and interaction control
   /// - Input validation with button state management and user guidance
   /// - Modern component styling with consistent theming and visual design
-  /// 
   /// Returns generation button widget with AI-powered functionality and loading state management.
   Widget _buildGenerateButton(MenuViewModel viewModel) {
     return Center(
@@ -675,19 +713,15 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   /// Comprehensive menu content construction with AI-generated menu display and empty state management.
-  /// 
   /// [viewModel] MenuViewModel instance for menu data access and state management
-  /// 
   /// Constructs complete menu content interface featuring AI-generated menu display,
   /// menu sections with regeneration functionality, and empty state management
   /// enabling comprehensive menu presentation with user interaction coordination.
-  /// 
   /// **Menu Content Features:**
   /// - AI-generated menu display with organized sections and recipe presentation
   /// - Menu section regeneration with individual section updates and content refresh
   /// - Empty state management with user guidance and generation prompts
   /// - Interactive recipe cards with navigation and detail view integration
-  /// 
   /// Returns menu content widget with comprehensive menu display and interaction functionality.
   Widget _buildMenuContent(MenuViewModel viewModel) {
     if (!viewModel.hasMenu) {
@@ -710,7 +744,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         ],
 
         // Extra padding för floating button
-        const SizedBox(height: AppDimensions.spacingXxxl + AppDimensions.spacingL),
+        const SizedBox(
+            height: AppDimensions.spacingXxxl + AppDimensions.spacingL),
       ],
     );
   }
@@ -728,31 +763,31 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
           ),
           child: Row(
             children: [
-            Icon(
-              Icons.restaurant,
-              color: Theme.of(context).colorScheme.onPrimaryContainer,
-              size: AppDimensions.iconSizeAction,
-            ),
-            const SizedBox(width: AppDimensions.spacingS),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Din veckomeny',
-                    style: AppTextStyles.titleMedium.copyWith(
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
-                  ),
-                  Text(
-                    '${viewModel.totalRecipeCount} recept i ${viewModel.menu.length} kategorier',
-                    style: AppTextStyles.bodySmall.copyWith(
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
-                  ),
-                ],
+              Icon(
+                Icons.restaurant,
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                size: AppDimensions.iconSizeAction,
               ),
-            ),
+              const SizedBox(width: AppDimensions.spacingS),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Din veckomeny',
+                      style: AppTextStyles.titleMedium.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                    Text(
+                      '${viewModel.totalRecipeCount} recept i ${viewModel.menu.length} kategorier',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -773,10 +808,16 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         Row(
           children: [
             Expanded(
-              child: Text(_capitalizeCategory(category), style: AppTextStyles.titleLarge),
+              child: Text(_capitalizeCategory(category),
+                  style: AppTextStyles.titleLarge),
             ),
             IconButton(
-              icon: Icon(Icons.refresh, size: AppDimensions.iconSizeAction, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+              icon: Icon(Icons.refresh,
+                  size: AppDimensions.iconSizeAction,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.7)),
               onPressed: viewModel.isGenerating
                   ? null
                   : () => viewModel.regenerateSection(category),
@@ -801,11 +842,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   /// Sorterar meny-sektioner i logisk måltidsordning
-  List<MapEntry<String, List<Recipe>>> _getSortedMenuEntries(Map<String, List<Recipe>> menu) {
+  List<MapEntry<String, List<Recipe>>> _getSortedMenuEntries(
+      Map<String, List<Recipe>> menu) {
     // Definiera logisk ordning för måltider
     const mealOrder = [
       'Frukost',
-      'Lunch', 
+      'Lunch',
       'Middag',
       'Dessert',
       'Mellanmål',
@@ -813,24 +855,24 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     ];
 
     final entries = menu.entries.toList();
-    
+
     entries.sort((a, b) {
       final aIndex = mealOrder.indexOf(_capitalizeCategory(a.key));
       final bIndex = mealOrder.indexOf(_capitalizeCategory(b.key));
-      
+
       // Om båda finns i ordningslistan, sortera enligt den
       if (aIndex != -1 && bIndex != -1) {
         return aIndex.compareTo(bIndex);
       }
-      
+
       // Om bara en finns i listan, den kommer först
       if (aIndex != -1) return -1;
       if (bIndex != -1) return 1;
-      
+
       // Om ingen finns i listan, alfabetisk ordning
       return a.key.compareTo(b.key);
     });
-    
+
     return entries;
   }
 
@@ -842,14 +884,13 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
 }
 
 /// Persistent MenuViewModel singleton to preserve menu state across navigation.
-/// 
 /// This class ensures the same MenuViewModel instance is reused when navigating
 /// between views, preventing menu state loss that occurs with factory registration.
 /// The instance is never disposed, allowing menu state to persist throughout
 /// the application lifecycle.
 class _PersistentMenuViewModel {
   static MenuViewModel? _instance;
-  
+
   /// Get the persistent MenuViewModel instance.
   /// Creates instance on first access and reuses it for subsequent calls.
   static MenuViewModel get instance {

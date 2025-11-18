@@ -10,18 +10,15 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 
 /// ViewModel for messaging group conversation creation with friend selection and validation.
-///
 /// Manages complete group conversation creation workflow including friend list loading,
 /// member selection, group name validation, and conversation creation through MessagingService.
 /// Follows MVVM architecture with AsyncOperationMixin for state management.
-///
 /// **Core Responsibilities:**
 /// - Load available friends for group member selection (loading managed by AsyncOperationMixin)
 /// - Manage selected members set with add/remove operations
 /// - Validate group name and member count requirements (minimum 2 members)
 /// - Create group conversation via MessagingService
 /// - Handle loading states and error conditions with Swedish messages
-///
 /// **State Management:**
 /// - General loading/error managed by StateNotifierMixin
 /// - Operation-specific _isCreatingGroup for distinct UI treatment
@@ -29,23 +26,18 @@ import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 /// - Selected members set for multi-selection
 /// - Group name and optional avatar URL
 /// - Validation state for creation button
-///
 /// **Usage Example:**
 /// ```dart
 /// final viewModel = CreateGroupConversationViewModel(
 ///   messagingService: messagingService,
 ///   friendsService: friendsService,
 /// );
-///
 /// // Load friends
 /// await viewModel.loadFriends();
-///
 /// // Select members
 /// viewModel.toggleMemberSelection(friend.uid);
-///
 /// // Set group name
 /// viewModel.updateGroupName('Min familj');
-///
 /// // Create conversation
 /// final conversationId = await viewModel.createGroupConversation();
 /// if (conversationId != null) {
@@ -89,7 +81,6 @@ class CreateGroupConversationViewModel extends ChangeNotifier
       _groupName.trim().isNotEmpty && _selectedMemberIds.length >= 2 && !_isCreatingGroup;
 
   /// Load available friends for group member selection.
-  ///
   /// Fetches complete friend list from UnifiedFriendsService and updates
   /// available friends state. Handles loading states and errors via AsyncOperationMixin.
   Future<void> loadFriends() async {
@@ -117,7 +108,6 @@ class CreateGroupConversationViewModel extends ChangeNotifier
   }
 
   /// Toggle friend selection for group membership.
-  ///
   /// [friendId] User ID of friend to toggle
   void toggleMemberSelection(String friendId) {
     if (_isDisposed) return;
@@ -135,7 +125,6 @@ class CreateGroupConversationViewModel extends ChangeNotifier
   }
 
   /// Check if friend is selected.
-  ///
   /// [friendId] User ID to check
   /// Returns true if selected
   bool isMemberSelected(String friendId) {
@@ -143,7 +132,6 @@ class CreateGroupConversationViewModel extends ChangeNotifier
   }
 
   /// Update group name with validation.
-  ///
   /// [name] New group name
   void updateGroupName(String name) {
     if (_isDisposed) return;
@@ -154,7 +142,6 @@ class CreateGroupConversationViewModel extends ChangeNotifier
   }
 
   /// Update optional group avatar URL.
-  ///
   /// [avatarUrl] URL of group avatar
   void updateGroupAvatar(String? avatarUrl) {
     if (_isDisposed) return;
@@ -173,7 +160,6 @@ class CreateGroupConversationViewModel extends ChangeNotifier
   }
 
   /// Validate group creation requirements.
-  ///
   /// Requires non-empty group name and at least 2 members.
   void _validateGroupCreation() {
     if (_groupName.trim().isEmpty) {
@@ -186,7 +172,6 @@ class CreateGroupConversationViewModel extends ChangeNotifier
   }
 
   /// Create group conversation with selected members.
-  ///
   /// Returns conversation ID if successful, null if failed.
   Future<String?> createGroupConversation() async {
     if (_isDisposed) return null;
@@ -250,7 +235,6 @@ class CreateGroupConversationViewModel extends ChangeNotifier
   }
 
   /// Search and filter friends by display name.
-  ///
   /// [query] Search query
   /// Returns filtered friend list
   List<UserProfile> searchFriends(String query) {

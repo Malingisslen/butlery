@@ -5,7 +5,6 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Reusable image preview card component
-/// 
 /// Provides consistent styling for image preview displays.
 /// Supports different states (loading, with image, empty).
 class ImagePreviewCard extends StatelessWidget {

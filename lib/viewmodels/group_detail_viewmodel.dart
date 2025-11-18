@@ -13,12 +13,10 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// ViewModel for group conversation detail view with member management.
-///
 /// Manages complete group detail display and management workflow including real-time
 /// conversation updates, member list display, add/remove member operations, group
 /// settings management, and leave group functionality. Follows MVVM architecture
 /// with proper state management and real-time synchronization.
-///
 /// **Core Responsibilities:**
 /// - Stream real-time conversation updates from MessagingService
 /// - Display group information (title, members, creation date)
@@ -27,14 +25,12 @@ import 'package:butlery/core/utils/logger.dart';
 /// - Implement leave group functionality for current user
 /// - Update group settings (title, avatar, mute)
 /// - Validate permissions for admin actions
-///
 /// **State Management:**
 /// - Real-time conversation stream with auto-updates
 /// - Current user ID for permission checks
 /// - Loading and error states
 /// - Member operation states (adding, removing)
 /// - Validation for admin-only actions
-///
 /// **Usage Example:**
 /// ```dart
 /// final viewModel = GroupDetailViewModel(
@@ -43,16 +39,12 @@ import 'package:butlery/core/utils/logger.dart';
 ///   friendsService: friendsService,
 ///   authRepository: authRepository,
 /// );
-///
 /// // Listen to conversation updates
 /// viewModel.conversation // Reactive updates
-///
 /// // Add members
 /// await viewModel.addMembers([friendId1, friendId2]);
-///
 /// // Remove member (admin only)
 /// await viewModel.removeMember(memberId);
-///
 /// // Leave group
 /// await viewModel.leaveGroup();
 /// ```
@@ -202,11 +194,9 @@ class GroupDetailViewModel extends ChangeNotifier
   }
 
   /// Add members to group
-  ///
   /// [memberIds] List of user IDs to add
   /// [memberDisplayNames] Map of display names for new members
   /// [memberAvatarUrls] Optional map of avatar URLs
-  ///
   /// Returns true if successful
   Future<bool> addMembers(
     List<String> memberIds,
@@ -251,9 +241,7 @@ class GroupDetailViewModel extends ChangeNotifier
   }
 
   /// Remove member from group (admin only)
-  ///
   /// [memberId] User ID of member to remove
-  ///
   /// Returns true if successful
   Future<bool> removeMember(String memberId) async {
     if (_isDisposed || _conversation == null) return false;
@@ -306,7 +294,6 @@ class GroupDetailViewModel extends ChangeNotifier
   }
 
   /// Leave group (current user leaves conversation)
-  ///
   /// Returns true if successful
   Future<bool> leaveGroup() async {
     if (_isDisposed || _conversation == null || currentUserId == null) {
@@ -348,9 +335,7 @@ class GroupDetailViewModel extends ChangeNotifier
   }
 
   /// Update group title (admin only)
-  ///
   /// [newTitle] New title for the group
-  ///
   /// Returns true if successful
   Future<bool> updateGroupTitle(String newTitle) async {
     if (_isDisposed || _conversation == null) return false;

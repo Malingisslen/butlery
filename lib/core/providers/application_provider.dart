@@ -1,38 +1,30 @@
 /// Comprehensive application provider system implementing widget-friendly dependency injection access for Swedish cooking application UI.
-///
 /// This provider system serves as the foundational service access infrastructure throughout the Butlery application's UI layer,
 /// wrapping the DI container with a clean, widget-friendly interface for accessing services while managing container lifecycle
 /// and providing convenient access methods. It ensures reliable service availability across the widget tree while providing
 /// comprehensive monitoring and error handling for Swedish cooking application's complex UI service dependencies, collaborative
 /// features, and real-time synchronization requirements that demand proper service access and initialization state management.
-///
 /// ## Core Architecture Features
-/// 
 /// **Widget-Friendly Service Access**
 /// - InheritedWidget-based service access with automatic dependency propagation through widget tree
 /// - Context-based service resolution with convenient extension methods and type-safe access
 /// - Application readiness management with loading states and initialization monitoring
 /// - Error handling with graceful fallbacks and comprehensive error reporting mechanisms
-/// 
 /// **Comprehensive Lifecycle Management**
 /// - Application initialization state tracking with progress monitoring and status reporting
 /// - Service health monitoring integration with real-time status updates and alerting
 /// - Container lifecycle management with proper cleanup and resource disposal
 /// - Ready state management with conditional UI rendering and loading state handling
-/// 
 /// **Developer Experience Optimization**
 /// - Extension methods for convenient service access from BuildContext instances
 /// - Global service locator for non-widget contexts with proper error handling
 /// - Application ready builder widget for conditional rendering based on initialization state
 /// - Comprehensive error messages with helpful debugging information and recovery guidance
-/// 
 /// ## Usage Examples
-/// 
 /// **Basic Application Setup:**
 /// ```dart
 /// void main() async {
 ///   await ApplicationBootstrap.initialize();
-///   
 ///   runApp(
 ///     ApplicationProvider(
 ///       container: DIContainer(),
@@ -47,7 +39,6 @@
 ///   );
 /// }
 /// ```
-/// 
 /// **Service Access in Widgets:**
 /// ```dart
 /// class RecipeListWidget extends StatelessWidget {
@@ -56,47 +47,39 @@
 ///     // Direct context extension usage
 ///     final recipeService = context.get<RecipeService>();
 ///     final authService = context.get<AuthService>();
-///     
 ///     // Check service availability
 ///     if (context.isServiceRegistered<NotificationService>()) {
 ///       final notificationService = context.get<NotificationService>();
 ///     }
-///     
 ///     return ListView.builder(
 ///       itemBuilder: (context, index) => RecipeCard(),
 ///     );
 ///   }
 /// }
 /// ```
-/// 
 /// **Health Monitoring Integration:**
 /// ```dart
 /// class HealthMonitoringWidget extends StatefulWidget {
 ///   @override
 ///   _HealthMonitoringWidgetState createState() => _HealthMonitoringWidgetState();
 /// }
-/// 
 /// class _HealthMonitoringWidgetState extends State<HealthMonitoringWidget> {
 ///   Map<String, dynamic>? healthStatus;
-///   
 ///   @override
 ///   void initState() {
 ///     super.initState();
 ///     _checkHealth();
 ///   }
-///   
 ///   Future<void> _checkHealth() async {
 ///     final status = await context.getAppHealthStatus();
 ///     setState(() => healthStatus = status);
 ///   }
-///   
 ///   @override
 ///   Widget build(BuildContext context) {
 ///     return HealthStatusDisplay(status: healthStatus);
 ///   }
 /// }
 /// ```
-/// 
 /// **Global Service Access:**
 /// ```dart
 /// class BackgroundTaskManager {
@@ -104,27 +87,21 @@
 ///     // Access services outside widget tree
 ///     final syncService = ServiceLocator.get<SyncService>();
 ///     final dataService = ServiceLocator.get<DataService>();
-///     
 ///     await syncService.performSync();
 ///     await dataService.processOfflineChanges();
 ///   }
 /// }
 /// ```
-/// 
 /// ## Performance Characteristics
-/// 
 /// - **Service Access Efficiency**: Optimized service resolution with minimal widget tree traversal
 /// - **Memory Management**: Proper InheritedWidget lifecycle with automatic cleanup and disposal
 /// - **Health Monitoring**: Efficient health checking with minimal UI performance impact
 /// - **Initialization Tracking**: Fast readiness checking with cached state and minimal overhead
-/// 
 /// ## Integration Patterns
-/// 
 /// - **Widget Tree**: Primary service provider for all UI components and widget-based service access
 /// - **Application Lifecycle**: Integrates with bootstrap system for proper initialization sequencing
 /// - **Service Resolution**: Provides centralized service access for all UI-driven operations
 /// - **Health Monitoring**: Real-time service health integration for production monitoring and alerting
-/// 
 /// This application provider system is essential for reliable, convenient, and properly managed service
 /// access throughout the Swedish cooking application's UI layer while providing comprehensive initialization
 /// tracking and health monitoring for production-grade service availability and error handling.
@@ -135,11 +112,9 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/bootstrap/application_bootstrap.dart';
 
 /// Comprehensive application provider widget that enables widget-friendly dependency injection access throughout the application.
-///
 /// This InheritedWidget wraps the entire application to provide clean, type-safe access to the dependency injection
 /// container and application bootstrap system. It manages container lifecycle, tracks initialization state, and provides
 /// convenient methods for service access across the widget tree with proper error handling.
-///
 /// **Key Features:**
 /// - InheritedWidget-based service access with automatic dependency propagation through widget tree
 /// - Application readiness tracking with initialization state monitoring and health validation
@@ -147,13 +122,11 @@ import 'package:butlery/core/bootstrap/application_bootstrap.dart';
 /// - Comprehensive error handling with helpful debugging information and recovery guidance
 /// - Health monitoring integration with real-time service status and alerting capabilities
 /// - Lifecycle management with proper cleanup and resource disposal mechanisms
-///
 /// **Integration Points:**
 /// - Wraps the entire application providing service access to all child widgets
 /// - Integrates with ApplicationBootstrap for initialization state tracking and monitoring
 /// - Connects with DIContainer for service resolution and health validation
 /// - Provides foundation for ApplicationReadyBuilder and other infrastructure widgets
-///
 /// **Example Usage:**
 /// ```dart
 /// // Application root setup
@@ -167,7 +140,6 @@ import 'package:butlery/core/bootstrap/application_bootstrap.dart';
 ///     ),
 ///   ),
 /// )
-/// 
 /// // Service access in widgets
 /// class MyWidget extends StatelessWidget {
 ///   @override
@@ -192,7 +164,6 @@ class ApplicationProvider extends InheritedWidget {
   });
 
   /// Get the ApplicationProvider from the widget tree.
-  ///
   /// Throws an exception if ApplicationProvider is not found in the tree.
   static ApplicationProvider of(BuildContext context) {
     final provider = context.dependOnInheritedWidgetOfExactType<ApplicationProvider>();
@@ -211,7 +182,6 @@ class ApplicationProvider extends InheritedWidget {
   }
 
   /// Get a service from the DI container.
-  ///
   /// Example usage:
   /// ```dart
   /// final authService = ApplicationProvider.of(context).get<AuthService>();
@@ -247,9 +217,7 @@ class ApplicationProvider extends InheritedWidget {
 /// Extension methods for convenient service access from BuildContext.
 extension ApplicationProviderExtension on BuildContext {
   /// Get a service from the DI container.
-  ///
   /// Shorthand for `ApplicationProvider.of(context).get<T>()`.
-  ///
   /// Example usage:
   /// ```dart
   /// final authService = context.get<AuthService>();
@@ -257,13 +225,11 @@ extension ApplicationProviderExtension on BuildContext {
   T get<T extends Object>() => ApplicationProvider.of(this).get<T>();
 
   /// Check if a service is registered in the DI container.
-  ///
   /// Shorthand for `ApplicationProvider.of(context).isRegistered<T>()`.
   bool isServiceRegistered<T extends Object>() => 
       ApplicationProvider.of(this).isRegistered<T>();
 
   /// Get the application health status.
-  ///
   /// Shorthand for `ApplicationProvider.of(context).getHealthStatus()`.
   Future<Map<String, dynamic>> getAppHealthStatus() => 
       ApplicationProvider.of(this).getHealthStatus();
@@ -273,7 +239,6 @@ extension ApplicationProviderExtension on BuildContext {
 }
 
 /// Widget that builds its child only when the application is ready.
-///
 /// Shows a loading widget while the application is initializing, then
 /// builds the child widget once initialization is complete.
 class ApplicationReadyBuilder extends StatelessWidget {
@@ -362,7 +327,6 @@ class ApplicationReadyBuilder extends StatelessWidget {
 }
 
 /// Service locator helper for accessing services outside of the widget tree.
-///
 /// This provides a global way to access services when you don't have access
 /// to a BuildContext. Should be used sparingly - prefer the widget-based
 /// approach when possible.
@@ -375,7 +339,6 @@ class ServiceLocator {
   }
 
   /// Get a service from the global container.
-  ///
   /// Throws an exception if the service locator is not initialized or
   /// the service is not registered.
   static T get<T extends Object>() {

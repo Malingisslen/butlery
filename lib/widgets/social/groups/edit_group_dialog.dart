@@ -10,7 +10,6 @@ import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dart';
 
 /// Dialog for editing an existing group
-///
 /// This dialog provides a focused interface for group editing with:
 /// - Pre-populated form fields from existing group data
 /// - Emoji/icon selection with current selection

@@ -10,29 +10,24 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Firebase implementation of MenuCollaborationRepository.
-///
 /// This repository provides comprehensive menu collaboration functionality using
 /// Firestore as the backend, abstracting all Firebase-specific operations including
 /// FieldValue operations, real-time streams, and complex document updates.
-///
 /// **Firebase Collections Used:**
 /// - `shared_menus`: Main collaboration menu documents
 /// - `menu_ratings/{menuId}/ratings`: Individual menu ratings
 /// - `menu_comments/{menuId}/comments`: Menu comment threads
 /// - `menu_templates`: Reusable menu templates
 /// - `menu_activity/{menuId}/activities`: Collaboration activity logs
-///
 /// **FieldValue Operations Abstracted:**
 /// - `FieldValue.serverTimestamp()`: For consistent server-side timestamps
 /// - `FieldValue.arrayUnion()`: For adding recipes to menu categories
 /// - `FieldValue.arrayRemove()`: For removing recipes from menu categories
 /// - `FieldValue.increment()`: For template usage counters and statistics
-///
 /// **Testing Strategy:**
 /// - Unit tests mock this repository using production_mocks.dart
 /// - Integration tests use Firebase emulator for FieldValue operations
 /// - Follows repository pattern for clean testability separation
-///
 /// **Real-time Features:**
 /// - Collaboration listener management with proper subscription lifecycle
 /// - Real-time comment streams for live discussions

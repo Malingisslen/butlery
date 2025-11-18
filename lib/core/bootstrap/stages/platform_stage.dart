@@ -1,5 +1,4 @@
 /// Platform initialization stage.
-///
 /// Handles the basic platform setup required before any other initialization
 /// can occur. This includes Flutter bindings, environment validation, and
 /// basic platform-specific configuration.
@@ -11,7 +10,6 @@ import 'package:butlery/core/bootstrap/stages/bootstrap_stage.dart';
 // Feature flags removed - using modular system only
 
 /// Platform stage for basic Flutter and environment setup.
-///
 /// This stage handles the foundational platform initialization that must
 /// occur before any other services can be initialized. It ensures:
 /// - Flutter bindings are properly initialized

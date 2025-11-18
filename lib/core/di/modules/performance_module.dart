@@ -1,11 +1,9 @@
 /// Performance optimization module for app performance services.
-///
 /// This module provides performance optimization services including:
 /// - Intelligent caching with predictive loading
 /// - Optimized image loading with progressive rendering
 /// - Startup optimization with lazy loading
 /// - Performance monitoring and metrics
-///
 /// This is an optional module that enhances app performance.
 library;
 
@@ -26,7 +24,6 @@ import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
 
 /// Performance optimization module.
-///
 /// This module provides advanced performance optimization features
 /// and should be loaded after core services are initialized.
 class PerformanceModule implements DIModule {

@@ -1,5 +1,4 @@
 /// Component theme system - barrel export for all component themes.
-///
 /// This file maintains backward compatibility while organizing themes
 /// into logical groupings.
 
@@ -15,7 +14,6 @@ import 'package:butlery/theme/components/navigation_themes.dart';
 import 'package:butlery/theme/components/feedback_themes.dart';
 
 /// Legacy facade maintaining existing API for backward compatibility.
-///
 /// New code should import specific theme files directly:
 /// - `import 'package:butlery/theme/components/button_themes.dart';`
 /// - `import 'package:butlery/theme/components/input_themes.dart';`

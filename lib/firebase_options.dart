@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart'
 import 'core/config/firebase_config.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
-///
 /// Example:
 /// ```dart
 /// import 'firebase_options.dart';

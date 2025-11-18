@@ -13,12 +13,10 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/performance/firebase_performance_service.dart';
 
 /// Firebase implementation of the StorageRepository interface with security validation.
-///
 /// This repository provides Firebase Storage functionality while maintaining
 /// the abstraction required for dependency injection and testability.
 /// It encapsulates all Firebase-specific storage operations and can be
 /// easily mocked or replaced with alternative implementations.
-///
 /// **Security Features:**
 /// - Ownership validation for all file operations (upload, delete)
 /// - Authentication checks preventing unauthorized access
@@ -39,12 +37,10 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
   static const int _defaultThumbnailQuality = 70;
   
   /// Creates a FirebaseStorageRepository with security validation.
-  ///
   /// [storage] Optional FirebaseStorage instance (default: FirebaseStorage.instance)
   /// [authRepository] Required for authentication and permission checks
   /// [auditRepository] Optional for GDPR-compliant audit logging
   /// [uuid] Optional UUID generator (for testing)
-  ///
   /// This allows for dependency injection in tests while maintaining production simplicity.
   FirebaseStorageRepository({
     FirebaseStorage? storage,
@@ -64,7 +60,6 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
   }
 
   /// Validate that user can upload to the specified path
-  ///
   /// **Security Rule:** Users can only upload to their own directory (users/{userId}/...)
   Future<void> _validateUploadPermission(String userId, String path) async {
     final currentUserId = _getCurrentUserId();
@@ -131,7 +126,6 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
   }
 
   /// Validate that user can delete the specified file
-  ///
   /// **Security Rule:** Users can only delete their own files (files in users/{userId}/...)
   Future<void> _validateDeletePermission(String imageUrl) async {
     final currentUserId = _getCurrentUserId();
@@ -182,7 +176,6 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
   }
 
   /// Extract user ID from storage path or URL
-  ///
   /// Expected formats:
   /// - users/{userId}/recipes/...
   /// - https://...users%2F{userId}%2Frecipes%2F...

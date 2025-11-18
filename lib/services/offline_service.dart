@@ -1,17 +1,14 @@
 /// Comprehensive offline data management service providing multi-user storage, synchronization, and connectivity management.
-///
 /// This service implements sophisticated offline functionality using a modular architecture with focused
 /// components for initialization, user-specific storage, legacy compatibility, and synchronization management.
 /// It provides comprehensive offline support including multi-user data isolation, intelligent sync strategies,
 /// connectivity monitoring, and seamless online/offline transitions for optimal user experience.
-///
 /// **Architecture Integration:**
 /// - Extends [ChangeNotifier] for reactive UI updates with offline state changes
 /// - Uses modular component architecture with specialized offline modules
 /// - Integrates with [Hive] for high-performance local data persistence
 /// - Coordinates with [FirestoreRepository] for cloud data synchronization
 /// - Implements [AuthRepository] integration for user-specific data isolation
-///
 /// **Offline Storage Features:**
 /// - **Multi-User Storage**: Isolated data storage for different authenticated users
 /// - **Recipe Persistence**: Complete recipe data with images and metadata preservation
@@ -19,7 +16,6 @@
 ///- **Legacy Compatibility**: Backward-compatible API surface for existing offline implementations
 /// - **Resource Management**: Comprehensive cleanup and disposal of offline resources
 /// - **Performance Optimization**: Efficient Hive-based storage with minimal memory footprint
-///
 /// **Synchronization and Connectivity:**
 /// - **Intelligent Sync**: Smart synchronization with conflict resolution and retry mechanisms
 /// - **Connectivity Monitoring**: Real-time network status monitoring with automatic sync triggers
@@ -44,45 +40,36 @@ import 'package:butlery/services/offline/sync_result.dart';
 export 'offline/sync_result.dart';
 
 /// Offline data management service providing comprehensive multi-user storage and synchronization capabilities.
-///
 /// This service serves as the primary facade for offline functionality, coordinating specialized components
 /// to provide seamless offline/online transitions, user-specific data isolation, and intelligent synchronization.
 /// It implements a modular architecture with focused components handling different aspects of offline management
 /// while maintaining a simple, consistent API surface for application integration.
-///
 /// **Modular Component Architecture:**
 /// Utilizes specialized components for focused functionality:
 /// - [OfflineInitialization] - Hive setup and connectivity monitoring with lifecycle management
 /// - [OfflineUserStorage] - User-specific storage operations with data isolation and security
 /// - [OfflineSyncManager] - Sync operations and retry handling with intelligent conflict resolution
 /// - [SyncResult] - Result type definitions for comprehensive sync operation reporting
-///
 /// **Singleton Pattern with Dependency Injection:**
 /// Implements flexible singleton pattern supporting:
 /// - Default dependency initialization for standard usage patterns
 /// - Optional dependency injection for testing and flexible backend configurations
 /// - Thread-safe singleton management with proper lifecycle handling
-///
 /// **Usage Examples:**
 /// ```dart
 /// final offlineService = OfflineService();
-/// 
 /// // Initialize offline capabilities
 /// await offlineService.initialize();
-/// 
 /// // Set current user for data isolation
 /// offlineService.setCurrentUser('user123');
-/// 
 /// // Save recipe offline
 /// await offlineService.saveRecipeOfflineForUser(recipe, 'user123');
-/// 
 /// // Listen to offline state changes
 /// offlineService.addListener(() {
 ///   if (offlineService.hasQueuedChanges) {
 ///     showSyncIndicator();
 ///   }
 /// });
-/// 
 /// // Manual synchronization
 /// final syncResult = await offlineService.syncNow();
 /// ```

@@ -7,7 +7,6 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
 /// Module handling shopping list template operations.
-///
 /// Provides template CRUD, search, and list generation from templates.
 class ShoppingTemplateOperationsModule {
   final FirebaseFirestore firestore;

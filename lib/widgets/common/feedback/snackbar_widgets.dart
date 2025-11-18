@@ -6,7 +6,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// SnackbarWidgets - Snackbar utility widgets
-///
 /// Provides consistent snackbar implementations for different message types.
 class SnackbarWidgets {
   /// Visa success snackbar

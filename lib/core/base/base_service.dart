@@ -1,5 +1,4 @@
 /// Base service class standardizing patterns for all business logic services.
-///
 /// **Features:** DI, error handling, lifecycle, logging, caching, permissions, batch operations, auth validation.
 /// ```dart
 /// class MyService extends BaseService {
@@ -15,12 +14,10 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 
 /// Abstract base class for all services in the Butlery application.
-///
 /// Provides a standardized foundation for service implementations by consolidating
 /// common patterns found across the codebase. All business logic services should
 /// extend this class to benefit from consistent error handling, logging, caching,
 /// and operational patterns.
-///
 /// Subclasses must implement:
 /// - [serviceName] getter for identification in logs and debugging
 /// - [onInitialize] method for custom initialization logic (optional)
@@ -32,20 +29,16 @@ abstract class BaseService with ErrorHandlingMixin {
   // ===== SERVICE INITIALIZATION =====
 
   /// Unique name identifier for this service.
-  ///
   /// Used in logging, debugging, and error reporting to identify which service
   /// generated a particular log entry or error. Should be a descriptive name
   /// that clearly identifies the service's purpose.
-  ///
   /// Example: 'RecipeService', 'AuthService', 'NotificationService'
   String get serviceName;
 
   /// Initializes the service with standardized logging.
-  ///
   /// This method should be called once during service creation, typically
   /// during dependency injection setup. It provides consistent initialization
   /// logging and delegates actual initialization work to [onInitialize].
-  ///
   /// The method ensures that initialization is properly logged for debugging
   /// and monitoring purposes.
   Future<void> initialize() async {
@@ -55,14 +48,12 @@ abstract class BaseService with ErrorHandlingMixin {
   }
 
   /// Hook method for custom service initialization logic.
-  ///
   /// Subclasses should override this method to perform service-specific
   /// initialization tasks such as:
   /// - Setting up stream subscriptions
   /// - Loading cached data
   /// - Validating service dependencies
   /// - Performing initial data synchronization
-  ///
   /// The default implementation is empty - it's safe to not override this
   /// method if no custom initialization is needed.
   Future<void> onInitialize() async {
@@ -70,11 +61,9 @@ abstract class BaseService with ErrorHandlingMixin {
   }
 
   /// Disposes service resources with standardized logging.
-  ///
   /// This method should be called when the service is no longer needed,
   /// typically during application shutdown or when removing the service
   /// from the dependency injection container.
-  ///
   /// Provides consistent disposal logging and delegates cleanup work to
   /// [onDispose]. Ensures proper resource management and prevents memory leaks.
   Future<void> dispose() async {
@@ -84,7 +73,6 @@ abstract class BaseService with ErrorHandlingMixin {
   }
 
   /// Hook method for custom service cleanup logic.
-  ///
   /// Subclasses should override this method to perform service-specific
   /// cleanup tasks such as:
   /// - Canceling stream subscriptions
@@ -92,7 +80,6 @@ abstract class BaseService with ErrorHandlingMixin {
   /// - Clearing caches and temporary data
   /// - Saving pending data
   /// - Releasing platform resources
-  ///
   /// The default implementation is empty - it's safe to not override this
   /// method if no custom cleanup is needed.
   Future<void> onDispose() async {
@@ -102,16 +89,13 @@ abstract class BaseService with ErrorHandlingMixin {
   // ===== COMMON SERVICE OPERATIONS =====
 
   /// Executes a service operation with comprehensive error handling and validation.
-  ///
   /// This method provides a standardized wrapper for all service operations,
   /// replacing scattered try-catch patterns found across service files. It
   /// performs pre-flight checks and handles errors consistently.
-  ///
   /// Pre-flight checks performed:
   /// - Authentication status (if [requiresAuth] is true)
   /// - Network connectivity (if [requiresNetwork] is true)
   /// - User permissions (if [requiresPermission] is true)
-  ///
   /// [operation] The async operation to execute
   /// [operationName] Human-readable name for logging (optional)
   /// [defaultValue] Value to return if operation fails (optional)
@@ -119,9 +103,7 @@ abstract class BaseService with ErrorHandlingMixin {
   /// [requiresNetwork] Whether operation requires network connectivity (default: false)
   /// [requiresPermission] Whether operation requires specific permission (default: false)
   /// [requiredPermission] The permission to check if [requiresPermission] is true
-  ///
   /// Returns the operation result or [defaultValue] if operation fails.
-  ///
   /// Example:
   /// ```dart
   /// final recipe = await executeServiceOperation(

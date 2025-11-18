@@ -1,5 +1,4 @@
 /// Social platform services initialization stage.
-///
 /// Handles initialization of social platform features including friends,
 /// sharing, messaging, and collaborative features.
 library;
@@ -13,7 +12,6 @@ import 'package:butlery/core/di/modules/messaging_module.dart';
 import 'package:butlery/core/di/modules/collaboration_module.dart';
 
 /// Social stage for social platform service initialization.
-///
 /// This stage ensures that all social platform services are properly
 /// initialized and ready for use. It handles:
 /// - User profile management

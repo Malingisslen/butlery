@@ -6,7 +6,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_menu_data.dart';
 
 /// Comprehensive realtime menu analytics with advanced search, filtering, and intelligent insights for collaborative meal planning.
-///
 /// Provides complete analytical capabilities for menu data including multi-criteria search, nutritional analysis,
 /// balance insights, and recommendation systems through focused analytical algorithms and Swedish-optimized content analysis.
 /// This class serves as the intelligence layer for all menu analysis and optimization features.

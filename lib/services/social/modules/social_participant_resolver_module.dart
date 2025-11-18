@@ -10,9 +10,7 @@ import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.da
 import 'package:butlery/core/utils/logger.dart';
 
 /// Module handling participant resolution for shared content.
-///
 /// Provides participant lookup and profile resolution for recipes, menus, and shopping lists.
-///
 /// Note (Issue #014): Updated to use Phase 1 repositories for member tracking via
 /// Firestore subcollections instead of model arrays.
 class SocialParticipantResolverModule {
@@ -33,7 +31,6 @@ class SocialParticipantResolverModule {
   });
 
   /// Get recipe participants
-  ///
   /// Note (Issue #014): Uses repository.getMembers() to fetch participants from
   /// Firestore subcollection instead of model's sharedToUserIds array.
   Future<List<UserProfile>> getRecipeParticipants(String recipeId) async {
@@ -52,7 +49,6 @@ class SocialParticipantResolverModule {
   }
 
   /// Get menu participants
-  ///
   /// Note (Issue #014): Uses repository.getMembers() to fetch participants from
   /// Firestore subcollection instead of model's sharedToUserIds array.
   Future<List<UserProfile>> getMenuParticipants(String menuId) async {

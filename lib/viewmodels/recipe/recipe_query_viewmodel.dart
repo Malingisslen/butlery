@@ -13,10 +13,8 @@ import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 
 /// Recipe Query ViewModel
-///
 /// Handles ONLY recipe querying, filtering, searching, and analytics operations.
 /// This includes search functionality, filtering by various criteria, and providing insights.
-///
 /// Performance optimizations:
 /// - Debounced search (300ms) to prevent excessive filtering
 /// - Result caching to avoid redundant computations

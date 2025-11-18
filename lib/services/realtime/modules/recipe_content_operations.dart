@@ -41,14 +41,12 @@ class RecipeOperationError {
 }
 
 /// Focused module for recipe content operations
-/// 
 /// This module handles ONLY recipe content manipulation:
 /// - Basic recipe information updates
 /// - Ingredient CRUD operations
 /// - Instruction CRUD operations
 /// - Image/media management
 /// - Content validation and utilities
-/// 
 /// ❌ DOES NOT CONTAIN: Participant management, state management, synchronization
 class RecipeContentOperations {
 

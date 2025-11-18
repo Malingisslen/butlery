@@ -57,10 +57,8 @@ class RecipeListViewModel extends ChangeNotifier {
   Set<String>? _lastRatingFilters;
 
   /// Initializes recipe list ViewModel with comprehensive service integration and reactive state coordination.
-  /// 
   /// [recipeService] Optional UnifiedRecipeService instance for dependency injection
   /// [searchService] Optional SearchService instance for dependency injection
-  /// 
   /// Establishes service layer integration with reactive state coordination, enabling
   /// comprehensive recipe list management with automatic cache invalidation and UI synchronization
   /// for optimal user experience and performance optimization.
@@ -76,26 +74,22 @@ class RecipeListViewModel extends ChangeNotifier {
   // ===== RECIPE LIST STATE ACCESSORS =====
 
   /// Filtered and sorted recipe collection with performance caching and intelligent optimization.
-  /// 
   /// Provides complete recipe list with applied search, filtering, and sorting operations
   /// through cached results for optimal performance and responsive user experience.
   /// Automatically invalidates cache when filter or sort criteria change.
   List<Recipe> get recipes => _getFilteredAndSortedRecipes();
 
   /// Loading state from recipe service for UI progress indication and interaction control.
-  /// 
   /// Delegates to UnifiedRecipeService for loading state enabling UI loading indicators
   /// and user interaction management during recipe operations and data refresh.
   bool get isLoading => _recipeService.isLoading;
 
   /// Error state from recipe service for user feedback and error handling.
-  /// 
   /// Provides localized error messages from recipe operations for user display
   /// and comprehensive error state management throughout recipe list operations.
   String? get error => _recipeService.error;
 
   /// Error presence indicator for UI conditional rendering and error state management.
-  /// 
   /// Delegates to UnifiedRecipeService for error state checking enabling
   /// UI conditional display and error handling throughout recipe operations.
   bool get hasError => _recipeService.hasError;
@@ -103,19 +97,16 @@ class RecipeListViewModel extends ChangeNotifier {
   // ===== SEARCH AND SORT STATE ACCESSORS =====
 
   /// Current search query for UI display and search state management.
-  /// 
   /// Provides access to active search query for UI input field synchronization
   /// and search state display throughout recipe list filtering operations.
   String get searchQuery => _searchQuery;
 
   /// Current sorting criteria for UI display and sort state management.
-  /// 
   /// Indicates active sorting method for UI sort control display
   /// and sort state management throughout recipe list organization.
   SortCriteria get sortCriteria => _sortCriteria;
 
   /// Current sorting direction for UI display and sort toggle management.
-  /// 
   /// Provides sorting direction state for UI sort direction indicators
   /// and ascending/descending toggle functionality display.
   bool get sortAscending => _sortAscending;
@@ -123,26 +114,22 @@ class RecipeListViewModel extends ChangeNotifier {
   // ===== FILTER STATE ACCESSORS =====
 
   /// Active time filters for UI display and filter state management.
-  /// 
   /// Provides immutable set of active time-based filters for UI filter display
   /// and filter state synchronization with user interface components.
   Set<String> get activeTimeFilters => Set.unmodifiable(_activeTimeFilters);
 
   /// Active meal type filters for UI display and category filter management.
-  /// 
   /// Provides immutable set of active meal type filters with Swedish localized categories
   /// for UI filter display and meal category selection state management.
   Set<String> get activeMealTypeFilters =>
       Set.unmodifiable(_activeMealTypeFilters);
 
   /// Active rating filters for UI display and quality filter management.
-  /// 
   /// Provides immutable set of active rating-based filters for UI filter display
   /// and quality threshold selection state management.
   Set<String> get activeRatingFilters => Set.unmodifiable(_activeRatingFilters);
 
   /// Filter presence indicator for UI conditional display and filter management.
-  /// 
   /// Indicates whether any filters are currently active for UI conditional rendering
   /// of filter clear buttons and filter state indicators.
   bool get hasActiveFilters =>
@@ -153,9 +140,7 @@ class RecipeListViewModel extends ChangeNotifier {
   // ===== RECIPE LIST MANAGEMENT ACTIONS =====
 
   /// Updates search query with intelligent caching and debounced filtering coordination.
-  /// 
   /// [query] New search query for recipe filtering and search functionality
-  /// 
   /// Performs search query update with debouncing (300ms delay) to prevent excessive 
   /// filtering operations on every keystroke. Provides optimal user experience while
   /// maintaining performance during rapid typing. Only triggers updates when query changes.
@@ -173,9 +158,7 @@ class RecipeListViewModel extends ChangeNotifier {
   }
 
   /// Updates sorting criteria with intelligent toggle functionality and performance optimization.
-  /// 
   /// [criteria] New sorting criteria for recipe list organization
-  /// 
   /// Performs dynamic sorting update with toggle functionality - if same criteria is selected,
   /// toggles ascending/descending direction; if new criteria, resets to ascending.
   /// Includes automatic cache invalidation and UI notification for immediate sorting changes.
@@ -193,9 +176,7 @@ class RecipeListViewModel extends ChangeNotifier {
   // ===== ADVANCED FILTERING OPERATIONS =====
 
   /// Toggles time-based filter with intelligent state management and cache coordination.
-  /// 
   /// [filterId] Time filter identifier ('quick', 'medium', 'long')
-  /// 
   /// Performs time filter toggle with automatic cache invalidation and UI notification.
   /// Supports multiple active filters with OR logic for flexible time-based recipe filtering.
   /// Filters: 'quick' (< 30 min), 'medium' (30-60 min), 'long' (> 60 min).
@@ -210,9 +191,7 @@ class RecipeListViewModel extends ChangeNotifier {
   }
 
   /// Toggles meal type filter with Swedish localization and comprehensive category management.
-  /// 
   /// [filterId] Meal type filter identifier ('breakfast', 'lunch', 'dinner', 'snack', 'dessert')
-  /// 
   /// Performs meal type filter toggle with automatic cache invalidation and UI notification.
   /// Maps English filter IDs to Swedish meal types for localized filtering:
   /// 'breakfast' → 'Frukost', 'lunch' → 'Lunch', 'dinner' → 'Middag', etc.
@@ -227,9 +206,7 @@ class RecipeListViewModel extends ChangeNotifier {
   }
 
   /// Toggles rating filter with quality threshold management and performance optimization.
-  /// 
   /// [filterId] Rating filter identifier ('high_rated', 'top_rated')
-  /// 
   /// Performs rating filter toggle with automatic cache invalidation and UI notification.
   /// Supports quality-based filtering: 'high_rated' (4+ stars), 'top_rated' (5 stars).
   /// Uses highest threshold when multiple rating filters are active.
@@ -244,7 +221,6 @@ class RecipeListViewModel extends ChangeNotifier {
   }
 
   /// Clears all active filters with comprehensive state reset and performance optimization.
-  /// 
   /// Removes all time, meal type, and rating filters with automatic cache invalidation
   /// and UI notification for complete filter state reset and clean recipe list display.
   /// Essential for filter reset functionality and clean state management.
@@ -259,9 +235,7 @@ class RecipeListViewModel extends ChangeNotifier {
   // ===== RECIPE MANAGEMENT OPERATIONS =====
 
   /// Deletes recipe with service coordination and automatic state management.
-  /// 
   /// [recipeId] Unique identifier for recipe deletion
-  /// 
   /// Performs recipe deletion through UnifiedRecipeService with automatic list updates.
   /// Service handles state notifications and cache invalidation automatically
   /// for seamless recipe management and UI synchronization.
@@ -272,7 +246,6 @@ class RecipeListViewModel extends ChangeNotifier {
   }
 
   /// Refreshes recipe data with pull-to-refresh coordination and service integration.
-  /// 
   /// Performs comprehensive data refresh through UnifiedRecipeService for pull-to-refresh
   /// functionality with automatic state management and UI synchronization.
   /// Essential for data consistency and user-initiated refresh operations.
@@ -281,7 +254,6 @@ class RecipeListViewModel extends ChangeNotifier {
   }
 
   /// Clears error state with service coordination and comprehensive state management.
-  /// 
   /// Delegates to UnifiedRecipeService for error state cleanup enabling
   /// error recovery and clean user experience after error resolution.
   void clearError() {
@@ -289,7 +261,6 @@ class RecipeListViewModel extends ChangeNotifier {
   }
 
   /// Loads more recipes for pagination with performance optimization.
-  /// 
   /// Increases display limit to show more recipes progressively,
   /// preventing initial performance issues while allowing access to all recipes.
   void loadMore() {
@@ -302,7 +273,6 @@ class RecipeListViewModel extends ChangeNotifier {
   // ===== ADVANCED FILTERING AND CACHING IMPLEMENTATION =====
 
   /// Retrieves filtered and sorted recipe collection with intelligent caching and comprehensive optimization.
-  /// 
   /// Returns processed recipe list with applied search, filtering, and sorting operations
   /// through sophisticated caching system for optimal performance and responsive user experience.
   /// Validates cache state against all filter criteria for accurate result delivery.
@@ -361,9 +331,7 @@ class RecipeListViewModel extends ChangeNotifier {
   }
 
   /// Applies time-based filters with intelligent OR logic and comprehensive range management.
-  /// 
   /// [recipes] Recipe collection to filter by cooking time
-  /// 
   /// Returns filtered recipes matching any active time criteria using OR logic.
   /// Time ranges: 'quick' (< 30 min), 'medium' (30-60 min), 'long' (> 60 min).
   /// Handles missing time data with fallback values for robust filtering.
@@ -390,9 +358,7 @@ class RecipeListViewModel extends ChangeNotifier {
   }
 
   /// Applies meal type filters with Swedish localization and comprehensive category mapping.
-  /// 
   /// [recipes] Recipe collection to filter by meal type categories
-  /// 
   /// Returns filtered recipes matching selected meal types with Swedish localized categories.
   /// Maps English filter IDs to Swedish meal types: 'breakfast' → 'Frukost', 'lunch' → 'Lunch',
   /// 'dinner' → 'Middag', 'snack' → 'Mellanmål', 'dessert' → 'Efterrätt'.
@@ -420,9 +386,7 @@ class RecipeListViewModel extends ChangeNotifier {
   }
 
   /// Applies rating filters with intelligent threshold management and quality-based filtering.
-  /// 
   /// [recipes] Recipe collection to filter by rating thresholds
-  /// 
   /// Returns filtered recipes meeting minimum rating requirements with highest threshold priority.
   /// Rating filters: 'high_rated' (4+ stars), 'top_rated' (5 stars).
   /// Uses highest active threshold when multiple rating filters are selected.
@@ -446,10 +410,8 @@ class RecipeListViewModel extends ChangeNotifier {
   // ===== PERFORMANCE OPTIMIZATION UTILITIES =====
 
   /// Compares two sets for equality with null safety and performance optimization.
-  /// 
   /// [a] First set for comparison
   /// [b] Second set for comparison
-  /// 
   /// Returns true if sets contain identical elements, false otherwise.
   /// Handles null values and performs efficient equality checking for cache validation.
   bool _setEquals<T>(Set<T>? a, Set<T>? b) {
@@ -459,7 +421,6 @@ class RecipeListViewModel extends ChangeNotifier {
   }
 
   /// Invalidates performance cache for fresh result computation on next access.
-  /// 
   /// Clears cached filter results forcing fresh computation on next recipe list access.
   /// Essential for maintaining data consistency when filter or sort criteria change.
   void _invalidateCache() {
@@ -469,7 +430,6 @@ class RecipeListViewModel extends ChangeNotifier {
   }
 
   /// Handles reactive updates from recipe service changes with automatic cache management.
-  /// 
   /// Provides seamless state synchronization between UnifiedRecipeService and ViewModel ensuring
   /// all recipe data changes are immediately reflected in filtered results with cache invalidation
   /// for consistent user experience and real-time recipe list updates.
@@ -479,7 +439,6 @@ class RecipeListViewModel extends ChangeNotifier {
   }
 
   /// Performs comprehensive ViewModel disposal with service listener cleanup and memory management.
-  /// 
   /// Removes UnifiedRecipeService listener connections and performs complete resource cleanup
   /// to prevent memory leaks and ensure proper ViewModel lifecycle management
   /// in dynamic recipe list scenarios with ViewModel creation and disposal.

@@ -9,7 +9,6 @@ import 'package:butlery/services/unified/operations/modules/group_sharing_bulk_o
 import 'package:butlery/services/unified/operations/modules/group_sharing_validation_module.dart';
 
 /// Social group sharing operations for group-based content sharing and bulk operations.
-///
 /// Handles group sharing, member resolution, validation, and bulk operations with progress tracking.
 class SocialGroupSharingOperations {
   final UnifiedFriendsService _parent;
@@ -221,11 +220,9 @@ class SocialGroupSharingOperations {
   // ===== GROUP CONTENT DISCOVERY =====
 
   /// Retrieves all content that has been shared to a specific group.
-  ///
   /// Queries the SharedContent repository to find all recipes, menus, and
   /// shopping lists that have been shared to the specified group. This method
   /// provides the foundation for group content feeds and activity timelines.
-  ///
   /// @param [groupId] The unique identifier of the friend group
   /// @returns List of SharedContent objects shared to the group
   /// @throws Exception if repository access fails
@@ -242,11 +239,9 @@ class SocialGroupSharingOperations {
   }
 
   /// Retrieves all friend groups that contain content shared by a specific user.
-  ///
   /// Queries the SharedContent repository to identify groups where the specified
   /// user has shared content. This enables users to track their sharing activity
   /// and manage content distribution across their social network.
-  ///
   /// @param [userId] The unique identifier of the content owner
   /// @returns List of FriendCategory objects containing user's shared content
   /// @throws Exception if repository access fails

@@ -7,7 +7,6 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// LoadingWidgets - Loading and error utility components
-///
 /// Provides loading overlays, error boundaries, and responsive wrappers.
 class LoadingWidgets {
   /// Loading overlay som visas över existerande innehåll

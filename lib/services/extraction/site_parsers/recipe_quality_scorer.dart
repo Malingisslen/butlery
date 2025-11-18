@@ -1,5 +1,4 @@
 /// Recipe quality scoring system for validation and success rate measurement
-///
 /// Calculates completeness scores based on field presence and quality.
 /// Used to determine if an extraction meets success criteria (>90% or >95%).
 
@@ -41,7 +40,6 @@ class RecipeQualityScore {
   });
 
   /// Completeness score (0.0 to 1.0)
-  ///
   /// **Weights:**
   /// - Title: 20% (required)
   /// - Ingredients: 30% (required)
@@ -63,17 +61,14 @@ class RecipeQualityScore {
   }
 
   /// Meets high quality threshold (>95% completeness)
-  ///
   /// Used for "95% success rate" target (ICA.se, Arla.se)
   bool get meetsHighQuality => completeness >= 0.95;
 
   /// Meets acceptable quality threshold (>90% completeness)
-  ///
   /// Used for "90% success rate" target (Köket.se)
   bool get meetsAcceptableQuality => completeness >= 0.90;
 
   /// Meets minimum quality threshold (>80% completeness)
-  ///
   /// Minimum bar for considering extraction successful.
   /// Below this, recipe is too incomplete to be useful.
   bool get meetsMinimumQuality => completeness >= 0.80;
@@ -104,11 +99,8 @@ class RecipeQualityScore {
 /// Static utility for scoring recipe quality
 class RecipeQualityScorer {
   /// Score a recipe based on field completeness
-  ///
   /// **Input:** Recipe data as `Map<String, dynamic>` (schema.org format)
-  ///
   /// **Returns:** Quality score with completeness percentage
-  ///
   /// **Example:**
   /// ```dart
   /// final recipe = {
@@ -119,7 +111,6 @@ class RecipeQualityScorer {
   ///   'totalTime': 'PT40M',
   ///   'image': 'https://example.com/kottbullar.jpg',
   /// };
-  ///
   /// final score = RecipeQualityScorer.score(recipe);
   /// print(score.completeness); // 1.0 (100%)
   /// print(score.meetsHighQuality); // true

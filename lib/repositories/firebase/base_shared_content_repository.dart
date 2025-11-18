@@ -1,47 +1,37 @@
 /// Abstract base class for Firebase shared content repositories.
-///
 /// This base class consolidates 860+ lines of duplicate code found across
 /// FirebaseSharedRecipeRepository, FirebaseSharedMenuRepository, and
 /// FirebaseSharedShoppingRepository, providing a unified foundation for
 /// all shared content operations while maintaining type safety and customization.
-///
 /// **Architectural Benefits:**
 /// - **65% Code Reduction**: Eliminates 21 duplicate methods across repositories
 /// - **Consistent API**: Unified status management and CRUD operations
 /// - **Type Safety**: Generic implementation with content-specific customization
 /// - **Single Responsibility**: Focused on shared content operations only
 /// - **Maintainability**: Single source of truth for shared content patterns
-///
 /// **Duplicate Code Eliminated:**
 /// - Status management methods (markAsViewed, markAsDismissed, undismiss)
 /// - Permission validation patterns (100% identical across repositories)
 /// - Error handling and logging (standardized approach)
 /// - Query operations (getUnreadCountForUser, getSharedContentForUser)
 /// - Delete operations (deleteSharedContent with creator validation)
-///
 /// **Design Pattern:**
 /// Uses Template Method pattern where base class provides common algorithms
 /// and concrete subclasses customize behavior through abstract methods.
-///
 /// **Usage Example:**
 /// ```dart
 /// class FirebaseSharedRecipeRepository
 ///     extends BaseSharedContentRepository<SharedRecipe> {
 ///   @override
 ///   String get contentTypeName => 'recipe';
-///
 ///   @override
 ///   String get resourceType => 'shared_recipe';
-///
 ///   @override
 ///   List<String> get createRequiredFields => ['recipeSnapshot'];
-///
 ///   @override
 ///   String getContentTitle(SharedRecipe entity) => entity.recipeSnapshot.title;
-///
 ///   @override
 ///   String get importAction => 'imported';
-///
 ///   @override
 ///   String get importField => 'importedByUserIds';
 /// }
@@ -216,10 +206,8 @@ abstract class BaseSharedContentRepository<T>
   // ===== QUERY OPERATIONS =====
 
   /// Get shared content for user with pagination
-  ///
   /// Consolidates 95% duplicate query logic with pagination support to prevent
   /// app timeouts when users have 1K-5K shared items.
-  ///
   /// [userId] The user ID to get shared content for
   /// [limit] Maximum number of items to return (default: 25)
   /// [startAfter] Document to start after for cursor-based pagination
@@ -412,7 +400,6 @@ abstract class BaseSharedContentRepository<T>
   // ===== SUBCOLLECTION OPERATIONS (Issue #014: Unbounded Array Migration) =====
 
   /// Add user to members subcollection (replaces sharedToUserIds array)
-  ///
   /// Enables unlimited sharing beyond Firestore's 100-element array limit.
   Future<void> addMember(
     String contentId,
@@ -731,7 +718,6 @@ abstract class BaseSharedContentRepository<T>
   }
 
   /// Query shared content for user using members subcollection (replaces arrayContains query)
-  ///
   /// This method uses Firestore collection group queries to find all content where
   /// the user is a member, supporting unlimited shares beyond the 100-element limit.
   Future<List<T>> getSharedContentForUserViaSubcollection(

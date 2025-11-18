@@ -10,7 +10,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/share_service.dart';
 
 /// Recipe management action handler
-///
 /// Handles recipe CRUD operations: delete, edit, mark as cooked, and share.
 class RecipeManagementHandler {
   /// Delete recipe with confirmation dialog

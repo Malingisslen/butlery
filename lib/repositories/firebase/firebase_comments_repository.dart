@@ -7,68 +7,57 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
 /// Firebase Firestore implementation for recipe comment management and social interaction.
-///
 /// This repository implements the [CommentsRepository] interface using Firebase Firestore
 /// to manage recipe comments with hierarchical reply structures, like/unlike functionality,
 /// and comprehensive social interaction features. It provides threaded commenting with
 /// performance optimizations and security validation.
-///
 /// **Architecture Design:**
 /// Extends [BaseFirebaseRepository] to leverage shared CRUD functionality while providing
 /// specialized comment operations. Uses a hierarchical comment structure with:
 /// - Top-level comments (parentCommentId: null)
 /// - Reply comments (parentCommentId: parent comment ID)
 /// - Like subcollections for each comment
-///
 /// **Comment Structure:**
 /// - **Hierarchical Threading**: Supports parent-child comment relationships
 /// - **Like System**: Individual like tracking with counts and user validation
 /// - **Edit History**: Tracks comment modifications with edit timestamps
 /// - **Content Validation**: Ensures comment content meets quality standards
 /// - **Recipe Association**: Links comments to specific recipes for organization
-///
 /// **Security Implementation:**
 /// - **Ownership Validation**: Users can only modify their own comments
 /// - **Permission Logging**: Comprehensive audit trail for comment operations
 /// - **Content Validation**: Prevents empty or invalid comment content
 /// - **Like Validation**: Users can only manage their own likes
 /// - **Access Control**: Recipe-based comment access validation
-///
 /// **Performance Optimizations:**
 /// - **Load Limits**: Caps comment queries at 50 top-level comments for performance
 /// - **Stream Limits**: Limits real-time comment streams for memory management
 /// - **Statistics Limits**: Processes up to 500 comments for statistics calculation
 /// - **Efficient Queries**: Uses proper Firestore indexing and query optimization
 /// - **Batch Operations**: Optimizes like/unlike operations with Firestore batches
-///
 /// **Social Features:**
 /// - **Threaded Replies**: Supports nested comment conversations
 /// - **Like/Unlike System**: Social engagement through comment appreciation
 /// - **Comment Statistics**: Comprehensive metrics for recipe engagement
 /// - **Real-time Updates**: Live comment streams for collaborative discussions
 /// - **Edit Functionality**: Allow users to modify their own comments with history
-///
 /// **Usage Examples:**
 /// ```dart
 /// final commentsRepo = FirebaseCommentsRepository(
 ///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
-/// 
 /// // Add comment with validation
 /// final comment = await commentsRepo.addComment(
 ///   recipeId: recipeId,
 ///   userId: currentUserId,
 ///   content: 'This recipe looks amazing!',
 /// );
-/// 
 /// // Real-time comment stream
 /// commentsRepo.getCommentsStream(recipeId).listen((comments) {
 ///   updateCommentsUI(comments);
 /// });
-/// 
 /// // Like/unlike comments
 /// await commentsRepo.toggleCommentLike(commentId, userId);
-/// 
 /// // Get engagement statistics
 /// final stats = await commentsRepo.getCommentStatistics(recipeId);
 /// print('Total engagement: ${stats.totalLikes} likes');

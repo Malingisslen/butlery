@@ -6,7 +6,6 @@ import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Module handling conflict resolution for concurrent edits in realtime sync.
-///
 /// Provides conflict detection, resolution algorithm, and update execution.
 class ConflictResolutionModule {
   final FirestoreRepository firestoreRepository;

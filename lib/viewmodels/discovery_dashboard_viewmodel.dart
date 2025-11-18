@@ -475,7 +475,6 @@ class DiscoveryDashboardViewModel extends ChangeNotifier
   }
 
   /// Save discovery settings to persistent storage
-  ///
   /// ✅ FIXED: Implemented persistent storage using SharedPreferences
   Future<void> saveDiscoverySettings() async {
     try {
@@ -503,7 +502,6 @@ class DiscoveryDashboardViewModel extends ChangeNotifier
   }
 
   /// Load discovery settings from persistent storage
-  ///
   /// ✅ FIXED: Load saved settings on app startup
   Future<void> loadDiscoverySettings() async {
     try {

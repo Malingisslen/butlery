@@ -5,7 +5,6 @@ import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Responsive grid that automatically adjusts column count based on screen width
-///
 /// Usage:
 /// ```dart
 /// ResponsiveGrid(
@@ -16,7 +15,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 ///   ],
 /// )
 /// ```
-///
 /// Column count automatically adjusts:
 /// - Mobile: 1 column
 /// - Tablet: 2 columns
@@ -105,10 +103,8 @@ class ResponsiveGrid extends StatelessWidget {
 }
 
 /// Responsive grid using extent (min item width) instead of column count
-///
 /// Better for items with variable sizes - grid automatically fits as many
 /// columns as possible while respecting minimum item width.
-///
 /// Usage:
 /// ```dart
 /// ResponsiveGridExtent(
@@ -178,9 +174,7 @@ class ResponsiveGridExtent extends StatelessWidget {
 }
 
 /// Responsive wrap that adjusts spacing based on screen size
-///
 /// Similar to Wrap widget but with responsive spacing.
-///
 /// Usage:
 /// ```dart
 /// ResponsiveWrap(
@@ -250,12 +244,9 @@ class ResponsiveWrap extends StatelessWidget {
 }
 
 /// Responsive staggered grid for items with varying heights
-///
 /// Perfect for masonry-style layouts (like Pinterest).
-///
 /// Note: This is a simplified version. For production, consider using
 /// flutter_staggered_grid_view package.
-///
 /// Usage:
 /// ```dart
 /// ResponsiveStaggeredGrid(
@@ -345,9 +336,7 @@ class ResponsiveStaggeredGrid extends StatelessWidget {
 }
 
 /// Responsive list that switches to grid on larger screens
-///
 /// Shows as vertical list on mobile, grid on tablet/desktop.
-///
 /// Usage:
 /// ```dart
 /// ResponsiveListGrid(

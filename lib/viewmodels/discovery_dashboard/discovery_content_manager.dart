@@ -8,7 +8,6 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Manages trending content discovery and loading for the discovery dashboard.
-/// 
 /// Handles all content discovery operations including trending recipes, menus,
 /// and shopping lists with intelligent caching and error handling.
 class DiscoveryContentManager extends ChangeNotifier {
@@ -79,7 +78,6 @@ class DiscoveryContentManager extends ChangeNotifier {
   }
 
   /// Loads trending menus from the discovery service.
-  ///
   /// Currently returns an empty list as menu discovery features are being
   /// developed. The delay simulates network latency for consistent UX.
   Future<void> _loadTrendingMenus() async {
@@ -94,7 +92,6 @@ class DiscoveryContentManager extends ChangeNotifier {
   }
 
   /// Loads trending shopping lists from the discovery service.
-  ///
   /// Currently returns an empty list as shopping list discovery features are being
   /// developed. The delay simulates network latency for consistent UX.
   Future<void> _loadTrendingShoppingLists() async {

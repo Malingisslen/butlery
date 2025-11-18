@@ -3,14 +3,12 @@
 import 'package:butlery/models/recipe_unified.dart';
 
 /// Focused module for recipe content operations
-/// 
 /// This module handles ONLY recipe content manipulation:
 /// - Basic info updates (title, description, portions, etc.)
 /// - Ingredient operations (add, remove, update)
 /// - Instruction operations (add, remove, update)
 /// - Image URL management
 /// - Content validation
-/// 
 /// ❌ DOES NOT CONTAIN: Serialization, metadata, participants, timestamps
 class RecipeOperations {
   

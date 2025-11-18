@@ -13,7 +13,6 @@ import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Universal Image Manager - Refactored with focused widgets
-///
 /// This is a compatibility layer that maintains the original API while
 /// using the new focused widgets internally for better maintainability
 class UniversalImageManager extends StatefulWidget {

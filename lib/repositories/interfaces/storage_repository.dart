@@ -2,17 +2,14 @@ import 'dart:io';
 import 'dart:typed_data';
 
 /// Storage repository interface for abstracting file storage operations.
-///
 /// This interface provides a contract for storage implementations, enabling
 /// dependency injection and testability while maintaining flexibility to switch
 /// between different storage providers (Firebase Storage, AWS S3, local storage, etc.).
-///
 /// The repository pattern abstracts the underlying storage implementation,
 /// allowing services to depend on this interface rather than concrete Firebase
 /// classes, which significantly improves testability and maintainability.
 abstract class StorageRepository {
   /// Upload an image file to storage
-  ///
   /// Returns the download URL of the uploaded file, or null if upload fails
   Future<String?> uploadImage({
     required File imageFile,
@@ -23,7 +20,6 @@ abstract class StorageRepository {
   });
   
   /// Upload image data (bytes) to storage
-  ///
   /// Returns the download URL of the uploaded file, or null if upload fails
   Future<String?> uploadImageData({
     required Uint8List imageData,
@@ -58,7 +54,6 @@ abstract class StorageRepository {
   dynamic createReference(String path);
   
   /// Compress an image file
-  ///
   /// Returns compressed image data, or null if compression fails
   Future<Uint8List?> compressImage({
     required File imageFile,

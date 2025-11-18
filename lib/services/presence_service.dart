@@ -77,13 +77,11 @@ class UserPresence {
 }
 
 /// Service managing user presence and typing indicators
-///
 /// Handles:
 /// - Online/offline status tracking
 /// - Automatic presence updates
 /// - Typing indicator management
 /// - Last seen timestamps
-///
 /// **Firebase Structure:**
 /// ```
 /// /presence/{userId}

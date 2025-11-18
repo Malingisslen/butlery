@@ -1,9 +1,7 @@
 /// Mixin providing common loading and error state management for ChangeNotifiers.
-///
 /// This mixin eliminates the duplicated state management patterns found in 37+ files
 /// across services and ViewModels by providing a centralized, consistent approach to
 /// loading states, error handling, and UI notifications.
-///
 /// Key capabilities:
 /// - Standardized loading state management with automatic UI updates
 /// - Error state management with user-friendly error messages
@@ -11,28 +9,24 @@
 /// - State consistency enforcement to prevent conflicting states
 /// - Batch state updates for performance optimization
 /// - Debug logging for state transitions in development mode
-///
 /// Architecture benefits:
 /// - Eliminates duplicate _isLoading, _error, _setLoading, _setError patterns
 /// - Provides consistent state management across all ViewModels and services
 /// - Ensures proper state transitions and prevents state conflicts
 /// - Simplifies testing with predictable state behavior
 /// - Reduces boilerplate code in business logic classes
-///
 /// Usage pattern transformation:
 /// ```dart
 /// // Before (duplicated in 37+ files):
 /// class MyService extends ChangeNotifier {
 ///   bool _isLoading = false;
 ///   String? _error;
-///   
 ///   bool get isLoading => _isLoading;
 ///   void _setLoading(bool loading) {
 ///     _isLoading = loading;
 ///     notifyListeners();
 ///   }
 /// }
-///
 /// // After (using StateNotifierMixin):
 /// class MyService extends ChangeNotifier with StateNotifierMixin {
 ///   // Loading and error state management is automatically available
@@ -43,37 +37,31 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Mixin that provides common state management functionality
-/// 
 /// This mixin eliminates the duplicated state management pattern found in 37+ files:
 /// - `bool _isLoading = false;`
 /// - `String? _error;`
 /// - `void _setLoading(bool loading) { ... }`
 /// - `void _setError(String message) { ... }`
 /// - `void _clearError() { ... }`
-/// 
 /// Pattern eliminated:
 /// ```dart
 /// // Before (duplicated in 37+ files):
 /// class MyService extends ChangeNotifier {
 ///   bool _isLoading = false;
 ///   String? _error;
-///   
 ///   bool get isLoading => _isLoading;
 ///   String? get error => _error;
 ///   bool get hasError => _error != null;
-///   
 ///   void _setLoading(bool loading) {
 ///     _isLoading = loading;
 ///     notifyListeners();
 ///   }
-///   
 ///   void _setError(String message) {
 ///     _error = message;
 ///     _isLoading = false;
 ///     notifyListeners();
 ///   }
 /// }
-/// 
 /// // After (centralized):
 /// class MyService extends ChangeNotifier with StateNotifierMixin {
 ///   // State management methods are automatically available

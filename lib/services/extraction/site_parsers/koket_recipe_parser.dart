@@ -1,10 +1,7 @@
 /// Köket.se recipe parser with community-specific enhancements
-///
 /// Köket (Sweden's most visited recipe site) provides recipes with schema.org JSON-LD markup.
 /// This parser extracts standard recipe data and adds Köket-specific enhancements.
-///
 /// **Target Success Rate:** >90% (high quality, but UGC variability)
-///
 /// **Köket-Specific Features:**
 /// - Difficulty level extraction
 /// - User ratings and reviews
@@ -17,7 +14,6 @@ import 'package:html/dom.dart';
 import 'package:butlery/services/extraction/site_parsers/recipe_site_parser.dart';
 
 /// Parser for Köket.se recipes
-///
 /// **Example URL:** https://www.koket.se/recept/klassiska-kottbullar/
 class KoketRecipeParser extends RecipeSiteParser {
   @override
@@ -318,7 +314,6 @@ class KoketRecipeParser extends RecipeSiteParser {
   }
 
   /// Convert Swedish time text to ISO 8601 duration
-  ///
   /// Examples:
   /// - "30 minuter" → "PT30M"
   /// - "1 timme 30 min" → "PT1H30M"

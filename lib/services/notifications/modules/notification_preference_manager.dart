@@ -8,14 +8,12 @@ import 'package:butlery/services/notifications/notification_repository.dart' as 
 import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for notification preferences and quiet hours management
-/// 
 /// This module handles ONLY notification preference responsibilities:
 /// - User preference checking and filtering
 /// - Quiet hours logic and time-based restrictions
 /// - Preference CRUD operations with caching
 /// - Permission validation for notification categories and types
 /// - Offline preference storage and synchronization
-/// 
 /// ❌ DOES NOT CONTAIN: FCM token management, content generation, batching, analytics
 class NotificationPreferenceManager {
   final NotificationsRepository _notificationsRepository;
@@ -34,7 +32,6 @@ class NotificationPreferenceManager {
   // ===== USER PREFERENCE CHECKING =====
 
   /// Check if user should receive a specific notification type
-  /// 
   /// This is the main filtering method used before sending any notification
   Future<bool> shouldReceiveNotification(
     NotificationCategory category,
@@ -104,7 +101,6 @@ class NotificationPreferenceManager {
   // ===== QUIET HOURS LOGIC =====
 
   /// Check if current user is in quiet hours
-  /// 
   /// Quiet hours prevent non-critical notifications during specified time periods
   Future<bool> isInQuietHours() async {
     try {
@@ -176,7 +172,6 @@ class NotificationPreferenceManager {
   // ===== PREFERENCE CRUD OPERATIONS =====
 
   /// Get notification preferences for current user
-  /// 
   /// Uses caching to avoid repeated Firestore calls and includes offline fallback
   Future<legacy.NotificationPreferences> getPreferences() async {
     try {
@@ -228,7 +223,6 @@ class NotificationPreferenceManager {
   }
 
   /// Update notification preferences for current user
-  /// 
   /// Updates both Firestore and local cache, with offline support
   Future<void> updatePreferences(legacy.NotificationPreferences preferences) async {
     try {

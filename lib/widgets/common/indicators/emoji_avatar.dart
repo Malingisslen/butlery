@@ -5,7 +5,6 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Reusable emoji avatar component
-/// 
 /// Provides consistent styling for emoji-based avatars.
 /// Used for group icons, user avatars with emojis, etc.
 class EmojiAvatar extends StatelessWidget {

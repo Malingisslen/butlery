@@ -5,7 +5,6 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Reusable overlay button component
-/// 
 /// Provides consistent styling for buttons overlaid on content.
 /// Used for remove buttons, edit buttons, etc. on images and cards.
 class OverlayButton extends StatelessWidget {

@@ -15,12 +15,10 @@ import 'package:butlery/services/unified/modules/realtime_cache_manager.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/realtime_notification_module.dart';
 
 /// Comprehensive real-time recipe collaboration module providing sophisticated multi-user editing capabilities.
-///
 /// This module implements advanced real-time collaboration functionality using facade pattern with specialized
 /// components for session management, content synchronization, conflict resolution, and editor coordination.
 /// It provides comprehensive real-time editing capabilities enabling multiple users to collaborate on recipes
 /// simultaneously with intelligent conflict resolution and seamless synchronization across all participants.
-///
 /// **Facade Pattern Architecture:**
 /// This module orchestrates real-time collaboration through focused specialized modules:
 /// - **[RealtimeSessionManager]**: Session lifecycle management and participant coordination
@@ -29,34 +27,27 @@ import 'package:butlery/services/unified/operations/realtime_recipe/realtime_not
 /// - **[RealtimeEditorTracker]**: Active editor management and presence awareness
 /// - **[RealtimeEventHandler]**: Real-time event processing and distribution
 /// - **[RealtimeCacheManager]**: Cache management and cleanup operations for optimal performance
-///
 /// **Single Responsibility Orchestration:**
 /// This module exclusively coordinates real-time collaboration concerns while delegating specific
 /// functionality to focused modules, ensuring clean separation of responsibilities and maintainable
 /// architecture for complex real-time collaboration features.
-///
 /// **Real-time Collaboration Features:**
 /// - **Multi-User Editing**: Simultaneous editing by multiple users with real-time change synchronization
 /// - **Conflict Resolution**: Intelligent conflict detection and resolution for concurrent modifications
 /// - **Presence Awareness**: Real-time tracking of active editors and their current editing focus
 /// - **Change Propagation**: Instant change distribution to all active participants
 /// - **Session Management**: Comprehensive session lifecycle with automatic cleanup and recovery
-///
 /// **Usage Examples:**
 /// ```dart
 /// final realtimeModule = RealtimeRecipeModule(firestore, cacheHelper);
-///
 /// // Start collaborative editing session
 /// await realtimeModule.startCollaborativeSession(recipeId, userId);
-///
 /// // Listen to real-time changes
 /// realtimeModule.watchRecipeChanges(recipeId).listen((changes) {
 ///   updateRecipeUI(changes);
 /// });
-///
 /// // Make collaborative edit
 /// await realtimeModule.updateRecipeContent(recipeId, newContent, userId);
-///
 /// // End collaboration session
 /// await realtimeModule.endCollaborativeSession(recipeId, userId);
 /// ```

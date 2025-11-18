@@ -14,7 +14,6 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 
 /// ViewModel managing group member addition with friend search, selection, and invitation sending.
-///
 /// Uses AsyncOperationMixin for general loading state while maintaining operation-specific
 /// _isSendingInvitations state for distinct UI treatment during invitation sending.
 class AddMembersToGroupViewModel extends ChangeNotifier

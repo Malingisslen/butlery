@@ -1,24 +1,18 @@
 /// Route observer that automatically tracks screen performance with Firebase Performance.
-///
 /// This observer integrates with Flutter's navigation system and Firebase Performance
 /// Monitoring to provide automatic performance tracking for all screens. It measures
 /// screen rendering time, transition duration, and navigation patterns, helping identify
 /// performance bottlenecks and slow screens.
-///
 /// ## Core Behavior
-///
 /// The observer creates Firebase Performance traces for these navigation events:
 /// - **Route Push**: Starts a new screen trace when a route is pushed
 /// - **Route Pop**: Stops the screen trace when a route is popped
 /// - **Route Replace**: Stops old trace and starts new trace
-///
 /// Each trace is named with pattern: `screen_{route_name}` and includes:
 /// - Screen rendering duration
 /// - Previous screen context (for navigation flow analysis)
 /// - Route configuration attributes
-///
 /// ## Integration
-///
 /// Register this observer in your MaterialApp's navigatorObservers:
 /// ```dart
 /// MaterialApp(
@@ -28,16 +22,12 @@
 ///   ],
 /// )
 /// ```
-///
 /// ## Firebase Console
-///
 /// After 24 hours, view traces in Firebase Console:
 /// - Performance → Custom Traces → Filter by "screen_"
 /// - See percentiles (p50, p90, p99) for each screen
 /// - Identify slow screens and performance regressions
-///
 /// ## Usage Example
-///
 /// ```dart
 /// // User navigates to recipe detail
 /// Navigator.push(
@@ -47,16 +37,13 @@
 ///     settings: RouteSettings(name: 'recipe_detail'), // Important!
 ///   ),
 /// );
-///
 /// // PerformanceNavigatorObserver automatically:
 /// // 1. Starts trace: screen_recipe_detail
 /// // 2. Records screen rendering time
 /// // 3. Stops trace when user navigates away
 /// // 4. Data appears in Firebase Console after 24 hours
 /// ```
-///
 /// ## Route Naming Convention
-///
 /// For accurate tracking, ensure all routes have meaningful names:
 /// - ✅ Good: `settings.name = 'recipe_detail'`
 /// - ✅ Good: `settings.name = 'shopping_list'`
@@ -68,12 +55,10 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/performance/firebase_performance_service.dart';
 
 /// Route observer that automatically tracks screen performance with Firebase.
-///
 /// This observer listens to navigation events and creates Firebase Performance
 /// traces for each screen, measuring rendering time and navigation patterns.
 class PerformanceNavigatorObserver extends NavigatorObserver {
   /// Map of active routes to their performance traces.
-  ///
   /// We track traces by route instance to ensure proper cleanup when
   /// routes are popped from the navigation stack.
   final Map<Route<dynamic>, Trace> _activeTraces = {};
@@ -135,7 +120,6 @@ class PerformanceNavigatorObserver extends NavigatorObserver {
   }
 
   /// Starts a Firebase Performance trace for the given route.
-  ///
   /// Adds optional attributes for navigation context (previous/replaced screens).
   Future<void> _startScreenTrace(
     Route<dynamic> route,

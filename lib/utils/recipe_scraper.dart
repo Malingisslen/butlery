@@ -1,24 +1,20 @@
 /// Advanced recipe extraction system providing comprehensive HTML parsing and structured data extraction for recipe import.
-///
 /// This utility provides sophisticated recipe parsing from web content, supporting both JSON-LD structured data
 /// and Microdata formats commonly used on recipe websites. It consolidates recipe extraction logic while providing
 /// robust parsing capabilities for international recipe import with comprehensive error handling and data validation
 /// for reliable recipe content extraction and import functionality.
-///
 /// **Extraction Capabilities:**
 /// - **JSON-LD Support**: Advanced parsing of Recipe schema.org structured data
 /// - **Microdata Parsing**: Fallback support for Microdata recipe markup
 /// - **Multi-format Support**: Handles various recipe website formats and structures
 /// - **Error Recovery**: Robust error handling for malformed HTML and data
 /// - **Cultural Adaptation**: Supports international recipe formats and standards
-///
 /// **Supported Data Formats:**
 /// ```
 /// // JSON-LD Recipe format
 /// <script type="application/ld+json">
 /// {"@type": "Recipe", "name": "...", "recipeIngredient": [...], ...}
 /// </script>
-/// 
 /// // Microdata Recipe format
 /// <div itemscope itemtype="http://schema.org/Recipe">
 ///   <span itemprop="name">Recipe Name</span>
@@ -26,7 +22,6 @@
 ///   ...
 /// </div>
 /// ```
-///
 /// **Usage Examples:**
 /// ```dart
 /// final recipeData = extractRecipeFromHtml(htmlContent);
@@ -42,21 +37,17 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart';
 
 /// Comprehensive recipe extraction from HTML content with JSON-LD and Microdata support
-///
 /// This function serves as the primary recipe extraction engine, providing intelligent parsing
 /// of web content to extract structured recipe data. It supports modern web standards for
 /// recipe markup while maintaining compatibility with various website formats and structures
 /// commonly used for recipe sharing and publication.
-///
 /// **Extraction Strategy:**
 /// 1. **JSON-LD Priority**: First attempts to extract Recipe schema.org JSON-LD data
 /// 2. **Microdata Fallback**: Falls back to Microdata parsing for legacy compatibility
 /// 3. **Data Validation**: Validates extracted data for completeness and accuracy
 /// 4. **Error Handling**: Gracefully handles parsing errors and malformed data
-///
 /// [html] The HTML content to parse for recipe data
 /// Returns a Map containing recipe data with schema.org field names, or null if no recipe found
-///
 /// **Return Format:**
 /// - `name`: Recipe title
 /// - `recipeIngredient`: List of ingredient strings

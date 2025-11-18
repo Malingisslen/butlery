@@ -1,5 +1,4 @@
 /// Content services initialization stage.
-///
 /// Handles initialization of content-related services including recipe
 /// management, menu planning, import functionality, and search services.
 library;
@@ -10,7 +9,6 @@ import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
 
 /// Content stage for recipe and menu service initialization.
-///
 /// This stage ensures that all content-related services are properly
 /// initialized and ready for use. It handles:
 /// - Recipe management services

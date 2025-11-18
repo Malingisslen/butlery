@@ -1,5 +1,4 @@
 /// Content module for recipe and menu management services.
-///
 /// This module handles all content-related functionality including:
 /// - Recipe management and operations
 /// - Menu planning and organization
@@ -7,7 +6,6 @@
 /// - Search and discovery services
 /// - Storage and file management
 /// - Image handling services
-///
 /// Depends on Core Module for authentication and database access.
 library;
 
@@ -62,7 +60,6 @@ import 'package:butlery/services/extraction/site_parsers/koket_recipe_parser.dar
 import 'package:butlery/services/extraction/site_parsers/recept_recipe_parser.dart';
 
 /// Content module providing recipe and menu management services.
-///
 /// This module handles all content-related functionality and depends on
 /// the Core Module for foundational services. It provides:
 /// - Recipe management through UnifiedRecipeService
@@ -322,7 +319,6 @@ class ContentModule implements DIModule {
   }
 
   /// Register site-specific recipe parsers for URL import.
-  ///
   /// This method registers parsers for Swedish recipe websites (ICA.se, Arla.se, Köket.se, Recept.se)
   /// that are used by UrlImportStrategy to extract recipes with site-specific enhancements.
   void _registerSiteParsers() {

@@ -9,11 +9,9 @@ import 'package:butlery/widgets/common/dialogs/recipe_selection/friend_recipe_sh
 import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart';
 
 /// Recipe Selection Dialogs API
-///
 /// This class provides a unified API for recipe selection dialogs:
 /// - Friend recipe sharing dialog for social sharing
 /// - Menu recipe selection dialog for category management
-///
 /// MIGRATION GUIDE:
 /// ```dart
 /// // Before: No change needed

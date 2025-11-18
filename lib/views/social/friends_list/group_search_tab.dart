@@ -7,7 +7,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
 
 /// GroupSearchTab - Group search tab component
-///
 /// Displays search results for filtering current groups.
 class GroupSearchTab {
   static Widget build(

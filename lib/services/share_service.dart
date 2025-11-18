@@ -326,22 +326,18 @@ class ShareService extends BaseService {
   // ===== SHARING METHODS - FIXED =====
 
   /// Shares recipe using platform-native share sheet with intelligent format selection.
-  ///
   /// This method provides seamless recipe sharing through the platform's native sharing interface
   /// with automatic format selection based on recipe content and optimal user experience. It uses
   /// the comprehensive error handling provided by BaseService and supports offline operation for
   /// maximum reliability across different network conditions.
-  ///
   /// [recipe] Complete recipe object to share through native platform interface
   /// Throws [ServiceException] if sharing operation fails or platform sharing is unavailable
-  ///
   /// **Sharing Process:**
   /// 1. **Smart Formatting**: Automatically selects optimal format based on recipe content
   /// 2. **Native Integration**: Uses platform share sheet for seamless user experience
   /// 3. **Error Handling**: Comprehensive error management through BaseService architecture
   /// 4. **Offline Support**: No network requirements for sharing operation
   /// 5. **Subject Setting**: Recipe title used as sharing subject for email and messaging
-  ///
   /// **Platform Compatibility:**
   /// - iOS: Integrates with iOS share sheet and activity view controller
   /// - Android: Uses Android intent system for comprehensive app integration

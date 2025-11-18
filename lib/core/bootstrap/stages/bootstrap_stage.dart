@@ -1,5 +1,4 @@
 /// Bootstrap stage interface for application initialization.
-///
 /// This interface defines the contract for bootstrap stages that handle
 /// different phases of application startup. Stages are executed in order
 /// and can have dependencies on specific modules being available.
@@ -8,20 +7,17 @@ library;
 import 'package:flutter/foundation.dart';
 
 /// Interface for application bootstrap stages.
-///
 /// Each stage represents a phase of application initialization:
 /// - Platform setup (Flutter bindings, environment)
 /// - Core services (Auth, Storage, Analytics)
 /// - Content services (Recipes, Import, Search)
 /// - Social services (Friends, Sharing, Messaging)
 /// - UI setup (Deep links, Analytics observers)
-///
 /// Example usage:
 /// ```dart
 /// class PlatformStage implements BootstrapStage {
 ///   @override
 ///   String get name => 'Platform';
-///   
 ///   @override
 ///   Future<void> execute() async {
 ///     WidgetsFlutterBinding.ensureInitialized();
@@ -33,41 +29,33 @@ abstract class BootstrapStage {
   String get name;
 
   /// List of module types that must be available before this stage runs.
-  ///
   /// These are not dependencies that trigger module loading, but rather
   /// validation that required modules are configured before execution.
   List<Type> get requiredModules;
 
   /// Maximum time allowed for this stage to complete.
-  ///
   /// Stages that exceed this timeout will cause initialization to fail.
   /// Use reasonable timeouts - most stages should complete in seconds.
   Duration get timeout;
 
   /// Execute this bootstrap stage.
-  ///
   /// This method performs the actual initialization work for this stage.
   /// It should be idempotent - safe to call multiple times.
-  ///
   /// Throws [BootstrapException] if the stage fails to execute.
   Future<void> execute();
 
   /// Validate that this stage completed successfully.
-  ///
   /// Called after execute() to verify the stage achieved its goals.
   /// Should perform minimal validation to avoid performance impact.
-  ///
   /// Returns `true` if validation passes, `false` otherwise.
   Future<bool> validate();
 
   /// Get the priority order for this stage.
-  ///
   /// Lower numbers have higher priority (execute first).
   /// Default priority is 100. Critical stages should use lower numbers.
   int get priority => 100;
 
   /// Whether this stage can be skipped if it fails.
-  ///
   /// Non-critical stages can be skipped to allow the app to start
   /// with reduced functionality. Critical stages will halt startup.
   bool get isOptional => false;

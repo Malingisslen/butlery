@@ -10,7 +10,6 @@ import 'package:butlery/services/unified/modules/service_adapters/recipe_service
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// Social Recipe Query Service
-/// 
 /// Handles ONLY query operations for collaborative recipes.
 /// This includes getting collaborative recipes, analytics, and cached data.
 class SocialRecipeQueryService extends BaseService with UserContextMixin {

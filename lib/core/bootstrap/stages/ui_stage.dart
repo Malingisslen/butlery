@@ -1,5 +1,4 @@
 /// UI and analytics initialization stage.
-///
 /// Handles initialization of UI-related services including analytics
 /// observers, deep link handling, and final UI setup before the app
 /// becomes fully interactive.
@@ -11,7 +10,6 @@ import 'package:butlery/core/di/modules/core_module.dart';
 // Feature flags removed - using modular system only
 
 /// UI stage for final UI and analytics setup.
-///
 /// This stage handles the final initialization steps before the app
 /// becomes fully interactive. It ensures:
 /// - Analytics observers are configured
@@ -77,7 +75,6 @@ class UIStage implements BootstrapStage {
   }
 
   /// Validates OCR service during startup to identify configuration issues early.
-  /// 
   /// Performs OCR API key and connectivity validation during application bootstrap
   /// to provide early detection of OCR service issues before users attempt photo imports.
   /// This validation is optional and will not prevent app startup if it fails.

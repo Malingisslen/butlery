@@ -1,5 +1,4 @@
 /// Nuclear Action Handler Component - Chat Actions Logic
-/// 
 /// Focused component handling ALL chat action logic that was previously
 /// scattered throughout the massive ChatView. Implements clean separation
 /// of concerns with proper error handling and user feedback.

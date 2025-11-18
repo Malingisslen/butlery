@@ -4,7 +4,6 @@ import 'package:butlery/models/shared_content.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Module handling bulk group sharing operations.
-///
 /// Provides bulk sharing, removal, and batch operations with progress tracking.
 class GroupSharingBulkOperationsModule {
   final Future<bool> Function(String groupId, SharedContent content) shareToGroup;

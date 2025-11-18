@@ -211,7 +211,6 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
 // ==================== FRIEND REQUEST ACTIONS ====================
 
 /// Refactored FriendRequestActions using BaseActionHandler
-///
 /// This class provides standardized friend request operations with:
 /// - Consistent batch operations with confirmation
 /// - Proper error handling and user feedback

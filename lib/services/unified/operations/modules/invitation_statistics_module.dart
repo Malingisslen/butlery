@@ -3,7 +3,6 @@
 import 'package:butlery/models/group_invitation.dart';
 
 /// Module handling invitation statistics and analytics.
-///
 /// Provides stats calculation, metrics, search, and filtering.
 class InvitationStatisticsModule {
   InvitationStatisticsModule();

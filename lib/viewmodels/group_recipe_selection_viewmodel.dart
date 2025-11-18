@@ -10,7 +10,6 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 
 /// ViewModel for selecting and sharing recipes with a group
-///
 /// Uses AsyncOperationMixin for loading state management while maintaining
 /// operation-specific _isSharing state for distinct UI treatment.
 class GroupRecipeSelectionViewModel extends ChangeNotifier

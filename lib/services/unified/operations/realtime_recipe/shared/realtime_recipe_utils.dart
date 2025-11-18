@@ -4,7 +4,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 
 /// Shared utilities for realtime recipe operations
-/// 
 /// Contains helper methods and conversion utilities used across
 /// multiple realtime recipe modules to reduce code duplication.
 class RealtimeRecipeUtils {

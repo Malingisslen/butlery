@@ -3,7 +3,6 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 
 /// View for displaying shared shopping lists.
-///
 /// This view shows all shopping lists that are shared with the current user,
 /// allowing them to collaborate on shopping with friends and family.
 class SharedShoppingListsView extends StatelessWidget {

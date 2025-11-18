@@ -1,8 +1,6 @@
 /// Intelligent cache manager with predictive loading and user behavior analysis.
-///
 /// This service implements advanced caching strategies to optimize app performance
 /// by predicting what content users are likely to need next and preloading it.
-///
 /// Features:
 /// - User behavior pattern analysis
 /// - Predictive recipe prefetching

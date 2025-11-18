@@ -21,7 +21,6 @@ import 'package:butlery/data/archived_recipes.dart' as archive;
 import 'package:butlery/services/import/import_strategy.dart';
 
 /// Strategy for importing recipes from the Butlery archive
-/// 
 /// Handles:
 /// - Single recipe import by ID
 /// - Batch recipe import

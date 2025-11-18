@@ -1,8 +1,6 @@
 /// Manages user search functionality for friend discovery
-///
 /// Extracted from FriendsViewModel for Single Responsibility compliance.
 /// Handles search queries, result management, and validation.
-///
 /// Performance optimizations:
 /// - Debounced search (300ms) to prevent excessive network requests
 /// - Search result caching (last 10 queries)

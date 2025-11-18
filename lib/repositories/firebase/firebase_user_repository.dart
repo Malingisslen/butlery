@@ -9,47 +9,39 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase Firestore implementation for user profile management and social discovery.
-///
 /// This repository implements the [UserRepository] interface using Firebase Firestore,
 /// managing user profiles in the `public_profiles` collection with comprehensive search,
 /// statistics tracking, and notification management. It provides the foundation for
 /// social features while maintaining privacy and security controls.
-///
 /// **Architecture Design:**
 /// Extends [BaseFirebaseRepository] to eliminate 45 lines of duplicate CRUD code while
 /// providing specialized user profile operations. Uses the `public_profiles` collection
 /// for searchable user data and integrates with authentication for security validation.
-///
 /// **Security and Privacy:**
 /// - **Self-Operation Validation**: Users can only modify their own profiles and settings
 /// - **Permission Logging**: Comprehensive audit trail for all profile operations
 /// - **Field Validation**: Ensures data integrity for required profile fields
 /// - **Privacy Controls**: Supports searchable profiles and email search opt-in
 /// - **FCM Security**: Validates token updates to prevent unauthorized access
-///
 /// **Search and Discovery:**
 /// - **Name Search**: Efficient searchable display name indexing with `displayNameLower`
 /// - **Email Search**: Optional email-based discovery with user consent
 /// - **Fallback Search**: Graceful degradation when indexed search fails
 /// - **Search Privacy**: Users can control searchability through `isSearchable` flag
 /// - **Result Ranking**: Prioritizes exact matches and alphabetical ordering
-///
 /// **Profile Statistics:**
 /// Tracks and maintains user statistics including friend counts, recipe counts,
 /// and activity metrics for profile display and social features integration.
-///
 /// **Notification Integration:**
 /// - **FCM Token Management**: Secure FCM token storage and updates for push notifications
 /// - **Notification Settings**: User-controlled notification preferences
 /// - **Token Cleanup**: Proper token cleanup on logout for security
 /// - **Timestamp Tracking**: FCM token update timestamps for debugging
-///
 /// **Usage Examples:**
 /// ```dart
 /// final userRepo = FirebaseUserRepository(
 ///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
-/// 
 /// // Create/update profile with validation
 /// final profile = UserProfile(
 ///   uid: currentUserId,
@@ -57,10 +49,8 @@ import 'package:butlery/core/utils/logger.dart';
 ///   isSearchable: true,
 /// );
 /// await userRepo.saveProfile(profile);
-/// 
 /// // Search for users
 /// final results = await userRepo.searchProfiles('john');
-/// 
 /// // Update notifications
 /// await userRepo.updateFCMToken(userId, fcmToken);
 /// await userRepo.updateNotificationSettings(userId, true);

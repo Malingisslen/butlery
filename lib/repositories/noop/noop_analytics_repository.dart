@@ -1,9 +1,7 @@
 /// No-op analytics repository for web platform where Firebase Analytics is not supported.
-///
 /// This implementation provides a null object pattern for analytics operations,
 /// allowing the app to function on web without Firebase Analytics dependency.
 /// All methods complete successfully but perform no actual analytics tracking.
-///
 /// **Use Case**: Registered on web platform (`kIsWeb`) to replace FirebaseAnalyticsRepository
 
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';

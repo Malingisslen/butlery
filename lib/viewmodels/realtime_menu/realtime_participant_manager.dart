@@ -9,13 +9,11 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/viewmodels/realtime/participant_tracker.dart';
 
 /// Focused module for realtime menu participant management
-/// 
 /// This module handles ONLY participant operations:
 /// - Adding and removing participants
 /// - Permission management
 /// - Participant tracking and activity
 /// - Permission validation
-/// 
 /// ❌ DOES NOT CONTAIN: UI state, menu content operations, streaming
 class RealtimeParticipantManager {
   final RealtimeMenuService _menuService;

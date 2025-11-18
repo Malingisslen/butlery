@@ -8,13 +8,11 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 
 /// Focused module for comment notification system
-///
 /// This module handles ONLY comment-related notifications:
 /// - New comment notifications to recipe members
 /// - Mention notifications in comments
 /// - Reply notifications to parent comment authors
 /// - Notification targeting and batching
-///
 /// ❌ DOES NOT CONTAIN: Comment content, likes, CRUD operations, statistics
 class CommentNotifications {
   // ===== COMMENT NOTIFICATION SENDING =====

@@ -4,18 +4,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/social/reaction_type.dart';
 
 /// Universal content reaction model for expressing user sentiment on any content type
-///
 /// This model provides a flexible reaction system that can be applied to any content
 /// throughout the application including recipes, comments, menus, shopping lists, and
 /// future content types. It follows the established Firestore integration patterns and
 /// provides comprehensive metadata for analytics and user experience optimization.
-///
 /// **Architecture Integration:**
 /// - Follows existing model patterns from SocialComment and RecipeComment
 /// - Integrates with Firestore using established serialization methods
 /// - Supports all content types through contentType and contentId fields
 /// - Provides audit trail with timestamp and user tracking
-///
 /// **Supported Content Types:**
 /// - 'recipe' - Recipe reactions for cooking content
 /// - 'comment' - Comment reactions for discussion engagement  
@@ -23,7 +20,6 @@ import 'package:butlery/models/social/reaction_type.dart';
 /// - 'shopping_list' - Shopping list reactions for utility feedback
 /// - 'user_profile' - Profile reactions for social appreciation
 /// - Extensible for future content types
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Create recipe reaction
@@ -33,7 +29,6 @@ import 'package:butlery/models/social/reaction_type.dart';
 ///   userId: 'user_456',
 ///   reactionType: ReactionType.delicious,
 /// );
-/// 
 /// // Toggle reaction
 /// final updated = reaction.copyWith(
 ///   reactionType: ReactionType.love,

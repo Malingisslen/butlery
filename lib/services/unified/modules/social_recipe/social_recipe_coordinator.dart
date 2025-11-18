@@ -350,7 +350,6 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   }
 
   /// Get all shared recipes for a specific user
-  ///
   /// Phase 3 Session 1: Content loading method for ViewModel migration.
   /// Wraps repository call with error handling and logging.
   Future<List<SharedRecipe>> getSharedRecipesForUser(String userId) async {
@@ -366,7 +365,6 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   // ===== STATUS CACHE METHODS (PHASE 3 SESSION 2) =====
 
   /// Load status for a recipe from repository and cache it
-  ///
   /// Phase 3 Session 2: Status caching method for ViewModel migration.
   /// Loads viewed, imported, and dismissed status from repository and caches locally.
   Future<void> loadStatusForRecipe(String recipeId, String userId) async {
@@ -386,7 +384,6 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   }
 
   /// Load status for all recipes in bulk
-  ///
   /// Phase 3 Session 2: Bulk status loading method for ViewModel migration.
   /// Loads status for multiple recipes to populate cache efficiently.
   Future<void> loadStatusForAllRecipes(
@@ -397,7 +394,6 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   }
 
   /// Check if recipe is dismissed using cache
-  ///
   /// Phase 3 Session 2: Status checking method for ViewModel migration.
   /// Falls back to false if not cached.
   bool isRecipeDismissed(String recipeId) {
@@ -405,7 +401,6 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   }
 
   /// Check if recipe is viewed using cache
-  ///
   /// Phase 3 Session 2: Status checking method for ViewModel migration.
   /// Falls back to false if not cached.
   bool isRecipeViewed(String recipeId) {
@@ -413,7 +408,6 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   }
 
   /// Check if recipe is imported using cache
-  ///
   /// Phase 3 Session 2: Status checking method for ViewModel migration.
   /// Falls back to false if not cached.
   bool isRecipeImported(String recipeId) {

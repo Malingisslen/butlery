@@ -11,7 +11,6 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// Message sending operations for the messaging service.
-///
 /// Handles all message sending functionality including:
 /// - Text messages with optional replies
 /// - Image messages with captions

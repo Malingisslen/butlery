@@ -1,5 +1,4 @@
 /// Shopping item operations manager for search, grouping, and bulk operations.
-///
 /// Handles item search, category grouping, and bulk operations like recipe imports.
 /// Part of UnifiedShoppingViewModel's modular architecture.
 

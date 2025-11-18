@@ -1,10 +1,8 @@
 /// Butlery E2E Optimized Application
-///
 /// INDUSTRY STANDARD E2E SOLUTION:
 /// - Preserves REAL UI components (AuthView, MinaReceptView, etc.)
 /// - Skips problematic Firebase/SharedPreferences initialization
 /// - Enables fast, reliable E2E testing with authentic user journeys
-///
 /// PERFORMANCE TARGET: <1 second initialization (vs 15+ seconds for full app)
 
 import 'package:flutter/material.dart';
@@ -50,7 +48,6 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 
 /// **INDUSTRY STANDARD E2E APP**
-///
 /// This app variant enables comprehensive E2E testing by:
 /// 1. Using REAL UI components from production app
 /// 2. Skipping Firebase initialization that hangs in test environments
@@ -88,7 +85,6 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
   }
 
   /// Initialize minimal ServiceLocator with mocked services for E2E testing
-  ///
   /// RESILIENT APPROACH: Ensure ServiceLocator always initializes successfully
   Future<void> _initializeE2EServices() async {
     if (kDebugMode) {
@@ -387,7 +383,6 @@ class _MockAnalyticsRepository implements AnalyticsRepository {
 }
 
 /// Mock AuthService for E2E testing
-///
 /// Provides minimal mock implementation that AuthViewModel depends on
 class _MockAuthService extends AuthService {
   _MockAuthService()
@@ -477,7 +472,6 @@ class _MockAuthService extends AuthService {
 }
 
 /// Mock AuthViewModel for E2E testing
-///
 /// Provides minimal mock implementation that AuthView expects
 class _MockAuthViewModel extends AuthViewModel {
   _MockAuthViewModel() : super(authService: _MockAuthService());

@@ -1,8 +1,6 @@
 /// Retry management with exponential backoff and circuit breaker pattern.
-///
 /// Provides intelligent retry coordination for failed uploads with circuit breaker
 /// protection to prevent cascading failures and resource exhaustion.
-///
 /// **Architecture:** Service Layer - Resilience Infrastructure
 /// **Responsibility:** Retry logic, backoff calculation, circuit breaker, error classification
 /// **Used By:** ImageUploadService
@@ -15,7 +13,6 @@ import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Manages retry logic and circuit breaker for upload resilience.
-///
 /// Core responsibilities:
 /// - Error classification for targeted handling
 /// - Exponential backoff with jitter calculation
@@ -100,7 +97,6 @@ class UploadRetryManager {
   // ===== RETRY DELAY CALCULATION =====
 
   /// Calculate retry delay with exponential backoff and jitter
-  ///
   /// Uses full jitter algorithm to prevent thundering herd:
   /// - Exponential backoff: 1s, 2s, 4s, 8s, 16s (capped at 30s)
   /// - Full jitter: Random delay from 0% to 100% of base delay

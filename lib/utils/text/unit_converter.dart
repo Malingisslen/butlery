@@ -1,34 +1,28 @@
 /// Intelligent unit conversion system providing Swedish-American measurement conversion and readability optimization.
-///
 /// This utility class provides comprehensive measurement unit conversion between Swedish and American cooking systems
 /// with intelligent readability optimization. It consolidates unit conversion logic found throughout the application
 /// while ensuring practical cooking measurements and cultural adaptation for both Swedish and international recipe
 /// formats with automatic conversion suggestions and optimal display units.
-///
 /// **Architecture Integration:**
 /// - Integrates with [TextFormatting] for Swedish fraction and decimal formatting
 /// - Provides foundation for ingredient parsing and shopping list optimization
 /// - Supports recipe scaling and international recipe import with automatic conversion
 /// - Eliminates unit conversion duplication across 95+ files in the codebase
 /// - Ensures consistent measurement standards throughout the application
-///
 /// **Conversion Capabilities:**
 /// - **American to Swedish**: Automatic conversion of cups, oz, tbsp, etc. to Swedish equivalents
 /// - **Swedish Optimization**: Smart conversion between Swedish units for readability (g -> kg, ml -> dl)
 /// - **Readability Enhancement**: Converts measurements to more practical units for cooking
 /// - **Cultural Adaptation**: Respects Swedish cooking measurement preferences and conventions
 /// - **Precision Management**: Maintains cooking-appropriate precision for practical use
-///
 /// **Conversion Examples:**
 /// ```
 /// // American to Swedish conversion
 /// convertToReadableUnit(1.0, "cup")     // -> ConvertedMeasurement(2.37, "dl")
 /// convertToReadableUnit(2.0, "tbsp")    // -> ConvertedMeasurement(1.78, "msk")
-/// 
 /// // Swedish unit optimization
 /// convertToReadableUnit(1500.0, "g")   // -> ConvertedMeasurement(1.5, "kg")
 /// convertToReadableUnit(15.0, "dl")    // -> ConvertedMeasurement(1.5, "l")
-/// 
 /// // Readability assessment
 /// shouldConvert(1000.0, "g")           // -> true (better as kg)
 /// shouldConvert(2.0, "dl")             // -> false (already readable)
@@ -37,17 +31,14 @@
 import 'package:butlery/utils/text/text_formatting.dart';
 
 /// Intelligent unit conversion utility class providing Swedish-American measurement conversion and optimization.
-///
 /// This class serves as the centralized measurement conversion engine for the Butlery cooking application,
 /// handling the complexity of international measurement systems, cultural preferences, and readability
 /// optimization. It provides comprehensive conversion support that makes cooking measurements practical
 /// and culturally appropriate for Swedish cooking applications.
-///
 /// **Smart Conversion Algorithm:**
 /// The converter uses sophisticated logic to determine when conversions improve readability,
 /// respecting Swedish cooking conventions while providing seamless integration of international
 /// recipe formats with automatic unit normalization and cultural adaptation.
-///
 /// **Static Utility Design:**
 /// - Private constructor prevents instantiation, ensuring pure utility function usage
 /// - All methods are static for convenient access without object creation overhead

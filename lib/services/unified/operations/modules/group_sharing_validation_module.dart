@@ -4,7 +4,6 @@ import 'package:butlery/models/shared_content.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Module handling group sharing validation and utilities.
-///
 /// Provides permission validation, bulk sharing validation, and summary generation.
 class GroupSharingValidationModule {
   final dynamic Function(String groupId) getCategoryById;

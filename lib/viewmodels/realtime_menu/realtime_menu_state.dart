@@ -16,13 +16,11 @@ enum RealtimeMenuStatus {
 }
 
 /// Focused module for realtime menu state management
-/// 
 /// This module handles ONLY core state management:
 /// - RealtimeMenu state tracking
 /// - Status management and transitions
 /// - Error state handling
 /// - UI state variables (selected category, show participants)
-/// 
 /// ❌ DOES NOT CONTAIN: Service operations, streaming, participant logic
 class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
   // Core menu state

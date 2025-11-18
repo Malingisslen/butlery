@@ -26,11 +26,9 @@ abstract class RatingsRepository extends Repository<RecipeRating> {
   Future<RecipeRating?> getUserRating(String recipeId, String userId);
 
   /// Get ratings for a recipe with pagination support
-  ///
   /// **Pagination Support (Issue #007 Fix):**
   /// - [limit] Maximum number of ratings to return (default: 100, max: 1000)
   /// - [startAfter] Document snapshot to start after for cursor-based pagination
-  ///
   /// **Performance:** O(limit) instead of O(N) - prevents timeouts at 10K+ ratings
   Future<List<RecipeRating>> getRecipeRatings(
     String recipeId, {

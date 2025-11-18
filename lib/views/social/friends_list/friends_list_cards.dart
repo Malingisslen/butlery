@@ -14,18 +14,15 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/views/social/group_detail_view.dart';
 
 /// Consolidated friends list card components
-///
 /// This file contains card components for the friends list view:
 /// - FriendCard: Individual friend card with profile navigation
 /// - FriendRequestCard: Friend request card with accept/reject actions
 /// - GroupCard: Group card with navigation to group detail
-///
 /// **Consolidation**: Merged from 3 separate files (~151 LOC) for better maintainability
 
 // ===== FRIEND CARD =====
 
 /// FriendCard - Individual friend card component
-///
 /// Displays friend information with profile and remove actions.
 class FriendCard {
   static Widget build(
@@ -59,7 +56,6 @@ class FriendCard {
 // ===== FRIEND REQUEST CARD =====
 
 /// FriendRequestCard - Friend request card component
-///
 /// Displays individual friend request with accept/reject actions.
 class FriendRequestCard {
   static Widget build(
@@ -100,7 +96,6 @@ class FriendRequestCard {
 // ===== GROUP CARD =====
 
 /// GroupCard - Group card component
-///
 /// Displays group information with navigation to group detail.
 class GroupCard {
   static Widget build(

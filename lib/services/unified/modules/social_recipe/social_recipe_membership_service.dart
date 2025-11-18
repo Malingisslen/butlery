@@ -9,7 +9,6 @@ import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 
 /// Social Recipe Membership Service
-/// 
 /// Handles ONLY member management operations for collaborative recipes.
 /// This includes adding/removing members, updating permissions, and member validation.
 class SocialRecipeMembershipService extends BaseService with UserContextMixin {

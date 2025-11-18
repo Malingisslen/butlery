@@ -9,7 +9,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_colors.dart';
 
 /// ServiceWidgets - Service integration widgets
-///
 /// Provides widgets that integrate with services and handle loading/error states.
 class ServiceWidgets {
   /// Widget som integrerar med RecipeService och hanterar loading/error states

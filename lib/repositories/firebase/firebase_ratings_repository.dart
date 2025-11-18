@@ -6,17 +6,14 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
 /// Firebase Firestore implementation for recipe rating system and statistics management.
-///
 /// This repository implements the [RatingsRepository] interface using Firebase Firestore
 /// to manage recipe ratings with comprehensive statistics calculation, real-time updates,
 /// and bulk operations. It provides a complete rating system with validation, analytics,
 /// and performance optimizations for recipe evaluation and discovery.
-///
 /// **Architecture Design:**
 /// Extends [BaseFirebaseRepository] to leverage shared CRUD functionality while providing
 /// specialized rating operations. Uses composite rating IDs (`recipeId_userId`) to ensure
 /// one rating per user per recipe and enable efficient querying and updates.
-///
 /// **Rating System Features:**
 /// - **5-Star Rating Scale**: Standard 1-5 star rating system with validation
 /// - **One Rating Per User**: Enforces single rating per user per recipe constraint
@@ -24,14 +21,12 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 /// - **Rating Updates**: Allow users to modify their existing ratings
 /// - **Rating Removal**: Support for rating deletion with statistics updates
 /// - **Bulk Statistics**: Efficient statistics calculation for multiple recipes
-///
 /// **Security Implementation:**
 /// - **Self-Operation Validation**: Users can only manage their own ratings
 /// - **Rating Range Validation**: Enforces 1-5 star rating constraints
 /// - **Permission Logging**: Comprehensive audit trail for rating operations
 /// - **Ownership Verification**: Validates rating ownership before modifications
 /// - **Input Sanitization**: Validates and sanitizes review text content
-///
 /// **Statistics and Analytics:**
 /// - **Real-time Statistics**: Live rating statistics with distribution analysis
 /// - **Average Calculation**: Precise average rating computation
@@ -39,20 +34,17 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 /// - **Temporal Tracking**: Last rated timestamps for freshness indicators
 /// - **Bulk Operations**: Efficient statistics for multiple recipes simultaneously
 /// - **Stream Updates**: Real-time statistics updates for dynamic UI
-///
 /// **Performance Optimizations:**
 /// - **Composite Keys**: Efficient rating identification with `recipeId_userId` format
 /// - **Batch Processing**: Bulk statistics calculation with Firestore batch operations
 /// - **Query Optimization**: Proper indexing for recipe and user-based queries
 /// - **Statistics Caching**: Future-ready for denormalized statistics storage
 /// - **Pagination Support**: Scalable rating retrieval for large datasets
-///
 /// **Usage Examples:**
 /// ```dart
 /// final ratingsRepo = FirebaseRatingsRepository(
 ///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
-///
 /// // Rate a recipe
 /// await ratingsRepo.rateRecipe(
 ///   recipeId: recipeId,
@@ -60,13 +52,11 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 ///   rating: 4.5,
 ///   review: 'Delicious and easy to make!',
 /// );
-///
 /// // Get real-time statistics
 /// ratingsRepo.getRatingStatisticsStream(recipeId).listen((stats) {
 ///   updateRatingDisplay(stats.averageRating);
 ///   updateDistributionChart(stats.ratingDistribution);
 /// });
-///
 /// // Bulk statistics for recipe list
 /// final bulkStats = await ratingsRepo.getBulkRatingStatistics(recipeIds);
 /// for (final entry in bulkStats.entries) {

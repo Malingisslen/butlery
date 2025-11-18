@@ -1,35 +1,28 @@
 /// Shared Menu ViewModel providing menu-specific shared content management.
-///
 /// This specialized ViewModel handles all shared menu operations including loading,
 /// importing, dismissing, and copy-on-write collaboration. It extends the base shared
 /// content ViewModel to provide menu-specific functionality while maintaining
 /// consistent patterns with other content types.
-///
 /// **Responsibilities:**
 /// - **Menu Loading**: Load shared menus from repository with proper filtering
 /// - **Import Operations**: Handle menu import with copy-on-write support
 /// - **Status Management**: Track read/unread status and dismissal state
 /// - **Collaboration**: Support copy-on-write collaboration for shared menus
 /// - **Search Integration**: Implement menu-specific search functionality
-///
 /// **Integration Points:**
 /// - **SocialMenuCoordinator**: For invitation and sharing operations
 /// - **FirebaseSharedMenuRepository**: For data persistence and retrieval
 /// - **SharedMenu Model**: With full copy-on-write support
-///
 /// **Usage Example:**
 /// ```dart
 /// final menuViewModel = SharedMenuViewModel();
 /// await menuViewModel.loadContent();
-///
 /// // Search functionality
 /// menuViewModel.updateSearchQuery('veckomeny');
 /// final searchResults = menuViewModel.filteredContent;
-///
 /// // Menu operations
 /// await menuViewModel.importSharedMenu(sharedMenu);
 /// await menuViewModel.dismissSharedMenu(sharedMenu);
-///
 /// // Copy-on-write collaboration
 /// await menuViewModel.joinSharedMenu(sharedMenu);
 /// ```
@@ -44,7 +37,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Specialized ViewModel for shared menu management and operations.
-///
 /// Note (Issue #014): Uses status caching for synchronous filtering/counting.
 /// Status loaded from Firestore subcollections and cached for performance.
 class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
@@ -177,7 +169,6 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
   // ===== MENU OPERATIONS =====
 
   /// Import shared menu using copy-on-write pattern
-  ///
   /// For new copy-on-write behavior, this joins as viewer until first edit.
   /// For legacy compatibility, creates immediate copy with attribution.
   Future<String?> importSharedMenu(SharedMenu sharedMenu,
@@ -203,7 +194,6 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
   }
 
   /// Start collaborative editing (triggers copy-on-write)
-  ///
   /// This method triggers copy-on-write when user attempts first edit.
   /// Creates static copy for original owner and enables collaboration.
   Future<String?> startCollaborativeEditing(SharedMenu sharedMenu) async {
@@ -256,7 +246,6 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
   }
 
   /// Mark menu as viewed/read
-  ///
   /// Note (Issue #014): Updates cache instead of local model state.
   Future<bool> markAsViewed(SharedMenu sharedMenu) async {
     final result = await executeOperation(
@@ -350,7 +339,6 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
   // ===== BULK OPERATIONS =====
 
   /// Mark all menus as viewed
-  ///
   /// Note (Issue #014): Uses cache to identify unviewed menus, then updates cache after marking.
   Future<void> markAllAsViewed() async {
     final userId = currentUserId;
@@ -414,7 +402,6 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
   }
 
   /// Get specific shared menu by ID
-  ///
   /// Week 2 Task 1 Completion: Loads a single SharedMenu from the coordinator.
   /// Useful for deep links and view operations where we need the full menu object.
   Future<SharedMenu?> getSharedMenuById(String menuId) async {

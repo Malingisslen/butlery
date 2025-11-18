@@ -7,7 +7,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 
 /// MessageStates - Error, Success, Info, and Warning state implementations
-///
 /// Handles different message state variants with appropriate styling.
 class MessageStates {
   /// Build error state

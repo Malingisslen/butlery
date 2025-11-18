@@ -5,7 +5,6 @@ import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Dialog shown when group owner wants to leave but is the only member.
-///
 /// Returns true if user wants to delete the empty group, false or null otherwise.
 /// This dialog doesn't perform any actions - it just captures user intent.
 class EmptyGroupDeleteDialog extends StatelessWidget {

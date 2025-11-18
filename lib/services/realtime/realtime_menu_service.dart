@@ -18,11 +18,9 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 /// Clean facade for realtime menu management using focused modules
-///
 /// This facade provides a unified API that delegates to focused modules:
 /// - MenuOperations: Menu content management (categories, recipes, basic info)
 /// - MenuParticipants: Participant management (adding, removing, permissions)
-///
 /// ❌ DOES NOT CONTAIN: Complex business logic, direct implementation details
 class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
   final RealtimeSyncService _syncService;

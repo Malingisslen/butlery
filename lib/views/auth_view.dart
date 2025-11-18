@@ -1,11 +1,3 @@
-///
-///
-///
-///
-///
-///
-///
-
 // lib/views/auth_view.dart
 
 import 'package:flutter/material.dart';
@@ -25,41 +17,22 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 
-///
-///
 class AuthView extends StatefulWidget {
-  ///
   const AuthView({super.key});
 
   @override
   State<AuthView> createState() => _AuthViewState();
 }
 
-///
 class _AuthViewState extends State<AuthView> {
-  ///
   final _formKey = GlobalKey<FormState>();
-
-  ///
   final _emailController = TextEditingController();
-
-  ///
   final _passwordController = TextEditingController();
-
-  ///
   final _nameController = TextEditingController();
-
-  ///
   final _emailFocus = FocusNode();
-
-  ///
   final _passwordFocus = FocusNode();
-
-  ///
   final _nameFocus = FocusNode();
 
-  ///
-  ///
   @override
   void dispose() {
     // Clean up form controllers to prevent memory leaks
@@ -124,11 +97,6 @@ class _AuthViewState extends State<AuthView> {
       ),
     );
   }
-
-  ///
-  ///
-  ///
-  ///
   Widget _buildHeader(BuildContext context) {
     return const Column(
       children: [
@@ -139,11 +107,6 @@ class _AuthViewState extends State<AuthView> {
       ],
     );
   }
-
-  ///
-  ///
-  ///
-  ///
   Widget _buildAuthCard(BuildContext context, AuthViewModel viewModel) {
     return AuthFormCard(
       child: Form(
@@ -197,11 +160,6 @@ class _AuthViewState extends State<AuthView> {
       ),
     );
   }
-
-  ///
-  ///
-  ///
-  ///
   Widget _buildNameField(AuthViewModel viewModel) {
     return TextFormField(
       key: const Key('name_field'),
@@ -221,11 +179,6 @@ class _AuthViewState extends State<AuthView> {
       },
     );
   }
-
-  ///
-  ///
-  ///
-  ///
   Widget _buildEmailField(AuthViewModel viewModel) {
     return StyledInput.email(
       key: const Key('email_field'),
@@ -236,11 +189,6 @@ class _AuthViewState extends State<AuthView> {
       validator: FormValidators.authEmail(),
     );
   }
-
-  ///
-  ///
-  ///
-  ///
   Widget _buildPasswordField(AuthViewModel viewModel) {
     return StyledInput.password(
       key: const Key('password_field'),
@@ -269,11 +217,6 @@ class _AuthViewState extends State<AuthView> {
       ),
     );
   }
-
-  ///
-  ///
-  ///
-  ///
   Widget _buildForgotPasswordButton(
     BuildContext context,
     AuthViewModel viewModel,
@@ -292,22 +235,12 @@ class _AuthViewState extends State<AuthView> {
       ),
     );
   }
-
-  ///
-  ///
-  ///
-  ///
   Widget _buildErrorMessage(String message) {
     return StateWidget.error(
       message: message,
       // Removed non-functional "Try Again" button - error messages are self-explanatory
     );
   }
-
-  ///
-  ///
-  ///
-  ///
   Widget _buildSubmitButton(AuthViewModel viewModel) {
     return StyledButton.primary(
       key: const Key('submit_button'),
@@ -316,11 +249,6 @@ class _AuthViewState extends State<AuthView> {
       isLoading: viewModel.isLoading,
     );
   }
-
-  ///
-  ///
-  ///
-  ///
   Widget _buildToggleButton(AuthViewModel viewModel) {
     return ActionButtons.textButton(
       context,
@@ -333,10 +261,6 @@ class _AuthViewState extends State<AuthView> {
       ),
     );
   }
-
-  ///
-  ///
-  ///
   Future<void> _handleSubmit(AuthViewModel viewModel) async {
     // Rensa tidigare fel
     viewModel.clearError();
@@ -379,10 +303,6 @@ class _AuthViewState extends State<AuthView> {
       );
     }
   }
-
-  ///
-  ///
-  ///
   Future<void> _showPasswordResetDialog(
     BuildContext context,
     AuthViewModel viewModel,

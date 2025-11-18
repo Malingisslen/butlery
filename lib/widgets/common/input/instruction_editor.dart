@@ -5,7 +5,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// Dynamic instruction editor with Enter-key support for new steps
-///
 /// This widget provides a list of text fields that dynamically grows as users
 /// add new instructions. Pressing Enter creates a new instruction field.
 class InstructionEditor extends StatefulWidget {

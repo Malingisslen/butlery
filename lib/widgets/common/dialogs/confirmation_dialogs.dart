@@ -7,7 +7,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 
 /// Confirmation dialogs for user actions
-/// 
 /// Refactored to use BaseDialog classes, eliminating 50+ lines of duplicate dialog code.
 class ConfirmationDialogs {
   /// ✅ Standard bekräftelse dialog

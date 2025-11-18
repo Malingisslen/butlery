@@ -10,7 +10,6 @@ import 'package:butlery/models/realtime/realtime_menu_data.dart';
 import 'package:uuid/uuid.dart';
 
 /// Comprehensive realtime menu factory with centralized construction logic and specialized parsing for collaborative meal planning.
-///
 /// Provides complete construction infrastructure for realtime menu instantiation including participant management,
 /// data parsing, and parameter organization through focused factory patterns and robust error handling.
 /// This class serves as the construction coordination layer for all realtime menu creation scenarios.
@@ -73,7 +72,6 @@ class RealtimeMenuFactory {
   }
 
   /// Parse repository document data to construction parameters
-  /// 
   /// @deprecated Use parseJsonData instead. This method will be removed when repositories are updated.
   /// Repositories should provide clean DateTime objects and Map data.
   static Map<String, dynamic> parseRepositoryData(String id, Map<String, dynamic> data) {

@@ -6,13 +6,11 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for real-time event handling
-/// 
 /// This module handles ONLY real-time event processing:
 /// - Firebase snapshot change processing
 /// - Real-time sync error handling
 /// - External edit detection and processing
 /// - Real-time notification triggering
-/// 
 /// ❌ DOES NOT CONTAIN: Session management, content operations, conflict resolution, editor tracking
 class RealtimeEventHandler {
 
