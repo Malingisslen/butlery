@@ -15,6 +15,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 /// View for creating new group conversations with friend selection.
 ///
@@ -74,7 +75,22 @@ class _CreateGroupConversationViewState
         builder: (context, viewModel, child) {
           return Scaffold(
             appBar: _buildAppBar(context, viewModel),
-            body: _buildBody(context, viewModel),
+            body: SafeArea(
+              // ✅ RESPONSIVE: Center and constrain content on large screens
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: LayoutComponents.valueFor(
+                      context: context,
+                      mobile: double.infinity,
+                      tablet: 700,
+                      desktop: 800,
+                    ),
+                  ),
+                  child: _buildBody(context, viewModel),
+                ),
+              ),
+            ),
             bottomNavigationBar: _buildBottomBar(context, viewModel),
           );
         },
