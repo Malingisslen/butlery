@@ -208,24 +208,39 @@ class _UserProfileEditViewContentState
       child: LayoutComponents.mainMenu(
         // ✅ UPPDATERAD: LayoutComponents istället för MainLayoutMenu
         currentIndex: null,
-        body: FormScaffold(
-          title: 'Redigera profil',
-          form: _buildForm(viewModel),
-          onSave: viewModel.isLoading || !viewModel.isFormValid
-              ? null
-              : _saveProfile,
-          isLoading: viewModel.isLoading,
-          showSaveButton: false,
-          showCancelButton: false,
-          additionalActions: [
-            // Clear error button
-            if (viewModel.hasError)
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: viewModel.clearError,
-                tooltip: 'Rensa fel',
+        body: SafeArea(
+          // ✅ RESPONSIVE: Center and constrain content on large screens
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: LayoutComponents.valueFor(
+                  context: context,
+                  mobile: double.infinity,
+                  tablet: 600,
+                  desktop: 700,
+                ),
               ),
-          ],
+              child: FormScaffold(
+                title: 'Redigera profil',
+                form: _buildForm(viewModel),
+                onSave: viewModel.isLoading || !viewModel.isFormValid
+                    ? null
+                    : _saveProfile,
+                isLoading: viewModel.isLoading,
+                showSaveButton: false,
+                showCancelButton: false,
+                additionalActions: [
+                  // Clear error button
+                  if (viewModel.hasError)
+                    IconButton(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: viewModel.clearError,
+                      tooltip: 'Rensa fel',
+                    ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
