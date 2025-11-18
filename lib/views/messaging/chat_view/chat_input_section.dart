@@ -1,5 +1,4 @@
 /// Nuclear Input Section Component - Message Composition Logic
-///
 /// Focused component handling ONLY message input and composition logic that was
 /// previously scattered throughout the massive ChatView. Implements clean
 /// message composition with attachment handling and typing indicators.

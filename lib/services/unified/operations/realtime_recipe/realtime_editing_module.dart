@@ -9,13 +9,11 @@ import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
 
 /// Realtime recipe editing module
-/// 
 /// This module handles ONLY real-time editing operations:
 /// - Start/stop realtime editing sessions
 /// - Make realtime edits with conflict resolution
 /// - Handle edit conflicts and merging
 /// - Validate editing permissions
-/// 
 /// ❌ DOES NOT CONTAIN: Watching, presence, notifications, collaboration management
 class RealtimeEditingModule {
   final UnifiedRecipeService _parent;

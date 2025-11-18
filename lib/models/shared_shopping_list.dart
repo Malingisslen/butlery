@@ -1,30 +1,25 @@
 /// Comprehensive shared shopping list model providing consistent sharing experience across all content types.
-///
 /// This model implements unified sharing functionality following Single Responsibility Principle,
 /// matching the patterns established by SharedRecipe and SharedMenu for consistent user experience.
 /// It provides complete shopping list sharing capabilities while maintaining clean separation from
 /// business logic and ensuring consistent behavior across all shared content types.
-///
 /// **Single Responsibility Focus:**
 /// This model exclusively handles shared shopping list management and tracking:
 /// - **Shopping List Snapshots**: Complete list preservation with all items for independent sharing and preview
 /// - **Status Tracking**: Unified read/unread, joined/not-joined, dismissed/visible status management
 /// - **Attribution Preservation**: Proper shopping list attribution with source acknowledgment
 /// - **Consistent User Interaction**: View/Join/Dismiss actions matching recipe and menu patterns
-///
 /// **What This Model Does NOT Handle:**
 /// - Shopping list creation and editing operations (handled by shopping services)
 /// - Collaborative list management (handled by collaborative shopping system)
 /// - UI concerns and presentation logic (handled by ViewModels and UI components)
 /// - Shopping list persistence and storage operations (handled by repositories and services)
-///
 /// **Shared Shopping List Features:**
 /// - **Complete Shopping List Snapshots**: Full list preservation with all items and metadata for independent sharing
 /// - **Unified Status Management**: Read/unread, joined/dismissed tracking consistent with other shared content
 /// - **Attribution Preservation**: Proper source attribution maintained throughout sharing lifecycle
 /// - **Preview Functionality**: Complete list preview before joining with item details
 /// - **Consistent Actions**: View/Join/Dismiss pattern matching recipes and menus
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Create new shared shopping list
@@ -37,20 +32,16 @@
 ///   listDescription: 'Familjehandling för hela veckan',
 ///   listItems: groceryItems,
 /// );
-///
 /// // Track user engagement
 /// final viewedList = sharedShoppingList.markViewedBy(userId);
 /// final joinedList = viewedList.markJoinedBy(userId);
-///
 /// // Handle user dismissal
 /// final dismissedList = sharedShoppingList.markDismissedBy(userId);
 /// final restoredList = dismissedList.undismissBy(userId);
-///
 /// // Check status and permissions
 /// final canView = sharedShoppingList.canBeViewedBy(userId);
 /// final isJoined = sharedShoppingList.isJoinedBy(userId);
 /// final shouldShow = sharedShoppingList.shouldBeShownTo(userId);
-///
 /// // Get list summary for preview
 /// final summary = sharedShoppingList.itemSummary; // '8 artiklar (mjölk, bröd, äpplen...)'
 /// final timeAgo = sharedShoppingList.timeAgoText; // '2 dagar sedan'
@@ -66,7 +57,6 @@ import 'package:butlery/models/shared_content/base_shared_content_model.dart';
 import 'package:butlery/models/shared_content/shared_content_status_mixin.dart';
 
 /// Shared shopping list model using unified base infrastructure for consistent shared content patterns.
-///
 /// This model extends BaseSharedContentModel and uses SharedContentStatusMixin for status management,
 /// eliminating duplicate code while maintaining shopping list-specific features and direct collaboration.
 /// Unlike recipes/menus, shopping lists use direct collaboration (not copy-on-write) and "joined" terminology.
@@ -82,7 +72,6 @@ class SharedShoppingList
   final String? listDescription;
 
   /// Number of items in the shopping list.
-  ///
   /// **Issue #015**: Cached from items subcollection for UI performance.
   /// Items now stored in Firestore subcollection: shared_shopping_lists/{id}/items/{itemId}
   /// This count is maintained via atomic FieldValue.increment/decrement operations.
@@ -97,10 +86,8 @@ class SharedShoppingList
   final String originalOwnerDisplayName;
 
   /// Creates a new shared shopping list with all required metadata.
-  ///
   /// **Issue #014**: sharedToUserIds removed from model. Repository layer handles adding
   /// members to Firestore subcollection after creation.
-  ///
   /// **Issue #015**: listItems array removed. Items stored in Firestore subcollection.
   /// itemCount parameter required for caching item count from subcollection.
   SharedShoppingList({
@@ -154,10 +141,8 @@ class SharedShoppingList
   // ===== FACTORY CONSTRUCTORS =====
 
   /// Factory constructor for creating new shared shopping lists with auto-generated ID and intelligent defaults.
-  ///
   /// **Issue #014**: sharedToUserIds still accepted for repository layer but NOT passed to constructor.
   /// Repository handles adding members to Firestore subcollection after creation.
-  ///
   /// **Issue #015**: listItems parameter DEPRECATED. Items stored in subcollection.
   /// Pass either itemCount OR listItems (will calculate count from list for migration compatibility).
   factory SharedShoppingList.create({
@@ -185,7 +170,6 @@ class SharedShoppingList
   }
 
   /// Creates a shared shopping list instance from Firestore repository data with robust error handling.
-  ///
   /// **Issue #014**: Arrays removed. Uses parseCommonFieldsFromFirestore() for base fields.
   /// **Issue #015**: listItems array removed. Now reads itemCount from document.
   /// For migration compatibility, falls back to calculating from listItems array if itemCount missing.
@@ -221,7 +205,6 @@ class SharedShoppingList
   }
 
   /// Creates a shared shopping list instance from map data for compatibility.
-  ///
   /// **Issue #014**: Arrays removed. Uses parseCommonFieldsFromFirestore() for base fields.
   /// **Issue #015**: listItems array removed. Now reads itemCount from map.
   /// For migration compatibility, falls back to calculating from listItems array if itemCount missing.
@@ -264,7 +247,6 @@ class SharedShoppingList
   // ===== SERIALIZATION =====
 
   /// Converts the shared shopping list to Firestore-compatible format for persistence.
-  ///
   /// **Issue #014**: Arrays removed. Uses getCommonFirestoreFields() for base serialization.
   /// **Issue #015**: listItems array removed. Now writes itemCount field.
   /// Items stored in separate subcollection: shared_shopping_lists/{id}/items/{itemId}
@@ -282,7 +264,6 @@ class SharedShoppingList
   }
 
   /// Converts the shared shopping list to JSON format for caching and client-side storage.
-  ///
   /// **Issue #014**: Arrays removed. Uses getCommonJsonFields() for base serialization.
   /// **Issue #015**: listItems array removed. Now writes itemCount field.
   Map<String, dynamic> toJson() {
@@ -299,7 +280,6 @@ class SharedShoppingList
   }
 
   /// Creates a shared shopping list instance from JSON data for caching and deserialization.
-  ///
   /// **Issue #014**: Arrays removed. Uses parseCommonFieldsFromJson() for base fields.
   /// **Issue #015**: listItems array removed. Now reads itemCount from JSON.
   /// For migration compatibility, falls back to calculating from listItems array if itemCount missing.
@@ -360,7 +340,6 @@ class SharedShoppingList
   // ===== DISPLAY PROPERTIES =====
 
   /// Get shopping list item summary for preview.
-  ///
   /// **Issue #015**: Items stored in subcollection, so we only have itemCount.
   /// Cannot display individual item names without loading subcollection.
   /// Use itemCountText instead or load items separately if needed.
@@ -391,7 +370,6 @@ class SharedShoppingList
   // ===== UTILITY METHODS =====
 
   /// Creates a copy of this shared shopping list with updated values.
-  ///
   /// **Issue #014**: Array parameters removed. Only counts can be updated.
   /// **Issue #015**: listItems parameter removed. Use itemCount instead.
   SharedShoppingList copyWith({

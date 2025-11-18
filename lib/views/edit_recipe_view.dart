@@ -1,14 +1,11 @@
 /// Comprehensive recipe editing view with all components inlined for maintainability.
-///
 /// This view provides complete recipe editing interface following MVVM architecture,
 /// specializing in recipe editing, collaborative features, and comprehensive form management.
-///
 /// **Single Responsibility Focus:**
 /// - Recipe Editing Interface Excellence with form validation
 /// - Collaborative Status Integration with permission management
 /// - Multi-Provider Coordination with service integration
 /// - Loading Overlay Management with user feedback
-///
 /// **Components Inlined** (all previously separate files):
 /// - edit_recipe_actions.dart: Save and fork functionality
 /// - edit_recipe_app_bar.dart: AppBar with collaborative status
@@ -17,7 +14,6 @@
 /// - edit_recipe_form_fields.dart: All form fields and inputs
 /// - edit_recipe_image_picker.dart: Image picker modal
 /// - edit_recipe_dynamic_list.dart: Dynamic list builder
-///
 /// **Multi-Provider Architecture:**
 /// - AuthService for user authentication and permission management
 /// - RecipeFormViewModel for recipe editing state and form coordination

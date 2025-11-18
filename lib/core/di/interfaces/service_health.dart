@@ -1,20 +1,16 @@
 /// Service health checking interfaces for the modular DI system.
-///
 /// This file defines interfaces and utilities for monitoring the health
 /// of services within the dependency injection system. Health checks are
 /// used during startup validation and ongoing monitoring.
 library;
 
 /// Interface for services that support health checking.
-///
 /// Services can implement this interface to provide custom health
 /// validation logic beyond simple instantiation checks.
 abstract class HealthCheckable {
   /// Perform a health check on this service.
-  ///
   /// Returns `true` if the service is healthy and ready for use.
   /// Should perform minimal validation to avoid performance impact.
-  ///
   /// Example implementations:
   /// - Database connection: verify connection is active
   /// - Auth service: verify token is valid
@@ -22,7 +18,6 @@ abstract class HealthCheckable {
   Future<bool> healthCheck();
 
   /// Get a human-readable health status description.
-  ///
   /// Used for debugging and monitoring dashboards.
   /// Should be brief but informative.
   String get healthStatus;
@@ -123,7 +118,6 @@ class HealthReport {
 /// Utility class for performing health checks on services.
 class HealthChecker {
   /// Check health of a single service.
-  ///
   /// If the service implements [HealthCheckable], uses its custom health check.
   /// Otherwise, performs basic instantiation check.
   static Future<HealthCheckResult> checkService(
@@ -166,7 +160,6 @@ class HealthChecker {
   }
 
   /// Check health of multiple services.
-  ///
   /// Performs health checks in parallel for better performance.
   static Future<HealthReport> checkServices(
     Map<String, dynamic> services,
@@ -179,7 +172,6 @@ class HealthChecker {
   }
 
   /// Check health with timeout.
-  ///
   /// Useful for preventing health checks from hanging the application.
   static Future<HealthCheckResult> checkServiceWithTimeout(
     String serviceName,

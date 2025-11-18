@@ -6,7 +6,6 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/base/base_service.dart';
 
 /// Focused module for social recipe discovery and filtering
-///
 /// This module handles ONLY recipe discovery responsibilities:
 /// - Finding collaborative recipes across the platform
 /// - Filtering recipes shared with current user
@@ -14,7 +13,6 @@ import 'package:butlery/core/base/base_service.dart';
 /// - User-specific recipe discovery and search
 /// - Social recipe filtering and categorization
 /// - Discovery analytics and recommendations
-///
 /// ❌ DOES NOT CONTAIN: Recipe sharing, member management, comments, ratings, permissions
 class RecipeDiscoveryService extends BaseService {
   @override
@@ -23,9 +21,6 @@ class RecipeDiscoveryService extends BaseService {
   final UnifiedRecipeService _parent;
 
   RecipeDiscoveryService(this._parent);
-
-
-  ///
   Future<List<Recipe>> getCollaborativeRecipes({
     int limit = 50,
     String? startAfter,
@@ -96,8 +91,6 @@ class RecipeDiscoveryService extends BaseService {
       return [];
     }
   }
-
-  ///
   Future<List<Recipe>> getSharedWithMe({
     int limit = 50,
     List<String>? categoryFilter,
@@ -170,8 +163,6 @@ class RecipeDiscoveryService extends BaseService {
       return [];
     }
   }
-
-  ///
   Future<List<Recipe>> getSharedByMe({
     int limit = 50,
     bool includeEmpty = false,
@@ -242,8 +233,6 @@ class RecipeDiscoveryService extends BaseService {
       return [];
     }
   }
-
-  ///
   Future<List<Recipe>> getRecipesByUser({
     required String userId,
     int limit = 50,
@@ -321,9 +310,6 @@ class RecipeDiscoveryService extends BaseService {
       return [];
     }
   }
-
-
-  ///
   Future<List<Recipe>> getTrendingRecipes({
     int limit = 20,
     Duration? timeWindow,
@@ -392,8 +378,6 @@ class RecipeDiscoveryService extends BaseService {
       return [];
     }
   }
-
-  ///
   Future<List<Recipe>> getRecentlySharedRecipes({
     int limit = 20,
     Duration? timeWindow,

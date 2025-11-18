@@ -5,13 +5,11 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:get_it/get_it.dart';
 
 /// Focused module for real-time editor tracking
-/// 
 /// This module handles ONLY active editor management:
 /// - Editor registration and presence tracking
 /// - Active editor queries and status
 /// - Editor presence heartbeat management
 /// - Collaborative editing indicators
-/// 
 /// ❌ DOES NOT CONTAIN: Session management, content operations, conflict resolution, event handling
 class RealtimeEditorTracker {
 

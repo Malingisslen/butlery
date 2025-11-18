@@ -11,7 +11,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 
 /// Shopping List Selection Dialog
-///
 /// Allows users to select an existing shopping list or create a new one
 /// for adding recipe ingredients. Provides a clean Swedish interface with
 /// proper validation and user feedback.

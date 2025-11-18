@@ -6,7 +6,6 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Dialog for selecting a new group owner when the current owner wants to leave.
-///
 /// Returns the selected UserProfile or null if cancelled.
 /// This dialog doesn't perform any actions - it just captures user selection.
 class OwnershipTransferDialog extends StatelessWidget {

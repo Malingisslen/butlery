@@ -7,14 +7,12 @@ import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 
 /// Recipe card widget for displaying recipe information with comprehensive functionality.
-///
 /// This widget provides a complete recipe card implementation with support for:
 /// - Recipe display with image, title, description, and metadata
 /// - Interactive callbacks for tap, long press, and favorite toggle
 /// - Context menu support for additional actions
 /// - Accessibility features with semantic labels
 /// - Customizable display options for different use cases
-///
 /// The widget follows the app's design system and provides consistent styling
 /// across all recipe card instances while maintaining flexibility for different
 /// contexts and user interactions.

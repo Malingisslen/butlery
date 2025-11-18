@@ -12,7 +12,6 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// Shopping list card widget
-///
 /// This module provides display components for shopping lists including
 /// cards, badges, and status indicators.
 class ShoppingListCard extends StatelessWidget {

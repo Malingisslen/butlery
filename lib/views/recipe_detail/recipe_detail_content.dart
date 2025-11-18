@@ -10,7 +10,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Recipe detail content widget
-///
 /// This widget displays the main recipe content including:
 /// - Recipe description
 /// - Tags display

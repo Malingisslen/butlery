@@ -18,12 +18,10 @@ import 'package:butlery/services/unified/modules/service_adapters/recipe_service
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 
 /// Comprehensive social recipe module providing coordinated social cooking and sharing functionality.
-///
 /// This module implements sophisticated social recipe management using facade pattern with specialized services
 /// for recipe creation, membership management, sharing operations, permission validation, and social analytics.
 /// It provides comprehensive social cooking features while maintaining clean architecture separation and
 /// backward compatibility for existing social recipe functionality.
-///
 /// **Refactored Architecture Benefits:**
 /// This facade represents a complete refactoring from monolithic 859-line class into focused services:
 /// - **5 Specialized Services**: Each handling 150-200 lines of focused functionality
@@ -31,7 +29,6 @@ import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coo
 /// - **Single Responsibility Compliance**: Each service handles one specific aspect of social recipes
 /// - **Enhanced Testability**: Focused services enable comprehensive unit testing
 /// - **Improved Maintainability**: Clean separation enables independent service evolution
-///
 /// **Specialized Services Coordination:**
 /// This facade coordinates between focused social recipe services:
 /// - **[SocialRecipeCreationService]**: Social recipe creation and initial setup operations
@@ -39,30 +36,24 @@ import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coo
 /// - **[SocialRecipeSharingService]**: Recipe sharing, unsharing, and visibility management operations
 /// - **[SocialRecipePermissionService]**: Comprehensive permission validation and access control logic
 /// - **[SocialRecipeQueryService]**: Social queries, analytics, and discovery operations
-///
 /// **Social Recipe Features:**
 /// - **Social Creation**: Recipe creation with immediate sharing and collaboration setup
 /// - **Member Management**: Comprehensive friend and group member invitation and management
 /// - **Sharing Control**: Granular sharing permissions with visibility and access management
 /// - **Permission System**: Sophisticated permission validation for social recipe access
 /// - **Social Discovery**: Recipe discovery through social networks and friend recommendations
-///
 /// **Usage Examples:**
 /// ```dart
 /// final socialModule = SocialRecipeModule(coordinator);
-/// 
 /// // Create social recipe with initial sharing
 /// final socialRecipe = await socialModule.createSocialRecipe(
 ///   title: 'Familjerecept Köttbullar',
 ///   initialMembers: ['friend1', 'friend2'],
 /// );
-/// 
 /// // Manage recipe membership
 /// await socialModule.inviteMemberToRecipe(recipeId, friendId);
-/// 
 /// // Control sharing permissions
 /// await socialModule.updateSharingPermissions(recipeId, permissions);
-/// 
 /// // Discover social recipes
 /// final recommendations = await socialModule.getSocialRecipeRecommendations();
 /// ```

@@ -533,26 +533,22 @@ class TabbedScaffold extends StatelessWidget {
 }
 
 /// Enhanced responsive scaffold helper using comprehensive breakpoint system
-///
 /// Provides three builder variants:
 /// 1. Simple mobile/desktop boolean check (backward compatible)
 /// 2. Full mobile/tablet/desktop builder functions
 /// 3. Device category enum for fine-grained control
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Simple mobile/desktop check (backward compatible)
 /// ResponsiveScaffoldBuilder(
 ///   builder: (context, isMobile) => isMobile ? MobileView() : DesktopView(),
 /// );
-///
 /// // Full mobile/tablet/desktop builders
 /// ResponsiveScaffoldBuilder.full(
 ///   mobile: (context) => MobileLayout(),
 ///   tablet: (context) => TabletLayout(),
 ///   desktop: (context) => DesktopLayout(),
 /// );
-///
 /// // Device category for fine-grained control
 /// ResponsiveScaffoldBuilder.category(
 ///   builder: (context, category) {
@@ -577,7 +573,6 @@ class ResponsiveScaffoldBuilder extends StatelessWidget {
   final Widget Function(BuildContext context, DeviceCategory category)? categoryBuilder;
 
   /// Simple mobile/desktop boolean check (backward compatible)
-  ///
   /// Uses 600px breakpoint: < 600px = mobile, >= 600px = desktop
   const ResponsiveScaffoldBuilder({
     super.key,
@@ -588,12 +583,10 @@ class ResponsiveScaffoldBuilder extends StatelessWidget {
         categoryBuilder = null;
 
   /// Full mobile/tablet/desktop builder functions
-  ///
   /// Breakpoints:
   /// - Mobile: < 600px
   /// - Tablet: 600-1024px
   /// - Desktop: >= 1024px
-  ///
   /// Graceful fallbacks: desktop → tablet → mobile
   const ResponsiveScaffoldBuilder.full({
     super.key,
@@ -604,7 +597,6 @@ class ResponsiveScaffoldBuilder extends StatelessWidget {
         categoryBuilder = null;
 
   /// Device category for fine-grained control
-  ///
   /// Provides all 6 device categories:
   /// - mobile, mobileLarge, tablet, tabletLarge, desktop, desktopLarge
   const ResponsiveScaffoldBuilder.category({

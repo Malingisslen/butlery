@@ -23,12 +23,10 @@ class AdaptiveNavigationItem {
 }
 
 /// Adaptive navigation that switches between BottomNavigationBar, NavigationRail, and Drawer
-///
 /// Automatically adapts based on screen width:
 /// - Mobile (< 600px): BottomNavigationBar
 /// - Tablet (600-1024px): NavigationRail (compact sidebar)
 /// - Desktop (>= 1024px): NavigationRail (extended) or Drawer
-///
 /// Usage:
 /// ```dart
 /// AdaptiveNavigationScaffold(
@@ -210,10 +208,8 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
 }
 
 /// Adaptive navigation for Butlery app with predefined navigation items
-///
 /// This is a convenience wrapper around AdaptiveNavigationScaffold
 /// with Butlery's standard navigation items.
-///
 /// Usage:
 /// ```dart
 /// ButleryAdaptiveNavigation(
@@ -297,9 +293,7 @@ extension AdaptiveNavigationItemExtension on BottomNavigationBarItem {
 }
 
 /// Responsive drawer for desktop navigation
-///
 /// Can be used as an alternative to NavigationRail on desktop.
-///
 /// Usage:
 /// ```dart
 /// Drawer(

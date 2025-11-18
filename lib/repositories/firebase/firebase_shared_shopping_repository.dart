@@ -1,35 +1,29 @@
 /// Firebase repository for shared shopping list management with consistent sharing patterns.
-///
 /// This repository implements unified sharing functionality following Single Responsibility Principle,
 /// matching the patterns established by other shared content repositories for consistent API design.
 /// It provides complete shared shopping list operations while maintaining clean separation from
 /// business logic and ensuring consistent behavior across all shared content types.
-///
 /// **Single Responsibility Focus:**
 /// This repository exclusively handles shared shopping list data operations:
 /// - **Shared Shopping List Storage**: Complete CRUD operations for shared shopping lists in Firestore
 /// - **Status Management**: Read/unread, joined/dismissed status tracking with atomic updates
 /// - **Permission Validation**: Comprehensive access control for shared shopping list operations
 /// - **Query Operations**: Efficient retrieval of shared lists with user-specific filtering
-///
 /// **What This Repository Does NOT Handle:**
 /// - UI concerns and presentation logic (handled by ViewModels and UI components)
 /// - Business logic and validation (handled by services and business layer)
 /// - Collaborative list creation (handled by shopping services)
 /// - User authentication (handled by auth services)
-///
 /// **Shared Shopping Repository Features:**
 /// - **Consistent API**: Unified operations matching SharedRecipe and SharedMenu patterns
 /// - **Status Tracking**: Read/unread, joined/dismissed status with efficient batch updates
 /// - **Permission Security**: Comprehensive access validation with audit logging
 /// - **Query Optimization**: Efficient Firestore queries with user-specific filtering
 /// - **Error Handling**: Robust exception handling with meaningful error messages
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Initialize repository
 /// final sharedShoppingRepo = FirebaseSharedShoppingRepository();
-///
 /// // Create shared shopping list
 /// final sharedList = SharedShoppingList.create(
 ///   sharedByUserId: currentUserId,
@@ -40,10 +34,8 @@
 ///   listItems: items,
 /// );
 /// await sharedShoppingRepo.createSharedShoppingList(sharedList);
-///
 /// // Get shared lists for user
 /// final sharedLists = await sharedShoppingRepo.getSharedShoppingListsForUser(userId);
-///
 /// // Update status
 /// await sharedShoppingRepo.markAsViewed(listId, userId);
 /// await sharedShoppingRepo.markAsJoined(listId, userId);
@@ -147,7 +139,6 @@ class FirebaseSharedShoppingRepository
   // ===== SHARED SHOPPING LIST OPERATIONS =====
 
   /// Create new shared shopping list with comprehensive validation
-  ///
   /// Note (Issue #014): recipientIds must be passed separately as sharedToUserIds
   /// is no longer stored in the model (tracked in Firestore subcollections instead).
   Future<String> createSharedShoppingList(
@@ -333,14 +324,11 @@ class FirebaseSharedShoppingRepository
   // ============================================================================
 
   /// Adds an item to the shopping list items subcollection.
-  ///
   /// **Issue #015**: Items stored in subcollection instead of array.
   /// Updates itemCount atomically via FieldValue.increment.
-  ///
   /// Validates:
   /// - User has access to the list (owner or member)
   /// - Item has valid data (id, name, amount, unit, category, bought)
-  ///
   /// Throws:
   /// - [PermissionDeniedException] if user doesn't have access
   /// - [RepositoryException] if operation fails
@@ -367,12 +355,9 @@ class FirebaseSharedShoppingRepository
   }
 
   /// Adds multiple items to the shopping list in a batch operation.
-  ///
   /// **Issue #015**: Items stored in subcollection. Uses Firestore batch writes
   /// for atomic multi-item addition with itemCount update.
-  ///
   /// Validates user access before performing batch operation.
-  ///
   /// Throws:
   /// - [PermissionDeniedException] if user doesn't have access
   /// - [RepositoryException] if batch operation fails
@@ -406,13 +391,9 @@ class FirebaseSharedShoppingRepository
   }
 
   /// Gets all items for a shopping list from the items subcollection.
-  ///
   /// **Issue #015**: Items loaded from subcollection, not from main document array.
-  ///
   /// Returns items ordered by addedAt timestamp (oldest first).
-  ///
   /// Validates user access before loading items.
-  ///
   /// Throws:
   /// - [PermissionDeniedException] if user doesn't have access
   /// - [RepositoryException] if query fails
@@ -439,13 +420,9 @@ class FirebaseSharedShoppingRepository
   }
 
   /// Gets a specific item by ID from the items subcollection.
-  ///
   /// **Issue #015**: Direct subcollection document access.
-  ///
   /// Returns null if item doesn't exist.
-  ///
   /// Validates user access before loading item.
-  ///
   /// Throws:
   /// - [PermissionDeniedException] if user doesn't have access
   /// - [RepositoryException] if query fails
@@ -470,11 +447,8 @@ class FirebaseSharedShoppingRepository
   }
 
   /// Updates an item in the shopping list items subcollection.
-  ///
   /// **Issue #015**: Updates subcollection document, not array element.
-  ///
   /// Validates user access before updating.
-  ///
   /// Throws:
   /// - [PermissionDeniedException] if user doesn't have access
   /// - [RepositoryException] if update fails
@@ -497,11 +471,8 @@ class FirebaseSharedShoppingRepository
   }
 
   /// Removes an item from the shopping list items subcollection.
-  ///
   /// **Issue #015**: Deletes subcollection document and decrements itemCount.
-  ///
   /// Validates user access before deleting.
-  ///
   /// Throws:
   /// - [PermissionDeniedException] if user doesn't have access
   /// - [RepositoryException] if deletion fails
@@ -527,14 +498,10 @@ class FirebaseSharedShoppingRepository
   }
 
   /// Toggles the bought status of an item in the shopping list.
-  ///
   /// **Issue #015**: Updates subcollection document with purchase metadata.
-  ///
   /// When bought=true, adds purchasedByUserId and purchasedAt timestamp.
   /// When bought=false, clears purchase metadata.
-  ///
   /// Validates user access before updating.
-  ///
   /// Throws:
   /// - [PermissionDeniedException] if user doesn't have access
   /// - [RepositoryException] if update fails
@@ -563,15 +530,10 @@ class FirebaseSharedShoppingRepository
   }
 
   /// Removes all completed items (bought=true) from the shopping list.
-  ///
   /// **Issue #015**: Batch deletes from subcollection and recalculates itemCount.
-  ///
   /// Uses Firestore batch writes for atomic multi-item deletion.
-  ///
   /// Validates user access before performing batch deletion.
-  ///
   /// Returns the number of items deleted.
-  ///
   /// Throws:
   /// - [PermissionDeniedException] if user doesn't have access
   /// - [RepositoryException] if batch operation fails
@@ -610,15 +572,10 @@ class FirebaseSharedShoppingRepository
   }
 
   /// Unchecks all items in the shopping list (sets bought=false).
-  ///
   /// **Issue #015**: Batch updates subcollection documents and clears purchase metadata.
-  ///
   /// Uses Firestore batch writes for atomic multi-item update.
-  ///
   /// Validates user access before performing batch update.
-  ///
   /// Returns the number of items unchecked.
-  ///
   /// Throws:
   /// - [PermissionDeniedException] if user doesn't have access
   /// - [RepositoryException] if batch operation fails
@@ -658,14 +615,10 @@ class FirebaseSharedShoppingRepository
   }
 
   /// Streams items in real-time for collaborative editing.
-  ///
   /// **Issue #015**: Real-time stream from items subcollection.
-  ///
   /// Returns a stream that emits the complete item list whenever any item changes.
   /// Items ordered by addedAt timestamp (oldest first).
-  ///
   /// Validates user access before creating stream.
-  ///
   /// Throws:
   /// - [PermissionDeniedException] if user doesn't have access
   Stream<List<UnifiedShoppingItem>> streamItems(String listId) {
@@ -691,18 +644,14 @@ class FirebaseSharedShoppingRepository
   // ============================================================================
 
   /// Updates the cached itemCount field in the main shopping list document.
-  ///
   /// **Issue #015**: Maintains itemCount consistency with items subcollection.
-  ///
   /// Supports two modes:
   /// 1. **Increment/Decrement**: Atomically adjusts count (add/remove single item)
   /// 2. **Recalculate**: Queries subcollection and sets exact count (bulk operations)
-  ///
   /// Parameters:
   /// - [listId]: Shopping list ID
   /// - [increment]: Amount to increment (positive) or decrement (negative). Default: 0
   /// - [recalculate]: If true, recalculates from subcollection. Default: false
-  ///
   /// Throws:
   /// - [RepositoryException] if update fails
   Future<void> _updateItemCount(
@@ -730,13 +679,10 @@ class FirebaseSharedShoppingRepository
   }
 
   /// Validates that the current user has access to the shopping list.
-  ///
   /// **Issue #015**: Access validation for items subcollection operations.
-  ///
   /// Checks if user is:
   /// - The list owner (sharedByUserId)
   /// - A list member (exists in members subcollection)
-  ///
   /// Throws:
   /// - [PermissionDeniedException] if user doesn't have access
   /// - [RepositoryException] if validation fails

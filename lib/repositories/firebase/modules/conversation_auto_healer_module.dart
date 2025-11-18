@@ -7,7 +7,6 @@ import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Auto-healer module for conversation.lastMessage synchronization.
-///
 /// Ensures conversation.lastMessage is always accurate through real-time monitoring.
 /// If atomic updates fail, this module automatically heals the conversation data.
 class ConversationAutoHealerModule {

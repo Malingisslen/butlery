@@ -9,7 +9,6 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 
 /// Social Recipe Creation Service
-/// 
 /// Handles ONLY the creation of collaborative recipes and related setup operations.
 /// This includes initial recipe creation, setting up permissions, and initial sharing.
 class SocialRecipeCreationService extends BaseService with UserContextMixin {

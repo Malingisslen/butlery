@@ -1,10 +1,7 @@
 /// ICA.se recipe parser with Swedish-specific enhancements
-///
 /// ICA (Swedish grocery chain) provides recipes with schema.org JSON-LD markup.
 /// This parser extracts standard recipe data and adds ICA-specific enhancements.
-///
 /// **Target Success Rate:** >95% (high quality)
-///
 /// **ICA-Specific Features:**
 /// - Difficulty level extraction
 /// - Cooking tips
@@ -16,7 +13,6 @@ import 'package:html/dom.dart';
 import 'package:butlery/services/extraction/site_parsers/recipe_site_parser.dart';
 
 /// Parser for ICA.se recipes
-///
 /// **Example URL:** https://www.ica.se/recept/kottbullar-724853/
 class IcaRecipeParser extends RecipeSiteParser {
   @override
@@ -93,7 +89,6 @@ class IcaRecipeParser extends RecipeSiteParser {
   }
 
   /// Extract ICA difficulty level
-  ///
   /// Common ICA difficulty indicators:
   /// - "Enkel" (Simple)
   /// - "Medel" (Medium)
@@ -410,7 +405,6 @@ class IcaRecipeParser extends RecipeSiteParser {
   }
 
   /// Convert Swedish time text to ISO 8601 duration
-  ///
   /// Examples:
   /// - "30 minuter" → "PT30M"
   /// - "1 timme 30 min" → "PT1H30M"

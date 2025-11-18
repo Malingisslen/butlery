@@ -8,11 +8,9 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// PermissionWidgets - Permission-based action buttons
-///
 /// Provides action buttons that adapt based on user permissions.
 class PermissionWidgets {
   /// Action buttons baserat på användares permissions för kollaborativ redigering
-  ///
   /// Visar olika knappar beroende på användarens rättigheter:
   /// - Ägare: "Spara ändringar" (standard save)
   /// - Collaborator: "Spara ändringar" + "Spara min kopia" (både save och fork)

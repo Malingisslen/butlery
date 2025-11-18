@@ -1,35 +1,29 @@
 /// Firebase repository for shared menu management with consistent invitation patterns.
-///
 /// This repository implements unified menu sharing functionality following Single Responsibility Principle,
 /// matching the patterns established by SharedShoppingList and SharedRecipe repositories for consistent API design.
 /// It provides complete shared menu operations while maintaining clean separation from
 /// business logic and ensuring consistent behavior across all shared content types.
-///
 /// **Single Responsibility Focus:**
 /// This repository exclusively handles shared menu data operations:
 /// - **Shared Menu Storage**: Complete CRUD operations for shared menus in Firestore
 /// - **Status Management**: Read/unread, imported/dismissed status tracking with atomic updates
 /// - **Permission Validation**: Comprehensive access control for shared menu operations
 /// - **Query Operations**: Efficient retrieval of shared menus with user-specific filtering
-///
 /// **What This Repository Does NOT Handle:**
 /// - UI concerns and presentation logic (handled by ViewModels and UI components)
 /// - Business logic and validation (handled by services and business layer)
 /// - Menu creation and editing (handled by menu services)
 /// - User authentication (handled by auth services)
-///
 /// **Shared Menu Repository Features:**
 /// - **Consistent API**: Unified operations matching SharedRecipe and SharedShoppingList patterns
 /// - **Status Tracking**: Read/unread, imported/dismissed status with efficient batch updates
 /// - **Permission Security**: Comprehensive access validation with audit logging
 /// - **Query Optimization**: Efficient Firestore queries with user-specific filtering
 /// - **Error Handling**: Robust exception handling with meaningful error messages
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Initialize repository
 /// final sharedMenuRepo = FirebaseSharedMenuRepository();
-///
 /// // Create shared menu
 /// final sharedMenu = SharedMenu.create(
 ///   sharedByUserId: currentUserId,
@@ -40,10 +34,8 @@
 ///   menuSnapshot: weeklyMenu,
 /// );
 /// await sharedMenuRepo.createSharedMenu(sharedMenu);
-///
 /// // Get shared menus for user
 /// final sharedMenus = await sharedMenuRepo.getSharedMenusForUser(userId);
-///
 /// // Update status
 /// await sharedMenuRepo.markAsViewed(menuId, userId);
 /// await sharedMenuRepo.markAsImported(menuId, userId);
@@ -146,7 +138,6 @@ class FirebaseSharedMenuRepository
   // ===== SHARED MENU OPERATIONS =====
 
   /// Create new shared menu with comprehensive validation
-  ///
   /// Note (Issue #014): recipientIds must be passed separately as sharedToUserIds
   /// is no longer stored in the model (tracked in Firestore subcollections instead).
   Future<String> createSharedMenu(

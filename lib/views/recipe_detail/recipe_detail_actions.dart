@@ -11,7 +11,6 @@ import 'package:butlery/views/recipe_detail/handlers/recipe_social_handler.dart'
 import 'package:butlery/views/recipe_detail/handlers/recipe_shopping_handler.dart';
 
 /// Recipe detail actions facade
-///
 /// **SRP Compliance:** This facade coordinates action handlers and manages view state.
 /// Delegates action logic to specialized handlers:
 /// - RecipeManagementHandler: CRUD operations

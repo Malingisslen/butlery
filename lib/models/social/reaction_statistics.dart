@@ -3,24 +3,20 @@
 import 'package:butlery/models/social/reaction_type.dart';
 
 /// Comprehensive reaction statistics model for content engagement analytics
-///
 /// This model provides detailed analytics for content reactions following the established
 /// patterns from RatingStatistics. It supports real-time updates, performance optimization
 /// through caching, and comprehensive engagement metrics for content creators and moderators.
-///
 /// **Analytics Capabilities:**
 /// - Individual reaction type counts for detailed breakdown
 /// - Total engagement metrics for overall performance
 /// - User-specific reaction tracking for personalized experiences
 /// - Top reactions identification for UI optimization
 /// - Engagement trends and velocity tracking
-///
 /// **Performance Features:**
 /// - Efficient count aggregation for UI display
 /// - Bulk statistics operations for performance
 /// - Cache-friendly structure for real-time updates
 /// - Minimal data transfer for mobile optimization
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Display reaction summary
@@ -29,7 +25,6 @@ import 'package:butlery/models/social/reaction_type.dart';
 ///   ReactionType.delicious: 8,
 ///   ReactionType.creative: 3,
 /// });
-/// 
 /// print('Total reactions: ${stats.totalCount}');
 /// print('Top reaction: ${stats.topReaction?.displayText}');
 /// ```

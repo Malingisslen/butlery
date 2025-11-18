@@ -1,17 +1,14 @@
 /// Comprehensive layout components facade providing unified interface for application-wide layout and navigation structures.
-///
 /// This facade implements a centralized layout system that provides consistent interface patterns for all
 /// layout-related functionality throughout the application. It delegates to specialized layout modules while
 /// maintaining unified API design and ensuring consistent user experience across different views and screens.
 /// The system supports responsive design, offline indicators, profile management, and menu persistence features.
-///
 /// **Architecture Integration:**
 /// - Implements Facade Pattern for unified access to specialized layout modules
 /// - Provides consistent navigation patterns and scaffold structures
 /// - Integrates with theme system for responsive design and visual consistency
 /// - Supports offline/online state management with visual indicators
 /// - Maintains backward compatibility for seamless migration from legacy layouts
-///
 /// **Layout Categories:**
 /// - **Main Layouts**: Primary app scaffolds with bottom navigation and app bars
 /// - **Simple Layouts**: Clean layouts for detail views and modal content
@@ -19,7 +16,6 @@
 /// - **Status Indicators**: Offline/online status with visual feedback and notifications
 /// - **Persistence Dialogs**: Menu saving/loading with social sharing capabilities
 /// - **Grid Layouts**: Specialized grid patterns for action buttons and content organization
-///
 /// **Key Features:**
 /// - Responsive design patterns adapting to various screen sizes and orientations
 /// - Consistent theming and visual design across all layout components
@@ -27,7 +23,6 @@
 /// - Profile menu integration with social features and backup functionality
 /// - Menu persistence system with collaborative sharing capabilities
 /// - Grid layout utilities for organized action button displays
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Main app layout with navigation
@@ -37,7 +32,6 @@
 ///   title: 'Mina Recept',
 ///   actions: [IconButton(icon: Icon(Icons.search))],
 /// );
-///
 /// // Profile menu with social features
 /// LayoutComponents.showProfileMenu(
 ///   context,
@@ -45,7 +39,6 @@
 ///   email: 'anna@example.com',
 ///   showSocialOptions: true,
 /// );
-///
 /// // Menu persistence dialog
 /// await LayoutComponents.showSaveMenuDialog(
 ///   context,
@@ -73,19 +66,16 @@ import 'package:butlery/widgets/common/responsive/responsive_grid.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 
 /// Comprehensive layout components facade implementing unified interface for application-wide layout and navigation structures.
-///
 /// This class serves as the central access point for all layout-related functionality throughout the application,
 /// providing consistent interface patterns and delegating to specialized layout modules for optimal performance
 /// and maintainability. It supports responsive design, offline state management, profile functionality, and
 /// menu persistence with collaborative features.
-///
 /// **Layout Architecture:**
 /// - **Modular Design**: Each layout type is handled by a focused specialized module
 /// - **Consistent API**: Unified method signatures and parameter patterns across all components
 /// - **Responsive Support**: Adaptive layouts for various screen sizes and device orientations
 /// - **Theme Integration**: Seamless integration with application theming and visual design system
 /// - **Performance Optimization**: Efficient rendering through focused layout-specific widgets
-///
 /// **Migration Support:**
 /// This facade maintains full backward compatibility while providing improved organization,
 /// performance, and consistency through the delegation pattern to specialized layout modules.
@@ -93,33 +83,27 @@ class LayoutComponents {
   // ===== MAIN LAYOUT =====
 
   /// Creates the primary application layout with bottom navigation, app bar, and comprehensive navigation functionality.
-  ///
   /// This method provides access to the main application scaffold that includes bottom navigation tabs,
   /// customizable app bar, floating action button support, and responsive design patterns. It maintains
   /// full compatibility with the original MainLayoutMenu while providing enhanced modularity and
   /// performance optimization through specialized layout delegation.
-  ///
   /// [body] The main content widget to display in the scaffold body
   /// [currentIndex] Current tab index for bottom navigation highlighting (0-based)
   /// [title] Optional title text for the app bar display
   /// [actions] Optional list of action widgets for the app bar (typically IconButtons)
   /// [floatingActionButton] Optional floating action button for primary actions
-  ///
   /// Returns configured main layout scaffold with navigation and app bar features
-  ///
   /// **Layout Features:**
   /// - Bottom navigation with tab switching and highlighting
   /// - Responsive app bar with title and action support
   /// - Floating action button integration with Material Design patterns
   /// - Automatic safe area handling for notched devices
   /// - Theme integration with consistent visual design
-  ///
   /// **Navigation Integration:**
   /// - Supports 4-tab bottom navigation (Recept, Meny, Inköp, Profil)
   /// - Automatic tab highlighting based on currentIndex
   /// - Smooth transitions between navigation states
   /// - Consistent navigation behavior across all main views
-  ///
   /// **Usage Example:**
   /// ```dart
   /// LayoutComponents.mainMenu(
@@ -155,33 +139,27 @@ class LayoutComponents {
   }
 
   /// Creates a simplified layout scaffold optimized for detail views and modal content without bottom navigation.
-  ///
   /// This method provides access to a clean, minimal scaffold structure designed for detail views,
   /// modal content, and secondary screens that don't require bottom navigation. It maintains focus
   /// on content while providing essential app bar functionality and responsive design patterns
   /// for optimal user experience across different screen sizes.
-  ///
   /// [body] The main content widget to display in the scaffold body
   /// [title] Optional title text for the app bar display
   /// [actions] Optional list of action widgets for the app bar
   /// [appBar] Optional custom app bar for advanced customization scenarios
-  ///
   /// Returns clean layout scaffold optimized for detail views and modal content
-  ///
   /// **Layout Features:**
   /// - Clean scaffold without bottom navigation for focused content display
   /// - Customizable app bar with title and action support
   /// - Automatic back button integration for navigation hierarchy
   /// - Responsive design with safe area handling
   /// - Theme integration with consistent visual styling
-  ///
   /// **Use Cases:**
   /// - Recipe detail views with focused content display
   /// - Settings and configuration screens
   /// - Import and export workflows
   /// - Modal content and dialog-style screens
   /// - Secondary views in navigation hierarchy
-  ///
   /// **Usage Example:**
   /// ```dart
   /// LayoutComponents.simpleLayout(
@@ -340,12 +318,10 @@ class LayoutComponents {
   // ===== RESPONSIVE LAYOUTS =====
 
   /// Adaptive navigation scaffold that switches between BottomNav (mobile), NavigationRail (tablet/desktop)
-  ///
   /// Automatically adapts navigation based on screen width:
   /// - Mobile (< 600px): BottomNavigationBar
   /// - Tablet (600-1024px): NavigationRail (compact)
   /// - Desktop (>= 1024px): NavigationRail (extended with labels)
-  ///
   /// **Usage Example:**
   /// ```dart
   /// LayoutComponents.adaptiveNavigation(
@@ -386,9 +362,7 @@ class LayoutComponents {
   }
 
   /// Convenience wrapper for Butlery's standard adaptive navigation
-  ///
   /// Uses predefined navigation items (Mina recept, Lägg till, Veckomeny, Inköpslista, Upptäck)
-  ///
   /// **Usage Example:**
   /// ```dart
   /// LayoutComponents.butleryAdaptiveNavigation(
@@ -414,7 +388,6 @@ class LayoutComponents {
   }
 
   /// Responsive builder that switches layouts based on screen size
-  ///
   /// **Usage Example:**
   /// ```dart
   /// LayoutComponents.responsiveBuilder(
@@ -436,13 +409,11 @@ class LayoutComponents {
   }
 
   /// Responsive grid with auto-adjusting column count
-  ///
   /// **Column counts:**
   /// - Mobile: 1 column
   /// - Tablet: 2 columns
   /// - Desktop: 3 columns
   /// - Large Desktop: 4 columns
-  ///
   /// **Usage Example:**
   /// ```dart
   /// LayoutComponents.responsiveGrid(
@@ -481,7 +452,6 @@ class LayoutComponents {
   }
 
   /// Responsive list/grid that switches between ListView (mobile) and GridView (tablet/desktop)
-  ///
   /// **Usage Example:**
   /// ```dart
   /// LayoutComponents.responsiveListGrid<Recipe>(
@@ -525,7 +495,6 @@ class LayoutComponents {
   static bool isDesktop(BuildContext context) => Breakpoints.isDesktop(context);
 
   /// Get responsive value based on screen size
-  ///
   /// **Usage Example:**
   /// ```dart
   /// final columns = LayoutComponents.valueFor(

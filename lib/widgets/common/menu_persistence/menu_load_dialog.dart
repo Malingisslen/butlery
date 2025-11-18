@@ -7,7 +7,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 /// Bottom sheet for loading a saved menu
-///
 /// This bottom sheet allows users to browse and load their saved menus,
 /// with options to load, mark as modified, or delete menus.
 class LoadMenuBottomSheet extends StatefulWidget {

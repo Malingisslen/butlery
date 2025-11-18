@@ -7,7 +7,6 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 
 /// Social Recipe Permission Service
-/// 
 /// Handles ONLY permission validation and checks for collaborative recipes.
 /// This includes checking edit rights, member management rights, and view permissions.
 class SocialRecipePermissionService extends BaseService {

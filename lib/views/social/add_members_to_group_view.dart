@@ -1,17 +1,14 @@
 /// View for adding new members to an existing social group.
-///
 /// This view provides a comprehensive interface for group administrators to add
 /// new members to their social groups. It displays available friends, allows
 /// multi-selection, and handles the invitation process with proper validation
 /// and error handling.
-///
 /// Key features:
 /// - Friend discovery and selection with search functionality
 /// - Multi-select interface with visual feedback
 /// - Real-time validation of selection limits and permissions
 /// - Optimistic UI updates with error recovery
 /// - Integration with the unified social system
-///
 /// The view follows MVVM architecture patterns, delegating business logic
 /// to AddMembersToGroupViewModel while focusing on user experience and
 /// responsive interface design.
@@ -33,7 +30,6 @@ import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 
 /// A view for adding new members to an existing social group.
-///
 /// Provides an interface for group administrators to discover and invite
 /// friends to join their social groups with comprehensive selection tools.
 class AddMembersToGroupView extends StatefulWidget {
@@ -41,7 +37,6 @@ class AddMembersToGroupView extends StatefulWidget {
   final String groupId;
 
   /// Creates an AddMembersToGroupView.
-  ///
   /// @param [groupId] The unique identifier of the target group
   const AddMembersToGroupView({
     super.key,

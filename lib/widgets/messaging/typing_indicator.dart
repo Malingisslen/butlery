@@ -6,7 +6,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Animated typing indicator widget for showing when users are typing
-/// 
 /// Displays a visual typing indicator with:
 /// - Animated dots to show activity
 /// - User names who are currently typing

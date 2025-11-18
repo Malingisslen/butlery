@@ -12,7 +12,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 /// SharedMenuCard - Card for displaying shared menus
-///
 /// Displays shared menu information with action buttons.
 class SharedMenuCard {
   static Widget build(

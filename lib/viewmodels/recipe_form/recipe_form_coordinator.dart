@@ -11,7 +11,6 @@ import 'package:butlery/viewmodels/recipe_form/recipe_collaborative_manager.dart
 import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
 
 /// Coordinates state synchronization between recipe form managers.
-///
 /// **Responsibilities:**
 /// - Set up and manage manager listeners
 /// - Coordinate notifications to prevent cascading loops
@@ -19,7 +18,6 @@ import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
 /// - Handle collaborative state updates
 /// - Sync image URLs between managers and state
 /// - Load initial permissions
-///
 /// **Dependencies:**
 /// - RecipeFormState: Form data management
 /// - RecipeImageManager: Image management
@@ -54,7 +52,6 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
   // ===== PUBLIC API =====
 
   /// Establishes comprehensive manager listener coordination for reactive state management.
-  ///
   /// Sets up listener connections to all focused managers ensuring automatic UI notification
   /// and state synchronization across form state, collaborative editing, image management,
   /// and permission systems for comprehensive reactive state coordination.
@@ -66,7 +63,6 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
   }
 
   /// Synchronizes form state to collaborative infrastructure for real-time updates.
-  ///
   /// Performs collaborative state synchronization when in collaborative mode,
   /// creating recipe from current state and updating Firebase for real-time
   /// collaborative editing and participant synchronization.
@@ -78,7 +74,6 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
   }
 
   /// Synchronizes image URLs between image manager and form state with collaborative coordination.
-  ///
   /// Updates form state with ONLY valid Firebase URLs from RecipeImageManager
   /// (filters out file paths to prevent invalid URLs from being persisted)
   /// and triggers collaborative synchronization for real-time image updates
@@ -97,9 +92,7 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
   }
 
   /// Loads initial permissions for recipe form initialization with comprehensive error handling.
-  ///
   /// [recipe] Recipe instance for permission validation and initialization
-  ///
   /// Performs asynchronous permission loading through RecipePermissionManager with
   /// comprehensive error handling and Swedish localized error messages
   /// for proper recipe form initialization and access control setup.
@@ -147,7 +140,6 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
   }
 
   /// Handles form state changes with automatic UI notification and reactive coordination.
-  ///
   /// Provides seamless state synchronization from RecipeFormState ensuring
   /// all form state changes are immediately reflected in UI components
   /// for consistent user experience and real-time form updates.
@@ -156,7 +148,6 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
   }
 
   /// Handles collaborative state changes with automatic UI synchronization and participant updates.
-  ///
   /// Provides seamless collaborative state synchronization ensuring
   /// all collaborative changes are immediately reflected in UI components
   /// for real-time collaborative editing and participant awareness.
@@ -165,7 +156,6 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
   }
 
   /// Handles image management changes with automatic UI notification and visual updates.
-  ///
   /// Provides seamless image state synchronization ensuring
   /// all image changes are immediately reflected in UI components
   /// for real-time image management and visual coordination.
@@ -174,7 +164,6 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
   }
 
   /// Handles permission changes with automatic UI synchronization and access control updates.
-  ///
   /// Provides seamless permission state synchronization ensuring
   /// all permission changes are immediately reflected in UI components
   /// for real-time access control and feature availability.

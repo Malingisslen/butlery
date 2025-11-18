@@ -8,20 +8,17 @@ import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 
 /// Social collaborative indicators and status components
-///
 /// This module handles ONLY collaborative status and indicator widgets:
 /// - Collaborative status badges and banners
 /// - Smart permissions banners
 /// - Collaborative app bar widgets
 /// - Participants lists and displays
 /// - Collaboration status indicators
-///
 /// ❌ DOES NOT CONTAIN: Avatars, group management, invitations, builders
 class SocialCollaborativeComponents {
   // ===== COLLABORATIVE INDICATORS =====
 
   /// Build collaborative status badge
-  ///
   /// Shows a simple badge indicating collaborative status
   static Widget collaborativeStatusBadge({
     String text = 'Delat',
@@ -38,7 +35,6 @@ class SocialCollaborativeComponents {
   }
 
   /// Build collaborative banner
-  ///
   /// Displays collaborative information with title and subtitle
   static Widget collaborativeBanner({
     required String title,
@@ -63,7 +59,6 @@ class SocialCollaborativeComponents {
   }
 
   /// Build smart permissions banner
-  ///
   /// Intelligent banner that adapts to recipe collaboration state
   static Widget smartPermissionsBanner({
     required BuildContext context,
@@ -76,7 +71,6 @@ class SocialCollaborativeComponents {
   }
 
   /// Build collaborative app bar widget
-  ///
   /// App bar component with collaborative features
   static Widget collaborativeAppBar({
     required BuildContext context,
@@ -99,7 +93,6 @@ class SocialCollaborativeComponents {
   }
 
   /// Build smart collaborative banner
-  ///
   /// Banner that automatically detects and displays collaboration state
   static Widget smartCollaborativeBanner({
     required BuildContext context,
@@ -115,7 +108,6 @@ class SocialCollaborativeComponents {
   }
 
   /// Build collaborative status indicator
-  ///
   /// Simple indicator showing current collaboration status
   static Widget collaborativeStatusIndicator({
     required String contentId,
@@ -154,7 +146,6 @@ class SocialCollaborativeComponents {
   }
 
   /// Build participants list
-  ///
   /// Displays list of collaboration participants
   static Widget participantsList({
     required String contentId,
@@ -187,7 +178,6 @@ class SocialCollaborativeComponents {
   // ===== COLLABORATIVE BANNER VARIANTS =====
 
   /// Build collaborative recipe banner
-  ///
   /// Specialized banner for collaborative recipes
   static Widget collaborativeRecipeBanner({
     required Recipe recipe,
@@ -208,7 +198,6 @@ class SocialCollaborativeComponents {
   }
 
   /// Build collaborative menu banner
-  ///
   /// Specialized banner for collaborative menus
   static Widget collaborativeMenuBanner({
     required String menuId,
@@ -232,7 +221,6 @@ class SocialCollaborativeComponents {
   // ===== COLLABORATION STATUS HELPERS =====
 
   /// Build collaboration active indicator
-  ///
   /// Shows when collaboration is currently active
   static Widget collaborationActiveIndicator({
     String text = 'Aktiv samarbete',
@@ -267,7 +255,6 @@ class SocialCollaborativeComponents {
   }
 
   /// Build collaboration inactive indicator
-  ///
   /// Shows when collaboration is not active
   static Widget collaborationInactiveIndicator({
     String text = 'Inte aktivt',
@@ -305,7 +292,6 @@ class SocialCollaborativeComponents {
   // ===== COLLABORATION METRICS =====
 
   /// Build collaboration metrics widget
-  ///
   /// Shows statistics about collaboration activity
   static Widget collaborationMetrics({
     required int memberCount,
@@ -411,7 +397,6 @@ class SocialCollaborativeComponents {
   // ===== COLLABORATION PERMISSION INDICATORS =====
 
   /// Build permission level indicator
-  ///
   /// Shows user's permission level in collaboration
   static Widget permissionLevelIndicator({
     required String permissionLevel, // 'owner', 'admin', 'editor', 'viewer'

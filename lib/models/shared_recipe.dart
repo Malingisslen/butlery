@@ -1,5 +1,4 @@
 /// Shared recipe model with unified base infrastructure, status tracking, and copy-on-write collaboration.
-///
 /// **Features:** Status mixins (view/import/dismiss), collaborative editing, sharing scopes, Firestore/JSON serialization.
 /// ```dart
 /// final sr = SharedRecipe.create(originalRecipeId: id, sharedByUserId: uid,
@@ -20,7 +19,6 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 
 /// Enumeration defining the scope of recipe sharing for distribution categorization.
-///
 /// Share scopes determine the distribution pattern and recipient management:
 /// - [individual] - Recipe shared with a specific person for direct personal sharing
 /// - [multiple] - Recipe shared with multiple specific recipients for group distribution
@@ -63,7 +61,6 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
   final String? _originalOwnerStaticCopyId;
 
   /// Count of users actively collaborating on this content (Issue #014).
-  ///
   /// Note: Actual collaborator list now stored in Firestore subcollection to eliminate
   /// 100-element array limit. Use repository.getCollaborators(recipeId) for full list.
   final int _activeCollaboratorCount;
@@ -95,7 +92,6 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
         super(sharedAt: sharedAt ?? DateTime.now());
 
   /// Factory constructor for creating new shared recipes with auto-generated ID and intelligent defaults.
-  ///
   /// Note (Issue #014): sharedToUserIds removed from model. Repository layer handles adding
   /// members to Firestore subcollection after creation.
   factory SharedRecipe.create({
@@ -157,7 +153,6 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
   }
 
   /// Creates a copy of this shared recipe with updated values.
-  ///
   /// Note (Issue #014): Array parameters removed. Status now tracked in Firestore subcollections.
   SharedRecipe copyWith({
     int? viewCount,
@@ -270,7 +265,6 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
   }
 
   /// Determines the appropriate edit mode for the specified user.
-  ///
   /// Note (Issue #014): Simplified version. For accurate membership/collaborator checks,
   /// use repository methods: isMember(recipeId, userId), isCollaborator(recipeId, userId).
   EditMode getEditModeFor(String userId) {
@@ -435,10 +429,8 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
   /// Standard object methods for debugging, comparison, and identity management.
 
   /// Returns a string representation of the shared recipe for debugging and logging.
-  ///
   /// Provides essential recipe sharing information in a readable format for development
   /// and debugging purposes with recipe title and owner name.
-  ///
   /// Note (Issue #014): Recipient count removed (array no longer exists).
   @override
   String toString() {
@@ -446,7 +438,6 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
   }
 
   /// Compares two shared recipes for equality based on unique identifier.
-  ///
   /// Uses recipe sharing ID for equality comparison ensuring consistent object
   /// identity across different instances of the same shared recipe data.
   @override
@@ -456,7 +447,6 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
   }
 
   /// Generates hash code based on unique shared recipe identifier.
-  ///
   /// Provides consistent hash code generation for use in collections and
   /// data structures requiring hash-based operations and recipe identification.
   @override

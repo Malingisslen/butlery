@@ -16,13 +16,11 @@ import 'package:butlery/services/unified/operations/modules/comment_notification
 import 'package:butlery/services/unified/operations/modules/comment_utilities.dart';
 
 /// Clean facade for recipe comment system using focused modules
-///
 /// This facade provides a unified API that delegates to focused modules:
 /// - CommentCrudOperations: Comment CRUD operations and streaming
 /// - CommentLikesSystem: Like/unlike functionality
 /// - CommentNotifications: Comment-related notifications
 /// - CommentUtilities: Statistics, permissions, utilities
-///
 /// ❌ DOES NOT CONTAIN: Complex business logic, direct implementation details
 class RecipeCommentsManager {
   final UnifiedRecipeService _parent;

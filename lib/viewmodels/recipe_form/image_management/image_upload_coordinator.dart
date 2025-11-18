@@ -8,18 +8,15 @@ import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Coordinates bulk image upload operations with thread-safe cancellation support.
-///
 /// **Responsibilities:**
 /// - Bulk upload coordination with progress tracking
 /// - Cancellable upload operations with proper resource management
 /// - Retry coordination for failed uploads
 /// - Upload queue management and status tracking
-///
 /// **Thread Safety:**
 /// - Safe disposal handling for long-running operations
 /// - Cancellation support for in-flight uploads
 /// - Proper cleanup of pending operations
-///
 /// **Dependencies:**
 /// - StorageService: Image upload backend
 /// - ImageUploadStatus: State tracking models
@@ -47,13 +44,10 @@ class ImageUploadCoordinator {
   // ===== BULK UPLOAD COORDINATION =====
 
   /// CRITICAL FIX: Thread-safe bulk upload with cancellation support and progress tracking.
-  ///
   /// Uploads all pending images in parallel with coordinated progress reporting,
   /// proper cancellation handling, and disposal safety for long-running operations.
-  ///
   /// Returns list of successfully uploaded Firebase Storage URLs.
   /// Empty list returned if uploads canceled, disposed, or no pending images.
-  ///
   /// **Upload Process:**
   /// - Create cancellable operation group for coordinated cancellation
   /// - Start parallel uploads with individual progress tracking
@@ -126,12 +120,9 @@ class ImageUploadCoordinator {
   }
 
   /// CRITICAL FIX: Upload single image with proper disposal tracking and state management.
-  ///
   /// Uploads single image to Firebase Storage with comprehensive state tracking,
   /// cancellation checks, and disposal safety throughout the upload lifecycle.
-  ///
   /// Returns Firebase Storage URL if successful, null if failed or canceled.
-  ///
   /// **Upload Lifecycle:**
   /// - Pre-upload cancellation check
   /// - State update to uploading with listener notification
@@ -219,7 +210,6 @@ class ImageUploadCoordinator {
   // ===== BULK UPLOAD MANAGEMENT =====
 
   /// Retry all failed uploads that can be retried with bulk coordination.
-  ///
   /// Iterates through all failed uploads with retry capability and attempts
   /// re-upload with proper error isolation to prevent cascading failures.
   Future<void> retryAllFailedUploads({
@@ -245,7 +235,6 @@ class ImageUploadCoordinator {
   }
 
   /// Cancel all active uploads with coordinated cleanup.
-  ///
   /// Stops all in-progress uploads and removes them from tracking state
   /// with proper notification of cancellation to UI layer.
   void cancelAllActiveUploads({
@@ -266,7 +255,6 @@ class ImageUploadCoordinator {
   }
 
   /// Clear all failed uploads from state with notification coordination.
-  ///
   /// Removes all failed upload entries from state and triggers completion
   /// event checks to update UI with cleaned state.
   void clearAllFailedUploads({
@@ -290,7 +278,6 @@ class ImageUploadCoordinator {
   }
 
   /// Get upload management summary for UI display with comprehensive statistics.
-  ///
   /// Returns map containing:
   /// - failed: Count of failed uploads
   /// - active: Count of active uploads
@@ -327,7 +314,6 @@ class ImageUploadCoordinator {
   // ===== DISPOSAL =====
 
   /// Dispose coordinator and cancel all active upload operations.
-  ///
   /// Cancels all in-flight uploads and clears tracking state for proper cleanup.
   void dispose() {
     // Cancel all active operations
@@ -341,7 +327,6 @@ class ImageUploadCoordinator {
 // ===== THREAD-SAFE UPLOAD OPERATION CLASSES =====
 
 /// CRITICAL FIX: Cancellable upload operation with proper resource management.
-///
 /// Wraps individual upload operations with cancellation support, completion tracking,
 /// and proper cleanup for thread-safe bulk upload coordination.
 class _CancellableUploadOperation {
@@ -362,7 +347,6 @@ class _CancellableUploadOperation {
   });
 
   /// Start the upload operation with cancellation support.
-  ///
   /// Returns uploaded URL if successful, null if cancelled or failed.
   Future<String?> start() async {
     if (_isCancelled) {
@@ -393,7 +377,6 @@ class _CancellableUploadOperation {
   }
 
   /// Cancel the upload operation with safe cleanup.
-  ///
   /// Marks operation as cancelled and completes completer if still pending.
   void cancel() {
     if (_isCompleted) return;
@@ -409,7 +392,6 @@ class _CancellableUploadOperation {
 }
 
 /// CRITICAL FIX: Upload operation group for coordinated cancellation.
-///
 /// Manages multiple upload operations as a single unit with coordinated
 /// cancellation and disposal for proper bulk upload resource management.
 class _UploadOperationGroup {

@@ -1,17 +1,14 @@
 /// Comprehensive permission validation mixin providing robust security enforcement for Firebase repository operations.
-///
 /// This mixin implements a sophisticated permission validation system that ensures proper authorization
 /// and access control throughout the Butlery cooking application. It provides comprehensive validation
 /// methods for ownership verification, read/write permissions, user operations, and data integrity
 /// checks that protect user data and maintain security compliance in cooking and social collaboration scenarios.
-///
 /// **Architecture Integration:**
 /// - Integrates seamlessly with Firebase repositories to provide consistent security enforcement
 /// - Implements defense-in-depth security patterns with multiple validation layers
 /// - Provides centralized permission logic reducing code duplication across repositories
 /// - Supports both individual and collaborative cooking scenarios with appropriate access controls
 /// - Enables comprehensive audit logging for security monitoring and compliance tracking
-///
 /// **Security Features:**
 /// - **Ownership Validation**: Ensures users only access their own cooking data (recipes, shopping lists)
 /// - **Read Access Control**: Manages shared content access for collaborative cooking scenarios
@@ -19,7 +16,6 @@
 /// - **Field Validation**: Validates data integrity and prevents malicious data injection
 /// - **Resource Existence Checks**: Ensures operations target valid, accessible resources
 /// - **Audit Logging**: Comprehensive security event logging for monitoring and compliance
-///
 /// **Permission Models:**
 /// The mixin supports multiple permission models essential for cooking applications:
 /// - **Personal Data**: User-owned recipes, shopping lists, and preferences
@@ -27,14 +23,12 @@
 /// - **Collaborative Editing**: Real-time collaboration on recipes and shopping lists
 /// - **Public Resources**: Community recipes and shared cooking content
 /// - **Group Management**: Family or friend group access controls
-///
 /// **Validation Categories:**
 /// - **Ownership Verification**: Confirms users own the resources they're accessing
 /// - **Shared Access Rights**: Validates permissions for shared cooking content
 /// - **Collaborative Permissions**: Manages multi-user editing and modification rights
 /// - **Data Integrity**: Ensures all data meets security and validation requirements
 /// - **Resource Security**: Validates resource existence and accessibility
-///
 /// **Usage Examples:**
 /// ```dart
 /// class RecipeRepository with PermissionValidationMixin {
@@ -45,13 +39,11 @@
 ///       resourceType: 'recipe',
 ///       resourceId: recipe.id,
 ///     );
-///     
 ///     validateRequiredFields(
 ///       data: recipe.toMap(),
 ///       requiredFields: ['title', 'ingredients'],
 ///       resourceType: 'recipe',
 ///     );
-///     
 ///     // Proceed with update
 ///     await _updateRecipeInFirestore(recipe);
 ///   }
@@ -64,19 +56,16 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 
 /// Comprehensive permission validation mixin implementing robust security enforcement for Firebase repository operations in cooking-focused applications.
-///
 /// This mixin serves as the central security enforcement layer for all repository operations throughout
 /// the Butlery application, providing comprehensive permission validation, access control, and data
 /// integrity checks. It implements defense-in-depth security patterns ensuring user data protection,
 /// collaborative feature security, and compliance with privacy requirements for Swedish cooking applications.
-///
 /// **Security Architecture:**
 /// - **Multi-Layer Validation**: Comprehensive permission checks at multiple application layers
 /// - **Centralized Enforcement**: Consistent security rules across all repository implementations
 /// - **Audit Integration**: Complete security event logging for monitoring and compliance
 /// - **Data Integrity**: Robust validation preventing malicious data injection and corruption
 /// - **Privacy Protection**: Strong user data isolation and access control mechanisms
-///
 /// **Design Principles:**
 /// The mixin reflects the trust and safety of cooking with comprehensive security validation,
 /// robust access controls, and transparent audit logging that protects user privacy while enabling
@@ -84,28 +73,22 @@ import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 mixin PermissionValidationMixin {
 
   /// Validates that the current user owns the specified resource with comprehensive security checks.
-  ///
   /// Performs thorough ownership verification ensuring that users can only access and modify
   /// resources they own. This is fundamental for protecting personal cooking data including
   /// recipes, shopping lists, meal plans, and other user-specific content in the cooking application.
-  ///
   /// [currentUserId] The ID of the user attempting the operation (null indicates unauthenticated)
   /// [resourceOwnerId] The ID of the user who owns the resource being accessed
   /// [resourceType] The type of resource being validated (e.g., 'recipe', 'shopping_list')
   /// [resourceId] Optional resource identifier for detailed audit logging
-  ///
   /// Throws [PermissionDeniedException] if the user is not authenticated or doesn't own the resource
-  ///
   /// **Security Enforcement:**
   /// - Validates user authentication before resource access
   /// - Confirms ownership match between current user and resource owner
   /// - Logs security violations for audit and monitoring purposes
   /// - Provides clear error messaging for debugging and user feedback
-  ///
   /// **Audit Logging:**
   /// All ownership validation attempts are logged with appropriate security event details
   /// for monitoring, compliance, and security incident investigation.
-  ///
   /// Example:
   /// ```dart
   /// await validateOwnership(
@@ -144,31 +127,25 @@ mixin PermissionValidationMixin {
   }
 
   /// Validates comprehensive read access permissions for shared cooking resources.
-  ///
   /// Evaluates whether the current user has appropriate read permissions for a resource,
   /// supporting multiple access scenarios including ownership, explicit sharing, and public
   /// access. This enables flexible content sharing for collaborative cooking while maintaining
   /// proper security boundaries and user privacy protection.
-  ///
   /// [currentUserId] The ID of the user requesting read access (null for unauthenticated)
   /// [resourceOwnerId] The ID of the user who owns the resource
   /// [sharedWithUserIds] Optional list of user IDs with whom the resource is explicitly shared
   /// [isPublic] Whether the resource is publicly accessible to all users
-  ///
   /// Returns true if the user has read access, false otherwise
-  ///
   /// **Access Hierarchy:**
   /// 1. **Owner Access**: Resource owners always have full read access
   /// 2. **Public Access**: Public resources are readable by all authenticated users
   /// 3. **Explicit Sharing**: Users in the shared list have read access
   /// 4. **Default Denial**: All other access attempts are denied
-  ///
   /// **Sharing Scenarios:**
   /// - **Family Recipes**: Shared between family members for collaborative cooking
   /// - **Friend Sharing**: Recipes shared with specific friends
   /// - **Community Content**: Public recipes available to all users
   /// - **Group Collaboration**: Shopping lists shared with cooking groups
-  ///
   /// Example:
   /// ```dart
   /// final canRead = await hasReadAccess(
@@ -212,34 +189,27 @@ mixin PermissionValidationMixin {
   }
 
   /// Validates comprehensive write permissions for collaborative cooking resource modification.
-  ///
   /// Enforces strict write access controls ensuring only authorized users can modify cooking
   /// resources. This supports collaborative cooking scenarios while maintaining data integrity
   /// and preventing unauthorized modifications to recipes, shopping lists, and other shared content.
-  ///
   /// [currentUserId] The ID of the user attempting to modify the resource
   /// [resourceOwnerId] The ID of the user who owns the resource
   /// [resourceType] The type of resource being modified (e.g., 'recipe', 'shopping_list')
   /// [resourceId] Optional resource identifier for detailed audit logging
   /// [collaborators] Optional list of user IDs with collaborative write permissions
-  ///
   /// Throws [PermissionDeniedException] if the user lacks write permissions
-  ///
   /// **Write Permission Hierarchy:**
   /// 1. **Owner Rights**: Resource owners have full write permissions
   /// 2. **Collaborator Access**: Users in the collaborators list can modify content
   /// 3. **Default Denial**: All other write attempts are blocked
-  ///
   /// **Collaborative Scenarios:**
   /// - **Recipe Co-creation**: Multiple users editing recipes together
   /// - **Shared Shopping Lists**: Family members adding items to shared lists
   /// - **Menu Planning**: Couples planning meals collaboratively
   /// - **Group Cooking**: Friends preparing meals together with shared resources
-  ///
   /// **Security Logging:**
   /// All write permission validation attempts are logged with comprehensive details
   /// for security monitoring and unauthorized access detection.
-  ///
   /// Example:
   /// ```dart
   /// await validateWritePermission(
@@ -403,14 +373,11 @@ mixin PermissionValidationMixin {
   }
 
   /// Logs permission check for audit trail with optional persistent storage.
-  ///
   /// This method provides dual-layer audit logging:
   /// 1. **Console Logging**: Always logs to AppLogger for development visibility
   /// 2. **Persistent Logging**: Optionally logs to Firestore for GDPR compliance (Article 30)
-  ///
   /// The persistent logging is fire-and-forget - failures do not block operations.
   /// This ensures audit logging issues never break application functionality.
-  ///
   /// [userId] The ID of the user performing the operation
   /// [resource] The resource being accessed (format: "resourceType/resourceId" or "resourceType")
   /// [operation] The operation being performed (read, write, update, delete, create)

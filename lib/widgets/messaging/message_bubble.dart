@@ -13,7 +13,6 @@ import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/widgets/messaging/fullscreen_image_viewer.dart';
 
 /// Message bubble component for displaying individual messages in chat
-///
 /// Provides different styling for sent vs received messages with:
 /// - Message content with proper formatting
 /// - Message status indicators (sent, delivered, read)

@@ -1,9 +1,7 @@
 /// E2E Mock Main Entry Point - Skips Firebase Initialization
-/// 
 /// This main entry point is designed for E2E tests that focus on UI/UX flows
 /// without Firebase dependencies. It provides the fastest E2E test execution
 /// by completely bypassing Firebase initialization and using mock services.
-/// 
 /// ULTRATHINK ANALYSIS:
 /// - Production main.dart initializes Firebase with production config
 /// - E2E tests need app functionality without Firebase platform dependencies
@@ -36,16 +34,13 @@ import 'package:butlery/core/di/modules/ui_module.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// E2E Mock Application Entry Point
-/// 
 /// This entry point provides complete Butlery app functionality for E2E testing
 /// without Firebase dependencies. Perfect for testing UI flows, navigation,
 /// form validation, and user interactions with maximum speed.
-/// 
 /// USAGE:
 /// ```dart
 /// // In E2E tests:
 /// import 'package:butlery/main_e2e_mock.dart' as mock_app;
-/// 
 /// testWidgets('UI flow test', (tester) async {
 ///   mock_app.main();
 ///   await tester.pumpAndSettle();
@@ -90,7 +85,6 @@ Future<void> main() async {
 }
 
 /// Initialize the modular system for E2E mock testing
-/// 
 /// This creates the same modular system as production but configured for
 /// E2E mock testing with no Firebase dependencies.
 Future<void> _initializeE2EMockSystem() async {

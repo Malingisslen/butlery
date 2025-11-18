@@ -8,7 +8,6 @@ import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 
 /// Module handling resource parsing and fetching for realtime sync.
-///
 /// Provides type-safe resource parsing, fetching, and DocumentReference helpers.
 class ResourceParserModule {
   final FirestoreRepository firestoreRepository;

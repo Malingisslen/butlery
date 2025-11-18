@@ -1,30 +1,25 @@
 /// Comprehensive friend request data model providing complete friend request lifecycle management.
-///
 /// This model implements sophisticated friend request management following Single Responsibility Principle,
 /// handling all aspects of friend request operations including status tracking, lifecycle management,
 /// expiration handling, and social interaction features. It provides comprehensive friend request
 /// functionality while maintaining clean separation from friend management and user profile concerns.
-///
 /// **Single Responsibility Focus:**
 /// This model exclusively handles friend request data and operations:
 /// - **Request Lifecycle**: Complete friend request workflow with pending, accepted, rejected, and cancelled states
 /// - **Status Management**: Comprehensive status tracking with timestamps and automated expiration detection
 /// - **Social Messaging**: Optional message support for personalized friend requests with custom communication
 /// - **Time Tracking**: Complete temporal tracking with sent time, response time, and expiration calculations
-///
 /// **What This Model Does NOT Handle:**
 /// - Friend relationship management (handled by friend operations and services)
 /// - User profile and identity management (handled by user profile models)
 /// - UI concerns and presentation logic (handled by ViewModels and UI components)
 /// - Authentication and permission validation (handled by permission services)
-///
 /// **Friend Request Features:**
 /// - **Complete Lifecycle Management**: Full request workflow from creation through resolution with status tracking
 /// - **Automated Expiration**: Smart expiration detection with configurable timeout periods for request cleanup
 /// - **Personalized Messaging**: Optional message support for custom friend request communication and context
 /// - **Temporal Analytics**: Comprehensive time tracking with user-friendly time display and duration calculations
 /// - **Status Operations**: Convenient status transition methods with automatic timestamp management
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Create new friend request
@@ -33,12 +28,10 @@
 ///   toUserId: targetUserId,
 ///   message: 'Hej! Vi träffades på matlagningskursen igår.',
 /// );
-/// 
 /// // Handle request responses
 /// final acceptedRequest = request.accept();
 /// final rejectedRequest = request.reject();
 /// final cancelledRequest = request.cancel();
-/// 
 /// // Check request status and timing
 /// final isPending = request.isPending;
 /// final isExpired = request.isExpired;
@@ -54,7 +47,6 @@ import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 
 /// Enumeration defining the different states of a friend request throughout its lifecycle.
-///
 /// Friend request statuses determine the current state and available actions:
 /// - [pending] - Request sent but not yet responded to by recipient
 /// - [accepted] - Request approved by recipient, friendship established
@@ -64,7 +56,6 @@ import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 enum FriendRequestStatus { pending, accepted, rejected, cancelled, expired }
 
 /// Comprehensive friend request data model with lifecycle management and social messaging capabilities.
-///
 /// Represents a complete friend request with all associated metadata including status tracking,
 /// temporal information, and optional messaging features.
 class FriendRequest with JsonSerializableMixin {

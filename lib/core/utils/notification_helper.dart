@@ -5,13 +5,11 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 
 /// Notification helper utilities for safe notification sending
-///
 /// This helper provides safe notification sending patterns with:
 /// - Null-safe notification service handling
 /// - Automatic error catching and logging
 /// - Non-blocking failures (notifications never throw)
 /// - Consistent logging patterns
-///
 /// **Usage:**
 /// ```dart
 /// await NotificationHelper.sendSafely(
@@ -22,20 +20,17 @@ import 'package:butlery/services/notifications/notification_types.dart';
 /// ```
 class NotificationHelper {
   /// Safely send a notification with automatic null checking and error handling
-  ///
   /// This method encapsulates the common pattern of:
   /// 1. Check if notification service exists
   /// 2. Try to send notification
   /// 3. Log success/failure
   /// 4. Never rethrow errors (notifications are non-critical)
-  ///
   /// **Parameters:**
   /// - [notificationService]: The notification service instance (nullable)
   /// - [operationName]: Human-readable operation description for logging
   /// - [send]: Async callback that sends the notification
   /// - [successMessage]: Optional success log message (auto-generated if not provided)
   /// - [logWarningOnNull]: If true, logs warning when service is null (default: false)
-  ///
   /// **Returns:** true if notification sent successfully, false otherwise
   static Future<bool> sendSafely({
     required NotificationService? notificationService,
@@ -71,9 +66,7 @@ class NotificationHelper {
   }
 
   /// Safely send immediate notification with standard parameters
-  ///
   /// Convenience wrapper for common immediate notification pattern.
-  ///
   /// **Example:**
   /// ```dart
   /// await NotificationHelper.sendImmediateSafely(
@@ -110,9 +103,7 @@ class NotificationHelper {
   }
 
   /// Safely send batchable notification with standard parameters
-  ///
   /// Convenience wrapper for common batchable notification pattern.
-  ///
   /// **Example:**
   /// ```dart
   /// await NotificationHelper.sendBatchableSafely(
@@ -146,9 +137,7 @@ class NotificationHelper {
   }
 
   /// Safely send silent notification with standard parameters
-  ///
   /// Convenience wrapper for silent notification pattern (background sync, data updates).
-  ///
   /// **Example:**
   /// ```dart
   /// await NotificationHelper.sendSilentSafely(

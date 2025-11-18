@@ -1,11 +1,8 @@
 /// Recept.se recipe parser with aggregation-specific enhancements
-///
 /// Recept.se is Sweden's leading recipe aggregation platform, featuring recipes from
 /// professional chefs, food bloggers, and home cooks. This parser handles the site's
 /// specific data structure and enhancements.
-///
 /// **Target Success Rate:** >90% (high quality, standardized format)
-///
 /// **Recept-Specific Features:**
 /// - Recipe source/origin tracking
 /// - Detailed categorization (meal type, cuisine, occasion)
@@ -19,7 +16,6 @@ import 'package:html/dom.dart';
 import 'package:butlery/services/extraction/site_parsers/recipe_site_parser.dart';
 
 /// Parser for Recept.se recipes
-///
 /// **Example URL:** https://www.recept.se/recept/kottbullar/
 class ReceptRecipeParser extends RecipeSiteParser {
   @override
@@ -320,7 +316,6 @@ class ReceptRecipeParser extends RecipeSiteParser {
   }
 
   /// Convert Swedish time text to ISO 8601 duration
-  ///
   /// Examples:
   /// - "30 minuter" → "PT30M"
   /// - "1 timme 30 min" → "PT1H30M"

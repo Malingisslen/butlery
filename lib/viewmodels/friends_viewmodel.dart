@@ -149,13 +149,11 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
   // ===== GROUP CREATION STATE ACCESSORS =====
 
   /// Group creation operation state for UI progress indication during group formation.
-  /// 
   /// Indicates active group creation for loading indicators and interaction
   /// control during group creation operations.
   bool get isCreatingGroup => _isCreatingGroup;
   
   /// Group creation error message for user feedback and creation error recovery.
-  /// 
   /// Provides group creation specific error messages for comprehensive error
   /// handling and user guidance during group formation.
   String? get groupCreationError => _groupCreationError;

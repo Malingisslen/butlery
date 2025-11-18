@@ -6,19 +6,16 @@ import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Focused module for invitation target display widgets
-/// 
 /// This module handles ONLY display widgets for invitation targets:
 /// - Target cards, chips, tiles, and badges
 /// - Display layouts and formatting
 /// - Visual presentation of target information
-/// 
 /// ❌ DOES NOT CONTAIN: Selection logic, states, actions, filtering
 class InvitationDisplays {
 
   // ===== BASIC DISPLAYS =====
 
   /// Build invitation target display
-  /// 
   /// Main display widget for invitation targets
   static Widget invitationTargetDisplay({
     required InvitationTarget target,
@@ -38,7 +35,6 @@ class InvitationDisplays {
   }
 
   /// Build target card
-  /// 
   /// Card layout for invitation targets
   static Widget targetCard({
     required InvitationTarget target,
@@ -58,7 +54,6 @@ class InvitationDisplays {
   }
 
   /// Build target chip
-  /// 
   /// Chip layout for invitation targets
   static Widget targetChip({
     required InvitationTarget target,
@@ -76,7 +71,6 @@ class InvitationDisplays {
   }
 
   /// Build target list tile
-  /// 
   /// List tile layout for invitation targets
   static Widget targetListTile({
     required InvitationTarget target,
@@ -95,7 +89,6 @@ class InvitationDisplays {
   }
 
   /// Build target badge
-  /// 
   /// Badge display for invitation targets
   static Widget targetBadge({
     required InvitationTarget target,

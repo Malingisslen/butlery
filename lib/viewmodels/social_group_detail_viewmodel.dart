@@ -1,5 +1,4 @@
 /// Social group detail ViewModel providing business logic for group management and member coordination.
-///
 /// This ViewModel handles all business logic for social groups (FriendCategory), including:
 /// - Group data loading and refresh
 /// - Event subscription management (GroupEventBus)
@@ -7,16 +6,13 @@
 /// - Ownership transfer coordination
 /// - Permission checks
 /// - Content sharing coordination
-///
 /// **Note**: This is separate from `GroupDetailViewModel` which handles messaging group conversations.
 /// This ViewModel is specifically for social groups (FriendCategory instances).
-///
 /// **Architecture**:
 /// - Uses AsyncOperationMixin for loading states
 /// - Uses ErrorHandlingMixin for error management
 /// - Extends ChangeNotifier for reactive updates
 /// - Constructor injection for testability
-///
 /// **Usage**:
 /// ```dart
 /// final viewModel = SocialGroupDetailViewModel(
@@ -44,7 +40,6 @@ import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Information about ownership succession when owner leaves group.
-///
 /// Used to communicate leave group requirements to the UI.
 class LeaveGroupDecision {
   final bool requiresOwnershipTransfer;
@@ -59,7 +54,6 @@ class LeaveGroupDecision {
 }
 
 /// ViewModel for social group detail view business logic.
-///
 /// Manages state, business logic, and service coordination for social group (FriendCategory) details.
 /// Separates concerns from UI presentation in GroupDetailView.
 class SocialGroupDetailViewModel extends ChangeNotifier
@@ -239,7 +233,6 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   // ===== LEAVE GROUP LOGIC =====
 
   /// Check if leaving group requires special handling (ownership transfer).
-  ///
   /// Returns information about what's needed to leave the group.
   LeaveGroupDecision checkLeaveGroupRequirements() {
     if (_group == null) {
@@ -284,7 +277,6 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   }
 
   /// Leave the group (after any required ownership transfer).
-  ///
   /// Returns true if successfully left the group.
   /// Throws exception if fails.
   Future<bool> leaveGroup() async {
@@ -317,7 +309,6 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   }
 
   /// Transfer group ownership to a new owner.
-  ///
   /// Returns true if ownership transfer succeeded.
   Future<bool> transferGroupOwnership(UserProfile newOwner) async {
     if (_group == null) {
@@ -356,10 +347,8 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   // ===== CONTENT SHARING COORDINATION =====
 
   /// Coordinate recipe sharing with this group.
-  ///
   /// This method validates the group state and prepares for sharing.
   /// The actual sharing dialog presentation is handled by the View.
-  ///
   /// Returns true if ready to show sharing dialog.
   bool canShareRecipeWithGroup() {
     if (_group == null) return false;
@@ -368,7 +357,6 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   }
 
   /// Coordinate menu sharing with this group.
-  ///
   /// Returns true if ready to show sharing dialog.
   bool canShareMenuWithGroup() {
     if (_group == null) return false;
@@ -377,7 +365,6 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   }
 
   /// Coordinate shopping list sharing with this group.
-  ///
   /// Returns true if ready to show sharing dialog.
   bool canShareShoppingListWithGroup() {
     if (_group == null) return false;

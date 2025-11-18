@@ -5,7 +5,6 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Reusable circular icon badge component
-/// 
 /// Provides consistent styling for circular icons with background.
 /// Used for add buttons, status indicators, etc.
 class CircularIconBadge extends StatelessWidget {

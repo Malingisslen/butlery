@@ -41,13 +41,11 @@ class MenuOperationError {
 }
 
 /// Focused module for menu content operations
-/// 
 /// This module handles ONLY menu content manipulation:
 /// - Basic menu information updates
 /// - Recipe CRUD operations within categories
 /// - Category management operations
 /// - Recipe movement between categories
-/// 
 /// ❌ DOES NOT CONTAIN: Participant management, state management, synchronization
 class MenuOperations {
 

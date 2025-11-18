@@ -21,42 +21,34 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/operations/collaborative_menu_operations.dart';
 
 /// Comprehensive unified menu service providing coordinated access to personal and collaborative menu functionality.
-///
 /// This service implements a sophisticated menu management system using modular architecture with focused components
 /// for personal menu operations, collaborative menu planning, and social menu sharing features.
 /// It provides a unified API surface that coordinates between specialized modules while maintaining clean separation
 /// of concerns for maintainable and scalable menu management across all application features.
-///
 /// **Architecture Integration:**
 /// - Extends [ChangeNotifier] for reactive UI updates with menu state changes across all modules
 /// - Uses [ErrorHandlingMixin] for comprehensive error management and graceful degradation strategies
 /// - Implements [FirebaseServiceMixin] for Firebase integration and authentication-aware operations
 /// - Coordinates with MenuService for basic menu generation and management operations
-///
 /// **Modular Coordination Architecture:**
 /// This service coordinates between focused modules with clear responsibilities:
 /// - **[MenuService]**: Basic menu generation, natural language processing, and meal planning
 /// - **[CollaborativeMenuOperations]**: Real-time collaborative menu planning and social features
-///
 /// **Unified API Benefits:**
 /// - **Single Entry Point**: Unified interface for all menu operations reducing complexity for ViewModels
 /// - **Coordinated Operations**: Seamless integration between personal and collaborative menu features
 /// - **Clean Separation**: Each module handles specific concerns without cross-module business logic contamination
 /// - **Reactive Updates**: Comprehensive state management with automatic UI updates across all menu operations
-///
 /// **What This Service Does NOT Contain:**
 /// - Business logic implementation (delegated to specialized modules for focused responsibility)
 /// - Direct Firebase operations (handled by modules and repository layers for proper abstraction)
 /// - Authentication management (handled by FirebaseAuthRepository and authentication mixins)
-///
 /// **Usage Examples:**
 /// ```dart
 /// final menuService = UnifiedMenuService(firestore, authRepository);
 /// await menuService.initialize();
-///
 /// // Personal menu operations
 /// final menu = await menuService.generateMenuFromPrompt('tre frukoster och två middagar', recipes);
-///
 /// // Collaborative menu planning
 /// await menuService.collaborative.enableMenuCollaboration(
 ///   menuId: menuId,

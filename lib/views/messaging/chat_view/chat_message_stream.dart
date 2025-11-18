@@ -1,5 +1,4 @@
 /// Nuclear Message Stream Component - Real-time Message Display
-///
 /// Focused component handling ONLY message streaming and display logic that was
 /// previously embedded in the massive ChatView. Implements clean separation of
 /// concerns with real-time message updates.

@@ -6,7 +6,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 
 /// Fullscreen image viewer for recipe images
-///
 /// This widget provides a full-screen image viewing experience with:
 /// - Swipe navigation between images
 /// - Zoom and pan functionality

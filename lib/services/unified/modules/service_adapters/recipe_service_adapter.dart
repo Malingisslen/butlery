@@ -10,7 +10,6 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Service adapter that provides repository pattern access for UnifiedRecipeService modules
-/// 
 /// This adapter abstracts Firebase operations through repository interfaces,
 /// allowing modules to follow clean architecture principles while maintaining
 /// backward compatibility with existing code.

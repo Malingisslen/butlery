@@ -1,17 +1,14 @@
 /// Firebase Firestore implementation for comprehensive network and database connectivity monitoring.
-///
 /// This repository provides sophisticated connectivity monitoring and quality assessment using both
 /// network connectivity detection and Firebase-specific connection testing. It enables the application
 /// to respond intelligently to connection changes, provide offline capabilities, and optimize
 /// performance based on connection quality assessments.
-///
 /// **Architecture Integration:**
 /// - Implements [ConnectivityRepository] interface for standardized connectivity operations
 /// - Uses [Connectivity] plugin for native network connectivity detection
 /// - Leverages Firebase's built-in connection monitoring via `.info/connected` path
 /// - Integrates with [AppLogger] for detailed connectivity event logging
 /// - Coordinates with offline-first data synchronization strategies
-///
 /// **Connectivity Monitoring Features:**
 /// - **Dual-layer Monitoring**: Both network and Firebase-specific connectivity detection
 /// - **Real-time Streams**: Live connectivity status updates for reactive UI
@@ -19,7 +16,6 @@
 /// - **Firebase-specific Testing**: Direct Firebase endpoint connectivity validation
 /// - **Intelligent Reconnection**: Automatic reconnection handling with exponential backoff
 /// - **Offline Capability Detection**: Determines when to enable offline-first features
-///
 /// **Performance and Reliability:**
 /// - **Periodic Health Checks**: Regular Firebase connection validation every 30 seconds
 /// - **Response Time Analysis**: Connection quality assessment based on actual performance
@@ -33,19 +29,16 @@ import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 /// Firebase implementation for sophisticated connectivity monitoring with quality assessment.
-///
 /// This repository provides comprehensive connectivity monitoring by combining network connectivity
 /// detection with Firebase-specific connection testing. It offers real-time connectivity streams,
 /// connection quality assessment, and intelligent offline capability detection for building
 /// resilient applications with excellent user experience during connectivity changes.
-///
 /// **Connectivity Architecture:**
 /// Uses a multi-layered approach to connectivity monitoring:
 /// - **Network Layer**: Native platform connectivity detection via connectivity_plus
 /// - **Firebase Layer**: Firebase-specific connection testing using `.info/connected`
 /// - **Application Layer**: Performance-based connection quality assessment
 /// - **Health Check Layer**: Periodic connectivity validation with timing analysis
-///
 /// **Quality Assessment System:**
 /// Determines connection quality based on Firebase response times:
 /// - **Excellent**: < 100ms response time - ideal for real-time features
@@ -53,11 +46,9 @@ import 'package:butlery/core/utils/logger.dart';
 /// - **Fair**: < 1000ms response time - basic functionality works
 /// - **Poor**: > 1000ms response time - consider offline-first approach
 /// - **Offline**: No connection - enable full offline capabilities
-///
 /// **Usage Examples:**
 /// ```dart
 /// final connectivityRepo = FirebaseConnectivityRepository();
-/// 
 /// // Monitor connectivity changes
 /// connectivityRepo.connectionStream.listen((isConnected) {
 ///   if (isConnected) {
@@ -66,7 +57,6 @@ import 'package:butlery/core/utils/logger.dart';
 ///     enableOfflineMode();
 ///   }
 /// });
-/// 
 /// // Assess connection quality
 /// final quality = await connectivityRepo.getConnectionQuality();
 /// switch (quality) {
@@ -98,7 +88,6 @@ class FirebaseConnectivityRepository implements ConnectivityRepository {
   Timer? _firebaseCheckTimer;
 
   /// Creates a Firebase connectivity repository with optional dependency injection.
-  ///
   /// [firestore] Optional Firestore instance for testing, defaults to production instance
   /// [authRepository] Optional authentication repository (currently unused but kept for future use)
   /// [connectivity] Optional connectivity service for testing, defaults to platform connectivity

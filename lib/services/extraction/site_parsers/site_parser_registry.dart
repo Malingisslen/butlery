@@ -1,5 +1,4 @@
 /// Central registry for site-specific recipe parsers
-///
 /// Maps recipe website domains to their corresponding parsers.
 /// Used by UrlImportStrategy to route URLs to site-specific extraction logic.
 
@@ -8,7 +7,6 @@ import 'package:butlery/services/extraction/site_parsers/recipe_site_parser.dart
 /// Registry of site-specific recipe parsers
 class SiteParserRegistry {
   /// Map of domain → parser
-  ///
   /// **Example:**
   /// ```dart
   /// 'ica.se' → IcaRecipeParser()
@@ -18,7 +16,6 @@ class SiteParserRegistry {
   static final Map<String, RecipeSiteParser> _parsers = {};
 
   /// Register a site parser
-  ///
   /// **Example:**
   /// ```dart
   /// SiteParserRegistry.register(IcaRecipeParser());
@@ -28,13 +25,11 @@ class SiteParserRegistry {
   }
 
   /// Get parser for a URL
-  ///
   /// **Matching logic:**
   /// 1. Extract domain from URL
   /// 2. Try exact match (e.g., "ica.se")
   /// 3. Try without "www." prefix (e.g., "www.ica.se" → "ica.se")
   /// 4. Return null if no parser found
-  ///
   /// **Example:**
   /// ```dart
   /// final parser = SiteParserRegistry.getParser('https://www.ica.se/recept/kottbullar');

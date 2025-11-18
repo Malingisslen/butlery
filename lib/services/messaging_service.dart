@@ -1,5 +1,4 @@
 /// Real-time messaging service for direct and group conversations.
-///
 /// Provides message sending/editing/deletion, typing indicators, read status tracking,
 /// conversation management (pin/archive/mute), and notification integration.
 /// Delegates to specialized operation classes following the facade pattern.
@@ -65,7 +64,6 @@ class MessagingService extends BaseService with StreamManagementMixin {
   }
 
   /// Start or get existing direct conversation with another user
-  ///
   /// This method now uses a deterministic conversation ID approach instead of querying.
   /// The `createDirectConversation` method already implements "get or create" pattern,
   /// so we skip the potentially problematic query-based lookup that could return old UUID conversations.

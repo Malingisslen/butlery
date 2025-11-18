@@ -11,7 +11,6 @@ import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dar
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 
 /// Dialog for deleting a group
-/// 
 /// Refactored to extend BaseActionDialog, eliminating 25+ lines of duplicate
 /// state management, error handling, and loading patterns.
 class DeleteGroupDialog extends BaseActionDialog<bool> {

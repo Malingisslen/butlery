@@ -7,13 +7,11 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// Bottom sheet dialog for selecting image source (camera or gallery).
-///
 /// Provides a clean, modern interface for image source selection with:
 /// - Camera option with icon
 /// - Gallery option with icon
 /// - Cancel button
 /// - Swedish localization
-///
 /// **Usage Example:**
 /// ```dart
 /// final source = await showImagePickerDialog(context);
@@ -154,7 +152,6 @@ class _SourceOption extends StatelessWidget {
 }
 
 /// Show image picker dialog as bottom sheet.
-///
 /// Returns selected [ImageSource] or null if cancelled.
 Future<ImageSource?> showImagePickerDialog(BuildContext context) async {
   return await showModalBottomSheet<ImageSource>(

@@ -1,5 +1,4 @@
 /// Facade/Coordinator for specialized shared content ViewModels.
-///
 /// Orchestrates SharedRecipeViewModel, SharedMenuViewModel, SharedShoppingViewModel,
 /// SharedContentSearchViewModel, and SocialSharingViewModel providing unified interface.
 /// Transformed from 1,965-line monolithic ViewModel to clean coordinator pattern.

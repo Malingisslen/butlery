@@ -9,7 +9,6 @@ import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Module handling connection state management and notifications for realtime sync.
-///
 /// Provides connection monitoring, auth state handling, and notification system.
 class ConnectionStateModule {
   final FirestoreRepository firestoreRepository;

@@ -25,17 +25,13 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
   // ===== PRIVATE HELPER METHODS =====
 
   /// Get authenticated user and optionally validate self-operation.
-  ///
   /// This helper eliminates duplication of the "get currentUser → null check → validateSelfOperation"
   /// pattern repeated across 9 methods in this repository.
-  ///
   /// Returns the authenticated user ID for use in subsequent operations.
   /// Throws [PermissionDeniedException] if user is not authenticated or validation fails.
-  ///
   /// **Parameters:**
   /// - [targetUserId]: Optional user ID to validate against (for self-operation validation)
   /// - [operation]: Description of the operation being performed (for validation error messages)
-  ///
   /// **Usage Example:**
   /// ```dart
   /// final currentUser = await _withAuthenticatedUser(

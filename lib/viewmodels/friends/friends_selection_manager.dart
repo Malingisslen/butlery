@@ -1,5 +1,4 @@
 /// Manages friend selection state for bulk operations
-///
 /// Extracted from FriendsViewModel for Single Responsibility compliance.
 /// Handles multi-friend selection for group creation and bulk operations.
 

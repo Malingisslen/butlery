@@ -9,7 +9,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Recipe detail metadata widget
-///
 /// This widget displays recipe metadata including:
 /// - Portions, cooking time, and rating
 /// - "Cooked today" button functionality

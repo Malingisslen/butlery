@@ -6,7 +6,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Reusable member count badge component
-/// 
 /// Shows additional member count in a circular badge.
 /// Used for displaying "+X" when member list is truncated.
 class MemberCountBadge extends StatelessWidget {

@@ -5,12 +5,10 @@ import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Specialized notification content generation and management module providing comprehensive message creation capabilities.
-///
 /// This focused module implements sophisticated notification content generation following Single Responsibility Principle,
 /// handling all aspects of notification message creation, template management, and content formatting. It provides
 /// comprehensive content generation capabilities including localized messaging, dynamic variable substitution,
 /// and intelligent content optimization for enhanced user engagement through personalized notifications.
-///
 /// **Single Responsibility Focus:**
 /// This module exclusively handles notification content generation responsibilities:
 /// - **Unique ID Generation**: Sophisticated notification identifier creation ensuring proper deduplication and tracking
@@ -18,34 +16,28 @@ import 'package:butlery/core/utils/logger.dart';
 /// - **Batch Content Building**: Intelligent batched notification content generation optimizing delivery efficiency
 /// - **Digest Generation**: Comprehensive digest content creation providing curated activity summaries
 /// - **Message Localization**: Swedish and English message formatting with cultural cooking terminology integration
-///
 /// **What This Module Does NOT Handle:**
 /// - FCM token management and message delivery (handled by FCMTokenManager and FCMService)
 /// - User preferences and quiet hours (handled by NotificationPreferenceManager)
 /// - Offline queuing and retry logic (handled by NotificationOfflineManager)
 /// - Delivery analytics and tracking (handled by NotificationAnalyticsManager)
-///
 /// **Content Generation Features:**
 /// - Advanced template engine supporting complex variable substitution and conditional content
 /// - Comprehensive localization system with Swedish cooking terminology and cultural references
 /// - Dynamic content optimization based on user engagement patterns and preferences
 /// - Intelligent digest generation providing meaningful activity summaries and recommendations
 /// - Rich content support including recipe previews, cooking tips, and social engagement elements
-///
 /// **Template System Capabilities:**
 /// - Multi-variable substitution with nested object support for complex content generation
 /// - Conditional content rendering based on user context and notification parameters
 /// - Fallback content strategies ensuring graceful handling of missing template variables
 /// - Content length optimization for different notification delivery channels and platforms
 /// - Swedish cultural cooking terminology integration for authentic user experience
-///
 /// **Usage Examples:**
 /// ```dart
 /// final contentManager = NotificationContentManager(userId: currentUserId);
-/// 
 /// // Generate unique notification ID
 /// final notificationId = contentManager.generateNotificationId(targetUserId, strategy);
-/// 
 /// // Create personalized notification content
 /// final content = await contentManager.createNotificationContent(
 ///   strategy: recipeSharedStrategy,
@@ -54,7 +46,6 @@ import 'package:butlery/core/utils/logger.dart';
 ///     'recipeTitle': 'Köttbullar med gräddsås',
 ///   },
 /// );
-/// 
 /// // Generate digest content
 /// final digest = await contentManager.generateDigestContent(activityData);
 /// ```
@@ -68,7 +59,6 @@ class NotificationContentManager {
   // ===== NOTIFICATION ID GENERATION =====
 
   /// Generate unique notification ID
-  /// 
   /// Creates unique identifiers using strategy category, user ID, timestamp, and random number
   /// to ensure no duplicate notifications and enable proper deduplication
   String generateNotificationId(String targetUserId, NotificationStrategy strategy) {
@@ -89,7 +79,6 @@ class NotificationContentManager {
   // ===== TEMPLATE CREATION =====
 
   /// Create notification content from strategy with variable substitution
-  /// 
   /// Main entry point for creating notification content
   NotificationTemplate createNotificationContent({
     required NotificationStrategy strategy,
@@ -108,7 +97,6 @@ class NotificationContentManager {
   }
 
   /// Create notification template from strategy with variable substitution
-  /// 
   /// Handles localization, variable replacement, and data payload construction
   NotificationTemplate createTemplate({
     required NotificationStrategy strategy,
@@ -197,7 +185,6 @@ class NotificationContentManager {
   // ===== BATCHED NOTIFICATIONS =====
 
   /// Build combined notification from multiple templates
-  /// 
   /// Combines multiple notifications into a single summary notification
   /// to prevent notification spam while preserving important information
   NotificationTemplate buildBatchedNotification(List<NotificationTemplate> notifications) {
@@ -243,7 +230,6 @@ class NotificationContentManager {
   // ===== DIGEST CONTENT =====
 
   /// Build digest content from activity list
-  /// 
   /// Creates summary content for digest notifications that aggregate
   /// multiple activities over a longer time period
   Map<String, String> buildDigestContent(

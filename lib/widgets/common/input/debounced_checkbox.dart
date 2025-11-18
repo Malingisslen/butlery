@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 /// Checkbox with debounce functionality to prevent spam clicking
-///
 /// This widget wraps a standard checkbox and provides debouncing to prevent
 /// multiple rapid state changes that could overwhelm the system.
 class DebouncedCheckbox extends StatefulWidget {

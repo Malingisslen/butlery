@@ -1,5 +1,4 @@
 /// Shopping analytics and insights manager for statistics and export functionality.
-///
 /// Handles shopping insights, completion tracking, and export operations.
 /// Part of UnifiedShoppingViewModel's modular architecture.
 

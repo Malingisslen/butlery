@@ -12,19 +12,16 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Focused module for menu local storage
-///
 /// This module handles ONLY local storage operations:
 /// - SharedPreferences save/load/delete operations
 /// - Menu serialization/deserialization
 /// - Local storage validation and error handling
 /// - Storage key management
-///
 /// ❌ DOES NOT CONTAIN: State management, social features, menu generation
 class MenuStorage {
   final FirestoreRepository _firestoreRepository;
 
   /// Creates MenuStorage with dependency injection support
-  ///
   /// [firestoreRepository] Optional FirestoreRepository for testing.
   /// If not provided, uses ServiceLocator to get the instance.
   MenuStorage({FirestoreRepository? firestoreRepository})

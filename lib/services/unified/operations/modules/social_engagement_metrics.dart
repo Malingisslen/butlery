@@ -5,13 +5,11 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for social engagement metrics
-/// 
 /// This module handles ONLY social engagement calculations:
 /// - Recipe engagement scoring and levels
 /// - User social statistics and reach
 /// - Social activity metrics
 /// - Engagement trend analysis
-/// 
 /// ❌ DOES NOT CONTAIN: Rating operations, statistics aggregation, notifications, top-rated queries
 class SocialEngagementMetrics {
 

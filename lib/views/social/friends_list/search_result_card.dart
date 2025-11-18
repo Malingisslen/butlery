@@ -8,7 +8,6 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// SearchResultCard - Enhanced search result card component with explicit action buttons
-///
 /// Displays search result user with clear friendship status and action buttons.
 /// Provides visual clarity about available actions based on current relationship status.
 class SearchResultCard {

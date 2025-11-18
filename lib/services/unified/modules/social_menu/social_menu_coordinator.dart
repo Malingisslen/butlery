@@ -1,22 +1,18 @@
 /// Social Menu Coordinator implementing standardized coordination patterns.
-///
 /// This coordinator provides unified menu sharing and collaboration functionality
 /// following the established pattern from SocialRecipeCoordinator. It uses the
 /// BaseSocialCoordinator to provide consistent invitation system, import operations,
 /// and notification coordination for menu content.
-///
 /// **Architecture Benefits:**
 /// - **Consistent API**: Unified operations matching SocialRecipeCoordinator patterns
 /// - **Standardized Coordination**: Common social coordination patterns across content types
 /// - **Menu-Specific Logic**: Customized behavior for menu sharing and collaboration
 /// - **Service Integration**: Seamless integration with UnifiedMenuService and focused services
-///
 /// **Menu Coordination Features:**
 /// - **Menu Invitation System**: Swedish-style menu sharing with complete recipe snapshots
 /// - **Copy-on-Write Import**: Fork-style menu import with proper attribution
 /// - **Collaboration Support**: Team-based menu planning and editing capabilities
 /// - **Analytics Integration**: Menu engagement tracking and user interaction metrics
-///
 /// **Usage Example:**
 /// ```dart
 /// final menuCoordinator = SocialMenuCoordinator(
@@ -27,14 +23,12 @@
 ///   getMenuById: (id) => menuService.getMenuById(id),
 ///   saveMenu: (menu) => menuService.saveMenu(menu),
 /// );
-/// 
 /// // Create menu invitation
 /// final invitationId = await menuCoordinator.createMenuInvitation(
 ///   menuId: 'menu_123',
 ///   inviteeUserIds: ['user1', 'user2'],
 ///   message: 'Min veckomeny för nästa vecka!',
 /// );
-/// 
 /// // Import shared menu
 /// final menuId = await menuCoordinator.importSharedMenu(
 ///   sharedMenuId: 'shared_menu_456',
@@ -255,7 +249,6 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
   }
 
   /// Join shared menu for viewing (true copy-on-write collaboration)
-  /// 
   /// This implements TRUE copy-on-write where users initially view the original
   /// menu until someone attempts to edit it, which triggers copy creation.
   Future<String?> joinSharedMenu({
@@ -285,7 +278,6 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
   }
 
   /// Legacy import method for backward compatibility (GitHub fork style)
-  /// 
   /// This maintains the old behavior for existing code that hasn't been updated
   /// to use the new copy-on-write pattern. Creates immediate copy with attribution.
   @Deprecated('Use joinSharedMenu for true copy-on-write behavior')
@@ -332,7 +324,6 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
   }
 
   /// Get all shared menus for a specific user
-  ///
   /// Phase 3 Session 1: Content loading method for ViewModel migration.
   /// Wraps repository call with error handling and logging.
   Future<List<SharedMenu>> getSharedMenusForUser(String userId) async {
@@ -346,7 +337,6 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
   }
 
   /// Get specific shared menu by ID
-  ///
   /// Week 2 Task 1 Completion: Menu fetching method for View/ViewModel access.
   /// Wraps repository read call with error handling and logging.
   /// Used for deep links and view operations where we need the full menu object.
@@ -363,7 +353,6 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
   // ===== STATUS CACHE METHODS (PHASE 3 SESSION 2) =====
 
   /// Load status for a menu from repository and cache it
-  ///
   /// Phase 3 Session 2: Status caching method for ViewModel migration.
   /// Loads viewed, imported, and dismissed status from repository and caches locally.
   Future<void> loadStatusForMenu(String menuId, String userId) async {
@@ -381,7 +370,6 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
   }
 
   /// Load status for all menus in bulk
-  ///
   /// Phase 3 Session 2: Bulk status loading method for ViewModel migration.
   /// Loads status for multiple menus to populate cache efficiently.
   Future<void> loadStatusForAllMenus(
@@ -392,7 +380,6 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
   }
 
   /// Check if menu is dismissed using cache
-  ///
   /// Phase 3 Session 2: Status checking method for ViewModel migration.
   /// Falls back to false if not cached.
   bool isMenuDismissed(String menuId) {
@@ -400,7 +387,6 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
   }
 
   /// Check if menu is viewed using cache
-  ///
   /// Phase 3 Session 2: Status checking method for ViewModel migration.
   /// Falls back to false if not cached.
   bool isMenuViewed(String menuId) {
@@ -408,7 +394,6 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
   }
 
   /// Check if menu is imported using cache
-  ///
   /// Phase 3 Session 2: Status checking method for ViewModel migration.
   /// Falls back to false if not cached.
   bool isMenuImported(String menuId) {

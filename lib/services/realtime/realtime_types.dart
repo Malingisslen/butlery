@@ -1,5 +1,4 @@
 /// Shared types for realtime synchronization services.
-///
 /// Contains error types and models used across realtime modules to avoid circular dependencies.
 
 import 'package:butlery/models/realtime/realtime_resource.dart';

@@ -1,5 +1,4 @@
 /// Social content features utility providing advanced social functionality coordination.
-///
 /// This module centralizes social content operations including friend management, sharing coordination,
 /// and social interaction utilities for consistent social functionality across shared content management.
 /// Extracted from SharedContentViewModel to enable modular architecture and deprecation of the monolithic ViewModel.
@@ -52,15 +51,12 @@ class ShareTargetValidationResult {
 }
 
 /// Comprehensive social content features utility providing advanced social functionality coordination.
-///
 /// Centralizes social content operations including friend management, sharing coordination,
 /// and social interaction utilities for consistent social functionality across shared content management.
 /// Provides static utility methods for social operations with comprehensive error handling and state coordination.
 class SocialContentFeatures {
   /// Loads friends for sharing functionality with comprehensive friend retrieval and social context.
-  ///
   /// [service] Friends service instance for friend data retrieval
-  ///
   /// Returns list of available friends for sharing functionality.
   /// Performs friend loading through service coordination with error handling
   /// and social context management for sharing operations.
@@ -69,10 +65,8 @@ class SocialContentFeatures {
   }
 
   /// Updates share message with reactive state coordination and input management.
-  ///
   /// [message] New share message for social sharing context
   /// [setter] Setter function for message state update
-  ///
   /// Performs share message update with immediate state coordination
   /// for responsive social sharing functionality.
   static void updateShareMessage(String message, Function(String) setter) {
@@ -80,11 +74,9 @@ class SocialContentFeatures {
   }
 
   /// Toggles friend selection with intelligent state management and social coordination.
-  ///
   /// [friendId] Friend identifier for selection toggle
   /// [selectedIds] Current selection state for modification
   /// [notifyListeners] Notification function for UI updates
-  ///
   /// Performs friend selection toggle with automatic state management
   /// and UI notification for responsive social interaction.
   static void toggleFriendSelection(
@@ -98,10 +90,8 @@ class SocialContentFeatures {
   }
 
   /// Clears friend selection with comprehensive state cleanup and UI coordination.
-  ///
   /// [selectedIds] Selection state for complete cleanup
   /// [notifyListeners] Notification function for UI updates
-  ///
   /// Performs complete friend selection cleanup with immediate UI notification
   /// for clean social interaction state management.
   static void clearFriendSelection(
@@ -111,13 +101,11 @@ class SocialContentFeatures {
   }
 
   /// Shares content with selected friends through comprehensive social distribution.
-  ///
   /// [contentId] Content identifier for sharing operation
   /// [contentType] Type of content for sharing coordination
   /// [friendIds] Selected friend identifiers for sharing targets
   /// [message] Share message for social context
   /// [service] Service instance for sharing operations
-  ///
   /// Returns true if sharing succeeds, false if operation fails.
   /// Performs content sharing through service coordination with comprehensive
   /// error handling and social distribution management.
@@ -196,10 +184,8 @@ class SocialContentFeatures {
   }
 
   /// Activates sharing mode with state coordination and UI preparation.
-  ///
   /// [setter] Setter function for sharing state update
   /// [notifyListeners] Notification function for UI updates
-  ///
   /// Enables sharing mode with immediate state coordination and UI notification
   /// for social sharing functionality activation.
   static void startSharing(Function(bool) setter, Function notifyListeners) {
@@ -208,11 +194,9 @@ class SocialContentFeatures {
   }
 
   /// Cancels sharing mode with comprehensive state cleanup and reset coordination.
-  ///
   /// [setter] Setter function for sharing state cleanup
   /// [selectedIds] Selection state for cleanup
   /// [notifyListeners] Notification function for UI updates
-  ///
   /// Deactivates sharing mode with complete state cleanup and UI notification
   /// for clean social sharing state management.
   static void cancelSharing(Function(bool) setter, List<String> selectedIds,

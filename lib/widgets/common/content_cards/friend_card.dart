@@ -9,14 +9,12 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 
 /// Focused module for friend card components
-/// 
 /// This module handles ONLY friend and user card display responsibilities:
 /// - Friend card rendering with user profile data
 /// - Friend request card with action buttons
 /// - User avatar display and online status
 /// - Friend-specific metadata (mutual friends, join date, etc.)
 /// - Friend card styling and theming
-/// 
 /// ❌ DOES NOT CONTAIN: Recipe cards, menu cards, shopping list cards, generic content logic
 class FriendCard extends StatelessWidget {
   final UserProfile user;

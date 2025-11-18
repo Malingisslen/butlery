@@ -6,13 +6,11 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/realtime/modules/recipe_content_operations.dart';
 
 /// Focused module for recipe participant management
-/// 
 /// This module handles ONLY participant-related operations:
 /// - Adding and removing participants
 /// - Managing participant permissions
 /// - Participant validation and utilities
 /// - Permission checking and enforcement
-/// 
 /// ❌ DOES NOT CONTAIN: Recipe content operations, state management, synchronization
 class RecipeParticipants {
 

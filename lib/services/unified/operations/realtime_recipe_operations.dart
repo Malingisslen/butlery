@@ -18,7 +18,6 @@ import 'package:butlery/repositories/firebase/firebase_recipe_presence_repositor
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// Realtime recipe operations coordinator.
-///
 /// Orchestrates real-time collaborative editing via watching, editing, collaboration, presence, and notification modules.
 
 // Export conflict info class for backward compatibility

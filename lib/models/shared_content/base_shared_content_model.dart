@@ -1,29 +1,22 @@
 /// Base shared content model providing common fields and functionality for all shared content types.
-///
 /// This abstract base class implements the Template Method pattern for shared content models,
 /// providing consistent status management, serialization patterns, and user interaction tracking
 /// while allowing specialized models to customize content-specific logic.
-///
 /// **Design Pattern**: Template Method + Mixin Composition
 /// **Responsibility**: Common shared content functionality across all types
 /// **Benefits**: Eliminates 400+ lines of duplicate code, ensures API consistency
-///
 /// **Architectural Transformation:**
 /// - **From**: 95%+ duplicate serialization methods across 3 models
 /// - **To**: Single source of truth with template customization
 /// - **Impact**: 65% code reduction, unified behavior, easier maintenance
-///
 /// **Usage Example:**
 /// ```dart
 /// class SharedRecipe extends BaseSharedContentModel<Recipe>
 ///     with SharedContentStatusMixin, CopyOnWriteSupport {
-///
 ///   @override
 ///   String get contentTypeName => 'recipe';
-///
 ///   @override
 ///   Recipe get contentSnapshot => recipeSnapshot;
-///
 ///   @override
 ///   String getContentTitle() => recipeSnapshot.title;
 /// }
@@ -35,7 +28,6 @@ import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:flutter/foundation.dart';
 
 /// Abstract base class for all shared content models providing common functionality.
-///
 /// Implements Template Method pattern where common algorithms are defined in the base class
 /// and content-specific customization is handled through abstract methods.
 abstract class BaseSharedContentModel<TContent> {
@@ -97,7 +89,6 @@ abstract class BaseSharedContentModel<TContent> {
   String getContentDescription();
 
   /// Create a copy with updated status counts
-  ///
   /// Note (Issue #014): Status checking now handled by repository layer.
   /// Models only track counts, not user-specific arrays.
   BaseSharedContentModel<TContent> copyWithStatus({
@@ -137,7 +128,6 @@ abstract class BaseSharedContentModel<TContent> {
   // ===== COMMON SERIALIZATION FIELDS (ISSUE #014 - Arrays Removed) =====
 
   /// Get common Firestore fields that are identical across all content types
-  ///
   /// Note: User-specific arrays (sharedToUserIds, viewedByUserIds, etc.) now stored
   /// in subcollections. Only aggregate counts persisted in main document.
   Map<String, dynamic> getCommonFirestoreFields() {
@@ -153,7 +143,6 @@ abstract class BaseSharedContentModel<TContent> {
   }
 
   /// Get common JSON fields for caching
-  ///
   /// Note: User-specific arrays removed (Issue #014). Use repository methods
   /// for status checking (hasViewed, hasEngaged, etc.).
   Map<String, dynamic> getCommonJsonFields() {
@@ -170,7 +159,6 @@ abstract class BaseSharedContentModel<TContent> {
   }
 
   /// Parse common fields from Firestore data
-  ///
   /// Note (Issue #014): Array fields removed. Only counts are parsed.
   static Map<String, dynamic> parseCommonFieldsFromFirestore(
       Map<String, dynamic> data) {
@@ -186,7 +174,6 @@ abstract class BaseSharedContentModel<TContent> {
   }
 
   /// Parse common fields from JSON data
-  ///
   /// Note (Issue #014): Array fields removed. Only counts are parsed.
   static Map<String, dynamic> parseCommonFieldsFromJson(
       Map<String, dynamic> json) {

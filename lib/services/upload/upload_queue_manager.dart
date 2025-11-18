@@ -1,8 +1,6 @@
 /// Upload queue management for coordinating multiple concurrent uploads.
-///
 /// Provides queue state management, status tracking, and query operations
 /// for upload coordination across the application.
-///
 /// **Architecture:** Service Layer - State Management
 /// **Responsibility:** Queue coordination, status tracking, upload lifecycle
 /// **Used By:** ImageUploadService
@@ -14,7 +12,6 @@ import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Manages upload queue state and provides query operations for upload coordination.
-///
 /// Core responsibilities:
 /// - Queue state management (add, remove, update, clear)
 /// - Upload status tracking and queries

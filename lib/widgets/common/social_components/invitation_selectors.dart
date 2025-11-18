@@ -6,20 +6,17 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Focused module for invitation target selection widgets
-/// 
 /// This module handles ONLY selection interfaces for invitation targets:
 /// - Target selectors with search and filtering
 /// - Multi-select and single-select interfaces
 /// - Search fields and type filters
 /// - Selection interaction logic
-/// 
 /// ❌ DOES NOT CONTAIN: Display widgets, states, actions, target lists
 class InvitationSelectors {
 
   // ===== TARGET SELECTORS =====
 
   /// Build target selector
-  /// 
   /// Interactive selector for invitation targets
   static Widget targetSelector({
     required List<InvitationTarget> availableTargets,
@@ -105,7 +102,6 @@ class InvitationSelectors {
   }
 
   /// Build checkable target list
-  /// 
   /// List with checkboxes for target selection
   static Widget checkableTargetList({
     required List<InvitationTarget> targets,
@@ -144,7 +140,6 @@ class InvitationSelectors {
   }
 
   /// Build radio target selector
-  /// 
   /// Radio button selector for single target selection
   static Widget radioTargetSelector({
     required List<InvitationTarget> targets,
@@ -165,7 +160,6 @@ class InvitationSelectors {
   // ===== SEARCH AND FILTERING =====
 
   /// Build target search field
-  /// 
   /// Search input for filtering targets
   static Widget targetSearchField({
     Function(String)? onSearchChanged,
@@ -191,7 +185,6 @@ class InvitationSelectors {
   }
 
   /// Build target type filters
-  /// 
   /// Filter chips for target types
   static Widget targetTypeFilters({
     required List<String> availableTypes,
@@ -228,7 +221,6 @@ class InvitationSelectors {
   }
 
   /// Build target filtering widget
-  /// 
   /// Complete filtering interface for targets
   static Widget targetFiltering({
     required List<InvitationTarget> allTargets,
@@ -311,7 +303,6 @@ class InvitationSelectors {
   // ===== SELECTION MANAGEMENT =====
 
   /// Build target selection summary
-  /// 
   /// Shows summary of selected targets
   static Widget targetSelectionSummary({
     required List<InvitationTarget> selectedTargets,

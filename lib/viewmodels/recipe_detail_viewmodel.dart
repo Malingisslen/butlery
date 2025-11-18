@@ -1,10 +1,8 @@
 /// Comprehensive recipe detail ViewModel providing advanced recipe interaction and management for Flutter applications.
-///
 /// This module implements sophisticated recipe detail management following Single Responsibility Principle,
 /// handling all aspects of individual recipe presentation including detailed display coordination, recipe interactions,
 /// analytics tracking, and comprehensive state management. It provides complete recipe detail infrastructure while
 /// maintaining clean separation from UI rendering, data persistence, and business logic implementation.
-///
 /// **Single Responsibility Focus:**
 /// This module exclusively handles recipe detail presentation layer concerns:
 /// - **Recipe Display Intelligence**: Comprehensive recipe detail coordination with multi-image support and dynamic UI state
@@ -12,20 +10,17 @@
 /// - **Analytics Integration**: Sophisticated analytics tracking for recipe interactions, cooking events, and user behavior
 /// - **State Synchronization**: Reactive state management with service integration and real-time recipe update coordination
 /// - **UI Convenience Accessors**: Comprehensive convenience getters for complex UI display logic and conditional rendering
-///
 /// **What This Module Does NOT Handle:**
 /// - Recipe data persistence and storage (handled by UnifiedRecipeService and data repositories)
 /// - UI rendering and widget creation (handled by RecipeDetailView and recipe detail UI components)
 /// - Recipe business logic and validation (handled by recipe service layer and business logic)
 /// - Analytics implementation and data processing (handled by AnalyticsService for focused analytics responsibility)
-///
 /// **Recipe Detail ViewModel Features:**
 /// - **Multi-Image Support**: Advanced image management with multiple image display and gallery coordination
 /// - **Cooking Interaction**: Comprehensive cooking tracking with timestamp management and analytics integration
 /// - **Real-time Synchronization**: Intelligent recipe state updates with service coordination and change detection
 /// - **Analytics Intelligence**: Detailed user interaction tracking with cooking events and engagement metrics
 /// - **Swedish Localization**: Complete Swedish language support for display formatting and user interface
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Initialize recipe detail ViewModel with recipe data
@@ -34,33 +29,27 @@
 ///   recipeService: unifiedRecipeService,
 ///   analyticsService: analyticsService,
 /// );
-/// 
 /// // Recipe interaction operations
 /// final cookingMarked = await recipeDetailViewModel.markAsCooked();
 /// if (cookingMarked) {
 ///   // Show cooking success feedback
 /// }
-/// 
 /// // Recipe management operations
 /// final deleted = await recipeDetailViewModel.deleteRecipe();
 /// if (deleted) {
 ///   // Navigate back to recipe list
 /// }
-/// 
 /// // UI display convenience accessors
 /// if (recipeDetailViewModel.hasMultipleImages) {
 ///   // Show image gallery UI
 /// }
-/// 
 /// final portions = recipeDetailViewModel.portionsDisplay; // "4" or "–"
 /// final cookingTime = recipeDetailViewModel.timeDisplay; // "30" or "–"
 /// final rating = recipeDetailViewModel.ratingDisplay; // "4.5" or "–"
-/// 
 /// // State monitoring for UI updates
 /// if (recipeDetailViewModel.isDeleting) {
 ///   // Show deletion progress
 /// }
-/// 
 /// // Reactive recipe updates
 /// final currentRecipe = recipeDetailViewModel.recipe; // Always current version
 /// ```
@@ -76,7 +65,6 @@ import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 
 /// Comprehensive recipe detail ViewModel providing advanced recipe interaction and management for Flutter applications.
-///
 /// Serves as the presentation layer coordinator for individual recipe operations, providing detailed display coordination,
 /// recipe interactions, analytics tracking, and real-time state management while maintaining clean MVVM architecture
 /// separation between recipe detail business logic and UI presentation concerns.
@@ -93,11 +81,9 @@ class RecipeDetailViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
   bool _isDeleting = false;
 
   /// Initializes recipe detail ViewModel with comprehensive service integration and reactive state coordination.
-  /// 
   /// [recipe] Recipe instance for detailed display and interaction management
   /// [recipeService] Optional UnifiedRecipeService instance for dependency injection
   /// [analyticsService] Optional AnalyticsService instance for dependency injection
-  /// 
   /// Establishes service layer integration with reactive state coordination, enabling
   /// comprehensive recipe detail management with automatic synchronization and analytics tracking
   /// for optimal user experience and interaction monitoring.
@@ -113,7 +99,6 @@ class RecipeDetailViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
   }
 
   /// Performs comprehensive ViewModel disposal with service listener cleanup and memory management.
-  /// 
   /// Removes UnifiedRecipeService listener connections and performs complete resource cleanup
   /// to prevent memory leaks and ensure proper ViewModel lifecycle management
   /// in dynamic recipe detail scenarios with ViewModel creation and disposal.
@@ -124,7 +109,6 @@ class RecipeDetailViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
   }
 
   /// Handles reactive updates from recipe service changes with intelligent state synchronization.
-  /// 
   /// Provides seamless state synchronization between UnifiedRecipeService and ViewModel ensuring
   /// recipe data changes are immediately reflected with change detection and automatic UI updates
   /// for consistent user experience and real-time recipe status coordination.
@@ -140,26 +124,22 @@ class RecipeDetailViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
   // ===== RECIPE STATE ACCESSORS =====
 
   /// Current recipe data with real-time synchronization and comprehensive detail access.
-  /// 
   /// Provides access to current recipe state with automatic synchronization from service updates
   /// ensuring UI components always display the most current recipe information.
   Recipe get recipe => _recipe;
 
   /// Deletion operation state for UI progress indication and interaction control.
-  /// 
   /// Indicates active deletion operation for UI loading indicators and interaction disabling
   /// during recipe deletion processes for optimal user experience and operation feedback.
   bool get isDeleting => _isDeleting;
 
   /// Error state placeholder for future error handling expansion and consistency.
-  /// 
   /// Currently returns null as recipe detail operations use ErrorHandlingMixin
   /// for comprehensive error management, designed for future error state expansion.
   @override
   String? get error => null; // No error state needed for now
 
   /// Error presence indicator for UI conditional rendering and future error handling.
-  /// 
   /// Currently returns false as recipe detail operations use ErrorHandlingMixin
   /// for error management, maintaining consistency with other ViewModels.
   @override
@@ -168,43 +148,36 @@ class RecipeDetailViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
   // ===== UI CONVENIENCE ACCESSORS =====
 
   /// Image presence indicator for conditional image display and gallery coordination.
-  /// 
   /// Indicates whether recipe has associated images for UI conditional rendering
   /// of image display components and gallery functionality.
   bool get hasImages => _recipe.hasImages;
 
   /// Multiple image indicator for gallery UI coordination and advanced image display.
-  /// 
   /// Indicates whether recipe has multiple images for UI gallery display decisions
   /// and advanced image navigation functionality activation.
   bool get hasMultipleImages => _recipe.imageUrls.length > 1;
 
   /// Formatted portions display with fallback for consistent UI presentation.
-  /// 
   /// Provides portions information formatted for UI display with Swedish dash fallback
   /// for recipes without portion information, ensuring consistent UI presentation.
   String get portionsDisplay => _recipe.portions?.toString() ?? '–';
 
   /// Formatted cooking time display with fallback for consistent UI presentation.
-  /// 
   /// Provides cooking time in minutes formatted for UI display with Swedish dash fallback
   /// for recipes without time information, ensuring consistent UI presentation.
   String get timeDisplay => _recipe.timeMinutes?.toString() ?? '–';
 
   /// Rating presence indicator for conditional rating display and UI coordination.
-  /// 
   /// Indicates whether recipe has rating information for UI conditional rendering
   /// of rating display components and rating-related functionality.
   bool get hasRating => _recipe.rating != null;
 
   /// Formatted rating display with precision control and fallback for consistent UI presentation.
-  /// 
   /// Provides rating formatted to one decimal place for UI display with Swedish dash fallback
   /// for recipes without rating information, ensuring consistent UI presentation.
   String get ratingDisplay => _recipe.rating?.toStringAsFixed(1) ?? '–';
 
   /// Tags presence indicator for conditional tag display and UI coordination.
-  /// 
   /// Indicates whether recipe has associated tags for UI conditional rendering
   /// of tag display components and tag-related functionality.
   bool get hasTags => _recipe.tags != null && _recipe.tags!.isNotEmpty;
@@ -212,17 +185,14 @@ class RecipeDetailViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
   // ===== RECIPE MANAGEMENT OPERATIONS =====
 
   /// Deletes recipe with comprehensive analytics tracking and progress management.
-  /// 
   /// Returns true if deletion succeeds, false if operation fails.
   /// Performs complete recipe deletion flow including service coordination, analytics tracking,
   /// and comprehensive error handling with progress state management for optimal user experience.
-  /// 
   /// **Deletion Process:**
   /// - Deletion state management with UI progress indication
   /// - Service-coordinated recipe deletion with error handling
   /// - Comprehensive analytics tracking with recipe metadata
   /// - Progress state cleanup with automatic UI synchronization
-  /// 
   /// **Usage Example:**
   /// ```dart
   /// final deleted = await recipeDetailViewModel.deleteRecipe();
@@ -263,17 +233,14 @@ class RecipeDetailViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
   }
 
   /// Marks recipe as cooked with comprehensive analytics tracking and state management.
-  /// 
   /// Returns true if cooking mark succeeds, false if operation fails.
   /// Performs complete cooking tracking flow including timestamp update, service coordination,
   /// analytics integration, and state synchronization for comprehensive cooking interaction management.
-  /// 
   /// **Cooking Tracking Process:**
   /// - Recipe state update with current cooking timestamp
   /// - Service-coordinated recipe update with error handling
   /// - Local state synchronization with immediate UI updates
   /// - Comprehensive analytics tracking with first-time cooking detection
-  /// 
   /// **Usage Example:**
   /// ```dart
   /// final cookingMarked = await recipeDetailViewModel.markAsCooked();
@@ -316,9 +283,7 @@ class RecipeDetailViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
   // ===== INTERNAL STATE MANAGEMENT =====
 
   /// Updates deletion state with automatic UI notification for progress indication.
-  /// 
   /// [value] New deletion state for progress tracking
-  /// 
   /// Manages deletion operation state with immediate UI notification enabling
   /// progress indicators and interaction control during recipe deletion operations.
   void _setDeleting(bool value) {
@@ -327,7 +292,6 @@ class RecipeDetailViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
   }
 
   /// Clears error state with comprehensive state management and UI synchronization.
-  /// 
   /// Provides error state cleanup capability designed for future error handling expansion
   /// and consistency with other ViewModels for comprehensive error management patterns.
   @override

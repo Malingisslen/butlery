@@ -8,7 +8,6 @@ import 'package:butlery/widgets/common/state/state_enums.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 
 /// EmptyStates - Empty state implementations
-///
 /// Handles different empty state variants with appropriate icons and messages.
 class EmptyStates {
   /// Build empty state based on variant

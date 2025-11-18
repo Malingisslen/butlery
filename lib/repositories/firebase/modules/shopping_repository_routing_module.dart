@@ -7,7 +7,6 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Module handling collection routing between personal and collaborative shopping lists.
-///
 /// Routes CRUD operations to appropriate Firestore collections:
 /// - Personal lists: /users/{userId}/unified_shopping_lists
 /// - Collaborative lists: /unified_shared_shopping_lists

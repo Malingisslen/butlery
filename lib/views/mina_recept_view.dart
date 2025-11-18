@@ -1,8 +1,6 @@
 /// Personal recipe management view with filtering, social integration, and offline support.
-///
 /// Displays user's recipe collection with search/filter capabilities, friend notifications,
 /// and offline synchronization. Uses multi-provider architecture for state management.
-///
 /// **Key Features:**
 /// - Recipe browsing with search, filtering, and sorting
 /// - Social notifications (friend requests, shared content)

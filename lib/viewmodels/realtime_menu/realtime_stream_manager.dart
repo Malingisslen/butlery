@@ -6,13 +6,11 @@ import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for realtime menu streaming
-/// 
 /// This module handles ONLY streaming and connection management:
 /// - Real-time menu subscription management
 /// - Stream lifecycle (start/stop/pause)
 /// - Connection monitoring and error handling
 /// - Stream state validation
-/// 
 /// ❌ DOES NOT CONTAIN: UI state, menu operations, participant management
 class RealtimeStreamManager {
   final RealtimeMenuService _menuService;

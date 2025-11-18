@@ -1,5 +1,4 @@
 /// URL Import Strategy - Extracts recipes from web URLs using structured data or text parsing.
-///
 /// Implements a multi-tier extraction workflow:
 /// 1. Fetch HTML from URL
 /// 2. Try RecipeScraper (JSON-LD/Microdata structured data)
@@ -17,13 +16,11 @@ import 'package:butlery/services/extraction/site_parsers/site_parser_registry.da
 import 'package:butlery/utils/recipe_scraper.dart';
 
 /// Strategy for importing recipes from web URLs (recipe sites, blogs, etc.).
-///
 /// **Extraction Workflow:**
 /// 1. **Static HTML Fetch**: Fast direct HTTP fetch for most recipe sites
 /// 2. **Structured Data Parse**: RecipeScraper extracts JSON-LD/Microdata
 /// 3. **Dynamic Content Fallback**: WebScraper for JavaScript-rendered sites
 /// 4. **Text Parsing Fallback**: TextImportStrategy parses plain text
-///
 /// **Supported Sites:**
 /// - Recipe sites with schema.org markup (ICA.se, Arla.se, Köket.se, AllRecipes, etc.)
 /// - General blogs with structured data
@@ -44,7 +41,6 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   final WebScraper Function()? _webScraperFactory;
 
   /// Creates a URL import strategy with optional dependency injection for testing.
-  ///
   /// [httpClient] - Optional HTTP client for mocking network requests
   /// [webScraperFactory] - Optional factory for creating WebScraper instances (for mocking)
   UrlImportStrategy({

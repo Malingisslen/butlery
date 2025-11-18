@@ -1,5 +1,4 @@
 /// Manages user profile caching for friend request participants
-///
 /// Extracted from FriendsViewModel for Single Responsibility compliance.
 /// Handles profile loading, caching, and display name/avatar resolution.
 

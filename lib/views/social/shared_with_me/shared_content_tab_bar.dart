@@ -7,7 +7,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 
 /// SharedContentTabBar - Tab bar for shared content view
-///
 /// Handles tab navigation between recipes, menus, and shared shopping lists with unread counts.
 class SharedContentTabBar {
   static Widget build(

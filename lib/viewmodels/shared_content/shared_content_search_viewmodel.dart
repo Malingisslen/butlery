@@ -1,5 +1,4 @@
 /// Unified search across shared content with filtering and relevance scoring.
-///
 /// Handles search across recipes, menus, and shopping lists with debouncing,
 /// advanced filtering (type, status, date), and relevance-based ranking.
 

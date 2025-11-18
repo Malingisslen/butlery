@@ -1,10 +1,8 @@
 /// Comprehensive notification type system defining intelligent delivery strategies and priority management for cooking-focused notifications.
-///
 /// This system implements sophisticated notification categorization with intelligent delivery strategies based on user
 /// interaction patterns and cooking workflow optimization. It provides comprehensive notification type definitions that
 /// balance user engagement with notification fatigue prevention through smart batching, priority management, and
 /// context-aware delivery timing for optimal cooking and social experience.
-///
 /// **Notification Delivery Strategies:**
 /// The system implements five core delivery strategies optimized for cooking and social interactions:
 /// - **IMMEDIATE**: Real-time notifications for critical social interactions requiring instant attention
@@ -12,20 +10,17 @@
 /// - **SILENT**: Background data synchronization without user interruption for seamless experience
 /// - **DIGEST**: Periodic summaries providing curated activity overviews on user-defined schedules
 /// - **OPTIONAL**: User-configurable notifications with sensible defaults respecting user preferences
-///
 /// **Priority Management System:**
 /// Four-tier priority system ensuring appropriate notification urgency and delivery timing:
 /// - **Critical**: Immediate delivery for friend requests, direct recipe shares, and collaboration invites
 /// - **High**: Prioritized delivery for comments, cooking collaborations, and social interactions
 /// - **Medium**: Standard delivery for activity updates, likes, and general social engagement
 /// - **Low**: Background delivery for digest summaries, optional features, and non-urgent content
-///
 /// **Cooking-Focused Optimization:**
 /// - Respects cooking time constraints with intelligent timing
 /// - Batches similar cooking-related notifications to prevent interruption during meal preparation
 /// - Provides context-aware delivery based on user's cooking schedule and meal planning activities
 /// - Integrates with quiet hours and do-not-disturb preferences for optimal user experience
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Define notification with appropriate type and priority
@@ -34,7 +29,6 @@
 ///   priority: NotificationPriority.critical,
 ///   category: 'recipe_shared',
 /// );
-/// 
 /// // Check if notification should be batched
 /// if (notification.type == NotificationType.batchable) {
 ///   await batchManager.addToBatch(notification);

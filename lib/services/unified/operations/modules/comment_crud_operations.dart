@@ -9,13 +9,11 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// Focused module for comment CRUD operations
-///
 /// This module handles ONLY comment content management:
 /// - Comment creation and validation
 /// - Comment reading and streaming
 /// - Comment editing and deletion
 /// - Comment threading and sorting
-///
 /// ❌ DOES NOT CONTAIN: Likes, notifications, reply counts, statistics
 class CommentCrudOperations {
   final CommentsRepository _commentsRepository;

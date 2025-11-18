@@ -14,14 +14,12 @@ import 'package:butlery/widgets/social/collaborative/components/collaborative_pe
 import 'package:butlery/widgets/social/collaborative/components/collaborative_connection_widgets.dart';
 
 /// Collaborative Indicators API
-///
 /// This class provides a unified API for collaborative editing indicators:
 /// - Status badges and banners for collaborative content
 /// - Participant avatars and lists
 /// - Live editing indicators with animations
 /// - Permission banners and status
 /// - Connection status indicators
-///
 /// MIGRATION GUIDE:
 /// ```dart
 /// // Before: No change needed
@@ -123,7 +121,6 @@ class CollaborativeIndicators {
   }
 
   /// Fetch real participants for collaborative content
-  ///
   /// This method fetches actual participants from SharedRecipe/SharedMenu
   /// based on contentId and contentType
   static Widget collaborativeParticipants({

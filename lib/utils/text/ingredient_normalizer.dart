@@ -31,11 +31,8 @@ class NormalizationResult {
 }
 
 /// MODUL1 Stage 2: Normalize parsed ingredient names
-///
 /// Runs AFTER IngredientParser to clean ingredient names for tagging.
-///
 /// # What Normalization Does
-///
 /// 1. Removes preparation states: "hackad lök" → "lök"
 /// 2. Removes size descriptors: "stort ägg" → "ägg"
 /// 3. Removes type descriptors: "mjölig potatis" → "potatis"
@@ -44,25 +41,19 @@ class NormalizationResult {
 /// 6. Normalizes plural: "tomater" → "tomat"
 /// 7. Extracts base: "tomatsås" → "tomat"
 /// 8. Validates against known ingredients
-///
 /// # CRITICAL: Special Preservation Rules
-///
 /// **PRESERVED - Diet descriptors:**
 /// - "glutenfri pasta" → "glutenfri pasta" ✅
 /// - "sockerfri läsk" → "sockerfri läsk" ✅
 /// - "laktosfri mjölk" → "laktosfri mjölk" ✅
-///
 /// **PRESERVED - "med [flavor]" products:**
 /// - "mayo med lime och jalapeño" → "mayo med lime och jalapeño" ✅
 /// - "läsk med hallonsmak" → "läsk med hallonsmak" ✅
-///
 /// **PRESERVED - Compound ingredient names:**
 /// - "vitpeppar" → "vitpeppar" ✅ (NOT "peppar")
 /// - "svartpeppar" → "svartpeppar" ✅
 /// - "kryddpeppar" → "kryddpeppar" ✅
-///
 /// # Real-World Examples
-///
 /// ```dart
 /// normalize("rimmat fläsk")               // → "fläsk"
 /// normalize("stort ägg")                  // → "ägg"
@@ -72,9 +63,7 @@ class NormalizationResult {
 /// normalize("mayo med lime och jalapeño") // → "mayo med lime och jalapeño" (preserved!)
 /// normalize("vitpeppar")                  // → "vitpeppar" (compound name!)
 /// ```
-///
 /// # Integration
-///
 /// ```dart
 /// // Full pipeline
 /// final preprocessed = IngredientPreprocessor.preprocess("ca 3 dl rimmat fläsk");
@@ -218,7 +207,6 @@ class IngredientNormalizer {
   }
 
   /// Handle "eller" alternatives
-  ///
   /// Takes the last item after "eller":
   /// - "gul eller röd lök" → "lök"
   /// - "farinsocker eller strösocker" → "strösocker"
@@ -268,7 +256,6 @@ class IngredientNormalizer {
   }
 
   /// Extract base ingredient from compound words
-  ///
   /// Examples:
   /// - "tomatsås" → "tomat" (if "tomat" is known)
   /// - "kycklingfilé" → "kyckling" (if "kyckling" is known)

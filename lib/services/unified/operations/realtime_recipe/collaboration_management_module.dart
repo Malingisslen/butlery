@@ -10,13 +10,11 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
 
 /// Collaboration management module
-/// 
 /// This module handles ONLY collaboration management operations:
 /// - Enable/disable collaborative editing for recipes
 /// - Manage collaboration membership and permissions
 /// - Handle collaboration ownership transfers
 /// - Track collaboration lifecycle events
-/// 
 /// ❌ DOES NOT CONTAIN: Watching, editing, presence, notifications
 class CollaborationManagementModule {
   final UnifiedRecipeService _parent;

@@ -7,19 +7,16 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Focused module for invitation target list and grid layouts
-/// 
 /// This module handles ONLY list and grid presentations:
 /// - Target lists and grids with selection capabilities
 /// - Layout management and scrolling behavior
 /// - Collection presentations
-/// 
 /// ❌ DOES NOT CONTAIN: Display widgets, selectors, states, actions
 class InvitationLists {
 
   // ===== TARGET LISTS AND GRIDS =====
 
   /// Build target list
-  /// 
   /// Scrollable list of invitation targets
   static Widget targetList({
     required List<InvitationTarget> targets,
@@ -38,7 +35,6 @@ class InvitationLists {
   }
 
   /// Build target grid
-  /// 
   /// Grid layout for invitation targets
   static Widget targetGrid({
     required List<InvitationTarget> targets,
@@ -58,7 +54,6 @@ class InvitationLists {
   }
 
   /// Build paginated target list
-  /// 
   /// List with pagination support
   static Widget paginatedTargetList({
     required List<InvitationTarget> targets,
@@ -85,7 +80,6 @@ class InvitationLists {
   }
 
   /// Build sectioned target list
-  /// 
   /// List grouped by target type
   static Widget sectionedTargetList({
     required List<InvitationTarget> targets,
@@ -142,7 +136,6 @@ class InvitationLists {
   }
 
   /// Build virtual scrolling target list
-  /// 
   /// Optimized list for large datasets
   static Widget virtualScrollingTargetList({
     required List<InvitationTarget> targets,
@@ -169,7 +162,6 @@ class InvitationLists {
   }
 
   /// Build horizontal target list
-  /// 
   /// Horizontal scrolling list
   static Widget horizontalTargetList({
     required List<InvitationTarget> targets,
@@ -221,7 +213,6 @@ class InvitationLists {
   }
 
   /// Build staggered target grid
-  /// 
   /// Grid with variable item heights
   static Widget staggeredTargetGrid({
     required List<InvitationTarget> targets,

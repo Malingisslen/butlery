@@ -1,9 +1,7 @@
 /// Comprehensive error handling mixin for standardizing error patterns across the app.
-///
 /// This mixin eliminates 1,100-1,400 lines of duplicate error handling code found
 /// across 184+ files in the codebase by providing a centralized, consistent approach
 /// to error management, logging, and user feedback.
-///
 /// Key capabilities:
 /// - Standardized try-catch-log patterns for async and sync operations
 /// - User-friendly error message generation and display
@@ -12,14 +10,12 @@
 /// - Firebase-specific error handling and categorization
 /// - Network error detection and appropriate user messaging
 /// - Error recovery patterns and retry mechanisms
-///
 /// Architecture benefits:
 /// - Eliminates inconsistent error handling across services and ViewModels
 /// - Provides centralized error logging and analytics tracking
 /// - Ensures consistent user experience during error scenarios
 /// - Simplifies testing with predictable error handling patterns
 /// - Reduces boilerplate code in business logic classes
-///
 /// Usage examples:
 /// ```dart
 /// // Basic async operation with error handling
@@ -28,13 +24,11 @@
 ///   operationName: 'Fetch user data',
 ///   defaultValue: [],
 /// );
-///
 /// // Create operation with user-friendly error messages
 /// final recipe = await safeCreate(
 ///   () => recipeService.createRecipe(data),
 ///   'recipe',
 /// );
-///
 /// // Batch operations with error handling
 /// final results = await safeBatchOperation(
 ///   operations,
@@ -47,11 +41,9 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/app_strings.dart';
 
 /// Error classification enum for intelligent error handling strategies.
-///
 /// This enumeration provides detailed error classification to enable appropriate
 /// handling strategies based on the specific type of connectivity or service issue.
 /// It helps distinguish between DNS problems, network issues, and service errors.
-///
 /// **Error Categories:**
 /// - [dnsResolution] DNS resolution failures preventing domain name resolution
 /// - [networkConnectivity] Network connectivity issues affecting communication
@@ -61,48 +53,40 @@ import 'package:butlery/core/constants/app_strings.dart';
 /// - [unknown] Unclassified errors requiring conservative handling
 enum ErrorType {
   /// DNS resolution failures preventing domain name resolution.
-  ///
   /// This error type indicates issues resolving domain names to IP addresses,
   /// which can be addressed through DNS failover and direct IP connection strategies.
   dnsResolution,
   
   /// Network connectivity issues affecting communication.
-  ///
   /// This error type indicates broader network connectivity problems that may require
   /// retry strategies, connection quality assessment, or offline mode activation.
   networkConnectivity,
   
   /// Authentication and permission errors.
-  ///
   /// This error type indicates authentication failures or insufficient permissions
   /// that require user authentication or permission elevation.
   authentication,
   
   /// Resource not found errors.
-  ///
   /// This error type indicates that requested resources could not be found,
   /// requiring appropriate user communication and error handling.
   notFound,
   
   /// Temporary service unavailability.
-  ///
   /// This error type indicates temporary service problems that may resolve
   /// with retry strategies or require user notification about service status.
   serviceUnavailable,
   
   /// Unclassified errors requiring conservative handling.
-  ///
   /// This error type indicates errors that cannot be clearly classified and
   /// require conservative error handling and user communication.
   unknown,
 }
 
 /// Mixin providing comprehensive error handling capabilities.
-///
 /// Consolidates common error handling patterns into reusable methods that provide
 /// consistent error logging, user messaging, and recovery mechanisms across the
 /// entire application.
-///
 /// Classes using this mixin gain access to:
 /// - Safe execution wrappers for async and synchronous operations
 /// - Operation-specific error handling (CRUD operations)
@@ -115,19 +99,15 @@ mixin ErrorHandlingMixin {
   // ===== BASIC ERROR HANDLING CONSOLIDATION =====
   
   /// Safely executes an async operation with comprehensive error handling.
-  ///
   /// This method wraps async operations in standardized try-catch logic,
   /// providing consistent error logging, user messaging, and fallback behavior.
   /// Replaces the most common error handling pattern found in 184+ files.
-  ///
   /// [operation] The async operation to execute safely
   /// [operationName] Human-readable name for logging purposes
   /// [defaultValue] Value to return if the operation fails
   /// [logError] Whether to log errors (default: true)
   /// [customErrorMessage] Custom error message for user feedback
-  ///
   /// Returns the operation result or [defaultValue] if the operation fails.
-  ///
   /// Example:
   /// ```dart
   /// final recipes = await safeExecute(
@@ -161,19 +141,15 @@ mixin ErrorHandlingMixin {
   }
   
   /// Safely executes a synchronous operation with error handling.
-  ///
   /// Provides the same error handling capabilities as [safeExecute] but for
   /// synchronous operations. Useful for data transformations, validations,
   /// and other non-async operations that may throw exceptions.
-  ///
   /// [operation] The synchronous operation to execute safely
   /// [operationName] Human-readable name for logging purposes
   /// [defaultValue] Value to return if the operation fails
   /// [logError] Whether to log errors (default: true)
   /// [customErrorMessage] Custom error message for user feedback
-  ///
   /// Returns the operation result or [defaultValue] if the operation fails.
-  ///
   /// Example:
   /// ```dart
   /// final parsedData = safeExecuteSync(
@@ -208,17 +184,13 @@ mixin ErrorHandlingMixin {
   // ===== OPERATION-SPECIFIC ERROR HANDLING =====
   
   /// Safely executes a create operation with specialized error handling.
-  ///
   /// Provides standardized error handling for create operations with
   /// user-friendly error messages. Automatically generates appropriate
   /// error messages based on the item type being created.
-  ///
   /// [createOperation] The async create operation to execute
   /// [itemType] Human-readable name of the item being created (e.g., 'recipe', 'user')
   /// [defaultValue] Value to return if the create operation fails
-  ///
   /// Returns the created item or [defaultValue] if creation fails.
-  ///
   /// Example:
   /// ```dart
   /// final recipe = await safeCreate(
@@ -486,14 +458,11 @@ mixin ErrorHandlingMixin {
   // ===== ERROR CATEGORIZATION =====
   
   /// Categorize and handle different error types with enhanced DNS-aware error classification.
-  ///
   /// This enhanced method provides comprehensive error categorization including DNS resolution
   /// failures, network connectivity issues, and service-specific errors. It enables intelligent
   /// error handling strategies based on the specific type of connectivity or service issue.
-  ///
   /// [error] The error to categorize and handle
   /// [operation] The operation context for logging and error reporting
-  ///
   /// **Enhanced Error Categories:**
   /// - DNS resolution failures with specific user messaging
   /// - Network connectivity issues with appropriate guidance
@@ -510,13 +479,10 @@ mixin ErrorHandlingMixin {
   }
 
   /// Classifies errors into specific categories for intelligent handling.
-  ///
   /// This method provides detailed error classification that enables appropriate
   /// handling strategies based on the specific type of connectivity or service issue.
   /// It's particularly useful for distinguishing DNS issues from other network problems.
-  ///
   /// [error] The error to classify
-  ///
   /// Returns [ErrorType] indicating the specific error category
   ErrorType classifyError(dynamic error) {
     if (error is Exception) {
@@ -566,12 +532,9 @@ mixin ErrorHandlingMixin {
   }
 
   /// Gets appropriate user message for specific error types.
-  ///
   /// This method provides user-friendly error messages tailored to specific
   /// error categories, enabling better user communication and guidance.
-  ///
   /// [errorType] The classified error type
-  ///
   /// Returns user-friendly error message string
   String getUserMessageForErrorType(ErrorType errorType) {
     switch (errorType) {
@@ -607,13 +570,10 @@ mixin ErrorHandlingMixin {
   // ===== UTILITY METHODS =====
   
   /// Check if error is recoverable with enhanced DNS-aware classification.
-  ///
   /// This enhanced method provides comprehensive error recoverability assessment
   /// including DNS resolution issues, network connectivity problems, and temporary
   /// service failures. It helps determine appropriate retry strategies.
-  ///
   /// [error] The error to assess for recoverability
-  ///
   /// Returns `true` if the error indicates a recoverable condition
   bool isRecoverableError(dynamic error) {
     final errorCategory = classifyError(error);
@@ -631,36 +591,27 @@ mixin ErrorHandlingMixin {
   }
 
   /// Checks if error is specifically related to DNS resolution issues.
-  ///
   /// This method provides targeted DNS error detection to enable DNS-specific
   /// recovery strategies like IP fallback and DNS server switching.
-  ///
   /// [error] The error to check for DNS issues
-  ///
   /// Returns `true` if the error is related to DNS resolution
   bool isDNSResolutionError(dynamic error) {
     return classifyError(error) == ErrorType.dnsResolution;
   }
 
   /// Checks if error is related to general network connectivity.
-  ///
   /// This method distinguishes between DNS-specific issues and broader
   /// network connectivity problems for appropriate handling strategies.
-  ///
   /// [error] The error to check for network issues
-  ///
   /// Returns `true` if the error is related to network connectivity
   bool isNetworkConnectivityError(dynamic error) {
     return classifyError(error) == ErrorType.networkConnectivity;
   }
   
   /// Extract user-friendly message from error with enhanced DNS-aware messaging.
-  ///
   /// This enhanced method provides user-friendly error messages with specific
   /// handling for DNS resolution issues and other connectivity problems.
-  ///
   /// [error] The error to extract user message from
-  ///
   /// Returns user-friendly error message string
   String extractUserMessage(dynamic error) {
     final errorCategory = classifyError(error);

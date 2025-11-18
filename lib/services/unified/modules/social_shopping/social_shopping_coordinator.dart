@@ -1,26 +1,21 @@
 /// Social Shopping Coordinator implementing standardized coordination patterns.
-///
 /// This coordinator provides unified shopping list sharing and collaboration functionality
 /// following the established pattern from SocialRecipeCoordinator and SocialMenuCoordinator.
 /// It uses the BaseSocialCoordinator to provide consistent invitation system, join operations,
 /// and notification coordination for shopping list content.
-///
 /// **Architecture Benefits:**
 /// - **Consistent API**: Unified operations matching other social coordinator patterns
 /// - **Standardized Coordination**: Common social coordination patterns across content types
 /// - **Shopping-Specific Logic**: Direct collaboration behavior for shopping lists (not copy-on-write)
 /// - **Service Integration**: Seamless integration with UnifiedShoppingService and focused services
-///
 /// **Shopping List Coordination Features:**
 /// - **Shopping List Invitation System**: Swedish-style shopping list sharing with direct collaboration
 /// - **Direct Collaboration**: Real-time shared editing (different from copy-on-write used for recipes/menus)
 /// - **Join Operations**: Users join collaborative shopping lists instead of importing copies
 /// - **Analytics Integration**: Shopping list engagement tracking and user interaction metrics
-///
 /// **Key Difference from Recipes/Menus:**
 /// Shopping lists use **direct collaboration** where all users edit the same list,
 /// while recipes and menus use **copy-on-write** where users import their own copies.
-///
 /// **Usage Example:**
 /// ```dart
 /// final shoppingCoordinator = SocialShoppingCoordinator(
@@ -31,14 +26,12 @@
 ///   getShoppingListById: (id) => shoppingService.getListById(id),
 ///   saveShoppingList: (list) => shoppingService.saveList(list),
 /// );
-///
 /// // Create shopping list invitation
 /// final invitationId = await shoppingCoordinator.createShoppingListInvitation(
 ///   shoppingListId: 'list_123',
 ///   inviteeUserIds: ['user1', 'user2'],
 ///   message: 'Vill ni hjälpa till med helgens inköp?',
 /// );
-///
 /// // Join shared shopping list (direct collaboration)
 /// final success = await shoppingCoordinator.joinSharedShoppingList(
 ///   sharedListId: 'shared_list_456',
@@ -339,7 +332,6 @@ class SocialShoppingCoordinator
   }
 
   /// Get all shared shopping lists for a specific user
-  ///
   /// Phase 3 Session 1: Content loading method for ViewModel migration.
   /// Wraps repository call with error handling and logging.
   Future<List<SharedShoppingList>> getSharedShoppingListsForUser(
@@ -357,7 +349,6 @@ class SocialShoppingCoordinator
   // ===== STATUS CACHE METHODS (PHASE 3 SESSION 2) =====
 
   /// Load status for a shopping list from repository and cache it
-  ///
   /// Phase 3 Session 2: Status caching method for ViewModel migration.
   /// Loads viewed, imported, and dismissed status from repository and caches locally.
   Future<void> loadStatusForShoppingList(
@@ -380,7 +371,6 @@ class SocialShoppingCoordinator
   }
 
   /// Load status for all shopping lists in bulk
-  ///
   /// Phase 3 Session 2: Bulk status loading method for ViewModel migration.
   /// Loads status for multiple shopping lists to populate cache efficiently.
   Future<void> loadStatusForAllShoppingLists(
@@ -391,7 +381,6 @@ class SocialShoppingCoordinator
   }
 
   /// Check if shopping list is dismissed using cache
-  ///
   /// Phase 3 Session 2: Status checking method for ViewModel migration.
   /// Falls back to false if not cached.
   bool isShoppingListDismissed(String shoppingListId) {
@@ -399,7 +388,6 @@ class SocialShoppingCoordinator
   }
 
   /// Check if shopping list is viewed using cache
-  ///
   /// Phase 3 Session 2: Status checking method for ViewModel migration.
   /// Falls back to false if not cached.
   bool isShoppingListViewed(String shoppingListId) {
@@ -407,7 +395,6 @@ class SocialShoppingCoordinator
   }
 
   /// Check if shopping list is imported using cache
-  ///
   /// Phase 3 Session 2: Status checking method for ViewModel migration.
   /// Falls back to false if not cached.
   bool isShoppingListImported(String shoppingListId) {

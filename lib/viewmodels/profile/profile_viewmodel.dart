@@ -11,18 +11,15 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// ViewModel for profile management and user account operations.
-///
 /// Handles:
 /// - User profile display data
 /// - Logout operation
 /// - Account deletion coordination
 /// - Profile updates
-///
 /// **Architecture**:
 /// - Uses AsyncOperationMixin for loading states
 /// - Uses StateNotifierMixin for safe notifications
 /// - Constructor injection for testability
-///
 /// **Usage**:
 /// ```dart
 /// final viewModel = ServiceLocator.get<ProfileViewModel>();
@@ -81,14 +78,11 @@ class ProfileViewModel extends ChangeNotifier
   }
 
   /// Delete user account and all associated data
-  ///
   /// This is a destructive operation that:
   /// - Deletes all user data from Firestore
   /// - Deletes Firebase Authentication account
   /// - Cannot be undone
-  ///
   /// [reason] - Required reason for account deletion (for audit log)
-  ///
   /// Returns true if successful, false otherwise
   Future<bool> deleteAccount({required String reason}) async {
     bool success = false;
@@ -127,7 +121,6 @@ class ProfileViewModel extends ChangeNotifier
   }
 
   /// Update user profile
-  ///
   /// Updates display name and other profile settings
   Future<void> updateProfile({
     required String displayName,

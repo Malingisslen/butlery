@@ -1,9 +1,7 @@
 /// Analytics repository interface for abstracting analytics operations.
-///
 /// This interface provides a contract for analytics implementations, enabling
 /// dependency injection and testability while maintaining flexibility to switch
 /// between different analytics providers (Firebase Analytics, custom analytics, etc.).
-///
 /// The repository pattern abstracts the underlying analytics implementation,
 /// allowing services to depend on this interface rather than concrete Firebase
 /// classes, which significantly improves testability and maintainability.

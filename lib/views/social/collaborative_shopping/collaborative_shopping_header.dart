@@ -7,13 +7,11 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Focused widget for collaborative shopping list header
-/// 
 /// This widget handles ONLY header display responsibilities:
 /// - List title and status badge display
 /// - Description and metadata display
 /// - Progress tracking and visualization
 /// - Member count and activity summary
-/// 
 /// ❌ DOES NOT CONTAIN: Item management, actions, business logic
 class CollaborativeShoppingHeader extends StatelessWidget {
   final CollaborativeShoppingViewModel viewModel;

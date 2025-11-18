@@ -1,10 +1,8 @@
 /// Comprehensive group detail view providing detailed group management and member coordination for Flutter applications.
-///
 /// This module implements sophisticated group detail interface following Single Responsibility Principle,
 /// specializing in group information display, member management, permission handling, and comprehensive group interaction.
 /// It provides complete group detail interface while maintaining clean separation from business logic,
 /// data persistence, and state management through UnifiedFriendsService integration and modern component architecture.
-///
 /// **Single Responsibility Focus:**
 /// This module exclusively handles group detail UI presentation concerns through comprehensive group architecture:
 /// - **Group Information Excellence**: Advanced group display with header, statistics, and comprehensive information presentation
@@ -12,20 +10,17 @@
 /// - **Permission System Integration**: Comprehensive permission validation with role-based access control and action authorization
 /// - **Real-Time Event Coordination**: Advanced event handling with group updates, member changes, and state synchronization
 /// - **Swedish Localization Excellence**: Complete Swedish language support for group operations and user feedback
-///
 /// **What This Module Does NOT Handle:**
 /// - Group business logic and data operations (handled by UnifiedFriendsService and group infrastructure)
 /// - Permission validation algorithms (handled by PermissionService and authorization infrastructure)
 /// - Member invitation processing (handled by invitation services and group management systems)
 /// - Event publishing and coordination (handled by GroupEventBus and event infrastructure)
-///
 /// **Group Detail View Architecture:**
 /// - **Comprehensive Group Display**: Advanced group presentation with header, statistics, and detailed information coordination
 /// - **Member Management System**: Sophisticated member display with invitation tracking and membership coordination
 /// - **Permission-Based Actions**: Complete action system with role-based permissions and authorization validation
 /// - **Real-Time Event Integration**: Advanced event handling with automatic updates and state synchronization
 /// - **Modular Component System**: Focused component architecture with specialized header, stats, and member list components
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Navigate to group detail view
@@ -36,14 +31,12 @@
 ///     ),
 ///   ),
 /// );
-///
 /// // The view provides comprehensive group detail functionality:
 /// // - Complete group information display with header, statistics, and member details
 /// // - Permission-based member management with invitation tracking and membership coordination
 /// // - Role-based action system with edit, delete, and leave group capabilities
 /// // - Real-time event integration with automatic updates and state synchronization
 /// // - Modular component architecture with specialized focused components
-///
 /// // Integration with specialized components:
 /// // - GroupDetailHeader for group information and visual presentation
 /// // - GroupDetailStats for membership statistics and group metrics
@@ -91,11 +84,9 @@ import 'package:butlery/widgets/social/groups/ownership_transfer_dialog.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 
 /// Comprehensive group detail view providing detailed group management and member coordination through advanced group architecture.
-///
 /// Manages complete group detail interface enabling group information display, member management, permission handling,
 /// and comprehensive group interaction while maintaining clean separation between UI presentation
 /// and business logic through UnifiedFriendsService integration and specialized component architecture.
-///
 /// **Core Responsibilities:**
 /// - Advanced group information display with header presentation, statistics coordination, and comprehensive detail management
 /// - Member management coordination with invitation tracking, membership display, and comprehensive member functionality
@@ -104,15 +95,12 @@ import 'package:butlery/widgets/common/layout_components.dart';
 /// - Swedish localized group experience with comprehensive user feedback and interactive guidance
 class GroupDetailView extends StatefulWidget {
   /// Group identifier for data loading and management coordination.
-  ///
   /// Contains group ID enabling group data loading, member management,
   /// permission validation, and comprehensive group functionality.
   final String groupId;
 
   /// Creates comprehensive group detail view with detailed management and member coordination.
-  ///
   /// [groupId] Group identifier for data loading and management coordination
-  ///
   /// Establishes group detail interface with information display, member management,
   /// permission handling, and comprehensive group functionality through
   /// UnifiedFriendsService integration and advanced group architecture.
@@ -399,7 +387,6 @@ class _GroupDetailViewState extends State<GroupDetailView>
   }
 
   /// ✅ REFACTORED: Leave group with ownership succession handling (MVVM pattern)
-  ///
   /// Business logic delegated to ViewModel, View handles only UI concerns.
   Future<void> _leaveGroup(FriendCategory group) async {
     if (!mounted) return;

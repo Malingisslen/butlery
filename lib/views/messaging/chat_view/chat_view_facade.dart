@@ -1,5 +1,4 @@
 /// Nuclear Facade for ChatView - Architectural Explosion Component
-///
 /// This facade coordinates the complete chat experience through focused components,
 /// reducing the massive 1,648-line ChatView into a clean, maintainable architecture.
 /// Each component handles a specific responsibility with clear interfaces.

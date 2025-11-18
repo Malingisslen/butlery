@@ -7,13 +7,11 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 
 /// Focused module for real-time cache management and cleanup
-/// 
 /// This module handles ONLY cache and cleanup operations:
 /// - Real-time recipe cache management
 /// - Session cleanup and resource disposal
 /// - Memory management for real-time operations
 /// - Cache synchronization during real-time editing
-/// 
 /// ❌ DOES NOT CONTAIN: Session management, content operations, conflict resolution, editor tracking
 class RealtimeCacheManager {
 

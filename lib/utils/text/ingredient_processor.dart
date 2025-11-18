@@ -1,12 +1,9 @@
 /// MODUL1 Integration Wrapper - Complete ingredient processing pipeline
-///
 /// Provides unified interface for ingredient processing with three patterns:
 /// - Pattern A: Full Pipeline (raw text → preprocessed → parsed → normalized)
 /// - Pattern B: Parse + Normalize (clean text → parsed → normalized)
 /// - Pattern C: Normalize Only (parsed name → normalized)
-///
 /// # Usage Guide
-///
 /// **Pattern A - Recipe Creation/Editing (Raw User Input)**
 /// ```dart
 /// // User types: "ca 3-5 dl mjölk (kall)"
@@ -18,7 +15,6 @@
 /// // - normalizedName: 'mjölk' (for search/tags)
 /// // - cleanedText: '5 dl mjölk' (approximations and parentheses removed)
 /// ```
-///
 /// **Pattern B - Shopping List Generation (Database Data)**
 /// ```dart
 /// // Database has: "2 dl hackad lök"
@@ -29,16 +25,13 @@
 /// // - originalName: 'hackad lök' (for display)
 /// // - normalizedName: 'lök' (preparation removed for grouping)
 /// ```
-///
 /// **Pattern C - Tagging/Search (Already Parsed)**
 /// ```dart
 /// // Already have ingredient name from parser
 /// final normalized = IngredientProcessor.normalizeIngredientName('hackad lök');
 /// // Result: 'lök' (preparation removed)
 /// ```
-///
 /// # Integration Points
-///
 /// - Recipe Form: Use Pattern A in `updateIngredient()` method
 /// - Text Import: Use Pattern A in `_parseIngredientLine()` method
 /// - Shopping Lists: Use Pattern B for better grouping (optional)
@@ -123,30 +116,25 @@ class ProcessedIngredient {
 }
 
 /// Unified ingredient processing system integrating MODUL1 pipeline
-///
 /// Provides three processing patterns for different use cases:
 /// - Pattern A: Full pipeline for raw user input
 /// - Pattern B: Parse + normalize for database data
 /// - Pattern C: Normalize only for parsed names
-///
 /// Static utility class - no instantiation required.
 class IngredientProcessor {
   /// Private constructor to prevent instantiation
   IngredientProcessor._();
 
   /// Pattern A: Full Pipeline - Raw user input → Complete processing
-  ///
   /// Use for:
   /// - Recipe creation/editing (manual user input)
   /// - Text import (pasted recipes)
   /// - OCR import (photo/screenshot recipes)
   /// - Any raw recipe text from external sources
-  ///
   /// Processing steps:
   /// 1. Preprocessing: Remove approximations, ranges, parentheses, instructions
   /// 2. Parsing: Extract quantity, unit, ingredient name
   /// 3. Normalization: Clean ingredient name, validate against known ingredients
-  ///
   /// Example:
   /// ```dart
   /// final input = "ca 3-5 dl glutenfri mjölk (kall) till gröten";
@@ -181,14 +169,11 @@ class IngredientProcessor {
   }
 
   /// Pattern B: Parse + Normalize - Clean text → Structured + Normalized
-  ///
   /// Use for:
   /// - Shopping list generation from database recipes
   /// - Recipe display where you want better grouping
   /// - Any scenario with existing clean ingredient strings
-  ///
   /// Skips preprocessing (assumes data already clean).
-  ///
   /// Example:
   /// ```dart
   /// final dbIngredient = "2 dl hackad lök";
@@ -217,14 +202,11 @@ class IngredientProcessor {
   }
 
   /// Pattern C: Normalize Only - Parsed name → Normalized name
-  ///
   /// Use for:
   /// - When you already have parsed data
   /// - Quick normalization for search/tagging
   /// - Categorization of ingredient names
-  ///
   /// Returns just the normalization result.
-  ///
   /// Example:
   /// ```dart
   /// final parsedName = "hackad lök";
@@ -236,9 +218,7 @@ class IngredientProcessor {
   }
 
   /// Batch process multiple raw ingredients (Pattern A)
-  ///
   /// Efficient processing of ingredient lists with full pipeline.
-  ///
   /// Example:
   /// ```dart
   /// final rawList = [
@@ -255,7 +235,6 @@ class IngredientProcessor {
   }
 
   /// Batch parse and normalize (Pattern B)
-  ///
   /// Efficient processing of clean ingredient lists.
   static List<ProcessedIngredient> parseAndNormalizeMany(
     List<String> cleanIngredients,
@@ -266,7 +245,6 @@ class IngredientProcessor {
   }
 
   /// Batch normalize ingredient names (Pattern C)
-  ///
   /// Quick normalization of parsed ingredient names.
   static List<NormalizationResult> normalizeIngredientNames(
     List<String> parsedNames,
@@ -277,9 +255,7 @@ class IngredientProcessor {
   }
 
   /// Helper: Get just the cleaned text without full processing
-  ///
   /// Useful when you only need preprocessing without parsing.
-  ///
   /// Example:
   /// ```dart
   /// final raw = "ca 3-5 dl mjölk (kall)";
@@ -291,9 +267,7 @@ class IngredientProcessor {
   }
 
   /// Helper: Check if preprocessing would modify the text
-  ///
   /// Useful for validation or user feedback.
-  ///
   /// Example:
   /// ```dart
   /// if (IngredientProcessor.needsPreprocessing("ca 3 dl mjölk")) {
@@ -306,9 +280,7 @@ class IngredientProcessor {
   }
 
   /// Helper: Get preprocessing changes for user feedback
-  ///
   /// Returns what changes would be made by preprocessing.
-  ///
   /// Example:
   /// ```dart
   /// final changes = IngredientProcessor.getPreprocessingChanges("ca 3-5 dl mjölk");
@@ -333,20 +305,15 @@ class IngredientProcessor {
   }
 
   /// Auto-populate normalized ingredients for a recipe
-  ///
   /// Takes a list of raw ingredient strings and returns normalized versions
   /// ready for database storage in the ingredientsNormalized field.
-  ///
   /// Uses Pattern B (Parse + Normalize) to extract core ingredient names
   /// without preparation words, enabling better search, filtering, and
   /// shopping list grouping.
-  ///
   /// Handles failures gracefully - if an ingredient can't be normalized,
   /// it uses the original ingredient as fallback to prevent data loss.
-  ///
   /// Returns null if input is null (for backward compatibility).
   /// Returns empty list if input is empty list.
-  ///
   /// Example:
   /// ```dart
   /// final ingredients = ["2 dl hackad lök", "3 st stora ägg", "glutenfri pasta"];
@@ -381,19 +348,15 @@ class IngredientProcessor {
   }
 
   /// Check if recipe needs normalized ingredients populated
-  ///
   /// Returns true if the recipe's ingredientsNormalized field needs to be
   /// populated or refreshed. This happens when:
   /// - ingredientsNormalized is null (never populated)
   /// - Length mismatch between ingredients and normalized (edited without update)
-  ///
   /// Returns false if:
   /// - Both ingredients and normalized are empty (nothing to normalize)
   /// - Lengths match (already normalized, may be up-to-date)
-  ///
   /// Note: This is a basic check. For thorough validation, you could
   /// compare the actual normalized values, but that's more expensive.
-  ///
   /// Example:
   /// ```dart
   /// final recipe = Recipe(
@@ -402,7 +365,6 @@ class IngredientProcessor {
   ///     ingredientsNormalized: null, // Not populated
   ///   ),
   /// );
-  ///
   /// if (IngredientProcessor.needsNormalization(recipe)) {
   ///   // Populate the field before saving
   /// }

@@ -40,7 +40,6 @@ class CommentsState {
 }
 
 /// Recipe detail comments widget
-///
 /// This widget provides a complete comments system for recipe details including:
 /// - Expandable/collapsible comments section
 /// - Comment form for posting new comments

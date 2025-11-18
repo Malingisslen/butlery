@@ -7,13 +7,11 @@ import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 
 /// Focused module for rating notifications
-///
 /// This module handles ONLY rating-related notifications:
 /// - Rating notifications to recipe owners
 /// - Rating milestone notifications
 /// - Rating summary notifications
 /// - Notification formatting and targeting
-///
 /// ❌ DOES NOT CONTAIN: Rating operations, statistics, social metrics, engagement calculations
 class RatingNotifications {
   // ===== RATING NOTIFICATIONS =====

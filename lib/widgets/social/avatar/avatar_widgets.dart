@@ -8,7 +8,6 @@ import 'package:butlery/widgets/user/user_display_widgets.dart';
 export '../../user/user_display_widgets.dart' show ImageSize, UserDisplayData;
 
 /// Avatar and user display widgets for social features
-/// 
 /// This module provides all avatar-related widgets with a consistent API
 /// that works with UserProfile objects or individual parameters.
 class AvatarWidgets {

@@ -6,10 +6,8 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/widgets/common/layout_components.dart';
 
 /// GDPR Article 13/14 - Privacy Policy View
-///
 /// Displays the complete privacy policy in Swedish, covering all GDPR
 /// transparency and information requirements.
-///
 /// **Features:**
 /// - Text-formatted privacy policy
 /// - Clickable links for external resources

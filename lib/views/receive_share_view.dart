@@ -1,8 +1,6 @@
 /// Shared content reception view with intelligent content analysis and import routing.
-///
 /// Handles content from share intents, detecting platform/type and routing to appropriate
 /// import workflow. Supports social media extraction with manual fallback options.
-///
 /// **Key Features:**
 /// - Content detection with platform recognition
 /// - Social media extraction (Instagram, Facebook, etc.)

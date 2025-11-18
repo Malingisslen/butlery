@@ -1,8 +1,6 @@
 /// Unified error state management coordinator providing centralized error handling across recipe form components.
-///
 /// This coordinator manages error states across RecipeFormViewModel, RecipeImageManager, FormFieldsManager,
 /// and other recipe form components, providing consistent error presentation, recovery mechanisms, and user feedback.
-/// 
 /// **Architecture Integration:**
 /// - Coordinates errors from multiple form components
 /// - Provides prioritized error display logic

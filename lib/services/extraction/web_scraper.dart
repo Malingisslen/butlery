@@ -1,5 +1,4 @@
 /// Headless web scraping service for extracting recipe content from social media and cooking websites.
-///
 /// Provides platform-specific extraction strategies (Instagram, Facebook, TikTok, recipe sites) using
 /// headless browser technology with timeout management and proper resource cleanup.
 
@@ -48,7 +47,6 @@ class WebScraper {
   }
 
   /// Extracts recipe content from URL using headless browser with platform-specific strategies.
-  ///
   /// Handles browser initialization, timeout management (15s), platform parsing, and resource cleanup.
   Future<ExtractionResult> performExtraction(
     String url,

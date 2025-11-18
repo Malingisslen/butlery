@@ -1,10 +1,8 @@
 /// Comprehensive styled card system providing consistent design patterns and eliminating design-in-views violations.
-///
 /// This widget system consolidates card styling patterns found throughout the application, providing consistent
 /// visual design, elevation handling, and content organization. It eliminates design-in-views violations by
 /// centralizing card styling logic and provides comprehensive card variants for all content display contexts
 /// with proper theming support and responsive design patterns.
-///
 /// **Card Consolidation Impact:**
 /// - **Card Styling**: Eliminates duplicate card styling found in 150+ files
 /// - **Elevation Logic**: Consolidates elevation patterns from 100+ card implementations

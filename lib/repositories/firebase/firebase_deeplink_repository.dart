@@ -1,17 +1,14 @@
 /// Firebase Firestore implementation for comprehensive deep link management and URL shortening services.
-///
 /// This repository provides complete deep link functionality using Firebase Firestore as the backend,
 /// enabling recipe and content sharing through shortened URLs with comprehensive analytics tracking,
 /// metadata management, and lifecycle controls. It supports both internal app navigation and external
 /// sharing with sophisticated click tracking and engagement analytics.
-///
 /// **Architecture Integration:**
 /// - Extends [BaseFirebaseRepository] for consistent CRUD operations and error handling
 /// - Implements [DeepLinkRepository] interface for standardized deep link operations
 /// - Integrates with [AppLogger] for detailed link activity monitoring and debugging
 /// - Coordinates with social sharing system for seamless content distribution
 /// - Supports both authenticated and anonymous link access patterns
-///
 /// **Deep Link System Features:**
 /// - **URL Shortening**: Generate short, shareable links for recipes and content
 /// - **Metadata Storage**: Rich metadata support for enhanced link preview and context
@@ -19,7 +16,6 @@
 /// - **Link Lifecycle**: Automated expiration and cleanup of old or unused links
 /// - **Collision Prevention**: Unique short code generation with conflict resolution
 /// - **Performance Optimization**: Efficient link resolution with minimal database queries
-///
 /// **Analytics and Tracking:**
 /// - **Click Counting**: Aggregate click statistics for link performance analysis
 /// - **User Attribution**: Track which users interact with shared links
@@ -32,41 +28,33 @@ import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 /// Firebase implementation for deep link management with comprehensive URL shortening and analytics.
-///
 /// This repository provides complete deep link functionality using Firebase Firestore collections
 /// for link storage, metadata management, and click analytics. It enables seamless recipe and content
 /// sharing through shortened URLs with sophisticated tracking and engagement analytics.
-///
 /// **Deep Link Architecture:**
 /// Uses a sophisticated multi-collection approach for comprehensive link management:
 /// - `deep_links`: Primary collection storing link mappings and metadata
 /// - `deep_links/{id}/clicks`: Subcollection for detailed click history and analytics
 /// - Automatic cleanup processes for expired and unused links
-///
 /// **URL Shortening System:**
 /// - **Unique Code Generation**: 8-character alphanumeric codes for collision-free short URLs
 /// - **Metadata Integration**: Rich link metadata for enhanced sharing and preview capabilities
 /// - **Click Tracking**: Comprehensive analytics with user attribution and temporal data
 /// - **Performance Optimization**: Efficient link resolution with minimal database overhead
-///
 /// **Usage Examples:**
 /// ```dart
 /// final deepLinkRepo = FirebaseDeepLinkRepository(
 ///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
-/// 
 /// // Create shareable short URL
 /// final shortCode = await deepLinkRepo.createShortUrl(
 ///   'https://butlery.app/recipe/12345',
 ///   {'title': 'Amazing Pasta Recipe', 'type': 'recipe'},
 /// );
-/// 
 /// // Resolve short URL
 /// final longUrl = await deepLinkRepo.getLongUrl(shortCode);
-/// 
 /// // Track click engagement  
 /// await deepLinkRepo.trackUrlClick(shortCode);
-/// 
 /// // Cleanup expired links
 /// await deepLinkRepo.deleteExpiredLinks(
 ///   DateTime.now().subtract(Duration(days: 30))
@@ -76,7 +64,6 @@ class FirebaseDeepLinkRepository extends BaseFirebaseRepository<Map<String, dyna
     implements DeepLinkRepository {
   
   /// Creates a Firebase deep link repository with dependency injection support.
-  ///
   /// [firestore] Optional Firestore instance for testing, defaults to production instance
   /// [authRepository] Required authentication repository for user validation and link attribution
   FirebaseDeepLinkRepository({

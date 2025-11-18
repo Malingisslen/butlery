@@ -9,14 +9,12 @@ import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 /// Focused module for menu card components
-/// 
 /// This module handles ONLY menu card display responsibilities:
 /// - Menu card rendering with menu-specific data
 /// - Menu metadata display (recipe count, duration, etc.)
 /// - Menu sharing status and collaborative indicators
 /// - Menu-specific styling and theming
 /// - Menu preview with recipe list
-/// 
 /// ❌ DOES NOT CONTAIN: Recipe cards, friend cards, shopping list cards, generic content logic
 class MenuCard extends StatelessWidget {
   final dynamic menu; // Can be SharedMenu, RealtimeMenu, or Map<String, List<Recipe>>

@@ -6,7 +6,6 @@ import 'package:butlery/widgets/common/input/portion_scaler_logic.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_ui.dart';
 
 /// Smart portion scaler with ingredient scaling and unit conversion
-///
 /// This widget provides portion scaling functionality with support for both
 /// Swedish and American units, automatic unit detection, and conversion capabilities.
 class PortionScaler extends StatefulWidget {

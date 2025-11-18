@@ -1,15 +1,12 @@
 /// Shared menu model using unified base infrastructure for consistent shared content patterns.
-///
 /// This model extends BaseSharedContentModel and uses mixins for status management and
 /// copy-on-write functionality, eliminating duplicate code while maintaining menu-specific
 /// features and collaboration capabilities.
-///
 /// **Key Features:**
 /// - **Unified Status Management**: Uses SharedContentStatusMixin for consistent view/import/dismiss tracking
 /// - **Copy-on-Write Collaboration**: Uses CopyOnWriteSupport for collaborative editing features
 /// - **Menu-Specific Logic**: Maintains menu snapshots, categories, and import attribution
 /// - **Consistent Serialization**: Leverages base class patterns for Firestore and JSON operations
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Create new shared menu with collaboration
@@ -22,7 +19,6 @@
 ///   menuSnapshot: menuData,
 ///   allowCollaboration: true,
 /// );
-///
 /// // Status tracking (via mixins)
 /// final viewedMenu = sharedMenu.markViewedBy(userId);
 /// final importedMenu = viewedMenu.markImportedBy(userId);
@@ -72,13 +68,11 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   final String? _originalOwnerStaticCopyId;
 
   /// Count of users actively collaborating on this content (Issue #014).
-  ///
   /// Note: Actual collaborator list now stored in Firestore subcollection to eliminate
   /// 100-element array limit. Use repository.getCollaborators(menuId) for full list.
   final int _activeCollaboratorCount;
 
   /// Creates a new shared menu with all required metadata.
-  ///
   /// Note (Issue #014): sharedToUserIds removed from model. Repository layer handles adding
   /// members to Firestore subcollection after creation.
   SharedMenu({
@@ -110,7 +104,6 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
         super(sharedAt: sharedAt ?? DateTime.now());
 
   /// Factory constructor for creating new shared menus with auto-generated ID.
-  ///
   /// Note (Issue #014): sharedToUserIds still accepted for backward compatibility but not stored in model.
   /// Repository layer handles adding members to Firestore subcollection after creation.
   factory SharedMenu.create({
@@ -163,7 +156,6 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   }
 
   /// Creates a copy of this shared menu with updated values.
-  ///
   /// Note (Issue #014): Array parameters removed. Status now tracked in Firestore subcollections.
   SharedMenu copyWith({
     int? viewCount,
@@ -296,10 +288,8 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   }
 
   /// Gets user-friendly Swedish text for how long ago the menu was shared.
-  ///
   /// Provides localized time-ago display optimized for Swedish users with natural
   /// language formatting for improved user experience and temporal context.
-  ///
   /// Returns Swedish time format: 'Nu', '5 min sedan', '2 tim sedan', '3 dagar sedan', '2 veckor sedan'.
   @override
   String get timeAgoText {
@@ -322,10 +312,8 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   /// Analytics and statistics methods for menu engagement insights.
 
   /// Gets the conversion rate from views to imports as a percentage.
-  ///
   /// Provides menu effectiveness metrics by calculating the percentage of
   /// viewers who imported the menu for performance analysis.
-  ///
   /// Returns conversion rate as a percentage (0.0 to 100.0).
   @override
   double get conversionRate {
@@ -334,17 +322,13 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   }
 
   /// Checks if the menu has any recipe content available for sharing.
-  ///
   /// Provides validation for menu sharing eligibility based on content availability.
-  ///
   /// Returns true if the menu contains at least one recipe in any category.
   bool get hasContent => totalRecipeCount > 0;
 
   /// Gets the most popular category based on recipe count.
-  ///
   /// Provides menu analysis by identifying the category with the most recipes
   /// for content optimization and user preference insights.
-  ///
   /// Returns the category name with the highest recipe count, or null if empty.
   String? get mostPopularCategory {
     if (menuSnapshot.isEmpty) return null;
@@ -365,10 +349,8 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   /// Data persistence and serialization methods for Firestore and caching integration.
 
   /// Converts the shared menu to Firestore-compatible format for persistence.
-  ///
   /// Transforms all menu data including complete recipe snapshots into Firestore format
   /// with proper timestamp handling and nested object serialization for database efficiency.
-  ///
   /// Returns a map containing all shared menu data formatted for Firestore persistence.
   Map<String, dynamic> toFirestore() {
     // Convert menu snapshot to Firestore format - UTAN serverTimestamp i nested data
@@ -409,16 +391,12 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   }
 
   /// Creates a shared menu instance from Firestore repository data with robust error handling.
-  ///
   /// Transforms Firestore document data into a complete [SharedMenu] instance with proper
   /// type conversion, recipe reconstruction, and comprehensive error handling for robust data recovery.
-  ///
   /// [id] Document identifier from Firestore
   /// [data] Raw document data from Firestore with all menu fields
-  ///
   /// Returns a new [SharedMenu] instance with all data properly parsed and validated.
   /// Factory constructor to create SharedMenu from Firestore document.
-  ///
   /// This is a convenience method that delegates to fromMap for compatibility
   /// with services expecting a fromFirestore method.
   factory SharedMenu.fromFirestore(Map<String, dynamic> data, String id) {
@@ -590,7 +568,6 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   /// Standard object methods for debugging, comparison, and identity management.
 
   /// Returns a string representation of the shared menu for debugging and logging.
-  ///
   /// Provides essential menu information in a readable format for development
   /// and debugging purposes with menu title, owner, and recipe count.
   @override
@@ -599,7 +576,6 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   }
 
   /// Compares two shared menus for equality based on unique identifier.
-  ///
   /// Uses menu ID for equality comparison ensuring consistent object
   /// identity across different instances of the same menu data.
   @override
@@ -609,7 +585,6 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   }
 
   /// Generates hash code based on unique menu identifier.
-  ///
   /// Provides consistent hash code generation for use in collections and
   /// data structures requiring hash-based operations and menu identification.
   @override

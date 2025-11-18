@@ -12,7 +12,6 @@ import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dar
 import 'package:butlery/widgets/common/social_components.dart';
 
 /// Dialog for creating a new group
-/// 
 /// Enhanced consolidation using DialogFormFields, eliminating 40+ lines of duplicate
 /// form field patterns, validation logic, and styling inconsistencies.
 class CreateGroupDialog extends StatefulWidget {

@@ -1,5 +1,4 @@
 /// Deep link handling for the application.
-///
 /// This handler manages all deep link processing including friend invitations,
 /// recipe sharing, menu sharing, and shopping list sharing. Extracted from
 /// the main.dart to provide clean separation of concerns.
@@ -12,13 +11,11 @@ import 'package:receive_intent/receive_intent.dart' as receive_intent;
 import 'package:butlery/core/constants/routes.dart';
 
 /// Deep link handler for processing incoming shared content.
-///
 /// Handles various types of deep links including:
 /// - Friend invitations (/invite)
 /// - Recipe sharing (/recipe)
 /// - Menu sharing (/menu)
 /// - Shopping list sharing (/shopping)
-///
 /// Provides both initialization-time handling and runtime processing.
 class DeepLinkHandler {
   static final DeepLinkHandler _instance = DeepLinkHandler._internal();
@@ -32,7 +29,6 @@ class DeepLinkHandler {
   bool get isInitialized => _isInitialized;
 
   /// Initialize deep link handling.
-  ///
   /// This should be called during app startup to set up deep link processing.
   /// It will handle any deep links that were received during app launch.
   Future<void> initialize() async {
@@ -99,7 +95,6 @@ class DeepLinkHandler {
   }
 
   /// Process any pending deep link with the provided context.
-  ///
   /// This should be called once the app is fully initialized and has
   /// a valid navigation context available.
   Future<void> processPendingDeepLink(BuildContext context) async {
@@ -114,13 +109,10 @@ class DeepLinkHandler {
   }
 
   /// Process a deep link URL and navigate to the appropriate view.
-  ///
   /// Parses the incoming URL to extract the path and query parameters,
   /// then routes to the correct handler based on the content type.
-  ///
   /// [deepLinkUrl] The complete deep link URL to process
   /// [context] The BuildContext for navigation
-  ///
   /// Supports the following URL patterns:
   /// - `/invite?id=xxx&from=yyy&type=friend` - Friend invitations
   /// - `/recipe?id=xxx&from=yyy` - Shared recipes

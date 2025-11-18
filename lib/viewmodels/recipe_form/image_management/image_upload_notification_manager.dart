@@ -5,14 +5,12 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 
 /// Manages upload progress notifications and error reporting for recipe images.
-///
 /// **Responsibilities:**
 /// - Broadcast upload notification events via stream
 /// - Cooldown management to prevent notification spam
 /// - Trigger notifications for upload milestones (completion, failures, queue cleared)
 /// - Priority-based notification system
 /// - Background notification coordination
-///
 /// **Used by:** RecipeImageManager for user feedback during uploads
 class ImageUploadNotificationManager {
   /// Stream controller for upload notification events

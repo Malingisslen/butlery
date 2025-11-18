@@ -6,7 +6,6 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase synchronization operations for friends data.
-///
 /// Handles direct Firebase operations for friend requests, friend relationships,
 /// and blocked users synchronization.
 class FriendsFirebaseSyncOperations {
@@ -59,7 +58,6 @@ class FriendsFirebaseSyncOperations {
   }
 
   /// Sync friend to Firebase
-  ///
   /// ⚠️ ULTRATHINK WARNING: This method should NOT be used for friend request acceptance!
   /// Use FriendRelationshipRepository.addMutualFriends() instead, which properly handles:
   /// - Atomic operations, counter updates, and consistent field structures

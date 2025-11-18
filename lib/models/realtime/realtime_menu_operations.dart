@@ -1,5 +1,4 @@
 /// Comprehensive realtime menu operations providing advanced business logic and collaborative recipe management for meal planning.
-///
 /// This class implements sophisticated menu operation management following Single Responsibility Principle,
 /// handling all aspects of menu business logic including recipe manipulation, category management, statistical analysis,
 /// and validation operations. It provides complete operational capabilities while maintaining clean separation
@@ -11,7 +10,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_menu_data.dart';
 
 /// Comprehensive realtime menu operations with advanced business logic and collaborative recipe management for meal planning.
-///
 /// Provides complete operational capabilities for menu manipulation including recipe management, category operations,
 /// statistical analysis, and validation systems through focused business logic algorithms and Swedish meal planning optimization.
 /// This class serves as the operational intelligence layer for all menu business logic and collaborative features.

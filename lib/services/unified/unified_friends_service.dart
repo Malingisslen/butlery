@@ -1,52 +1,42 @@
 /// Comprehensive unified friends service providing coordinated social relationship management with advanced collaboration features.
-///
 /// This service implements sophisticated friend management functionality using facade pattern with specialized operations
 /// for friend relationships, group management, invitations, and social sharing. It provides unified access to all
 /// social features while maintaining clean architecture separation and comprehensive real-time synchronization for
 /// enhanced social cooking experiences and community engagement.
-///
 /// **Phase 9 Refactored Architecture:**
 /// This service represents a complete refactoring following Single Responsibility Principle with focused modules:
 /// - Clean facade coordination with backward compatibility for existing ViewModels
 /// - Modular architecture enabling independent testing and maintenance of social features
 /// - Optimistic updates with Firebase synchronization and intelligent caching strategies
 /// - Real-time synchronization ensuring immediate updates across all social interactions
-///
 /// **Architecture Integration:**
 /// - Implements facade pattern coordinating specialized friend management modules
 /// - Integrates with [FirestoreRepository] for persistent friend data storage and real-time updates
 /// - Uses [AuthRepository] for user authentication and permission-aware social operations
 /// - Delegates state management to [FriendsStateManager] with ChangeNotifier for reactive UI updates
 /// - Coordinates with [PermissionService] for comprehensive social permission validation
-///
 /// **Specialized Operations Coordination:**
 /// This facade coordinates between focused operations modules:
 /// - **[FriendsManagementOperations]**: Core friend relationship CRUD operations and status management
 /// - **[FriendsCategoriesOperations]**: Friend categorization and organization with custom groups
 /// - **[FriendsInvitationsOperations]**: Friend request management and invitation workflow handling
 /// - **[SocialGroupSharingOperations]**: Group-based sharing and collaborative cooking features
-///
 /// **Social Features:**
 /// - **Friend Relationships**: Comprehensive friend request, acceptance, and management system
 /// - **Group Management**: Custom friend groups and categories for organized social cooking
 /// - **Social Sharing**: Recipe and menu sharing with friends and groups
 /// - **Real-time Sync**: Live updates for friend activities and social interactions
 /// - **Offline Support**: Complete offline functionality with automatic synchronization
-///
 /// **Usage Examples:**
 /// ```dart
 /// final friendsService = UnifiedFriendsService(firestoreRepo, authRepo);
 /// await friendsService.initialize();
-/// 
 /// // Send friend request
 /// await friendsService.sendFriendRequest(userId, customMessage);
-/// 
 /// // Organize friends in categories
 /// await friendsService.createFriendCategory('Matlagning', ['friend1', 'friend2']);
-/// 
 /// // Share recipe with friend group
 /// await friendsService.shareRecipeWithGroup(recipeId, groupId);
-/// 
 /// // Real-time friend activity updates
 /// friendsService.watchFriendActivity().listen(updateSocialUI);
 /// ```
@@ -83,13 +73,11 @@ import 'package:butlery/services/unified/friends/friends_utility_operations.dart
 // Friends service classes consolidated during nuclear consolidation
 
 /// Unified Friends Service - Main facade for friend management (Phase 9 Refactored)
-/// 
 /// This facade coordinates between focused single-responsibility modules:
 /// - FriendsStateManager: Manages all state and notifications
 /// - FriendsServiceCoordinator: Handles service initialization and callbacks
 /// - FriendsInternalOperations: Provides internal methods for operations classes
 /// - Feature operations: Handle specific business logic
-/// 
 /// Maintains 100% backward compatibility while providing clean modular architecture.
 class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
   // Dependencies
@@ -418,7 +406,6 @@ class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin, E
       await _firebaseSyncOps.updateFriendRequestStatus(request);
 
   /// Sync friend to Firebase
-  ///
   /// ⚠️ ULTRATHINK WARNING: This method should NOT be used for friend request acceptance!
   /// Use FriendRelationshipRepository.addMutualFriends() instead, which properly handles:
   /// - Atomic operations, counter updates, and consistent field structures

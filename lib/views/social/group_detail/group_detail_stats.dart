@@ -7,7 +7,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// GroupDetailStats - Group statistics component
-///
 /// Displays group statistics like member count, activity, etc.
 class GroupDetailStats {
   static Widget build(

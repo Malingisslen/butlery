@@ -76,7 +76,6 @@ class PermissionService extends BaseService {
   }
 
   /// Reset singleton instance for testing purposes only.
-  ///
   /// WARNING: This method should ONLY be used in test environments to ensure
   /// test isolation. Using this in production code will break the singleton
   /// pattern and may cause unexpected behavior.
@@ -91,13 +90,11 @@ class PermissionService extends BaseService {
   }
 
   /// Current authenticated user ID for permission validation and ownership checks.
-  ///
   /// Returns the actual Firebase Auth user ID for the currently authenticated user.
   /// Returns null if no user is authenticated, which is used for permission validation.
   String? get currentUserId => _authRepository.currentUserId;
 
   /// Current authenticated user profile for comprehensive user information access.
-  ///
   /// Returns the UserProfile for the currently authenticated user by converting
   /// from Firebase Auth User. Returns null if no user is authenticated.
   models.UserProfile? get currentUser {
@@ -117,33 +114,27 @@ class PermissionService extends BaseService {
   }
 
   /// Current authenticated user's display name for UI presentation and attribution.
-  ///
   /// Returns the actual Firebase Auth user's display name for UI elements,
   /// notifications, and user attribution features.
   String? get currentUserDisplayName =>
       _authRepository.currentUser?.displayName;
 
   /// Checks if a user is currently authenticated and authorized to perform actions.
-  ///
   /// Returns `true` if there is a current authenticated user, `false` otherwise.
   /// This is a security-critical check that must be performed before any sensitive operations.
   bool get isAuthenticated => currentUserId != null;
 
   /// Retrieves comprehensive user profile information for permission validation and UI presentation.
-  ///
   /// This method provides detailed user profile information including display name, avatar, online status,
   /// and account metadata. In the mock implementation, it generates consistent mock data for development.
   /// In production, this would fetch real user profiles from the authentication system.
-  ///
   /// [userId] Unique identifier of the user whose profile should be retrieved
   /// Returns [UserProfile] with complete user information or `null` if user not found
-  ///
   /// **Mock Implementation Features:**
   /// - Generates consistent mock profiles with realistic data structure
   /// - Provides predictable online status and account age for testing
   /// - Maintains referential integrity with provided user ID
   /// - Simulates realistic user profile attributes for UI development
-  ///
   /// **Production Integration:**
   /// In production, this method would:
   /// - Query the authentication service for real user profile data
@@ -267,20 +258,16 @@ class PermissionService extends BaseService {
   }
 
   /// Validates whether the current user is the owner of a resource by comparing user IDs.
-  ///
   /// This method provides fundamental ownership validation by comparing the current user's ID
   /// against the provided owner ID. It serves as the foundation for ownership-based permission
   /// checking throughout the application and enables consistent ownership semantics.
-  ///
   /// [ownerId] The user ID of the resource owner to validate against current user
   /// Returns `true` if current user ID matches the owner ID, `false` otherwise
-  ///
   /// **Ownership Validation:**
   /// - Performs exact string matching between user IDs
   /// - Returns `false` if current user is not authenticated (null user ID)
   /// - Provides consistent ownership semantics across all resource types
   /// - Enables hierarchical permission checking based on ownership status
-  ///
   /// **Usage Examples:**
   /// ```dart
   /// // Check if current user owns a specific resource

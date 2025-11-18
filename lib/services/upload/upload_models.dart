@@ -1,8 +1,6 @@
 /// State models and data structures for image upload management.
-///
 /// Generic upload models used across the image upload service infrastructure.
 /// These models support all upload scenarios: recipes, avatars, messaging, etc.
-///
 /// **Architecture:** Service Layer - Domain Models
 /// **Responsibility:** Data structures for upload state, progress, and error tracking
 /// **Used By:** ImageUploadService, UploadQueueManager, UploadRetryManager

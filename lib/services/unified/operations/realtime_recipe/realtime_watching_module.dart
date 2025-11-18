@@ -11,13 +11,11 @@ import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart';
 
 /// Realtime recipe watching module
-///
 /// This module handles ONLY real-time watching and stream management:
 /// - Watch single recipes for real-time updates
 /// - Watch multiple recipes simultaneously
 /// - Connection status monitoring
 /// - Fallback polling when realtime unavailable
-///
 /// ❌ DOES NOT CONTAIN: Editing, presence, notifications, collaboration management
 class RealtimeWatchingModule {
   final UnifiedRecipeService _parent;

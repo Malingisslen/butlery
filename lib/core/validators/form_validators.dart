@@ -1,5 +1,4 @@
 /// Form validation system with Swedish localization for all app forms.
-///
 /// **Features:** Required/min/max/email/password/URL validation, conditional/combinatorial validators, Swedish errors.
 /// ```dart
 /// final v = FormValidators.combine([
@@ -10,7 +9,6 @@
 ///   final optionalUrlValidator = FormValidators.optional(
 ///     FormValidators.url(),
 ///   );
-///   
 ///   // Combined validation with multiple rules
 ///   final complexValidator = FormValidators.combine([
 ///     FormValidators.required('Field'),
@@ -19,21 +17,16 @@
 ///   ]);
 /// }
 /// ```
-/// 
 /// ## Performance Characteristics
-/// 
 /// - **Validation Efficiency**: Lightweight validation logic with minimal computational overhead
 /// - **Memory Management**: Stateless validation functions with no memory leaks or resource retention
 /// - **Regex Optimization**: Precompiled regex patterns for improved validation performance
 /// - **Error Message Caching**: Efficient string formatting with minimal allocation overhead
-/// 
 /// ## Integration Patterns
-/// 
 /// - **Form Integration**: Direct integration with Flutter TextFormField widgets and form validation
 /// - **Localization**: Complete Swedish localization with proper grammar and cultural appropriateness
 /// - **Error Handling**: Consistent error message formatting and user guidance across all forms
 /// - **Feature Integration**: Specialized validators for recipes, social features, authentication, and shopping
-/// 
 /// This validation system is essential for maintaining consistent, user-friendly, and culturally appropriate
 /// form validation throughout the Swedish cooking application while ensuring data integrity and providing
 /// helpful user guidance for successful form completion across all application features and interactions.
@@ -41,11 +34,9 @@
 import 'package:flutter/material.dart';
 
 /// Comprehensive form validation utility class that provides standardized validation patterns for all application forms.
-/// 
 /// This class consolidates validation logic including basic field validation, Swedish-localized error messages,
 /// specialized validators for different application domains, and advanced validation patterns. It ensures consistent
 /// validation behavior across authentication, recipe management, social features, and collaborative functionality.
-///
 /// **Key Features:**
 /// - Basic validation patterns with required fields, length constraints, and format validation
 /// - Swedish-localized error messages with culturally appropriate tone and guidance
@@ -53,13 +44,11 @@ import 'package:flutter/material.dart';
 /// - Advanced validation including password strength, conditional validation, and combinatorial patterns
 /// - Unicode support for Swedish characters and international user names
 /// - Optional validation patterns for non-required fields with consistent behavior
-///
 /// **Integration Points:**
 /// - All forms throughout the application use these validators for consistent validation
 /// - Authentication flows leverage these for secure user input validation
 /// - Recipe creation and editing forms depend on these for data integrity
 /// - Social features utilize these for profile and interaction validation
-///
 /// **Example Usage:**
 /// ```dart
 /// // Recipe form validation
@@ -67,10 +56,8 @@ import 'package:flutter/material.dart';
 ///   FormValidators.required('Recepttitel'),
 ///   FormValidators.minLength(3, 'Recepttitel'),
 /// ]);
-/// 
 /// // Social validation
 /// final displayNameValidator = FormValidators.requiredDisplayName();
-/// 
 /// // Authentication validation
 /// final passwordValidator = FormValidators.strongPassword();
 /// ```

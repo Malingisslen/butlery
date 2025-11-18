@@ -49,7 +49,6 @@ class CollaborativeStatus {
 }
 
 /// 🤝 Enhanced Collaborative Status ViewModel
-///
 /// Skalbar system för att hantera kollaborativ status över alla content-typer
 /// med robust caching, batch operations och comprehensive error handling
 class CollaborativeStatusViewModel extends ChangeNotifier with ErrorHandlingMixin {

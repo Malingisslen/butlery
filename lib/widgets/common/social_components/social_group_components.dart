@@ -8,20 +8,17 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Social group and friend category management components
-/// 
 /// This module handles ONLY group and friend category widgets:
 /// - Friend category selectors and chips
 /// - Group dialog launchers
 /// - Friend category management interfaces
 /// - Group creation and management dialogs
-/// 
 /// ❌ DOES NOT CONTAIN: Avatars, collaborative indicators, invitations, builders
 class SocialGroupComponents {
 
   // ===== FRIEND CATEGORY MANAGEMENT =====
 
   /// Build friend category selector
-  /// 
   /// Dropdown or selection interface for choosing friend categories
   static Widget friendCategorySelector({
     required List<FriendCategory> categories,
@@ -50,7 +47,6 @@ class SocialGroupComponents {
   }
 
   /// Build friend category chip
-  /// 
   /// Chip display for a single friend category
   static Widget friendCategoryChip({
     required FriendCategory category,
@@ -71,7 +67,6 @@ class SocialGroupComponents {
   // ===== GROUP DIALOGS =====
 
   /// Show create group dialog
-  /// 
   /// Launch dialog for creating a new friend group
   static Future<bool?> showCreateGroupDialog({
     required BuildContext context,
@@ -87,7 +82,6 @@ class SocialGroupComponents {
   }
 
   /// Show edit group dialog
-  /// 
   /// Launch dialog for editing an existing friend group
   static Future<bool?> showEditGroupDialog({
     required BuildContext context,
@@ -111,7 +105,6 @@ class SocialGroupComponents {
   }
 
   /// Show delete group dialog
-  /// 
   /// Launch confirmation dialog for deleting a friend group
   static Future<bool?> showDeleteGroupDialog({
     required BuildContext context,
@@ -134,7 +127,6 @@ class SocialGroupComponents {
   }
 
   /// Show remove member dialog
-  /// 
   /// Launch confirmation dialog for removing a member from a group
   static Future<bool?> showRemoveMemberDialog({
     required BuildContext context,
@@ -167,7 +159,6 @@ class SocialGroupComponents {
   // ===== CATEGORY DISPLAY VARIANTS =====
 
   /// Build category list
-  /// 
   /// Display list of friend categories
   static Widget categoryList({
     required List<FriendCategory> categories,
@@ -215,7 +206,6 @@ class SocialGroupComponents {
   }
 
   /// Build category chips row
-  /// 
   /// Horizontal scrollable row of category chips
   static Widget categoryChipsRow({
     required List<FriendCategory> categories,
@@ -256,7 +246,6 @@ class SocialGroupComponents {
   // ===== CATEGORY MANAGEMENT ACTIONS =====
 
   /// Build add category button
-  /// 
   /// Button to create a new friend category
   static Widget addCategoryButton({
     VoidCallback? onPressed,
@@ -280,7 +269,6 @@ class SocialGroupComponents {
   }
 
   /// Build category management toolbar
-  /// 
   /// Toolbar with common category management actions
   static Widget categoryManagementToolbar({
     VoidCallback? onAddCategory,
@@ -316,7 +304,6 @@ class SocialGroupComponents {
   // ===== CATEGORY STATISTICS =====
 
   /// Build category statistics widget
-  /// 
   /// Shows statistics about categories and their usage
   static Widget categoryStatistics({
     required List<FriendCategory> categories,
@@ -416,7 +403,6 @@ class SocialGroupComponents {
   // ===== EMPTY STATES AND LOADING =====
 
   /// Build empty categories state
-  /// 
   /// Shows when no categories are available
   static Widget emptyCategoriesState({
     String title = 'Inga kategorier',
@@ -454,7 +440,6 @@ class SocialGroupComponents {
   }
 
   /// Build categories loading state
-  /// 
   /// Shows loading indicator for categories
   static Widget categoriesLoading({
     String text = 'Laddar kategorier...',

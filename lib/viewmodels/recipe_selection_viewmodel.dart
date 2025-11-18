@@ -1,5 +1,4 @@
 /// Recipe selection ViewModel for multi-selection, search, sharing status tracking, and social distribution.
-///
 /// ```dart
 /// final vm = RecipeSelectionViewModel(recipeService: ServiceLocator.get<UnifiedRecipeService>());
 /// await vm.loadRecipes();
@@ -13,12 +12,10 @@
 /// } else if (recipeSelectionViewModel.hasError) {
 ///   // Handle sharing error
 /// }
-/// 
 /// // Monitor sharing progress
 /// if (recipeSelectionViewModel.isSharing) {
 ///   // Show sharing progress indicator
 /// }
-/// 
 /// // State monitoring and data access
 /// if (recipeSelectionViewModel.isLoading) {
 ///   // Show loading indicator
@@ -28,12 +25,10 @@
 ///   final totalCount = recipeSelectionViewModel.totalCount;
 ///   final filteredCount = recipeSelectionViewModel.filteredCount;
 /// }
-/// 
 /// // Validation and capability checking
 /// if (recipeSelectionViewModel.canShare) {
 ///   // Enable share button
 /// }
-/// 
 /// // Refresh functionality for pull-to-refresh
 /// await recipeSelectionViewModel.refresh();
 /// ```
@@ -50,11 +45,9 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 
 /// Comprehensive recipe selection ViewModel providing advanced recipe sharing through service integration.
-///
 /// Manages recipe selection state enabling social recipe sharing with multi-recipe selection, sharing status tracking,
 /// search functionality, and friend-targeted distribution while maintaining clean MVVM architecture separation between
 /// recipe selection business logic and UI presentation concerns through comprehensive state management.
-///
 /// **Core Responsibilities:**
 /// - Advanced recipe discovery with search functionality and intelligent filtering capabilities (loading managed by AsyncOperationMixin)
 /// - Comprehensive multi-selection management with state tracking and shared recipe awareness
@@ -66,20 +59,16 @@ class RecipeSelectionViewModel extends ChangeNotifier
   final UnifiedRecipeService _recipeService;
   
   /// Target friend for recipe sharing and social distribution coordination.
-  /// 
   /// Stores the friend profile for targeted sharing enabling friend-specific
   /// functionality and social recipe distribution management.
   final UserProfile targetFriend;
 
   /// Initializes recipe selection ViewModel with comprehensive service integration and friend targeting.
-  /// 
   /// [recipeService] UnifiedRecipeService instance for recipe operations and social sharing coordination
   /// [targetFriend] UserProfile instance for friend targeting and social distribution management
-  /// 
   /// Establishes recipe selection infrastructure with service integration and friend targeting, enabling comprehensive
   /// social recipe sharing functionality with multi-selection management, sharing status tracking,
   /// and search capabilities through unified state management and reactive coordination.
-  /// 
   /// **Service Integration:**
   /// - UnifiedRecipeService integration for recipe operations and social sharing functionality
   /// - Friend targeting setup for personalized sharing and social distribution coordination
@@ -93,19 +82,16 @@ class RecipeSelectionViewModel extends ChangeNotifier
   // ===== RECIPE COLLECTION STATE =====
 
   /// Complete recipe collection for selection and sharing coordination.
-  /// 
   /// Stores all available recipes enabling recipe discovery, selection functionality,
   /// and comprehensive recipe management throughout selection operations.
   List<Recipe> _allRecipes = [];
   
   /// Filtered recipe collection based on search criteria for display coordination.
-  /// 
   /// Stores search-filtered recipe results enabling responsive search functionality
   /// and recipe discovery throughout selection interface operations.
   List<Recipe> _filteredRecipes = [];
   
   /// Current search query for recipe filtering and discovery functionality.
-  /// 
   /// Stores user search input enabling recipe search functionality
   /// and content discovery throughout recipe selection operations.
   String _searchQuery = '';
@@ -114,13 +100,11 @@ class RecipeSelectionViewModel extends ChangeNotifier
   /// isLoading, error, hasError provided by StateNotifierMixin
 
   /// Selected recipe IDs for sharing coordination and selection management.
-  ///
   /// Stores selected recipes for sharing enabling multi-recipe selection,
   /// sharing coordination, and selection state tracking.
   final Set<String> _selectedRecipeIds = {};
 
   /// Sharing operation state for UI progress indication during sharing operations.
-  ///
   /// Operation-specific state maintained separately from general loading (isLoading)
   /// because sharing requires distinct visual treatment from recipe loading.
   /// Indicates active sharing operation for loading indicators and interaction
@@ -128,7 +112,6 @@ class RecipeSelectionViewModel extends ChangeNotifier
   bool _isSharing = false;
   
   /// Already shared recipe IDs for sharing status tracking and visual feedback.
-  /// 
   /// Stores recipes already shared with target friend enabling sharing status display,
   /// duplicate prevention, and comprehensive sharing state management.
   final Set<String> _alreadySharedRecipeIds = {};
@@ -198,13 +181,10 @@ class RecipeSelectionViewModel extends ChangeNotifier
   // ===== RECIPE SELECTION OPERATIONS =====
 
   /// Advanced recipe selection toggling with state management and visual feedback coordination.
-  /// 
   /// [recipeId] Recipe identifier for selection management and state tracking
-  /// 
   /// Toggles recipe selection state enabling multi-recipe selection functionality,
   /// selection state tracking, and comprehensive selection management with visual feedback
   /// and UI coordination through reactive selection state management.
-  /// 
   /// **Selection Features:**
   /// - Multi-recipe selection with state tracking and visual feedback coordination
   /// - Selection state persistence with comprehensive tracking and management
@@ -222,12 +202,9 @@ class RecipeSelectionViewModel extends ChangeNotifier
   }
 
   /// Recipe selection status checking for UI state management and selection coordination.
-  /// 
   /// [recipeId] Recipe identifier for selection status validation and UI state management
-  /// 
   /// Returns selection status enabling UI selection indicators, checkbox state management,
   /// and comprehensive selection tracking throughout recipe selection interface operations.
-  /// 
   /// **Status Features:**
   /// - Selection state validation with comprehensive tracking and UI coordination
   /// - UI selection indicators with checkbox state management and visual feedback
@@ -237,11 +214,9 @@ class RecipeSelectionViewModel extends ChangeNotifier
   }
 
   /// Comprehensive selection clearing with state management and UI coordination.
-  /// 
   /// Clears all recipe selections enabling selection reset functionality,
   /// UI state management, and comprehensive selection coordination with
   /// visual feedback and responsive state management through reactive clearing.
-  /// 
   /// **Clearing Features:**
   /// - Complete selection reset with state management and visual feedback coordination
   /// - UI state synchronization with selection indicators and responsive design
@@ -297,11 +272,9 @@ class RecipeSelectionViewModel extends ChangeNotifier
   // ===== PRIVATE FILTERING AND SORTING OPERATIONS =====
 
   /// Advanced filtering and sorting coordination with search criteria and sharing status prioritization.
-  /// 
   /// Applies comprehensive filtering logic combining search criteria with intelligent sorting,
   /// prioritizing unshared recipes and maintaining alphabetical organization for optimal
   /// user experience and efficient recipe discovery through responsive filtering operations.
-  /// 
   /// **Filtering Features:**
   /// - Multi-criteria search across recipe titles, descriptions, and ingredients with comprehensive matching
   /// - Case-insensitive search with performance optimized filtering and responsive results
@@ -369,9 +342,7 @@ class RecipeSelectionViewModel extends ChangeNotifier
   /// setLoading, setError, clearError provided by StateNotifierMixin
 
   /// Sharing operation state management with UI notification coordination.
-  ///
   /// [sharing] Sharing state for operation-specific progress indication
-  ///
   /// Updates sharing operation state enabling UI sharing progress indicators,
   /// interaction control, and comprehensive sharing state management throughout
   /// recipe sharing operations with reactive UI coordination.
@@ -381,11 +352,9 @@ class RecipeSelectionViewModel extends ChangeNotifier
   }
 
   /// Comprehensive shared recipe loading with friend-specific sharing status coordination.
-  /// 
   /// Loads all recipes already shared with target friend enabling sharing status tracking,
   /// duplicate prevention, and comprehensive sharing history management with collaborative
   /// recipe analysis and social data coordination through unified sharing status operations.
-  /// 
   /// **Shared Recipe Loading Features:**
   /// - Comprehensive collaborative recipe analysis with bidirectional sharing detection
   /// - Friend-specific sharing status with targeted relationship validation and tracking

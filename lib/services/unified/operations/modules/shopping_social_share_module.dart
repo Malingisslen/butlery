@@ -5,7 +5,6 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Module handling social shopping list sharing with friends and groups.
-///
 /// Provides complete social sharing functionality with Firebase integration.
 class ShoppingSocialShareModule {
   final FirebaseFirestore _firestore;

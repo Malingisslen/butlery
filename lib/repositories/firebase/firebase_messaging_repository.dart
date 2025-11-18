@@ -1,5 +1,4 @@
 /// Firebase implementation for real-time messaging with conversation management.
-///
 /// Supports direct/group conversations, real-time delivery, read receipts, and participant management.
 
 import 'dart:async';

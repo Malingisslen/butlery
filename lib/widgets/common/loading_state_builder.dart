@@ -18,11 +18,9 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 /// Builder widget that eliminates duplicated loading/error/empty state patterns
-/// 
 /// This widget wraps the existing StateWidget with a convenient builder pattern
 /// that automatically detects and handles different states based on common
 /// ViewModel patterns (isLoading, hasError, isEmpty, etc.)
-/// 
 /// Usage Examples:
 /// ```dart
 /// // Simple usage with ViewModel
@@ -32,7 +30,6 @@ import 'package:butlery/widgets/common/state_widget.dart';
 ///   data: viewModel.recipes,
 ///   builder: (context, recipes) => ListView.builder(...),
 /// )
-/// 
 /// // With custom empty state
 /// LoadingStateBuilder<List<Recipe>>(
 ///   isLoading: viewModel.isLoading,
@@ -42,7 +39,6 @@ import 'package:butlery/widgets/common/state_widget.dart';
 ///   emptyState: EmptyStateVariant.noRecipes,
 ///   onEmptyAction: () => Navigator.pushNamed(context, '/add-recipe'),
 /// )
-/// 
 /// // With custom loading message
 /// LoadingStateBuilder<MenuData>(
 ///   isLoading: viewModel.isGenerating,

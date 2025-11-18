@@ -4,12 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 
 /// Dialog for handling pending/failed uploads during recipe save.
-///
 /// Provides user choices when saving a recipe with incomplete uploads:
 /// - Wait for pending uploads to complete
 /// - Save without pending/failed images
 /// - Cancel the save operation
-///
 /// **Usage:**
 /// ```dart
 /// final choice = await showUploadChoiceDialog(

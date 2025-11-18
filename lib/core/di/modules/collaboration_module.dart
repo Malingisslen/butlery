@@ -1,5 +1,4 @@
 /// Collaboration module for real-time services and collaborative features.
-///
 /// This module handles all collaborative functionality including:
 /// - Real-time synchronization services
 /// - Collaborative recipe editing
@@ -7,7 +6,6 @@
 /// - Unified shopping list management
 /// - Permission validation system
 /// - Real-time conflict resolution
-///
 /// Depends on Core, Content, and Social modules for foundational services.
 library;
 
@@ -52,7 +50,6 @@ import 'package:butlery/core/di/modules/content_module.dart';
 import 'package:butlery/core/di/modules/social_module.dart';
 
 /// Collaboration module providing real-time collaborative services.
-///
 /// This module handles all collaborative functionality and depends on
 /// Core, Content, and Social modules. It provides:
 /// - Real-time synchronization for collaborative editing

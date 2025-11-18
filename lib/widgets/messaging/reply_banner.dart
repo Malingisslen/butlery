@@ -7,10 +7,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// Banner shown above chat input when replying to a message.
-///
 /// Displays the original message content and sender, with a close button
 /// to cancel the reply. Styled to match the app's design system.
-///
 /// **Usage:**
 /// ```dart
 /// if (replyToMessage != null)

@@ -179,15 +179,12 @@ class SearchService extends BaseService {
   }
 
   /// Generates intelligent search suggestions based on partial input and existing recipe content.
-  ///
   /// This method analyzes the recipe collection to provide relevant search suggestions as users type,
   /// improving search discoverability and user experience. It examines titles, ingredients, and tags
   /// to generate contextually relevant suggestions with duplicate removal and intelligent ranking.
-  ///
   /// [recipes] Recipe collection to analyze for suggestion generation
   /// [partial] Partial search input from user for suggestion matching
   /// Returns up to 10 relevant search suggestions sorted alphabetically
-  ///
   /// **Suggestion Algorithm:**
   /// - **Minimum Length**: Requires at least 2 characters for meaningful suggestions
   /// - **Multi-Source**: Analyzes titles, ingredients, and tags for comprehensive coverage
@@ -195,18 +192,15 @@ class SearchService extends BaseService {
   /// - **Duplicate Removal**: Uses Set data structure to eliminate duplicate suggestions
   /// - **Result Limiting**: Returns top 10 suggestions to prevent UI overcrowding
   /// - **Alphabetical Sorting**: Provides predictable, user-friendly suggestion ordering
-  ///
   /// **Suggestion Sources:**
   /// - Recipe titles for primary content matching
   /// - Individual ingredients for specific component suggestions
   /// - Recipe tags for categorical and descriptive suggestions
-  ///
   /// **Usage Examples:**
   /// ```dart
   /// // Real-time search suggestions
   /// final suggestions = searchService.getSearchSuggestions(recipes, 'kyck');
   /// // Returns: ['kyckling', 'kycklingbröst', 'kycklinglår', ...]
-  ///
   /// // Ingredient-based suggestions
   /// final ingredientSuggestions = searchService.getSearchSuggestions(recipes, 'tom');
   /// // Returns: ['tomat', 'tomatpuré', 'tomatkonserv', ...]
@@ -324,26 +318,21 @@ class SearchService extends BaseService {
 }
 
 /// Enumeration defining available sorting criteria for recipe organization and discovery optimization.
-///
 /// This enum provides comprehensive sorting options for recipe collections enabling users to organize
 /// and discover recipes based on different attributes. Each criteria supports both ascending and descending
 /// sort orders for flexible recipe organization that meets various user preferences and discovery patterns.
-///
 /// **Sorting Criteria:**
 /// - [title] Alphabetical sorting by recipe name for browsing and organization
 /// - [time] Cooking time sorting for meal planning and time-constrained cooking
 /// - [rating] Quality-based sorting for discovering highly-rated recipes
 /// - [portions] Serving size sorting for meal planning and group cooking
 /// - [mealType] Category-based sorting for meal organization and discovery
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Sort by rating (highest first)
 /// final topRated = searchService.sortRecipes(recipes, SortCriteria.rating, ascending: false);
-///
 /// // Sort by cooking time (quickest first)
 /// final quickMeals = searchService.sortRecipes(recipes, SortCriteria.time, ascending: true);
-///
 /// // Alphabetical organization
 /// final alphabetical = searchService.sortRecipes(recipes, SortCriteria.title);
 /// ```
@@ -365,12 +354,10 @@ enum SortCriteria {
 }
 
 /// Comprehensive search parameters container for complex search operations and state management.
-///
 /// This class encapsulates all possible search and filtering parameters into a single, immutable
 /// data structure that simplifies search state management and enables complex search operations.
 /// It provides comprehensive parameter management with sensible defaults and supports immutable
 /// updates through the copyWith pattern for predictable state management.
-///
 /// **Parameter Categories:**
 /// - **Text Search**: Query string for full-text search across recipe content
 /// - **Category Filter**: Meal type filtering for category-based discovery
@@ -379,13 +366,11 @@ enum SortCriteria {
 /// - **Quality Filter**: Minimum rating threshold for quality-based recipe discovery
 /// - **Portion Filters**: Minimum and maximum serving size constraints for meal planning
 /// - **Sorting Options**: Sort criteria and direction for result organization
-///
 /// **Immutable Design:**
 /// - Immutable data structure prevents accidental state mutations
 /// - copyWith method enables controlled parameter updates
 /// - Default values provide sensible starting points for search operations
 /// - Comprehensive parameter validation through type safety
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Create basic search parameters
@@ -394,13 +379,11 @@ enum SortCriteria {
 ///   mealType: 'middag',
 ///   maxTime: 45,
 /// );
-///
 /// // Update parameters immutably
 /// final updatedParams = params.copyWith(
 ///   minRating: 4.0,
 ///   tags: ['glutenfri'],
 /// );
-///
 /// // Use with advanced search
 /// final results = searchService.advancedSearch(
 ///   recipes,
@@ -421,11 +404,9 @@ class SearchParameters {
   final bool sortAscending;
 
   /// Creates SearchParameters with comprehensive search and filtering configuration.
-  ///
   /// All parameters are optional with sensible defaults to provide flexible search configuration.
   /// The constructor creates an immutable instance that can be updated through copyWith method
   /// for predictable search state management throughout the application.
-  ///
   /// [query] Optional text search query for full-text recipe matching
   /// [mealType] Optional meal category filter for category-based discovery
   /// [tags] List of tags for AND-logic filtering (defaults to empty list)

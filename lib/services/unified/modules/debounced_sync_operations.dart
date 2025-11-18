@@ -8,32 +8,27 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:get_it/get_it.dart';
 
 /// Specialized debounced synchronization module providing intelligent Firebase write optimization for recipe data.
-///
 /// This module implements sophisticated debounced synchronization following Single Responsibility Principle,
 /// handling all aspects of delayed Firebase writes including batch processing, retry mechanisms, and performance
 /// optimization. It provides comprehensive sync management ensuring optimal Firebase usage while maintaining
 /// clean separation from real-time synchronization and cache management concerns.
-///
 /// **Single Responsibility Focus:**
 /// This module exclusively handles debounced synchronization operations:
 /// - **Debounced Scheduling**: Intelligent write delay scheduling with configurable debounce intervals
 /// - **Batch Processing**: Efficient batch sync operations for multiple recipe updates simultaneously
 /// - **Retry Management**: Comprehensive error handling with exponential backoff and retry strategies
 /// - **Queue Management**: Sync queue optimization with priority handling and urgent sync detection
-///
 /// **What This Module Does NOT Handle:**
 /// - Real-time sync streams and live updates (handled by FirebaseSyncManager)
 /// - Basic cache operations and local storage (handled by CacheOperations)
 /// - Cache cleanup and optimization (handled by CacheOptimization)
 /// - Authentication and user management (handled by parent services)
-///
 /// **Debounced Sync Features:**
 /// - **Performance Optimization**: Intelligent batching reduces Firebase write operations and improves performance
 /// - **Error Recovery**: Comprehensive retry mechanisms with network error detection and exponential backoff
 /// - **Queue Management**: Smart sync queue with priority handling and urgent sync detection
 /// - **Repository Integration**: Seamless integration with personal and collaborative recipe repositories
 /// - **Monitoring Support**: Comprehensive sync status tracking with detailed logging and diagnostics
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Schedule debounced sync for recipe
@@ -45,14 +40,12 @@ import 'package:get_it/get_it.dart';
 ///   syncDebounce: Duration(seconds: 2),
 ///   onSyncPending: _processPendingSync,
 /// );
-/// 
 /// // Force immediate sync for critical updates
 /// await DebouncedSyncOperations.forceSyncRecipe(
 ///   recipeId: recipeId,
 ///   recipeLoader: loadRecipeFromCache,
 ///   currentUserId: userId,
 /// );
-/// 
 /// // Batch sync multiple recipes
 /// await DebouncedSyncOperations.syncMultipleRecipesImmediately(
 ///   recipeIds: recipeIds,

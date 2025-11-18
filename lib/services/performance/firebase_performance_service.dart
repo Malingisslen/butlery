@@ -4,20 +4,17 @@ import 'package:firebase_performance/firebase_performance.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase Performance Monitoring Service
-///
 /// Provides centralized Firebase Performance monitoring for:
 /// - Screen rendering traces
 /// - Network request monitoring
 /// - Custom performance traces
 /// - Key user flow metrics
-///
 /// Usage:
 /// ```dart
 /// // Start a trace
 /// final trace = await FirebasePerformanceService.startTrace('load_recipe');
 /// // ... perform operation ...
 /// await trace.stop();
-///
 /// // Monitor specific metric
 /// trace.incrementMetric('recipe_count', 1);
 /// trace.putAttribute('recipe_type', 'imported');

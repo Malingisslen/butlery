@@ -1,9 +1,7 @@
 /// E2E Emulator Main Entry Point - Firebase Emulator Integration
-/// 
 /// This main entry point is designed for E2E tests that require Firebase
 /// operations but use the Firebase emulator for isolated, reproducible testing.
 /// It provides real Firebase functionality without affecting production data.
-/// 
 /// ULTRATHINK ANALYSIS:
 /// - Production main.dart initializes Firebase with production config
 /// - E2E tests need real Firebase operations for authentication/data flows  
@@ -43,20 +41,16 @@ import 'package:butlery/core/di/modules/ui_module.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// E2E Emulator Application Entry Point
-/// 
 /// This entry point provides complete Butlery app functionality for E2E testing
 /// with Firebase emulator integration. Perfect for testing authentication flows,
 /// data persistence, real-time features, and Firebase operations.
-/// 
 /// REQUIREMENTS:
 /// - Firebase emulators must be running: `firebase emulators:start`
 /// - Emulator ports: Firestore (8080), Auth (9099), Storage (9199)
-/// 
 /// USAGE:
 /// ```dart
 /// // In E2E tests:
 /// import 'package:butlery/main_e2e_emulator.dart' as emulator_app;
-/// 
 /// testWidgets('Firebase flow test', (tester) async {
 ///   emulator_app.main();
 ///   await tester.pumpAndSettle();
@@ -110,7 +104,6 @@ Future<void> main() async {
 }
 
 /// Connect to Firebase emulators for E2E testing
-/// 
 /// This connects all Firebase services to their respective emulators
 /// using the standard emulator ports from firebase.json configuration.
 Future<void> _connectToE2EEmulators() async {
@@ -146,7 +139,6 @@ Future<void> _connectToE2EEmulators() async {
 }
 
 /// Initialize the modular system for E2E emulator testing
-/// 
 /// This creates the same modular system as production but configured for
 /// E2E emulator testing with Firebase emulator connections.
 Future<void> _initializeE2EEmulatorSystem() async {

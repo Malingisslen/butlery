@@ -18,7 +18,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 
 /// Recipe Detail View - Complete recipe display with metadata, actions, and social features
-///
 /// This view provides comprehensive recipe details including:
 /// - Recipe content (description, images, instructions)
 /// - Recipe metadata (portions, time, rating, tags)

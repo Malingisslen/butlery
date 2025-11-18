@@ -8,43 +8,36 @@ import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
 
 /// Comprehensive collaborative menu operations providing real-time menu sharing and social cooking collaboration features.
-///
 /// This operations class implements sophisticated collaborative menu functionality following Single Responsibility Principle,
 /// handling all aspects of multi-user menu collaboration including real-time editing, rating systems, commenting,
 /// and template management. It provides comprehensive collaborative cooking features while maintaining clean separation
 /// from basic menu operations and individual recipe management concerns.
-///
 /// **Single Responsibility Focus:**
 /// This class exclusively handles collaborative menu operations:
 /// - **Real-time Collaboration**: Live menu editing with multiple users and conflict resolution
 /// - **Social Rating System**: Comprehensive menu rating and review system with statistical tracking
 /// - **Comment System**: Threaded menu discussions with likes and real-time streaming capabilities
 /// - **Template Management**: Collaborative menu templates with sharing and reuse functionality
-///
 /// **What This Class Does NOT Handle:**
 /// - Basic menu CRUD operations (handled by parent service)
 /// - Individual recipe management (handled by recipe operations)
 /// - User authentication and permissions (handled by permission services)
 /// - Non-collaborative menu features (handled by basic menu operations)
-///
 /// **Collaborative Menu Features:**
 /// - **Real-time Editing**: Multi-user menu collaboration with live updates and activity logging
 /// - **Rating System**: Comprehensive 5-star rating system with comments and average rating calculations
 /// - **Discussion System**: Threaded comments with likes, replies, and real-time streaming
 /// - **Template System**: Menu template creation, sharing, and reuse with usage tracking
 /// - **Activity Logging**: Complete collaboration activity tracking with detailed audit trails
-///
 /// **Usage Examples:**
 /// ```dart
 /// final collaborativeOps = CollaborativeMenuOperations(parentService, firestore);
-/// 
 /// // Enable collaborative menu editing
 /// await collaborativeOps.enableMenuCollaboration(
 ///   menuId: menuId,
 ///   collaboratorIds: ['user1', 'user2'],
 ///   collaboratorDisplayNames: {'user1': 'Anna', 'user2': 'Erik'},
 /// );
-/// 
 /// // Collaborative recipe management
 /// await collaborativeOps.addRecipeToCollaborativeMenu(
 ///   menuId: menuId,
@@ -52,11 +45,9 @@ import 'package:butlery/repositories/interfaces/menu_collaboration_repository.da
 ///   recipe: recipe,
 ///   suggestion: 'Perfekt för söndagsmiddag!',
 /// );
-/// 
 /// // Social interaction features
 /// await collaborativeOps.rateMenu(menuId: menuId, rating: 5.0, comment: 'Fantastisk meny!');
 /// await collaborativeOps.addMenuComment(menuId: menuId, comment: 'Vilken kreativ kombination!');
-/// 
 /// // Template system
 /// final templateId = await collaborativeOps.createMenuTemplate(
 ///   templateName: 'Veckomeny Familj',

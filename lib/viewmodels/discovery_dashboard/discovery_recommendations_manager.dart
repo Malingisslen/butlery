@@ -8,7 +8,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Manages personalized recommendations for the discovery dashboard.
-/// 
 /// Handles AI-powered content recommendations with user feedback and learning.
 class DiscoveryRecommendationsManager extends ChangeNotifier {
   final RecommendationService _recommendationService;

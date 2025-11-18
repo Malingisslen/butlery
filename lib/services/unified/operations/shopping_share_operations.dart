@@ -6,7 +6,6 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// Shopping share operations coordinator.
-///
 /// Orchestrates shopping list sharing via export, import, templates, external sharing, and social collaboration.
 /// Delegates to specialized modules for each concern.
 
@@ -72,7 +71,6 @@ class ShoppingImportModule {
 }
 
 /// Shopping share operations feature interface - Clean coordinator providing unified API for all sharing operations.
-///
 /// Provides a unified API for all shopping list sharing operations while delegating to focused, single-responsibility modules.
 /// This coordinator maintains clean separation of concerns while offering comprehensive sharing capabilities through specialized modules.
 class ShoppingShareOperations {

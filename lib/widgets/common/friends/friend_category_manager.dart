@@ -11,7 +11,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 /// Friend Category Manager
-/// 
 /// Handles ONLY interactive friend category management with state.
 /// This is a complex stateful widget for selecting friends and categories with full UI interaction.
 class FriendCategoryManager extends StatefulWidget {

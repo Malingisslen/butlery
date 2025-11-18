@@ -3,14 +3,12 @@
 import 'package:flutter/material.dart';
 
 /// Responsive design breakpoints for Butlery app
-///
 /// Following Material Design 3 guidelines with 5 breakpoints:
 /// - Mobile Small: 0-600px (phones)
 /// - Tablet: 600-768px (small tablets, large phones landscape)
 /// - Tablet Large: 768-1024px (tablets)
 /// - Desktop: 1024-1280px (small desktops, large tablets landscape)
 /// - Desktop Large: 1280px+ (standard desktops, 4K displays)
-///
 /// Usage:
 /// ```dart
 /// if (Breakpoints.isMobile(context)) {
@@ -164,7 +162,6 @@ class Breakpoints {
   // ==========================================================================
 
   /// Select value based on current breakpoint
-  ///
   /// Example:
   /// ```dart
   /// final columns = Breakpoints.valueFor(
@@ -190,7 +187,6 @@ class Breakpoints {
   }
 
   /// Select value based on device category with full control
-  ///
   /// Example:
   /// ```dart
   /// final spacing = Breakpoints.valueForCategory(
@@ -240,7 +236,6 @@ class Breakpoints {
   // ==========================================================================
 
   /// Get recommended grid column count based on screen width
-  ///
   /// Returns:
   /// - Mobile: 1 column
   /// - Tablet: 2 columns
@@ -257,7 +252,6 @@ class Breakpoints {
   }
 
   /// Get recommended grid column count for cards
-  ///
   /// More conservative than general grid (better readability)
   static int getCardColumnCount(BuildContext context) {
     return valueForCategory(

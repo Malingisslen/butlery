@@ -7,13 +7,11 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// Focused module for recipe rating system
-///
 /// This module handles ONLY recipe rating operations:
 /// - Recipe rating creation and validation
 /// - User rating queries and management
 /// - Rating permission checking
 /// - Individual rating data operations
-///
 /// ❌ DOES NOT CONTAIN: Statistics aggregation, social metrics, notifications, top-rated queries
 class RecipeRatingSystem {
   final RatingsRepository _ratingsRepository;
@@ -102,7 +100,6 @@ class RecipeRatingSystem {
   }
 
   /// Get ratings for a recipe with pagination support
-  ///
   /// **Issue #007 Fix:** Adds pagination to prevent timeouts with 10K+ ratings
   /// - [limit] Maximum ratings to return (default: 100)
   /// - [startAfter] Cursor for pagination (from last document)

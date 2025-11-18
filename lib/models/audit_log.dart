@@ -1,21 +1,17 @@
 /// Audit log entry for GDPR compliance and security monitoring.
-///
 /// Represents a single audit log entry recording a permission check or security event.
 /// These logs are persisted to Firestore to satisfy GDPR Article 30 (Records of Processing)
 /// requirements, enabling data subject access requests and security auditing.
-///
 /// **GDPR Compliance:**
 /// - Article 30: Records of Processing Activities
 /// - Article 15: Right of Access by the Data Subject
 /// - Article 17: Right to Erasure (audit logs retained per legal requirements)
-///
 /// **Security Use Cases:**
 /// - Permission check auditing (granted and denied)
 /// - Unauthorized access detection
 /// - User activity monitoring
 /// - Compliance reporting
 /// - Forensic investigation
-///
 /// **Privacy Notes:**
 /// - Audit logs are write-only for users (prevents tampering)
 /// - Only admins can read audit logs
@@ -25,7 +21,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Immutable audit log entry for security and compliance tracking.
-///
 /// Each audit log records a single permission check or security event with
 /// complete context including user, resource, operation, outcome, and metadata.
 class AuditLog {

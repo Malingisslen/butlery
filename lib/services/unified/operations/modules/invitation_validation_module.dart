@@ -4,7 +4,6 @@ import 'package:butlery/models/group_invitation.dart';
 import 'package:collection/collection.dart';
 
 /// Module handling invitation validation logic.
-///
 /// Provides email/phone validation, duplicate checking, and authentication validation.
 class InvitationValidationModule {
   InvitationValidationModule();

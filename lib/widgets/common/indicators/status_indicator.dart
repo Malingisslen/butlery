@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Reusable status indicator component
-/// 
 /// Provides consistent styling for status indicators with icons.
 /// Used for content type indicators, status displays, etc.
 class StatusIndicator extends StatelessWidget {

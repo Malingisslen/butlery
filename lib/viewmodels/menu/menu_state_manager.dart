@@ -5,13 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 /// Focused module for menu state management
-/// 
 /// This module handles ONLY state management:
 /// - Menu state variables and getters
 /// - Error state management
 /// - Loading state management
 /// - State notifications and updates
-/// 
 /// ❌ DOES NOT CONTAIN: Business logic, external service calls, persistence
 class MenuStateManager extends ChangeNotifier  with StreamManagementMixin{
   // Core state variables

@@ -8,7 +8,6 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// GroupInvitationCard - Invitation card component
-///
 /// Displays pending group invitation with cancel action.
 class GroupInvitationCard {
   static Widget build(

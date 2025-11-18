@@ -7,7 +7,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// Fullscreen image viewer with pinch-to-zoom and swipe gestures.
-///
 /// Provides immersive image viewing experience with:
 /// - Pinch to zoom in/out
 /// - Pan around zoomed image
@@ -16,7 +15,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 /// - Dark background for focus
 /// - Optional caption display
 /// - Close button in app bar
-///
 /// **Usage Example:**
 /// ```dart
 /// Navigator.of(context).push(

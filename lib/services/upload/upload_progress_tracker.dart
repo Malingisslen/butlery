@@ -1,8 +1,6 @@
 /// Upload progress tracking with speed calculation and ETA estimation.
-///
 /// Provides real-time progress monitoring, upload speed calculation,
 /// and estimated time remaining for upload operations.
-///
 /// **Architecture:** Service Layer - Progress Coordination
 /// **Responsibility:** Progress updates, speed calculation, milestone detection
 /// **Used By:** ImageUploadService
@@ -13,7 +11,6 @@ import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Tracks upload progress with speed calculation and milestone detection.
-///
 /// Core responsibilities:
 /// - Progress update coordination
 /// - Upload speed calculation (bytes per second)
@@ -115,7 +112,6 @@ class UploadProgressTracker {
   // ===== MILESTONE DETECTION =====
 
   /// Check if a progress milestone was crossed
-  ///
   /// Returns the milestone value (0.25, 0.50, 0.75) if crossed, null otherwise
   double? _checkMilestoneCrossed(double previousProgress, double currentProgress) {
     for (final milestone in progressMilestones) {

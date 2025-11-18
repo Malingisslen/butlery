@@ -11,7 +11,6 @@ import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 
 /// Shopping list actions handler
-///
 /// This module provides action handling for shopping lists including
 /// rename, delete, export, and create operations.
 class ShoppingListActions {

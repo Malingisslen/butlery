@@ -1,24 +1,20 @@
 /// Advanced Swedish pluralization system providing cultural language support and cooking-specific ingredient formatting.
-///
 /// This utility class provides comprehensive Swedish language pluralization rules and cooking-specific formatting
 /// for ingredient names, measurements, and cooking terminology. It consolidates pluralization logic found throughout
 /// the application while ensuring proper Swedish cultural conventions and cooking measurement standards for
 /// authentic Swedish cooking application experiences.
-///
 /// **Architecture Integration:**
 /// - Integrates with [TextFormatting] for Swedish fraction and quantity formatting
 /// - Provides foundation for ingredient parsing and shopping list generation
 /// - Supports cooking measurement unit recognition and validation
 /// - Eliminates pluralization duplication across 120+ files in the codebase
 /// - Ensures consistent Swedish language conventions throughout the application
-///
 /// **Swedish Language Features:**
 /// - **Irregular Plurals**: Comprehensive database of Swedish irregular plural forms
 /// - **Cooking Terminology**: Specialized support for cooking ingredients and measurements
 /// - **Measurement Units**: Recognition of Swedish and American cooking units
 /// - **Invariant Forms**: Proper handling of ingredients that don't change in plural
 /// - **Cultural Accuracy**: Authentic Swedish language conventions and usage patterns
-///
 /// **Pluralization Categories:**
 /// ```
 /// // Irregular plurals (potatis -> potatisar)
@@ -27,16 +23,13 @@
 /// // Cooking measurements (dl mjölk remains dl mjölk)
 /// // Compound ingredients (proper handling of multi-word ingredients)
 /// ```
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Ingredient pluralization
 /// SwedishPluralization.formatIngredient("potatis", 3.0);  // "3 potatisar"
 /// SwedishPluralization.formatIngredient("dl mjölk", 2.0); // "2 dl mjölk"
-/// 
 /// // Normalization for grouping
 /// SwedishPluralization.normalizeToSingular("tomater");    // "tomat"
-/// 
 /// // Unit recognition
 /// SwedishPluralization.isMeasurementUnit("dl");           // true
 /// ```
@@ -44,17 +37,14 @@
 import 'package:butlery/utils/text/text_formatting.dart';
 
 /// Advanced Swedish pluralization utility class providing cultural language support and cooking-specific formatting.
-///
 /// This class serves as the centralized Swedish language engine for the Butlery cooking application, handling
 /// the complexity of Swedish pluralization rules, cooking terminology, and measurement unit recognition.
 /// It provides comprehensive language support that respects Swedish cultural conventions while maintaining
 /// practical usability for cooking applications and ingredient management.
-///
 /// **Swedish Cultural Integration:**
 /// The pluralization system incorporates authentic Swedish language patterns including irregular plurals,
 /// invariant forms commonly used in cooking, and specialized cooking terminology that reflects how
 /// Swedish speakers naturally discuss food and cooking measurements.
-///
 /// **Static Utility Design:**
 /// - Private constructor prevents instantiation, ensuring pure utility function usage
 /// - All methods are static for convenient access without object creation overhead
@@ -64,11 +54,9 @@ class SwedishPluralization {
   /// Private constructor preventing instantiation to enforce static utility usage.
   SwedishPluralization._();
   /// Comprehensive database of Swedish irregular plurals and invariant forms for cooking applications
-  ///
   /// This extensive mapping provides accurate Swedish pluralization for cooking ingredients, measurements,
   /// and food terminology. It includes both irregular plural forms and invariant forms (words that don't
   /// change in plural) commonly used in Swedish cooking and recipe contexts.
-  ///
   /// **Categories Covered:**
   /// - **Liquid Measurements**: Volume measurements that remain invariant (dl mjölk, l vatten)
   /// - **Spices and Powders**: Cooking seasonings that typically don't change (msk olja, tsk salt)
@@ -76,7 +64,6 @@ class SwedishPluralization {
   /// - **Special Ingredients**: Foods with invariant plural forms (mjöl, ris, pasta)
   /// - **Irregular Plurals**: Common foods with non-standard plural forms (lök -> lökar)
   /// - **Cooking Equipment**: Kitchen measurements and containers (burk, ask, flaska)
-  ///
   /// **Usage in Consolidation:**
   /// This database eliminates duplicate pluralization logic across ingredient parsing,
   /// shopping list generation, and recipe formatting components.
@@ -165,22 +152,18 @@ class SwedishPluralization {
   };
 
   /// Advanced normalization of ingredient names to singular form for accurate grouping and consolidation
-  ///
   /// This method provides sophisticated normalization that converts Swedish ingredient names to their
   /// singular base forms, enabling accurate ingredient grouping in shopping lists and recipe consolidation.
   /// It handles irregular plurals, common plural endings, and complex Swedish pluralization patterns
   /// to ensure proper ingredient recognition and consolidation.
-  ///
   /// **Normalization Process:**
   /// 1. **Irregular Lookup**: Checks against comprehensive irregular plural database
   /// 2. **Pattern Matching**: Applies Swedish pluralization rules for regular forms
   /// 3. **Ending Analysis**: Removes common plural endings (-ar, -or, -er, etc.)
   /// 4. **Complex Forms**: Handles compound plurals (-ningar, -ingar)
   /// 5. **Fallback**: Preserves original form if no patterns match
-  ///
   /// [name] The ingredient name to normalize (may be plural or singular)
   /// Returns the singular form of the ingredient name for grouping purposes
-  ///
   /// **Examples:**
   /// ```dart
   /// normalizeToSingular("tomater");     // Returns "tomat"
@@ -231,23 +214,19 @@ class SwedishPluralization {
   }
 
   /// Intelligent Swedish pluralization with cooking-specific rules and cultural accuracy
-  ///
   /// This method provides comprehensive Swedish pluralization that handles both regular and irregular
   /// plural forms while respecting Swedish cooking conventions. It includes special handling for
   /// measurement units, compound ingredient names, and cultural patterns specific to Swedish
   /// cooking terminology and ingredient descriptions.
-  ///
   /// **Pluralization Strategy:**
   /// 1. **Count Validation**: Returns singular for count of 1.0
   /// 2. **Irregular Lookup**: Checks comprehensive irregular plurals database
   /// 3. **Compound Analysis**: Handles multi-word ingredient names properly
   /// 4. **Unit Detection**: Preserves measurement units while pluralizing ingredients
   /// 5. **Pattern Application**: Applies Swedish pluralization rules for regular forms
-  ///
   /// [singular] The singular form of the ingredient name
   /// [count] The quantity count to determine plural necessity
   /// Returns properly pluralized Swedish ingredient name
-  ///
   /// **Examples:**
   /// ```dart
   /// pluralize("potatis", 2.0);     // Returns "potatisar"
@@ -292,11 +271,9 @@ class SwedishPluralization {
   }
 
   /// Comprehensive measurement unit recognition for Swedish and American cooking systems
-  ///
   /// This method provides accurate detection of measurement units to prevent incorrect pluralization
   /// of cooking measurements. It supports both Swedish cooking measurements and American units
   /// commonly found in imported recipes, ensuring proper handling of international recipe formats.
-  ///
   /// **Unit Categories:**
   /// - **Swedish Weight**: g, kg, hg, dag, mg
   /// - **Swedish Volume**: dl, l, ml, cl
@@ -304,10 +281,8 @@ class SwedishPluralization {
   /// - **American Volume**: cup, fl oz, tbsp, tsp, pint, quart, gallon
   /// - **American Weight**: lb, oz, pound, ounce
   /// - **Variations**: Supports both singular and plural forms
-  ///
   /// [word] The word to check for measurement unit recognition
   /// Returns true if the word is a recognized measurement unit
-  ///
   /// **Examples:**
   /// ```dart
   /// isMeasurementUnit("dl");        // Returns true
@@ -412,23 +387,19 @@ class SwedishPluralization {
   }
 
   /// Advanced ingredient formatting with Swedish quantity display and intelligent pluralization
-  ///
   /// This method serves as the primary ingredient formatting function, combining Swedish quantity
   /// formatting with appropriate pluralization rules. It handles measurement units, fraction
   /// notation, and cultural conventions to provide natural Swedish ingredient display that
   /// reflects how Swedish speakers naturally describe cooking ingredients.
-  ///
   /// **Formatting Features:**
   /// - **Swedish Fractions**: Uses Unicode fraction notation (½, ¼, ¾) when appropriate
   /// - **Unit Preservation**: Maintains measurement units without pluralization
   /// - **Smart Pluralization**: Applies Swedish pluralization rules for ingredient names
   /// - **Cultural Accuracy**: Follows Swedish cooking terminology and conventions
   /// - **Special Cases**: Handles complex ingredient names and measurement combinations
-  ///
   /// [ingredientKey] The ingredient identifier (may include unit and name)
   /// [totalQuantity] The total quantity to format and display
   /// Returns formatted Swedish ingredient string with proper quantity and pluralization
-  ///
   /// **Examples:**
   /// ```dart
   /// formatIngredient("potatis", 3.0);     // Returns "3 potatisar"
@@ -468,11 +439,9 @@ class SwedishPluralization {
 }
 
 /// Legacy exports for backward compatibility during migration phase
-///
 /// These exports provide backward compatibility for existing code that hasn't been updated to use
 /// the new SwedishPluralization class methods. They maintain the same behavior while delegating
 /// to the consolidated implementation for consistent pluralization throughout the application.
-///
 /// **Migration Note:** New code should use `SwedishPluralization.methodName()` directly.
 /// These legacy exports will be removed in a future version once all code has been migrated.
 

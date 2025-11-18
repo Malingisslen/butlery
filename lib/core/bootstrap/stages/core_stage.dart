@@ -1,5 +1,4 @@
 /// Core services initialization stage.
-///
 /// Handles initialization of essential core services including authentication,
 /// storage, analytics, persistence, and Firebase App Check. These are the 
 /// foundational services that other modules depend on.
@@ -10,7 +9,6 @@ import 'package:butlery/core/bootstrap/stages/bootstrap_stage.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
 
 /// Core stage for essential service initialization.
-///
 /// This stage ensures that all foundational services are properly
 /// initialized and ready for use by other modules. It handles:
 /// - Authentication services

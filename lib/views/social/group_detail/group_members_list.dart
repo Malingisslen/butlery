@@ -13,7 +13,6 @@ import 'package:butlery/views/social/group_detail/group_member_card.dart';
 import 'package:butlery/views/social/group_detail/group_invitation_card.dart';
 
 /// GroupMembersList - Members list component
-///
 /// Displays group members and pending invitations with actions.
 class GroupMembersList {
   static Widget build(

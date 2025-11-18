@@ -1,24 +1,20 @@
 /// Intelligent shopping list generation system providing ingredient consolidation and Swedish formatting for menu planning.
-///
 /// This utility class provides sophisticated shopping list generation from menu data, consolidating ingredients
 /// across multiple recipes with intelligent unit conversion, quantity aggregation, and proper Swedish formatting.
 /// It eliminates duplicate shopping list generation logic while providing comprehensive ingredient management
 /// and smart measurement unit optimization for practical shopping experiences.
-///
 /// **Architecture Integration:**
 /// - Integrates with [IngredientParser] for accurate ingredient parsing and recognition
 /// - Uses [SmartUnitConverter] for optimal measurement unit conversions and readability
 /// - Leverages [SwedishPluralization] for proper ingredient name formatting and pluralization
 /// - Supports complex menu structures with multiple recipes and ingredient variations
 /// - Provides foundation for collaborative shopping and menu planning features
-///
 /// **Shopping List Features:**
 /// - **Ingredient Consolidation**: Automatically combines similar ingredients across recipes
 /// - **Unit Optimization**: Converts quantities to practical shopping units (e.g., 1500g -> 1.5kg)
 /// - **Swedish Formatting**: Applies proper Swedish measurement and language conventions
 /// - **Duplicate Handling**: Intelligent ingredient deduplication with normalization
 /// - **Quantity Aggregation**: Sums quantities of identical ingredients across recipes
-///
 /// **Consolidation Algorithm:**
 /// ```
 /// 1. Parse all ingredients from menu recipes
@@ -29,7 +25,6 @@
 /// 6. Format with Swedish pluralization and measurements
 /// 7. Sort alphabetically for organized shopping
 /// ```
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Generate shopping list from menu
@@ -37,7 +32,6 @@
 ///   'Huvudrätter': [recipe1, recipe2],
 ///   'Efterrätter': [recipe3],
 /// };
-/// 
 /// final shoppingList = ShoppingListGenerator.generateShoppingList(menu);
 /// // Returns: ["1,5 kg mjöl", "6 ägg", "3 dl grädde", ...]
 /// ```
@@ -50,17 +44,14 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 /// Intelligent shopping list generation system providing ingredient consolidation and optimization for menu planning.
-///
 /// This class serves as the central shopping list generation engine for the Butlery cooking application,
 /// handling the complexity of ingredient consolidation across multiple recipes, unit optimization,
 /// and Swedish formatting conventions. It provides comprehensive ingredient management that transforms
 /// complex menu data into organized, practical shopping lists.
-///
 /// **Smart Consolidation Algorithm:**
 /// The generator uses a sophisticated multi-step process that parses ingredients, normalizes names,
 /// groups similar items, aggregates quantities, and applies intelligent unit conversion for optimal
 /// shopping readability and Swedish cultural conventions.
-///
 /// **Static Utility Design:**
 /// - Private constructor prevents instantiation, ensuring pure utility function usage
 /// - All methods are static for convenient access without object creation overhead
@@ -70,12 +61,10 @@ class ShoppingListGenerator {
   /// Private constructor preventing instantiation to enforce static utility usage.
   ShoppingListGenerator._();
   /// Comprehensive shopping list generation with intelligent ingredient consolidation and optimization
-  ///
   /// This method serves as the primary shopping list generation engine, processing complex menu structures
   /// to create optimized, consolidated shopping lists. It handles ingredient parsing, normalization,
   /// aggregation, and formatting with Swedish cultural conventions and smart unit conversion for
   /// practical shopping experiences.
-  ///
   /// **Generation Process:**
   /// 1. **Ingredient Extraction**: Parses all ingredients from menu recipes
   /// 2. **Data Processing**: Handles various recipe data formats and structures
@@ -84,16 +73,13 @@ class ShoppingListGenerator {
   /// 5. **Unit Optimization**: Applies smart unit conversion for readability
   /// 6. **Swedish Formatting**: Formats with proper pluralization and measurements
   /// 7. **Alphabetical Sorting**: Organizes for efficient shopping
-  ///
   /// **Menu Structure Support:**
   /// - Map-based recipe data with ingredient arrays
   /// - Recipe object format with ingredients property
   /// - Mixed data formats with robust error handling
   /// - Empty menu handling with graceful fallback
-  ///
   /// [menu] The menu data structure containing recipes organized by sections
   /// Returns a sorted list of consolidated shopping items with Swedish formatting
-  ///
   /// **Examples:**
   /// ```dart
   /// final menu = {
@@ -102,7 +88,6 @@ class ShoppingListGenerator {
   ///     {'ingredients': ['200g köttfärs', '1 lök']},
   ///   ],
   /// };
-  /// 
   /// final list = generateShoppingList(menu);
   /// // Returns: ['600g köttfärs', '3 lökar']
   /// ```
@@ -208,30 +193,24 @@ class ShoppingListGenerator {
   }
 
   /// Generate shopping items from a single recipe with Swedish ingredient parsing and categorization.
-  ///
   /// This method creates UnifiedShoppingItem objects from a recipe's ingredients, providing
   /// structured shopping data ready for addition to shopping lists. It leverages the existing
   /// Swedish ingredient parsing infrastructure and intelligent categorization system.
-  ///
   /// **Processing Features:**
   /// - Swedish ingredient parsing with unit/quantity extraction
   /// - Automatic ingredient categorization (Mejeri, Kött & Fisk, etc.)
   /// - Smart unit conversion and formatting  
   /// - Fallback categorization for unknown ingredients
   /// - Robust error handling for malformed ingredient strings
-  ///
   /// [recipe] Recipe object containing ingredients list to convert
   /// [portions] Optional portion scaling factor (defaults to recipe portions)
-  /// 
   /// Returns List of UnifiedShoppingItem objects ready for shopping list addition
-  ///
   /// **Usage Example:**
   /// ```dart
   /// final recipe = Recipe(
   ///   title: 'Pannkakor',
   ///   ingredients: ['2 dl mjölk', '1 ägg', '100g mjöl'],
   /// );
-  /// 
   /// final items = ShoppingListGenerator.generateShoppingItemsFromRecipe(recipe);
   /// // Returns: [
   /// //   UnifiedShoppingItem(name: 'mjölk', amount: 2.0, unit: 'dl', category: 'Mejeri'),
@@ -301,10 +280,8 @@ class ShoppingListGenerator {
   }
 
   /// Categorize ingredient based on Swedish ingredient name patterns.
-  ///
   /// Uses intelligent pattern matching to assign appropriate Swedish shopping categories
   /// based on ingredient names. Provides fallback to 'Övrigt' for unknown ingredients.
-  ///
   /// [ingredientName] Raw ingredient name to categorize
   /// Returns Swedish category string suitable for shopping organization
   static String _categorizeIngredient(String ingredientName) {

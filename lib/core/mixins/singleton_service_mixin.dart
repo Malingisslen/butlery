@@ -1,57 +1,45 @@
 /// Comprehensive singleton pattern mixin implementing thread-safe instance management for service layer consolidation.
-///
 /// This mixin serves as the foundational singleton infrastructure throughout the Butlery application,
 /// eliminating 150+ lines of duplicate singleton patterns across 15+ services while providing advanced
 /// features including dependency tracking, lifecycle management, memory leak detection, and comprehensive
 /// testing support. It standardizes singleton behavior across all service classes, ensuring consistent
 /// instance management patterns and optimal memory utilization throughout the application lifecycle.
-///
 /// ## Core Architecture Features
-/// 
 /// **Thread-Safe Singleton Management**
 /// - Global instance registry with type-safe singleton creation
 /// - Automatic instance lifecycle tracking and disposal management
 /// - Memory-efficient instance reuse with proper cleanup patterns
 /// - Advanced dependency injection support with change detection
-/// 
 /// **Service Layer Integration**
 /// - Seamless integration with all service classes requiring singleton behavior
 /// - Factory constructor elimination through standardized creation patterns  
 /// - Support for complex initialization scenarios with configuration management
 /// - Comprehensive debugging and monitoring capabilities for production environments
-/// 
 /// **Memory Management Intelligence**
 /// - Automatic memory leak detection with detailed reporting
 /// - Disposal tracking for all singleton instances with cleanup coordination
 /// - Testing support with isolated instance creation capabilities
 /// - Performance optimization through dependency hash comparison
-/// 
 /// ## Implementation Patterns Consolidated
-/// 
 /// This mixin replaces the following patterns found across 15+ services:
 /// - Factory constructor patterns: `factory Service() => _instance ??= Service._internal();`
 /// - Internal constructor patterns: `Service._internal() : super();`
 /// - Instance management patterns: `static Service? _instance;`
 /// - Thread-safe creation patterns: Mutex-based singleton initialization
 /// - Disposal patterns: Custom cleanup and resource management
-/// 
 /// ## Usage Examples
-/// 
 /// **Basic Singleton Service:**
 /// ```dart
 /// class RecipeService with SingletonServiceMixin<RecipeService> {
 ///   RecipeService._internal();
 ///   factory RecipeService() => createSingleton(() => RecipeService._internal());
-///   
 ///   Future<List<Recipe>> getRecipes() async { /* implementation */ }
 /// }
 /// ```
-/// 
 /// **Service with Dependency Injection:**
 /// ```dart
 /// class NotificationService with SingletonServiceMixin<NotificationService> {
 ///   NotificationService._internal(this.repository, this.analytics);
-///   
 ///   factory NotificationService(Repository repo, Analytics analytics) =>
 ///     createSingletonWithDependencies(
 ///       () => NotificationService._internal(repo, analytics),
@@ -59,32 +47,25 @@
 ///     );
 /// }
 /// ```
-/// 
 /// **Testing Integration:**
 /// ```dart
 /// // In tests - create isolated instances
 /// final testService = SingletonServiceMixin.createTestInstance<RecipeService>(
 ///   () => RecipeService._internal(),
 /// );
-/// 
 /// // Reset all singletons between tests
 /// SingletonServiceMixin.resetForTesting();
 /// ```
-/// 
 /// ## Performance Characteristics
-/// 
 /// - **Memory Efficiency**: Eliminates duplicate instances and provides proper cleanup
 /// - **Creation Speed**: O(1) instance lookup with type-safe registry management
 /// - **Dependency Tracking**: Efficient hash-based comparison for dependency changes
 /// - **Thread Safety**: Lock-free singleton creation with atomic operations
-/// 
 /// ## Monitoring and Debugging
-/// 
 /// - Comprehensive debug information including instance counts and types
 /// - Memory leak detection with detailed warnings and recommendations
 /// - Dependency change tracking for complex service initialization scenarios
 /// - Production-ready monitoring integration for singleton lifecycle events
-/// 
 /// This mixin is essential for maintaining consistent singleton patterns across the entire
 /// service layer while providing advanced features for dependency management, testing,
 /// and production monitoring in the Swedish cooking application architecture.
@@ -299,16 +280,13 @@ mixin SingletonServiceMixin<T> {
 }
 
 /// Extension to provide convenient factory constructor generation
-/// 
 /// Usage example:
 /// ```dart
 /// class MyService extends BaseService with SingletonServiceMixin<MyService> {
 ///   // Private constructor
 ///   MyService._internal();
-///   
 ///   // Factory constructor using mixin
 ///   factory MyService() => createSingleton(() => MyService._internal());
-///   
 ///   // Or with dependencies
 ///   factory MyService.withDeps(List<Object> deps) => 
 ///     createSingletonWithDependencies(

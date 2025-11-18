@@ -5,13 +5,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for real-time conflict resolution
-/// 
 /// This module handles ONLY edit conflict resolution:
 /// - Conflict detection and resolution strategies
 /// - Edit merging and field-level conflict handling
 /// - List operation conflict resolution
 /// - Optimistic update conflict management
-/// 
 /// ❌ DOES NOT CONTAIN: Session management, content operations, editor tracking, event handling
 class RealtimeConflictResolver {
 

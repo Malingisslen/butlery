@@ -7,7 +7,6 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 
 /// Message and conversation management operations.
-///
 /// Handles:
 /// - Message editing and deletion
 /// - Conversation deletion

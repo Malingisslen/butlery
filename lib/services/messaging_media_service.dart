@@ -10,27 +10,23 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 
 /// Service for handling media (images) in messaging conversations.
-///
 /// Provides comprehensive media upload and messaging integration including:
 /// - Image selection from camera/gallery
 /// - Upload to Firebase Storage with automatic retry and progress tracking
 /// - Automatic message creation with image URLs
 /// - Error handling with user-friendly Swedish messages
-///
 /// **Core Responsibilities:**
 /// - Pick images using ImagePicker
 /// - Upload images to Firebase Storage via ImageUploadService (with automatic retry)
 /// - Send image messages via MessagingService
 /// - Track upload progress for UI feedback
 /// - Handle errors gracefully
-///
 /// **Usage Example:**
 /// ```dart
 /// final mediaService = MessagingMediaService(
 ///   messagingService: messagingService,
 ///   authRepository: authRepository,
 /// );
-///
 /// // Pick and send image (now with automatic retry on failure!)
 /// await mediaService.pickAndSendImage(
 ///   conversationId: conversationId,
@@ -57,13 +53,10 @@ class MessagingMediaService extends BaseService {
         _imagePicker = imagePicker ?? ImagePicker();
 
   /// Pick image and send in conversation.
-  ///
   /// Complete workflow: pick → upload → send message.
-  ///
   /// [conversationId] Target conversation ID
   /// [source] Image source (camera or gallery)
   /// [onProgress] Optional progress callback (0.0 to 1.0)
-  ///
   /// Returns true if successful, false otherwise
   Future<bool> pickAndSendImage({
     required String conversationId,
@@ -101,13 +94,10 @@ class MessagingMediaService extends BaseService {
   }
 
   /// Upload image and send as message.
-  ///
   /// Uploads image to Firebase Storage and creates image message.
-  ///
   /// [conversationId] Target conversation ID
   /// [imagePath] Local file path of image
   /// [onProgress] Optional progress callback (0.0 to 1.0)
-  ///
   /// Returns true if successful, false otherwise
   Future<bool> uploadAndSendImage({
     required String conversationId,
@@ -166,10 +156,8 @@ class MessagingMediaService extends BaseService {
   }
 
   /// Pick multiple images and send in conversation.
-  ///
   /// [conversationId] Target conversation ID
   /// [onProgress] Optional progress callback with (completed, total)
-  ///
   /// Returns number of successfully sent images
   Future<int> pickAndSendMultipleImages({
     required String conversationId,
@@ -217,9 +205,7 @@ class MessagingMediaService extends BaseService {
   }
 
   /// Get estimated file size in MB.
-  ///
   /// Useful for showing file size before upload.
-  ///
   /// [imagePath] Local file path
   /// Returns size in MB or null if file doesn't exist
   Future<double?> getImageSizeMB(String imagePath) async {
@@ -236,12 +222,9 @@ class MessagingMediaService extends BaseService {
   }
 
   /// Validate image before upload.
-  ///
   /// Checks file existence and size limits.
-  ///
   /// [imagePath] Local file path
   /// [maxSizeMB] Maximum allowed size in MB (default 10MB)
-  ///
   /// Returns null if valid, error message if invalid
   Future<String?> validateImage(String imagePath, {double maxSizeMB = 10.0}) async {
     try {

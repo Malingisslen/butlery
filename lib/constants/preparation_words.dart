@@ -1,17 +1,13 @@
 /// Registry of Swedish preparation states and descriptors to remove
 /// during ingredient normalization.
-///
 /// **EXCLUDED:** Diet descriptors (glutenfri, sockerfri, laktosfri)
 /// These are preserved as they're important for dietary restrictions.
-///
 /// # Usage
-///
 /// ```dart
 /// // Check if word should be removed
 /// if (PreparationWords.shouldRemove('hackad')) {
 ///   // Remove from ingredient name
 /// }
-///
 /// // Get all removable words
 /// final allWords = PreparationWords.all;
 /// ```
@@ -150,12 +146,10 @@ class PreparationWords {
   };
 
   /// Color descriptors (only remove when not part of compound name)
-  ///
   /// **WARNING:** Do not remove from compound ingredient names like:
   /// - "vitpeppar" (white pepper)
   /// - "svartpeppar" (black pepper)
   /// - "rödlök" (red onion)
-  ///
   /// These should be checked against compound name list first.
   static const colorDescriptors = {
     'gul',
@@ -202,13 +196,10 @@ class PreparationWords {
   };
 
   /// Check if word should be removed during normalization
-  ///
   /// Returns true if the word is a preparation state, size descriptor,
   /// type descriptor, color descriptor, or alternative conjunction.
-  ///
   /// **Note:** This does not check for compound names. Always check
   /// compound names BEFORE using this method.
-  ///
   /// Examples:
   /// ```dart
   /// PreparationWords.shouldRemove('hackad')  // → true

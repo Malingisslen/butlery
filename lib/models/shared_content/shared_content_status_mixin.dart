@@ -1,38 +1,30 @@
 /// Mixin providing status management functionality for shared content models.
-///
 /// **DEPRECATED (Issue #014)**: Status tracking methods removed.
-///
 /// **Migration Complete:**
 /// Status tracking has been migrated from local model arrays to Firestore subcollections
 /// to eliminate the 100-element array limit and enable unlimited sharing.
-///
 /// **Old Approach (Deprecated):**
 /// ```dart
 /// // ❌ NO LONGER WORKS - Arrays removed
 /// final viewed = recipe.markViewedBy(userId);
 /// final isViewed = recipe.isViewedBy(userId);
 /// ```
-///
 /// **New Approach (Phase 1-3 Complete):**
 /// ```dart
 /// // ✅ Use repository methods for status operations
 /// await repository.addView(recipeId, userId);
 /// final isViewed = await repository.hasViewed(recipeId, userId);
-///
 /// // ✅ Use ViewModel caching for synchronous UI access
 /// final recipeViewModel = ServiceLocator.get<SharedRecipeViewModel>();
 /// final isViewed = recipeViewModel.isRecipeViewed(recipe);
 /// ```
-///
 /// **Status Tracking Architecture:**
 /// - **Phase 1 (Repository)**: Status stored in Firestore subcollections
 /// - **Phase 2 (Models)**: Arrays removed, counts added
 /// - **Phase 3 (ViewModels)**: Status caching for synchronous access
-///
 /// **Available Methods:**
 /// - Repository: `hasViewed()`, `hasEngaged()`, `hasDismissed()`, `getMembers()`
 /// - ViewModel: `isRecipeViewed()`, `isRecipeImported()`, `isRecipeDismissed()`
-///
 /// **Benefits of New Approach:**
 /// - ✅ Unlimited members (no 100-element limit)
 /// - ✅ Better query performance (indexed subcollections)
@@ -44,10 +36,8 @@
 import 'package:butlery/models/shared_content/base_shared_content_model.dart';
 
 /// Mixin providing common status management operations for shared content.
-///
 /// **DEPRECATED (Issue #014)**: All status tracking methods have been removed.
 /// Status is now tracked in Firestore subcollections via repository layer.
-///
 /// This mixin is kept for backward compatibility but contains no functional code.
 /// Use repository methods or ViewModel caching instead.
 mixin SharedContentStatusMixin<TContent> on BaseSharedContentModel<TContent> {

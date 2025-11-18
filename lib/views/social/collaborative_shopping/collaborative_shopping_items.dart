@@ -8,13 +8,11 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// Focused widget for collaborative shopping items list
-/// 
 /// This widget handles ONLY items list display responsibilities:
 /// - Active and completed items rendering
 /// - Item cards with checkboxes and details
 /// - Empty state display
 /// - Items list organization and separators
-/// 
 /// ❌ DOES NOT CONTAIN: Item actions, header display, business logic
 class CollaborativeShoppingItems extends StatelessWidget {
   final CollaborativeShoppingViewModel viewModel;

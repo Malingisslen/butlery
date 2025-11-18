@@ -1,5 +1,4 @@
 /// Unified shopping service for personal and collaborative shopping list management.
-///
 /// Implements facade pattern coordinating personal operations, collaborative sharing,
 /// and real-time synchronization with Firebase.
 

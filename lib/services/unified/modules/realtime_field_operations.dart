@@ -6,7 +6,6 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/modules/realtime_edit_context.dart';
 
 /// Core real-time field operations module
-///
 /// Handles recipe field updates (title, description, portions, time) and batch operations.
 /// Provides core makeRealtimeEdit method used by ingredient/instruction operations.
 class RealtimeFieldOperations {

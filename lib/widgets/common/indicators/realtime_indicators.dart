@@ -7,13 +7,11 @@ import 'package:butlery/widgets/common/indicators/participant_list_widget.dart';
 import 'package:butlery/widgets/common/indicators/realtime_status_widgets.dart';
 
 /// Realtime indicators facade for collaborative features
-///
 /// This facade provides a unified interface to realtime indicator widgets:
 /// - EditIndicatorWidget: Shows active editor
 /// - ParticipantListWidget: Shows all participants
 /// - RealtimeStatusWidget: Shows connection status
 /// - RealtimeStatusBanner: Shows offline banner
-///
 /// **SRP Compliance:** This file follows the facade pattern - it delegates
 /// to specialized widget modules rather than implementing widgets directly.
 class RealtimeIndicators {

@@ -7,21 +7,17 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Repository for GDPR consent management (Article 7: Conditions for consent).
-///
 /// This repository handles persistent storage and retrieval of user consent
 /// with comprehensive security validation and audit logging to ensure GDPR compliance.
-///
 /// **GDPR Compliance:**
 /// - Article 7: Conditions for Consent (CRITICAL requirement)
 /// - Article 4(11): Definition of consent
 /// - Article 13: Information to be provided where personal data are collected
-///
 /// **Security Model:**
 /// - Users can only read/write their own consent
 /// - All consent operations are audit logged
 /// - Consent version tracking for policy changes
 /// - Device information tracking for audit trails
-///
 /// **Data Structure:**
 /// ```
 /// users/{userId}/consent/current
@@ -122,9 +118,7 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
   }
 
   /// Get user's consent
-  ///
   /// Returns null if no consent exists or user is not authenticated.
-  ///
   /// **Security:** Users can only read their own consent
   Future<UserConsent?> getUserConsent(String userId) async {
     try {
@@ -158,7 +152,6 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
   }
 
   /// Save or update user consent
-  ///
   /// **Security:** Users can only write their own consent
   /// **Audit:** All consent changes are logged for GDPR compliance
   Future<bool> saveConsent(String userId, UserConsent consent) async {
@@ -209,7 +202,6 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
   }
 
   /// Delete user consent
-  ///
   /// **GDPR:** This supports Article 17 (Right to Erasure)
   /// **Security:** Users can only delete their own consent
   Future<bool> deleteConsent(String userId) async {
@@ -246,7 +238,6 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
   }
 
   /// Get consent history for a user (for GDPR audit trail)
-  ///
   /// **Security:** Users can only access their own consent history
   /// **GDPR:** Article 15 (Right of Access)
   Future<List<UserConsent>> getConsentHistory(

@@ -1,10 +1,7 @@
 /// Arla.se recipe parser with dairy-specific enhancements
-///
 /// Arla (Swedish dairy brand) provides recipes with schema.org JSON-LD markup.
 /// This parser extracts standard recipe data and adds Arla-specific enhancements.
-///
 /// **Target Success Rate:** >95% (high quality)
-///
 /// **Arla-Specific Features:**
 /// - Difficulty level extraction
 /// - Cooking tips
@@ -17,7 +14,6 @@ import 'package:html/dom.dart';
 import 'package:butlery/services/extraction/site_parsers/recipe_site_parser.dart';
 
 /// Parser for Arla.se recipes
-///
 /// **Example URL:** https://www.arla.se/recept/chokladbollar/
 class ArlaRecipeParser extends RecipeSiteParser {
   @override
@@ -312,7 +308,6 @@ class ArlaRecipeParser extends RecipeSiteParser {
   }
 
   /// Convert Swedish time text to ISO 8601 duration
-  ///
   /// Examples:
   /// - "30 minuter" → "PT30M"
   /// - "1 timme 30 min" → "PT1H30M"

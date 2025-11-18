@@ -1,5 +1,4 @@
 /// Comprehensive realtime menu model providing advanced collaborative meal planning and recipe organization.
-///
 /// This model implements sophisticated collaborative menu management following Single Responsibility Principle,
 /// handling all aspects of realtime menu collaboration including category-based recipe organization, participant
 /// management, menu analytics, and comprehensive UI integration. It provides complete collaborative menu
@@ -18,20 +17,17 @@ import 'package:butlery/models/realtime/realtime_menu_analytics.dart';
 import 'package:butlery/models/realtime/realtime_menu_factory.dart';
 
 /// Comprehensive realtime menu model with collaborative meal planning and recipe organization delegation.
-///
 /// Represents a complete collaborative menu with category-based recipe organization, participant management,
 /// and comprehensive analytics through focused component delegation. This class serves as the orchestration
 /// layer for all collaborative menu features while maintaining clean separation of concerns.
 class RealtimeMenu extends RealtimeResource {
   /// Core menu data component providing pure data representation without business logic contamination.
-  ///
   /// Contains the fundamental menu structure including categories, recipes, metadata, and temporal information
   /// while delegating to specialized data handling for clean separation of concerns and focused responsibility.
   /// Used internally for data operations and serialization through delegation pattern.
   final RealtimeMenuData _data;
 
   /// Creates a new realtime menu with comprehensive collaborative configuration and component delegation.
-  ///
   /// This constructor provides complete menu initialization with delegation to specialized components
   /// for data management, operations, and analytics while maintaining clean separation of concerns
   /// and focused responsibility distribution throughout the collaborative menu architecture.
@@ -93,7 +89,6 @@ class RealtimeMenu extends RealtimeResource {
   }
 
   /// Creates a realtime menu instance from repository data with complete parsing and validation.
-  /// 
   /// @deprecated Firebase-specific constructor. Repositories should use fromData() instead.
   /// This maintains backward compatibility while repositories are updated.
   factory RealtimeMenu.fromRepositoryData(String id, Map<String, dynamic> data) {
@@ -116,7 +111,6 @@ class RealtimeMenu extends RealtimeResource {
   }
   
   /// Preferred factory constructor from clean data
-  /// 
   /// Repositories should provide DateTime objects and clean Map data,
   /// eliminating Firebase-specific types from the model layer.
   factory RealtimeMenu.fromData({

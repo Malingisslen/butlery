@@ -14,22 +14,18 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Recipe shopping list action handler
-///
 /// Handles shopping list generation from recipe ingredients with portion scaling.
 class RecipeShoppingHandler {
   /// Generate shopping list from current recipe with portion scaling and Swedish categorization.
-  ///
   /// This method creates a shopping list from the recipe's ingredients, allowing users to
   /// select an existing shopping list or create a new one. It leverages Swedish ingredient
   /// parsing and intelligent categorization for optimal shopping organization.
-  ///
   /// **Process Flow:**
   /// 1. Generate UnifiedShoppingItem objects from recipe ingredients
   /// 2. Show shopping list selection dialog (existing lists + create new option)
   /// 3. Add items to selected shopping list using batch operations
   /// 4. Provide success feedback with navigation option to shopping view
   /// 5. Handle errors gracefully with user feedback
-  ///
   /// **Features:**
   /// - Portion scaling based on current recipe portions
   /// - Swedish ingredient categorization (Mejeri, Kött & Fisk, etc.)

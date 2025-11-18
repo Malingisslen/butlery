@@ -5,16 +5,13 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 
 /// ViewModel for managing user data export UI state and operations
-///
 /// Handles the GDPR data portability feature, allowing users to export
 /// all their personal data in JSON format.
-///
 /// **State Management:**
 /// - Export progress tracking with AsyncOperationMixin
 /// - Loading states managed automatically
 /// - Success/error handling via AsyncOperationMixin
 /// - Export result storage
-///
 /// **User Flow:**
 /// 1. User requests data export
 /// 2. ViewModel triggers export via DataExportService
@@ -76,7 +73,6 @@ class DataExportViewModel extends ChangeNotifier
   }
 
   /// Export all user data
-  ///
   /// Returns true on success, false on failure.
   /// Loading state, error handling, and duplicate prevention managed by AsyncOperationMixin.
   Future<bool> exportData() async {

@@ -14,7 +14,6 @@ import 'package:butlery/widgets/styled/styled_widgets.dart';
 import 'package:butlery/core/events/group_events.dart';
 
 /// GroupDetailActions - Group action methods
-///
 /// Handles group-related actions like adding/removing members, editing, deleting.
 class GroupDetailActions {
   /// Add members to group

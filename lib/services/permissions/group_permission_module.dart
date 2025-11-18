@@ -5,7 +5,6 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Module handling group (friend category) permission checks and admin validation.
-///
 /// Provides comprehensive permission validation for group management, admin privileges, and invitations.
 class GroupPermissionModule {
   final String? Function() getCurrentUserId;
@@ -15,9 +14,7 @@ class GroupPermissionModule {
   });
 
   /// Validates whether the current user has administrative privileges for a specific group.
-  ///
   /// Returns `true` if user has admin privileges for the group, `false` otherwise
-  ///
   /// **Admin Privileges:**
   /// - Managing group membership (adding/removing members)
   /// - Modifying group settings and description
@@ -52,9 +49,7 @@ class GroupPermissionModule {
   }
 
   /// Validates user permission to permanently delete a specific group.
-  ///
   /// Returns `true` if user can delete the group, `false` otherwise
-  ///
   /// **Deletion Authority:**
   /// - Group creators typically have deletion privileges
   /// - Designated admins may be granted deletion permissions
@@ -73,9 +68,7 @@ class GroupPermissionModule {
   }
 
   /// Validates user permission to invite others to join a specific group.
-  ///
   /// Returns `true` if user can invite others to the group, `false` otherwise
-  ///
   /// **Invitation Authority:**
   /// - Group admins can typically invite new members
   /// - Regular members may have invitation privileges based on group settings

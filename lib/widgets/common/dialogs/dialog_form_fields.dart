@@ -23,7 +23,6 @@ import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 
 /// Common form field factory that eliminates duplicate form field patterns.
-///
 /// Consolidates form field patterns found across:
 /// - create_group_dialog.dart (name field)
 /// - edit_group_dialog.dart (name field)

@@ -14,7 +14,6 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/models/user_profile.dart';
 
 /// Recipe social action handler
-///
 /// Handles social features: sharing to friends/groups, comments, and user profile management.
 class RecipeSocialHandler {
   /// Show social sharing dialog

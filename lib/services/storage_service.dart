@@ -14,7 +14,6 @@ export 'package:butlery/repositories/interfaces/storage_repository.dart'
     show StorageInfo;
 
 /// Storage service for image upload and management
-///
 /// This service now uses dependency injection for better testability while
 /// maintaining the singleton pattern and existing API. The repository pattern
 /// allows for easy mocking in tests and switching between different storage
@@ -27,7 +26,6 @@ class StorageService extends BaseService
   StorageService._internal(this._repository, this._firestoreRepository);
 
   /// Factory constructor with dependency injection support.
-  ///
   /// Requires [repository] and [firestoreRepository] parameters from DI container.
   /// Use `ServiceLocator.get<StorageService>()` to obtain instance.
   factory StorageService({

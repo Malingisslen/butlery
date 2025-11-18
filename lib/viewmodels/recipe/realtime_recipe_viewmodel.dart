@@ -11,7 +11,6 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Realtime Recipe ViewModel
-/// 
 /// Handles ONLY real-time collaborative editing operations.
 /// This includes real-time sessions, live edits, active editor tracking, and connection management.
 class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {

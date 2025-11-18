@@ -1,9 +1,7 @@
 /// E2E Staging Main Entry Point - Production-Like Testing
-///
 /// This main entry point is designed for E2E tests that require production-like
 /// Firebase operations using a dedicated staging Firebase project. This provides
 /// the highest fidelity testing for critical user journeys.
-///
 /// ULTRATHINK ANALYSIS:
 /// - Production main.dart initializes Firebase with production config
 /// - Staging E2E tests need production-like Firebase operations
@@ -42,21 +40,17 @@ import 'package:butlery/core/di/modules/ui_module.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// E2E Staging Application Entry Point
-///
 /// This entry point provides complete Butlery app functionality for E2E testing
 /// with production-like Firebase integration using a staging project. Perfect for
 /// testing critical user journeys, payment flows, and external integrations.
-///
 /// REQUIREMENTS:
 /// - Staging Firebase project configured
 /// - Staging environment variables (.env.staging)
 /// - Valid Firebase App Check configuration for staging
-///
 /// USAGE:
 /// ```dart
 /// // In E2E tests (typically CI/CD only):
 /// import 'package:butlery/main_e2e_staging.dart' as staging_app;
-///
 /// testWidgets('production-like test', (tester) async {
 ///   staging_app.main();
 ///   await tester.pumpAndSettle();
@@ -111,7 +105,6 @@ Future<void> main() async {
 }
 
 /// Load staging environment variables
-///
 /// This loads environment configuration specific to staging testing,
 /// including staging Firebase project settings and API keys.
 Future<void> _loadStagingEnvironment() async {
@@ -131,7 +124,6 @@ Future<void> _loadStagingEnvironment() async {
 }
 
 /// Initialize Firebase App Check for staging environment
-///
 /// This sets up App Check with staging-appropriate configuration,
 /// typically more lenient than production but more secure than debug.
 Future<void> _initializeStagingAppCheck() async {
@@ -162,7 +154,6 @@ Future<void> _initializeStagingAppCheck() async {
 }
 
 /// Initialize the modular system for E2E staging testing
-///
 /// This creates the same modular system as production configured for
 /// staging environment with production-like Firebase integration.
 Future<void> _initializeE2EStagingSystem() async {

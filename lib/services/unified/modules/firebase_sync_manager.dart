@@ -10,32 +10,27 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:get_it/get_it.dart';
 
 /// Specialized Firebase synchronization manager providing real-time data streaming and subscription management.
-///
 /// This module implements comprehensive Firebase synchronization following Single Responsibility Principle,
 /// handling all aspects of real-time data streaming including subscription management, change processing,
 /// and health monitoring. It provides robust Firebase streaming capabilities ensuring real-time data
 /// consistency while maintaining clean separation from cache operations and debounced synchronization.
-///
 /// **Single Responsibility Focus:**
 /// This module exclusively handles Firebase real-time synchronization:
 /// - **Stream Management**: Complete Firebase stream setup, lifecycle management, and subscription handling
 /// - **Change Processing**: Real-time document change processing with type-safe recipe conversion
 /// - **Health Monitoring**: Sync health assessment with automatic restart and recovery mechanisms
 /// - **Selective Sync**: Granular control over personal and collaborative recipe synchronization streams
-///
 /// **What This Module Does NOT Handle:**
 /// - Local cache operations and storage (handled by CacheOperations)
 /// - Debounced write operations and batching (handled by DebouncedSyncOperations)
 /// - Cache cleanup and optimization (handled by CacheOptimization)
 /// - Authentication and user management (handled by parent services)
-///
 /// **Firebase Sync Features:**
 /// - **Real-time Streams**: Live Firebase document streaming with automatic reconnection and error recovery
 /// - **Repository Integration**: Seamless integration with personal and collaborative recipe repositories
 /// - **Health Monitoring**: Comprehensive sync health monitoring with automatic recovery and restart
 /// - **Selective Control**: Granular control over individual sync streams for optimal performance
 /// - **Error Handling**: Robust error handling with detailed logging and recovery mechanisms
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Start complete Firebase synchronization
@@ -45,7 +40,6 @@ import 'package:get_it/get_it.dart';
 ///   onRecipeRemoved: handleRecipeRemoval,
 ///   onSyncError: handleSyncError,
 /// );
-/// 
 /// // Start selective sync streams
 /// final personalSub = FirebaseSyncManager.startPersonalSyncOnly(
 ///   currentUserId: userId,
@@ -53,7 +47,6 @@ import 'package:get_it/get_it.dart';
 ///   onRecipeRemoved: handleRemoval,
 ///   onSyncError: handleError,
 /// );
-/// 
 /// // Monitor and maintain sync health
 /// await FirebaseSyncManager.ensureSyncHealth(
 ///   subscriptions: subscriptions,

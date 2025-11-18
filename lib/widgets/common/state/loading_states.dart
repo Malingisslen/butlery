@@ -7,7 +7,6 @@ import 'package:butlery/widgets/common/state/state_enums.dart';
 import 'package:butlery/widgets/common/state/skeleton_components.dart';
 
 /// LoadingStates - Loading state implementations
-///
 /// Handles different loading variants including spinners and skeleton loaders.
 class LoadingStates {
   /// Build loading state based on variant

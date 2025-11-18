@@ -7,13 +7,11 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 
 /// Focused module for recipe serialization/deserialization
-/// 
 /// This module handles ONLY Firestore conversion:
 /// - Recipe to Firestore serialization
 /// - Firestore to Recipe deserialization
 /// - Data validation and sanitization
 /// - Type conversion and safety
-/// 
 /// ❌ DOES NOT CONTAIN: Business logic, metadata management, operations
 class RecipeSerialization {
   
@@ -33,7 +31,6 @@ class RecipeSerialization {
   }
 
   /// Serialize recipe with metadata for storage (repository-agnostic)
-  /// 
   /// Returns clean data map without Firebase-specific types.
   /// Repositories handle conversion to their specific format (Firestore, etc.)
   static Map<String, dynamic> serializeWithMetadata({
@@ -112,7 +109,6 @@ class RecipeSerialization {
   }
 
   /// Deserialize complete realtime recipe from repository data
-  /// 
   /// @deprecated Repositories should use fromData() constructors instead.
   /// This maintains backward compatibility during repository updates.
   static (Recipe recipe, Map<String, dynamic> metadata) deserializeRealtimeRecipe(
@@ -231,7 +227,6 @@ class RecipeSerialization {
   // ===== HELPER METHODS =====
 
   /// Parse timestamp from various formats (repository-agnostic)
-  /// 
   /// Repositories should provide DateTime objects, but this handles legacy formats.
   static DateTime? _parseTimestamp(dynamic timestamp) {
     if (timestamp == null) return null;

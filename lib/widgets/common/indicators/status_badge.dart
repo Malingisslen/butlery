@@ -5,7 +5,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// Reusable status badge component
-/// 
 /// Provides consistent styling for status badges.
 /// Used for labels like "DELAD MENY", "NYA", etc.
 class StatusBadge extends StatelessWidget {

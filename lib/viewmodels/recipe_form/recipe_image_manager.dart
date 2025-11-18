@@ -23,7 +23,6 @@ import 'package:butlery/viewmodels/recipe_form/image_management/upload_queue_sum
 
 /// ===== RECIPE IMAGE MANAGER =====
 /// REFACTORED: Now delegates to ImageUploadService for upload execution
-///
 /// Recipe-specific multi-image coordination for recipe forms.
 /// Handles image selection, recipe-specific state, and upload safety checks.
 /// Upload execution, retry, and progress delegated to ImageUploadService.
@@ -721,7 +720,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Start background upload for a single file
-  ///
   /// REFACTORED: Simplified to delegate to ImageUploadService.
   /// The service handles progress tracking, retry logic, circuit breaker, and notifications.
   void _startBackgroundUploadForFile(File imageFile, String recipeId) {
@@ -885,7 +883,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Upload XFile with web platform support (handles blob URLs)
-  ///
   /// REFACTORED: For web blob URLs, convert to File first then use ImageUploadService
   Future<String?> _uploadXFileWithWebSupport(
       XFile xFile, String recipeId) async {
@@ -919,7 +916,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Handle XFile upload failure
-  ///
   /// REFACTORED: Simplified - ImageUploadService handles error classification and retry logic
   void _handleXFileUploadFailure(
       String filePath, XFile xFile, String errorMessage, dynamic error) {
@@ -998,7 +994,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   }
 
   /// Upload a single file with enhanced progress tracking and speed calculation
-  ///
   /// REFACTORED: Now uses ImageUploadService which provides automatic progress tracking,
   /// speed calculation, ETA, retry logic, and circuit breaker protection.
   Future<String?> _uploadSingleFileWithEnhancedTracking(
@@ -1164,7 +1159,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   /// Show dialog to user about pending uploads during save
   /// Returns user choice for how to handle pending uploads
   /// Show upload choice dialog for handling pending/failed uploads.
-  ///
   /// REFACTORED: Delegates to upload_choice_dialog widget for UI rendering.
   /// Maintains separation of concerns (ViewModel should not build widgets).
   Future<UploadChoice?> showUploadChoiceDialog(
@@ -1249,7 +1243,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   // ===== RETRY MANAGEMENT =====
 
   /// Retry failed upload
-  ///
   /// REFACTORED: Simplified to restart upload via ImageUploadService
   /// Service handles retry delays, exponential backoff, and circuit breaker
   Future<void> retryFailedUpload(String filePath) async {

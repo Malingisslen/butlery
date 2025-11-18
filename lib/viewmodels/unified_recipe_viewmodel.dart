@@ -1,5 +1,4 @@
 /// Streamlined unified recipe ViewModel providing essential recipe management operations.
-///
 /// Serves as a facade coordinating specialized ViewModels for recipe operations while 
 /// maintaining the 500-line file size limit. For advanced operations, access focused 
 /// ViewModels directly.

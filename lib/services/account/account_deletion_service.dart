@@ -16,7 +16,6 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 
 /// GDPR-compliant account deletion orchestrator delegating to focused deletion modules.
-///
 /// Uses repository pattern for database access to improve testability and maintain
 /// architectural consistency. Delegates to focused deletion operation modules for
 /// different data categories (content, social, profile, storage).

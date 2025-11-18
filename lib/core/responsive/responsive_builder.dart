@@ -7,7 +7,6 @@ import 'package:butlery/core/responsive/breakpoints.dart';
 typedef ResponsiveWidgetBuilder = Widget Function(BuildContext context);
 
 /// Responsive layout builder that switches between mobile, tablet, and desktop layouts
-///
 /// Usage:
 /// ```dart
 /// ResponsiveBuilder(
@@ -16,7 +15,6 @@ typedef ResponsiveWidgetBuilder = Widget Function(BuildContext context);
 ///   desktop: (context) => DesktopLayout(),
 /// )
 /// ```
-///
 /// Falls back gracefully:
 /// - Desktop not provided → uses tablet → uses mobile
 /// - Tablet not provided → uses mobile for tablet sizes
@@ -66,9 +64,7 @@ class ResponsiveBuilder extends StatelessWidget {
 }
 
 /// Responsive layout builder with full breakpoint control
-///
 /// Provides builders for all 6 device categories with graceful fallbacks.
-///
 /// Usage:
 /// ```dart
 /// ResponsiveBuilderFull(
@@ -138,9 +134,7 @@ class ResponsiveBuilderFull extends StatelessWidget {
 }
 
 /// Orientation-aware responsive builder
-///
 /// Switches layouts based on both screen size AND orientation.
-///
 /// Usage:
 /// ```dart
 /// OrientationResponsiveBuilder(
@@ -197,7 +191,6 @@ class OrientationResponsiveBuilder extends StatelessWidget {
 }
 
 /// Simple conditional widget based on device type
-///
 /// Usage:
 /// ```dart
 /// ResponsiveWidget(
@@ -229,7 +222,6 @@ class ResponsiveWidget extends StatelessWidget {
 }
 
 /// Visibility widget that shows/hides based on device type
-///
 /// Usage:
 /// ```dart
 /// ResponsiveVisibility(
@@ -281,9 +273,7 @@ class ResponsiveVisibility extends StatelessWidget {
 }
 
 /// Constrain content width for better readability on large screens
-///
 /// Automatically centers and constrains content based on screen size.
-///
 /// Usage:
 /// ```dart
 /// ResponsiveConstrainedBox(
@@ -322,12 +312,10 @@ class ResponsiveConstrainedBox extends StatelessWidget {
 }
 
 /// Responsive spacing helper
-///
 /// Automatically adjusts spacing based on screen size:
 /// - Mobile: base spacing
 /// - Tablet: base * 1.25
 /// - Desktop: base * 1.5
-///
 /// Usage:
 /// ```dart
 /// ResponsiveSpacing(
@@ -371,9 +359,7 @@ class ResponsiveSpacing extends StatelessWidget {
 }
 
 /// Responsive padding widget
-///
 /// Automatically scales padding based on screen size.
-///
 /// Usage:
 /// ```dart
 /// ResponsivePadding(
@@ -418,7 +404,6 @@ class ResponsiveUtils {
   ResponsiveUtils._();
 
   /// Get responsive font size multiplier
-  ///
   /// Returns:
   /// - Mobile: 1.0
   /// - Tablet: 1.1
@@ -433,7 +418,6 @@ class ResponsiveUtils {
   }
 
   /// Get responsive spacing multiplier
-  ///
   /// Returns:
   /// - Mobile: 1.0
   /// - Tablet: 1.25
@@ -448,7 +432,6 @@ class ResponsiveUtils {
   }
 
   /// Get responsive icon size multiplier
-  ///
   /// Returns:
   /// - Mobile: 1.0
   /// - Tablet: 1.15
@@ -481,7 +464,6 @@ class ResponsiveUtils {
   }
 
   /// Get sidebar width for navigation
-  ///
   /// Returns:
   /// - Mobile: 0 (no sidebar)
   /// - Tablet: 72 (NavigationRail compact)
@@ -496,7 +478,6 @@ class ResponsiveUtils {
   }
 
   /// Whether to use master-detail pattern
-  ///
   /// Returns true on tablet and desktop
   static bool useMasterDetail(BuildContext context) {
     return !Breakpoints.isMobile(context);

@@ -17,12 +17,10 @@ import 'package:butlery/repositories/firebase/friends/friend_category_repository
 import 'package:butlery/repositories/firebase/friends/group_invitation_repository.dart';
 
 /// Firebase Firestore implementation for comprehensive social friendship management.
-///
 /// This repository implements the [FriendsRepository] interface using a sophisticated
 /// facade pattern that delegates to four specialized repositories, providing complete
 /// social relationship management while maintaining clean separation of concerns and
 /// backward compatibility.
-///
 /// **Facade Architecture:**
 /// Uses the facade pattern to coordinate four focused repositories, eliminating the
 /// complexity of a monolithic friends repository while providing a unified interface:
@@ -30,7 +28,6 @@ import 'package:butlery/repositories/firebase/friends/group_invitation_repositor
 /// - **FriendRelationshipRepository**: Handles mutual friendship management and profiles
 /// - **FriendCategoryRepository**: Organizes friends into custom categories and groups
 /// - **GroupInvitationRepository**: Manages group invitations and cleanup operations
-///
 /// **Social Relationship Features:**
 /// - **Friend Requests**: Complete request lifecycle (send, accept, reject, cancel)
 /// - **Mutual Friendships**: Bidirectional relationship management with consistency
@@ -38,42 +35,34 @@ import 'package:butlery/repositories/firebase/friends/group_invitation_repositor
 /// - **Group Invitations**: Social group invitation system with expiration handling
 /// - **Profile Integration**: Seamless integration with user profiles and social data
 /// - **Real-time Streams**: Live updates for social activities and relationship changes
-///
 /// **Data Consistency:**
 /// Ensures complex social relationships remain synchronized across multiple collections
 /// and operations. Handles concurrent social operations gracefully while maintaining
 /// referential integrity between friend requests, relationships, and categories.
-///
 /// **Performance Optimization:**
 /// - **Focused Queries**: Each repository optimizes queries for its specific domain
 /// - **Batch Operations**: Efficient bulk operations for friend management
 /// - **Stream Management**: Optimized real-time subscriptions for social activities
 /// - **Statistics Aggregation**: Comprehensive social statistics from all repositories
-///
 /// **Privacy and Security:**
 /// Implements comprehensive authorization checks across all social operations,
 /// respects user privacy settings, and provides audit logging for social interactions.
-///
 /// **Usage Examples:**
 /// ```dart
 /// final friendsRepo = FirebaseFriendsRepository(
 ///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
-/// 
 /// // Send and manage friend requests
 /// await friendsRepo.sendFriendRequest(targetUserId, 
 ///   message: 'Let\\'s connect!');
-/// 
 /// // Accept request and create mutual friendship
 /// await friendsRepo.acceptFriendRequest(requestId);
-/// 
 /// // Organize friends into categories
 /// final familyCategory = FriendCategory(
 ///   name: 'Family',
 ///   memberIds: familyFriendIds,
 /// );
 /// await friendsRepo.saveCategory(userId, familyCategory);
-/// 
 /// // Real-time social updates
 /// friendsRepo.incomingRequestsStream(userId).listen((requests) {
 ///   updateFriendRequestsUI(requests);

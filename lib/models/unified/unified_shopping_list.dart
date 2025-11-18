@@ -1,30 +1,25 @@
 /// Comprehensive unified shopping list model providing advanced shopping list management with collaborative features.
-///
 /// This model implements sophisticated shopping list management following Single Responsibility Principle,
 /// handling all aspects of shopping lists including basic functionality, collaborative features, real-time
 /// synchronization, and comprehensive member management. It provides complete unified shopping list
 /// capabilities while maintaining clean separation from UI concerns and individual item management.
-///
 /// **Single Responsibility Focus:**
 /// This model exclusively handles shopping list management and coordination:
 /// - **Unified List Management**: Seamlessly handles personal, collaborative, and template shopping lists
 /// - **Real-Time Synchronization**: Complete sync status management with conflict resolution and offline support
 /// - **Collaborative Features**: Advanced member management with permission-based access control and activity tracking
 /// - **List Operations**: Comprehensive item operations with user attribution and collaborative tracking
-///
 /// **What This Model Does NOT Handle:**
 /// - Individual shopping item creation and management (handled by UnifiedShoppingItem)
 /// - UI concerns and presentation logic (handled by ViewModels and UI components)
 /// - Shopping list persistence and storage operations (handled by repositories and services)
 /// - Permission validation and enforcement (handled by PermissionService for centralized management)
-///
 /// **Unified Shopping List Features:**
 /// - **Triple-Mode Support**: Personal lists, collaborative sharing, and reusable templates with seamless transitions
 /// - **Real-Time Synchronization**: Complete sync status management with conflict resolution and offline capabilities
 /// - **Advanced Collaboration**: Member management with granular permissions and real-time activity tracking
 /// - **Comprehensive Analytics**: List completion tracking, member activity summaries, and progress analytics
 /// - **Swedish Localization**: Complete Swedish language support for status messages and activity summaries
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Create personal shopping list
@@ -34,7 +29,6 @@
 ///   ownerDisplayName: 'Anna Andersson',
 ///   items: [milk, bread, eggs],
 /// );
-/// 
 /// // Create collaborative shopping list
 /// final collabList = UnifiedShoppingList.collaborative(
 ///   name: 'Gemensam handlingslista',
@@ -47,12 +41,10 @@
 ///   description: 'Lista för helgens middag',
 ///   allowGuestEditing: true,
 /// );
-/// 
 /// // List operations with user tracking
 /// final updatedList = collabList
 ///   .addItem(newItem, userId: currentUserId, userDisplayName: 'Erik')
 ///   .toggleItemBought(itemId, userId: currentUserId, userDisplayName: 'Erik');
-/// 
 /// // Check list status and analytics
 /// print(updatedList.summary); // "2 av 5 artiklar kvar"
 /// print(updatedList.completionPercentage); // 60.0
@@ -67,7 +59,6 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 
 /// Enumeration defining synchronization status for shopping list data management.
-///
 /// Provides comprehensive sync state tracking for offline-first shopping list functionality
 /// with conflict resolution and error handling capabilities.
 enum SyncStatus {
@@ -88,7 +79,6 @@ enum SyncStatus {
 }
 
 /// Enumeration defining shopping list types for different usage patterns.
-///
 /// Supports multiple list types with different behavioral characteristics and
 /// collaboration features for flexible shopping list management.
 enum ListType {
@@ -106,7 +96,6 @@ enum ListType {
 typedef ShoppingListType = ListType;
 
 /// Enumeration defining permission levels for collaborative shopping list access.
-///
 /// Provides granular access control for collaborative shopping lists with
 /// hierarchical permission management and administrative capabilities.
 enum SharedListPermission {
@@ -120,7 +109,6 @@ enum SharedListPermission {
   admin, // Kan redigera behörigheter och ta bort lista
 }
 /// Comprehensive unified shopping list with triple-mode support and collaborative features.
-///
 /// Represents a complete shopping list with all associated metadata including items, collaboration
 /// settings, synchronization status, and comprehensive member management. Supports personal,
 /// collaborative, and template shopping list modes with seamless mode transitions.
@@ -129,99 +117,80 @@ class UnifiedShoppingList {
   final String id;
   
   /// Name of the shopping list for identification and display.
-  ///
   /// The primary identifier that users see and use to recognize the list.
   final String name;
   
   /// User identifier of the shopping list owner.
-  ///
   /// References the user who created and owns the shopping list with administrative privileges.
   final String ownerId;
   
   /// Cached display name of the list owner for UI performance optimization.
-  ///
   /// Stored locally to avoid additional user profile lookups during list display and attribution.
   final String ownerDisplayName;
   
   /// List of shopping items contained within this shopping list.
-  ///
   /// Complete collection of UnifiedShoppingItem instances that make up the shopping list content.
   final List<UnifiedShoppingItem> items;
   
   /// Timestamp when the shopping list was originally created.
-  ///
   /// Used for chronological tracking and list organization by creation date.
   final DateTime createdAt;
   
   /// Timestamp when the shopping list was last updated.
-  ///
   /// Tracks the most recent modification for synchronization and freshness determination.
   final DateTime updatedAt;
   
   /// Optional timestamp when the list was last synchronized with the backend.
-  ///
   /// Used for sync status tracking and determining data freshness for offline-first functionality.
   final DateTime? lastSyncedAt;
   
   /// Current synchronization status of the shopping list.
-  ///
   /// Tracks sync state for offline-first functionality with conflict resolution and error handling.
   final SyncStatus syncStatus;
 
   /// Collaborative features and advanced shopping list metadata.
 
   /// Type classification of the shopping list determining its behavioral characteristics.
-  ///
   /// Controls whether the list is personal, collaborative, or a reusable template.
   final ListType type;
   
   /// Member permissions mapping for collaborative access control.
-  ///
   /// Maps user IDs to their permission levels for granular collaborative list management.
   final Map<String, SharedListPermission> memberPermissions; // userId -> permission
   
   /// Optional timestamp of the most recent activity on the shopping list.
-  ///
   /// Used for activity tracking and determining list engagement for collaborative features.
   final DateTime? lastActivityAt;
   
   /// Optional user identifier who performed the most recent activity.
-  ///
   /// Tracks the last user to modify the list for collaborative attribution and activity summaries.
   final String? lastActivityByUserId;
   
   /// Optional display name of the user who performed the most recent activity.
-  ///
   /// Cached display name for performance optimization in activity summaries and collaborative UI.
   final String? lastActivityByDisplayName;
   
   /// Optional description providing additional context for the shopping list.
-  ///
   /// Allows users to add detailed information about the list's purpose or special instructions.
   final String? description;
   
   /// Flexible settings container for future feature extensions.
-  ///
   /// Extensible settings system for storing list-specific configuration and preferences.
   final Map<String, dynamic> settings; // Framtida inställningar
   
   /// List of friend category IDs for bulk sharing operations.
-  ///
   /// References friend categories that can be used for efficient bulk sharing of the shopping list.
   final List<String> categoryIds; // Related friend categories for bulk sharing
   
   /// Flag indicating whether guest users can edit the collaborative list.
-  ///
   /// Controls editing permissions for users without explicit member permissions in collaborative lists.
   final bool allowGuestEditing;
   
   /// Flag indicating whether completed items should be automatically removed.
-  ///
   /// Controls automatic cleanup behavior for purchased items to maintain list cleanliness.
   final bool autoRemoveCompleted;
   
   /// Optional field tracking the origin of collaborative lists to prevent duplicates.
-  ///
   /// Used to distinguish between collaborative lists created explicitly vs those created 
   /// from shared list acceptance. Helps prevent showing duplicates in the shopping list dropdown.
   /// - null: Explicitly created collaborative list or personal list (show in dropdown)
@@ -229,11 +198,9 @@ class UnifiedShoppingList {
   final String? collaborativeOrigin;
 
   /// Creates a new unified shopping list with comprehensive metadata and automatic ID generation.
-  ///
   /// This constructor provides complete shopping list initialization with support for personal,
   /// collaborative, and template shopping lists. All collaborative features are optional and
   /// default to appropriate values for different list types.
-  ///
   /// [id] Optional custom identifier, auto-generated UUID if not provided
   /// [name] Required list name for identification and display
   /// [ownerId] Required owner user ID for ownership and administrative privileges
@@ -281,16 +248,13 @@ class UnifiedShoppingList {
   /// Factory constructors for simplified shopping list creation with specific configurations.
 
   /// Creates a personal shopping list optimized for individual use without collaboration.
-  ///
   /// This factory provides simplified creation for non-collaborative shopping with minimal
   /// required parameters and no member management overhead. Ideal for personal shopping lists
   /// where collaboration features are not needed. Replaces legacy ShoppingList.personal.
-  ///
   /// [name] Required list name for identification and display
   /// [ownerId] Required owner user ID for ownership and administrative privileges
   /// [ownerDisplayName] Required owner display name for UI display and attribution
   /// [items] Optional list of shopping items, defaults to empty for new lists
-  ///
   /// Returns a new [UnifiedShoppingList] configured for personal use with auto-generated ID.
   factory UnifiedShoppingList.personal({
     required String name,
@@ -308,11 +272,9 @@ class UnifiedShoppingList {
   }
 
   /// Creates a collaborative shopping list optimized for shared use with member management.
-  ///
   /// This factory provides comprehensive creation for collaborative shopping with full
   /// member management, permissions, and activity tracking. Automatically sets up proper
   /// collaborative features with current timestamp initialization. Replaces legacy SharedShoppingList.
-  ///
   /// [name] Required list name for identification and display
   /// [ownerId] Required owner user ID for ownership and administrative privileges
   /// [ownerDisplayName] Required owner display name for collaborative UI and attribution
@@ -322,9 +284,7 @@ class UnifiedShoppingList {
   /// [categoryIds] Optional friend category IDs for bulk sharing operations
   /// [allowGuestEditing] Guest editing permission flag, defaults to true for accessibility
   /// [autoRemoveCompleted] Auto-removal of completed items flag, defaults to false for safety
-  ///
   /// Returns a new [UnifiedShoppingList] configured for collaboration with current timestamps.
-  ///
   /// **Permission Management:** Owner automatically receives admin permissions regardless
   /// of the provided memberPermissions map to ensure proper administrative access.
   factory UnifiedShoppingList.collaborative({
@@ -363,7 +323,6 @@ class UnifiedShoppingList {
   /// List state and analytics properties for shopping list management and UI display.
 
   /// Checks if this shopping list is configured for personal use without collaboration.
-  ///
   /// Returns true if the list type is personal, indicating individual usage without member management.
   bool get isPersonal => type == ListType.personal;
   bool get isCollaborative => type == ListType.collaborative;
@@ -439,10 +398,8 @@ class UnifiedShoppingList {
   /// List modification methods for shopping list updates with collaborative tracking support.
 
   /// Creates a copy of this shopping list with updated values while preserving immutability.
-  ///
   /// Used for all list modifications while maintaining immutable data patterns and ensuring
   /// consistent state management for collaborative tracking and synchronization.
-  ///
   /// Returns a new [UnifiedShoppingList] instance with updated values.
   UnifiedShoppingList copyWith({
     String? name,
@@ -504,10 +461,8 @@ class UnifiedShoppingList {
   /// Item operations methods for shopping list content management with collaborative tracking.
 
   /// Adds a new shopping item to the list with collaborative user attribution.
-  ///
   /// Implements item addition functionality with automatic timestamp updates, sync status
   /// management, and collaborative activity tracking for shared shopping lists.
-  ///
   /// Returns a new [UnifiedShoppingList] instance with the added item and updated metadata.
   UnifiedShoppingList addItem(
     UnifiedShoppingItem item, {
@@ -615,10 +570,8 @@ class UnifiedShoppingList {
   /// Data persistence and serialization methods for Firestore and caching integration.
 
   /// Converts the shopping list to Firestore-compatible format for persistence.
-  ///
   /// Transforms all shopping list data including items and collaborative metadata into Firestore format
   /// with proper timestamp handling and member permissions serialization for database efficiency.
-  ///
   /// Returns a map containing all shopping list data formatted for Firestore persistence.
   Map<String, dynamic> toFirestore() {
     return {
@@ -648,10 +601,8 @@ class UnifiedShoppingList {
   }
 
   /// Converts the shopping list to JSON format for caching and client-side storage.
-  ///
   /// Provides JSON serialization for client-side caching, local storage, and data transfer
   /// with ISO timestamp formatting and complete collaborative metadata serialization.
-  ///
   /// Returns a JSON-compatible map with all shopping list data properly formatted.
   Map<String, dynamic> toJson() {
     return {
@@ -680,10 +631,8 @@ class UnifiedShoppingList {
   }
 
   /// Creates a shopping list instance from JSON data for caching and deserialization.
-  ///
   /// Transforms JSON cache data into a complete [UnifiedShoppingList] instance with proper
   /// type conversion and collaborative metadata deserialization for client-side caching support.
-  ///
   /// Returns a new [UnifiedShoppingList] instance with all data properly parsed from JSON.
   factory UnifiedShoppingList.fromJson(Map<String, dynamic> json) {
     return UnifiedShoppingList(
@@ -731,11 +680,9 @@ class UnifiedShoppingList {
   }
 
   /// Creates a shopping list instance from repository data with robust timestamp parsing.
-  ///
   /// Transforms repository data into a complete [UnifiedShoppingList] instance with proper
   /// type conversion, timestamp parsing, and collaborative metadata deserialization for
   /// robust data recovery from various data sources.
-  ///
   /// Returns a new [UnifiedShoppingList] instance with all data properly parsed from repository data.
   factory UnifiedShoppingList.fromMap(String id, Map<String, dynamic> data) {
     return UnifiedShoppingList(
@@ -791,7 +738,6 @@ class UnifiedShoppingList {
   /// Standard object methods for debugging, comparison, and identity management.
 
   /// Returns a string representation of the shopping list for debugging and logging.
-  ///
   /// Provides essential list information in a readable format for development
   /// and debugging purposes with list name, item count, type, and sync status.
   @override
@@ -800,7 +746,6 @@ class UnifiedShoppingList {
   }
 
   /// Compares two shopping lists for equality based on unique identifier.
-  ///
   /// Uses list ID for equality comparison ensuring consistent object identity
   /// across different instances of the same shopping list data.
   @override
@@ -811,7 +756,6 @@ class UnifiedShoppingList {
           id == other.id;
 
   /// Generates hash code based on unique shopping list identifier.
-  ///
   /// Provides consistent hash code generation for use in collections and
   /// data structures requiring hash-based operations and list identification.
   @override

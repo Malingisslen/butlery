@@ -7,7 +7,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// GroupDetailHeader - Group header component
-///
 /// Displays group information, avatar, and basic details.
 class GroupDetailHeader {
   static Widget build(BuildContext context, FriendCategory group) {

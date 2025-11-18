@@ -1,8 +1,6 @@
 /// Startup optimization manager for reducing app launch time.
-///
 /// This service implements lazy loading and deferred initialization strategies
 /// to minimize the time from app launch to first meaningful paint.
-///
 /// Features:
 /// - Service priority-based initialization
 /// - Lazy loading of non-critical services

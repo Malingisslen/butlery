@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Reusable selection card component
-///
 /// Provides consistent styling for selectable cards.
 /// Used for friend selection, item selection, etc.
 class SelectionCard extends StatelessWidget {

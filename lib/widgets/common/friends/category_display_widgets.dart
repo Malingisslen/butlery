@@ -7,7 +7,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
 /// Category Display Widgets
-/// 
 /// Handles ONLY category display and presentation components.
 /// This includes list views, grid views, statistics, and read-only displays.
 class CategoryDisplayWidgets {

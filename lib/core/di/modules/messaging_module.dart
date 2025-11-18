@@ -1,12 +1,10 @@
 /// Messaging module for direct messaging and notifications.
-///
 /// This module handles all messaging-related functionality including:
 /// - Direct messaging between users
 /// - Group conversations
 /// - Push notifications via FCM
 /// - Message status tracking
 /// - Typing indicators
-///
 /// Depends on Core Module and Social Module for foundational services.
 library;
 
@@ -40,7 +38,6 @@ import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/social_module.dart';
 
 /// Messaging module providing direct messaging and notification services.
-///
 /// This module handles all messaging functionality and depends on both
 /// Core and Social modules. It provides:
 /// - Direct messaging between users

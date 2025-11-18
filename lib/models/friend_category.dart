@@ -1,30 +1,25 @@
 /// Comprehensive friend category data model providing friend organization and group management capabilities.
-///
 /// This model implements sophisticated friend categorization functionality following Single Responsibility Principle,
 /// handling all aspects of friend organization including category metadata, member management, sorting,
 /// and social grouping features. It provides comprehensive friend categorization capabilities while
 /// maintaining clean separation from friend management and social interaction concerns.
-///
 /// **Single Responsibility Focus:**
 /// This model exclusively handles friend category data and operations:
 /// - **Category Metadata**: Complete category information including name, description, emoji, and ownership
 /// - **Member Management**: Friend membership operations with add, remove, and containment checking
 /// - **Organization Features**: Sorting, display customization, and hierarchical organization capabilities
 /// - **Data Persistence**: Comprehensive serialization for Firestore and JSON with timestamp handling
-///
 /// **What This Model Does NOT Handle:**
 /// - Friend relationship management (handled by friend models and operations)
 /// - Social interaction and communication (handled by social features)
 /// - UI concerns and presentation logic (handled by ViewModels and UI components)
 /// - Authentication and user management (handled by permission services)
-///
 /// **Friend Category Features:**
 /// - **Flexible Organization**: Custom categories with names, descriptions, emojis, and custom sorting
 /// - **Member Management**: Complete member operations with duplicate prevention and membership tracking
 /// - **Visual Customization**: Emoji support and display name formatting for enhanced user experience
 /// - **Default Categories**: Predefined category templates for quick setup and standard organization
 /// - **Comprehensive Metadata**: Creation tracking, update timestamps, and ownership information
-///
 /// **Usage Examples:**
 /// ```dart
 /// // Create custom friend category
@@ -35,19 +30,16 @@
 ///   emoji: '💼',
 ///   sortOrder: 1,
 /// );
-/// 
 /// // Add friends to category
 /// final updatedCategory = workCategory
 ///     .addFriend(colleague1Id)
 ///     .addFriend(colleague2Id);
-/// 
 /// // Update category metadata
 /// final renamedCategory = updatedCategory.updateMetadata(
 ///   name: 'Jobbet',
 ///   emoji: '🏢',
 ///   description: 'Alla från kontoret',
 /// );
-/// 
 /// // Category utilities and display
 /// final displayName = category.displayName; // '💼 Arbetskamrater'
 /// final summary = category.summary; // '5 vänner'
@@ -60,7 +52,6 @@ import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:uuid/uuid.dart';
 
 /// Comprehensive friend category data model for organizing friends into groups with metadata and display customization.
-///
 /// Represents a friend category with all associated metadata including member management,
 /// visual customization, and organizational features.
 class FriendCategory {

@@ -7,7 +7,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/social/friends_list/search_result_card.dart';
 
 /// SearchTab - Friend search tab component
-///
 /// Displays search results for finding new friends.
 class SearchTab {
   static Widget build(

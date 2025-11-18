@@ -13,14 +13,12 @@ import 'package:butlery/widgets/common/search_filter/search_stats_widget.dart';
 export 'search_filter/filter_models.dart';
 
 /// Search and Filter Widget API
-///
 /// This class provides a unified API for search and filter functionality:
 /// - Search input field with clear functionality
 /// - Filter panels with animated show/hide
 /// - Filter chips for time, meal type, and rating
 /// - Statistics showing search and filter results
 /// - Both search-only and full filter modes
-///
 /// MIGRATION GUIDE:
 /// ```dart
 /// // Before: No change needed

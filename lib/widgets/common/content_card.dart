@@ -1,5 +1,4 @@
 /// Content card facade for unified multi-type display (recipes, friends, menus, shopping lists).
-///
 /// **Modes:** Detailed/Compact/Grid. **Types:** Recipe/Friend/Menu/ShoppingList/FriendRequest cards.
 /// ```dart
 /// ContentCard(item: recipe, type: ContentCardType.recipe, style: ContentCardStyle.detailed,
@@ -23,7 +22,6 @@ export 'content_cards/menu_card.dart' show MenuCardStyle;
 export 'content_cards/shopping_list_card.dart' show ShoppingListCardStyle;
 
 /// Content card type enumeration defining supported content types for unified card display system.
-///
 /// This enumeration provides type safety and clear categorization for different content types
 /// supported by the ContentCard facade, enabling proper delegation to specialized card modules
 /// and consistent content type handling across the application.
@@ -45,7 +43,6 @@ enum ContentCardType {
 }
 
 /// Content card style enumeration defining display modes for responsive and context-aware card rendering.
-///
 /// This enumeration provides consistent styling options across all content types, enabling
 /// responsive design patterns and optimized display for different UI contexts and screen sizes.
 enum ContentCardStyle {
@@ -60,26 +57,22 @@ enum ContentCardStyle {
 }
 
 /// Comprehensive content card facade implementing unified interface for multi-type content display with delegation architecture.
-///
 /// This widget serves as the primary facade for displaying various content types through specialized
 /// card modules while maintaining consistent API and backward compatibility. It implements intelligent
 /// delegation to focused single-responsibility card components, providing optimal performance and
 /// maintainability through modular architecture patterns.
-///
 /// **Core Features:**
 /// - **Type Safety**: Strict content type validation with compile-time type checking
 /// - **Responsive Design**: Adaptive styling for different screen sizes and orientations
 /// - **Modular Architecture**: Delegation to specialized card modules for optimal maintainability
 /// - **Backward Compatibility**: Legacy API support for seamless migration paths
 /// - **Performance Optimization**: Lazy loading and efficient rendering through focused modules
-///
 /// **Content Type Support:**
 /// - Recipe cards with complete cooking information and social features
 /// - Friend cards with user profiles and relationship management
 /// - Menu cards with meal planning and collaborative features
 /// - Shopping list cards with item management and sharing capabilities
 /// - Friend request cards with specialized social interaction patterns
-///
 /// **Usage Patterns:**
 /// ```dart
 /// // Standard recipe display
@@ -91,7 +84,6 @@ enum ContentCardStyle {
 ///   showTags: true,
 ///   showMetadata: true,
 /// );
-/// 
 /// // Compact friend display for lists
 /// ContentCard(
 ///   item: userProfile,
@@ -151,11 +143,9 @@ class ContentCard extends StatelessWidget {
   final VoidCallback? onDecline;
 
   /// Creates a content card with specified content type and display configuration.
-  ///
   /// This constructor provides comprehensive configuration options for displaying various
   /// content types through the unified card interface. It validates required parameters
   /// and provides sensible defaults for optional display and interaction settings.
-  ///
   /// [item] The content object to display - must match the specified [type]
   /// [type] The content type determining which specialized card module to use
   /// [style] Display style controlling appearance and information density
@@ -193,14 +183,11 @@ class ContentCard extends StatelessWidget {
   });
 
   /// Builds the appropriate specialized card widget based on the specified content type.
-  ///
   /// This method implements the core delegation logic of the facade pattern, routing
   /// to specialized card modules based on the ContentCardType. Each content type is
   /// handled by a focused single-responsibility widget optimized for that specific
   /// content display requirements and interaction patterns.
-  ///
   /// Returns the appropriate specialized card widget configured with current parameters
-  ///
   /// **Performance Notes:**
   /// - Delegates immediately to specialized modules for optimal rendering performance
   /// - No intermediate widget creation or unnecessary abstraction layers
@@ -223,11 +210,9 @@ class ContentCard extends StatelessWidget {
   }
 
   /// Creates and configures a recipe card widget with proper type validation and parameter mapping.
-  ///
   /// This method handles delegation to the RecipeCard module with comprehensive parameter
   /// mapping and type safety validation. It ensures the provided item is a valid Recipe
   /// instance and maps generic ContentCard parameters to RecipeCard-specific configurations.
-  ///
   /// Returns configured RecipeCard widget with all applicable parameters mapped
   /// Throws AssertionError if item is not a Recipe instance
   Widget _buildRecipeCard() {
@@ -248,11 +233,9 @@ class ContentCard extends StatelessWidget {
   }
 
   /// Creates and configures a friend card widget with user profile display and social features.
-  ///
   /// This method handles delegation to the FriendCard module with comprehensive social
   /// feature support including online status, relationship management, and custom actions.
   /// It maps generic parameters to friend-specific display configurations.
-  ///
   /// Returns configured FriendCard widget with social features enabled
   /// Throws AssertionError if item is not a UserProfile instance
   Widget _buildFriendCard() {
@@ -275,11 +258,9 @@ class ContentCard extends StatelessWidget {
   }
 
   /// Creates and configures a friend request card widget with specialized social interaction actions.
-  ///
   /// This method handles delegation to the FriendRequestCard module with support for
   /// friend request-specific actions including accept and decline functionality. It provides
   /// specialized UI for managing pending social connections.
-  ///
   /// Returns configured FriendRequestCard widget with action handlers
   /// Throws AssertionError if item is not a FriendRequest instance
   Widget _buildFriendRequestCard() {
@@ -297,11 +278,9 @@ class ContentCard extends StatelessWidget {
   }
 
   /// Creates and configures a menu card widget with meal planning and collaboration features.
-  ///
   /// This method handles delegation to the MenuCard module with support for weekly menu
   /// display, sharing status, and collaborative meal planning features. It maps generic
   /// parameters to menu-specific display configurations.
-  ///
   /// Returns configured MenuCard widget with meal planning features
   Widget _buildMenuCard() {
     // Menu model not yet defined, so we accept dynamic for now
@@ -319,11 +298,9 @@ class ContentCard extends StatelessWidget {
   }
 
   /// Creates and configures a shopping list card widget with collaborative list management features.
-  ///
   /// This method handles delegation to the ShoppingListCard module with support for
   /// collaborative shopping list display, item preview, and sharing status indicators.
   /// It provides specialized UI for shopping list management and collaboration.
-  ///
   /// Returns configured ShoppingListCard widget with collaboration features
   Widget _buildShoppingListCard() {
     // Shopping list model not yet defined, so we accept dynamic for now

@@ -12,13 +12,11 @@ import 'package:butlery/services/unified/operations/realtime_recipe/shared/realt
 import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart';
 
 /// Presence tracking module
-///
 /// This module handles ONLY user presence tracking:
 /// - Show/hide user presence in recipes
 /// - Track who's viewing/editing recipes
 /// - Manage presence status updates
 /// - Stream presence changes to UI
-///
 /// ❌ DOES NOT CONTAIN: Watching, editing, collaboration management, notifications
 class PresenceTrackingModule {
   final UnifiedRecipeService _parent;

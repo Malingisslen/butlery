@@ -14,7 +14,6 @@ import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/widgets/common/profile/profile_actions.dart';
 
 /// Profile menu display components
-///
 /// This module provides the main profile menu widget with user information
 /// and navigation options.
 class ProfileMenu extends StatefulWidget {

@@ -13,13 +13,11 @@ abstract class NotificationParent {
 }
 
 /// Realtime notification module
-///
 /// This module handles ONLY collaboration notification operations:
 /// - Send collaboration joined/left notifications
 /// - Send real-time edit notifications
 /// - Send collaboration enabled/disabled notifications
 /// - Manage notification preferences and delivery
-///
 /// ❌ DOES NOT CONTAIN: Watching, editing, presence, collaboration management
 class RealtimeNotificationModule {
   final NotificationParent _parent;

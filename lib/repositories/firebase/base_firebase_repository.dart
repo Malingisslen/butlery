@@ -1,16 +1,13 @@
 /// Base Firebase repository providing unified CRUD operations for all Firebase collections.
-///
 /// This abstract base class consolidates duplicate code patterns found across multiple
 /// Firebase repositories, providing a consistent interface for data access operations.
 /// It implements the Repository pattern with Firebase Firestore as the underlying
 /// data store, including authentication checks, error handling, and logging.
-///
 /// Architecture Integration:
 /// - Extends Repository interface for consistent data access patterns
 /// - Uses PermissionValidationMixin for security enforcement
 /// - Integrates with AuthRepository for user authentication
 /// - Provides template methods for customization by concrete repositories
-///
 /// Key Features:
 /// - Generic CRUD operations with consistent error handling
 /// - Authentication validation for all write operations
@@ -18,23 +15,18 @@
 /// - Real-time data streaming with Firestore snapshots
 /// - User-scoped and global collection support
 /// - Comprehensive logging for debugging and monitoring
-///
 /// **Usage Example:**
 /// ```dart
 /// class RecipeRepository extends BaseFirebaseRepository<Recipe>
 ///     with UserScopedFirebaseRepository<Recipe> {
 ///   RecipeRepository({required super.authRepository});
-///
 ///   @override
 ///   String get collectionName => 'recipes';
-///
 ///   @override
 ///   Recipe fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
 ///     Recipe.fromFirestore(doc);
-///
 ///   @override
 ///   Map<String, dynamic> toFirestore(Recipe recipe) => recipe.toFirestore();
-///
 ///   @override
 ///   String getId(Recipe recipe) => recipe.id;
 /// }
@@ -51,28 +43,22 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 
 /// Base class for Firebase repositories that eliminates duplicate CRUD patterns.
-///
 /// This class consolidates the 95% duplicate code found across 6 Firebase repositories:
 /// - Unified authentication checks (23 duplications eliminated)
 /// - Unified collection reference patterns (13 duplications eliminated)
 /// - Unified CRUD operations (5 complete implementations consolidated)
 /// - Unified error handling (3 different patterns standardized)
-///
 /// Usage:
 /// ```dart
 /// class MyFirebaseRepository extends BaseFirebaseRepository\<MyModel\> {
 ///   MyFirebaseRepository({required super.authRepository});
-///
 ///   @override
 ///   String get collectionName => 'my_collection';
-///
 ///   @override
 ///   MyModel fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
 ///     MyModel.fromFirestore(doc);
-///
 ///   @override
 ///   Map<String, dynamic> toFirestore(MyModel entity) => entity.toFirestore();
-///
 ///   @override
 ///   String getId(MyModel entity) => entity.id;
 /// }

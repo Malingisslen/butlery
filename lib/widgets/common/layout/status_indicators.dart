@@ -8,7 +8,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/services/offline_service.dart';
 
 /// Status indicators for app state display
-///
 /// This module provides widgets for displaying app status like
 /// offline indicators and connection status.
 class StatusIndicators {

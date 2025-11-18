@@ -6,13 +6,11 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for menu generation
-/// 
 /// This module handles ONLY menu generation:
 /// - AI-powered menu generation from prompts
 /// - Menu section regeneration
 /// - Recipe availability validation
 /// - Generation error handling
-/// 
 /// ❌ DOES NOT CONTAIN: State management, persistence, social features
 class MenuGenerator {
   final MenuService _menuService;

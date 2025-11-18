@@ -9,11 +9,9 @@ import 'package:butlery/widgets/common/friends/category_display_widgets.dart';
 import 'package:butlery/widgets/common/friends/friend_category_manager.dart';
 
 /// FriendCategoryWidgets (Facade)
-/// 
 /// Maintains backward compatibility while delegating to focused widget classes.
 /// This facade provides the same interface as the original monolithic widget class
 /// while internally using the 3 focused widget classes for better separation of concerns.
-/// 
 /// Focused Widget Classes:
 /// - CategorySelectionWidgets: Category selection UI components and interaction widgets
 /// - CategoryDisplayWidgets: Category display and presentation components  

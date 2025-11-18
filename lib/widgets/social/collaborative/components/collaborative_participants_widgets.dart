@@ -11,7 +11,6 @@ import 'package:butlery/widgets/user/user_display_widgets.dart';
 /// Widgets for displaying collaborative participants
 class CollaborativeParticipantsWidgets {
   /// Fetch real participants for collaborative content
-  ///
   /// This method fetches actual participants from SharedRecipe/SharedMenu
   /// based on contentId and contentType
   static Widget participantsList({

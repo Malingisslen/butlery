@@ -3,13 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 
 /// Repository interface for push notification and user notification management.
-///
 /// This interface provides comprehensive notification operations including push
 /// notification delivery, notification preferences management, and real-time
 /// notification streaming. It integrates with Firebase Cloud Messaging (FCM)
 /// to deliver timely notifications about social activities, recipe sharing, and
 /// system updates.
-///
 /// **Core Notification Features:**
 /// - **Push Notifications**: Send individual and bulk push notifications via FCM
 /// - **Notification History**: Persistent storage and retrieval of user notifications
@@ -17,26 +15,21 @@ import 'package:butlery/services/notifications/notification_types.dart';
 /// - **Preference Management**: User-controlled notification settings and filtering
 /// - **FCM Integration**: Token management and push notification delivery
 /// - **Notification Categorization**: Type-based notification organization and filtering
-///
 /// **Notification Types:**
 /// Supports various notification categories including recipe sharing, friend requests,
 /// group invitations, comments, ratings, collaborative editing, and system updates.
 /// Each type can be individually controlled through user preferences.
-///
 /// **Performance and UX:**
 /// - Implements efficient notification querying with pagination
 /// - Supports batch operations for better performance
 /// - Provides unread count tracking for UI badges
 /// - Enables notification marking and cleanup operations
-///
 /// **Privacy and Control:**
 /// Respects user notification preferences, supports granular notification control,
 /// and provides opt-out mechanisms for different notification categories.
-///
 /// **Usage Examples:**
 /// ```dart
 /// final notificationRepo = ServiceLocator.get<NotificationsRepository>();
-/// 
 /// // Send notification to user
 /// await notificationRepo.sendNotification(
 ///   userId: friendUserId,
@@ -45,12 +38,10 @@ import 'package:butlery/services/notifications/notification_types.dart';
 ///   body: '${currentUser.name} wants to be your friend!',
 ///   data: {'requestId': requestId},
 /// );
-/// 
 /// // Listen to notifications
 /// notificationRepo.getNotificationsStream(userId).listen((notifications) {
 ///   updateNotificationBadge(notifications.where((n) => !n.isRead).length);
 /// });
-/// 
 /// // Manage preferences
 /// final preferences = NotificationPreferences(
 ///   enableFriendRequests: true,

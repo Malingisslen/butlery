@@ -14,7 +14,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// SharedContentActions - Action methods for shared content
-///
 /// Handles import, dismiss, and other actions for shared content.
 class SharedContentActions {
   /// Import a shared recipe

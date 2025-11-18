@@ -1,5 +1,4 @@
 /// Optimized image loader with automatic resizing, progressive loading, and memory management.
-///
 /// This service improves image loading performance by:
 /// - Automatically resizing images based on display size
 /// - Progressive loading with blur-up effect
