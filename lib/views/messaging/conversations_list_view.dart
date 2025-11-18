@@ -157,16 +157,31 @@ class _ConversationsListViewState extends State<ConversationsListView> {
           tooltip: 'Ny konversation',
         ),
       ],
-      body: Column(
-        children: [
-          // Search bar
-          _buildSearchBar(),
+      body: SafeArea(
+        // ✅ RESPONSIVE: Center and constrain content on large screens
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: LayoutComponents.valueFor(
+                context: context,
+                mobile: double.infinity,
+                tablet: 700,
+                desktop: 800,
+              ),
+            ),
+            child: Column(
+              children: [
+                // Search bar
+                _buildSearchBar(),
 
-          // Conversations list
-          Expanded(
-            child: _buildConversationsList(),
+                // Conversations list
+                Expanded(
+                  child: _buildConversationsList(),
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
       floatingActionButton: FloatingActionButtonWidget.message(
         onPressed: _showNewConversationDialog,
