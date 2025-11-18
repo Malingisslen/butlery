@@ -61,6 +61,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 // Focused components (Phase 9 refactoring)
 import 'package:butlery/views/social/collaborative_shopping/collaborative_shopping_header.dart';
@@ -147,7 +148,22 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
           
           return Scaffold(
             appBar: _actions.buildAppBar(context),
-            body: _buildBody(context, viewModel),
+            body: SafeArea(
+              // ✅ RESPONSIVE: Center and constrain content on large screens
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: LayoutComponents.valueFor(
+                      context: context,
+                      mobile: double.infinity,
+                      tablet: 800,
+                      desktop: 900,
+                    ),
+                  ),
+                  child: _buildBody(context, viewModel),
+                ),
+              ),
+            ),
           );
         },
       ),

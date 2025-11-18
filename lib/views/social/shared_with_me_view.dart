@@ -62,6 +62,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 // Import focused components
 import 'package:butlery/views/social/shared_with_me/shared_content_app_bar.dart';
@@ -161,13 +162,28 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Consumer<SharedContentCoordinatorViewModel>(
         builder: (context, viewModel, _) {
-          return CustomScrollView(
-            slivers: [
-              SharedContentAppBar.build(context, viewModel),
-              SharedContentSearchBar.build(context, viewModel, _searchController),
-              SharedContentTabBar.build(context, viewModel, _tabController),
-              _buildContent(context, viewModel),
-            ],
+          return SafeArea(
+            // ✅ RESPONSIVE: Center and constrain content on large screens
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: LayoutComponents.valueFor(
+                    context: context,
+                    mobile: double.infinity,
+                    tablet: 900,
+                    desktop: 1200,
+                  ),
+                ),
+                child: CustomScrollView(
+                  slivers: [
+                    SharedContentAppBar.build(context, viewModel),
+                    SharedContentSearchBar.build(context, viewModel, _searchController),
+                    SharedContentTabBar.build(context, viewModel, _tabController),
+                    _buildContent(context, viewModel),
+                  ],
+                ),
+              ),
+            ),
           );
         },
       ),
