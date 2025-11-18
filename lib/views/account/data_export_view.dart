@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:butlery/viewmodels/account/data_export_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 /// GDPR Article 20 - Right to Data Portability UI
 ///
@@ -30,11 +31,22 @@ class DataExportView extends StatelessWidget {
           centerTitle: true,
         ),
         body: SafeArea(
-          child: Consumer<DataExportViewModel>(
-            builder: (context, viewModel, _) {
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
+          // ✅ RESPONSIVE: Center and constrain content on large screens
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: LayoutComponents.valueFor(
+                  context: context,
+                  mobile: double.infinity,
+                  tablet: 600,
+                  desktop: 700,
+                ),
+              ),
+              child: Consumer<DataExportViewModel>(
+                builder: (context, viewModel, _) {
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _buildHeaderSection(),
@@ -46,10 +58,12 @@ class DataExportView extends StatelessWidget {
                     if (viewModel.hasExportedData) _buildSuccessState(context, viewModel),
                     const SizedBox(height: 32),
                     _buildInfoSection(),
-                  ],
-                ),
-              );
-            },
+                    ],
+                  ),
+                );
+                },
+              ),
+            ),
           ),
         ),
       ),

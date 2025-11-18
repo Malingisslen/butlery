@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 /// GDPR Article 7 - Consent Management View for user consent preferences
 class ConsentManagementView extends StatefulWidget {
@@ -28,15 +29,26 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Consumer<ConsentViewModel>(
-          builder: (context, viewModel, _) {
-            if (viewModel.isLoading) {
-              return _buildLoadingState();
-            }
+        // ✅ RESPONSIVE: Center and constrain content on large screens
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: LayoutComponents.valueFor(
+                context: context,
+                mobile: double.infinity,
+                tablet: 600,
+                desktop: 700,
+              ),
+            ),
+            child: Consumer<ConsentViewModel>(
+              builder: (context, viewModel, _) {
+                if (viewModel.isLoading) {
+                  return _buildLoadingState();
+                }
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   _buildHeaderSection(viewModel),
@@ -50,10 +62,12 @@ class _ConsentManagementViewState extends State<ConsentManagementView> {
                   _buildActionButtons(viewModel),
                   const SizedBox(height: 24),
                   _buildInfoSection(),
-                ],
-              ),
-            );
-          },
+                  ],
+                ),
+              );
+              },
+            ),
+          ),
         ),
       ),
     );

@@ -69,6 +69,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 /// Comprehensive friend profile view providing detailed friend information and social interaction through advanced profile architecture.
 ///
@@ -109,11 +110,23 @@ class FriendProfileView extends StatelessWidget {
         backgroundColor: AppColors.primaryBlue,
         foregroundColor: AppColors.neutralLight,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          child: Column(
-            children: [
+      body: SafeArea(
+        // ✅ RESPONSIVE: Center and constrain content on large screens
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: LayoutComponents.valueFor(
+                context: context,
+                mobile: double.infinity,
+                tablet: 600,
+                desktop: 700,
+              ),
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                child: Column(
+                  children: [
               // Avatar och grundläggande info
               Center(
                 child: Column(
@@ -206,6 +219,9 @@ class FriendProfileView extends StatelessWidget {
                 ],
               ),
             ],
+                ),
+              ),
+            ),
           ),
         ),
       ),
