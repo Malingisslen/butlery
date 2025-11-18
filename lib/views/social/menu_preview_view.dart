@@ -16,6 +16,7 @@ import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_vie
 import 'package:butlery/widgets/common/indicators/status_badge.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 /// ✅ MenuPreviewView - Visa delad meny med alla recept
 class MenuPreviewView extends StatelessWidget {
@@ -33,13 +34,28 @@ class MenuPreviewView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: CustomScrollView(
-        slivers: [
-          _buildAppBar(context),
-          _buildMenuHeader(context),
-          _buildMenuContent(context),
-          _buildActionButtons(context),
-        ],
+      body: SafeArea(
+        // ✅ RESPONSIVE: Center and constrain content on large screens
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: LayoutComponents.valueFor(
+                context: context,
+                mobile: double.infinity,
+                tablet: 700,
+                desktop: 800,
+              ),
+            ),
+            child: CustomScrollView(
+              slivers: [
+                _buildAppBar(context),
+                _buildMenuHeader(context),
+                _buildMenuContent(context),
+                _buildActionButtons(context),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

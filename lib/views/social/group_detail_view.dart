@@ -88,6 +88,7 @@ import 'package:butlery/widgets/social/groups/group_shared_content_section.dart'
 import 'package:butlery/viewmodels/social_group_detail_viewmodel.dart';
 import 'package:butlery/widgets/social/groups/empty_group_delete_dialog.dart';
 import 'package:butlery/widgets/social/groups/ownership_transfer_dialog.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 /// Comprehensive group detail view providing detailed group management and member coordination through advanced group architecture.
 ///
@@ -657,12 +658,24 @@ class _GroupDetailViewState extends State<GroupDetailView>
         onRefresh: _refreshData,
         onMenuAction: (action) => _handleMenuAction(action, group),
       ),
-      body: RefreshIndicator(
-        onRefresh: _refreshData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(AppDimensions.spacingL),
-          child: Column(
+      body: SafeArea(
+        // ✅ RESPONSIVE: Center and constrain content on large screens
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: LayoutComponents.valueFor(
+                context: context,
+                mobile: double.infinity,
+                tablet: 700,
+                desktop: 800,
+              ),
+            ),
+            child: RefreshIndicator(
+              onRefresh: _refreshData,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(AppDimensions.spacingL),
+                child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildGroupHeader(group),
@@ -675,7 +688,10 @@ class _GroupDetailViewState extends State<GroupDetailView>
               GroupSharedContentSection(group: group),
               const SizedBox(height: AppDimensions.spacingLg),
               _buildActionButtons(group),
-            ],
+              ],
+            ),
+          ),
+            ),
           ),
         ),
       ),

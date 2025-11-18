@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/widgets/common/layout_components.dart';
 
 /// GDPR Article 13/14 - Privacy Policy View
 ///
@@ -39,7 +40,8 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         _errorMessage = null;
       });
 
-      final content = await rootBundle.loadString('assets/legal/privacy_policy_sv.md');
+      final content =
+          await rootBundle.loadString('assets/legal/privacy_policy_sv.md');
 
       if (mounted) {
         setState(() {
@@ -48,13 +50,16 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         });
       }
 
-      app_logger.AppLogger.info('[PrivacyPolicyView] Privacy policy loaded successfully');
+      app_logger.AppLogger.info(
+          '[PrivacyPolicyView] Privacy policy loaded successfully');
     } catch (e) {
-      app_logger.AppLogger.error('[PrivacyPolicyView] Failed to load privacy policy', e);
+      app_logger.AppLogger.error(
+          '[PrivacyPolicyView] Failed to load privacy policy', e);
 
       if (mounted) {
         setState(() {
-          _errorMessage = 'Kunde inte ladda integritetspolicyn. Försök igen senare.';
+          _errorMessage =
+              'Kunde inte ladda integritetspolicyn. Försök igen senare.';
           _isLoading = false;
         });
       }
@@ -76,7 +81,20 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         ],
       ),
       body: SafeArea(
-        child: _buildBody(),
+        // ✅ RESPONSIVE: Center and constrain content on large screens
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: LayoutComponents.valueFor(
+                context: context,
+                mobile: double.infinity,
+                tablet: 700,
+                desktop: 800,
+              ),
+            ),
+            child: _buildBody(),
+          ),
+        ),
       ),
     );
   }
@@ -261,7 +279,8 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
         }
       }
     } catch (e) {
-      app_logger.AppLogger.error('[PrivacyPolicyView] Failed to launch email', e);
+      app_logger.AppLogger.error(
+          '[PrivacyPolicyView] Failed to launch email', e);
       if (mounted) {
         _showError('Kunde inte öppna e-postklient');
       }

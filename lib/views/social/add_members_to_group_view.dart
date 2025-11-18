@@ -30,6 +30,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 
 /// A view for adding new members to an existing social group.
 ///
@@ -84,7 +85,22 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         builder: (context, viewModel, child) {
           return Scaffold(
             appBar: _buildAppBar(context, viewModel),
-            body: _buildBody(context, viewModel),
+            body: SafeArea(
+              // ✅ RESPONSIVE: Center and constrain content on large screens
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: LayoutComponents.valueFor(
+                      context: context,
+                      mobile: double.infinity,
+                      tablet: 700,
+                      desktop: 800,
+                    ),
+                  ),
+                  child: _buildBody(context, viewModel),
+                ),
+              ),
+            ),
             bottomNavigationBar: _buildBottomBar(viewModel),
           );
         },
