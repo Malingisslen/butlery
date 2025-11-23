@@ -1,7 +1,7 @@
 # BUTLERY MASTER REMEDIATION PLAN
 
 **Generated**: November 7, 2025
-**Last Updated**: November 22, 2025 (Issue #028 RepaintBoundary optimization complete)
+**Last Updated**: November 23, 2025 (Issue #155 BaseMetadataRepository pattern complete)
 **Analysis Current As Of**: November 16, 2025
 **Total Issues**: 154
 **Estimated Effort**: 858-876 hours (107-110 working days / ~21-22 weeks)
@@ -11,7 +11,7 @@
 
 ## MASTER CHECKLIST
 
-**Progress**: 29 / 154 complete (18.8%)
+**Progress**: 31 / 154 complete (20.1%)
 
 ---
 
@@ -83,7 +83,7 @@
 ### PHASE 3: MEDIUM (P2) - 197-199 hours (~25 days)
 *Quality improvements*
 
-**P2 Progress**: 6 / 9 complete (66.7%)
+**P2 Progress**: 8 / 9 complete (88.9%)
 
 > **📖 See [finished/P2.md](finished/P2.md) for complete P2 details**
 
@@ -94,13 +94,13 @@
 - ✅ Corrected inflated documentation metrics (1 hr)
 - ✅ Typography consistency - Theme.of(context).textTheme migration (32 hrs)
 - ✅ RepaintBoundary optimization - added to 9 high-frequency widgets (16 hrs)
+- ✅ Photo import navigation trap fixed - retry mechanism + enhanced error handling (16 hrs)
+- ✅ BaseMetadataRepository pattern - eliminated 2,000+ lines of duplicate metadata code (24 hrs)
 
 **Remaining Issues**:
-- **#029** Photo import navigation trap (16 hrs)
-- **#155** BaseMetadataRepository pattern (24 hrs)
 - **#156** BaseStorageRepository pattern (16 hrs)
 
-**Phase 3 Subtotal**: 6 / 9 complete (66.7%) - 197-199 hours
+**Phase 3 Subtotal**: 8 / 9 complete (88.9%) - 197-199 hours
 
 ---
 

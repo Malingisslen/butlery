@@ -47,6 +47,12 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/repositories/firebase/base_shared_content_repository.dart';
+import 'package:butlery/repositories/firebase/base_view_repository.dart';
+import 'package:butlery/repositories/firebase/base_engagement_repository.dart';
+import 'package:butlery/repositories/firebase/base_dismissal_repository.dart';
+import 'package:butlery/repositories/firebase/shared_content/shared_recipe_view_repository.dart';
+import 'package:butlery/repositories/firebase/shared_content/shared_recipe_engagement_repository.dart';
+import 'package:butlery/repositories/firebase/shared_content/shared_recipe_dismissal_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -54,15 +60,45 @@ import 'package:butlery/core/utils/logger.dart';
 /// Firebase repository for shared recipe operations with consistent API patterns
 class FirebaseSharedRecipeRepository
     extends BaseSharedContentRepository<SharedRecipe> {
+  final SharedRecipeViewRepository _viewRepository;
+  final SharedRecipeEngagementRepository _engagementRepository;
+  final SharedRecipeDismissalRepository _dismissalRepository;
+
   FirebaseSharedRecipeRepository({
     super.firestore,
     AuthRepository? authRepository,
-  }) : super(
+    SharedRecipeViewRepository? viewRepository,
+    SharedRecipeEngagementRepository? engagementRepository,
+    SharedRecipeDismissalRepository? dismissalRepository,
+  })  : _viewRepository = viewRepository ??
+            SharedRecipeViewRepository(
+              authRepository: authRepository ?? FirebaseAuthRepository(),
+            ),
+        _engagementRepository = engagementRepository ??
+            SharedRecipeEngagementRepository(
+              authRepository: authRepository ?? FirebaseAuthRepository(),
+            ),
+        _dismissalRepository = dismissalRepository ??
+            SharedRecipeDismissalRepository(
+              authRepository: authRepository ?? FirebaseAuthRepository(),
+            ),
+        super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         );
 
   @override
   String get collectionName => 'shared_recipes';
+
+  // ===== METADATA REPOSITORY GETTERS =====
+
+  @override
+  BaseViewRepository get viewRepository => _viewRepository;
+
+  @override
+  BaseEngagementRepository get engagementRepository => _engagementRepository;
+
+  @override
+  BaseDismissalRepository get dismissalRepository => _dismissalRepository;
 
   // ===== BASE SHARED CONTENT REPOSITORY IMPLEMENTATIONS =====
 

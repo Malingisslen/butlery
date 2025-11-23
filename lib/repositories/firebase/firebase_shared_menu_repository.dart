@@ -47,6 +47,12 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/repositories/firebase/base_shared_content_repository.dart';
+import 'package:butlery/repositories/firebase/base_view_repository.dart';
+import 'package:butlery/repositories/firebase/base_engagement_repository.dart';
+import 'package:butlery/repositories/firebase/base_dismissal_repository.dart';
+import 'package:butlery/repositories/firebase/shared_content/shared_menu_view_repository.dart';
+import 'package:butlery/repositories/firebase/shared_content/shared_menu_engagement_repository.dart';
+import 'package:butlery/repositories/firebase/shared_content/shared_menu_dismissal_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -54,15 +60,45 @@ import 'package:butlery/core/utils/logger.dart';
 /// Firebase repository for shared menu operations with consistent API patterns
 class FirebaseSharedMenuRepository
     extends BaseSharedContentRepository<SharedMenu> {
+  final SharedMenuViewRepository _viewRepository;
+  final SharedMenuEngagementRepository _engagementRepository;
+  final SharedMenuDismissalRepository _dismissalRepository;
+
   FirebaseSharedMenuRepository({
     super.firestore,
     AuthRepository? authRepository,
-  }) : super(
+    SharedMenuViewRepository? viewRepository,
+    SharedMenuEngagementRepository? engagementRepository,
+    SharedMenuDismissalRepository? dismissalRepository,
+  })  : _viewRepository = viewRepository ??
+            SharedMenuViewRepository(
+              authRepository: authRepository ?? FirebaseAuthRepository(),
+            ),
+        _engagementRepository = engagementRepository ??
+            SharedMenuEngagementRepository(
+              authRepository: authRepository ?? FirebaseAuthRepository(),
+            ),
+        _dismissalRepository = dismissalRepository ??
+            SharedMenuDismissalRepository(
+              authRepository: authRepository ?? FirebaseAuthRepository(),
+            ),
+        super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         );
 
   @override
   String get collectionName => 'shared_menus';
+
+  // ===== METADATA REPOSITORY GETTERS =====
+
+  @override
+  BaseViewRepository get viewRepository => _viewRepository;
+
+  @override
+  BaseEngagementRepository get engagementRepository => _engagementRepository;
+
+  @override
+  BaseDismissalRepository get dismissalRepository => _dismissalRepository;
 
   // ===== BASE SHARED CONTENT REPOSITORY IMPLEMENTATIONS =====
 
