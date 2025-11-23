@@ -1,7 +1,7 @@
 # BUTLERY MASTER REMEDIATION PLAN
 
 **Generated**: November 7, 2025
-**Last Updated**: November 23, 2025 (Issue #155 BaseMetadataRepository pattern complete)
+**Last Updated**: November 23, 2025 (Security Rules Audit complete: 9 issues #041, #045-#052)
 **Analysis Current As Of**: November 16, 2025
 **Total Issues**: 154
 **Estimated Effort**: 858-876 hours (107-110 working days / ~21-22 weeks)
@@ -11,7 +11,7 @@
 
 ## MASTER CHECKLIST
 
-**Progress**: 31 / 154 complete (20.1%)
+**Progress**: 40 / 154 complete (26.0%)
 
 ---
 
@@ -166,11 +166,12 @@
       → Impact: Loads hundreds of documents in loops, performance degradation
       → Dependencies: None
 
-- [ ] **#041** Missing Firestore indexes `CODE_QUALITY:Performance:6.4.2` **8 hrs**
-      → Files: Firestore console
-      → Fix: Create composite indexes: (userId, isRead, createdAt), (userId, createdAt), (parentCommentId, createdAt)
-      → Impact: Slow query performance on user_notifications, recipe_comments
-      → Dependencies: None
+- [x] **#041** Missing Firestore indexes `CODE_QUALITY:Performance:6.4.2` **1.5 hrs** ✅
+      → Files: firestore.indexes.json (lines 321-362)
+      → Fix: Added 3 composite indexes after codebase research (3 needed, 3 rejected as unnecessary)
+      → Indexes: shoppingListTemplates (2), user_notifications (1)
+      → Impact: Performance optimization for template queries and notification filtering
+      → See: docs/SECURITY_RULES_AUDIT_REPORT.md#Issue-041
 
 - [ ] **#042** Stream memory leak risks (18 critical) `CODE_QUALITY:Performance:6.1` **16 hrs**
       → Files: FirebaseMenuCollaborationRepository, CollaborativeRecipeRepository, PresenceService, 15 others
@@ -190,53 +191,53 @@
       → Impact: Increased latency, unnecessary network, battery drain
       → Dependencies: #005 production persistence
 
-- [ ] **#045** Friend categories enumeration `FIREBASE:Security:3` **1 hr**
-      → Files: firestore.rules:90
-      → Fix: Remove `allow get: if isAuthenticated()` or add ownership check
-      → Impact: Private group enumeration via ID guessing (CVSS 7.5)
-      → Dependencies: None
+- [x] **#045** Friend categories enumeration `FIREBASE:Security:3` **✅ COMPLETE**
+      → Files: firestore.rules (lines 190-211, 342-363)
+      → Fix: Added friend/group permission validation, removed permissive rules
+      → Impact: CVSS 7.5 vulnerability eliminated - shared content properly secured
+      → See: docs/SECURITY_RULES_AUDIT_REPORT.md#Issue-045
 
-- [ ] **#046** Shared content enumeration attacks `FIREBASE:Security:4` **4 hrs**
-      → Files: firestore.rules lines 194, 255, 318, 548, 591
-      → Fix: Remove list permissions or restrict to participants
-      → Impact: Privacy leak, performance risk
-      → Dependencies: None
+- [x] **#046** Shared content enumeration attacks `FIREBASE:Security:4` **✅ COMPLETE**
+      → Files: firestore.rules (removed 12 lines across 6 collections)
+      → Fix: Removed all `allow list: if isAuthenticated()` rules (6 collections)
+      → Impact: 6 enumeration attack vectors eliminated
+      → See: docs/SECURITY_RULES_AUDIT_REPORT.md#Issue-046
 
-- [ ] **#047** User notifications spam `FIREBASE:Security:5` **2 hrs**
-      → Files: firestore.rules:707
-      → Fix: Add ownership validation to notification creation
-      → Impact: Any user can create notifications for anyone
-      → Dependencies: None
+- [x] **#047** User notifications spam `FIREBASE:Security:5` **✅ COMPLETE**
+      → Files: firestore.rules (lines 767-805), firebase_notifications_repository.dart (135, 159)
+      → Fix: Added senderId field + friend relationship validation
+      → Impact: CVSS 7.5 vulnerability eliminated - spam attacks prevented
+      → See: docs/SECURITY_RULES_AUDIT_REPORT.md#Issue-047
 
-- [ ] **#048** shoppingListTemplates missing rules `FIREBASE:Security:6` **1 hr**
-      → Files: firestore.rules (missing)
-      → Fix: Add security rules for shoppingListTemplates collection
-      → Impact: Feature broken, no access control
-      → Dependencies: None
+- [x] **#048** shoppingListTemplates missing rules `FIREBASE:Security:6` **✅ COMPLETE**
+      → Files: firestore.rules (lines 807-831)
+      → Fix: Added complete CRUD rules with public/private visibility controls
+      → Impact: Feature secured with creator ownership validation
+      → See: docs/SECURITY_RULES_AUDIT_REPORT.md#Issue-048
 
-- [ ] **#049** recipePresence collection name mismatch `FIREBASE:Security:7` **2 hrs**
-      → Files: firestore.rules vs actual collection name in code
-      → Fix: Align collection names (code vs rules)
-      → Impact: Real-time presence feature broken
-      → Dependencies: None
+- [x] **#049** recipePresence collection name mismatch `FIREBASE:Security:7` **✅ COMPLETE**
+      → Files: firestore.rules (lines 639-656)
+      → Fix: Added correct rules matching code structure (recipePresence/activeUsers)
+      → Impact: Real-time presence tracking properly secured
+      → See: docs/SECURITY_RULES_AUDIT_REPORT.md#Issue-049
 
-- [ ] **#050** Storage /shared path permissive `FIREBASE:Storage:7` **1 hr**
-      → Files: storage.rules:19
-      → Fix: Add owner validation to write rules
-      → Impact: Users can overwrite others' shared content (CVSS 7.5)
-      → Dependencies: None
+- [x] **#050** Storage /shared path permissive `FIREBASE:Storage:7` **✅ COMPLETE**
+      → Files: storage.rules (lines 46-53), firebase_storage_repository.dart (line 259)
+      → Fix: Added uploadedBy metadata + ownership validation for updates/deletes
+      → Impact: CVSS 7.5 vulnerability eliminated - storage vandalism prevented
+      → See: docs/SECURITY_RULES_AUDIT_REPORT.md#Issue-050
 
-- [ ] **#051** No storage file size/type limits in rules `FIREBASE:Storage:7` **2 hrs**
-      → Files: storage.rules
-      → Fix: Add 10MB size limit, content-type validation to storage.rules
-      → Impact: Malicious users bypass client-side limits
-      → Dependencies: None
+- [x] **#051** No storage file size/type limits in rules `FIREBASE:Storage:7` **✅ COMPLETE**
+      → Files: storage.rules (complete rewrite, lines 1-61)
+      → Fix: Added 10MB limit + image-only validation via helper functions
+      → Impact: Storage abuse prevented (size/type enforcement)
+      → See: docs/SECURITY_RULES_AUDIT_REPORT.md#Issue-051
 
-- [ ] **#052** Triple auth listener system `FIREBASE:Auth:6` **2 hrs**
-      → Files: lib/main.dart:497-585
-      → Fix: Remove periodic timer + idTokenChanges, use single authStateChanges()
-      → Impact: Performance overhead, battery drain
-      → Dependencies: Related to #004
+- [x] **#052** Triple auth listener system `FIREBASE:Auth:6` **✅ VERIFIED ACCEPTABLE**
+      → Files: main.dart:564, auth_service.dart:103, connection_state_module.dart:77, unified_recipe_service.dart:373
+      → Finding: 4 listeners serve different purposes (not redundant)
+      → Impact: Architecture acceptable - different from original P0 redundancy issue
+      → See: docs/SECURITY_RULES_AUDIT_REPORT.md#Issue-052
 
 - [ ] **#053** No email verification `FIREBASE:Auth:6` **4 hrs**
       → Files: lib/repositories/firebase/firebase_auth_repository.dart

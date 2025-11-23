@@ -190,8 +190,6 @@ service cloud.firestore {
     // ========================================
 
     match /shared_recipes/{shareId} {
-      // Allow list queries for authenticated users (needed for arrayContainsAny)
-      allow list: if isAuthenticated();
 
       // Can read specific document if you're in the sharedWithUserIds list or the sharedByUserId
       allow get: if isAuthenticated() && (
@@ -342,8 +340,6 @@ service cloud.firestore {
     // ========================================
 
     match /shared_menus/{menuId} {
-      // Allow list queries for authenticated users (needed for arrayContainsAny)
-      allow list: if isAuthenticated();
 
       // Can read specific document if you're in the sharedToUserIds list or the sharedByUserId
       allow get: if isAuthenticated() && (
@@ -598,8 +594,6 @@ service cloud.firestore {
         request.auth.uid in resource.data.participants.keys()
       );
       
-      // Allow listing for authenticated users (needed for broad queries)
-      allow list: if isAuthenticated();
       
       // Can create if you're the owner and adding yourself as participant
       allow create: if isAuthenticated() 
@@ -635,6 +629,25 @@ service cloud.firestore {
       }
     }
     
+    
+    // ========================================
+    // RECIPE PRESENCE - Real-time presence tracking for recipe viewing
+    // ========================================
+    // Note: This is separate from realtime_recipes/presence which is for collaborative editing.
+    // This collection tracks ALL users viewing recipes (not just collaborative ones).
+    
+    match /recipePresence/{recipeId} {
+      // Presence documents (per-recipe metadata)
+      allow read: if isAuthenticated();
+      
+      match /activeUsers/{userId} {
+        // Users can read all active users (collaborative awareness)
+        allow read: if isAuthenticated();
+        
+        // Users can write their own presence
+        allow write: if isAuthenticated() && request.auth.uid == userId;
+      }
+    }
     // ========================================
     // RECIPE COMMENTS - Threaded comments
     // ========================================
@@ -800,8 +813,32 @@ service cloud.firestore {
       allow delete: if isAuthenticated() 
         && request.auth.uid == resource.data.ownerId;
         
-      // Allow listing for authenticated users
-      allow list: if isAuthenticated();
+    }
+    
+    // ========================================
+    // SHOPPING LIST TEMPLATES - Reusable shopping list patterns
+    // ========================================
+    
+    match /shoppingListTemplates/{templateId} {
+      // Public templates can be read by anyone
+      // Private templates can only be read by the creator
+      allow read: if isAuthenticated() && (
+        resource.data.isPublic == true ||
+        request.auth.uid == resource.data.creatorId
+      );
+      
+      // Can create if authenticated and setting yourself as creator
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.creatorId
+        && hasRequiredFields(['creatorId', 'name', 'items', 'isPublic', 'createdAt']);
+      
+      // Can update if you're the creator
+      allow update: if isAuthenticated()
+        && request.auth.uid == resource.data.creatorId;
+      
+      // Can delete if you're the creator
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.creatorId;
     }
     
     // ========================================
@@ -831,8 +868,6 @@ service cloud.firestore {
     // ========================================
 
     match /sharedShoppingLists/{listId} {
-      // Allow list queries for authenticated users (needed for arrayContainsAny)
-      allow list: if isAuthenticated();
 
       // Can read specific document if you shared it or it's shared with you
       allow get: if isAuthenticated() && (
@@ -874,8 +909,6 @@ service cloud.firestore {
     // ========================================
 
     match /sharedMenus/{menuId} {
-      // Allow list queries for authenticated users (needed for arrayContainsAny)
-      allow list: if isAuthenticated();
 
       // Can read specific document if you shared it or it's shared with you
       allow get: if isAuthenticated() && (
@@ -987,12 +1020,19 @@ service cloud.firestore {
     match /user_notifications/{notificationId} {
       // Can read only your own notifications
       allow read: if isAuthenticated()
-        && request.auth.uid == resource.data.userId;
-
-      // System/authenticated users can create notifications for any user
-      // (supports server-side notification delivery)
+      // Users can create notifications if:
+      // - Sending to themselves (system notifications), OR
+      // - They are friends with the recipient
+      // This prevents notification spam attacks
       allow create: if isAuthenticated()
-        && hasRequiredFields(['userId', 'type', 'title', 'body', 'createdAt']);
+        && hasRequiredFields(["userId", "senderId", "type", "title", "body", "createdAt"])
+        && request.resource.data.senderId == request.auth.uid
+        && (
+          // Allow self-notification (system events)
+          request.resource.data.userId == request.auth.uid ||
+          // Or sender and recipient are friends
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)/friends/$(request.resource.data.userId))
+        );
 
       // Can update only your own notifications (mark as read)
       allow update: if isAuthenticated()
