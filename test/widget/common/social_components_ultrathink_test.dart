@@ -72,7 +72,8 @@ void main() {
     });
 
     group('SocialAvatarComponents Widget Delegation', () {
-      testWidgets('avatar method delegates correctly and returns Widget', (WidgetTester tester) async {
+      testWidgets('avatar method delegates correctly and returns Widget',
+          (WidgetTester tester) async {
         // Test method exists and has correct return type
         expect(SocialComponents.avatar, isA<Function>());
 
@@ -100,7 +101,8 @@ void main() {
         expect(minimalAvatar, isA<Widget>());
       });
 
-      testWidgets('userCard method delegates correctly and returns Widget', (WidgetTester tester) async {
+      testWidgets('userCard method delegates correctly and returns Widget',
+          (WidgetTester tester) async {
         expect(SocialComponents.userCard, isA<Function>());
 
         // Test with all parameters - interface validation
@@ -122,7 +124,8 @@ void main() {
         expect(minimalUserCard, isA<Widget>());
       });
 
-      testWidgets('userListTile method delegates correctly and returns Widget', (WidgetTester tester) async {
+      testWidgets('userListTile method delegates correctly and returns Widget',
+          (WidgetTester tester) async {
         expect(SocialComponents.userListTile, isA<Function>());
 
         // Test with all parameters - interface validation
@@ -140,13 +143,15 @@ void main() {
         expect(fullUserListTile, isA<Widget>());
 
         // Test minimal parameters - interface validation
-        final minimalUserListTile = SocialComponents.userListTile(user: testUser);
+        final minimalUserListTile =
+            SocialComponents.userListTile(user: testUser);
         expect(minimalUserListTile, isA<Widget>());
       });
     });
 
     group('SocialCollaborativeComponents Widget Delegation', () {
-      testWidgets('collaborativeStatusBadge method delegates correctly', (WidgetTester tester) async {
+      testWidgets('collaborativeStatusBadge method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.collaborativeStatusBadge, isA<Function>());
 
         // Test with all parameters - interface validation
@@ -163,7 +168,8 @@ void main() {
         expect(defaultBadge, isA<Widget>());
       });
 
-      testWidgets('collaborativeBanner method delegates correctly', (WidgetTester tester) async {
+      testWidgets('collaborativeBanner method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.collaborativeBanner, isA<Function>());
 
         await tester.pumpWidget(
@@ -197,7 +203,8 @@ void main() {
         );
       });
 
-      testWidgets('smartPermissionsBanner method delegates correctly', (WidgetTester tester) async {
+      testWidgets('smartPermissionsBanner method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.smartPermissionsBanner, isA<Function>());
 
         await tester.pumpWidget(
@@ -216,7 +223,8 @@ void main() {
         );
       });
 
-      testWidgets('collaborativeAppBar method delegates correctly', (WidgetTester tester) async {
+      testWidgets('collaborativeAppBar method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.collaborativeAppBar, isA<Function>());
 
         await tester.pumpWidget(
@@ -249,7 +257,8 @@ void main() {
         );
       });
 
-      testWidgets('smartCollaborativeBanner method delegates correctly', (WidgetTester tester) async {
+      testWidgets('smartCollaborativeBanner method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.smartCollaborativeBanner, isA<Function>());
 
         await tester.pumpWidget(
@@ -271,10 +280,25 @@ void main() {
         );
       });
 
-      testWidgets('collaborativeStatusIndicator method delegates correctly', (WidgetTester tester) async {
+      testWidgets('collaborativeStatusIndicator method delegates correctly',
+          (WidgetTester tester) async {
+        // Build a minimal widget tree to get BuildContext
+        await tester.pumpWidget(MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (BuildContext context) {
+                return Container();
+              },
+            ),
+          ),
+        ));
+
+        final BuildContext context = tester.element(find.byType(Builder));
+
         expect(SocialComponents.collaborativeStatusIndicator, isA<Function>());
 
         final statusIndicator = SocialComponents.collaborativeStatusIndicator(
+          context,
           contentId: 'recipe-status-test',
           contentType: 'recipe',
           showText: true,
@@ -284,10 +308,25 @@ void main() {
         expect(statusIndicator, isA<Widget>());
       });
 
-      testWidgets('participantsList method delegates correctly', (WidgetTester tester) async {
+      testWidgets('participantsList method delegates correctly',
+          (WidgetTester tester) async {
+        // Build a minimal widget tree to get BuildContext
+        await tester.pumpWidget(MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (BuildContext context) {
+                return Container();
+              },
+            ),
+          ),
+        ));
+
+        final BuildContext context = tester.element(find.byType(Builder));
+
         expect(SocialComponents.participantsList, isA<Function>());
 
         final participantsList = SocialComponents.participantsList(
+          context,
           contentId: 'content-participants',
           contentType: 'menu',
           maxParticipants: 8,
@@ -299,56 +338,83 @@ void main() {
     });
 
     group('SocialGroupComponents Widget & Dialog Delegation', () {
-      testWidgets('friendCategorySelector method delegates correctly', (WidgetTester tester) async {
+      testWidgets('friendCategorySelector method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.friendCategorySelector, isA<Function>());
 
         final List<FriendCategory> testCategories = [testCategory];
 
-        // Test with all parameters - interface validation
-        final fullSelector = SocialComponents.friendCategorySelector(
-          categories: testCategories,
-          selectedCategory: testCategory,
-          onCategoryChanged: (category) {},
-          hint: 'Välj kategori',
-          enabled: true,
-          leading: const Icon(Icons.group),
-          trailing: const Icon(Icons.arrow_drop_down),
-          padding: const EdgeInsets.all(16.0),
-          backgroundColor: Colors.white,
-          borderRadius: BorderRadius.circular(8.0),
-        );
-        expect(fullSelector, isA<Widget>());
+        await tester.pumpWidget(
+          createTestWidget(
+            child: Builder(
+              builder: (context) {
+                // Test with all parameters - interface validation
+                final fullSelector = SocialComponents.friendCategorySelector(
+                  context,
+                  categories: testCategories,
+                  selectedCategory: testCategory,
+                  onCategoryChanged: (category) {},
+                  hint: 'Välj kategori',
+                  enabled: true,
+                  leading: const Icon(Icons.group),
+                  trailing: const Icon(Icons.arrow_drop_down),
+                  padding: const EdgeInsets.all(16.0),
+                  backgroundColor: Colors.white,
+                  borderRadius: BorderRadius.circular(8.0),
+                );
+                expect(fullSelector, isA<Widget>());
 
-        // Test minimal parameters - interface validation
-        final minimalSelector = SocialComponents.friendCategorySelector(
-          categories: testCategories,
+                // Test minimal parameters - interface validation
+                final minimalSelector = SocialComponents.friendCategorySelector(
+                  context,
+                  categories: testCategories,
+                );
+                expect(minimalSelector, isA<Widget>());
+
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
         );
-        expect(minimalSelector, isA<Widget>());
       });
 
-      testWidgets('friendCategoryChip method delegates correctly', (WidgetTester tester) async {
+      testWidgets('friendCategoryChip method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.friendCategoryChip, isA<Function>());
 
-        // Test with all parameters - interface validation
-        final fullChip = SocialComponents.friendCategoryChip(
-          category: testCategory,
-          selected: true,
-          onTap: () {},
-          onDeleted: () {},
-          backgroundColor: Colors.blue.shade50,
-          selectedColor: Colors.blue,
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        );
-        expect(fullChip, isA<Widget>());
+        await tester.pumpWidget(
+          createTestWidget(
+            child: Builder(
+              builder: (context) {
+                // Test with all parameters - interface validation
+                final fullChip = SocialComponents.friendCategoryChip(
+                  context,
+                  category: testCategory,
+                  selected: true,
+                  onTap: () {},
+                  onDeleted: () {},
+                  backgroundColor: Colors.blue.shade50,
+                  selectedColor: Colors.blue,
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                );
+                expect(fullChip, isA<Widget>());
 
-        // Test minimal parameters - interface validation
-        final minimalChip = SocialComponents.friendCategoryChip(
-          category: testCategory,
+                // Test minimal parameters - interface validation
+                final minimalChip = SocialComponents.friendCategoryChip(
+                  context,
+                  category: testCategory,
+                );
+                expect(minimalChip, isA<Widget>());
+
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
         );
-        expect(minimalChip, isA<Widget>());
       });
 
-      testWidgets('group dialog methods exist with correct signatures', (WidgetTester tester) async {
+      testWidgets('group dialog methods exist with correct signatures',
+          (WidgetTester tester) async {
         // Verify all group dialog methods exist and return Future<bool?>
         expect(SocialComponents.showCreateGroupDialog, isA<Function>());
         expect(SocialComponents.showEditGroupDialog, isA<Function>());
@@ -414,7 +480,8 @@ void main() {
     });
 
     group('SocialInvitationComponents Target Display Delegation', () {
-      testWidgets('invitationTargetDisplay method delegates correctly', (WidgetTester tester) async {
+      testWidgets('invitationTargetDisplay method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.invitationTargetDisplay, isA<Function>());
 
         // Test with all parameters - interface validation
@@ -437,7 +504,8 @@ void main() {
         expect(minimalDisplay, isA<Widget>());
       });
 
-      testWidgets('targetCard method delegates correctly', (WidgetTester tester) async {
+      testWidgets('targetCard method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.targetCard, isA<Function>());
 
         final fullCard = SocialComponents.targetCard(
@@ -453,7 +521,8 @@ void main() {
         expect(fullCard, isA<Widget>());
       });
 
-      testWidgets('targetChip method delegates correctly', (WidgetTester tester) async {
+      testWidgets('targetChip method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.targetChip, isA<Function>());
 
         final fullChip = SocialComponents.targetChip(
@@ -468,7 +537,8 @@ void main() {
         expect(fullChip, isA<Widget>());
       });
 
-      testWidgets('targetListTile method delegates correctly', (WidgetTester tester) async {
+      testWidgets('targetListTile method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.targetListTile, isA<Function>());
 
         final fullListTile = SocialComponents.targetListTile(
@@ -483,7 +553,8 @@ void main() {
         expect(fullListTile, isA<Widget>());
       });
 
-      testWidgets('targetBadge method delegates correctly', (WidgetTester tester) async {
+      testWidgets('targetBadge method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.targetBadge, isA<Function>());
 
         final fullBadge = SocialComponents.targetBadge(
@@ -499,7 +570,8 @@ void main() {
     });
 
     group('SocialInvitationComponents Target Lists & Selection Delegation', () {
-      testWidgets('targetList method delegates correctly', (WidgetTester tester) async {
+      testWidgets('targetList method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.targetList, isA<Function>());
 
         final List<InvitationTarget> testTargets = [testTarget];
@@ -517,7 +589,8 @@ void main() {
         expect(fullList, isA<Widget>());
       });
 
-      testWidgets('targetGrid method delegates correctly', (WidgetTester tester) async {
+      testWidgets('targetGrid method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.targetGrid, isA<Function>());
 
         final List<InvitationTarget> testTargets = [testTarget];
@@ -536,27 +609,38 @@ void main() {
         expect(fullGrid, isA<Widget>());
       });
 
-      testWidgets('targetSelector method delegates correctly', (WidgetTester tester) async {
+      testWidgets('targetSelector method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.targetSelector, isA<Function>());
 
         final List<InvitationTarget> testTargets = [testTarget];
 
-        final fullSelector = SocialComponents.targetSelector(
-          availableTargets: testTargets,
-          selectedTargets: testTargets,
-          onSelectionChanged: (targets) {},
-          allowMultiSelect: true,
-          showSearch: true,
-          showTypeFilters: true,
-          searchHint: 'Sök bland målgrupper...',
-          maxSelections: 10,
-          emptyWidget: const Text('Inga målgrupper'),
-          physics: const BouncingScrollPhysics(),
-        );
-        expect(fullSelector, isA<Widget>());
+        // Build a widget to get BuildContext
+        await tester.pumpWidget(createTestWidget(
+          child: Builder(
+            builder: (BuildContext context) {
+              final fullSelector = SocialComponents.targetSelector(
+                context,
+                availableTargets: testTargets,
+                selectedTargets: testTargets,
+                onSelectionChanged: (targets) {},
+                allowMultiSelect: true,
+                showSearch: true,
+                showTypeFilters: true,
+                searchHint: 'Sök bland målgrupper...',
+                maxSelections: 10,
+                emptyWidget: const Text('Inga målgrupper'),
+                physics: const BouncingScrollPhysics(),
+              );
+              expect(fullSelector, isA<Widget>());
+              return fullSelector;
+            },
+          ),
+        ));
       });
 
-      testWidgets('checkableTargetList method delegates correctly', (WidgetTester tester) async {
+      testWidgets('checkableTargetList method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.checkableTargetList, isA<Function>());
 
         final List<InvitationTarget> testTargets = [testTarget];
@@ -574,7 +658,8 @@ void main() {
         expect(fullCheckableList, isA<Widget>());
       });
 
-      testWidgets('radioTargetSelector method delegates correctly', (WidgetTester tester) async {
+      testWidgets('radioTargetSelector method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.radioTargetSelector, isA<Function>());
 
         final List<InvitationTarget> testTargets = [testTarget];
@@ -591,7 +676,8 @@ void main() {
     });
 
     group('SocialInvitationComponents Target Utilities Delegation', () {
-      testWidgets('targetSearchField method delegates correctly', (WidgetTester tester) async {
+      testWidgets('targetSearchField method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.targetSearchField, isA<Function>());
 
         // Test with all parameters - interface validation
@@ -610,7 +696,8 @@ void main() {
         expect(defaultSearchField, isA<Widget>());
       });
 
-      testWidgets('targetTypeFilters method delegates correctly', (WidgetTester tester) async {
+      testWidgets('targetTypeFilters method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.targetTypeFilters, isA<Function>());
 
         final List<String> availableTypes = ['friend', 'group', 'category'];
@@ -626,7 +713,8 @@ void main() {
         expect(fullFilters, isA<Widget>());
       });
 
-      testWidgets('quickSelectionButtons method delegates correctly', (WidgetTester tester) async {
+      testWidgets('quickSelectionButtons method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.quickSelectionButtons, isA<Function>());
 
         final quickButtons = SocialComponents.quickSelectionButtons(
@@ -646,7 +734,22 @@ void main() {
     });
 
     group('SocialInvitationComponents State Widgets Delegation', () {
-      testWidgets('target state widgets delegate correctly', (WidgetTester tester) async {
+      testWidgets('target state widgets delegate correctly',
+          (WidgetTester tester) async {
+        // Build a minimal widget tree to get BuildContext
+        await tester.pumpWidget(MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (BuildContext context) {
+                return Container();
+              },
+            ),
+          ),
+        ));
+
+        // Get the BuildContext from the Builder widget
+        final BuildContext context = tester.element(find.byType(Builder));
+
         // Loading states
         expect(SocialComponents.targetListLoading, isA<Function>());
         expect(SocialComponents.targetCardLoading, isA<Function>());
@@ -661,8 +764,9 @@ void main() {
 
         // Error state
         expect(SocialComponents.targetLoadingError, isA<Function>());
-        
+
         final errorState = SocialComponents.targetLoadingError(
+          context,
           title: 'Kunde inte ladda målgrupper',
           message: 'Kontrollera internetanslutningen',
           onRetry: () {},
@@ -676,6 +780,7 @@ void main() {
         expect(SocialComponents.noSearchResults, isA<Function>());
 
         final noTargets = SocialComponents.noTargetsAvailable(
+          context,
           title: 'Inga målgrupper ännu',
           message: 'Lägg till vänner för att börja dela recept',
           icon: Icons.group_add,
@@ -686,6 +791,7 @@ void main() {
         expect(noTargets, isA<Widget>());
 
         final noResults = SocialComponents.noSearchResults(
+          context,
           query: 'köttbullar',
           title: 'Inga sökresultat',
           message: 'Prova att söka på något annat',
@@ -700,6 +806,7 @@ void main() {
         expect(SocialComponents.targetsSelectedSuccess, isA<Function>());
 
         final successState = SocialComponents.targetsSelectedSuccess(
+          context,
           selectedCount: 3,
           title: 'Målgrupper valda',
           message: 'Du har valt 3 målgrupper för delning',
@@ -713,7 +820,8 @@ void main() {
     });
 
     group('SocialBuilderComponents Action & Helper Delegation', () {
-      testWidgets('socialActionButton method delegates correctly', (WidgetTester tester) async {
+      testWidgets('socialActionButton method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.socialActionButton, isA<Function>());
 
         // Test with all parameters - interface validation
@@ -748,7 +856,8 @@ void main() {
         expect(outlinedButton, isA<Widget>());
       });
 
-      testWidgets('socialStats method delegates correctly', (WidgetTester tester) async {
+      testWidgets('socialStats method delegates correctly',
+          (WidgetTester tester) async {
         expect(SocialComponents.socialStats, isA<Function>());
 
         final Map<String, dynamic> testStats = {
@@ -758,64 +867,83 @@ void main() {
           'likes': 134,
         };
 
-        final fullStats = SocialComponents.socialStats(
-          stats: testStats,
-          horizontal: true,
-          padding: const EdgeInsets.all(16.0),
-          backgroundColor: Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(12.0),
-          showLabels: true,
-          showIcons: true,
-        );
-        expect(fullStats, isA<Widget>());
+        await tester.pumpWidget(
+          createTestWidget(
+            child: Builder(
+              builder: (context) {
+                final fullStats = SocialComponents.socialStats(
+                  context,
+                  stats: testStats,
+                  horizontal: true,
+                  padding: const EdgeInsets.all(16.0),
+                  backgroundColor: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(12.0),
+                  showLabels: true,
+                  showIcons: true,
+                );
+                expect(fullStats, isA<Widget>());
 
-        // Test vertical layout - interface validation
-        final verticalStats = SocialComponents.socialStats(
-          stats: testStats,
-          horizontal: false,
-          showLabels: false,
+                // Test vertical layout - interface validation
+                final verticalStats = SocialComponents.socialStats(
+                  context,
+                  stats: testStats,
+                  horizontal: false,
+                  showLabels: false,
+                );
+                expect(verticalStats, isA<Widget>());
+
+                return fullStats;
+              },
+            ),
+          ),
         );
-        expect(verticalStats, isA<Widget>());
       });
     });
 
     group('SocialBuilderComponents Helper Method Delegation', () {
-      testWidgets('helper methods delegate correctly and return correct types', (WidgetTester tester) async {
+      testWidgets('helper methods delegate correctly and return correct types',
+          (WidgetTester tester) async {
         // String formatters
         expect(SocialComponents.formatUserDisplayName, isA<Function>());
-        expect(SocialComponents.formatInvitationTargetDisplayName, isA<Function>());
+        expect(SocialComponents.formatInvitationTargetDisplayName,
+            isA<Function>());
 
-        final formattedUserName = SocialComponents.formatUserDisplayName(testUser);
+        final formattedUserName =
+            SocialComponents.formatUserDisplayName(testUser);
         expect(formattedUserName, isA<String>());
 
-        final formattedTargetName = SocialComponents.formatInvitationTargetDisplayName(testTarget);
+        final formattedTargetName =
+            SocialComponents.formatInvitationTargetDisplayName(testTarget);
         expect(formattedTargetName, isA<String>());
 
         // Boolean helpers
         expect(SocialComponents.isUserOnline, isA<Function>());
-        
+
         final userOnlineStatus = SocialComponents.isUserOnline(testUser);
         expect(userOnlineStatus, isA<bool>());
 
         // URL helper
         expect(SocialComponents.getUserAvatarUrl, isA<Function>());
-        
+
         final avatarUrl = SocialComponents.getUserAvatarUrl(testUser);
         expect(avatarUrl, isA<String?>());
 
         // Icon helper
         expect(SocialComponents.getInvitationTargetTypeIcon, isA<Function>());
-        
-        final targetIcon = SocialComponents.getInvitationTargetTypeIcon('group');
+
+        final targetIcon =
+            SocialComponents.getInvitationTargetTypeIcon('group');
         expect(targetIcon, isA<IconData>());
-        
-        final friendIcon = SocialComponents.getInvitationTargetTypeIcon('friend');
+
+        final friendIcon =
+            SocialComponents.getInvitationTargetTypeIcon('friend');
         expect(friendIcon, isA<IconData>());
       });
     });
 
     group('Swedish Localization Support', () {
-      testWidgets('all widget methods support Swedish parameters', (WidgetTester tester) async {
+      testWidgets('all widget methods support Swedish parameters',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             child: SingleChildScrollView(
@@ -830,7 +958,7 @@ void main() {
                     size: ImageSize.large,
                     showOnlineStatus: true,
                   ),
-                  
+
                   // Test collaborative badge with Swedish text
                   SocialComponents.collaborativeStatusBadge(
                     text: 'Delat recept',
@@ -838,10 +966,13 @@ void main() {
                   ),
 
                   // Test category chip with Swedish name
-                  SocialComponents.friendCategoryChip(
-                    category: SocialFactory.createFriendCategory(
-                      name: 'Släktingar & nära vänner',
-                      memberIds: ['user-1', 'user-2'],
+                  Builder(
+                    builder: (context) => SocialComponents.friendCategoryChip(
+                      context,
+                      category: SocialFactory.createFriendCategory(
+                        name: 'Släktingar & nära vänner',
+                        memberIds: ['user-1', 'user-2'],
+                      ),
                     ),
                   ),
 
@@ -879,7 +1010,8 @@ void main() {
     });
 
     group('Facade Pattern Interface Validation', () {
-      testWidgets('all static methods exist and are callable', (WidgetTester tester) async {
+      testWidgets('all static methods exist and are callable',
+          (WidgetTester tester) async {
         // SocialAvatarComponents methods
         expect(SocialComponents.avatar, isA<Function>());
         expect(SocialComponents.userCard, isA<Function>());
@@ -919,7 +1051,8 @@ void main() {
         expect(SocialComponents.getUserAvatarUrl, isA<Function>());
       });
 
-      testWidgets('return types are correctly maintained through facade', (WidgetTester tester) async {
+      testWidgets('return types are correctly maintained through facade',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             child: Builder(
@@ -934,22 +1067,28 @@ void main() {
                     text: 'Test',
                     onPressed: () {},
                   ),
-                  
+
                   ElevatedButton(
                     onPressed: () async {
                       // Future return types validation
-                      final Future<bool?> createDialog = SocialComponents.showCreateGroupDialog(
+                      final Future<bool?> createDialog =
+                          SocialComponents.showCreateGroupDialog(
                         context: context,
                       );
-                      
+
                       expect(createDialog, isA<Future<bool?>>());
-                      
+
                       // Helper return types validation
-                      final String displayName = SocialComponents.formatUserDisplayName(testUser);
-                      final bool isOnline = SocialComponents.isUserOnline(testUser);
-                      final String? avatarUrl = SocialComponents.getUserAvatarUrl(testUser);
-                      final IconData targetIcon = SocialComponents.getInvitationTargetTypeIcon('friend');
-                      
+                      final String displayName =
+                          SocialComponents.formatUserDisplayName(testUser);
+                      final bool isOnline =
+                          SocialComponents.isUserOnline(testUser);
+                      final String? avatarUrl =
+                          SocialComponents.getUserAvatarUrl(testUser);
+                      final IconData targetIcon =
+                          SocialComponents.getInvitationTargetTypeIcon(
+                              'friend');
+
                       expect(displayName, isA<String>());
                       expect(isOnline, isA<bool>());
                       expect(avatarUrl, isA<String?>());
@@ -968,7 +1107,8 @@ void main() {
     });
 
     group('Responsive Design Behavior', () {
-      testWidgets('social components adapt to small screen sizes', (WidgetTester tester) async {
+      testWidgets('social components adapt to small screen sizes',
+          (WidgetTester tester) async {
         tester.view.physicalSize = const Size(320, 568);
         tester.view.devicePixelRatio = 1.0;
 
@@ -999,7 +1139,8 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      testWidgets('social components adapt to tablet screen sizes', (WidgetTester tester) async {
+      testWidgets('social components adapt to tablet screen sizes',
+          (WidgetTester tester) async {
         tester.view.physicalSize = const Size(768, 1024);
         tester.view.devicePixelRatio = 1.0;
 

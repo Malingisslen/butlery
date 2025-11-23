@@ -23,7 +23,8 @@ class InvitationTargetStates {
   }
 
   /// Build target loading error state
-  static Widget targetLoadingError({
+  static Widget targetLoadingError(
+    BuildContext context, {
     String? message,
     VoidCallback? onRetry,
   }) {
@@ -39,7 +40,9 @@ class InvitationTargetStates {
           const SizedBox(height: AppDimensions.spacingL),
           Text(
             message ?? 'Kunde inte ladda mål',
-            style: const TextStyle(color: AppColors.error),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.error,
+                ),
           ),
           if (onRetry != null) ...[
             const SizedBox(height: AppDimensions.spacingL),
@@ -54,7 +57,8 @@ class InvitationTargetStates {
   }
 
   /// Build no targets available state
-  static Widget noTargetsAvailable({
+  static Widget noTargetsAvailable(
+    BuildContext context, {
     String? message,
     VoidCallback? onAction,
     String? actionLabel,
@@ -71,7 +75,9 @@ class InvitationTargetStates {
           const SizedBox(height: AppDimensions.spacingL),
           Text(
             message ?? 'Inga mål tillgängliga',
-            style: const TextStyle(color: AppColors.textMedium),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textMedium,
+                ),
           ),
           if (onAction != null && actionLabel != null) ...[
             const SizedBox(height: AppDimensions.spacingL),
@@ -86,7 +92,8 @@ class InvitationTargetStates {
   }
 
   /// Build no search results state
-  static Widget noSearchResults({
+  static Widget noSearchResults(
+    BuildContext context, {
     String? searchQuery,
     VoidCallback? onClearSearch,
   }) {
@@ -104,7 +111,9 @@ class InvitationTargetStates {
             searchQuery != null
                 ? 'Inga resultat för "$searchQuery"'
                 : 'Inga sökresultat',
-            style: const TextStyle(color: AppColors.textMedium),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textMedium,
+                ),
           ),
           if (onClearSearch != null) ...[
             const SizedBox(height: AppDimensions.spacingL),
@@ -119,7 +128,8 @@ class InvitationTargetStates {
   }
 
   /// Build targets selected success state
-  static Widget targetsSelectedSuccess({
+  static Widget targetsSelectedSuccess(
+    BuildContext context, {
     required int count,
     VoidCallback? onContinue,
   }) {
@@ -135,7 +145,9 @@ class InvitationTargetStates {
           const SizedBox(height: AppDimensions.spacingL),
           Text(
             '$count mål valda',
-            style: const TextStyle(color: AppColors.success),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.success,
+                ),
           ),
           if (onContinue != null) ...[
             const SizedBox(height: AppDimensions.spacingL),
@@ -162,7 +174,8 @@ class InvitationTargetStates {
               height: 40,
               decoration: BoxDecoration(
                 color: AppColors.neutralLight,
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadius20),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadius20),
               ),
             ),
             title: Container(
@@ -170,7 +183,8 @@ class InvitationTargetStates {
               width: double.infinity,
               decoration: BoxDecoration(
                 color: AppColors.neutralLight,
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadius8),
               ),
             ),
             subtitle: Container(
@@ -178,7 +192,8 @@ class InvitationTargetStates {
               width: 100,
               decoration: BoxDecoration(
                 color: AppColors.neutralLight,
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadius7),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadius7),
               ),
             ),
           ),
@@ -188,7 +203,8 @@ class InvitationTargetStates {
   }
 
   /// Build empty selection state
-  static Widget emptySelection({
+  static Widget emptySelection(
+    BuildContext context, {
     String? message,
     VoidCallback? onAction,
     String? actionLabel,
@@ -205,7 +221,9 @@ class InvitationTargetStates {
           const SizedBox(height: AppDimensions.spacingL),
           Text(
             message ?? 'Inga val gjorda',
-            style: const TextStyle(color: AppColors.textMedium),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textMedium,
+                ),
           ),
           if (onAction != null && actionLabel != null) ...[
             const SizedBox(height: AppDimensions.spacingL),

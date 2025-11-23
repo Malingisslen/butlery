@@ -46,21 +46,23 @@ class RecipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      label: 'Recipe: ${recipe.title}',
-      child: Container(
-        margin: margin ?? const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-        child: Material(
-          elevation: isSelected ? AppDimensions.elevationMedium : AppDimensions.elevationLow,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          color: isSelected ? AppColors.primaryBlue.withValues(alpha: 0.1) : null,
-          child: InkWell(
+    return RepaintBoundary(
+      child: Semantics(
+        label: 'Recipe: ${recipe.title}',
+        child: Container(
+          margin: margin ?? const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+          child: Material(
+            elevation: isSelected ? AppDimensions.elevationMedium : AppDimensions.elevationLow,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            onTap: onTap != null ? () => onTap!(recipe) : null,
-            onLongPress: onLongPress != null ? () => onLongPress!(recipe) : null,
-            child: Container(
-              padding: padding ?? const EdgeInsets.all(AppDimensions.paddingM),
-              child: _buildCardContent(context),
+            color: isSelected ? AppColors.primaryBlue.withValues(alpha: 0.1) : null,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              onTap: onTap != null ? () => onTap!(recipe) : null,
+              onLongPress: onLongPress != null ? () => onLongPress!(recipe) : null,
+              child: Container(
+                padding: padding ?? const EdgeInsets.all(AppDimensions.paddingM),
+                child: _buildCardContent(context),
+              ),
             ),
           ),
         ),

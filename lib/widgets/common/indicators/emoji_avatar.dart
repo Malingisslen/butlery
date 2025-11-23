@@ -25,15 +25,15 @@ class EmojiAvatar extends StatelessWidget {
   const EmojiAvatar.group({
     super.key,
     required this.emoji,
-  }) : size = 48,
-       backgroundColor = null,
-       fontSize = 24;
+  })  : size = 48,
+        backgroundColor = null,
+        fontSize = 24;
 
   @override
   Widget build(BuildContext context) {
     final avatarSize = size ?? 48;
     final textSize = fontSize ?? 24;
-    
+
     return Container(
       width: avatarSize,
       height: avatarSize,
@@ -44,7 +44,9 @@ class EmojiAvatar extends StatelessWidget {
       child: Center(
         child: Text(
           emoji,
-          style: TextStyle(fontSize: textSize),
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontSize: textSize,
+              ),
         ),
       ),
     );

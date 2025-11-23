@@ -23,7 +23,8 @@ class ShareTargetSelectionEnhanced {
     Function(String) onSearchChanged,
     Function(String) onFriendToggled,
     Function(String) onGroupToggled, {
-    Set<String>? existingCollaborators, // PHASE 2: Add existing collaborators info
+    Set<String>?
+        existingCollaborators, // PHASE 2: Add existing collaborators info
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -35,7 +36,7 @@ class ShareTargetSelectionEnhanced {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        
+
         // Tab navigation
         _buildTabNavigation(
           context,
@@ -43,13 +44,13 @@ class ShareTargetSelectionEnhanced {
           onTabChanged,
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        
+
         // Search field
         TextField(
           onChanged: onSearchChanged,
           decoration: InputDecoration(
-            hintText: selectedTab == ShareTargetType.friends 
-                ? 'Sök bland vänner...' 
+            hintText: selectedTab == ShareTargetType.friends
+                ? 'Sök bland vänner...'
                 : 'Sök bland grupper...',
             hintStyle: AppTextStyles.bodySmall.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -62,7 +63,7 @@ class ShareTargetSelectionEnhanced {
           style: AppTextStyles.bodyLarge,
         ),
         const SizedBox(height: AppDimensions.spacingXl),
-        
+
         // Content based on selected tab with adaptive height
         Container(
           constraints: const BoxConstraints(
@@ -82,7 +83,8 @@ class ShareTargetSelectionEnhanced {
                   selectedFriendIds,
                   searchQuery,
                   onFriendToggled,
-                  existingCollaborators: existingCollaborators, // PHASE 2: Pass collaborator info
+                  existingCollaborators:
+                      existingCollaborators, // PHASE 2: Pass collaborator info
                 )
               : _buildGroupsList(
                   context,
@@ -92,7 +94,7 @@ class ShareTargetSelectionEnhanced {
                   onGroupToggled,
                 ),
         ),
-        
+
         const SizedBox(height: AppDimensions.spacingXl),
       ],
     );
@@ -144,7 +146,7 @@ class ShareTargetSelectionEnhanced {
     Function(ShareTargetType) onTabChanged,
   ) {
     final isSelected = selectedTab == type;
-    
+
     return GestureDetector(
       onTap: () => onTabChanged(type),
       child: Container(
@@ -153,7 +155,7 @@ class ShareTargetSelectionEnhanced {
           horizontal: AppDimensions.paddingL,
         ),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? Theme.of(context).colorScheme.primary
               : AppColors.transparent,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -190,12 +192,15 @@ class ShareTargetSelectionEnhanced {
     Set<String> selectedFriendIds,
     String searchQuery,
     Function(String) onFriendToggled, {
-    Set<String>? existingCollaborators, // PHASE 2: Add existing collaborators info
+    Set<String>?
+        existingCollaborators, // PHASE 2: Add existing collaborators info
   }) {
     // Filter friends based on search query
     final filteredFriends = friends.where((friend) {
       if (searchQuery.isEmpty) return true;
-      return friend.displayName.toLowerCase().contains(searchQuery.toLowerCase());
+      return friend.displayName
+          .toLowerCase()
+          .contains(searchQuery.toLowerCase());
     }).toList();
 
     if (filteredFriends.isEmpty) {
@@ -220,13 +225,17 @@ class ShareTargetSelectionEnhanced {
       itemBuilder: (context, index) {
         final friend = filteredFriends[index];
         final isSelected = selectedFriendIds.contains(friend.uid);
-        final isExistingCollaborator = existingCollaborators?.contains(friend.uid) ?? false;
-        
+        final isExistingCollaborator =
+            existingCollaborators?.contains(friend.uid) ?? false;
+
         return Opacity(
-          opacity: isExistingCollaborator ? 0.5 : 1.0, // PHASE 2: Gray out existing collaborators
+          opacity: isExistingCollaborator
+              ? 0.5
+              : 1.0, // PHASE 2: Gray out existing collaborators
           child: ListTile(
             contentPadding: EdgeInsets.zero,
-            enabled: !isExistingCollaborator, // PHASE 2: Disable interaction for existing collaborators
+            enabled:
+                !isExistingCollaborator, // PHASE 2: Disable interaction for existing collaborators
             leading: UserDisplayWidgets.avatar(
               imageUrl: friend.avatarUrl,
               displayName: friend.displayName,
@@ -236,8 +245,11 @@ class ShareTargetSelectionEnhanced {
               friend.displayName,
               style: AppTextStyles.bodyLarge.copyWith(
                 fontWeight: FontWeight.w500,
-                color: isExistingCollaborator 
-                    ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6) 
+                color: isExistingCollaborator
+                    ? Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6)
                     : null,
               ),
             ),
@@ -264,9 +276,15 @@ class ShareTargetSelectionEnhanced {
             ),
             trailing: Checkbox(
               value: isSelected,
-              onChanged: isExistingCollaborator ? null : (_) => onFriendToggled(friend.uid), // PHASE 2: Disable checkbox for existing collaborators
+              onChanged: isExistingCollaborator
+                  ? null
+                  : (_) => onFriendToggled(friend
+                      .uid), // PHASE 2: Disable checkbox for existing collaborators
             ),
-            onTap: isExistingCollaborator ? null : () => onFriendToggled(friend.uid), // PHASE 2: Disable tap for existing collaborators
+            onTap: isExistingCollaborator
+                ? null
+                : () => onFriendToggled(friend
+                    .uid), // PHASE 2: Disable tap for existing collaborators
           ),
         );
       },
@@ -308,7 +326,7 @@ class ShareTargetSelectionEnhanced {
       itemBuilder: (context, index) {
         final group = filteredGroups[index];
         final isSelected = selectedGroupIds.contains(group.id);
-        
+
         return ListTile(
           contentPadding: EdgeInsets.zero,
           leading: DecoratedBox(
@@ -322,7 +340,9 @@ class ShareTargetSelectionEnhanced {
               child: Center(
                 child: Text(
                   group.emoji ?? '👥',
-                  style: const TextStyle(fontSize: 20),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontSize: 20,
+                      ),
                 ),
               ),
             ),

@@ -36,8 +36,8 @@ class GroupMemberCard {
         title: Text(
           member.displayName,
           style: AppTextStyles.titleMedium.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+            fontWeight: FontWeight.w600,
+          ),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,20 +52,23 @@ class GroupMemberCard {
                     ),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.primary,
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.borderRadiusS),
                     ),
                     child: Text(
                       'Ägare',
                       style: AppTextStyles.bodySmall.copyWith(
-                            color: Theme.of(context).colorScheme.onPrimary,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 if (_isGroupCreator(member, group))
                   Container(
                     margin: EdgeInsets.only(
-                      left: _isGroupOwner(member, group) ? AppDimensions.spacingXs : 0,
+                      left: _isGroupOwner(member, group)
+                          ? AppDimensions.spacingXs
+                          : 0,
                     ),
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.spacingXs,
@@ -73,14 +76,15 @@ class GroupMemberCard {
                     ),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.secondary,
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.borderRadiusS),
                     ),
                     child: Text(
                       'Skapare',
                       style: AppTextStyles.bodySmall.copyWith(
-                            color: Theme.of(context).colorScheme.onSecondary,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        color: Theme.of(context).colorScheme.onSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
               ],
@@ -114,9 +118,10 @@ class GroupMemberCard {
                         const SizedBox(width: AppDimensions.spacingXs),
                         Text(
                           'Ta bort från grupp',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
                         ),
                       ],
                     ),

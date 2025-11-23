@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 
 // ViewModel integration for shopping state management
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 
 // Theme and utility components
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -138,7 +139,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
                 child: Column(
                   children: [
                     // Collaborative offline indicator for connection awareness
-                    if (!viewModel.isOnline) LayoutComponents.offlineIndicator(),
+                    if (!viewModel.isOnline)
+                      LayoutComponents.offlineIndicator(),
 
                     // Shopping list header with statistics and bulk operations
                     ShoppingListHeader.build(
@@ -180,7 +182,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   /// - Shopping status toggling with immediate visual feedback and state synchronization
   /// - Collaborative coordination with real-time synchronization and multi-user support
   /// - Optimistic updates with rollback capability and error handling coordination
-  Future<void> _onItemTap(item) async {
+  Future<void> _onItemTap(UnifiedShoppingItem item) async {
     await _viewModel.toggleItemBought(item.id);
   }
 
@@ -193,7 +195,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   /// - Dialog-based editing with form validation and user-friendly interface
   /// - Comprehensive validation with Swedish localized error messages
   /// - Success and error feedback with snackbar integration and user guidance
-  Future<void> _onEditItem(item) async {
+  Future<void> _onEditItem(UnifiedShoppingItem item) async {
     await ShoppingDialogs.showEditItemDialog(
       context,
       item,
@@ -211,7 +213,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   /// - Comprehensive item removal with collaborative synchronization and state management
   /// - Success and error feedback with Swedish localized messages and user guidance
   /// - Collaborative coordination with real-time synchronization and multi-user support
-  Future<void> _onDeleteItem(item) async {
+  Future<void> _onDeleteItem(UnifiedShoppingItem item) async {
     final success = await _viewModel.removeItemFromActiveList(item.id);
     if (success) {
       _showSuccessSnackBar('${item.name} borttagen!');
@@ -302,7 +304,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   /// - Confirmation dialog with user safety and operation preview
   /// - Collaborative synchronization with real-time updates and multi-user coordination
   /// - Success feedback with operation summary and user experience optimization
-  Future<void> _clearBoughtItemsWithConfirmation(UnifiedShoppingViewModel viewModel) async {
+  Future<void> _clearBoughtItemsWithConfirmation(
+      UnifiedShoppingViewModel viewModel) async {
     await ShoppingDialogs.showClearCompletedConfirmation(
       context,
       viewModel,
@@ -342,7 +345,8 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
   }
 
   /// Show delete list confirmation dialog with item count warning
-  Future<void> _showDeleteListConfirmation(UnifiedShoppingViewModel viewModel) async {
+  Future<void> _showDeleteListConfirmation(
+      UnifiedShoppingViewModel viewModel) async {
     final activeList = viewModel.activeList;
     if (activeList == null) {
       _showErrorSnackBar('Ingen lista vald för borttagning');

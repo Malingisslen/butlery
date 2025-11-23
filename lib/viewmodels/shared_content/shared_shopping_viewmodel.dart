@@ -328,7 +328,8 @@ class SharedShoppingViewModel
   String getShoppingListSummary(SharedShoppingList list) {
     final totalItems = list.itemCount;
     // Note: Can't determine checkedItems without loading from repository.getItems()
-    const checkedItems = 0; // Note: Would require loading items from subcollection
+    const checkedItems =
+        0; // Note: Would require loading items from subcollection
     final remainingItems = totalItems;
 
     if (totalItems == 0) return 'Tom handlingslista';
@@ -420,11 +421,15 @@ class SharedShoppingViewModel
 
     return content.where((list) {
       if (isViewed != null &&
-          _socialShoppingCoordinator.isShoppingListViewed(list.id) != isViewed)
+          _socialShoppingCoordinator.isShoppingListViewed(list.id) !=
+              isViewed) {
         return false;
+      }
       if (isJoined != null &&
           _socialShoppingCoordinator.isShoppingListImported(list.id) !=
-              isJoined) return false;
+              isJoined) {
+        return false;
+      }
       if (isDismissed != null &&
           _socialShoppingCoordinator.isShoppingListDismissed(list.id) !=
               isDismissed) {
@@ -468,7 +473,8 @@ class SharedShoppingViewModel
     // Note: Can't determine completed vs remaining without loading all items
     return {
       'totalItems': totalItems,
-      'completedItems': 0, // Note: Would require loading items from subcollection
+      'completedItems':
+          0, // Note: Would require loading items from subcollection
       'remainingItems': totalItems,
       'completionPercentage': 0,
     };

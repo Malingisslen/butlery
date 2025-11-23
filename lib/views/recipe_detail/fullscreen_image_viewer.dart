@@ -68,7 +68,9 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
         title: _showAppBar
             ? Text(
                 '${_currentIndex + 1} / ${widget.imageUrls.length}',
-                style: const TextStyle(color: AppColors.cardWhite),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppColors.cardWhite,
+                    ),
               )
             : null,
         iconTheme: const IconThemeData(color: AppColors.cardWhite),

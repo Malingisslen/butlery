@@ -122,8 +122,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   /// - Button state management with enabled/disabled coordination
   /// - User experience optimization with responsive interface coordination
   void _onPromptChanged() {
-    if (mounted)
+    if (mounted) {
       setState(() {}); // Update button enabled state based on prompt input
+    }
   }
 
   /// AI-powered menu generation with prompt processing and intelligent recipe coordination.

@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 
 /// Edit indicator widget showing active editor
 class EditIndicatorWidget extends StatefulWidget {
@@ -103,7 +102,8 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
                         height: 8,
                         decoration: BoxDecoration(
                           color: color,
-                          borderRadius: BorderRadius.circular(AppDimensions.borderRadius4),
+                          borderRadius: BorderRadius.circular(
+                              AppDimensions.borderRadius4),
                         ),
                       ),
                     );
@@ -112,11 +112,10 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
                 const SizedBox(width: AppDimensions.spacingTight),
                 Text(
                   '${widget.editorName} redigerar ${widget.editingWhat}',
-                  style: TextStyle(
-                    fontSize: AppTextStyles.bodySmall.fontSize,
-                    color: color,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
               ],
             ),

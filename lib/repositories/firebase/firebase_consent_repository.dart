@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/account/user_consent.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -31,15 +30,10 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
   final FirebaseAuditRepository? _localAuditRepository;
 
   FirebaseConsentRepository({
-    FirebaseFirestore? firestore,
-    required AuthRepository authRepository,
-    FirebaseAuditRepository? auditRepository,
-  })  : _localAuditRepository = auditRepository,
-        super(
-          firestore: firestore,
-          authRepository: authRepository,
-          auditRepository: auditRepository,
-        );
+    super.firestore,
+    required super.authRepository,
+    super.auditRepository,
+  }) : _localAuditRepository = auditRepository;
 
   // ===== BASEFIREB ASEREPOSITORY ABSTRACT METHODS =====
 

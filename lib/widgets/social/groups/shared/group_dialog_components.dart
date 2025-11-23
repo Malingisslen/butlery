@@ -98,7 +98,9 @@ class EmojiSelector extends StatelessWidget {
                   child: Center(
                     child: Text(
                       emoji,
-                      style: const TextStyle(fontSize: 20),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontSize: 20,
+                      ),
                     ),
                   ),
                 ),

@@ -42,22 +42,24 @@ class MenuCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: margin ?? _getDefaultMargin(),
-      child: Material(
-        color: AppColors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          onLongPress: onLongPress,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          child: Container(
-            padding: padding ?? _getDefaultPadding(),
-            decoration: BoxDecoration(
-              color: AppColors.backgroundLight,
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(color: AppColors.textLight, width: AppDimensions.borderWidthThin),
+    return RepaintBoundary(
+      child: Container(
+        margin: margin ?? _getDefaultMargin(),
+        child: Material(
+          color: AppColors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            onLongPress: onLongPress,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            child: Container(
+              padding: padding ?? _getDefaultPadding(),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundLight,
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                border: Border.all(color: AppColors.textLight, width: AppDimensions.borderWidthThin),
+              ),
+              child: _buildContent(context),
             ),
-            child: _buildContent(context),
           ),
         ),
       ),

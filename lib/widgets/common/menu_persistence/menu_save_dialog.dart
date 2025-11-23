@@ -106,7 +106,10 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+        color: Theme.of(context)
+            .colorScheme
+            .primaryContainer
+            .withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: Column(
@@ -163,16 +166,18 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
       title: const Text('Dela med vänner'),
       subtitle: const Text('Dela denna meny med valda vänner'),
       value: _enableSocialSharing,
-      onChanged: _isLoading ? null : (value) {
-        if (mounted) {
-          setState(() {
-            _enableSocialSharing = value;
-            if (!value) {
-              _selectedFriendIds.clear();
-            }
-          });
-        }
-      },
+      onChanged: _isLoading
+          ? null
+          : (value) {
+              if (mounted) {
+                setState(() {
+                  _enableSocialSharing = value;
+                  if (!value) {
+                    _selectedFriendIds.clear();
+                  }
+                });
+              }
+            },
     );
   }
 
@@ -193,11 +198,16 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
             border: Border.all(color: Theme.of(context).colorScheme.outline),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
-          child: widget.availableFriends == null || widget.availableFriends!.isEmpty
-              ? const Center(
-                  child: Text(
-                    'Inga vänner tillgängliga',
-                    style: TextStyle(color: AppColors.textMedium),
+          child: widget.availableFriends == null ||
+                  widget.availableFriends!.isEmpty
+              ? Center(
+                  child: Builder(
+                    builder: (context) => Text(
+                      'Inga vänner tillgängliga',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textMedium,
+                          ),
+                    ),
                   ),
                 )
               : ListView.builder(
@@ -205,23 +215,26 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
                   itemBuilder: (context, index) {
                     final friend = widget.availableFriends![index];
                     final friendId = friend.userId ?? friend.id ?? '';
-                    final friendName = friend.displayName ?? friend.name ?? 'Okänd vän';
+                    final friendName =
+                        friend.displayName ?? friend.name ?? 'Okänd vän';
                     final isSelected = _selectedFriendIds.contains(friendId);
-                    
+
                     return CheckboxListTile(
                       title: Text(friendName),
                       value: isSelected,
-                      onChanged: _isLoading ? null : (bool? selected) {
-                        if (mounted) {
-                          setState(() {
-                            if (selected == true) {
-                              _selectedFriendIds.add(friendId);
-                            } else {
-                              _selectedFriendIds.remove(friendId);
-                            }
-                          });
-                        }
-                      },
+                      onChanged: _isLoading
+                          ? null
+                          : (bool? selected) {
+                              if (mounted) {
+                                setState(() {
+                                  if (selected == true) {
+                                    _selectedFriendIds.add(friendId);
+                                  } else {
+                                    _selectedFriendIds.remove(friendId);
+                                  }
+                                });
+                              }
+                            },
                       dense: true,
                     );
                   },
@@ -264,7 +277,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         selectedFriendIds: _selectedFriendIds,
         shareMessage: _shareMessageController.text,
       );
-      
+
       if (mounted) {
         Navigator.pop(context);
         if (success) {

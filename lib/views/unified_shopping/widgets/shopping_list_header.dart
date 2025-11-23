@@ -38,10 +38,11 @@ class ShoppingListHeader {
         children: [
           // Lista-väljare dropdown with management buttons
           _buildListSelector(context, viewModel, onRenameList, onDeleteList),
-          
+
           if (viewModel.activeList != null) ...[
             const SizedBox(height: AppDimensions.spacingM),
-            _buildListActions(context, viewModel, onClearCompleted, onUncheckAll),
+            _buildListActions(
+                context, viewModel, onClearCompleted, onUncheckAll),
           ],
         ],
       ),
@@ -70,7 +71,8 @@ class ShoppingListHeader {
                 value: viewModel.activeList?.id,
                 hint: const Text('Välj lista'),
                 isExpanded: true,
-                icon: const Icon(Icons.arrow_drop_down, color: AppColors.textMedium),
+                icon: const Icon(Icons.arrow_drop_down,
+                    color: AppColors.textMedium),
                 onChanged: (listId) {
                   if (listId != null) {
                     viewModel.setActiveList(listId);
@@ -86,11 +88,11 @@ class ShoppingListHeader {
             ),
           ),
         ),
-        
+
         // Management buttons (only show if there's an active list)
         if (viewModel.activeList != null) ...[
           const SizedBox(width: AppDimensions.spacingS),
-          
+
           // Rename button
           DecoratedBox(
             decoration: BoxDecoration(
@@ -102,7 +104,10 @@ class ShoppingListHeader {
               onPressed: onRenameList,
               icon: Icon(
                 Icons.edit,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.7),
                 size: AppDimensions.iconSizeAction,
               ),
               tooltip: 'Byt namn på lista',
@@ -113,9 +118,9 @@ class ShoppingListHeader {
               ),
             ),
           ),
-          
+
           const SizedBox(width: AppDimensions.spacingXs),
-          
+
           // Delete button
           DecoratedBox(
             decoration: BoxDecoration(
@@ -127,7 +132,10 @@ class ShoppingListHeader {
               onPressed: onDeleteList,
               icon: Icon(
                 Icons.delete,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.7),
                 size: AppDimensions.iconSizeAction,
               ),
               tooltip: 'Ta bort lista',
@@ -160,9 +168,11 @@ class ShoppingListHeader {
               onPressed: onClearCompleted,
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 8),
-                side: BorderSide(color: AppColors.textMedium.withValues(alpha: 0.5)),
+                side: BorderSide(
+                    color: AppColors.textMedium.withValues(alpha: 0.5)),
               ),
-              icon: const Icon(Icons.clear, size: AppDimensions.iconSizeS, color: AppColors.textMedium),
+              icon: const Icon(Icons.clear,
+                  size: AppDimensions.iconSizeS, color: AppColors.textMedium),
               label: Text(
                 'Rensa (${viewModel.boughtItems})',
                 style: AppTextStyles.bodySmall.copyWith(
@@ -173,7 +183,8 @@ class ShoppingListHeader {
             ),
           ),
 
-        if (viewModel.boughtItems > 0 && viewModel.totalItems > viewModel.boughtItems)
+        if (viewModel.boughtItems > 0 &&
+            viewModel.totalItems > viewModel.boughtItems)
           const SizedBox(width: AppDimensions.spacingSm),
 
         // Avbocka alla artiklar
@@ -183,9 +194,11 @@ class ShoppingListHeader {
               onPressed: onUncheckAll,
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 8),
-                side: BorderSide(color: AppColors.primaryBlue.withValues(alpha: 0.5)),
+                side: BorderSide(
+                    color: AppColors.primaryBlue.withValues(alpha: 0.5)),
               ),
-              icon: const Icon(Icons.check_box_outline_blank, size: AppDimensions.iconSizeS, color: AppColors.primaryBlue),
+              icon: const Icon(Icons.check_box_outline_blank,
+                  size: AppDimensions.iconSizeS, color: AppColors.primaryBlue),
               label: Text(
                 'Avbocka alla',
                 style: AppTextStyles.bodySmall.copyWith(
@@ -203,12 +216,12 @@ class ShoppingListHeader {
   static Widget _buildListDropdownItem(UnifiedShoppingList list) {
     final permissionService = ServiceLocator.get<PermissionService>();
     final currentUserId = permissionService.currentUser?.uid;
-    
+
     // Get sharing status
     IconData sharingIcon;
     Color sharingColor;
     String? permissionText;
-    
+
     switch (list.type) {
       case ListType.personal:
         sharingIcon = Icons.person;
@@ -218,7 +231,7 @@ class ShoppingListHeader {
         if (currentUserId != null) {
           final isOwner = list.ownerId == currentUserId;
           final userPermission = list.memberPermissions[currentUserId];
-          
+
           if (isOwner) {
             sharingIcon = Icons.admin_panel_settings;
             sharingColor = AppColors.primaryBlue;
@@ -274,7 +287,9 @@ class ShoppingListHeader {
             children: [
               Text(
                 list.name,
-                style: const TextStyle(fontWeight: FontWeight.w500),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

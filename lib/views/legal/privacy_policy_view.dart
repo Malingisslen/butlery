@@ -114,15 +114,17 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
+          const CircularProgressIndicator(),
+          const SizedBox(height: 16),
           Text(
             'Laddar integritetspolicy...',
-            style: TextStyle(fontSize: 14, color: Colors.grey),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey,
+                ),
           ),
         ],
       ),
@@ -145,7 +147,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
             Text(
               _errorMessage!,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16),
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -164,10 +166,12 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
   }
 
   Widget _buildEmptyState() {
-    return const Center(
+    return Center(
       child: Text(
         'Ingen integritetspolicy tillgänglig',
-        style: TextStyle(fontSize: 16, color: Colors.grey),
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: Colors.grey,
+            ),
       ),
     );
   }
@@ -181,10 +185,9 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
             padding: const EdgeInsets.all(20),
             child: SelectableText(
               _policyContent!,
-              style: const TextStyle(
-                fontSize: 14,
-                height: 1.6,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    height: 1.6,
+                  ),
             ),
           ),
         ),
@@ -206,17 +209,16 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
           ),
         ),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.info_outline, color: AppColors.info, size: 20),
-          SizedBox(width: 12),
+          const Icon(Icons.info_outline, color: AppColors.info, size: 20),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
               'GDPR-kompatibel integritetspolicy. Senast uppdaterad: 2025-10-21',
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.info,
-              ),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.info,
+                  ),
             ),
           ),
         ],
@@ -240,12 +242,11 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
+          Text(
             'Har du frågor om vår integritetspolicy?',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),

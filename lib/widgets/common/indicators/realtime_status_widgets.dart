@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 
 /// Realtime status widget showing connection status
 class RealtimeStatusWidget extends StatelessWidget {
@@ -36,7 +35,7 @@ class RealtimeStatusWidget extends StatelessWidget {
               child: Text(
                 statusEmoji,
                 key: ValueKey(statusEmoji),
-                style: TextStyle(fontSize: AppTextStyles.bodyLarge.fontSize),
+                style: Theme.of(context).textTheme.bodyLarge,
               ),
             ),
             if (showText) ...[
@@ -46,13 +45,13 @@ class RealtimeStatusWidget extends StatelessWidget {
                 child: Text(
                   statusDescription,
                   key: ValueKey(statusDescription),
-                  style: TextStyle(
-                    fontSize: AppTextStyles.bodySmall.fontSize,
-                    color: isOnline
-                        ? Theme.of(context).colorScheme.onSurface
-                        : AppColors.error,
-                    fontWeight: isOnline ? FontWeight.normal : FontWeight.bold,
-                  ),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: isOnline
+                            ? Theme.of(context).colorScheme.onSurface
+                            : AppColors.error,
+                        fontWeight:
+                            isOnline ? FontWeight.normal : FontWeight.bold,
+                      ),
                 ),
               ),
             ],
@@ -83,25 +82,35 @@ class RealtimeStatusBanner extends StatelessWidget {
     if (isOnline) return const SizedBox.shrink();
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all((AppDimensions.spacingSm + AppDimensions.spacingXs)),
+      padding: const EdgeInsets.all(
+          (AppDimensions.spacingSm + AppDimensions.spacingXs)),
       color: AppColors.error.withValues(alpha: 0.1),
       child: Row(
         children: [
-          Text(statusEmoji, style: TextStyle(fontSize: AppDimensions.iconSizeM.toDouble())),
-          const SizedBox(width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+          Text(
+            statusEmoji,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontSize: AppDimensions.iconSizeM.toDouble(),
+                ),
+          ),
+          const SizedBox(
+              width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                Text(
                   'Offline',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.error,
-                  ),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.error,
+                      ),
                 ),
-                Text(statusDescription, style: TextStyle(fontSize: AppTextStyles.bodyLarge.fontSize)),
+                Text(
+                  statusDescription,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
               ],
             ),
           ),

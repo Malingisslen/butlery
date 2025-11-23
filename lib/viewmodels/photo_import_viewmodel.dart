@@ -40,14 +40,13 @@ import 'package:butlery/services/ocr_extraction_service.dart';
 /// - Automatic recipe parsing from OCR text with intelligent structure recognition
 /// - Swedish localized error messages and user feedback coordination
 class PhotoImportViewModel extends ImportBaseViewModel {
-  
   // ===== PHOTO IMPORT STATE =====
-  
+
   /// Raw image bytes from selected photo for OCR processing and display.
   /// Stores captured or selected image data enabling OCR processing
   /// and image preview functionality throughout photo import workflow.
   Uint8List? _imageBytes;
-  
+
   /// Extracted text from OCR processing for recipe parsing and display.
   /// Stores OCR results enabling recipe parsing, text review,
   /// and manual editing throughout photo import functionality.
@@ -110,7 +109,6 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   @override
   bool get canImport => hasOcrResult;
 
-
   /// Photo import type identifier for analytics tracking and logging coordination.
   /// Provides import type classification for analytics tracking, logging coordination,
   /// and import workflow identification throughout photo import operations.
@@ -164,6 +162,42 @@ class PhotoImportViewModel extends ImportBaseViewModel {
     await _pickImageAndProcess(ImageSource.gallery);
   }
 
+  /// Retries OCR processing on the currently selected image after a previous failure.
+  /// Enables users to retry OCR extraction without losing their photo, fixing the navigation trap
+  /// where users become stuck after OCR failures with no recovery options.
+  /// **Retry Process:**
+  /// - Validates that image data is available for retry
+  /// - Clears previous error state for fresh attempt
+  /// - Re-runs OCR processing on existing image bytes
+  /// - Provides user feedback through state management
+  /// **Usage Example:**
+  /// ```dart
+  /// if (photoImportViewModel.hasError && photoImportViewModel.hasImage) {
+  ///   await photoImportViewModel.retryOcr();
+  /// }
+  /// ```
+  /// **Throws**: Exception if no image data is available for retry.
+  Future<void> retryOcr() async {
+    if (_imageBytes == null) {
+      setError('Ingen bild att behandla');
+      return;
+    }
+
+    await executeAsyncVoid(
+      () async {
+        clearError();
+        await _performOcr(_imageBytes!);
+      },
+      errorPrefix: 'Kunde inte försöka OCR igen',
+    );
+  }
+
+  /// Indicates whether OCR retry is possible based on image availability.
+  /// Used by the UI to determine whether to show retry button, providing
+  /// clear user feedback about available recovery options.
+  /// Returns true if image data exists and retry is possible, false otherwise.
+  bool get canRetryOcr => _imageBytes != null;
+
   /// Clears all photo and OCR data with comprehensive state cleanup and memory management.
   /// Performs complete photo import state cleanup including image data, OCR results,
   /// and imported recipe data with disposal safety checks and memory management.
@@ -179,11 +213,11 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// ```
   void clearPhoto() {
     if (isDisposed) return;
-    
+
     _imageBytes = null;
     _ocrText = '';
     clearImportData();
-    
+
     // Also clear OCR cache for testing
     OCRExtractionService.instance.clearAllCache();
   }
@@ -229,14 +263,12 @@ class PhotoImportViewModel extends ImportBaseViewModel {
     setParsedRecipe(recipe);
   }
 
-
-
   // ===== PRIVATE OPERATIONS =====
 
   /// Performs unified image selection and OCR processing with comprehensive workflow coordination.
   /// [source] Image source for capture or selection (camera or gallery)
   /// Executes complete image selection and OCR workflow including image capture,
-  /// bytes processing, validation, OCR execution, and automatic recipe parsing 
+  /// bytes processing, validation, OCR execution, and automatic recipe parsing
   /// with comprehensive error handling and state coordination.
   /// **Unified Processing Workflow:**
   /// - Import data cleanup and state preparation
@@ -255,9 +287,10 @@ class PhotoImportViewModel extends ImportBaseViewModel {
         final picker = ImagePicker();
         final XFile? picked = await picker.pickImage(
           source: source,
-          maxWidth: 2048,  // Limit width to reduce file size
+          maxWidth: 2048, // Limit width to reduce file size
           maxHeight: 2048, // Limit height to reduce file size
-          imageQuality: 85, // Compress image to reduce file size while maintaining OCR quality
+          imageQuality:
+              85, // Compress image to reduce file size while maintaining OCR quality
         );
 
         if (picked == null) {
@@ -266,8 +299,8 @@ class PhotoImportViewModel extends ImportBaseViewModel {
 
         // Validate image format
         final fileName = picked.name.toLowerCase();
-        if (!fileName.endsWith('.jpg') && 
-            !fileName.endsWith('.jpeg') && 
+        if (!fileName.endsWith('.jpg') &&
+            !fileName.endsWith('.jpeg') &&
             !fileName.endsWith('.png')) {
           throw Exception(
             'Bildformatet stöds inte. Använd JPEG eller PNG-format.',
@@ -276,7 +309,7 @@ class PhotoImportViewModel extends ImportBaseViewModel {
 
         // Read image bytes
         final bytes = await picked.readAsBytes();
-        
+
         // Validate image size (max 15MB after compression)
         final sizeInMB = bytes.length / (1024 * 1024);
         if (sizeInMB > 15) {
@@ -286,8 +319,9 @@ class PhotoImportViewModel extends ImportBaseViewModel {
           );
         }
 
-        debugPrint('🔍 [PhotoImport] Image validated: ${sizeInMB.toStringAsFixed(2)} MB, format: ${fileName.split('.').last}');
-        
+        debugPrint(
+            '🔍 [PhotoImport] Image validated: ${sizeInMB.toStringAsFixed(2)} MB, format: ${fileName.split('.').last}');
+
         _imageBytes = bytes;
         notifyListeners();
 
@@ -313,17 +347,21 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// **Throws**: Exception if no text can be extracted from image.
   Future<void> _performOcr(Uint8List imageBytes) async {
     final imageSizeKB = imageBytes.length / 1024;
-    debugPrint('🔍 [PhotoImport] Starting universal OCR processing: ${imageSizeKB.toStringAsFixed(1)} KB');
+    debugPrint(
+        '🔍 [PhotoImport] Starting universal OCR processing: ${imageSizeKB.toStringAsFixed(1)} KB');
 
     try {
       // Use the new universal OCR service
-      final ocrResult = await OCRExtractionService.instance.extractText(imageBytes);
-      
-      debugPrint('🔍 [PhotoImport] OCR completed - Method: ${ocrResult.processingMethod}, Confidence: ${ocrResult.confidence.toStringAsFixed(2)}');
-      
+      final ocrResult =
+          await OCRExtractionService.instance.extractText(imageBytes);
+
+      debugPrint(
+          '🔍 [PhotoImport] OCR completed - Method: ${ocrResult.processingMethod}, Confidence: ${ocrResult.confidence.toStringAsFixed(2)}');
+
       if (ocrResult.isSuccessful && ocrResult.text.isNotEmpty) {
-        debugPrint('✅ [PhotoImport] OCR succeeded, extracted ${ocrResult.text.length} characters');
-        
+        debugPrint(
+            '✅ [PhotoImport] OCR succeeded, extracted ${ocrResult.text.length} characters');
+
         _ocrText = ocrResult.text;
         notifyListeners();
 
@@ -331,16 +369,15 @@ class PhotoImportViewModel extends ImportBaseViewModel {
         await _autoParseOcrText(ocrResult.text);
       } else {
         // Handle OCR failure with user-friendly message
-        final errorMessage = ocrResult.errorMessage ?? 
-          'Ingen text kunde extraheras från bilden. Kontrollera att:\n'
-          '• Bilden innehåller tydlig, läsbar text\n'
-          '• Texten är i god kontrast mot bakgrunden\n'
-          '• Bilden inte är för suddig eller mörk';
-        
+        final errorMessage = ocrResult.errorMessage ??
+            'Ingen text kunde extraheras från bilden. Kontrollera att:\n'
+                '• Bilden innehåller tydlig, läsbar text\n'
+                '• Texten är i god kontrast mot bakgrunden\n'
+                '• Bilden inte är för suddig eller mörk';
+
         debugPrint('❌ [PhotoImport] OCR failed: $errorMessage');
         throw Exception(errorMessage);
       }
-      
     } catch (e) {
       debugPrint('❌ [PhotoImport] OCR processing error: $e');
       rethrow;
@@ -374,7 +411,6 @@ class PhotoImportViewModel extends ImportBaseViewModel {
     }
   }
 
-
   // ===== DEBUGGING SUPPORT =====
 
   /// Provides comprehensive debugging state information for photo import development and troubleshooting.
@@ -389,14 +425,14 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// - OCR processing status and image handling debugging information
   @override
   Map<String, dynamic> get debugState => {
-    ...super.debugState,
-    'hasImage': hasImage,
-    'hasOcrResult': hasOcrResult,
-    'ocrTextLength': _ocrText.length,
-    'isProcessing': isProcessing,
-    'imageBytesSize': _imageBytes?.length ?? 0,
-    'ocrServiceStatus': OCRExtractionService.instance.getServiceStatus(),
-  };
+        ...super.debugState,
+        'hasImage': hasImage,
+        'hasOcrResult': hasOcrResult,
+        'ocrTextLength': _ocrText.length,
+        'isProcessing': isProcessing,
+        'imageBytesSize': _imageBytes?.length ?? 0,
+        'ocrServiceStatus': OCRExtractionService.instance.getServiceStatus(),
+      };
 
   /// Disposes photo import ViewModel with comprehensive cleanup and memory management.
   /// Performs complete resource cleanup including image data disposal, OCR text cleanup,

@@ -20,24 +20,26 @@ class SocialBuilders {
   }) {
     return ElevatedButton.icon(
       onPressed: enabled && !isLoading ? onPressed : null,
-      icon: isLoading 
-        ? const SizedBox(
-            width: AppDimensions.iconSizeS,
-            height: AppDimensions.iconSizeS,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          )
-        : Icon(icon, size: iconSize ?? AppDimensions.iconSizeS),
+      icon: isLoading
+          ? const SizedBox(
+              width: AppDimensions.iconSizeS,
+              height: AppDimensions.iconSizeS,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Icon(icon, size: iconSize ?? AppDimensions.iconSizeS),
       label: Text(label),
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor ?? AppColors.primaryBlue,
         foregroundColor: foregroundColor ?? Colors.white,
-        padding: padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding:
+            padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
     );
   }
 
   /// Build social stats widget
-  static Widget socialStats({
+  static Widget socialStats(
+    BuildContext context, {
     required Map<String, dynamic> stats,
     bool showLabels = true,
     bool horizontal = true,
@@ -52,20 +54,20 @@ class SocialBuilders {
         children: [
           Text(
             entry.value.toString(),
-            style: valueStyle ?? const TextStyle(
-              fontSize: 16,
-              color: Colors.blue,
-              fontWeight: FontWeight.bold,
-            ).copyWith(color: textColor ?? AppColors.primaryBlue),
+            style: valueStyle ??
+                Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: textColor ?? AppColors.primaryBlue,
+                      fontWeight: FontWeight.bold,
+                    ),
           ),
           if (showLabels) ...[
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
               entry.key,
-              style: labelStyle ?? const TextStyle(
-                fontSize: 12,
-                color: AppColors.textMedium,
-              ).copyWith(color: textColor ?? AppColors.textMedium),
+              style: labelStyle ??
+                  Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: textColor ?? AppColors.textMedium,
+                      ),
             ),
           ],
         ],
@@ -75,13 +77,13 @@ class SocialBuilders {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       child: horizontal
-        ? Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: children,
-          )
-        : Column(
-            children: children,
-          ),
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: children,
+            )
+          : Column(
+              children: children,
+            ),
     );
   }
 

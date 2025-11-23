@@ -14,7 +14,7 @@ class FriendActivitySection {
     DiscoveryDashboardViewModel viewModel,
   ) {
     final friendActivity = viewModel.friendActivity;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -40,7 +40,6 @@ class FriendActivitySection {
           ],
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        
         if (friendActivity.isEmpty)
           _buildEmptyState()
         else
@@ -89,7 +88,8 @@ class FriendActivitySection {
     );
   }
 
-  static Widget _buildActivityCard(BuildContext context, Map<String, dynamic> activity) {
+  static Widget _buildActivityCard(
+      BuildContext context, Map<String, dynamic> activity) {
     final String type = activity['type'] ?? '';
     final String title = activity['title'] ?? '';
     final String ownerName = activity['ownerName'] ?? 'Okänd användare';
@@ -123,33 +123,38 @@ class FriendActivitySection {
                 height: 60,
                 decoration: BoxDecoration(
                   color: AppColors.primaryContainer.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 child: imageUrl != null
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.borderRadiusS),
                         child: CachedNetworkImage(
                           imageUrl: imageUrl,
                           width: 60,
                           height: 60,
                           fit: BoxFit.contain,
                           placeholder: (context, url) => ColoredBox(
-                            color: AppColors.primaryContainer.withValues(alpha: 0.3),
+                            color: AppColors.primaryContainer
+                                .withValues(alpha: 0.3),
                             child: const Center(
                               child: SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               ),
                             ),
                           ),
-                          errorWidget: (context, url, error) => _buildContentPlaceholder(type),
+                          errorWidget: (context, url, error) =>
+                              _buildContentPlaceholder(type),
                         ),
                       )
                     : _buildContentPlaceholder(type),
               ),
               const SizedBox(width: AppDimensions.spacingM),
-              
+
               // Activity details
               Expanded(
                 child: Column(
@@ -200,7 +205,7 @@ class FriendActivitySection {
                         if (engagement['shares'] > 0) ...[
                           const Icon(
                             Icons.people,
-                            size: AppDimensions.iconSize14,  
+                            size: AppDimensions.iconSize14,
                             color: AppColors.success,
                           ),
                           const SizedBox(width: 4),
@@ -218,7 +223,7 @@ class FriendActivitySection {
                   ],
                 ),
               ),
-              
+
               // Action indicator
               Icon(
                 Icons.chevron_right,
@@ -283,7 +288,8 @@ class FriendActivitySection {
     }
   }
 
-  static void _openActivityContent(BuildContext context, Map<String, dynamic> activity) {
+  static void _openActivityContent(
+      BuildContext context, Map<String, dynamic> activity) {
     final String contentType = activity['contentType'] ?? '';
     final String contentId = activity['contentId'] ?? '';
 
@@ -312,7 +318,8 @@ class FriendActivitySection {
     }
   }
 
-  static void _showAllActivity(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+  static void _showAllActivity(
+      BuildContext context, DiscoveryDashboardViewModel viewModel) {
     // Navigate to extended activity view
     Navigator.push(
       context,
@@ -321,8 +328,9 @@ class FriendActivitySection {
       ),
     );
   }
-  
-  static Widget _buildActivityPage(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+
+  static Widget _buildActivityPage(
+      BuildContext context, DiscoveryDashboardViewModel viewModel) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Vänaktivitet'),
@@ -330,29 +338,28 @@ class FriendActivitySection {
         foregroundColor: AppColors.onPrimary,
       ),
       body: viewModel.friendActivity.isEmpty
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.people_outline,
                     size: AppDimensions.iconSizeXXXl,
                     color: AppColors.onSurface,
                   ),
-                  SizedBox(height: AppDimensions.spacingM),
+                  const SizedBox(height: AppDimensions.spacingM),
                   Text(
                     'Ingen vänaktivitet än',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: AppColors.onSurface,
-                    ),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: AppColors.onSurface,
+                        ),
                   ),
-                  SizedBox(height: AppDimensions.spacingS),
+                  const SizedBox(height: AppDimensions.spacingS),
                   Text(
                     'Aktivitet från dina vänner visas här',
-                    style: TextStyle(
-                      color: AppColors.onSurface,
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.onSurface,
+                        ),
                   ),
                 ],
               ),
@@ -368,22 +375,28 @@ class FriendActivitySection {
                     leading: CircleAvatar(
                       backgroundColor: AppColors.primary,
                       child: Text(
-                        (activity['userName'] as String? ?? 'U').substring(0, 1).toUpperCase(),
-                        style: const TextStyle(color: AppColors.onPrimary),
+                        (activity['userName'] as String? ?? 'U')
+                            .substring(0, 1)
+                            .toUpperCase(),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppColors.onPrimary,
+                            ),
                       ),
                     ),
-                    title: Text(activity['userName'] as String? ?? 'Okänd användare'),
+                    title: Text(
+                        activity['userName'] as String? ?? 'Okänd användare'),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(activity['action'] as String? ?? 'Utförde en aktivitet'),
+                        Text(activity['action'] as String? ??
+                            'Utförde en aktivitet'),
                         const SizedBox(height: 4),
                         Text(
                           activity['timestamp'] as String? ?? 'Nyligen',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.onSurface,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppColors.onSurface,
+                                  ),
                         ),
                       ],
                     ),
@@ -392,7 +405,7 @@ class FriendActivitySection {
                       // Handle activity item tap
                       final activityType = activity['type'] as String?;
                       final contentId = activity['contentId'] as String?;
-                      
+
                       if (activityType == 'recipe' && contentId != null) {
                         Navigator.pushNamed(
                           context,

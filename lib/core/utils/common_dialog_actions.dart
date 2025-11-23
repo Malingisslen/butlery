@@ -13,7 +13,6 @@ import 'package:butlery/core/constants/app_strings.dart';
 
 /// Dialog factory for delete, action, and info dialogs with Swedish localization and BaseDialog foundation.
 class CommonDialogActions {
-
   // ============================================================================
   // === DELETE CONFIRMATION DIALOGS ===
   // ============================================================================
@@ -145,10 +144,10 @@ class CommonDialogActions {
     required String itemType,
     required List<String> recipientNames,
   }) async {
-    final recipients = recipientNames.length <= 3 
+    final recipients = recipientNames.length <= 3
         ? recipientNames.join(', ')
         : '${recipientNames.take(2).join(', ')} och ${recipientNames.length - 2} till';
-        
+
     return await showActionConfirmation(
       context: context,
       title: 'Dela $itemType?',
@@ -238,12 +237,12 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
     this.warningMessage,
     this.icon,
   }) : super(
-    title: '${AppStrings.delete} $itemType?',
-    titleIcon: Icons.delete,
-    primaryActionText: AppStrings.delete,
-    secondaryActionText: AppStrings.cancel,
-    isDangerous: true,
-  );
+          title: '${AppStrings.delete} $itemType?',
+          titleIcon: Icons.delete,
+          primaryActionText: AppStrings.delete,
+          secondaryActionText: AppStrings.cancel,
+          isDangerous: true,
+        );
 
   @override
   Widget buildContent(BuildContext context) {
@@ -258,14 +257,16 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
               const TextSpan(text: 'Vill du verkligen ta bort '),
               TextSpan(
                 text: '"$itemName"',
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: AppTextStyles.bodyMedium
+                    .copyWith(fontWeight: FontWeight.bold),
               ),
               const TextSpan(text: '?'),
             ],
           ),
         ),
         if (warningMessage != null) ...[
-          const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+          const SizedBox(
+              height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
           Text(
             warningMessage!,
             style: AppTextStyles.bodySmall.copyWith(
@@ -273,13 +274,13 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
             ),
           ),
         ],
-        const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
-        const Text(
+        const SizedBox(
+            height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+        Text(
           'Denna åtgärd kan inte ångras.',
-          style: TextStyle(
-            fontSize: 12,
-            fontStyle: FontStyle.italic,
-          ),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontStyle: FontStyle.italic,
+              ),
         ),
       ],
     );
@@ -306,9 +307,9 @@ class _ActionConfirmationDialog extends BaseDialog<bool> {
     this.confirmColor,
     required super.isDangerous,
   }) : super(
-    titleIcon: icon,
-    primaryActionColor: confirmColor,
-  );
+          titleIcon: icon,
+          primaryActionColor: confirmColor,
+        );
 
   @override
   Widget buildContent(BuildContext context) {

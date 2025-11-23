@@ -16,10 +16,12 @@ class SearchResultCard {
     UserProfile user,
     FriendsViewModel viewModel,
   ) {
-    return ContentCard.friend(
-      user: user,
-      onTap: null, // Remove generic onTap to prevent confusion
-      trailing: _buildActionButton(context, user, viewModel),
+    return RepaintBoundary(
+      child: ContentCard.friend(
+        user: user,
+        onTap: null, // Remove generic onTap to prevent confusion
+        trailing: _buildActionButton(context, user, viewModel),
+      ),
     );
   }
 
@@ -117,14 +119,16 @@ class SearchResultCard {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Vänförfrågan skickad till ${user.displayName}! 📨'),
+              content:
+                  Text('Vänförfrågan skickad till ${user.displayName}! 📨'),
               backgroundColor: AppColors.success,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(viewModel.error ?? 'Kunde inte skicka vänförfrågan'),
+              content:
+                  Text(viewModel.error ?? 'Kunde inte skicka vänförfrågan'),
               backgroundColor: AppColors.error,
             ),
           );
@@ -150,9 +154,8 @@ class SearchResultCard {
   ) async {
     // Find the friend request from this user
     final incomingRequests = viewModel.incomingRequests;
-    final request = incomingRequests
-        .where((req) => req.fromUserId == user.uid)
-        .firstOrNull;
+    final request =
+        incomingRequests.where((req) => req.fromUserId == user.uid).firstOrNull;
 
     if (request == null) {
       if (context.mounted) {
@@ -173,14 +176,16 @@ class SearchResultCard {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Vänskapsförfrågan från ${user.displayName} accepterad! 🎉'),
+              content: Text(
+                  'Vänskapsförfrågan från ${user.displayName} accepterad! 🎉'),
               backgroundColor: AppColors.success,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(viewModel.error ?? 'Kunde inte acceptera vänskapsförfrågan'),
+              content: Text(
+                  viewModel.error ?? 'Kunde inte acceptera vänskapsförfrågan'),
               backgroundColor: AppColors.error,
             ),
           );

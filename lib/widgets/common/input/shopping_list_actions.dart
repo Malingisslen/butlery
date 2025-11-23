@@ -22,7 +22,8 @@ class ShoppingListActions {
   ) {
     return PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert, size: AppDimensions.iconSizeAction),
-      onSelected: (action) => _handleListAction(context, action, list, viewModel),
+      onSelected: (action) =>
+          _handleListAction(context, action, list, viewModel),
       itemBuilder: (context) => [
         const PopupMenuItem(
           value: 'rename',
@@ -44,21 +45,25 @@ class ShoppingListActions {
             ],
           ),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'delete',
-          child: Row(
-            children: [
-              Icon(
-                Icons.delete,
-                size: AppDimensions.iconSizeAction,
-                color: AppColors.error,
-              ),
-              SizedBox(width: AppDimensions.spacingM),
-              Text(
-                AppStrings.delete,
-                style: TextStyle(color: AppColors.error),
-              ),
-            ],
+          child: Builder(
+            builder: (context) => Row(
+              children: [
+                const Icon(
+                  Icons.delete,
+                  size: AppDimensions.iconSizeAction,
+                  color: AppColors.error,
+                ),
+                const SizedBox(width: AppDimensions.spacingM),
+                Text(
+                  AppStrings.delete,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.error,
+                      ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -92,7 +97,7 @@ class ShoppingListActions {
     UnifiedShoppingViewModel viewModel,
   ) async {
     final controller = TextEditingController(text: list.name);
-    
+
     final newName = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
@@ -122,7 +127,7 @@ class ShoppingListActions {
 
     if (newName != null && newName.isNotEmpty && newName != list.name) {
       final success = await viewModel.renameList(list.id, newName);
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -146,7 +151,7 @@ class ShoppingListActions {
   ) async {
     try {
       final exportText = viewModel.exportList();
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -155,7 +160,8 @@ class ShoppingListActions {
                   ? 'Lista "${list.name}" exporterad'
                   : 'Kunde inte exportera lista: ${viewModel.error ?? "Okänt fel"}',
             ),
-            backgroundColor: exportText.isNotEmpty ? AppColors.success : AppColors.error,
+            backgroundColor:
+                exportText.isNotEmpty ? AppColors.success : AppColors.error,
           ),
         );
       }
@@ -182,13 +188,14 @@ class ShoppingListActions {
       context: context,
       itemName: list.name,
       itemType: 'handlista',
-      warningMessage: 'Denna åtgärd kan inte ångras och alla ${list.totalItems} artiklar försvinner.',
+      warningMessage:
+          'Denna åtgärd kan inte ångras och alla ${list.totalItems} artiklar försvinner.',
       icon: Icons.list,
     );
 
     if (confirmed == true) {
       final success = await viewModel.deleteList(list.id);
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -207,7 +214,7 @@ class ShoppingListActions {
   /// Show create new list dialog
   static Future<String?> showCreateListDialog(BuildContext context) async {
     final controller = TextEditingController();
-    
+
     return await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
@@ -246,7 +253,8 @@ class ShoppingListActions {
     final result = await CommonDialogActions.showActionConfirmation(
       context: context,
       title: '${AppStrings.addToList} "${list.name}"',
-      message: 'Vill du lägga till $itemCount artiklar från menyn i "${list.name}"?',
+      message:
+          'Vill du lägga till $itemCount artiklar från menyn i "${list.name}"?',
       confirmText: AppStrings.add,
       icon: Icons.add_shopping_cart,
     );

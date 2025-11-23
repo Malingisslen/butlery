@@ -112,12 +112,14 @@ class CollaborativeParticipantsWidgets {
               ),
             ),
             child: Center(
-              child: Text(
-                '+$remaining',
-                style: TextStyle(
-                  fontSize: size * 0.35,
-                  color: AppColors.primaryBlue,
-                  fontWeight: FontWeight.bold,
+              child: Builder(
+                builder: (context) => Text(
+                  '+$remaining',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontSize: size * 0.35,
+                    color: AppColors.primaryBlue,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),

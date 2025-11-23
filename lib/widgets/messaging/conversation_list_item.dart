@@ -36,15 +36,16 @@ class ConversationListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      onLongPress: onLongPress,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingS,
-        ),
-        child: Row(
+    return RepaintBoundary(
+      child: InkWell(
+        onTap: onTap,
+        onLongPress: onLongPress,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingM,
+            vertical: AppDimensions.paddingS,
+          ),
+          child: Row(
           children: [
             // Avatar
             _buildAvatar(),
@@ -124,6 +125,7 @@ class ConversationListItem extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 

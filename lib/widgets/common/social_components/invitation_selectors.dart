@@ -13,12 +13,12 @@ import 'package:butlery/theme/app_dimensions.dart';
 /// - Selection interaction logic
 /// ❌ DOES NOT CONTAIN: Display widgets, states, actions, target lists
 class InvitationSelectors {
-
   // ===== TARGET SELECTORS =====
 
   /// Build target selector
   /// Interactive selector for invitation targets
-  static Widget targetSelector({
+  static Widget targetSelector(
+    BuildContext context, {
     required List<InvitationTarget> availableTargets,
     List<InvitationTarget>? selectedTargets,
     Function(List<InvitationTarget>)? onSelectionChanged,
@@ -32,18 +32,20 @@ class InvitationSelectors {
   }) {
     // ULTRATHINK FIX: Implement concrete widget instead of circular delegation
     // Use existing components from this class to build the complete selector
-    
+
     if (availableTargets.isEmpty) {
-      return emptyWidget ?? 
-        const Center(
-          child: Padding(
-            padding: EdgeInsets.all(AppDimensions.spacingLg),
-            child: Text(
-              'Inga målgrupper tillgängliga',
-              style: TextStyle(color: AppColors.textMedium),
+      return emptyWidget ??
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppDimensions.spacingLg),
+              child: Text(
+                'Inga målgrupper tillgängliga',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textMedium,
+                    ),
+              ),
             ),
-          ),
-        );
+          );
     }
 
     return Column(
@@ -57,14 +59,14 @@ class InvitationSelectors {
               // For now, just show the field
             },
           ),
-        
-        if (showSearch)
-          const SizedBox(height: AppDimensions.spacingSm),
 
-        // Type filters if enabled  
+        if (showSearch) const SizedBox(height: AppDimensions.spacingSm),
+
+        // Type filters if enabled
         if (showTypeFilters) ...[
           targetTypeFilters(
-            availableTypes: availableTargets.map((t) => t.type.name).toSet().toList(),
+            availableTypes:
+                availableTargets.map((t) => t.type.name).toSet().toList(),
             onTypesChanged: (types) {
               // Filter logic would be handled by parent widget
             },
@@ -74,26 +76,29 @@ class InvitationSelectors {
 
         // Target list - use appropriate selector based on allowMultiSelect
         Expanded(
-          child: allowMultiSelect 
-            ? checkableTargetList(
-                targets: availableTargets,
-                selectedTargets: selectedTargets,
-                onSelectionChanged: onSelectionChanged,
-                physics: physics,
-              )
-            : radioTargetSelector(
-                targets: availableTargets,
-                selectedTarget: selectedTargets?.isNotEmpty == true ? selectedTargets!.first : null,
-                onSelectionChanged: (target) {
-                  onSelectionChanged?.call(target != null ? [target] : []);
-                },
-                physics: physics,
-              ),
+          child: allowMultiSelect
+              ? checkableTargetList(
+                  targets: availableTargets,
+                  selectedTargets: selectedTargets,
+                  onSelectionChanged: onSelectionChanged,
+                  physics: physics,
+                )
+              : radioTargetSelector(
+                  targets: availableTargets,
+                  selectedTarget: selectedTargets?.isNotEmpty == true
+                      ? selectedTargets!.first
+                      : null,
+                  onSelectionChanged: (target) {
+                    onSelectionChanged?.call(target != null ? [target] : []);
+                  },
+                  physics: physics,
+                ),
         ),
 
         // Selection summary if targets are selected
         if (selectedTargets?.isNotEmpty == true)
           targetSelectionSummary(
+            context,
             selectedTargets: selectedTargets!,
             compact: true,
           ),
@@ -125,7 +130,8 @@ class InvitationSelectors {
           value: isSelected,
           onChanged: (value) {
             if (onSelectionChanged != null) {
-              final newSelection = List<InvitationTarget>.from(selectedTargets ?? []);
+              final newSelection =
+                  List<InvitationTarget>.from(selectedTargets ?? []);
               if (value == true) {
                 newSelection.add(target);
               } else {
@@ -239,24 +245,30 @@ class InvitationSelectors {
             targetSearchField(
               onSearchChanged: (query) {
                 if (onFilterChanged != null) {
-                  final filtered = allTargets.where((target) =>
-                      target.displayName.toLowerCase().contains(query.toLowerCase())
-                  ).toList();
+                  final filtered = allTargets
+                      .where((target) => target.displayName
+                          .toLowerCase()
+                          .contains(query.toLowerCase()))
+                      .toList();
                   onFilterChanged(filtered);
                 }
               },
             ),
           if (showSearch && (showTypeFilters || showSorting))
-            const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+            const SizedBox(
+                height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
           if (showTypeFilters) ...[
             targetTypeFilters(
-              availableTypes: allTargets.map((t) => t.type.name).toSet().toList(),
+              availableTypes:
+                  allTargets.map((t) => t.type.name).toSet().toList(),
               onTypesChanged: (selectedTypes) {
                 if (onFilterChanged != null) {
                   final filtered = selectedTypes.isEmpty
                       ? allTargets
-                      : allTargets.where((target) => 
-                          selectedTypes.contains(target.type.name)).toList();
+                      : allTargets
+                          .where((target) =>
+                              selectedTypes.contains(target.type.name))
+                          .toList();
                   onFilterChanged(filtered);
                 }
               },
@@ -264,36 +276,48 @@ class InvitationSelectors {
             const SizedBox(height: AppDimensions.spacingSm),
           ],
           if (showSorting)
-            Row(
-              children: [
-                const Text('Sortera:', style: TextStyle(fontWeight: FontWeight.w500)),
-                const SizedBox(width: AppDimensions.spacingSm),
-                DropdownButton<String>(
-                  value: 'name',
-                  items: const [
-                    DropdownMenuItem(value: 'name', child: Text('Namn')),
-                    DropdownMenuItem(value: 'type', child: Text('Typ')),
-                    DropdownMenuItem(value: 'members', child: Text('Medlemmar')),
-                  ],
-                  onChanged: (sortBy) {
-                    if (onFilterChanged != null && sortBy != null) {
-                      final sorted = List<InvitationTarget>.from(filteredTargets);
-                      switch (sortBy) {
-                        case 'name':
-                          sorted.sort((a, b) => a.displayName.compareTo(b.displayName));
-                          break;
-                        case 'type':
-                          sorted.sort((a, b) => a.type.name.compareTo(b.type.name));
-                          break;
-                        case 'members':
-                          sorted.sort((a, b) => (b.memberCount ?? 0).compareTo(a.memberCount ?? 0));
-                          break;
+            Builder(
+              builder: (context) => Row(
+                children: [
+                  Text(
+                    'Sortera:',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  DropdownButton<String>(
+                    value: 'name',
+                    items: const [
+                      DropdownMenuItem(value: 'name', child: Text('Namn')),
+                      DropdownMenuItem(value: 'type', child: Text('Typ')),
+                      DropdownMenuItem(
+                          value: 'members', child: Text('Medlemmar')),
+                    ],
+                    onChanged: (sortBy) {
+                      if (onFilterChanged != null && sortBy != null) {
+                        final sorted =
+                            List<InvitationTarget>.from(filteredTargets);
+                        switch (sortBy) {
+                          case 'name':
+                            sorted.sort((a, b) =>
+                                a.displayName.compareTo(b.displayName));
+                            break;
+                          case 'type':
+                            sorted.sort(
+                                (a, b) => a.type.name.compareTo(b.type.name));
+                            break;
+                          case 'members':
+                            sorted.sort((a, b) => (b.memberCount ?? 0)
+                                .compareTo(a.memberCount ?? 0));
+                            break;
+                        }
+                        onFilterChanged(sorted);
                       }
-                      onFilterChanged(sorted);
-                    }
-                  },
-                ),
-              ],
+                    },
+                  ),
+                ],
+              ),
             ),
         ],
       ),
@@ -304,7 +328,8 @@ class InvitationSelectors {
 
   /// Build target selection summary
   /// Shows summary of selected targets
-  static Widget targetSelectionSummary({
+  static Widget targetSelectionSummary(
+    BuildContext context, {
     required List<InvitationTarget> selectedTargets,
     VoidCallback? onClearAll,
     Function(InvitationTarget)? onRemoveTarget,
@@ -331,7 +356,9 @@ class InvitationSelectors {
             children: [
               Text(
                 title ?? 'Valda målgrupper',
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const Spacer(),
               if (showClearAll && onClearAll != null)
@@ -345,7 +372,9 @@ class InvitationSelectors {
           if (compact)
             Text(
               '${selectedTargets.length} målgrupper valda',
-              style: const TextStyle(color: AppColors.textMedium),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textMedium,
+                  ),
             )
           else
             Wrap(
@@ -354,8 +383,8 @@ class InvitationSelectors {
               children: selectedTargets.map((target) {
                 return Chip(
                   label: Text(target.displayName),
-                  onDeleted: onRemoveTarget != null 
-                      ? () => onRemoveTarget(target) 
+                  onDeleted: onRemoveTarget != null
+                      ? () => onRemoveTarget(target)
                       : null,
                   backgroundColor: Colors.blue.withValues(alpha: 0.1),
                 );
@@ -422,7 +451,7 @@ class _RadioTargetSelectorState extends State<_RadioTargetSelector> {
       itemBuilder: (context, index) {
         final target = widget.targets[index];
         final isSelected = _selectedTarget == target;
-        
+
         return ListTile(
           leading: Container(
             width: 20,
@@ -430,18 +459,22 @@ class _RadioTargetSelectorState extends State<_RadioTargetSelector> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: isSelected ? Theme.of(context).primaryColor : AppColors.textMedium,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : AppColors.textMedium,
                 width: 2,
               ),
-              color: isSelected ? Theme.of(context).primaryColor : AppColors.transparent,
+              color: isSelected
+                  ? Theme.of(context).primaryColor
+                  : AppColors.transparent,
             ),
-            child: isSelected 
-              ? const Icon(
-                  Icons.check,
-                  size: 14,
-                  color: Colors.white,
-                )
-              : null,
+            child: isSelected
+                ? const Icon(
+                    Icons.check,
+                    size: 14,
+                    color: Colors.white,
+                  )
+                : null,
           ),
           title: Text(target.displayName),
           onTap: () => _handleSelection(target),

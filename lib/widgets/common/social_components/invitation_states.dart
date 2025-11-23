@@ -12,7 +12,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 /// - Success states with feedback
 /// ❌ DOES NOT CONTAIN: Display widgets, selectors, actions, lists
 class InvitationStates {
-
   // ===== LOADING STATES =====
 
   /// Build target list loading state
@@ -38,12 +37,14 @@ class InvitationStates {
     int count = 3,
   }) {
     return Column(
-      children: List.generate(count, (index) => const Card(
-        child: ListTile(
-          leading: CircularProgressIndicator(),
-          title: Text('Laddar...'),
-        ),
-      )),
+      children: List.generate(
+          count,
+          (index) => const Card(
+                child: ListTile(
+                  leading: CircularProgressIndicator(),
+                  title: Text('Laddar...'),
+                ),
+              )),
     );
   }
 
@@ -71,7 +72,8 @@ class InvitationStates {
   // ===== ERROR STATES =====
 
   /// Build target loading error state
-  static Widget targetLoadingError({
+  static Widget targetLoadingError(
+    BuildContext context, {
     String? title = 'Kunde inte ladda målgrupper',
     String? message = 'Kontrollera din internetanslutning och försök igen.',
     VoidCallback? onRetry,
@@ -85,9 +87,12 @@ class InvitationStates {
           Icon(errorIcon, size: AppDimensions.iconSizeXXXl, color: Colors.red),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          if (message != null)
-            Text(message, textAlign: TextAlign.center),
+            Text(title,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+          if (message != null) Text(message, textAlign: TextAlign.center),
           if (onRetry != null) ...[
             const SizedBox(height: AppDimensions.spacingMd),
             ElevatedButton(
@@ -101,13 +106,15 @@ class InvitationStates {
   }
 
   /// Build network error state
-  static Widget networkError({
+  static Widget networkError(
+    BuildContext context, {
     String? title = 'Nätverksfel',
     String? message = 'Kontrollera din internetanslutning.',
     VoidCallback? onRetry,
     String? retryText = 'Försök igen',
   }) {
     return targetLoadingError(
+      context,
       title: title,
       message: message,
       onRetry: onRetry,
@@ -117,7 +124,8 @@ class InvitationStates {
   }
 
   /// Build permission error state
-  static Widget permissionError({
+  static Widget permissionError(
+    BuildContext context, {
     String? title = 'Ingen åtkomst',
     String? message = 'Du har inte behörighet att se denna information.',
     VoidCallback? onRequestAccess,
@@ -127,12 +135,16 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.lock, size: AppDimensions.iconSizeXXXl, color: Colors.orange),
+          const Icon(Icons.lock,
+              size: AppDimensions.iconSizeXXXl, color: Colors.orange),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          if (message != null)
-            Text(message, textAlign: TextAlign.center),
+            Text(title,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+          if (message != null) Text(message, textAlign: TextAlign.center),
           if (onRequestAccess != null) ...[
             const SizedBox(height: AppDimensions.spacingMd),
             ElevatedButton(
@@ -148,7 +160,8 @@ class InvitationStates {
   // ===== EMPTY STATES =====
 
   /// Build no targets available state
-  static Widget noTargetsAvailable({
+  static Widget noTargetsAvailable(
+    BuildContext context, {
     String? title = 'Inga målgrupper tillgängliga',
     String? message = 'Du har inte lagt till några vänner eller grupper än.',
     IconData icon = Icons.group_outlined,
@@ -160,12 +173,16 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: AppDimensions.iconSizeXXXl, color: AppColors.textMedium),
+          Icon(icon,
+              size: AppDimensions.iconSizeXXXl, color: AppColors.textMedium),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          if (message != null)
-            Text(message, textAlign: TextAlign.center),
+            Text(title,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+          if (message != null) Text(message, textAlign: TextAlign.center),
           if (showAddButton && onAddTargets != null) ...[
             const SizedBox(height: AppDimensions.spacingMd),
             ElevatedButton(
@@ -179,10 +196,12 @@ class InvitationStates {
   }
 
   /// Build no search results state
-  static Widget noSearchResults({
+  static Widget noSearchResults(
+    BuildContext context, {
     String? query,
     String? title = 'Inga sökresultat',
-    String? message = 'Prova att söka med andra ord eller kontrollera stavningen.',
+    String? message =
+        'Prova att söka med andra ord eller kontrollera stavningen.',
     IconData icon = Icons.search_off,
     VoidCallback? onClearSearch,
     String? clearButtonText = 'Rensa sökning',
@@ -192,14 +211,22 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: AppDimensions.iconSizeXXXl, color: AppColors.textMedium),
+          Icon(icon,
+              size: AppDimensions.iconSizeXXXl, color: AppColors.textMedium),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          if (message != null)
-            Text(message, textAlign: TextAlign.center),
+            Text(title,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+          if (message != null) Text(message, textAlign: TextAlign.center),
           if (query != null)
-            Text('Sökning: "$query"', style: const TextStyle(fontStyle: FontStyle.italic)),
+            Text('Sökning: "$query"',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(fontStyle: FontStyle.italic)),
           if (showClearButton && onClearSearch != null) ...[
             const SizedBox(height: AppDimensions.spacingMd),
             TextButton(
@@ -213,7 +240,8 @@ class InvitationStates {
   }
 
   /// Build empty selection state
-  static Widget emptySelection({
+  static Widget emptySelection(
+    BuildContext context, {
     String? title = 'Inga valda målgrupper',
     String? message = 'Välj målgrupper från listan ovan för att fortsätta.',
     IconData icon = Icons.checklist_outlined,
@@ -222,12 +250,16 @@ class InvitationStates {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: AppDimensions.iconSizeXXXl, color: AppColors.textMedium),
+          Icon(icon,
+              size: AppDimensions.iconSizeXXXl, color: AppColors.textMedium),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          if (message != null)
-            Text(message, textAlign: TextAlign.center),
+            Text(title,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+          if (message != null) Text(message, textAlign: TextAlign.center),
         ],
       ),
     );
@@ -236,7 +268,8 @@ class InvitationStates {
   // ===== SUCCESS STATES =====
 
   /// Build targets selected success state
-  static Widget targetsSelectedSuccess({
+  static Widget targetsSelectedSuccess(
+    BuildContext context, {
     required int selectedCount,
     String? title = 'Målgrupper valda',
     String? message = 'Du har valt {count} målgrupper för inbjudan.',
@@ -252,7 +285,11 @@ class InvitationStates {
           Icon(icon, size: AppDimensions.iconSizeXXXl, color: successColor),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(title,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold)),
           if (message != null)
             Text(
               message.replaceAll('{count}', selectedCount.toString()),
@@ -271,7 +308,8 @@ class InvitationStates {
   }
 
   /// Build invitation sent success state
-  static Widget invitationSentSuccess({
+  static Widget invitationSentSuccess(
+    BuildContext context, {
     required int sentCount,
     String? title = 'Inbjudningar skickade',
     String? message = 'Inbjudningar har skickats till {count} målgrupper.',
@@ -287,7 +325,11 @@ class InvitationStates {
           Icon(icon, size: AppDimensions.iconSizeXXXl, color: successColor),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(title,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold)),
           if (message != null)
             Text(
               message.replaceAll('{count}', sentCount.toString()),
@@ -308,7 +350,8 @@ class InvitationStates {
   // ===== PROGRESS STATES =====
 
   /// Build upload progress state
-  static Widget uploadProgress({
+  static Widget uploadProgress(
+    BuildContext context, {
     required double progress, // 0.0 to 1.0
     String? title = 'Skickar inbjudningar...',
     String? subtitle,
@@ -328,25 +371,28 @@ class InvitationStates {
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           if (title != null)
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          if (showPercentage)
-            Text('${(progress * 100).toInt()}%'),
-          if (subtitle != null)
-            Text(subtitle, textAlign: TextAlign.center),
+            Text(title,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+          if (showPercentage) Text('${(progress * 100).toInt()}%'),
+          if (subtitle != null) Text(subtitle, textAlign: TextAlign.center),
         ],
       ),
     );
   }
 
   /// Build batch operation progress
-  static Widget batchOperationProgress({
+  static Widget batchOperationProgress(
+    BuildContext context, {
     required int completed,
     required int total,
     String? operationName = 'Bearbetar',
     String? currentItem,
   }) {
     final progress = total > 0 ? completed / total : 0.0;
-    
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -358,13 +404,19 @@ class InvitationStates {
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
             '$operationName $completed av $total',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: FontWeight.w500),
           ),
           if (currentItem != null) ...[
             const SizedBox(height: AppDimensions.spacingSm),
             Text(
               'Aktuell: $currentItem',
-              style: const TextStyle(color: AppColors.textMedium),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: AppColors.textMedium),
             ),
           ],
         ],

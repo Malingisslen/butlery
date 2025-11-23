@@ -210,63 +210,68 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                     child: PopupMenuButton(
                       icon: const Icon(Icons.more_vert),
                       itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit, size: AppDimensions.iconSizeM),
-                            SizedBox(width: AppDimensions.spacingM),
-                            Text('Edit Recipe'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'fork',
-                        child: Row(
-                          children: [
-                            Icon(Icons.content_copy,
-                                size: AppDimensions.iconSizeM),
-                            SizedBox(width: AppDimensions.spacingM),
-                            Text('Make Copy'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'generate_shopping_list',
-                        child: Row(
-                          children: [
-                            Icon(Icons.shopping_cart,
-                                size: AppDimensions.iconSizeM),
-                            SizedBox(width: AppDimensions.spacingM),
-                            Text('Skapa inköpslista'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete,
-                                size: AppDimensions.iconSizeM,
-                                color: AppColors.error),
-                            SizedBox(width: AppDimensions.spacingM),
-                            Text('Delete Recipe',
-                                style: TextStyle(color: AppColors.error)),
-                          ],
-                        ),
-                      ),
-                      if (recipe.sourceUrl != null &&
-                          recipe.sourceUrl!.isNotEmpty)
                         const PopupMenuItem(
-                          value: 'source',
+                          value: 'edit',
                           child: Row(
                             children: [
-                              Icon(Icons.link, size: AppDimensions.iconSizeM),
+                              Icon(Icons.edit, size: AppDimensions.iconSizeM),
                               SizedBox(width: AppDimensions.spacingM),
-                              Text('View Source'),
+                              Text('Edit Recipe'),
                             ],
                           ),
                         ),
+                        const PopupMenuItem(
+                          value: 'fork',
+                          child: Row(
+                            children: [
+                              Icon(Icons.content_copy,
+                                  size: AppDimensions.iconSizeM),
+                              SizedBox(width: AppDimensions.spacingM),
+                              Text('Make Copy'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'generate_shopping_list',
+                          child: Row(
+                            children: [
+                              Icon(Icons.shopping_cart,
+                                  size: AppDimensions.iconSizeM),
+                              SizedBox(width: AppDimensions.spacingM),
+                              Text('Skapa inköpslista'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.delete,
+                                  size: AppDimensions.iconSizeM,
+                                  color: AppColors.error),
+                              const SizedBox(width: AppDimensions.spacingM),
+                              Text('Delete Recipe',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        color: AppColors.error,
+                                      )),
+                            ],
+                          ),
+                        ),
+                        if (recipe.sourceUrl != null &&
+                            recipe.sourceUrl!.isNotEmpty)
+                          const PopupMenuItem(
+                            value: 'source',
+                            child: Row(
+                              children: [
+                                Icon(Icons.link, size: AppDimensions.iconSizeM),
+                                SizedBox(width: AppDimensions.spacingM),
+                                Text('View Source'),
+                              ],
+                            ),
+                          ),
                       ],
                       onSelected: (value) =>
                           _handleMenuAction(context, value, viewModel, recipe),
@@ -296,8 +301,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           RecipeDetailMetadata(
                             viewModel: viewModel,
                             currentPortions: _actions.currentPortions,
-                            isScaled:
-                                _actions.currentPortions != (recipe.portions ?? 1),
+                            isScaled: _actions.currentPortions !=
+                                (recipe.portions ?? 1),
                           ),
                           const SizedBox(height: AppDimensions.spacingXl),
 
@@ -307,7 +312,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             scaledIngredients: _actions.scaledIngredients,
                             onPortionChanged: (portions, ingredients) {
                               setState(() {
-                                _actions.onPortionChanged(portions, ingredients);
+                                _actions.onPortionChanged(
+                                    portions, ingredients);
                               });
                             },
                             onImageTap: (imageUrls, index) =>
@@ -325,7 +331,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           ),
 
                           // Bottom padding for safe area (Android gesture navigation)
-                          SizedBox(height: bottomPadding + AppDimensions.spacingXl),
+                          SizedBox(
+                              height: bottomPadding + AppDimensions.spacingXl),
                         ],
                       ),
                     ),

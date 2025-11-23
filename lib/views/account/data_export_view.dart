@@ -45,20 +45,22 @@ class DataExportView extends StatelessWidget {
                   return SingleChildScrollView(
                     padding: const EdgeInsets.all(20),
                     child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _buildHeaderSection(),
-                    const SizedBox(height: 32),
-                    _buildExportButton(context, viewModel),
-                    const SizedBox(height: 24),
-                    if (viewModel.isExporting) _buildLoadingState(),
-                    if (viewModel.hasError) _buildErrorState(context, viewModel),
-                    if (viewModel.hasExportedData) _buildSuccessState(context, viewModel),
-                    const SizedBox(height: 32),
-                    _buildInfoSection(),
-                    ],
-                  ),
-                );
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildHeaderSection(context),
+                        const SizedBox(height: 32),
+                        _buildExportButton(context, viewModel),
+                        const SizedBox(height: 24),
+                        if (viewModel.isExporting) _buildLoadingState(context),
+                        if (viewModel.hasError)
+                          _buildErrorState(context, viewModel),
+                        if (viewModel.hasExportedData)
+                          _buildSuccessState(context, viewModel),
+                        const SizedBox(height: 32),
+                        _buildInfoSection(context),
+                      ],
+                    ),
+                  );
                 },
               ),
             ),
@@ -68,28 +70,27 @@ class DataExportView extends StatelessWidget {
     );
   }
 
-  Widget _buildHeaderSection() {
+  Widget _buildHeaderSection(BuildContext context) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.download_rounded,
                   size: 32,
                   color: AppColors.primary,
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     'Ladda ner dina data',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                 ),
               ],
@@ -97,11 +98,10 @@ class DataExportView extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               'Enligt GDPR Artikel 20 har du rätt att få en kopia av all din personliga data som lagras i Butlery. Data exporteras i JSON-format som du kan spara eller överföra till en annan tjänst.',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[700],
-                height: 1.5,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[700],
+                    height: 1.5,
+                  ),
             ),
           ],
         ),
@@ -109,7 +109,8 @@ class DataExportView extends StatelessWidget {
     );
   }
 
-  Widget _buildExportButton(BuildContext context, DataExportViewModel viewModel) {
+  Widget _buildExportButton(
+      BuildContext context, DataExportViewModel viewModel) {
     if (viewModel.hasExportedData) {
       return const SizedBox.shrink(); // Hide button when data is exported
     }
@@ -122,15 +123,14 @@ class DataExportView extends StatelessWidget {
       label: const Text('Exportera mina data'),
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 16),
-        textStyle: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
+        textStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
       ),
     );
   }
 
-  Widget _buildLoadingState() {
+  Widget _buildLoadingState(BuildContext context) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -138,20 +138,18 @@ class DataExportView extends StatelessWidget {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Exporterar dina data...',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               'Detta kan ta några sekunder',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[600],
+                  ),
             ),
           ],
         ),
@@ -172,18 +170,17 @@ class DataExportView extends StatelessWidget {
               color: AppColors.error,
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Export misslyckades',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               viewModel.errorMessage ?? 'Ett okänt fel uppstod',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14),
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
@@ -197,7 +194,8 @@ class DataExportView extends StatelessWidget {
     );
   }
 
-  Widget _buildSuccessState(BuildContext context, DataExportViewModel viewModel) {
+  Widget _buildSuccessState(
+      BuildContext context, DataExportViewModel viewModel) {
     return Card(
       color: AppColors.success.withValues(alpha: 0.1),
       child: Padding(
@@ -210,28 +208,25 @@ class DataExportView extends StatelessWidget {
               color: AppColors.success,
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Data exporterad',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               'Exporterad ${viewModel.exportTimestampText}',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[700],
-              ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[700],
+                  ),
             ),
             const SizedBox(height: 4),
             Text(
               'Filstorlek: ${viewModel.exportSizeText}',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[700],
-              ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[700],
+                  ),
             ),
             const SizedBox(height: 20),
             Row(
@@ -269,7 +264,7 @@ class DataExportView extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoSection() {
+  Widget _buildInfoSection(BuildContext context) {
     return Card(
       color: AppColors.info.withValues(alpha: 0.1),
       child: Padding(
@@ -277,39 +272,37 @@ class DataExportView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.info_outline,
                   color: AppColors.info,
                   size: 20,
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text(
                   'Vad ingår i exporten?',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            _buildInfoItem('Profil och inställningar'),
-            _buildInfoItem('Alla dina recept'),
-            _buildInfoItem('Vänner och sociala kontakter'),
-            _buildInfoItem('Meddelanden och konversationer'),
-            _buildInfoItem('Inköpslistor och menyer'),
-            _buildInfoItem('Kommentarer och betyg'),
-            _buildInfoItem('Aktivitetshistorik'),
+            _buildInfoItem(context, 'Profil och inställningar'),
+            _buildInfoItem(context, 'Alla dina recept'),
+            _buildInfoItem(context, 'Vänner och sociala kontakter'),
+            _buildInfoItem(context, 'Meddelanden och konversationer'),
+            _buildInfoItem(context, 'Inköpslistor och menyer'),
+            _buildInfoItem(context, 'Kommentarer och betyg'),
+            _buildInfoItem(context, 'Aktivitetshistorik'),
             const SizedBox(height: 12),
             Text(
               'OBS: Exporten innehåller endast din egen data. Ingen data från andra användare inkluderas.',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-                fontStyle: FontStyle.italic,
-              ),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey[600],
+                    fontStyle: FontStyle.italic,
+                  ),
             ),
           ],
         ),
@@ -317,7 +310,7 @@ class DataExportView extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoItem(String text) {
+  Widget _buildInfoItem(BuildContext context, String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -328,7 +321,7 @@ class DataExportView extends StatelessWidget {
             color: AppColors.success,
           ),
           const SizedBox(width: 8),
-          Text(text, style: const TextStyle(fontSize: 14)),
+          Text(text, style: Theme.of(context).textTheme.bodyMedium),
         ],
       ),
     );
@@ -336,7 +329,8 @@ class DataExportView extends StatelessWidget {
 
   // Action handlers
 
-  Future<void> _handleExport(BuildContext context, DataExportViewModel viewModel) async {
+  Future<void> _handleExport(
+      BuildContext context, DataExportViewModel viewModel) async {
     final success = await viewModel.exportData();
 
     if (success && context.mounted) {
@@ -349,13 +343,18 @@ class DataExportView extends StatelessWidget {
     }
   }
 
-  Future<void> _handleDownload(BuildContext context, DataExportViewModel viewModel) async {
+  Future<void> _handleDownload(
+      BuildContext context, DataExportViewModel viewModel) async {
     if (viewModel.exportedData == null) return;
 
     try {
       // Get downloads directory
       final directory = await getApplicationDocumentsDirectory();
-      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.').first;
+      final timestamp = DateTime.now()
+          .toIso8601String()
+          .replaceAll(':', '-')
+          .split('.')
+          .first;
       final fileName = 'butlery_data_export_$timestamp.json';
       final filePath = '${directory.path}/$fileName';
 
@@ -389,13 +388,18 @@ class DataExportView extends StatelessWidget {
     }
   }
 
-  Future<void> _handleShare(BuildContext context, DataExportViewModel viewModel) async {
+  Future<void> _handleShare(
+      BuildContext context, DataExportViewModel viewModel) async {
     if (viewModel.exportedData == null) return;
 
     try {
       // Create temporary file
       final directory = await getTemporaryDirectory();
-      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.').first;
+      final timestamp = DateTime.now()
+          .toIso8601String()
+          .replaceAll(':', '-')
+          .split('.')
+          .first;
       final fileName = 'butlery_data_export_$timestamp.json';
       final filePath = '${directory.path}/$fileName';
 
@@ -420,7 +424,8 @@ class DataExportView extends StatelessWidget {
     }
   }
 
-  Future<void> _handleClear(BuildContext context, DataExportViewModel viewModel) async {
+  Future<void> _handleClear(
+      BuildContext context, DataExportViewModel viewModel) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(

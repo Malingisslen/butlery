@@ -89,9 +89,9 @@ class GroupDetailAppBar {
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   'Ta bort grupp',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                 ),
               ],
             ),
@@ -109,9 +109,9 @@ class GroupDetailAppBar {
                 const SizedBox(width: AppDimensions.spacingSm),
                 Text(
                   'Lämna grupp',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.tertiary,
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.tertiary,
+                      ),
                 ),
               ],
             ),

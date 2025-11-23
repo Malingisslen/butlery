@@ -162,12 +162,15 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.friendCategorySelector(
-              categories: testCategories,
-              selectedCategoryIds: testSelectedCategoryIds,
-              onCategoryToggled: (_) {},
-              title: 'Test Selector',
-              onCreateNew: () {}, // Required for "Skapa ny kategori" text to appear
+            Builder(
+              builder: (context) => FriendCategoryWidgets.friendCategorySelector(
+                context,
+                categories: testCategories,
+                selectedCategoryIds: testSelectedCategoryIds,
+                onCategoryToggled: (_) {},
+                title: 'Test Selector',
+                onCreateNew: () {}, // Required for "Skapa ny kategori" text to appear
+              ),
             ),
           ),
         );
@@ -183,12 +186,15 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.friendCategorySelector(
-              categories: testCategories,
-              selectedCategoryIds: testSelectedCategoryIds,
-              onCategoryToggled: (_) {},
-              showSelectAll: false,
-              showCreateNew: false,
+            Builder(
+              builder: (context) => FriendCategoryWidgets.friendCategorySelector(
+                context,
+                categories: testCategories,
+                selectedCategoryIds: testSelectedCategoryIds,
+                onCategoryToggled: (_) {},
+                showSelectAll: false,
+                showCreateNew: false,
+              ),
             ),
           ),
         );
@@ -203,11 +209,14 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.friendCategoryChip(
-              category: testCategories.first,
-              isSelected: true,
-              onTap: () {},
-              showCount: true,
+            Builder(
+              builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                context,
+                category: testCategories.first,
+                isSelected: true,
+                onTap: () {},
+                showCount: true,
+              ),
             ),
           ),
         );
@@ -222,11 +231,14 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.friendCategoryChip(
-              category: testCategories.first,
-              isSelected: false,
-              onTap: () {},
-              showCount: false,
+            Builder(
+              builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                context,
+                category: testCategories.first,
+                isSelected: false,
+                onTap: () {},
+                showCount: false,
+              ),
             ),
           ),
         );
@@ -239,11 +251,14 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.horizontalCategorySelector(
-              categories: testCategories,
-              selectedCategoryIds: testSelectedCategoryIds,
-              onCategoryToggled: (_) {},
-              height: 80,
+            Builder(
+              builder: (context) => FriendCategoryWidgets.horizontalCategorySelector(
+                context,
+                categories: testCategories,
+                selectedCategoryIds: testSelectedCategoryIds,
+                onCategoryToggled: (_) {},
+                height: 80,
+              ),
             ),
           ),
         );
@@ -450,11 +465,14 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.compactCategoryChip(
-              category: testCategories.first,
-              isSelected: true,
-              onTap: () {},
-              enabled: true,
+            Builder(
+              builder: (context) => FriendCategoryWidgets.compactCategoryChip(
+                context,
+                category: testCategories.first,
+                isSelected: true,
+                onTap: () {},
+                enabled: true,
+              ),
             ),
           ),
         );
@@ -468,11 +486,14 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.compactCategoryChip(
-              category: testCategories.first,
-              isSelected: false,
-              onTap: () {},
-              enabled: false,
+            Builder(
+              builder: (context) => FriendCategoryWidgets.compactCategoryChip(
+                context,
+                category: testCategories.first,
+                isSelected: false,
+                onTap: () {},
+                enabled: false,
+              ),
             ),
           ),
         );
@@ -489,10 +510,13 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.friendCategoryChip(
-              category: testCategories.first,
-              isSelected: false,
-              onTap: () => tapped = true,
+            Builder(
+              builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                context,
+                category: testCategories.first,
+                isSelected: false,
+                onTap: () => tapped = true,
+              ),
             ),
           ),
         );
@@ -532,10 +556,13 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.friendCategorySelector(
-              categories: testCategories,
-              selectedCategoryIds: {},
-              onCategoryToggled: (categoryId) => toggledCategory = categoryId,
+            Builder(
+              builder: (context) => FriendCategoryWidgets.friendCategorySelector(
+                context,
+                categories: testCategories,
+                selectedCategoryIds: {},
+                onCategoryToggled: (categoryId) => toggledCategory = categoryId,
+              ),
             ),
           ),
         );
@@ -554,10 +581,13 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.friendCategorySelector(
-              categories: [],
-              selectedCategoryIds: {},
-              onCategoryToggled: (_) {},
+            Builder(
+              builder: (context) => FriendCategoryWidgets.friendCategorySelector(
+                context,
+                categories: [],
+                selectedCategoryIds: {},
+                onCategoryToggled: (_) {},
+              ),
             ),
           ),
         );
@@ -599,10 +629,13 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.friendCategoryChip(
-              category: categoryWithoutEmoji,
-              isSelected: false,
-              onTap: () {},
+            Builder(
+              builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                context,
+                category: categoryWithoutEmoji,
+                isSelected: false,
+                onTap: () {},
+              ),
             ),
           ),
         );
@@ -625,10 +658,13 @@ void main() {
 
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.friendCategoryChip(
-              category: categoryWithLongName,
-              isSelected: false,
-              onTap: () {},
+            Builder(
+              builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                context,
+                category: categoryWithLongName,
+                isSelected: false,
+                onTap: () {},
+              ),
             ),
           ),
         );
@@ -673,11 +709,14 @@ void main() {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            FriendCategoryWidgets.friendCategorySelector(
-              categories: testCategories,
-              selectedCategoryIds: {},
-              onCategoryToggled: (_) {},
-              onCreateNew: () {}, // Required for "Skapa ny kategori" text to appear
+            Builder(
+              builder: (context) => FriendCategoryWidgets.friendCategorySelector(
+                context,
+                categories: testCategories,
+                selectedCategoryIds: {},
+                onCategoryToggled: (_) {},
+                onCreateNew: () {}, // Required for "Skapa ny kategori" text to appear
+              ),
             ),
           ),
         );

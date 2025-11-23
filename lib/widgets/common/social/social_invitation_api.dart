@@ -117,7 +117,8 @@ class SocialInvitationApi {
   }
 
   /// Build target selector
-  static Widget targetSelector({
+  static Widget targetSelector(
+    BuildContext context, {
     required List<InvitationTarget> availableTargets,
     required Set<String> selectedTargetIds,
     required Function(InvitationTarget) onTargetToggled,
@@ -130,6 +131,7 @@ class SocialInvitationApi {
     String? searchHint,
   }) {
     return InvitationSelectors.targetSelector(
+      context,
       availableTargets: availableTargets,
       allowMultiSelect: allowMultipleSelection,
       showSearch: showSearchBar,
@@ -221,7 +223,8 @@ class SocialInvitationApi {
   }
 
   /// Build invitation target selector
-  static Widget invitationTargetSelector({
+  static Widget invitationTargetSelector(
+    BuildContext context, {
     required List<InvitationTarget> availableTargets,
     required Set<String> selectedTargetIds,
     required Function(InvitationTarget) onTargetToggled,
@@ -234,6 +237,7 @@ class SocialInvitationApi {
     String? searchHint,
   }) {
     return InvitationSelectors.targetSelector(
+      context,
       availableTargets: availableTargets,
       allowMultiSelect: allowMultipleSelection,
       showSearch: showSearchBar,
@@ -267,23 +271,27 @@ class SocialInvitationApi {
   }
 
   /// Build target loading error state
-  static Widget targetLoadingError({
+  static Widget targetLoadingError(
+    BuildContext context, {
     String? message,
     VoidCallback? onRetry,
   }) {
     return InvitationTargetStates.targetLoadingError(
+      context,
       message: message,
       onRetry: onRetry,
     );
   }
 
   /// Build no targets available state
-  static Widget noTargetsAvailable({
+  static Widget noTargetsAvailable(
+    BuildContext context, {
     String? message,
     VoidCallback? onAction,
     String? actionLabel,
   }) {
     return InvitationTargetStates.noTargetsAvailable(
+      context,
       message: message,
       onAction: onAction,
       actionLabel: actionLabel,
@@ -291,22 +299,26 @@ class SocialInvitationApi {
   }
 
   /// Build no search results state
-  static Widget noSearchResults({
+  static Widget noSearchResults(
+    BuildContext context, {
     String? searchQuery,
     VoidCallback? onClearSearch,
   }) {
     return InvitationTargetStates.noSearchResults(
+      context,
       searchQuery: searchQuery,
       onClearSearch: onClearSearch,
     );
   }
 
   /// Build targets selected success state
-  static Widget targetsSelectedSuccess({
+  static Widget targetsSelectedSuccess(
+    BuildContext context, {
     required int count,
     VoidCallback? onContinue,
   }) {
     return InvitationTargetStates.targetsSelectedSuccess(
+      context,
       count: count,
       onContinue: onContinue,
     );

@@ -158,12 +158,11 @@ class AdaptiveNavigationScaffold extends StatelessWidget {
         }
       },
       extended: extended,
-      labelType: extended
-          ? NavigationRailLabelType.none
-          : NavigationRailLabelType.all,
+      labelType:
+          extended ? NavigationRailLabelType.none : NavigationRailLabelType.all,
       leading: extended
-          ? Padding(
-              padding: const EdgeInsets.only(
+          ? const Padding(
+              padding: EdgeInsets.only(
                 top: AppDimensions.spacingLg,
                 bottom: AppDimensions.spacingMd,
               ),
@@ -286,7 +285,8 @@ extension AdaptiveNavigationItemExtension on BottomNavigationBarItem {
     return AdaptiveNavigationItem(
       label: label ?? '',
       icon: (icon as Icon).icon ?? Icons.error,
-      activeIcon: (activeIcon as Icon?)?.icon ?? (icon as Icon).icon ?? Icons.error,
+      activeIcon:
+          (activeIcon as Icon?)?.icon ?? (icon as Icon).icon ?? Icons.error,
       route: route,
     );
   }
@@ -377,7 +377,8 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildBadgedIcon(IconData icon, int? badgeCount, BuildContext context) {
+  Widget _buildBadgedIcon(
+      IconData icon, int? badgeCount, BuildContext context) {
     if (badgeCount == null || badgeCount == 0) {
       return Icon(icon);
     }

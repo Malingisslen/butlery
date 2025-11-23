@@ -26,29 +26,27 @@ class SharedShoppingListsView extends StatelessWidget {
                 desktop: 800,
               ),
             ),
-            child: const Column(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.shopping_cart_outlined,
                   size: 64,
                   color: AppColors.textMedium,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Text(
                   'Delade inköpslistor',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
                   'Kommer snart...',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: AppColors.textMedium,
-                  ),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppColors.textMedium,
+                      ),
                 ),
               ],
             ),

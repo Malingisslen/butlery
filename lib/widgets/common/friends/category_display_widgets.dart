@@ -28,8 +28,11 @@ class CategoryDisplayWidgets {
             color: AppColors.primaryBlue,
           ),
           title: Text(category.name),
-          subtitle: showMemberCount ? Text('${category.friendUserIds.length} medlemmar') : null,
-          trailing: const Icon(Icons.arrow_forward_ios, size: AppDimensions.iconSizeS),
+          subtitle: showMemberCount
+              ? Text('${category.friendUserIds.length} medlemmar')
+              : null,
+          trailing: const Icon(Icons.arrow_forward_ios,
+              size: AppDimensions.iconSizeS),
           onTap: () => onCategoryTap(category),
         );
       },
@@ -95,10 +98,13 @@ class CategoryDisplayWidgets {
     required List<FriendCategory> categories,
     EdgeInsets? padding,
   }) {
-    final totalMembers = categories.fold<int>(0, (sum, cat) => sum + cat.memberIds.length);
-    final averageSize = categories.isNotEmpty ? (totalMembers / categories.length).round() : 0;
-    final largestCategory = categories.isNotEmpty 
-        ? categories.reduce((a, b) => a.memberIds.length > b.memberIds.length ? a : b)
+    final totalMembers =
+        categories.fold<int>(0, (sum, cat) => sum + cat.memberIds.length);
+    final averageSize =
+        categories.isNotEmpty ? (totalMembers / categories.length).round() : 0;
+    final largestCategory = categories.isNotEmpty
+        ? categories
+            .reduce((a, b) => a.memberIds.length > b.memberIds.length ? a : b)
         : null;
 
     return Card(
@@ -178,10 +184,13 @@ class CategoryDisplayWidgets {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisSize: MainAxisSize.min, // Fix unbounded width constraints in horizontal scrollable
+                  mainAxisSize: MainAxisSize
+                      .min, // Fix unbounded width constraints in horizontal scrollable
                   children: [
                     Icon(
-                      category.emoji != null ? Icons.emoji_emotions : Icons.group,
+                      category.emoji != null
+                          ? Icons.emoji_emotions
+                          : Icons.group,
                       color: AppColors.primaryBlue,
                       size: AppDimensions.iconSizeM,
                     ),
@@ -195,7 +204,9 @@ class CategoryDisplayWidgets {
                     ),
                   ],
                 ),
-                if (showDescription && category.description != null && category.description!.isNotEmpty) ...[
+                if (showDescription &&
+                    category.description != null &&
+                    category.description!.isNotEmpty) ...[
                   const SizedBox(height: AppDimensions.spacingS),
                   Text(
                     category.description!,
@@ -243,9 +254,11 @@ class CategoryDisplayWidgets {
       height: height,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: padding ?? const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
+        padding: padding ??
+            const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
         itemCount: categories.length,
-        separatorBuilder: (context, index) => const SizedBox(width: AppDimensions.spacingMd),
+        separatorBuilder: (context, index) =>
+            const SizedBox(width: AppDimensions.spacingMd),
         itemBuilder: (context, index) {
           final category = categories[index];
           return categoryCard(
@@ -265,8 +278,9 @@ class CategoryDisplayWidgets {
     bool showTotalMembers = true,
     EdgeInsets? padding,
   }) {
-    final totalMembers = categories.fold<int>(0, (sum, cat) => sum + cat.friendUserIds.length);
-    
+    final totalMembers =
+        categories.fold<int>(0, (sum, cat) => sum + cat.friendUserIds.length);
+
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
@@ -378,18 +392,16 @@ class _StatItem extends StatelessWidget {
         const SizedBox(height: AppDimensions.spacingXs),
         Text(
           value,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
         ),
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: AppColors.textMedium,
-          ),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textMedium,
+              ),
           textAlign: TextAlign.center,
         ),
       ],

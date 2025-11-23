@@ -375,8 +375,9 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
 
     return content.where((menu) {
       if (isViewed != null &&
-          _socialMenuCoordinator.isMenuViewed(menu.id) != isViewed)
+          _socialMenuCoordinator.isMenuViewed(menu.id) != isViewed) {
         return false;
+      }
       if (isImported != null &&
           _socialMenuCoordinator.isMenuImported(menu.id) != isImported) {
         return false;

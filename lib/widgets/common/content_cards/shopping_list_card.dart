@@ -41,19 +41,21 @@ class ShoppingListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: margin ?? _getDefaultMargin(),
-      child: Material(
-        elevation: AppDimensions.elevationMedium,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        color: AppColors.backgroundLight,
-        child: InkWell(
-          onTap: onTap,
-          onLongPress: onLongPress,
+    return RepaintBoundary(
+      child: Container(
+        margin: margin ?? _getDefaultMargin(),
+        child: Material(
+          elevation: AppDimensions.elevationMedium,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          child: Padding(
-            padding: padding ?? _getDefaultPadding(),
-            child: _buildContent(context),
+          color: AppColors.backgroundLight,
+          child: InkWell(
+            onTap: onTap,
+            onLongPress: onLongPress,
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+            child: Padding(
+              padding: padding ?? _getDefaultPadding(),
+              child: _buildContent(context),
+            ),
           ),
         ),
       ),

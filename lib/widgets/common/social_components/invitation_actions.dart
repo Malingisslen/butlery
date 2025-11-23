@@ -13,7 +13,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 /// - Bulk operations
 /// ❌ DOES NOT CONTAIN: Display widgets, selectors, states, lists
 class InvitationActions {
-
   // ===== QUICK ACTIONS =====
 
   /// Build quick selection buttons
@@ -39,7 +38,8 @@ class InvitationActions {
 
   /// Build selection action bar
   /// Action bar for selected targets
-  static Widget selectionActionBar({
+  static Widget selectionActionBar(
+    BuildContext context, {
     required int selectedCount,
     VoidCallback? onSelectAll,
     VoidCallback? onDeselectAll,
@@ -63,7 +63,10 @@ class InvitationActions {
         children: [
           Text(
             '$selectedCount valda',
-            style: const TextStyle(fontWeight: FontWeight.w500),
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(fontWeight: FontWeight.w500),
           ),
           const Spacer(),
           if (showSelectAll && onSelectAll != null)
@@ -145,10 +148,12 @@ class InvitationActions {
 
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: buttons.reversed.map((button) => Padding(
-        padding: const EdgeInsets.only(bottom: 16.0),
-        child: button,
-      )).toList(),
+      children: buttons.reversed
+          .map((button) => Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: button,
+              ))
+          .toList(),
     );
   }
 
@@ -156,7 +161,8 @@ class InvitationActions {
 
   /// Build bulk operation buttons
   /// Buttons for bulk operations on targets
-  static Widget bulkOperationButtons({
+  static Widget bulkOperationButtons(
+    BuildContext context, {
     required List<InvitationTarget> selectedTargets,
     VoidCallback? onBulkInvite,
     VoidCallback? onBulkRemove,
@@ -179,7 +185,10 @@ class InvitationActions {
         children: [
           Text(
             '${selectedTargets.length} valda',
-            style: const TextStyle(fontWeight: FontWeight.w500),
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(fontWeight: FontWeight.w500),
           ),
           const Spacer(),
           if (showRemove && onBulkRemove != null)
@@ -227,9 +236,12 @@ class InvitationActions {
         children: [
           Text(message),
           const SizedBox(height: AppDimensions.spacingMd),
-          const Text(
+          Text(
             'Berörda målgrupper:',
-            style: TextStyle(fontWeight: FontWeight.w500),
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           Container(
@@ -242,18 +254,18 @@ class InvitationActions {
                 return ListTile(
                   dense: true,
                   leading: Icon(
-                    target.type == InvitationTargetType.group 
-                        ? Icons.group 
+                    target.type == InvitationTargetType.group
+                        ? Icons.group
                         : Icons.person,
                     size: 20,
                   ),
                   title: Text(
                     target.displayName,
-                    style: const TextStyle(fontSize: 14),
+                    style: Theme.of(context).textTheme.titleSmall,
                   ),
                   subtitle: Text(
                     '${target.memberCount ?? 0} medlemmar',
-                    style: const TextStyle(fontSize: 12),
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 );
               },
@@ -271,7 +283,7 @@ class InvitationActions {
             Navigator.of(context).pop();
             onConfirm();
           },
-          style: isDangerous 
+          style: isDangerous
               ? ElevatedButton.styleFrom(backgroundColor: Colors.red)
               : null,
           child: Text(confirmText ?? 'Fortsätt'),
@@ -341,12 +353,18 @@ class InvitationActions {
             ),
           ),
         if (showRemove && onRemove != null)
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'remove',
-            child: ListTile(
-              leading: Icon(Icons.delete, color: Colors.red),
-              title: Text('Ta bort', style: TextStyle(color: Colors.red)),
-              dense: true,
+            child: Builder(
+              builder: (context) => ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: Text('Ta bort',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(color: Colors.red)),
+                dense: true,
+              ),
             ),
           ),
       ],
@@ -355,7 +373,8 @@ class InvitationActions {
 
   /// Build swipe actions
   /// Swipe actions for list items
-  static Widget swipeActions({
+  static Widget swipeActions(
+    BuildContext context, {
     required Widget child,
     VoidCallback? onSwipeLeft,
     VoidCallback? onSwipeRight,
@@ -368,38 +387,46 @@ class InvitationActions {
   }) {
     return Dismissible(
       key: UniqueKey(),
-      background: leftAction ?? Container(
-        color: leftColor,
-        alignment: Alignment.centerLeft,
-        padding: const EdgeInsets.only(left: 20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.delete, color: AppColors.cardWhite),
-            if (leftLabel != null)
-              Text(
-                leftLabel,
-                style: const TextStyle(color: AppColors.cardWhite, fontSize: 12),
-              ),
-          ],
-        ),
-      ),
-      secondaryBackground: rightAction ?? Container(
-        color: rightColor,
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.send, color: AppColors.cardWhite),
-            if (rightLabel != null)
-              Text(
-                rightLabel,
-                style: const TextStyle(color: AppColors.cardWhite, fontSize: 12),
-              ),
-          ],
-        ),
-      ),
+      background: leftAction ??
+          Container(
+            color: leftColor,
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.only(left: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.delete, color: AppColors.cardWhite),
+                if (leftLabel != null)
+                  Text(
+                    leftLabel,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: AppColors.cardWhite),
+                  ),
+              ],
+            ),
+          ),
+      secondaryBackground: rightAction ??
+          Container(
+            color: rightColor,
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.only(right: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.send, color: AppColors.cardWhite),
+                if (rightLabel != null)
+                  Text(
+                    rightLabel,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: AppColors.cardWhite),
+                  ),
+              ],
+            ),
+          ),
       onDismissed: (direction) {
         if (direction == DismissDirection.startToEnd) {
           onSwipeLeft?.call();

@@ -29,7 +29,6 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/core/utils/logger.dart';
 
 // Account/GDPR services
 import 'package:butlery/services/account/account_deletion_service.dart';
@@ -87,46 +86,60 @@ class CoreModule implements DIModule {
     try {
       // ==================== PLATFORM DEPENDENCIES ====================
       // SharedPreferences must be registered first as many services depend on it
-      if (kDebugMode)
+      if (kDebugMode) {
         debugPrint('🔍 [CoreModule] Step 1: Getting SharedPreferences...');
+      }
       final sharedPreferences = await SharedPreferences.getInstance();
       container.registerSingleton<SharedPreferences>(sharedPreferences);
-      if (kDebugMode) debugPrint('✅ [CoreModule] SharedPreferences registered');
+      if (kDebugMode) {
+        debugPrint('✅ [CoreModule] SharedPreferences registered');
+      }
 
       // ==================== CORE REPOSITORIES ====================
       // Core repositories form the foundation of the data access layer
-      if (kDebugMode)
+      if (kDebugMode) {
         debugPrint('🔍 [CoreModule] Step 2: Registering AuthRepository...');
+      }
       container.registerSingleton<AuthRepository>(FirebaseAuthRepository());
-      if (kDebugMode) debugPrint('✅ [CoreModule] AuthRepository registered');
+      if (kDebugMode) {
+        debugPrint('✅ [CoreModule] AuthRepository registered');
+      }
 
       // Audit repository for GDPR Article 30 compliance (persistent audit logging)
-      if (kDebugMode)
+      if (kDebugMode) {
         debugPrint('🔍 [CoreModule] Step 3: Registering AuditRepository...');
+      }
       container.registerSingleton<FirebaseAuditRepository>(
         FirebaseAuditRepository(),
       );
-      if (kDebugMode) debugPrint('✅ [CoreModule] AuditRepository registered');
+      if (kDebugMode) {
+        debugPrint('✅ [CoreModule] AuditRepository registered');
+      }
 
       // Consent repository for GDPR Article 7 compliance (consent management)
-      if (kDebugMode)
+      if (kDebugMode) {
         debugPrint('🔍 [CoreModule] Step 4: Registering ConsentRepository...');
+      }
       container.registerSingleton<FirebaseConsentRepository>(
         FirebaseConsentRepository(
           authRepository: container<AuthRepository>(),
           auditRepository: container<FirebaseAuditRepository>(),
         ),
       );
-      if (kDebugMode) debugPrint('✅ [CoreModule] ConsentRepository registered');
+      if (kDebugMode) {
+        debugPrint('✅ [CoreModule] ConsentRepository registered');
+      }
 
       // ==================== DATABASE REPOSITORIES ====================
       // FirestoreRepository provides centralized Firestore access
-      if (kDebugMode)
+      if (kDebugMode) {
         debugPrint(
             '🔍 [CoreModule] Step 5: Registering FirestoreRepository...');
+      }
       container.registerSingleton<FirestoreRepository>(FirestoreRepository());
-      if (kDebugMode)
+      if (kDebugMode) {
         debugPrint('✅ [CoreModule] FirestoreRepository registered');
+      }
 
       // ==================== CORE SERVICES ====================
 
@@ -174,11 +187,13 @@ class CoreModule implements DIModule {
       }
 
       // Persistence service for local data storage and caching
-      if (kDebugMode)
+      if (kDebugMode) {
         debugPrint('🔍 [CoreModule] Step 8: Registering PersistenceService...');
+      }
       container.registerSingleton<PersistenceService>(PersistenceService());
-      if (kDebugMode)
+      if (kDebugMode) {
         debugPrint('✅ [CoreModule] PersistenceService registered');
+      }
 
       // ==================== ACCOUNT/GDPR SERVICES ====================
 
@@ -238,41 +253,6 @@ class CoreModule implements DIModule {
         'Failed to configure core services',
         e,
       );
-    }
-  }
-
-  /// Configures the logger with analytics callback to avoid circular dependency.
-  /// This method sets up the AppLogger to use AnalyticsService for error tracking
-  /// without creating a circular dependency by using a callback pattern.
-  /// Note: This method should only be called when AnalyticsService is registered (!kIsWeb).
-  void _configureLogger(GetIt container) {
-    // Double-check that AnalyticsService is registered (safety check)
-    if (!container.isRegistered<AnalyticsService>()) {
-      if (kDebugMode) {
-        debugPrint(
-            '⚠️ [CoreModule] Skipping logger configuration - AnalyticsService not registered');
-      }
-      return;
-    }
-
-    final analyticsService = container<AnalyticsService>();
-
-    AppLogger.configureAnalytics((
-      errorCode,
-      errorType,
-      userAction,
-      stackTrace,
-    ) {
-      return analyticsService.logErrorOccurred(
-        errorCode: errorCode,
-        errorType: errorType,
-        userAction: userAction,
-        stackTrace: stackTrace,
-      );
-    });
-
-    if (kDebugMode) {
-      debugPrint('✅ [CoreModule] Configured logger with analytics callback');
     }
   }
 

@@ -13,12 +13,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
+import 'package:butlery/models/realtime/live_editor.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/errors/unified_error_coordinator.dart';
+import 'package:butlery/core/form/form_fields_manager.dart';
 
 // Import upload models for image upload status and notifications
 import 'package:butlery/services/upload/upload_models.dart';
@@ -37,7 +39,10 @@ import 'package:butlery/viewmodels/recipe_form/recipe_backward_compatibility_mix
 
 /// Coordinator for recipe form operations with delegation to specialized managers.
 class RecipeFormViewModel extends ChangeNotifier
-    with ErrorHandlingMixin, ErrorCoordinatorMixin, RecipeBackwardCompatibilityMixin {
+    with
+        ErrorHandlingMixin,
+        ErrorCoordinatorMixin,
+        RecipeBackwardCompatibilityMixin {
   final UnifiedRecipeService _recipeService;
   // final AnalyticsService _analyticsService; // Currently unused
 
@@ -95,11 +100,13 @@ class RecipeFormViewModel extends ChangeNotifier
     AnalyticsService? analyticsService,
     Recipe? initialRecipe,
     bool isTemplate = false,
-  }) : _recipeService = recipeService ?? ServiceLocator.get<UnifiedRecipeService>() {
-       // _analyticsService = analyticsService ?? ServiceLocator.get<AnalyticsService>();
+  }) : _recipeService =
+            recipeService ?? ServiceLocator.get<UnifiedRecipeService>() {
+    // _analyticsService = analyticsService ?? ServiceLocator.get<AnalyticsService>();
 
     // Initialize focused managers
-    _state = RecipeFormState(initialRecipe: initialRecipe, isTemplate: isTemplate);
+    _state =
+        RecipeFormState(initialRecipe: initialRecipe, isTemplate: isTemplate);
     _collaborativeManager = RecipeCollaborativeManager();
     _imageManager = RecipeImageManager();
     _permissionManager = RecipePermissionManager();
@@ -144,12 +151,12 @@ class RecipeFormViewModel extends ChangeNotifier
   /// Delegates to RecipeFormState for original recipe access enabling
   /// edit mode initialization and unsaved changes detection.
   Recipe? get originalRecipe => _state.originalRecipe;
-  
+
   /// Save operation state for UI progress indication and interaction control.
   /// Provides real-time save status for loading indicators and user interaction
   /// management during recipe save operations and form submission.
   bool get isSaving => _state.isSaving;
-  
+
   /// Fork operation in progress.
   bool get isForking => _state.isForking;
 
@@ -164,39 +171,39 @@ class RecipeFormViewModel extends ChangeNotifier
 
   /// Form validation state.
   bool get isValid => _state.isValid;
-  
+
   /// CRITICAL FIX: Unsaved changes detection with comprehensive null safety
   /// Compares current form state with original recipe data to detect modifications
   /// requiring user confirmation before navigation or form abandonment.
   /// Essential for preventing data loss and providing proper user experience.
   bool get hasUnsavedChanges {
     if (!isEditing || originalRecipe == null) return false;
-    
+
     final original = originalRecipe!;
-    
+
     // CRITICAL FIX: Safe comparison with null checking for all fields
     return title != original.title ||
-           description != original.description ||
-           mealType != original.mealType ||
-           portions != original.portions ||
-           timeMinutes != original.timeMinutes ||
-           rating != original.rating ||
-           sourceUrl != original.sourceUrl ||
-           !_listEquals(ingredients, original.ingredients) ||
-           !_listEquals(instructions, original.instructions) ||
-           !_listEquals(tags, original.tags) ||
-           !_listEquals(_imageManager.validImageUrls, original.imageUrls);
+        description != original.description ||
+        mealType != original.mealType ||
+        portions != original.portions ||
+        timeMinutes != original.timeMinutes ||
+        rating != original.rating ||
+        sourceUrl != original.sourceUrl ||
+        !_listEquals(ingredients, original.ingredients) ||
+        !_listEquals(instructions, original.instructions) ||
+        !_listEquals(tags, original.tags) ||
+        !_listEquals(_imageManager.validImageUrls, original.imageUrls);
   }
-  
+
   /// CRITICAL FIX: Helper method to compare two lists for equality with null safety
   bool _listEquals<T>(List<T>? list1, List<T>? list2) {
     // Handle null cases first - prevents null pointer exceptions
     if (list1 == null && list2 == null) return true;
     if (list1 == null || list2 == null) return false;
-    
+
     // Handle length differences
     if (list1.length != list2.length) return false;
-    
+
     // Compare elements safely
     for (int i = 0; i < list1.length; i++) {
       if (list1[i] != list2[i]) return false;
@@ -217,7 +224,7 @@ class RecipeFormViewModel extends ChangeNotifier
 
   /// Portion count.
   int? get portions => _state.portions;
-  
+
   /// Cooking time in minutes.
   int? get timeMinutes => _state.timeMinutes;
 
@@ -240,18 +247,18 @@ class RecipeFormViewModel extends ChangeNotifier
   List<String> get tags => _state.tags;
 
   // ===== SPECIALIZED MANAGER ACCESSORS =====
-  
+
   /// Dynamic ingredients manager.
-  get ingredientsManager => _state.ingredientsManager;
+  FormFieldsManager get ingredientsManager => _state.ingredientsManager;
 
   /// Dynamic instructions manager.
-  get instructionsManager => _state.instructionsManager;
+  FormFieldsManager get instructionsManager => _state.instructionsManager;
 
   /// Dynamic tags manager.
-  get tagsManager => _state.tagsManager;
+  FormFieldsManager get tagsManager => _state.tagsManager;
 
   // ===== COLLABORATIVE EDITING ACCESSORS =====
-  
+
   /// Collaborative mode active.
   @override
   bool get isCollaborative => _collaborativeManager.isCollaborative;
@@ -263,45 +270,48 @@ class RecipeFormViewModel extends ChangeNotifier
   String get connectionStatusText => _collaborativeManager.connectionStatusText;
 
   /// Active collaborative participants.
-  List<UserProfile> get collaborativeParticipants => _collaborativeManager.collaborativeParticipants;
+  List<UserProfile> get collaborativeParticipants =>
+      _collaborativeManager.collaborativeParticipants;
 
   /// Currently active editors.
-  get liveEditors => _collaborativeManager.liveEditors;
+  List<LiveEditor> get liveEditors => _collaborativeManager.liveEditors;
 
   // ===== IMAGE MANAGEMENT ACCESSORS =====
-  
+
   /// Image upload operation state for UI progress indication and interaction control.
   /// Indicates active image upload operation for progress display
   /// and user interaction management during image processing operations.
   bool get isUploadingImage => _imageManager.isUploadingImage;
-  
+
   /// Image upload error message for user feedback and error handling.
   /// Provides localized error messages from image upload operations
   /// for user display and comprehensive error state management.
   String? get imageUploadError => _imageManager.imageUploadError;
-  
+
   /// Image upload error state indicator for UI conditional rendering and error handling.
   /// Indicates presence of image upload errors for UI error display decisions
   /// and error state management throughout image operations.
   bool get hasImageUploadError => _imageManager.hasImageUploadError;
-  
+
   /// Image addition capability indicator for UI control and limit enforcement.
   /// Indicates whether additional images can be added based on image limits
   /// enabling UI control state and image limit enforcement.
   bool get canAddMoreImages => _imageManager.canAddMoreImages;
 
   // ===== ENHANCED UPLOAD PROGRESS TRACKING =====
-  
+
   /// Individual image upload statuses for detailed progress visualization and error handling.
   /// Provides comprehensive upload status information for each image including progress percentages,
   /// error states, retry counts, and upload speeds for advanced UI progress indication.
-  Map<String, ImageUploadStatus> get imageUploadStatuses => _imageManager.imageUploadStatuses;
-  
+  Map<String, ImageUploadStatus> get imageUploadStatuses =>
+      _imageManager.imageUploadStatuses;
+
   /// Upload queue summary for overall upload progress display and user feedback.
   /// Provides aggregated upload queue information including active upload counts,
   /// overall progress percentage, and localized status text for comprehensive upload management.
-  Map<String, dynamic> get uploadQueueSummary => _imageManager.uploadQueueSummary;
-  
+  Map<String, dynamic> get uploadQueueSummary =>
+      _imageManager.uploadQueueSummary;
+
   /// Upload queue status text for banner display and user progress indication.
   /// Returns Swedish localized status text describing current upload queue state
   /// for banner display and user progress feedback during image upload operations.
@@ -309,7 +319,7 @@ class RecipeFormViewModel extends ChangeNotifier
     final summary = uploadQueueSummary;
     return summary['statusText'] as String?;
   }
-  
+
   /// Overall upload progress percentage for progress bars and completion indication.
   /// Returns aggregated upload progress as percentage (0-100) for overall progress
   /// bar display and upload completion status indication.
@@ -317,7 +327,7 @@ class RecipeFormViewModel extends ChangeNotifier
     final summary = uploadQueueSummary;
     return summary['progressPercentage'] as int;
   }
-  
+
   /// Active upload indicator for UI state management and interaction control.
   /// Indicates whether any uploads are currently active (pending, uploading, or retrying)
   /// for UI state management and user interaction control during active operations.
@@ -325,7 +335,7 @@ class RecipeFormViewModel extends ChangeNotifier
     final summary = uploadQueueSummary;
     return summary['hasActivity'] as bool;
   }
-  
+
   /// Failed upload count for error indication and recovery action display.
   /// Returns count of failed uploads for error state indication and
   /// recovery action button display in the user interface.
@@ -333,19 +343,21 @@ class RecipeFormViewModel extends ChangeNotifier
     final summary = uploadQueueSummary;
     return summary['failed'] as int;
   }
-  
+
   /// Individual image upload progress for specific image progress indicators.
   /// [pathOrUrl] File path or URL identifier for the image
   /// Returns upload progress (0.0 to 1.0) for specific image enabling
   /// individual image progress indicator display and detailed status tracking.
-  double getImageUploadProgress(String pathOrUrl) => _imageManager.getUploadProgress(pathOrUrl);
-  
+  double getImageUploadProgress(String pathOrUrl) =>
+      _imageManager.getUploadProgress(pathOrUrl);
+
   /// Individual image upload status for detailed progress and error information.
   /// [pathOrUrl] File path or URL identifier for the image
   /// Returns complete ImageUploadStatus for specific image including progress,
   /// error details, retry information, and speed metrics for advanced UI display.
-  ImageUploadStatus? getImageUploadStatus(String pathOrUrl) => _imageManager.imageUploadStatuses[pathOrUrl];
-  
+  ImageUploadStatus? getImageUploadStatus(String pathOrUrl) =>
+      _imageManager.imageUploadStatuses[pathOrUrl];
+
   /// Retry failed upload with exponential backoff and comprehensive error handling.
   /// [pathOrUrl] File path or URL identifier for the failed image
   /// Initiates retry sequence for failed upload with exponential backoff delay,
@@ -353,7 +365,7 @@ class RecipeFormViewModel extends ChangeNotifier
   Future<void> retryImageUpload(String pathOrUrl) async {
     await _imageManager.retryFailedUpload(pathOrUrl);
   }
-  
+
   /// Cancel specific image upload with state cleanup and user feedback.
   /// [pathOrUrl] File path or URL identifier for the image to cancel
   /// Cancels individual image upload and removes from upload queue with proper
@@ -361,102 +373,105 @@ class RecipeFormViewModel extends ChangeNotifier
   Future<void> cancelImageUpload(String pathOrUrl) async {
     await _imageManager.removeImageAndCleanup(pathOrUrl);
   }
-  
+
   // ===== BULK UPLOAD MANAGEMENT =====
-  
+
   /// Retry all failed uploads with comprehensive error handling and user feedback.
   /// Performs bulk retry operation for all retryable failed uploads
   /// with individual error handling and comprehensive progress tracking.
   Future<void> retryAllFailedUploads() async {
     await _imageManager.retryAllFailedUploads();
   }
-  
+
   /// Cancel all active uploads with state cleanup and user feedback.
   /// Cancels all currently active uploads with comprehensive state cleanup
   /// for enhanced upload queue management and user control.
   void cancelAllActiveUploads() {
     _imageManager.cancelAllActiveUploads();
   }
-  
+
   /// Clear all failed uploads from state for clean queue management.
   /// Removes all failed uploads from tracking state for clean upload queue
   /// management and enhanced user experience.
   void clearAllFailedUploads() {
     _imageManager.clearAllFailedUploads();
   }
-  
+
   /// Upload management summary for bulk operation UI and user feedback.
   /// Provides comprehensive upload management information including failed,
   /// active, and completed counts for bulk operation UI and management controls.
-  Map<String, dynamic> get uploadManagementSummary => _imageManager.uploadManagementSummary;
-  
+  Map<String, dynamic> get uploadManagementSummary =>
+      _imageManager.uploadManagementSummary;
+
   /// Check if bulk retry operation is available and beneficial.
   /// Indicates whether bulk retry controls should be shown for enhanced
   /// upload management and user experience.
-  bool get canBulkRetry => uploadManagementSummary['canBulkRetry'] as bool? ?? false;
-  
+  bool get canBulkRetry =>
+      uploadManagementSummary['canBulkRetry'] as bool? ?? false;
+
   /// Check if bulk cancel operation is available for active uploads.
   /// Indicates whether bulk cancel controls should be shown for active
   /// upload management and enhanced user control.
-  bool get canBulkCancel => uploadManagementSummary['canBulkCancel'] as bool? ?? false;
-  
+  bool get canBulkCancel =>
+      uploadManagementSummary['canBulkCancel'] as bool? ?? false;
+
   /// Check if there are failed uploads that can be cleared.
   /// Indicates whether clear failed uploads control should be shown
   /// for enhanced queue management and user experience.
   bool get hasRetryableFailures => _imageManager.hasRetryableFailures;
 
   // ===== BACKGROUND NOTIFICATION SYSTEM =====
-  
+
   /// Stream of upload notification events for UI subscription and feedback.
   /// Provides real-time upload events including completion, failures, progress milestones,
   /// and queue state changes for enhanced user feedback and notification system integration.
-  static Stream<UploadNotificationEvent> get uploadNotificationStream => 
+  static Stream<UploadNotificationEvent> get uploadNotificationStream =>
       RecipeImageManager.notificationStream;
 
   // ===== PERMISSION SYSTEM ACCESSORS =====
-  
+
   /// Edit permission for form modification and content management functionality.
   /// Indicates whether user has edit permission for recipe form modification
   /// enabling comprehensive form editing and content management capabilities.
   bool get canEdit => _permissionManager.canEdit;
-  
+
   /// View permission for recipe form display and content access functionality.
   /// Indicates whether user has view permission for recipe form display
   /// enabling content access and form viewing capabilities.
   bool get canView => _permissionManager.canView;
-  
+
   /// Share permission for collaborative features and recipe distribution functionality.
   /// Indicates whether user has share permission for collaborative sharing
   /// enabling recipe distribution and collaborative feature access.
   bool get canShare => _permissionManager.canShare;
-  
+
   /// Invite permission for collaborative member management and invitation functionality.
   /// Indicates whether user has invite permission for collaborative invitations
   /// enabling member management and collaborative team building.
   bool get canInvite => _permissionManager.canInvite;
-  
+
   /// Delete permission for recipe removal and cleanup operations.
   /// Indicates whether user has delete permission for recipe removal
   /// enabling comprehensive recipe management and cleanup functionality.
   bool get canDelete => _permissionManager.canDelete;
-  
+
   /// Owner status for administrative functions and comprehensive recipe management.
   /// Indicates whether user is recipe owner enabling administrative functions
   /// and comprehensive recipe management capabilities.
   bool get isOwner => _permissionManager.isOwner;
-  
+
   /// Permission availability indicator for UI conditional rendering and feature enabling.
   /// Indicates whether user has any permissions for UI conditional display
   /// and feature availability throughout recipe form functionality.
   bool get hasPermissions => _permissionManager.hasPermissions;
 
   // ===== FORM CONFIGURATION CONSTANTS =====
-  
+
   /// Available meal types for Swedish localized meal categorization and selection.
   /// Provides comprehensive meal type options with Swedish localization
   /// for recipe categorization and meal planning functionality.
   static const List<String> mealTypes = RecipeFormState.mealTypes;
-  
+
   /// Maximum image limit for performance optimization and storage management.
   /// Defines maximum number of images per recipe for performance optimization
   /// and storage resource management throughout image operations.
@@ -500,9 +515,9 @@ class RecipeFormViewModel extends ChangeNotifier
       isCollaborative: isCollaborative,
     );
   }
-  
+
   // ===== ERROR COORDINATION METHODS =====
-  
+
   /// Initialize error coordination for all managers
   void _initializeManagerErrorCoordination() {
     // Listen to form state errors
@@ -515,8 +530,8 @@ class RecipeFormViewModel extends ChangeNotifier
         );
       }
     });
-    
-    // Listen to image manager errors  
+
+    // Listen to image manager errors
     _imageManager.addListener(() {
       if (_imageManager.hasImageUploadError) {
         reportError(
@@ -528,16 +543,15 @@ class RecipeFormViewModel extends ChangeNotifier
       }
     });
   }
-  
+
   /// Get unified error coordinator for UI integration
   UnifiedErrorCoordinator get errorCoordinator => _errorCoordinator;
-  
 
   // ===== DRAFT RECOVERY OPERATIONS =====
-  
+
   /// Get available drafts for recovery with comprehensive metadata
   /// Returns list of DraftMetadata for recent drafts that can be restored.
-  /// Provides draft information including creation time, modification time, 
+  /// Provides draft information including creation time, modification time,
   /// title preview, and content significance for optimal user experience.
   /// **Usage Example:**
   /// ```dart
@@ -549,7 +563,7 @@ class RecipeFormViewModel extends ChangeNotifier
   Future<List<DraftMetadata>> getAvailableDrafts() async {
     return await _state.getAvailableDrafts();
   }
-  
+
   /// Load form state from auto-saved draft with comprehensive restoration
   /// [draftId] Unique identifier for the draft to restore
   /// Returns true if draft was successfully loaded and form state restored,
@@ -577,7 +591,7 @@ class RecipeFormViewModel extends ChangeNotifier
       return false;
     }
   }
-  
+
   /// Serialize current form data for analysis and feedback
   /// Returns Map containing all current form field values for
   /// content analysis, field counting, and user feedback purposes.
@@ -683,13 +697,16 @@ class RecipeFormViewModel extends ChangeNotifier
   @override
   Future<void> showImagePickerDialog(BuildContext context) async {
     AppLogger.info('🎯 VIEWMODEL: showImagePickerDialog called');
-    final recipeId = _state.originalRecipe?.id ?? 'temp_${DateTime.now().millisecondsSinceEpoch}';
+    final recipeId = _state.originalRecipe?.id ??
+        'temp_${DateTime.now().millisecondsSinceEpoch}';
     AppLogger.info('🎯 VIEWMODEL: Using recipeId for image upload: $recipeId');
     await _imageManager.showImagePickerDialog(context, recipeId: recipeId);
-    AppLogger.info('🎯 VIEWMODEL: _imageManager.showImagePickerDialog completed');
+    AppLogger.info(
+        '🎯 VIEWMODEL: _imageManager.showImagePickerDialog completed');
     // Use post-frame callback to prevent setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      AppLogger.info('🎯 VIEWMODEL: Running _syncImageUrls in post-frame callback');
+      AppLogger.info(
+          '🎯 VIEWMODEL: Running _syncImageUrls in post-frame callback');
       _coordinator.syncImageUrls(isCollaborative: isCollaborative);
     });
   }
@@ -709,7 +726,8 @@ class RecipeFormViewModel extends ChangeNotifier
   /// Performs image file upload through RecipeImageManager with automatic
   /// recipe ID generation and comprehensive state synchronization.
   Future<void> uploadImageFromFile(XFile imageFile) async {
-    final recipeId = _state.originalRecipe?.id ?? 'temp_${DateTime.now().millisecondsSinceEpoch}';
+    final recipeId = _state.originalRecipe?.id ??
+        'temp_${DateTime.now().millisecondsSinceEpoch}';
     await _imageManager.uploadImageFromFile(imageFile, recipeId);
     _coordinator.syncImageUrls(isCollaborative: isCollaborative);
   }
@@ -748,12 +766,14 @@ class RecipeFormViewModel extends ChangeNotifier
 
   Future<void> enableCollaborativeMode() async {
     if (_state.originalRecipe == null) return;
-    
+
     await _collaborativeManager.enableCollaborativeMode(_state.originalRecipe!);
   }
 
-  Future<void> inviteUserToCollaboration(String userId, String userDisplayName, ResourcePermission permission) async {
-    await _collaborativeManager.inviteUserToCollaboration(userId, userDisplayName, permission);
+  Future<void> inviteUserToCollaboration(String userId, String userDisplayName,
+      ResourcePermission permission) async {
+    await _collaborativeManager.inviteUserToCollaboration(
+        userId, userDisplayName, permission);
   }
 
   Future<void> removeUserFromCollaboration(String userId) async {
@@ -766,16 +786,20 @@ class RecipeFormViewModel extends ChangeNotifier
 
   // ===== PERMISSION OPERATIONS (Delegate to permission manager) =====
 
-  Future<void> updateUserPermission(String userId, ResourcePermission permission) async {
+  Future<void> updateUserPermission(
+      String userId, ResourcePermission permission) async {
     if (_state.originalRecipe == null) return;
-    
-    _permissionManager.updateUserPermission(_state.originalRecipe!.id, userId, permission);
+
+    _permissionManager.updateUserPermission(
+        _state.originalRecipe!.id, userId, permission);
   }
 
-  Future<void> shareRecipeWithUser(String userId, ResourcePermission permission) async {
+  Future<void> shareRecipeWithUser(
+      String userId, ResourcePermission permission) async {
     if (_state.originalRecipe == null) return;
-    
-    _permissionManager.shareRecipeWithUser(_state.originalRecipe!.id, userId, permission);
+
+    _permissionManager.shareRecipeWithUser(
+        _state.originalRecipe!.id, userId, permission);
   }
 
   bool canPerformAction(String action) {
@@ -800,23 +824,24 @@ class RecipeFormViewModel extends ChangeNotifier
   @override
   void dispose() {
     _disposed = true;
-    
+
     // CRITICAL FIX: Clear component errors from unified coordinator
     clearComponentErrors();
-    
+
     // CRITICAL FIX: Cancel all active uploads FIRST to prevent race condition crashes
     _imageManager.cancelAllUploads();
-    
+
     // Dispose managers
     _state.dispose();
     _collaborativeManager.dispose();
     _imageManager.dispose();
     _permissionManager.dispose();
-    
+
     // Dispose error coordinator
     _errorCoordinator.dispose();
-    
-    AppLogger.info('RecipeFormViewModel with unified error coordination disposed');
+
+    AppLogger.info(
+        'RecipeFormViewModel with unified error coordination disposed');
     super.dispose();
   }
 }

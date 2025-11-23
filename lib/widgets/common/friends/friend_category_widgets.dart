@@ -14,11 +14,11 @@ import 'package:butlery/widgets/common/friends/friend_category_manager.dart';
 /// while internally using the 3 focused widget classes for better separation of concerns.
 /// Focused Widget Classes:
 /// - CategorySelectionWidgets: Category selection UI components and interaction widgets
-/// - CategoryDisplayWidgets: Category display and presentation components  
+/// - CategoryDisplayWidgets: Category display and presentation components
 /// - FriendCategoryManager: Interactive friend category management with state
 class FriendCategoryWidgets {
   // ===== MAIN MANAGER WIDGETS (Delegate to FriendCategoryManager) =====
-  
+
   /// Complete friend category manager for social sharing
   static Widget friendCategoryManager({
     required List<String> selectedFriendIds,
@@ -54,9 +54,10 @@ class FriendCategoryWidgets {
   }
 
   // ===== CATEGORY SELECTION WIDGETS (Delegate to CategorySelectionWidgets) =====
-  
+
   /// Build friend category selector
-  static Widget friendCategorySelector({
+  static Widget friendCategorySelector(
+    BuildContext context, {
     required List<FriendCategory> categories,
     required Set<String> selectedCategoryIds,
     required Function(String) onCategoryToggled,
@@ -68,6 +69,7 @@ class FriendCategoryWidgets {
     VoidCallback? onCreateNew,
   }) {
     return CategorySelectionWidgets.friendCategorySelector(
+      context,
       categories: categories,
       selectedCategoryIds: selectedCategoryIds,
       onCategoryToggled: onCategoryToggled,
@@ -81,7 +83,8 @@ class FriendCategoryWidgets {
   }
 
   /// Build friend category chip
-  static Widget friendCategoryChip({
+  static Widget friendCategoryChip(
+    BuildContext context, {
     required FriendCategory category,
     required bool isSelected,
     required VoidCallback onTap,
@@ -89,6 +92,7 @@ class FriendCategoryWidgets {
     bool enabled = true,
   }) {
     return CategorySelectionWidgets.friendCategoryChip(
+      context,
       category: category,
       isSelected: isSelected,
       onTap: onTap,
@@ -98,7 +102,7 @@ class FriendCategoryWidgets {
   }
 
   // ===== CATEGORY DISPLAY WIDGETS (Delegate to CategoryDisplayWidgets) =====
-  
+
   /// Build category list view
   static Widget categoryList({
     required List<FriendCategory> categories,
@@ -141,9 +145,10 @@ class FriendCategoryWidgets {
   }
 
   // ===== ADDITIONAL UTILITY METHODS (Delegate to appropriate classes) =====
-  
+
   /// Build horizontal category selector strip
-  static Widget horizontalCategorySelector({
+  static Widget horizontalCategorySelector(
+    BuildContext context, {
     required List<FriendCategory> categories,
     required Set<String> selectedCategoryIds,
     required Function(String) onCategoryToggled,
@@ -151,6 +156,7 @@ class FriendCategoryWidgets {
     EdgeInsets? padding,
   }) {
     return CategorySelectionWidgets.horizontalCategorySelector(
+      context,
       categories: categories,
       selectedCategoryIds: selectedCategoryIds,
       onCategoryToggled: onCategoryToggled,
@@ -192,13 +198,15 @@ class FriendCategoryWidgets {
   }
 
   /// Build compact category chip for smaller spaces
-  static Widget compactCategoryChip({
+  static Widget compactCategoryChip(
+    BuildContext context, {
     required FriendCategory category,
     required bool isSelected,
     required VoidCallback onTap,
     bool enabled = true,
   }) {
     return CategorySelectionWidgets.compactCategoryChip(
+      context,
       category: category,
       isSelected: isSelected,
       onTap: onTap,

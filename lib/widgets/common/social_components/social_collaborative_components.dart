@@ -109,14 +109,14 @@ class SocialCollaborativeComponents {
 
   /// Build collaborative status indicator
   /// Simple indicator showing current collaboration status
-  static Widget collaborativeStatusIndicator({
+  static Widget collaborativeStatusIndicator(
+    BuildContext context, {
     required String contentId,
     String contentType = 'recipe',
     bool showText = true,
     Color? activeColor,
     Color? inactiveColor,
   }) {
-    // Since we can't provide context here, return a simple indicator
     return Container(
       padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingSm,
@@ -129,15 +129,16 @@ class SocialCollaborativeComponents {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.sync, size: AppDimensions.iconSizeXs, color: activeColor ?? Colors.green),
+          Icon(Icons.sync,
+              size: AppDimensions.iconSizeXs,
+              color: activeColor ?? Colors.green),
           if (showText) ...[
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               'Aktiv',
-              style: TextStyle(
-                fontSize: 12,
-                color: activeColor ?? Colors.green,
-              ),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: activeColor ?? Colors.green,
+                  ),
             ),
           ],
         ],
@@ -147,23 +148,23 @@ class SocialCollaborativeComponents {
 
   /// Build participants list
   /// Displays list of collaboration participants
-  static Widget participantsList({
+  static Widget participantsList(
+    BuildContext context, {
     required String contentId,
     String contentType = 'recipe',
     int maxParticipants = 5,
     bool horizontal = true,
     VoidCallback? onViewAll,
   }) {
-    // Since we can't provide context here, return a simple placeholder
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingSm),
       child: Row(
         children: [
           const Icon(Icons.people, size: AppDimensions.iconSizeS),
           const SizedBox(width: AppDimensions.spacingXs),
-          const Text(
+          Text(
             'Deltagare',
-            style: TextStyle(fontSize: 12),
+            style: Theme.of(context).textTheme.bodySmall,
           ),
           if (onViewAll != null)
             TextButton(
@@ -222,7 +223,8 @@ class SocialCollaborativeComponents {
 
   /// Build collaboration active indicator
   /// Shows when collaboration is currently active
-  static Widget collaborationActiveIndicator({
+  static Widget collaborationActiveIndicator(
+    BuildContext context, {
     String text = 'Aktiv samarbete',
     Color? color,
     IconData icon = Icons.sync,
@@ -239,15 +241,15 @@ class SocialCollaborativeComponents {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: AppDimensions.iconSizeXs, color: color ?? Colors.green),
+          Icon(icon,
+              size: AppDimensions.iconSizeXs, color: color ?? Colors.green),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             text,
-            style: TextStyle(
-              fontSize: 12,
-              color: color ?? Colors.green,
-              fontWeight: FontWeight.w500,
-            ),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: color ?? Colors.green,
+                  fontWeight: FontWeight.w500,
+                ),
           ),
         ],
       ),
@@ -256,7 +258,8 @@ class SocialCollaborativeComponents {
 
   /// Build collaboration inactive indicator
   /// Shows when collaboration is not active
-  static Widget collaborationInactiveIndicator({
+  static Widget collaborationInactiveIndicator(
+    BuildContext context, {
     String text = 'Inte aktivt',
     Color? color,
     IconData icon = Icons.pause_circle_outline,
@@ -266,23 +269,24 @@ class SocialCollaborativeComponents {
           horizontal: AppDimensions.spacingSm,
           vertical: AppDimensions.spacingXs),
       decoration: BoxDecoration(
-        color:
-            color?.withValues(alpha: 0.1) ?? AppColors.textMedium.withValues(alpha: 0.1),
+        color: color?.withValues(alpha: 0.1) ??
+            AppColors.textMedium.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius12),
         border: Border.all(color: color ?? AppColors.textMedium),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: AppDimensions.iconSizeXs, color: color ?? AppColors.textMedium),
+          Icon(icon,
+              size: AppDimensions.iconSizeXs,
+              color: color ?? AppColors.textMedium),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             text,
-            style: TextStyle(
-              fontSize: 12,
-              color: color ?? AppColors.textMedium,
-              fontWeight: FontWeight.w500,
-            ),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: color ?? AppColors.textMedium,
+                  fontWeight: FontWeight.w500,
+                ),
           ),
         ],
       ),
@@ -293,7 +297,8 @@ class SocialCollaborativeComponents {
 
   /// Build collaboration metrics widget
   /// Shows statistics about collaboration activity
-  static Widget collaborationMetrics({
+  static Widget collaborationMetrics(
+    BuildContext context, {
     required int memberCount,
     required int activeEditors,
     int? totalEdits,
@@ -301,7 +306,8 @@ class SocialCollaborativeComponents {
     bool showLabels = true,
   }) {
     return Container(
-      padding: const EdgeInsets.all((AppDimensions.spacingSm + AppDimensions.spacingXs)),
+      padding: const EdgeInsets.all(
+          (AppDimensions.spacingSm + AppDimensions.spacingXs)),
       decoration: BoxDecoration(
         border: Border.all(color: AppColors.textMedium.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
@@ -310,20 +316,25 @@ class SocialCollaborativeComponents {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (showLabels)
-            const Text(
+            Text(
               'Samarbetsstatistik',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
           if (showLabels) const SizedBox(height: AppDimensions.spacingSm),
           Row(
             children: [
               _buildMetricItem(
+                context,
                 icon: Icons.people,
                 value: memberCount.toString(),
                 label: 'Medlemmar',
               ),
               const SizedBox(width: AppDimensions.spacingMd),
               _buildMetricItem(
+                context,
                 icon: Icons.edit,
                 value: activeEditors.toString(),
                 label: 'Aktiva',
@@ -331,6 +342,7 @@ class SocialCollaborativeComponents {
               if (totalEdits != null) ...[
                 const SizedBox(width: AppDimensions.spacingMd),
                 _buildMetricItem(
+                  context,
                   icon: Icons.history,
                   value: totalEdits.toString(),
                   label: 'Ändringar',
@@ -342,7 +354,10 @@ class SocialCollaborativeComponents {
             const SizedBox(height: AppDimensions.spacingSm),
             Text(
               'Senast aktiv: ${_formatRelativeTime(lastActivity)}',
-              style: const TextStyle(fontSize: 12, color: AppColors.textMedium),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: AppColors.textMedium),
             ),
           ],
         ],
@@ -351,7 +366,8 @@ class SocialCollaborativeComponents {
   }
 
   /// Build metric item for collaboration metrics
-  static Widget _buildMetricItem({
+  static Widget _buildMetricItem(
+    BuildContext context, {
     required IconData icon,
     required String value,
     required String label,
@@ -361,18 +377,25 @@ class SocialCollaborativeComponents {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: AppDimensions.iconSizeS, color: AppColors.textMedium),
+            Icon(icon,
+                size: AppDimensions.iconSizeS, color: AppColors.textMedium),
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               value,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
           ],
         ),
         const SizedBox(height: AppDimensions.spacingXxs),
         Text(
           label,
-          style: const TextStyle(fontSize: 10, color: AppColors.textMedium),
+          style: Theme.of(context)
+              .textTheme
+              .bodySmall
+              ?.copyWith(color: AppColors.textMedium),
         ),
       ],
     );
@@ -398,7 +421,8 @@ class SocialCollaborativeComponents {
 
   /// Build permission level indicator
   /// Shows user's permission level in collaboration
-  static Widget permissionLevelIndicator({
+  static Widget permissionLevelIndicator(
+    BuildContext context, {
     required String permissionLevel, // 'owner', 'admin', 'editor', 'viewer'
     bool showText = true,
     Color? color,
@@ -407,7 +431,8 @@ class SocialCollaborativeComponents {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingTight, vertical: AppDimensions.spacingXxs),
+          horizontal: AppDimensions.spacingTight,
+          vertical: AppDimensions.spacingXxs),
       decoration: BoxDecoration(
         color: (color ?? config.color).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
@@ -416,16 +441,16 @@ class SocialCollaborativeComponents {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(config.icon, size: AppDimensions.iconSizeXs, color: color ?? config.color),
+          Icon(config.icon,
+              size: AppDimensions.iconSizeXs, color: color ?? config.color),
           if (showText) ...[
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               config.label,
-              style: TextStyle(
-                fontSize: 10,
-                color: color ?? config.color,
-                fontWeight: FontWeight.w500,
-              ),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: color ?? config.color,
+                    fontWeight: FontWeight.w500,
+                  ),
             ),
           ],
         ],

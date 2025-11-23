@@ -43,7 +43,8 @@ class SocialBuilderComponents {
 
   /// Build social stats widget
   /// Display social statistics and metrics
-  static Widget socialStats({
+  static Widget socialStats(
+    BuildContext context, {
     required Map<String, dynamic> stats,
     bool horizontal = true,
     EdgeInsets? padding,
@@ -53,6 +54,7 @@ class SocialBuilderComponents {
     bool showIcons = true,
   }) {
     return SocialFacade.socialStats(
+      context,
       stats: stats,
       horizontal: horizontal,
       padding: padding,
@@ -131,7 +133,8 @@ class SocialBuilderComponents {
   // ===== SOCIAL STATS VARIANTS =====
 
   /// Build user statistics widget
-  static Widget userStats({
+  static Widget userStats(
+    BuildContext context, {
     required int friendCount,
     required int groupCount,
     int? sharedRecipeCount,
@@ -165,6 +168,7 @@ class SocialBuilderComponents {
     };
 
     return socialStats(
+      context,
       stats: stats,
       horizontal: horizontal,
       padding: padding,
@@ -172,7 +176,8 @@ class SocialBuilderComponents {
   }
 
   /// Build collaboration statistics widget
-  static Widget collaborationStats({
+  static Widget collaborationStats(
+    BuildContext context, {
     required int activeCollaborations,
     required int totalMembers,
     int? totalEdits,
@@ -202,6 +207,7 @@ class SocialBuilderComponents {
     return Column(
       children: [
         socialStats(
+          context,
           stats: stats,
           horizontal: horizontal,
           padding: padding,
@@ -210,7 +216,9 @@ class SocialBuilderComponents {
           const SizedBox(height: AppDimensions.spacingSm),
           Text(
             'Senast aktiv: ${_formatRelativeTime(lastActivity)}',
-            style: const TextStyle(fontSize: 12, color: AppColors.textMedium),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textMedium,
+                ),
           ),
         ],
       ],
@@ -218,7 +226,8 @@ class SocialBuilderComponents {
   }
 
   /// Build invitation statistics widget
-  static Widget invitationStats({
+  static Widget invitationStats(
+    BuildContext context, {
     required int sentInvitations,
     required int receivedInvitations,
     int? acceptedInvitations,
@@ -252,6 +261,7 @@ class SocialBuilderComponents {
     };
 
     return socialStats(
+      context,
       stats: stats,
       horizontal: horizontal,
       padding: padding,
@@ -298,7 +308,8 @@ class SocialBuilderComponents {
 
   /// Build social section header
   /// Standardized header for social sections
-  static Widget sectionHeader({
+  static Widget sectionHeader(
+    BuildContext context, {
     required String title,
     String? subtitle,
     IconData? icon,
@@ -324,18 +335,16 @@ class SocialBuilderComponents {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 if (subtitle != null)
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textMedium,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textMedium,
+                        ),
                   ),
               ],
             ),
@@ -343,7 +352,8 @@ class SocialBuilderComponents {
           if (onAction != null && actionText != null)
             TextButton.icon(
               onPressed: onAction,
-              icon: Icon(actionIcon ?? Icons.arrow_forward, size: AppDimensions.iconSizeS),
+              icon: Icon(actionIcon ?? Icons.arrow_forward,
+                  size: AppDimensions.iconSizeS),
               label: Text(actionText),
             ),
         ],
@@ -402,7 +412,8 @@ class SocialBuilderComponents {
     EdgeInsets? margin,
   }) {
     return Container(
-      margin: margin ?? const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
+      margin: margin ??
+          const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
       child: Divider(
         height: height,
         thickness: thickness,
@@ -429,7 +440,8 @@ class SocialBuilderComponents {
 
   /// Build loading state wrapper
   /// Consistent loading state styling
-  static Widget loadingStateWrapper({
+  static Widget loadingStateWrapper(
+    BuildContext context, {
     String? text,
     EdgeInsets? padding,
     double? minHeight,
@@ -445,7 +457,9 @@ class SocialBuilderComponents {
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
               text,
-              style: const TextStyle(color: AppColors.textMedium),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textMedium,
+                  ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -456,9 +470,12 @@ class SocialBuilderComponents {
 
   // ===== UTILITY FUNCTIONS (Delegated to SocialFormatters) =====
 
-  static String _formatRelativeTime(DateTime dateTime) => SocialFormatters.formatRelativeTime(dateTime);
-  static String formatNumberWithAbbreviation(int number) => SocialFormatters.formatNumberWithAbbreviation(number);
-  static Map<String, Color> getSocialColorScheme() => SocialFormatters.getSocialColorScheme();
+  static String _formatRelativeTime(DateTime dateTime) =>
+      SocialFormatters.formatRelativeTime(dateTime);
+  static String formatNumberWithAbbreviation(int number) =>
+      SocialFormatters.formatNumberWithAbbreviation(number);
+  static Map<String, Color> getSocialColorScheme() =>
+      SocialFormatters.getSocialColorScheme();
 
   /// Build responsive social layout
   /// Adapts layout based on screen size

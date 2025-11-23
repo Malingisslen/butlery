@@ -15,12 +15,12 @@ import 'package:butlery/theme/app_dimensions.dart';
 /// - Group creation and management dialogs
 /// ❌ DOES NOT CONTAIN: Avatars, collaborative indicators, invitations, builders
 class SocialGroupComponents {
-
   // ===== FRIEND CATEGORY MANAGEMENT =====
 
   /// Build friend category selector
   /// Dropdown or selection interface for choosing friend categories
-  static Widget friendCategorySelector({
+  static Widget friendCategorySelector(
+    BuildContext context, {
     required List<FriendCategory> categories,
     FriendCategory? selectedCategory,
     Function(FriendCategory?)? onCategoryChanged,
@@ -33,8 +33,10 @@ class SocialGroupComponents {
     BorderRadius? borderRadius,
   }) {
     return SocialFacade.friendCategorySelector(
+      context,
       categories: categories,
-      selectedCategoryIds: selectedCategory != null ? {selectedCategory.id} : {},
+      selectedCategoryIds:
+          selectedCategory != null ? {selectedCategory.id} : {},
       onCategoryToggled: (categoryId) {
         if (onCategoryChanged != null) {
           final category = categories.firstWhere((c) => c.id == categoryId);
@@ -48,7 +50,8 @@ class SocialGroupComponents {
 
   /// Build friend category chip
   /// Chip display for a single friend category
-  static Widget friendCategoryChip({
+  static Widget friendCategoryChip(
+    BuildContext context, {
     required FriendCategory category,
     bool selected = false,
     VoidCallback? onTap,
@@ -58,6 +61,7 @@ class SocialGroupComponents {
     EdgeInsets? padding,
   }) {
     return SocialFacade.friendCategoryChip(
+      context,
       category: category,
       isSelected: selected,
       onTap: onTap ?? () {},
@@ -175,21 +179,24 @@ class SocialGroupComponents {
       itemCount: categories.length,
       itemBuilder: (context, index) {
         final category = categories[index];
-        final isSelected = allowMultiSelect 
+        final isSelected = allowMultiSelect
             ? selectedCategories?.contains(category) ?? false
             : selectedCategory == category;
 
         return ListTile(
           title: Text(category.name),
-          subtitle: showMemberCount 
-              ? const Text('${0} medlemmar') // FriendCategory doesn't have memberIds
+          subtitle: showMemberCount
+              ? const Text(
+                  '${0} medlemmar') // FriendCategory doesn't have memberIds
               : null,
           leading: const Icon(Icons.group),
-          trailing: isSelected ? const Icon(Icons.check, color: Colors.green) : null,
+          trailing:
+              isSelected ? const Icon(Icons.check, color: Colors.green) : null,
           selected: isSelected,
           onTap: () {
             if (allowMultiSelect && onMultiSelectChanged != null) {
-              final currentSelection = List<FriendCategory>.from(selectedCategories ?? []);
+              final currentSelection =
+                  List<FriendCategory>.from(selectedCategories ?? []);
               if (isSelected) {
                 currentSelection.remove(category);
               } else {
@@ -207,7 +214,8 @@ class SocialGroupComponents {
 
   /// Build category chips row
   /// Horizontal scrollable row of category chips
-  static Widget categoryChipsRow({
+  static Widget categoryChipsRow(
+    BuildContext context, {
     required List<FriendCategory> categories,
     List<FriendCategory>? selectedCategories,
     Function(FriendCategory)? onCategoryTap,
@@ -218,6 +226,7 @@ class SocialGroupComponents {
     final chips = categories.map((category) {
       final isSelected = selectedCategories?.contains(category) ?? false;
       return friendCategoryChip(
+        context,
         category: category,
         selected: isSelected,
         onTap: onCategoryTap != null ? () => onCategoryTap(category) : null,
@@ -305,7 +314,8 @@ class SocialGroupComponents {
 
   /// Build category statistics widget
   /// Shows statistics about categories and their usage
-  static Widget categoryStatistics({
+  static Widget categoryStatistics(
+    BuildContext context, {
     required List<FriendCategory> categories,
     bool showTotalMembers = true,
     bool showAverageSize = true,
@@ -313,10 +323,9 @@ class SocialGroupComponents {
   }) {
     final totalCategories = categories.length;
     const totalMembers = 0; // FriendCategory doesn't have memberIds
-    final averageSize = totalCategories > 0 ? totalMembers / totalCategories : 0.0;
-    final largestCategory = categories.isNotEmpty
-        ? categories.first
-        : null;
+    final averageSize =
+        totalCategories > 0 ? totalMembers / totalCategories : 0.0;
+    final largestCategory = categories.isNotEmpty ? categories.first : null;
 
     return Card(
       child: Padding(
@@ -324,15 +333,19 @@ class SocialGroupComponents {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Kategoristatistik',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
-            const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+            const SizedBox(
+                height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
             Row(
               children: [
                 Expanded(
                   child: _buildStatItem(
+                    context,
                     icon: Icons.category,
                     value: totalCategories.toString(),
                     label: 'Kategorier',
@@ -341,6 +354,7 @@ class SocialGroupComponents {
                 if (showTotalMembers)
                   Expanded(
                     child: _buildStatItem(
+                      context,
                       icon: Icons.people,
                       value: totalMembers.toString(),
                       label: 'Totalt medlemmar',
@@ -349,12 +363,14 @@ class SocialGroupComponents {
               ],
             ),
             if (showAverageSize || showLargestCategory) ...[
-              const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+              const SizedBox(
+                  height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
               Row(
                 children: [
                   if (showAverageSize)
                     Expanded(
                       child: _buildStatItem(
+                        context,
                         icon: Icons.analytics,
                         value: averageSize.toStringAsFixed(1),
                         label: 'Genomsnitt/kategori',
@@ -363,6 +379,7 @@ class SocialGroupComponents {
                   if (showLargestCategory && largestCategory != null)
                     Expanded(
                       child: _buildStatItem(
+                        context,
                         icon: Icons.star,
                         value: largestCategory.name,
                         label: 'Största kategorin',
@@ -378,7 +395,8 @@ class SocialGroupComponents {
   }
 
   /// Build statistic item helper
-  static Widget _buildStatItem({
+  static Widget _buildStatItem(
+    BuildContext context, {
     required IconData icon,
     required String value,
     required String label,
@@ -389,11 +407,15 @@ class SocialGroupComponents {
         const SizedBox(height: AppDimensions.spacingXs),
         Text(
           value,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
         ),
         Text(
           label,
-          style: const TextStyle(fontSize: 12, color: AppColors.textMedium),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: AppColors.textMedium,
+              ),
           textAlign: TextAlign.center,
         ),
       ],
@@ -404,7 +426,8 @@ class SocialGroupComponents {
 
   /// Build empty categories state
   /// Shows when no categories are available
-  static Widget emptyCategoriesState({
+  static Widget emptyCategoriesState(
+    BuildContext context, {
     String title = 'Inga kategorier',
     String subtitle = 'Skapa din första vänkategori för att komma igång',
     IconData icon = Icons.category_outlined,
@@ -415,16 +438,21 @@ class SocialGroupComponents {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: AppDimensions.iconSizeXxl, color: AppColors.textMedium),
+          Icon(icon,
+              size: AppDimensions.iconSizeXxl, color: AppColors.textMedium),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(
             title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           Text(
             subtitle,
-            style: const TextStyle(color: AppColors.textMedium),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textMedium,
+                ),
             textAlign: TextAlign.center,
           ),
           if (onCreateFirst != null && createButtonText != null) ...[
