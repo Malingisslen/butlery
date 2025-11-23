@@ -5,9 +5,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
 import 'package:butlery/repositories/interfaces/storage_repository.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
-import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
+import 'package:butlery/repositories/base/base_storage_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/performance/firebase_performance_service.dart';
@@ -17,25 +15,27 @@ import 'package:butlery/services/performance/firebase_performance_service.dart';
 /// the abstraction required for dependency injection and testability.
 /// It encapsulates all Firebase-specific storage operations and can be
 /// easily mocked or replaced with alternative implementations.
+/// **Architecture:** Extends BaseStorageRepository for unified storage patterns
 /// **Security Features:**
 /// - Ownership validation for all file operations (upload, delete)
 /// - Authentication checks preventing unauthorized access
 /// - Path-based security (users can only access their own directories)
 /// - Comprehensive audit logging for GDPR compliance
-/// - Permission validation using PermissionValidationMixin
-class FirebaseStorageRepository with PermissionValidationMixin implements StorageRepository {
-  final FirebaseStorage _storage;
+/// - Image-specific operations (compression, thumbnails, batch uploads)
+class FirebaseStorageRepository extends BaseStorageRepository
+    implements StorageRepository {
   final Uuid _uuid;
-  final AuthRepository _authRepository;
-  final FirebaseAuditRepository? _auditRepository;
-  
+
   // Image compression constants - optimized for mobile with aspect ratio preservation
-  static const int _defaultMaxWidth = 1200;   // Max width while preserving aspect ratio
-  static const int _defaultMaxHeight = 1200;  // Max height while preserving aspect ratio  
-  static const int _defaultQuality = 85;      // Higher quality for recipe photos (vs 75)
+  static const int _defaultMaxWidth =
+      1200; // Max width while preserving aspect ratio
+  static const int _defaultMaxHeight =
+      1200; // Max height while preserving aspect ratio
+  static const int _defaultQuality =
+      85; // Higher quality for recipe photos (vs 75)
   static const int _defaultThumbnailSize = 300;
   static const int _defaultThumbnailQuality = 70;
-  
+
   /// Creates a FirebaseStorageRepository with security validation.
   /// [storage] Optional FirebaseStorage instance (default: FirebaseStorage.instance)
   /// [authRepository] Required for authentication and permission checks
@@ -43,20 +43,17 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
   /// [uuid] Optional UUID generator (for testing)
   /// This allows for dependency injection in tests while maintaining production simplicity.
   FirebaseStorageRepository({
-    FirebaseStorage? storage,
-    required AuthRepository authRepository,
-    FirebaseAuditRepository? auditRepository,
+    super.storage,
+    required super.authRepository,
+    super.auditRepository,
     Uuid? uuid,
-  }) : _storage = storage ?? FirebaseStorage.instance,
-       _authRepository = authRepository,
-       _auditRepository = auditRepository,
-       _uuid = uuid ?? const Uuid();
+  }) : _uuid = uuid ?? const Uuid();
 
   // ===== SECURITY VALIDATION METHODS =====
 
   /// Get current authenticated user ID
   String? _getCurrentUserId() {
-    return _authRepository.currentUser?.uid;
+    return currentUserId; // Use inherited getter from BaseStorageRepository
   }
 
   /// Validate that user can upload to the specified path
@@ -70,7 +67,7 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
         resource: 'storage/$path',
         operation: 'upload',
         granted: false,
-        auditRepository: _auditRepository,
+        auditRepository: auditRepository,
       );
       throw PermissionDeniedException(
         'User must be authenticated to upload files',
@@ -87,7 +84,7 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
         operation: 'upload',
         granted: false,
         details: 'User attempted to upload to another user\'s directory',
-        auditRepository: _auditRepository,
+        auditRepository: auditRepository,
       );
       throw PermissionDeniedException(
         'Users can only upload files to their own directory',
@@ -105,7 +102,7 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
         operation: 'upload',
         granted: false,
         details: 'Invalid path format - must start with users/{userId}/',
-        auditRepository: _auditRepository,
+        auditRepository: auditRepository,
       );
       throw PermissionDeniedException(
         'Invalid upload path - must be in user directory',
@@ -121,7 +118,7 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
       resource: 'storage/$path',
       operation: 'upload',
       granted: true,
-      auditRepository: _auditRepository,
+      auditRepository: auditRepository,
     );
   }
 
@@ -136,7 +133,7 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
         resource: 'storage/$imageUrl',
         operation: 'delete',
         granted: false,
-        auditRepository: _auditRepository,
+        auditRepository: auditRepository,
       );
       throw PermissionDeniedException(
         'User must be authenticated to delete files',
@@ -155,7 +152,7 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
         operation: 'delete',
         granted: false,
         details: 'User attempted to delete another user\'s file',
-        auditRepository: _auditRepository,
+        auditRepository: auditRepository,
       );
       throw PermissionDeniedException(
         'Users can only delete their own files',
@@ -171,7 +168,7 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
       resource: 'storage/$imageUrl',
       operation: 'delete',
       granted: true,
-      auditRepository: _auditRepository,
+      auditRepository: auditRepository,
     );
   }
 
@@ -218,7 +215,7 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
       if (compressedBytes == null) {
         throw Exception('Failed to compress image');
       }
-      
+
       return await uploadImageData(
         imageData: compressedBytes,
         userId: userId,
@@ -235,7 +232,7 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
       return null;
     }
   }
-  
+
   @override
   Future<String?> uploadImageData({
     required Uint8List imageData,
@@ -250,7 +247,7 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
           // 🔒 SECURITY: Validate upload permission before proceeding
           await _validateUploadPermission(userId, path);
 
-          final storageRef = _storage.ref().child(path);
+          final storageRef = storage.ref().child(path);
 
           // Create upload task
           final uploadTask = storageRef.putData(
@@ -296,7 +293,7 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
       imageFormat: 'jpeg',
     );
   }
-  
+
   @override
   Future<List<String>> uploadMultipleImages({
     required List<File> imageFiles,
@@ -306,39 +303,41 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
   }) async {
     final total = imageFiles.length;
     int completed = 0;
-    
+
     AppLogger.info('🚀 Starting parallel upload of $total images');
-    
+
     // Create upload futures for parallel processing
     final uploadFutures = imageFiles.map((file) async {
       final fileName = generateFileName(originalPath: file.path);
       final fullPath = '$basePath/$fileName';
-      
+
       final url = await uploadImage(
         imageFile: file,
         userId: userId,
         path: fullPath,
       );
-      
+
       // Update progress atomically
       if (onProgress != null) {
         completed++;
         onProgress(completed, total);
       }
-      
+
       return url;
     }).toList();
-    
+
     // Wait for all uploads to complete in parallel
     final results = await Future.wait(uploadFutures);
-    
+
     // Filter out null results
-    final successfulUploads = results.where((url) => url != null).cast<String>().toList();
-    
-    AppLogger.info('✅ Parallel upload completed: ${successfulUploads.length}/$total successful');
+    final successfulUploads =
+        results.where((url) => url != null).cast<String>().toList();
+
+    AppLogger.info(
+        '✅ Parallel upload completed: ${successfulUploads.length}/$total successful');
     return successfulUploads;
   }
-  
+
   @override
   Future<bool> deleteImage(String imageUrl) async {
     try {
@@ -346,42 +345,42 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
       await _validateDeletePermission(imageUrl);
 
       // Extract reference from URL
-      final ref = _storage.refFromURL(imageUrl);
+      final ref = storage.refFromURL(imageUrl);
       await ref.delete();
-      
+
       AppLogger.info('Image deleted from storage: $imageUrl');
-      
+
       // Try to delete thumbnail too
       await deleteThumbnail(imageUrl);
-      
+
       return true;
     } catch (e) {
       AppLogger.error('Failed to delete image: $e');
       return false;
     }
   }
-  
+
   @override
   Future<void> deleteMultipleImages(List<String> imageUrls) async {
     for (final url in imageUrls) {
       await deleteImage(url);
     }
   }
-  
+
   @override
   Future<StorageInfo?> getUserStorageInfo(String userId) async {
     try {
-      final listResult = await _storage.ref('users/$userId/recipes').listAll();
-      
+      final listResult = await storage.ref('users/$userId/recipes').listAll();
+
       int totalSize = 0;
       int fileCount = 0;
-      
+
       for (final item in listResult.items) {
         final metadata = await item.getMetadata();
         totalSize += metadata.size ?? 0;
         fileCount++;
       }
-      
+
       return StorageInfo(
         totalBytes: totalSize,
         fileCount: fileCount,
@@ -392,22 +391,23 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
       return null;
     }
   }
-  
-  @override
-  dynamic getReference(String url) {
+
+  /// Get storage reference from a download URL
+  /// This is different from the inherited getReference(path) which takes a storage path
+  Reference? getReferenceFromURL(String url) {
     try {
-      return _storage.refFromURL(url);
+      return storage.refFromURL(url);
     } catch (e) {
       AppLogger.error('Failed to get reference from URL: $e');
       return null;
     }
   }
-  
+
   @override
   dynamic createReference(String path) {
-    return _storage.ref().child(path);
+    return storage.ref().child(path);
   }
-  
+
   @override
   Future<Uint8List?> compressImage({
     required File imageFile,
@@ -419,32 +419,35 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
       // Read original image
       final bytes = await imageFile.readAsBytes();
       final originalSize = bytes.length;
-      
+
       // Skip compression for small images (under 500KB) to save processing time
       const maxSizeWithoutCompression = 500 * 1024; // 500KB
       if (originalSize < maxSizeWithoutCompression) {
-        AppLogger.info('⚡ Skipping compression for small image: ${(originalSize / 1024).toStringAsFixed(1)}KB');
+        AppLogger.info(
+            '⚡ Skipping compression for small image: ${(originalSize / 1024).toStringAsFixed(1)}KB');
         return bytes;
       }
-      
-      AppLogger.info('🔄 Compressing image with aspect ratio preservation: ${(originalSize / 1024).toStringAsFixed(1)}KB');
-      
+
+      AppLogger.info(
+          '🔄 Compressing image with aspect ratio preservation: ${(originalSize / 1024).toStringAsFixed(1)}KB');
+
       // Compress with aspect-ratio preservation using quality-based approach
       var compressed = await FlutterImageCompress.compressWithList(
         bytes,
         quality: quality,
         format: CompressFormat.jpeg,
-        autoCorrectionAngle: true,  // Automatic EXIF rotation
-        keepExif: false,           // Remove EXIF data for smaller file size
+        autoCorrectionAngle: true, // Automatic EXIF rotation
+        keepExif: false, // Remove EXIF data for smaller file size
         // Let flutter_image_compress handle dimensions automatically to preserve aspect ratio
       );
-      
+
       // If result is still too large, apply additional compression passes
       int currentQuality = quality;
       while (compressed.length > 1024 * 1024 && currentQuality > 50) {
         currentQuality -= 10;
-        AppLogger.info('🔄 Image still large (${formatBytes(compressed.length)}), reducing quality to $currentQuality');
-        
+        AppLogger.info(
+            '🔄 Image still large (${formatBytes(compressed.length)}), reducing quality to $currentQuality');
+
         compressed = await FlutterImageCompress.compressWithList(
           bytes,
           quality: currentQuality,
@@ -453,22 +456,22 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
           keepExif: false,
         );
       }
-      
+
       final compressedSize = compressed.length;
-      final reduction = ((1 - (compressedSize / originalSize)) * 100)
-          .toStringAsFixed(1);
-      
+      final reduction =
+          ((1 - (compressedSize / originalSize)) * 100).toStringAsFixed(1);
+
       AppLogger.info(
         '✅ Image compressed with aspect ratio preserved: ${formatBytes(originalSize)} → ${formatBytes(compressedSize)} ($reduction% reduction)',
       );
-      
+
       return compressed;
     } catch (e) {
       AppLogger.error('Image compression failed: $e');
       return null;
     }
   }
-  
+
   @override
   Future<String?> createAndUploadThumbnail({
     required File imageFile,
@@ -480,7 +483,7 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
     try {
       // Read original image
       final bytes = await imageFile.readAsBytes();
-      
+
       // Create thumbnail
       final thumbnailBytes = await FlutterImageCompress.compressWithList(
         bytes,
@@ -490,12 +493,12 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
         format: CompressFormat.jpeg,
         autoCorrectionAngle: true,
       );
-      
+
       // Generate thumbnail path
       final thumbPath = originalPath
           .replaceAll('/recipes/', '/recipes/thumbnails/')
           .replaceAll('.jpg', '_thumb.jpg');
-      
+
       // Upload thumbnail
       final thumbnailUrl = await uploadImageData(
         imageData: thumbnailBytes,
@@ -506,18 +509,18 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
           'originalPath': originalPath,
         },
       );
-      
+
       if (thumbnailUrl != null) {
         AppLogger.info('Thumbnail created and uploaded');
       }
-      
+
       return thumbnailUrl;
     } catch (e) {
       AppLogger.error('Thumbnail creation failed: $e');
       return null;
     }
   }
-  
+
   @override
   Future<void> deleteThumbnail(String imageUrl) async {
     try {
@@ -527,8 +530,8 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
         final thumbUrl = imageUrl
             .replaceAll('/recipes/', '/recipes/thumbnails/')
             .replaceAll('.jpg', '_thumb.jpg');
-        
-        final ref = _storage.refFromURL(thumbUrl);
+
+        final ref = storage.refFromURL(thumbUrl);
         await ref.delete();
         AppLogger.info('Thumbnail deleted');
       }
@@ -537,7 +540,7 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
       AppLogger.debug('Thumbnail deletion failed (may not exist): $e');
     }
   }
-  
+
   @override
   String generateFileName({
     required String originalPath,
@@ -546,7 +549,7 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
     final extension = path.extension(originalPath).toLowerCase();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final uniqueId = _uuid.v4().substring(0, 8);
-    
+
     // If no extension or unsupported, use .jpg
     final validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
     final fileExtension =
@@ -555,26 +558,26 @@ class FirebaseStorageRepository with PermissionValidationMixin implements Storag
     final filePrefix = prefix ?? 'recipe';
     return '${filePrefix}_${timestamp}_$uniqueId$fileExtension';
   }
-  
+
   @override
   bool isValidImageFile(File file) {
     final extension = path.extension(file.path).toLowerCase();
     const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-    
+
     // Check extension
     if (!validExtensions.contains(extension)) {
       return false;
     }
-    
+
     // Check file size (max 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.lengthSync() > maxSize) {
       return false;
     }
-    
+
     return true;
   }
-  
+
   @override
   String formatBytes(int bytes) {
     if (bytes < 1024) return '$bytes B';

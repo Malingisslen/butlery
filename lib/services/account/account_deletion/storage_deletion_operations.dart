@@ -1,63 +1,73 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/repositories/base/base_storage_repository.dart';
 
 /// Handles deletion of storage and cached data (Firebase Storage, realtime recipes, offline cache).
-class StorageDeletionOperations {
+/// **Architecture:** Extends BaseStorageRepository for proper repository pattern and GDPR compliance
+/// **Security:** Uses BaseStorageRepository security validation and audit logging
+/// **GDPR:** Article 17 - Right to Erasure (comprehensive user data deletion)
+class StorageDeletionOperations extends BaseStorageRepository {
   final FirebaseFirestore _firestore;
   final OfflineService _offlineService;
   static const String _logTag = 'StorageDeletionOps';
 
-  StorageDeletionOperations(this._firestore, this._offlineService);
+  StorageDeletionOperations({
+    required FirebaseFirestore firestore,
+    required OfflineService offlineService,
+    super.storage,
+    required super.authRepository,
+    super.auditRepository,
+  })  : _firestore = firestore,
+        _offlineService = offlineService;
 
+  /// Delete all Firebase Storage files for a user (GDPR Article 17 - Right to Erasure)
+  /// **Security:** No permission validation needed - this is a system-level deletion operation
+  /// **GDPR:** Comprehensive audit logging for all file deletions
+  /// **Pattern:** Uses BaseStorageRepository.deleteDirectory() instead of direct Firebase access
   Future<bool> deleteUserStorageFiles(String userId) async {
     try {
-      final storage = FirebaseStorage.instance;
-      final userRef = storage.ref('users/$userId');
+      final path = 'users/$userId';
 
-      final ListResult result = await userRef.listAll();
+      app_logger.AppLogger.info(
+        '[$_logTag] Starting deletion of all storage files for user: $userId',
+      );
 
-      for (final fileRef in result.items) {
-        try {
-          await fileRef.delete();
-          app_logger.AppLogger.debug('[$_logTag] Deleted storage file: ${fileRef.fullPath}');
-        } catch (e) {
-          app_logger.AppLogger.warning('[$_logTag] Failed to delete storage file ${fileRef.fullPath}: $e');
-        }
-      }
+      // Use BaseStorageRepository's deleteDirectory method
+      // This provides:
+      // - Recursive deletion of all files and subdirectories
+      // - GDPR-compliant audit logging for each file deletion
+      // - Consistent error handling
+      await deleteDirectory(path, logAudit: true);
 
-      for (final prefix in result.prefixes) {
-        await _deleteStorageDirectory(prefix);
-      }
+      // Log GDPR compliance event
+      await logPermissionCheck(
+        userId: userId,
+        resource: 'storage/$path',
+        operation: 'gdpr_deletion',
+        granted: true,
+        details: 'Complete user storage deletion (GDPR Article 17)',
+        auditRepository: auditRepository,
+      );
+
+      app_logger.AppLogger.success(
+        '[$_logTag] Successfully deleted all storage files for user: $userId',
+      );
 
       return true;
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete user storage files', e);
+      app_logger.AppLogger.error(
+        '[$_logTag] Failed to delete user storage files',
+        e,
+      );
+      // Return true to allow account deletion to continue even if storage deletion fails
+      // This prevents orphaned accounts if storage deletion has issues
       return true;
     }
   }
 
-  Future<void> _deleteStorageDirectory(Reference dirRef) async {
-    try {
-      final ListResult result = await dirRef.listAll();
-
-      for (final fileRef in result.items) {
-        try {
-          await fileRef.delete();
-        } catch (e) {
-          app_logger.AppLogger.warning('[$_logTag] Failed to delete ${fileRef.fullPath}: $e');
-        }
-      }
-
-      for (final prefix in result.prefixes) {
-        await _deleteStorageDirectory(prefix);
-      }
-    } catch (e) {
-      app_logger.AppLogger.warning('[$_logTag] Failed to delete directory ${dirRef.fullPath}: $e');
-    }
-  }
-
+  /// Delete all realtime recipes owned by the user (Firestore cleanup)
+  /// **Note:** This is Firestore (not Storage), so it doesn't use BaseStorageRepository methods
   Future<bool> deleteRealtimeRecipes(String userId) async {
     try {
       final realtimeRecipes = await _firestore
@@ -72,11 +82,14 @@ class StorageDeletionOperations {
       await batch.commit();
       return true;
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete realtime recipes', e);
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete realtime recipes', e);
       return false;
     }
   }
 
+  /// Clear offline cached data for the user (local storage cleanup)
+  /// **Note:** This is local cache (not Firebase Storage), so it doesn't use BaseStorageRepository methods
   Future<bool> clearOfflineData(String userId) async {
     try {
       await _offlineService.clearUserData(userId);
