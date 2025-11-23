@@ -3,22 +3,56 @@ rules_version = '2';
 // Firebase Storage Security Rules for Butlery App
 service firebase.storage {
   match /b/{bucket}/o {
-    
+
+    // Helper function to validate image files
+    function isValidImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    // Helper function to check file size (in MB)
+    function isWithinSizeLimit(maxSizeMB) {
+      return request.resource.size < maxSizeMB * 1024 * 1024;
+    }
+
     // Users can only access their own files - this covers all user content including:
     // - Profile avatars: /users/{userId}/avatars/
     // - Recipe images: /users/{userId}/recipes/
     // - Any other user-specific content
     match /users/{userId}/{allPaths=**} {
-      // Allow if user is authenticated and accessing their own files
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Read access for authenticated user accessing their own files
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Write access with size and type validation
+      // Max 10 MB for recipe images, must be image format
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+        && isValidImage()
+        && isWithinSizeLimit(10);
     }
-    
-    // Public read access for shared recipe images (if needed for sharing)
+
+    // Shared recipe images - publicly readable, upload-validated writes
     match /shared/recipes/{recipeId}/{allPaths=**} {
       allow read: if true; // Public read access for shared content
-      allow write: if request.auth != null; // Only authenticated users can upload
+
+      // Allow creating new files if authenticated and setting correct uploader metadata
+      // Application must set metadata.uploadedBy = userId when uploading
+      // Max 10 MB, must be image format
+      allow create: if request.auth != null
+        && request.resource.metadata.uploadedBy == request.auth.uid
+        && isValidImage()
+        && isWithinSizeLimit(10);
+
+      // Allow updating/deleting only files you uploaded
+      // Update also requires size/type validation if changing content
+      allow update: if request.auth != null
+        && resource.metadata.uploadedBy == request.auth.uid
+        && isValidImage()
+        && isWithinSizeLimit(10);
+
+      allow delete: if request.auth != null
+        && resource.metadata.uploadedBy == request.auth.uid;
     }
-    
+
     // Default deny for all other paths
     match /{allPaths=**} {
       allow read, write: if false;
