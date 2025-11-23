@@ -48,6 +48,12 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/firebase/base_shared_content_repository.dart';
+import 'package:butlery/repositories/firebase/base_view_repository.dart';
+import 'package:butlery/repositories/firebase/base_engagement_repository.dart';
+import 'package:butlery/repositories/firebase/base_dismissal_repository.dart';
+import 'package:butlery/repositories/firebase/shared_content/shared_shopping_view_repository.dart';
+import 'package:butlery/repositories/firebase/shared_content/shared_shopping_engagement_repository.dart';
+import 'package:butlery/repositories/firebase/shared_content/shared_shopping_dismissal_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -55,15 +61,45 @@ import 'package:butlery/core/utils/logger.dart';
 /// Firebase repository for shared shopping list operations with consistent API patterns
 class FirebaseSharedShoppingRepository
     extends BaseSharedContentRepository<SharedShoppingList> {
+  final SharedShoppingViewRepository _viewRepository;
+  final SharedShoppingEngagementRepository _engagementRepository;
+  final SharedShoppingDismissalRepository _dismissalRepository;
+
   FirebaseSharedShoppingRepository({
     super.firestore,
     AuthRepository? authRepository,
-  }) : super(
+    SharedShoppingViewRepository? viewRepository,
+    SharedShoppingEngagementRepository? engagementRepository,
+    SharedShoppingDismissalRepository? dismissalRepository,
+  })  : _viewRepository = viewRepository ??
+            SharedShoppingViewRepository(
+              authRepository: authRepository ?? FirebaseAuthRepository(),
+            ),
+        _engagementRepository = engagementRepository ??
+            SharedShoppingEngagementRepository(
+              authRepository: authRepository ?? FirebaseAuthRepository(),
+            ),
+        _dismissalRepository = dismissalRepository ??
+            SharedShoppingDismissalRepository(
+              authRepository: authRepository ?? FirebaseAuthRepository(),
+            ),
+        super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         );
 
   @override
   String get collectionName => 'shared_shopping_lists';
+
+  // ===== METADATA REPOSITORY GETTERS =====
+
+  @override
+  BaseViewRepository get viewRepository => _viewRepository;
+
+  @override
+  BaseEngagementRepository get engagementRepository => _engagementRepository;
+
+  @override
+  BaseDismissalRepository get dismissalRepository => _dismissalRepository;
 
   // ===== BASE SHARED CONTENT REPOSITORY IMPLEMENTATIONS =====
 
@@ -408,10 +444,12 @@ class FirebaseSharedShoppingRepository
           .orderBy('addedAt', descending: false)
           .get();
 
-      final items =
-          snapshot.docs.map((doc) => UnifiedShoppingItem.fromFirestore(doc.data())).toList();
+      final items = snapshot.docs
+          .map((doc) => UnifiedShoppingItem.fromFirestore(doc.data()))
+          .toList();
 
-      AppLogger.info('🛒 Loaded ${items.length} items from shopping list $listId');
+      AppLogger.info(
+          '🛒 Loaded ${items.length} items from shopping list $listId');
       return items;
     } catch (e) {
       AppLogger.error('Failed to get items from shopping list $listId: $e');
@@ -441,7 +479,8 @@ class FirebaseSharedShoppingRepository
 
       return UnifiedShoppingItem.fromFirestore(doc.data()!);
     } catch (e) {
-      AppLogger.error('Failed to get item $itemId from shopping list $listId: $e');
+      AppLogger.error(
+          'Failed to get item $itemId from shopping list $listId: $e');
       throw RepositoryException('Failed to retrieve item: $e');
     }
   }
@@ -505,7 +544,8 @@ class FirebaseSharedShoppingRepository
   /// Throws:
   /// - [PermissionDeniedException] if user doesn't have access
   /// - [RepositoryException] if update fails
-  Future<void> toggleItemBought(String listId, String itemId, bool bought) async {
+  Future<void> toggleItemBought(
+      String listId, String itemId, bool bought) async {
     try {
       await validateListAccess(listId);
 
@@ -522,9 +562,11 @@ class FirebaseSharedShoppingRepository
           .doc(itemId)
           .update(updateData);
 
-      AppLogger.info('🛒 Toggled item $itemId bought status to $bought in list $listId');
+      AppLogger.info(
+          '🛒 Toggled item $itemId bought status to $bought in list $listId');
     } catch (e) {
-      AppLogger.error('Failed to toggle item bought status in list $listId: $e');
+      AppLogger.error(
+          'Failed to toggle item bought status in list $listId: $e');
       throw RepositoryException('Failed to toggle item bought status: $e');
     }
   }
@@ -563,7 +605,8 @@ class FirebaseSharedShoppingRepository
       await _updateItemCount(listId, recalculate: true);
 
       final deletedCount = snapshot.docs.length;
-      AppLogger.info('🛒 Cleared $deletedCount completed items from list $listId');
+      AppLogger.info(
+          '🛒 Cleared $deletedCount completed items from list $listId');
       return deletedCount;
     } catch (e) {
       AppLogger.error('Failed to clear completed items from list $listId: $e');
@@ -666,7 +709,8 @@ class FirebaseSharedShoppingRepository
         // Recalculate from subcollection (for bulk operations)
         final snapshot = await listRef.collection('items').get();
         await listRef.update({'itemCount': snapshot.size});
-        AppLogger.debug('🛒 Recalculated itemCount for list $listId: ${snapshot.size}');
+        AppLogger.debug(
+            '🛒 Recalculated itemCount for list $listId: ${snapshot.size}');
       } else if (increment != 0) {
         // Atomic increment/decrement (for single item operations)
         await listRef.update({'itemCount': FieldValue.increment(increment)});
@@ -695,10 +739,8 @@ class FirebaseSharedShoppingRepository
       }
 
       // Check if user is owner
-      final listDoc = await firestore
-          .collection('shared_shopping_lists')
-          .doc(listId)
-          .get();
+      final listDoc =
+          await firestore.collection('shared_shopping_lists').doc(listId).get();
 
       if (!listDoc.exists) {
         throw RepositoryException('Shopping list not found: $listId');

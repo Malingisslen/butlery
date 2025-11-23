@@ -39,6 +39,9 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+import 'package:butlery/repositories/firebase/base_view_repository.dart';
+import 'package:butlery/repositories/firebase/base_engagement_repository.dart';
+import 'package:butlery/repositories/firebase/base_dismissal_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -76,6 +79,20 @@ abstract class BaseSharedContentRepository<T>
 
   /// Whether this content type tracks view/import counts
   bool get tracksCounts => true;
+
+  // ===== METADATA REPOSITORY GETTERS =====
+
+  /// Get the view repository for this content type
+  /// Subclasses must provide their specific view repository implementation
+  BaseViewRepository get viewRepository;
+
+  /// Get the engagement repository for this content type
+  /// Subclasses must provide their specific engagement repository implementation
+  BaseEngagementRepository get engagementRepository;
+
+  /// Get the dismissal repository for this content type
+  /// Subclasses must provide their specific dismissal repository implementation
+  BaseDismissalRepository get dismissalRepository;
 
   // ===== SHARED CONTENT CREATION =====
 
@@ -483,18 +500,10 @@ abstract class BaseSharedContentRepository<T>
   }
 
   /// Add view record to views subcollection (replaces viewedByUserIds array)
+  /// **Refactored**: Now delegates to BaseViewRepository for unified metadata handling
   Future<void> addView(String contentId, String userId) async {
     try {
-      await getCollectionRef()
-          .doc(contentId)
-          .collection('views')
-          .doc(userId)
-          .set({
-        'userId': userId,
-        'viewedAt': DateTime
-            .now(), // Issue #014: DateTime.now() for FakeFirestore compatibility
-        // Note: viewCount removed from subcollection document (not needed, only timestamp matters)
-      });
+      await viewRepository.markAsViewed(contentId);
 
       // Increment view count on main document (wrapped in try-catch for FakeFirestore compatibility)
       try {
@@ -516,14 +525,10 @@ abstract class BaseSharedContentRepository<T>
   }
 
   /// Check if user has viewed content (subcollection-based)
+  /// **Refactored**: Now delegates to BaseViewRepository for unified metadata handling
   Future<bool> hasViewed(String contentId, String userId) async {
     try {
-      final doc = await getCollectionRef()
-          .doc(contentId)
-          .collection('views')
-          .doc(userId)
-          .get();
-      return doc.exists;
+      return await viewRepository.hasViewed(contentId);
     } catch (e) {
       AppLogger.error('Failed to check view status: $e');
       return false;
@@ -531,6 +536,7 @@ abstract class BaseSharedContentRepository<T>
   }
 
   /// Add import/join record to engagements subcollection (replaces engagedByUserIds array)
+  /// **Refactored**: Now delegates to BaseEngagementRepository for unified metadata handling
   Future<void> addEngagement(
     String contentId,
     String userId, {
@@ -538,17 +544,11 @@ abstract class BaseSharedContentRepository<T>
     String? targetId, // ID of imported copy or joined list
   }) async {
     try {
-      await getCollectionRef()
-          .doc(contentId)
-          .collection('engagements')
-          .doc(userId)
-          .set({
-        'userId': userId,
-        'engagedAt': DateTime
-            .now(), // Issue #014: DateTime.now() for FakeFirestore compatibility
-        'action': action,
-        if (targetId != null) 'targetId': targetId,
-      });
+      await engagementRepository.markAsEngaged(
+        contentId,
+        action: action,
+        targetId: targetId,
+      );
 
       // Increment engagement count on main document (wrapped in try-catch for FakeFirestore compatibility)
       try {
@@ -570,14 +570,10 @@ abstract class BaseSharedContentRepository<T>
   }
 
   /// Check if user has engaged (imported/joined) with content
+  /// **Refactored**: Now delegates to BaseEngagementRepository for unified metadata handling
   Future<bool> hasEngaged(String contentId, String userId) async {
     try {
-      final doc = await getCollectionRef()
-          .doc(contentId)
-          .collection('engagements')
-          .doc(userId)
-          .get();
-      return doc.exists;
+      return await engagementRepository.hasEngaged(contentId);
     } catch (e) {
       AppLogger.error('Failed to check engagement status: $e');
       return false;
@@ -585,19 +581,11 @@ abstract class BaseSharedContentRepository<T>
   }
 
   /// Add dismissal record to dismissals subcollection (replaces dismissedByUserIds array)
+  /// **Refactored**: Now delegates to BaseDismissalRepository for unified metadata handling
   Future<void> addDismissal(String contentId, String userId,
       {String? reason}) async {
     try {
-      await getCollectionRef()
-          .doc(contentId)
-          .collection('dismissals')
-          .doc(userId)
-          .set({
-        'userId': userId,
-        'dismissedAt': DateTime
-            .now(), // Issue #014: DateTime.now() for FakeFirestore compatibility
-        if (reason != null) 'reason': reason,
-      });
+      await dismissalRepository.dismiss(contentId, reason: reason);
 
       AppLogger.success(
           '✅ Added dismissal for user $userId on $contentTypeName $contentId');
@@ -608,13 +596,10 @@ abstract class BaseSharedContentRepository<T>
   }
 
   /// Remove dismissal record (restore visibility)
+  /// **Refactored**: Now delegates to BaseDismissalRepository for unified metadata handling
   Future<void> removeDismissal(String contentId, String userId) async {
     try {
-      await getCollectionRef()
-          .doc(contentId)
-          .collection('dismissals')
-          .doc(userId)
-          .delete();
+      await dismissalRepository.undismiss(contentId);
 
       AppLogger.success(
           '✅ Removed dismissal for user $userId on $contentTypeName $contentId');
@@ -625,14 +610,10 @@ abstract class BaseSharedContentRepository<T>
   }
 
   /// Check if user has dismissed content (subcollection-based)
+  /// **Refactored**: Now delegates to BaseDismissalRepository for unified metadata handling
   Future<bool> hasDismissed(String contentId, String userId) async {
     try {
-      final doc = await getCollectionRef()
-          .doc(contentId)
-          .collection('dismissals')
-          .doc(userId)
-          .get();
-      return doc.exists;
+      return await dismissalRepository.isDismissed(contentId);
     } catch (e) {
       AppLogger.error('Failed to check dismissal status: $e');
       return false;
