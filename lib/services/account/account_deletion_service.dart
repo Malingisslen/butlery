@@ -50,7 +50,12 @@ class AccountDeletionService extends BaseService {
     _contentOps = ContentDeletionOperations(firestore);
     _socialOps = SocialDeletionOperations(firestore);
     _profileOps = ProfileDeletionOperations(firestore);
-    _storageOps = StorageDeletionOperations(firestore, offlineService);
+    _storageOps = StorageDeletionOperations(
+      firestore: firestore,
+      offlineService: offlineService,
+      authRepository: authRepository,
+      // Note: audit repository could be injected here for GDPR Article 30 compliance
+    );
   }
 
   /// Access Firestore instance from repository
