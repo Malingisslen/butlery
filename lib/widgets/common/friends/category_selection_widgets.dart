@@ -11,7 +11,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 /// This includes category chips, selectors, and selection utilities.
 class CategorySelectionWidgets {
   /// Build friend category selector
-  static Widget friendCategorySelector({
+  static Widget friendCategorySelector(
+    BuildContext context, {
     required List<FriendCategory> categories,
     required Set<String> selectedCategoryIds,
     required Function(String) onCategoryToggled,
@@ -69,11 +70,14 @@ class CategorySelectionWidgets {
           Wrap(
             spacing: AppDimensions.spacingS,
             runSpacing: AppDimensions.spacingS,
-            children: categories.map((category) => friendCategoryChip(
-              category: category,
-              isSelected: selectedCategoryIds.contains(category.id),
-              onTap: () => onCategoryToggled(category.id),
-            )).toList(),
+            children: categories
+                .map((category) => friendCategoryChip(
+                      context,
+                      category: category,
+                      isSelected: selectedCategoryIds.contains(category.id),
+                      onTap: () => onCategoryToggled(category.id),
+                    ))
+                .toList(),
           ),
           if (showCreateNew && onCreateNew != null) ...[
             const SizedBox(height: AppDimensions.spacingMd),
@@ -91,7 +95,8 @@ class CategorySelectionWidgets {
   }
 
   /// Build friend category chip
-  static Widget friendCategoryChip({
+  static Widget friendCategoryChip(
+    BuildContext context, {
     required FriendCategory category,
     required bool isSelected,
     required VoidCallback onTap,
@@ -113,10 +118,10 @@ class CategorySelectionWidgets {
             const SizedBox(width: AppDimensions.spacingXs),
             Text(
               '(${category.friendUserIds.length})',
-              style: TextStyle(
-                fontSize: 12,
-                color: isSelected ? AppColors.textDark : AppColors.textMedium,
-              ),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color:
+                        isSelected ? AppColors.textDark : AppColors.textMedium,
+                  ),
             ),
           ],
         ],
@@ -126,14 +131,15 @@ class CategorySelectionWidgets {
       backgroundColor: AppColors.backgroundBeige,
       selectedColor: AppColors.primaryBlue,
       checkmarkColor: AppColors.textDark,
-      labelStyle: TextStyle(
-        color: isSelected ? AppColors.textDark : AppColors.textMedium,
-      ),
+      labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: isSelected ? AppColors.textDark : AppColors.textMedium,
+          ),
     );
   }
 
   /// Build compact category chip for smaller spaces
-  static Widget compactCategoryChip({
+  static Widget compactCategoryChip(
+    BuildContext context, {
     required FriendCategory category,
     required bool isSelected,
     required VoidCallback onTap,
@@ -162,11 +168,10 @@ class CategorySelectionWidgets {
             ),
             child: Text(
               '${category.friendCount}',
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryBlue,
-              ),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryBlue,
+                  ),
             ),
           ),
         ],
@@ -183,7 +188,8 @@ class CategorySelectionWidgets {
   }
 
   /// Build horizontal category selector strip
-  static Widget horizontalCategorySelector({
+  static Widget horizontalCategorySelector(
+    BuildContext context, {
     required List<FriendCategory> categories,
     required Set<String> selectedCategoryIds,
     required Function(String) onCategoryToggled,
@@ -192,15 +198,19 @@ class CategorySelectionWidgets {
   }) {
     return Container(
       height: height,
-      padding: padding ?? const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+      padding: padding ??
+          const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
+        padding:
+            const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
         itemCount: categories.length,
-        separatorBuilder: (context, index) => const SizedBox(width: AppDimensions.spacingS),
+        separatorBuilder: (context, index) =>
+            const SizedBox(width: AppDimensions.spacingS),
         itemBuilder: (context, index) {
           final category = categories[index];
           return compactCategoryChip(
+            context,
             category: category,
             isSelected: selectedCategoryIds.contains(category.id),
             onTap: () => onCategoryToggled(category.id),
@@ -222,9 +232,9 @@ class CategorySelectionWidgets {
     final selectedCategories = categories
         .where((cat) => selectedCategoryIds.contains(cat.id))
         .toList();
-    
-    final totalFriends = selectedCategories
-        .fold<int>(0, (sum, cat) => sum + cat.friendUserIds.length);
+
+    final totalFriends = selectedCategories.fold<int>(
+        0, (sum, cat) => sum + cat.friendUserIds.length);
 
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
@@ -303,8 +313,8 @@ class CategorySelectionWidgets {
       ),
       child: ExpansionTile(
         title: Text(
-          selectedCategoryIds.isEmpty 
-              ? hint 
+          selectedCategoryIds.isEmpty
+              ? hint
               : '${selectedCategoryIds.length} kategorier valda',
           style: AppTextStyles.bodyMedium,
         ),

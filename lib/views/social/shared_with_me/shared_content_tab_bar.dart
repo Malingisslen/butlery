@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 
 /// SharedContentTabBar - Tab bar for shared content view
@@ -49,7 +48,8 @@ class SharedContentTabBar {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.calendar_month, size: AppDimensions.iconSizeM),
+                  const Icon(Icons.calendar_month,
+                      size: AppDimensions.iconSizeM),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text('Menyer (${viewModel.menuViewModel.totalCount})'),
                   if (viewModel.menuViewModel.unreadCount > 0) ...[
@@ -66,9 +66,11 @@ class SharedContentTabBar {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.shopping_cart, size: AppDimensions.iconSizeM),
+                  const Icon(Icons.shopping_cart,
+                      size: AppDimensions.iconSizeM),
                   const SizedBox(width: AppDimensions.spacingXs),
-                  Text('Inköpslistor (${viewModel.shoppingViewModel.totalCount})'),
+                  Text(
+                      'Inköpslistor (${viewModel.shoppingViewModel.totalCount})'),
                   if (viewModel.shoppingViewModel.unreadCount > 0) ...[
                     const SizedBox(width: AppDimensions.spacingXs),
                     _buildUnreadBadge(
@@ -101,11 +103,10 @@ class SharedContentTabBar {
       ),
       child: Text(
         '$count',
-        style: TextStyle(
-          color: AppColors.neutralLight,
-          fontSize: AppTextStyles.labelSmall.fontSize,
-          fontWeight: FontWeight.bold,
-        ),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: AppColors.neutralLight,
+              fontWeight: FontWeight.bold,
+            ),
       ),
     );
   }

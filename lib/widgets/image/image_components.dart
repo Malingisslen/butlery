@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -259,7 +260,7 @@ class ImageComponents {
             const SizedBox(width: AppDimensions.spacingXxs),
             Text(
               '$imageCount',
-              style: const TextStyle(
+              style: AppTextStyles.bodySmall.copyWith(
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
                 color: AppColors.textDark,
@@ -295,8 +296,7 @@ class ImageComponents {
         ),
         child: Text(
           '${currentIndex + 1}/$totalImages',
-          style: const TextStyle(
-            fontSize: 12,
+          style: AppTextStyles.bodySmall.copyWith(
             fontWeight: FontWeight.w500,
             color: AppColors.textDark,
           ),

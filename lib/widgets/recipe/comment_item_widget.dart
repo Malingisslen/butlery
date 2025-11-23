@@ -22,15 +22,16 @@ class CommentItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SocialComponents.avatar(
+    return RepaintBoundary(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SocialComponents.avatar(
                 displayName:
                     socialViewModel.getAuthorDisplayName(comment.authorId),
                 imageUrl: socialViewModel.getAuthorAvatarUrl(comment.authorId),
@@ -75,6 +76,7 @@ class CommentItemWidget extends StatelessWidget {
           ..._buildReplies(context),
         ],
       ),
+    ),
     );
   }
 

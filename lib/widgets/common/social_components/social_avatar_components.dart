@@ -278,9 +278,13 @@ class SocialAvatarComponents {
           ),
         )),
         if (remainingCount > 0 && moreUsersText != null)
-          Text(
-            moreUsersText.replaceAll('{count}', remainingCount.toString()),
-            style: const TextStyle(fontSize: 12, color: AppColors.textMedium),
+          Builder(
+            builder: (context) => Text(
+              moreUsersText.replaceAll('{count}', remainingCount.toString()),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textMedium,
+              ),
+            ),
           ),
       ],
     );

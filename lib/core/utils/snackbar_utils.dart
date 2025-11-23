@@ -9,8 +9,7 @@ import 'package:butlery/core/utils/logger.dart';
 class SnackBarUtils {
   // Prevent instantiation
   SnackBarUtils._();
-  
-  
+
   static void showSuccess(
     BuildContext context,
     String message, {
@@ -31,13 +30,13 @@ class SnackBarUtils {
         onAction: onAction,
         showCloseButton: showCloseButton,
       );
-      
+
       AppLogger.debug('Success snackbar shown: $message');
     } catch (e) {
       AppLogger.error('Failed to show success snackbar: $e');
     }
   }
-  
+
   static void showSuccessWithAction(
     BuildContext context,
     String message, {
@@ -53,8 +52,7 @@ class SnackBarUtils {
       duration: duration,
     );
   }
-  
-  
+
   static void showError(
     BuildContext context,
     String message, {
@@ -75,13 +73,13 @@ class SnackBarUtils {
         onAction: onAction ?? (showCloseButton ? () => hide(context) : null),
         showCloseButton: false, // Handle via action
       );
-      
+
       AppLogger.debug('Error snackbar shown: $message');
     } catch (e) {
       AppLogger.error('Failed to show error snackbar: $e');
     }
   }
-  
+
   static void showErrorWithRetry(
     BuildContext context,
     String message, {
@@ -96,7 +94,7 @@ class SnackBarUtils {
       duration: duration,
     );
   }
-  
+
   static void showNetworkError(
     BuildContext context, {
     VoidCallback? onRetry,
@@ -110,8 +108,7 @@ class SnackBarUtils {
       duration: duration,
     );
   }
-  
-  
+
   static void showWarning(
     BuildContext context,
     String message, {
@@ -132,14 +129,13 @@ class SnackBarUtils {
         onAction: onAction,
         showCloseButton: showCloseButton,
       );
-      
+
       AppLogger.debug('Warning snackbar shown: $message');
     } catch (e) {
       AppLogger.error('Failed to show warning snackbar: $e');
     }
   }
-  
-  
+
   static void showInfo(
     BuildContext context,
     String message, {
@@ -160,14 +156,13 @@ class SnackBarUtils {
         onAction: onAction,
         showCloseButton: showCloseButton,
       );
-      
+
       AppLogger.debug('Info snackbar shown: $message');
     } catch (e) {
       AppLogger.error('Failed to show info snackbar: $e');
     }
   }
-  
-  
+
   static void showLoading(
     BuildContext context,
     String message, {
@@ -183,14 +178,17 @@ class SnackBarUtils {
                 height: AppDimensions.iconSizeS,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.neutralLight),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(AppColors.neutralLight),
                 ),
               ),
               const SizedBox(width: AppDimensions.spacingMd),
               Expanded(
                 child: Text(
                   message,
-                  style: const TextStyle(color: AppColors.neutralLight),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.neutralLight,
+                      ),
                 ),
               ),
             ],
@@ -200,13 +198,13 @@ class SnackBarUtils {
           behavior: SnackBarBehavior.floating,
         ),
       );
-      
+
       AppLogger.debug('Loading snackbar shown: $message');
     } catch (e) {
       AppLogger.error('Failed to show loading snackbar: $e');
     }
   }
-  
+
   static void showCustom(
     BuildContext context, {
     required String message,
@@ -230,7 +228,7 @@ class SnackBarUtils {
         onAction: onAction,
         showCloseButton: showCloseButton,
       );
-      
+
       AppLogger.debug('Custom snackbar shown: $message');
     } catch (e) {
       AppLogger.error('Failed to show custom snackbar: $e');
@@ -245,7 +243,7 @@ class SnackBarUtils {
       AppLogger.error('Failed to hide snackbar: $e');
     }
   }
-  
+
   static void clearAll(BuildContext context) {
     try {
       ScaffoldMessenger.of(context).clearSnackBars();
@@ -254,8 +252,7 @@ class SnackBarUtils {
       AppLogger.error('Failed to clear snackbars: $e');
     }
   }
-  
-  
+
   static void _showSnackBar(
     BuildContext context, {
     required String message,
@@ -269,23 +266,23 @@ class SnackBarUtils {
   }) {
     Widget content = Text(
       message,
-      style: TextStyle(
-        color: textColor,
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-      ),
+      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: textColor,
+            fontWeight: FontWeight.w500,
+          ),
     );
-    
+
     if (icon != null) {
       content = Row(
         children: [
           Icon(icon, color: textColor, size: AppDimensions.iconSizeM),
-          const SizedBox(width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+          const SizedBox(
+              width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
           Expanded(child: content),
         ],
       );
     }
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: content,
@@ -297,12 +294,12 @@ class SnackBarUtils {
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         ),
         action: (actionLabel != null && onAction != null)
-          ? SnackBarAction(
-              label: actionLabel,
-              textColor: textColor,
-              onPressed: onAction,
-            )
-          : null,
+            ? SnackBarAction(
+                label: actionLabel,
+                textColor: textColor,
+                onPressed: onAction,
+              )
+            : null,
       ),
     );
   }
@@ -313,19 +310,19 @@ extension SnackBarExtensions on BuildContext {
   void showSuccess(String message, {Duration? duration}) {
     SnackBarUtils.showSuccess(this, message, duration: duration);
   }
-  
+
   void showError(String message, {Duration? duration}) {
     SnackBarUtils.showError(this, message, duration: duration);
   }
-  
+
   void showWarning(String message, {Duration? duration}) {
     SnackBarUtils.showWarning(this, message, duration: duration);
   }
-  
+
   void showInfo(String message, {Duration? duration}) {
     SnackBarUtils.showInfo(this, message, duration: duration);
   }
-  
+
   void hideSnackBar() {
     SnackBarUtils.hide(this);
   }
@@ -337,7 +334,8 @@ class SnackBarConfig {
   static const Duration normalDuration = Duration(seconds: 3);
   static const Duration longDuration = Duration(seconds: 5);
   static const Duration persistentDuration = Duration(seconds: 10);
-  
-  static const EdgeInsets defaultMargin = EdgeInsets.all(AppDimensions.spacingMd);
+
+  static const EdgeInsets defaultMargin =
+      EdgeInsets.all(AppDimensions.spacingMd);
   static const double defaultBorderRadius = AppDimensions.borderRadius8;
 }

@@ -19,10 +19,12 @@ class EditableMenuItemsPreviewDialog extends StatefulWidget {
   });
 
   @override
-  State<EditableMenuItemsPreviewDialog> createState() => _EditableMenuItemsPreviewDialogState();
+  State<EditableMenuItemsPreviewDialog> createState() =>
+      _EditableMenuItemsPreviewDialogState();
 }
 
-class _EditableMenuItemsPreviewDialogState extends State<EditableMenuItemsPreviewDialog> {
+class _EditableMenuItemsPreviewDialogState
+    extends State<EditableMenuItemsPreviewDialog> {
   late List<UnifiedShoppingItem> _editableItems;
 
   @override
@@ -119,9 +121,11 @@ class _EditableMenuItemsPreviewDialogState extends State<EditableMenuItemsPrevie
               });
             },
             icon: const Icon(Icons.clear_all, color: AppColors.error),
-            label: const Text(
+            label: Text(
               'Ta bort alla',
-              style: TextStyle(color: AppColors.error),
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: AppColors.error,
+                  ),
             ),
           ),
         TextButton(

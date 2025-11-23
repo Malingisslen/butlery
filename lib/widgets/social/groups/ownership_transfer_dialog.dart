@@ -46,9 +46,11 @@ class OwnershipTransferDialog extends StatelessWidget {
             'Du är ägare av "${group.name}". Du måste välja en ny ägare innan du kan lämna gruppen.',
           ),
           const SizedBox(height: AppDimensions.spacingL),
-          const Text(
+          Text(
             'Välj ny ägare:',
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: AppDimensions.spacingM),
           // List of available members

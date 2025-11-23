@@ -30,8 +30,12 @@ class CommentDebugPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('🔍 DEBUG INFO:',
-              style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            '🔍 DEBUG INFO:',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           Text(
               'SocialViewModel.currentUser: ${socialViewModel.currentUser?.displayName ?? "NULL"}'),
           Text(

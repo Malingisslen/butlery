@@ -31,10 +31,12 @@ class ProfileActions {
     VoidCallback? onTap,
   }) {
     return InkWell(
-      onTap: onTap != null ? () {
-        Navigator.pop(context);
-        onTap();
-      } : null,
+      onTap: onTap != null
+          ? () {
+              Navigator.pop(context);
+              onTap();
+            }
+          : null,
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: Container(
         width: double.infinity,
@@ -85,10 +87,12 @@ class ProfileActions {
     int count = 0,
   }) {
     return InkWell(
-      onTap: onTap != null ? () {
-        Navigator.pop(context);
-        onTap();
-      } : null,
+      onTap: onTap != null
+          ? () {
+              Navigator.pop(context);
+              onTap();
+            }
+          : null,
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: Container(
         width: double.infinity,
@@ -158,7 +162,8 @@ class ProfileActions {
   }
 
   /// Build data backup section
-  static Widget buildDataBackupSection(BuildContext context, {BuildContext? rootContext}) {
+  static Widget buildDataBackupSection(BuildContext context,
+      {BuildContext? rootContext}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
       child: Column(
@@ -217,13 +222,15 @@ class ProfileActions {
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.error.withValues(alpha: 0.1),
                 foregroundColor: AppColors.error,
-                minimumSize: const Size(double.infinity, AppDimensions.buttonHeight),
+                minimumSize:
+                    const Size(double.infinity, AppDimensions.buttonHeight),
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.paddingXl,
                   vertical: AppDimensions.paddingM,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusL),
                 ),
               ),
               icon: const Icon(Icons.logout),
@@ -368,12 +375,13 @@ class ProfileActions {
     try {
       final backupService = ServiceLocator.get<BackupService>();
       final result = await backupService.exportToFile();
-      
+
       if (context.mounted) {
         if (result.success) {
           _showBackupResult(context, true, result.message);
         } else {
-          _showBackupResult(context, false, 'Backup misslyckades: ${result.message}');
+          _showBackupResult(
+              context, false, 'Backup misslyckades: ${result.message}');
         }
       }
     } catch (e) {
@@ -389,7 +397,7 @@ class ProfileActions {
     try {
       final backupService = ServiceLocator.get<BackupService>();
       final result = await backupService.importFromFile();
-      
+
       if (context.mounted) {
         if (result.success) {
           _showRestoreResult(context, true, 'Återställning genomförd!');
@@ -397,7 +405,8 @@ class ProfileActions {
           // User cancelled - no message needed
           return;
         } else {
-          _showRestoreResult(context, false, 'Återställning misslyckades: ${result.errorMessage ?? 'Okänt fel'}');
+          _showRestoreResult(context, false,
+              'Återställning misslyckades: ${result.errorMessage ?? 'Okänt fel'}');
         }
       }
     } catch (e) {
@@ -417,10 +426,11 @@ class ProfileActions {
   }
 
   /// Show backup result
-  static void _showBackupResult(BuildContext context, bool success, String message) {
+  static void _showBackupResult(
+      BuildContext context, bool success, String message) {
     // Close the modal first
     Navigator.of(context).pop();
-    
+
     // Use a delay to show the snackbar after the modal closes
     Future.delayed(const Duration(milliseconds: 300), () {
       try {
@@ -440,10 +450,11 @@ class ProfileActions {
   }
 
   /// Show restore result
-  static void _showRestoreResult(BuildContext context, bool success, String message) {
+  static void _showRestoreResult(
+      BuildContext context, bool success, String message) {
     // Close the modal first
     Navigator.of(context).pop();
-    
+
     // Use a delay to show the snackbar after the modal closes
     Future.delayed(const Duration(milliseconds: 300), () {
       try {
@@ -494,7 +505,7 @@ class ProfileActions {
       if (context.mounted) {
         Navigator.pushNamedAndRemoveUntil(
           context,
-          '/auth',  // Fixed: Use correct auth route
+          '/auth', // Fixed: Use correct auth route
           (route) => false,
         );
       }
@@ -663,7 +674,8 @@ class ProfileActions {
           );
         } else {
           // Deletion failed
-          _showErrorDialog(context, 'Kontot kunde inte raderas helt. Kontakta support.');
+          _showErrorDialog(
+              context, 'Kontot kunde inte raderas helt. Kontakta support.');
         }
       }
     } catch (e) {
@@ -681,29 +693,33 @@ class ProfileActions {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Radera konto permanent'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'VARNING: Detta kommer att:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text('• Ta bort alla dina recept'),
-            Text('• Ta bort alla dina menyer'),
-            Text('• Ta bort alla dina shoppinglistor'),
-            Text('• Ta bort alla vänner och meddelanden'),
-            Text('• Ta bort all delad innehåll'),
-            SizedBox(height: 16),
-            Text(
-              'Denna åtgärd kan INTE ångras!',
-              style: TextStyle(
-                color: AppColors.error,
-                fontWeight: FontWeight.bold,
+        content: Builder(
+          builder: (context) => Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'VARNING: Detta kommer att:',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              const Text('• Ta bort alla dina recept'),
+              const Text('• Ta bort alla dina menyer'),
+              const Text('• Ta bort alla dina shoppinglistor'),
+              const Text('• Ta bort alla vänner och meddelanden'),
+              const Text('• Ta bort all delad innehåll'),
+              const SizedBox(height: 16),
+              Text(
+                'Denna åtgärd kan INTE ångras!',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.error,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(

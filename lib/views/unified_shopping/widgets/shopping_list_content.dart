@@ -150,23 +150,24 @@ class ShoppingListContent {
       children: [
         // Category header
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: (AppDimensions.spacingSm + AppDimensions.spacingXs), vertical: AppDimensions.spacingSm),
+          padding: const EdgeInsets.symmetric(
+              horizontal: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+              vertical: AppDimensions.spacingSm),
           margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
           decoration: BoxDecoration(
-            color:
-                (isCompleted ? AppColors.textMedium : AppColors.primaryBlue)
-                    .withValues(alpha: 0.1),
+            color: (isCompleted ? AppColors.textMedium : AppColors.primaryBlue)
+                .withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
           ),
           child: Row(
             children: [
               _getCategoryIcon(category, isCompleted),
-              const SizedBox(width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+              const SizedBox(
+                  width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
               Expanded(
                 child: Text(
                   category,
-                  style: TextStyle(
-                    fontSize: AppTextStyles.bodyLarge.fontSize,
+                  style: AppTextStyles.bodyLarge.copyWith(
                     fontWeight: FontWeight.w600,
                     color: isCompleted
                         ? AppColors.textMedium
@@ -191,8 +192,7 @@ class ShoppingListContent {
                 ),
                 child: Text(
                   '${items.length}',
-                  style: TextStyle(
-                    fontSize: AppTextStyles.bodySmall.fontSize,
+                  style: AppTextStyles.bodySmall.copyWith(
                     fontWeight: FontWeight.w500,
                     color: isCompleted
                         ? AppColors.textMedium

@@ -57,6 +57,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+
 /// Comprehensive photo import view providing intelligent OCR processing and recipe extraction through advanced image analysis.
 /// Manages complete photo-based import interface enabling image capture, OCR processing, text extraction,
 /// and comprehensive import workflow while maintaining clean separation between UI presentation
@@ -121,7 +122,8 @@ class _PhotoImportViewContent extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimensions.borderRadiusL)),
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppDimensions.borderRadiusL)),
       ),
       builder: (BuildContext context) {
         return SafeArea(
@@ -130,7 +132,8 @@ class _PhotoImportViewContent extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Välj bildkälla', style: AppTextStyles.headlineSmall),
+                const Text('Välj bildkälla',
+                    style: AppTextStyles.headlineSmall),
                 const SizedBox(height: AppDimensions.spacingXl),
 
                 // Kamera-alternativ
@@ -195,6 +198,28 @@ class _PhotoImportViewContent extends StatelessWidget {
     }
   }
 
+  /// Manual entry navigation escape route allowing users to proceed without OCR success.
+  /// Critical fix for Issue #029 navigation trap - enables users to continue to manual
+  /// recipe entry even when OCR fails, preventing users from becoming stuck.
+  /// [context] Build context for navigation and route coordination
+  /// [viewModel] PhotoImportViewModel for state management
+  /// **Navigation Features:**
+  /// - Unconditional navigation (works even without OCR success)
+  /// - Passes empty string or partial OCR text to manual entry
+  /// - Provides escape route from OCR failure state
+  /// - Preserves user workflow progression
+  void _navigateToManualEntry(
+    BuildContext context,
+    PhotoImportViewModel viewModel,
+  ) {
+    // Navigate even without OCR success - critical escape route
+    Navigator.pushNamed(
+      context,
+      '/franSocialaMedier',
+      arguments: viewModel.ocrText.isEmpty ? '' : viewModel.ocrText,
+    );
+  }
+
   /// Comprehensive photo import interface construction with OCR processing and workflow coordination.
   /// [context] Build context for theme access and ViewModel integration
   /// Constructs complete photo import interface featuring image capture, OCR processing,
@@ -231,76 +256,109 @@ class _PhotoImportViewContent extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-            // Information om funktionen
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
-              decoration: BoxDecoration(
-                color: AppColors.backgroundTint,
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                border: Border.all(color: AppColors.divider),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    size: AppDimensions.iconSizeM,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingS),
-                  const Expanded(
-                    child: Text(
-                      'Ta bild av ett recept eller välj från galleriet för att importera text automatiskt',
-                      style: AppTextStyles.bodySmall,
+                  // Information om funktionen
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(AppDimensions.paddingL),
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundTint,
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.borderRadiusM),
+                      border: Border.all(color: AppColors.divider),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          size: AppDimensions.iconSizeM,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingS),
+                        const Expanded(
+                          child: Text(
+                            'Ta bild av ett recept eller välj från galleriet för att importera text automatiskt',
+                            style: AppTextStyles.bodySmall,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppDimensions.spacingXl),
+                  const SizedBox(height: AppDimensions.spacingXl),
 
-            // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
-            UtilityComponents.primaryButton(
-              context,
-              label: viewModel.hasImage ? 'Välj ny bild' : 'Välj bild',
-              icon: Icons.add_photo_alternate,
-              onPressed: viewModel.isProcessing
-                  ? null
-                  : () => _showImageSourceDialog(context),
-              isExpanded: true,
-            ),
-            const SizedBox(height: AppDimensions.spacingXl),
+                  // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
+                  UtilityComponents.primaryButton(
+                    context,
+                    label: viewModel.hasImage ? 'Välj ny bild' : 'Välj bild',
+                    icon: Icons.add_photo_alternate,
+                    onPressed: viewModel.isProcessing
+                        ? null
+                        : () => _showImageSourceDialog(context),
+                    isExpanded: true,
+                  ),
+                  const SizedBox(height: AppDimensions.spacingXl),
 
-            // Bildvisning
-            _buildImagePreview(context, viewModel),
-            const SizedBox(height: AppDimensions.spacingXl),
+                  // Bildvisning
+                  _buildImagePreview(context, viewModel),
+                  const SizedBox(height: AppDimensions.spacingXl),
 
-            // Error container
-            if (viewModel.hasError) ...[
-              StateWidget.error(
-                message: viewModel.error!,
-                onAction: () => viewModel.clearError(),
-              ),
-              const SizedBox(height: AppDimensions.spacingXl),
-            ],
+                  // Error container with recovery options
+                  if (viewModel.hasError) ...[
+                    StateWidget.error(
+                      message: viewModel.error!,
+                      onAction: viewModel.canRetryOcr
+                          ? null // Don't show clear button when retry is available
+                          : () => viewModel.clearError(),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingM),
 
-            // OCR-resultat
-            if (viewModel.hasOcrResult) ...[
-              const Text('Tolkad text:', style: AppTextStyles.headlineSmall),
-              const SizedBox(height: AppDimensions.spacingM),
-              TextDisplayCard(text: viewModel.ocrText),
-              const SizedBox(height: AppDimensions.spacingXl),
-              // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
-              UtilityComponents.primaryButton(
-                context,
-                label: 'Gå vidare till redigera',
-                icon: Icons.arrow_forward,
-                onPressed: () => _navigateToTextImport(context, viewModel),
-                isExpanded: true,
-              ),
-              // Add bottom padding for safe scrolling
-              const SizedBox(height: AppDimensions.spacingXl),
-            ],
+                    // Error recovery buttons (only shown when image is available)
+                    if (viewModel.hasImage) ...[
+                      // Retry OCR button
+                      UtilityComponents.primaryButton(
+                        context,
+                        label: 'Försök igen',
+                        icon: Icons.refresh,
+                        onPressed: viewModel.isProcessing
+                            ? null
+                            : () => viewModel.retryOcr(),
+                        isExpanded: true,
+                      ),
+                      const SizedBox(height: AppDimensions.spacingM),
+
+                      // Continue without OCR button (escape route)
+                      UtilityComponents.secondaryButton(
+                        context,
+                        label: 'Fortsätt utan OCR',
+                        icon: Icons.edit,
+                        onPressed: viewModel.isProcessing
+                            ? null
+                            : () => _navigateToManualEntry(context, viewModel),
+                        isExpanded: true,
+                      ),
+                    ],
+
+                    const SizedBox(height: AppDimensions.spacingXl),
+                  ],
+
+                  // OCR-resultat
+                  if (viewModel.hasOcrResult) ...[
+                    const Text('Tolkad text:',
+                        style: AppTextStyles.headlineSmall),
+                    const SizedBox(height: AppDimensions.spacingM),
+                    TextDisplayCard(text: viewModel.ocrText),
+                    const SizedBox(height: AppDimensions.spacingXl),
+                    // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
+                    UtilityComponents.primaryButton(
+                      context,
+                      label: 'Gå vidare till redigera',
+                      icon: Icons.arrow_forward,
+                      onPressed: () =>
+                          _navigateToTextImport(context, viewModel),
+                      isExpanded: true,
+                    ),
+                    // Add bottom padding for safe scrolling
+                    const SizedBox(height: AppDimensions.spacingXl),
+                  ],
                 ],
               ),
             ),
@@ -338,7 +396,7 @@ class _PhotoImportViewContent extends StatelessWidget {
       // Calculate adaptive height based on screen size (max 40% of screen height, min 200px)
       final screenHeight = MediaQuery.of(context).size.height;
       final adaptiveHeight = (screenHeight * 0.4).clamp(200.0, 400.0);
-      
+
       return ImagePreviewCard.loading(
         height: adaptiveHeight,
         child: ClipRRect(
@@ -374,9 +432,10 @@ class _PhotoImportViewContent extends StatelessWidget {
       ),
     );
   }
+
   void dispose() {
     // Cancel all timers
-    // Cancel all stream subscriptions  
+    // Cancel all stream subscriptions
     // Dispose of resources    super.dispose();
   }
 }

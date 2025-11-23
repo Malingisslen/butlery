@@ -8,8 +8,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/widgets/image/image_picker_dialogs.dart';
-import 'package:butlery/widgets/recipe/upload_choice_dialog.dart' as upload_dialog;
-import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/widgets/recipe/upload_choice_dialog.dart'
+    as upload_dialog;
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
@@ -20,6 +20,9 @@ import 'package:butlery/viewmodels/recipe_form/image_management/image_upload_val
 import 'package:butlery/viewmodels/recipe_form/image_management/image_upload_notification_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/image_management/image_upload_coordinator.dart';
 import 'package:butlery/viewmodels/recipe_form/image_management/upload_queue_summary_calculator.dart';
+
+// Re-export ImageDisplayInfo for backwards compatibility
+export 'package:butlery/viewmodels/recipe_form/image_management/image_display_info.dart';
 
 /// ===== RECIPE IMAGE MANAGER =====
 /// REFACTORED: Now delegates to ImageUploadService for upload execution
@@ -77,7 +80,8 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     StorageService? storageService,
     ImagePickerService? imagePickerService,
   })  : _uploadService = uploadService ?? ImageUploadService(),
-        _storageService = storageService ?? ServiceLocator.get<StorageService>(),
+        _storageService =
+            storageService ?? ServiceLocator.get<StorageService>(),
         _imagePickerService =
             imagePickerService ?? ServiceLocator.get<ImagePickerService>() {
     // Initialize specialized managers
@@ -217,7 +221,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         state: ImageUploadState.pending,
         progress: 0.0,
       );
-      AppLogger.info('📁 Added pending image: ${imageFile.path}');
+      AppLogger.info('ðŸ“ Added pending image: ${imageFile.path}');
       notifyListeners();
     }
   }
@@ -230,7 +234,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         state: ImageUploadState.completed,
         progress: 1.0,
       );
-      AppLogger.info('☁️ Added uploaded image: $imageUrl');
+      AppLogger.info('â˜ï¸ Added uploaded image: $imageUrl');
       notifyListeners();
     }
   }
@@ -238,7 +242,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   /// Remove image by path or URL
   void removeImageByPath(String pathOrUrl) {
     if (_imageStates.remove(pathOrUrl) != null) {
-      AppLogger.info('🗑️ Removed image: $pathOrUrl');
+      AppLogger.info('ðŸ—‘ï¸ Removed image: $pathOrUrl');
       notifyListeners();
     }
   }
@@ -311,7 +315,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       }
     } catch (e) {
       AppLogger.error('Image picker error: $e');
-      _setImageUploadError('Kunde inte välja bild: $e');
+      _setImageUploadError('Kunde inte vÃ¤lja bild: $e');
     }
   }
 
@@ -367,7 +371,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       }
     } catch (e) {
       AppLogger.error('Gallery picker error: $e');
-      _setImageUploadError('Kunde inte välja bild: $e');
+      _setImageUploadError('Kunde inte vÃ¤lja bild: $e');
     } finally {
       _setUploadingImage(false);
     }
@@ -395,7 +399,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       }
     } catch (e) {
       AppLogger.error('Multiple image picker error: $e');
-      _setImageUploadError('Kunde inte välja bilder: $e');
+      _setImageUploadError('Kunde inte vÃ¤lja bilder: $e');
     } finally {
       _setUploadingImage(false);
     }
@@ -407,7 +411,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     await pickMultipleImagesFromGallery(context, recipeId: recipeId);
   }
 
-  /// Lägg till bild från URL
+  /// LÃ¤gg till bild frÃ¥n URL
   Future<void> addImageFromUrl(String imageUrl) async {
     if (!canAddMoreImages) {
       _setImageUploadError('Du kan bara ha maximalt $maxImages bilder');
@@ -415,7 +419,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     }
 
     if (imageUrl.trim().isEmpty) {
-      _setImageUploadError('Bildlänk får inte vara tom');
+      _setImageUploadError('BildlÃ¤nk fÃ¥r inte vara tom');
       return;
     }
 
@@ -425,7 +429,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       // Validera URL format
       final uri = Uri.tryParse(imageUrl.trim());
       if (uri == null || !uri.hasAbsolutePath) {
-        _setImageUploadError('Ogiltig bildlänk');
+        _setImageUploadError('Ogiltig bildlÃ¤nk');
         return;
       }
 
@@ -436,14 +440,14 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       }
 
       addUploadedImageUrl(imageUrl.trim());
-      AppLogger.info('Bild tillagd från URL: $imageUrl');
+      AppLogger.info('Bild tillagd frÃ¥n URL: $imageUrl');
     } catch (e) {
-      AppLogger.error('Fel vid tillägg av bild från URL: $e');
-      _setImageUploadError('Kunde inte lägga till bild: $e');
+      AppLogger.error('Fel vid tillÃ¤gg av bild frÃ¥n URL: $e');
+      _setImageUploadError('Kunde inte lÃ¤gga till bild: $e');
     }
   }
 
-  /// Ladda upp bild från lokal fil
+  /// Ladda upp bild frÃ¥n lokal fil
   Future<void> uploadImageFromFile(XFile imageFile, String recipeId) async {
     if (!canAddMoreImages) {
       _setImageUploadError('Du kan bara ha maximalt $maxImages bilder');
@@ -458,11 +462,12 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       final file = File(imageFile.path);
 
       // Get authenticated user ID
-      final permissionService = ServiceLocator.get<permission.PermissionService>();
+      final permissionService =
+          ServiceLocator.get<permission.PermissionService>();
       final userId = permissionService.currentUserId;
 
       if (userId == null) {
-        _setImageUploadError('Ingen användare inloggad');
+        _setImageUploadError('Ingen anvÃ¤ndare inloggad');
         return;
       }
 
@@ -487,7 +492,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     }
   }
 
-  /// Ladda upp flera bilder från lokala filer
+  /// Ladda upp flera bilder frÃ¥n lokala filer
   Future<void> uploadMultipleImages(
       List<XFile> imageFiles, String recipeId) async {
     if (imageFiles.isEmpty) return;
@@ -520,8 +525,8 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         _setImageUploadError(limitationMessage);
       }
     } catch (e) {
-      AppLogger.error('Fel vid förberedelse av uppladdning: $e');
-      _setImageUploadError('Kunde inte förbereda bilder: $e');
+      AppLogger.error('Fel vid fÃ¶rberedelse av uppladdning: $e');
+      _setImageUploadError('Kunde inte fÃ¶rbereda bilder: $e');
     }
     // Note: No finally block setting _setUploadingImage(false) - each individual upload handles its own state
   }
@@ -538,13 +543,13 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       if (imageStatus?.url != null && _isUploadedUrl(imageStatus!.url!)) {
         await _storageService.deleteRecipeImage(imageStatus.url!);
         AppLogger.info(
-            '☁️ 🗑️ Bild borttagen från Firebase storage: ${imageStatus.url}');
+            'â˜ï¸ ðŸ—‘ï¸ Bild borttagen frÃ¥n Firebase storage: ${imageStatus.url}');
       } else {
         AppLogger.info(
-            '📁 🗑️ Pending file removed (no storage cleanup needed): $pathOrUrl');
+            'ðŸ“ ðŸ—‘ï¸ Pending file removed (no storage cleanup needed): $pathOrUrl');
       }
     } catch (e) {
-      AppLogger.error('❌ Fel vid borttagning av bild: $e');
+      AppLogger.error('âŒ Fel vid borttagning av bild: $e');
       // Continue anyway, image is removed from the list
     }
   }
@@ -580,12 +585,12 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
   // ===== PRIVATE METHODS =====
 
-  /// Bearbeta resultat från image picker
+  /// Bearbeta resultat frÃ¥n image picker
   /// Process image picker result with instant feedback (no upload yet)
   Future<void> _processImagePickerResult(dynamic result,
       {String? recipeId}) async {
     AppLogger.info(
-        '🚀 INSTANT_IMAGES: Processing image picker result (no upload yet)');
+        'ðŸš€ INSTANT_IMAGES: Processing image picker result (no upload yet)');
 
     try {
       if (result is XFile) {
@@ -601,26 +606,26 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         await addImageFromUrl(result);
       }
     } catch (e) {
-      AppLogger.error('🚀 INSTANT_IMAGES: Error processing result: $e');
-      _setImageUploadError('Kunde inte lägga till bild: $e');
+      AppLogger.error('ðŸš€ INSTANT_IMAGES: Error processing result: $e');
+      _setImageUploadError('Kunde inte lÃ¤gga till bild: $e');
     }
   }
 
   /// Process single XFile with proper web blob URL handling
   Future<void> _processSingleXFile(XFile xFile) async {
-    AppLogger.info('🖼️ WEB_FIX: Processing XFile: ${xFile.path}');
+    AppLogger.info('ðŸ–¼ï¸ WEB_FIX: Processing XFile: ${xFile.path}');
 
     // Check if this is a web blob URL (needs special handling)
     if (xFile.path.startsWith('blob:')) {
       AppLogger.info(
-          '🌐 WEB_FIX: Blob URL detected, using XFile directly for display');
+          'ðŸŒ WEB_FIX: Blob URL detected, using XFile directly for display');
 
       // For web blob URLs, we can't create a File object
       // Instead, add the XFile path directly for display
       await _addPendingImageFromXFile(xFile);
     } else {
       // Mobile platform - normal file path, create File object
-      AppLogger.info('📱 MOBILE: Normal file path, creating File object');
+      AppLogger.info('ðŸ“± MOBILE: Normal file path, creating File object');
       final file = File(xFile.path);
       await _addPendingImageFromFile(file);
     }
@@ -640,11 +645,11 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       final fileSize = await xFile.length();
       const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
       if (fileSize > maxSizeInBytes) {
-        _setImageUploadError('Bilden är för stor (max 5MB)');
+        _setImageUploadError('Bilden Ã¤r fÃ¶r stor (max 5MB)');
         return;
       }
     } catch (e) {
-      AppLogger.error('🌐 WEB_FIX: Could not validate file size: $e');
+      AppLogger.error('ðŸŒ WEB_FIX: Could not validate file size: $e');
     }
 
     // Store XFile reference for later upload
@@ -661,7 +666,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     _clearImageUploadError();
     _notifyImmediately();
 
-    AppLogger.info('🌐 WEB_FIX: Blob URL image added for display: $filePath');
+    AppLogger.info('ðŸŒ WEB_FIX: Blob URL image added for display: $filePath');
 
     // Start background upload immediately with XFile
     final recipeId = _getTemporaryRecipeId();
@@ -697,7 +702,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     _notifyImmediately();
 
     AppLogger.info(
-        '⚡ INSTANT_FEEDBACK: Image added with immediate UI update: $filePath');
+        'âš¡ INSTANT_FEEDBACK: Image added with immediate UI update: $filePath');
 
     // Start background upload immediately with temporary ID
     // Images will be uploaded right away for better performance
@@ -728,24 +733,24 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     // Don't upload if already uploading
     final currentState = _imageStates[filePath];
     if (currentState?.isActive == true) {
-      AppLogger.info('🔄 Already uploading: $filePath');
+      AppLogger.info('ðŸ”„ Already uploading: $filePath');
       return;
     }
 
-    AppLogger.info('🚀 Starting background upload for: $filePath');
+    AppLogger.info('ðŸš€ Starting background upload for: $filePath');
 
     // Start upload - service handles all progress tracking, retry, circuit breaker
     _uploadSingleFileWithEnhancedTracking(imageFile, recipeId)
         .then((uploadedUrl) {
       if (_uploadsCanceled || _disposed) {
         AppLogger.info(
-            '📦 Upload completed but manager disposed/cancelled: $filePath');
+            'ðŸ“¦ Upload completed but manager disposed/cancelled: $filePath');
         return;
       }
 
       if (uploadedUrl != null) {
         AppLogger.info(
-            '✅ Background upload completed: $filePath -> $uploadedUrl');
+            'âœ… Background upload completed: $filePath -> $uploadedUrl');
 
         // Update local state to completed (service already updated via onProgress)
         _imageStates.remove(filePath); // Remove file path key
@@ -755,7 +760,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
           progress: 1.0,
         );
       } else {
-        AppLogger.error('❌ Background upload failed: $filePath');
+        AppLogger.error('âŒ Background upload failed: $filePath');
         // Service already handled retry/circuit breaker, just update local state
         final failedStatus = _imageStates[filePath];
         if (failedStatus != null) {
@@ -773,11 +778,11 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     }).catchError((error) {
       if (_uploadsCanceled || _disposed) {
         AppLogger.info(
-            '📦 Upload error but manager disposed/cancelled: $filePath');
+            'ðŸ“¦ Upload error but manager disposed/cancelled: $filePath');
         return;
       }
 
-      AppLogger.error('❌ Background upload error: $error');
+      AppLogger.error('âŒ Background upload error: $error');
 
       // Service already handled retry/circuit breaker, just update local state
       final failedStatus = _imageStates[filePath];
@@ -802,12 +807,12 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     // Don't upload if already uploading
     final currentState = _imageStates[filePath];
     if (currentState?.isActive == true) {
-      AppLogger.info('🔄 Already uploading XFile: $filePath');
+      AppLogger.info('ðŸ”„ Already uploading XFile: $filePath');
       return;
     }
 
     AppLogger.info(
-        '🌐 WEB_FIX: Starting background upload for XFile: $filePath');
+        'ðŸŒ WEB_FIX: Starting background upload for XFile: $filePath');
 
     // Get file size for progress tracking (async for XFile)
     xFile.length().then((fileSize) {
@@ -830,13 +835,13 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       _uploadXFileWithWebSupport(xFile, recipeId).then((uploadedUrl) {
         if (_uploadsCanceled || _disposed) {
           AppLogger.info(
-              '📦 XFile upload completed but manager disposed/cancelled: $filePath');
+              'ðŸ“¦ XFile upload completed but manager disposed/cancelled: $filePath');
           return;
         }
 
         if (uploadedUrl != null) {
           AppLogger.info(
-              '✅ Background XFile upload completed: $filePath -> $uploadedUrl');
+              'âœ… Background XFile upload completed: $filePath -> $uploadedUrl');
 
           // Update comprehensive state to completed
           _imageStates.remove(filePath); // Remove blob URL path key
@@ -852,7 +857,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
           // Check for completion notification
           _checkAndTriggerCompletionEvents();
         } else {
-          AppLogger.error('❌ Background XFile upload failed: $filePath');
+          AppLogger.error('âŒ Background XFile upload failed: $filePath');
           _handleXFileUploadFailure(filePath, xFile, 'Upload failed', null);
         }
 
@@ -863,12 +868,12 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       }).catchError((error) {
         if (_uploadsCanceled || _disposed) {
           AppLogger.info(
-              '📦 XFile upload error but manager disposed/cancelled: $filePath');
+              'ðŸ“¦ XFile upload error but manager disposed/cancelled: $filePath');
           return;
         }
 
         AppLogger.error(
-            '💥 Background XFile upload error: $filePath -> $error');
+            'ðŸ’¥ Background XFile upload error: $filePath -> $error');
         _handleXFileUploadFailure(filePath, xFile, 'Upload error', error);
 
         if (!_disposed) {
@@ -877,8 +882,8 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         }
       });
     }).catchError((error) {
-      AppLogger.error('💥 Could not get XFile size: $filePath -> $error');
-      _setImageUploadError('Kunde inte läsa bilddata: $error');
+      AppLogger.error('ðŸ’¥ Could not get XFile size: $filePath -> $error');
+      _setImageUploadError('Kunde inte lÃ¤sa bilddata: $error');
     });
   }
 
@@ -888,7 +893,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       XFile xFile, String recipeId) async {
     try {
       AppLogger.info(
-          '🌐 WEB_FIX: Uploading XFile with web support: ${xFile.path}');
+          'ðŸŒ WEB_FIX: Uploading XFile with web support: ${xFile.path}');
 
       // Get authenticated user ID
       final userId =
@@ -907,10 +912,10 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         path: 'recipes/$recipeId/${xFile.name}',
       );
 
-      AppLogger.info('🌐 WEB_FIX: Upload result: ${result.url}');
+      AppLogger.info('ðŸŒ WEB_FIX: Upload result: ${result.url}');
       return result.success ? result.url : null;
     } catch (e) {
-      AppLogger.error('🌐 WEB_FIX: Upload failed: $e');
+      AppLogger.error('ðŸŒ WEB_FIX: Upload failed: $e');
       return null;
     }
   }
@@ -932,9 +937,8 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     _imageStates[filePath] = failedStatus;
     _setImageUploadError('Kunde inte ladda upp bild: $errorMessage');
 
-    AppLogger.error('❌ XFile upload failed: $filePath - $errorMessage');
+    AppLogger.error('âŒ XFile upload failed: $filePath - $errorMessage');
   }
-
 
   // ===== BULK UPLOAD MANAGEMENT (Delegated to ImageUploadCoordinator) =====
 
@@ -1002,7 +1006,8 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
     try {
       // Get authenticated user ID
-      final permissionService = ServiceLocator.get<permission.PermissionService>();
+      final permissionService =
+          ServiceLocator.get<permission.PermissionService>();
       final userId = permissionService.currentUserId;
 
       if (userId == null) {
@@ -1048,7 +1053,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       const maxSizeInBytes =
           20 * 1024 * 1024; // 20MB (generous limit before compression)
       if (fileSize > maxSizeInBytes) {
-        _setImageUploadError('Bilden är för stor (max 20MB)');
+        _setImageUploadError('Bilden Ã¤r fÃ¶r stor (max 20MB)');
         return false;
       }
 
@@ -1134,7 +1139,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       try {
         notifyListeners();
         AppLogger.debug(
-            '🔔 UI notification sent - images: ${imageUrls.length}, pending: ${pendingImages.length}');
+            'ðŸ”” UI notification sent - images: ${imageUrls.length}, pending: ${pendingImages.length}');
       } catch (e) {
         AppLogger.debug('Notification skipped due to disposal: $e');
       } finally {
@@ -1235,7 +1240,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     return _validator.isValidImageFormat(imageUrl);
   }
 
-  /// Validera bildstorlek (om tillgänglig)
+  /// Validera bildstorlek (om tillgÃ¤nglig)
   Future<bool> isValidImageSize(XFile imageFile) async {
     return _validator.isValidImageSize(imageFile);
   }
@@ -1252,7 +1257,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       return;
     }
 
-    AppLogger.info('🔄 Manual retry initiated for: $filePath');
+    AppLogger.info('ðŸ”„ Manual retry initiated for: $filePath');
 
     // Restart the upload - service handles all retry logic
     final recipeId = _getTemporaryRecipeId();
@@ -1268,7 +1273,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   /// CRITICAL FIX: Thread-safe cancel all active uploads with proper coordination
   void cancelAllUploads() {
     _uploadsCanceled = true;
-    AppLogger.info('🛑 Thread-safe canceling active uploads');
+    AppLogger.info('ðŸ›‘ Thread-safe canceling active uploads');
 
     // CRITICAL FIX: Thread-safe state update for cancelled uploads
     _safeUpdateState(() {
@@ -1292,7 +1297,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   void dispose() {
     _disposed = true;
 
-    AppLogger.info('🔄 Starting thread-safe disposal of RecipeImageManager');
+    AppLogger.info('ðŸ”„ Starting thread-safe disposal of RecipeImageManager');
 
     // CRITICAL FIX: Cancel all active uploads FIRST with proper coordination
     cancelAllUploads();
@@ -1310,73 +1315,7 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     // Cancel all timers and stream subscriptions
     disposeStreamResources(); // From StreamManagementMixin
 
-    AppLogger.info('✅ Thread-safe disposal of RecipeImageManager completed');
+    AppLogger.info('âœ… Thread-safe disposal of RecipeImageManager completed');
     super.dispose();
   }
 }
-
-// ===== IMAGE DISPLAY INFO CLASS =====
-
-/// CRITICAL FIX: Comprehensive image display information for immediate UI feedback
-class ImageDisplayInfo {
-  final String displayPath;
-  final ImageUploadState state;
-  final double progress;
-  final bool isPending;
-  final bool isUploading;
-  final bool isCompleted;
-  final bool hasError;
-  final String? errorMessage;
-  final String progressText;
-  final bool canRetry;
-
-  const ImageDisplayInfo({
-    required this.displayPath,
-    required this.state,
-    required this.progress,
-    required this.isPending,
-    required this.isUploading,
-    required this.isCompleted,
-    required this.hasError,
-    this.errorMessage,
-    required this.progressText,
-    required this.canRetry,
-  });
-
-  /// Get color indicator for upload state
-  Color getStateColor() {
-    switch (state) {
-      case ImageUploadState.pending:
-        return Colors.blue;
-      case ImageUploadState.uploading:
-        return Colors.orange;
-      case ImageUploadState.retrying:
-        return Colors.amber;
-      case ImageUploadState.completed:
-        return Colors.green;
-      case ImageUploadState.failed:
-        return Colors.red;
-      case ImageUploadState.cancelled:
-        return AppColors.textMedium;
-    }
-  }
-
-  /// Get icon for upload state
-  IconData getStateIcon() {
-    switch (state) {
-      case ImageUploadState.pending:
-        return Icons.schedule;
-      case ImageUploadState.uploading:
-        return Icons.cloud_upload;
-      case ImageUploadState.retrying:
-        return Icons.refresh;
-      case ImageUploadState.completed:
-        return Icons.cloud_done;
-      case ImageUploadState.failed:
-        return Icons.error;
-      case ImageUploadState.cancelled:
-        return Icons.cancel;
-    }
-  }
-}
-

@@ -12,55 +12,143 @@ import 'package:butlery/widgets/common/social_components/invitation_actions.dart
 
 /// Facade for social invitation components delegating to focused modules
 class SocialInvitationComponents {
-
   static Widget invitationTargetDisplay({
-    required InvitationTarget target, VoidCallback? onTap, bool selected = false, bool compact = false,
-    Widget? trailing, EdgeInsets? padding, Color? backgroundColor, BorderRadius? borderRadius,
-  }) => InvitationDisplays.invitationTargetDisplay(target: target, onTap: onTap, selected: selected,
-      compact: compact, trailing: trailing, padding: padding, backgroundColor: backgroundColor, borderRadius: borderRadius);
+    required InvitationTarget target,
+    VoidCallback? onTap,
+    bool selected = false,
+    bool compact = false,
+    Widget? trailing,
+    EdgeInsets? padding,
+    Color? backgroundColor,
+    BorderRadius? borderRadius,
+  }) =>
+      InvitationDisplays.invitationTargetDisplay(
+          target: target,
+          onTap: onTap,
+          selected: selected,
+          compact: compact,
+          trailing: trailing,
+          padding: padding,
+          backgroundColor: backgroundColor,
+          borderRadius: borderRadius);
 
   static Widget targetCard({
-    required InvitationTarget target, VoidCallback? onTap, bool selected = false, Widget? trailing,
-    bool showType = true, bool showMemberCount = true, EdgeInsets? padding, Color? backgroundColor,
-  }) => InvitationDisplays.targetCard(target: target, onTap: onTap, selected: selected, trailing: trailing,
-      showType: showType, showMemberCount: showMemberCount, padding: padding, backgroundColor: backgroundColor);
+    required InvitationTarget target,
+    VoidCallback? onTap,
+    bool selected = false,
+    Widget? trailing,
+    bool showType = true,
+    bool showMemberCount = true,
+    EdgeInsets? padding,
+    Color? backgroundColor,
+  }) =>
+      InvitationDisplays.targetCard(
+          target: target,
+          onTap: onTap,
+          selected: selected,
+          trailing: trailing,
+          showType: showType,
+          showMemberCount: showMemberCount,
+          padding: padding,
+          backgroundColor: backgroundColor);
 
   static Widget targetChip({
-    required InvitationTarget target, VoidCallback? onTap, VoidCallback? onDeleted, bool selected = false,
-    Color? backgroundColor, Color? selectedColor, EdgeInsets? padding,
-  }) => InvitationDisplays.targetChip(target: target, onTap: onTap, onDeleted: onDeleted, selected: selected,
-      backgroundColor: backgroundColor, selectedColor: selectedColor, padding: padding);
+    required InvitationTarget target,
+    VoidCallback? onTap,
+    VoidCallback? onDeleted,
+    bool selected = false,
+    Color? backgroundColor,
+    Color? selectedColor,
+    EdgeInsets? padding,
+  }) =>
+      InvitationDisplays.targetChip(
+          target: target,
+          onTap: onTap,
+          onDeleted: onDeleted,
+          selected: selected,
+          backgroundColor: backgroundColor,
+          selectedColor: selectedColor,
+          padding: padding);
 
   static Widget targetListTile({
-    required InvitationTarget target, VoidCallback? onTap, bool selected = false, Widget? trailing,
-    bool showSubtitle = true, bool enabled = true, EdgeInsets? contentPadding,
-  }) => InvitationDisplays.targetListTile(target: target, onTap: onTap, selected: selected, trailing: trailing,
-      showSubtitle: showSubtitle, enabled: enabled, contentPadding: contentPadding);
+    required InvitationTarget target,
+    VoidCallback? onTap,
+    bool selected = false,
+    Widget? trailing,
+    bool showSubtitle = true,
+    bool enabled = true,
+    EdgeInsets? contentPadding,
+  }) =>
+      InvitationDisplays.targetListTile(
+          target: target,
+          onTap: onTap,
+          selected: selected,
+          trailing: trailing,
+          showSubtitle: showSubtitle,
+          enabled: enabled,
+          contentPadding: contentPadding);
 
   static Widget targetBadge({
-    required InvitationTarget target, bool showCount = false, Color? backgroundColor,
-    Color? textColor, EdgeInsets? padding, double? fontSize,
-  }) => InvitationDisplays.targetBadge(target: target, showCount: showCount, backgroundColor: backgroundColor,
-      textColor: textColor, padding: padding, fontSize: fontSize);
+    required InvitationTarget target,
+    bool showCount = false,
+    Color? backgroundColor,
+    Color? textColor,
+    EdgeInsets? padding,
+    double? fontSize,
+  }) =>
+      InvitationDisplays.targetBadge(
+          target: target,
+          showCount: showCount,
+          backgroundColor: backgroundColor,
+          textColor: textColor,
+          padding: padding,
+          fontSize: fontSize);
 
   static Widget targetList({
-    required List<InvitationTarget> targets, Function(InvitationTarget)? onTargetTap, bool allowMultiSelect = false,
-    List<InvitationTarget>? selectedTargets, Function(List<InvitationTarget>)? onSelectionChanged,
-    bool showTrailing = true, ScrollPhysics? physics, EdgeInsets? padding,
-  }) => InvitationLists.targetList(targets: targets, onTargetTap: onTargetTap, allowMultiSelect: allowMultiSelect,
-      selectedTargets: selectedTargets, onSelectionChanged: onSelectionChanged, showTrailing: showTrailing,
-      physics: physics, padding: padding);
+    required List<InvitationTarget> targets,
+    Function(InvitationTarget)? onTargetTap,
+    bool allowMultiSelect = false,
+    List<InvitationTarget>? selectedTargets,
+    Function(List<InvitationTarget>)? onSelectionChanged,
+    bool showTrailing = true,
+    ScrollPhysics? physics,
+    EdgeInsets? padding,
+  }) =>
+      InvitationLists.targetList(
+          targets: targets,
+          onTargetTap: onTargetTap,
+          allowMultiSelect: allowMultiSelect,
+          selectedTargets: selectedTargets,
+          onSelectionChanged: onSelectionChanged,
+          showTrailing: showTrailing,
+          physics: physics,
+          padding: padding);
 
   static Widget targetGrid({
-    required List<InvitationTarget> targets, Function(InvitationTarget)? onTargetTap, bool allowMultiSelect = false,
-    List<InvitationTarget>? selectedTargets, Function(List<InvitationTarget>)? onSelectionChanged,
-    int crossAxisCount = 2, double crossAxisSpacing = 8.0, double mainAxisSpacing = 8.0, EdgeInsets? padding,
-  }) => InvitationLists.targetGrid(targets: targets, onTargetTap: onTargetTap, allowMultiSelect: allowMultiSelect,
-      selectedTargets: selectedTargets, onSelectionChanged: onSelectionChanged, crossAxisCount: crossAxisCount,
-      crossAxisSpacing: crossAxisSpacing, mainAxisSpacing: mainAxisSpacing, padding: padding);
+    required List<InvitationTarget> targets,
+    Function(InvitationTarget)? onTargetTap,
+    bool allowMultiSelect = false,
+    List<InvitationTarget>? selectedTargets,
+    Function(List<InvitationTarget>)? onSelectionChanged,
+    int crossAxisCount = 2,
+    double crossAxisSpacing = 8.0,
+    double mainAxisSpacing = 8.0,
+    EdgeInsets? padding,
+  }) =>
+      InvitationLists.targetGrid(
+          targets: targets,
+          onTargetTap: onTargetTap,
+          allowMultiSelect: allowMultiSelect,
+          selectedTargets: selectedTargets,
+          onSelectionChanged: onSelectionChanged,
+          crossAxisCount: crossAxisCount,
+          crossAxisSpacing: crossAxisSpacing,
+          mainAxisSpacing: mainAxisSpacing,
+          padding: padding);
 
   /// Build target selector
-  static Widget targetSelector({
+  static Widget targetSelector(
+    BuildContext context, {
     required List<InvitationTarget> availableTargets,
     List<InvitationTarget>? selectedTargets,
     Function(List<InvitationTarget>)? onSelectionChanged,
@@ -73,6 +161,7 @@ class SocialInvitationComponents {
     ScrollPhysics? physics,
   }) {
     return InvitationSelectors.targetSelector(
+      context,
       availableTargets: availableTargets,
       selectedTargets: selectedTargets,
       onSelectionChanged: onSelectionChanged,
@@ -302,7 +391,8 @@ class SocialInvitationComponents {
   }
 
   /// Build target loading error state
-  static Widget targetLoadingError({
+  static Widget targetLoadingError(
+    BuildContext context, {
     String? title = 'Kunde inte ladda målgrupper',
     String? message = 'Kontrollera din internetanslutning och försök igen.',
     VoidCallback? onRetry,
@@ -310,6 +400,7 @@ class SocialInvitationComponents {
     IconData errorIcon = Icons.error_outline,
   }) {
     return InvitationStates.targetLoadingError(
+      context,
       title: title,
       message: message,
       onRetry: onRetry,
@@ -319,7 +410,8 @@ class SocialInvitationComponents {
   }
 
   /// Build no targets available state
-  static Widget noTargetsAvailable({
+  static Widget noTargetsAvailable(
+    BuildContext context, {
     String? title = 'Inga målgrupper tillgängliga',
     String? message = 'Du har inte lagt till några vänner eller grupper än.',
     IconData icon = Icons.group_outlined,
@@ -328,6 +420,7 @@ class SocialInvitationComponents {
     bool showAddButton = true,
   }) {
     return InvitationStates.noTargetsAvailable(
+      context,
       title: title,
       message: message,
       icon: icon,
@@ -338,16 +431,19 @@ class SocialInvitationComponents {
   }
 
   /// Build no search results state
-  static Widget noSearchResults({
+  static Widget noSearchResults(
+    BuildContext context, {
     String? query,
     String? title = 'Inga sökresultat',
-    String? message = 'Prova att söka med andra ord eller kontrollera stavningen.',
+    String? message =
+        'Prova att söka med andra ord eller kontrollera stavningen.',
     IconData icon = Icons.search_off,
     VoidCallback? onClearSearch,
     String? clearButtonText = 'Rensa sökning',
     bool showClearButton = true,
   }) {
     return InvitationStates.noSearchResults(
+      context,
       query: query,
       title: title,
       message: message,
@@ -359,7 +455,8 @@ class SocialInvitationComponents {
   }
 
   /// Build targets selected success state
-  static Widget targetsSelectedSuccess({
+  static Widget targetsSelectedSuccess(
+    BuildContext context, {
     required int selectedCount,
     String? title = 'Målgrupper valda',
     String? message = 'Du har valt {count} målgrupper för inbjudan.',
@@ -369,6 +466,7 @@ class SocialInvitationComponents {
     Color? successColor = Colors.green,
   }) {
     return InvitationStates.targetsSelectedSuccess(
+      context,
       selectedCount: selectedCount,
       title: title,
       message: message,
@@ -383,7 +481,8 @@ class SocialInvitationComponents {
 
   /// Build target selection summary
   /// Shows summary of selected targets
-  static Widget targetSelectionSummary({
+  static Widget targetSelectionSummary(
+    BuildContext context, {
     required List<InvitationTarget> selectedTargets,
     VoidCallback? onClearAll,
     Function(InvitationTarget)? onRemoveTarget,
@@ -393,6 +492,7 @@ class SocialInvitationComponents {
     EdgeInsets? padding,
   }) {
     return InvitationSelectors.targetSelectionSummary(
+      context,
       selectedTargets: selectedTargets,
       onClearAll: onClearAll,
       onRemoveTarget: onRemoveTarget,

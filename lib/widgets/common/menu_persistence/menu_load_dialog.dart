@@ -6,6 +6,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+
 /// Bottom sheet for loading a saved menu
 /// This bottom sheet allows users to browse and load their saved menus,
 /// with options to load, mark as modified, or delete menus.
@@ -41,7 +42,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
     try {
       // FIXED: Use actual ViewModel saved menus
       await widget.viewModel.refreshSavedMenus(); // Ensure menus are loaded
-      
+
       if (mounted) {
         setState(() {
           _savedMenus = widget.viewModel.savedMenus;
@@ -65,7 +66,8 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
       ),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppDimensions.bottomSheetBorderRadius),
+        borderRadius:
+            BorderRadius.circular(AppDimensions.bottomSheetBorderRadius),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -74,7 +76,8 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           Container(
             width: AppDimensions.iconSizeDisplay,
             height: AppDimensions.spacingXs,
-            margin: const EdgeInsets.symmetric(vertical: AppDimensions.spacingL),
+            margin:
+                const EdgeInsets.symmetric(vertical: AppDimensions.spacingL),
             decoration: BoxDecoration(
               color: Theme.of(context)
                   .colorScheme
@@ -86,7 +89,8 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
 
           // Title
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+            padding:
+                const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
             child: Row(
               children: [
                 Icon(
@@ -130,7 +134,8 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
       padding: const EdgeInsets.all(AppDimensions.spacingXl),
       child: StateWidget.empty(
         title: 'Inga sparade menyer',
-        subtitle: 'Du har inga sparade menyer än. Generera och spara en meny först!',
+        subtitle:
+            'Du har inga sparade menyer än. Generera och spara en meny först!',
         icon: Icons.folder_outlined,
         onAction: () => Navigator.pop(context),
         actionLabel: 'Stäng',
@@ -189,14 +194,21 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
                 ],
               ),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'delete',
-              child: Row(
-                children: [
-                  Icon(Icons.delete, color: AppColors.error),
-                  SizedBox(width: AppDimensions.spacingSm),
-                  Text('Ta bort', style: TextStyle(color: AppColors.error)),
-                ],
+              child: Builder(
+                builder: (context) => Row(
+                  children: [
+                    const Icon(Icons.delete, color: AppColors.error),
+                    const SizedBox(width: AppDimensions.spacingSm),
+                    Text(
+                      'Ta bort',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.error,
+                          ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -221,7 +233,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
     try {
       // FIXED: Use actual ViewModel load logic
       final success = await widget.viewModel.loadSavedMenu(menu.key);
-      
+
       if (mounted) {
         Navigator.pop(context);
         if (success) {
@@ -278,7 +290,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
       try {
         // FIXED: Use actual ViewModel delete logic
         final success = await widget.viewModel.deleteSavedMenu(menu.key);
-        
+
         if (mounted) {
           if (success) {
             setState(() {
@@ -293,7 +305,8 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(widget.viewModel.error ?? 'Kunde inte ta bort meny'),
+                content:
+                    Text(widget.viewModel.error ?? 'Kunde inte ta bort meny'),
                 backgroundColor: AppColors.error,
               ),
             );
@@ -311,10 +324,11 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
       }
     }
   }
+
   @override
   void dispose() {
     // Cancel all timers
-    // Cancel all stream subscriptions  
+    // Cancel all stream subscriptions
     // Dispose of resources
     super.dispose();
   }

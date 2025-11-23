@@ -129,12 +129,11 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
             const SizedBox(height: AppDimensions.paddingS),
 
             // Or select friend for direct chat
-            const Align(
+            Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 'Eller välj en vän för direktmeddelande:',
-                style: TextStyle(
-                  fontSize: 14,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textMedium,
                 ),
               ),
@@ -188,30 +187,28 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
     }
 
     if (_friends.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.people_outline,
               size: AppDimensions.iconSizeXxl,
               color: AppColors.textMedium,
             ),
-            SizedBox(height: AppDimensions.paddingM),
+            const SizedBox(height: AppDimensions.paddingM),
             Text(
               'Inga vänner ännu',
-              style: TextStyle(
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: AppColors.textMedium,
-                fontSize: 16,
               ),
             ),
-            SizedBox(height: AppDimensions.paddingS),
+            const SizedBox(height: AppDimensions.paddingS),
             Text(
               'Lägg till vänner först för att starta konversationer.',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: AppColors.textLight,
-                fontSize: 14,
               ),
             ),
           ],
@@ -220,10 +217,10 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
     }
 
     if (_filteredFriends.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           'Inga vänner matchar din sökning',
-          style: TextStyle(
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: AppColors.textMedium,
           ),
         ),

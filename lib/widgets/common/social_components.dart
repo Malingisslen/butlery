@@ -26,7 +26,7 @@ export 'social_components/social_builder_components.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
 
 /// 🚀 SocialComponents - The ultimate social widget API
-/// Clean barrel export that consolidates all social-related widgets into a unified API 
+/// Clean barrel export that consolidates all social-related widgets into a unified API
 /// through delegation to focused single-responsibility modules:
 /// - ✅ Avatar widgets (delegates to SocialAvatarComponents)
 /// - ✅ Collaborative indicators (delegates to SocialCollaborativeComponents)
@@ -51,7 +51,6 @@ import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
 /// - Better maintainability with focused concerns
 /// - Easier testing with isolated modules
 class SocialComponents {
-  
   // ===== USER DISPLAY & AVATARS (Delegated to SocialAvatarComponents) =====
 
   /// Build user avatar - MAIN METHOD that replaces UserDisplayWidgets.avatar()
@@ -223,7 +222,8 @@ class SocialComponents {
   }
 
   /// Build collaborative status indicator
-  static Widget collaborativeStatusIndicator({
+  static Widget collaborativeStatusIndicator(
+    BuildContext context, {
     required String contentId,
     String contentType = 'recipe',
     bool showText = true,
@@ -231,6 +231,7 @@ class SocialComponents {
     Color? inactiveColor,
   }) {
     return SocialCollaborativeComponents.collaborativeStatusIndicator(
+      context,
       contentId: contentId,
       contentType: contentType,
       showText: showText,
@@ -240,7 +241,8 @@ class SocialComponents {
   }
 
   /// Build participants list
-  static Widget participantsList({
+  static Widget participantsList(
+    BuildContext context, {
     required String contentId,
     String contentType = 'recipe',
     int maxParticipants = 5,
@@ -248,6 +250,7 @@ class SocialComponents {
     VoidCallback? onViewAll,
   }) {
     return SocialCollaborativeComponents.participantsList(
+      context,
       contentId: contentId,
       contentType: contentType,
       maxParticipants: maxParticipants,
@@ -259,7 +262,8 @@ class SocialComponents {
   // ===== FRIEND CATEGORY MANAGEMENT (Delegated to SocialGroupComponents) =====
 
   /// Build friend category selector
-  static Widget friendCategorySelector({
+  static Widget friendCategorySelector(
+    BuildContext context, {
     required List<FriendCategory> categories,
     FriendCategory? selectedCategory,
     Function(FriendCategory?)? onCategoryChanged,
@@ -272,6 +276,7 @@ class SocialComponents {
     BorderRadius? borderRadius,
   }) {
     return SocialGroupComponents.friendCategorySelector(
+      context,
       categories: categories,
       selectedCategory: selectedCategory,
       onCategoryChanged: onCategoryChanged,
@@ -286,7 +291,8 @@ class SocialComponents {
   }
 
   /// Build friend category chip
-  static Widget friendCategoryChip({
+  static Widget friendCategoryChip(
+    BuildContext context, {
     required FriendCategory category,
     bool selected = false,
     VoidCallback? onTap,
@@ -296,6 +302,7 @@ class SocialComponents {
     EdgeInsets? padding,
   }) {
     return SocialGroupComponents.friendCategoryChip(
+      context,
       category: category,
       selected: selected,
       onTap: onTap,
@@ -530,7 +537,8 @@ class SocialComponents {
   }
 
   /// Build target selector
-  static Widget targetSelector({
+  static Widget targetSelector(
+    BuildContext context, {
     required List<InvitationTarget> availableTargets,
     List<InvitationTarget>? selectedTargets,
     Function(List<InvitationTarget>)? onSelectionChanged,
@@ -543,6 +551,7 @@ class SocialComponents {
     ScrollPhysics? physics,
   }) {
     return SocialInvitationComponents.targetSelector(
+      context,
       availableTargets: availableTargets,
       selectedTargets: selectedTargets,
       onSelectionChanged: onSelectionChanged,
@@ -689,7 +698,8 @@ class SocialComponents {
   }
 
   /// Build social stats widget
-  static Widget socialStats({
+  static Widget socialStats(
+    BuildContext context, {
     required Map<String, dynamic> stats,
     bool horizontal = true,
     EdgeInsets? padding,
@@ -699,6 +709,7 @@ class SocialComponents {
     bool showIcons = true,
   }) {
     return SocialBuilderComponents.socialStats(
+      context,
       stats: stats,
       horizontal: horizontal,
       padding: padding,
@@ -753,7 +764,8 @@ class SocialComponents {
   }
 
   /// Build target loading error state
-  static Widget targetLoadingError({
+  static Widget targetLoadingError(
+    BuildContext context, {
     String? title = 'Kunde inte ladda målgrupper',
     String? message = 'Kontrollera din internetanslutning och försök igen.',
     VoidCallback? onRetry,
@@ -761,6 +773,7 @@ class SocialComponents {
     IconData errorIcon = Icons.error_outline,
   }) {
     return SocialInvitationComponents.targetLoadingError(
+      context,
       title: title,
       message: message,
       onRetry: onRetry,
@@ -770,7 +783,8 @@ class SocialComponents {
   }
 
   /// Build no targets available state
-  static Widget noTargetsAvailable({
+  static Widget noTargetsAvailable(
+    BuildContext context, {
     String? title = 'Inga målgrupper tillgängliga',
     String? message = 'Du har inte lagt till några vänner eller grupper än.',
     IconData icon = Icons.group_outlined,
@@ -779,6 +793,7 @@ class SocialComponents {
     bool showAddButton = true,
   }) {
     return SocialInvitationComponents.noTargetsAvailable(
+      context,
       title: title,
       message: message,
       icon: icon,
@@ -789,16 +804,19 @@ class SocialComponents {
   }
 
   /// Build no search results state
-  static Widget noSearchResults({
+  static Widget noSearchResults(
+    BuildContext context, {
     String? query,
     String? title = 'Inga sökresultat',
-    String? message = 'Prova att söka med andra ord eller kontrollera stavningen.',
+    String? message =
+        'Prova att söka med andra ord eller kontrollera stavningen.',
     IconData icon = Icons.search_off,
     VoidCallback? onClearSearch,
     String? clearButtonText = 'Rensa sökning',
     bool showClearButton = true,
   }) {
     return SocialInvitationComponents.noSearchResults(
+      context,
       query: query,
       title: title,
       message: message,
@@ -810,7 +828,8 @@ class SocialComponents {
   }
 
   /// Build targets selected success state
-  static Widget targetsSelectedSuccess({
+  static Widget targetsSelectedSuccess(
+    BuildContext context, {
     required int selectedCount,
     String? title = 'Målgrupper valda',
     String? message = 'Du har valt {count} målgrupper för inbjudan.',
@@ -820,6 +839,7 @@ class SocialComponents {
     Color? successColor = Colors.green,
   }) {
     return SocialInvitationComponents.targetsSelectedSuccess(
+      context,
       selectedCount: selectedCount,
       title: title,
       message: message,

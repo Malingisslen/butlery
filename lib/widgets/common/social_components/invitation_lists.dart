@@ -13,7 +13,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 /// - Collection presentations
 /// ❌ DOES NOT CONTAIN: Display widgets, selectors, states, actions
 class InvitationLists {
-
   // ===== TARGET LISTS AND GRIDS =====
 
   /// Build target list
@@ -72,7 +71,8 @@ class InvitationLists {
         final target = targets[index];
         return ListTile(
           title: Text(target.displayName),
-          subtitle: Text('${target.type.name} • ${target.memberCount ?? 0} medlemmar'),
+          subtitle: Text(
+              '${target.type.name} • ${target.memberCount ?? 0} medlemmar'),
           onTap: onTargetTap != null ? () => onTargetTap(target) : null,
         );
       },
@@ -81,7 +81,8 @@ class InvitationLists {
 
   /// Build sectioned target list
   /// List grouped by target type
-  static Widget sectionedTargetList({
+  static Widget sectionedTargetList(
+    BuildContext context, {
     required List<InvitationTarget> targets,
     Function(InvitationTarget)? onTargetTap,
     bool groupByType = true,
@@ -109,7 +110,7 @@ class InvitationLists {
       children: groupedTargets.entries.map((entry) {
         final type = entry.key;
         final typeTargets = entry.value;
-        
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -117,17 +118,16 @@ class InvitationLists {
               padding: const EdgeInsets.all(AppDimensions.spacingMd),
               child: Text(
                 type == InvitationTargetType.group ? 'Grupper' : 'Individer',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
             ),
             ...typeTargets.map((target) => ListTile(
-              title: Text(target.displayName),
-              subtitle: Text('${target.memberCount ?? 0} medlemmar'),
-              onTap: onTargetTap != null ? () => onTargetTap(target) : null,
-            )),
+                  title: Text(target.displayName),
+                  subtitle: Text('${target.memberCount ?? 0} medlemmar'),
+                  onTap: onTargetTap != null ? () => onTargetTap(target) : null,
+                )),
             const Divider(),
           ],
         );
@@ -154,7 +154,8 @@ class InvitationLists {
         final target = targets[index];
         return ListTile(
           title: Text(target.displayName),
-          subtitle: Text('${target.type.name} • ${target.memberCount ?? 0} medlemmar'),
+          subtitle: Text(
+              '${target.type.name} • ${target.memberCount ?? 0} medlemmar'),
           onTap: onTargetTap != null ? () => onTargetTap(target) : null,
         );
       },
@@ -163,7 +164,8 @@ class InvitationLists {
 
   /// Build horizontal target list
   /// Horizontal scrolling list
-  static Widget horizontalTargetList({
+  static Widget horizontalTargetList(
+    BuildContext context, {
     required List<InvitationTarget> targets,
     Function(InvitationTarget)? onTargetTap,
     double itemWidth = 120.0,
@@ -189,8 +191,8 @@ class InvitationLists {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        target.type == InvitationTargetType.group 
-                            ? Icons.group 
+                        target.type == InvitationTargetType.group
+                            ? Icons.group
                             : Icons.person,
                       ),
                       const SizedBox(height: AppDimensions.spacingXs),
@@ -199,7 +201,7 @@ class InvitationLists {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 12),
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
                   ),
@@ -214,7 +216,8 @@ class InvitationLists {
 
   /// Build staggered target grid
   /// Grid with variable item heights
-  static Widget staggeredTargetGrid({
+  static Widget staggeredTargetGrid(
+    BuildContext context, {
     required List<InvitationTarget> targets,
     Function(InvitationTarget)? onTargetTap,
     int crossAxisCount = 2,
@@ -237,13 +240,14 @@ class InvitationLists {
           child: InkWell(
             onTap: onTargetTap != null ? () => onTargetTap(target) : null,
             child: Padding(
-              padding: const EdgeInsets.all((AppDimensions.spacingSm + AppDimensions.spacingXs)),
+              padding: const EdgeInsets.all(
+                  (AppDimensions.spacingSm + AppDimensions.spacingXs)),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    target.type == InvitationTargetType.group 
-                        ? Icons.group 
+                    target.type == InvitationTargetType.group
+                        ? Icons.group
                         : Icons.person,
                     size: 32,
                   ),
@@ -253,15 +257,16 @@ class InvitationLists {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontWeight: FontWeight.w500),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
                   ),
                   const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     '${target.memberCount ?? 0} medlemmar',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textMedium,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textMedium,
+                        ),
                   ),
                 ],
               ),

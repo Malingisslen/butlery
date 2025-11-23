@@ -46,9 +46,8 @@ class SiteParserRegistry {
       }
 
       // Try without www. prefix
-      final withoutWww = domain.startsWith('www.')
-          ? domain.substring(4)
-          : domain;
+      final withoutWww =
+          domain.startsWith('www.') ? domain.substring(4) : domain;
 
       if (_parsers.containsKey(withoutWww)) {
         return _parsers[withoutWww];

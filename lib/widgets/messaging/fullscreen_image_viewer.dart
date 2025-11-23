@@ -67,19 +67,19 @@ class FullscreenImageViewer extends StatelessWidget {
                       color: AppColors.cardWhite,
                     ),
                   ),
-                  errorWidget: (context, url, error) => const Center(
+                  errorWidget: (context, url, error) => Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.broken_image,
                           size: 64,
                           color: AppColors.textLight,
                         ),
-                        SizedBox(height: AppDimensions.spacingM),
+                        const SizedBox(height: AppDimensions.spacingM),
                         Text(
                           'Kunde inte ladda bild',
-                          style: TextStyle(
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: AppColors.textLight,
                           ),
                         ),

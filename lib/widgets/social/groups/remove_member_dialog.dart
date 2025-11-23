@@ -58,14 +58,20 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
               ),
               TextSpan(
                 text: member.displayName,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
               const TextSpan(
                 text: ' från gruppen ',
               ),
               TextSpan(
                 text: '"${group.name}"',
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
               const TextSpan(
                 text: '?',

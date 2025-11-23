@@ -76,7 +76,8 @@ class CollaborativeShoppingItems extends StatelessWidget {
             child: Divider(color: Theme.of(context).colorScheme.outline),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingS),
+            padding:
+                const EdgeInsets.symmetric(horizontal: AppDimensions.spacingS),
             child: Text(
               'KLARA (${viewModel.completedItemsCount})',
               style: AppTextStyles.bodySmall.copyWith(
@@ -136,13 +137,13 @@ class CollaborativeShoppingItems extends StatelessWidget {
   Widget _buildItemTitle(BuildContext context, dynamic item) {
     return Text(
       item.displayText,
-      style: TextStyle(
-        decoration: item.bought ? TextDecoration.lineThrough : null,
-        color: item.bought
-            ? Theme.of(context).colorScheme.onSurfaceVariant
-            : null,
-        fontWeight: item.bought ? FontWeight.normal : FontWeight.w500,
-      ),
+      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            decoration: item.bought ? TextDecoration.lineThrough : null,
+            color: item.bought
+                ? Theme.of(context).colorScheme.onSurfaceVariant
+                : null,
+            fontWeight: item.bought ? FontWeight.normal : FontWeight.w500,
+          ),
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
     );
@@ -153,7 +154,8 @@ class CollaborativeShoppingItems extends StatelessWidget {
     return subtitle != null
         ? Text(
             subtitle,
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+            style:
+                AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           )
@@ -178,8 +180,8 @@ class CollaborativeShoppingItems extends StatelessWidget {
 
   /// Check if index represents a completed item separator
   bool isCompletedSeparatorIndex(int index) {
-    return index == viewModel.activeItems.length && 
-           viewModel.completedItemsList.isNotEmpty;
+    return index == viewModel.activeItems.length &&
+        viewModel.completedItemsList.isNotEmpty;
   }
 
   /// Check if index represents an active item

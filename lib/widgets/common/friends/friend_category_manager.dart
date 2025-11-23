@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+
 /// Friend Category Manager
 /// Handles ONLY interactive friend category management with state.
 /// This is a complex stateful widget for selecting friends and categories with full UI interaction.
@@ -62,25 +63,25 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
     return Consumer2<UnifiedFriendsService, FriendsViewModel>(
       builder: (context, categoriesService, friendsVM, child) {
         if (categoriesService.isLoading || friendsVM.isLoading) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
+                const SizedBox(
                   width: AppDimensions.iconSizeM,
                   height: AppDimensions.iconSizeM,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
                   ),
                 ),
-                SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.spacingXl),
                 Text(
                   'Laddar vänner och kategorier...',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
               ],
             ),
@@ -97,10 +98,9 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             ),
             child: Text(
               categoriesService.error ?? 'Kunde inte ladda kategorier',
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.error,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.error,
+                  ),
             ),
           );
         }
@@ -115,10 +115,9 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             ),
             child: Text(
               friendsVM.error ?? 'Kunde inte ladda vänner',
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.error,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.error,
+                  ),
             ),
           );
         }
@@ -166,16 +165,16 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
         Text(
           widget.title,
           style: AppTextStyles.headlineSmall.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+            fontWeight: FontWeight.bold,
+          ),
         ),
         if (widget.subtitle.isNotEmpty) ...[
           const SizedBox(height: AppDimensions.spacingM),
           Text(
             widget.subtitle,
             style: AppTextStyles.bodyMedium.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ],
@@ -198,9 +197,9 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             Text(
               'Kategorier',
               style: AppTextStyles.titleMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
           ],
         ),
@@ -208,8 +207,8 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
         Text(
           'Välj hela kategorier för snabb delning',
           style: AppTextStyles.bodySmall.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: AppDimensions.spacingM),
         Wrap(
@@ -246,15 +245,15 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                               .colorScheme
                               .primary
                               .withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.borderRadius8),
                     ),
                     child: Text(
                       '${category.friendCount}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
                     ),
                   ),
                 ],
@@ -291,9 +290,9 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             Text(
               'Individuellt val',
               style: AppTextStyles.titleMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
           ],
         ),
@@ -301,12 +300,13 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
         Text(
           'Välj specifika vänner från din vänlista',
           style: AppTextStyles.bodySmall.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: AppDimensions.spacingM),
         SizedBox(
-          height: 320, // Increased from 240 to accommodate 5 friends (5 × ~64px)
+          height:
+              320, // Increased from 240 to accommodate 5 friends (5 × ~64px)
           child: DecoratedBox(
             decoration: BoxDecoration(
               border: Border.all(
@@ -315,52 +315,55 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
             ),
             child: friends.isEmpty
-              ? StateWidget.empty(
-                  title: 'Inga vänner att visa',
-                  subtitle: 'Lägg till vänner först',
-                  icon: Icons.people_outline,
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(AppDimensions.spacingXs),
-                  itemCount: friends.length,
-                  itemBuilder: (context, index) {
-                    final friend = friends[index];
-                    final isSelected = _selectedFriends.contains(friend.uid);
+                ? StateWidget.empty(
+                    title: 'Inga vänner att visa',
+                    subtitle: 'Lägg till vänner först',
+                    icon: Icons.people_outline,
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                    itemCount: friends.length,
+                    itemBuilder: (context, index) {
+                      final friend = friends[index];
+                      final isSelected = _selectedFriends.contains(friend.uid);
 
-                    return Card(
-                      elevation: 0,
-                      margin:
-                          const EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
-                      color: isSelected
-                          ? Theme.of(context)
-                              .colorScheme
-                              .primary
-                              .withValues(alpha: 0.1)
-                          : null,
-                      child: CheckboxListTile(
-                        value: isSelected,
-                        onChanged: (selected) => _toggleFriend(friend.uid),
-                        title: Text(
-                          friend.displayName,
-                          style: TextStyle(
-                            fontWeight: isSelected
-                                ? FontWeight.w600
-                                : FontWeight.normal,
+                      return Card(
+                        elevation: 0,
+                        margin: const EdgeInsets.symmetric(
+                            vertical: AppDimensions.spacingXs),
+                        color: isSelected
+                            ? Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.1)
+                            : null,
+                        child: CheckboxListTile(
+                          value: isSelected,
+                          onChanged: (selected) => _toggleFriend(friend.uid),
+                          title: Text(
+                            friend.displayName,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                ),
                           ),
+                          subtitle: null,
+                          dense: true,
+                          controlAffinity: ListTileControlAffinity.trailing,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: AppDimensions.spacingS,
+                            vertical: AppDimensions.spacingXs,
+                          ),
+                          activeColor: Theme.of(context).colorScheme.primary,
+                          checkColor: AppColors.neutralLight,
                         ),
-                        subtitle: null,
-                        dense: true,
-                        controlAffinity: ListTileControlAffinity.trailing,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: AppDimensions.spacingS,
-                          vertical: AppDimensions.spacingXs,
-                        ),
-                        activeColor: Theme.of(context).colorScheme.primary,
-                        checkColor: AppColors.neutralLight,
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
           ),
         ),
       ],
@@ -399,16 +402,16 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                 Text(
                   'Valda vänner',
                   style: AppTextStyles.labelMedium.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 Text(
                   '${_selectedFriends.length} ${_selectedFriends.length == 1 ? 'vän vald' : 'vänner valda'}',
                   style: AppTextStyles.bodyMedium.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
@@ -431,8 +434,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
     );
   }
 
-  void _toggleCategory(
-      FriendCategory category, UnifiedFriendsService service) {
+  void _toggleCategory(FriendCategory category, UnifiedFriendsService service) {
     if (mounted) {
       setState(() {
         if (_selectedCategories.contains(category.id)) {
@@ -486,10 +488,11 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
     widget.onSelectionChanged([]);
     AppLogger.info('🗑️ Alla val rensade');
   }
+
   @override
   void dispose() {
     // Cancel all timers
-    // Cancel all stream subscriptions  
+    // Cancel all stream subscriptions
     // Dispose of resources
     super.dispose();
   }

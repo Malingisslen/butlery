@@ -63,19 +63,22 @@ void main() {
       testWidgets('should delegate to CategorySelectionWidgets.friendCategoryChip correctly', (tester) async {
         // Test facade delegation - ultrathink focus on architecture verification
         bool onTapCalled = false;
-        
-        final widget = FriendCategoryWidgets.friendCategoryChip(
-          category: testCategory,
-          isSelected: false,
-          onTap: () => onTapCalled = true,
-          showCount: true,
-          enabled: true,
-        );
 
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Center(child: widget),
+              body: Builder(
+                builder: (context) => Center(
+                  child: FriendCategoryWidgets.friendCategoryChip(
+                    context,
+                    category: testCategory,
+                    isSelected: false,
+                    onTap: () => onTapCalled = true,
+                    showCount: true,
+                    enabled: true,
+                  ),
+                ),
+              ),
             ),
           ),
         );
@@ -101,17 +104,22 @@ void main() {
         ];
 
         for (final config in testConfigs) {
-          final widget = FriendCategoryWidgets.friendCategoryChip(
-            category: testCategory,
-            isSelected: config['isSelected'] as bool,
-            onTap: () {},
-            showCount: config['showCount'] as bool,
-            enabled: config['enabled'] as bool,
-          );
-
           await tester.pumpWidget(
             MaterialApp(
-              home: Scaffold(body: Center(child: widget)),
+              home: Scaffold(
+                body: Builder(
+                  builder: (context) => Center(
+                    child: FriendCategoryWidgets.friendCategoryChip(
+                      context,
+                      category: testCategory,
+                      isSelected: config['isSelected'] as bool,
+                      onTap: () {},
+                      showCount: config['showCount'] as bool,
+                      enabled: config['enabled'] as bool,
+                    ),
+                  ),
+                ),
+              ),
             ),
           );
 
@@ -131,10 +139,13 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: FriendCategoryWidgets.friendCategoryChip(
-                category: testCategory,
-                isSelected: false,
-                onTap: () {},
+              body: Builder(
+                builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                  context,
+                  category: testCategory,
+                  isSelected: false,
+                  onTap: () {},
+                ),
               ),
             ),
           ),
@@ -150,11 +161,14 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: FriendCategoryWidgets.friendCategoryChip(
-                category: testCategory,
-                isSelected: false,
-                onTap: () {},
-                showCount: true,
+              body: Builder(
+                builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                  context,
+                  category: testCategory,
+                  isSelected: false,
+                  onTap: () {},
+                  showCount: true,
+                ),
               ),
             ),
           ),
@@ -171,11 +185,14 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: FriendCategoryWidgets.friendCategoryChip(
-                category: testCategory,
-                isSelected: false,
-                onTap: () {},
-                showCount: false,
+              body: Builder(
+                builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                  context,
+                  category: testCategory,
+                  isSelected: false,
+                  onTap: () {},
+                  showCount: false,
+                ),
               ),
             ),
           ),
@@ -192,10 +209,13 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: FriendCategoryWidgets.friendCategoryChip(
-                category: emojiCategory,
-                isSelected: false,
-                onTap: () {},
+              body: Builder(
+                builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                  context,
+                  category: emojiCategory,
+                  isSelected: false,
+                  onTap: () {},
+                ),
               ),
             ),
           ),
@@ -212,10 +232,13 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: FriendCategoryWidgets.friendCategoryChip(
-                category: noEmojiCategory,
-                isSelected: false,
-                onTap: () {},
+              body: Builder(
+                builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                  context,
+                  category: noEmojiCategory,
+                  isSelected: false,
+                  onTap: () {},
+                ),
               ),
             ),
           ),
@@ -234,10 +257,13 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: FriendCategoryWidgets.friendCategoryChip(
-                category: testCategory,
-                isSelected: true,
-                onTap: () {},
+              body: Builder(
+                builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                  context,
+                  category: testCategory,
+                  isSelected: true,
+                  onTap: () {},
+                ),
               ),
             ),
           ),
@@ -254,10 +280,13 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: FriendCategoryWidgets.friendCategoryChip(
-                category: testCategory,
-                isSelected: false,
-                onTap: () {},
+              body: Builder(
+                builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                  context,
+                  category: testCategory,
+                  isSelected: false,
+                  onTap: () {},
+                ),
               ),
             ),
           ),
@@ -272,15 +301,18 @@ void main() {
       testWidgets('should handle enabled state correctly', (tester) async {
         // Test enabled interaction
         bool onTapCalled = false;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: FriendCategoryWidgets.friendCategoryChip(
-                category: testCategory,
-                isSelected: false,
-                onTap: () => onTapCalled = true,
-                enabled: true,
+              body: Builder(
+                builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                  context,
+                  category: testCategory,
+                  isSelected: false,
+                  onTap: () => onTapCalled = true,
+                  enabled: true,
+                ),
               ),
             ),
           ),
@@ -297,15 +329,18 @@ void main() {
       testWidgets('should handle disabled state correctly', (tester) async {
         // Test disabled interaction
         bool onTapCalled = false;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: FriendCategoryWidgets.friendCategoryChip(
-                category: testCategory,
-                isSelected: false,
-                onTap: () => onTapCalled = true,
-                enabled: false,
+              body: Builder(
+                builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                  context,
+                  category: testCategory,
+                  isSelected: false,
+                  onTap: () => onTapCalled = true,
+                  enabled: false,
+                ),
               ),
             ),
           ),
@@ -334,11 +369,14 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: FriendCategoryWidgets.friendCategoryChip(
-                category: swedishCategory,
-                isSelected: false,
-                onTap: () {},
-                showCount: true,
+              body: Builder(
+                builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                  context,
+                  category: swedishCategory,
+                  isSelected: false,
+                  onTap: () {},
+                  showCount: true,
+                ),
               ),
             ),
           ),
@@ -358,11 +396,14 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: FriendCategoryWidgets.friendCategoryChip(
-                category: emptyCategory,
-                isSelected: false,
-                onTap: () {},
-                showCount: true,
+              body: Builder(
+                builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                  context,
+                  category: emptyCategory,
+                  isSelected: false,
+                  onTap: () {},
+                  showCount: true,
+                ),
               ),
             ),
           ),
@@ -380,11 +421,14 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: FriendCategoryWidgets.friendCategoryChip(
-                category: noEmojiCategory, // Has 1 friend
-                isSelected: false,
-                onTap: () {},
-                showCount: true,
+              body: Builder(
+                builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                  context,
+                  category: noEmojiCategory, // Has 1 friend
+                  isSelected: false,
+                  onTap: () {},
+                  showCount: true,
+                ),
               ),
             ),
           ),
@@ -412,10 +456,13 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: FriendCategoryWidgets.friendCategoryChip(
-                category: nullEmojiCategory,
-                isSelected: false,
-                onTap: () {},
+              body: Builder(
+                builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                  context,
+                  category: nullEmojiCategory,
+                  isSelected: false,
+                  onTap: () {},
+                ),
               ),
             ),
           ),
@@ -443,10 +490,13 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: FriendCategoryWidgets.friendCategoryChip(
-                category: emptyEmojiCategory,
-                isSelected: false,
-                onTap: () {},
+              body: Builder(
+                builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                  context,
+                  category: emptyEmojiCategory,
+                  isSelected: false,
+                  onTap: () {},
+                ),
               ),
             ),
           ),
@@ -475,11 +525,14 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: FriendCategoryWidgets.friendCategoryChip(
-                category: largeCategory,
-                isSelected: false,
-                onTap: () {},
-                showCount: true,
+              body: Builder(
+                builder: (context) => FriendCategoryWidgets.friendCategoryChip(
+                  context,
+                  category: largeCategory,
+                  isSelected: false,
+                  onTap: () {},
+                  showCount: true,
+                ),
               ),
             ),
           ),
@@ -504,13 +557,16 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: SizedBox(
-                width: 300, // Constrained width to test text wrapping
-                child: FriendCategoryWidgets.friendCategoryChip(
-                  category: longNameCategory,
-                  isSelected: false,
-                  onTap: () {},
-                  showCount: true,
+              body: Builder(
+                builder: (context) => SizedBox(
+                  width: 300, // Constrained width to test text wrapping
+                  child: FriendCategoryWidgets.friendCategoryChip(
+                    context,
+                    category: longNameCategory,
+                    isSelected: false,
+                    onTap: () {},
+                    showCount: true,
+                  ),
                 ),
               ),
             ),

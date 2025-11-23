@@ -97,6 +97,7 @@ class _AuthViewState extends State<AuthView> {
       ),
     );
   }
+
   Widget _buildHeader(BuildContext context) {
     return const Column(
       children: [
@@ -107,61 +108,63 @@ class _AuthViewState extends State<AuthView> {
       ],
     );
   }
+
   Widget _buildAuthCard(BuildContext context, AuthViewModel viewModel) {
     return AuthFormCard(
       child: AutofillGroup(
         child: Form(
           key: _formKey,
           child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Rubrik
-            Text(
-              viewModel.isLoginMode ? 'Logga in' : 'Skapa konto',
-              style: AppTextStyles.headlineSmall,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppDimensions.spacingXl),
-
-            // Namn-fält (bara vid registrering)
-            if (!viewModel.isLoginMode) ...[
-              _buildNameField(viewModel),
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Rubrik
+              Text(
+                viewModel.isLoginMode ? 'Logga in' : 'Skapa konto',
+                style: AppTextStyles.headlineSmall,
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: AppDimensions.spacingXl),
-            ],
 
-            // Email-fält
-            _buildEmailField(viewModel),
-            const SizedBox(height: AppDimensions.spacingXl),
+              // Namn-fält (bara vid registrering)
+              if (!viewModel.isLoginMode) ...[
+                _buildNameField(viewModel),
+                const SizedBox(height: AppDimensions.spacingXl),
+              ],
 
-            // Lösenords-fält
-            _buildPasswordField(viewModel),
-
-            // Glömt lösenord (bara vid login)
-            if (viewModel.isLoginMode) ...[
-              const SizedBox(height: AppDimensions.spacingM),
-              _buildForgotPasswordButton(context, viewModel),
-            ],
-
-            const SizedBox(height: AppDimensions.spacingXl),
-
-            // Error-meddelande
-            if (viewModel.errorMessage != null) ...[
-              _buildErrorMessage(viewModel.errorMessage!),
+              // Email-fält
+              _buildEmailField(viewModel),
               const SizedBox(height: AppDimensions.spacingXl),
+
+              // Lösenords-fält
+              _buildPasswordField(viewModel),
+
+              // Glömt lösenord (bara vid login)
+              if (viewModel.isLoginMode) ...[
+                const SizedBox(height: AppDimensions.spacingM),
+                _buildForgotPasswordButton(context, viewModel),
+              ],
+
+              const SizedBox(height: AppDimensions.spacingXl),
+
+              // Error-meddelande
+              if (viewModel.errorMessage != null) ...[
+                _buildErrorMessage(viewModel.errorMessage!),
+                const SizedBox(height: AppDimensions.spacingXl),
+              ],
+
+              // Submit-knapp
+              _buildSubmitButton(viewModel),
+              const SizedBox(height: AppDimensions.spacingXl),
+
+              // Toggle login/register
+              _buildToggleButton(viewModel),
             ],
-
-            // Submit-knapp
-            _buildSubmitButton(viewModel),
-            const SizedBox(height: AppDimensions.spacingXl),
-
-            // Toggle login/register
-            _buildToggleButton(viewModel),
-          ],
+          ),
         ),
-      ),
       ),
     );
   }
+
   Widget _buildNameField(AuthViewModel viewModel) {
     return TextFormField(
       key: const Key('name_field'),
@@ -182,6 +185,7 @@ class _AuthViewState extends State<AuthView> {
       },
     );
   }
+
   Widget _buildEmailField(AuthViewModel viewModel) {
     return StyledInput.email(
       key: const Key('email_field'),
@@ -192,6 +196,7 @@ class _AuthViewState extends State<AuthView> {
       validator: FormValidators.authEmail(),
     );
   }
+
   Widget _buildPasswordField(AuthViewModel viewModel) {
     return StyledInput.password(
       key: const Key('password_field'),
@@ -220,6 +225,7 @@ class _AuthViewState extends State<AuthView> {
       ),
     );
   }
+
   Widget _buildForgotPasswordButton(
     BuildContext context,
     AuthViewModel viewModel,
@@ -238,12 +244,14 @@ class _AuthViewState extends State<AuthView> {
       ),
     );
   }
+
   Widget _buildErrorMessage(String message) {
     return StateWidget.error(
       message: message,
       // Removed non-functional "Try Again" button - error messages are self-explanatory
     );
   }
+
   Widget _buildSubmitButton(AuthViewModel viewModel) {
     return StyledButton.primary(
       key: const Key('submit_button'),
@@ -252,6 +260,7 @@ class _AuthViewState extends State<AuthView> {
       isLoading: viewModel.isLoading,
     );
   }
+
   Widget _buildToggleButton(AuthViewModel viewModel) {
     return ActionButtons.textButton(
       context,
@@ -264,6 +273,7 @@ class _AuthViewState extends State<AuthView> {
       ),
     );
   }
+
   Future<void> _handleSubmit(AuthViewModel viewModel) async {
     // Rensa tidigare fel
     viewModel.clearError();
@@ -306,6 +316,7 @@ class _AuthViewState extends State<AuthView> {
       );
     }
   }
+
   Future<void> _showPasswordResetDialog(
     BuildContext context,
     AuthViewModel viewModel,
@@ -355,10 +366,10 @@ class _AuthViewState extends State<AuthView> {
       // ignore: use_build_context_synchronously
       final messenger = ScaffoldMessenger.of(context);
       // ignore: use_build_context_synchronously
-      final primaryColor =
-          Theme.of(context).colorScheme.primary.withValues(alpha: 0.8);
+      final theme = Theme.of(context);
+      final primaryColor = theme.colorScheme.primary.withValues(alpha: 0.8);
       // ignore: use_build_context_synchronously
-      final errorColor = Theme.of(context).colorScheme.error;
+      final errorColor = theme.colorScheme.error;
 
       final success = await viewModel.sendPasswordReset(emailController.text);
 

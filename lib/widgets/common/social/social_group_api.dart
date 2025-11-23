@@ -9,7 +9,8 @@ import 'package:butlery/widgets/common/friends/friend_category_widgets.dart';
 /// Group API delegation for SocialComponents
 class SocialGroupApi {
   /// Build friend category selector
-  static Widget friendCategorySelector({
+  static Widget friendCategorySelector(
+    BuildContext context, {
     required List<FriendCategory> categories,
     required Set<String> selectedCategoryIds,
     required Function(String) onCategoryToggled,
@@ -21,6 +22,7 @@ class SocialGroupApi {
     VoidCallback? onCreateNew,
   }) {
     return FriendCategoryWidgets.friendCategorySelector(
+      context,
       categories: categories,
       selectedCategoryIds: selectedCategoryIds,
       onCategoryToggled: onCategoryToggled,
@@ -34,7 +36,8 @@ class SocialGroupApi {
   }
 
   /// Build friend category chip
-  static Widget friendCategoryChip({
+  static Widget friendCategoryChip(
+    BuildContext context, {
     required FriendCategory category,
     required bool isSelected,
     required VoidCallback onTap,
@@ -42,6 +45,7 @@ class SocialGroupApi {
     bool enabled = true,
   }) {
     return FriendCategoryWidgets.friendCategoryChip(
+      context,
       category: category,
       isSelected: isSelected,
       onTap: onTap,

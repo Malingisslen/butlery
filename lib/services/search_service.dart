@@ -308,8 +308,9 @@ class SearchService extends BaseService {
     final queryAsNumber = double.tryParse(query);
     if (queryAsNumber != null) {
       if ((recipe.portions?.toString().contains(query)).orFalse()) return true;
-      if ((recipe.timeMinutes?.toString().contains(query)).orFalse())
+      if ((recipe.timeMinutes?.toString().contains(query)).orFalse()) {
         return true;
+      }
       if ((recipe.rating?.toString().contains(query)).orFalse()) return true;
     }
 

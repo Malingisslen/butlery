@@ -47,7 +47,11 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
   Widget build(BuildContext context) {
     return AlertDialog(
       icon: widget.titleIcon != null
-          ? Icon(widget.titleIcon!, color: widget.isDangerous ? AppColors.error : widget.primaryActionColor ?? AppColors.primaryBlue, size: AppDimensions.iconSizeXxl)
+          ? Icon(widget.titleIcon!,
+              color: widget.isDangerous
+                  ? AppColors.error
+                  : widget.primaryActionColor ?? AppColors.primaryBlue,
+              size: AppDimensions.iconSizeXxl)
           : null,
       title: Text(widget.title),
       content: Column(
@@ -55,7 +59,9 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (widget.subtitle != null) ...[
-            Text(widget.subtitle!, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+            Text(widget.subtitle!,
+                style: AppTextStyles.bodyMedium
+                    .copyWith(color: AppColors.textSecondary)),
             const SizedBox(height: AppDimensions.spacingM),
           ],
           widget.buildContent(context),
@@ -80,7 +86,9 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
   }
 
   Widget _buildPrimaryButton() {
-    final buttonColor = widget.isDangerous ? AppColors.error : (widget.primaryActionColor ?? AppColors.primaryBlue);
+    final buttonColor = widget.isDangerous
+        ? AppColors.error
+        : (widget.primaryActionColor ?? AppColors.primaryBlue);
     if (widget.isDangerous) {
       return FilledButton.icon(
         onPressed: _isLoading ? null : _onPrimaryAction,
@@ -94,7 +102,8 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
                 height: 16,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.cardWhite),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(AppColors.cardWhite),
                 ),
               )
             : Icon(widget.primaryActionIcon ?? Icons.delete),
@@ -110,7 +119,8 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
                 height: 16,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.cardWhite),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(AppColors.cardWhite),
                 ),
               )
             : Icon(widget.primaryActionIcon ?? Icons.check),
@@ -157,7 +167,12 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
           const Icon(Icons.error_outline, color: AppColors.error),
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
-            child: Text(_error!, style: const TextStyle(color: AppColors.error)),
+            child: Text(
+              _error!,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.error,
+                  ),
+            ),
           ),
         ],
       ),
@@ -284,7 +299,9 @@ class DestructiveConfirmationDialog extends BaseDialog<bool> {
               TextSpan(text: message),
               TextSpan(
                 text: ' "$itemName"',
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const TextSpan(text: '?'),
             ],
@@ -338,7 +355,8 @@ abstract class BaseActionDialog<T> extends StatefulWidget {
   bool get isDestructiveAction => false;
 
   @override
-  State<BaseActionDialog<T>> createState() => BaseActionDialogState<BaseActionDialog<T>, T>();
+  State<BaseActionDialog<T>> createState() =>
+      BaseActionDialogState<BaseActionDialog<T>, T>();
 }
 
 class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
@@ -386,7 +404,8 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
                 ),
               )
             : widget.actionButtonIcon,
-        label: Text(isLoading ? widget.loadingButtonText : widget.actionButtonText),
+        label: Text(
+            isLoading ? widget.loadingButtonText : widget.actionButtonText),
       );
     } else {
       return FilledButton.icon(
@@ -398,7 +417,8 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
             : widget.actionButtonIcon,
-        label: Text(isLoading ? widget.loadingButtonText : widget.actionButtonText),
+        label: Text(
+            isLoading ? widget.loadingButtonText : widget.actionButtonText),
       );
     }
   }
@@ -443,7 +463,9 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
           Expanded(
             child: Text(
               error!,
-              style: const TextStyle(color: AppColors.error),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.error,
+                  ),
             ),
           ),
         ],
