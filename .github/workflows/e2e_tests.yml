@@ -46,7 +46,7 @@ jobs:
 
       - name: Setup Node.js for Firebase CLI (emulator tests only)
         if: matrix.tier == 'emulator'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '18'
 
