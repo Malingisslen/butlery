@@ -141,7 +141,7 @@ final service = ServiceLocator.get<UnifiedRecipeService>();
 - ViewModels → `test/unit/viewmodels/`
 - Widgets → `test/unit/widgets/`
 - Run `flutter test` before completing changes
-- See `/docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md`
+- See `/docs/testing/TESTING_COMPLETE_GUIDE.md`
 
 **5. Swedish Localization**:
 - All user-facing text must be in Swedish

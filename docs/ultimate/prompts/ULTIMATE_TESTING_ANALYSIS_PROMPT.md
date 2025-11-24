@@ -408,8 +408,7 @@ Your **ONLY** task is to:
 **Investigate:**
 
 1. **Testing Strategy Documentation**
-   - Check: docs/testing/TEST_GUIDE.md (exists? comprehensive?)
-   - Review: docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md
+   - Check: docs/testing/TESTING_COMPLETE_GUIDE.md (exists? comprehensive?)
    - Verify: docs/testing/TESTING_DASHBOARD.md (up to date?)
    - Identify: Missing testing documentation
 

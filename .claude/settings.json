@@ -34,10 +34,46 @@
       "Bash(else:*)",
       "Bash(fi)",
       "WebSearch",
-      "mcp__*"
+      "mcp__*",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git rm:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(cp:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(git push:*)",
+      "Bash(git reset:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -Command \"[System.Media.SystemSounds]::Exclamation.Play()\""
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -Command \"[System.Media.SystemSounds]::Exclamation.Play()\""
+          }
+        ]
+      }
+    ]
   },
   "customInstructions": {
     "enabled": true,
@@ -67,49 +103,6 @@
       "docs/testing/TESTING_DASHBOARD.md",
       "docs/PROJECT_STATUS.md",
       "README.md"
-    ]
-  },
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "npx tsx .claude/hooks/skill-injector.ts"
-          },
-          {
-            "type": "command",
-            "command": "npx tsx .claude/hooks/prompt-logger.ts"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "npx tsx .claude/hooks/architecture-validator.ts"
-          },
-          {
-            "type": "command",
-            "command": "npx tsx .claude/hooks/file-operation-logger.ts"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "npx tsx .claude/hooks/quality-checks.ts"
-          }
-        ]
-      }
     ]
   }
 }
