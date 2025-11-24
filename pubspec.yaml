@@ -29,7 +29,7 @@ dependencies:
 
   # ==================== STATE MANAGEMENT ====================
   provider: ^6.1.2
-  get_it: ^9.0.5
+  get_it: ^9.1.0
 
   # ==================== LOCAL STORAGE ====================
   hive: ^2.2.3
