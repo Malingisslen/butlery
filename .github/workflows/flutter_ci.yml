@@ -329,7 +329,7 @@ jobs:
         uses: actions/checkout@v4
         
       - name: 📥 Download web artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v6
         with:
           name: Web-artifacts
           path: build/web
