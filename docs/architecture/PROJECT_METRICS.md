@@ -405,8 +405,7 @@ This architecture serves as a **gold standard** for Flutter applications and pro
 
 ### Testing
 - [Testing Dashboard](../testing/TESTING_DASHBOARD.md) - Detailed test metrics
-- [Test Patterns](../testing/TEST_PATTERNS_QUICK_REFERENCE.md) - Testing patterns
-- [Test Guide](../testing/TEST_GUIDE.md) - Complete testing guide
+- [Testing Guide](../testing/TESTING_COMPLETE_GUIDE.md) - Complete testing guide
 
 ### Project
 - [CLAUDE.md](../../CLAUDE.md) - Development standards

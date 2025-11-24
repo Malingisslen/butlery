@@ -31,7 +31,7 @@
   - ✅ Real-time streams and UI components
 - **Test Coverage & Infrastructure**:
   - **Test Dashboard**: See `/docs/testing/TESTING_DASHBOARD.md` for current metrics
-  - **Test Patterns**: See `/docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md` for essential patterns
+  - **Test Guide**: See `/docs/testing/TESTING_COMPLETE_GUIDE.md` for patterns and strategy
   - **Test Strategy**: Bottom-up (repositories → services → viewmodels → integration)
   - **CI/CD**: Tests run on every commit (GitHub Actions)
   - **Priority Areas**: Security validation, GDPR compliance, data integrity
@@ -279,7 +279,7 @@ if (ingredients.hasItems) { /* ... */ } // Instead of: ingredients != null && in
 **See Also:**
 - Comprehensive documentation: `/docs/architecture/DEDUPLICATION_PATTERNS.md`
 - Usage examples and migration guides in documentation
-- Test patterns: `/docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md`
+- Test guide: `/docs/testing/TESTING_COMPLETE_GUIDE.md`
 
 ### Dependency Injection System
 **Architecture**: Clean modular DI with GetIt service locator
@@ -426,8 +426,7 @@ await ApplicationBootstrap.initialize();
 - **Run Command**: `dart tools/code_intelligence_platform.dart`
 
 ## Test System Guidelines
-- **Complete Guide**: See `/docs/testing/TEST_GUIDE.md`
-- **Quick Patterns**: See `/docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md`
+- **Complete Guide**: See `/docs/testing/TESTING_COMPLETE_GUIDE.md`
 - **Current Status**: See `/docs/testing/TESTING_DASHBOARD.md`
 
 ## Critical Rules

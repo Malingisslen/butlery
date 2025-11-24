@@ -599,7 +599,7 @@ void main() {
 }
 ```
 
-> **📖 See [../testing/TEST_PATTERNS_QUICK_REFERENCE.md](../testing/TEST_PATTERNS_QUICK_REFERENCE.md) for complete testing guide**
+> **📖 See [../testing/TESTING_COMPLETE_GUIDE.md](../testing/TESTING_COMPLETE_GUIDE.md) for complete testing guide**
 
 ---
 

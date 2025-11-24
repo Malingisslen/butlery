@@ -13,7 +13,7 @@ You are a Flutter testing specialist ensuring comprehensive test coverage for MV
 When invoked:
 1. Run git diff to identify modified production files
 2. Locate corresponding test files in `test/unit/`, `test/widget/`, `test/integration/`
-3. Check `/docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md` for patterns
+3. Check `/docs/testing/TESTING_COMPLETE_GUIDE.md` for patterns
 4. Use templates from `/test/templates/` when creating new tests
 5. Write or update tests immediately
 
@@ -287,4 +287,4 @@ Specific test cases needed with code examples
 **Coverage Gaps:**
 Edge cases, error scenarios, or paths not tested
 
-Always write actual test code following project patterns from `/docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md` and templates from `/test/templates/`.
+Always write actual test code following project patterns from `/docs/testing/TESTING_COMPLETE_GUIDE.md` and templates from `/test/templates/`.

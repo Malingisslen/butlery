@@ -384,7 +384,6 @@ jobs:
 ## Related Documentation
 
 - **[TESTING_COMPLETE_GUIDE.md](./TESTING_COMPLETE_GUIDE.md)** - Complete testing guide
-- **[TEST_PATTERNS_QUICK_REFERENCE.md](./TEST_PATTERNS_QUICK_REFERENCE.md)** - Quick pattern lookup
 - **[INTEGRATION_TESTING.md](./INTEGRATION_TESTING.md)** - Integration testing patterns
 - **[WIDGET_E2E_TESTING.md](./WIDGET_E2E_TESTING.md)** - Widget and E2E testing patterns
 - **[TESTING_DASHBOARD.md](./TESTING_DASHBOARD.md)** - Current test coverage and priorities

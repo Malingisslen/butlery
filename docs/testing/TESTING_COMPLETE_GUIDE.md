@@ -23,7 +23,6 @@ The testing documentation is now organized into focused guides:
 
 ### Tracking & Status
 - **[Testing Dashboard](TESTING_DASHBOARD.md)** - Current coverage and test metrics
-- **[Test Patterns Quick Reference](TEST_PATTERNS_QUICK_REFERENCE.md)** - Quick lookup guide
 
 ---
 
@@ -49,7 +48,6 @@ The original TESTING_COMPLETE_GUIDE.md was **2,175 lines** - too large for easy 
 
 **For Test Coverage:**
 - Current metrics → [Testing Dashboard](TESTING_DASHBOARD.md)
-- Quick patterns → [Test Patterns Quick Reference](TEST_PATTERNS_QUICK_REFERENCE.md)
 
 ---
 

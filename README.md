@@ -215,7 +215,7 @@ open coverage/html/index.html
 
 **📊 For detailed test metrics and patterns, see:**
 - [docs/testing/TESTING_DASHBOARD.md](docs/testing/TESTING_DASHBOARD.md)
-- [docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md](docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md)
+- [docs/testing/TESTING_COMPLETE_GUIDE.md](docs/testing/TESTING_COMPLETE_GUIDE.md)
 
 ---
 
@@ -245,7 +245,7 @@ We welcome contributions to Butlery! Before contributing, please:
 
 1. **Read [CLAUDE.md](CLAUDE.md)** - Essential coding standards and architectural patterns
 2. **Review [docs/architecture/BEST_PRACTICES.md](docs/architecture/BEST_PRACTICES.md)** - Best practices and patterns
-3. **Check [docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md](docs/testing/TEST_PATTERNS_QUICK_REFERENCE.md)** - Test patterns and examples
+3. **Check [docs/testing/TESTING_COMPLETE_GUIDE.md](docs/testing/TESTING_COMPLETE_GUIDE.md)** - Test patterns and examples
 
 ### Development Standards
 

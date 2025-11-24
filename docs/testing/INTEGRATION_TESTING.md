@@ -370,7 +370,6 @@ Use this checklist to ensure your integration tests are complete and correct:
 ## Related Documentation
 
 - **[TESTING_COMPLETE_GUIDE.md](./TESTING_COMPLETE_GUIDE.md)** - Complete testing guide
-- **[TEST_PATTERNS_QUICK_REFERENCE.md](./TEST_PATTERNS_QUICK_REFERENCE.md)** - Quick pattern lookup
 - **[FIREBASE_TESTING_PATTERNS.md](./FIREBASE_TESTING_PATTERNS.md)** - Firebase-specific patterns
 - **[TESTING_DASHBOARD.md](./TESTING_DASHBOARD.md)** - Current test coverage and priorities
 
