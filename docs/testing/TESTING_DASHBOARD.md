@@ -408,8 +408,6 @@ find test -name "*_test.dart" -exec grep -l "testWidgets" {} \; | wc -l
 3. FirebaseMenuCollaborationRepository - Multi-user menu collaboration
 4. FirebaseConnectivityRepository - Network & Firebase connection monitoring
 
-**Documentation**: See `docs/testing/completed/REPOSITORY_TESTING_PHASE3_SUMMARY.md`
-
 ---
 
 ### Phase 4: GDPR Service Testing ✅
@@ -435,8 +433,6 @@ find test -name "*_test.dart" -exec grep -l "testWidgets" {} \; | wc -l
    - GDPR metadata verified
 
 **GDPR Compliance Status**: ✅ **Production Ready**
-
-**Documentation**: See `docs/testing/completed/PHASE4_GDPR_SERVICES_COMPLETE.md`
 
 ---
 
@@ -531,11 +527,6 @@ Comprehensive test templates available in:
 - **Main Guide**: `docs/testing/TESTING_COMPLETE_GUIDE.md`
 - **This Dashboard**: `docs/testing/TESTING_DASHBOARD.md`
 - **Test Tracking**: `docs/testing/TRACKING.md`
-
-### Phase Reports
-
-- **Phase 3 Summary**: `docs/testing/completed/REPOSITORY_TESTING_PHASE3_SUMMARY.md`
-- **Phase 4 Summary**: `docs/testing/completed/PHASE4_GDPR_SERVICES_COMPLETE.md`
 
 ### Architecture Documentation
 
