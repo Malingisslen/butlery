@@ -21,7 +21,7 @@
 **P0 Progress**: 15 / 15 complete (100%) ✅
 **Completion Date**: 2025-11-13
 
-> **📖 See [finished/P0.md](finished/P0.md) for complete P0 details**
+> **📖 See [P0.md](../archive/phase-completion/P0.md) for complete P0 details**
 
 **Summary**:
 - ✅ Fixed 8 critical security vulnerabilities (CVSS 8.1-9.1)
@@ -51,7 +51,7 @@
 **P1 Progress**: 11 / 11 complete (100%) ✅ **COMPLETE**
 **Completion Date**: 2025-11-17
 
-> **📖 See [finished/p1.md](finished/p1.md) for complete P1 details**
+> **📖 See [p1.md](../archive/phase-completion/p1.md) for complete P1 details**
 
 **Summary**:
 - ✅ Fixed 2 critical scalability issues (unbounded arrays → subcollections)
@@ -85,7 +85,7 @@
 
 **P2 Progress**: 9 / 9 complete (100%) ✅
 
-> **📖 See [finished/P2.md](finished/P2.md) for complete P2 details**
+> **📖 See [P2.md](../archive/phase-completion/P2.md) for complete P2 details**
 
 **Summary**:
 - ✅ Complete tablet/desktop responsive optimization (32 view files, 120 hrs)
