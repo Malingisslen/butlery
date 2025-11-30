@@ -742,15 +742,12 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     // Start upload - service handles all progress tracking, retry, circuit breaker
     _uploadSingleFileWithEnhancedTracking(imageFile, recipeId)
         .then((uploadedUrl) {
-      if (_uploadsCanceled || _disposed) {
-        AppLogger.info(
-            'ðŸ“¦ Upload completed but manager disposed/cancelled: $filePath');
-        return;
-      }
-
+      // CRITICAL FIX: Always update state first, even if disposed/cancelled
+      // This prevents the spinner from getting stuck when upload completes
+      // during disposal (race condition fix)
       if (uploadedUrl != null) {
         AppLogger.info(
-            'âœ… Background upload completed: $filePath -> $uploadedUrl');
+            '✅ Background upload completed: $filePath -> $uploadedUrl');
 
         // Update local state to completed (service already updated via onProgress)
         _imageStates.remove(filePath); // Remove file path key
@@ -771,18 +768,17 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         }
       }
 
-      if (!_disposed) {
+      // Only notify listeners if not disposed (notifications can be skipped, state update cannot)
+      if (!_disposed && !_uploadsCanceled) {
         notifyListeners();
         _checkAndTriggerCompletionEvents();
+      } else {
+        AppLogger.info(
+            '📦 Upload completed but manager disposed/cancelled, skipping notifications: $filePath');
       }
     }).catchError((error) {
-      if (_uploadsCanceled || _disposed) {
-        AppLogger.info(
-            'ðŸ“¦ Upload error but manager disposed/cancelled: $filePath');
-        return;
-      }
-
-      AppLogger.error('âŒ Background upload error: $error');
+      // CRITICAL FIX: Always update state first, even if disposed/cancelled
+      AppLogger.error('❌ Background upload error: $error');
 
       // Service already handled retry/circuit breaker, just update local state
       final failedStatus = _imageStates[filePath];
@@ -793,9 +789,13 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
         );
       }
 
-      if (!_disposed) {
+      // Only notify listeners if not disposed
+      if (!_disposed && !_uploadsCanceled) {
         notifyListeners();
         _checkAndTriggerCompletionEvents();
+      } else {
+        AppLogger.info(
+            '📦 Upload error but manager disposed/cancelled, skipping notifications: $filePath');
       }
     });
   }
@@ -833,12 +833,8 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
       // Start upload with XFile handling for web
       _uploadXFileWithWebSupport(xFile, recipeId).then((uploadedUrl) {
-        if (_uploadsCanceled || _disposed) {
-          AppLogger.info(
-              'ðŸ“¦ XFile upload completed but manager disposed/cancelled: $filePath');
-          return;
-        }
-
+        // CRITICAL FIX: Always update state first, even if disposed/cancelled
+        // This prevents the spinner from getting stuck
         if (uploadedUrl != null) {
           AppLogger.info(
               'âœ… Background XFile upload completed: $filePath -> $uploadedUrl');
@@ -853,32 +849,32 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
             totalBytes: fileSize,
             bytesTransferred: fileSize,
           );
-
-          // Check for completion notification
-          _checkAndTriggerCompletionEvents();
         } else {
           AppLogger.error('âŒ Background XFile upload failed: $filePath');
           _handleXFileUploadFailure(filePath, xFile, 'Upload failed', null);
         }
 
-        if (!_disposed) {
+        // Only notify listeners if not disposed (notifications can be skipped, state update cannot)
+        if (!_disposed && !_uploadsCanceled) {
           notifyListeners();
           _checkAndTriggerCompletionEvents();
+        } else {
+          AppLogger.info(
+              '📦 XFile upload completed but manager disposed/cancelled, skipping notifications: $filePath');
         }
       }).catchError((error) {
-        if (_uploadsCanceled || _disposed) {
-          AppLogger.info(
-              'ðŸ“¦ XFile upload error but manager disposed/cancelled: $filePath');
-          return;
-        }
-
+        // CRITICAL FIX: Always update state first, even if disposed/cancelled
         AppLogger.error(
-            'ðŸ’¥ Background XFile upload error: $filePath -> $error');
+            '💥 Background XFile upload error: $filePath -> $error');
         _handleXFileUploadFailure(filePath, xFile, 'Upload error', error);
 
-        if (!_disposed) {
+        // Only notify listeners if not disposed
+        if (!_disposed && !_uploadsCanceled) {
           notifyListeners();
           _checkAndTriggerCompletionEvents();
+        } else {
+          AppLogger.info(
+              '📦 XFile upload error but manager disposed/cancelled, skipping notifications: $filePath');
         }
       });
     }).catchError((error) {

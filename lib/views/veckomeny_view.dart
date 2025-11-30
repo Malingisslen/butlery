@@ -68,44 +68,17 @@ class _VeckomenyViewContent extends StatefulWidget {
 /// menu generation coordination, and user interaction handling while maintaining clean state management
 /// and proper resource disposal through comprehensive lifecycle management.
 class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
-  /// Prompt input controller for AI-powered menu generation and user input management.
-  /// Manages user prompt input enabling AI-powered menu generation, input validation,
-  /// and user interaction coordination throughout menu creation workflows.
   final TextEditingController _promptController = TextEditingController();
-
-  /// Share service for external menu sharing and platform integration coordination.
-  /// Enables external menu sharing with system integration, platform coordination,
-  /// and comprehensive sharing functionality through ShareService integration.
   final ShareService _shareService = ServiceLocator.get<ShareService>();
-
-  /// Friends service for social features and collaborative menu functionality coordination.
-  /// Manages social menu features enabling friend selection, collaborative sharing,
-  /// and social integration throughout menu operations and sharing workflows.
   final UnifiedFriendsService _friendsService =
       ServiceLocator.get<UnifiedFriendsService>();
 
-  /// State initialization with prompt input listener setup and lifecycle preparation.
-  /// Initializes weekly menu state enabling prompt input monitoring, UI state management,
-  /// and comprehensive menu functionality through proper listener setup and
-  /// state lifecycle coordination.
-  /// **Initialization Process:**
-  /// - Prompt controller listener setup for reactive UI state management
-  /// - State preparation for menu generation and user interaction coordination
-  /// - Lifecycle management preparation with proper resource handling
   @override
   void initState() {
     super.initState();
     _promptController.addListener(_onPromptChanged);
   }
 
-  /// Comprehensive resource disposal with controller cleanup and listener management.
-  /// Performs complete resource cleanup preventing memory leaks and ensuring proper
-  /// lifecycle management through systematic disposal of controllers, listeners,
-  /// and state resources with comprehensive cleanup coordination.
-  /// **Disposal Process:**
-  /// - Prompt controller listener cleanup with proper resource management
-  /// - Controller disposal with memory leak prevention
-  /// - Proper lifecycle management with systematic resource cleanup
   @override
   void dispose() {
     _promptController.removeListener(_onPromptChanged);
@@ -113,56 +86,23 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     super.dispose();
   }
 
-  /// Prompt input change handling with reactive UI state management and button coordination.
-  /// Handles prompt input changes enabling reactive UI updates, button state management,
-  /// and user interface coordination through state management and UI responsiveness
-  /// with comprehensive user experience optimization.
-  /// **Change Handling Features:**
-  /// - Reactive UI state updates with immediate visual feedback
-  /// - Button state management with enabled/disabled coordination
-  /// - User experience optimization with responsive interface coordination
   void _onPromptChanged() {
     if (mounted) {
       setState(() {}); // Update button enabled state based on prompt input
     }
   }
 
-  /// AI-powered menu generation with prompt processing and intelligent recipe coordination.
-  /// Handles menu generation triggering AI-powered meal planning, recipe recommendations,
-  /// and comprehensive menu creation through MenuViewModel integration with
-  /// prompt processing and intelligent content generation.
-  /// **Generation Features:**
-  /// - AI-powered menu creation with intelligent recipe recommendations
-  /// - Prompt processing with user input analysis and menu customization
-  /// - Comprehensive meal planning with category organization and recipe coordination
   void _generateMenu() {
     final viewModel = context.read<MenuViewModel>();
     viewModel.generateMenu(_promptController.text);
   }
 
-  /// Comprehensive menu clearing with state reset and input cleanup coordination.
-  /// Handles complete menu clearing enabling state reset, input cleanup,
-  /// and user interface coordination through MenuViewModel integration
-  /// with comprehensive state management and UI synchronization.
-  /// **Clearing Features:**
-  /// - Complete menu state reset with comprehensive data cleanup
-  /// - Input field clearing with user interface synchronization
-  /// - State management coordination with proper cleanup and reset functionality
   void _clearMenu() {
     final viewModel = context.read<MenuViewModel>();
     viewModel.clearMenu();
     _promptController.clear();
   }
 
-  /// Comprehensive menu save dialog with validation and friend integration through migrated components.
-  /// Presents menu save dialog enabling menu persistence, friend sharing setup,
-  /// and comprehensive save functionality through LayoutComponents integration
-  /// with validation and user feedback coordination.
-  /// **Save Dialog Features:**
-  /// - Menu validation with user guidance and error prevention
-  /// - Friend integration with social sharing setup and collaborative features
-  /// - Migrated component architecture with modern dialog presentation
-  /// - Swedish localized user feedback with warning messages and guidance
   Future<void> _showSaveMenuDialog() async {
     final viewModel = context.read<MenuViewModel>();
 
@@ -179,15 +119,6 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     );
   }
 
-  /// Advanced menu load dialog with menu selection and restoration through migrated components.
-  /// Presents menu load dialog enabling saved menu selection, menu restoration,
-  /// and comprehensive load functionality through LayoutComponents integration
-  /// with menu browsing and selection coordination.
-  /// **Load Dialog Features:**
-  /// - Saved menu browsing with selection interface and preview functionality
-  /// - Menu restoration with comprehensive data loading and state synchronization
-  /// - Migrated component architecture with modern dialog presentation
-  /// - User-friendly menu selection with intuitive interface and navigation
   Future<void> _showLoadMenuBottomSheet() async {
     final viewModel = context.read<MenuViewModel>();
 
@@ -197,15 +128,6 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     );
   }
 
-  /// External menu sharing with system integration and platform distribution coordination.
-  /// Handles external menu sharing enabling system share dialog presentation,
-  /// platform integration, and comprehensive sharing functionality through
-  /// ShareService coordination with success feedback and user experience optimization.
-  /// **External Sharing Features:**
-  /// - System share dialog integration with platform-specific sharing capabilities
-  /// - Menu content formatting with readable presentation and user-friendly format
-  /// - Success feedback with Swedish localized messages and user confirmation
-  /// - Platform integration with comprehensive sharing options and distribution coordination
   Future<void> _shareMenu() async {
     final viewModel = context.read<MenuViewModel>();
 
@@ -218,36 +140,21 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     }
   }
 
-  /// Comprehensive social menu sharing dialog with friend selection and collaborative features coordination.
-  /// Presents social sharing dialog enabling friend selection, collaborative menu sharing,
-  /// and comprehensive social functionality through UniversalShareDialog integration
-  /// with validation, friend management, and user experience optimization.
-  /// **Social Sharing Features:**
-  /// - Menu name capture with user input dialog
-  /// - Menu validation with user guidance and error prevention
-  /// - Friend selection with availability management and social integration
-  /// - Collaborative sharing with personalized messages and social coordination
-  /// - Error handling with graceful fallback and user feedback management
-  /// - Swedish localized interface with intuitive social sharing experience
   Future<void> _showSocialMenuShareDialog() async {
     final menuViewModel = Provider.of<MenuViewModel>(context, listen: false);
 
-    // Validate menu availability before sharing
     if (!menuViewModel.hasMenu) {
       SnackBarUtils.showWarning(
           context, 'Skapa en meny först innan du kan dela den');
       return;
     }
 
-    // Step 1: Capture menu name from user
     final menuName = await _showMenuNameDialog();
-    if (!mounted) return; // Check if widget is still mounted after async gap
+    if (!mounted) return;
     if (menuName == null || menuName.isEmpty) {
-      // User cancelled or provided empty name
       return;
     }
 
-    // Step 2: Retrieve available friends with error handling
     List<UserProfile> availableFriends = [];
     try {
       availableFriends = _friendsService.friends;
@@ -255,7 +162,6 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       AppLogger.warning('⚠️ Kunde inte hämta vänner: $e');
     }
 
-    // Step 3: Show share dialog with captured menu name
     showDialog(
       context: context,
       builder: (context) => UniversalShareDialog.menu(
@@ -315,7 +221,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       ),
     );
 
-    nameController.dispose();
+    // Don't manually dispose - controller will be garbage collected
+    // Disposing here can cause "used after disposed" errors during dialog close animation
     return result;
   }
 

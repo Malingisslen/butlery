@@ -50,8 +50,6 @@ class MessagingService extends BaseService with StreamManagementMixin {
     );
   }
 
-  // ===== CONVERSATION OPERATIONS =====
-
   /// Get all conversations for current user
   Stream<List<Conversation>> getMyConversations() {
     final currentUserId = _authRepository.currentUserId;
@@ -148,8 +146,6 @@ class MessagingService extends BaseService with StreamManagementMixin {
       return null;
     }
   }
-
-  // ===== MESSAGE OPERATIONS =====
 
   /// Get messages for a conversation
   Stream<List<Message>> getConversationMessages({
@@ -292,8 +288,6 @@ class MessagingService extends BaseService with StreamManagementMixin {
   Future<void> deleteConversation(String conversationId) async =>
       _managementOps.deleteConversation(conversationId, getConversation);
 
-  // ===== TYPING INDICATORS =====
-
   /// Set typing indicator for current user in conversation
   Future<void> setTypingIndicator(String conversationId) async {
     try {
@@ -345,8 +339,6 @@ class MessagingService extends BaseService with StreamManagementMixin {
         .toList() ?? [];
   }
 
-  // ===== CONVERSATION ORGANIZATION =====
-
   /// Pin a conversation to the top of the list
   Future<void> pinConversation(String conversationId) async =>
       _actionOps.pinConversation(conversationId, getConversation);
@@ -374,8 +366,6 @@ class MessagingService extends BaseService with StreamManagementMixin {
   /// Mark all conversations as read for current user
   Future<void> markAllConversationsAsRead() async =>
       _actionOps.markAllConversationsAsRead(getMyConversations, markConversationAsRead);
-
-  // ===== UTILITY OPERATIONS =====
 
   /// Search messages in conversation
   Future<List<Message>> searchMessages({
@@ -453,11 +443,6 @@ class MessagingService extends BaseService with StreamManagementMixin {
         conversationId: conversationId,
         newTitle: newTitle,
       );
-
-  // ===== NOTIFICATION METHODS =====
-
-  /// Send push notification for new message
-  // ===== SERVICE LIFECYCLE =====
 
   @override
   Future<void> dispose() async {

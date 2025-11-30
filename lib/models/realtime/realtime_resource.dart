@@ -69,6 +69,8 @@ abstract class RealtimeResource {
   final String ownerDisplayName;
   /// Mapp över alla deltagare och deras behörigheter
   final Map<String, ResourcePermission> participants;
+  /// Lista över deltagarnas ID:n (denormaliserad för Firestore-queries)
+  final List<String> participantIds;
   /// När resursen skapades
   final DateTime createdAt;
   /// När resursen senast uppdaterades
@@ -90,6 +92,7 @@ abstract class RealtimeResource {
     required this.ownerId,
     required this.ownerDisplayName,
     required this.participants,
+    List<String>? participantIds,
     DateTime? createdAt,
     DateTime? lastEditedAt,
     required this.lastEditedBy,
@@ -97,7 +100,8 @@ abstract class RealtimeResource {
     this.editCount = 0,
     this.isActive = true,
     Map<String, dynamic>? metadata,
-  })  : createdAt = createdAt ?? DateTime.now(),
+  })  : participantIds = participantIds ?? participants.keys.toList(),
+        createdAt = createdAt ?? DateTime.now(),
         lastEditedAt = lastEditedAt ?? DateTime.now(),
         metadata = metadata ?? {};
 
@@ -266,6 +270,7 @@ abstract class RealtimeResource {
   /// Subclasses måste implementera sin egen copyWith
   RealtimeResource copyWithMetadata({
     Map<String, ResourcePermission>? participants,
+    List<String>? participantIds,
     DateTime? lastEditedAt,
     String? lastEditedBy,
     String? lastEditedByDisplayName,
@@ -286,6 +291,7 @@ abstract class RealtimeResource {
         (userId, permission) => MapEntry(
             userId, ResourcePermissionHelper.permissionToString(permission)),
       ),
+      'participantIds': participantIds,
       'createdAt': Timestamp.fromDate(createdAt),
       'lastEditedAt': Timestamp.fromDate(lastEditedAt),
       'lastEditedBy': lastEditedBy,
@@ -321,6 +327,11 @@ abstract class RealtimeResource {
       }
     }
 
+    // Parse participantIds with fallback to participants.keys for migration
+    final participantIds = data.containsKey('participantIds')
+        ? List<String>.from(data['participantIds'] as List? ?? [])
+        : participants.keys.toList();
+
     return {
       'id': documentId,
       'type': RealtimeResourceType.fromString(
@@ -329,6 +340,7 @@ abstract class RealtimeResource {
       'ownerId': data['ownerId'] as String? ?? '',
       'ownerDisplayName': data['ownerDisplayName'] as String? ?? '',
       'participants': participants,
+      'participantIds': participantIds,
       'createdAt': (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       'lastEditedAt': (data['lastEditedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       'lastEditedBy': data['lastEditedBy'] as String? ?? '',
@@ -350,6 +362,7 @@ abstract class RealtimeResource {
         (userId, permission) => MapEntry(
             userId, ResourcePermissionHelper.permissionToString(permission)),
       ),
+      'participantIds': participantIds,
       'createdAt': createdAt.toIso8601String(),
       'lastEditedAt': lastEditedAt.toIso8601String(),
       'lastEditedBy': lastEditedBy,
@@ -369,8 +382,15 @@ abstract class RealtimeResource {
     final updatedParticipants = Map<String, ResourcePermission>.from(participants);
     updatedParticipants[userId] = permission;
 
+    // Keep participantIds in sync
+    final updatedParticipantIds = List<String>.from(participantIds);
+    if (!updatedParticipantIds.contains(userId)) {
+      updatedParticipantIds.add(userId);
+    }
+
     return copyWithMetadata(
       participants: updatedParticipants,
+      participantIds: updatedParticipantIds,
       lastEditedAt: DateTime.now(),
       lastEditedBy: ownerId,
       lastEditedByDisplayName: ownerDisplayName,
@@ -387,8 +407,13 @@ abstract class RealtimeResource {
     final updatedParticipants = Map<String, ResourcePermission>.from(participants);
     updatedParticipants.remove(userId);
 
+    // Keep participantIds in sync
+    final updatedParticipantIds = List<String>.from(participantIds);
+    updatedParticipantIds.remove(userId);
+
     return copyWithMetadata(
       participants: updatedParticipants,
+      participantIds: updatedParticipantIds,
       lastEditedAt: DateTime.now(),
       lastEditedBy: ownerId,
       lastEditedByDisplayName: ownerDisplayName,

@@ -65,10 +65,13 @@ class RecipeListViewModel extends ChangeNotifier {
   RecipeListViewModel({
     UnifiedRecipeService? recipeService,
     SearchService? searchService,
-  }) : _recipeService = recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
-       _searchService = searchService ?? ServiceLocator.get<SearchService>() {
+  })  : _recipeService =
+            recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
+        _searchService = searchService ?? ServiceLocator.get<SearchService>() {
     // Lyssna på ändringar från UnifiedRecipeService
     _recipeService.addListener(_onRecipesChanged);
+    // Initialize service to ensure recipes are loaded
+    _recipeService.initialize();
   }
 
   // ===== RECIPE LIST STATE ACCESSORS =====
@@ -141,13 +144,13 @@ class RecipeListViewModel extends ChangeNotifier {
 
   /// Updates search query with intelligent caching and debounced filtering coordination.
   /// [query] New search query for recipe filtering and search functionality
-  /// Performs search query update with debouncing (300ms delay) to prevent excessive 
+  /// Performs search query update with debouncing (300ms delay) to prevent excessive
   /// filtering operations on every keystroke. Provides optimal user experience while
   /// maintaining performance during rapid typing. Only triggers updates when query changes.
   void updateSearch(String query) {
     if (_searchQuery != query) {
       _searchQuery = query;
-      
+
       // PERFORMANCE FIX: Cancel previous timer and start new one for debouncing
       _searchDebounceTimer?.cancel();
       _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () {
@@ -372,11 +375,10 @@ class RecipeListViewModel extends ChangeNotifier {
       'dessert': 'Efterrätt',
     };
 
-    final selectedMealTypes =
-        _activeMealTypeFilters
-            .map((id) => mealTypeMap[id])
-            .where((type) => type != null)
-            .toSet();
+    final selectedMealTypes = _activeMealTypeFilters
+        .map((id) => mealTypeMap[id])
+        .where((type) => type != null)
+        .toSet();
 
     if (selectedMealTypes.isEmpty) return recipes;
 

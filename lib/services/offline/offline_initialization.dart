@@ -6,41 +6,41 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'dart:async';
 
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/recipe_unified.g.dart'; // Manual TypeAdapter
 import 'package:butlery/core/utils/logger.dart';
 
 /// Handles initialization and connectivity monitoring for offline service
 class OfflineInitialization {
-  
   // Hive box names
   static const String recipeBoxName = 'recipes_offline';
   static const String syncQueueBoxName = 'sync_queue';
-  
+
   // Connectivity monitoring
   final Connectivity _connectivity = Connectivity();
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
   bool _isOnline = true;
   bool _isInitialized = false;
-  
+
   // Boxes
   late Box<Recipe> _recipeBox;
   late Box<String> _syncQueueBox;
-  
+
   // Callbacks
   final VoidCallback? _onConnectivityChanged;
   final VoidCallback? _onReconnected;
-  
+
   OfflineInitialization({
     VoidCallback? onConnectivityChanged,
     VoidCallback? onReconnected,
-  }) : _onConnectivityChanged = onConnectivityChanged,
-       _onReconnected = onReconnected;
-  
+  })  : _onConnectivityChanged = onConnectivityChanged,
+        _onReconnected = onReconnected;
+
   // Getters
   bool get isOnline => _isOnline;
   bool get isInitialized => _isInitialized;
   Box<Recipe> get recipeBox => _recipeBox;
   Box<String> get syncQueueBox => _syncQueueBox;
-  
+
   /// Initialize Hive and offline service
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -72,7 +72,7 @@ class OfflineInitialization {
       rethrow;
     }
   }
-  
+
   /// Initialize connectivity monitoring
   Future<void> _initConnectivityMonitoring() async {
     // Check initial status
@@ -102,7 +102,7 @@ class OfflineInitialization {
 
     _onConnectivityChanged?.call();
   }
-  
+
   /// Clean up resources
   void dispose() {
     _connectivitySubscription?.cancel();

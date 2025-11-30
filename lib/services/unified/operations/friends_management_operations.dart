@@ -9,7 +9,8 @@ import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/services/user_service.dart' as user_svc;
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/notifications/notification_service.dart' as notif;
+import 'package:butlery/services/notifications/notification_service.dart'
+    as notif;
 import 'package:butlery/services/notifications/notification_types.dart';
 
 /// Friends management operations handling request lifecycle, relationship management, user discovery, blocking, and notification integration.
@@ -18,19 +19,21 @@ class FriendsManagementOperations extends BaseService {
   String get serviceName => 'FriendsManagementOperations';
   final UnifiedFriendsService _parent;
   late final user_svc.UserService _userService;
-  late final notif.NotificationService? _notificationService;
+  notif.NotificationService? _notificationServiceInstance;
 
   FriendsManagementOperations(this._parent) {
     _userService = ServiceLocator.get<user_svc.UserService>();
-    
-    // Initialize notification service if user is authenticated
-    _notificationService = safeExecuteSync<notif.NotificationService?>(
+    // NotificationService is now lazy initialized on first access
+  }
+
+  /// Lazy getter for notification service - initializes on first access after MessagingModule has loaded
+  notif.NotificationService? get _notificationService {
+    _notificationServiceInstance ??=
+        safeExecuteSync<notif.NotificationService?>(
       () {
         final currentUserId = _parent.currentUserId;
         if (currentUserId != null) {
-          final service = notif.NotificationService(
-            userId: currentUserId,
-          );
+          final service = notif.NotificationService(userId: currentUserId);
           service.initialize();
           return service;
         }
@@ -39,6 +42,7 @@ class FriendsManagementOperations extends BaseService {
       operationName: 'Initialize notification service',
       customErrorMessage: 'Could not initialize friend notifications',
     );
+    return _notificationServiceInstance;
   }
 
   Future<bool> sendFriendRequest(String recipientId, {String? message}) async {
@@ -47,59 +51,61 @@ class FriendsManagementOperations extends BaseService {
       return false;
     }
 
-    final result = await executeServiceOperation(
-      () async {
-        // Check authentication
-        final currentUserId = _parent.currentUserId;
-        final currentUserDisplayName = _parent.currentUserDisplayName;
+    final result = await executeServiceOperation(() async {
+      // Check authentication
+      final currentUserId = _parent.currentUserId;
+      final currentUserDisplayName = _parent.currentUserDisplayName;
 
-        if (ValidationUtils.isNullOrEmpty(currentUserId) || ValidationUtils.isNullOrEmpty(currentUserDisplayName)) {
-          throw Exception(AppStrings.authenticationError);
-        }
+      if (ValidationUtils.isNullOrEmpty(currentUserId) ||
+          ValidationUtils.isNullOrEmpty(currentUserDisplayName)) {
+        throw Exception(AppStrings.authenticationError);
+      }
 
-        // Validate not sending to self
-        if (recipientId == currentUserId) {
-          throw Exception('Cannot send friend request to yourself');
-        }
+      // Validate not sending to self
+      if (recipientId == currentUserId) {
+        throw Exception('Cannot send friend request to yourself');
+      }
 
-        // Check if already friends
-        if (isFriend(recipientId)) {
-          throw Exception('Already friends with this user');
-        }
+      // Check if already friends
+      if (isFriend(recipientId)) {
+        throw Exception('Already friends with this user');
+      }
 
-        // Check if request already exists
-        if (hasOutgoingRequest(recipientId)) {
-          throw Exception('Friend request already sent to this user');
-        }
+      // Check if request already exists
+      if (hasOutgoingRequest(recipientId)) {
+        throw Exception('Friend request already sent to this user');
+      }
 
-        // Check if there's an incoming request from this user
-        if (hasIncomingRequest(recipientId)) {
-          throw Exception('This user has already sent you a friend request');
-        }
+      // Check if there's an incoming request from this user
+      if (hasIncomingRequest(recipientId)) {
+        throw Exception('This user has already sent you a friend request');
+      }
 
-        final request = FriendRequest(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          fromUserId: currentUserId!,
-          toUserId: recipientId,
-          message: message,
-          sentAt: DateTime.now(),
-          status: FriendRequestStatus.pending,
-        );
+      final request = FriendRequest(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        fromUserId: currentUserId!,
+        toUserId: recipientId,
+        message: message,
+        sentAt: DateTime.now(),
+        status: FriendRequestStatus.pending,
+      );
 
-        // Add to local state (optimistic update)
-        _parent.addOutgoingRequestInternal(request);
+      // Add to local state (optimistic update)
+      _parent.addOutgoingRequestInternal(request);
 
-        // Send to Firebase
-        await _parent.syncFriendRequestToFirebase(request);
+      // Send to Firebase
+      await _parent.syncFriendRequestToFirebase(request);
 
-        // Send notification to recipient
-        final recipientDisplayName = 'User ${recipientId.substring(0, 6)}...';
-        await _sendFriendRequestNotification(request, currentUserDisplayName ?? 'Unknown User', recipientDisplayName);
+      // Send notification to recipient
+      final recipientDisplayName = 'User ${recipientId.substring(0, 6)}...';
+      await _sendFriendRequestNotification(
+        request,
+        currentUserDisplayName ?? 'Unknown User',
+        recipientDisplayName,
+      );
 
-        return true;
-      },
-      operationName: 'Send Friend Request',
-    );
+      return true;
+    }, operationName: 'Send Friend Request');
     return result == true;
   }
 
@@ -108,65 +114,67 @@ class FriendsManagementOperations extends BaseService {
       return false;
     }
 
-    final result = await executeServiceOperation(
-      () async {
-        final request = _parent.incomingRequests
-            .where((r) => r.id == requestId)
-            .firstOrNull;
+    final result = await executeServiceOperation(() async {
+      final request =
+          _parent.incomingRequests.where((r) => r.id == requestId).firstOrNull;
 
-        if (request == null) {
-          throw Exception('Friend request not found');
-        }
+      if (request == null) {
+        throw Exception('Friend request not found');
+      }
 
-        // Update request status
-        final acceptedRequest = request.copyWith(
-          status: FriendRequestStatus.accepted,
-          respondedAt: DateTime.now(),
+      // Update request status
+      final acceptedRequest = request.copyWith(
+        status: FriendRequestStatus.accepted,
+        respondedAt: DateTime.now(),
+      );
+
+      // ULTRATHINK FIX: Fetch real user profile instead of creating fake one
+      final userProfile = await _userService.getUserProfile(request.fromUserId);
+      if (userProfile == null) {
+        throw Exception(
+          'Could not fetch user profile for friend request sender',
         );
+      }
 
-        // ULTRATHINK FIX: Fetch real user profile instead of creating fake one
-        final userProfile = await _userService.getUserProfile(request.fromUserId);
-        if (userProfile == null) {
-          throw Exception('Could not fetch user profile for friend request sender');
-        }
+      final friend = userProfile;
 
-        final friend = userProfile;
+      // Update local state
+      _parent.addFriendInternal(friend);
+      _parent.removeIncomingRequestInternal(requestId);
 
-        // Update local state
-        _parent.addFriendInternal(friend);
-        _parent.removeIncomingRequestInternal(requestId);
+      // Add mutual friends with counter updates using relationship repository
+      await _parent.relationshipRepository.addMutualFriends(
+        _parent.currentUserId!,
+        request.fromUserId,
+      );
+      await _parent.updateFriendRequestStatus(acceptedRequest);
 
-        // Add mutual friends with counter updates using relationship repository
-        await _parent.relationshipRepository.addMutualFriends(
-          _parent.currentUserId!,
-          request.fromUserId,
+      // Send notification to the original sender
+      await _sendFriendRequestAcceptedNotification(
+        request,
+        _parent.currentUserDisplayName ?? 'Unknown User',
+      );
+
+      // ULTRATHINK FIX: Refresh state from Firebase to ensure consistency
+      try {
+        await _parent.refresh();
+        AppLogger.success('✅ State refreshed after friend request acceptance');
+      } catch (e) {
+        AppLogger.warning(
+          '⚠️ State refresh failed after friend acceptance, but operation completed: $e',
         );
-        await _parent.updateFriendRequestStatus(acceptedRequest);
+        // Don't fail the entire operation just because refresh failed
+      }
 
-        // Send notification to the original sender
-        await _sendFriendRequestAcceptedNotification(request, _parent.currentUserDisplayName ?? 'Unknown User');
-
-        // ULTRATHINK FIX: Refresh state from Firebase to ensure consistency
-        try {
-          await _parent.refresh();
-          AppLogger.success('✅ State refreshed after friend request acceptance');
-        } catch (e) {
-          AppLogger.warning('⚠️ State refresh failed after friend acceptance, but operation completed: $e');
-          // Don't fail the entire operation just because refresh failed
-        }
-
-        return true;
-      },
-      operationName: 'Accept Friend Request',
-    );
+      return true;
+    }, operationName: 'Accept Friend Request');
     return result == true;
   }
 
   Future<bool> rejectFriendRequest(String requestId) async {
     try {
-      final request = _parent.incomingRequests
-          .where((r) => r.id == requestId)
-          .firstOrNull;
+      final request =
+          _parent.incomingRequests.where((r) => r.id == requestId).firstOrNull;
 
       if (request == null) {
         AppLogger.error('Friend request not found');
@@ -195,9 +203,8 @@ class FriendsManagementOperations extends BaseService {
 
   Future<bool> cancelFriendRequest(String requestId) async {
     try {
-      final request = _parent.outgoingRequests
-          .where((r) => r.id == requestId)
-          .firstOrNull;
+      final request =
+          _parent.outgoingRequests.where((r) => r.id == requestId).firstOrNull;
 
       if (request == null) {
         AppLogger.error('Friend request not found');
@@ -226,9 +233,8 @@ class FriendsManagementOperations extends BaseService {
 
   Future<bool> removeFriend(String friendId) async {
     try {
-      final friend = _parent.friends
-          .where((f) => f.uid == friendId)
-          .firstOrNull;
+      final friend =
+          _parent.friends.where((f) => f.uid == friendId).firstOrNull;
 
       if (friend == null) {
         AppLogger.error('Friend not found');
@@ -325,25 +331,29 @@ class FriendsManagementOperations extends BaseService {
   Future<List<model.UserProfile>> searchUsers(String query) async {
     try {
       AppLogger.info('Searching users with query: $query');
-      
+
       // Search current friends first
       final currentFriends = searchFriends(query);
-      
+
       // Search for new users from UserService
       final allUsers = await _userService.searchUsers(query);
-      
+
       // Combine results, prioritizing current friends
       final combinedResults = <model.UserProfile>[];
-      
+
       // Add current friends first
       combinedResults.addAll(currentFriends);
-      
+
       // Add new users that aren't already friends
       final currentFriendIds = currentFriends.map((f) => f.uid).toSet();
-      final newUsers = allUsers.where((user) => !currentFriendIds.contains(user.uid)).toList();
+      final newUsers = allUsers
+          .where((user) => !currentFriendIds.contains(user.uid))
+          .toList();
       combinedResults.addAll(newUsers);
-      
-      AppLogger.info('Search returned ${currentFriends.length} current friends and ${newUsers.length} new users');
+
+      AppLogger.info(
+        'Search returned ${currentFriends.length} current friends and ${newUsers.length} new users',
+      );
       return combinedResults;
     } catch (e) {
       AppLogger.error('Failed to search users', e);
@@ -360,13 +370,15 @@ class FriendsManagementOperations extends BaseService {
   }
 
   bool hasOutgoingRequest(String userId) {
-    return _parent.outgoingRequests.any((r) =>
-        r.toUserId == userId && r.status == FriendRequestStatus.pending);
+    return _parent.outgoingRequests.any(
+      (r) => r.toUserId == userId && r.status == FriendRequestStatus.pending,
+    );
   }
 
   bool hasIncomingRequest(String userId) {
-    return _parent.incomingRequests.any((r) =>
-        r.fromUserId == userId && r.status == FriendRequestStatus.pending);
+    return _parent.incomingRequests.any(
+      (r) => r.fromUserId == userId && r.status == FriendRequestStatus.pending,
+    );
   }
 
   int getIncomingRequestCount() {
@@ -411,7 +423,7 @@ class FriendsManagementOperations extends BaseService {
 
       // Get current user's friends
       final currentUserFriends = _parent.friends.map((f) => f.uid).toSet();
-      
+
       if (currentUserFriends.isEmpty) {
         AppLogger.debug('No friends to compare for mutual friends');
         return [];
@@ -426,14 +438,12 @@ class FriendsManagementOperations extends BaseService {
           .get();
 
       // Get target user's friend IDs
-      final targetUserFriendIds = targetUserFriendsQuery.docs
-          .map((doc) => doc.id)
-          .toSet();
+      final targetUserFriendIds =
+          targetUserFriendsQuery.docs.map((doc) => doc.id).toSet();
 
       // Find intersection (mutual friends)
-      final mutualFriendIds = currentUserFriends
-          .intersection(targetUserFriendIds)
-          .toList();
+      final mutualFriendIds =
+          currentUserFriends.intersection(targetUserFriendIds).toList();
 
       if (mutualFriendIds.isEmpty) {
         AppLogger.debug('No mutual friends found with user $userId');
@@ -443,15 +453,16 @@ class FriendsManagementOperations extends BaseService {
       // Get model.UserProfile objects for mutual friends
       final mutualFriends = <model.UserProfile>[];
       for (final friendId in mutualFriendIds) {
-        final friend = _parent.friends
-            .where((f) => f.uid == friendId)
-            .firstOrNull;
+        final friend =
+            _parent.friends.where((f) => f.uid == friendId).firstOrNull;
         if (friend != null) {
           mutualFriends.add(friend);
         }
       }
 
-      AppLogger.success('Found ${mutualFriends.length} mutual friends with user $userId');
+      AppLogger.success(
+        'Found ${mutualFriends.length} mutual friends with user $userId',
+      );
       return mutualFriends;
     } catch (e) {
       AppLogger.error('Failed to get mutual friends', e);
@@ -465,17 +476,17 @@ class FriendsManagementOperations extends BaseService {
     String recipientDisplayName,
   ) async {
     if (_notificationService == null) {
-      AppLogger.debug('Notification service not available - skipping friend request notification');
+      AppLogger.debug(
+        'Notification service not available - skipping friend request notification',
+      );
       return;
     }
 
     try {
-      await _notificationService.sendImmediateNotification(
+      await _notificationService!.sendImmediateNotification(
         targetUserIds: [request.toUserId],
         strategy: NotificationStrategy.friendRequest,
-        variables: {
-          'senderName': senderDisplayName,
-        },
+        variables: {'senderName': senderDisplayName},
         additionalData: {
           'senderUserId': request.fromUserId,
           'requestId': request.id,
@@ -483,7 +494,9 @@ class FriendsManagementOperations extends BaseService {
         },
       );
 
-      AppLogger.success('Friend request notification sent to $recipientDisplayName');
+      AppLogger.success(
+        'Friend request notification sent to $recipientDisplayName',
+      );
     } catch (e) {
       AppLogger.warning('Failed to send friend request notification: $e');
     }
@@ -494,26 +507,30 @@ class FriendsManagementOperations extends BaseService {
     String acceptorDisplayName,
   ) async {
     if (_notificationService == null) {
-      AppLogger.debug('Notification service not available - skipping friend request accepted notification');
+      AppLogger.debug(
+        'Notification service not available - skipping friend request accepted notification',
+      );
       return;
     }
 
     try {
-      await _notificationService.sendImmediateNotification(
+      await _notificationService!.sendImmediateNotification(
         targetUserIds: [request.fromUserId],
         strategy: NotificationStrategy.friendRequestAccepted,
-        variables: {
-          'acceptorName': acceptorDisplayName,
-        },
+        variables: {'acceptorName': acceptorDisplayName},
         additionalData: {
           'acceptorUserId': request.toUserId,
           'requestId': request.id,
         },
       );
 
-      AppLogger.success('Friend request accepted notification sent to ${request.fromUserId}');
+      AppLogger.success(
+        'Friend request accepted notification sent to ${request.fromUserId}',
+      );
     } catch (e) {
-      AppLogger.warning('Failed to send friend request accepted notification: $e');
+      AppLogger.warning(
+        'Failed to send friend request accepted notification: $e',
+      );
     }
   }
 }

@@ -26,16 +26,24 @@ class RecipeAuthStateHandler {
 
   /// Handle auth state change (login/logout).
   void handleAuthStateChange(String? userId) {
-    AppLogger.info('🔍 [UnifiedRecipeService] Auth state changed - User ID: ${userId ?? 'NULL'}');
+    AppLogger.info(
+      '🔍 [UnifiedRecipeService] Auth state changed - User ID: ${userId ?? 'NULL'}',
+    );
 
     cacheModule.onAuthStateChanged(userId);
 
     if (userId == null) {
-      AppLogger.info('🔍 [UnifiedRecipeService] User logged out - clearing all recipe data');
+      AppLogger.info(
+        '🔍 [UnifiedRecipeService] User logged out - clearing all recipe data',
+      );
       _clearAll();
     } else {
-      AppLogger.info('🔍 [UnifiedRecipeService] 🚨 USER LOGGED IN - RELOADING RECIPES');
-      AppLogger.info('🔍 [UnifiedRecipeService] ✅ Triggering recipe reload for user: $userId');
+      AppLogger.info(
+        '🔍 [UnifiedRecipeService] 🚨 USER LOGGED IN - RELOADING RECIPES',
+      );
+      AppLogger.info(
+        '🔍 [UnifiedRecipeService] ✅ Triggering recipe reload for user: $userId',
+      );
       reloadUserRecipes(userId);
     }
   }
@@ -43,7 +51,9 @@ class RecipeAuthStateHandler {
   /// Reload user-specific recipes when user logs in.
   Future<void> reloadUserRecipes(String userId) async {
     try {
-      AppLogger.info('🔍 [UnifiedRecipeService] Starting user recipe reload for: $userId');
+      AppLogger.info(
+        '🔍 [UnifiedRecipeService] Starting user recipe reload for: $userId',
+      );
 
       setLoading(true);
       setError(''); // Clear error
@@ -57,18 +67,35 @@ class RecipeAuthStateHandler {
       final cachedRecipes = await cacheModule.initializeCache();
       recipes.addAll(cachedRecipes);
 
-      AppLogger.info('🔍 [UnifiedRecipeService] ✅ Loaded ${cachedRecipes.length} recipes from cache');
+      AppLogger.info(
+        '🔍 [UnifiedRecipeService] ✅ Loaded ${cachedRecipes.length} recipes from cache',
+      );
 
       // Ensure Firebase sync is active
       if (authRepository.currentUser != null) {
-        AppLogger.info('🔍 [UnifiedRecipeService] Starting Firebase sync for authenticated user');
+        AppLogger.info(
+          '🔍 [UnifiedRecipeService] Starting Firebase sync for authenticated user',
+        );
         await cacheModule.startFirebaseSync();
+
+        // Additional safety delay to ensure all async cache writes complete
+        // startFirebaseSync already waits 300ms, but we add extra buffer for large datasets
+        await Future.delayed(const Duration(milliseconds: 300));
+
+        // Reload from cache after initial fetch has populated it
+        recipes.clear();
+        final fetchedRecipes = await cacheModule.initializeCache();
+        recipes.addAll(fetchedRecipes);
+        AppLogger.info(
+          '🔍 [UnifiedRecipeService] 📦 Reloaded ${fetchedRecipes.length} recipes from cache after sync',
+        );
       }
 
       setLoading(false);
-      AppLogger.success('🔍 [UnifiedRecipeService] ✅ User recipe reload complete - ${recipes.length} recipes loaded');
+      AppLogger.success(
+        '🔍 [UnifiedRecipeService] ✅ User recipe reload complete - ${recipes.length} recipes loaded',
+      );
       notifyListeners();
-
     } catch (e) {
       AppLogger.error('🔍 [UnifiedRecipeService] ❌ Recipe reload failed: $e');
       setError('Kunde inte ladda recept: $e');

@@ -446,122 +446,9 @@ void main() {
     });
   });
 
-  group('MenuStorage - Storage Information', () {
-    test('should get storage info for empty storage', () async {
-      final storageInfo = await menuStorage.getStorageInfo();
-
-      expect(storageInfo['menuCount'], equals(0));
-      expect(storageInfo['totalSizeBytes'], equals(0));
-      expect(storageInfo['totalSizeKB'], equals(0.0));
-      expect(storageInfo['averageSizePerMenu'], equals(0.0));
-    });
-
-    test('should calculate storage info correctly', () async {
-      final prefs = await SharedPreferences.getInstance();
-
-      final menu1 = createTestMenuData(name: 'Menu 1');
-      final menu2 = createTestMenuData(name: 'Menu 2');
-
-      final menu1Json = jsonEncode(menu1.toJson());
-      final menu2Json = jsonEncode(menu2.toJson());
-
-      await prefs.setString('saved_menu_1', menu1Json);
-      await prefs.setString('saved_menu_2', menu2Json);
-      await prefs.setString('not_a_menu', 'other data'); // Should be ignored
-
-      final storageInfo = await menuStorage.getStorageInfo();
-
-      expect(storageInfo['menuCount'], equals(2));
-      expect(storageInfo['totalSizeBytes'],
-          equals(menu1Json.length + menu2Json.length));
-      expect(storageInfo['totalSizeKB'],
-          equals((menu1Json.length + menu2Json.length) / 1024));
-      expect(storageInfo['averageSizePerMenu'],
-          equals((menu1Json.length + menu2Json.length).toDouble() / 2.0));
-    });
-
-    test('should handle storage info calculation errors', () async {
-      final storageInfo = await menuStorage.getStorageInfo();
-
-      expect(storageInfo, isA<Map<String, dynamic>>());
-    });
-
-    test('should ignore null menu data in storage calculations', () async {
-      final prefs = await SharedPreferences.getInstance();
-
-      final validMenu = createTestMenuData();
-      final validMenuJson = jsonEncode(validMenu.toJson());
-
-      await prefs.setString('saved_menu_valid', validMenuJson);
-      await prefs.setString('saved_menu_null', ''); // Empty string
-
-      final storageInfo = await menuStorage.getStorageInfo();
-
-      expect(storageInfo['menuCount'], equals(2)); // Counts both entries
-      expect(storageInfo['totalSizeBytes'],
-          equals(validMenuJson.length)); // Only valid menu size
-    });
-  });
-
-  group('MenuStorage - Storage Cleanup', () {
-    test('should cleanup empty storage successfully', () async {
-      final cleanedCount = await menuStorage.cleanupStorage();
-
-      expect(cleanedCount, equals(0));
-    });
-
-    test('should remove corrupted menu entries', () async {
-      final prefs = await SharedPreferences.getInstance();
-
-      final validMenu = createTestMenuData();
-      await prefs.setString('saved_menu_valid', jsonEncode(validMenu.toJson()));
-      await prefs.setString('saved_menu_corrupted_1', 'invalid json');
-      await prefs.setString('saved_menu_corrupted_2',
-          '{"incomplete": true}'); // Missing required fields
-      await prefs.setString('saved_menu_empty', ''); // Empty string
-      await prefs.setString('not_a_menu', 'other data'); // Should be ignored
-
-      final cleanedCount = await menuStorage.cleanupStorage();
-
-      expect(cleanedCount, equals(2)); // Invalid JSON and empty string
-
-      // Valid menu and incomplete JSON (which parses successfully) should still exist
-      final remainingKeys = prefs
-          .getKeys()
-          .where((key) => key.startsWith('saved_menu_'))
-          .toList();
-      expect(remainingKeys, contains('saved_menu_valid'));
-      expect(remainingKeys, contains('saved_menu_corrupted_2')); // Incomplete JSON still parses
-      expect(remainingKeys, hasLength(2));
-    });
-
-    test('should handle cleanup without corrupted data', () async {
-      final prefs = await SharedPreferences.getInstance();
-
-      final validMenu1 = createTestMenuData(name: 'Menu 1');
-      final validMenu2 = createTestMenuData(name: 'Menu 2');
-
-      await prefs.setString('saved_menu_1', jsonEncode(validMenu1.toJson()));
-      await prefs.setString('saved_menu_2', jsonEncode(validMenu2.toJson()));
-
-      final cleanedCount = await menuStorage.cleanupStorage();
-
-      expect(cleanedCount, equals(0));
-
-      // All menus should still exist
-      final remainingKeys = prefs
-          .getKeys()
-          .where((key) => key.startsWith('saved_menu_'))
-          .toList();
-      expect(remainingKeys, hasLength(2));
-    });
-
-    test('should handle cleanup operation errors gracefully', () async {
-      final cleanedCount = await menuStorage.cleanupStorage();
-
-      expect(cleanedCount, equals(0));
-    });
-  });
+// NOTE: Storage Information and Storage Cleanup tests removed
+  // These tests were for SharedPreferences-based storage methods that
+  // were removed when MenuStorage was refactored to Firestore-only architecture.
 
   group('MenuStorage - SavedMenuData Class', () {
     test('should create SavedMenuData with all properties', () {
@@ -802,9 +689,6 @@ void main() {
         );
         keys.add(key);
       }
-
-      final storageInfo = await menuStorage.getStorageInfo();
-      expect(storageInfo['menuCount'], equals(50));
 
       final loadedMenus = await menuStorage.loadLocalMenus();
       expect(loadedMenus.length, equals(50));

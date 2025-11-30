@@ -21,17 +21,12 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/auth_service.dart';
 
-// Dependencies from other modules (imported but not used directly in registration)
-import 'package:butlery/repositories/interfaces/recipe_repository.dart';
-
 // Menu collaboration repository
 import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_menu_collaboration_repository.dart';
 
-// Recipe presence repository
-import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart';
-
 // Shopping repository
+// Note: FirebaseRecipePresenceRepository now in ContentModule
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shopping_repository.dart';
 
@@ -42,6 +37,8 @@ import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/services/realtime/realtime_recipe_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+
+// Permission service now in ContentModule
 import 'package:butlery/services/permission_service.dart';
 
 // Import dependency modules
@@ -71,7 +68,6 @@ class CollaborationModule implements DIModule {
         RealtimeRecipeService,
         RealtimeMenuService,
         UnifiedShoppingService,
-        PermissionService,
         MenuCollaborationRepository,
       ];
 
@@ -107,16 +103,8 @@ class CollaborationModule implements DIModule {
         ),
       );
 
-      // ==================== RECIPE PRESENCE REPOSITORY ====================
-
-      // FirebaseRecipePresenceRepository - recipe presence tracking for collaborative editing
-      container.registerLazySingleton<FirebaseRecipePresenceRepository>(
-        () => FirebaseRecipePresenceRepository(
-          firestoreRepository: container<FirestoreRepository>(),
-        ),
-      );
-
       // ==================== COLLABORATIVE SERVICES ====================
+      // Note: FirebaseRecipePresenceRepository is now registered in ContentModule
 
       // RealtimeMenuService - collaborative meal planning
       container.registerLazySingleton<RealtimeMenuService>(
@@ -147,18 +135,8 @@ class CollaborationModule implements DIModule {
         ),
       );
 
-      // ==================== PERMISSION SYSTEM ====================
-
-      // PermissionService - comprehensive authorization system
-      // Now includes RecipeRepository for proper ownership validation
-      container.registerLazySingleton<PermissionService>(
-        () => PermissionService(
-          authRepository: container<AuthRepository>(),
-          recipeRepository: container<RecipeRepository>(),
-        ),
-      );
-
       // ==================== REALTIME RECIPE SERVICE ====================
+      // Note: PermissionService is now registered in ContentModule (moved for proper module ordering)
 
       // RealtimeRecipeService - collaborative recipe editing
       // Note: This depends on PermissionService, so it's registered as lazy singleton

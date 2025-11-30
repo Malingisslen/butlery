@@ -1,11 +1,15 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+// Manual TypeAdapter for RecipeCore
+// Replaces generated code from hive_generator
+// Written to enable analyzer 9.0.0 upgrade (Issue #055)
 
-part of 'recipe_unified.dart';
+// ignore_for_file: lines_longer_than_80_chars
 
-// **************************************************************************
-// TypeAdapterGenerator
-// **************************************************************************
+import 'package:hive/hive.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
+/// Manual TypeAdapter for RecipeCore model.
+/// This adapter handles binary serialization/deserialization for Hive storage.
+/// Maintains compatibility with previously generated adapter (typeId: 1, 22 fields).
 class RecipeCoreAdapter extends TypeAdapter<RecipeCore> {
   @override
   final int typeId = 1;
@@ -45,7 +49,7 @@ class RecipeCoreAdapter extends TypeAdapter<RecipeCore> {
   @override
   void write(BinaryWriter writer, RecipeCore obj) {
     writer
-      ..writeByte(22)
+      ..writeByte(22) // Number of fields
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)

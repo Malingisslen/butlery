@@ -1,6 +1,14 @@
 {
   "permissions": {
-    "allow": [],
+    "allow": [
+      "Bash(cmd /c \"for /r .playwright-mcp %I in (.) do @for /f %z in (''''%~zI'''') do @set /a size+=%z & echo %I: %~zI bytes\")",
+      "Bash(timeout 5 cat:*)",
+      "Bash(flutter run:*)",
+      "Bash(timeout 3 cat:*)",
+      "Bash(flutter attach:*)",
+      "Bash(xargs:*)",
+      "Bash(\"C:/Users/malla/AppData/Local/Android/sdk/platform-tools/adb.exe\" shell am force-stop com.example.butlery)"
+    ],
     "deny": [],
     "ask": []
   }

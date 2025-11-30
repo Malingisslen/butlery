@@ -238,8 +238,6 @@ class AnalyticsService extends BaseService {
     );
   }
 
-  // ===== STANDARDIZED EVENT METHODS (Analytics Strategy Document) =====
-
   /// Log a generic event with parameters
   /// Use this for custom events not covered by specific methods
   Future<void> logEvent({
@@ -279,8 +277,6 @@ class AnalyticsService extends BaseService {
       requiresNetwork: false,
     );
   }
-
-  // ===== RECIPE EVENTS =====
 
   /// Log recipe viewed (standardized event)
   Future<void> logRecipeViewed({
@@ -365,8 +361,6 @@ class AnalyticsService extends BaseService {
       },
     );
   }
-
-  // ===== MENU EVENTS =====
 
   /// Log menu generation started (standardized event)
   Future<void> logMenuGenerationStarted({int? promptLength}) async {
@@ -457,8 +451,6 @@ class AnalyticsService extends BaseService {
     );
   }
 
-  // ===== SHOPPING LIST EVENTS =====
-
   /// Log shopping list created (standardized event)
   Future<void> logShoppingListCreated({
     required String listId,
@@ -545,8 +537,6 @@ class AnalyticsService extends BaseService {
     );
   }
 
-  // ===== SOCIAL EVENTS =====
-
   /// Log friend request sent (standardized event)
   Future<void> logFriendRequestSent({
     required String recipientId,
@@ -607,8 +597,6 @@ class AnalyticsService extends BaseService {
       },
     );
   }
-
-  // ===== ERROR & PERFORMANCE EVENTS =====
 
   /// Log error occurred (standardized event)
   /// Error events exempt from consent check (service operation tracking)

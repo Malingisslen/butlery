@@ -142,7 +142,6 @@ void main() {
       // Create viewModel for creation mode (default)
       viewModel = RecipeFormViewModel(
         recipeService: mockRecipeService,
-        analyticsService: mockAnalyticsService,
       );
     });
     
@@ -184,8 +183,7 @@ void main() {
         // Arrange & Act - create new viewModel in edit mode
         final editViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-          analyticsService: mockAnalyticsService,
-          initialRecipe: testRecipe,
+            initialRecipe: testRecipe,
         );
         
         // Assert
@@ -424,8 +422,7 @@ void main() {
         // Arrange - create viewModel in edit mode
         final editViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-          analyticsService: mockAnalyticsService,
-          initialRecipe: testRecipe,
+            initialRecipe: testRecipe,
         );
         
         expect(editViewModel.hasUnsavedChanges, isFalse);
@@ -490,8 +487,7 @@ void main() {
         // Arrange - create viewModel in edit mode
         final editViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-          analyticsService: mockAnalyticsService,
-          initialRecipe: testRecipe,
+            initialRecipe: testRecipe,
         );
         
         // Act
@@ -554,8 +550,7 @@ void main() {
         // Arrange - create viewModel in edit mode
         final editViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-          analyticsService: mockAnalyticsService,
-          initialRecipe: testRecipe,
+            initialRecipe: testRecipe,
         );
         
         // Act
@@ -574,8 +569,7 @@ void main() {
         // Arrange
         final editViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-          analyticsService: mockAnalyticsService,
-          initialRecipe: testRecipe,
+            initialRecipe: testRecipe,
         );
         
         when(() => mockPersonalOps.addUnifiedRecipe(any()))
@@ -599,8 +593,7 @@ void main() {
         // Arrange - create viewModel in edit mode
         final editViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-          analyticsService: mockAnalyticsService,
-          initialRecipe: testRecipe,
+            initialRecipe: testRecipe,
         );
         
         // Setup mock for deleteRecipe in recipeService
@@ -622,8 +615,7 @@ void main() {
         // Arrange
         final editViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-          analyticsService: mockAnalyticsService,
-          initialRecipe: testRecipe,
+            initialRecipe: testRecipe,
         );
         
         when(() => mockPersonalOps.deleteRecipe(any()))
@@ -780,8 +772,7 @@ void main() {
         // Create a new viewModel for this test
         final testViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-          analyticsService: mockAnalyticsService,
-        );
+          );
         
         // Act & Assert
         expect(() => testViewModel.dispose(), returnsNormally);
@@ -791,8 +782,7 @@ void main() {
         // Create a new viewModel for this test
         final testViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-          analyticsService: mockAnalyticsService,
-        );
+          );
         
         // Arrange
         testViewModel.addListener(() {

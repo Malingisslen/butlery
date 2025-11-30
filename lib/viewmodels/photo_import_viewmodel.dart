@@ -52,6 +52,20 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// and manual editing throughout photo import functionality.
   String _ocrText = '';
 
+  // ===== OCR QUALITY DATA (Phase 2 Enhancement) =====
+
+  /// Last OCR quality score from image assessment (0.0-1.0).
+  /// Enables quality-based error messaging and user guidance on image quality.
+  double? _lastQualityScore;
+
+  /// Last OCR quality recommendations from image assessment.
+  /// Provides actionable suggestions for improving OCR success (lighting, focus, etc.).
+  List<String>? _lastRecommendations;
+
+  /// Last OCR confidence score from successful extraction (0.0-1.0).
+  /// Indicates reliability of extracted text for user confidence and retry decisions.
+  double? _lastConfidence;
+
   /// Initializes photo import ViewModel with comprehensive ImportManager integration and OCR preparation.
   /// [importManager] ImportManager instance for photo import strategy coordination and recipe parsing
   /// Establishes photo import infrastructure with ImportManager integration, enabling comprehensive
@@ -96,6 +110,19 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// Indicates whether OCR has produced text results enabling
   /// recipe parsing workflow and text review functionality.
   bool get hasOcrResult => _ocrText.isNotEmpty;
+
+  /// Last OCR quality score for error messaging and user guidance (Phase 2 Enhancement).
+  /// Returns quality score from image assessment (0.0-1.0) enabling quality-based
+  /// error messages and recommendations display in UI.
+  double? get qualityScore => _lastQualityScore;
+
+  /// Last OCR quality recommendations for user guidance (Phase 2 Enhancement).
+  /// Returns actionable suggestions from quality assessment for improving OCR success.
+  List<String>? get recommendations => _lastRecommendations;
+
+  /// Last OCR confidence score for user confidence indication (Phase 2 Enhancement).
+  /// Returns confidence of extracted text (0.0-1.0) enabling reliability display in UI.
+  double? get confidence => _lastConfidence;
 
   /// OCR processing state indicator for UI progress indication and interaction control.
   /// Indicates active OCR processing operations for loading indicators
@@ -183,13 +210,10 @@ class PhotoImportViewModel extends ImportBaseViewModel {
       return;
     }
 
-    await executeAsyncVoid(
-      () async {
-        clearError();
-        await _performOcr(_imageBytes!);
-      },
-      errorPrefix: 'Kunde inte försöka OCR igen',
-    );
+    await executeAsyncVoid(() async {
+      clearError();
+      await _performOcr(_imageBytes!);
+    }, errorPrefix: 'Kunde inte försöka OCR igen');
   }
 
   /// Indicates whether OCR retry is possible based on image availability.
@@ -200,10 +224,11 @@ class PhotoImportViewModel extends ImportBaseViewModel {
 
   /// Clears all photo and OCR data with comprehensive state cleanup and memory management.
   /// Performs complete photo import state cleanup including image data, OCR results,
-  /// and imported recipe data with disposal safety checks and memory management.
+  /// quality metrics, and imported recipe data with disposal safety checks and memory management.
   /// **Cleanup Process:**
   /// - Image bytes disposal and memory cleanup
   /// - OCR text results clearing
+  /// - OCR quality data and confidence scores clearing (Phase 2 Enhancement)
   /// - Imported recipe data cleanup through base class
   /// - State coordination and UI notification
   /// **Usage Example:**
@@ -216,6 +241,9 @@ class PhotoImportViewModel extends ImportBaseViewModel {
 
     _imageBytes = null;
     _ocrText = '';
+    _lastQualityScore = null;
+    _lastRecommendations = null;
+    _lastConfidence = null;
     clearImportData();
 
     // Also clear OCR cache for testing
@@ -281,55 +309,67 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   Future<void> _pickImageAndProcess(ImageSource source) async {
     clearImportData();
 
-    await executeAsyncVoid(
-      () async {
-        // Pick image
-        final picker = ImagePicker();
-        final XFile? picked = await picker.pickImage(
-          source: source,
-          maxWidth: 2048, // Limit width to reduce file size
-          maxHeight: 2048, // Limit height to reduce file size
-          imageQuality:
-              85, // Compress image to reduce file size while maintaining OCR quality
+    await executeAsyncVoid(() async {
+      // Pick image
+      final picker = ImagePicker();
+      final XFile? picked = await picker.pickImage(
+        source: source,
+        maxWidth: 2048, // Limit width to reduce file size
+        maxHeight: 2048, // Limit height to reduce file size
+        imageQuality:
+            85, // Compress image to reduce file size while maintaining OCR quality
+      );
+
+      if (picked == null) {
+        throw Exception('Ingen bild vald');
+      }
+
+      // Validate image format
+      final fileName = picked.name.toLowerCase();
+      if (!fileName.endsWith('.jpg') &&
+          !fileName.endsWith('.jpeg') &&
+          !fileName.endsWith('.png')) {
+        throw Exception(
+          'Bildformatet stöds inte. Använd JPEG eller PNG-format.',
         );
+      }
 
-        if (picked == null) {
-          throw Exception('Ingen bild vald');
-        }
+      // Read image bytes
+      final bytes = await picked.readAsBytes();
 
-        // Validate image format
-        final fileName = picked.name.toLowerCase();
-        if (!fileName.endsWith('.jpg') &&
-            !fileName.endsWith('.jpeg') &&
-            !fileName.endsWith('.png')) {
-          throw Exception(
-            'Bildformatet stöds inte. Använd JPEG eller PNG-format.',
-          );
-        }
+      // Validate image size (max 15MB after compression)
+      final sizeInMB = bytes.length / (1024 * 1024);
+      if (sizeInMB > 15) {
+        throw Exception(
+          'Bilden är för stor (${sizeInMB.toStringAsFixed(1)} MB). '
+          'Använd en mindre bild eller komprimera den.',
+        );
+      }
 
-        // Read image bytes
-        final bytes = await picked.readAsBytes();
+      debugPrint(
+        '🔍 [PhotoImport] Image validated: ${sizeInMB.toStringAsFixed(2)} MB, format: ${fileName.split('.').last}',
+      );
 
-        // Validate image size (max 15MB after compression)
-        final sizeInMB = bytes.length / (1024 * 1024);
-        if (sizeInMB > 15) {
-          throw Exception(
-            'Bilden är för stor (${sizeInMB.toStringAsFixed(1)} MB). '
-            'Använd en mindre bild eller komprimera den.',
-          );
-        }
+      _imageBytes = bytes;
+      notifyListeners();
 
+      // Pre-flight quality assessment (Phase 2 Enhancement)
+      final qualityAssessment =
+          await OCRExtractionService.instance.assessImageQuality(bytes);
+      _lastQualityScore = qualityAssessment.qualityScore;
+      _lastRecommendations = qualityAssessment.recommendations;
+
+      // Show quality warning if poor quality detected
+      if (!qualityAssessment.isGoodQuality) {
         debugPrint(
-            '🔍 [PhotoImport] Image validated: ${sizeInMB.toStringAsFixed(2)} MB, format: ${fileName.split('.').last}');
+          '⚠️ [PhotoImport] Quality warning: Score ${(_lastQualityScore! * 100).toInt()}%, Issues: ${qualityAssessment.issues.join(', ')}',
+        );
+        // Continue to OCR anyway, but user will see warning in UI
+      }
 
-        _imageBytes = bytes;
-        notifyListeners();
-
-        // Perform OCR
-        await _performOcr(bytes);
-      },
-      errorPrefix: 'Kunde inte bearbeta bild',
-    );
+      // Perform OCR
+      await _performOcr(bytes);
+    }, errorPrefix: 'Kunde inte bearbeta bild');
   }
 
   /// Performs comprehensive OCR processing using universal multi-provider OCR service.
@@ -348,32 +388,33 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   Future<void> _performOcr(Uint8List imageBytes) async {
     final imageSizeKB = imageBytes.length / 1024;
     debugPrint(
-        '🔍 [PhotoImport] Starting universal OCR processing: ${imageSizeKB.toStringAsFixed(1)} KB');
+      '🔍 [PhotoImport] Starting universal OCR processing: ${imageSizeKB.toStringAsFixed(1)} KB',
+    );
 
     try {
       // Use the new universal OCR service
-      final ocrResult =
-          await OCRExtractionService.instance.extractText(imageBytes);
+      final ocrResult = await OCRExtractionService.instance.extractText(
+        imageBytes,
+      );
 
       debugPrint(
-          '🔍 [PhotoImport] OCR completed - Method: ${ocrResult.processingMethod}, Confidence: ${ocrResult.confidence.toStringAsFixed(2)}');
+        '🔍 [PhotoImport] OCR completed - Method: ${ocrResult.processingMethod}, Confidence: ${ocrResult.confidence.toStringAsFixed(2)}',
+      );
 
       if (ocrResult.isSuccessful && ocrResult.text.isNotEmpty) {
         debugPrint(
-            '✅ [PhotoImport] OCR succeeded, extracted ${ocrResult.text.length} characters');
+          '✅ [PhotoImport] OCR succeeded, extracted ${ocrResult.text.length} characters',
+        );
 
         _ocrText = ocrResult.text;
+        _lastConfidence = ocrResult.confidence;
         notifyListeners();
 
         // Auto-parse the OCR text into a recipe
         await _autoParseOcrText(ocrResult.text);
       } else {
-        // Handle OCR failure with user-friendly message
-        final errorMessage = ocrResult.errorMessage ??
-            'Ingen text kunde extraheras från bilden. Kontrollera att:\n'
-                '• Bilden innehåller tydlig, läsbar text\n'
-                '• Texten är i god kontrast mot bakgrunden\n'
-                '• Bilden inte är för suddig eller mörk';
+        // Handle OCR failure with enhanced error messaging (Phase 2 Enhancement)
+        final errorMessage = _buildEnhancedErrorMessage(ocrResult);
 
         debugPrint('❌ [PhotoImport] OCR failed: $errorMessage');
         throw Exception(errorMessage);
@@ -411,6 +452,74 @@ class PhotoImportViewModel extends ImportBaseViewModel {
     }
   }
 
+  /// Builds enhanced error message from OCR failure with quality data and actionable guidance (Phase 2 Enhancement).
+  /// [result] OCR processing result containing failure metadata, quality scores, and recommendations
+  /// Extracts rich quality data from OCRResult metadata and constructs specific, actionable error messages
+  /// in Swedish based on actual failure reasons rather than generic fallback messages.
+  /// **Enhanced Error Message Strategy:**
+  /// - Quality-based messaging: Low quality score → specific quality issues
+  /// - Circuit breaker awareness: All providers down → service availability guidance
+  /// - Recommendation surfacing: Display actionable suggestions from quality assessment
+  /// - Progressive guidance: Multiple recovery options from retry to manual entry
+  /// **Metadata Extracted:**
+  /// - quality_assessment: Image quality score (0.0-1.0)
+  /// - recommendations: List of actionable quality improvements
+  /// - circuit_breakers: Provider availability status (OCR.space, Google Vision, Tesseract)
+  String _buildEnhancedErrorMessage(OCRResult result) {
+    // Store quality data for UI access
+    _lastQualityScore = result.metadata['quality_assessment'] as double?;
+    _lastRecommendations =
+        (result.metadata['recommendations'] as List?)?.cast<String>();
+    _lastConfidence = result.confidence;
+
+    // Extract circuit breaker states
+    final circuitBreakers =
+        result.metadata['circuit_breakers'] as Map<String, dynamic>?;
+    final allProvidersDown = circuitBreakers != null &&
+        circuitBreakers['ocr_space_state'] == 'open' &&
+        circuitBreakers['google_vision_state'] == 'open' &&
+        circuitBreakers['tesseract_state'] == 'open';
+
+    // Build specific error message based on failure reasons
+    final messageParts = <String>[];
+
+    // Primary message based on quality score
+    if (_lastQualityScore != null && _lastQualityScore! < 0.6) {
+      messageParts.add(
+        'Bildkvaliteten är för låg för OCR (${(_lastQualityScore! * 100).toInt()}%).',
+      );
+    } else if (allProvidersDown) {
+      messageParts.add(
+        'OCR-tjänsterna är tillfälligt otillgängliga. Försök igen om några minuter.',
+      );
+    } else {
+      messageParts.add('Ingen text kunde extraheras från bilden.');
+    }
+
+    // Add specific recommendations if available
+    if (_lastRecommendations != null && _lastRecommendations!.isNotEmpty) {
+      messageParts.add('\n\nFörbättringsförslag:');
+      for (final recommendation in _lastRecommendations!) {
+        messageParts.add('• $recommendation');
+      }
+    } else {
+      // Generic quality tips if no specific recommendations
+      messageParts.add(
+        '\n\nTips för bättre resultat:\n'
+        '• Se till att bilden är välbelyst och skarp\n'
+        '• Undvik skuggor och reflektioner\n'
+        '• Håll kameran rakt mot texten',
+      );
+    }
+
+    // Add recovery options
+    messageParts.add(
+      '\n\nDu kan försöka igen med en ny bild eller fortsätta med manuell inmatning.',
+    );
+
+    return messageParts.join('\n');
+  }
+
   // ===== DEBUGGING SUPPORT =====
 
   /// Provides comprehensive debugging state information for photo import development and troubleshooting.
@@ -436,10 +545,11 @@ class PhotoImportViewModel extends ImportBaseViewModel {
 
   /// Disposes photo import ViewModel with comprehensive cleanup and memory management.
   /// Performs complete resource cleanup including image data disposal, OCR text cleanup,
-  /// and memory management ensuring proper photo import ViewModel lifecycle management.
+  /// quality metrics, and memory management ensuring proper photo import ViewModel lifecycle management.
   /// **Disposal Process:**
   /// - Image bytes disposal and memory cleanup
   /// - OCR text data cleanup and state reset
+  /// - OCR quality data and confidence scores cleanup (Phase 2 Enhancement)
   /// - Parent disposal coordination through super.dispose()
   /// - Resource cleanup and memory management
   /// **Override Implementation**: Extends ImportBaseViewModel disposal with photo-specific cleanup.
@@ -447,6 +557,9 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   void dispose() {
     _imageBytes = null;
     _ocrText = '';
+    _lastQualityScore = null;
+    _lastRecommendations = null;
+    _lastConfidence = null;
     super.dispose();
   }
 }

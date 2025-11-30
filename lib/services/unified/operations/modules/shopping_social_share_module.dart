@@ -1,5 +1,6 @@
 // lib/services/unified/operations/modules/shopping_social_share_module.dart
 
+import 'dart:math' show min;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -119,19 +120,28 @@ class ShoppingSocialShareModule {
   }
 
   /// Share with groups - resolves group members and shares with all
+  /// Optimized: Uses batch whereIn queries instead of N+1 pattern (#040)
   Future<bool> shareWithGroups({
     required String listId,
     required List<String> groupIds,
     String? message,
   }) async {
     try {
-      // Resolve all group members
+      if (groupIds.isEmpty) return false;
+
+      // Resolve all group members using batch fetch (max 30 per whereIn query)
       final allMemberIds = <String>{};
 
-      for (final groupId in groupIds) {
-        final groupDoc = await _firestore.collection('friendCategories').doc(groupId).get();
-        if (groupDoc.exists) {
-          final memberIds = List<String>.from(groupDoc.data()!['friendUserIds'] ?? []);
+      // Batch fetch groups in chunks of 30 (Firestore whereIn limit)
+      for (int i = 0; i < groupIds.length; i += 30) {
+        final batchIds = groupIds.sublist(i, min(i + 30, groupIds.length));
+        final groupDocs = await _firestore
+            .collection('friendCategories')
+            .where(FieldPath.documentId, whereIn: batchIds)
+            .get();
+
+        for (final doc in groupDocs.docs) {
+          final memberIds = List<String>.from(doc.data()['friendUserIds'] ?? []);
           allMemberIds.addAll(memberIds);
         }
       }
@@ -185,6 +195,7 @@ class ShoppingSocialShareModule {
   }
 
   /// Get shopping lists shared with me
+  /// Optimized: Uses batch whereIn queries instead of N+1 pattern (#040)
   Future<List<Map<String, dynamic>>> getShoppingListsSharedWithMe() async {
     try {
       if (!_permissionService.isAuthenticated) return [];
@@ -199,29 +210,55 @@ class ShoppingSocialShareModule {
           .orderBy('sharedAt', descending: true)
           .get();
 
-      final sharedLists = <Map<String, dynamic>>[];
+      if (querySnapshot.docs.isEmpty) return [];
+
+      // Collect all sharedListIds for batch fetch
+      final receivedListData = <String, Map<String, dynamic>>{};
+      final sharedListIds = <String>[];
 
       for (final doc in querySnapshot.docs) {
         final data = doc.data();
-        final sharedListId = data['sharedListId'];
+        final sharedListId = data['sharedListId'] as String?;
+        if (sharedListId != null) {
+          sharedListIds.add(sharedListId);
+          receivedListData[sharedListId] = data;
+        }
+      }
 
-        // Get full list data
-        final listDoc = await _firestore
+      if (sharedListIds.isEmpty) return [];
+
+      // Batch fetch all shared list documents (max 10 per whereIn query)
+      final allListDocs = <String, Map<String, dynamic>>{};
+
+      for (int i = 0; i < sharedListIds.length; i += 10) {
+        final batchIds = sharedListIds.sublist(i, min(i + 10, sharedListIds.length));
+        final listDocs = await _firestore
             .collection('sharedShoppingLists')
-            .doc(sharedListId)
+            .where(FieldPath.documentId, whereIn: batchIds)
             .get();
 
-        if (listDoc.exists && listDoc.data()!['isActive'] == true) {
-          final listData = listDoc.data()!;
+        for (final doc in listDocs.docs) {
+          allListDocs[doc.id] = doc.data();
+        }
+      }
+
+      // Build result list from cached batch data
+      final sharedLists = <Map<String, dynamic>>[];
+
+      for (final sharedListId in sharedListIds) {
+        final listData = allListDocs[sharedListId];
+        final receivedData = receivedListData[sharedListId];
+
+        if (listData != null && receivedData != null && listData['isActive'] == true) {
           sharedLists.add({
             'id': sharedListId,
             'title': listData['title'] ?? 'Namnlös inköpslista',
             'sharedByDisplayName': listData['sharedByDisplayName'] ?? 'Okänd användare',
             'sharedByAvatarUrl': listData['sharedByAvatarUrl'],
-            'sharedAt': data['sharedAt'],
+            'sharedAt': receivedData['sharedAt'],
             'description': listData['description'],
-            'isViewed': data['isViewed'] ?? false,
-            'isImported': data['isImported'] ?? false,
+            'isViewed': receivedData['isViewed'] ?? false,
+            'isImported': receivedData['isImported'] ?? false,
           });
         }
       }

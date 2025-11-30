@@ -32,6 +32,10 @@ class PresenceTrackingModule {
       _presenceController =
       StreamController<Map<String, List<Map<String, dynamic>>>>.broadcast();
 
+  // Timer and subscription tracking for proper cleanup (#042)
+  Timer? _cleanupTimer;
+  final Map<String, StreamSubscription<void>> _heartbeatSubscriptions = {};
+
   PresenceTrackingModule(
     this._parent,
     this._realtimeSyncService,
@@ -269,15 +273,28 @@ class PresenceTrackingModule {
   // ===== PRESENCE UTILITIES =====
 
   /// Start automatic presence tracking for recipe
+  /// Fixed (#042): Track subscription internally for proper cleanup
   StreamSubscription<void>? startAutomaticPresenceTracking(
     String recipeId, {
-    Duration heartbeatInterval = const Duration(seconds: 30),
+    Duration heartbeatInterval = const Duration(seconds: 60), // Optimized: 50% write reduction (#037)
   }) {
-    return Stream.periodic(heartbeatInterval).listen((_) async {
+    // Cancel existing subscription for this recipe if any
+    _heartbeatSubscriptions[recipeId]?.cancel();
+
+    final subscription = Stream.periodic(heartbeatInterval).listen((_) async {
       if (isUserPresent(recipeId, _parent.currentUserId ?? '')) {
         await updatePresenceHeartbeat(recipeId);
       }
     });
+
+    _heartbeatSubscriptions[recipeId] = subscription;
+    return subscription;
+  }
+
+  /// Stop automatic presence tracking for recipe (#042)
+  void stopAutomaticPresenceTracking(String recipeId) {
+    _heartbeatSubscriptions[recipeId]?.cancel();
+    _heartbeatSubscriptions.remove(recipeId);
   }
 
   /// Bulk update presence for multiple recipes
@@ -410,8 +427,9 @@ class PresenceTrackingModule {
   }
 
   /// Start periodic presence cleanup
+  /// Fixed (#042): Store timer reference for proper cleanup
   void _startPresenceCleanup() {
-    Timer.periodic(const Duration(minutes: 1), (_) {
+    _cleanupTimer = Timer.periodic(const Duration(minutes: 1), (_) {
       _cleanupStalePresence();
     });
   }
@@ -419,7 +437,7 @@ class PresenceTrackingModule {
   /// Clean up stale presence data
   void _cleanupStalePresence() {
     final now = DateTime.now();
-    const staleThreshold = Duration(minutes: 5);
+    const staleThreshold = Duration(minutes: 10); // Optimized: less aggressive cleanup (#037)
     final keysToRemove = <String>[];
 
     for (final entry in _presenceTimestamps.entries) {
@@ -462,7 +480,19 @@ class PresenceTrackingModule {
   }
 
   /// Dispose resources
+  /// Fixed (#042): Cancel timer and all heartbeat subscriptions
   void dispose() {
+    // Cancel cleanup timer
+    _cleanupTimer?.cancel();
+    _cleanupTimer = null;
+
+    // Cancel all heartbeat subscriptions
+    for (final subscription in _heartbeatSubscriptions.values) {
+      subscription.cancel();
+    }
+    _heartbeatSubscriptions.clear();
+
+    // Close stream controller
     _presenceController.close();
   }
 }

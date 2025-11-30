@@ -17,6 +17,7 @@ class RealtimeRecipe extends RealtimeResource {
     required super.ownerId,
     required super.ownerDisplayName,
     required super.participants,
+    super.participantIds,
     super.createdAt,
     super.lastEditedAt,
     required super.lastEditedBy,
@@ -155,7 +156,16 @@ class RealtimeRecipe extends RealtimeResource {
       permission,
     );
 
-    return copyWithMetadata(participants: updatedParticipants);
+    // Keep participantIds in sync
+    final updatedParticipantIds = List<String>.from(participantIds);
+    if (!updatedParticipantIds.contains(userId)) {
+      updatedParticipantIds.add(userId);
+    }
+
+    return copyWithMetadata(
+      participants: updatedParticipants,
+      participantIds: updatedParticipantIds,
+    );
   }
 
   @override
@@ -165,7 +175,14 @@ class RealtimeRecipe extends RealtimeResource {
       userId,
     );
 
-    return copyWithMetadata(participants: updatedParticipants);
+    // Keep participantIds in sync
+    final updatedParticipantIds = List<String>.from(participantIds);
+    updatedParticipantIds.remove(userId);
+
+    return copyWithMetadata(
+      participants: updatedParticipants,
+      participantIds: updatedParticipantIds,
+    );
   }
 
   @override
@@ -230,7 +247,7 @@ class RealtimeRecipe extends RealtimeResource {
     // Parse recipe data from the nested structure
     final recipeData = data['recipe'] as Map<String, dynamic>? ?? data;
     final recipe = RecipeSerialization.deserializeRecipe(recipeData, id);
-    
+
     // Parse participants
     final participantsData = data['participants'] as Map<String, dynamic>? ?? {};
     final participants = participantsData.map(
@@ -240,15 +257,21 @@ class RealtimeRecipe extends RealtimeResource {
       ),
     );
 
+    // Parse participantIds with fallback to participants.keys for migration
+    final participantIds = data.containsKey('participantIds')
+        ? List<String>.from(data['participantIds'] as List? ?? [])
+        : participants.keys.toList();
+
     return RealtimeRecipe(
       id: id,
       ownerId: data['ownerId'] as String,
       ownerDisplayName: data['ownerDisplayName'] as String,
       participants: participants,
-      createdAt: data['createdAt'] is DateTime 
+      participantIds: participantIds,
+      createdAt: data['createdAt'] is DateTime
           ? data['createdAt'] as DateTime
           : DateTime.now(),
-      lastEditedAt: data['lastEditedAt'] is DateTime 
+      lastEditedAt: data['lastEditedAt'] is DateTime
           ? data['lastEditedAt'] as DateTime
           : DateTime.now(),
       lastEditedBy: data['lastEditedBy'] as String,
@@ -270,6 +293,7 @@ class RealtimeRecipe extends RealtimeResource {
   @override
   RealtimeRecipe copyWithMetadata({
     Map<String, ResourcePermission>? participants,
+    List<String>? participantIds,
     DateTime? lastEditedAt,
     String? lastEditedBy,
     String? lastEditedByDisplayName,
@@ -282,6 +306,7 @@ class RealtimeRecipe extends RealtimeResource {
       ownerId: ownerId,
       ownerDisplayName: ownerDisplayName,
       participants: participants ?? this.participants,
+      participantIds: participantIds ?? this.participantIds,
       createdAt: createdAt,
       lastEditedAt: lastEditedAt ?? DateTime.now(),
       lastEditedBy: lastEditedBy ?? this.lastEditedBy,
@@ -297,6 +322,7 @@ class RealtimeRecipe extends RealtimeResource {
   RealtimeRecipe copyWith({
     Recipe? recipe,
     Map<String, ResourcePermission>? participants,
+    List<String>? participantIds,
     DateTime? lastEditedAt,
     String? lastEditedBy,
     String? lastEditedByDisplayName,
@@ -309,6 +335,7 @@ class RealtimeRecipe extends RealtimeResource {
       ownerId: ownerId,
       ownerDisplayName: ownerDisplayName,
       participants: participants ?? this.participants,
+      participantIds: participantIds ?? this.participantIds,
       createdAt: createdAt,
       lastEditedAt: lastEditedAt ?? DateTime.now(),
       lastEditedBy: lastEditedBy ?? this.lastEditedBy,

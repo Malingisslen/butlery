@@ -319,8 +319,6 @@ class RecipePersistenceManager with ErrorHandlingMixin {
             throw Exception(saveResult.message ?? 'Failed to fork recipe');
           }
           final savedRecipe = newRecipe;
-
-          // _analyticsService.trackRecipeForked(_state.originalRecipe!.id, savedRecipe.id);
           AppLogger.info('Recept forkat: ${savedRecipe.id}');
 
           return savedRecipe;
@@ -382,10 +380,7 @@ class RecipePersistenceManager with ErrorHandlingMixin {
           await _collaborativeManager.leaveCollaborativeMode();
         }
 
-        // Cleanup images
         await _imageManager.clearAllImages();
-
-        // _analyticsService.trackRecipeDeleted(_state.originalRecipe!.id);
         AppLogger.info('Recept borttaget: ${_state.originalRecipe!.id}');
 
         return true;

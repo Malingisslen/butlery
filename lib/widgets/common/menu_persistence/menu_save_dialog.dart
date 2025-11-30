@@ -214,9 +214,8 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
                   itemCount: widget.availableFriends!.length,
                   itemBuilder: (context, index) {
                     final friend = widget.availableFriends![index];
-                    final friendId = friend.userId ?? friend.id ?? '';
-                    final friendName =
-                        friend.displayName ?? friend.name ?? 'Okänd vän';
+                    final friendId = friend.uid;
+                    final friendName = friend.displayName;
                     final isSelected = _selectedFriendIds.contains(friendId);
 
                     return CheckboxListTile(

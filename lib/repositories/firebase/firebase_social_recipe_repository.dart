@@ -8,19 +8,25 @@ import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 
-class FirebaseSocialRecipeRepository with PermissionValidationMixin implements SocialRecipeRepository {
+class FirebaseSocialRecipeRepository
+    with PermissionValidationMixin
+    implements SocialRecipeRepository {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
   final AuthRepository _authRepository;
+  final FirebaseAuditRepository? _auditRepository;
 
   FirebaseSocialRecipeRepository({
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
     required AuthRepository authRepository,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance,
-       _auth = auth ?? FirebaseAuth.instance,
-       _authRepository = authRepository;
+    FirebaseAuditRepository? auditRepository,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _auth = auth ?? FirebaseAuth.instance,
+        _authRepository = authRepository,
+        _auditRepository = auditRepository;
 
   // ===== PRIVATE HELPER METHODS =====
 
@@ -90,8 +96,10 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
       final snapshot = await sharedRecipesRef
           .where('sharedWithUserIds', arrayContains: userId)
           .get();
-      
-      return snapshot.docs.map((doc) => SharedRecipe.fromMap(doc.id, doc.data())).toList();
+
+      return snapshot.docs
+          .map((doc) => SharedRecipe.fromMap(doc.id, doc.data()))
+          .toList();
     } catch (e) {
       throw Exception('Failed to get shared recipes: $e');
     }
@@ -103,8 +111,10 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
       final snapshot = await sharedMenusRef
           .where('sharedWithUserIds', arrayContains: userId)
           .get();
-      
-      return snapshot.docs.map((doc) => SharedMenu.fromMap(doc.id, doc.data())).toList();
+
+      return snapshot.docs
+          .map((doc) => SharedMenu.fromMap(doc.id, doc.data()))
+          .toList();
     } catch (e) {
       throw Exception('Failed to get shared menus: $e');
     }
@@ -124,10 +134,12 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
       currentUserId: currentUser,
       resourceType: 'shared_recipe',
     );
-    
+
     final data = doc.data() as Map<String, dynamic>;
-    final sharedWith = List<String>.from((data['sharedWith'] as List?).orEmpty());
-    
+    final sharedWith = List<String>.from(
+      (data['sharedWith'] as List?).orEmpty(),
+    );
+
     if (!await hasReadAccess(
       currentUserId: currentUser,
       resourceOwnerId: (data['ownerId'] as String?).orEmpty(),
@@ -140,17 +152,18 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
         userId: currentUser,
       );
     }
-    
+
     await sharedRecipesRef.doc(recipeId).update({
       'viewedByUserIds': FieldValue.arrayUnion([userId]),
       'viewedAt.$userId': FieldValue.serverTimestamp(),
     });
-    
-    logPermissionCheck(
+
+    await logPermissionCheck(
       userId: currentUser,
       resource: 'shared_recipe',
       operation: 'mark_viewed',
       granted: true,
+      auditRepository: _auditRepository,
     );
   }
 
@@ -168,10 +181,12 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
       currentUserId: currentUser,
       resourceType: 'shared_menu',
     );
-    
+
     final data = doc.data() as Map<String, dynamic>;
-    final sharedWith = List<String>.from((data['sharedWithUserIds'] as List?).orEmpty());
-    
+    final sharedWith = List<String>.from(
+      (data['sharedWithUserIds'] as List?).orEmpty(),
+    );
+
     if (!await hasReadAccess(
       currentUserId: currentUser,
       resourceOwnerId: (data['ownerId'] as String?).orEmpty(),
@@ -184,22 +199,26 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
         userId: currentUser,
       );
     }
-    
+
     await sharedMenusRef.doc(menuId).update({
       'viewedByUserIds': FieldValue.arrayUnion([userId]),
       'viewedAt.$userId': FieldValue.serverTimestamp(),
     });
-    
-    logPermissionCheck(
+
+    await logPermissionCheck(
       userId: currentUser,
       resource: 'shared_menu',
       operation: 'mark_viewed',
       granted: true,
+      auditRepository: _auditRepository,
     );
   }
 
   @override
-  Future<void> markSharedRecipeAsImported(String recipeId, String userId) async {
+  Future<void> markSharedRecipeAsImported(
+    String recipeId,
+    String userId,
+  ) async {
     // Validate user is marking their own import
     final currentUser = await _withAuthenticatedUser(
       targetUserId: userId,
@@ -212,10 +231,12 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
       currentUserId: currentUser,
       resourceType: 'shared_recipe',
     );
-    
+
     final data = doc.data() as Map<String, dynamic>;
-    final sharedWith = List<String>.from((data['sharedWith'] as List?).orEmpty());
-    
+    final sharedWith = List<String>.from(
+      (data['sharedWith'] as List?).orEmpty(),
+    );
+
     if (!await hasReadAccess(
       currentUserId: currentUser,
       resourceOwnerId: (data['ownerId'] as String?).orEmpty(),
@@ -228,17 +249,18 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
         userId: currentUser,
       );
     }
-    
+
     await sharedRecipesRef.doc(recipeId).update({
       'importedByUserIds': FieldValue.arrayUnion([userId]),
       'importedAt.$userId': FieldValue.serverTimestamp(),
     });
-    
-    logPermissionCheck(
+
+    await logPermissionCheck(
       userId: currentUser,
       resource: 'shared_recipe',
       operation: 'mark_imported',
       granted: true,
+      auditRepository: _auditRepository,
     );
   }
 
@@ -256,10 +278,12 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
       currentUserId: currentUser,
       resourceType: 'shared_menu',
     );
-    
+
     final data = doc.data() as Map<String, dynamic>;
-    final sharedWith = List<String>.from((data['sharedWithUserIds'] as List?).orEmpty());
-    
+    final sharedWith = List<String>.from(
+      (data['sharedWithUserIds'] as List?).orEmpty(),
+    );
+
     if (!await hasReadAccess(
       currentUserId: currentUser,
       resourceOwnerId: (data['ownerId'] as String?).orEmpty(),
@@ -272,17 +296,18 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
         userId: currentUser,
       );
     }
-    
+
     await sharedMenusRef.doc(menuId).update({
       'importedByUserIds': FieldValue.arrayUnion([userId]),
       'importedAt.$userId': FieldValue.serverTimestamp(),
     });
-    
-    logPermissionCheck(
+
+    await logPermissionCheck(
       userId: currentUser,
       resource: 'shared_menu',
       operation: 'mark_imported',
       granted: true,
+      auditRepository: _auditRepository,
     );
   }
 
@@ -300,10 +325,12 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
       currentUserId: currentUser,
       resourceType: 'shared_recipe',
     );
-    
+
     final data = doc.data() as Map<String, dynamic>;
-    final sharedWith = List<String>.from((data['sharedWith'] as List?).orEmpty());
-    
+    final sharedWith = List<String>.from(
+      (data['sharedWith'] as List?).orEmpty(),
+    );
+
     if (!await hasReadAccess(
       currentUserId: currentUser,
       resourceOwnerId: (data['ownerId'] as String?).orEmpty(),
@@ -316,17 +343,18 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
         userId: currentUser,
       );
     }
-    
+
     await sharedRecipesRef.doc(recipeId).update({
       'dismissedByUserIds': FieldValue.arrayUnion([userId]),
       'dismissedAt.$userId': FieldValue.serverTimestamp(),
     });
-    
-    logPermissionCheck(
+
+    await logPermissionCheck(
       userId: currentUser,
       resource: 'shared_recipe',
       operation: 'dismiss',
       granted: true,
+      auditRepository: _auditRepository,
     );
   }
 
@@ -344,10 +372,12 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
       currentUserId: currentUser,
       resourceType: 'shared_menu',
     );
-    
+
     final data = doc.data() as Map<String, dynamic>;
-    final sharedWith = List<String>.from((data['sharedWithUserIds'] as List?).orEmpty());
-    
+    final sharedWith = List<String>.from(
+      (data['sharedWithUserIds'] as List?).orEmpty(),
+    );
+
     if (!await hasReadAccess(
       currentUserId: currentUser,
       resourceOwnerId: (data['ownerId'] as String?).orEmpty(),
@@ -360,17 +390,18 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
         userId: currentUser,
       );
     }
-    
+
     await sharedMenusRef.doc(menuId).update({
       'dismissedByUserIds': FieldValue.arrayUnion([userId]),
       'dismissedAt.$userId': FieldValue.serverTimestamp(),
     });
-    
-    logPermissionCheck(
+
+    await logPermissionCheck(
       userId: currentUser,
       resource: 'shared_menu',
       operation: 'dismiss',
       granted: true,
+      auditRepository: _auditRepository,
     );
   }
 
@@ -388,10 +419,12 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
       currentUserId: currentUser,
       resourceType: 'shared_recipe',
     );
-    
+
     final data = doc.data() as Map<String, dynamic>;
-    final sharedWith = List<String>.from((data['sharedWith'] as List?).orEmpty());
-    
+    final sharedWith = List<String>.from(
+      (data['sharedWith'] as List?).orEmpty(),
+    );
+
     if (!await hasReadAccess(
       currentUserId: currentUser,
       resourceOwnerId: (data['ownerId'] as String?).orEmpty(),
@@ -404,17 +437,18 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
         userId: currentUser,
       );
     }
-    
+
     await sharedRecipesRef.doc(recipeId).update({
       'dismissedByUserIds': FieldValue.arrayRemove([userId]),
       'dismissedAt.$userId': FieldValue.delete(),
     });
-    
-    logPermissionCheck(
+
+    await logPermissionCheck(
       userId: currentUser,
       resource: 'shared_recipe',
       operation: 'undismiss',
       granted: true,
+      auditRepository: _auditRepository,
     );
   }
 
@@ -432,10 +466,12 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
       currentUserId: currentUser,
       resourceType: 'shared_menu',
     );
-    
+
     final data = doc.data() as Map<String, dynamic>;
-    final sharedWith = List<String>.from((data['sharedWithUserIds'] as List?).orEmpty());
-    
+    final sharedWith = List<String>.from(
+      (data['sharedWithUserIds'] as List?).orEmpty(),
+    );
+
     if (!await hasReadAccess(
       currentUserId: currentUser,
       resourceOwnerId: (data['ownerId'] as String?).orEmpty(),
@@ -448,17 +484,18 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
         userId: currentUser,
       );
     }
-    
+
     await sharedMenusRef.doc(menuId).update({
       'dismissedByUserIds': FieldValue.arrayRemove([userId]),
       'dismissedAt.$userId': FieldValue.delete(),
     });
-    
-    logPermissionCheck(
+
+    await logPermissionCheck(
       userId: currentUser,
       resource: 'shared_menu',
       operation: 'undismiss',
       granted: true,
+      auditRepository: _auditRepository,
     );
   }
 
@@ -486,14 +523,12 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
       requiredFields: ['fromUserId', 'toUserId', 'contentType', 'contentData'],
       resourceType: 'shared_content',
     );
-    
+
     // Can't share content with yourself
     if (fromUserId == toUserId) {
-      throw SecurityViolationException(
-        'Cannot share content with yourself',
-      );
+      throw SecurityViolationException('Cannot share content with yourself');
     }
-    
+
     await sharedContentRef.add({
       'fromUserId': fromUserId,
       'toUserId': toUserId,
@@ -502,12 +537,13 @@ class FirebaseSocialRecipeRepository with PermissionValidationMixin implements S
       'sharedAt': FieldValue.serverTimestamp(),
       'status': 'pending',
     });
-    
-    logPermissionCheck(
+
+    await logPermissionCheck(
       userId: currentUser,
       resource: 'shared_content',
       operation: 'create',
       granted: true,
+      auditRepository: _auditRepository,
       details: 'Type: $contentType, To: $toUserId',
     );
   }

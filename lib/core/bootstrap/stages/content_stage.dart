@@ -37,13 +37,13 @@ class ContentStage implements BootstrapStage {
   Future<void> execute() async {
     try {
       // Content module initialization is handled by the DI container
-      // This stage can perform any additional content-specific setup
-      
-      // Allow time for any async operations
-      await Future.delayed(const Duration(milliseconds: 200));
-      
+      // UnifiedRecipeService.initialize() is called during ContentModule.initialize()
+      // No duplicate initialization needed here - the early return guard would prevent it anyway
+
       if (kDebugMode) {
-        debugPrint('✅ [ContentStage] Content services ready');
+        debugPrint(
+          '✅ [ContentStage] Content services ready (initialized by ContentModule)',
+        );
       }
     } catch (e) {
       throw BootstrapException(
@@ -60,7 +60,7 @@ class ContentStage implements BootstrapStage {
     try {
       // Validation is primarily handled by the DI container's health checks
       // This stage confirms content services are ready
-      
+
       return true;
     } catch (e) {
       if (kDebugMode) {

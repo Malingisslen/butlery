@@ -29,7 +29,7 @@ import 'package:butlery/services/unified/modules/cache_optimization.dart';
 /// for complex caching scenarios and real-time synchronization requirements.
 /// **Recipe Caching Features:**
 /// - **Local Storage**: High-performance local caching with JSON serialization and integrity validation
-/// - **Real-time Sync**: Automatic Firebase synchronization with conflict resolution and offline support  
+/// - **Real-time Sync**: Automatic Firebase synchronization with conflict resolution and offline support
 /// - **Debounced Writes**: Intelligent write batching to minimize Firebase operations and improve performance
 /// - **Cache Optimization**: Automatic cleanup, memory management, and performance optimization
 /// - **Multi-user Support**: User-specific cache isolation with secure data separation
@@ -61,10 +61,10 @@ class RecipeCacheModule {
 
   /// Sync subscriptions (delegated to FirebaseSyncManager)
   final Map<String, StreamSubscription> _syncSubscriptions = {};
-  
+
   /// Pending sync items (delegated to DebouncedSyncOperations)
   final Set<String> _pendingSyncIds = {};
-  
+
   /// Sync debounce timer
   Timer? _syncDebounceTimer;
   static const Duration _syncDebounce = Duration(seconds: 2);
@@ -84,10 +84,9 @@ class RecipeCacheModule {
         _getCurrentUserId = getCurrentUserId,
         _setError = setError,
         _notifyListeners = notifyListeners {
-    
     // Set current user for cache helper
     _cacheHelper.setCurrentUser(_getCurrentUserId());
-    
+
     // Start periodic cache cleanup
     _startCacheCleanup();
   }
@@ -158,7 +157,10 @@ class RecipeCacheModule {
       // Start sync using FirebaseSyncManager
       final subscriptions = await FirebaseSyncManager.startFirebaseSync(
         currentUserId: currentUserId,
-        onRecipeUpdated: _updateCachedRecipe,
+        onRecipeUpdated: (recipe, source) {
+          // Call async method without awaiting (fire-and-forget)
+          _updateCachedRecipe(recipe, source);
+        },
         onRecipeRemoved: _removeCachedRecipe,
         onSyncError: _handleSyncError,
         firestore: _firestore,
@@ -188,10 +190,10 @@ class RecipeCacheModule {
   }
 
   /// Update cached recipe from Firebase change
-  void _updateCachedRecipe(Recipe recipe, String source) {
+  Future<void> _updateCachedRecipe(Recipe recipe, String source) async {
     try {
       // Save to cache using CacheOperations
-      saveRecipeToCache(recipe);
+      await saveRecipeToCache(recipe);
 
       // Notify listeners of change
       _notifyListeners();
@@ -262,8 +264,12 @@ class RecipeCacheModule {
   /// Get cache statistics
   Future<Map<String, dynamic>> getCacheStatistics() async {
     try {
-      final baseStats = await CacheOperations.validateCacheIntegrity(_cacheHelper);
-      final syncStats = DebouncedSyncOperations.getPendingSyncStatus(_pendingSyncIds);
+      final baseStats = await CacheOperations.validateCacheIntegrity(
+        _cacheHelper,
+      );
+      final syncStats = DebouncedSyncOperations.getPendingSyncStatus(
+        _pendingSyncIds,
+      );
       final syncManagerStats = FirebaseSyncManager.getSyncStatus(
         subscriptions: _syncSubscriptions,
         currentUserId: _getCurrentUserId(),

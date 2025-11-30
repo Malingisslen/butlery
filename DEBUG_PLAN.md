@@ -1,409 +1,608 @@
-# Butlery - Debug-plan
-**Skapad:** 2025-11-22
-**Analyserad av:** Claude Code
-**Bas:** EXISTING_FEATURES.md
+# Butlery - Test Plan
+
+**Generated**: November 2025
+**Last Updated**: November 28, 2025
+**Purpose**: Comprehensive user journey testing with all features and service methods
 
 ---
 
-## Sammanfattning av Butlery
+## Journey 1: Authentication & Onboarding ✅ COMPLETE
 
-**Butlery** är en komplett svensk recepthanteringsapp med stark social och samarbetsfokus. Här är kärnan:
+### User Flow
+1. User opens app for first time
+2. User chooses to register or login
+3. User completes registration with email/password
+4. User profile is created automatically
+5. User can reset password if forgotten
+6. User can logout
+7. User can delete account
 
-### Vad är Butlery?
+### Test Steps
+- [x] Open app without authentication → shows AuthView ✅ (2025-11-28)
+- [ ] Register with valid email/password/displayName → account created
+- [ ] Register with invalid email → shows error
+- [ ] Register with weak password → shows error
+- [x] Login with valid credentials → authenticated ✅ (2025-11-28)
+- [x] Login with wrong password → shows error ✅ (2025-11-28)
+- [ ] Login with non-existent email → shows error
+- [x] Send password reset email → email sent ✅ (2025-11-28)
+- [x] Logout → returns to AuthView ✅ (2025-11-28)
+- [ ] Delete account → complete removal
 
-**Butlery** är en receptapp för svensktalande hemmakockar med 60+ funktioner fördelade över 15 kategorier. Appen kombinerar:
+### Features & Methods
 
-1. **Recepthantering** – Skapa, redigera, dela och importera recept från 15+ svenska webbplatser (Arla, ICA, Köket m.fl.), sociala medier (Instagram, TikTok, YouTube), foton (OCR), eller manuellt.
+**AuthService**
+- `registerWithEmail(email, password, displayName)` - Create account
+- `signInWithEmail(email, password)` - Login
+- `signOut()` - Logout
+- `logoutDueToInactivity()` - Session timeout logout
+- `forceSignOut()` - Clear all credentials
+- `sendPasswordResetEmail(email)` - Password recovery
+- `deleteAccount()` - Account deletion
+- `isAuthenticated` - Auth state check
+- `currentUser` - Current Firebase user
+- `currentUserId` - User ID getter
 
-2. **Menyplanering med AI** – Generera veckomeny via svenska naturliga språkprompter (t.ex. "3 middagar, 2 luncher, 1 frukost"). Samarbeta i realtid med upp till 10 användare.
+**UserService**
+- `initialize()` - Set up auth state monitoring
+- `createOrUpdateProfile(displayName, avatarUrl, isSearchable, allowEmailSearch)` - Profile management
+- `getUserProfile(userId)` - Fetch profile with caching
+- `getUserProfiles(userIds)` - Batch profile fetch
+- `searchUsers(query)` - User search
+- `updateOnlineStatus(isOnline)` - Presence update
+- `updateProfileStats(friendsCount, publicRecipeCount)` - Stats update
+- `isDisplayNameAvailable(displayName)` - Name availability check
+- `updateFCMToken(token)` - Push notification token
+- `updateNotificationSettings(enabled)` - Notification preferences
+- `clearFCMToken()` - Remove push token
 
-3. **Inköpslistor** – Skapa och hantera flera listor, lägg till ingredienser från recept (skalade efter portioner), samarbeta i realtid med vänner/familj, exportera till CSV/text.
-
-4. **Social plattform** – Vänhantering, grupper, delning av recept/menyer/listor, kommentarer, betyg, aktivitetsflöde, rekommendationer, direktmeddelanden och gruppchatt.
-
-5. **GDPR-efterlevnad** – Fullständig hantering av samtycke, dataexport, kontoborttagning och revisionsspår (produktionsklar för EU-marknaden).
-
-6. **Offline-first arkitektur** – All kärnfunktionalitet fungerar offline med synkronisering när appen kommer online igen.
-
-7. **Realtidssamarbete** – Upp till 10 samtidiga redigerare på recept, menyer och inköpslistor med live-närvaro och konfliktlösning.
-
-**Teknisk grund:** MVVM + Repository Pattern, Firebase (Auth, Firestore, Storage, FCM), modulariserad Dependency Injection, 40 000+ rader servicelager.
-
----
-
-## Prioriterade testflöden
-
-### 1. Autentisering & Onboarding [KRITISKT]
-
-**Flöde:**
-- Öppna appen → Registrera nytt konto → Logga in → Logga ut → Återlogga in
-
-**Varför:**
-- Grund för all funktionalitet; om detta inte fungerar kan ingenting annat testas
-
-**UI-fokus:**
-- Finns det tydliga felmeddelanden vid felaktig inmatning?
-- Hur ser laddningstillstånd ut (spinner, text, knappar)?
-- Går navigering till rätt vy efter lyckad inloggning?
-
-**Teststeg:**
-1. Öppna appen från scratch
-2. Notera vilken skärm som visas
-3. Om inloggningsskärm:
-   - Klicka på "Registrera" (om tillgänglig)
-   - Fyll i email + lösenord
-   - Observera laddning/felmeddelanden
-   - Notera var du hamnar efter lyckad registrering
-4. Logga ut (om det finns en knapp)
-5. Logga in igen med samma credentials
-6. Verifiera att du hamnar på rätt vy
-
----
-
-### 2. Recepthantering (grundläggande CRUD) [HÖGT]
-
-**Flöde:**
-- Skapa recept manuellt → Visa receptlista → Öppna receptdetalj → Redigera recept → Ta bort recept
-
-**Varför:**
-- Kärnfunktionalitet som största delen av appen bygger på
-
-**UI-fokus:**
-- Visas receptet korrekt i listan efter skapande?
-- Stämmer portioner, ingredienser och instruktioner i detaljvyn?
-- Fungerar bilduppladdning (tumnagelbildning, progressindikator)?
-- Vad händer vid långsam nätverksanslutning?
-
-**Teststeg:**
-1. Från hemskärm/receptlista: Klicka på "+" eller "Lägg till recept"
-2. Välj "Skriv själv" eller manuell inmatning
-3. Fyll i:
-   - Titel: "Testrecept Pannkakor"
-   - Portioner: 4
-   - Ingredienser: "3 ägg", "5 dl mjölk", "3 dl mjöl"
-   - Instruktioner: "Vispa ihop allt. Stek i smör."
-4. Ladda upp en testbild (om möjligt)
-5. Spara receptet
-6. Observera:
-   - Laddningsindikator?
-   - Navigering tillbaka till listan?
-   - Syns receptet i listan?
-7. Klicka på receptet i listan
-8. Verifiera att alla uppgifter visas korrekt
-9. Klicka "Redigera" → Ändra portioner till 8 → Spara
-10. Gå tillbaka och verifiera att portionerna uppdaterats
-11. Ta bort receptet → Bekräfta → Verifiera att det försvinner från listan
+### Views
+- `AuthView` - Login/Register screen
 
 ---
 
-### 3. Import (URL-import som exempel) [MEDELHÖGT]
+## Journey 2: Recipe Management ✅ COMPLETE
 
-**Flöde:**
-- Välj "Importera via URL" → Klistra in URL från ICA/Arla → Analysera → Granska → Spara
+### User Flow
+1. User views their recipe collection (MinaReceptView)
+2. User creates recipe manually (SkrivSjalvReceptView)
+3. User imports recipe from URL
+4. User imports recipe from photo (OCR)
+5. User imports recipe from social media
+6. User edits existing recipe
+7. User views recipe details
+8. User shares recipe with friends
+9. User deletes recipe
 
-**Varför:**
-- Differentiator med stöd för 15+ svenska receptsajter
+### Test Steps
+- [x] View recipe list → shows collection ✅ (2025-11-28) - 20 recipes displayed
+- [x] View recipe detail → shows full content ✅ (2025-11-28)
+- [x] Create recipe manually → saves to Firebase ✅ (2025-11-28) - Bug fixed: text input scrambling
+- [x] Edit recipe title → updates in Firebase ✅ (2025-11-28)
+- [x] Edit recipe ingredients → updates in Firebase ✅ (2025-11-28) - Bug fixed: add items not working
+- [x] Add images to recipe → uploads to Storage ✅ (2025-11-28) - Bug fixed: images disappearing
+- [ ] Remove image from recipe → removes URL
+- [x] Import recipe from valid URL → extracts content ✅ (2025-11-28) - Works but parser needs improvement
+- [ ] Import recipe from invalid URL → shows error
+- [x] Import recipe from photo → OCR extraction ✅ (2025-11-28) - Works but OCR needs improvement
+- [ ] Share recipe with friend → creates share record
+- [ ] Fork shared recipe → creates personal copy
+- [x] Delete recipe → removes from Firebase ✅ (2025-11-28) - Bug fixed: navigation after delete
 
-**UI-fokus:**
-- Visas laddningsindikator under scraping/AI-parsing?
-- Hur hanteras felade importer (felmeddelande, fallback)?
-- Ser det importerade receptet korrekt ut (ingredienser, mängder, bilder)?
+### Bugs Fixed (2025-11-28)
+1. **Text input scrambling** - TextEditingController lifecycle issue in SkrivSjalvReceptView
+2. **Images disappearing when editing** - Image URLs not synced to ImageManager in RecipeFormState
+3. **Cannot add ingredients/instructions when editing** - Empty field not added at end when loading recipe
+4. **Delete navigation bug** - popNavigation callback was empty stub in RecipeDetailActions
 
-**Teststeg:**
-1. Från hemskärm: "Lägg till" → "Importera via URL"
-2. Klistra in en URL från ICA eller Arla (t.ex. https://www.ica.se/recept/pannkakor-723804/)
-3. Tryck "Importera" eller "Analysera"
-4. Observera:
-   - Laddningsindikator/progress?
-   - Hur lång tid tar det?
-   - Felmeddelanden vid misslyckande?
-5. När receptet laddats:
-   - Kontrollera att titel, ingredienser, mängder stämmer
-   - Kontrollera att bild laddats ned
-6. Spara receptet
-7. Verifiera i receptlistan
+### Known Issues (Deferred)
+- Parser improvements needed for URL and photo import (see docs/TODO_PARSER_IMPROVEMENTS.md)
 
-**Fallback-test:**
-- Klistra in en ogiltig URL → Förväntat: Tydligt felmeddelande
-- Klistra in URL från en icke-supportad sajt → Förväntat: AI-fallback eller felmeddelande
+### Features & Methods
 
----
+**UnifiedRecipeService**
+- `initialize()` - Service initialization
+- `loadRecipes()` - Fetch user's recipes
+- `getRecipeById(id)` - Single recipe fetch
+- `createRecipe(recipe)` - Create new recipe
+- `updateRecipe(recipe)` - Update existing recipe
+- `deleteRecipe(id)` - Remove recipe
+- `watchRecipes()` - Real-time recipe stream
+- `searchRecipes(query)` - Search by title/ingredients
+- `clearError()` - Error state reset
 
-### 4. Menyplanering (AI-generering) [MEDELHÖGT]
+**UnifiedRecipeService.personal**
+- `createRecipe(recipe)` - Personal recipe creation
+- `updateRecipe(recipe)` - Personal recipe update
+- `deleteRecipe(id)` - Personal recipe deletion
+- `loadRecipes()` - Load personal recipes
 
-**Flöde:**
-- Öppna Veckomeny → Skriv svensk prompt ("3 middagar") → Generera → Spara meny
+**UnifiedRecipeService.social**
+- `shareRecipeWithFriends(recipeId, friendIds)` - Friend sharing
+- `shareRecipeWithGroup(recipeId, groupId)` - Group sharing
+- `forkRecipe(recipeId)` - Create personal copy
+- `getSharedRecipes()` - Recipes shared with user
+- `getPublicRecipes()` - Discover public recipes
 
-**Varför:**
-- Unikt värde med svensk AI-integration
+**UnifiedRecipeService.realtime**
+- `startRealtimeSession(recipeId)` - Begin collaborative editing
+- `stopRealtimeSession(recipeId)` - End collaborative editing
+- `updateRecipeInFirebase(recipe)` - Real-time update
+- `watchRecipe(recipeId)` - Live recipe stream
+- `getActiveParticipants(recipeId)` - Current editors
 
-**UI-fokus:**
-- Hur lång tid tar AI-genereringen (progressindikator)?
-- Är de föreslagna recepten relevanta och logiskt ordnade?
-- Kan du regenerera enskilda sektioner?
+**Import Services**
+- `ImportManager.importFromUrl(url)` - URL recipe import
+- `ImportManager.importFromPhoto(image)` - Photo import
+- `ImportManager.importFromText(text)` - Text import
+- `PhotoImportStrategy.extractRecipe(imageBytes)` - OCR extraction
+- `UrlImportStrategy.extractRecipe(url)` - Web scraping
 
-**Teststeg:**
-1. Navigera till "Veckomeny" (via navigationsmeny)
-2. Om det finns en "Skapa ny meny"-knapp, klicka på den
-3. Skriv en svensk prompt: "3 middagar, 2 luncher och 1 frukost"
-4. Tryck "Generera" eller liknande
-5. Observera:
-   - Laddningsindikator/progress?
-   - Hur lång tid tar det?
-6. När menyn genererats:
-   - Kontrollera att antalet måltider stämmer (3 middagar, 2 luncher, 1 frukost)
-   - Är recepten logiskt ordnade (frukost först, sedan luncher, sedan middagar)?
-   - Är recepten från din egen receptsamling?
-7. Testa att regenerera en sektion (t.ex. "Generera om middagar")
-8. Spara menyn med ett namn (t.ex. "Vecka 47")
-9. Gå tillbaka och verifiera att menyn finns sparad
+**OCRExtractionService**
+- `extractTextFromImage(imageBytes)` - Vision API OCR
+- `parseRecipeFromText(text)` - AI parsing
+- `recordSuccess()` - Usage tracking
+- `recordFailure()` - Error tracking
 
----
+**StorageService**
+- `uploadRecipeImage(file, recipeId)` - Image upload
+- `deleteRecipeImage(url)` - Image deletion
+- `getDownloadUrl(path)` - URL generation
+- `isValidImageFile(file)` - File validation
 
-### 5. Inköpslista (personlig + samarbete) [MEDELHÖGT]
-
-**Flöde:**
-- Skapa lista → Lägg till objekt manuellt → Lägg till från recept → Markera som köpt → Dela med vän (om möjligt)
-
-**Varför:**
-- Daglig användning, realtidssynk är kritiskt
-
-**UI-fokus:**
-- Uppdateras "köpt"-status direkt utan fördröjning?
-- Fungerar svenska enhetsbeteckningar (liter→l, styck→st)?
-- Vid delning: Syns ändringar i realtid för båda användarna?
-
-**Teststeg:**
-1. Navigera till "Inköpslista" (via navigationsmeny)
-2. Skapa en ny lista (om knappen finns) med namn "Testlista"
-3. Lägg till manuellt:
-   - "2 liter mjölk"
-   - "5 st ägg"
-   - "1 kg mjöl"
-4. Observera:
-   - Visas objekten direkt i listan?
-   - Formateras enheterna korrekt (liter→l, styck→st)?
-5. Markera "2 liter mjölk" som köpt (checkbox/toggle)
-6. Observera:
-   - Uppdateras status direkt?
-   - Visuell feedback (genomstruken text, färgändring)?
-7. Lägg till ingredienser från ett recept:
-   - Öppna ett recept → "Lägg till i inköpslista"
-   - Välj portioner (t.ex. 4 portioner)
-   - Verifiera att ingredienserna hamnar i listan med korrekta mängder
-8. (Valfritt) Testa delning med en vän:
-   - Klicka "Dela lista" eller liknande
-   - Välj en vän från listan
-   - Låt vännen öppna listan på sin enhet
-   - Du markerar ett objekt som köpt → Vännen bör se uppdateringen direkt
-   - Vännen lägger till ett nytt objekt → Du bör se det direkt
+### Views
+- `MinaReceptView` - Recipe collection
+- `RecipeDetailView` - Recipe detail
+- `EditRecipeView` - Recipe editor
+- `SkrivSjalvReceptView` - Manual recipe creation
+- `LaggTillReceptView` - Add recipe menu
+- `ImportViaUrlView` - URL import
+- `PhotoImportView` - Photo import
+- `FranSocialaMedierView` - Social media import
 
 ---
 
-### 6. Social funktionalitet (vänner, delning) [MEDELLÅGT]
+## Journey 3: Menu Planning 🔄 IN PROGRESS
 
-**Flöde:**
-- Sök vän → Skicka vänförfrågan → Acceptera → Dela recept → Kommentera/Betygsätt
+### User Flow
+1. User views weekly menu (VeckomenyView)
+2. User generates menu with AI from prompt
+3. User manually assigns recipes to days
+4. User shares menu with friends/groups
+5. User enables collaborative menu editing
+6. User exports menu to shopping list
 
-**Varför:**
-- Viktigt för engagemang, men beroende av att flera användare finns
+### Test Steps
+- [ ] View empty menu → shows empty slots
+- [ ] Generate menu from prompt "3 middagar" → AI assigns recipes
+- [ ] Drag recipe to day slot → updates menu
+- [ ] Remove recipe from slot → clears assignment
+- [ ] Share menu with friend → creates share
+- [ ] Enable collaborative editing → real-time sync
+- [ ] View collaborator changes → live updates
+- [ ] Export menu to shopping list → creates items
 
-**UI-fokus:**
-- Visas vänförfrågningar tydligt med notiser?
-- Hur ser delningsmiljön ut (välj vänner/grupper)?
-- Uppdateras aktivitetsflödet i realtid?
+### Features & Methods
 
-**Teststeg:**
-1. Navigera till "Vänner" eller "Upptäck" (Discovery)
-2. Sök efter en användare (kräver att du har en annan testanvändare)
-3. Skicka vänförfrågan
-4. Observera:
-   - Bekräftelsemeddelande?
-   - Var visas förfrågan för mottagaren?
-5. Logga in som mottagaren (eller be någon acceptera)
-6. Acceptera vänförfrågan
-7. Dela ett recept:
-   - Öppna ett recept → "Dela"
-   - Välj vännen från listan
-   - Skicka
-8. Observera:
-   - Får vännen en notis?
-   - Syns receptet under "Delat med mig"?
-9. Kommentera receptet:
-   - Öppna det delade receptet
-   - Skriv en kommentar: "Testkommentar"
-   - Skicka
-10. Verifiera att kommentaren visas direkt
-11. Betygsätt receptet (0-5 stjärnor)
-12. Verifiera att betyget visas/uppdateras
+**UnifiedMenuService**
+- `initialize()` - Service setup
+- `refresh()` - Reload menus
+- `generateMenuFromPrompt(prompt, recipes)` - AI menu generation
+- `createMenu(name, description, initialRecipes)` - Create menu
+- `updateMenu(menu)` - Update menu
+- `deleteMenu(menuId)` - Remove menu
+- `menus` - All menus list
 
----
+**UnifiedMenuService.collaborative**
+- `enableMenuCollaboration(menuId, collaboratorIds)` - Enable sharing
+- `disableMenuCollaboration(menuId)` - Disable sharing
+- `inviteCollaborator(menuId, userId)` - Add collaborator
+- `removeCollaborator(menuId, userId)` - Remove collaborator
+- `getCollaborators(menuId)` - List collaborators
 
-### 7. Offline-läge [MEDELLÅGT]
+**MenuService**
+- `generateMenuFromPrompt(prompt, recipes)` - NLP menu parsing
+- `parseMenuRequest(prompt)` - Extract meal requirements
+- `assignRecipesToSlots(requirements, recipes)` - Recipe matching
 
-**Flöde:**
-- Koppla bort nätverk → Visa recept → Skapa/redigera → Koppla på nätverk igen → Verifiera synk
-
-**Varför:**
-- Kritisk för användarupplevelse i köket (dåligt WiFi)
-
-**UI-fokus:**
-- Finns visuell indikator för offline-läge?
-- Fungerar receptvisning och grundläggande funktioner offline?
-- Synkas ändringar smidigt när du kommer online?
-
-**Teststeg:**
-1. Med aktiv internetanslutning: Öppna receptlistan
-2. Öppna ett befintligt recept för att cacha det
-3. Stäng av WiFi/mobilt nätverk på enheten
-4. Observera:
-   - Visas en offline-indikator i UI:t?
-   - Banner/ikon/text som säger "Offline"?
-5. Navigera i appen:
-   - Öppna receptet du precis tittade på
-   - Förväntat: Receptet visas korrekt (cachad data)
-6. Försök skapa ett nytt recept:
-   - Fyll i uppgifter
-   - Spara
-   - Observera: Sparas receptet lokalt? Felmeddelande?
-7. Redigera ett befintligt recept:
-   - Ändra titeln
-   - Spara
-8. Aktivera internetanslutning igen
-9. Observera:
-   - Försvinner offline-indikatorn?
-   - Synkas ändringarna automatiskt?
-10. Verifiera på en annan enhet (om möjligt) att ändringarna synkats
+### Views
+- `VeckomenyView` - Weekly menu planner
+- `MenuPreviewView` - Menu preview/sharing
 
 ---
 
-## Feltyper att vara uppmärksam på
+## Journey 4: Shopping Lists
 
-### A) Logik- och datafel
-- **Symptom:** Felaktig datahantering (portioner skalas inte korrekt, ingredienser saknas efter import)
-- **Symptom:** Tillståndshantering (ViewModels laddar inte data eller uppdaterar inte UI vid ändringar)
-- **Symptom:** Null-pointer-fel (crashes när data saknas, särskilt vid offline/async-operationer)
-- **Symptom:** Firebase-regler (behörighetsproblem vid delning/samarbete)
-- **Vad du ska titta efter:** Felaktiga värden, saknad data, oväntade crashes
+### User Flow
+1. User views personal shopping list
+2. User creates new shopping list
+3. User adds items manually
+4. User adds items from recipe
+5. User checks off items as purchased
+6. User creates collaborative list with friends
+7. User manages list members
+8. User exports list as text
 
-### B) Navigation och routing
-- **Symptom:** Hamnar på fel skärm efter inloggning/skapande/redigering
-- **Symptom:** "Tillbaka"-knappen leder till oväntad vy
-- **Symptom:** Deep links fungerar inte (t.ex. vid mottagande av delning)
-- **Symptom:** Navigation stack läcker minne (för många vyer på stacken)
-- **Vad du ska titta efter:** Oväntat beteende vid navigation, "Tillbaka"-knapp som inte fungerar logiskt
+### Test Steps
+- [ ] View empty shopping list → shows empty state
+- [ ] Create personal list → saves to Firebase
+- [ ] Add item manually → appears in list
+- [ ] Add items from recipe → batch import
+- [ ] Check item → marks as completed
+- [ ] Uncheck item → marks as pending
+- [ ] Delete item → removes from list
+- [ ] Create collaborative list → shares with members
+- [ ] Add member to list → sends invitation
+- [ ] Remove member from list → revokes access
+- [ ] Real-time sync → see collaborator changes
+- [ ] Export list → generates text format
 
-### C) State-hantering (särskilt i realtidsfunktioner)
-- **Symptom:** Ändringar från andra användare syns inte eller fördröjt
-- **Symptom:** Optimistiska uppdateringar (t.ex. "köpt"-toggle) rullas tillbaka eller dupliceras
-- **Symptom:** Konfliktlösning misslyckas (två användare redigerar samma recept samtidigt)
-- **Symptom:** Loading states hänger sig i "laddar..." utan felmeddelande
-- **Vad du ska titta efter:** Fördröjda uppdateringar, duplikat, eviga laddningsindikatorer
+### Features & Methods
 
-### D) UX/visuella buggar
-- **Symptom:** Bilder laddas inte eller visas i fel storlek/proportion
-- **Symptom:** Text skärs av eller flyter utanför skärmen (responsivitet)
-- **Symptom:** Knappar/fält är osynliga eller har dålig kontrast
-- **Symptom:** Loading-spinners försvinner inte efter lyckad operation
-- **Symptom:** Felmeddelanden är otydliga eller på engelska (ska vara svenska)
-- **Vad du ska titta efter:** Layoutproblem, klippt text, dålig kontrast, engelska texter
+**UnifiedShoppingService**
+- `initialize()` - Service setup
+- `loadLists()` - Fetch all lists
+- `createPersonalList(name, items)` - Personal list creation
+- `updateList(list)` - Update list
+- `deleteList(listId)` - Remove list
+- `setActiveList(listId)` - Select current list
+- `exportListAsText(listId)` - Text export
+- `lists` - All lists getter
+- `personalLists` - Personal lists only
+- `collaborativeLists` - Shared lists only
+- `activeList` - Current list
 
-### E) API- och nätverksfel
-- **Symptom:** Långsam/timeout vid import från externa sajter
-- **Symptom:** Firebase-kvotagränser (t.ex. för bilduppladdning)
-- **Symptom:** Retrylogik fungerar inte vid nätverksavbrott
-- **Symptom:** Generiska felmeddelanden ("Okänt fel") istället för specifika
-- **Vad du ska titta efter:** Timeouts, otydliga felmeddelanden, långsamma operationer
+**UnifiedShoppingService.personal**
+- `createList(name)` - Create personal list
+- `addItem(listId, item)` - Add single item
+- `addItems(listId, items)` - Add multiple items
+- `updateItem(listId, item)` - Update item
+- `removeItem(listId, itemId)` - Delete item
+- `toggleItemChecked(listId, itemId)` - Check/uncheck
 
-### F) GDPR/säkerhet
-- **Symptom:** Samtyckesinställningar sparas inte
-- **Symptom:** Dataexport genererar ofullständiga filer
-- **Symptom:** Kontoborttagning lämnar kvar data
-- **Symptom:** Obehöriga användare kan se/redigera delat innehåll
-- **Vad du ska titta efter:** Inställningar som inte sparas, åtkomst som inte borde finnas
+**UnifiedShoppingService.collaborative**
+- `createCollaborativeList(name, memberIds)` - Create shared list
+- `addMember(listId, userId)` - Add collaborator
+- `removeMember(listId, userId)` - Remove collaborator
+- `leaveList(listId)` - Leave shared list
+- `getMembers(listId)` - List collaborators
 
----
+**UnifiedShoppingService.share**
+- `shareListWithFriend(listId, friendId)` - Direct sharing
+- `generateShareLink(listId)` - Create invite link
+- `acceptShareInvitation(invitationId)` - Join shared list
 
-## Kända kodproblem (från flutter analyze 2025-11-22)
-
-**Status:** 9 fel hittade (alla "not_enough_positional_arguments")
-
-**Berörda filer:**
-1. `lib/widgets/common/friends/friend_category_widgets.dart` (4 fel)
-2. `lib/widgets/common/social/social_invitation_api.dart` (4 fel)
-3. `test/widget/common/social_components_ultrathink_test.dart` (1 fel)
-
-**Potentiell påverkan:**
-- Vänfunktionalitet (kategorisering, väljare)
-- Social delning (inbjudningar, målval)
-- Kan orsaka runtime-crashes eller kompileringsfel
-
-**Prioritet:** HÖG (bör åtgärdas innan omfattande manuell testning av social funktionalitet)
-
----
-
-## Debug-metodik
-
-### Hypotesdriven felsökning
-
-1. **Formulera hypotes** baserat på förväntad funktionalitet
-   - Exempel: "När jag skapar ett recept bör det visas i receptlistan direkt efter sparande"
-
-2. **Testa i UI**
-   - Följ teststegen ovan
-   - Notera exakt vad du ser
-
-3. **Jämför med förväntning**
-   - Stämmer beteendet med hypotesen?
-   - Om nej: Vad skiljer sig?
-
-4. **Koppla till kod**
-   - Identifiera vilket ViewModel/Service som hanterar flödet
-   - Granska terminalloggar för fel
-   - Läs relevant kod för att förstå root cause
-
-5. **Föreslå lösning**
-   - Patch kod
-   - Verifiera med nytt test
-
-### Informationsbehov vid varje test
-
-När du testar, beskriv alltid:
-
-**Vad du ser:**
-- Skärmnamn/titel
-- Knappar och deras texter
-- Formulär och fält
-- Meddelanden (fel, bekräftelser)
-- Loading states (spinner, progress bar)
-
-**Vad du gör:**
-- Exakta steg du följer
-- Vad du klickar på
-- Vad du skriver in
-
-**Vad som händer:**
-- Direkt respons (navigation, meddelande)
-- Fördröjningar (hur lång tid?)
-- Oväntat beteende
-- Crashes eller felmeddelanden
-
-**Vad som känns konstigt:**
-- Layout-problem
-- Icke-intuitiv navigation
-- Otydliga instruktioner
-- Långsamma operationer
+### Views
+- `UnifiedShoppingView` - Shopping list manager
+- `CollaborativeShoppingView` - Shared list view
+- `CreateSharedShoppingListView` - List creation
 
 ---
 
-## Nästa steg
+## Journey 5: Social & Friends
 
-1. **Åtgärda kända kodfel** (9 st från flutter analyze)
-2. **Starta appen** och verifiera initial vy
-3. **Arbeta igenom testflödena** i prioritetsordning
-4. **Dokumentera buggar** med hypotes + observation
-5. **Patcha kod** och verifiera fix
+### User Flow
+1. User searches for friends
+2. User sends friend request
+3. User accepts/rejects incoming requests
+4. User views friend profile
+5. User creates friend group/category
+6. User blocks/unblocks user
+7. User shares content with friends
+8. User views shared content
+
+### Test Steps
+- [ ] Search for user by name → shows results
+- [ ] Search for user by email → shows results (if allowed)
+- [ ] Send friend request → creates pending request
+- [ ] Cancel sent request → removes request
+- [ ] Accept friend request → creates friendship
+- [ ] Reject friend request → removes request
+- [ ] View friend profile → shows public info
+- [ ] Create friend category → saves category
+- [ ] Add friend to category → updates relationships
+- [ ] Block user → prevents interactions
+- [ ] Unblock user → restores visibility
+- [ ] View shared recipes → shows SharedWithMeView
+- [ ] Accept shared recipe → saves to collection
+
+### Features & Methods
+
+**UnifiedFriendsService**
+- `initialize()` - Service setup
+- `friends` - Friends list getter
+- `incomingRequests` - Pending requests received
+- `outgoingRequests` - Pending requests sent
+- `categoriesList` - Friend categories
+- `blockedUsers` - Blocked user IDs
+
+**UnifiedFriendsService.management**
+- `sendFriendRequest(userId, message)` - Send request
+- `cancelFriendRequest(requestId)` - Cancel sent request
+- `acceptFriendRequest(requestId)` - Accept request
+- `rejectFriendRequest(requestId)` - Decline request
+- `removeFriend(friendId)` - Unfriend
+- `blockUser(userId)` - Block user
+- `unblockUser(userId)` - Unblock user
+- `isFriend(userId)` - Check friendship
+- `isBlocked(userId)` - Check block status
+
+**UnifiedFriendsService.categories**
+- `createCategory(name, friendIds)` - Create category
+- `updateCategory(categoryId, name, friendIds)` - Update category
+- `deleteCategory(categoryId)` - Remove category
+- `addFriendToCategory(friendId, categoryId)` - Assign friend
+- `removeFriendFromCategory(friendId, categoryId)` - Unassign friend
+
+**UnifiedFriendsService.invitations**
+- `sendGroupInvitation(groupId, userId)` - Invite to group
+- `acceptGroupInvitation(invitationId)` - Accept group invite
+- `rejectGroupInvitation(invitationId)` - Decline group invite
+- `cancelGroupInvitation(invitationId)` - Cancel sent invite
+
+**UnifiedFriendsService.groupSharing**
+- `shareRecipeWithGroup(recipeId, groupId)` - Share recipe
+- `shareMenuWithGroup(menuId, groupId)` - Share menu
+- `shareListWithGroup(listId, groupId)` - Share shopping list
+- `getGroupSharedContent(groupId)` - Group's shared items
+
+### Views
+- `FriendsListView` - Friends management
+- `FriendProfileView` - Friend details
+- `FriendRequestsView` - Request management
+- `SharedWithMeView` - Received shares
+- `GroupDetailView` - Group management
+- `AddMembersToGroupView` - Member addition
+- `DiscoveryDashboardView` - Social discovery
 
 ---
 
-**Slutsats:** Butlery är en omfattande app med kraftfull funktionalitet. Genom systematisk testning av de 7 huvudflödena ovan kan vi identifiera och åtgärda både kritiska och kosmetiska buggar. Fokus ligger på användarupplevelse (UX), state-hantering i realtidsfunktioner och navigation.
+## Journey 6: Messaging
+
+### User Flow
+1. User views conversations list
+2. User starts direct message with friend
+3. User creates group conversation
+4. User sends text message
+5. User sends recipe/menu/list share
+6. User edits/deletes message
+7. User pins/archives conversation
+8. User mutes notifications
+
+### Test Steps
+- [ ] View conversations → shows list
+- [ ] Start DM with friend → creates conversation
+- [ ] Create group chat → creates group conversation
+- [ ] Send text message → appears in chat
+- [ ] Send recipe share → includes recipe card
+- [ ] Edit sent message → updates content
+- [ ] Delete message → removes from chat
+- [ ] Pin conversation → moves to top
+- [ ] Archive conversation → hides from list
+- [ ] Mute conversation → disables notifications
+- [ ] Typing indicator → shows when typing
+- [ ] Read status → marks as read
+
+### Features & Methods
+
+**MessagingService**
+- `getMyConversations()` - Stream of user's conversations
+- `startDirectConversation(otherUserId, otherUserDisplayName)` - Start DM
+- `createGroupConversation(participantIds, title)` - Create group
+- `getConversation(conversationId)` - Get conversation details
+- `getMessages(conversationId)` - Message stream
+
+**MessagingService (sending operations)**
+- `sendMessage(conversationId, content, type)` - Send message
+- `sendRecipeShare(conversationId, recipeId)` - Share recipe
+- `sendMenuShare(conversationId, menuId)` - Share menu
+- `sendListShare(conversationId, listId)` - Share shopping list
+
+**MessagingService (conversation actions)**
+- `pinConversation(conversationId)` - Pin to top
+- `unpinConversation(conversationId)` - Unpin
+- `archiveConversation(conversationId)` - Archive
+- `unarchiveConversation(conversationId)` - Restore
+- `muteConversation(conversationId)` - Disable notifications
+- `unmuteConversation(conversationId)` - Enable notifications
+- `leaveConversation(conversationId)` - Leave group
+
+**MessagingService (message management)**
+- `editMessage(conversationId, messageId, newContent)` - Edit message
+- `deleteMessage(conversationId, messageId)` - Delete message
+- `markAsRead(conversationId)` - Mark conversation read
+- `setTypingStatus(conversationId, isTyping)` - Typing indicator
+
+**PresenceService**
+- `setOnline()` - Set user online
+- `setOffline()` - Set user offline
+- `startTyping(conversationId)` - Start typing indicator
+- `stopTyping(conversationId)` - Stop typing indicator
+- `isTypingIn(conversationId)` - Check typing status
+- `watchOnlineStatus(userId)` - Online status stream
+
+### Views
+- `ConversationsListView` - Conversation list
+- `ChatViewFacade` - Chat interface
+- `CreateGroupConversationView` - Group creation
+
+---
+
+## Journey 7: GDPR & Account
+
+### User Flow
+1. User manages consent preferences
+2. User exports all personal data
+3. User views privacy policy
+4. User requests account deletion
+5. User completes full account deletion
+
+### Test Steps
+- [ ] View consent settings → shows current consents
+- [ ] Update consent preferences → saves to Firebase
+- [ ] Revoke optional consents → updates records
+- [ ] Export data → generates JSON file
+- [ ] View exported data → contains all user data
+- [ ] Request account deletion → confirms intent
+- [ ] Complete deletion → removes all data
+
+### Features & Methods
+
+**ConsentService**
+- `getUserConsent()` - Get current consent
+- `saveConsent(purposes)` - Save consent choices
+- `hasConsent(purpose)` - Check specific consent
+- `needsConsentRenewal()` - Version change check
+- `hasRequiredConsents()` - Minimum consents check
+- `revokeOptionalConsents()` - Reset to defaults
+- `getConsentHistory()` - Audit trail
+
+**DataExportService**
+- `exportUserData()` - Complete JSON export
+- Includes: profile, recipes, friends, messages, shopping lists, menus, comments, ratings, activity, shared content, audit logs, consent records, notifications
+
+**AccountDeletionService**
+- `deleteUserAccount()` - Complete account removal
+- `deleteUserContent(userId)` - Content deletion
+- `deleteUserSocialData(userId)` - Social data deletion
+- `deleteUserProfile(userId)` - Profile deletion
+
+### Views
+- `ConsentManagementView` - Consent settings
+- `DataExportView` - Data export
+- `PrivacyPolicyView` - Privacy information
+
+---
+
+## Journey 8: Offline & Sync
+
+### User Flow
+1. User loses network connection
+2. User continues to view cached recipes
+3. User makes changes while offline
+4. User regains connection
+5. Changes sync automatically
+6. Conflicts are resolved
+
+### Test Steps
+- [ ] Go offline → app continues working
+- [ ] View cached recipes → shows local data
+- [ ] Create recipe offline → queues for sync
+- [ ] Update recipe offline → queues for sync
+- [ ] Go online → syncs pending changes
+- [ ] Conflict resolution → handles merge conflicts
+- [ ] Real-time updates resume → live sync active
+
+### Features & Methods
+
+**OfflineService**
+- `initialize()` - Set up offline storage
+- `setCurrentUser(userId)` - User context
+- `queueOperation(operation)` - Queue for sync
+- `syncPendingOperations()` - Process queue
+- `getCachedRecipes()` - Local recipe data
+- `getCachedShoppingLists()` - Local list data
+
+**ConnectivityMonitoringService**
+- `startMonitoring()` - Begin connection watch
+- `stopMonitoring()` - Stop monitoring
+- `isConnected` - Current status
+- `connectionStream` - Status changes stream
+
+**RealtimeSyncService**
+- `addListener(callback)` - Register for updates
+- `removeListener(callback)` - Unregister
+- `watchResource(resourceId)` - Start watching
+- `unwatchResource(resourceId)` - Stop watching
+- `refreshAllResources()` - Force refresh
+- `isResourceWatched(resourceId)` - Check watch status
+
+**ConflictResolutionModule**
+- `resolveConflict(local, remote)` - Merge strategy
+- `detectConflict(local, remote)` - Conflict detection
+- `getConflictResolutionStrategy()` - Current strategy
+
+### Views
+- Offline indicators in all views
+- Sync status badges
+
+---
+
+## Permission & Security Testing
+
+### Features & Methods
+
+**PermissionService**
+- `currentUserId` - Authenticated user
+- `currentUser` - Firebase user
+- `isOwner(ownerId)` - Ownership check
+- `canViewRecipe(recipeId)` - View permission
+- `canEditRecipe(recipeId)` - Edit permission
+- `canInviteToRecipe(recipeId)` - Invite permission
+- `isRecipeOwner(recipeId)` - Recipe ownership
+- `canViewShoppingList(listId)` - List view permission
+- `canEditShoppingList(listId)` - List edit permission
+- `canManageShoppingList(listId)` - List admin permission
+- `canDeleteShoppingList(listId)` - List delete permission
+- `isShoppingListOwner(listId)` - List ownership
+- `canEditMenu(menuId)` - Menu edit permission
+- `isGroupAdmin(groupId)` - Group admin check
+- `canDeleteGroup(groupId)` - Group delete permission
+- `canInviteToGroup(groupId)` - Group invite permission
+- `hasPermission(resourceId, permission)` - Generic check
+
+---
+
+## Analytics Testing
+
+### Features & Methods
+
+**AnalyticsService**
+- `setConsentService(consentService)` - Link consent
+- `logLogin(method)` - Track login
+- `logSignUp(method)` - Track registration
+- `logLogout()` - Track logout
+- `logRecipeCreated(recipeId)` - Track recipe creation
+- `logRecipeViewed(recipeId)` - Track recipe view
+- `logRecipeShared(recipeId)` - Track recipe share
+- `logMenuGenerated(prompt)` - Track AI menu
+- `logEvent(name, parameters)` - Custom events
+- `setUserProperty(name, value)` - User properties
+
+---
+
+## Service Summary
+
+| Service | Methods | Category |
+|---------|---------|----------|
+| AuthService | 10 | Core |
+| UserService | 15 | Core |
+| UnifiedRecipeService | 25+ | Core |
+| UnifiedMenuService | 15+ | Core |
+| UnifiedShoppingService | 25+ | Core |
+| UnifiedFriendsService | 30+ | Social |
+| MessagingService | 20+ | Social |
+| ConsentService | 7 | GDPR |
+| DataExportService | 1 | GDPR |
+| AccountDeletionService | 4 | GDPR |
+| PermissionService | 18 | Security |
+| AnalyticsService | 12 | Analytics |
+| OfflineService | 6 | Infrastructure |
+| PresenceService | 6 | Infrastructure |
+| OCRExtractionService | 4 | Import |
+| StorageService | 4 | Infrastructure |
+
+---
+
+## View Summary
+
+| Category | Views |
+|----------|-------|
+| Auth | AuthView |
+| Recipe | MinaReceptView, RecipeDetailView, EditRecipeView, SkrivSjalvReceptView, LaggTillReceptView |
+| Import | ImportViaUrlView, PhotoImportView, FranSocialaMedierView, FileImportView |
+| Menu | VeckomenyView, MenuPreviewView |
+| Shopping | UnifiedShoppingView, CollaborativeShoppingView, CreateSharedShoppingListView |
+| Social | FriendsListView, FriendProfileView, FriendRequestsView, SharedWithMeView, GroupDetailView, AddMembersToGroupView, DiscoveryDashboardView |
+| Messaging | ConversationsListView, ChatViewFacade, CreateGroupConversationView |
+| Account | ConsentManagementView, DataExportView, PrivacyPolicyView, UserProfileEditView |

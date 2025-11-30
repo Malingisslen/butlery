@@ -55,7 +55,6 @@ import 'package:get_it/get_it.dart';
 /// );
 /// ```
 class FirebaseSyncManager {
-
   // ===== SYNC STREAM MANAGEMENT =====
 
   /// Start Firebase synchronization for user's recipes
@@ -71,6 +70,37 @@ class FirebaseSyncManager {
 
       final subscriptions = <String, StreamSubscription>{};
 
+      // STEP 1: Fetch existing recipes from Firestore to populate cache
+      try {
+        final recipeRepository = GetIt.instance<RecipeRepository>();
+        AppLogger.info('📥 Fetching existing recipes from Firestore...');
+
+        final existingRecipes = await recipeRepository.fetchUserRecipes(
+          currentUserId,
+        );
+
+        AppLogger.info('📥 Fetched ${existingRecipes.length} existing recipes');
+
+        // Process each existing recipe through the update callback to populate cache
+        // Note: onRecipeUpdated is synchronous but may trigger async operations internally
+        for (final recipe in existingRecipes) {
+          onRecipeUpdated(recipe, 'initial_fetch');
+        }
+
+        // Wait adequately for all async cache operations to complete
+        // This accounts for internal async operations in the cache layer
+        await Future.delayed(const Duration(milliseconds: 300));
+
+        AppLogger.success(
+          '✅ Initial fetch complete: ${existingRecipes.length} recipes loaded',
+        );
+      } catch (e) {
+        AppLogger.error('❌ Error fetching existing recipes: $e');
+        // Don't rethrow - continue with real-time sync even if initial fetch fails
+        onSyncError('initial_fetch', e);
+      }
+
+      // STEP 2: Start real-time listeners for future changes
       // Start personal recipes sync
       // ignore: cancel_subscriptions - returned in Map for caller to manage
       final personalSub = _startPersonalRecipesSync(
@@ -92,7 +122,9 @@ class FirebaseSyncManager {
       );
       subscriptions['collaborative_recipes'] = collaborativeSub;
 
-      AppLogger.success('✅ Repository sync started (${subscriptions.length} streams)');
+      AppLogger.success(
+        '✅ Repository sync started (${subscriptions.length} streams)',
+      );
       return subscriptions;
     } catch (e) {
       AppLogger.error('❌ Error starting repository sync: $e');
@@ -129,7 +161,7 @@ class FirebaseSyncManager {
   }) {
     try {
       final recipeRepository = GetIt.instance<RecipeRepository>();
-      
+
       final subscription = recipeRepository.subscribeToUserRecipes(
         currentUserId,
         (recipeChanges) => _handlePersonalRecipeChanges(
@@ -184,20 +216,21 @@ class FirebaseSyncManager {
     try {
       // Use injected firestore or fallback to instance
       final firestoreInstance = firestore ?? FirebaseFirestore.instance;
-      
+
       // Watch for collaborative recipes where user is a participant
+      // Use participantIds array for proper Firestore rules validation
       final subscription = firestoreInstance
           .collection('realtime_recipes')
-          .where('participants.$currentUserId', isNotEqualTo: null)
+          .where('participantIds', arrayContains: currentUserId)
           .snapshots()
           .listen(
-        (snapshot) => _handleCollaborativeRecipeChanges(
-          snapshot: snapshot,
-          onRecipeUpdated: onRecipeUpdated,
-          onRecipeRemoved: onRecipeRemoved,
-        ),
-        onError: (error) => onSyncError('collaborative_recipes', error),
-      );
+            (snapshot) => _handleCollaborativeRecipeChanges(
+              snapshot: snapshot,
+              onRecipeUpdated: onRecipeUpdated,
+              onRecipeRemoved: onRecipeRemoved,
+            ),
+            onError: (error) => onSyncError('collaborative_recipes', error),
+          );
 
       AppLogger.debug('Collaborative recipes sync started');
       return subscription;
@@ -248,7 +281,9 @@ class FirebaseSyncManager {
       'currentUserId': currentUserId,
       'isSyncing': subscriptions.isNotEmpty,
       'personalSyncActive': subscriptions.containsKey('personal_recipes'),
-      'collaborativeSyncActive': subscriptions.containsKey('collaborative_recipes'),
+      'collaborativeSyncActive': subscriptions.containsKey(
+        'collaborative_recipes',
+      ),
     };
   }
 
@@ -258,17 +293,23 @@ class FirebaseSyncManager {
   }
 
   /// Check if personal recipes are syncing
-  static bool isPersonalSyncActive(Map<String, StreamSubscription> subscriptions) {
+  static bool isPersonalSyncActive(
+    Map<String, StreamSubscription> subscriptions,
+  ) {
     return subscriptions.containsKey('personal_recipes');
   }
 
   /// Check if collaborative recipes are syncing
-  static bool isCollaborativeSyncActive(Map<String, StreamSubscription> subscriptions) {
+  static bool isCollaborativeSyncActive(
+    Map<String, StreamSubscription> subscriptions,
+  ) {
     return subscriptions.containsKey('collaborative_recipes');
   }
 
   /// Get active subscription names
-  static List<String> getActiveSubscriptions(Map<String, StreamSubscription> subscriptions) {
+  static List<String> getActiveSubscriptions(
+    Map<String, StreamSubscription> subscriptions,
+  ) {
     return subscriptions.keys.toList();
   }
 
@@ -346,8 +387,10 @@ class FirebaseSyncManager {
       }
 
       if (missingSyncs.isNotEmpty) {
-        AppLogger.warning('Restarting missing syncs: ${missingSyncs.join(', ')}');
-        
+        AppLogger.warning(
+          'Restarting missing syncs: ${missingSyncs.join(', ')}',
+        );
+
         for (final syncType in missingSyncs) {
           if (syncType == 'personal_recipes') {
             // ignore: cancel_subscriptions - added to subscriptions Map for management

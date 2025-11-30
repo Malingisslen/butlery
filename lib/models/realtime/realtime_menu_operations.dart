@@ -28,12 +28,10 @@ class RealtimeMenuOperations {
       updatedMenu[entry.key] = List<Recipe>.from(entry.value);
     }
 
-    // Initialize category if it doesn't exist
     if (!updatedMenu.containsKey(categoryName)) {
       updatedMenu[categoryName] = [];
     }
 
-    // Add recipe to category
     updatedMenu[categoryName]!.add(recipe);
 
     return data.copyWith(menuSnapshot: updatedMenu);
@@ -80,15 +78,12 @@ class RealtimeMenuOperations {
       return data;
     }
 
-    // Get the recipe to move
     final recipe = updatedMenu[fromCategory]!.removeAt(fromIndex);
 
-    // Initialize target category if it doesn't exist
     if (!updatedMenu.containsKey(toCategory)) {
       updatedMenu[toCategory] = [];
     }
 
-    // Add to target category
     final targetIndex = toIndex ?? updatedMenu[toCategory]!.length;
     updatedMenu[toCategory]!.insert(targetIndex, recipe);
 

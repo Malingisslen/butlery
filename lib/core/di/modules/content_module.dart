@@ -48,6 +48,10 @@ import 'package:butlery/services/recommendation_service.dart';
 import 'package:butlery/services/backup_service.dart';
 import 'package:butlery/services/social_media_extractor.dart';
 import 'package:butlery/services/content_detector_service.dart';
+import 'package:butlery/services/permission_service.dart';
+
+// Recipe presence repository (for realtime operations)
+import 'package:butlery/repositories/firebase/firebase_recipe_presence_repository.dart';
 
 // Import core module for dependencies
 import 'package:butlery/core/di/modules/core_module.dart';
@@ -94,6 +98,8 @@ class ContentModule implements DIModule {
         SocialMediaExtractor,
         ExtractionManager,
         ContentDetectorService,
+        PermissionService, // Moved from CollaborationModule for proper module ordering
+        FirebaseRecipePresenceRepository, // Moved from CollaborationModule for UnifiedRecipeService
       ];
 
   @override
@@ -116,6 +122,28 @@ class ContentModule implements DIModule {
       // Collaborative recipe repository
       container.registerSingleton<CollaborativeRecipeRepository>(
         CollaborativeRecipeRepository(),
+      );
+
+      // ==================== PERMISSION SYSTEM ====================
+
+      // PermissionService - comprehensive authorization system
+      // Moved from CollaborationModule to ContentModule to ensure availability in SocialModule
+      // Now includes RecipeRepository for proper ownership validation
+      container.registerLazySingleton<PermissionService>(
+        () => PermissionService(
+          authRepository: container<AuthRepository>(),
+          recipeRepository: container<RecipeRepository>(),
+        ),
+      );
+
+      // ==================== RECIPE PRESENCE REPOSITORY ====================
+
+      // FirebaseRecipePresenceRepository - recipe presence tracking for collaborative editing
+      // Moved from CollaborationModule to ContentModule for UnifiedRecipeService availability
+      container.registerLazySingleton<FirebaseRecipePresenceRepository>(
+        () => FirebaseRecipePresenceRepository(
+          firestoreRepository: container<FirestoreRepository>(),
+        ),
       );
 
       // ==================== UNIFIED RECIPE SYSTEM ====================
@@ -218,12 +246,37 @@ class ContentModule implements DIModule {
 
   @override
   Future<void> initialize() async {
+    if (kDebugMode) {
+      debugPrint(
+        '🔧 [ContentModule.initialize] ENTRY - Starting initialization...',
+      );
+    }
+
     try {
       final container = GetIt.instance;
 
+      if (kDebugMode) {
+        debugPrint(
+          '🔍 [ContentModule.initialize] Getting UnifiedRecipeService from container...',
+        );
+      }
+
       // Initialize UnifiedRecipeService
       final unifiedRecipeService = container<UnifiedRecipeService>();
+
+      if (kDebugMode) {
+        debugPrint(
+          '✅ [ContentModule.initialize] Got UnifiedRecipeService instance, calling initialize()...',
+        );
+      }
+
       await unifiedRecipeService.initialize();
+
+      if (kDebugMode) {
+        debugPrint(
+          '✅ [ContentModule.initialize] UnifiedRecipeService.initialize() COMPLETED',
+        );
+      }
 
       // Initialize UnifiedMenuService
       final unifiedMenuService = container<UnifiedMenuService>();

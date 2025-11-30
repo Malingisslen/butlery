@@ -128,19 +128,23 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
   // ===== GROUP INVITATION OPERATIONS =====
 
   /// Stream received invitations for a user.
+  /// Optimized (#043): Added limit to prevent unbounded stream
   Stream<List<GroupInvitation>> receivedInvitationsStream(String userId) {
     return _invitationsRef
         .where('toUserId', isEqualTo: userId)
         .orderBy('sentAt', descending: true)
+        .limit(50) // Limit to 50 recent invitations
         .snapshots()
         .map((s) => s.docs.map((doc) => GroupInvitation.fromMap(doc.id, doc.data())).toList());
   }
 
   /// Stream sent invitations for a user.
+  /// Optimized (#043): Added limit to prevent unbounded stream
   Stream<List<GroupInvitation>> sentInvitationsStream(String userId) {
     return _invitationsRef
         .where('fromUserId', isEqualTo: userId)
         .orderBy('sentAt', descending: true)
+        .limit(50) // Limit to 50 recent invitations
         .snapshots()
         .map((s) => s.docs.map((doc) => GroupInvitation.fromMap(doc.id, doc.data())).toList());
   }
