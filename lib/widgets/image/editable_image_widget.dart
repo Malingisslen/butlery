@@ -168,10 +168,23 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
     } else if (widget.imageUrls.length == 1) {
       // Single image: use original config dimensions for proper image display
       final dimensions = widget.config.getDimensions();
+      final isUnboundedHeight = dimensions.height == double.infinity;
+      final isUnboundedWidth = dimensions.width == double.infinity;
+
+      // CRITICAL FIX: PageView requires bounded height. Use AspectRatio for responsive sizing.
+      Widget carousel = _buildEditCarousel();
+      if (isUnboundedHeight) {
+        // Wrap in AspectRatio to provide bounded height for PageView
+        carousel = AspectRatio(
+          aspectRatio: widget.config.getAspectRatio(),
+          child: carousel,
+        );
+      }
+
       mainContent = SizedBox(
-        width: dimensions.width == double.infinity ? null : dimensions.width,
-        height: dimensions.height == double.infinity ? null : dimensions.height,
-        child: _buildEditCarousel(),
+        width: isUnboundedWidth ? null : dimensions.width,
+        height: isUnboundedHeight ? null : dimensions.height,
+        child: carousel,
       );
     } else {
       // Multiple images: use adaptive grid layout that expands with content
@@ -229,18 +242,8 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
             children: [
               Row(
                 children: [
-                  SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                          AppColors.primaryBlue),
-                      value: managementSummary != null
-                          ? (managementSummary['overallProgress'] as double?)
-                          : null,
-                    ),
-                  ),
+                  // Show checkmark when all uploads complete, spinner when active
+                  _buildStatusIcon(managementSummary),
                   const SizedBox(width: AppDimensions.spacingM),
                   Expanded(
                     child: Text(
@@ -270,6 +273,34 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
         ],
       ),
     );
+  }
+
+  /// Build status icon - checkmark when complete, spinner when active
+  Widget _buildStatusIcon(Map<String, dynamic>? managementSummary) {
+    final hasActiveUploads = managementSummary != null &&
+        ((managementSummary['active'] as int? ?? 0) > 0 ||
+            (managementSummary['pending'] as int? ?? 0) > 0);
+
+    if (hasActiveUploads) {
+      // Show spinner when uploads are active
+      return SizedBox(
+        width: 16,
+        height: 16,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          valueColor:
+              const AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+          value: (managementSummary['overallProgress'] as double?),
+        ),
+      );
+    } else {
+      // Show checkmark when all uploads are complete
+      return const Icon(
+        Icons.check_circle,
+        size: 16,
+        color: AppColors.success,
+      );
+    }
   }
 
   /// Build bulk management control buttons
@@ -1080,136 +1111,140 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
     final isPrimary = index == widget.primaryIndex;
 
     return Semantics(
-      label: isPrimary ? 'Primär bild, tryck för att visa fullstorlek' : 'Välj som primär bild',
+      label: isPrimary
+          ? 'Primär bild, tryck för att visa fullstorlek'
+          : 'Välj som primär bild',
       button: true,
       child: GestureDetector(
         // Move GestureDetector to the outermost level for better touch detection
         behavior: HitTestBehavior.opaque,
         onTap: () {
-        AppLogger.debug('👆 TOUCH: Image $index tapped! isPrimary: $isPrimary');
-
-        if (widget.config.enableHapticFeedback) {
-          HapticFeedback.lightImpact();
-        }
-
-        // Primary selection: Tap image to make it primary
-        if (!isPrimary) {
           AppLogger.debug(
-              '🌟 GRID: Setting primary at index $index (callback: ${widget.onPrimaryImageChanged != null})');
-          if (widget.onPrimaryImageChanged != null) {
-            widget.onPrimaryImageChanged!(index);
-          } else {
-            AppLogger.warning(
-                '⚠️ GRID: onPrimaryImageChanged callback is null!');
+              '👆 TOUCH: Image $index tapped! isPrimary: $isPrimary');
+
+          if (widget.config.enableHapticFeedback) {
+            HapticFeedback.lightImpact();
           }
-        } else {
-          AppLogger.debug('🌟 GRID: Primary image tapped - calling onImageTap');
-          widget.onImageTap?.call(index);
-        }
-      },
-      child: Stack(
-        children: [
-          // Main image display with border that actually surrounds the image
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: widget.config.effectiveBorderRadius,
-                border: Border.all(
-                  color: Theme.of(context).primaryColor,
-                  width: isPrimary
-                      ? AppDimensions.borderWidthThick *
-                          2 // PRIMARY: Extra thick border (4px)
-                      : AppDimensions
-                          .borderWidthStandard, // NON-PRIMARY: Standard border (1px)
-                ),
-              ),
-              child: ClipRRect(
-                borderRadius: widget.config.effectiveBorderRadius,
-                child: ImageComponents.buildAdaptiveImage(
-                  pathOrUrl: imageUrl,
-                  config: widget.config,
-                  fit: BoxFit.cover,
-                  placeholder: ImageComponents.buildLoadingPlaceholder(
-                    config: widget.config,
-                  ),
-                  errorWidget: ImageComponents.buildErrorPlaceholder(
-                    config: widget.config,
-                  ),
-                ),
-              ),
-            ),
-          ),
 
-          // Primary indicator (doesn't block touches)
-          Positioned(
-            top: AppDimensions.spacingXs,
-            left: AppDimensions.spacingXs,
-            child: IgnorePointer(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingXs,
-                  vertical: AppDimensions.spacingXxs,
-                ),
+          // Primary selection: Tap image to make it primary
+          if (!isPrimary) {
+            AppLogger.debug(
+                '🌟 GRID: Setting primary at index $index (callback: ${widget.onPrimaryImageChanged != null})');
+            if (widget.onPrimaryImageChanged != null) {
+              widget.onPrimaryImageChanged!(index);
+            } else {
+              AppLogger.warning(
+                  '⚠️ GRID: onPrimaryImageChanged callback is null!');
+            }
+          } else {
+            AppLogger.debug(
+                '🌟 GRID: Primary image tapped - calling onImageTap');
+            widget.onImageTap?.call(index);
+          }
+        },
+        child: Stack(
+          children: [
+            // Main image display with border that actually surrounds the image
+            Positioned.fill(
+              child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: isPrimary
-                      ? Theme.of(context).primaryColor
-                      : Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusS),
+                  borderRadius: widget.config.effectiveBorderRadius,
+                  border: Border.all(
+                    color: Theme.of(context).primaryColor,
+                    width: isPrimary
+                        ? AppDimensions.borderWidthThick *
+                            2 // PRIMARY: Extra thick border (4px)
+                        : AppDimensions
+                            .borderWidthStandard, // NON-PRIMARY: Standard border (1px)
+                  ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      isPrimary ? Icons.star : Icons.star_outline,
-                      size: AppDimensions.iconSizeXs,
-                      color: AppColors.cardWhite,
+                child: ClipRRect(
+                  borderRadius: widget.config.effectiveBorderRadius,
+                  child: ImageComponents.buildAdaptiveImage(
+                    pathOrUrl: imageUrl,
+                    config: widget.config,
+                    fit: BoxFit.cover,
+                    placeholder: ImageComponents.buildLoadingPlaceholder(
+                      config: widget.config,
                     ),
-                    if (isPrimary) ...[
-                      const SizedBox(width: AppDimensions.spacingXxs),
-                      Text(
-                        'Primär',
-                        style: AppTextStyles.labelSmall.copyWith(
-                              color: AppColors.cardWhite,
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Delete button with separate gesture detector to prevent conflicts
-          if (widget.config.showEditControls)
-            Positioned(
-              bottom: AppDimensions.spacingXs,
-              right: AppDimensions.spacingXs,
-              child: Semantics(
-                label: 'Ta bort bild',
-                button: true,
-                child: GestureDetector(
-                  onTap: () {
-                    AppLogger.debug(
-                        '🗑️ DELETE: Delete button tapped for image $index');
-                    _removeImageAtIndex(index);
-                  },
-                  child: _buildGridActionButton(
-                    icon: Icons.close,
-                    onTap: () {}, // Empty since we handle tap above
-                    tooltip: 'Ta bort bild',
-                    isDestructive: true,
+                    errorWidget: ImageComponents.buildErrorPlaceholder(
+                      config: widget.config,
+                    ),
                   ),
                 ),
               ),
             ),
-        ],
+
+            // Primary indicator (doesn't block touches)
+            Positioned(
+              top: AppDimensions.spacingXs,
+              left: AppDimensions.spacingXs,
+              child: IgnorePointer(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacingXs,
+                    vertical: AppDimensions.spacingXxs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isPrimary
+                        ? Theme.of(context).primaryColor
+                        : Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.6),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusS),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isPrimary ? Icons.star : Icons.star_outline,
+                        size: AppDimensions.iconSizeXs,
+                        color: AppColors.cardWhite,
+                      ),
+                      if (isPrimary) ...[
+                        const SizedBox(width: AppDimensions.spacingXxs),
+                        Text(
+                          'Primär',
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: AppColors.cardWhite,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Delete button with separate gesture detector to prevent conflicts
+            if (widget.config.showEditControls)
+              Positioned(
+                bottom: AppDimensions.spacingXs,
+                right: AppDimensions.spacingXs,
+                child: Semantics(
+                  label: 'Ta bort bild',
+                  button: true,
+                  child: GestureDetector(
+                    onTap: () {
+                      AppLogger.debug(
+                          '🗑️ DELETE: Delete button tapped for image $index');
+                      _removeImageAtIndex(index);
+                    },
+                    child: _buildGridActionButton(
+                      icon: Icons.close,
+                      onTap: () {}, // Empty since we handle tap above
+                      tooltip: 'Ta bort bild',
+                      isDestructive: true,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
-    ),
     );
   }
 

@@ -30,6 +30,11 @@ import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
 // Route observers
 import 'package:butlery/core/observers/snackbar_route_observer.dart';
 import 'package:butlery/core/observers/performance_navigator_observer.dart';
+import 'package:butlery/core/observers/session_activity_observer.dart';
+
+// Session timeout
+import 'package:butlery/services/session_timeout_service.dart';
+import 'package:butlery/widgets/common/dialogs/session_timeout_warning_dialog.dart';
 
 // Performance optimization - handled by modular system
 
@@ -131,17 +136,25 @@ Future<void> main() async {
     // Skip startup optimization manager - it conflicts with the modular bootstrap system
     // The modular system already handles all initialization properly
 
-    // Start the application with zone error handling for async errors
-    runZonedGuarded(() => runApp(const ButleryApp()), (error, stack) {
-      // Log to Crashlytics (mobile only)
-      if (!kIsWeb) {
-        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-      }
-      if (kDebugMode) {
-        debugPrint('❌ Uncaught async error: $error');
-        debugPrint('Stack trace: $stack');
-      }
-    });
+    // Setup zone error handling for async errors
+    runZonedGuarded(
+      () async {
+        // This zone will catch async errors but app is started outside
+      },
+      (error, stack) {
+        // Log to Crashlytics (mobile only)
+        if (!kIsWeb) {
+          FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        }
+        if (kDebugMode) {
+          debugPrint('❌ Uncaught async error: $error');
+          debugPrint('Stack trace: $stack');
+        }
+      },
+    );
+
+    // Start the application (must be in same zone as ensureInitialized)
+    runApp(const ButleryApp());
   } catch (e, stackTrace) {
     if (kDebugMode) {
       debugPrint('❌ Application startup failed: $e');
@@ -281,6 +294,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   final SnackbarRouteObserver _snackbarObserver = SnackbarRouteObserver();
   final PerformanceNavigatorObserver _performanceObserver =
       PerformanceNavigatorObserver();
+  SessionTimeoutService? _sessionTimeoutService;
+  SessionActivityObserver? _sessionActivityObserver;
   DateTime? _sessionStartTime;
 
   @override
@@ -289,11 +304,82 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _initializeUI();
     _trackAppOpened();
+    _initializeSessionTimeout();
+  }
+
+  /// Initialize session timeout service for automatic logout on inactivity
+  Future<void> _initializeSessionTimeout() async {
+    try {
+      final bootstrap = ApplicationBootstrap();
+
+      // Wait for bootstrap to be ready
+      if (!bootstrap.isInitialized) {
+        var attempts = 0;
+        while (!bootstrap.isInitialized && attempts < 50) {
+          await Future.delayed(const Duration(milliseconds: 100));
+          attempts++;
+        }
+      }
+
+      if (bootstrap.isInitialized) {
+        _sessionTimeoutService =
+            bootstrap.container.get<SessionTimeoutService>();
+
+        // Register warning dialog callback
+        _sessionTimeoutService?.registerWarningCallback(() {
+          _showSessionTimeoutWarning();
+        });
+
+        // Initialize the service
+        await _sessionTimeoutService?.initialize();
+
+        // Create session activity observer
+        if (_sessionTimeoutService != null) {
+          _sessionActivityObserver = SessionActivityObserver(
+            _sessionTimeoutService!,
+          );
+        }
+
+        if (kDebugMode) {
+          debugPrint('✅ Session timeout service initialized');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('⚠️ Session timeout service initialization failed: $e');
+      }
+    }
+  }
+
+  /// Show session timeout warning dialog
+  void _showSessionTimeoutWarning() {
+    if (!mounted || _navigatorKey.currentContext == null) return;
+
+    final remainingSeconds =
+        (_sessionTimeoutService?.timeRemaining?.inSeconds ?? 300);
+
+    SessionTimeoutWarningDialog.show(
+      context: _navigatorKey.currentContext!,
+      remainingSeconds: remainingSeconds,
+      onExtendSession: () {
+        _sessionTimeoutService?.recordActivity();
+        if (kDebugMode) {
+          debugPrint('Session extended by user');
+        }
+      },
+      onLogoutNow: () {
+        _sessionTimeoutService?.forceLogout();
+        if (kDebugMode) {
+          debugPrint('User requested immediate logout');
+        }
+      },
+    );
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _sessionTimeoutService?.dispose();
     super.dispose();
   }
 
@@ -304,9 +390,11 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       // App came to foreground
       _trackAppOpened();
+      _sessionTimeoutService?.onAppResumed();
     } else if (state == AppLifecycleState.paused) {
       // App went to background
       _trackAppBackgrounded();
+      _sessionTimeoutService?.onAppPaused();
     }
   }
 
@@ -434,34 +522,42 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   }
 
   Widget _buildMainApp() {
-    // Build navigator observers list with performance, snackbar, and optional analytics observers
+    // Build navigator observers list with performance, snackbar, session activity, and optional analytics observers
     final observers = <NavigatorObserver>[
       _performanceObserver, // Track screen performance with Firebase Performance
       _snackbarObserver,
+      if (_sessionActivityObserver != null) _sessionActivityObserver!,
       if (_analyticsObserver != null) _analyticsObserver!,
     ];
 
-    return MaterialApp(
-      navigatorKey: _navigatorKey,
-      navigatorObservers: observers,
-      title: 'Butlery',
-      theme: AppTheme.lightTheme,
-      debugShowCheckedModeBanner: false,
-      home: const InitializationWrapper(),
-      onUnknownRoute: AppRouter.handleUnknownRoute,
-      onGenerateRoute: AppRouter.generateRoute,
-      // Universal fix for Android nav bar overlay
-      // Wraps ALL views with SafeArea to prevent content from being hidden
-      builder: (context, child) {
-        if (child == null) return const SizedBox.shrink();
-        return SafeArea(
-          top: false, // Let AppBar handle top
-          bottom: true, // Always protect bottom from system nav bar
-          left: false,
-          right: false,
-          child: child,
-        );
-      },
+    // Wrap MaterialApp with GestureDetector for universal activity tracking (session timeout)
+    return GestureDetector(
+      onTap: () => _sessionTimeoutService?.recordActivity(),
+      onPanDown: (_) => _sessionTimeoutService?.recordActivity(),
+      onScaleStart: (_) => _sessionTimeoutService?.recordActivity(),
+      behavior: HitTestBehavior.translucent,
+      child: MaterialApp(
+        navigatorKey: _navigatorKey,
+        navigatorObservers: observers,
+        title: 'Butlery',
+        theme: AppTheme.lightTheme,
+        debugShowCheckedModeBanner: false,
+        home: const InitializationWrapper(),
+        onUnknownRoute: AppRouter.handleUnknownRoute,
+        onGenerateRoute: AppRouter.generateRoute,
+        // Universal fix for Android nav bar overlay
+        // Wraps ALL views with SafeArea to prevent content from being hidden
+        builder: (context, child) {
+          if (child == null) return const SizedBox.shrink();
+          return SafeArea(
+            top: false, // Let AppBar handle top
+            bottom: true, // Always protect bottom from system nav bar
+            left: false,
+            right: false,
+            child: child,
+          );
+        },
+      ),
     );
   }
 

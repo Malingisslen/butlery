@@ -63,9 +63,9 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 ///   NotificationPreferences(enableFriendRequests: false),
 /// );
 /// ```
-class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotification>
+class FirebaseNotificationsRepository
+    extends BaseFirebaseRepository<UserNotification>
     implements NotificationsRepository {
-  
   FirebaseNotificationsRepository({
     super.firestore,
     required super.authRepository,
@@ -80,7 +80,8 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
       UserNotification.fromFirestore(doc.data()!, doc.id);
 
   @override
-  Map<String, dynamic> toFirestore(UserNotification entity) => entity.toFirestore();
+  Map<String, dynamic> toFirestore(UserNotification entity) =>
+      entity.toFirestore();
 
   @override
   String getId(UserNotification entity) => entity.id;
@@ -88,14 +89,21 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
   // ===== PERMISSION VALIDATION IMPLEMENTATION =====
 
   @override
-  Future<bool> validateCreatePermission(String userId, UserNotification entity) async {
+  Future<bool> validateCreatePermission(
+    String userId,
+    UserNotification entity,
+  ) async {
     // System can create notifications for any user (server-side notification creation)
     // This supports notification delivery from system/admin operations
     return true;
   }
 
   @override
-  Future<bool> validateReadPermission(String userId, String resourceId, UserNotification? entity) async {
+  Future<bool> validateReadPermission(
+    String userId,
+    String resourceId,
+    UserNotification? entity,
+  ) async {
     if (entity == null) return false;
 
     // Users can only read their own notifications
@@ -103,13 +111,20 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
   }
 
   @override
-  Future<bool> validateUpdatePermission(String userId, String resourceId, UserNotification entity) async {
+  Future<bool> validateUpdatePermission(
+    String userId,
+    String resourceId,
+    UserNotification entity,
+  ) async {
     // Users can only update their own notifications (mark as read)
     return entity.userId == userId;
   }
 
   @override
-  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+  Future<bool> validateDeletePermission(
+    String userId,
+    String resourceId,
+  ) async {
     // Users can only delete their own notifications
     try {
       final notification = await read(resourceId);
@@ -132,6 +147,8 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
   }) async {
     await collection.add({
       'userId': userId,
+      'senderId':
+          currentUserId, // 🔒 SECURITY: Required by firestore.rules for spam prevention
       'type': type.toString(),
       'title': title,
       'body': body,
@@ -150,11 +167,13 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
     Map<String, dynamic>? data,
   }) async {
     final batch = firestore.batch();
-    
+
     for (final userId in userIds) {
       final docRef = collection.doc();
       batch.set(docRef, {
         'userId': userId,
+        'senderId':
+            currentUserId, // 🔒 SECURITY: Required by firestore.rules for spam prevention
         'type': type.toString(),
         'title': title,
         'body': body,
@@ -163,7 +182,7 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
         'createdAt': FieldValue.serverTimestamp(),
       });
     }
-    
+
     await batch.commit();
   }
 
@@ -183,23 +202,21 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
     }
 
     final querySnapshot = await query.get();
-    return querySnapshot.docs
-        .map((doc) => fromFirestore(doc))
-        .toList();
+    return querySnapshot.docs.map((doc) => fromFirestore(doc)).toList();
   }
 
   @override
   Future<void> markAsRead(String notificationId) async {
     // Validate user owns the notification
     final currentUser = requireCurrentUserId();
-    
+
     // First check if notification exists and user owns it
     final doc = await getDocumentWithPermissionCheck(
       docRef: collection.doc(notificationId),
       currentUserId: currentUser,
       resourceType: 'notification',
     );
-    
+
     final notificationData = doc.data() as Map<String, dynamic>;
     await validateOwnership(
       currentUserId: currentUser,
@@ -207,12 +224,12 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
       resourceType: 'notification',
       resourceId: notificationId,
     );
-    
+
     await collection.doc(notificationId).update({
       'isRead': true,
       'readAt': FieldValue.serverTimestamp(),
     });
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'notification',
@@ -226,7 +243,7 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
     // Validate user owns all notifications
     final currentUser = requireCurrentUserId();
     final batch = firestore.batch();
-    
+
     // Verify ownership of each notification
     for (final id in notificationIds) {
       final doc = await getDocumentWithPermissionCheck(
@@ -234,7 +251,7 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
         currentUserId: currentUser,
         resourceType: 'notification',
       );
-      
+
       final notificationData = doc.data() as Map<String, dynamic>;
       await validateOwnership(
         currentUserId: currentUser,
@@ -242,15 +259,15 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
         resourceType: 'notification',
         resourceId: id,
       );
-      
+
       batch.update(collection.doc(id), {
         'isRead': true,
         'readAt': FieldValue.serverTimestamp(),
       });
     }
-    
+
     await batch.commit();
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'notification',
@@ -269,23 +286,23 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
       targetUserId: userId,
       operation: 'mark all notifications as read',
     );
-    
+
     final unreadQuery = await collection
         .where('userId', isEqualTo: userId)
         .where('isRead', isEqualTo: false)
         .get();
 
     final batch = firestore.batch();
-    
+
     for (final doc in unreadQuery.docs) {
       batch.update(doc.reference, {
         'isRead': true,
         'readAt': FieldValue.serverTimestamp(),
       });
     }
-    
+
     await batch.commit();
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'notification',
@@ -299,14 +316,14 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
   Future<void> deleteNotification(String notificationId) async {
     // Validate user owns the notification
     final currentUser = requireCurrentUserId();
-    
+
     // First check if notification exists and user owns it
     final doc = await getDocumentWithPermissionCheck(
       docRef: collection.doc(notificationId),
       currentUserId: currentUser,
       resourceType: 'notification',
     );
-    
+
     final notificationData = doc.data() as Map<String, dynamic>;
     await validateOwnership(
       currentUserId: currentUser,
@@ -314,9 +331,9 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
       resourceType: 'notification',
       resourceId: notificationId,
     );
-    
+
     await collection.doc(notificationId).delete();
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'notification',
@@ -331,7 +348,7 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
         .where('userId', isEqualTo: userId)
         .where('isRead', isEqualTo: false)
         .get();
-    
+
     return unreadQuery.docs.length;
   }
 
@@ -342,9 +359,9 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
         .orderBy('createdAt', descending: true)
         .limit(50)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => fromFirestore(doc))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs.map((doc) => fromFirestore(doc)).toList(),
+        );
   }
 
   @override
@@ -374,13 +391,14 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
       targetUserId: userId,
       operation: 'update notification preferences',
     );
-    
-    final prefsCollection = firestore.collection('user_notification_preferences');
-    await prefsCollection.doc(userId).set(
-      preferences.toFirestore(),
-      SetOptions(merge: true),
+
+    final prefsCollection = firestore.collection(
+      'user_notification_preferences',
     );
-    
+    await prefsCollection
+        .doc(userId)
+        .set(preferences.toFirestore(), SetOptions(merge: true));
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'notification_preferences',
@@ -390,14 +408,18 @@ class FirebaseNotificationsRepository extends BaseFirebaseRepository<UserNotific
   }
 
   @override
-  Future<NotificationPreferences> getNotificationPreferences(String userId) async {
-    final prefsCollection = firestore.collection('user_notification_preferences');
+  Future<NotificationPreferences> getNotificationPreferences(
+    String userId,
+  ) async {
+    final prefsCollection = firestore.collection(
+      'user_notification_preferences',
+    );
     final doc = await prefsCollection.doc(userId).get();
-    
+
     if (!doc.exists) {
       return NotificationPreferences(); // Default preferences
     }
-    
+
     return NotificationPreferences.fromFirestore(doc.data()!);
   }
 }

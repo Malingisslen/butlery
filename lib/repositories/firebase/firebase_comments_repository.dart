@@ -359,37 +359,48 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
 
   @override
   Future<CommentStatistics> getCommentStatistics(String recipeId) async {
-    // Get all comments for the recipe
-    // ✅ PERFORMANCE FIX: Added limit for statistics calculation
-    // For accurate statistics, we might need to implement server-side aggregation
-    final allCommentsQuery = await collection
+    // Optimized (#040): Use count() aggregation for totals - no document fetch needed
+    // This reduces reads from 500 full docs to 2 count queries + 1 limited fetch
+
+    // Count top-level comments (no parentCommentId)
+    final topLevelCount = await collection
         .where('recipeId', isEqualTo: recipeId)
-        .limit(500) // Limit to most recent 500 comments for stats
+        .where('parentCommentId', isEqualTo: null)
+        .count()
         .get();
 
-    final allComments = allCommentsQuery.docs;
-    final topLevelComments = allComments.where((doc) => 
-        doc.data()['parentCommentId'] == null).toList();
-    final replies = allComments.where((doc) => 
-        doc.data()['parentCommentId'] != null).toList();
+    // Count replies (have parentCommentId)
+    // Note: Firestore doesn't support isNotEqualTo: null directly with count,
+    // so we calculate replies as total - topLevel
+    final totalCount = await collection
+        .where('recipeId', isEqualTo: recipeId)
+        .count()
+        .get();
 
-    // Calculate total likes across all comments
+    final repliesCount = (totalCount.count ?? 0) - (topLevelCount.count ?? 0);
+
+    // Fetch only for likes sum and lastCommentAt (need actual values, not just counts)
+    // Limited to 500 most recent comments for performance
+    final likesSnapshot = await collection
+        .where('recipeId', isEqualTo: recipeId)
+        .orderBy('createdAt', descending: true)
+        .limit(500)
+        .get();
+
     int totalLikes = 0;
     DateTime? lastCommentAt;
 
-    for (final doc in allComments) {
+    for (final doc in likesSnapshot.docs) {
       final data = doc.data();
       totalLikes += (data['likesCount'] as int?) ?? 0;
-      
-      final createdAt = (data['createdAt'] as Timestamp?)?.toDate();
-      if (createdAt != null && (lastCommentAt == null || createdAt.isAfter(lastCommentAt))) {
-        lastCommentAt = createdAt;
-      }
+
+      // First doc is most recent due to orderBy descending
+      lastCommentAt ??= (data['createdAt'] as Timestamp?)?.toDate();
     }
 
     return CommentStatistics(
-      totalComments: topLevelComments.length,
-      totalReplies: replies.length,
+      totalComments: topLevelCount.count ?? 0,
+      totalReplies: repliesCount,
       totalLikes: totalLikes,
       lastCommentAt: lastCommentAt,
     );

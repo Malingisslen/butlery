@@ -1,43 +1,44 @@
 // lib/viewmodels/menu/menu_storage.dart
 
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/viewmodels/menu/menu_state_manager.dart' show SavedMenuInfo;
 
-/// Focused module for menu local storage
-/// This module handles ONLY local storage operations:
-/// - SharedPreferences save/load/delete operations
-/// - Menu serialization/deserialization
-/// - Local storage validation and error handling
-/// - Storage key management
-/// ❌ DOES NOT CONTAIN: State management, social features, menu generation
+/// Firestore-based menu storage module
+///
+/// This module handles menu persistence using Firestore:
+/// - Save menus to Firestore 'menus' collection
+/// - Load user's menus from Firestore
+/// - Delete menus from Firestore
+/// - Menu validation
+///
+/// Architecture: Firestore-only for cloud sync and social sharing support.
+/// All menus are stored in Firebase, enabling cross-device access and sharing.
 class MenuStorage {
   final FirestoreRepository _firestoreRepository;
 
   /// Creates MenuStorage with dependency injection support
-  /// [firestoreRepository] Optional FirestoreRepository for testing.
-  /// If not provided, uses ServiceLocator to get the instance.
   MenuStorage({FirestoreRepository? firestoreRepository})
       : _firestoreRepository = firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
-  
+
   // ===== SAVE OPERATIONS =====
 
   /// Save menu to Firestore
-  Future<String> saveMenuLocally({
+  ///
+  /// Returns the Firestore document ID for the saved menu.
+  /// Throws if user is not authenticated.
+  Future<String> saveMenu({
     required String menuName,
     required String comment,
     required Map<String, List<Recipe>> menu,
     required String lastPrompt,
     required int totalRecipeCount,
   }) async {
-    // Get current user
     final permissionService = ServiceLocator.get<PermissionService>();
     final userId = permissionService.currentUserId;
     final userName = permissionService.currentUserDisplayName ?? 'Unknown';
@@ -46,98 +47,98 @@ class MenuStorage {
       throw Exception('User not authenticated');
     }
 
-    // Create SharedMenu
+    // Create SharedMenu model
     final sharedMenu = SharedMenu.create(
       sharedByUserId: userId,
       sharedByDisplayName: userName,
-      sharedToUserIds: [], // Not shared yet
+      sharedToUserIds: [], // Not shared yet - sharing handled separately
       shareMessage: comment.trim(),
       menuTitle: menuName.trim(),
       menuSnapshot: menu,
     );
 
-    // Save to Firestore using repository
+    // Save to Firestore
     final docRef = await _firestoreRepository.collection('menus').add(
       sharedMenu.toFirestore(),
     );
 
-    AppLogger.success('✅ Meny sparad till Firestore: $menuName med $totalRecipeCount recept');
-
-    return docRef.id; // Return Firestore document ID instead of local key
+    AppLogger.success('✅ Menu saved to Firestore: $menuName ($totalRecipeCount recipes)');
+    return docRef.id;
   }
 
-  /// Load menu from local storage by key
-  Future<SavedMenuData?> loadMenuByKey(String menuKey) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final menuJson = prefs.getString(menuKey);
-
-      if (menuJson != null) {
-        final menuData = SavedMenuData.fromJson(jsonDecode(menuJson));
-        AppLogger.success('✅ Lokal meny laddad: ${menuData.name}');
-        return menuData;
-      }
-
-      return null;
-    } catch (e) {
-      AppLogger.error('Load menu failed', e);
-      rethrow;
-    }
-  }
-
-  /// Delete menu from local storage
-  Future<bool> deleteMenuByKey(String menuKey) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(menuKey);
-
-      AppLogger.success('✅ Meny borttagen: $menuKey');
-      return true;
-    } catch (e) {
-      AppLogger.error('Delete menu failed', e);
-      return false;
-    }
-  }
-
-  /// Mark menu as modified
-  Future<bool> markMenuAsModified(String menuKey) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final menuJson = prefs.getString(menuKey);
-
-      if (menuJson != null) {
-        final menuData = SavedMenuData.fromJson(jsonDecode(menuJson));
-        final modifiedData = SavedMenuData(
-          name: menuData.name,
-          savedDate: menuData.savedDate,
-          recipeCount: menuData.recipeCount,
-          menu: menuData.menu,
-          lastPrompt: menuData.lastPrompt,
-          comment: menuData.comment,
-          originalAuthor: menuData.originalAuthor,
-          originalAuthorId: menuData.originalAuthorId,
-          isModified: true,
-          firebaseId: menuData.firebaseId,
-        );
-
-        final modifiedJson = jsonEncode(modifiedData.toJson());
-        await prefs.setString(menuKey, modifiedJson);
-
-        AppLogger.success('✅ Meny markerad som modifierad: $menuKey');
-        return true;
-      }
-
-      return false;
-    } catch (e) {
-      AppLogger.error('Mark menu as modified failed', e);
-      return false;
-    }
-  }
+  /// Legacy method name - delegates to saveMenu
+  @Deprecated('Use saveMenu instead')
+  Future<String> saveMenuLocally({
+    required String menuName,
+    required String comment,
+    required Map<String, List<Recipe>> menu,
+    required String lastPrompt,
+    required int totalRecipeCount,
+  }) => saveMenu(
+    menuName: menuName,
+    comment: comment,
+    menu: menu,
+    lastPrompt: lastPrompt,
+    totalRecipeCount: totalRecipeCount,
+  );
 
   // ===== LOAD OPERATIONS =====
 
-  /// Load all menus from Firestore (owned by user)
-  Future<List<SavedMenuInfo>> loadLocalMenus() async {
+  /// Load a specific menu by its Firestore document ID
+  ///
+  /// Returns SavedMenuData if found, null otherwise.
+  Future<SavedMenuData?> loadMenuByKey(String menuId) async {
+    try {
+      final permissionService = ServiceLocator.get<PermissionService>();
+      final userId = permissionService.currentUserId;
+
+      if (userId == null) {
+        AppLogger.warning('No user ID available for loading menu');
+        return null;
+      }
+
+      // Load from Firestore
+      final doc = await _firestoreRepository.collection('menus').doc(menuId).get();
+
+      if (!doc.exists || doc.data() == null) {
+        AppLogger.debug('Menu not found: $menuId');
+        return null;
+      }
+
+      final data = doc.data()!;
+
+      // Verify ownership
+      if (data['sharedByUserId'] != userId) {
+        AppLogger.warning('Menu $menuId does not belong to current user');
+        return null;
+      }
+
+      // Parse SharedMenu and convert to SavedMenuData
+      final sharedMenu = SharedMenu.fromFirestore(data, doc.id);
+
+      final menuData = SavedMenuData(
+        name: sharedMenu.menuTitle,
+        savedDate: sharedMenu.sharedAt,
+        recipeCount: sharedMenu.totalRecipeCount,
+        menu: sharedMenu.menuSnapshot,
+        lastPrompt: '', // Not stored in SharedMenu - could be added later
+        comment: sharedMenu.shareMessage ?? '',
+        originalAuthor: null,
+        originalAuthorId: null,
+        isModified: false,
+        firebaseId: doc.id,
+      );
+
+      AppLogger.success('✅ Menu loaded from Firestore: ${menuData.name}');
+      return menuData;
+    } catch (e) {
+      AppLogger.error('Failed to load menu: $menuId', e);
+      return null;
+    }
+  }
+
+  /// Load all menus owned by the current user from Firestore
+  Future<List<SavedMenuInfo>> loadUserMenus() async {
     try {
       final permissionService = ServiceLocator.get<PermissionService>();
       final userId = permissionService.currentUserId;
@@ -147,7 +148,7 @@ class MenuStorage {
         return [];
       }
 
-      // Query menus from Firestore using repository
+      // Query user's menus from Firestore
       final snapshot = await _firestoreRepository
           .collection('menus')
           .where('sharedByUserId', isEqualTo: userId)
@@ -182,31 +183,81 @@ class MenuStorage {
     }
   }
 
-  /// Load imported menu data by key
-  Future<SavedMenuData?> loadImportedMenuByKey(String menuKey) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final importedMenusJson = prefs.getString('imported_menus');
+  /// Legacy method name - delegates to loadUserMenus
+  @Deprecated('Use loadUserMenus instead')
+  Future<List<SavedMenuInfo>> loadLocalMenus() => loadUserMenus();
 
-      if (importedMenusJson != null) {
-        final importedMenusData = jsonDecode(importedMenusJson) as Map<String, dynamic>;
-        
-        if (importedMenusData.containsKey(menuKey)) {
-          final menuData = SavedMenuData.fromJson(
-            importedMenusData[menuKey] as Map<String, dynamic>
-          );
-          return menuData;
-        }
+  // ===== DELETE OPERATIONS =====
+
+  /// Delete a menu from Firestore by document ID
+  ///
+  /// Returns true if deletion succeeds, false otherwise.
+  Future<bool> deleteMenuByKey(String menuId) async {
+    try {
+      final permissionService = ServiceLocator.get<PermissionService>();
+      final userId = permissionService.currentUserId;
+
+      if (userId == null) {
+        AppLogger.warning('No user ID available for deleting menu');
+        return false;
       }
 
-      return null;
+      // Verify ownership before deletion
+      final doc = await _firestoreRepository.collection('menus').doc(menuId).get();
+
+      if (!doc.exists) {
+        AppLogger.warning('Menu not found for deletion: $menuId');
+        return false;
+      }
+
+      final data = doc.data();
+      if (data?['sharedByUserId'] != userId) {
+        AppLogger.warning('Cannot delete menu $menuId - not owned by current user');
+        return false;
+      }
+
+      // Delete from Firestore
+      await _firestoreRepository.collection('menus').doc(menuId).delete();
+
+      AppLogger.success('✅ Menu deleted from Firestore: $menuId');
+      return true;
     } catch (e) {
-      AppLogger.error('Load imported menu failed', e);
-      return null;
+      AppLogger.error('Failed to delete menu: $menuId', e);
+      return false;
     }
   }
 
-  // ===== STORAGE VALIDATION =====
+  // ===== UPDATE OPERATIONS =====
+
+  /// Mark menu as modified (updates Firestore document)
+  Future<bool> markMenuAsModified(String menuId) async {
+    try {
+      final permissionService = ServiceLocator.get<PermissionService>();
+      final userId = permissionService.currentUserId;
+
+      if (userId == null) return false;
+
+      // Verify ownership
+      final doc = await _firestoreRepository.collection('menus').doc(menuId).get();
+      if (!doc.exists || doc.data()?['sharedByUserId'] != userId) {
+        return false;
+      }
+
+      // Update the document with modified flag
+      await _firestoreRepository.collection('menus').doc(menuId).update({
+        'isModified': true,
+        'modifiedAt': DateTime.now().toIso8601String(),
+      });
+
+      AppLogger.success('✅ Menu marked as modified: $menuId');
+      return true;
+    } catch (e) {
+      AppLogger.error('Failed to mark menu as modified: $menuId', e);
+      return false;
+    }
+  }
+
+  // ===== VALIDATION =====
 
   /// Validate menu name for storage
   bool validateMenuName(String menuName) {
@@ -217,80 +268,23 @@ class MenuStorage {
   /// Validate menu data for storage
   bool validateMenuData(Map<String, List<Recipe>> menu) {
     if (menu.isEmpty) return false;
-    
+
     // Check that each section has at least one recipe
     for (final recipes in menu.values) {
       if (recipes.isEmpty) return false;
     }
-    
+
     return true;
   }
 
-  /// Get storage size information
-  Future<Map<String, dynamic>> getStorageInfo() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final keys = prefs.getKeys();
-      final menuKeys = keys.where((key) => key.startsWith('saved_menu_')).toList();
+  // ===== IMPORTED MENUS (from social sharing) =====
 
-      int totalSize = 0;
-      for (final key in menuKeys) {
-        final menuJson = prefs.getString(key);
-        if (menuJson != null) {
-          totalSize += menuJson.length;
-        }
-      }
-
-      return {
-        'menuCount': menuKeys.length,
-        'totalSizeBytes': totalSize,
-        'totalSizeKB': totalSize / 1024,
-        'averageSizePerMenu': menuKeys.isNotEmpty ? totalSize.toDouble() / menuKeys.length.toDouble() : 0.0,
-      };
-    } catch (e) {
-      AppLogger.error('Get storage info failed', e);
-      return {};
-    }
-  }
-
-  // ===== CLEANUP OPERATIONS =====
-
-  /// Clean up orphaned or corrupted menu data
-  Future<int> cleanupStorage() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final keys = prefs.getKeys();
-      final menuKeys = keys.where((key) => key.startsWith('saved_menu_')).toList();
-
-      int cleaned = 0;
-      for (final key in menuKeys) {
-        try {
-          final menuJson = prefs.getString(key);
-          if (menuJson != null) {
-            // Try to parse - if it fails, it's corrupted
-            SavedMenuData.fromJson(jsonDecode(menuJson));
-          } else {
-            // Empty key, remove it
-            await prefs.remove(key);
-            cleaned++;
-          }
-        } catch (e) {
-          // Corrupted data, remove it
-          await prefs.remove(key);
-          cleaned++;
-          AppLogger.warning('⚠️ Removed corrupted menu data: $key');
-        }
-      }
-
-      if (cleaned > 0) {
-        AppLogger.success('✅ Cleaned up $cleaned corrupted menu entries');
-      }
-
-      return cleaned;
-    } catch (e) {
-      AppLogger.error('Storage cleanup failed', e);
-      return 0;
-    }
+  /// Load imported menu data by key (menus shared with you)
+  /// These are stored locally after being imported from social shares
+  Future<SavedMenuData?> loadImportedMenuByKey(String menuKey) async {
+    // TODO: Implement imported menu loading from shared_menus collection
+    // For now, return null - imported menus flow needs separate implementation
+    return null;
   }
 }
 
@@ -369,3 +363,5 @@ class SavedMenuData {
     );
   }
 }
+
+// SavedMenuInfo is defined in menu_state_manager.dart

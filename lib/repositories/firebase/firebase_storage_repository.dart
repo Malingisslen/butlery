@@ -256,6 +256,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
               contentType: 'image/jpeg',
               customMetadata: {
                 'uploadedAt': DateTime.now().toIso8601String(),
+                'uploadedBy': userId, // 🔒 SECURITY: Required by storage.rules
                 ...?metadata,
               },
             ),
@@ -334,7 +335,8 @@ class FirebaseStorageRepository extends BaseStorageRepository
         results.where((url) => url != null).cast<String>().toList();
 
     AppLogger.info(
-        '✅ Parallel upload completed: ${successfulUploads.length}/$total successful');
+      '✅ Parallel upload completed: ${successfulUploads.length}/$total successful',
+    );
     return successfulUploads;
   }
 
@@ -424,12 +426,14 @@ class FirebaseStorageRepository extends BaseStorageRepository
       const maxSizeWithoutCompression = 500 * 1024; // 500KB
       if (originalSize < maxSizeWithoutCompression) {
         AppLogger.info(
-            '⚡ Skipping compression for small image: ${(originalSize / 1024).toStringAsFixed(1)}KB');
+          '⚡ Skipping compression for small image: ${(originalSize / 1024).toStringAsFixed(1)}KB',
+        );
         return bytes;
       }
 
       AppLogger.info(
-          '🔄 Compressing image with aspect ratio preservation: ${(originalSize / 1024).toStringAsFixed(1)}KB');
+        '🔄 Compressing image with aspect ratio preservation: ${(originalSize / 1024).toStringAsFixed(1)}KB',
+      );
 
       // Compress with aspect-ratio preservation using quality-based approach
       var compressed = await FlutterImageCompress.compressWithList(
@@ -446,7 +450,8 @@ class FirebaseStorageRepository extends BaseStorageRepository
       while (compressed.length > 1024 * 1024 && currentQuality > 50) {
         currentQuality -= 10;
         AppLogger.info(
-            '🔄 Image still large (${formatBytes(compressed.length)}), reducing quality to $currentQuality');
+          '🔄 Image still large (${formatBytes(compressed.length)}), reducing quality to $currentQuality',
+        );
 
         compressed = await FlutterImageCompress.compressWithList(
           bytes,
@@ -504,10 +509,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
         imageData: thumbnailBytes,
         userId: userId,
         path: thumbPath,
-        metadata: {
-          'type': 'thumbnail',
-          'originalPath': originalPath,
-        },
+        metadata: {'type': 'thumbnail', 'originalPath': originalPath},
       );
 
       if (thumbnailUrl != null) {
@@ -542,10 +544,7 @@ class FirebaseStorageRepository extends BaseStorageRepository
   }
 
   @override
-  String generateFileName({
-    required String originalPath,
-    String? prefix,
-  }) {
+  String generateFileName({required String originalPath, String? prefix}) {
     final extension = path.extension(originalPath).toLowerCase();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final uniqueId = _uuid.v4().substring(0, 8);

@@ -96,14 +96,6 @@ class GroupDetailHeader {
                   '${group.friendCount} personer',
                   Icons.people,
                 ),
-                // Remove isPrivate as it's not available in FriendCategory
-                // if (group.isPrivate)
-                //   _buildDetailRow(
-                //     context,
-                //     'Synlighet',
-                //     'Privat grupp',
-                //     Icons.lock,
-                //   ),
               ],
             ),
           ),

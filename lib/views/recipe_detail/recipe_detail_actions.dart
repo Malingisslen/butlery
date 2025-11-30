@@ -54,7 +54,11 @@ class RecipeDetailActions {
       context,
       onSuccess: () {},
       showSnackBar: _showSnackBar,
-      popNavigation: _popNavigation,
+      popNavigation: () {
+        if (context.mounted) {
+          Navigator.pop(context);
+        }
+      },
     );
   }
 

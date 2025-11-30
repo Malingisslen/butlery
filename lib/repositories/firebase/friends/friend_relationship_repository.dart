@@ -224,8 +224,10 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   }
 
   /// Stream friend ids for real-time updates.
+  /// Optimized (#043): Added limit to prevent unbounded stream for power users
   Stream<List<String>> friendIdsStream(String userId) {
     return _userFriendsRef(userId)
+        .limit(200) // Limit to 200 friends for stream performance
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) => doc.id).toList());
   }

@@ -322,20 +322,24 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
   }
 
   /// Stream incoming friend requests for the current user.
+  /// Optimized (#043): Added limit to prevent unbounded stream
   Stream<List<FriendRequest>> incomingRequestsStream(String userId) {
     return _friendRequestsRef
         .where('toUserId', isEqualTo: userId)
         .where('status', isEqualTo: FriendRequestStatus.pending.name)
+        .limit(50) // Limit to 50 pending requests
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.map((doc) => FriendRequest.fromMap(doc.id, doc.data())).toList());
   }
 
   /// Stream sent friend requests for the current user.
+  /// Optimized (#043): Added limit to prevent unbounded stream
   Stream<List<FriendRequest>> sentRequestsStream(String userId) {
     return _friendRequestsRef
         .where('fromUserId', isEqualTo: userId)
         .where('status', isEqualTo: FriendRequestStatus.pending.name)
+        .limit(50) // Limit to 50 pending requests
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.map((doc) => FriendRequest.fromMap(doc.id, doc.data())).toList());

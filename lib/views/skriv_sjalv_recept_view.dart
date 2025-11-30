@@ -39,7 +39,6 @@ class SkrivSjalvReceptView extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => RecipeFormViewModel(
         recipeService: ServiceLocator.get(),
-        analyticsService: ServiceLocator.get(),
         initialRecipe: initialRecipe,
         isTemplate: isTemplate,
       ),
@@ -66,6 +65,16 @@ class _SkrivSjalvReceptViewContentState
   // Enhanced upload notification system
   StreamSubscription<UploadNotificationEvent>? _uploadNotificationSubscription;
 
+  // CRITICAL FIX: Store TextEditingControllers in State to prevent text scrambling
+  // Creating new controllers on every build causes cursor position to reset to 0
+  TextEditingController? _titleController;
+  TextEditingController? _descriptionController;
+  TextEditingController? _portionsController;
+  TextEditingController? _timeMinutesController;
+  TextEditingController? _ratingController;
+  TextEditingController? _sourceUrlController;
+  bool _controllersInitialized = false;
+
   @override
   void initState() {
     super.initState();
@@ -75,6 +84,23 @@ class _SkrivSjalvReceptViewContentState
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _checkAndShowDraftRecovery();
     });
+  }
+
+  /// Initialize text controllers with ViewModel values (called once on first build)
+  void _initializeControllersIfNeeded(RecipeFormViewModel viewModel) {
+    if (_controllersInitialized) return;
+
+    _titleController = TextEditingController(text: viewModel.title);
+    _descriptionController = TextEditingController(text: viewModel.description);
+    _portionsController = TextEditingController(
+        text: viewModel.portions?.toString() ?? '');
+    _timeMinutesController = TextEditingController(
+        text: viewModel.timeMinutes?.toString() ?? '');
+    _ratingController = TextEditingController(
+        text: viewModel.rating?.toString() ?? '');
+    _sourceUrlController = TextEditingController(
+        text: viewModel.sourceUrl ?? '');
+    _controllersInitialized = true;
   }
 
   /// Setup upload notification listener for background events
@@ -418,6 +444,9 @@ class _SkrivSjalvReceptViewContentState
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeFormViewModel>();
 
+    // CRITICAL FIX: Initialize controllers once on first build
+    _initializeControllersIfNeeded(viewModel);
+
     return PopScope(
       canPop: !_isSaving &&
           !viewModel
@@ -568,7 +597,7 @@ class _SkrivSjalvReceptViewContentState
 
                     // Titel
                     StyledInput(
-                      controller: TextEditingController(text: viewModel.title),
+                      controller: _titleController,
                       label: 'Titel',
                       textInputAction: TextInputAction.next,
                       onChanged: viewModel.setTitle,
@@ -581,8 +610,7 @@ class _SkrivSjalvReceptViewContentState
 
                     // Beskrivning
                     StyledInput(
-                      controller:
-                          TextEditingController(text: viewModel.description),
+                      controller: _descriptionController,
                       label: 'Beskrivning',
                       maxLines: 2,
                       minLines: 2,
@@ -594,8 +622,7 @@ class _SkrivSjalvReceptViewContentState
 
                     // Portioner
                     StyledInput(
-                      controller: TextEditingController(
-                          text: viewModel.portions?.toString() ?? ''),
+                      controller: _portionsController,
                       label: 'Portioner',
                       keyboardType: TextInputType.number,
                       textInputAction: TextInputAction.next,
@@ -607,8 +634,7 @@ class _SkrivSjalvReceptViewContentState
 
                     // Tid
                     StyledInput(
-                      controller: TextEditingController(
-                          text: viewModel.timeMinutes?.toString() ?? ''),
+                      controller: _timeMinutesController,
                       label: 'Tid (min)',
                       keyboardType: TextInputType.number,
                       textInputAction: TextInputAction.next,
@@ -653,8 +679,7 @@ class _SkrivSjalvReceptViewContentState
 
                     // Betyg
                     StyledInput(
-                      controller: TextEditingController(
-                          text: viewModel.rating?.toString() ?? ''),
+                      controller: _ratingController,
                       label: 'Betyg (0–5)',
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
@@ -667,8 +692,7 @@ class _SkrivSjalvReceptViewContentState
 
                     // Source URL-fält
                     StyledInput(
-                      controller: TextEditingController(
-                          text: viewModel.sourceUrl ?? ''),
+                      controller: _sourceUrlController,
                       label: 'Källa (URL)',
                       hint: 'Valfritt: länk till originalreceptet',
                       helperText: viewModel.sourceUrl == 'Delad från annan app'
@@ -795,8 +819,17 @@ class _SkrivSjalvReceptViewContentState
     // HIGH PRIORITY FIX: Proper resource disposal to prevent memory leaks
     // Cancel upload notification subscription to prevent memory leaks
     _uploadNotificationSubscription?.cancel();
+
+    // CRITICAL FIX: Dispose text controllers to prevent memory leaks
+    _titleController?.dispose();
+    _descriptionController?.dispose();
+    _portionsController?.dispose();
+    _timeMinutesController?.dispose();
+    _ratingController?.dispose();
+    _sourceUrlController?.dispose();
+
     AppLogger.debug(
-        'SkrivSjalvReceptView disposed - notification subscription cancelled');
+        'SkrivSjalvReceptView disposed - notification subscription and controllers disposed');
     super.dispose();
   }
 }

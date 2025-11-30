@@ -58,7 +58,7 @@ dependencies:
   clock: ^1.1.1  # For testable time-dependent code
   share_plus: ^10.1.0        # För utgående sharing (skicka till andra appar)
   path_provider: ^2.1.4
-  file_picker: ^8.1.2
+  file_picker: ^10.3.3
   path: ^1.9.0
   flutter_dotenv: ^5.2.1     # För säker API key hantering
   package_info_plus: ^8.0.2  # För att hämta app version och build info
@@ -81,8 +81,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  hive_generator: ^2.0.1
-  
+
   # ==================== CORE TESTING ====================
   test: ^1.25.2
   integration_test:
@@ -91,7 +90,7 @@ dev_dependencies:
   
   # ==================== MOCKING (Mocktail preferred over Mockito) ====================
   mocktail: ^1.0.4
-  build_runner: ^2.4.13
+  build_runner: ^2.9.0  # 2.10.1 requires analyzer 8.0+, blocked by Flutter SDK 3.35.1
   
   # ==================== FIREBASE MOCKING ====================
   fake_cloud_firestore: ^4.0.0
@@ -123,9 +122,9 @@ dev_dependencies:
   flutter_driver:
     sdk: flutter
   benchmark_harness: ^2.3.0
-  
-  # ==================== ANALYZER FIX ====================
-  analyzer: ^6.4.1  # Kompatibel med Flutter 3.24
+
+  # ==================== BUILD TOOLS ====================
+  # analyzer provided by test package - let pub determine compatible version
   cli_util: ^0.4.0  # For CLI utilities
   meta: ^1.11.0  # For annotations
 

@@ -24,49 +24,17 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_list_header.dart
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_dialogs.dart';
 
-/// Comprehensive unified shopping view providing advanced shopping list management through facade pattern architecture.
-/// Manages complete shopping list interface enabling item management, collaborative features, sharing functionality,
-/// and comprehensive shopping coordination while maintaining clean separation between UI presentation
-/// and business logic through MVVM architecture and focused component delegation.
-/// **Core Responsibilities:**
-/// - Advanced shopping list presentation with item management and collaborative feature coordination
-/// - Facade pattern implementation with specialized component delegation and clean architecture
-/// - Event handling coordination with proper separation of concerns and user interaction management
-/// - Dialog management with comprehensive user input and shopping operation coordination
-/// - Swedish localized user feedback with success and error message management
+/// Shopping list management view using facade pattern architecture.
 class UnifiedShoppingView extends StatefulWidget {
-  /// Creates comprehensive unified shopping view with facade pattern architecture and component delegation.
-  /// Establishes shopping list interface with focused component integration,
-  /// event handling coordination, and comprehensive shopping functionality
-  /// through clean architectural separation and responsive design coordination.
   const UnifiedShoppingView({super.key});
 
-  /// Creates unified shopping view state with ViewModel integration and lifecycle management.
-  /// Establishes stateful shopping interface enabling ViewModel initialization,
-  /// event handling coordination, and comprehensive shopping functionality
-  /// through proper state lifecycle and component management.
   @override
   State<UnifiedShoppingView> createState() => _UnifiedShoppingViewState();
 }
 
-/// Unified shopping view state managing ViewModel integration, event handling, and component lifecycle coordination.
-/// Handles complete shopping list state management including ViewModel initialization, event delegation,
-/// dialog coordination, and user interaction handling while maintaining clean facade pattern architecture
-/// and proper lifecycle management through comprehensive state coordination.
 class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
-  /// Unified shopping ViewModel for comprehensive shopping state management and business logic coordination.
-  /// Manages shopping list operations, item management, collaborative features,
-  /// and shopping functionality enabling complete shopping coordination through MVVM architecture.
   late UnifiedShoppingViewModel _viewModel;
 
-  /// State initialization with ViewModel setup and shopping functionality preparation.
-  /// Initializes shopping view state enabling ViewModel integration, shopping list loading,
-  /// and comprehensive shopping functionality through proper dependency injection
-  /// and state lifecycle management coordination.
-  /// **Initialization Process:**
-  /// - ViewModel acquisition through dependency injection and service locator
-  /// - Asynchronous ViewModel initialization with shopping data loading
-  /// - Component preparation with event handling and dialog coordination
   @override
   void initState() {
     super.initState();
@@ -74,25 +42,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     _initializeViewModel();
   }
 
-  /// Initialize ViewModel with shopping data loading and collaborative features
   Future<void> _initializeViewModel() async {
     await _viewModel.initialize();
   }
 
-  /// Build shopping interface with Provider state management and facade pattern components
-  /// - Main menu layout with navigation integration and consistent app structure
-  /// - Collaborative features with offline indicators and synchronization status
-  /// - Floating action button integration with item addition functionality
-  /// **Component Integration:**
-  /// - ShoppingAppBar for action management with create, share, and sync functionality
-  /// - ShoppingListHeader for list statistics and bulk operations coordination
-  /// - ShoppingListContent for item display, interaction, and management functionality
-  /// - LayoutComponents for consistent app structure and navigation integration
-  /// **Collaborative Features:**
-  /// - Offline indicator with connection status and synchronization awareness
-  /// - Real-time synchronization with collaborative editing and multi-user support
-  /// - Sharing functionality with social integration and external distribution
-  /// Returns complete shopping interface with comprehensive functionality and facade pattern architecture.
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(

@@ -103,6 +103,8 @@ class PresenceService extends BaseService {
       Duration(minutes: 2); // Optimized: 50% write reduction
   static const Duration _typingTimeout = Duration(seconds: 5);
   static const Duration _typingDebounce = Duration(milliseconds: 500);
+  static const Duration _typingCleanupInterval =
+      Duration(seconds: 30); // Optimized: 83% write reduction (#037)
 
   PresenceService({
     required FirestoreRepository firestoreRepository,
@@ -330,7 +332,7 @@ class PresenceService extends BaseService {
 
   void _startTypingCleanup() {
     _typingCleanupTimer?.cancel();
-    _typingCleanupTimer = Timer.periodic(_typingTimeout, (_) {
+    _typingCleanupTimer = Timer.periodic(_typingCleanupInterval, (_) {
       _cleanupStaleTypingIndicators();
     });
   }

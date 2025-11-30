@@ -309,29 +309,25 @@ service cloud.firestore {
     }
     
     // ========================================
-    // MENUS - User's personal menus
+    // MENUS - User's personal menus (Issue #014 aligned)
     // ========================================
-    
+
     match /menus/{menuId} {
-      // Can read if you're the owner or the menu is shared with you
-      allow read: if isAuthenticated() && (
-        request.auth.uid == resource.data.sharedByUserId ||
-        request.auth.uid in resource.data.sharedToUserIds
-      );
-      
+      // Can read if you're the owner
+      allow read: if isAuthenticated()
+        && request.auth.uid == resource.data.sharedByUserId;
+
       // Can create if you're the sharedByUserId
-      allow create: if isAuthenticated() 
+      allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
-        && hasRequiredFields(['sharedByUserId', 'sharedToUserIds', 'title', 'createdAt']);
-      
-      // Can update if you're the sharedByUserId or in sharedToUserIds
-      allow update: if isAuthenticated() && (
-        request.auth.uid == resource.data.sharedByUserId ||
-        request.auth.uid in resource.data.sharedToUserIds
-      );
-      
+        && hasRequiredFields(['sharedByUserId', 'menuTitle', 'sharedAt']);
+
+      // Can update if you're the sharedByUserId
+      allow update: if isAuthenticated()
+        && request.auth.uid == resource.data.sharedByUserId;
+
       // Can delete if you're the sharedByUserId
-      allow delete: if isAuthenticated() 
+      allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
     }
     
@@ -341,17 +337,20 @@ service cloud.firestore {
 
     match /shared_menus/{menuId} {
 
-      // Can read specific document if you're in the sharedToUserIds list or the sharedByUserId
+      // Can list menus you created (for "my saved menus" view)
+      allow list: if isAuthenticated()
+        && request.auth.uid == resource.data.sharedByUserId;
+
+      // Can read specific document if you're the owner or a member (Issue #014: subcollection-based)
       allow get: if isAuthenticated() && (
         request.auth.uid == resource.data.sharedByUserId ||
-        request.auth.uid in resource.data.sharedToUserIds
+        exists(/databases/$(database)/documents/shared_menus/$(menuId)/members/$(request.auth.uid))
       );
 
-      // Can create if you're the sharedByUserId
+      // Can create if you're the sharedByUserId (Issue #014: sharedToUserIds removed, members in subcollection)
       allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.sharedByUserId
-        && request.resource.data.sharedToUserIds is list
-        && hasRequiredFields(['sharedByUserId', 'sharedToUserIds', 'menuSnapshot', 'sharedAt']);
+        && hasRequiredFields(['sharedByUserId', 'menuSnapshot', 'sharedAt']);
 
       // Can update if you're the sharedByUserId
       allow update: if isAuthenticated()
@@ -588,43 +587,43 @@ service cloud.firestore {
     // ========================================
     
     match /realtime_recipes/{recipeId} {
+      // Helper function to check if user is a participant
+      // Uses participantIds array for efficient queries
+      function isParticipantInRecipe() {
+        return request.auth.uid == resource.data.ownerId ||
+               request.auth.uid in resource.data.participantIds;
+      }
+
       // Can read if you're a participant in the collaborative recipe
-      allow read: if isAuthenticated() && (
-        request.auth.uid == resource.data.ownerId ||
-        request.auth.uid in resource.data.participants.keys()
-      );
-      
-      
+      allow read: if isAuthenticated() && isParticipantInRecipe();
+
       // Can create if you're the owner and adding yourself as participant
-      allow create: if isAuthenticated() 
+      allow create: if isAuthenticated()
         && request.auth.uid == request.resource.data.ownerId
-        && request.auth.uid in request.resource.data.participants.keys()
-        && hasRequiredFields(['ownerId', 'participants', 'recipe', 'createdAt']);
-      
+        && request.auth.uid in request.resource.data.participantIds
+        && hasRequiredFields(['ownerId', 'participants', 'participantIds', 'recipe', 'createdAt']);
+
       // Can update if you're a participant (for real-time collaboration)
-      allow update: if isAuthenticated() && (
-        request.auth.uid == resource.data.ownerId ||
-        request.auth.uid in resource.data.participants.keys()
-      );
-      
+      allow update: if isAuthenticated() && isParticipantInRecipe();
+
       // Can delete if you're the owner
-      allow delete: if isAuthenticated() 
+      allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.ownerId;
-      
+
       // Presence subcollection for real-time collaboration
       match /presence/{userId} {
         // Can read presence if you're a participant in the recipe
         allow read: if isAuthenticated() && (
           request.auth.uid == get(/databases/$(database)/documents/realtime_recipes/$(recipeId)).data.ownerId ||
-          request.auth.uid in get(/databases/$(database)/documents/realtime_recipes/$(recipeId)).data.participants.keys()
+          request.auth.uid in get(/databases/$(database)/documents/realtime_recipes/$(recipeId)).data.participantIds
         );
-        
+
         // Can write your own presence if you're a participant
-        allow write: if isAuthenticated() 
+        allow write: if isAuthenticated()
           && request.auth.uid == userId
           && (
             request.auth.uid == get(/databases/$(database)/documents/realtime_recipes/$(recipeId)).data.ownerId ||
-            request.auth.uid in get(/databases/$(database)/documents/realtime_recipes/$(recipeId)).data.participants.keys()
+            request.auth.uid in get(/databases/$(database)/documents/realtime_recipes/$(recipeId)).data.participantIds
           );
       }
     }
@@ -693,37 +692,9 @@ service cloud.firestore {
       allow write: if false;
     }
     
-    // ========================================
-    // PERSONAL MENUS - User's individual menus
-    // ========================================
-    
-    match /menus/{menuId} {
-      // Can read if you're the owner (userId) or the sharer (sharedByUserId) or in shared list
-      allow read: if isAuthenticated() && (
-        request.auth.uid == resource.data.userId ||
-        request.auth.uid == resource.data.get('sharedByUserId', '') ||
-        (resource.data.keys().hasAny(['sharedToUserIds']) && request.auth.uid in resource.data.get('sharedToUserIds', []))
-      );
-      
-      // Can create if you're the owner or sharer
-      allow create: if isAuthenticated() && (
-        request.auth.uid == request.resource.data.get('userId', '') ||
-        request.auth.uid == request.resource.data.get('sharedByUserId', '')
-      );
-      
-      // Can update if you're the owner or sharer
-      allow update: if isAuthenticated() && (
-        request.auth.uid == resource.data.get('userId', '') ||
-        request.auth.uid == resource.data.get('sharedByUserId', '')
-      );
-      
-      // Can delete if you're the owner or sharer
-      allow delete: if isAuthenticated() && (
-        request.auth.uid == resource.data.get('userId', '') ||
-        request.auth.uid == resource.data.get('sharedByUserId', '')
-      );
-    }
-    
+    // NOTE: /menus/ rules are defined earlier in this file (line ~315)
+    // Duplicate rule block removed to prevent override conflicts
+
     // ========================================
     // CONVERSATIONS - User messaging
     // ========================================

@@ -59,7 +59,6 @@ class EditRecipeView extends StatelessWidget {
         ChangeNotifierProvider<RecipeFormViewModel>(
           create: (_) => RecipeFormViewModel(
             recipeService: ServiceLocator.get(),
-            analyticsService: ServiceLocator.get(),
             initialRecipe: recipe,
           ),
         ),

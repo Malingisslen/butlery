@@ -4,7 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart' as models;
 import 'package:butlery/models/permissions/resource_permission.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
+import 'package:butlery/repositories/interfaces/auth_repository.dart'
+    as auth_repo;
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -28,17 +29,19 @@ class PermissionService extends BaseService {
   /// Repository handling recipe data operations.
   final RecipeRepository? _recipeRepository;
 
-  /// Permission modules
-  late final RecipePermissionModule _recipeModule;
-  late final ShoppingPermissionModule _shoppingModule;
-  late final GroupPermissionModule _groupModule;
+  /// Permission modules (lazy initialized)
+  RecipePermissionModule? _recipeModuleInstance;
+  ShoppingPermissionModule? _shoppingModuleInstance;
+  GroupPermissionModule? _groupModuleInstance;
 
   /// Private singleton instance for thread-safe singleton implementation.
   static PermissionService? _instance;
 
   /// Factory constructor providing singleton access to the permission service.
-  factory PermissionService(
-      {auth_repo.AuthRepository? authRepository, RecipeRepository? recipeRepository}) {
+  factory PermissionService({
+    auth_repo.AuthRepository? authRepository,
+    RecipeRepository? recipeRepository,
+  }) {
     _instance ??= PermissionService._internal(
       authRepository ?? FirebaseAuthRepository(),
       recipeRepository,
@@ -48,31 +51,43 @@ class PermissionService extends BaseService {
 
   /// Private constructor for singleton pattern implementation.
   PermissionService._internal(this._authRepository, this._recipeRepository) {
-    _initializeModules();
+    // Modules are now lazy initialized on first access
   }
 
-  /// Initialize permission modules with dependency injection
-  void _initializeModules() {
-    final recipeService = ServiceLocator.get<UnifiedRecipeService>();
-    final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
-    final permissionHelper = RecipePermissionHelper(recipeService);
+  /// Lazy getter for recipe permission module
+  RecipePermissionModule get _recipeModule {
+    if (_recipeModuleInstance == null) {
+      final recipeService = ServiceLocator.get<UnifiedRecipeService>();
+      final permissionHelper = RecipePermissionHelper(recipeService);
+      _recipeModuleInstance = RecipePermissionModule(
+        authRepository: _authRepository,
+        recipeRepository: _recipeRepository,
+        recipeService: recipeService,
+        permissionHelper: permissionHelper,
+        getCurrentUserId: () => currentUserId,
+      );
+    }
+    return _recipeModuleInstance!;
+  }
 
-    _recipeModule = RecipePermissionModule(
-      authRepository: _authRepository,
-      recipeRepository: _recipeRepository,
-      recipeService: recipeService,
-      permissionHelper: permissionHelper,
+  /// Lazy getter for shopping permission module
+  ShoppingPermissionModule get _shoppingModule {
+    if (_shoppingModuleInstance == null) {
+      final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
+      _shoppingModuleInstance = ShoppingPermissionModule(
+        shoppingService: shoppingService,
+        getCurrentUserId: () => currentUserId,
+      );
+    }
+    return _shoppingModuleInstance!;
+  }
+
+  /// Lazy getter for group permission module
+  GroupPermissionModule get _groupModule {
+    _groupModuleInstance ??= GroupPermissionModule(
       getCurrentUserId: () => currentUserId,
     );
-
-    _shoppingModule = ShoppingPermissionModule(
-      shoppingService: shoppingService,
-      getCurrentUserId: () => currentUserId,
-    );
-
-    _groupModule = GroupPermissionModule(
-      getCurrentUserId: () => currentUserId,
-    );
+    return _groupModuleInstance!;
   }
 
   /// Reset singleton instance for testing purposes only.
@@ -81,6 +96,9 @@ class PermissionService extends BaseService {
   /// pattern and may cause unexpected behavior.
   @visibleForTesting
   static void resetForTesting() {
+    _instance?._recipeModuleInstance = null;
+    _instance?._shoppingModuleInstance = null;
+    _instance?._groupModuleInstance = null;
     _instance = null;
   }
 
@@ -210,9 +228,14 @@ class PermissionService extends BaseService {
   }
 
   /// Add retry logic for permission checking with service refresh
-  Future<bool> canEditShoppingListWithRetry(String listId,
-      {int maxRetries = 3}) async {
-    return _shoppingModule.canEditShoppingListWithRetry(listId, maxRetries: maxRetries);
+  Future<bool> canEditShoppingListWithRetry(
+    String listId, {
+    int maxRetries = 3,
+  }) async {
+    return _shoppingModule.canEditShoppingListWithRetry(
+      listId,
+      maxRetries: maxRetries,
+    );
   }
 
   /// Validates user permission to manage sharing and collaboration settings for a shopping list.
@@ -234,7 +257,9 @@ class PermissionService extends BaseService {
 
   /// Validates user permission to accept/decline shopping list invitations.
   bool canRespondToShoppingInvitation(String invitationRecipientId) {
-    return _shoppingModule.canRespondToShoppingInvitation(invitationRecipientId);
+    return _shoppingModule.canRespondToShoppingInvitation(
+      invitationRecipientId,
+    );
   }
 
   /// Validates whether the current user has administrative privileges for a specific group.

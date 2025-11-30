@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
@@ -88,6 +89,9 @@ class UnifiedRecipeService extends ChangeNotifier
   bool _isLoading = false;
   String? _error;
 
+  // Auth state subscription (stored to prevent garbage collection)
+  StreamSubscription<User?>? _authSubscription;
+
   UnifiedRecipeService({
     FirebaseAuthRepository? authRepository,
     RecipeRepository? recipeRepository,
@@ -114,7 +118,8 @@ class UnifiedRecipeService extends ChangeNotifier
     });
 
     AppLogger.info(
-        '✅ UnifiedRecipeService initialized with focused modules and legacy interfaces');
+      '✅ UnifiedRecipeService initialized with focused modules and legacy interfaces',
+    );
   }
 
   // ===== FIREBASE SERVICE MIXIN IMPLEMENTATION =====
@@ -334,10 +339,22 @@ class UnifiedRecipeService extends ChangeNotifier
   // ===== INITIALIZATION =====
 
   Future<void> initialize() async {
-    if (_isInitialized) return;
+    // Early return guard to prevent double initialization
+    if (_isInitialized) {
+      debugPrint(
+        '⚠️ [UnifiedRecipeService.initialize] Already initialized, skipping duplicate call',
+      );
+      return;
+    }
 
     try {
-      AppLogger.info('🔄 Initializing UnifiedRecipeService...');
+      // Use debugPrint for first log to bypass AppLogger initialization issues
+      debugPrint(
+        '🔄 [UnifiedRecipeService.initialize] ENTRY - Starting initialization...',
+      );
+      AppLogger.info(
+        '🔄 [UnifiedRecipeService.initialize] Starting initialization (early return guard active)...',
+      );
       _isLoading = true;
       notifyListeners();
 
@@ -365,25 +382,55 @@ class UnifiedRecipeService extends ChangeNotifier
       _recipes.clear();
       _recipes.addAll(cachedRecipes);
 
-      // Listen to auth state changes
-      _authRepository.authStateChanges().listen((user) {
-        _handleAuthStateChange(user?.uid);
-      });
+      // Listen to auth state changes with error handling
+      _authSubscription = _authRepository.authStateChanges().listen(
+        (user) {
+          try {
+            AppLogger.info(
+              '🔔 [UnifiedRecipeService] Auth state listener fired - User: ${user?.uid ?? "NULL"}',
+            );
+            _handleAuthStateChange(user?.uid);
+          } catch (e) {
+            AppLogger.error(
+              '❌ [UnifiedRecipeService] Auth state listener error: $e',
+            );
+          }
+        },
+        onError: (error) {
+          AppLogger.error(
+            '❌ [UnifiedRecipeService] Auth state stream error: $error',
+          );
+        },
+      );
+      AppLogger.success(
+        '✅ [UnifiedRecipeService] Auth state listener registered',
+      );
 
       // Start Firebase sync if authenticated
       if (_authRepository.currentUser != null) {
         await _cacheModule.startFirebaseSync();
+
+        // Reload from cache after initial fetch has populated it
+        _recipes.clear();
+        final fetchedRecipes = await _cacheModule.initializeCache();
+        _recipes.addAll(fetchedRecipes);
+        AppLogger.info(
+          '📦 Reloaded ${fetchedRecipes.length} recipes from cache after initial fetch',
+        );
       }
 
       _isInitialized = true;
       _isLoading = false;
       AppLogger.success('✅ UnifiedRecipeService initialized');
       notifyListeners();
-    } catch (e) {
-      AppLogger.error('❌ Initialization error: $e');
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        '❌ [UnifiedRecipeService] Initialization failed: $e\n$stackTrace',
+      );
       _setError('Kunde inte ladda recept: $e');
       _isLoading = false;
       notifyListeners();
+      rethrow; // CRITICAL: Propagate failure to bootstrap system
     }
   }
 
@@ -468,7 +515,10 @@ class UnifiedRecipeService extends ChangeNotifier
   }
 
   Future<bool> addMemberToRecipe(
-      String recipeId, String userId, ResourcePermission permission) async {
+    String recipeId,
+    String userId,
+    ResourcePermission permission,
+  ) async {
     return await _socialModule.addMemberToRecipe(recipeId, userId, permission);
   }
 
@@ -477,9 +527,15 @@ class UnifiedRecipeService extends ChangeNotifier
   }
 
   Future<bool> updateMemberPermission(
-      String recipeId, String userId, ResourcePermission permission) async {
+    String recipeId,
+    String userId,
+    ResourcePermission permission,
+  ) async {
     return await _socialModule.updateMemberPermission(
-        recipeId, userId, permission);
+      recipeId,
+      userId,
+      permission,
+    );
   }
 
   // ===== REAL-TIME EDITING OPERATIONS (DELEGATE TO REALTIME MODULE) =====
@@ -493,7 +549,9 @@ class UnifiedRecipeService extends ChangeNotifier
   }
 
   Future<bool> makeRealtimeEdit(
-      String recipeId, Map<String, dynamic> changes) async {
+    String recipeId,
+    Map<String, dynamic> changes,
+  ) async {
     return await _realtimeModule.makeRealtimeEdit(recipeId, changes);
   }
 
@@ -540,7 +598,10 @@ class UnifiedRecipeService extends ChangeNotifier
       _contentOps.addIngredient(recipeId, ingredient);
 
   Future<bool> updateIngredient(
-          String recipeId, int index, String newIngredient) async =>
+    String recipeId,
+    int index,
+    String newIngredient,
+  ) async =>
       _contentOps.updateIngredient(recipeId, index, newIngredient);
 
   Future<bool> removeIngredient(String recipeId, int index) async =>
@@ -551,7 +612,10 @@ class UnifiedRecipeService extends ChangeNotifier
       _contentOps.addInstruction(recipeId, instruction);
 
   Future<bool> updateInstruction(
-          String recipeId, int index, String newInstruction) async =>
+    String recipeId,
+    int index,
+    String newInstruction,
+  ) async =>
       _contentOps.updateInstruction(recipeId, index, newInstruction);
 
   Future<bool> removeInstruction(String recipeId, int index) async =>
@@ -599,7 +663,8 @@ class UnifiedRecipeService extends ChangeNotifier
       return RecipeOperationResult.success();
     } else {
       return RecipeOperationResult.failure(
-          _error ?? 'Kunde inte ta bort recept');
+        _error ?? 'Kunde inte ta bort recept',
+      );
     }
   }
 
@@ -624,7 +689,7 @@ class UnifiedRecipeService extends ChangeNotifier
   }
 
   void _setError(String message) {
-    _error = message;
+    _error = message.isEmpty ? null : message;
     notifyListeners();
   }
 
@@ -650,6 +715,9 @@ class UnifiedRecipeService extends ChangeNotifier
 
   @override
   void dispose() {
+    // Cancel auth state subscription
+    _authSubscription?.cancel();
+
     if (_areModulesInitialized()) {
       _cacheModule.dispose();
       _realtimeModule.dispose();

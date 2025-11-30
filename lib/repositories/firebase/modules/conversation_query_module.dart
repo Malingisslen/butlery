@@ -67,10 +67,15 @@ class ConversationQueryModule {
   }
 
   /// Get unread message count for user (simplified aggregation).
+  ///
+  /// Optimized (#040): Limited to 100 conversations to prevent unbounded fetches.
+  /// Future optimization: Add `unreadByUser` map field to conversation documents
+  /// for server-side filtering with `.count()` aggregation.
   Future<int> getUnreadMessageCount(String userId) async {
     try {
       final conversations = await firestore.collection(collectionName)
           .where('participantIds', arrayContains: userId)
+          .orderBy('updatedAt', descending: true) // Most recent first
           .limit(100) // Limit to 100 most recent conversations
           .get();
 
@@ -90,10 +95,24 @@ class ConversationQueryModule {
   }
 
   /// Get count of conversations with unread messages.
+  ///
+  /// Optimized (#040): Added limit to prevent unbounded fetches.
+  /// Future optimization: Add `unreadByUser` map field to conversation documents
+  /// for server-side filtering:
+  /// ```dart
+  /// final count = await firestore.collection(collectionName)
+  ///     .where('participantIds', arrayContains: userId)
+  ///     .where('unreadByUser.$userId', isEqualTo: true)
+  ///     .count()
+  ///     .get();
+  /// return count.count ?? 0;
+  /// ```
   Future<int> getUnreadConversationsCount(String userId) async {
     try {
       final conversations = await firestore.collection(collectionName)
           .where('participantIds', arrayContains: userId)
+          .orderBy('updatedAt', descending: true) // Most recent first
+          .limit(500) // Limit to prevent unbounded fetches (#040)
           .get();
 
       return conversations.docs

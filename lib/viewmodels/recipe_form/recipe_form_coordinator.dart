@@ -109,7 +109,9 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
 
   /// Safe notification that respects disposal state and coordination locks
   void safeNotifyParent() {
-    if (_disposed || _isNotifying) return;
+    if (_disposed || _isNotifying) {
+      return;
+    }
 
     _isNotifying = true;
     try {

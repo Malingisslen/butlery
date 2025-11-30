@@ -15,7 +15,6 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/live_editor.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
@@ -44,74 +43,45 @@ class RecipeFormViewModel extends ChangeNotifier
         ErrorCoordinatorMixin,
         RecipeBackwardCompatibilityMixin {
   final UnifiedRecipeService _recipeService;
-  // final AnalyticsService _analyticsService; // Currently unused
 
-  // ===== DISPOSAL TRACKING =====
   bool _disposed = false;
   bool get disposed => _disposed;
 
-  // ===== FOCUSED MANAGER ARCHITECTURE =====
-
-  /// Form state manager for comprehensive recipe data and validation coordination.
   late final RecipeFormState _state;
-
-  /// Collaborative editing manager for real-time synchronization and participant management.
   late final RecipeCollaborativeManager _collaborativeManager;
-
-  /// Image management system for multi-image upload, ordering, and storage coordination.
   late final RecipeImageManager _imageManager;
-
-  /// Permission management system for access control and collaborative sharing.
   late final RecipePermissionManager _permissionManager;
-
-  /// Persistence manager for save/fork/delete operations with atomic coordination.
   late final RecipePersistenceManager _persistenceManager;
-
-  /// Coordinator for manager synchronization and state coordination.
   late final RecipeFormCoordinator _coordinator;
-
-  // CRITICAL FIX: Unified error coordination for consistent error handling
   late final UnifiedErrorCoordinator _errorCoordinator;
 
-  // ===== MIXIN INTERFACE IMPLEMENTATIONS =====
-
-  /// Expose state for backward compatibility mixin
   @override
   RecipeFormState get state => _state;
 
-  /// Expose imageManager for backward compatibility mixin
   @override
   RecipeImageManager get imageManager => _imageManager;
 
-  /// Expose permissionManager for backward compatibility mixin
   @override
   RecipePermissionManager get permissionManager => _permissionManager;
 
-  /// Expose persistenceManager for backward compatibility mixin
   @override
   RecipePersistenceManager get persistenceManager => _persistenceManager;
 
-  /// Expose coordinator for backward compatibility mixin
   @override
   RecipeFormCoordinator get coordinator => _coordinator;
 
   RecipeFormViewModel({
     UnifiedRecipeService? recipeService,
-    AnalyticsService? analyticsService,
     Recipe? initialRecipe,
     bool isTemplate = false,
   }) : _recipeService =
             recipeService ?? ServiceLocator.get<UnifiedRecipeService>() {
-    // _analyticsService = analyticsService ?? ServiceLocator.get<AnalyticsService>();
-
-    // Initialize focused managers
     _state =
         RecipeFormState(initialRecipe: initialRecipe, isTemplate: isTemplate);
     _collaborativeManager = RecipeCollaborativeManager();
     _imageManager = RecipeImageManager();
     _permissionManager = RecipePermissionManager();
 
-    // Initialize persistence manager
     _persistenceManager = RecipePersistenceManager(
       recipeService: _recipeService,
       state: _state,
@@ -139,9 +109,16 @@ class RecipeFormViewModel extends ChangeNotifier
     // Initialize error coordination for all managers
     _initializeManagerErrorCoordination();
 
-    // Load permissions if editing existing recipe
+    // Load permissions and images if editing existing recipe
     if (initialRecipe != null && !isTemplate) {
       _coordinator.loadInitialPermissions(initialRecipe);
+
+      // CRITICAL FIX: Sync existing image URLs to ImageManager
+      // The state loads imageUrls, but the ImageManager needs them too
+      // since viewModel.imageUrls returns _imageManager.imageUrls
+      if (initialRecipe.imageUrls.isNotEmpty) {
+        _imageManager.setUploadedImageUrls(initialRecipe.imageUrls);
+      }
     }
   }
 

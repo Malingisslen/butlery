@@ -61,8 +61,6 @@ class ValidationUtils {
   /// Private constructor preventing instantiation to enforce static utility usage.
   ValidationUtils._();
 
-  // ===== NULL/EMPTY VALIDATION CONSOLIDATION =====
-  
   /// Validates whether a string value is null or empty, providing the most common validation pattern consolidation.
   /// This method replaces the ubiquitous pattern `if (value == null || value.isEmpty) return 'error';`
   /// found in 321+ files throughout the codebase, representing the highest impact validation consolidation.
@@ -138,8 +136,6 @@ class ValidationUtils {
   /// **Performance:** O(1) - Single null check and property access
   static bool isNullOrEmptyMap<K, V>(Map<K, V>? map) => map == null || map.isEmpty;
 
-  // ===== STRING VALIDATION CONSOLIDATION =====
-  
   /// Consolidated string validation with consistent error messages
   /// Replaces duplicate validation patterns across form fields
   static String? validateRequired(String? value, {String? fieldName}) {
@@ -190,8 +186,6 @@ class ValidationUtils {
     return null;
   }
   
-  // ===== BUSINESS RULE VALIDATION CONSOLIDATION =====
-  
   /// Recipe name validation - consolidates patterns from recipe-related files
   static String? validateRecipeName(String? name) {
     final requiredCheck = validateRequired(name, fieldName: 'Receptnamn');
@@ -230,8 +224,6 @@ class ValidationUtils {
     return null;
   }
 
-  // ===== COLLECTION VALIDATION CONSOLIDATION =====
-  
   /// Safe collection access - replaces null check patterns
   /// Eliminates: if (list != null && list.isNotEmpty) { ... }
   static bool hasItems<T>(List<T>? list) => list != null && list.isNotEmpty;
@@ -244,8 +236,6 @@ class ValidationUtils {
   /// Eliminates: list ?? []
   static List<T> safeList<T>(List<T>? list) => list ?? <T>[];
 
-  // ===== PERMISSION VALIDATION CONSOLIDATION =====
-  
   /// User ID validation - consolidates authentication checks
   /// Replaces patterns found in 67+ service files
   static String? validateUserId(String? userId) {
@@ -262,8 +252,6 @@ class ValidationUtils {
            userId == resourceOwnerId;
   }
 
-  // ===== COMPOSITE VALIDATION CONSOLIDATION =====
-  
   /// Multi-field validation - consolidates complex validation patterns
   static List<String> validateMultiple(Map<String, String? Function()> validators) {
     final errors = <String>[];
@@ -283,8 +271,6 @@ class ValidationUtils {
     return validateMultiple(validators).isEmpty;
   }
 
-  // ===== ASYNC VALIDATION CONSOLIDATION =====
-  
   /// Async validation wrapper - consolidates async validation patterns
   static Future<String?> validateAsync<T>(
     Future<T?> Function() validator,
@@ -298,8 +284,6 @@ class ValidationUtils {
     }
   }
 
-  // ===== UTILITY EXTENSIONS =====
-  
   /// Safe string operations - eliminates repetitive null checks
   static String safeString(String? value, {String defaultValue = ''}) => 
       value ?? defaultValue;

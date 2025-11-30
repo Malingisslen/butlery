@@ -161,7 +161,8 @@ abstract class BaseSharedContentModel<TContent> {
   /// Parse common fields from Firestore data
   /// Note (Issue #014): Array fields removed. Only counts are parsed.
   static Map<String, dynamic> parseCommonFieldsFromFirestore(
-      Map<String, dynamic> data) {
+    Map<String, dynamic> data,
+  ) {
     return {
       'sharedByUserId': data['sharedByUserId'] as String? ?? '',
       'sharedByDisplayName': data['sharedByDisplayName'] as String? ?? '',
@@ -176,7 +177,8 @@ abstract class BaseSharedContentModel<TContent> {
   /// Parse common fields from JSON data
   /// Note (Issue #014): Array fields removed. Only counts are parsed.
   static Map<String, dynamic> parseCommonFieldsFromJson(
-      Map<String, dynamic> json) {
+    Map<String, dynamic> json,
+  ) {
     return {
       'id': json['id'] as String,
       'sharedByUserId': json['sharedByUserId'] as String? ?? '',
@@ -204,7 +206,8 @@ abstract class BaseSharedContentModel<TContent> {
         final nanoseconds = timestamp['nanoseconds'] as int? ?? 0;
         if (seconds != null) {
           return DateTime.fromMillisecondsSinceEpoch(
-              seconds * 1000 + nanoseconds ~/ 1000000);
+            seconds * 1000 + nanoseconds ~/ 1000000,
+          );
         }
       } else if (timestamp is int) {
         // Handle milliseconds since epoch
@@ -212,6 +215,14 @@ abstract class BaseSharedContentModel<TContent> {
       } else if (timestamp is String) {
         // Handle ISO string format
         return DateTime.parse(timestamp);
+      } else if (timestamp.runtimeType.toString() == 'Timestamp') {
+        // Handle Firestore Timestamp objects
+        try {
+          return (timestamp as dynamic).toDate() as DateTime;
+        } catch (e) {
+          debugPrint('❌ Error converting Firestore Timestamp: $e');
+          return DateTime.now();
+        }
       }
 
       debugPrint('⚠️ Unknown timestamp format: ${timestamp.runtimeType}');

@@ -139,9 +139,10 @@ class RecipeFormState extends ChangeNotifier {
     _sourceUrl = recipe.sourceUrl;
 
     // CRITICAL FIX: Update FormFieldsManagers directly as single source of truth
-    final ingredients = recipe.ingredients.isNotEmpty ? recipe.ingredients : [''];
-    final instructions = recipe.instructions.isNotEmpty ? recipe.instructions : [''];
-    final tags = recipe.tags?.isNotEmpty == true ? recipe.tags! : [''];
+    // CRITICAL FIX: Always add an empty field at the end for auto-add behavior when editing
+    final ingredients = recipe.ingredients.isNotEmpty ? [...recipe.ingredients, ''] : [''];
+    final instructions = recipe.instructions.isNotEmpty ? [...recipe.instructions, ''] : [''];
+    final tags = recipe.tags?.isNotEmpty == true ? [...recipe.tags!, ''] : [''];
 
     _ingredientsManager.updateItems(ingredients);
     _instructionsManager.updateItems(instructions);

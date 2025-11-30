@@ -29,6 +29,7 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/session_timeout_service.dart';
 
 // Account/GDPR services
 import 'package:butlery/services/account/account_deletion_service.dart';
@@ -59,6 +60,7 @@ class CoreModule implements DIModule {
       SharedPreferences,
       AuthRepository,
       AuthService,
+      SessionTimeoutService,
       FirebaseAuditRepository,
       FirebaseConsentRepository,
       FirestoreRepository,
@@ -134,7 +136,8 @@ class CoreModule implements DIModule {
       // FirestoreRepository provides centralized Firestore access
       if (kDebugMode) {
         debugPrint(
-            '🔍 [CoreModule] Step 5: Registering FirestoreRepository...');
+          '🔍 [CoreModule] Step 5: Registering FirestoreRepository...',
+        );
       }
       container.registerSingleton<FirestoreRepository>(FirestoreRepository());
       if (kDebugMode) {
@@ -148,7 +151,8 @@ class CoreModule implements DIModule {
       // Uses FirebaseAnalyticsRepository on native platforms, NoOpAnalyticsRepository on web
       if (kDebugMode) {
         debugPrint(
-            '🔍 [CoreModule] Step 6: Registering Analytics - kIsWeb=$kIsWeb');
+          '🔍 [CoreModule] Step 6: Registering Analytics - kIsWeb=$kIsWeb',
+        );
       }
 
       // Register appropriate repository based on platform
@@ -157,7 +161,8 @@ class CoreModule implements DIModule {
       );
       if (kDebugMode) {
         debugPrint(
-            '✅ [CoreModule] AnalyticsRepository registered (${kIsWeb ? "NoOp" : "Firebase"})');
+          '✅ [CoreModule] AnalyticsRepository registered (${kIsWeb ? "NoOp" : "Firebase"})',
+        );
       }
 
       // Analytics service for monitoring and tracking (available on all platforms)
@@ -186,6 +191,21 @@ class CoreModule implements DIModule {
         debugPrint('✅ [CoreModule] AuthService registered');
       }
 
+      // Session timeout service for automatic logout on inactivity
+      // Note: Depends on AuthService and AnalyticsService
+      if (kDebugMode) {
+        debugPrint('🔍 [CoreModule] Registering SessionTimeoutService...');
+      }
+      container.registerLazySingleton<SessionTimeoutService>(
+        () => SessionTimeoutService(
+          authService: container<AuthService>(),
+          analyticsService: container<AnalyticsService>(),
+        ),
+      );
+      if (kDebugMode) {
+        debugPrint('✅ [CoreModule] SessionTimeoutService registered');
+      }
+
       // Persistence service for local data storage and caching
       if (kDebugMode) {
         debugPrint('🔍 [CoreModule] Step 8: Registering PersistenceService...');
@@ -203,23 +223,22 @@ class CoreModule implements DIModule {
       }
 
       // Account deletion service for GDPR Article 17 (Right to Erasure)
-      container.registerLazySingleton<AccountDeletionService>(
-        () {
-          if (kDebugMode) {
-            debugPrint(
-                '🔍 [CoreModule] Creating AccountDeletionService instance...');
-          }
-          return AccountDeletionService(
-            authRepository: container<AuthRepository>(),
-            firestoreRepository: container<FirestoreRepository>(),
-            authService: container<AuthService>(),
-            userService: container(), // Will be provided by content module
-            recipeService: container(), // Will be provided by content module
-            offlineService: container(), // Will be provided by content module
-            analyticsService: container<AnalyticsService>(),
+      container.registerLazySingleton<AccountDeletionService>(() {
+        if (kDebugMode) {
+          debugPrint(
+            '🔍 [CoreModule] Creating AccountDeletionService instance...',
           );
-        },
-      );
+        }
+        return AccountDeletionService(
+          authRepository: container<AuthRepository>(),
+          firestoreRepository: container<FirestoreRepository>(),
+          authService: container<AuthService>(),
+          userService: container(), // Will be provided by content module
+          recipeService: container(), // Will be provided by content module
+          offlineService: container(), // Will be provided by content module
+          analyticsService: container<AnalyticsService>(),
+        );
+      });
 
       if (kDebugMode) {
         debugPrint('✅ [CoreModule] AccountDeletionService registered');

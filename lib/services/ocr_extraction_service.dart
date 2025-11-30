@@ -143,8 +143,9 @@ class OCRExtractionService extends BaseService {
         _testTimeProvider = testTimeProvider {
     // Initialize circuit breakers with time provider
     _ocrSpaceCircuitBreaker = CircuitBreaker(timeProvider: testTimeProvider);
-    _googleVisionCircuitBreaker =
-        CircuitBreaker(timeProvider: testTimeProvider);
+    _googleVisionCircuitBreaker = CircuitBreaker(
+      timeProvider: testTimeProvider,
+    );
     _tesseractCircuitBreaker = CircuitBreaker(timeProvider: testTimeProvider);
   }
 
@@ -247,7 +248,8 @@ class OCRExtractionService extends BaseService {
     try {
       _monthStartDate ??= _now;
       debugPrint(
-          '✅ [OCR] Service initialized - Providers: OCR.space, Google Vision, Tesseract');
+        '✅ [OCR] Service initialized - Providers: OCR.space, Google Vision, Tesseract',
+      );
       if (_ocrApiKey.isEmpty) {
         debugPrint('⚠️ [OCR] OCR.space API key not configured');
       }
@@ -300,12 +302,14 @@ class OCRExtractionService extends BaseService {
     if (kDebugMode) {
       final total = _providerUsage.values.reduce((a, b) => a + b);
       debugPrint(
-          '📊 [OCR Usage] Today: $_dailyRequestCount | Month: $_monthlyRequestCount/$_freeMonthlyLimit');
+        '📊 [OCR Usage] Today: $_dailyRequestCount | Month: $_monthlyRequestCount/$_freeMonthlyLimit',
+      );
       debugPrint(
-          '📊 [OCR Providers] OCR.space: ${_providerUsage['ocr_space']} | '
-          'Google Vision: ${_providerUsage['google_vision']} | '
-          'Tesseract: ${_providerUsage['tesseract']} | '
-          'Cache hits: ${_providerUsage['cache_hits']} (${(((_providerUsage['cache_hits'] ?? 0) / total) * 100).toInt()}%)');
+        '📊 [OCR Providers] OCR.space: ${_providerUsage['ocr_space']} | '
+        'Google Vision: ${_providerUsage['google_vision']} | '
+        'Tesseract: ${_providerUsage['tesseract']} | '
+        'Cache hits: ${_providerUsage['cache_hits']} (${(((_providerUsage['cache_hits'] ?? 0) / total) * 100).toInt()}%)',
+      );
     }
   }
 
@@ -313,13 +317,16 @@ class OCRExtractionService extends BaseService {
   void _checkUsageWarnings() {
     if (_monthlyRequestCount >= _freeMonthlyLimit) {
       debugPrint(
-          '🚨 [OCR] EXCEEDED FREE TIER! Monthly usage: $_monthlyRequestCount/$_freeMonthlyLimit');
+        '🚨 [OCR] EXCEEDED FREE TIER! Monthly usage: $_monthlyRequestCount/$_freeMonthlyLimit',
+      );
       debugPrint(
-          '💡 [OCR] Action required: Upgrade to paid tier (\$19/month) or add fallback provider');
+        '💡 [OCR] Action required: Upgrade to paid tier (\$19/month) or add fallback provider',
+      );
     } else if (_monthlyRequestCount >=
         (_freeMonthlyLimit * _warningThreshold)) {
       debugPrint(
-          '⚠️ [OCR] Approaching limit: $_monthlyRequestCount/$_freeMonthlyLimit (${((_monthlyRequestCount / _freeMonthlyLimit) * 100).toInt()}%)');
+        '⚠️ [OCR] Approaching limit: $_monthlyRequestCount/$_freeMonthlyLimit (${((_monthlyRequestCount / _freeMonthlyLimit) * 100).toInt()}%)',
+      );
       debugPrint('💡 [OCR] Consider: Upgrade soon or optimize caching');
     }
   }
@@ -369,7 +376,8 @@ class OCRExtractionService extends BaseService {
     } else if (_monthlyRequestCount >=
         (_freeMonthlyLimit * _warningThreshold)) {
       warnings.add(
-          'Approaching monthly limit (${((_monthlyRequestCount / _freeMonthlyLimit) * 100).toInt()}%)');
+        'Approaching monthly limit (${((_monthlyRequestCount / _freeMonthlyLimit) * 100).toInt()}%)',
+      );
     }
 
     if (_providerUsage['ocr_space'] == 0 && _monthlyRequestCount > 0) {
@@ -379,7 +387,8 @@ class OCRExtractionService extends BaseService {
     final cacheHitRate = _calculateCacheHitRate();
     if (cacheHitRate < 0.2 && _monthlyRequestCount > 100) {
       warnings.add(
-          'Low cache hit rate (${(cacheHitRate * 100).toInt()}%) - many duplicate requests');
+        'Low cache hit rate (${(cacheHitRate * 100).toInt()}%) - many duplicate requests',
+      );
     }
 
     return warnings;
@@ -400,13 +409,16 @@ class OCRExtractionService extends BaseService {
       _recordUsage('cache_hits');
       return cachedResult;
     }
-    final qualityAssessment = await _assessImageQuality(imageBytes);
+    final qualityAssessment = await assessImageQuality(imageBytes);
     if (!qualityAssessment.isGoodQuality) {
       debugPrint(
-          '⚠️ [OCR] Poor quality: ${qualityAssessment.issues.join(', ')}');
+        '⚠️ [OCR] Poor quality: ${qualityAssessment.issues.join(', ')}',
+      );
     }
-    final preprocessedImage =
-        await _preprocessImage(imageBytes, qualityAssessment);
+    final preprocessedImage = await _preprocessImage(
+      imageBytes,
+      qualityAssessment,
+    );
     OCRResult result;
 
     if (_ocrSpaceCircuitBreaker.canExecute && _ocrApiKey.isNotEmpty) {
@@ -464,7 +476,7 @@ class OCRExtractionService extends BaseService {
           'ocr_space_state': _ocrSpaceCircuitBreaker.state.name,
           'google_vision_state': _googleVisionCircuitBreaker.state.name,
           'tesseract_state': _tesseractCircuitBreaker.state.name,
-        }
+        },
       },
     );
 
@@ -529,19 +541,20 @@ class OCRExtractionService extends BaseService {
         {
           'image': {'content': base64Image},
           'features': [
-            {'type': 'TEXT_DETECTION', 'maxResults': 1}
+            {'type': 'TEXT_DETECTION', 'maxResults': 1},
           ],
           'imageContext': {
-            'languageHints': ['sv', 'en'] // Swedish and English
-          }
-        }
-      ]
+            'languageHints': ['sv', 'en'], // Swedish and English
+          },
+        },
+      ],
     });
 
     final response = await _httpClient
         .post(
           Uri.parse(
-              'https://vision.googleapis.com/v1/images:annotate?key=$_googleVisionKey'),
+            'https://vision.googleapis.com/v1/images:annotate?key=$_googleVisionKey',
+          ),
           headers: {'Content-Type': 'application/json'},
           body: requestBody,
         )
@@ -574,7 +587,8 @@ class OCRExtractionService extends BaseService {
     }
 
     throw Exception(
-        'Google Vision API processing failed: ${response.statusCode}');
+      'Google Vision API processing failed: ${response.statusCode}',
+    );
   }
 
   /// Extract text using Tesseract API (Tertiary fallback)
@@ -590,7 +604,7 @@ class OCRExtractionService extends BaseService {
       'options': {
         'psm': '6', // Uniform block of text
         'oem': '3', // Default OCR engine mode
-      }
+      },
     });
 
     try {
@@ -624,9 +638,20 @@ class OCRExtractionService extends BaseService {
     throw Exception('Tesseract API processing failed or not configured');
   }
 
-  /// Assess image quality for OCR optimization
-  Future<ImageQualityAssessment> _assessImageQuality(
-      Uint8List imageBytes) async {
+  /// Assess image quality for OCR optimization (Phase 2 Enhancement - Now public for ViewModel access).
+  /// [imageBytes] Raw image data to assess for OCR suitability
+  /// Evaluates image quality metrics including size, resolution, and format to determine
+  /// OCR readiness and provide actionable recommendations for improving extraction success.
+  /// **Quality Assessment Process:**
+  /// - Size validation: Too large (>10MB) or too small (<50KB) detection
+  /// - Format validation: Optimal JPEG/PNG format checking
+  /// - Quality scoring: 0.0-1.0 score based on image characteristics
+  /// - Recommendation generation: Specific suggestions for improvement
+  /// **Returns**: ImageQualityAssessment with score, issues list, and recommendations
+  /// **Usage**: Called by ViewModel before OCR to warn users about quality issues
+  Future<ImageQualityAssessment> assessImageQuality(
+    Uint8List imageBytes,
+  ) async {
     final issues = <String>[], recommendations = <String>[];
     double qualityScore = 1.0;
     if (imageBytes.length > _maxImageSize) {
@@ -654,7 +679,9 @@ class OCRExtractionService extends BaseService {
 
   /// Preprocess image for optimal OCR results
   Future<Uint8List> _preprocessImage(
-      Uint8List imageBytes, ImageQualityAssessment assessment) async {
+    Uint8List imageBytes,
+    ImageQualityAssessment assessment,
+  ) async {
     // Future: orientation correction, contrast enhancement, noise reduction
     return imageBytes;
   }
@@ -681,7 +708,7 @@ class OCRExtractionService extends BaseService {
       'vispa',
       'stek',
       'portioner',
-      'minut'
+      'minut',
     ];
     final keywordMatches =
         keywords.where((k) => text.toLowerCase().contains(k)).length;
@@ -750,17 +777,17 @@ class OCRExtractionService extends BaseService {
         'ocr_space': {
           'state': _ocrSpaceCircuitBreaker.state.name,
           'failures': _ocrSpaceCircuitBreaker.failures,
-          'can_execute': _ocrSpaceCircuitBreaker.canExecute
+          'can_execute': _ocrSpaceCircuitBreaker.canExecute,
         },
         'google_vision': {
           'state': _googleVisionCircuitBreaker.state.name,
           'failures': _googleVisionCircuitBreaker.failures,
-          'can_execute': _googleVisionCircuitBreaker.canExecute
+          'can_execute': _googleVisionCircuitBreaker.canExecute,
         },
         'tesseract': {
           'state': _tesseractCircuitBreaker.state.name,
           'failures': _tesseractCircuitBreaker.failures,
-          'can_execute': _tesseractCircuitBreaker.canExecute
+          'can_execute': _tesseractCircuitBreaker.canExecute,
         },
       },
       'device_compatibility': 'universal_ios_android',

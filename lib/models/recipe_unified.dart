@@ -15,8 +15,6 @@ import 'package:butlery/models/recipe/recipe_operations.dart';
 import 'package:butlery/models/recipe/recipe_factory.dart';
 import 'package:butlery/models/recipe/recipe_serialization.dart';
 
-part 'recipe_unified.g.dart';
-
 /// Enumeration defining the different types of recipes and their behavior.
 /// Recipe types determine the sharing model, editing permissions, and
 /// collaboration features available for a recipe:
@@ -70,85 +68,67 @@ enum RecipeType {
 ///   timeMinutes: 30,
 /// );
 /// ```
-@HiveType(typeId: 1) // New type ID to avoid conflicts
 class RecipeCore extends HiveObject with JsonSerializableMixin {
   /// Unique identifier for this recipe.
   /// This ID is immutable and generated once when the recipe is created.
   /// It's used for database references, sharing, and cache management.
-  @HiveField(0)
   final String id;
 
   /// The display name of the recipe.
   /// This is the primary user-visible identifier for the recipe,
   /// shown in lists, search results, and detail views.
-  @HiveField(1)
   String title;
 
   /// Detailed description of the recipe.
   /// Provides additional context, cooking tips, origin story,
   /// or other descriptive information about the recipe.
-  @HiveField(2)
   String description;
 
   /// Number of servings this recipe produces.
   /// Used for scaling ingredients and nutritional calculations.
   /// Can be null if portion size is not specified.
-  @HiveField(3)
   int? portions;
 
   /// Total cooking and preparation time in minutes.
   /// Includes active cooking time and any waiting/resting periods.
   /// Used for meal planning and filtering by available time.
-  @HiveField(4)
   int? timeMinutes;
 
   /// List of ingredients required for this recipe.
   /// Each string represents one ingredient with quantity and preparation
   /// instructions (e.g., "2 cups flour, sifted", "1 large onion, diced").
   /// Order typically reflects the sequence of use in cooking.
-  @HiveField(5)
   List<String> ingredients;
 
   /// Step-by-step cooking instructions.
   /// Each string represents one cooking step, ordered from first to last.
   /// Instructions should be clear and actionable for the home cook.
-  @HiveField(6)
   List<String> instructions;
 
   /// Optional tags for categorization and search.
   /// Tags help users discover recipes through filtering and search.
   /// Common tags include dietary restrictions, cuisines, and cooking methods.
-  @HiveField(7)
   List<String>? tags;
 
   /// User rating for this recipe (0.0 to 5.0).
   /// Represents the average user rating or personal rating depending
   /// on the recipe type. Used for sorting and recommendation algorithms.
-  @HiveField(8)
   double? rating;
 
-  @HiveField(9)
   String mealType;
 
-  @HiveField(10)
   String? sourceUrl;
 
-  @HiveField(11)
   List<String> imageUrls;
 
-  @HiveField(12)
   final DateTime createdAt;
 
-  @HiveField(13)
   DateTime updatedAt;
 
-  @HiveField(14)
   String? createdBy;
 
-  @HiveField(15)
   bool isPublic;
 
-  @HiveField(16)
   DateTime? lastCookedAt;
 
   /// Normalized ingredient names for search and tagging.
@@ -161,21 +141,18 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
   /// - "glutenfri pasta" → "glutenfri pasta" (diet descriptors preserved)
   /// Optional field for backward compatibility. Null for recipes created
   /// before MODUL1 integration.
-  @HiveField(17)
   List<String>? ingredientsNormalized;
 
   /// Total number of ratings this recipe has received.
   /// Denormalized aggregate maintained by Cloud Function on rating changes.
   /// Used for sorting by popularity and displaying rating counts in UI.
   /// Null for recipes without any ratings.
-  @HiveField(18)
   int? ratingCount;
 
   /// Average rating value (1.0-5.0).
   /// Denormalized aggregate calculated from all ratings by Cloud Function.
   /// Provides instant access to recipe rating without querying all rating documents.
   /// Null for recipes without any ratings.
-  @HiveField(19)
   double? averageRating;
 
   /// Distribution of ratings across star levels.
@@ -183,14 +160,12 @@ class RecipeCore extends HiveObject with JsonSerializableMixin {
   /// Example: {1: 2, 2: 5, 3: 18, 4: 45, 5: 86} = 156 total ratings
   /// Denormalized for instant rating histogram display.
   /// Null for recipes without any ratings.
-  @HiveField(20)
   Map<int, int>? ratingDistribution;
 
   /// Timestamp of the most recent rating.
   /// Used for cache freshness detection and sorting by recently rated.
   /// Updated by Cloud Function on every rating change.
   /// Null for recipes that have never been rated.
-  @HiveField(21)
   DateTime? lastRatedAt;
 
   RecipeCore({

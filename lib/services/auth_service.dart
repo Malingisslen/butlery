@@ -125,8 +125,10 @@ class AuthService extends ChangeNotifier
       clearError();
       setLoading(true);
 
-      final UserCredential credential =
-          await _authRepository.createUser(email, password);
+      final UserCredential credential = await _authRepository.createUser(
+        email,
+        password,
+      );
 
       if (credential.user != null) {
         await _authRepository.updateDisplayName(credential.user!, displayName);
@@ -179,7 +181,8 @@ class AuthService extends ChangeNotifier
       setLoading(true);
 
       AppLogger.debug(
-          'Attempting login for email: ${email.substring(0, 3)}...');
+        'Attempting login for email: ${email.substring(0, 3)}...',
+      );
 
       await _authRepository.signIn(email: email, password: password);
 
@@ -240,6 +243,29 @@ class AuthService extends ChangeNotifier
       // Track user sign out analytics
       await _analyticsService.logLogout();
     }).catchError((e) {
+      setError('Kunde inte logga ut: ${e.toString()}');
+    });
+  }
+
+  /// Logout user due to session inactivity timeout
+  /// Specialized logout method for session timeout scenarios with dedicated analytics tracking.
+  /// This differentiation allows monitoring of automatic vs. manual logouts for security insights.
+  Future<void> logoutDueToInactivity() async {
+    await executeAsync(() async {
+      await _authRepository.signOut();
+      _currentUser = null;
+      AppLogger.info('User logged out due to session inactivity');
+
+      // Track session timeout logout with specific event
+      await _analyticsService.logEvent(
+        name: 'logout_inactivity',
+        parameters: {
+          'reason': 'session_timeout',
+          'timestamp': DateTime.now().toIso8601String(),
+        },
+      );
+    }).catchError((e) {
+      AppLogger.error('Session timeout logout failed', e);
       setError('Kunde inte logga ut: ${e.toString()}');
     });
   }

@@ -339,8 +339,10 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
 
   @override
   Stream<RatingStatistics> getRatingStatisticsStream(String recipeId) {
+    // Optimized (#043): Added limit to prevent unbounded stream for popular recipes
     return collection
         .where('recipeId', isEqualTo: recipeId)
+        .limit(500) // Limit to 500 most recent ratings for statistics
         .snapshots()
         .map((snapshot) {
       final ratings = snapshot.docs.map((doc) => fromFirestore(doc)).toList();

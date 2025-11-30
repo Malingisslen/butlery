@@ -213,10 +213,12 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
 
   @override
   Stream<List<SharedContent>> getSharedWithMe(String userId) {
+    // Optimized (#043): Added limit to prevent unbounded stream
     try {
       return collection
           .where('sharedWithUserIds', arrayContains: userId)
           .orderBy('sharedAt', descending: true)
+          .limit(50) // Limit to 50 most recent shares
           .snapshots()
           .map((snapshot) => snapshot.docs.map(fromFirestore).toList());
     } catch (e) {
@@ -227,10 +229,12 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
 
   @override
   Stream<List<SharedContent>> getMySharedContent(String userId) {
+    // Optimized (#043): Added limit to prevent unbounded stream
     try {
       return collection
           .where('ownerId', isEqualTo: userId)
           .orderBy('sharedAt', descending: true)
+          .limit(50) // Limit to 50 most recent shares
           .snapshots()
           .map((snapshot) => snapshot.docs.map(fromFirestore).toList());
     } catch (e) {

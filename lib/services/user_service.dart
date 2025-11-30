@@ -33,12 +33,8 @@ class UserService extends ChangeNotifier
         _firestoreRepository =
             firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
 
-  // ===== FIREBASE SERVICE MIXIN IMPLEMENTATION =====
-
   @override
   FirestoreRepository get firestoreRepository => _firestoreRepository;
-
-  // ===== STATE AND CACHE =====
 
   // Cache för prestanda (30 minuter)
   UserProfile? _currentUserProfile;
@@ -103,12 +99,10 @@ class UserService extends ChangeNotifier
       _setLoading(true);
       _clearError();
 
-      // Check if profile exists
       final existingProfile = await _repository.fetchProfile(user.uid);
 
       UserProfile profile;
       if (existingProfile != null) {
-        // Update existing profile
         profile = existingProfile.copyWith(
           displayName: displayName,
           avatarUrl: avatarUrl,
@@ -117,7 +111,6 @@ class UserService extends ChangeNotifier
           lastActiveAt: DateTime.now(),
         );
       } else {
-        // Create new profile
         final now = DateTime.now();
         profile = UserProfile(
           uid: user.uid,
@@ -134,10 +127,8 @@ class UserService extends ChangeNotifier
         );
       }
 
-      // Save via repository
       await _repository.saveProfile(profile);
 
-      // Update cache
       _currentUserProfile = profile;
       _profileCache[user.uid] = profile;
       _cacheTimestamps[user.uid] = DateTime.now();
@@ -420,10 +411,8 @@ class UserService extends ChangeNotifier
     try {
       AppLogger.info('🔔 Updating FCM token for user: $userId');
 
-      // Update in repository
       await _repository.updateFCMToken(userId, token);
 
-      // Update local cache
       _currentUserProfile = _currentUserProfile!.copyWith(
         fcmToken: token,
         fcmTokenUpdatedAt: DateTime.now(),
@@ -451,10 +440,8 @@ class UserService extends ChangeNotifier
     try {
       AppLogger.info('🔔 Updating notification settings for user: $userId');
 
-      // Update in repository
       await _repository.updateNotificationSettings(userId, enabled);
 
-      // Update local cache
       _currentUserProfile = _currentUserProfile!.copyWith(
         notificationsEnabled: enabled,
       );
