@@ -216,8 +216,8 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     }
 
     try {
-      // Save locally first
-      final menuId = await _storage.saveMenuLocally(
+      // Save to Firestore
+      final menuId = await _storage.saveMenu(
         menuName: menuName,
         comment: comment,
         menu: menu,
@@ -444,7 +444,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// - State management update with organized menu list
   Future<void> _loadAllMenus() async {
     try {
-      final localMenus = await _storage.loadLocalMenus();
+      final localMenus = await _storage.loadUserMenus();
       final importedMenus = await _socialManager.loadImportedMenus();
 
       // Combine and sort menus

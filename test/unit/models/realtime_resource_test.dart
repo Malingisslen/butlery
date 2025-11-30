@@ -16,6 +16,7 @@ class TestRealtimeResource extends RealtimeResource {
     required super.ownerId,
     required super.ownerDisplayName,
     required super.participants,
+    super.participantIds,
     super.createdAt,
     super.lastEditedAt,
     required super.lastEditedBy,
@@ -29,6 +30,7 @@ class TestRealtimeResource extends RealtimeResource {
   @override
   RealtimeResource copyWithMetadata({
     Map<String, ResourcePermission>? participants,
+    List<String>? participantIds,
     DateTime? lastEditedAt,
     String? lastEditedBy,
     String? lastEditedByDisplayName,
@@ -42,6 +44,7 @@ class TestRealtimeResource extends RealtimeResource {
       ownerId: ownerId,
       ownerDisplayName: ownerDisplayName,
       participants: participants ?? this.participants,
+      participantIds: participantIds ?? this.participantIds,
       createdAt: createdAt,
       lastEditedAt: lastEditedAt ?? this.lastEditedAt,
       lastEditedBy: lastEditedBy ?? this.lastEditedBy,
