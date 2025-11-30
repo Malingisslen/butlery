@@ -63,7 +63,7 @@ void main() {
       const lastPrompt = 'vegetarian weekly menu';
       const totalRecipeCount = 3;
 
-      final menuKey = await menuStorage.saveMenuLocally(
+      final menuKey = await menuStorage.saveMenu(
         menuName: menuName,
         comment: comment,
         menu: menu,
@@ -88,7 +88,7 @@ void main() {
       const comment = '  Trimmed comment  ';
       final menu = createTestMenu();
 
-      final menuKey = await menuStorage.saveMenuLocally(
+      final menuKey = await menuStorage.saveMenu(
         menuName: menuName,
         comment: comment,
         menu: menu,
@@ -106,7 +106,7 @@ void main() {
     test('should generate unique menu keys', () async {
       final menu = createTestMenu();
 
-      final key1 = await menuStorage.saveMenuLocally(
+      final key1 = await menuStorage.saveMenu(
         menuName: 'Same Name',
         comment: 'Comment 1',
         menu: menu,
@@ -117,7 +117,7 @@ void main() {
       // Add small delay to ensure different timestamp
       await Future.delayed(const Duration(milliseconds: 10));
 
-      final key2 = await menuStorage.saveMenuLocally(
+      final key2 = await menuStorage.saveMenu(
         menuName: 'Same Name',
         comment: 'Comment 2',
         menu: menu,
@@ -134,7 +134,7 @@ void main() {
       const menuName = 'Menü with Spëcial Chârs!';
       final menu = createTestMenu();
 
-      final menuKey = await menuStorage.saveMenuLocally(
+      final menuKey = await menuStorage.saveMenu(
         menuName: menuName,
         comment: 'Test',
         menu: menu,
@@ -154,7 +154,7 @@ void main() {
       const lastPrompt = 'detailed prompt';
       const totalRecipeCount = 5;
 
-      final menuKey = await menuStorage.saveMenuLocally(
+      final menuKey = await menuStorage.saveMenu(
         menuName: menuName,
         comment: comment,
         menu: menu,
@@ -226,7 +226,7 @@ void main() {
       await prefs.setString('saved_menu_3', jsonEncode(menu3.toJson()));
       await prefs.setString('not_a_menu', 'other data'); // Should be ignored
 
-      final loadedMenus = await menuStorage.loadLocalMenus();
+      final loadedMenus = await menuStorage.loadUserMenus();
 
       expect(
           loadedMenus.length, equals(2)); // Only owned menus (menu1 and menu3)
@@ -236,7 +236,7 @@ void main() {
     });
 
     test('should handle empty storage when loading local menus', () async {
-      final loadedMenus = await menuStorage.loadLocalMenus();
+      final loadedMenus = await menuStorage.loadUserMenus();
 
       expect(loadedMenus, isEmpty);
     });
@@ -248,7 +248,7 @@ void main() {
       await prefs.setString('saved_menu_valid', jsonEncode(validMenu.toJson()));
       await prefs.setString('saved_menu_corrupted', 'invalid json');
 
-      final loadedMenus = await menuStorage.loadLocalMenus();
+      final loadedMenus = await menuStorage.loadUserMenus();
 
       expect(loadedMenus.length, equals(1));
       expect(loadedMenus[0].name, equals('Valid Menu'));
@@ -258,7 +258,7 @@ void main() {
       // Mock SharedPreferences to throw an error
       SharedPreferences.setMockInitialValues(<String, Object>{});
 
-      final loadedMenus = await menuStorage.loadLocalMenus();
+      final loadedMenus = await menuStorage.loadUserMenus();
 
       expect(loadedMenus, isEmpty);
     });
@@ -623,7 +623,7 @@ void main() {
 
       final futures = List.generate(
         5,
-        (index) => menuStorage.saveMenuLocally(
+        (index) => menuStorage.saveMenu(
           menuName: 'Concurrent Menu $index',
           comment: 'Comment $index',
           menu: menu,
@@ -658,7 +658,7 @@ void main() {
         largeMenu['Section_$i'] = recipes;
       }
 
-      final menuKey = await menuStorage.saveMenuLocally(
+      final menuKey = await menuStorage.saveMenu(
         menuName: 'Large Menu',
         comment: 'Contains 200 recipes',
         menu: largeMenu,
@@ -680,7 +680,7 @@ void main() {
 
       // Save many menus
       for (int i = 0; i < 50; i++) {
-        final key = await menuStorage.saveMenuLocally(
+        final key = await menuStorage.saveMenu(
           menuName: 'Menu $i',
           comment: 'Comment $i',
           menu: menu,
@@ -690,7 +690,7 @@ void main() {
         keys.add(key);
       }
 
-      final loadedMenus = await menuStorage.loadLocalMenus();
+      final loadedMenus = await menuStorage.loadUserMenus();
       expect(loadedMenus.length, equals(50));
     });
 
@@ -698,7 +698,7 @@ void main() {
       const unicodeMenuName = '🍝 Pasta Menü 中文 العربية';
       final menu = createTestMenu();
 
-      final menuKey = await menuStorage.saveMenuLocally(
+      final menuKey = await menuStorage.saveMenu(
         menuName: unicodeMenuName,
         comment: 'Unicode test',
         menu: menu,
@@ -722,7 +722,7 @@ void main() {
       expect(menuStorage.validateMenuData(menuWithEmptyRecipes), isFalse);
 
       // But can still save if needed
-      final menuKey = await menuStorage.saveMenuLocally(
+      final menuKey = await menuStorage.saveMenu(
         menuName: 'Menu With Empty Section',
         comment: 'Test empty sections',
         menu: menuWithEmptyRecipes,

@@ -35,9 +35,6 @@ class RecipeDetailActions {
     Color? backgroundColor,
   }) {}
 
-  /// Pop navigation safely
-  void _popNavigation() {}
-
   /// Initialize actions with recipe data
   void initializeActions(BuildContext context) {
     final viewModel = context.read<RecipeDetailViewModel>();
