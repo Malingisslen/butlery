@@ -165,49 +165,83 @@
 ## Journey 3: Menu Planning 🔄 IN PROGRESS
 
 ### User Flow
-1. User views weekly menu (VeckomenyView)
-2. User generates menu with AI from prompt
-3. User manually assigns recipes to days
-4. User shares menu with friends/groups
-5. User enables collaborative menu editing
-6. User exports menu to shopping list
+1. User opens VeckomenyView (weekly menu tab)
+2. User enters Swedish prompt (e.g., "3 middagar och 2 frukoster")
+3. User generates menu → recipes categorized by meal type
+4. User can regenerate individual sections
+5. User saves menu with name and optional comment
+6. User can share menu with friends during save
+7. User loads previously saved menus
+8. User exports menu ingredients to shopping list
+9. User can native-share menu as text
 
 ### Test Steps
-- [ ] View empty menu → shows empty slots
-- [ ] Generate menu from prompt "3 middagar" → AI assigns recipes
-- [ ] Drag recipe to day slot → updates menu
-- [ ] Remove recipe from slot → clears assignment
-- [ ] Share menu with friend → creates share
-- [ ] Enable collaborative editing → real-time sync
-- [ ] View collaborator changes → live updates
-- [ ] Export menu to shopping list → creates items
+
+**Menu Generation**
+- [ ] View empty menu state → shows prompt input + "Generera meny" button
+- [ ] Enter Swedish prompt "3 middagar" → button enables
+- [ ] Generate menu → shows recipes in "Middag" section
+- [ ] Generate complex prompt "3 frukoster och 2 middagar" → creates multiple sections
+- [ ] Regenerate single section → replaces only that section's recipes
+- [ ] View recipe from menu → navigates to recipe detail
+- [ ] Clear menu → returns to empty state
+
+**Menu Persistence**
+- [ ] Save menu → SaveMenuDialog opens with name/comment fields
+- [ ] Save with valid name → menu saved to Firestore, success message
+- [ ] Save with empty name → shows validation error
+- [ ] Load menu → LoadMenuBottomSheet shows saved menus list
+- [ ] Load saved menu → menu populates in view
+- [ ] Delete saved menu → removes from list
+
+**Menu Sharing**
+- [ ] Native share → opens system share sheet with text format
+- [ ] Social share with friends → UniversalShareDialog with friend selection
+- [ ] Share with selected friends → creates share records in Firestore
+
+**Shopping Integration**
+- [ ] Export to shopping list → shows list selector
+- [ ] Select list and confirm → ingredients added to shopping list
+- [ ] Navigate to shopping list → shows menu items
 
 ### Features & Methods
 
-**UnifiedMenuService**
-- `initialize()` - Service setup
-- `refresh()` - Reload menus
-- `generateMenuFromPrompt(prompt, recipes)` - AI menu generation
-- `createMenu(name, description, initialRecipes)` - Create menu
-- `updateMenu(menu)` - Update menu
-- `deleteMenu(menuId)` - Remove menu
-- `menus` - All menus list
+**MenuViewModel** (MVVM coordinator)
+- `generateMenu(prompt)` - Generate menu from Swedish prompt
+- `regenerateSection(sectionName)` - Regenerate single meal category
+- `saveMenuWithNameAndComment(name, comment, friendIds)` - Save to Firestore
+- `loadSavedMenu(menuKey)` - Load from Firestore
+- `deleteSavedMenu(menuKey)` - Delete from Firestore
+- `refreshSavedMenus()` - Reload saved menu list
+- `clearMenu()` - Clear current menu state
 
-**UnifiedMenuService.collaborative**
-- `enableMenuCollaboration(menuId, collaboratorIds)` - Enable sharing
-- `disableMenuCollaboration(menuId)` - Disable sharing
-- `inviteCollaborator(menuId, userId)` - Add collaborator
-- `removeCollaborator(menuId, userId)` - Remove collaborator
-- `getCollaborators(menuId)` - List collaborators
+**MenuStorage** (Firestore persistence)
+- `saveMenu(menuName, comment, menu, lastPrompt, totalRecipeCount)` - Save menu
+- `loadMenuByKey(menuKey)` - Load single menu
+- `loadUserMenus()` - Load all user's menus
+- `deleteMenuByKey(menuKey)` - Delete menu
 
-**MenuService**
-- `generateMenuFromPrompt(prompt, recipes)` - NLP menu parsing
-- `parseMenuRequest(prompt)` - Extract meal requirements
-- `assignRecipesToSlots(requirements, recipes)` - Recipe matching
+**MenuSocialManager** (Social sharing)
+- `shareMenuWithFriends(menuKey, friendIds, menuSnapshot, menuName, message)` - Share with friends
+- `loadImportedMenus()` - Load menus shared with user
+
+**MenuService** (NLP + generation)
+- `generateMenuFromPrompt(prompt, recipes)` - Parse Swedish + select recipes
+- Supports: "tre middagar", "3 frukoster och 2 luncher", complex syntax
+
+**MenuGenerator** (Recipe selection)
+- `generateMenuFromPrompt(prompt, recipes)` - Coordinate generation
+- Random recipe selection per meal type category
 
 ### Views
-- `VeckomenyView` - Weekly menu planner
-- `MenuPreviewView` - Menu preview/sharing
+- `VeckomenyView` - Main menu planner with prompt input
+- `SaveMenuDialog` - Save dialog with name, comment, friend sharing
+- `LoadMenuBottomSheet` - Saved menus list with load/delete
+
+### Data Model
+- Firestore `menus` collection: User-owned saved menus
+- Firestore `sharedMenus` collection: Shared menu documents
+- Firestore `userSharedMenus/{userId}/receivedMenus`: Incoming shares
 
 ---
 
