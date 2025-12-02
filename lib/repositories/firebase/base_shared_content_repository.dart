@@ -223,8 +223,8 @@ abstract class BaseSharedContentRepository<T>
   // ===== QUERY OPERATIONS =====
 
   /// Get shared content for user with pagination
-  /// Consolidates 95% duplicate query logic with pagination support to prevent
-  /// app timeouts when users have 1K-5K shared items.
+  /// Issue #014 Migration: Now uses subcollection-based query instead of
+  /// deprecated sharedToUserIds array to support unlimited sharing.
   /// [userId] The user ID to get shared content for
   /// [limit] Maximum number of items to return (default: 25)
   /// [startAfter] Document to start after for cursor-based pagination
@@ -233,64 +233,28 @@ abstract class BaseSharedContentRepository<T>
     int limit = 25,
     DocumentSnapshot? startAfter,
   }) async {
-    final uid = requireCurrentUserId();
-
-    if (userId != uid) {
-      throw PermissionDeniedException(
-          'Cannot access shared $contentTypeName for another user');
-    }
-
-    try {
-      AppLogger.info(
-          '📥 Getting shared $contentTypeName for user $userId (limit: $limit)');
-
-      var query = getCollectionRef()
-          .where('sharedToUserIds', arrayContains: userId)
-          .orderBy('sharedAt', descending: true)
-          .limit(limit);
-
-      // Apply cursor-based pagination if provided
-      if (startAfter != null) {
-        query = query.startAfterDocument(startAfter);
-      }
-
-      final querySnapshot = await query.get();
-
-      final sharedContent = querySnapshot.docs
-          .map((doc) => fromFirestore(doc))
-          .where((content) => shouldShowToUser(content, userId))
-          .toList();
-
-      AppLogger.info(
-          '📊 Found ${sharedContent.length} shared $contentTypeName for user $userId');
-      return sharedContent;
-    } catch (e) {
-      AppLogger.error(
-          'Failed to get shared $contentTypeName for user $userId: $e');
-      throw RepositoryException(
-          'Failed to retrieve shared $contentTypeName: $e');
-    }
+    // Delegate to subcollection-based query (Issue #014 migration)
+    return await getSharedContentForUserViaSubcollection(
+      userId,
+      limit: limit,
+      startAfter: startAfter,
+    );
   }
 
   /// Get the last document snapshot for pagination
-  /// Used to get the cursor for "Load More" functionality
+  /// Issue #014 Migration: Pagination now handled internally by subcollection query.
+  /// This method is deprecated - use getSharedContentForUser with startAfter instead.
+  @Deprecated('Use getSharedContentForUser with startAfter parameter instead')
   Future<DocumentSnapshot?> getLastDocumentForUser(String userId) async {
-    try {
-      final querySnapshot = await getCollectionRef()
-          .where('sharedToUserIds', arrayContains: userId)
-          .orderBy('sharedAt', descending: true)
-          .limit(1)
-          .get();
-
-      return querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null;
-    } catch (e) {
-      AppLogger.error('Failed to get last document: $e');
-      return null;
-    }
+    // Note: With subcollection-based queries, pagination cursors work differently.
+    // The subcollection method handles pagination internally.
+    AppLogger.warning(
+        'getLastDocumentForUser is deprecated - subcollection queries handle pagination differently');
+    return null;
   }
 
   /// Get unread count for user
-  /// This was 95% identical across all repositories
+  /// Issue #014 Migration: Uses subcollection-based query instead of array
   Future<int> getUnreadCountForUser(String userId) async {
     final uid = requireCurrentUserId();
 
@@ -300,12 +264,13 @@ abstract class BaseSharedContentRepository<T>
     }
 
     try {
-      final querySnapshot = await getCollectionRef()
-          .where('sharedToUserIds', arrayContains: userId)
-          .get();
+      // Use subcollection-based query (Issue #014 migration)
+      final sharedContent = await getSharedContentForUserViaSubcollection(
+        userId,
+        limit: 100, // Get up to 100 items for unread count
+      );
 
-      final unreadCount = querySnapshot.docs
-          .map((doc) => fromFirestore(doc))
+      final unreadCount = sharedContent
           .where((content) =>
               shouldShowToUser(content, userId) &&
               !isViewedByUser(content, userId))
@@ -425,6 +390,9 @@ abstract class BaseSharedContentRepository<T>
     String role = 'viewer',
   }) async {
     try {
+      final memberPath = '$collectionName/$contentId/members/$userId';
+      AppLogger.info('🔍 DEBUG: Writing member document to path: $memberPath');
+
       await getCollectionRef()
           .doc(contentId)
           .collection('members')
@@ -438,7 +406,7 @@ abstract class BaseSharedContentRepository<T>
       });
 
       AppLogger.success(
-          '✅ Added user $userId as member to $contentTypeName $contentId');
+          '✅ Added user $userId as member to $contentTypeName $contentId at $memberPath');
     } catch (e) {
       AppLogger.error('Failed to add member to $contentTypeName: $e');
       throw RepositoryException('Failed to add member: $e');
@@ -716,6 +684,7 @@ abstract class BaseSharedContentRepository<T>
     try {
       AppLogger.info(
           '📥 Getting shared $contentTypeName for user $userId via subcollections (limit: $limit)');
+      AppLogger.info('🔍 DEBUG: collectionName=$collectionName');
 
       // Step 1: Query collection group to find all memberships
       final memberQuery = firestore
@@ -723,7 +692,9 @@ abstract class BaseSharedContentRepository<T>
           .where('userId', isEqualTo: userId)
           .limit(limit * 2); // Get more than needed to account for filtering
 
+      AppLogger.info('🔍 DEBUG: Executing collection group query for members where userId=$userId');
       final memberSnapshot = await memberQuery.get();
+      AppLogger.info('🔍 DEBUG: Query returned ${memberSnapshot.docs.length} member documents');
 
       if (memberSnapshot.docs.isEmpty) {
         AppLogger.info('📊 No shared $contentTypeName found for user $userId');
@@ -734,13 +705,31 @@ abstract class BaseSharedContentRepository<T>
       final contentIds = <String>{};
       for (final memberDoc in memberSnapshot.docs) {
         // Members are at: shared_content/{contentId}/members/{userId}
+        final parentPath = memberDoc.reference.parent.parent?.path ?? 'unknown';
         final contentId = memberDoc.reference.parent.parent?.id;
-        if (contentId != null) {
+        AppLogger.info('🔍 DEBUG: Member doc at $parentPath, contentId=$contentId');
+
+        // Only include if parent is our collection type
+        // Use split check to handle any potential path variations
+        final pathSegments = parentPath.split('/');
+        final isMatchingCollection = pathSegments.isNotEmpty && pathSegments.first == collectionName;
+
+        if (contentId != null && isMatchingCollection) {
           contentIds.add(contentId);
+          AppLogger.info('🔍 DEBUG: Added contentId=$contentId (matches $collectionName)');
+        } else {
+          AppLogger.warning('🔍 DEBUG: Skipped contentId=$contentId (parent=$parentPath, segments=$pathSegments, expected=$collectionName, isMatch=$isMatchingCollection)');
         }
       }
 
       // Step 3: Batch fetch content documents (Firestore allows max 10 per 'in' query)
+      AppLogger.info('🔍 DEBUG: Extracted ${contentIds.length} unique content IDs: $contentIds');
+
+      if (contentIds.isEmpty) {
+        AppLogger.info('📊 No $collectionName content IDs found for user $userId');
+        return [];
+      }
+
       final batches = <List<String>>[];
       final contentIdList = contentIds.toList();
       for (var i = 0; i < contentIdList.length; i += 10) {
@@ -751,16 +740,23 @@ abstract class BaseSharedContentRepository<T>
 
       final allContent = <T>[];
       for (final batch in batches) {
-        final batchSnapshot = await getCollectionRef()
-            .where(FieldPath.documentId, whereIn: batch)
-            .orderBy('sharedAt', descending: true)
-            .get();
+        AppLogger.info('🔍 DEBUG: Fetching batch of ${batch.length} documents from $collectionName');
 
-        final batchContent = batchSnapshot.docs
+        // FIX: Use individual GET operations instead of whereIn (LIST operation)
+        // Firestore security rules allow GET for members but not LIST
+        // whereIn is a LIST operation which is blocked for non-owners
+        final docFutures = batch.map((id) => getCollectionRef().doc(id).get());
+        final docs = await Future.wait(docFutures);
+        final validDocs = docs.where((doc) => doc.exists).toList();
+
+        AppLogger.info('🔍 DEBUG: Individual GET fetch returned ${validDocs.length} documents');
+
+        final batchContent = validDocs
             .map((doc) => fromFirestore(doc))
             .where((content) => shouldShowToUser(content, userId))
             .toList();
 
+        AppLogger.info('🔍 DEBUG: After shouldShowToUser filter: ${batchContent.length} documents');
         allContent.addAll(batchContent);
 
         if (allContent.length >= limit) {
