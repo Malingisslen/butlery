@@ -1,7 +1,7 @@
 # Butlery - Test Plan
 
 **Generated**: November 2025
-**Last Updated**: November 28, 2025
+**Last Updated**: December 2, 2025
 **Purpose**: Comprehensive user journey testing with all features and service methods
 
 ---
@@ -199,6 +199,13 @@
 - [ ] Social share with friends → UniversalShareDialog with friend selection
 - [ ] Share with selected friends → creates share records in Firestore
 
+**Collaborative Menu Editing** (NEW - 2025-12-01)
+- [ ] Share menu with "Realtidsdelning" mode → creates RealtimeMenu in Firebase
+- [ ] Friend receives invitation → shows in "Delat med mig"
+- [ ] Friend accepts collaborative invitation → navigates to realtime menu view
+- [ ] Both users can edit menu → changes sync in real-time
+- [ ] Presence indicators → show who is currently editing
+
 **Shopping Integration**
 - [ ] Export to shopping list → shows list selector
 - [ ] Select list and confirm → ingredients added to shopping list
@@ -337,8 +344,24 @@
 - [ ] Add friend to category → updates relationships
 - [ ] Block user → prevents interactions
 - [ ] Unblock user → restores visibility
-- [ ] View shared recipes → shows SharedWithMeView
+- [x] View shared recipes → shows SharedWithMeView ✅ (2025-12-02) Issue #014 fixed
+- [x] Shared content loads automatically → no manual refresh needed ✅ (2025-12-02)
 - [ ] Accept shared recipe → saves to collection
+
+### Bugs Fixed (2025-12-02) - Issue #014
+
+**Problem**: Shared content (menus, recipes) not visible to recipients in "Delat med mig" view.
+
+**Root Causes & Fixes**:
+1. **Firestore query blocked by security rules** - `whereIn` is a LIST operation blocked for non-owners
+   - Fix: Replaced with individual `get()` calls in `base_shared_content_repository.dart:744-752`
+
+2. **Race condition in ViewModel initialization** - Constructor called `_initialize()` before `currentUserId` was available
+   - Fix: Removed auto-init from `BaseSharedContentViewModel` constructor
+   - Fix: Updated `SharedContentCoordinatorViewModel.initialize()` to explicitly call `loadContent()` on each ViewModel
+
+3. **Tab bar overflow on mobile** - Tab content too wide for screen
+   - Fix: Added `isScrollable: true` to `SharedContentTabBar`
 
 ### Features & Methods
 

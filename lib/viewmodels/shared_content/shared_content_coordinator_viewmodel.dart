@@ -213,19 +213,20 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
   /// Initialize all ViewModels and load initial data
   Future<void> initialize() async {
     if (_isInitialized || _isInitializing) return;
-    
+
     _setInitializing(true);
+    _setGlobalLoading(true);
     AppLogger.info('🔄 Initializing SharedContentCoordinatorViewModel...');
-    
+
     try {
-      // All ViewModels should auto-initialize their content
-      // We just need to wait for them to complete
+      // Explicitly load content on each ViewModel
+      // This ensures data is loaded when user is authenticated
       await Future.wait([
-        _waitForViewModelInitialization(_recipeViewModel),
-        _waitForViewModelInitialization(_menuViewModel),
-        _waitForViewModelInitialization(_shoppingViewModel),
+        _recipeViewModel.loadContent(),
+        _menuViewModel.loadContent(),
+        _shoppingViewModel.loadContent(),
       ]);
-      
+
       _isInitialized = true;
       AppLogger.success('✅ SharedContentCoordinatorViewModel initialization completed');
       AppLogger.info('📊 Loaded content counts: ${contentCounts.toString()}');
@@ -234,18 +235,10 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
       AppLogger.error('❌ SharedContentCoordinatorViewModel initialization failed: $e');
     } finally {
       _setInitializing(false);
+      _setGlobalLoading(false);
     }
   }
   
-  /// Wait for a ViewModel to complete its initialization
-  Future<void> _waitForViewModelInitialization(ChangeNotifier viewModel) async {
-    // Simple approach: wait for loading state to become false
-    // In a more sophisticated implementation, we could add initialization callbacks
-    while ((viewModel as dynamic).isLoading == true) {
-      await Future.delayed(const Duration(milliseconds: 100));
-    }
-  }
-
   // ===== TAB MANAGEMENT =====
   
   /// Set current active tab
