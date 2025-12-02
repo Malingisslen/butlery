@@ -64,7 +64,8 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
 
   BaseSharedContentViewModel() {
     AppLogger.info('${contentTypeName}ViewModel initialized');
-    _initialize();
+    // Don't auto-initialize - coordinator will trigger when ready
+    // This prevents race condition where currentUserId is null at constructor time
   }
 
   // ===== ABSTRACT METHODS FOR CUSTOMIZATION =====
@@ -142,12 +143,6 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
 
   /// Has more content to load
   bool get hasMoreContent => _hasMoreContent;
-
-  // ===== INITIALIZATION =====
-
-  Future<void> _initialize() async {
-    await loadContent();
-  }
 
   // ===== CONTENT OPERATIONS (TEMPLATE METHODS) =====
 
