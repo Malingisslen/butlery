@@ -26,6 +26,8 @@ class SharedContentTabBar {
         ),
         child: TabBar(
           controller: tabController,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
           tabs: [
             Tab(
               child: Row(

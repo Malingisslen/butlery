@@ -61,12 +61,13 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
 
-    // Tab controller is managed locally - no need to sync with ViewModel
-    // in the modular architecture since each specialized viewmodel manages
-    // its own content independently
-
     // Konfigurera svenska för timeago
     timeago.setLocaleMessages('sv', timeago.SvMessages());
+
+    // Trigger initial data load after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<SharedContentCoordinatorViewModel>().initialize();
+    });
   }
 
   @override
