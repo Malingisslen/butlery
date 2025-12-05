@@ -16,9 +16,25 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/realtime/realtime_menu_service.dart';
 
 // Operations modules
 import 'package:butlery/services/unified/operations/collaborative_menu_operations.dart';
+
+/// Result of importing a shared menu.
+/// Indicates whether the import joined a collaborative session or created a local copy.
+class MenuImportResult {
+  /// The ID of the imported or joined menu.
+  final String menuId;
+
+  /// Whether this is a collaborative realtime menu (true) or a local copy (false).
+  final bool isCollaborative;
+
+  const MenuImportResult({
+    required this.menuId,
+    required this.isCollaborative,
+  });
+}
 
 /// Comprehensive unified menu service providing coordinated access to personal and collaborative menu functionality.
 /// This service implements a sophisticated menu management system using modular architecture with focused components
@@ -313,6 +329,8 @@ class UnifiedMenuService extends ChangeNotifier
     final result = await safeExecute<String?>(() async {
       try {
         AppLogger.info(
+            '🔍🔍🔍 DEBUG SHARE ENTRY: createMenuInvitation called with "$menuTitle" for ${inviteeUserIds.length} users');
+        AppLogger.info(
             '📨 Creating menu invitation "$menuTitle" for ${inviteeUserIds.length} users');
 
         // Get current user's display name
@@ -324,6 +342,22 @@ class UnifiedMenuService extends ChangeNotifier
           return null;
         }
 
+        // If collaboration is enabled, create a RealtimeMenu first
+        String? realtimeMenuId;
+        if (allowCollaboration) {
+          AppLogger.info('🔄 Creating RealtimeMenu for collaborative editing');
+          final realtimeMenuService =
+              ServiceLocator.get<RealtimeMenuService>();
+          final realtimeMenu = await realtimeMenuService.createRealtimeMenu(
+            menuTitle: menuTitle,
+            menuSnapshot: menuSnapshot,
+            editorUserIds: inviteeUserIds,
+          );
+          realtimeMenuId = realtimeMenu.id;
+          AppLogger.success(
+              '✅ RealtimeMenu created: $realtimeMenuId with ${inviteeUserIds.length} editors');
+        }
+
         // Create SharedMenu invitation
         final sharedMenu = SharedMenu.create(
           sharedByUserId: userId,
@@ -333,6 +367,7 @@ class UnifiedMenuService extends ChangeNotifier
           menuTitle: menuTitle,
           menuSnapshot: menuSnapshot,
           allowCollaboration: allowCollaboration,
+          realtimeMenuId: realtimeMenuId,
         );
 
         // Save invitation to Firebase
@@ -398,8 +433,11 @@ class UnifiedMenuService extends ChangeNotifier
     return result ?? [];
   }
 
-  /// Import shared menu (copy-on-write collaboration)
-  Future<String?> importSharedMenu({
+  /// Import shared menu or join collaborative session.
+  /// Returns a tuple-like result: (menuId, isCollaborative)
+  /// - For collaborative menus: returns (realtimeMenuId, true)
+  /// - For regular menus: returns (importedMenuId, false)
+  Future<MenuImportResult?> importSharedMenu({
     required String sharedMenuId,
     String? newTitle,
   }) async {
@@ -409,7 +447,7 @@ class UnifiedMenuService extends ChangeNotifier
       return null;
     }
 
-    final result = await safeExecute<String?>(() async {
+    final result = await safeExecute<MenuImportResult?>(() async {
       try {
         AppLogger.info('📥 Importing shared menu $sharedMenuId');
 
@@ -421,7 +459,22 @@ class UnifiedMenuService extends ChangeNotifier
           return null;
         }
 
-        // Create imported menu with attribution
+        // Check if this is a collaborative menu with a realtime session
+        if (sharedMenu.realtimeMenuId != null) {
+          AppLogger.info(
+              '📡 Joining collaborative menu: ${sharedMenu.realtimeMenuId}');
+          // Mark as accepted/imported in SharedMenu
+          await _sharedMenuRepository.markAsImported(sharedMenuId, userId);
+          AppLogger.success(
+              '✅ Joined collaborative menu session: ${sharedMenu.realtimeMenuId}');
+          // Return the realtime menu ID - caller should navigate to collaborative view
+          return MenuImportResult(
+            menuId: sharedMenu.realtimeMenuId!,
+            isCollaborative: true,
+          );
+        }
+
+        // Regular import: create a copy with attribution
         final menuTitle = newTitle ?? '${sharedMenu.menuTitle} (Importerad)';
         final attributedMenu =
             Map<String, List<Recipe>>.from(sharedMenu.menuSnapshot);
@@ -461,7 +514,10 @@ class UnifiedMenuService extends ChangeNotifier
         await _sharedMenuRepository.markAsImported(sharedMenuId, userId);
 
         AppLogger.success('✅ Menu imported successfully with attribution');
-        return importedMenuId;
+        return MenuImportResult(
+          menuId: importedMenuId,
+          isCollaborative: false,
+        );
       } catch (e) {
         AppLogger.error('Failed to import shared menu: $e');
         return null;

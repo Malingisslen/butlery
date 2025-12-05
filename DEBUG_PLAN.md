@@ -1,7 +1,7 @@
 # Butlery - Test Plan
 
 **Generated**: November 2025
-**Last Updated**: December 2, 2025
+**Last Updated**: December 5, 2025
 **Purpose**: Comprehensive user journey testing with all features and service methods
 
 ---
@@ -178,24 +178,24 @@
 ### Test Steps
 
 **Menu Generation**
-- [ ] View empty menu state → shows prompt input + "Generera meny" button
-- [ ] Enter Swedish prompt "3 middagar" → button enables
-- [ ] Generate menu → shows recipes in "Middag" section
-- [ ] Generate complex prompt "3 frukoster och 2 middagar" → creates multiple sections
-- [ ] Regenerate single section → replaces only that section's recipes
-- [ ] View recipe from menu → navigates to recipe detail
-- [ ] Clear menu → returns to empty state
+- [x] View empty menu state → shows prompt input + "Generera meny" button ✅ (2025-12-03)
+- [x] Enter Swedish prompt "3 middagar" → button enables ✅ (2025-12-03)
+- [x] Generate menu → shows recipes in "Middag" section ✅ (2025-12-03)
+- [x] Generate complex prompt "3 frukoster och 2 middagar" → creates multiple sections ✅ (2025-12-03)
+- [x] Regenerate single section → replaces only that section's recipes ✅ (2025-12-03)
+- [x] View recipe from menu → navigates to recipe detail ✅ (2025-12-03)
+- [x] Clear menu → returns to empty state ✅ (2025-12-03)
 
 **Menu Persistence**
-- [ ] Save menu → SaveMenuDialog opens with name/comment fields
-- [ ] Save with valid name → menu saved to Firestore, success message
-- [ ] Save with empty name → shows validation error
-- [ ] Load menu → LoadMenuBottomSheet shows saved menus list
-- [ ] Load saved menu → menu populates in view
-- [ ] Delete saved menu → removes from list
+- [x] Save menu → SaveMenuDialog opens with name/comment fields ✅ (2025-12-03)
+- [x] Save with valid name → menu saved to Firestore, success message ✅ (2025-12-03)
+- [x] Save with empty name → shows validation error ✅ (2025-12-03)
+- [x] Load menu → LoadMenuBottomSheet shows saved menus list ✅ (2025-12-03)
+- [x] Load saved menu → menu populates in view ✅ (2025-12-03)
+- [x] Delete saved menu → removes from list ✅ (2025-12-03)
 
 **Menu Sharing**
-- [ ] Native share → opens system share sheet with text format
+- [x] Native share → opens system share sheet with text format ✅ (2025-12-03)
 - [ ] Social share with friends → UniversalShareDialog with friend selection
 - [ ] Share with selected friends → creates share records in Firestore
 
@@ -207,9 +207,32 @@
 - [ ] Presence indicators → show who is currently editing
 
 **Shopping Integration**
-- [ ] Export to shopping list → shows list selector
-- [ ] Select list and confirm → ingredients added to shopping list
-- [ ] Navigate to shopping list → shows menu items
+- [x] Export to shopping list → shows list selector ✅ (2025-12-03)
+- [x] Select list and confirm → ingredients added to shopping list ✅ (2025-12-03) - Fixed init race condition
+- [x] Navigate to shopping list → shows menu items ✅ (2025-12-03)
+
+### Bugs Fixed (2025-12-05)
+
+1. **Deleted shared menus reappear after navigation** - Status cache not cleared before loading fresh data
+   - Fix: Added `_socialMenuCoordinator.clearStatusCache()` before loading in `SharedMenuViewModel`
+
+2. **Collaborative menu permission denied** - Security rules checking 'participants' instead of 'participantIds'
+   - Fix: Added `participantIds` array to SharedMenu model and Firestore documents for query validation
+
+3. **Static menu save doesn't appear in saved menus** - Race condition between save and UI refresh
+   - Fix: Ensured proper async await and refresh sequence in save flow
+
+4. **Loading spinner on all menus when importing one** - Global loading state used instead of per-item
+   - Fix: Implemented per-item operating state tracking with `setItemOperating(id, bool)`
+
+### UX Improvements (2025-12-05)
+
+1. **Filter toggle for imported items in SharedWithMe view**
+   - Default: Imported items hidden for cleaner inbox experience
+   - Filter icon in search bar to toggle "Visa importerade" (Show imported)
+   - Visual chip indicator when filter is active
+   - Badge counter respects filter (unread count excludes hidden imported items)
+   - Files: `SharedContentCoordinatorViewModel`, `SharedMenuViewModel`, `SharedRecipeViewModel`, `SharedContentSearchBar`
 
 ### Features & Methods
 

@@ -152,10 +152,10 @@ class FirebaseSharedRecipeRepository
 
   @override
   bool shouldShowToUser(SharedRecipe content, String userId) {
-    // Note (Issue #014): Array-based status methods removed.
-    // Actual dismissed/viewed filtering happens via subcollection queries.
-    // This method now only checks basic permission (owner or collaboration allowed).
-    return content.sharedByUserId == userId || content.allowCollaboration;
+    // Issue #014 Migration: If content was found via subcollection query,
+    // the user is already verified as a member. Always show.
+    // The query itself (members subcollection) handles access control.
+    return true;
   }
 
   @override

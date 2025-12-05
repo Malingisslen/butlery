@@ -44,6 +44,8 @@ import 'package:butlery/services/unified/modules/social_menu/social_menu_coordin
 import 'package:butlery/services/unified/modules/social_shopping/social_shopping_coordinator.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/models/recipe_unified.dart';
 
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
@@ -200,11 +202,39 @@ class SocialModule implements DIModule {
                   'SocialMenuCoordinator.getMenu not yet implemented');
               return null;
             },
-            saveMenu: (menu) async {
-              // FIXME(social-menu-api): Implement when UnifiedMenuService has save method
-              AppLogger.warning(
-                  'SocialMenuCoordinator.saveMenu not yet implemented');
-              return null;
+            saveMenu: (Map<String, List<Recipe>> menu) async {
+              try {
+                final firestoreRepo = container<FirestoreRepository>();
+                final userId = authRepo.currentUserId;
+                final displayName =
+                    userService.currentUserProfile?.displayName ?? 'Unknown User';
+
+                if (userId == null) {
+                  AppLogger.error('Cannot save menu: No authenticated user');
+                  return null;
+                }
+
+                // Create SharedMenu model for the imported menu
+                final sharedMenu = SharedMenu.create(
+                  sharedByUserId: userId,
+                  sharedByDisplayName: displayName,
+                  sharedToUserIds: [],
+                  shareMessage: null,
+                  menuTitle: 'Importerad meny',
+                  menuSnapshot: menu,
+                );
+
+                // Save to menus collection
+                final menuData = sharedMenu.toFirestore();
+                final docRef =
+                    await firestoreRepo.firestore.collection('menus').add(menuData);
+
+                AppLogger.success('✅ Saved imported menu: ${docRef.id}');
+                return docRef.id;
+              } catch (e) {
+                AppLogger.error('Failed to save imported menu: $e');
+                return null;
+              }
             },
             cacheHelper: container<JsonCacheHelper>(),
           );

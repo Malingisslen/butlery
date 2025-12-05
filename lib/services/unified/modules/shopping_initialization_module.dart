@@ -33,6 +33,13 @@ class ShoppingInitializationModule {
   bool get isInitialized => _isInitialized;
 
   Future<void> initialize() async {
+    // Early return if already initialized to prevent clearing local state
+    // This fixes race condition when navigating after adding items
+    if (_isInitialized) {
+      AppLogger.info('Shopping service already initialized, skipping reload', 'ShoppingService');
+      return;
+    }
+
     try {
       AppLogger.info('Initializing shopping service...', 'ShoppingService');
       AppLogger.info('Authentication status: ${authRepository.currentUser != null ? "✅ Authenticated" : "❌ Not authenticated"}', 'ShoppingService');

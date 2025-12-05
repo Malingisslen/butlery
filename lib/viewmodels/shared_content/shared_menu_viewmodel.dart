@@ -70,14 +70,21 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
 
     AppLogger.info(
         '🔄 Loading shared menus from coordinator for user: $userId');
+
+    // Clear stale cache before loading fresh status from Firestore
+    // Bug fix: Prevents dismissed menus from reappearing after navigation
+    _socialMenuCoordinator.clearStatusCache();
+
     final menus = await _socialMenuCoordinator.getSharedMenusForUser(userId);
 
     // Load status for all menus to populate cache (Issue #014)
     await _socialMenuCoordinator.loadStatusForAllMenus(menus, userId);
 
-    // Filter out dismissed menus for main content view using cache
+    // Filter out dismissed menus and optionally imported menus for cleaner inbox
     final visibleMenus = menus
-        .where((menu) => !_socialMenuCoordinator.isMenuDismissed(menu.id))
+        .where((menu) =>
+            !_socialMenuCoordinator.isMenuDismissed(menu.id) &&
+            (showImported || !_socialMenuCoordinator.isMenuImported(menu.id)))
         .toList();
 
     AppLogger.info(
@@ -112,11 +119,25 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     }
 
     AppLogger.info('🔄 Loading shared menus (pagination not used for MVP)');
+
+    // Clear stale cache before loading fresh status from Firestore
+    _socialMenuCoordinator.clearStatusCache();
+
     // Use existing coordinator method - pagination not needed for MVP
     final menus = await _socialMenuCoordinator.getSharedMenusForUser(userId);
 
-    AppLogger.info('✅ Loaded ${menus.length} shared menus');
-    return menus;
+    // Load status for all menus to populate cache
+    await _socialMenuCoordinator.loadStatusForAllMenus(menus, userId);
+
+    // Filter out dismissed menus and optionally imported menus for cleaner inbox
+    final visibleMenus = menus
+        .where((menu) =>
+            !_socialMenuCoordinator.isMenuDismissed(menu.id) &&
+            (showImported || !_socialMenuCoordinator.isMenuImported(menu.id)))
+        .toList();
+
+    AppLogger.info('✅ Loaded ${menus.length} shared menus (${visibleMenus.length} visible, showImported: $showImported)');
+    return visibleMenus;
   }
 
   @override
@@ -132,7 +153,9 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     if (userId == null) return 0;
 
     return content
-        .where((menu) => !_socialMenuCoordinator.isMenuViewed(menu.id))
+        .where((menu) =>
+            !_socialMenuCoordinator.isMenuViewed(menu.id) &&
+            (showImported || !_socialMenuCoordinator.isMenuImported(menu.id)))
         .length;
   }
 
@@ -170,27 +193,28 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
 
   /// Import shared menu using copy-on-write pattern
   /// For new copy-on-write behavior, this joins as viewer until first edit.
-  /// For legacy compatibility, creates immediate copy with attribution.
-  Future<String?> importSharedMenu(SharedMenu sharedMenu,
-      {String? newTitle, bool legacyMode = false}) async {
-    return await executeOperation(
-      'Import menu "${getContentTitle(sharedMenu)}"',
-      () async {
-        if (legacyMode) {
-          // Legacy GitHub fork-style import
-          return await _socialMenuCoordinator.joinSharedMenu(
-            sharedMenuId: sharedMenu.id,
-            newTitle: newTitle,
-          );
-        } else {
-          // New copy-on-write behavior - join as viewer
-          return await _socialMenuCoordinator.joinSharedMenu(
-            sharedMenuId: sharedMenu.id,
-            newTitle: newTitle,
-          );
-        }
-      },
-    );
+  /// Returns a [MenuJoinResult] indicating if this is a collaborative menu.
+  Future<MenuJoinResult?> importSharedMenu(SharedMenu sharedMenu,
+      {String? newTitle}) async {
+    // Use per-item operating state for individual loading spinner
+    setItemOperating(sharedMenu.id, true);
+    try {
+      AppLogger.info(
+          '🔄 Starting Import menu "${getContentTitle(sharedMenu)}" for menu...');
+      final result = await _socialMenuCoordinator.joinSharedMenu(
+        sharedMenuId: sharedMenu.id,
+        newTitle: newTitle,
+      );
+      AppLogger.success(
+          '✅ Import menu "${getContentTitle(sharedMenu)}" completed successfully');
+      return result;
+    } catch (e) {
+      AppLogger.error(
+          '❌ Import menu "${getContentTitle(sharedMenu)}" failed: $e');
+      return null;
+    } finally {
+      setItemOperating(sharedMenu.id, false);
+    }
   }
 
   /// Start collaborative editing (triggers copy-on-write)

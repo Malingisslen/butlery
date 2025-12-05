@@ -76,10 +76,11 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     // Load status for all recipes to populate cache (Issue #014)
     await _socialRecipeCoordinator.loadStatusForAllRecipes(recipes, userId);
 
-    // Filter out dismissed recipes for main content view using cache
+    // Filter out dismissed recipes and optionally imported recipes for cleaner inbox
     final visibleRecipes = recipes
-        .where(
-            (recipe) => !_socialRecipeCoordinator.isRecipeDismissed(recipe.id))
+        .where((recipe) =>
+            !_socialRecipeCoordinator.isRecipeDismissed(recipe.id) &&
+            (showImported || !_socialRecipeCoordinator.isRecipeImported(recipe.id)))
         .toList();
 
     AppLogger.info(
@@ -115,12 +116,23 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     }
 
     AppLogger.info('🔄 Loading shared recipes (pagination not used for MVP)');
+
     // Use existing coordinator method - pagination not needed for MVP
     final recipes =
         await _socialRecipeCoordinator.getSharedRecipesForUser(userId);
 
-    AppLogger.info('✅ Loaded ${recipes.length} shared recipes');
-    return recipes;
+    // Load status for all recipes to populate cache
+    await _socialRecipeCoordinator.loadStatusForAllRecipes(recipes, userId);
+
+    // Filter out dismissed recipes and optionally imported recipes for cleaner inbox
+    final visibleRecipes = recipes
+        .where((recipe) =>
+            !_socialRecipeCoordinator.isRecipeDismissed(recipe.id) &&
+            (showImported || !_socialRecipeCoordinator.isRecipeImported(recipe.id)))
+        .toList();
+
+    AppLogger.info('✅ Loaded ${recipes.length} shared recipes (${visibleRecipes.length} visible, showImported: $showImported)');
+    return visibleRecipes;
   }
 
   @override
@@ -134,12 +146,16 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   // ===== RECIPE-SPECIFIC GETTERS =====
 
   /// Get unread recipes count (using cache - Issue #014)
+  /// Respects showImported filter - imported items don't count as unread when hidden
   int get unreadCount {
     final userId = currentUserId;
     if (userId == null) return 0;
 
     return content
-        .where((recipe) => !_socialRecipeCoordinator.isRecipeViewed(recipe.id))
+        .where((recipe) =>
+            !_socialRecipeCoordinator.isRecipeViewed(recipe.id) &&
+            (showImported ||
+                !_socialRecipeCoordinator.isRecipeImported(recipe.id)))
         .length;
   }
 

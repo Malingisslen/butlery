@@ -56,6 +56,10 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   /// Flag indicating whether collaborative editing is allowed.
   final bool allowCollaboration;
 
+  /// ID of the associated RealtimeMenu for live collaborative editing.
+  /// When set, recipients join the realtime session instead of creating a copy.
+  final String? realtimeMenuId;
+
   // ===== COPY-ON-WRITE FIELDS =====
 
   /// Flag indicating whether this is an original reference or collaborative version.
@@ -87,6 +91,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     required this.menuTitle,
     required this.menuSnapshot,
     this.allowCollaboration = false,
+    this.realtimeMenuId,
     // Copy-on-write fields
     bool isOriginalReference = true,
     bool copyOnWriteTriggered = false,
@@ -114,6 +119,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     String? menuTitle,
     required Map<String, List<Recipe>> menuSnapshot,
     bool allowCollaboration = false,
+    String? realtimeMenuId,
   }) {
     final title = menuTitle ?? '${sharedByDisplayName}s veckomeny';
 
@@ -125,6 +131,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
       menuTitle: title,
       menuSnapshot: menuSnapshot,
       allowCollaboration: allowCollaboration,
+      realtimeMenuId: realtimeMenuId,
     ); // Note: sharedToUserIds NOT passed to constructor
   }
 
@@ -162,6 +169,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     int? importCount,
     int? dismissalCount,
     bool? allowCollaboration,
+    String? realtimeMenuId,
     bool? isOriginalReference,
     bool? copyOnWriteTriggered,
     String? originalOwnerStaticCopyId,
@@ -179,6 +187,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
       menuTitle: menuTitle,
       menuSnapshot: menuSnapshot,
       allowCollaboration: allowCollaboration ?? this.allowCollaboration,
+      realtimeMenuId: realtimeMenuId ?? this.realtimeMenuId,
       isOriginalReference: isOriginalReference ?? this.isOriginalReference,
       copyOnWriteTriggered: copyOnWriteTriggered ?? this.copyOnWriteTriggered,
       originalOwnerStaticCopyId:
@@ -354,11 +363,13 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   /// Returns a map containing all shared menu data formatted for Firestore persistence.
   Map<String, dynamic> toFirestore() {
     // Convert menu snapshot to Firestore format - UTAN serverTimestamp i nested data
+    // Bug fix: Use recipe.core.toFirestore() for flat structure that fromMap() expects
+    // (recipe.toFirestore() wraps under 'core' key which causes "Untitled Recipe" on load)
     final menuData = <String, dynamic>{};
     for (final entry in menuSnapshot.entries) {
       menuData[entry.key] = entry.value.map((recipe) {
-        // Få recipe data och säkerställ att inga FieldValue.serverTimestamp() finns i nested objects
-        final recipeData = recipe.toFirestore();
+        // Use core.toFirestore() for flat structure matching fromMap() expectations
+        final recipeData = recipe.core.toFirestore();
 
         // Ersätt eventuella serverTimestamp med DateTime.now() för nested objects
         if (recipeData['createdAt'] is DateTime) {
@@ -387,6 +398,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
       'totalRecipeCount': totalRecipeCount,
       'categories': categories,
       'allowCollaboration': allowCollaboration,
+      if (realtimeMenuId != null) 'realtimeMenuId': realtimeMenuId,
     };
   }
 
@@ -487,6 +499,8 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
         allowCollaboration: utils.SerializationUtils.safeBool(
             data, 'allowCollaboration',
             defaultValue: false),
+        realtimeMenuId:
+            utils.SerializationUtils.safeNullableString(data, 'realtimeMenuId'),
         isOriginalReference: cowFields['isOriginalReference'] as bool,
         copyOnWriteTriggered: cowFields['copyOnWriteTriggered'] as bool,
         originalOwnerStaticCopyId:
@@ -519,6 +533,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
       'totalRecipeCount': totalRecipeCount,
       'categories': categories,
       'allowCollaboration': allowCollaboration,
+      if (realtimeMenuId != null) 'realtimeMenuId': realtimeMenuId,
     };
   }
 
@@ -557,6 +572,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
       menuTitle: (json['menuTitle'] as String?).orDefault('Delad meny'),
       menuSnapshot: reconstructedMenu,
       allowCollaboration: (json['allowCollaboration'] as bool?).orFalse(),
+      realtimeMenuId: json['realtimeMenuId'] as String?,
       isOriginalReference: cowFields['isOriginalReference'] as bool,
       copyOnWriteTriggered: cowFields['copyOnWriteTriggered'] as bool,
       originalOwnerStaticCopyId:

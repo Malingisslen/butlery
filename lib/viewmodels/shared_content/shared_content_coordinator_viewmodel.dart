@@ -56,6 +56,9 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
   /// Initialization in progress
   bool _isInitializing = false;
 
+  /// Show imported content toggle (default: false = hidden for cleaner inbox)
+  bool _showImported = false;
+
   // ===== CONSTRUCTOR =====
   
   SharedContentCoordinatorViewModel({
@@ -112,6 +115,9 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
   
   /// Initialization in progress
   bool get isInitializing => _isInitializing;
+
+  /// Show imported content toggle state
+  bool get showImported => _showImported;
   
   /// Any ViewModel is loading
   bool get isAnyViewModelLoading => 
@@ -333,6 +339,18 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
     _searchViewModel.clearSearch();
     _searchViewModel.clearFilters();
     AppLogger.info('🧹 Cleared all search and filters');
+  }
+
+  /// Toggle showing imported content
+  void toggleShowImported() {
+    _showImported = !_showImported;
+    AppLogger.info('🔄 Show imported toggled: $_showImported');
+    // Sync the flag to all content viewmodels
+    _recipeViewModel.setShowImported(_showImported);
+    _menuViewModel.setShowImported(_showImported);
+    _shoppingViewModel.setShowImported(_showImported);
+    // Reload all content to apply the filter
+    refreshAllContent();
   }
 
   // ===== HIGH-LEVEL SHARING OPERATIONS =====

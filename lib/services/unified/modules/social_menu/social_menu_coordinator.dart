@@ -47,6 +47,21 @@ import 'package:butlery/services/unified/modules/social_coordination/base_social
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
+/// Result of joining a shared menu.
+/// Indicates whether the join connected to a collaborative realtime session.
+class MenuJoinResult {
+  /// The ID of the joined menu (either sharedMenuId or realtimeMenuId).
+  final String menuId;
+
+  /// Whether this is a collaborative realtime menu (true) or a regular shared menu (false).
+  final bool isCollaborative;
+
+  const MenuJoinResult({
+    required this.menuId,
+    required this.isCollaborative,
+  });
+}
+
 /// Menu-specific service adapter for menu operations
 class MenuServiceAdapter {
   final UnifiedMenuService _menuService;
@@ -248,23 +263,58 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
     );
   }
 
-  /// Join shared menu for viewing (true copy-on-write collaboration)
-  /// This implements TRUE copy-on-write where users initially view the original
-  /// menu until someone attempts to edit it, which triggers copy creation.
-  Future<String?> joinSharedMenu({
+  /// Join shared menu - creates a local copy for static menus
+  /// For collaborative menus (with realtimeMenuId), joins the session.
+  /// For static menus, creates an immediate copy (like GitHub fork).
+  /// Returns a [MenuJoinResult] with the menu ID and whether it's collaborative.
+  Future<MenuJoinResult?> joinSharedMenu({
     required String sharedMenuId,
     String? newTitle,
   }) async {
-    final menuId = await importSharedContent(
-      sharedContentId: sharedMenuId,
+    // Get the shared menu to check if it's collaborative
+    final sharedMenu = await _sharedMenuRepository.read(sharedMenuId);
+    if (sharedMenu == null) {
+      AppLogger.error('Shared menu not found: $sharedMenuId');
+      return null;
+    }
+
+    // Check if this is a collaborative menu with a realtime session
+    if (sharedMenu.realtimeMenuId != null) {
+      AppLogger.info(
+          '📡 Joining collaborative menu session: ${sharedMenu.realtimeMenuId}');
+      // Mark as joined in the shared menu
+      await _sharedMenuRepository.markAsImportedOrJoined(
+          sharedMenuId, currentUserId!);
+      AppLogger.success(
+          '✅ Joined collaborative menu session: ${sharedMenu.realtimeMenuId}');
+      return MenuJoinResult(
+        menuId: sharedMenu.realtimeMenuId!,
+        isCollaborative: true,
+      );
+    }
+
+    // Static menu import - create an actual copy (like GitHub fork)
+    AppLogger.info('📥 Importing static menu $sharedMenuId');
+
+    // Use UnifiedMenuService.importSharedMenu for proper import with all data
+    final menuService = ServiceLocator.get<UnifiedMenuService>();
+    final importResult = await menuService.importSharedMenu(
+      sharedMenuId: sharedMenuId,
       newTitle: newTitle,
     );
-    
-    if (menuId != null) {
-      AppLogger.success('✅ Joined shared menu as viewer (copy-on-write ready): $menuId');
+
+    if (importResult == null) {
+      AppLogger.error('Failed to import menu via UnifiedMenuService');
+      return null;
     }
-    
-    return menuId;
+
+    AppLogger.success(
+        '✅ Menu imported successfully: ${importResult.menuId}');
+
+    return MenuJoinResult(
+      menuId: importResult.menuId,
+      isCollaborative: importResult.isCollaborative,
+    );
   }
 
   /// Trigger copy-on-write when user attempts to edit shared menu
@@ -351,6 +401,16 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
   }
 
   // ===== STATUS CACHE METHODS (PHASE 3 SESSION 2) =====
+
+  /// Clear all status caches
+  /// Call this before reloading menus to ensure fresh dismissal/viewed/imported status.
+  /// Bug fix: Prevents stale cached values from causing dismissed menus to reappear.
+  void clearStatusCache() {
+    _viewedStatusCache.clear();
+    _importedStatusCache.clear();
+    _dismissedStatusCache.clear();
+    AppLogger.info('🗑️ Cleared menu status caches');
+  }
 
   /// Load status for a menu from repository and cache it
   /// Phase 3 Session 2: Status caching method for ViewModel migration.

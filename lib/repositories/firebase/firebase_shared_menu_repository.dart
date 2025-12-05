@@ -152,10 +152,10 @@ class FirebaseSharedMenuRepository
 
   @override
   bool shouldShowToUser(SharedMenu content, String userId) {
-    // Note (Issue #014): Array-based status methods removed.
-    // Actual dismissed/viewed filtering happens via subcollection queries.
-    // This method now only checks basic permission (owner or collaboration allowed).
-    return content.sharedByUserId == userId || content.isCollaborative;
+    // Issue #014 Migration: If content was found via subcollection query,
+    // the user is already verified as a member. Always show.
+    // The query itself (members subcollection) handles access control.
+    return true;
   }
 
   @override
@@ -180,7 +180,9 @@ class FirebaseSharedMenuRepository
     SharedMenu sharedMenu, {
     required List<String> recipientIds,
   }) async {
+    AppLogger.info('🔍🔍🔍 DEBUG REPO: createSharedMenu called with ${recipientIds.length} recipients');
     final uid = requireCurrentUserId();
+    AppLogger.info('🔍 DEBUG REPO: Current user ID: $uid');
 
     // Menu-specific validations
     if (sharedMenu.sharedByUserId != uid) {
@@ -196,8 +198,11 @@ class FirebaseSharedMenuRepository
     final menuId = await createSharedContent(sharedMenu);
 
     // Add all recipients to members subcollection (Issue #014: Unlimited sharing)
+    AppLogger.info('🔍 DEBUG REPO: About to add ${recipientIds.length} members for menu $menuId');
     for (final recipientId in recipientIds) {
+      AppLogger.info('🔍 DEBUG REPO: Adding member $recipientId to menu $menuId');
       await addMember(menuId, recipientId, addedBy: uid);
+      AppLogger.info('🔍 DEBUG REPO: Member $recipientId added successfully');
     }
 
     AppLogger.success(

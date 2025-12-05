@@ -1,6 +1,6 @@
 # BUTLERY - FEATURE INDEX
 
-**Last Updated:** 2025-11-25
+**Last Updated:** 2025-12-01
 **Status:** Production-Ready
 
 ---
@@ -81,9 +81,9 @@ Unified services (facade pattern), modular DI system (7 modules), MVVM architect
 
 ---
 
-## Routes (26 primary)
+## Routes (27 primary)
 
-`/` Home | `/auth` Auth | `/laggTill` Add | `/importViaUrl` URL | `/photoImport` Photo | `/skrivSjalv` Manual | `/franSocialaMedier` Social | `/importFranArkiv` Archive | `/fileImport` File | `/receptDetalj` Detail | `/redigeraRecept` Edit | `/receiveShare` Receive | `/veckomeny` Menu | `/inkopslista` Shopping | `/discovery` Discovery | `/profile/edit` Profile | `/friends` Friends | `/friends/requests` Requests | `/shared` Shared | `/collaborative-shopping` Collab | `/menu-preview` Preview | `/create-shared-shopping` Create | `/friend-profile` Friend | `/shared-shopping-lists` Lists | `/messages` Messages | `/chat` Chat
+`/` Home | `/auth` Auth | `/laggTill` Add | `/importViaUrl` URL | `/photoImport` Photo | `/skrivSjalv` Manual | `/franSocialaMedier` Social | `/importFranArkiv` Archive | `/fileImport` File | `/receptDetalj` Detail | `/redigeraRecept` Edit | `/receiveShare` Receive | `/veckomeny` Menu | `/realtime-menu` Collab Menu | `/inkopslista` Shopping | `/discovery` Discovery | `/profile/edit` Profile | `/friends` Friends | `/friends/requests` Requests | `/shared` Shared | `/collaborative-shopping` Collab | `/menu-preview` Preview | `/create-shared-shopping` Create | `/friend-profile` Friend | `/shared-shopping-lists` Lists | `/messages` Messages | `/chat` Chat
 
 ---
 

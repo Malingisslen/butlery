@@ -40,7 +40,10 @@ class Routes {
 
   /// Weekly menu route
   static const String veckomeny = '/veckomeny';
-  
+
+  /// Collaborative realtime menu route
+  static const String realtimeMenu = '/realtime-menu';
+
   /// Unified shopping list route
   static const String inkopslista = '/inkopslista';
 
@@ -78,6 +81,7 @@ class Routes {
     redigeraRecept,
     receiveShare,
     veckomeny,
+    realtimeMenu,
     inkopslista,
     discovery,
     profileEdit,
@@ -178,6 +182,7 @@ class Routes {
 
     // Menu & Shopping
     veckomeny,
+    realtimeMenu,
     inkopslista,
 
     // Social features
