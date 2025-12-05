@@ -42,21 +42,40 @@ class SharedContentActions {
     }
   }
 
-  /// Import a shared menu
+  /// Import a shared menu or join collaborative session
   static Future<void> importMenu(
     BuildContext context,
     SharedContentCoordinatorViewModel viewModel,
     SharedMenu sharedMenu,
   ) async {
-    final menuId = await viewModel.menuViewModel.importSharedMenu(sharedMenu);
+    final result = await viewModel.menuViewModel.importSharedMenu(sharedMenu);
 
-    if (menuId != null && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('✅ Meny "${sharedMenu.menuTitle}" importerad!'),
-          backgroundColor: AppColors.success,
-        ),
-      );
+    if (result != null && context.mounted) {
+      if (result.isCollaborative) {
+        // Navigate to collaborative menu view
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '📡 Ansluter till samarbetsmeny "${sharedMenu.menuTitle}"...'),
+            backgroundColor: AppColors.primary,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        // Navigate to the realtime menu view
+        AppRouter.navigateTo(
+          context,
+          Routes.realtimeMenu,
+          arguments: {'menuId': result.menuId},
+        );
+      } else {
+        // Regular menu import
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ Meny "${sharedMenu.menuTitle}" importerad!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
     } else if (context.mounted && viewModel.menuViewModel.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

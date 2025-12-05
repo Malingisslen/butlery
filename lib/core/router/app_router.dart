@@ -208,7 +208,17 @@ class AppRouter {
             settings,
             Routes.getAnimationType(routeName)
           );
-        
+
+        case Routes.realtimeMenu:
+          // Navigate to VeckomenyView for collaborative menu
+          // The realtime menu ID is passed in arguments for future enhancement
+          // TODO: Enhance VeckomenyView to load and sync with realtime menu
+          return _buildRoute(
+            const vecko.VeckomenyView(),
+            settings,
+            Routes.getAnimationType(routeName)
+          );
+
         case Routes.inkopslista:
           return _buildRoute(const UnifiedShoppingView(), settings, Routes.getAnimationType(routeName));
 

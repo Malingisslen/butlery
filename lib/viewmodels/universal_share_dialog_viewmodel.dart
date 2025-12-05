@@ -191,7 +191,13 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
     String? message,
     bool allowCollaboration = false,
   }) async {
+    AppLogger.info('🔍🔍🔍 DEBUG VIEWMODEL: shareMenu() CALLED');
+    AppLogger.info('🔍 DEBUG: friendUserIds = $friendUserIds (${friendUserIds.length} items)');
+    AppLogger.info('🔍 DEBUG: groupIds = $groupIds');
+    AppLogger.info('🔍 DEBUG: menuName = $menuName');
+
     if (friendUserIds.isEmpty && (groupIds?.isEmpty ?? true)) {
+      AppLogger.warning('🔍 DEBUG: Early return - no friends or groups selected!');
       _setError('Inga vänner eller grupper valda');
       return false;
     }

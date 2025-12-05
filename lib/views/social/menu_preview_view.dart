@@ -17,6 +17,8 @@ import 'package:butlery/widgets/common/indicators/status_badge.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/core/router/app_router.dart';
+import 'package:butlery/core/constants/routes.dart';
 
 /// ✅ MenuPreviewView - Visa delad meny med alla recept
 class MenuPreviewView extends StatelessWidget {
@@ -283,6 +285,10 @@ class MenuPreviewView extends StatelessWidget {
           builder: (context, viewModel, _) {
             final isImported = viewModel.menuViewModel.isMenuImported(sharedMenu);
 
+            // Use per-item loading state to avoid spinner on all items
+            final isThisMenuOperating =
+                viewModel.menuViewModel.isItemOperating(sharedMenu.id);
+
             return Column(
               children: [
                 // Import knapp
@@ -294,10 +300,10 @@ class MenuPreviewView extends StatelessWidget {
                   icon: isImported
                       ? Icons.check
                       : Icons.download,
-                  onPressed: isImported || viewModel.menuViewModel.isOperating
+                  onPressed: isImported || isThisMenuOperating
                       ? null
                       : () => _importMenu(context, viewModel),
-                  isLoading: viewModel.menuViewModel.isOperating,
+                  isLoading: isThisMenuOperating,
                   loadingText: 'Importerar...',
                   isExpanded: true,
                 ),
@@ -369,19 +375,37 @@ class MenuPreviewView extends StatelessWidget {
     BuildContext context,
     SharedContentCoordinatorViewModel viewModel,
   ) async {
-    final menuId = await viewModel.menuViewModel.importSharedMenu(sharedMenu);
+    final result = await viewModel.menuViewModel.importSharedMenu(sharedMenu);
 
-    if (menuId != null && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('✅ Meny "${sharedMenu.menuTitle}" importerad!'),
-          backgroundColor: AppColors.success,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-
-      // Navigera tillbaka efter lyckad import
-      Navigator.pop(context);
+    if (result != null && context.mounted) {
+      if (result.isCollaborative) {
+        // Navigate to collaborative menu view
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '📡 Ansluter till samarbetsmeny "${sharedMenu.menuTitle}"...'),
+            backgroundColor: AppColors.primary,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        // Pop current view and navigate to realtime menu
+        Navigator.pop(context);
+        AppRouter.navigateTo(
+          context,
+          Routes.realtimeMenu,
+          arguments: {'menuId': result.menuId},
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ Meny "${sharedMenu.menuTitle}" importerad!'),
+            backgroundColor: AppColors.success,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        // Navigera tillbaka efter lyckad import
+        Navigator.pop(context);
+      }
     } else if (context.mounted && viewModel.menuViewModel.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

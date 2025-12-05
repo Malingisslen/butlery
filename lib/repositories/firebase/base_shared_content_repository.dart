@@ -182,6 +182,8 @@ abstract class BaseSharedContentRepository<T>
 
   /// Mark shared content as imported/joined by user
   /// Handles both 'imported' (recipes/menus) and 'joined' (shopping lists) patterns
+  /// Issue #014 Fix: Uses engagements subcollection instead of main document update
+  /// This allows non-owners to mark content as imported (security rules allow self-annotation)
   Future<void> markAsImportedOrJoined(String contentId, String userId) async {
     final uid = requireCurrentUserId();
 
@@ -191,17 +193,12 @@ abstract class BaseSharedContentRepository<T>
     }
 
     try {
-      final updateData = <String, dynamic>{
-        importField: FieldValue.arrayUnion([userId]),
-        'viewedByUserIds': FieldValue.arrayUnion([userId]),
-      };
+      // Use subcollection-based engagement tracking (Issue #014)
+      // This works because security rules allow users to create their own engagement docs
+      await addEngagement(contentId, userId, action: importAction);
 
-      // Add count tracking for content types that support it
-      if (tracksCounts) {
-        updateData['importCount'] = FieldValue.increment(1);
-      }
-
-      await getCollectionRef().doc(contentId).update(updateData);
+      // Also mark as viewed
+      await addView(contentId, userId);
 
       AppLogger.success(
           '✅ Marked shared $contentTypeName $contentId as $importAction by user $userId');
@@ -469,21 +466,12 @@ abstract class BaseSharedContentRepository<T>
 
   /// Add view record to views subcollection (replaces viewedByUserIds array)
   /// **Refactored**: Now delegates to BaseViewRepository for unified metadata handling
+  /// Issue #014 Fix: Removed counter increment on main document - only owner can update main doc
   Future<void> addView(String contentId, String userId) async {
     try {
       await viewRepository.markAsViewed(contentId);
-
-      // Increment view count on main document (wrapped in try-catch for FakeFirestore compatibility)
-      try {
-        await getCollectionRef().doc(contentId).update({
-          'viewCount': FieldValue.increment(1),
-        });
-      } catch (e) {
-        // FakeFirestore doesn't support FieldValue.increment() - ignore for tests
-        AppLogger.warning(
-            'Could not increment viewCount (expected in tests): $e');
-      }
-
+      // Note: viewCount increment removed - security rules only allow owner to update main document
+      // View counts can be calculated via aggregate queries on the views subcollection if needed
       AppLogger.success(
           '✅ Added view for user $userId on $contentTypeName $contentId');
     } catch (e) {
@@ -505,6 +493,7 @@ abstract class BaseSharedContentRepository<T>
 
   /// Add import/join record to engagements subcollection (replaces engagedByUserIds array)
   /// **Refactored**: Now delegates to BaseEngagementRepository for unified metadata handling
+  /// Issue #014 Fix: Removed counter increment on main document - only owner can update main doc
   Future<void> addEngagement(
     String contentId,
     String userId, {
@@ -517,18 +506,8 @@ abstract class BaseSharedContentRepository<T>
         action: action,
         targetId: targetId,
       );
-
-      // Increment engagement count on main document (wrapped in try-catch for FakeFirestore compatibility)
-      try {
-        await getCollectionRef().doc(contentId).update({
-          'importCount': FieldValue.increment(1),
-        });
-      } catch (e) {
-        // FakeFirestore doesn't support FieldValue.increment() - ignore for tests
-        AppLogger.warning(
-            'Could not increment importCount (expected in tests): $e');
-      }
-
+      // Note: importCount increment removed - security rules only allow owner to update main document
+      // Import counts can be calculated via aggregate queries on the engagements subcollection if needed
       AppLogger.success(
           '✅ Added $action for user $userId on $contentTypeName $contentId');
     } catch (e) {

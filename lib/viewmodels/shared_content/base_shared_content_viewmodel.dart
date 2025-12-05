@@ -51,14 +51,21 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
   /// Error message, null if no error
   String? _error;
 
-  /// Import/operation in progress indicator
+  /// Import/operation in progress indicator (global)
   bool _isOperating = false;
+
+  /// Per-item operation state for individual loading spinners
+  /// Bug fix: Prevents loading spinner showing on all items when importing one
+  final Set<String> _operatingItemIds = {};
 
   /// Pagination state
   bool _isLoadingMore = false;
   bool _hasMoreContent = true;
   DocumentSnapshot? _lastDocument;
   static const int _pageSize = 25;
+
+  /// Show imported content filter (default: false = hide imported for cleaner inbox)
+  bool _showImported = false;
 
   // ===== CONSTRUCTOR =====
 
@@ -112,8 +119,23 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
   /// Has error flag
   bool get hasError => _error != null;
 
-  /// Operation in progress state
-  bool get isOperating => _isOperating;
+  /// Operation in progress state (global - true if any item is operating)
+  bool get isOperating => _isOperating || _operatingItemIds.isNotEmpty;
+
+  /// Check if a specific item is being operated on
+  /// Use this for per-item loading spinners
+  bool isItemOperating(String itemId) => _operatingItemIds.contains(itemId);
+
+  /// Set operating state for a specific item
+  /// Use this when importing/operating on individual items
+  void setItemOperating(String itemId, bool operating) {
+    if (operating) {
+      _operatingItemIds.add(itemId);
+    } else {
+      _operatingItemIds.remove(itemId);
+    }
+    notifyListeners();
+  }
 
   /// All loaded content
   List<TContent> get content => List.unmodifiable(_content);
@@ -143,6 +165,18 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
 
   /// Has more content to load
   bool get hasMoreContent => _hasMoreContent;
+
+  /// Show imported content filter state
+  bool get showImported => _showImported;
+
+  /// Set show imported filter and notify listeners
+  void setShowImported(bool value) {
+    if (_showImported != value) {
+      _showImported = value;
+      AppLogger.info('🔄 $contentTypeName showImported set to: $value');
+      notifyListeners();
+    }
+  }
 
   // ===== CONTENT OPERATIONS (TEMPLATE METHODS) =====
 

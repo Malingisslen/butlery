@@ -222,8 +222,10 @@ service cloud.firestore {
 
       // Members subcollection - who the recipe is shared with
       match /members/{userId} {
-        // Owner and members can read member list
+        // Users can read their OWN membership (for collection group queries)
+        // Owner and other members can read the full member list
         allow read: if isAuthenticated() && (
+          userId == request.auth.uid ||
           request.auth.uid == get(/databases/$(database)/documents/shared_recipes/$(shareId)).data.sharedByUserId ||
           exists(/databases/$(database)/documents/shared_recipes/$(shareId)/members/$(request.auth.uid))
         );
@@ -366,8 +368,10 @@ service cloud.firestore {
 
       // Members subcollection - who the menu is shared with
       match /members/{userId} {
-        // Owner and members can read member list
+        // Users can read their OWN membership (for collection group queries)
+        // Owner and other members can read the full member list
         allow read: if isAuthenticated() && (
+          userId == request.auth.uid ||
           request.auth.uid == get(/databases/$(database)/documents/shared_menus/$(menuId)).data.sharedByUserId ||
           exists(/databases/$(database)/documents/shared_menus/$(menuId)/members/$(request.auth.uid))
         );
@@ -393,9 +397,11 @@ service cloud.firestore {
         );
 
         // Users can mark themselves as having viewed
+        // Issue #014 Fix: Accept 'timestamp' (from BaseMetadataRepository) OR 'viewedAt'
         allow create: if isAuthenticated()
           && request.auth.uid == userId
-          && hasRequiredFields(['userId', 'viewedAt']);
+          && hasRequiredFields(['userId'])
+          && (request.resource.data.keys().hasAny(['timestamp', 'viewedAt']));
       }
 
       // Engagements subcollection - who has imported the menu
@@ -407,9 +413,10 @@ service cloud.firestore {
         );
 
         // Users can mark themselves as having engaged (imported)
+        // Issue #014 Fix: Accept 'timestamp' (from BaseMetadataRepository) OR 'engagedAt'
         allow create: if isAuthenticated()
           && request.auth.uid == userId
-          && hasRequiredFields(['userId', 'action', 'engagedAt']);
+          && request.resource.data.keys().hasAny(['timestamp', 'engagedAt']);
       }
 
       // Dismissals subcollection - who has dismissed the menu
@@ -485,8 +492,10 @@ service cloud.firestore {
 
       // Members subcollection - who the shopping list is shared with
       match /members/{userId} {
-        // Owner and members can read member list
+        // Users can read their OWN membership (for collection group queries)
+        // Owner and other members can read the full member list
         allow read: if isAuthenticated() && (
+          userId == request.auth.uid ||
           request.auth.uid == get(/databases/$(database)/documents/shared_shopping_lists/$(listId)).data.sharedByUserId ||
           exists(/databases/$(database)/documents/shared_shopping_lists/$(listId)/members/$(request.auth.uid))
         );
@@ -627,8 +636,100 @@ service cloud.firestore {
           );
       }
     }
-    
-    
+
+    // ========================================
+    // REALTIME MENUS - Collaborative menu editing
+    // ========================================
+
+    match /realtime_menus/{menuId} {
+      // Helper function to check if user is a participant
+      // Uses participantIds array for efficient queries
+      function isParticipantInMenu() {
+        return request.auth.uid == resource.data.ownerId ||
+               request.auth.uid in resource.data.participantIds;
+      }
+
+      // Can read if you're a participant in the collaborative menu
+      allow read: if isAuthenticated() && isParticipantInMenu();
+
+      // Can create if you're the owner and adding yourself as participant
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.ownerId
+        && request.auth.uid in request.resource.data.participantIds
+        && hasRequiredFields(['ownerId', 'participants', 'participantIds', 'menuSnapshot', 'createdAt']);
+
+      // Can update if you're a participant (for real-time collaboration)
+      allow update: if isAuthenticated() && isParticipantInMenu();
+
+      // Can delete if you're the owner
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.ownerId;
+
+      // Presence subcollection for real-time collaboration
+      match /presence/{userId} {
+        // Can read presence if you're a participant in the menu
+        allow read: if isAuthenticated() && (
+          request.auth.uid == get(/databases/$(database)/documents/realtime_menus/$(menuId)).data.ownerId ||
+          request.auth.uid in get(/databases/$(database)/documents/realtime_menus/$(menuId)).data.participantIds
+        );
+
+        // Can write your own presence if you're a participant
+        allow write: if isAuthenticated()
+          && request.auth.uid == userId
+          && (
+            request.auth.uid == get(/databases/$(database)/documents/realtime_menus/$(menuId)).data.ownerId ||
+            request.auth.uid in get(/databases/$(database)/documents/realtime_menus/$(menuId)).data.participantIds
+          );
+      }
+    }
+
+
+    // ========================================
+    // REALTIME RESOURCES - Unified collection for all realtime collaborative resources
+    // ========================================
+
+    match /realtime_resources/{resourceId} {
+      // Helper function to check if user is a participant
+      // Uses participantIds array for efficient queries
+      function isParticipantInResource() {
+        return request.auth.uid == resource.data.ownerId ||
+               request.auth.uid in resource.data.participantIds;
+      }
+
+      // Can read if you're a participant in the collaborative resource
+      allow read: if isAuthenticated() && isParticipantInResource();
+
+      // Can create if you're the owner and adding yourself as participant
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.ownerId
+        && request.auth.uid in request.resource.data.participantIds
+        && hasRequiredFields(['ownerId', 'participants', 'participantIds', 'type', 'createdAt']);
+
+      // Can update if you're a participant (for real-time collaboration)
+      allow update: if isAuthenticated() && isParticipantInResource();
+
+      // Can delete if you're the owner
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.ownerId;
+
+      // Presence subcollection for real-time collaboration
+      match /presence/{userId} {
+        // Can read presence if you're a participant in the resource
+        allow read: if isAuthenticated() && (
+          request.auth.uid == get(/databases/$(database)/documents/realtime_resources/$(resourceId)).data.ownerId ||
+          request.auth.uid in get(/databases/$(database)/documents/realtime_resources/$(resourceId)).data.participantIds
+        );
+
+        // Can write your own presence if you're a participant
+        allow write: if isAuthenticated()
+          && request.auth.uid == userId
+          && (
+            request.auth.uid == get(/databases/$(database)/documents/realtime_resources/$(resourceId)).data.ownerId ||
+            request.auth.uid in get(/databases/$(database)/documents/realtime_resources/$(resourceId)).data.participantIds
+          );
+      }
+    }
+
     // ========================================
     // RECIPE PRESENCE - Real-time presence tracking for recipe viewing
     // ========================================
@@ -1162,6 +1263,18 @@ service cloud.firestore {
 
       // No updates or deletes allowed (immutable activity trail)
       allow update, delete: if false;
+    }
+
+    // ========================================
+    // COLLECTION GROUP RULES (Issue #014: Unlimited Sharing)
+    // Required for collectionGroup('members') queries
+    // ========================================
+
+    // Users can read their OWN membership documents across all collections
+    // This enables: firestore.collectionGroup('members').where('userId', isEqualTo: currentUserId)
+    // Applies to: shared_recipes/members, shared_menus/members, shared_shopping_lists/members
+    match /{path=**}/members/{memberId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
     // ========================================

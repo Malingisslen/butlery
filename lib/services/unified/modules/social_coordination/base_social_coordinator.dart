@@ -142,8 +142,21 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
       final invitationId =
           await sharedRepository.createSharedContent(sharedContent);
 
+      // Add invitees as members to the subcollection (Issue #014 migration fix)
+      // This enables collectionGroup('members') queries to find content for recipients
+      AppLogger.info('🔍 DEBUG: Adding ${inviteeUserIds.length} members to subcollection for $invitationId');
+      for (final inviteeId in inviteeUserIds) {
+        AppLogger.info('🔍 DEBUG: Adding member $inviteeId to $invitationId');
+        await sharedRepository.addMember(
+          invitationId,
+          inviteeId,
+          addedBy: currentUserId,
+        );
+        AppLogger.info('🔍 DEBUG: Member $inviteeId added successfully');
+      }
+
       AppLogger.success(
-          '✅ ${_capitalize(contentTypeName)} invitation created successfully: $invitationId');
+          '✅ ${_capitalize(contentTypeName)} invitation created with ${inviteeUserIds.length} members: $invitationId');
       AppLogger.info(
           '📥 Recipients will see invitation in "Delat med mig" view');
 

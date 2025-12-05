@@ -281,19 +281,24 @@ class SharedMenuCard {
         ),
         const SizedBox(width: AppDimensions.spacingS),
         Expanded(
-          child: ActionButtons.primaryButton(
-            context,
-            label: isImported ? 'Importerat' : 'Importera',
-            icon: isImported ? Icons.check : Icons.download,
-            isLoading: viewModel.menuViewModel.isOperating,
-            onPressed: isImported || viewModel.menuViewModel.isOperating
-                ? null
-                : () => SharedContentActions.importMenu(
-                      context,
-                      viewModel,
-                      sharedMenu,
-                    ),
-          ),
+          child: Builder(builder: (context) {
+            // Use per-item loading state to avoid spinner on all items
+            final isThisMenuOperating =
+                viewModel.menuViewModel.isItemOperating(sharedMenu.id);
+            return ActionButtons.primaryButton(
+              context,
+              label: isImported ? 'Importerat' : 'Importera',
+              icon: isImported ? Icons.check : Icons.download,
+              isLoading: isThisMenuOperating,
+              onPressed: isImported || isThisMenuOperating
+                  ? null
+                  : () => SharedContentActions.importMenu(
+                        context,
+                        viewModel,
+                        sharedMenu,
+                      ),
+            );
+          }),
         ),
       ],
     );
