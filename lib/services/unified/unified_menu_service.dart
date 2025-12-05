@@ -158,6 +158,7 @@ class UnifiedMenuService extends ChangeNotifier
   }
 
   /// Load menus from Firebase
+  /// Includes both user-owned menus and collaborative menus the user has joined
   Future<void> _loadMenus() async {
     try {
       final userId = currentUserId;
@@ -166,13 +167,14 @@ class UnifiedMenuService extends ChangeNotifier
         return;
       }
 
-      // Load user's menus from Firestore
+      _menus.clear();
+
+      // Load user's own menus from Firestore
       final querySnapshot = await _firestore
           .collection('menus')
           .where('sharedByUserId', isEqualTo: userId)
           .get();
 
-      _menus.clear();
       for (final doc in querySnapshot.docs) {
         try {
           final menu = SharedMenu.fromFirestore(doc.data(), doc.id);
@@ -182,12 +184,72 @@ class UnifiedMenuService extends ChangeNotifier
         }
       }
 
-      AppLogger.info('Loaded ${_menus.length} menus');
+      // Also load collaborative menus where user is a participant
+      // Bug fix: Without this, collaborative menus the user joined don't appear in saved menus
+      try {
+        final realtimeMenusSnapshot = await _firestore
+            .collection('realtime_menus')
+            .where('participantIds', arrayContains: userId)
+            .get();
+
+        for (final doc in realtimeMenusSnapshot.docs) {
+          try {
+            final data = doc.data();
+            // Convert realtime menu to SharedMenu for display
+            // Skip if user is the owner (already loaded in menus collection)
+            if (data['ownerId'] != userId) {
+              final menuSnapshotData = data['menuSnapshot'] as Map<String, dynamic>?;
+              if (menuSnapshotData != null) {
+                final menu = SharedMenu(
+                  id: doc.id,
+                  menuSnapshot: _parseMenuSnapshot(menuSnapshotData),
+                  menuTitle: menuSnapshotData['title'] as String? ?? 'Kollaborativ meny',
+                  sharedByUserId: data['ownerId'] as String? ?? '',
+                  sharedByDisplayName: data['ownerDisplayName'] as String? ?? 'Okänd',
+                  sharedAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+                  allowCollaboration: true,
+                  realtimeMenuId: doc.id,
+                );
+                _menus.add(menu);
+              }
+            }
+          } catch (e) {
+            AppLogger.error('Error parsing realtime menu ${doc.id}', e);
+          }
+        }
+      } catch (e) {
+        AppLogger.warning('Could not load collaborative menus: $e');
+        // Non-critical - continue with owned menus
+      }
+
+      AppLogger.info('Loaded ${_menus.length} menus (including collaborative)');
       notifyListeners();
     } catch (e) {
       AppLogger.error('Failed to load menus', e);
       throw Exception('Failed to load menus: $e');
     }
+  }
+
+  /// Parse menu snapshot from Firestore data
+  Map<String, List<Recipe>> _parseMenuSnapshot(Map<String, dynamic> menuSnapshot) {
+    final result = <String, List<Recipe>>{};
+    final categories = menuSnapshot['categories'] as Map<String, dynamic>? ?? {};
+
+    for (final entry in categories.entries) {
+      final recipes = <Recipe>[];
+      final recipeList = entry.value as List<dynamic>? ?? [];
+      for (final recipeData in recipeList) {
+        try {
+          if (recipeData is Map<String, dynamic>) {
+            recipes.add(Recipe.fromJson(recipeData));
+          }
+        } catch (e) {
+          AppLogger.warning('Error parsing recipe in menu snapshot: $e');
+        }
+      }
+      result[entry.key] = recipes;
+    }
+    return result;
   }
 
   /// Refresh menus from Firebase (bypasses initialization guard)

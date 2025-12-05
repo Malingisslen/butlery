@@ -144,40 +144,17 @@ abstract class BaseSharedContentRepository<T>
   }
 
   /// Mark shared content as dismissed by user
+  /// Issue #014 Fix: Use subcollection-based dismissal (dismissalRepository.dismiss)
+  /// instead of updating main document which fails for non-owners due to security rules
   Future<void> markAsDismissed(String contentId, String userId) async {
-    await _updateUserStatus(
-        contentId, userId, 'dismissedByUserIds', 'dismissed');
+    await addDismissal(contentId, userId);
   }
 
   /// Remove dismissal status for user (restore visibility)
-  /// This method was 100% identical across all repositories
+  /// Issue #014 Fix: Use subcollection-based undismissal (removeDismissal)
+  /// instead of updating main document which fails for non-owners due to security rules
   Future<void> undismiss(String contentId, String userId) async {
-    final uid = requireCurrentUserId();
-
-    if (userId != uid) {
-      throw PermissionDeniedException(
-          'Cannot undismiss $contentTypeName for another user');
-    }
-
-    try {
-      await getCollectionRef().doc(contentId).update({
-        'dismissedByUserIds': FieldValue.arrayRemove([userId]),
-      });
-
-      AppLogger.success(
-          '✅ Restored visibility of shared $contentTypeName $contentId for user $userId');
-
-      logPermissionCheck(
-        userId: uid,
-        resource: resourceType,
-        operation: 'undismiss',
-        granted: true,
-        details: '$contentTypeName: $contentId',
-      );
-    } catch (e) {
-      AppLogger.error('Failed to undismiss $contentTypeName $contentId: $e');
-      throw RepositoryException('Failed to restore visibility: $e');
-    }
+    await removeDismissal(contentId, userId);
   }
 
   /// Mark shared content as imported/joined by user
