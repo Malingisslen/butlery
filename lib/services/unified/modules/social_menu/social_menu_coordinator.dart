@@ -39,12 +39,15 @@
 import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/models/realtime/realtime_participants.dart';
+import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/repositories/firebase/base_shared_content_repository.dart';
 import 'package:butlery/services/unified/modules/social_coordination/base_social_coordinator.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
+import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// Result of joining a shared menu.
@@ -282,6 +285,22 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
     if (sharedMenu.realtimeMenuId != null) {
       AppLogger.info(
           '📡 Joining collaborative menu session: ${sharedMenu.realtimeMenuId}');
+
+      // Add user as participant to the realtime menu (Bug fix: without this, the menu doesn't appear in saved menus)
+      try {
+        final realtimeMenuService = ServiceLocator.get<RealtimeMenuService>();
+        await realtimeMenuService.addParticipant(
+          resourceId: sharedMenu.realtimeMenuId!,
+          userId: currentUserId!,
+          userDisplayName: currentUserDisplayName ?? 'Okänd',
+          permission: ResourcePermission.editor,
+        );
+        AppLogger.success('✅ Added user as participant to realtime menu');
+      } catch (e) {
+        AppLogger.error('Failed to add participant to realtime menu: $e');
+        // Continue anyway - the user can still view the menu via shared link
+      }
+
       // Mark as joined in the shared menu
       await _sharedMenuRepository.markAsImportedOrJoined(
           sharedMenuId, currentUserId!);

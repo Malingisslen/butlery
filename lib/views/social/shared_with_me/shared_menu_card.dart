@@ -168,19 +168,25 @@ class SharedMenuCard {
   }
 
   static Widget _buildMenuContent(BuildContext context, SharedMenu sharedMenu) {
+    final isCollaborative = sharedMenu.realtimeMenuId != null && sharedMenu.allowCollaboration;
+
     return Row(
       children: [
         Container(
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
+            color: isCollaborative
+                ? Theme.of(context).colorScheme.tertiaryContainer
+                : Theme.of(context).colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
           ),
           child: Icon(
-            Icons.calendar_month,
+            isCollaborative ? Icons.group : Icons.calendar_month,
             size: AppDimensions.iconSizeXl,
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
+            color: isCollaborative
+                ? Theme.of(context).colorScheme.onTertiaryContainer
+                : Theme.of(context).colorScheme.onPrimaryContainer,
           ),
         ),
         const SizedBox(width: AppDimensions.spacingS),
@@ -188,9 +194,48 @@ class SharedMenuCard {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                sharedMenu.menuTitle,
-                style: AppTextStyles.titleMedium,
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      sharedMenu.menuTitle,
+                      style: AppTextStyles.titleMedium,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.spacingXs,
+                      vertical: AppDimensions.spacingXxs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isCollaborative
+                          ? Theme.of(context).colorScheme.tertiaryContainer
+                          : Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isCollaborative ? Icons.sync : Icons.content_copy,
+                          size: AppDimensions.iconSizeXs,
+                          color: isCollaborative
+                              ? Theme.of(context).colorScheme.onTertiaryContainer
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: AppDimensions.spacingXxs),
+                        Text(
+                          isCollaborative ? 'Live' : 'Kopia',
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: isCollaborative
+                                ? Theme.of(context).colorScheme.onTertiaryContainer
+                                : Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: AppDimensions.spacingXs),
               Text(

@@ -279,9 +279,11 @@ service cloud.firestore {
         );
 
         // Users can dismiss for themselves
+        // Issue #014 Fix: Accept 'timestamp' (from BaseMetadataRepository) OR 'dismissedAt'
         allow create: if isAuthenticated()
           && request.auth.uid == userId
-          && hasRequiredFields(['userId', 'dismissedAt']);
+          && hasRequiredFields(['userId'])
+          && request.resource.data.keys().hasAny(['timestamp', 'dismissedAt']);
 
         // Users can undismiss for themselves
         allow delete: if isAuthenticated()
@@ -428,9 +430,11 @@ service cloud.firestore {
         );
 
         // Users can dismiss for themselves
+        // Issue #014 Fix: Accept 'timestamp' (from BaseMetadataRepository) OR 'dismissedAt'
         allow create: if isAuthenticated()
           && request.auth.uid == userId
-          && hasRequiredFields(['userId', 'dismissedAt']);
+          && hasRequiredFields(['userId'])
+          && request.resource.data.keys().hasAny(['timestamp', 'dismissedAt']);
 
         // Users can undismiss for themselves
         allow delete: if isAuthenticated()
@@ -549,9 +553,11 @@ service cloud.firestore {
         );
 
         // Users can dismiss for themselves
+        // Issue #014 Fix: Accept 'timestamp' (from BaseMetadataRepository) OR 'dismissedAt'
         allow create: if isAuthenticated()
           && request.auth.uid == userId
-          && hasRequiredFields(['userId', 'dismissedAt']);
+          && hasRequiredFields(['userId'])
+          && request.resource.data.keys().hasAny(['timestamp', 'dismissedAt']);
 
         // Users can undismiss for themselves
         allow delete: if isAuthenticated()
@@ -1263,6 +1269,27 @@ service cloud.firestore {
 
       // No updates or deletes allowed (immutable activity trail)
       allow update, delete: if false;
+    }
+
+    // ========================================
+    // GLOBAL RECIPE CACHE - Cross-user recipe deduplication
+    // ========================================
+
+    match /globalRecipeCache/{docId} {
+      // Any authenticated user can read cache entries
+      allow read: if isAuthenticated();
+
+      // Any authenticated user can create cache entries
+      allow create: if isAuthenticated();
+
+      // Updates allowed only for access statistics (accessCount, lastAccessedAt)
+      // Prevents modification of cached recipe data
+      allow update: if isAuthenticated()
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['accessCount', 'lastAccessedAt']);
+
+      // No deletes from client - cleanup handled by Cloud Functions
+      allow delete: if false;
     }
 
     // ========================================

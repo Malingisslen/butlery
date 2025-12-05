@@ -17,7 +17,7 @@ import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 
 // Dependencies from Core Module
-import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
@@ -63,6 +63,14 @@ import 'package:butlery/services/extraction/site_parsers/arla_recipe_parser.dart
 import 'package:butlery/services/extraction/site_parsers/koket_recipe_parser.dart';
 import 'package:butlery/services/extraction/site_parsers/recept_recipe_parser.dart';
 
+// Import cache services
+import 'package:butlery/services/import/cache/url_normalizer.dart';
+import 'package:butlery/services/import/cache/content_fingerprint.dart';
+import 'package:butlery/services/import/cache/global_recipe_cache.dart';
+
+// Import rate limiting
+import 'package:butlery/services/import/import_rate_limiter.dart';
+
 /// Content module providing recipe and menu management services.
 /// This module handles all content-related functionality and depends on
 /// the Core Module for foundational services. It provides:
@@ -100,6 +108,12 @@ class ContentModule implements DIModule {
         ContentDetectorService,
         PermissionService, // Moved from CollaborationModule for proper module ordering
         FirebaseRecipePresenceRepository, // Moved from CollaborationModule for UnifiedRecipeService
+        // Import cache services
+        UrlNormalizer,
+        ContentFingerprint,
+        GlobalRecipeCache,
+        // Import rate limiting
+        ImportRateLimiter,
       ];
 
   @override
@@ -116,7 +130,7 @@ class ContentModule implements DIModule {
 
       // Recipe repository - depends on Auth from Core Module
       container.registerSingleton<RecipeRepository>(
-        FirebaseRecipeRepository(authRepository: container<AuthRepository>()),
+        FirebaseRecipeRepository(authRepository: container<auth.AuthRepository>()),
       );
 
       // Collaborative recipe repository
@@ -131,7 +145,7 @@ class ContentModule implements DIModule {
       // Now includes RecipeRepository for proper ownership validation
       container.registerLazySingleton<PermissionService>(
         () => PermissionService(
-          authRepository: container<AuthRepository>(),
+          authRepository: container<auth.AuthRepository>(),
           recipeRepository: container<RecipeRepository>(),
         ),
       );
@@ -152,7 +166,7 @@ class ContentModule implements DIModule {
       // Note: We use lazy singleton to ensure social dependencies are available
       container.registerLazySingleton<UnifiedRecipeService>(
         () => UnifiedRecipeService(
-          authRepository: container<AuthRepository>() as FirebaseAuthRepository,
+          authRepository: container<auth.AuthRepository>() as FirebaseAuthRepository,
           // Include social dependencies if available (from SocialModule)
           ratingsRepository: container.isRegistered<RatingsRepository>()
               ? container<RatingsRepository>()
@@ -166,6 +180,31 @@ class ContentModule implements DIModule {
       // Import manager for various content import methods
       container.registerLazySingleton<ImportManager>(
         () => ImportManager(container<UnifiedRecipeService>().personal),
+      );
+
+      // ==================== IMPORT CACHE SERVICES ====================
+
+      // URL normalizer for consistent cache keys
+      container.registerSingleton<UrlNormalizer>(UrlNormalizer());
+
+      // Content fingerprint generator for recipe deduplication
+      container.registerSingleton<ContentFingerprint>(ContentFingerprint());
+
+      // Global recipe cache for cross-user deduplication
+      container.registerLazySingleton<GlobalRecipeCache>(
+        () => GlobalRecipeCache(
+          firestoreRepository: container<FirestoreRepository>(),
+          urlNormalizer: container<UrlNormalizer>(),
+          fingerprinter: container<ContentFingerprint>(),
+        ),
+      );
+
+      // Import rate limiter for cost protection
+      container.registerLazySingleton<ImportRateLimiter>(
+        () => ImportRateLimiter(
+          firestoreRepository: container<FirestoreRepository>(),
+          authRepository: container<auth.AuthRepository>(),
+        ),
       );
 
       // ==================== CONTENT SERVICES ====================
@@ -189,7 +228,7 @@ class ContentModule implements DIModule {
       // Storage repository for storage operations
       container.registerSingleton<StorageRepository>(
         FirebaseStorageRepository(
-          authRepository: container<AuthRepository>(),
+          authRepository: container<auth.AuthRepository>(),
           auditRepository: container<FirebaseAuditRepository>(),
         ),
       );
@@ -206,7 +245,7 @@ class ContentModule implements DIModule {
       container.registerSingleton<OfflineService>(
         OfflineService(
           firestoreRepository: container<FirestoreRepository>(),
-          authRepository: container<AuthRepository>(),
+          authRepository: container<auth.AuthRepository>(),
         ),
       );
 
@@ -231,7 +270,7 @@ class ContentModule implements DIModule {
 
       if (kDebugMode) {
         debugPrint(
-          '✅ [ContentModule] Configured 16 services (Recipes, Menus, Import, Storage, Offline, Backup, Extraction, Detection)',
+          '✅ [ContentModule] Configured 20 services (Recipes, Menus, Import, Cache, RateLimiter, Storage, Offline, Backup, Extraction, Detection)',
         );
       }
     } catch (e) {
@@ -335,6 +374,8 @@ class ContentModule implements DIModule {
         'BackupService': container<BackupService>(),
         'SocialMediaExtractor': container<SocialMediaExtractor>(),
         'ExtractionManager': container<ExtractionManager>(),
+        'GlobalRecipeCache': container<GlobalRecipeCache>(),
+        'ImportRateLimiter': container<ImportRateLimiter>(),
       };
 
       // Perform health checks on services that support it
