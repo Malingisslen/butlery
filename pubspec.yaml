@@ -29,7 +29,7 @@ dependencies:
 
   # ==================== STATE MANAGEMENT ====================
   provider: ^6.1.2
-  get_it: ^9.0.5
+  get_it: ^9.2.0
 
   # ==================== LOCAL STORAGE ====================
   hive: ^2.2.3
@@ -90,7 +90,7 @@ dev_dependencies:
   
   # ==================== MOCKING (Mocktail preferred over Mockito) ====================
   mocktail: ^1.0.4
-  build_runner: ^2.9.0  # 2.10.1 requires analyzer 8.0+, blocked by Flutter SDK 3.35.1
+  build_runner: ^2.10.4  # 2.10.1 requires analyzer 8.0+, blocked by Flutter SDK 3.35.1
   
   # ==================== FIREBASE MOCKING ====================
   fake_cloud_firestore: ^4.0.0
@@ -121,7 +121,7 @@ dev_dependencies:
   # ==================== PERFORMANCE & ACCESSIBILITY ====================
   flutter_driver:
     sdk: flutter
-  benchmark_harness: ^2.3.0
+  benchmark_harness: ^2.4.0
 
   # ==================== BUILD TOOLS ====================
   # analyzer provided by test package - let pub determine compatible version
