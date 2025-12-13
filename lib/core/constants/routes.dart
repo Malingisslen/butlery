@@ -28,6 +28,9 @@ class Routes {
   
   /// File import route (CSV/Excel)
   static const String fileImport = '/fileImport';
+
+  /// Smart import route (unified URL/text import)
+  static const String smartImport = '/smartImport';
   
   /// Recipe detail route
   static const String receptDetalj = '/receptDetalj';
@@ -77,6 +80,7 @@ class Routes {
     skrivSjalv,
     franSocialaMedier,
     importFranArkiv,
+    smartImport,
     receptDetalj,
     redigeraRecept,
     receiveShare,
@@ -105,6 +109,7 @@ class Routes {
     skrivSjalv,
     franSocialaMedier,
     importFranArkiv,
+    smartImport,
     receiveShare,
   };
 
@@ -176,6 +181,7 @@ class Routes {
     skrivSjalv,
     franSocialaMedier,
     importFranArkiv,
+    smartImport,
     receptDetalj,
     redigeraRecept,
     receiveShare,

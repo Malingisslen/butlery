@@ -1,6 +1,6 @@
 # BUTLERY - FEATURE INDEX
 
-**Last Updated:** 2025-12-01
+**Last Updated:** 2025-12-06
 **Status:** Production-Ready
 
 ---
@@ -9,17 +9,17 @@
 
 | Category | Count |
 |----------|-------|
-| Views/Screens | 85 |
-| Services | 183 |
-| ViewModels | 90 |
-| Models | 48 |
-| **Total Files** | **406** |
+| Views/Screens | 87 |
+| Services | 195 |
+| ViewModels | 92 |
+| Models | 52 |
+| **Total Files** | **426** |
 
 ---
 
 ## Feature Summary
 
-**60+ features** across **15 categories**
+**70+ features** across **16 categories**
 
 ---
 
@@ -49,8 +49,8 @@ Consent management (Art. 7), data export (Art. 15/20), account deletion (Art. 17
 ### 8. Authentication & Security (6 features)
 Email/password auth, password reset, permission system, role-based access, ownership validation, session management
 
-### 9. Performance & Caching (8 features)
-Intelligent caching, recipe caching, user profile caching, image optimization, startup optimization, Firebase performance monitoring, analytics integration, connection monitoring
+### 9. Performance & Caching (10 features)
+Intelligent caching, recipe caching, user profile caching, image optimization, startup optimization, Firebase performance monitoring, analytics integration, connection monitoring, **global recipe cache (cross-user deduplication)**, **content fingerprinting**
 
 ### 10. Offline Support (4 features)
 Offline mode, sync queue, conflict resolution, local storage
@@ -58,8 +58,8 @@ Offline mode, sync queue, conflict resolution, local storage
 ### 11. Storage & Media (5 features)
 Firebase Storage, thumbnail generation, multi-image support, upload queue, upload speed tracking
 
-### 12. Content Extraction (5 features)
-Web scraping, platform detection, platform-specific parsing, OCR extraction, recipe detection
+### 12. Content Extraction & Import (12 features)
+Web scraping, platform detection, platform-specific parsing (ICA, Arla, Köket, Recept.se), OCR extraction (multi-provider), recipe detection, **YouTube transcript extraction**, **TikTok import (oEmbed + emoji parsing)**, **Instagram enhancement**, **LLM-powered extraction (Mistral AI)**, **user-assisted import UI**, **tiered fallback system**
 
 ### 13. Deep Linking & Sharing (3 features)
 Deep link handling, native share, receive share
@@ -70,20 +70,44 @@ Real-time recipe editing, real-time menu planning, real-time shopping, presence 
 ### 15. Architecture & Infrastructure (6 features)
 Unified services (facade pattern), modular DI system (7 modules), MVVM architecture, Firebase backend, responsive design, code quality utilities
 
+### 16. Rate Limiting & Cost Control (5 features)
+**Per-user import rate limits** (minute/hour/day), **LLM cost budgets** (daily/monthly), **rate limit dialog UI**, **scheduled cleanup functions**, **analytics logging**
+
+---
+
+## Import System Architecture (NEW)
+
+Multi-tier extraction with intelligent fallbacks:
+
+| Pipeline | Tiers | Technologies |
+|----------|-------|--------------|
+| Website | 5 | JSON-LD → Site Parsers → Microdata → Headless → LLM |
+| YouTube | 3 | Transcript + LLM → User-Assisted → Screenshot |
+| TikTok | 4 | oEmbed → Emoji Parsing → LLM → Screenshot |
+| Instagram | 3 | Graph API → Caption Parse → User-Assisted |
+| Photo/OCR | 4 | OCR.space → Google Vision → Tesseract → LLM Vision |
+
+**Cloud Functions:**
+- `structureRecipe` - LLM recipe extraction
+- `ocrRecipeImage` - LLM vision OCR
+- `cleanupExpiredCache` - Daily cache cleanup
+- `cleanupOldRateLimits` - Weekly rate limit cleanup
+
 ---
 
 ## Technical Foundation
 
 - **Architecture:** MVVM + Repository Pattern + Modular DI
-- **Backend:** Firebase (Auth, Firestore, Storage, FCM, Analytics, Performance)
+- **Backend:** Firebase (Auth, Firestore, Storage, FCM, Analytics, Performance, Cloud Functions)
+- **LLM Integration:** Mistral AI (Pixtral for vision)
 - **Platform:** Flutter (mobile + web)
 - **Target:** Swedish-speaking home cooks
 
 ---
 
-## Routes (27 primary)
+## Routes (28 primary)
 
-`/` Home | `/auth` Auth | `/laggTill` Add | `/importViaUrl` URL | `/photoImport` Photo | `/skrivSjalv` Manual | `/franSocialaMedier` Social | `/importFranArkiv` Archive | `/fileImport` File | `/receptDetalj` Detail | `/redigeraRecept` Edit | `/receiveShare` Receive | `/veckomeny` Menu | `/realtime-menu` Collab Menu | `/inkopslista` Shopping | `/discovery` Discovery | `/profile/edit` Profile | `/friends` Friends | `/friends/requests` Requests | `/shared` Shared | `/collaborative-shopping` Collab | `/menu-preview` Preview | `/create-shared-shopping` Create | `/friend-profile` Friend | `/shared-shopping-lists` Lists | `/messages` Messages | `/chat` Chat
+`/` Home | `/auth` Auth | `/laggTill` Add | `/importViaUrl` URL | `/photoImport` Photo | `/skrivSjalv` Manual | `/franSocialaMedier` Social | `/importFranArkiv` Archive | `/fileImport` File | `/receptDetalj` Detail | `/redigeraRecept` Edit | `/receiveShare` Receive | `/veckomeny` Menu | `/realtime-menu` Collab Menu | `/inkopslista` Shopping | `/discovery` Discovery | `/profile/edit` Profile | `/friends` Friends | `/friends/requests` Requests | `/shared` Shared | `/collaborative-shopping` Collab | `/menu-preview` Preview | `/create-shared-shopping` Create | `/friend-profile` Friend | `/shared-shopping-lists` Lists | `/messages` Messages | `/chat` Chat | `/assistedImport` User-Assisted
 
 ---
 

@@ -28,8 +28,11 @@
 
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
+import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
 
 /// Strategy for importing recipes from photos using OCR technology.
@@ -57,6 +60,15 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
     TextImportStrategy? textStrategy,
   })  : _ocrService = ocrService ?? OCRExtractionService.instance,
         _textStrategy = textStrategy ?? TextImportStrategy();
+
+  /// Get the LLM enhancement service (lazy initialization with graceful fallback)
+  LlmEnhancementService? get _llmService {
+    try {
+      return ServiceLocator.get<LlmEnhancementService>();
+    } catch (e) {
+      return null;
+    }
+  }
 
   @override
   String get strategyName => 'Photo Import';
@@ -115,6 +127,16 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
       final ocrResult = await _ocrService.extractText(imageBytes);
 
       if (!ocrResult.isSuccessful) {
+        // OCR failed - try LLM vision as Tier 4 fallback
+        final llmResult = await _tryLlmFallback(
+          imageBytes,
+          options?['sourceType'] as String?,
+        );
+        if (llmResult != null) {
+          return llmResult;
+        }
+
+        // LLM also unavailable or failed
         return ImportResult.failure(
           ocrResult.errorMessage ?? 'OCR extraction failed',
           metadata: _buildMetadata(
@@ -127,6 +149,16 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
 
       // Check if OCR extracted any text
       if (ocrResult.text.isEmpty) {
+        // No text extracted - try LLM vision as Tier 4 fallback
+        final llmResult = await _tryLlmFallback(
+          imageBytes,
+          options?['sourceType'] as String?,
+        );
+        if (llmResult != null) {
+          return llmResult;
+        }
+
+        // LLM also unavailable or failed
         return ImportResult.failure(
           'No text could be extracted from the image. Please ensure the image is clear and contains readable text.',
           metadata: _buildMetadata(
@@ -141,6 +173,16 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
       final textResult = await _textStrategy.import(ocrResult.text);
 
       if (!textResult.isSuccess || textResult.recipe == null) {
+        // Text parsing failed - try LLM vision as Tier 4 fallback
+        final llmResult = await _tryLlmFallback(
+          imageBytes,
+          options?['sourceType'] as String?,
+        );
+        if (llmResult != null) {
+          return llmResult;
+        }
+
+        // LLM also unavailable or failed
         return ImportResult.failure(
           'Could not parse recipe from extracted text. ${textResult.errorMessage ?? "The text may not contain a valid recipe structure."}',
           warnings: _buildWarnings(
@@ -179,6 +221,58 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
           'error_type': e.runtimeType.toString(),
         },
       );
+    }
+  }
+
+  /// Try LLM vision extraction as Tier 4 fallback when OCR fails.
+  Future<ImportResult?> _tryLlmFallback(
+    Uint8List imageBytes,
+    String? sourceType,
+  ) async {
+    final llmService = _llmService;
+    if (llmService == null) {
+      return null; // LLM service not available
+    }
+
+    try {
+      final llmResult = await llmService.extractFromImage(
+        imageBytes,
+        context: 'Recipe image from photo import',
+      );
+
+      // Convert ImportResultV2 to ImportResult
+      if (llmResult is ImportSuccess) {
+        return ImportResult.success(
+          llmResult.recipe,
+          metadata: {
+            'strategy': 'Photo Import (LLM Vision)',
+            'tier': 4,
+            'method': 'llm-vision',
+            'usedLlm': true,
+            'image_size_bytes': imageBytes.length,
+            'source_type': sourceType,
+            ...?llmResult.metadata,
+          },
+        );
+      }
+
+      if (llmResult is ImportNeedsAssistance) {
+        return ImportResult.assistance(
+          extractedText: llmResult.extractedText,
+          suggestedTitle: llmResult.suggestedTitle,
+          metadata: {
+            'imageBytes': imageBytes,
+            'tier': 4,
+            'method': 'llm-vision-partial',
+          },
+        );
+      }
+
+      // LLM failed - return null to fall through to original error
+      return null;
+    } catch (e) {
+      // LLM error - return null to fall through to original error
+      return null;
     }
   }
 
