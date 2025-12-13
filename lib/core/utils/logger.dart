@@ -392,4 +392,23 @@ class AppLogger {
       // Silently fail if Crashlytics not initialized
     }
   }
+
+  /// Logs analytics events with structured data for operational metrics.
+  /// This method provides a standardized way to log analytics events that can be
+  /// used for monitoring cache performance, API usage, and other operational metrics.
+  /// [eventName] Name of the analytics event (e.g., 'cache_hit', 'rate_limit_denied')
+  /// [data] Optional map of key-value pairs with event context
+  /// **Usage Examples:**
+  /// ```dart
+  /// AppLogger.analytics('cache_hit', {'domain': 'example.com', 'ageInDays': 5});
+  /// AppLogger.analytics('llm_extraction_success', {'tier': 3, 'model': 'pixtral'});
+  /// ```
+  static void analytics(String eventName, [Map<String, dynamic>? data]) {
+    final dataStr = data != null ? ' $data' : '';
+    developer.log(
+      '📊 $eventName$dataStr',
+      name: 'Analytics',
+      level: 800, // Info level
+    );
+  }
 }

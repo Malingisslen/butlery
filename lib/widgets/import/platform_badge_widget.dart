@@ -1,0 +1,196 @@
+/// Platform badge widget showing detected platform with icon.
+///
+/// Displays the platform icon and Swedish label for detected input type
+/// (YouTube, TikTok, Instagram, Website, or Text).
+library;
+
+import 'package:flutter/material.dart';
+import 'package:butlery/services/import/input_detector.dart';
+
+/// Badge showing detected platform from user input.
+class PlatformBadgeWidget extends StatelessWidget {
+  /// The detection result from InputDetector.
+  final InputDetectionResult? detection;
+
+  /// Whether to show the badge (hidden when detection is null).
+  final bool isVisible;
+
+  const PlatformBadgeWidget({
+    super.key,
+    required this.detection,
+    this.isVisible = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (!isVisible || detection == null || detection!.input.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 200),
+      opacity: isVisible ? 1.0 : 0.0,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: _getBackgroundColor(detection!.platform, colorScheme),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: _getBorderColor(detection!.platform, colorScheme),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _getIconForPlatform(detection!.platform),
+              size: 16,
+              color: _getIconColor(detection!.platform, colorScheme),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              detection!.platformLabel,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: _getTextColor(detection!.platform, colorScheme),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _getIconForPlatform(Platform platform) {
+    switch (platform) {
+      case Platform.youtube:
+        return Icons.play_circle_outline;
+      case Platform.tiktok:
+        return Icons.music_note;
+      case Platform.instagram:
+        return Icons.camera_alt_outlined;
+      case Platform.website:
+        return Icons.language;
+      case Platform.unknown:
+        return Icons.text_snippet_outlined;
+    }
+  }
+
+  Color _getBackgroundColor(Platform platform, ColorScheme colorScheme) {
+    switch (platform) {
+      case Platform.youtube:
+        return const Color(0xFFFFE0E0); // Light red
+      case Platform.tiktok:
+        return const Color(0xFFE0F7FA); // Light cyan
+      case Platform.instagram:
+        return const Color(0xFFFCE4EC); // Light pink
+      case Platform.website:
+        return colorScheme.primaryContainer.withValues(alpha: 0.5);
+      case Platform.unknown:
+        return colorScheme.surfaceContainerHighest;
+    }
+  }
+
+  Color _getBorderColor(Platform platform, ColorScheme colorScheme) {
+    switch (platform) {
+      case Platform.youtube:
+        return const Color(0xFFFF0000).withValues(alpha: 0.3);
+      case Platform.tiktok:
+        return const Color(0xFF00F2EA).withValues(alpha: 0.5);
+      case Platform.instagram:
+        return const Color(0xFFE1306C).withValues(alpha: 0.3);
+      case Platform.website:
+        return colorScheme.primary.withValues(alpha: 0.3);
+      case Platform.unknown:
+        return colorScheme.outline.withValues(alpha: 0.5);
+    }
+  }
+
+  Color _getIconColor(Platform platform, ColorScheme colorScheme) {
+    switch (platform) {
+      case Platform.youtube:
+        return const Color(0xFFFF0000);
+      case Platform.tiktok:
+        return const Color(0xFF000000);
+      case Platform.instagram:
+        return const Color(0xFFE1306C);
+      case Platform.website:
+        return colorScheme.primary;
+      case Platform.unknown:
+        return colorScheme.onSurfaceVariant;
+    }
+  }
+
+  Color _getTextColor(Platform platform, ColorScheme colorScheme) {
+    switch (platform) {
+      case Platform.youtube:
+        return const Color(0xFFCC0000);
+      case Platform.tiktok:
+        return const Color(0xFF000000);
+      case Platform.instagram:
+        return const Color(0xFFC13584);
+      case Platform.website:
+        return colorScheme.onPrimaryContainer;
+      case Platform.unknown:
+        return colorScheme.onSurfaceVariant;
+    }
+  }
+}
+
+/// Compact platform icon for inline display.
+class PlatformIconWidget extends StatelessWidget {
+  /// The platform to display.
+  final Platform platform;
+
+  /// Icon size.
+  final double size;
+
+  const PlatformIconWidget({
+    super.key,
+    required this.platform,
+    this.size = 20,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Icon(
+      _getIconForPlatform(platform),
+      size: size,
+      color: _getIconColor(platform, Theme.of(context).colorScheme),
+    );
+  }
+
+  IconData _getIconForPlatform(Platform platform) {
+    switch (platform) {
+      case Platform.youtube:
+        return Icons.play_circle_outline;
+      case Platform.tiktok:
+        return Icons.music_note;
+      case Platform.instagram:
+        return Icons.camera_alt_outlined;
+      case Platform.website:
+        return Icons.language;
+      case Platform.unknown:
+        return Icons.text_snippet_outlined;
+    }
+  }
+
+  Color _getIconColor(Platform platform, ColorScheme colorScheme) {
+    switch (platform) {
+      case Platform.youtube:
+        return const Color(0xFFFF0000);
+      case Platform.tiktok:
+        return const Color(0xFF000000);
+      case Platform.instagram:
+        return const Color(0xFFE1306C);
+      case Platform.website:
+        return colorScheme.primary;
+      case Platform.unknown:
+        return colorScheme.onSurfaceVariant;
+    }
+  }
+}

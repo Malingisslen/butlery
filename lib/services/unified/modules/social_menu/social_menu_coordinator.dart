@@ -39,7 +39,6 @@
 import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
-import 'package:butlery/models/realtime/realtime_participants.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
@@ -92,7 +91,8 @@ class MenuServiceAdapter {
       // Implementation depends on how menus are saved in UnifiedMenuService
       // This is a placeholder - the actual implementation would need to be
       // coordinated with the UnifiedMenuService API
-      AppLogger.info('💾 Saving menu with ${_getMenuRecipeCount(menu)} recipes (using $_menuService)');
+      AppLogger.info(
+          '💾 Saving menu with ${_getMenuRecipeCount(menu)} recipes (using $_menuService)');
       return null; // Placeholder - needs actual implementation
     } catch (e) {
       AppLogger.error('Failed to save menu: $e');
@@ -107,7 +107,8 @@ class MenuServiceAdapter {
 }
 
 /// Social Menu Coordinator extending BaseSocialCoordinator for consistent patterns
-class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recipe>>, SharedMenu> {
+class SocialMenuCoordinator
+    extends BaseSocialCoordinator<Map<String, List<Recipe>>, SharedMenu> {
   @override
   String get serviceName => 'SocialMenuCoordinator';
 
@@ -140,11 +141,11 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
   })  : _serviceAdapter = serviceAdapter ?? MenuServiceAdapter(),
         _getMenu = getMenu,
         _saveMenu = saveMenu {
-    
     // Initialize SharedMenu repository
     _sharedMenuRepository = FirebaseSharedMenuRepository();
 
-    AppLogger.info('✅ SocialMenuCoordinator initialized for menu sharing and collaboration using $_serviceAdapter');
+    AppLogger.info(
+        '✅ SocialMenuCoordinator initialized for menu sharing and collaboration using $_serviceAdapter');
   }
 
   // ===== BASE SOCIAL COORDINATOR IMPLEMENTATIONS =====
@@ -156,18 +157,20 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
   String getContentTitle(Map<String, List<Recipe>> content) {
     // Generate descriptive title from menu content
     final categories = content.keys.toList();
-    final totalRecipes = content.values.fold(0, (sum, recipes) => sum + recipes.length);
-    
+    final totalRecipes =
+        content.values.fold(0, (sum, recipes) => sum + recipes.length);
+
     if (categories.isEmpty) return 'Tom meny';
     if (categories.length == 1) {
       return '${categories.first} meny ($totalRecipes recept)';
     }
-    
+
     return 'Veckomeny med ${categories.join(', ')} ($totalRecipes recept)';
   }
 
   @override
-  BaseSharedContentRepository<SharedMenu> get sharedRepository => _sharedMenuRepository;
+  BaseSharedContentRepository<SharedMenu> get sharedRepository =>
+      _sharedMenuRepository;
 
   @override
   Future<Map<String, List<Recipe>>?> getContentById(String contentId) async {
@@ -185,8 +188,9 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
     Map<String, dynamic>? additionalData,
   }) {
     final allowCollaboration = additionalData?['allowCollaboration'] ?? false;
-    final menuTitle = additionalData?['menuTitle'] ?? getContentTitle(contentSnapshot);
-    
+    final menuTitle =
+        additionalData?['menuTitle'] ?? getContentTitle(contentSnapshot);
+
     return SharedMenu.create(
       sharedByUserId: sharedByUserId,
       sharedByDisplayName: sharedByDisplayName,
@@ -205,8 +209,9 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
     String? newTitle,
   }) {
     // For menus, we copy the entire menu structure with attribution
-    final importedMenu = Map<String, List<Recipe>>.from(sharedContent.menuSnapshot);
-    
+    final importedMenu =
+        Map<String, List<Recipe>>.from(sharedContent.menuSnapshot);
+
     // Add attribution information to each recipe
     final attributedMenu = <String, List<Recipe>>{};
     importedMenu.forEach((category, recipes) {
@@ -217,7 +222,8 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
       }).toList();
     });
 
-    AppLogger.info('📋 Created imported menu with ${_getTotalRecipeCount(attributedMenu)} recipes and attribution');
+    AppLogger.info(
+        '📋 Created imported menu with ${_getTotalRecipeCount(attributedMenu)} recipes and attribution');
     return attributedMenu;
   }
 
@@ -327,8 +333,7 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
       return null;
     }
 
-    AppLogger.success(
-        '✅ Menu imported successfully: ${importResult.menuId}');
+    AppLogger.success('✅ Menu imported successfully: ${importResult.menuId}');
 
     return MenuJoinResult(
       menuId: importResult.menuId,
@@ -354,8 +359,9 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
     required String sharedMenuId,
     String? newTitle,
   }) async {
-    AppLogger.warning('⚠️ Using legacy import mode - consider using joinSharedMenu for true copy-on-write');
-    
+    AppLogger.warning(
+        '⚠️ Using legacy import mode - consider using joinSharedMenu for true copy-on-write');
+
     try {
       AppLogger.info('📥 Importing shared menu $sharedMenuId (legacy mode)');
 
@@ -367,8 +373,9 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
       }
 
       // Create imported menu with attribution (GitHub fork style)
-      final importedMenu = sharedMenu.createImportMenu(newOwnerId: currentUserId!);
-      
+      final importedMenu =
+          sharedMenu.createImportMenu(newOwnerId: currentUserId!);
+
       // Save imported menu
       final menuId = await _serviceAdapter.saveMenu(importedMenu);
       if (menuId == null) {
@@ -377,9 +384,11 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
       }
 
       // Mark as imported in SharedMenu
-      await _sharedMenuRepository.markAsImportedOrJoined(sharedMenuId, currentUserId!);
+      await _sharedMenuRepository.markAsImportedOrJoined(
+          sharedMenuId, currentUserId!);
 
-      AppLogger.success('✅ Menu imported successfully with attribution (legacy mode)');
+      AppLogger.success(
+          '✅ Menu imported successfully with attribution (legacy mode)');
       return menuId;
     } catch (e) {
       AppLogger.error('Failed to import shared menu: $e');
@@ -438,7 +447,8 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
     try {
       final viewed = await _sharedMenuRepository.hasViewed(menuId, userId);
       final imported = await _sharedMenuRepository.hasEngaged(menuId, userId);
-      final dismissed = await _sharedMenuRepository.hasDismissed(menuId, userId);
+      final dismissed =
+          await _sharedMenuRepository.hasDismissed(menuId, userId);
 
       _viewedStatusCache[menuId] = viewed;
       _importedStatusCache[menuId] = imported;
@@ -551,14 +561,16 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
   // ===== COPY-ON-WRITE ABSTRACT METHOD IMPLEMENTATIONS =====
 
   @override
-  Map<String, List<Recipe>> getOriginalContentFromShared(SharedMenu sharedContent) {
+  Map<String, List<Recipe>> getOriginalContentFromShared(
+      SharedMenu sharedContent) {
     return sharedContent.menuSnapshot;
   }
 
   @override
-  Future<String?> createStaticCopyForOwner(dynamic originalContent, String ownerId) async {
+  Future<String?> createStaticCopyForOwner(
+      dynamic originalContent, String ownerId) async {
     final menu = originalContent as Map<String, List<Recipe>>;
-    
+
     // Add "(Min kopia)" suffix to indicate owner's static copy
     final staticMenu = <String, List<Recipe>>{};
     menu.forEach((category, recipes) {
@@ -569,7 +581,7 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
         );
       }).toList();
     });
-    
+
     return await _saveMenu(staticMenu);
   }
 
@@ -598,12 +610,14 @@ class SocialMenuCoordinator extends BaseSocialCoordinator<Map<String, List<Recip
   // ===== NOTIFICATION PLACEHOLDERS =====
 
   /// Send menu invitation notifications
-  Future<void> sendMenuInvitationNotifications(String menuId, List<String> inviteeUserIds) async {
+  Future<void> sendMenuInvitationNotifications(
+      String menuId, List<String> inviteeUserIds) async {
     await sendInvitationNotifications(menuId, inviteeUserIds);
   }
 
   /// Send menu sharing notifications
-  Future<void> sendMenuSharingNotifications(String menuId, List<String> sharedWithUserIds) async {
+  Future<void> sendMenuSharingNotifications(
+      String menuId, List<String> sharedWithUserIds) async {
     await sendSharingNotifications(menuId, sharedWithUserIds);
   }
 }

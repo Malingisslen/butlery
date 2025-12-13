@@ -23,6 +23,7 @@ import 'package:butlery/views/photo_import_view.dart';
 import 'package:butlery/views/file_import_view.dart';
 import 'package:butlery/views/import_via_url_view.dart';
 import 'package:butlery/views/receive_share_view.dart';
+import 'package:butlery/views/smart_import_view.dart';
 
 // Unified shopping system
 import 'package:butlery/views/unified_shopping_view.dart';
@@ -127,7 +128,10 @@ class AppRouter {
         
         case Routes.fileImport:
           return _buildRoute(const FileImportView(), settings, Routes.getAnimationType(routeName));
-        
+
+        case Routes.smartImport:
+          return _buildRoute(const SmartImportView(), settings, Routes.getAnimationType(routeName));
+
         case Routes.skrivSjalv:
           // Handle arguments for template or initial recipe
           final arguments = settings.arguments;

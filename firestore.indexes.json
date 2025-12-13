@@ -359,6 +359,44 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "globalRecipeCache",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "contentFingerprint",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "globalRecipeCache",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "domain",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "cachedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "globalRecipeCache",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "sourceType",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "cachedAt",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": [

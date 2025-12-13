@@ -125,8 +125,143 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return false;
   }
 
+  // Temporary marker for protected decimals (Unicode BLACK CIRCLE)
+  static const _decimalMarker = '⬤';
+
+  /// Protect decimal numbers from being corrupted by sentence splitting.
+  /// Example: "0.75 dl" → "0⬤75 dl" (protected)
+  String _protectDecimals(String text) {
+    return text.replaceAllMapped(
+      RegExp(r'(\d)\.(\d)'),
+      (m) => '${m.group(1)}$_decimalMarker${m.group(2)}',
+    );
+  }
+
+  /// Restore protected decimals back to normal.
+  /// Example: "0⬤75 dl" → "0.75 dl"
+  String _restoreDecimals(String text) {
+    return text.replaceAll(_decimalMarker, '.');
+  }
+
+  /// Smart sentence splitting that respects decimals and Swedish patterns.
+  /// Splits at periods ONLY when followed by sentence boundaries.
+  String _smartSentenceSplit(String text) {
+    // Step 1: Protect decimals FIRST
+    String result = _protectDecimals(text);
+
+    // Step 2: Also protect common abbreviations
+    result = result.replaceAll('ca.', 'ca⬛');
+    result = result.replaceAll('ev.', 'ev⬛');
+    result = result.replaceAll('st.', 'st⬛');
+    result = result.replaceAll('t.ex.', 't⬛ex⬛');
+
+    // Step 3: Split at period + space + capital letter (new sentence)
+    result = result.replaceAllMapped(
+      RegExp(r'\.(\s*)([A-ZÅÄÖ])'),
+      (m) => '.\n${m.group(2)}',
+    );
+
+    // Step 4: Split at period followed immediately by Swedish action verbs
+    // These indicate a new instruction is starting
+    const actionWords =
+        'stek|koka|blanda|rör|häll|lägg|skär|servera|värm|vispa|grädda|fräs|'
+        'sjud|tillsätt|smaksätt|strö|vänd|ta|låt|förvärm|sätt|börja|gör|ställ|'
+        'skala|hacka|riv|strimla|marinera|krydda|toppa|garnera';
+    result = result.replaceAllMapped(
+      RegExp('\\.($actionWords)', caseSensitive: false),
+      (m) => '.\n${m.group(1)}',
+    );
+
+    // Step 5: Restore protected abbreviations
+    result = result.replaceAll('ca⬛', 'ca.');
+    result = result.replaceAll('ev⬛', 'ev.');
+    result = result.replaceAll('st⬛', 'st.');
+    result = result.replaceAll('t⬛ex⬛', 't.ex.');
+
+    // Step 6: Restore decimals
+    result = _restoreDecimals(result);
+
+    return result;
+  }
+
+  /// Split concatenated ingredient text that lacks line breaks.
+  /// Common in Instagram captions where ingredients run together.
+  /// Example: "oystersås2 msk japansk soya1 msk" → "oystersås\n2 msk japansk soya\n1 msk"
+  String _splitConcatenatedIngredients(String text) {
+    // CRITICAL: Protect decimals before ANY regex processing
+    String result = _protectDecimals(text);
+
+    // Pattern 1: Split before measurements when preceded by word characters
+    // Match: letters followed directly by digit + measurement unit
+    // Example: "oystersås2 msk" → "oystersås\n2 msk"
+    // Example: "strösocker500 g" → "strösocker\n500 g"
+    result = result.replaceAllMapped(
+      RegExp(
+        '([a-zåäöA-ZÅÄÖ]{2,})(\\d+(?:[⬤,]\\d+)?\\s*(?:dl|cl|ml|msk|tsk|krm|g|kg|hg|st|burk|pkt|påse|bit|skiva|klyfta|klyft)\\b)',
+        caseSensitive: false,
+      ),
+      (m) => '${m.group(1)}\n${m.group(2)}',
+    );
+
+    // Pattern 2: Split before Swedish recipe section headers
+    // Example: "...pepparbiffen500 g" → "...peppar\nbiffen\n500 g"
+    // Example: "...sockersås0.75 dl" → "...socker\nsås\n0.75 dl"
+    result = result.replaceAllMapped(
+      RegExp(
+        r'([a-zåäö])(sås|såsen|biffen|övrigt|marinaden|gräddsåsen|till servering|kycklingen|fisken|köttet|grönsakerna|woka ihop|servera)',
+        caseSensitive: false,
+      ),
+      (m) => '${m.group(1)}\n${m.group(2)}\n',
+    );
+
+    // Pattern 3: Split before "X portioner" patterns mid-text
+    // Example: "recept4 portioner" → "recept\n4 portioner"
+    result = result.replaceAllMapped(
+      RegExp(r'([a-zåäö]{2,})\s*(\d+\s*portioner?\b)', caseSensitive: false),
+      (m) => '${m.group(1)}\n${m.group(2)}',
+    );
+
+    // Pattern 3b: Split AFTER "X portioner" when followed by uppercase (section header)
+    // Example: "4 portionerSÅS" → "4 portioner\nSÅS"
+    result = result.replaceAllMapped(
+      RegExp(r'(\d+\s*portioner?)\s*([A-ZÅÄÖ])', caseSensitive: false),
+      (m) => '${m.group(1)}\n${m.group(2)}',
+    );
+
+    // Pattern 4: Split when a digit+unit is immediately followed by another digit
+    // Example: "2 msk soya1 tsk" → "2 msk soya\n1 tsk"
+    result = result.replaceAllMapped(
+      RegExp(
+        r'(\d+\s*(?:dl|cl|ml|msk|tsk|krm|g|kg|hg|st|burk|pkt)\s+[a-zåäöA-ZÅÄÖ]+)(\d+\s*(?:dl|cl|ml|msk|tsk|krm|g|kg|hg|st|burk|pkt)\b)',
+        caseSensitive: false,
+      ),
+      (m) => '${m.group(1)}\n${m.group(2)}',
+    );
+
+    // Pattern 5: Split ALL CAPS section header from following content
+    // Example: "BIFFENStrimla biffen" → "BIFFEN\nStrimla biffen"
+    // Example: "WOKA IHOPStek biffen" → "WOKA IHOP\nStek biffen"
+    // Note: Following word often starts with uppercase (sentence case), so we match
+    // uppercase letter followed by lowercase letter to detect word boundary
+    result = result.replaceAllMapped(
+      RegExp(r'([A-ZÅÄÖ]{2,15}(?:\s+[A-ZÅÄÖ]+)?)([A-ZÅÄÖ])([a-zåäö])'),
+      (m) => '${m.group(1)}\n${m.group(2)}${m.group(3)}',
+    );
+
+    // Restore decimals at the end
+    result = _restoreDecimals(result);
+
+    return result;
+  }
+
   String _preprocessText(String input) {
     String processed = input;
+
+    // Stage 1: Smart sentence splitting with decimal protection
+    processed = _smartSentenceSplit(processed);
+
+    // Stage 2: Split concatenated ingredients (handles Instagram text without line breaks)
+    processed = _splitConcatenatedIngredients(processed);
 
     // Clean up social media formatting
     processed = _cleanSocialMediaFormatting(processed);
@@ -140,10 +275,16 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       (match) => '${match.group(0)}\n',
     );
 
+    // Normalize instruction header variants before adding line breaks
+    processed = processed.replaceAll(
+      RegExp(r'gör\s*så\s*här', caseSensitive: false),
+      'gör så här',
+    );
+
     // Add line breaks after instruction headers
     processed = processed.replaceAllMapped(
       RegExp(
-        r'(gör så här|instruktion|tillredning|steg|instructions|method|directions|preparation)',
+        r'(gör så här|gör såhär|instruktion|tillredning|tillagning|steg|instructions|method|directions|preparation)',
         caseSensitive: false,
       ),
       (match) => '${match.group(0)}\n',
@@ -194,6 +335,353 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     return processed;
   }
 
+  /// Known recipe section headers in Swedish
+  static const _sectionHeaders = {
+    // Ingredient sections
+    'såsen',
+    'sås',
+    'biffen',
+    'marinaden',
+    'kycklingen',
+    'grönsakerna',
+    'övrigt',
+    'fisken',
+    'köttet',
+    'gräddsåsen',
+    'till servering',
+    // Instruction sections
+    'gör så här',
+    'tillagning',
+    'instruktioner',
+    'woka ihop',
+    'servera',
+  };
+
+  /// Section headers that indicate INSTRUCTIONS (not ingredients)
+  static const _instructionSectionHeaders = {
+    'woka ihop',
+    'servera',
+    'gör så här',
+    'gör såhär', // variant without space
+    'gör så',
+    'tillagning',
+    'tillaga',
+    'förbered',
+    'instruktioner',
+    'steg',
+    'övrigt', // often contains final instructions
+  };
+
+  /// Check if text is a section header (like "biffen", "såsen")
+  bool _isSectionHeader(String text) {
+    final clean = text.toLowerCase().trim();
+    // Check known headers
+    if (_sectionHeaders.contains(clean)) return true;
+    // Single word < 15 chars that could be a component name
+    if (clean.length < 15 &&
+        !clean.contains(' ') &&
+        RegExp(r'^[a-zåäö]+$').hasMatch(clean)) {
+      return true;
+    }
+    return false;
+  }
+
+  /// Detect garbage/invalid text fragments
+  bool _isGarbage(String text) {
+    final clean = text.trim();
+
+    // Too short
+    if (clean.length < 3) return true;
+
+    // Just "na" or punctuation fragments (common Instagram artifact)
+    if (RegExp(r'^[na\.\s,]+$', caseSensitive: false).hasMatch(clean)) {
+      return true;
+    }
+
+    // Malformed metadata like "Ingrediens 32"
+    if (RegExp(r'^ingrediens\s*\d+$', caseSensitive: false).hasMatch(clean)) {
+      return true;
+    }
+
+    // "Instruktion" alone or with just numbers
+    if (RegExp(r'^instruktion\s*\d*$', caseSensitive: false).hasMatch(clean)) {
+      return true;
+    }
+
+    // Section headers that are too short (orphaned)
+    if (_isSectionHeader(clean) && clean.length < 20) return true;
+
+    // "X portioner" should not be an ingredient
+    if (RegExp(r'^\d+\s*portioner?$', caseSensitive: false).hasMatch(clean)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /// Extract just the ingredient name without measurement for deduplication
+  /// E.g., "1 påse vörtmix" → "vörtmix", "6 dl mjölk" → "mjölk"
+  String _extractIngredientNameOnly(String ingredient) {
+    // Remove leading measurement pattern
+    final withoutMeasure = ingredient.replaceFirst(
+      RegExp(
+        r'^\d+(?:[,\.]\d+)?\s*(dl|cl|ml|msk|tsk|krm|g|kg|hg|st|burk|pkt|påse|bit|skiva|klyfta|nypa)?\s*',
+        caseSensitive: false,
+      ),
+      '',
+    );
+    return withoutMeasure.trim();
+  }
+
+  /// Extract title from Instagram-style text
+  /// Handles format: "username Recipe title here - description..."
+  String _extractTitleFromText(String text) {
+    final lines = text.split('\n').where((l) => l.trim().isNotEmpty).toList();
+    if (lines.isEmpty) return '';
+
+    String firstLine = lines.first.trim();
+
+    // Remove common Instagram username patterns at start (lowercase word followed by space)
+    firstLine = firstLine.replaceFirst(
+      RegExp(r'^[a-z_][a-z0-9_\.]*\s+', caseSensitive: true),
+      '',
+    );
+
+    // Remove emojis (common Unicode emoji ranges)
+    firstLine = firstLine
+        .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
+        .replaceAll(RegExp(r'[\u{2600}-\u{26FF}]', unicode: true), '')
+        .replaceAll(RegExp(r'[\u{2700}-\u{27BF}]', unicode: true), '')
+        .trim();
+
+    // Take text before first hyphen if it exists (often intro text follows)
+    final dashIndex = firstLine.indexOf('-');
+    if (dashIndex > 5 && dashIndex < 80) {
+      firstLine = firstLine.substring(0, dashIndex).trim();
+    }
+
+    // Or take text before "Om du" / "Spara" which are common Instagram intros
+    final introPatterns = ['om du', 'spara och', 'prova detta', 'testa detta'];
+    for (final pattern in introPatterns) {
+      final idx = firstLine.toLowerCase().indexOf(pattern);
+      if (idx > 5) {
+        firstLine = firstLine.substring(0, idx).trim();
+        break;
+      }
+    }
+
+    // Validate: reasonable length, not a section header, not garbage
+    if (firstLine.length >= 5 &&
+        firstLine.length <= 100 &&
+        !_isIngredientHeader(firstLine.toLowerCase()) &&
+        !_isInstructionHeader(firstLine.toLowerCase()) &&
+        !_isSectionHeader(firstLine)) {
+      return firstLine;
+    }
+
+    return '';
+  }
+
+  /// Check if a section header indicates instruction content
+  bool _isInstructionSectionHeader(String header) {
+    final clean = header.toLowerCase().trim();
+    return _instructionSectionHeaders.contains(clean);
+  }
+
+  /// Check if following text looks like instructions (for section header detection)
+  bool _followingTextIsInstruction(List<String> lines, int currentIndex) {
+    // Look at next 1-3 non-empty, non-header lines
+    for (int j = currentIndex + 1; j < lines.length && j < currentIndex + 4; j++) {
+      final nextLine = lines[j].trim();
+      if (nextLine.isEmpty) continue;
+      if (_isSectionHeader(nextLine)) continue;
+
+      // Check if this looks like instruction text
+      final score = _instructionScore(nextLine);
+      if (score >= 2) return true;
+      if (nextLine.length > 50) return true; // Long text = likely instruction
+
+      break; // Only check first substantive line
+    }
+    return false;
+  }
+
+  /// Validate if text is a valid ingredient
+  bool _isValidIngredient(String text) {
+    // Must have reasonable length
+    if (text.length < 3 || text.length > 100) return false;
+
+    // Reject if it contains instruction phrases
+    if (RegExp(
+      r'(gör\s+så|att\s+pensla|att\s+strö|att\s+servera|'
+      r'lös\s+upp|degen|smeten|blandningen|efter\s+gräddning)',
+      caseSensitive: false,
+    ).hasMatch(text)) {
+      return false;
+    }
+
+    // Reject orphan fragments (single short words without measurements)
+    if (text.length < 6 &&
+        !text.contains(RegExp(r'\d')) &&
+        text.split(' ').length == 1) {
+      return false;
+    }
+
+    // Should contain a measurement OR be a simple ingredient like "salt, peppar"
+    final hasMeasurement = RegExp(
+      r'\d+(?:[,\.]\d+)?\s*(dl|cl|ml|msk|tsk|krm|g|kg|hg|st|burk|pkt|påse|bit|skiva|klyfta)',
+      caseSensitive: false,
+    ).hasMatch(text);
+
+    // Simple ingredients: short, no periods suggesting sentences
+    final isSimpleIngredient =
+        text.length < 30 && !text.contains('. ') && !_isSectionHeader(text);
+
+    return hasMeasurement || isSimpleIngredient;
+  }
+
+  /// Calculate instruction likelihood score
+  int _instructionScore(String text) {
+    int score = 0;
+    final lower = text.toLowerCase();
+
+    // +3: Starts with Swedish action verb
+    final actionVerbs = [
+      'stek',
+      'koka',
+      'blanda',
+      'rör',
+      'häll',
+      'lägg',
+      'skär',
+      'servera',
+      'värm',
+      'vispa',
+      'grädda',
+      'fräs',
+      'sjud',
+      'tillsätt',
+      'smaksätt',
+      'strö',
+      'vänd',
+      'ta',
+      'låt',
+      'förvärm',
+      'sätt',
+      'börja',
+      'gör',
+      'ställ',
+      'skala',
+      'hacka',
+      'riv',
+      'strimla',
+      'marinera',
+      'toppa',
+    ];
+    if (actionVerbs.any((verb) => lower.startsWith(verb))) score += 3;
+
+    // +2: Contains time indicator
+    if (RegExp(r'\d+\s*(min|minut|tim|sek)', caseSensitive: false)
+        .hasMatch(lower)) {
+      score += 2;
+    }
+
+    // +2: Contains temperature
+    if (RegExp(r'\d+\s*(°|grad)', caseSensitive: false).hasMatch(lower)) {
+      score += 2;
+    }
+
+    // +1: Contains sequencing words
+    if (RegExp(r'\b(sedan|därefter|tills|medan|när|sen)\b',
+            caseSensitive: false)
+        .hasMatch(lower)) {
+      score += 1;
+    }
+
+    // +1: Longer text (>40 chars suggests instruction)
+    if (text.length > 40) score += 1;
+
+    // -2: Contains measurement (likely ingredient)
+    if (RegExp(r'\d+\s*(dl|msk|tsk|g|kg|cl|ml)', caseSensitive: false)
+        .hasMatch(lower)) {
+      score -= 2;
+    }
+
+    return score;
+  }
+
+  /// Extract ingredients using measurement-first approach.
+  /// Finds all quantity + unit + name patterns in the text.
+  List<String> _extractIngredientsByMeasurement(String text) {
+    final ingredients = <String>[];
+
+    // Pattern: quantity + optional space + unit + ingredient name
+    // Captures: "0.75 dl oystersås", "2 msk japansk soya", "500 g lövbiff"
+    final measurementPattern = RegExp(
+      r'(\d+(?:[,\.]\d+)?)\s*'
+      r'(dl|cl|ml|msk|tsk|krm|g|kg|hg|st|burk|pkt|påse|bit|skiva|klyfta)\s+'
+      r'([a-zåäöA-ZÅÄÖ][a-zåäöA-ZÅÄÖ\s\-]{1,40})',
+      caseSensitive: false,
+    );
+
+    for (final match in measurementPattern.allMatches(text)) {
+      final quantity = match.group(1);
+      final unit = match.group(2);
+      var name = match.group(3)!.trim();
+
+      // Clean up: remove trailing action words
+      name = _cleanIngredientName(name);
+
+      if (name.isNotEmpty) {
+        ingredients.add('$quantity $unit $name');
+      }
+    }
+
+    return ingredients;
+  }
+
+  /// Clean ingredient name by removing trailing instruction fragments
+  String _cleanIngredientName(String name) {
+    // Remove trailing digits (often from adjacent measurements)
+    name = name.replaceAll(RegExp(r'\d+$'), '').trim();
+
+    // CUT OFF at instruction phrases - these indicate we've captured too much
+    // Pattern matches start of instruction text
+    final instructionCutoff = RegExp(
+      r'\s*(att\s+|gör\s+så|för\s+att|till\s+att|sedan\s+|sen\s+|'
+      r'stek|koka|blanda|rör|häll|lägg|skär|servera|värm|vispa|grädda|fräs|'
+      r'pensla|strö|toppa|garnera|tillsätt|smält|lös\s+upp|'
+      r'degen|smeten|såsen|blandningen)',
+      caseSensitive: false,
+    );
+
+    final cutoffMatch = instructionCutoff.firstMatch(name);
+    if (cutoffMatch != null && cutoffMatch.start > 2) {
+      name = name.substring(0, cutoffMatch.start).trim();
+    }
+
+    // Remove trailing action verbs that got captured
+    final trailingActions = RegExp(
+      r'\s+(stek|koka|blanda|och\s+\w+|i\s+\w+|på\s+\w+|med\s+\w+)$',
+      caseSensitive: false,
+    );
+    name = name.replaceAll(trailingActions, '').trim();
+
+    // Remove trailing punctuation
+    name = name.replaceAll(RegExp(r'[,\.]+$'), '').trim();
+
+    // Limit ingredient name length (most ingredients are short)
+    if (name.length > 25) {
+      // Find last space before 25 chars
+      final spaceIdx = name.lastIndexOf(' ', 25);
+      if (spaceIdx > 5) {
+        name = name.substring(0, spaceIdx).trim();
+      }
+    }
+
+    return name;
+  }
+
   Recipe? _parseTextToRecipe(String text) {
     final lines =
         text.split('\n').where((line) => line.trim().isNotEmpty).toList();
@@ -201,54 +689,73 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     if (lines.isEmpty) return null;
 
     // Extract recipe name from first lines before processing sections
-    String recipeName = 'Importerat recept';
+    String recipeName = '';
     String description = '';
     final List<String> ingredients = [];
     final List<String> instructions = [];
 
-    // Try to extract title from first few lines
-    for (int i = 0; i < lines.length && i < 3; i++) {
-      final line = lines[i].trim();
-      final lowerLine = line.toLowerCase();
+    // ===== STAGE 1: MEASUREMENT-FIRST INGREDIENT EXTRACTION =====
+    // This is the most reliable method for Instagram text
+    final measurementIngredients = _extractIngredientsByMeasurement(text);
+    ingredients.addAll(measurementIngredients);
 
-      // Skip empty lines
-      if (line.isEmpty) continue;
+    // Create a set to track text already captured as ingredients
+    final capturedAsIngredient = <String>{};
+    for (final ing in measurementIngredients) {
+      capturedAsIngredient.add(ing.toLowerCase());
+    }
 
-      // If this line looks like a section header, stop looking for title
-      if (_isIngredientHeader(lowerLine) || _isInstructionHeader(lowerLine)) {
-        break;
-      }
+    // ===== STAGE 2: EXTRACT TITLE =====
+    // First try the Instagram-aware extraction from raw text
+    recipeName = _extractTitleFromText(text);
 
-      // If this line looks like an ingredient (has measurements), skip it
-      if (_looksLikeIngredient(line)) {
-        break;
-      }
+    // Fallback: try line-by-line if Instagram extraction failed
+    if (recipeName.isEmpty) {
+      for (int i = 0; i < lines.length && i < 3; i++) {
+        final line = lines[i].trim();
+        final lowerLine = line.toLowerCase();
 
-      // If this looks like a good title (not too long, not too short, no measurements)
-      if (recipeName == 'Importerat recept' &&
-          line.length > 2 &&
-          line.length < 100 &&
-          !line.contains(
-              RegExp(r'\d+\s+(dl|cl|ml|kg|g(?!\w)|msk|tsk|st|krm)\b'))) {
-        recipeName = line;
-        break;
+        // Skip empty lines and garbage
+        if (line.isEmpty || _isGarbage(line)) continue;
+
+        // If this line looks like a section header, stop looking for title
+        if (_isIngredientHeader(lowerLine) || _isInstructionHeader(lowerLine)) {
+          break;
+        }
+
+        // If this line looks like an ingredient (has measurements), skip it
+        if (_looksLikeIngredient(line)) {
+          break;
+        }
+
+        // If this looks like a good title (not too long, not too short, no measurements)
+        if (line.length > 2 &&
+            line.length < 100 &&
+            !_isSectionHeader(line) &&
+            !line.contains(
+                RegExp(r'\d+\s+(dl|cl|ml|kg|g(?!\w)|msk|tsk|st|krm)\b'))) {
+          recipeName = line;
+          break;
+        }
       }
     }
 
+    // ===== STAGE 3: LINE-BY-LINE CLASSIFICATION WITH SCORING =====
     bool inIngredients = false;
     bool inInstructions = false;
+    final seenIngredientSections = <String>{}; // Track seen section headers
 
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i].trim();
       final lowerLine = line.toLowerCase();
 
-      // Skip empty lines
-      if (line.isEmpty) continue;
+      // Skip empty lines and garbage
+      if (line.isEmpty || _isGarbage(line)) continue;
 
       // Skip the line if it's already been used as the title
       if (line == recipeName) continue;
 
-      // Check for section headers
+      // Check for explicit section headers first
       if (_isIngredientHeader(lowerLine)) {
         inIngredients = true;
         inInstructions = false;
@@ -261,33 +768,139 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         continue;
       }
 
-      // Parse ingredients
+      // Handle section headers (like "biffen", "såsen", "woka ihop")
+      if (_isSectionHeader(line)) {
+        final headerKey = lowerLine.trim();
+
+        // Check if this is a known instruction section header
+        if (_isInstructionSectionHeader(lowerLine)) {
+          inIngredients = false;
+          inInstructions = true;
+          continue;
+        }
+
+        // If we've seen this header before as ingredient section,
+        // it's now an instruction section (Swedish recipes repeat headers)
+        if (seenIngredientSections.contains(headerKey)) {
+          inIngredients = false;
+          inInstructions = true;
+          continue;
+        }
+
+        // Look ahead: if following text looks like instructions, switch to instruction mode
+        if (_followingTextIsInstruction(lines, i)) {
+          inIngredients = false;
+          inInstructions = true;
+          continue;
+        }
+
+        // Mark this as a seen ingredient section header
+        if (inIngredients) {
+          seenIngredientSections.add(headerKey);
+        }
+
+        // Otherwise, assume it's an ingredient sub-section (like "BIFFEN" for beef ingredients)
+        // Don't change mode, just skip the header
+        continue;
+      }
+
+      // Use instruction scoring for classification
+      final score = _instructionScore(line);
+
+      // In explicit ingredient section
       if (inIngredients) {
-        final ingredient = _parseIngredientLine(line);
-        if (ingredient != null) {
-          ingredients.add(ingredient);
+        // Only add if it's valid and not already captured
+        if (_isValidIngredient(line) &&
+            !capturedAsIngredient.contains(lowerLine)) {
+          final ingredient = _parseIngredientLine(line);
+          if (ingredient != null) {
+            ingredients.add(ingredient);
+            capturedAsIngredient.add(ingredient.toLowerCase());
+          }
         }
         continue;
       }
 
-      // Parse instructions
+      // In explicit instruction section
       if (inInstructions) {
         final instruction = _parseInstructionLine(line);
-        if (instruction != null) {
+        if (instruction != null && instruction.length > 10) {
           instructions.add(instruction);
         }
         continue;
       }
 
-      // If not in specific section, try to auto-detect
-      if (_looksLikeIngredient(line)) {
-        ingredients.add(_parseIngredientLine(line) ?? line);
-      } else if (_looksLikeInstruction(line)) {
-        instructions.add(_parseInstructionLine(line) ?? line);
-      } else if (description.isEmpty && line.length > 10) {
+      // Auto-detect based on scoring: score >= 2 → likely instruction
+      if (score >= 2) {
+        final instruction = _parseInstructionLine(line);
+        if (instruction != null && instruction.length > 10) {
+          instructions.add(instruction);
+        }
+      } else if (_looksLikeIngredient(line)) {
+        // Only add if not already captured by measurement extraction
+        if (!capturedAsIngredient.contains(lowerLine)) {
+          final ingredient = _parseIngredientLine(line);
+          if (ingredient != null && _isValidIngredient(ingredient)) {
+            ingredients.add(ingredient);
+            capturedAsIngredient.add(ingredient.toLowerCase());
+          }
+        }
+      } else if (description.isEmpty && line.length > 10 && score < 1) {
         description = line;
       }
     }
+
+    // ===== STAGE 4: FINAL CLEANUP - Remove duplicates and garbage =====
+    // Smart deduplication - handles partial matches and keeps best version
+    final cleanedIngredients = <String>[];
+    final seenNames = <String>[]; // Track ingredient names for partial matching
+
+    for (final ing in ingredients) {
+      if (_isGarbage(ing) || !_isValidIngredient(ing)) continue;
+
+      final normalized = ing.toLowerCase().trim();
+      final ingName = _extractIngredientNameOnly(normalized);
+
+      // Check if this ingredient name is a duplicate or partial match
+      var isDuplicate = false;
+      var replaceIndex = -1;
+
+      for (var i = 0; i < seenNames.length; i++) {
+        final existingName = seenNames[i];
+
+        // Exact match
+        if (existingName == ingName) {
+          isDuplicate = true;
+          break;
+        }
+
+        // One contains the other (partial match)
+        if (existingName.contains(ingName) || ingName.contains(existingName)) {
+          // Keep the longer one (more complete)
+          if (ingName.length > existingName.length) {
+            replaceIndex = i;
+          } else {
+            isDuplicate = true;
+          }
+          break;
+        }
+      }
+
+      if (!isDuplicate) {
+        if (replaceIndex >= 0) {
+          // Replace shorter with longer
+          cleanedIngredients[replaceIndex] = ing;
+          seenNames[replaceIndex] = ingName;
+        } else {
+          cleanedIngredients.add(ing);
+          seenNames.add(ingName);
+        }
+      }
+    }
+
+    final cleanedInstructions = instructions
+        .where((i) => !_isGarbage(i) && i.length > 10)
+        .toList();
 
     // Extract additional metadata
     final portions = _extractPortions(text);
@@ -301,11 +914,11 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         id: _uuid.v4(),
         title: recipeName,
         description: description,
-        ingredients: ingredients.isNotEmpty
-            ? ingredients
+        ingredients: cleanedIngredients.isNotEmpty
+            ? cleanedIngredients
             : ['Ingen ingrediensinformation'],
-        instructions: instructions.isNotEmpty
-            ? instructions
+        instructions: cleanedInstructions.isNotEmpty
+            ? cleanedInstructions
             : ['Ingen instruktionsinformation'],
         imageUrls: [],
         mealType: mealType,
@@ -323,16 +936,21 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   bool _isIngredientHeader(String line) {
+    final clean = line.toLowerCase().trim();
     final headers = [
       'ingrediens',
       'ingredienser',
+      'ingredienserna',
       'råvaror',
       'du behöver',
       'behöver är',
       'ingredients',
       'what you need'
     ];
-    return headers.any((header) => line.contains(header));
+    // Only match if line STARTS with header and is short (actual header)
+    // This prevents matching "häll i resten av ingredienser" as a header
+    return headers.any((header) =>
+        clean.startsWith(header) && clean.length < header.length + 30);
   }
 
   bool _isInstructionHeader(String line) {
@@ -408,85 +1026,6 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
     // Starts with bullet point or dash
     if (RegExp(r'^[•\-\*]\s+').hasMatch(line)) return true;
-
-    return false;
-  }
-
-  bool _looksLikeInstruction(String line) {
-    // Numbered instruction
-    if (RegExp(r'^\d+\.').hasMatch(line)) return true;
-
-    // Starts with bullet point or dash (but longer than typical ingredient)
-    if (RegExp(r'^[•\-\*]\s+').hasMatch(line) && line.length > 15) return true;
-
-    // Starts with Swedish action words
-    final swedishActionWords = [
-      'koka',
-      'stek',
-      'blanda',
-      'rör',
-      'häll',
-      'lägg',
-      'skär',
-      'servera',
-      'värm',
-      'vispa',
-      'knåda',
-      'grädda',
-      'sjud',
-      'fräs',
-      'koka upp',
-      'sätt ugnen',
-      'förvärm',
-      'tillsätt',
-      'smaksätt',
-      'strö över'
-    ];
-    if (swedishActionWords.any((word) => line.toLowerCase().startsWith(word))) {
-      return true;
-    }
-
-    // Starts with English action words
-    final englishActionWords = [
-      'cook',
-      'fry',
-      'mix',
-      'stir',
-      'pour',
-      'add',
-      'cut',
-      'serve',
-      'heat',
-      'whisk',
-      'knead',
-      'bake',
-      'boil',
-      'sauté',
-      'preheat',
-      'season',
-      'sprinkle',
-      'chop',
-      'slice',
-      'dice',
-      'mince'
-    ];
-    if (englishActionWords.any((word) => line.toLowerCase().startsWith(word))) {
-      return true;
-    }
-
-    // Contains time indicators
-    if (RegExp(r'\d+\s*(min|minut|tim|hour|sec)', caseSensitive: false)
-        .hasMatch(line)) {
-      return true;
-    }
-
-    // Contains temperature indicators
-    if (RegExp(r'\d+\s*(°|grad|degree)', caseSensitive: false).hasMatch(line)) {
-      return true;
-    }
-
-    // Longer descriptive line (likely an instruction)
-    if (line.length > 30 && line.split(' ').length > 4) return true;
 
     return false;
   }

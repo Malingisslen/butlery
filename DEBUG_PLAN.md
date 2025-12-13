@@ -225,6 +225,19 @@
 4. **Loading spinner on all menus when importing one** - Global loading state used instead of per-item
    - Fix: Implemented per-item operating state tracking with `setItemOperating(id, bool)`
 
+5. **Dismissed shared menus reappear after navigation** - Firestore rules rejected 'timestamp' field in subcollection documents
+   - Fix: Updated `firestore.rules` to accept `timestamp` field in `sharedMenus/{menuId}/status/{userId}` documents
+   - Fix: Changed `markAsDismissed` to use subcollection-based dismissal in `base_shared_content_repository.dart`
+
+6. **Collaborative menu not appearing in saved menus after accepting** - Participant not registered when joining via share
+   - Fix: Added `realtimeMenuService.addParticipant()` call in `social_menu_coordinator.dart` when importing collaborative menu
+   - Fix: Added collaborative menu loading via `collectionGroup('participants')` query in `unified_menu_service.dart`
+
+7. **No visual indicator for static vs collaborative shared menus** - All shared menus looked identical
+   - Fix: Added `isCollaborative` check in `shared_menu_card.dart` based on `realtimeMenuId != null && allowCollaboration`
+   - Fix: Added "Live" / "Kopia" chip indicator with appropriate icons (Icons.sync vs Icons.content_copy)
+   - Fix: Used tertiary color scheme for collaborative menus to distinguish visually
+
 ### UX Improvements (2025-12-05)
 
 1. **Filter toggle for imported items in SharedWithMe view**

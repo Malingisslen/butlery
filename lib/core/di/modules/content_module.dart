@@ -71,6 +71,17 @@ import 'package:butlery/services/import/cache/global_recipe_cache.dart';
 // Import rate limiting
 import 'package:butlery/services/import/import_rate_limiter.dart';
 
+// LLM services
+import 'package:butlery/services/llm/llm_service.dart';
+import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
+
+// YouTube import services
+import 'package:butlery/services/import/youtube/youtube_transcript_service.dart';
+import 'package:butlery/services/import/youtube/youtube_import_strategy.dart';
+
+// TikTok import pipeline
+import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart';
+
 /// Content module providing recipe and menu management services.
 /// This module handles all content-related functionality and depends on
 /// the Core Module for foundational services. It provides:
@@ -114,6 +125,14 @@ class ContentModule implements DIModule {
         GlobalRecipeCache,
         // Import rate limiting
         ImportRateLimiter,
+        // LLM services
+        LlmService,
+        LlmEnhancementService,
+        // YouTube import services
+        YouTubeTranscriptService,
+        YouTubeImportStrategy,
+        // TikTok import pipeline
+        TikTokPipeline,
       ];
 
   @override
@@ -207,6 +226,45 @@ class ContentModule implements DIModule {
         ),
       );
 
+      // ==================== LLM SERVICES ====================
+
+      // LLM service for recipe extraction (Mistral AI via Cloud Functions)
+      container.registerLazySingleton<LlmService>(
+        () => LlmService(
+          rateLimiter: container<ImportRateLimiter>(),
+        ),
+      );
+
+      // LLM enhancement service for import pipeline integration
+      container.registerLazySingleton<LlmEnhancementService>(
+        () => LlmEnhancementService(
+          llmService: container<LlmService>(),
+          rateLimiter: container<ImportRateLimiter>(),
+        ),
+      );
+
+      // ==================== YOUTUBE IMPORT SERVICES ====================
+
+      // YouTube transcript service for fetching video transcripts
+      container.registerLazySingleton<YouTubeTranscriptService>(
+        () => YouTubeTranscriptService(),
+      );
+
+      // YouTube import strategy for video recipe imports
+      container.registerLazySingleton<YouTubeImportStrategy>(
+        () => YouTubeImportStrategy(
+          transcriptService: container<YouTubeTranscriptService>(),
+          llmService: container<LlmEnhancementService>(),
+        ),
+      );
+
+      // TikTok import pipeline for TikTok video recipe imports
+      container.registerLazySingleton<TikTokPipeline>(
+        () => TikTokPipeline(
+          llmService: container<LlmEnhancementService>(),
+        ),
+      );
+
       // ==================== CONTENT SERVICES ====================
 
       // Menu service for meal planning
@@ -270,7 +328,7 @@ class ContentModule implements DIModule {
 
       if (kDebugMode) {
         debugPrint(
-          '✅ [ContentModule] Configured 20 services (Recipes, Menus, Import, Cache, RateLimiter, Storage, Offline, Backup, Extraction, Detection)',
+          '✅ [ContentModule] Configured 25 services (Recipes, Menus, Import, Cache, RateLimiter, LLM, YouTube, Storage, Offline, Backup, Extraction, Detection)',
         );
       }
     } catch (e) {
@@ -376,6 +434,11 @@ class ContentModule implements DIModule {
         'ExtractionManager': container<ExtractionManager>(),
         'GlobalRecipeCache': container<GlobalRecipeCache>(),
         'ImportRateLimiter': container<ImportRateLimiter>(),
+        'LlmService': container<LlmService>(),
+        'LlmEnhancementService': container<LlmEnhancementService>(),
+        'YouTubeTranscriptService': container<YouTubeTranscriptService>(),
+        'YouTubeImportStrategy': container<YouTubeImportStrategy>(),
+        'TikTokPipeline': container<TikTokPipeline>(),
       };
 
       // Perform health checks on services that support it

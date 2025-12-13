@@ -52,13 +52,45 @@ class ImportResult {
   final List<String>? warnings;
   final Map<String, dynamic>? metadata;
 
+  /// Whether this result requires user assistance to complete.
+  final bool needsAssistance;
+
+  /// Extracted text for user-assisted import (only set when needsAssistance=true).
+  final String? extractedText;
+
+  /// Suggested title for user-assisted import.
+  final String? suggestedTitle;
+
+  /// Pre-detected ingredient line indices.
+  final List<int>? likelyIngredientLines;
+
   ImportResult.success(this.recipe, {this.warnings, this.metadata})
       : isSuccess = true,
-        errorMessage = null;
+        errorMessage = null,
+        needsAssistance = false,
+        extractedText = null,
+        suggestedTitle = null,
+        likelyIngredientLines = null;
 
   ImportResult.failure(this.errorMessage, {this.warnings, this.metadata})
       : isSuccess = false,
-        recipe = null;
+        recipe = null,
+        needsAssistance = false,
+        extractedText = null,
+        suggestedTitle = null,
+        likelyIngredientLines = null;
+
+  /// Result indicating user assistance is needed.
+  ImportResult.assistance({
+    required this.extractedText,
+    this.suggestedTitle,
+    this.likelyIngredientLines,
+    this.metadata,
+  })  : isSuccess = false,
+        needsAssistance = true,
+        recipe = null,
+        errorMessage = null,
+        warnings = null;
 
   bool get hasWarnings => warnings != null && warnings!.isNotEmpty;
   bool get hasMetadata => metadata != null && metadata!.isNotEmpty;
@@ -86,8 +118,18 @@ mixin ImportValidationMixin {
   /// Clean and normalize text input (preserves newlines for line-by-line parsing)
   String normalizeText(String input) {
     // Remove emojis and normalize whitespace WHILE PRESERVING NEWLINES
+    // Expanded emoji ranges to cover all common emoji blocks
     return input
-        .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true),
+        .replaceAll(
+            RegExp(
+              r'[\u{1F300}-\u{1F9FF}]|' // Misc Symbols, Emoticons, Dingbats
+              r'[\u{1FA00}-\u{1FAFF}]|' // Symbols Extended-A (includes 🫑)
+              r'[\u{2600}-\u{26FF}]|' // Misc Symbols (☀️, ⚡, etc.)
+              r'[\u{2700}-\u{27BF}]|' // Dingbats
+              r'[\u{FE00}-\u{FE0F}]|' // Variation Selectors
+              r'\u{200D}', // Zero Width Joiner
+              unicode: true,
+            ),
             '') // Remove emojis first
         .split('\n') // Process line by line to preserve newlines
         .map((line) => line

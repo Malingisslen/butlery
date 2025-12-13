@@ -1,10 +1,10 @@
 # BUTLERY - FUTURE FEATURES
 
-**Last Updated:** 2025-11-19
+**Last Updated:** 2025-12-06
 **Status:** Planned / Not Implemented
 **Source:** creative_ideas.md + comprehensive analysis gaps
-**Total Features:** 43
-**Total Estimated Effort:** ~1,999 hours (~50 weeks)
+**Total Features:** 44
+**Total Estimated Effort:** ~2,029 hours (~51 weeks)
 
 ---
 
@@ -78,7 +78,7 @@ Features for social engagement and family cooking.
 | 18 | Recipe Duet Mode | ~58 hrs | Synchronized couple cooking |
 | 21 | Family Meal Voting | ~56 hrs | Democratic dinner decisions |
 
-### Utility Features (~202 hours)
+### Utility Features (~232 hours)
 Quick wins and utility enhancements.
 
 | # | Feature | Effort | Description |
@@ -88,6 +88,7 @@ Quick wins and utility enhancements.
 | 13 | Smart Substitution Engine | ~44 hrs | Intelligent ingredient swaps |
 | 14 | Kitchen Equipment Profile | ~44 hrs | Filter recipes by your equipment |
 | 15 | Recipe Carbon Calculator | ~50 hrs | Environmental impact tracking |
+| 44 | Video Audio Transcription | ~30 hrs | Import recipes from videos without captions |
 
 ---
 
@@ -919,6 +920,50 @@ Track original recipe sources and remix chains to credit creators and preserve r
 - Full attribution chain (like GitHub forking)
 - Credit system for recipe creators
 - Remix discovery feed
+
+---
+
+### 44. VIDEO AUDIO TRANSCRIPTION
+**Effort:** ~30 hours (4 day sprint)
+
+Import recipes from YouTube/TikTok/Instagram videos that don't have captions by transcribing the audio.
+
+**Current Behavior:**
+- Videos without subtitles/captions show "Videon saknar text" dialog
+- User must take a screenshot manually and use Photo Import
+- No automatic extraction from spoken content
+
+**Key Capabilities:**
+- Audio extraction from video URL
+- Speech-to-text transcription (Whisper API or Google Speech-to-Text)
+- Swedish language support (primary)
+- English language support (secondary)
+- Recipe text parsing from transcription
+- Fallback to current photo import if transcription fails
+- Progress indicator during transcription
+- Cache transcriptions to avoid re-processing
+
+**Technical Notes:**
+- Use OpenAI Whisper API (~$0.006/minute) or Google Cloud Speech-to-Text
+- Firebase Cloud Function for server-side audio processing
+- Extract audio from video using yt-dlp (server-side)
+- Support YouTube, TikTok, Instagram Reels
+- Rate limiting to manage API costs
+- Quality threshold - skip if audio quality too poor
+- Parse recipe from transcribed text using existing LLM pipeline
+
+**Implementation Approach:**
+1. Add "Try Audio Transcription" option in needs-screenshot dialog
+2. Call Cloud Function with video URL
+3. Cloud Function: extract audio → transcribe → return text
+4. Parse transcription with LLM for recipe extraction
+5. If successful, proceed with normal import flow
+6. If failed, fall back to photo import suggestion
+
+**Cost Considerations:**
+- Whisper API: ~$0.006/minute (3-min video = ~$0.02)
+- Consider daily/monthly limits per user
+- Could be premium-only feature
 
 ---
 

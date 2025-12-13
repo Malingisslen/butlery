@@ -2,8 +2,10 @@
 /// Implements a multi-tier extraction workflow:
 /// 1. Fetch HTML from URL
 /// 2. Try RecipeScraper (JSON-LD/Microdata structured data)
-/// 3. Fallback to WebScraper (for JavaScript-heavy sites)
-/// 4. Final fallback to TextImportStrategy (parse as plain text)
+/// 3. Try site-specific parser (ICA, Arla, Köket, etc.)
+/// 4. Fallback to WebScraper (for JavaScript-heavy sites)
+/// 5. Fallback to TextImportStrategy (parse as plain text)
+/// 6. Final fallback to LLM extraction (paid, rate-limited)
 
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
@@ -13,6 +15,10 @@ import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/extraction/web_scraper.dart';
 import 'package:butlery/services/extraction/platform_detector.dart' as pd;
 import 'package:butlery/services/extraction/site_parsers/site_parser_registry.dart';
+import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/utils/recipe_scraper.dart';
 
 /// Strategy for importing recipes from web URLs (recipe sites, blogs, etc.).
@@ -40,6 +46,9 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   final http.Client? _httpClient;
   final WebScraper Function()? _webScraperFactory;
 
+  /// Lazily initialized LLM service
+  LlmEnhancementService? _llmService;
+
   /// Creates a URL import strategy with optional dependency injection for testing.
   /// [httpClient] - Optional HTTP client for mocking network requests
   /// [webScraperFactory] - Optional factory for creating WebScraper instances (for mocking)
@@ -48,6 +57,18 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     WebScraper Function()? webScraperFactory,
   })  : _httpClient = httpClient,
         _webScraperFactory = webScraperFactory;
+
+  /// Get LLM service (lazy initialization with graceful fallback)
+  LlmEnhancementService? get _llmEnhancement {
+    if (_llmService != null) return _llmService;
+    try {
+      _llmService = ServiceLocator.get<LlmEnhancementService>();
+      return _llmService;
+    } catch (e) {
+      // LLM service not available - continue without LLM fallback
+      return null;
+    }
+  }
 
   @override
   String get strategyName => 'URL Import';
@@ -186,15 +207,58 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
                 'strategy': strategyName,
                 'extraction_method': 'html_text_parse',
                 'url': url,
+                'tier': 3,
               },
             );
           }
         }
       }
 
-      // All extraction methods failed
+      // Step 4: LLM extraction as final paid fallback
+      if (htmlResult != null && htmlResult.length > 100) {
+        final llmResult = await _tryLlmExtraction(htmlResult, url);
+        if (llmResult != null) {
+          return llmResult;
+        }
+      }
+
+      // Step 5: Return for user-assisted import if we have content
+      if (htmlResult != null && htmlResult.length > 100) {
+        final plainText = _stripHtmlTags(htmlResult);
+
+        if (plainText.length > 50) {
+          AppLogger.info(
+            'UrlImportStrategy: Returning for user-assisted import',
+          );
+
+          // Try to extract a suggested title from the HTML
+          final suggestedTitle = _extractTitleFromHtml(htmlResult);
+
+          // Detect likely ingredient lines
+          final lines = plainText.split('\n');
+          final likelyIngredients = <int>[];
+          for (int i = 0; i < lines.length; i++) {
+            if (_looksLikeIngredient(lines[i])) {
+              likelyIngredients.add(i);
+            }
+          }
+
+          return ImportResult.assistance(
+            extractedText: plainText,
+            suggestedTitle: suggestedTitle,
+            likelyIngredientLines: likelyIngredients,
+            metadata: {
+              'strategy': strategyName,
+              'url': url,
+              'tier': 5,
+            },
+          );
+        }
+      }
+
+      // All extraction methods failed and no content for assistance
       return ImportResult.failure(
-        'Could not extract recipe from URL. The page may not contain a valid recipe or may require manual input.',
+        'Could not extract recipe from URL. The page may not contain a valid recipe.',
         metadata: {
           'strategy': strategyName,
           'url': url,
@@ -471,5 +535,156 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     }
 
     return [];
+  }
+
+  /// Extract title from HTML meta tags or title element.
+  String? _extractTitleFromHtml(String html) {
+    // Try og:title first (using simpler pattern)
+    final ogTitleMatch = RegExp(
+      r'<meta[^>]+property="og:title"[^>]+content="([^"]+)"',
+      caseSensitive: false,
+    ).firstMatch(html);
+    if (ogTitleMatch != null) {
+      return _cleanTitle(ogTitleMatch.group(1)!);
+    }
+
+    // Also try with single quotes
+    final ogTitleMatchSingle = RegExp(
+      "<meta[^>]+property='og:title'[^>]+content='([^']+)'",
+      caseSensitive: false,
+    ).firstMatch(html);
+    if (ogTitleMatchSingle != null) {
+      return _cleanTitle(ogTitleMatchSingle.group(1)!);
+    }
+
+    // Try title element
+    final titleMatch = RegExp(
+      r'<title[^>]*>([^<]+)</title>',
+      caseSensitive: false,
+    ).firstMatch(html);
+    if (titleMatch != null) {
+      return _cleanTitle(titleMatch.group(1)!);
+    }
+
+    // Try h1 element
+    final h1Match = RegExp(
+      r'<h1[^>]*>([^<]+)</h1>',
+      caseSensitive: false,
+    ).firstMatch(html);
+    if (h1Match != null) {
+      return _cleanTitle(h1Match.group(1)!);
+    }
+
+    return null;
+  }
+
+  /// Clean up extracted title.
+  String _cleanTitle(String title) {
+    return title
+        .replaceAll(RegExp(r'\s*[-|]\s*.*$'), '') // Remove site name suffix
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
+
+  /// Check if a line looks like an ingredient.
+  bool _looksLikeIngredient(String line) {
+    final trimmed = line.trim();
+    if (trimmed.isEmpty || trimmed.length < 3 || trimmed.length > 100) {
+      return false;
+    }
+
+    // Swedish measurements
+    final measurements = [
+      'dl', 'cl', 'ml', 'l', 'msk', 'tsk', 'krm',
+      'g', 'gram', 'kg', 'st', 'styck', 'port',
+    ];
+
+    final lower = trimmed.toLowerCase();
+    for (final m in measurements) {
+      if (RegExp(r'\b' + m + r'\b').hasMatch(lower)) {
+        return true;
+      }
+    }
+
+    // Starts with number
+    if (RegExp(r'^\d').hasMatch(trimmed)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /// Try LLM extraction as final fallback tier (paid, rate-limited).
+  ///
+  /// This is only called when all free extraction methods fail.
+  /// It uses the LlmEnhancementService to extract recipes from HTML.
+  Future<ImportResult?> _tryLlmExtraction(String html, String url) async {
+    final llm = _llmEnhancement;
+    if (llm == null) {
+      AppLogger.debug('UrlImportStrategy: LLM service not available');
+      return null;
+    }
+
+    // Check if LLM is available (not rate limited)
+    final isAvailable = await llm.isAvailable();
+    if (!isAvailable) {
+      AppLogger.info('UrlImportStrategy: LLM rate limited, skipping');
+      return null;
+    }
+
+    AppLogger.info('UrlImportStrategy: Trying LLM extraction for $url');
+
+    try {
+      final llmResult = await llm.extractFromHtml(html, url, currentTier: 3);
+
+      // Handle different result types
+      if (llmResult is ImportSuccess) {
+        AppLogger.info(
+          'UrlImportStrategy: LLM extracted "${llmResult.recipe.title}"',
+        );
+        return ImportResult.success(
+          llmResult.recipe,
+          warnings: [
+            'Extracted using AI - please review for accuracy',
+          ],
+          metadata: {
+            'strategy': strategyName,
+            'extraction_method': 'llm',
+            'url': url,
+            'tier': 4,
+            'usedLlm': true,
+            'requiresReview': true,
+            ...?(llmResult.metadata),
+          },
+        );
+      }
+
+      if (llmResult is ImportFailure) {
+        // Check if rate limited
+        if (llmResult.errorCode == ImportErrorCode.rateLimited ||
+            llmResult.errorCode == ImportErrorCode.llmQuotaExceeded) {
+          AppLogger.info('UrlImportStrategy: LLM rate limited');
+          return null; // Fall through to failure
+        }
+
+        AppLogger.warning(
+          'UrlImportStrategy: LLM extraction failed - ${llmResult.message}',
+        );
+        return null;
+      }
+
+      // ImportNeedsAssistance - LLM couldn't fully extract, needs user help
+      if (llmResult is ImportNeedsAssistance) {
+        AppLogger.info('UrlImportStrategy: LLM needs user assistance');
+        // For now, return null to let the standard failure path handle it
+        // Phase 5 will add proper user-assisted import flow
+        return null;
+      }
+
+      return null;
+    } catch (e) {
+      AppLogger.warning('UrlImportStrategy: LLM extraction error - $e');
+      return null;
+    }
   }
 }

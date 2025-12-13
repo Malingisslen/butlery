@@ -2,6 +2,7 @@
 /// ```dart
 /// final im = ImportManager(ops); await im.autoImport(text);
 
+import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/import/import_strategy.dart';
@@ -10,14 +11,69 @@ import 'package:butlery/services/import/archive_import_strategy.dart';
 import 'package:butlery/services/import/file_import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
 import 'package:butlery/services/import/photo_import_strategy.dart';
+import 'package:butlery/services/import/youtube/youtube_import_strategy.dart';
+import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart';
+import 'package:butlery/services/import/cache/global_recipe_cache.dart';
+import 'package:butlery/services/import/cache/cache_entry.dart';
+import 'package:butlery/services/import/cache/url_normalizer.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Import manager coordinating multiple import strategies with auto-selection, fallback, and batch processing.
 class ImportManager {
   final PersonalRecipeOperations _personalOperations;
   final List<ImportStrategy> _strategies = [];
 
+  /// Lazily initialized cache reference
+  GlobalRecipeCache? _cache;
+  UrlNormalizer? _urlNormalizer;
+
   ImportManager(this._personalOperations) {
     _initializeStrategies();
+  }
+
+  /// Get the global recipe cache (lazy initialization with graceful fallback)
+  GlobalRecipeCache? get _globalCache {
+    if (_cache != null) return _cache;
+    try {
+      _cache = ServiceLocator.get<GlobalRecipeCache>();
+      return _cache;
+    } catch (e) {
+      // Cache not available - continue without caching
+      return null;
+    }
+  }
+
+  /// Get the URL normalizer (lazy initialization with graceful fallback)
+  UrlNormalizer? get _normalizer {
+    if (_urlNormalizer != null) return _urlNormalizer;
+    try {
+      _urlNormalizer = ServiceLocator.get<UrlNormalizer>();
+      return _urlNormalizer;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Get the YouTube import strategy (lazy initialization with graceful fallback)
+  YouTubeImportStrategy? get _youtubeStrategy {
+    try {
+      final strategy = ServiceLocator.get<YouTubeImportStrategy>();
+      debugPrint('✅ YouTubeImportStrategy loaded successfully');
+      return strategy;
+    } catch (e) {
+      debugPrint('❌ Failed to load YouTubeImportStrategy: $e');
+      return null;
+    }
+  }
+
+  /// Get the TikTok import pipeline (lazy initialization with graceful fallback)
+  TikTokPipeline? get _tiktokPipeline {
+    try {
+      return ServiceLocator.get<TikTokPipeline>();
+    } catch (e) {
+      return null;
+    }
   }
 
   void _initializeStrategies() {
@@ -85,20 +141,73 @@ class ImportManager {
     Map<String, dynamic>? options,
   }) async {
     try {
-      // Try preferred strategy first if provided
+      // ===== STEP 1: Check global cache for URL imports =====
+      final cacheResult = await _checkCacheForUrl(input);
+      if (cacheResult != null) {
+        return cacheResult;
+      }
+
+      // ===== STEP 2: Try YouTube strategy for YouTube URLs =====
+      final youtubeStrategy = _youtubeStrategy;
+      debugPrint('🎬 YouTube strategy check: strategy=${youtubeStrategy != null}, canHandle=${youtubeStrategy?.canHandle(input)}');
+      if (youtubeStrategy != null && youtubeStrategy.canHandle(input)) {
+        debugPrint('🎬 Using YouTubeImportStrategy for: $input');
+        final result = await _parseWithStrategy(youtubeStrategy, input, options);
+        debugPrint('🎬 YouTube result: isSuccess=${result.isSuccess}, needsAssistance=${result.needsAssistance}, error=${result.errorMessage}');
+
+        // Handle all YouTube results - don't fall back to WebScraper for YouTube URLs
+        if (result.isSuccess || result.needsAssistance) {
+          await _saveToCacheIfUrl(input, result);
+          return result;
+        }
+
+        // Check for "needs screenshot" case - this is a valid result, not a fallback-worthy failure
+        if (result.metadata?['needsScreenshot'] == true) {
+          debugPrint('🎬 YouTube video needs screenshot - returning assistance request');
+          // Convert to user-assisted import with helpful message
+          return ImportManagerResult.assistance(
+            extractedText: result.errorMessage ?? 'Video saknar undertexter',
+            suggestedTitle: null,
+            sourceUrl: result.metadata?['url'] as String?,
+            thumbnailUrl: result.metadata?['thumbnailUrl'] as String?,
+            strategy: 'youtube',
+            metadata: result.metadata,
+          );
+        }
+
+        debugPrint('🎬 YouTube strategy failed, falling back to other strategies');
+        // YouTube strategy failed, continue with other strategies
+      }
+
+      // ===== STEP 2b: Try TikTok pipeline for TikTok URLs =====
+      final tiktokPipeline = _tiktokPipeline;
+      if (tiktokPipeline != null && tiktokPipeline.canHandle(input)) {
+        final result = await _parseWithStrategy(tiktokPipeline, input, options);
+        if (result.isSuccess || result.needsAssistance) {
+          await _saveToCacheIfUrl(input, result);
+          return result;
+        }
+        // TikTok pipeline failed, continue with other strategies
+      }
+
+      // ===== STEP 3: Try preferred strategy first if provided =====
       if (preferredStrategy != null && preferredStrategy.canHandle(input)) {
         final result =
-            await _importWithStrategy(preferredStrategy, input, options);
+            await _parseWithStrategy(preferredStrategy, input, options);
         if (result.isSuccess) {
+          // Save to cache on success
+          await _saveToCacheIfUrl(input, result);
           return result;
         }
       }
 
-      // Try all compatible strategies
+      // ===== STEP 4: Try all compatible strategies =====
       for (final strategy in _strategies) {
         if (strategy.canHandle(input)) {
-          final result = await _importWithStrategy(strategy, input, options);
+          final result = await _parseWithStrategy(strategy, input, options);
           if (result.isSuccess) {
+            // Save to cache on success
+            await _saveToCacheIfUrl(input, result);
             return result;
           }
         }
@@ -133,7 +242,7 @@ class ImportManager {
       );
     }
 
-    return await _importWithStrategy(strategy, input, options);
+    return await _parseWithStrategy(strategy, input, options);
   }
 
   /// Processes multiple recipe imports in batch with comprehensive progress tracking and error aggregation.
@@ -284,56 +393,6 @@ class ImportManager {
 
   // ===== PRIVATE METHODS =====
 
-  Future<ImportManagerResult> _importWithStrategy(
-    ImportStrategy strategy,
-    String input,
-    Map<String, dynamic>? options,
-  ) async {
-    try {
-      // Execute import strategy
-      final importResult = await strategy.import(input, options: options);
-
-      if (!importResult.isSuccess) {
-        return ImportManagerResult.failure(
-          importResult.errorMessage ?? 'Import failed',
-          strategy: strategy.strategyName,
-          warnings: importResult.warnings,
-        );
-      }
-
-      if (importResult.recipe == null) {
-        return ImportManagerResult.failure(
-          'Import successful but no recipe returned',
-          strategy: strategy.strategyName,
-        );
-      }
-
-      // Save recipe using PersonalRecipeOperations
-      final saveResult =
-          await _personalOperations.addUnifiedRecipe(importResult.recipe!);
-
-      if (!saveResult.isSuccess) {
-        return ImportManagerResult.failure(
-          'Failed to save imported recipe: ${saveResult.message}',
-          strategy: strategy.strategyName,
-          recipe: importResult.recipe,
-        );
-      }
-
-      return ImportManagerResult.success(
-        importResult.recipe!,
-        strategy: strategy.strategyName,
-        warnings: importResult.warnings,
-        metadata: importResult.metadata,
-      );
-    } catch (e) {
-      return ImportManagerResult.failure(
-        'Strategy execution error: $e',
-        strategy: strategy.strategyName,
-      );
-    }
-  }
-
   /// Parse with strategy without saving - returns recipe in memory only
   Future<ImportManagerResult> _parseWithStrategy(
     ImportStrategy strategy,
@@ -390,6 +449,156 @@ class ImportManager {
 
     return 0.5; // Default confidence
   }
+
+  // ===== CACHE INTEGRATION =====
+
+  /// Check if input looks like a URL and return cached result if available.
+  Future<ImportManagerResult?> _checkCacheForUrl(String input) async {
+    final cache = _globalCache;
+    final normalizer = _normalizer;
+
+    if (cache == null || normalizer == null) {
+      return null; // Cache not available
+    }
+
+    // Only check cache for URL-like inputs
+    if (!normalizer.looksLikeUrl(input)) {
+      return null;
+    }
+
+    // DEBUG: Log cache lookup
+    debugPrint('🔍 Checking cache for: $input');
+
+    try {
+      final cacheEntry = await cache.findByUrl(input);
+
+      if (cacheEntry == null) {
+        // DEBUG: Log cache miss
+        debugPrint('❌ CACHE MISS - extracting...');
+        return null; // Cache miss
+      }
+
+      // Create recipe from cached data
+      final recipe = _recipeFromCacheEntry(cacheEntry);
+      if (recipe == null) {
+        AppLogger.warning('ImportManager: Invalid recipe data in cache');
+        return null;
+      }
+
+      // Note: Recipe is NOT saved here - user will save after reviewing in editor
+
+      AppLogger.info(
+        'ImportManager: Loaded from cache '
+        '(source: ${cacheEntry.sourceType}, domain: ${cacheEntry.domain})',
+      );
+
+      // DEBUG: Log cache hit
+      debugPrint('✅ CACHE HIT - returning cached recipe');
+      debugPrint('   Domain: ${cacheEntry.domain}, Age: ${cacheEntry.ageInDays}d');
+
+      return ImportManagerResult.success(
+        recipe,
+        strategy: 'cache',
+        metadata: {
+          'fromCache': true,
+          'cacheAge': cacheEntry.ageInDays,
+          'originalPipeline': cacheEntry.extractionMeta.pipeline,
+          'originalTier': cacheEntry.extractionMeta.tier,
+          'originalMethod': cacheEntry.extractionMeta.method,
+        },
+      );
+    } catch (e) {
+      AppLogger.debug('ImportManager: Cache lookup failed: $e');
+      return null; // Continue with normal import on cache error
+    }
+  }
+
+  /// Save successful import result to cache if input is a URL.
+  Future<void> _saveToCacheIfUrl(
+    String input,
+    ImportManagerResult result,
+  ) async {
+    final cache = _globalCache;
+    final normalizer = _normalizer;
+
+    if (cache == null || normalizer == null) {
+      return; // Cache not available
+    }
+
+    // Only cache URL-based imports
+    if (!normalizer.looksLikeUrl(input)) {
+      return;
+    }
+
+    // Don't cache if already from cache
+    if (result.metadata?['fromCache'] == true) {
+      return;
+    }
+
+    if (result.recipe == null) {
+      return;
+    }
+
+    try {
+      final recipeData = result.recipe!.toJson();
+
+      // Determine source type based on strategy
+      final sourceType = _sourceTypeFromStrategy(result.strategy);
+
+      // Create extraction metadata
+      final extractionMeta = ExtractionMeta(
+        pipeline: sourceType,
+        tier: 0, // Phase 4 will add proper tier tracking
+        method: result.strategy ?? 'unknown',
+        confidence: 0.8, // Default confidence for now
+      );
+
+      await cache.save(
+        input: input,
+        recipeData: recipeData,
+        extractionMeta: extractionMeta,
+        sourceType: sourceType,
+      );
+
+      // DEBUG: Log cache save
+      final urlHash = normalizer.hash(input);
+      debugPrint('💾 Saved to cache: $urlHash');
+      debugPrint('   Source: $sourceType, Title: ${result.recipe!.title}');
+
+      AppLogger.debug(
+        'ImportManager: Saved to cache (source: $sourceType)',
+      );
+    } catch (e) {
+      // Don't fail import if cache save fails
+      AppLogger.debug('ImportManager: Cache save failed: $e');
+    }
+  }
+
+  /// Create a Recipe from cache entry data.
+  Recipe? _recipeFromCacheEntry(CacheEntry entry) {
+    try {
+      return Recipe.fromJson(entry.recipe);
+    } catch (e) {
+      AppLogger.warning('ImportManager: Failed to parse cached recipe: $e');
+      return null;
+    }
+  }
+
+  /// Determine source type from strategy name.
+  String _sourceTypeFromStrategy(String? strategy) {
+    if (strategy == null) return 'unknown';
+
+    final lower = strategy.toLowerCase();
+    if (lower.contains('url')) return 'website';
+    if (lower.contains('youtube')) return 'youtube';
+    if (lower.contains('tiktok')) return 'tiktok';
+    if (lower.contains('instagram')) return 'instagram';
+    if (lower.contains('photo') || lower.contains('ocr')) return 'ocr';
+    if (lower.contains('text')) return 'text';
+    if (lower.contains('archive')) return 'archive';
+
+    return 'website'; // Default for URL imports
+  }
 }
 
 /// Result of import manager operation
@@ -402,6 +611,24 @@ class ImportManagerResult {
   final Map<String, dynamic>? metadata;
   final List<String>? availableStrategies;
 
+  /// Whether this result requires user assistance to complete.
+  final bool needsAssistance;
+
+  /// Extracted text for user-assisted import (only set when needsAssistance=true).
+  final String? extractedText;
+
+  /// Suggested title for user-assisted import.
+  final String? suggestedTitle;
+
+  /// Thumbnail URL for visual reference.
+  final String? thumbnailUrl;
+
+  /// Source URL for the import.
+  final String? sourceUrl;
+
+  /// Pre-detected ingredient line indices.
+  final List<int>? likelyIngredientLines;
+
   ImportManagerResult.success(
     this.recipe, {
     this.strategy,
@@ -409,7 +636,13 @@ class ImportManagerResult {
     this.metadata,
   })  : isSuccess = true,
         errorMessage = null,
-        availableStrategies = null;
+        availableStrategies = null,
+        needsAssistance = false,
+        extractedText = null,
+        suggestedTitle = null,
+        thumbnailUrl = null,
+        sourceUrl = null,
+        likelyIngredientLines = null;
 
   ImportManagerResult.failure(
     this.errorMessage, {
@@ -418,7 +651,29 @@ class ImportManagerResult {
     this.recipe,
     this.availableStrategies,
   })  : isSuccess = false,
-        metadata = null;
+        metadata = null,
+        needsAssistance = false,
+        extractedText = null,
+        suggestedTitle = null,
+        thumbnailUrl = null,
+        sourceUrl = null,
+        likelyIngredientLines = null;
+
+  /// Result indicating user assistance is needed.
+  ImportManagerResult.assistance({
+    required this.extractedText,
+    this.suggestedTitle,
+    this.thumbnailUrl,
+    this.sourceUrl,
+    this.likelyIngredientLines,
+    this.strategy,
+    this.metadata,
+  })  : isSuccess = false,
+        needsAssistance = true,
+        recipe = null,
+        errorMessage = null,
+        warnings = null,
+        availableStrategies = null;
 
   bool get hasWarnings => warnings != null && warnings!.isNotEmpty;
   bool get hasMetadata => metadata != null && metadata!.isNotEmpty;

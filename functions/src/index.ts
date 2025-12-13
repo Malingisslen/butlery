@@ -6,10 +6,22 @@
  * - Triggers on rating create/update/delete operations
  * - Calculates: ratingCount, averageRating, ratingDistribution, lastRatedAt
  * - Prevents N+1 query problems and ensures O(1) rating stat access
+ *
+ * LLM Services (Mistral AI):
+ * - structureRecipe: Extract structured recipe from text
+ * - ocrRecipeImage: Extract recipe from images using vision AI
  */
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+
+// LLM Functions - Mistral AI integration
+export { structureRecipe } from "./llm/structure-recipe";
+export { ocrRecipeImage } from "./llm/ocr-recipe-image";
+
+// Cleanup Functions - Scheduled maintenance
+export { cleanupExpiredCache } from "./cleanup/cleanup-cache";
+export { cleanupOldRateLimits } from "./cleanup/cleanup-rate-limits";
 
 admin.initializeApp();
 const db = admin.firestore();

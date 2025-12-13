@@ -55,34 +55,34 @@ class LaggTillReceptView extends StatelessWidget {
                   ),
                   SizedBox(height: spacing),
 
-                  // Recipe upload button grid using theme-based layout
+                  // Recipe import options - all social/URL routes go to unified SmartImport
                   LayoutComponents.recipeUploadButtonGrid(
                     context,
                     buttons: [
                       {
-                        'label': 'FACEBOOK',
-                        'icon': Icons.facebook,
-                        'onPressed': () => _navigate(context, '/franSocialaMedier'),
+                        'label': 'YOUTUBE',
+                        'icon': Icons.play_circle,
+                        'onPressed': () => _navigate(context, '/smartImport'),
                       },
                       {
                         'label': 'FOTO',
-                        'icon': Icons.photo,
+                        'icon': Icons.photo_camera,
                         'onPressed': () => _navigate(context, '/photoImport'),
                       },
                       {
                         'label': 'LÄNK',
                         'icon': Icons.link,
-                        'onPressed': () => _navigate(context, '/importViaUrl'),
+                        'onPressed': () => _navigate(context, '/smartImport'),
                       },
                       {
                         'label': 'INSTAGRAM',
                         'icon': Icons.camera_alt,
-                        'onPressed': () => _navigate(context, '/franSocialaMedier'),
+                        'onPressed': () => _navigate(context, '/smartImport'),
                       },
                       {
                         'label': 'TIKTOK',
                         'icon': Icons.music_note,
-                        'onPressed': () => _navigate(context, '/franSocialaMedier'),
+                        'onPressed': () => _navigate(context, '/smartImport'),
                       },
                       {
                         'label': 'SKRIV SJÄLV',

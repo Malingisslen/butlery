@@ -76,6 +76,7 @@ dependencies:
   flutter_mentions: ^2.0.1  
   share_handler: ^0.0.22     # UPPDATERAD: Senaste stabila versionen för inkommande shares
   receive_intent: ^0.2.0     # För hantering av deep links och app launch intents
+  cloud_functions: ^6.0.4
 
 dev_dependencies:
   flutter_test:
