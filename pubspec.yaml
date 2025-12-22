@@ -18,14 +18,14 @@ dependencies:
 
   # ==================== FIREBASE & BACKEND ====================
   firebase_core: ^4.2.1        # Updated for CVE-2025-0838 fix
-  firebase_auth: ^6.1.2        # Updated for security patches
+  firebase_auth: ^6.1.3        # Updated for security patches
   cloud_firestore: ^6.1.0      # Updated for CVE-2024-7254 fix
-  firebase_storage: ^13.0.4    # Updated for bug fixes
-  firebase_analytics: ^12.0.4  # Updated for tracking improvements
+  firebase_storage: ^13.0.5    # Updated for bug fixes
+  firebase_analytics: ^12.1.0  # Updated for tracking improvements
   firebase_app_check: ^0.4.0
-  firebase_messaging: ^16.0.4  # Updated for FCM improvements
+  firebase_messaging: ^16.1.0  # Updated for FCM improvements
   firebase_performance: ^0.11.0  # For performance monitoring
-  firebase_crashlytics: ^5.0.4  # Updated for reporting improvements
+  firebase_crashlytics: ^5.0.6  # Updated for reporting improvements
 
   # ==================== STATE MANAGEMENT ====================
   provider: ^6.1.2
