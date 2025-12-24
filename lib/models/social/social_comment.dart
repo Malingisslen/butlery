@@ -47,6 +47,7 @@
 /// ```
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 /// Comprehensive social comment model providing threaded discussion functionality with engagement tracking and moderation capabilities.
 /// This model implements sophisticated social commenting functionality with hierarchical threading, engagement
 /// tracking, and comprehensive moderation support. It provides real-time synchronization capabilities through
@@ -138,13 +139,13 @@ class SocialComment {
   factory SocialComment.fromFirestore(String id, Map<String, dynamic> data) {
     return SocialComment(
       id: id,
-      recipeId: data['recipeId'] as String? ?? '',
-      authorId: data['authorId'] as String? ?? '',
-      text: data['text'] as String? ?? '',
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      parentCommentId: data['parentCommentId'] as String?,
-      isLiked: data['isLiked'] as bool? ?? false,
-      likeCount: data['likeCount'] as int? ?? 0,
+      recipeId: SerializationUtils.safeString(data, 'recipeId'),
+      authorId: SerializationUtils.safeString(data, 'authorId'),
+      text: SerializationUtils.safeString(data, 'text'),
+      createdAt: SerializationUtils.safeRequiredDateTime(data, 'createdAt'),
+      parentCommentId: SerializationUtils.safeNullableString(data, 'parentCommentId'),
+      isLiked: SerializationUtils.safeBool(data, 'isLiked'),
+      likeCount: SerializationUtils.safeInt(data, 'likeCount'),
     );
   }
 

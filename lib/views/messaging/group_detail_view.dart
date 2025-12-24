@@ -2,20 +2,19 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/group_detail_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
-import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/messaging/components/group_info_card.dart';
+import 'package:butlery/widgets/messaging/components/group_member_item.dart';
+import 'package:butlery/widgets/messaging/dialogs/add_group_members_dialog.dart';
 
 /// Group conversation details view with member management, add/remove operations, and admin controls.
 class GroupDetailView extends StatelessWidget {
@@ -106,7 +105,12 @@ class GroupDetailView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Group info card
-            _buildGroupInfoCard(context, viewModel),
+            GroupInfoCard(
+              groupTitle: viewModel.groupTitle,
+              memberCount: viewModel.memberCount,
+              createdAt: viewModel.createdAt,
+              isAdmin: viewModel.isAdmin,
+            ),
 
             const SizedBox(height: AppDimensions.spacingXl),
 
@@ -119,100 +123,6 @@ class GroupDetailView extends StatelessWidget {
             _buildActionButtons(context, viewModel),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildGroupInfoCard(
-      BuildContext context, GroupDetailViewModel viewModel) {
-    final createdAt = viewModel.createdAt;
-    final createdDateStr = createdAt != null
-        ? DateFormat('d MMM yyyy, HH:mm', 'sv_SE').format(createdAt)
-        : 'Okänd';
-
-    return CardContent.standard(
-      child: Column(
-        children: [
-          // Group icon
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.group,
-              size: 40,
-              color: AppColors.primaryBlue,
-            ),
-          ),
-
-          const SizedBox(height: AppDimensions.spacingM),
-
-          // Group name
-          Text(
-            viewModel.groupTitle,
-            style: AppTextStyles.headlineMedium.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-
-          const SizedBox(height: AppDimensions.spacingS),
-
-          // Member count
-          Text(
-            '${viewModel.memberCount} medlemmar',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textMedium,
-            ),
-          ),
-
-          const SizedBox(height: AppDimensions.spacingS),
-
-          // Created date
-          Text(
-            'Skapad: $createdDateStr',
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textLight,
-            ),
-          ),
-
-          // Admin badge if applicable
-          if (viewModel.isAdmin) ...[
-            const SizedBox(height: AppDimensions.spacingM),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingM,
-                vertical: AppDimensions.paddingS,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusS),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.admin_panel_settings,
-                    size: AppDimensions.iconSizeS,
-                    color: AppColors.primaryBlue,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingXs),
-                  Text(
-                    'Du är administratör',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.primaryBlue,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
       ),
     );
   }
@@ -244,51 +154,23 @@ class GroupDetailView extends StatelessWidget {
 
         // Member list
         ...viewModel.memberIds.map((memberId) {
-          return _buildMemberItem(context, viewModel, memberId);
+          final displayName = viewModel.getMemberDisplayName(memberId);
+          final avatarUrl = viewModel.getMemberAvatarUrl(memberId);
+          final isCurrentUser = memberId == viewModel.currentUserId;
+          final canRemove = viewModel.isAdmin && !isCurrentUser;
+
+          return GroupMemberItem(
+            displayName: displayName,
+            avatarUrl: avatarUrl,
+            isCurrentUser: isCurrentUser,
+            canRemove: canRemove,
+            onRemove: canRemove
+                ? () => _confirmRemoveMember(
+                    context, viewModel, memberId, displayName)
+                : null,
+          );
         }),
       ],
-    );
-  }
-
-  Widget _buildMemberItem(
-      BuildContext context, GroupDetailViewModel viewModel, String memberId) {
-    final displayName = viewModel.getMemberDisplayName(memberId);
-    final avatarUrl = viewModel.getMemberAvatarUrl(memberId);
-    final isCurrentUser = memberId == viewModel.currentUserId;
-    final canRemove = viewModel.isAdmin && !isCurrentUser;
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
-      child: ListTile(
-        leading: UserDisplayWidgets.avatar(
-          imageUrl: avatarUrl,
-          displayName: displayName,
-          size: ImageSize.medium,
-        ),
-        title: Row(
-          children: [
-            Text(displayName),
-            if (isCurrentUser) ...[
-              const SizedBox(width: AppDimensions.spacingS),
-              Text(
-                '(Du)',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textMedium,
-                ),
-              ),
-            ],
-          ],
-        ),
-        trailing: canRemove
-            ? IconButton(
-                icon: const Icon(Icons.remove_circle_outline),
-                color: AppColors.error,
-                onPressed: () => _confirmRemoveMember(
-                    context, viewModel, memberId, displayName),
-                tooltip: 'Ta bort medlem',
-              )
-            : null,
-      ),
     );
   }
 
@@ -384,11 +266,8 @@ class GroupDetailView extends StatelessWidget {
     }
 
     // Show friend selection dialog
-    final selectedFriends = await showDialog<List<UserProfile>>(
-      context: context,
-      builder: (context) =>
-          _AddMembersDialog(availableFriends: availableFriends),
-    );
+    final selectedFriends =
+        await AddGroupMembersDialog.show(context, availableFriends);
 
     if (selectedFriends != null &&
         selectedFriends.isNotEmpty &&
@@ -485,115 +364,5 @@ class GroupDetailView extends StatelessWidget {
         }
       }
     }
-  }
-}
-
-/// Dialog for selecting friends to add to group
-class _AddMembersDialog extends StatefulWidget {
-  final List<UserProfile> availableFriends;
-
-  const _AddMembersDialog({required this.availableFriends});
-
-  @override
-  State<_AddMembersDialog> createState() => _AddMembersDialogState();
-}
-
-class _AddMembersDialogState extends State<_AddMembersDialog> {
-  final Set<String> _selectedIds = {};
-  final TextEditingController _searchController = TextEditingController();
-  List<UserProfile> _filteredFriends = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _filteredFriends = widget.availableFriends;
-    _searchController.addListener(_filterFriends);
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  void _filterFriends() {
-    final query = _searchController.text.toLowerCase();
-    setState(() {
-      if (query.isEmpty) {
-        _filteredFriends = widget.availableFriends;
-      } else {
-        _filteredFriends = widget.availableFriends
-            .where((f) => f.displayName.toLowerCase().contains(query))
-            .toList();
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Lägg till medlemmar'),
-      content: SizedBox(
-        width: double.maxFinite,
-        height: 400,
-        child: Column(
-          children: [
-            TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                hintText: 'Sök vänner...',
-                prefixIcon: Icon(Icons.search),
-              ),
-            ),
-            const SizedBox(height: AppDimensions.spacingM),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _filteredFriends.length,
-                itemBuilder: (context, index) {
-                  final friend = _filteredFriends[index];
-                  final isSelected = _selectedIds.contains(friend.uid);
-
-                  return CheckboxListTile(
-                    value: isSelected,
-                    onChanged: (selected) {
-                      setState(() {
-                        if (selected == true) {
-                          _selectedIds.add(friend.uid);
-                        } else {
-                          _selectedIds.remove(friend.uid);
-                        }
-                      });
-                    },
-                    title: Text(friend.displayName),
-                    secondary: UserDisplayWidgets.avatar(
-                      imageUrl: friend.avatarUrl,
-                      displayName: friend.displayName,
-                      size: ImageSize.small,
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Avbryt'),
-        ),
-        TextButton(
-          onPressed: _selectedIds.isEmpty
-              ? null
-              : () {
-                  final selected = widget.availableFriends
-                      .where((f) => _selectedIds.contains(f.uid))
-                      .toList();
-                  Navigator.pop(context, selected);
-                },
-          child: Text('Lägg till (${_selectedIds.length})'),
-        ),
-      ],
-    );
   }
 }

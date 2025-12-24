@@ -31,7 +31,7 @@ class CommentItemWidget extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SocialComponents.avatar(
+                SocialAvatarComponents.avatar(
                 displayName:
                     socialViewModel.getAuthorDisplayName(comment.authorId),
                 imageUrl: socialViewModel.getAuthorAvatarUrl(comment.authorId),

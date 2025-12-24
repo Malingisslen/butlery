@@ -12,6 +12,7 @@
 
 **File Size**: 500 lines max. Use facade pattern for larger files.
 - ✅ Exemplary: `recipe_form_viewmodel.dart` - delegates to 6 focused managers
+- ⚠️ **33 files intentionally >500 lines** - see `/docs/architecture/ACCEPTED_LARGE_FILES.md` for list with reasons. Don't refactor these without reviewing the rationale first.
 
 **Service Access**: `ServiceLocator.get<T>()` for all services
 ```dart
@@ -47,26 +48,34 @@ See `/docs/architecture/` for complete patterns.
 - Primary pattern: Center + ConstrainedBox with responsive max width
 - Content widths: Narrow (500-600px), Medium (700-800px), Wide (900-1200px)
 
+**Commenting**: See `/docs/architecture/COMMENTING_STANDARDS.md`
+- WHY not WHAT - code shows what, comments explain intent
+- No doc comments on simple getters/private methods
+- No section dividers (`// ===== SECTION =====`)
+- All comments in English (UI strings stay Swedish)
+
 ## Infrastructure
 
-**Mixins & Utilities** (use in new code):
+**Mixins & Utilities** (REQUIRED in new code):
 | Tool | Purpose | Usage |
 |------|---------|-------|
 | ErrorHandlingMixin | Async error handling, retries | `with ErrorHandlingMixin` or extend BaseService |
 | AsyncOperationMixin | Loading/error states | `with StateNotifierMixin, AsyncOperationMixin` |
 | BaseService | Pre-flight checks, caching | `extends BaseService` |
 | BaseFirebaseRepository | CRUD + audit logging | `extends BaseFirebaseRepository<T>` |
-| SerializationUtils | Firestore parsing | `SerializationUtils.safeString(data, 'field')` |
+| **SerializationUtils** | Firestore parsing (100% adopted) | `SerializationUtils.safeString(data, 'field')` |
 | ValidationUtils | Form validation | `ValidationUtils.validateRequired(value)` |
 | Default Extensions | Null-safe defaults | `value.orEmpty()`, `value.hasItems` |
 
 ```dart
-// Model serialization example
+// Model serialization - ALWAYS use SerializationUtils for fromFirestore
 factory Recipe.fromFirestore(DocumentSnapshot doc) {
   final data = doc.data() as Map<String, dynamic>;
   return Recipe(
     title: SerializationUtils.safeString(data, 'title'),
     portions: SerializationUtils.safeInt(data, 'portions', defaultValue: 4),
+    createdAt: SerializationUtils.safeRequiredDateTime(data, 'createdAt'),
+    imageUrl: SerializationUtils.safeNullableString(data, 'imageUrl'),
   );
 }
 ```
@@ -81,13 +90,21 @@ See `/docs/architecture/DEDUPLICATION_PATTERNS.md` for full documentation.
 | GDPR Compliance (Articles 7, 15, 17, 30) | ✅ Phase 1 Complete |
 | Responsive Design (10 Tier 1 views) | ✅ Phase 3 Complete |
 | Security (PermissionValidationMixin, audit logging) | ✅ Complete |
-| FCM Notifications | ✅ Complete |
+| FCM Notifications (Cloud Functions) | ✅ Complete |
+| SerializationUtils Adoption | ✅ 100% (17 models) |
+| ErrorHandlingMixin Adoption | ✅ 100% (all services) |
 
 ## Testing
 
 - **Guide**: `/docs/testing/TESTING_COMPLETE_GUIDE.md`
 - **Dashboard**: `/docs/testing/TESTING_DASHBOARD.md`
 - **Strategy**: Bottom-up (repositories → services → viewmodels → integration)
+
+## CI/CD
+
+- **Analysis**: `/docs/analysis/cicd-analysis/` (8-dimension assessment)
+- **Flutter version**: Update `FLUTTER_VERSION` env var in all `.github/workflows/*.yml` files
+- **Workflows**: `analyze.yml`, `test.yml`, `build-validation.yml`, `architecture-validation.yml`, `e2e_tests.yml`
 
 ## Critical Rules
 

@@ -1,0 +1,382 @@
+/**
+ * FCM Push Notification Cloud Function
+ *
+ * Sends push notifications to users via Firebase Cloud Messaging.
+ * Supports both display notifications and silent data-only messages.
+ *
+ * Features:
+ * - Fetches user FCM tokens from Firestore
+ * - Handles multi-device delivery (sendEachForMulticast)
+ * - Cleans up invalid tokens automatically
+ * - Supports silent notifications for background sync
+ */
+
+import * as functions from "firebase-functions";
+import * as admin from "firebase-admin";
+
+interface NotificationRequest {
+  targetUserId: string;
+  title?: string;
+  body?: string;
+  data?: Record<string, string>;
+  imageUrl?: string;
+  silent?: boolean;
+}
+
+interface NotificationResponse {
+  success: boolean;
+  successCount: number;
+  failureCount: number;
+  error?: string;
+}
+
+/**
+ * Sends a push notification to a specific user.
+ *
+ * Fetches all registered FCM tokens for the user and sends
+ * the notification to all their devices. Invalid tokens are
+ * automatically removed from the database.
+ */
+export const sendNotification = functions.https.onCall(
+  async (data: NotificationRequest, context): Promise<NotificationResponse> => {
+    // Validate authentication
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "Must be authenticated to send notifications"
+      );
+    }
+
+    const { targetUserId, title, body, data: payload, imageUrl, silent } = data;
+
+    // Validate required fields
+    if (!targetUserId) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "targetUserId is required"
+      );
+    }
+
+    if (!silent && (!title || !body)) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "title and body are required for display notifications"
+      );
+    }
+
+    try {
+      // Fetch user's FCM tokens from Firestore
+      const tokensSnapshot = await admin
+        .firestore()
+        .collection("user_fcm_tokens")
+        .doc(targetUserId)
+        .get();
+
+      if (!tokensSnapshot.exists) {
+        functions.logger.info(
+          `No FCM tokens found for user ${targetUserId}`
+        );
+        return {
+          success: true,
+          successCount: 0,
+          failureCount: 0,
+        };
+      }
+
+      const tokenData = tokensSnapshot.data();
+      const tokens: string[] = tokenData?.tokens || [];
+
+      if (tokens.length === 0) {
+        functions.logger.info(
+          `Empty token list for user ${targetUserId}`
+        );
+        return {
+          success: true,
+          successCount: 0,
+          failureCount: 0,
+        };
+      }
+
+      functions.logger.info(
+        `Sending notification to ${tokens.length} device(s) for user ${targetUserId}`
+      );
+
+      // Build the message
+      const message: admin.messaging.MulticastMessage = {
+        tokens,
+        data: payload || {},
+      };
+
+      // Add notification payload for display notifications
+      if (!silent) {
+        message.notification = {
+          title: title!,
+          body: body!,
+        };
+
+        if (imageUrl) {
+          message.notification.imageUrl = imageUrl;
+        }
+
+        // Android-specific configuration
+        message.android = {
+          priority: "high",
+          notification: {
+            channelId: "butlery_notifications",
+            priority: "high",
+            defaultSound: true,
+            defaultVibrateTimings: true,
+          },
+        };
+
+        // iOS-specific configuration
+        message.apns = {
+          payload: {
+            aps: {
+              sound: "default",
+              badge: 1,
+            },
+          },
+        };
+      } else {
+        // Silent notification configuration
+        message.android = {
+          priority: "high",
+        };
+        message.apns = {
+          payload: {
+            aps: {
+              contentAvailable: true,
+            },
+          },
+          headers: {
+            "apns-priority": "5",
+            "apns-push-type": "background",
+          },
+        };
+      }
+
+      // Send to all devices
+      const response = await admin.messaging().sendEachForMulticast(message);
+
+      functions.logger.info(
+        `Notification sent: ${response.successCount} success, ${response.failureCount} failures`
+      );
+
+      // Clean up invalid tokens
+      const invalidTokens: string[] = [];
+      response.responses.forEach((resp, idx) => {
+        if (!resp.success) {
+          const error = resp.error;
+          if (
+            error?.code === "messaging/invalid-registration-token" ||
+            error?.code === "messaging/registration-token-not-registered"
+          ) {
+            invalidTokens.push(tokens[idx]);
+          }
+          functions.logger.warn(
+            `Failed to send to token ${idx}: ${error?.message}`
+          );
+        }
+      });
+
+      // Remove invalid tokens from database
+      if (invalidTokens.length > 0) {
+        functions.logger.info(
+          `Removing ${invalidTokens.length} invalid tokens for user ${targetUserId}`
+        );
+
+        const validTokens = tokens.filter((t) => !invalidTokens.includes(t));
+        await admin
+          .firestore()
+          .collection("user_fcm_tokens")
+          .doc(targetUserId)
+          .update({
+            tokens: validTokens,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+      }
+
+      return {
+        success: response.failureCount < tokens.length,
+        successCount: response.successCount,
+        failureCount: response.failureCount,
+      };
+    } catch (error) {
+      functions.logger.error(
+        `Failed to send notification to user ${targetUserId}:`,
+        error
+      );
+
+      throw new functions.https.HttpsError(
+        "internal",
+        `Failed to send notification: ${error}`
+      );
+    }
+  }
+);
+
+/**
+ * Sends notifications to multiple users (batch operation).
+ *
+ * Useful for group notifications or announcements.
+ */
+export const sendNotificationBatch = functions.https.onCall(
+  async (
+    data: { notifications: NotificationRequest[] },
+    context
+  ): Promise<{ results: NotificationResponse[] }> => {
+    // Validate authentication
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "Must be authenticated to send notifications"
+      );
+    }
+
+    const { notifications } = data;
+
+    if (!notifications || !Array.isArray(notifications)) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "notifications array is required"
+      );
+    }
+
+    // Limit batch size to prevent abuse
+    if (notifications.length > 100) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "Maximum 100 notifications per batch"
+      );
+    }
+
+    functions.logger.info(
+      `Processing batch of ${notifications.length} notifications`
+    );
+
+    // Process notifications in parallel with some concurrency control
+    const results: NotificationResponse[] = [];
+    const batchSize = 10;
+
+    for (let i = 0; i < notifications.length; i += batchSize) {
+      const batch = notifications.slice(i, i + batchSize);
+      const batchResults = await Promise.all(
+        batch.map(async (notification) => {
+          try {
+            // Recursively call the single notification logic
+            const result = await sendNotificationInternal(notification);
+            return result;
+          } catch (error) {
+            return {
+              success: false,
+              successCount: 0,
+              failureCount: 1,
+              error: String(error),
+            };
+          }
+        })
+      );
+      results.push(...batchResults);
+    }
+
+    return { results };
+  }
+);
+
+/**
+ * Internal helper for sending a single notification.
+ * Shared logic between single and batch operations.
+ */
+async function sendNotificationInternal(
+  data: NotificationRequest
+): Promise<NotificationResponse> {
+  const { targetUserId, title, body, data: payload, imageUrl, silent } = data;
+
+  if (!targetUserId) {
+    return {
+      success: false,
+      successCount: 0,
+      failureCount: 0,
+      error: "targetUserId is required",
+    };
+  }
+
+  try {
+    const tokensSnapshot = await admin
+      .firestore()
+      .collection("user_fcm_tokens")
+      .doc(targetUserId)
+      .get();
+
+    if (!tokensSnapshot.exists) {
+      return {
+        success: true,
+        successCount: 0,
+        failureCount: 0,
+      };
+    }
+
+    const tokenData = tokensSnapshot.data();
+    const tokens: string[] = tokenData?.tokens || [];
+
+    if (tokens.length === 0) {
+      return {
+        success: true,
+        successCount: 0,
+        failureCount: 0,
+      };
+    }
+
+    const message: admin.messaging.MulticastMessage = {
+      tokens,
+      data: payload || {},
+    };
+
+    if (!silent) {
+      message.notification = {
+        title: title || "",
+        body: body || "",
+      };
+      if (imageUrl) {
+        message.notification.imageUrl = imageUrl;
+      }
+      message.android = {
+        priority: "high",
+        notification: {
+          channelId: "butlery_notifications",
+          priority: "high",
+          defaultSound: true,
+        },
+      };
+      message.apns = {
+        payload: {
+          aps: {
+            sound: "default",
+          },
+        },
+      };
+    } else {
+      message.android = { priority: "high" };
+      message.apns = {
+        payload: { aps: { contentAvailable: true } },
+        headers: { "apns-priority": "5", "apns-push-type": "background" },
+      };
+    }
+
+    const response = await admin.messaging().sendEachForMulticast(message);
+
+    return {
+      success: response.failureCount < tokens.length,
+      successCount: response.successCount,
+      failureCount: response.failureCount,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      successCount: 0,
+      failureCount: 1,
+      error: String(error),
+    };
+  }
+}

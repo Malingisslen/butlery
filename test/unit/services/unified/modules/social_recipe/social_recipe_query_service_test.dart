@@ -190,7 +190,7 @@ void main() {
       
       // Create service
       queryService = SocialRecipeQueryService(
-        cacheHelper: mockCacheHelper,
+        getCacheHelper: () => mockCacheHelper,
         getCurrentUserId: () => currentUserId,
         setError: (error) {},
         serviceAdapter: mockServiceAdapter as RecipeServiceAdapter,
@@ -222,7 +222,7 @@ void main() {
       test('should return empty list when user not authenticated', () async {
         // Arrange
         queryService = SocialRecipeQueryService(
-          cacheHelper: mockCacheHelper,
+          getCacheHelper: () => mockCacheHelper,
           getCurrentUserId: () => null,
           setError: (error) {},
           serviceAdapter: mockServiceAdapter as RecipeServiceAdapter,
@@ -295,7 +295,7 @@ void main() {
       test('should return empty list when user not authenticated', () async {
         // Arrange
         queryService = SocialRecipeQueryService(
-          cacheHelper: mockCacheHelper,
+          getCacheHelper: () => mockCacheHelper,
           getCurrentUserId: () => null,
           setError: (error) {},
           serviceAdapter: mockServiceAdapter as RecipeServiceAdapter,
@@ -361,7 +361,7 @@ void main() {
       test('should return empty stats when user not authenticated', () async {
         // Arrange
         queryService = SocialRecipeQueryService(
-          cacheHelper: mockCacheHelper,
+          getCacheHelper: () => mockCacheHelper,
           getCurrentUserId: () => null,
           setError: (error) {},
           serviceAdapter: mockServiceAdapter as RecipeServiceAdapter,

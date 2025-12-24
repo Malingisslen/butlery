@@ -1,11 +1,14 @@
 // lib/services/notifications/notification_service.dart
 
 import 'dart:async';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/notifications/notification_repository.dart' as legacy;
+import 'package:butlery/models/notification_preferences.dart';
+import 'package:butlery/models/notification_batch.dart';
 import 'package:butlery/services/notifications/fcm_service.dart';
 import 'package:butlery/services/notifications/modules/notification_content_manager.dart';
 import 'package:butlery/services/notifications/modules/notification_preference_manager.dart';
@@ -13,7 +16,7 @@ import 'package:butlery/services/notifications/modules/notification_offline_mana
 import 'package:butlery/services/notifications/modules/notification_batch_manager.dart';
 import 'package:butlery/services/notifications/modules/fcm_token_manager.dart';
 import 'package:butlery/services/notifications/modules/notification_analytics_manager.dart';
-import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:butlery/repositories/interfaces/notifications_repository.dart' as interface_repo;
 import 'package:get_it/get_it.dart';
 
 /// Notification coordinator using modular architecture with 6 specialized managers (Content, Preference, Offline, Batch, Token, Analytics).
@@ -37,7 +40,7 @@ class NotificationService extends BaseService {
   NotificationService({
     required String userId,
   }) : _userId = userId {
-    final notificationsRepository = GetIt.instance<NotificationsRepository>();
+    final notificationsRepository = GetIt.instance<interface_repo.NotificationsRepository>();
     
     _repository = legacy.NotificationRepository(
       userId: userId,
@@ -369,49 +372,60 @@ class NotificationService extends BaseService {
     }
   }
 
-  /// Send FCM notification (DEV: logs only. PROD: replace with Cloud Function HTTP call)
+  /// Send FCM notification via Cloud Function
   Future<void> _sendFCMNotification(String targetUserId, NotificationTemplate template, String notificationId) async {
     try {
-      // =============================================================================
-      // DEVELOPMENT LOGGING (INTENTIONAL - NOT A BUG)
-      // =============================================================================
-      
-      AppLogger.info('🔔 [DEV] Coordinator: FCM notification ready for: $targetUserId');
-      AppLogger.debug('📋 [DEV] ID: $notificationId');
-      AppLogger.debug('📋 [DEV] Title: ${template.title}');  
-      AppLogger.debug('📋 [DEV] Body: ${template.body}');
-      AppLogger.debug('📋 [DEV] Data keys: ${template.data.keys.join(', ')}');
-      if (template.imageUrl != null) {
-        AppLogger.debug('📋 [DEV] Image: ${template.imageUrl}');
+      AppLogger.info('🔔 Sending FCM notification to: $targetUserId');
+
+      final callable = FirebaseFunctions.instance.httpsCallable('sendNotification');
+
+      final result = await callable.call<Map<String, dynamic>>({
+        'targetUserId': targetUserId,
+        'title': template.title,
+        'body': template.body,
+        'data': {
+          ...template.data.map((key, value) => MapEntry(key, value.toString())),
+          'notificationId': notificationId,
+        },
+        if (template.imageUrl != null) 'imageUrl': template.imageUrl,
+        'silent': false,
+      });
+
+      final response = result.data;
+      final successCount = response['successCount'] as int? ?? 0;
+      final failureCount = response['failureCount'] as int? ?? 0;
+
+      if (successCount > 0) {
+        AppLogger.success('✅ FCM notification sent: $successCount device(s)');
       }
-      
-      // =============================================================================
-      // PRODUCTION REPLACEMENT POINT
-      // =============================================================================
-      // Replace the above logging with HTTP call to Cloud Function when ready
-      
+      if (failureCount > 0) {
+        AppLogger.warning('⚠️ FCM notification failed for $failureCount device(s)');
+      }
+      if (successCount == 0 && failureCount == 0) {
+        AppLogger.info('ℹ️ No FCM tokens registered for user $targetUserId');
+      }
     } catch (e) {
-      AppLogger.error('❌ Failed to prepare FCM notification', e);
+      AppLogger.error('❌ Failed to send FCM notification', e);
       rethrow;
     }
   }
 
-  /// Send silent FCM notification (DEV: logs only. PROD: Cloud Function with silent flag)
+  /// Send silent FCM notification via Cloud Function (for background sync events)
   Future<void> _sendSilentFCMNotification(String targetUserId, Map<String, dynamic> data) async {
     try {
-      // =============================================================================
-      // DEVELOPMENT LOGGING - Silent notifications for collaboration events
-      // =============================================================================
-      AppLogger.info('🔔 [DEV] Coordinator: Silent FCM data ready for: $targetUserId');
-      AppLogger.debug('📋 [DEV] Data payload: ${data.keys.join(', ')}');
-      AppLogger.debug('📋 [DEV] Event type: ${data['type'] ?? 'unknown'}');
+      AppLogger.info('🔔 Sending silent FCM notification to: $targetUserId');
 
-      // =============================================================================
-      // PRODUCTION: Call same Cloud Function with silent flag
-      // =============================================================================
-      
+      final callable = FirebaseFunctions.instance.httpsCallable('sendNotification');
+
+      await callable.call<Map<String, dynamic>>({
+        'targetUserId': targetUserId,
+        'data': data.map((key, value) => MapEntry(key, value.toString())),
+        'silent': true,
+      });
+
+      AppLogger.debug('✅ Silent FCM notification sent to: $targetUserId');
     } catch (e) {
-      AppLogger.warning('⚠️ Silent notification preparation failed (non-critical): $e');
+      AppLogger.warning('⚠️ Silent notification failed (non-critical): $e');
     }
   }
 
@@ -428,7 +442,7 @@ class NotificationService extends BaseService {
   }
   
   /// Callback for sending batched notifications from batch manager
-  Future<void> _sendBatchedNotification(legacy.NotificationBatch batch) async {
+  Future<void> _sendBatchedNotification(NotificationBatch batch) async {
     if (batch.notifications.isNotEmpty) {
       final template = batch.notifications.first;
       final notificationId = _contentManager.generateNotificationId(
@@ -445,12 +459,12 @@ class NotificationService extends BaseService {
   }
 
   /// Get notification preferences for current user
-  Future<legacy.NotificationPreferences> getPreferences() async {
+  Future<NotificationPreferences> getPreferences() async {
     return await _preferenceManager.getPreferences();
   }
 
   /// Update notification preferences for current user
-  Future<void> updatePreferences(legacy.NotificationPreferences preferences) async {
+  Future<void> updatePreferences(NotificationPreferences preferences) async {
     await _preferenceManager.updatePreferences(preferences);
   }
 

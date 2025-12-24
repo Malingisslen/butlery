@@ -7,6 +7,9 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+env:
+  FLUTTER_VERSION: '3.32.4'
+
 jobs:
   analyze:
     # Kör på Ubuntu (gratis och snabbt)
@@ -21,8 +24,9 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.4'  # Matcha din lokala version
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
+          cache: true
       
       # Steg 3: Hämta dependencies
       - name: Get dependencies

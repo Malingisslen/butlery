@@ -8,8 +8,6 @@ class AppDimensions {
   /// Private constructor to prevent instantiation of utility class
   AppDimensions._();
 
-  // ===== SPACING CONSTANTS (MATCHING ORIGINAL APPTHEME) =====
-
   /// Extra small spacing (4px) - matches original spacingXs
   static const double spacingXs = 4.0;
 
@@ -54,8 +52,6 @@ class AppDimensions {
   static const double spacingL = (spacingSm + spacingXs);  // 12px (8+4)
   static const double spacingXxxl = spacingLg; // Alias for 24px
 
-  // ===== PADDING CONSTANTS =====
-
   /// Small padding (8px)
   static const double paddingS = 8.0;
 
@@ -68,12 +64,8 @@ class AppDimensions {
   /// Extra large padding (20px)
   static const double paddingXl = 20.0;
 
-  // ===== MARGIN CONSTANTS =====
-
   /// Medium margin (8px)
   static const double marginM = 8.0;
-
-  // ===== BORDER RADIUS CONSTANTS =====
 
   /// Small border radius (4px)
   static const double borderRadiusS = 4.0;
@@ -103,8 +95,6 @@ class AppDimensions {
   static const double borderRadius25 = 25.0;
   static const double borderRadius100 = 100.0;
 
-  // ===== ELEVATION CONSTANTS =====
-
   /// Low elevation (matching original AppTheme)
   static const double elevationLow = 2.0;
 
@@ -120,12 +110,8 @@ class AppDimensions {
   /// Maximum elevation (12dp)
   static const double elevationMax = 12.0;
 
-  // ===== COMPONENT DIMENSIONS =====
-
   /// Standard button height (matching original AppTheme)
   static const double buttonHeight = 56.0;
-
-  // ===== ICON DIMENSIONS =====
 
   /// Small icon size
   static const double iconSizeS = 16.0;
@@ -169,20 +155,14 @@ class AppDimensions {
   /// Extra extra extra large icon size (64px)
   static const double iconSizeXXXl = 64.0;
 
-  // ===== STROKE/BORDER WIDTH CONSTANTS =====
-
   /// Thin stroke width (0.5px)
   static const double strokeWidth05 = 0.5;
 
   /// Standard stroke width (2px)
   static const double strokeWidth2 = 2.0;
 
-  // ===== DOT AND INDICATOR CONSTANTS =====
-
   /// Standard dot size (8px)
   static const double dotSize = 8.0;
-
-  // ===== HEIGHT CONSTANTS =====
 
   /// Large minimum height (200px)
   static const double minHeightLarge = 200.0;
@@ -192,15 +172,11 @@ class AppDimensions {
 
   // Removed redundant numeric aliases - use semantic names instead
 
-  // ===== AVATAR DIMENSIONS =====
-
   /// Medium avatar size
   static const double avatarSizeM = 32.0;
 
   /// Medium avatar size (alias)
   static const double avatarSizeMedium = avatarSizeM;
-
-  // ===== IMAGE DIMENSIONS =====
 
   /// Thumbnail image size
   static const double imageSizeThumbnail = 80.0; // Back to original size
@@ -230,8 +206,6 @@ class AppDimensions {
   /// Minimum touch target size (Material Design requirement)
   static const double minTouchTarget = 48.0;
 
-  // ===== BORDER WIDTH CONSTANTS =====
-
   /// Thin border width
   static const double borderWidthThin = 0.5;
 
@@ -241,8 +215,6 @@ class AppDimensions {
   /// Thick border width
   static const double borderWidthThick = 2.0;
 
-
-  // ===== ANIMATION DURATIONS =====
 
   /// Fast animation duration (150ms)
   static const Duration animationDurationFast = Duration(milliseconds: 150);
@@ -261,8 +233,6 @@ class AppDimensions {
 
   /// Snackbar duration (3000ms)
   static const Duration snackbarDuration = Duration(milliseconds: 3000);
-
-  // ===== OPACITY/ALPHA CONSTANTS =====
 
   /// Very light transparency (0.1)
   static const double opacityVeryLight = 0.1;
@@ -288,8 +258,6 @@ class AppDimensions {
   /// Very dark transparency (0.8)
   static const double opacityVeryDark = 0.8;
 
-  // ===== COMMON HEIGHT CONSTANTS =====
-
   /// Thumbnail height (80px)
   static const double heightThumbnail = 80.0;
 
@@ -302,12 +270,8 @@ class AppDimensions {
   /// Extra large container height (200px)
   static const double heightXLarge = 200.0;
 
-  // ===== GRID CONSTANTS =====
-
   /// Grid aspect ratio for recipe cards
   static const double gridAspectRatio = 0.75;
-
-  // ===== SCREEN LAYOUT DIMENSIONS =====
 
   /// Standard screen padding
   static const EdgeInsets screenPadding = EdgeInsets.all(paddingL);
@@ -338,21 +302,11 @@ class AppDimensions {
   static const double buttonWidth = 120.0;
 
 
-  // ===== UTILITY METHODS =====
-
-
-  // ===== ELEVATION AND SHADOW CONSTANTS (FROM ORIGINAL APPTHEME) =====
-  // Note: Elevation constants are already defined above in the ELEVATION section
-
-  // ===== LEGACY COMPATIBILITY ALIASES =====
-
   /// Extra small border radius (2px)
   static const double borderRadiusXs = 2.0;
 
   /// Extra large buttons width
   static const double buttonWidthXLarge = 280.0;
-
-  // ===== GRID BUTTON LAYOUT CONSTANTS =====
 
   /// Optimal button size for mobile recipe grid (prevents text wrapping)
   static const double gridButtonSize = 160.0;
@@ -364,8 +318,6 @@ class AppDimensions {
   static const double gridRowSpacing = 20.0;
 
 
-
-  // ===== SHADOWS (FROM ORIGINAL APPTHEME) =====
 
   /// Card shadow definition
   static const List<BoxShadow> cardShadow = [
@@ -383,11 +335,6 @@ class AppDimensions {
     ),
   ];
 
-
-  // ===== STANDARDIZED EDGE INSETS (FROM ORIGINAL APPTHEME) =====
-
-
-  // ===== RESPONSIVE DESIGN UTILITIES =====
 
   /// Get responsive spacing based on screen size
   /// Automatically scales spacing:

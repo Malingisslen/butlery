@@ -4,6 +4,12 @@
 /// 1. Selecting ingredient lines from extracted text
 /// 2. Selecting instruction lines from remaining text
 /// 3. Reviewing and editing the final recipe
+///
+/// Uses extracted components for reusability:
+/// - [ImportDialogHeader] - Header with title and close button
+/// - [StepProgressIndicator] - Progress dots
+/// - [ImportDialogFooter] - Validation and navigation buttons
+/// - [EditableListBuilder] - Editable list component
 library;
 
 import 'package:flutter/material.dart';
@@ -11,6 +17,10 @@ import 'package:provider/provider.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/assisted_import_viewmodel.dart';
 import 'package:butlery/widgets/import/text_line_selector.dart';
+import 'package:butlery/widgets/import/components/import_dialog_header.dart';
+import 'package:butlery/widgets/import/components/step_progress_indicator.dart';
+import 'package:butlery/widgets/import/components/import_dialog_footer.dart';
+import 'package:butlery/widgets/import/components/editable_list_builder.dart';
 
 /// Show the assisted import dialog.
 ///
@@ -74,7 +84,6 @@ class _AssistedImportDialogContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<AssistedImportViewModel>();
-    final theme = Theme.of(context);
     final mediaQuery = MediaQuery.of(context);
 
     // Responsive sizing
@@ -94,140 +103,29 @@ class _AssistedImportDialogContent extends StatelessWidget {
         ),
         child: Column(
           children: [
-            // Header
-            _buildHeader(context, viewModel, theme),
-
-            // Progress indicator
-            _buildProgressIndicator(viewModel, theme),
-
-            // Content area
+            ImportDialogHeader(
+              currentStep: viewModel.currentStep,
+              onClose: () => _showCancelConfirmation(context),
+            ),
+            StepProgressIndicator(
+              currentStep: viewModel.stepNumber,
+              totalSteps: viewModel.totalSteps,
+            ),
             Expanded(
               child: _buildContent(context, viewModel),
             ),
-
-            // Footer with navigation buttons
-            _buildFooter(context, viewModel, theme),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(
-    BuildContext context,
-    AssistedImportViewModel viewModel,
-    ThemeData theme,
-  ) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 8, 8),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: theme.colorScheme.outlineVariant),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.edit_note,
-            color: theme.colorScheme.primary,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Manuell import',
-                  style: theme.textTheme.titleLarge,
-                ),
-                Text(
-                  _getStepDescription(viewModel.currentStep),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () => _showCancelConfirmation(context),
-            tooltip: 'Avbryt',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressIndicator(
-    AssistedImportViewModel viewModel,
-    ThemeData theme,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
-        children: [
-          for (int i = 1; i <= viewModel.totalSteps; i++) ...[
-            if (i > 1)
-              Expanded(
-                child: Container(
-                  height: 2,
-                  color: i <= viewModel.stepNumber
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.outlineVariant,
-                ),
-              ),
-            _buildStepIndicator(
-              stepNumber: i,
-              isActive: i == viewModel.stepNumber,
-              isCompleted: i < viewModel.stepNumber,
-              theme: theme,
+            ImportDialogFooter(
+              validationError: viewModel.validateCurrentStep(),
+              canGoBack: viewModel.canGoBack,
+              canProceed: viewModel.canProceed,
+              currentStep: viewModel.currentStep,
+              onBack: viewModel.previousStep,
+              onCancel: () => _showCancelConfirmation(context),
+              onNext: viewModel.nextStep,
+              onSave: () => _saveRecipe(context, viewModel),
             ),
           ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStepIndicator({
-    required int stepNumber,
-    required bool isActive,
-    required bool isCompleted,
-    required ThemeData theme,
-  }) {
-    final colorScheme = theme.colorScheme;
-
-    Color backgroundColor;
-    Color textColor;
-
-    if (isCompleted) {
-      backgroundColor = colorScheme.primary;
-      textColor = colorScheme.onPrimary;
-    } else if (isActive) {
-      backgroundColor = colorScheme.primary;
-      textColor = colorScheme.onPrimary;
-    } else {
-      backgroundColor = colorScheme.surfaceContainerHighest;
-      textColor = colorScheme.onSurfaceVariant;
-    }
-
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: backgroundColor,
-      ),
-      child: Center(
-        child: isCompleted
-            ? Icon(Icons.check, size: 16, color: textColor)
-            : Text(
-                '$stepNumber',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: textColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+        ),
       ),
     );
   }
@@ -240,103 +138,6 @@ class _AssistedImportDialogContent extends StatelessWidget {
         return _InstructionSelectionStep(viewModel: viewModel);
       case AssistedImportStep.reviewEdit:
         return _ReviewEditStep(viewModel: viewModel);
-    }
-  }
-
-  Widget _buildFooter(
-    BuildContext context,
-    AssistedImportViewModel viewModel,
-    ThemeData theme,
-  ) {
-    final validationError = viewModel.validateCurrentStep();
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: theme.colorScheme.outlineVariant),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Validation error
-          if (validationError != null) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.errorContainer,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.warning_amber,
-                    size: 18,
-                    color: theme.colorScheme.onErrorContainer,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      validationError,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onErrorContainer,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-          // Buttons
-          Row(
-            children: [
-              // Back button
-              if (viewModel.canGoBack)
-                TextButton.icon(
-                  onPressed: viewModel.previousStep,
-                  icon: const Icon(Icons.arrow_back),
-                  label: const Text('Tillbaka'),
-                )
-              else
-                TextButton(
-                  onPressed: () => _showCancelConfirmation(context),
-                  child: const Text('Avbryt'),
-                ),
-              const Spacer(),
-              // Next/Save button
-              if (viewModel.currentStep == AssistedImportStep.reviewEdit)
-                FilledButton.icon(
-                  onPressed: viewModel.canProceed
-                      ? () => _saveRecipe(context, viewModel)
-                      : null,
-                  icon: const Icon(Icons.save),
-                  label: const Text('Spara recept'),
-                )
-              else
-                FilledButton.icon(
-                  onPressed: viewModel.canProceed
-                      ? viewModel.nextStep
-                      : null,
-                  icon: const Icon(Icons.arrow_forward),
-                  label: const Text('Nästa'),
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _getStepDescription(AssistedImportStep step) {
-    switch (step) {
-      case AssistedImportStep.selectIngredients:
-        return 'Steg 1: Välj ingredienser';
-      case AssistedImportStep.selectInstructions:
-        return 'Steg 2: Välj instruktioner';
-      case AssistedImportStep.reviewEdit:
-        return 'Steg 3: Granska och redigera';
     }
   }
 
@@ -371,9 +172,7 @@ class _AssistedImportDialogContent extends StatelessWidget {
   }
 }
 
-// =============================================================================
-// Step 1: Ingredient Selection
-// =============================================================================
+// ===== STEP WIDGETS =====
 
 class _IngredientSelectionStep extends StatelessWidget {
   final AssistedImportViewModel viewModel;
@@ -393,10 +192,6 @@ class _IngredientSelectionStep extends StatelessWidget {
     );
   }
 }
-
-// =============================================================================
-// Step 2: Instruction Selection
-// =============================================================================
 
 class _InstructionSelectionStep extends StatelessWidget {
   final AssistedImportViewModel viewModel;
@@ -427,10 +222,6 @@ class _InstructionSelectionStep extends StatelessWidget {
   }
 }
 
-// =============================================================================
-// Step 3: Review and Edit
-// =============================================================================
-
 class _ReviewEditStep extends StatelessWidget {
   final AssistedImportViewModel viewModel;
 
@@ -438,8 +229,6 @@ class _ReviewEditStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -531,15 +320,13 @@ class _ReviewEditStep extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Ingredients section
-          _buildSectionHeader(
-            theme,
-            'Ingredienser',
-            Icons.restaurant,
-            viewModel.editedIngredients.length,
+          EditableListHeader(
+            title: 'Ingredienser',
+            icon: Icons.restaurant,
+            count: viewModel.editedIngredients.length,
           ),
           const SizedBox(height: 8),
-          _buildEditableList(
-            context,
+          EditableListBuilder(
             items: viewModel.editedIngredients,
             onUpdate: viewModel.updateIngredient,
             onRemove: viewModel.removeIngredient,
@@ -549,15 +336,13 @@ class _ReviewEditStep extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Instructions section
-          _buildSectionHeader(
-            theme,
-            'Instruktioner',
-            Icons.format_list_numbered,
-            viewModel.editedInstructions.length,
+          EditableListHeader(
+            title: 'Instruktioner',
+            icon: Icons.format_list_numbered,
+            count: viewModel.editedInstructions.length,
           ),
           const SizedBox(height: 8),
-          _buildEditableList(
-            context,
+          EditableListBuilder(
             items: viewModel.editedInstructions,
             onUpdate: viewModel.updateInstruction,
             onRemove: viewModel.removeInstruction,
@@ -567,184 +352,6 @@ class _ReviewEditStep extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSectionHeader(
-    ThemeData theme,
-    String title,
-    IconData icon,
-    int count,
-  ) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: theme.colorScheme.primary),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            '$count',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onPrimaryContainer,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildEditableList(
-    BuildContext context, {
-    required List<String> items,
-    required void Function(int, String) onUpdate,
-    required void Function(int) onRemove,
-    required void Function(String) onAdd,
-    required String hintText,
-    bool showNumbers = false,
-  }) {
-    final theme = Theme.of(context);
-
-    return Column(
-      children: [
-        // Existing items
-        ...items.asMap().entries.map((entry) {
-          final index = entry.key;
-          final item = entry.value;
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (showNumbers) ...[
-                  SizedBox(
-                    width: 28,
-                    child: Text(
-                      '${index + 1}.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-                Expanded(
-                  child: TextFormField(
-                    initialValue: item,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      border: const OutlineInputBorder(),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.close, size: 18),
-                        onPressed: () => onRemove(index),
-                        tooltip: 'Ta bort',
-                      ),
-                    ),
-                    onChanged: (value) => onUpdate(index, value),
-                    maxLines: null,
-                    textCapitalization: TextCapitalization.sentences,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }),
-
-        // Add new item
-        Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Row(
-            children: [
-              if (showNumbers) const SizedBox(width: 28),
-              Expanded(
-                child: _AddItemField(
-                  hintText: hintText,
-                  onAdd: onAdd,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Text field for adding new items.
-class _AddItemField extends StatefulWidget {
-  final String hintText;
-  final void Function(String) onAdd;
-
-  const _AddItemField({
-    required this.hintText,
-    required this.onAdd,
-  });
-
-  @override
-  State<_AddItemField> createState() => _AddItemFieldState();
-}
-
-class _AddItemFieldState extends State<_AddItemField> {
-  final _controller = TextEditingController();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _add() {
-    final value = _controller.text.trim();
-    if (value.isNotEmpty) {
-      widget.onAdd(value);
-      _controller.clear();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return TextFormField(
-      controller: _controller,
-      decoration: InputDecoration(
-        isDense: true,
-        hintText: widget.hintText,
-        border: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: theme.colorScheme.outline.withValues(alpha: 0.5),
-            style: BorderStyle.solid,
-          ),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 10,
-        ),
-        suffixIcon: IconButton(
-          icon: Icon(
-            Icons.add_circle,
-            color: theme.colorScheme.primary,
-          ),
-          onPressed: _add,
-          tooltip: 'Lägg till',
-        ),
-      ),
-      textCapitalization: TextCapitalization.sentences,
-      onFieldSubmitted: (_) => _add(),
     );
   }
 }

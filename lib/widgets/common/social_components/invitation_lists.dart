@@ -1,22 +1,12 @@
-// lib/widgets/common/social_components/invitation_lists.dart
-
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
-/// Focused module for invitation target list and grid layouts
-/// This module handles ONLY list and grid presentations:
-/// - Target lists and grids with selection capabilities
-/// - Layout management and scrolling behavior
-/// - Collection presentations
-/// ❌ DOES NOT CONTAIN: Display widgets, selectors, states, actions
+/// Invitation target list and grid layouts.
 class InvitationLists {
-  // ===== TARGET LISTS AND GRIDS =====
-
-  /// Build target list
-  /// Scrollable list of invitation targets
+  /// Build target list.
   static Widget targetList({
     required List<InvitationTarget> targets,
     Function(InvitationTarget)? onTargetTap,

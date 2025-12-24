@@ -10,13 +10,13 @@ coverage:
   status:
     project:
       default:
-        target: 50%                 # Current baseline (will increase over time)
+        target: 60%                 # Increased from 50% baseline
         threshold: 2%               # Allow 2% decrease before failing
         if_ci_failed: error
 
     patch:
       default:
-        target: 60%                 # New code should have better coverage
+        target: 70%                 # New code should have good coverage
         threshold: 5%
         if_ci_failed: error
 

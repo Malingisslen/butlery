@@ -39,7 +39,7 @@ void main() {
       registerFallbackValue(FakeNotificationAction(id: 'test', title: 'Test'));
       registerFallbackValue(NotificationCategory.social);
       registerFallbackValue(NotificationType.immediate);
-      registerFallbackValue(FakeNotificationPreferences());
+      registerFallbackValue(FakeNotificationPreferences.defaults());
       registerFallbackValue(DateTime.now());
     });
 
@@ -57,7 +57,7 @@ void main() {
 
       // Setup default stubs for notifications repository
       when(() => mockNotificationsRepo.getNotificationPreferences(any()))
-          .thenAnswer((_) async => NotificationPreferences());
+          .thenAnswer((_) async => NotificationPreferences.defaults());
       when(() =>
               mockNotificationsRepo.updateNotificationPreferences(any(), any()))
           .thenAnswer((_) async {});
@@ -72,7 +72,7 @@ void main() {
         data: any(named: 'data'),
       )).thenAnswer((_) async {});
       when(() => mockLegacyRepo.getPreferences())
-          .thenAnswer((_) async => legacy.NotificationPreferences.defaults());
+          .thenAnswer((_) async => NotificationPreferences.defaults());
       when(() => mockLegacyRepo.markNotificationDelivered(any()))
           .thenAnswer((_) async {});
       when(() => mockLegacyRepo.markNotificationOpened(any()))
@@ -362,12 +362,12 @@ void main() {
 
         // Assert
         expect(preferences, isNotNull);
-        expect(preferences, isA<legacy.NotificationPreferences>());
+        expect(preferences, isA<NotificationPreferences>());
       });
 
       test('should update notification preferences', () async {
         // Arrange
-        final mockPreferences = FakeNotificationPreferences();
+        final mockPreferences = FakeNotificationPreferences.defaults();
 
         // Act & Assert - Should not throw
         await expectLater(
@@ -786,7 +786,7 @@ void main() {
         test('should handle invalid quiet hour settings', () async {
           // Arrange - End time before start time
           when(() => mockLegacyRepo.getPreferences()).thenAnswer((_) async => 
-            legacy.NotificationPreferences.defaults());
+            NotificationPreferences.defaults());
 
           // Act & Assert - Should handle invalid settings
           final isQuiet = await notificationService.isInQuietHours('user-123');

@@ -90,7 +90,7 @@ class SharedRecipeCard {
   ) {
     return Row(
       children: [
-        SocialComponents.avatar(
+        SocialAvatarComponents.avatar(
           size: ImageSize.small,
           displayName: sharedRecipe.sharedByDisplayName,
         ),
@@ -275,7 +275,7 @@ class SharedRecipeCard {
     return Row(
       children: [
         Expanded(
-          child: SocialComponents.socialActionButton(
+          child: SocialBuilderComponents.socialActionButton(
             text: 'Visa',
             onPressed: () {
               if (!isRead) {
@@ -294,7 +294,7 @@ class SharedRecipeCard {
         ),
         const SizedBox(width: AppDimensions.spacingS),
         Expanded(
-          child: SocialComponents.socialActionButton(
+          child: SocialBuilderComponents.socialActionButton(
             text: isImported ? 'Importerat' : 'Importera',
             onPressed: () {
               if (!isImported && !viewModel.recipeViewModel.isOperating) {

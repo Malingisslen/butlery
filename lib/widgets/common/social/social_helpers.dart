@@ -1,20 +1,11 @@
-// lib/widgets/common/social/social_helpers.dart
-
 import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 
-/// Consolidated Social Helper Functions
-/// This class provides unified social utility methods, consolidating functionality
-/// from multiple social helper files to eliminate duplication.
+/// Consolidated social helper functions.
 class SocialHelpers {
-  
-  // ============================================================================
-  // === USER DISPLAY AND FORMATTING (original social_helpers.dart) ===
-  // ============================================================================
-  
-  /// Format user display name
+  /// Format user display name.
   static String formatUserDisplayName(UserProfile? user, {String fallback = 'Okänd användare'}) {
     if (user == null) return fallback;
     return user.displayName.isNotEmpty ? user.displayName : user.email;
@@ -51,11 +42,7 @@ class SocialHelpers {
     }
   }
 
-  // ============================================================================
-  // === USER PROFILE CONVERSIONS (from utilities/social_helpers.dart) ===
-  // ============================================================================
-
-  /// Generate initials from display name
+  /// Generate initials from display name.
   static String getInitials(String displayName) {
     return UserDisplayWidgets.getInitials(displayName);
   }

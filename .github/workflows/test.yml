@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+env:
+  FLUTTER_VERSION: '3.32.4'
+
 jobs:
   unit-tests:
     name: Unit Tests
@@ -16,20 +19,17 @@ jobs:
       
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.4'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
-      
+          cache: true
+
       - run: flutter pub get
-      
-      # Run unit and widget tests with coverage
-      - name: Run unit and widget tests
+
+      # Run unit, widget, and view tests with coverage
+      - name: Run unit, widget, and view tests
         run: |
-          if [ -n "$(find test/unit test/widget -name '*.dart' -type f 2>/dev/null)" ]; then
-            echo "Running unit and widget tests with coverage..."
-            flutter test test/unit test/widget --coverage --reporter=expanded
-          else
-            echo "No unit/widget tests found, skipping test step"
-          fi
+          echo "Running unit, widget, and view tests with coverage..."
+          flutter test test/unit test/widget test/views --coverage --reporter=expanded
 
       # Upload coverage to Codecov
       - name: Upload coverage to Codecov
@@ -59,9 +59,10 @@ jobs:
       
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.4'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
-      
+          cache: true
+
       # Setup Java for Firebase Emulator
       - uses: actions/setup-java@v3
         with:

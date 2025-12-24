@@ -9,6 +9,7 @@
 /// - Shared menus: Track who has viewed each shared menu
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 
 class ViewMetadata {
   final String userId;
@@ -25,8 +26,8 @@ class ViewMetadata {
   ) {
     final data = doc.data()!;
     return ViewMetadata(
-      userId: data['userId'] as String,
-      viewedAt: (data['timestamp'] as Timestamp).toDate(),
+      userId: SerializationUtils.safeString(data, 'userId'),
+      viewedAt: SerializationUtils.safeRequiredDateTime(data, 'timestamp'),
     );
   }
 

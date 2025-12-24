@@ -282,8 +282,9 @@ class MenuStorage {
   /// Load imported menu data by key (menus shared with you)
   /// These are stored locally after being imported from social shares
   Future<SavedMenuData?> loadImportedMenuByKey(String menuKey) async {
-    // TODO: Implement imported menu loading from shared_menus collection
-    // For now, return null - imported menus flow needs separate implementation
+    // TODO(imported-menu-flow): Implement imported menu loading from shared_menus collection
+    // Status: Deferred - current social menu flow handles sharing separately
+    // Returns null as imported menus use a different data flow
     return null;
   }
 }

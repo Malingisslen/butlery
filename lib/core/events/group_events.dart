@@ -1,7 +1,7 @@
 /// Group event bus for reactive UI updates.
 import 'dart:async';
 
-/// Group event types för att trigga UI-uppdateringar
+/// Group event types for triggering UI updates.
 enum GroupEventType {
   created,
   updated,
@@ -10,7 +10,7 @@ enum GroupEventType {
   memberRemoved,
 }
 
-/// Event bus för gruppändringar
+/// Event bus for group changes.
 class GroupEventBus {
   static final StreamController<GroupEventType> _controller =
       StreamController<GroupEventType>.broadcast();

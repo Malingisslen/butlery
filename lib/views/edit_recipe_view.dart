@@ -36,13 +36,14 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/social_components.dart';
-import 'package:butlery/services/social_recipe_service.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
+import 'package:butlery/widgets/recipe/recipe_form/dynamic_list_builder.dart';
 
 /// Comprehensive recipe editing view with all components inlined.
 class EditRecipeView extends StatelessWidget {
@@ -163,8 +164,6 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     );
   }
 
-  // ==================== APPBAR ====================
-  /// Build AppBar with collaborative status indicator (inlined from edit_recipe_app_bar.dart)
   PreferredSizeWidget _buildAppBar(BuildContext context, Recipe recipe) {
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight),
@@ -186,7 +185,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                 Padding(
                   padding: const EdgeInsets.only(right: AppDimensions.spacingL),
                   child: Center(
-                    child: SocialComponents.collaborativeStatusBadge(
+                    child: SocialCollaborativeComponents.collaborativeStatusBadge(
                       text: 'Delat',
                       icon: Icons.people,
                     ),
@@ -199,15 +198,13 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     );
   }
 
-  // ==================== BANNERS ====================
-  /// Build smart banners showing collaborative and permissions status (inlined from edit_recipe_banners.dart)
   Widget _buildSmartBanners(BuildContext context, Recipe recipe) {
     return Consumer2<CollaborativeStatusViewModel, RecipeFormViewModel>(
       builder: (context, collaborativeViewModel, recipeViewModel, child) {
         return Column(
           children: [
             _buildCollaborativeBanner(context, recipe),
-            SocialComponents.smartPermissionsBanner(
+            SocialCollaborativeComponents.smartPermissionsBanner(
               context: context,
               viewModel: recipeViewModel,
             ),
@@ -217,43 +214,19 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     );
   }
 
-  /// Build collaborative banner with debug information
   Widget _buildCollaborativeBanner(BuildContext context, Recipe recipe) {
     return Consumer<CollaborativeStatusViewModel>(
       builder: (context, collaborativeViewModel, child) {
-        debugPrint('🔍 === COLLABORATIVE DEBUG START ===');
-        debugPrint('🔍 Recipe ID: ${recipe.id}');
-        debugPrint('🔍 Recipe owner: ${recipe.createdBy}');
-
-        final socialService = ServiceLocator.get<SocialRecipeService>();
-        for (final shared in socialService.sharedWithMe) {
-          debugPrint(
-              '🔍 Shared recipe: ${shared.originalRecipeId} by ${shared.sharedByUserId}');
-          if (shared.originalRecipeId == recipe.id) {
-            debugPrint('🔍 ⭐ MATCH! This recipe IS shared!');
-          }
-        }
-
         final status = collaborativeViewModel.getRecipeCollaborativeStatus(
           recipe.id,
           recipe,
         );
-        final isCollaborative = status.isCollaborative;
 
-        debugPrint(
-            '🔍 CollaborativeStatusViewModel says isCollaborative: $isCollaborative');
-        debugPrint('🔍 Participants: ${status.participants.length}');
-        debugPrint('🔍 === COLLABORATIVE DEBUG END ===');
+        if (!status.isCollaborative) return const SizedBox.shrink();
 
-        if (!isCollaborative) {
-          debugPrint('🔍 ❌ No collaborative banner shown');
-          return const SizedBox.shrink();
-        }
-
-        debugPrint('🔍 ✅ Showing collaborative banner with real participants');
-        return SocialComponents.collaborativeBanner(
+        return SocialCollaborativeComponents.collaborativeBanner(
           title: 'Du redigerar tillsammans med andra',
-          subtitle: 'Ändringar synkas automatiskt med andra deltagare',
+          subtitle: 'Angringar synkas automatiskt med andra deltagare',
           context: context,
           contentId: recipe.id,
           contentType: 'recipe',
@@ -262,8 +235,6 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     );
   }
 
-  // ==================== BOTTOM BAR ====================
-  /// Build permissions-based bottom navigation bar (inlined from edit_recipe_bottom_bar.dart)
   Widget _buildBottomBar(BuildContext context, RecipeFormViewModel viewModel) {
     if (viewModel.editMode == null) {
       return BottomActionContainer(
@@ -298,8 +269,6 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     );
   }
 
-  // ==================== FORM FIELDS ====================
-  /// Build all form fields for recipe editing (inlined from edit_recipe_form_fields.dart)
   List<Widget> _buildFormFields(
       BuildContext context, RecipeFormViewModel viewModel) {
     return [
@@ -347,7 +316,10 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           }
         },
         userId: ServiceLocator.get<PermissionService>().currentUserId ?? '',
-        onPickImage: () => _pickImage(context, viewModel),
+        onPickImage: () => RecipeImagePicker.showAndPick(
+          context: context,
+          viewModel: viewModel,
+        ),
         maxImages: 5,
         isLoading: viewModel.isUploadingImage,
       ),
@@ -404,35 +376,32 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       const SizedBox(height: AppDimensions.spacingXl),
 
       // Ingredients dynamic list
-      _buildDynamicList(
+      DynamicListBuilder(
         label: 'Ingrediens',
         controllers: viewModel.ingredientControllers,
         onUpdate: viewModel.updateIngredient,
         onAdd: viewModel.addIngredient,
         onRemove: viewModel.removeIngredient,
-        context: context,
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 
       // Instructions dynamic list
-      _buildDynamicList(
+      DynamicListBuilder(
         label: 'Instruktion',
         controllers: viewModel.instructionControllers,
         onUpdate: viewModel.updateInstruction,
         onAdd: viewModel.addInstruction,
         onRemove: viewModel.removeInstruction,
-        context: context,
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 
       // Tags dynamic list
-      _buildDynamicList(
+      DynamicListBuilder(
         label: 'Tagg',
         controllers: viewModel.tagControllers,
         onUpdate: viewModel.updateTag,
         onAdd: viewModel.addTag,
         onRemove: viewModel.removeTag,
-        context: context,
       ),
       const SizedBox(height: AppDimensions.spacingXl),
 
@@ -470,139 +439,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
     ];
   }
 
-  // ==================== DYNAMIC LIST ====================
-  /// Build a dynamic list widget with add/remove functionality (inlined from edit_recipe_dynamic_list.dart)
-  Widget _buildDynamicList({
-    required String label,
-    required List<TextEditingController> controllers,
-    required Function(int, String) onUpdate,
-    required VoidCallback onAdd,
-    required Function(int) onRemove,
-    required BuildContext context,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTextStyles.labelLarge),
-        const SizedBox(height: AppDimensions.spacingM),
-        for (int index = 0; index < controllers.length; index++)
-          Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: controllers[index],
-                      decoration: InputDecoration(
-                        hintText: '$label ${index + 1}',
-                      ),
-                      style: AppTextStyles.bodyMedium,
-                      textInputAction: TextInputAction.next,
-                      maxLines: null,
-                      keyboardType: TextInputType.multiline,
-                      onChanged: (value) {
-                        onUpdate(index, value);
-                        if (index == controllers.length - 1 &&
-                            value.trim().isNotEmpty &&
-                            value.length == 1) {
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            onAdd();
-                          });
-                        }
-                      },
-                    ),
-                  ),
-                  if (controllers.length > 1)
-                    IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () => onRemove(index),
-                    ),
-                ],
-              ),
-              const SizedBox(height: AppDimensions.spacingS),
-            ],
-          ),
-        if (controllers.isEmpty)
-          TextButton.icon(
-            icon: const Icon(Icons.add),
-            label: Text('Lägg till $label'),
-            onPressed: onAdd,
-          ),
-      ],
-    );
-  }
 
-  // ==================== IMAGE PICKER ====================
-  /// Show image picker modal with camera and gallery options (inlined from edit_recipe_image_picker.dart)
-  Future<void> _pickImage(
-    BuildContext context,
-    RecipeFormViewModel viewModel,
-  ) async {
-    final choice = await showModalBottomSheet<String>(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(AppDimensions.spacingL),
-              child: const Text(
-                'Lägg till bild',
-                style: AppTextStyles.titleMedium,
-              ),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: Icon(
-                Icons.photo_camera,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              title: const Text('Ta foto'),
-              subtitle: const Text('Använd kameran'),
-              onTap: () => Navigator.pop(context, 'camera'),
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.photo_library,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              title: const Text('Från galleriet'),
-              subtitle: Text(
-                viewModel.canAddMoreImages
-                    ? 'Välj upp till ${RecipeFormViewModel.maxImages - viewModel.imageUrls.length} bilder'
-                    : 'Välj en bild från galleriet',
-              ),
-              onTap: () => Navigator.pop(context, 'gallery'),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.close),
-              title: const Text('Avbryt'),
-              onTap: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
-    );
-
-    if (choice == null || !context.mounted) return;
-
-    switch (choice) {
-      case 'camera':
-        await viewModel.pickImageFromCamera(context);
-        break;
-      case 'gallery':
-        if (viewModel.canAddMoreImages && viewModel.imageUrls.length < 4) {
-          await viewModel.pickMultipleImagesFromGallery(context);
-        } else {
-          await viewModel.pickImageFromGallery(context);
-        }
-        break;
-    }
-  }
-
-  // ==================== ACTIONS ====================
-  /// Save recipe with form validation and collaborative cache invalidation (inlined from edit_recipe_actions.dart)
   Future<void> _saveRecipe(BuildContext context) async {
     final currentState = _formKey.currentState;
     if (currentState == null || !currentState.validate()) {

@@ -13,10 +13,6 @@ import 'package:butlery/core/constants/app_strings.dart';
 
 /// Dialog factory for delete, action, and info dialogs with Swedish localization and BaseDialog foundation.
 class CommonDialogActions {
-  // ============================================================================
-  // === DELETE CONFIRMATION DIALOGS ===
-  // ============================================================================
-
   /// Show delete confirmation dialog for any item type
   static Future<bool?> showDeleteConfirmation({
     required BuildContext context,
@@ -77,10 +73,6 @@ class CommonDialogActions {
       icon: Icons.shopping_cart,
     );
   }
-
-  // ============================================================================
-  // === ACTION CONFIRMATION DIALOGS ===
-  // ============================================================================
 
   /// Show generic action confirmation dialog
   static Future<bool?> showActionConfirmation({
@@ -158,10 +150,6 @@ class CommonDialogActions {
     );
   }
 
-  // ============================================================================
-  // === SUCCESS/INFO DIALOGS ===
-  // ============================================================================
-
   /// Show success dialog
   static Future<void> showSuccessDialog({
     required BuildContext context,
@@ -219,10 +207,6 @@ class CommonDialogActions {
     );
   }
 }
-
-// ============================================================================
-// === PRIVATE DIALOG IMPLEMENTATIONS ===
-// ============================================================================
 
 /// Private delete confirmation dialog
 class _DeleteConfirmationDialog extends BaseDialog<bool> {

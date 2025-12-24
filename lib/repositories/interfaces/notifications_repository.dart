@@ -1,6 +1,8 @@
 import 'package:butlery/repositories/interfaces/repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/models/notification_preferences.dart';
+export 'package:butlery/models/notification_preferences.dart';
 
 /// Repository interface for push notification and user notification management.
 /// This interface provides comprehensive notification operations including push
@@ -42,11 +44,9 @@ import 'package:butlery/services/notifications/notification_types.dart';
 /// notificationRepo.getNotificationsStream(userId).listen((notifications) {
 ///   updateNotificationBadge(notifications.where((n) => !n.isRead).length);
 /// });
-/// // Manage preferences
-/// final preferences = NotificationPreferences(
-///   enableFriendRequests: true,
-///   enableRecipeSharing: false,
-/// );
+/// // Manage preferences using the model's defaults and category settings
+/// var preferences = NotificationPreferences.defaults();
+/// // The model uses categorySettings and typeSettings maps for granular control
 /// await notificationRepo.updateNotificationPreferences(userId, preferences);
 /// ```
 abstract class NotificationsRepository extends Repository<UserNotification> {
@@ -157,50 +157,5 @@ class UserNotification {
     isRead: data['isRead'] ?? false,
     createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     readAt: (data['readAt'] as Timestamp?)?.toDate(),
-  );
-}
-
-/// Notification preferences for a user
-class NotificationPreferences {
-  final bool enableRecipeSharing;
-  final bool enableFriendRequests;
-  final bool enableGroupInvitations;
-  final bool enableComments;
-  final bool enableRatings;
-  final bool enableCollaborativeEditing;
-  final bool enableMenuSharing;
-  final bool enableGeneralUpdates;
-
-  NotificationPreferences({
-    this.enableRecipeSharing = true,
-    this.enableFriendRequests = true,
-    this.enableGroupInvitations = true,
-    this.enableComments = true,
-    this.enableRatings = true,
-    this.enableCollaborativeEditing = true,
-    this.enableMenuSharing = true,
-    this.enableGeneralUpdates = true,
-  });
-
-  Map<String, dynamic> toFirestore() => {
-    'enableRecipeSharing': enableRecipeSharing,
-    'enableFriendRequests': enableFriendRequests,
-    'enableGroupInvitations': enableGroupInvitations,
-    'enableComments': enableComments,
-    'enableRatings': enableRatings,
-    'enableCollaborativeEditing': enableCollaborativeEditing,
-    'enableMenuSharing': enableMenuSharing,
-    'enableGeneralUpdates': enableGeneralUpdates,
-  };
-
-  factory NotificationPreferences.fromFirestore(Map<String, dynamic> data) => NotificationPreferences(
-    enableRecipeSharing: data['enableRecipeSharing'] ?? true,
-    enableFriendRequests: data['enableFriendRequests'] ?? true,
-    enableGroupInvitations: data['enableGroupInvitations'] ?? true,
-    enableComments: data['enableComments'] ?? true,
-    enableRatings: data['enableRatings'] ?? true,
-    enableCollaborativeEditing: data['enableCollaborativeEditing'] ?? true,
-    enableMenuSharing: data['enableMenuSharing'] ?? true,
-    enableGeneralUpdates: data['enableGeneralUpdates'] ?? true,
   );
 }

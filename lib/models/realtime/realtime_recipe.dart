@@ -1,5 +1,6 @@
 // lib/models/realtime/realtime_recipe.dart
 
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
@@ -245,40 +246,40 @@ class RealtimeRecipe extends RealtimeResource {
   /// @deprecated Use fromData() constructor instead. This maintains backward compatibility.
   factory RealtimeRecipe.fromMap(String id, Map<String, dynamic> data) {
     // Parse recipe data from the nested structure
-    final recipeData = data['recipe'] as Map<String, dynamic>? ?? data;
+    final recipeData = SerializationUtils.safeNullableMap(data, 'recipe') ?? data;
     final recipe = RecipeSerialization.deserializeRecipe(recipeData, id);
 
     // Parse participants
-    final participantsData = data['participants'] as Map<String, dynamic>? ?? {};
+    final participantsData = SerializationUtils.safeMap(data, 'participants');
     final participants = participantsData.map(
       (userId, permissionString) => MapEntry(
         userId,
-        ResourcePermissionHelper.fromString(permissionString as String),
+        ResourcePermissionHelper.fromString(permissionString as String? ?? 'viewer'),
       ),
     );
 
     // Parse participantIds with fallback to participants.keys for migration
     final participantIds = data.containsKey('participantIds')
-        ? List<String>.from(data['participantIds'] as List? ?? [])
+        ? SerializationUtils.safeStringList(data, 'participantIds')
         : participants.keys.toList();
 
     return RealtimeRecipe(
       id: id,
-      ownerId: data['ownerId'] as String,
-      ownerDisplayName: data['ownerDisplayName'] as String,
+      ownerId: SerializationUtils.safeString(data, 'ownerId'),
+      ownerDisplayName: SerializationUtils.safeString(data, 'ownerDisplayName'),
       participants: participants,
       participantIds: participantIds,
       createdAt: data['createdAt'] is DateTime
           ? data['createdAt'] as DateTime
-          : DateTime.now(),
+          : SerializationUtils.safeRequiredDateTime(data, 'createdAt'),
       lastEditedAt: data['lastEditedAt'] is DateTime
           ? data['lastEditedAt'] as DateTime
-          : DateTime.now(),
-      lastEditedBy: data['lastEditedBy'] as String,
-      lastEditedByDisplayName: data['lastEditedByDisplayName'] as String,
-      editCount: data['editCount'] as int? ?? 0,
-      isActive: data['isActive'] as bool? ?? true,
-      metadata: data['metadata'] as Map<String, dynamic>?,
+          : SerializationUtils.safeRequiredDateTime(data, 'lastEditedAt'),
+      lastEditedBy: SerializationUtils.safeString(data, 'lastEditedBy'),
+      lastEditedByDisplayName: SerializationUtils.safeString(data, 'lastEditedByDisplayName'),
+      editCount: SerializationUtils.safeInt(data, 'editCount'),
+      isActive: SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
+      metadata: SerializationUtils.safeNullableMap(data, 'metadata'),
       recipe: recipe,
     );
   }

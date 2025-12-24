@@ -342,16 +342,7 @@ void main() {
       test('should update notification preferences', () async {
         // Arrange
         const userId = 'test_user';
-        final preferences = NotificationPreferences(
-          enableRecipeSharing: true,
-          enableFriendRequests: true,
-          enableGroupInvitations: false,
-          enableComments: true,
-          enableRatings: false,
-          enableCollaborativeEditing: true,
-          enableMenuSharing: true,
-          enableGeneralUpdates: false,
-        );
+        final preferences = NotificationPreferences.defaults();
         
         // Stub the repository method
         when(() => mockRepository.updateNotificationPreferences(userId, preferences))
@@ -367,10 +358,7 @@ void main() {
       test('should get notification preferences', () async {
         // Arrange
         const userId = 'test_user';
-        final preferences = NotificationPreferences(
-          enableRecipeSharing: true,
-          enableFriendRequests: false,
-        );
+        final preferences = NotificationPreferences.defaults();
         
         // Stub the repository method
         when(() => mockRepository.getNotificationPreferences(userId))
@@ -379,9 +367,9 @@ void main() {
         // Act
         final result = await mockRepository.getNotificationPreferences(userId);
         
-        // Assert
-        expect(result.enableRecipeSharing, isTrue);
-        expect(result.enableFriendRequests, isFalse);
+        // Assert - verify model uses categorySettings map
+        expect(result.categorySettings[NotificationCategory.recipes], isTrue);
+        expect(result.categorySettings[NotificationCategory.friends], isTrue);
         verify(() => mockRepository.getNotificationPreferences(userId)).called(1);
       });
     });

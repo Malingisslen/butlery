@@ -9,8 +9,6 @@ import 'package:butlery/core/utils/logger.dart';
 /// Mixin for async operations with loading states, error handling, concurrency control, debouncing, caching, and batch processing.
 /// Built on [StateNotifierMixin]. Use in ViewModels for executeAsync, executeNamedOperation, executeDebounced, executeBatch.
 mixin AsyncOperationMixin on StateNotifierMixin {
-  // ===== OPERATION TRACKING =====
-  
   /// Set of currently active operation names to prevent duplicates.
   final Set<String> _activeOperations = {};
   
@@ -19,9 +17,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
   
   /// Cache of operation results to avoid redundant network requests.
   final Map<String, dynamic> _operationCache = {};
-  
-  // ===== PUBLIC GETTERS =====
-  
+
   /// Whether any operations are currently executing
   bool get hasActiveOperations => _activeOperations.isNotEmpty;
 
@@ -30,9 +26,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
 
   /// List of names of currently executing operations
   List<String> get activeOperationNames => _activeOperations.toList();
-  
-  // ===== BASIC ASYNC OPERATIONS =====
-  
+
   /// Execute async operation with loading states and error handling
   @override
   Future<T> executeAsync<T>(
@@ -128,9 +122,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
       rethrow;
     }
   }
-  
-  // ===== DEBOUNCED OPERATIONS =====
-  
+
   /// Execute debounced operation (delays execution until no more calls)
   Future<T?> executeDebounced<T>(
     String operationName,
@@ -185,9 +177,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
       errorPrefix: errorPrefix,
     );
   }
-  
-  // ===== BATCH OPERATIONS =====
-  
+
   /// Execute multiple operations in parallel
   Future<List<T>> executeBatch<T>(
     Map<String, Future<T> Function()> operations, {
@@ -285,9 +275,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
       rethrow;
     }
   }
-  
-  // ===== BACKGROUND OPERATIONS =====
-  
+
   /// Execute operation in background without affecting loading state
   Future<T> executeInBackground<T>(
     String operationName,
@@ -319,9 +307,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
       _activeOperations.remove(operationName);
     }
   }
-  
-  // ===== OPERATION CONTROL =====
-  
+
   /// Cancel specific operation
   void cancelOperation(String operationName) {
     _pendingOperations[operationName]?.cancel();
@@ -360,9 +346,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
   bool isOperationPending(String operationName) {
     return _pendingOperations.containsKey(operationName);
   }
-  
-  // ===== PRIVATE HELPERS =====
-  
+
   /// Storage for operation execution times (for throttling)
   static final Map<String, DateTime> _executionTimes = {};
   
@@ -373,9 +357,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
   void _setLastExecutionTime(String operationName, DateTime time) {
     _executionTimes[operationName] = time;
   }
-  
-  // ===== LIFECYCLE =====
-  
+
   @override
   void dispose() {
     cancelAllOperations();

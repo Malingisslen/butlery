@@ -1,5 +1,3 @@
-// lib/widgets/common/social_components/social_group_components.dart
-
 import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -7,18 +5,9 @@ import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
-/// Social group and friend category management components
-/// This module handles ONLY group and friend category widgets:
-/// - Friend category selectors and chips
-/// - Group dialog launchers
-/// - Friend category management interfaces
-/// - Group creation and management dialogs
-/// ❌ DOES NOT CONTAIN: Avatars, collaborative indicators, invitations, builders
+/// Social group and friend category management components.
 class SocialGroupComponents {
-  // ===== FRIEND CATEGORY MANAGEMENT =====
-
-  /// Build friend category selector
-  /// Dropdown or selection interface for choosing friend categories
+  /// Build friend category selector.
   static Widget friendCategorySelector(
     BuildContext context, {
     required List<FriendCategory> categories,
@@ -68,10 +57,7 @@ class SocialGroupComponents {
     );
   }
 
-  // ===== GROUP DIALOGS =====
-
-  /// Show create group dialog
-  /// Launch dialog for creating a new friend group
+  /// Show create group dialog.
   static Future<bool?> showCreateGroupDialog({
     required BuildContext context,
     List<String>? preselectedMemberIds,
@@ -160,10 +146,7 @@ class SocialGroupComponents {
     );
   }
 
-  // ===== CATEGORY DISPLAY VARIANTS =====
-
-  /// Build category list
-  /// Display list of friend categories
+  /// Build category list.
   static Widget categoryList({
     required List<FriendCategory> categories,
     FriendCategory? selectedCategory,
@@ -252,10 +235,7 @@ class SocialGroupComponents {
     }
   }
 
-  // ===== CATEGORY MANAGEMENT ACTIONS =====
-
-  /// Build add category button
-  /// Button to create a new friend category
+  /// Build add category button.
   static Widget addCategoryButton({
     VoidCallback? onPressed,
     String text = 'Lägg till kategori',
@@ -310,10 +290,7 @@ class SocialGroupComponents {
     );
   }
 
-  // ===== CATEGORY STATISTICS =====
-
-  /// Build category statistics widget
-  /// Shows statistics about categories and their usage
+  /// Build category statistics widget.
   static Widget categoryStatistics(
     BuildContext context, {
     required List<FriendCategory> categories,
@@ -422,10 +399,7 @@ class SocialGroupComponents {
     );
   }
 
-  // ===== EMPTY STATES AND LOADING =====
-
-  /// Build empty categories state
-  /// Shows when no categories are available
+  /// Build empty categories state.
   static Widget emptyCategoriesState(
     BuildContext context, {
     String title = 'Inga kategorier',

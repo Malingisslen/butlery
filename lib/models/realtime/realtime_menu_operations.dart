@@ -1,64 +1,36 @@
-/// Comprehensive realtime menu operations providing advanced business logic and collaborative recipe management for meal planning.
-/// This class implements sophisticated menu operation management following Single Responsibility Principle,
-/// handling all aspects of menu business logic including recipe manipulation, category management, statistical analysis,
-/// and validation operations. It provides complete operational capabilities while maintaining clean separation
-/// from data representation, search analytics, and UI presentation concerns.
-
-// lib/models/realtime/realtime_menu_operations.dart
-
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/realtime/realtime_menu_data.dart';
 
-/// Comprehensive realtime menu operations with advanced business logic and collaborative recipe management for meal planning.
-/// Provides complete operational capabilities for menu manipulation including recipe management, category operations,
-/// statistical analysis, and validation systems through focused business logic algorithms and Swedish meal planning optimization.
-/// This class serves as the operational intelligence layer for all menu business logic and collaborative features.
+/// Menu operations for recipe management and category manipulation.
 class RealtimeMenuOperations {
-  /// Menu content operations for advanced recipe management and category manipulation.
-
-  /// Adds a recipe to a specified category with automatic category creation and immutable data patterns.
+  /// Adds a recipe to a category.
   static RealtimeMenuData addRecipeToCategory(
     RealtimeMenuData data, {
     required String categoryName,
     required Recipe recipe,
   }) {
-    // Create deep copy of the menu snapshot
-    final updatedMenu = <String, List<Recipe>>{};
-    for (final entry in data.menuSnapshot.entries) {
-      updatedMenu[entry.key] = List<Recipe>.from(entry.value);
-    }
-
+    final updatedMenu = _copyMenuSnapshot(data);
     if (!updatedMenu.containsKey(categoryName)) {
       updatedMenu[categoryName] = [];
     }
-
     updatedMenu[categoryName]!.add(recipe);
-
     return data.copyWith(menuSnapshot: updatedMenu);
   }
 
-  /// Removes a recipe from a specified category by index.
   static RealtimeMenuData removeRecipeFromCategory(
     RealtimeMenuData data, {
     required String categoryName,
     required int recipeIndex,
   }) {
-    // Create deep copy of the menu snapshot
-    final updatedMenu = <String, List<Recipe>>{};
-    for (final entry in data.menuSnapshot.entries) {
-      updatedMenu[entry.key] = List<Recipe>.from(entry.value);
-    }
-
-    if (updatedMenu.containsKey(categoryName) && 
-        recipeIndex >= 0 && 
+    final updatedMenu = _copyMenuSnapshot(data);
+    if (updatedMenu.containsKey(categoryName) &&
+        recipeIndex >= 0 &&
         recipeIndex < updatedMenu[categoryName]!.length) {
       updatedMenu[categoryName]!.removeAt(recipeIndex);
     }
-
     return data.copyWith(menuSnapshot: updatedMenu);
   }
 
-  /// Moves a recipe between categories.
   static RealtimeMenuData moveRecipeBetweenCategories(
     RealtimeMenuData data, {
     required String fromCategory,
@@ -66,83 +38,64 @@ class RealtimeMenuOperations {
     required String toCategory,
     int? toIndex,
   }) {
-    // Create deep copy of the menu snapshot
-    final updatedMenu = <String, List<Recipe>>{};
-    for (final entry in data.menuSnapshot.entries) {
-      updatedMenu[entry.key] = List<Recipe>.from(entry.value);
-    }
-
-    if (!updatedMenu.containsKey(fromCategory) || 
-        fromIndex < 0 || 
+    final updatedMenu = _copyMenuSnapshot(data);
+    if (!updatedMenu.containsKey(fromCategory) ||
+        fromIndex < 0 ||
         fromIndex >= updatedMenu[fromCategory]!.length) {
       return data;
     }
 
     final recipe = updatedMenu[fromCategory]!.removeAt(fromIndex);
-
     if (!updatedMenu.containsKey(toCategory)) {
       updatedMenu[toCategory] = [];
     }
-
     final targetIndex = toIndex ?? updatedMenu[toCategory]!.length;
     updatedMenu[toCategory]!.insert(targetIndex, recipe);
-
     return data.copyWith(menuSnapshot: updatedMenu);
   }
 
-  /// Replaces a recipe in a category.
   static RealtimeMenuData replaceRecipeInCategory(
     RealtimeMenuData data, {
     required String categoryName,
     required int recipeIndex,
     required Recipe newRecipe,
   }) {
-    // Create deep copy of the menu snapshot
-    final updatedMenu = <String, List<Recipe>>{};
-    for (final entry in data.menuSnapshot.entries) {
-      updatedMenu[entry.key] = List<Recipe>.from(entry.value);
-    }
-
-    if (updatedMenu.containsKey(categoryName) && 
-        recipeIndex >= 0 && 
+    final updatedMenu = _copyMenuSnapshot(data);
+    if (updatedMenu.containsKey(categoryName) &&
+        recipeIndex >= 0 &&
         recipeIndex < updatedMenu[categoryName]!.length) {
       updatedMenu[categoryName]![recipeIndex] = newRecipe;
     }
-
     return data.copyWith(menuSnapshot: updatedMenu);
   }
 
-  /// Clears all recipes from a category.
   static RealtimeMenuData clearCategory(
     RealtimeMenuData data, {
     required String categoryName,
   }) {
-    // Create deep copy of the menu snapshot
-    final updatedMenu = <String, List<Recipe>>{};
-    for (final entry in data.menuSnapshot.entries) {
-      updatedMenu[entry.key] = List<Recipe>.from(entry.value);
-    }
-    
+    final updatedMenu = _copyMenuSnapshot(data);
     if (updatedMenu.containsKey(categoryName)) {
       updatedMenu[categoryName] = [];
     }
-
     return data.copyWith(menuSnapshot: updatedMenu);
   }
 
-  /// Updates an entire category with new recipes.
   static RealtimeMenuData updateWholeCategory(
     RealtimeMenuData data, {
     required String categoryName,
     required List<Recipe> recipes,
   }) {
-    // Create deep copy of the menu snapshot
-    final updatedMenu = <String, List<Recipe>>{};
-    for (final entry in data.menuSnapshot.entries) {
-      updatedMenu[entry.key] = List<Recipe>.from(entry.value);
-    }
+    final updatedMenu = _copyMenuSnapshot(data);
     updatedMenu[categoryName] = List.from(recipes);
     return data.copyWith(menuSnapshot: updatedMenu);
+  }
+
+  static Map<String, List<Recipe>> _copyMenuSnapshot(RealtimeMenuData data) {
+    final copy = <String, List<Recipe>>{};
+    for (final entry in data.menuSnapshot.entries) {
+      copy[entry.key] = List<Recipe>.from(entry.value);
+    }
+    return copy;
   }
 
   /// Regenerates a category with new recipes.
@@ -154,9 +107,7 @@ class RealtimeMenuOperations {
     return updateWholeCategory(data, categoryName: categoryName, recipes: newRecipes);
   }
 
-  // ===== STATISTICS AND ANALYSIS =====
-
-  /// Common Swedish menu categories
+  /// Common Swedish menu categories.
   static List<String> get commonCategories => [
     'Frukost',
     'Lunch', 

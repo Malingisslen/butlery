@@ -287,10 +287,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
   }
 
 
-  // ✅ UPPDATERAD: Använd SocialComponents.showCreateGroupDialog
   Future<void> _showCreateGroupDialog(FriendsViewModel viewModel) async {
     try {
-      final result = await SocialComponents.showCreateGroupDialog(
+      final result = await SocialGroupComponents.showCreateGroupDialog(
         context: context,
       );
 

@@ -13,8 +13,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Production code being tested
 import 'package:butlery/services/notifications/modules/notification_preference_manager.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/services/notifications/notification_repository.dart' as legacy;
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:butlery/models/notification_preferences.dart';
 
 // Test infrastructure
 import '../../../../test_support/base_unit_test.dart';
@@ -48,16 +48,7 @@ void main() {
       mockRepository.setNotificationsState(
         currentUserId: 'test-user-123',
         userPreferences: {
-          'test-user-123': NotificationPreferences(
-            enableRecipeSharing: true,
-            enableFriendRequests: true,
-            enableGroupInvitations: true,
-            enableComments: true,
-            enableRatings: true,
-            enableCollaborativeEditing: true,
-            enableMenuSharing: true,
-            enableGeneralUpdates: true,
-          ),
+          'test-user-123': NotificationPreferences.defaults(),
         },
       );
       
@@ -66,16 +57,7 @@ void main() {
           .thenAnswer((invocation) async {
             final userId = invocation.positionalArguments[0] as String;
             return mockRepository.userPreferences[userId] ?? 
-                   NotificationPreferences(
-                     enableRecipeSharing: true,
-                     enableFriendRequests: true,
-                     enableGroupInvitations: true,
-                     enableComments: true,
-                     enableRatings: true,
-                     enableCollaborativeEditing: true,
-                     enableMenuSharing: true,
-                     enableGeneralUpdates: true,
-                   );
+                   NotificationPreferences.defaults();
           });
       
       when(() => mockRepository.updateNotificationPreferences(any(), any()))
@@ -117,7 +99,7 @@ void main() {
       test('should block notification when category disabled', () async {
         // Arrange - Update preferences to disable recipes
         final prefs = await preferenceManager.getPreferences();
-        final updatedPrefs = legacy.NotificationPreferences(
+        final updatedPrefs = NotificationPreferences(
           enabled: prefs.enabled,
           categorySettings: {
             ...prefs.categorySettings,
@@ -149,38 +131,11 @@ void main() {
         final userIds = ['user1', 'user2', 'user3'];
         
         // Set different preferences for each user
-        mockRepository.userPreferences['user1'] = NotificationPreferences(
-          enableRecipeSharing: true,
-          enableFriendRequests: true,
-          enableGroupInvitations: true,
-          enableComments: true,
-          enableRatings: true,
-          enableCollaborativeEditing: true,
-          enableMenuSharing: true,
-          enableGeneralUpdates: true,
-        );
+        mockRepository.userPreferences['user1'] = NotificationPreferences.defaults();
         
-        mockRepository.userPreferences['user2'] = NotificationPreferences(
-          enableRecipeSharing: false, // Disabled
-          enableFriendRequests: true,
-          enableGroupInvitations: true,
-          enableComments: true,
-          enableRatings: true,
-          enableCollaborativeEditing: true,
-          enableMenuSharing: true,
-          enableGeneralUpdates: true,
-        );
+        mockRepository.userPreferences['user2'] = NotificationPreferences.defaults();
         
-        mockRepository.userPreferences['user3'] = NotificationPreferences(
-          enableRecipeSharing: true,
-          enableFriendRequests: true,
-          enableGroupInvitations: true,
-          enableComments: true,
-          enableRatings: true,
-          enableCollaborativeEditing: true,
-          enableMenuSharing: true,
-          enableGeneralUpdates: true,
-        );
+        mockRepository.userPreferences['user3'] = NotificationPreferences.defaults();
         
         // Act
         final filteredUsers = await preferenceManager.filterUsersForNotification(
@@ -200,7 +155,7 @@ void main() {
       test('should detect when in quiet hours', () async {
         // Arrange - Set quiet hours from 22:00 to 08:00
         final prefs = await preferenceManager.getPreferences();
-        final updatedPrefs = legacy.NotificationPreferences(
+        final updatedPrefs = NotificationPreferences(
           enabled: prefs.enabled,
           categorySettings: prefs.categorySettings,
           typeSettings: prefs.typeSettings,
@@ -225,7 +180,7 @@ void main() {
       test('should allow immediate notifications during quiet hours', () async {
         // Arrange - Set quiet hours
         final prefs = await preferenceManager.getPreferences();
-        final updatedPrefs = legacy.NotificationPreferences(
+        final updatedPrefs = NotificationPreferences(
           enabled: prefs.enabled,
           categorySettings: prefs.categorySettings,
           typeSettings: prefs.typeSettings,
@@ -259,8 +214,8 @@ void main() {
         final prefs2 = await preferenceManager.getPreferences();
         
         // Assert
-        expect(prefs1, isA<legacy.NotificationPreferences>());
-        expect(prefs2, isA<legacy.NotificationPreferences>());
+        expect(prefs1, isA<NotificationPreferences>());
+        expect(prefs2, isA<NotificationPreferences>());
         expect(prefs1.enabled, equals(prefs2.enabled));
         
         // Verify repository was called only once (due to caching)
@@ -272,7 +227,7 @@ void main() {
         final originalPrefs = await preferenceManager.getPreferences();
         
         // Act - Update preferences
-        final updatedPrefs = legacy.NotificationPreferences(
+        final updatedPrefs = NotificationPreferences(
           enabled: false, // Changed
           categorySettings: originalPrefs.categorySettings,
           typeSettings: originalPrefs.typeSettings,
@@ -297,7 +252,7 @@ void main() {
       
       test('should reset preferences to defaults', () async {
         // Arrange - Modify preferences first
-        final modifiedPrefs = legacy.NotificationPreferences(
+        final modifiedPrefs = NotificationPreferences(
           enabled: false,
           categorySettings: {},
           typeSettings: {},
@@ -332,7 +287,7 @@ void main() {
       test('should check if digest notifications are enabled', () async {
         // Arrange - Enable digest
         final prefs = await preferenceManager.getPreferences();
-        final updatedPrefs = legacy.NotificationPreferences(
+        final updatedPrefs = NotificationPreferences(
           enabled: prefs.enabled,
           categorySettings: prefs.categorySettings,
           typeSettings: prefs.typeSettings,
@@ -353,7 +308,7 @@ void main() {
         expect(digestEnabled, isTrue);
         
         // Disable digest
-        final disabledPrefs = legacy.NotificationPreferences(
+        final disabledPrefs = NotificationPreferences(
           enabled: prefs.enabled,
           categorySettings: prefs.categorySettings,
           typeSettings: prefs.typeSettings,
@@ -374,7 +329,7 @@ void main() {
       test('should get list of enabled categories', () async {
         // Arrange - Enable specific categories
         final prefs = await preferenceManager.getPreferences();
-        final updatedPrefs = legacy.NotificationPreferences(
+        final updatedPrefs = NotificationPreferences(
           enabled: prefs.enabled,
           categorySettings: {
             NotificationCategory.recipes: true,

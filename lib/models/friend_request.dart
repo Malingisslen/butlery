@@ -1,71 +1,20 @@
-/// Comprehensive friend request data model providing complete friend request lifecycle management.
-/// This model implements sophisticated friend request management following Single Responsibility Principle,
-/// handling all aspects of friend request operations including status tracking, lifecycle management,
-/// expiration handling, and social interaction features. It provides comprehensive friend request
-/// functionality while maintaining clean separation from friend management and user profile concerns.
-/// **Single Responsibility Focus:**
-/// This model exclusively handles friend request data and operations:
-/// - **Request Lifecycle**: Complete friend request workflow with pending, accepted, rejected, and cancelled states
-/// - **Status Management**: Comprehensive status tracking with timestamps and automated expiration detection
-/// - **Social Messaging**: Optional message support for personalized friend requests with custom communication
-/// - **Time Tracking**: Complete temporal tracking with sent time, response time, and expiration calculations
-/// **What This Model Does NOT Handle:**
-/// - Friend relationship management (handled by friend operations and services)
-/// - User profile and identity management (handled by user profile models)
-/// - UI concerns and presentation logic (handled by ViewModels and UI components)
-/// - Authentication and permission validation (handled by permission services)
-/// **Friend Request Features:**
-/// - **Complete Lifecycle Management**: Full request workflow from creation through resolution with status tracking
-/// - **Automated Expiration**: Smart expiration detection with configurable timeout periods for request cleanup
-/// - **Personalized Messaging**: Optional message support for custom friend request communication and context
-/// - **Temporal Analytics**: Comprehensive time tracking with user-friendly time display and duration calculations
-/// - **Status Operations**: Convenient status transition methods with automatic timestamp management
-/// **Usage Examples:**
-/// ```dart
-/// // Create new friend request
-/// final request = FriendRequest.create(
-///   fromUserId: currentUserId,
-///   toUserId: targetUserId,
-///   message: 'Hej! Vi träffades på matlagningskursen igår.',
-/// );
-/// // Handle request responses
-/// final acceptedRequest = request.accept();
-/// final rejectedRequest = request.reject();
-/// final cancelledRequest = request.cancel();
-/// // Check request status and timing
-/// final isPending = request.isPending;
-/// final isExpired = request.isExpired;
-/// final timeAgo = request.timeAgoText; // '2 dagar sedan'
-/// final isCompleted = request.isCompleted;
-/// ```
-
-// lib/models/friend_request.dart
-
+/// Friend request model with lifecycle management and optional messaging.
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 
-/// Enumeration defining the different states of a friend request throughout its lifecycle.
-/// Friend request statuses determine the current state and available actions:
-/// - [pending] - Request sent but not yet responded to by recipient
-/// - [accepted] - Request approved by recipient, friendship established
-/// - [rejected] - Request declined by recipient
-/// - [cancelled] - Request withdrawn by sender before response
-/// - [expired] - Request automatically expired due to timeout
 enum FriendRequestStatus { pending, accepted, rejected, cancelled, expired }
 
-/// Comprehensive friend request data model with lifecycle management and social messaging capabilities.
-/// Represents a complete friend request with all associated metadata including status tracking,
-/// temporal information, and optional messaging features.
+/// Friend request with status tracking and optional message.
 class FriendRequest with JsonSerializableMixin {
   final String id;
-  final String fromUserId; // Who sent the request
-  final String toUserId; // Who received the request
+  final String fromUserId;
+  final String toUserId;
   final FriendRequestStatus status;
   final DateTime sentAt;
-  final DateTime? respondedAt; // When accepted/rejected
-  final String? message; // Optional message with request
+  final DateTime? respondedAt;
+  final String? message;
 
   FriendRequest({
     required this.id,
@@ -77,7 +26,6 @@ class FriendRequest with JsonSerializableMixin {
     this.message,
   }) : sentAt = sentAt ?? DateTime.now();
 
-  /// Factory constructor with auto-generated ID
   factory FriendRequest.create({
     required String fromUserId,
     required String toUserId,
@@ -92,7 +40,6 @@ class FriendRequest with JsonSerializableMixin {
     );
   }
 
-  /// Create copy with updated status
   FriendRequest copyWith({FriendRequestStatus? status, DateTime? respondedAt}) {
     return FriendRequest(
       id: id,
@@ -105,7 +52,6 @@ class FriendRequest with JsonSerializableMixin {
     );
   }
 
-  /// Accept the friend request
   FriendRequest accept() {
     return copyWith(
       status: FriendRequestStatus.accepted,
@@ -113,7 +59,6 @@ class FriendRequest with JsonSerializableMixin {
     );
   }
 
-  /// Reject the friend request
   FriendRequest reject() {
     return copyWith(
       status: FriendRequestStatus.rejected,
@@ -121,7 +66,6 @@ class FriendRequest with JsonSerializableMixin {
     );
   }
 
-  /// Cancel the friend request
   FriendRequest cancel() {
     return copyWith(
       status: FriendRequestStatus.cancelled,
@@ -129,19 +73,13 @@ class FriendRequest with JsonSerializableMixin {
     );
   }
 
-  // Status checkers
   bool get isPending => status == FriendRequestStatus.pending;
   bool get isAccepted => status == FriendRequestStatus.accepted;
   bool get isRejected => status == FriendRequestStatus.rejected;
   bool get isCancelled => status == FriendRequestStatus.cancelled;
   bool get isCompleted => respondedAt != null;
+  bool get isExpired => DateTime.now().difference(sentAt).inDays > 7;
 
-  /// Check if request has expired (7 days)
-  bool get isExpired {
-    return DateTime.now().difference(sentAt).inDays > 7;
-  }
-
-  /// Get time ago text for UI
   String get timeAgoText {
     final now = DateTime.now();
     final difference = now.difference(sentAt);
@@ -159,7 +97,6 @@ class FriendRequest with JsonSerializableMixin {
     }
   }
 
-  /// Convert to Firestore format
   Map<String, dynamic> toFirestore() {
     return {
       'fromUserId': fromUserId,
@@ -172,7 +109,6 @@ class FriendRequest with JsonSerializableMixin {
     };
   }
 
-  /// Create from repository data
   factory FriendRequest.fromMap(String id, Map<String, dynamic> data) {
     return FriendRequest(
       id: id,
@@ -191,7 +127,6 @@ class FriendRequest with JsonSerializableMixin {
     );
   }
 
-  /// JSON serialization för caching
   @override
   Map<String, dynamic> toJson() {
     return {

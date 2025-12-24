@@ -16,16 +16,17 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
   @override
   String get serviceName => 'SocialRecipeQueryService';
 
-  final JsonCacheHelper _cacheHelper;
+  final JsonCacheHelper Function() _getCacheHelper;
+  JsonCacheHelper get _cacheHelper => _getCacheHelper();
   final String? Function() _getCurrentUserId;
   final RecipeServiceAdapter _serviceAdapter;
 
   SocialRecipeQueryService({
-    required JsonCacheHelper cacheHelper,
+    required JsonCacheHelper Function() getCacheHelper,
     required String? Function() getCurrentUserId,
     required void Function(String) setError,
     RecipeServiceAdapter? serviceAdapter,
-  }) : _cacheHelper = cacheHelper,
+  }) : _getCacheHelper = getCacheHelper,
        _getCurrentUserId = getCurrentUserId,
        _serviceAdapter = serviceAdapter ?? SocialRecipeQueryService._createDefaultServiceAdapter() {
     // Set the user ID provider for the mixin

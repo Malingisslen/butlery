@@ -146,7 +146,7 @@ class FriendCard extends StatelessWidget {
     // Map size to ImageSize enum - 50+ is large, 40+ is medium, default small
     final imageSize = size >= 50 ? ImageSize.large : (size >= 40 ? ImageSize.medium : ImageSize.small);
     
-    return SocialComponents.avatar(
+    return SocialAvatarComponents.avatar(
       user: user,
       size: imageSize,
       showOnlineStatus: showOnlineStatus,
@@ -307,7 +307,7 @@ class FriendRequestCard extends StatelessWidget {
   }
 
   Widget _buildSenderAvatar(BuildContext context) {
-    return SocialComponents.avatar(
+    return SocialAvatarComponents.avatar(
       imageUrl: null, // FriendRequest doesn't store sender avatar directly
       displayName: '', // No sender display name available
       size: ImageSize.large, // 50px corresponds to large size

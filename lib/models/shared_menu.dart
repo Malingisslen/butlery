@@ -1,31 +1,3 @@
-/// Shared menu model using unified base infrastructure for consistent shared content patterns.
-/// This model extends BaseSharedContentModel and uses mixins for status management and
-/// copy-on-write functionality, eliminating duplicate code while maintaining menu-specific
-/// features and collaboration capabilities.
-/// **Key Features:**
-/// - **Unified Status Management**: Uses SharedContentStatusMixin for consistent view/import/dismiss tracking
-/// - **Copy-on-Write Collaboration**: Uses CopyOnWriteSupport for collaborative editing features
-/// - **Menu-Specific Logic**: Maintains menu snapshots, categories, and import attribution
-/// - **Consistent Serialization**: Leverages base class patterns for Firestore and JSON operations
-/// **Usage Examples:**
-/// ```dart
-/// // Create new shared menu with collaboration
-/// final sharedMenu = SharedMenu.create(
-///   sharedByUserId: currentUserId,
-///   sharedByDisplayName: 'Anna Andersson',
-///   sharedToUserIds: [friend1Id, friend2Id],
-///   shareMessage: 'Min veckomeny för nästa vecka!',
-///   menuTitle: 'Annas veckomeny v.45',
-///   menuSnapshot: menuData,
-///   allowCollaboration: true,
-/// );
-/// // Status tracking (via mixins)
-/// final viewedMenu = sharedMenu.markViewedBy(userId);
-/// final importedMenu = viewedMenu.markImportedBy(userId);
-/// ```
-
-// lib/models/shared_menu.dart
-
 import 'package:butlery/models/shared_content/base_shared_content_model.dart';
 import 'package:butlery/models/shared_content/shared_content_status_mixin.dart';
 import 'package:butlery/models/shared_content/copy_on_write_mixin.dart';
@@ -36,49 +8,20 @@ import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
-/// Shared menu model with unified base infrastructure and menu-specific features.
+/// Shared menu model with copy-on-write collaboration support.
 class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     with SharedContentStatusMixin, CopyOnWriteSupport {
-  // ===== MENU-SPECIFIC FIELDS =====
-
-  /// Title of the shared menu for identification and display.
   final String menuTitle;
-
-  /// Complete snapshot of the menu with all recipes organized by category.
   final Map<String, List<Recipe>> menuSnapshot;
-
-  /// Cached total recipe count for quick statistics and UI display.
   final int totalRecipeCount;
-
-  /// List of category names present in the menu snapshot.
   final List<String> categories;
-
-  /// Flag indicating whether collaborative editing is allowed.
   final bool allowCollaboration;
-
-  /// ID of the associated RealtimeMenu for live collaborative editing.
-  /// When set, recipients join the realtime session instead of creating a copy.
   final String? realtimeMenuId;
-
-  // ===== COPY-ON-WRITE FIELDS =====
-
-  /// Flag indicating whether this is an original reference or collaborative version.
   final bool _isOriginalReference;
-
-  /// Flag indicating whether copy-on-write has been triggered for this content.
   final bool _copyOnWriteTriggered;
-
-  /// ID of the static copy created for the original owner when CoW is triggered.
   final String? _originalOwnerStaticCopyId;
-
-  /// Count of users actively collaborating on this content (Issue #014).
-  /// Note: Actual collaborator list now stored in Firestore subcollection to eliminate
-  /// 100-element array limit. Use repository.getCollaborators(menuId) for full list.
   final int _activeCollaboratorCount;
 
-  /// Creates a new shared menu with all required metadata.
-  /// Note (Issue #014): sharedToUserIds removed from model. Repository layer handles adding
-  /// members to Firestore subcollection after creation.
   SharedMenu({
     required super.id,
     required super.sharedByUserId,
@@ -108,13 +51,10 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
         categories = menuSnapshot.keys.toList(),
         super(sharedAt: sharedAt ?? DateTime.now());
 
-  /// Factory constructor for creating new shared menus with auto-generated ID.
-  /// Note (Issue #014): sharedToUserIds still accepted for backward compatibility but not stored in model.
-  /// Repository layer handles adding members to Firestore subcollection after creation.
   factory SharedMenu.create({
     required String sharedByUserId,
     required String sharedByDisplayName,
-    required List<String> sharedToUserIds, // Still accept for repository layer
+    required List<String> sharedToUserIds,
     String? shareMessage,
     String? menuTitle,
     required Map<String, List<Recipe>> menuSnapshot,
@@ -132,10 +72,8 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
       menuSnapshot: menuSnapshot,
       allowCollaboration: allowCollaboration,
       realtimeMenuId: realtimeMenuId,
-    ); // Note: sharedToUserIds NOT passed to constructor
+    );
   }
-
-  // ===== BASE CLASS IMPLEMENTATIONS =====
 
   @override
   String get contentTypeName => 'menu';
@@ -162,8 +100,6 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     );
   }
 
-  /// Creates a copy of this shared menu with updated values.
-  /// Note (Issue #014): Array parameters removed. Status now tracked in Firestore subcollections.
   SharedMenu copyWith({
     int? viewCount,
     int? importCount,
@@ -197,9 +133,6 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     );
   }
 
-  // ===== COPY-ON-WRITE IMPLEMENTATIONS =====
-
-  /// Copy-on-write getter implementations from CopyOnWriteSupport mixin.
   @override
   bool get isOriginalReference => _isOriginalReference;
 
@@ -225,7 +158,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
       isOriginalReference: false,
       copyOnWriteTriggered: true,
       originalOwnerStaticCopyId: staticCopyId,
-      activeCollaboratorCount: 1, // First collaborator
+      activeCollaboratorCount: 1,
     );
   }
 
@@ -234,29 +167,11 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     if (!copyOnWriteTriggered) {
       return this;
     }
-
-    // Increment count (actual list managed in Firestore subcollection)
-    return copyWith(
-      activeCollaboratorCount: activeCollaboratorCount + 1,
-    );
+    return copyWith(activeCollaboratorCount: activeCollaboratorCount + 1);
   }
 
-  // ===== MENU-SPECIFIC PROPERTIES =====
-
-  // ===== TYPE-SAFE WRAPPER METHODS (REMOVED - ISSUE #014) =====
-  //
-  // Note: Status-checking methods (markViewedBy, markEngagedBy, etc.) removed from base class.
-  // Status tracking now handled by repository layer using Firestore subcollections.
-  // Use repository methods instead:
-  //   - repository.addView(menuId, userId)
-  //   - repository.addEngagement(menuId, userId, action: 'import')
-  //   - repository.addDismissal(menuId, userId)
-  //   - repository.removeDismissal(menuId, userId)
-
-  /// Import count getter for backward compatibility.
   int get importCount => engagementCount;
 
-  /// Creates an imported menu with proper attribution from this shared menu.
   Map<String, List<Recipe>> createImportMenu({required String newOwnerId}) {
     final importedMenu = <String, List<Recipe>>{};
 
@@ -278,12 +193,8 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     return importedMenu;
   }
 
-  /// Checks if the menu can be imported by users.
-  bool get allowImport {
-    return totalRecipeCount > 0;
-  }
+  bool get allowImport => totalRecipeCount > 0;
 
-  /// Gets a localized Swedish summary of the menu contents for preview display.
   String get menuSummary {
     final parts = <String>[];
     for (final entry in menuSnapshot.entries) {
@@ -296,10 +207,6 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     return parts.join(', ');
   }
 
-  /// Gets user-friendly Swedish text for how long ago the menu was shared.
-  /// Provides localized time-ago display optimized for Swedish users with natural
-  /// language formatting for improved user experience and temporal context.
-  /// Returns Swedish time format: 'Nu', '5 min sedan', '2 tim sedan', '3 dagar sedan', '2 veckor sedan'.
   @override
   String get timeAgoText {
     final now = DateTime.now();
@@ -318,27 +225,14 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     }
   }
 
-  /// Analytics and statistics methods for menu engagement insights.
-
-  /// Gets the conversion rate from views to imports as a percentage.
-  /// Provides menu effectiveness metrics by calculating the percentage of
-  /// viewers who imported the menu for performance analysis.
-  /// Returns conversion rate as a percentage (0.0 to 100.0).
   @override
   double get conversionRate {
     if (viewCount == 0) return 0.0;
     return (importCount / viewCount) * 100.0;
   }
 
-  /// Checks if the menu has any recipe content available for sharing.
-  /// Provides validation for menu sharing eligibility based on content availability.
-  /// Returns true if the menu contains at least one recipe in any category.
   bool get hasContent => totalRecipeCount > 0;
 
-  /// Gets the most popular category based on recipe count.
-  /// Provides menu analysis by identifying the category with the most recipes
-  /// for content optimization and user preference insights.
-  /// Returns the category name with the highest recipe count, or null if empty.
   String? get mostPopularCategory {
     if (menuSnapshot.isEmpty) return null;
 
@@ -355,23 +249,12 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     return topCategory;
   }
 
-  /// Data persistence and serialization methods for Firestore and caching integration.
-
-  /// Converts the shared menu to Firestore-compatible format for persistence.
-  /// Transforms all menu data including complete recipe snapshots into Firestore format
-  /// with proper timestamp handling and nested object serialization for database efficiency.
-  /// Returns a map containing all shared menu data formatted for Firestore persistence.
   Map<String, dynamic> toFirestore() {
-    // Convert menu snapshot to Firestore format - UTAN serverTimestamp i nested data
-    // Bug fix: Use recipe.core.toFirestore() for flat structure that fromMap() expects
-    // (recipe.toFirestore() wraps under 'core' key which causes "Untitled Recipe" on load)
     final menuData = <String, dynamic>{};
     for (final entry in menuSnapshot.entries) {
       menuData[entry.key] = entry.value.map((recipe) {
-        // Use core.toFirestore() for flat structure matching fromMap() expectations
         final recipeData = recipe.core.toFirestore();
 
-        // Ersätt eventuella serverTimestamp med DateTime.now() för nested objects
         if (recipeData['createdAt'] is DateTime) {
           recipeData['createdAt'] =
               AppTimestamp.fromDateTime(recipe.createdAt).toFirestore();
@@ -402,22 +285,12 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     };
   }
 
-  /// Creates a shared menu instance from Firestore repository data with robust error handling.
-  /// Transforms Firestore document data into a complete [SharedMenu] instance with proper
-  /// type conversion, recipe reconstruction, and comprehensive error handling for robust data recovery.
-  /// [id] Document identifier from Firestore
-  /// [data] Raw document data from Firestore with all menu fields
-  /// Returns a new [SharedMenu] instance with all data properly parsed and validated.
-  /// Factory constructor to create SharedMenu from Firestore document.
-  /// This is a convenience method that delegates to fromMap for compatibility
-  /// with services expecting a fromFirestore method.
   factory SharedMenu.fromFirestore(Map<String, dynamic> data, String id) {
     return SharedMenu.fromMap(id, data);
   }
 
   factory SharedMenu.fromMap(String id, Map<String, dynamic> data) {
     try {
-      // 🔧 FIXED: Reconstruct menu snapshot utan MockDocumentSnapshot type cast
       final menuData =
           (data['menuSnapshot'] as Map<String, dynamic>?).orEmpty();
       final reconstructedMenu = <String, List<Recipe>>{};
@@ -428,7 +301,6 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
 
         for (final recipeData in recipes) {
           try {
-            // 🔧 FIXED: Skapa Recipe direkt från data istället för via mock DocumentSnapshot
             final recipeMap = recipeData as Map<String, dynamic>;
             final recipe = Recipe(
               core: RecipeCore(
@@ -465,14 +337,13 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
                 lastCookedAt: utils.SerializationUtils.safeDateTime(
                     recipeMap, 'lastCookedAt'),
               ),
-              type: RecipeType.shared, // Mark as shared menu recipe
+              type: RecipeType.shared,
             );
             recipeList.add(recipe);
           } catch (e) {
             if (kDebugMode) {
               debugPrint('⚠️ Skippar ogiltigt recept i meny: $e');
             }
-            // Skip invalid recipes rather than failing entirely
             continue;
           }
         }
@@ -516,9 +387,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     }
   }
 
-  /// JSON serialization för caching
   Map<String, dynamic> toJson() {
-    // Convert menu snapshot to JSON format
     final menuData = <String, dynamic>{};
     for (final entry in menuSnapshot.entries) {
       menuData[entry.key] =
@@ -538,7 +407,6 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
   }
 
   factory SharedMenu.fromJson(Map<String, dynamic> json) {
-    // Reconstruct menu snapshot from JSON
     final menuData = (json['menuSnapshot'] as Map<String, dynamic>?).orEmpty();
     final reconstructedMenu = <String, List<Recipe>>{};
 
@@ -550,7 +418,6 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
         try {
           recipeList.add(Recipe.fromJson(recipeData as Map<String, dynamic>));
         } catch (e) {
-          // Skip invalid recipes
           continue;
         }
       }
@@ -581,28 +448,17 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
     );
   }
 
-  /// Standard object methods for debugging, comparison, and identity management.
-
-  /// Returns a string representation of the shared menu for debugging and logging.
-  /// Provides essential menu information in a readable format for development
-  /// and debugging purposes with menu title, owner, and recipe count.
   @override
   String toString() {
     return 'SharedMenu(id: $id, title: $menuTitle, sharedBy: $sharedByDisplayName, recipes: $totalRecipeCount, CoW: ${copyOnWriteTriggered ? 'collaborative' : 'original'})';
   }
 
-  /// Compares two shared menus for equality based on unique identifier.
-  /// Uses menu ID for equality comparison ensuring consistent object
-  /// identity across different instances of the same menu data.
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is SharedMenu && other.id == id;
   }
 
-  /// Generates hash code based on unique menu identifier.
-  /// Provides consistent hash code generation for use in collections and
-  /// data structures requiring hash-based operations and menu identification.
   @override
   int get hashCode => id.hashCode;
 }

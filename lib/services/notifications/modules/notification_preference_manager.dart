@@ -3,8 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/repositories/interfaces/notifications_repository.dart';
-import 'package:butlery/services/notifications/notification_repository.dart' as legacy;
+import 'package:butlery/repositories/interfaces/notifications_repository.dart' as interface_repo;
+import 'package:butlery/models/notification_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Focused module for notification preferences and quiet hours management
@@ -16,16 +16,16 @@ import 'package:butlery/core/utils/logger.dart';
 /// - Offline preference storage and synchronization
 /// ❌ DOES NOT CONTAIN: FCM token management, content generation, batching, analytics
 class NotificationPreferenceManager {
-  final NotificationsRepository _notificationsRepository;
+  final interface_repo.NotificationsRepository _notificationsRepository;
   final String _userId;
   
   // Cache for notification preferences to avoid repeated Firestore calls
-  legacy.NotificationPreferences? _cachedPreferences;
+  NotificationPreferences? _cachedPreferences;
   
   // Collections (kept for reference but not used since we use repository)
 
   NotificationPreferenceManager({
-    required NotificationsRepository notificationsRepository,
+    required interface_repo.NotificationsRepository notificationsRepository,
     required String userId,
   }) : _notificationsRepository = notificationsRepository, _userId = userId;
 
@@ -114,7 +114,7 @@ class NotificationPreferenceManager {
 
   /// Check quiet hours for specific user (static helper)
   static Future<bool> checkQuietHoursForUser(
-    NotificationsRepository notificationsRepository,
+    interface_repo.NotificationsRepository notificationsRepository,
     String userId,
   ) async {
     try {
@@ -130,7 +130,7 @@ class NotificationPreferenceManager {
   }
 
   /// Internal quiet hours checking logic
-  bool _checkQuietHours(legacy.NotificationPreferences preferences) {
+  bool _checkQuietHours(NotificationPreferences preferences) {
     if (preferences.quietHoursStart == null || preferences.quietHoursEnd == null) {
       return false; // No quiet hours set
     }
@@ -173,7 +173,7 @@ class NotificationPreferenceManager {
 
   /// Get notification preferences for current user
   /// Uses caching to avoid repeated Firestore calls and includes offline fallback
-  Future<legacy.NotificationPreferences> getPreferences() async {
+  Future<NotificationPreferences> getPreferences() async {
     try {
       // Return cached preferences if available and not expired
       if (_cachedPreferences != null && _isCacheValid()) {
@@ -184,16 +184,14 @@ class NotificationPreferenceManager {
       AppLogger.info('📋 Loading notification preferences for user: $_userId');
 
       // Try to load from repository first
-      legacy.NotificationPreferences preferences;
+      NotificationPreferences preferences;
       try {
-        // Convert from repository to legacy format for compatibility
-        final repoPrefs = await _notificationsRepository.getNotificationPreferences(_userId);
-        preferences = _convertToLegacyPreferences(repoPrefs);
+        preferences = await _notificationsRepository.getNotificationPreferences(_userId);
         AppLogger.success('✅ Loaded preferences from repository');
       } catch (e) {
         // Create default preferences if none exist
-        preferences = legacy.NotificationPreferences.defaults();
-        await _updateRepositoryPreferences(preferences);
+        preferences = NotificationPreferences.defaults();
+        await _notificationsRepository.updateNotificationPreferences(_userId, preferences);
         AppLogger.info('📋 Created default notification preferences');
       }
 
@@ -218,18 +216,18 @@ class NotificationPreferenceManager {
       
       // Final fallback to defaults
       AppLogger.warning('⚠️ Using default preferences as fallback');
-      return legacy.NotificationPreferences.defaults();
+      return NotificationPreferences.defaults();
     }
   }
 
   /// Update notification preferences for current user
   /// Updates both Firestore and local cache, with offline support
-  Future<void> updatePreferences(legacy.NotificationPreferences preferences) async {
+  Future<void> updatePreferences(NotificationPreferences preferences) async {
     try {
       AppLogger.info('📋 Updating notification preferences for user: $_userId');
 
-      // Save via repository (convert to repository format)
-      await _updateRepositoryPreferences(preferences);
+      // Save via repository
+      await _notificationsRepository.updateNotificationPreferences(_userId, preferences);
       
       // Update cache
       _cachedPreferences = preferences;
@@ -250,7 +248,7 @@ class NotificationPreferenceManager {
     try {
       AppLogger.info('📋 Resetting preferences to defaults for user: $_userId');
       
-      final defaultPrefs = legacy.NotificationPreferences.defaults();
+      final defaultPrefs = NotificationPreferences.defaults();
       await updatePreferences(defaultPrefs);
       
       AppLogger.success('✅ Preferences reset to defaults');
@@ -327,7 +325,7 @@ class NotificationPreferenceManager {
 
 
   /// Save preferences to local storage for offline access
-  Future<void> _savePreferencesLocally(legacy.NotificationPreferences preferences) async {
+  Future<void> _savePreferencesLocally(NotificationPreferences preferences) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final prefsJson = preferences.toJson();
@@ -339,14 +337,14 @@ class NotificationPreferenceManager {
   }
 
   /// Load preferences from local storage
-  Future<legacy.NotificationPreferences?> _loadPreferencesLocally() async {
+  Future<NotificationPreferences?> _loadPreferencesLocally() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final prefsJson = prefs.getString('notification_preferences_$_userId');
       
       if (prefsJson != null) {
         AppLogger.debug('📋 Loaded preferences from local storage for $_userId');
-        return legacy.NotificationPreferences.fromJson(prefsJson);
+        return NotificationPreferences.fromJson(prefsJson);
       }
     } catch (e) {
       AppLogger.warning('⚠️ Failed to load preferences locally: $e');
@@ -364,57 +362,5 @@ class NotificationPreferenceManager {
   /// Dispose resources
   void dispose() {
     clearCache();
-  }
-
-  // ===== CONVERSION HELPERS =====
-  
-  /// Convert repository preferences to legacy format
-  legacy.NotificationPreferences _convertToLegacyPreferences(NotificationPreferences repoPrefs) {
-    // Create a mapping from repository format to legacy format
-    final categorySettings = <NotificationCategory, bool>{
-      NotificationCategory.friends: repoPrefs.enableFriendRequests,
-      NotificationCategory.recipes: repoPrefs.enableRecipeSharing,
-      NotificationCategory.collaboration: repoPrefs.enableCollaborativeEditing,
-      NotificationCategory.shopping: false, // Not in repo format
-      NotificationCategory.social: repoPrefs.enableComments,
-      NotificationCategory.system: repoPrefs.enableGeneralUpdates,
-    };
-    
-    final typeSettings = <NotificationType, bool>{
-      NotificationType.immediate: true, // Always enabled for critical
-      NotificationType.batchable: true, // Allow batching
-      NotificationType.silent: true, // Background operations
-      NotificationType.digest: false, // Disable by default
-      NotificationType.optional: false, // Disable by default
-    };
-    
-    return legacy.NotificationPreferences(
-      enabled: repoPrefs.enableGeneralUpdates,
-      categorySettings: categorySettings,
-      typeSettings: typeSettings,
-      allowBatching: true,
-      digestFrequency: 'never',
-      quietHoursStart: const TimeOfDay(hour: 22, minute: 0),
-      quietHoursEnd: const TimeOfDay(hour: 8, minute: 0),
-      soundEnabled: true,
-      vibrationEnabled: true,
-      lastUpdated: DateTime.now(),
-    );
-  }
-  
-  /// Update repository with legacy preferences
-  Future<void> _updateRepositoryPreferences(legacy.NotificationPreferences legacyPrefs) async {
-    final repoPrefs = NotificationPreferences(
-      enableRecipeSharing: legacyPrefs.categorySettings[NotificationCategory.recipes] ?? true,
-      enableFriendRequests: legacyPrefs.categorySettings[NotificationCategory.friends] ?? true,
-      enableGroupInvitations: true,
-      enableComments: legacyPrefs.categorySettings[NotificationCategory.social] ?? true,
-      enableRatings: true,
-      enableCollaborativeEditing: legacyPrefs.categorySettings[NotificationCategory.collaboration] ?? true,
-      enableMenuSharing: true,
-      enableGeneralUpdates: legacyPrefs.enabled,
-    );
-    
-    await _notificationsRepository.updateNotificationPreferences(_userId, repoPrefs);
   }
 }

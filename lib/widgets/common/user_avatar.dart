@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/widgets/user/user_avatar_widgets.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
 
-/// Simple wrapper around UserAvatarWidgets for common usage
+/// Wrapper around UserAvatarWidgets for common usage.
 class UserAvatar extends StatelessWidget {
   final String? imageUrl;
   final String displayName;

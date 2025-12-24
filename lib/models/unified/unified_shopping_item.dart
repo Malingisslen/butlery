@@ -60,6 +60,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 /// Comprehensive unified shopping item with dual-mode support and collaborative features.
 /// Represents a complete shopping item with all associated metadata including basic shopping data,
 /// collaborative tracking information, smart formatting capabilities, and priority management.
@@ -584,24 +585,24 @@ class UnifiedShoppingItem {
   /// Returns a new [UnifiedShoppingItem] instance with all data properly parsed from Firestore.
   factory UnifiedShoppingItem.fromFirestore(Map<String, dynamic> data) {
     return UnifiedShoppingItem(
-      id: data['id'] as String,
-      name: data['name'] as String,
-      amount: (data['amount'] as num).toDouble(),
-      unit: (data['unit'] as String?).orEmpty(),
-      category: (data['category'] as String?).orDefault('Övrigt'),
-      bought: (data['bought'] as bool?).orFalse(),
-      addedByUserId: data['addedByUserId'] as String?,
-      addedByDisplayName: data['addedByDisplayName'] as String?,
-      addedAt: (data['addedAt'] as Timestamp?)?.toDate(),
-      purchasedByUserId: data['purchasedByUserId'] as String?,
-      purchasedByDisplayName: data['purchasedByDisplayName'] as String?,
-      purchasedAt: (data['purchasedAt'] as Timestamp?)?.toDate(),
-      lastModifiedByUserId: data['lastModifiedByUserId'] as String?,
-      lastModifiedByDisplayName: data['lastModifiedByDisplayName'] as String?,
-      lastModifiedAt: (data['lastModifiedAt'] as Timestamp?)?.toDate(),
-      note: data['note'] as String?,
-      estimatedPrice: (data['estimatedPrice'] as num?)?.toDouble(),
-      priority: (data['priority'] as int?).orDefault(3),
+      id: SerializationUtils.safeString(data, 'id'),
+      name: SerializationUtils.safeString(data, 'name'),
+      amount: SerializationUtils.safeDouble(data, 'amount'),
+      unit: SerializationUtils.safeString(data, 'unit'),
+      category: SerializationUtils.safeString(data, 'category', defaultValue: 'Övrigt'),
+      bought: SerializationUtils.safeBool(data, 'bought'),
+      addedByUserId: SerializationUtils.safeNullableString(data, 'addedByUserId'),
+      addedByDisplayName: SerializationUtils.safeNullableString(data, 'addedByDisplayName'),
+      addedAt: SerializationUtils.safeDateTime(data, 'addedAt'),
+      purchasedByUserId: SerializationUtils.safeNullableString(data, 'purchasedByUserId'),
+      purchasedByDisplayName: SerializationUtils.safeNullableString(data, 'purchasedByDisplayName'),
+      purchasedAt: SerializationUtils.safeDateTime(data, 'purchasedAt'),
+      lastModifiedByUserId: SerializationUtils.safeNullableString(data, 'lastModifiedByUserId'),
+      lastModifiedByDisplayName: SerializationUtils.safeNullableString(data, 'lastModifiedByDisplayName'),
+      lastModifiedAt: SerializationUtils.safeDateTime(data, 'lastModifiedAt'),
+      note: SerializationUtils.safeNullableString(data, 'note'),
+      estimatedPrice: SerializationUtils.safeNullableDouble(data, 'estimatedPrice'),
+      priority: SerializationUtils.safeInt(data, 'priority', defaultValue: 3),
     );
   }
 

@@ -9,6 +9,7 @@
 /// - Social content: Track any like/favorite interactions
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 
 class InteractionMetadata {
   final String userId;
@@ -31,11 +32,11 @@ class InteractionMetadata {
   ) {
     final data = doc.data()!;
     return InteractionMetadata(
-      userId: data['userId'] as String,
-      interactedAt: (data['timestamp'] as Timestamp).toDate(),
-      interactionType: data['interactionType'] as String,
-      value: data['value'] as double?,
-      comment: data['comment'] as String?,
+      userId: SerializationUtils.safeString(data, 'userId'),
+      interactedAt: SerializationUtils.safeRequiredDateTime(data, 'timestamp'),
+      interactionType: SerializationUtils.safeString(data, 'interactionType'),
+      value: SerializationUtils.safeNullableDouble(data, 'value'),
+      comment: SerializationUtils.safeNullableString(data, 'comment'),
     );
   }
 

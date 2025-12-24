@@ -1,19 +1,8 @@
-// lib/models/recipe/recipe_factory.dart
-
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 
-/// Focused module for recipe factory methods
-/// This module handles ONLY recipe construction:
-/// - Factory methods for different recipe types
-/// - Recipe conversion between types
-/// - Default value setting for different recipe types
-/// - Recipe initialization helpers
-/// ❌ DOES NOT CONTAIN: Recipe operations, serialization, validation logic
+/// Factory methods for recipe construction and conversion.
 class RecipeFactory {
-  
-  // ===== PERSONAL RECIPE FACTORIES =====
-
   /// Create a basic personal recipe
   static Recipe createPersonal({
     required String title,
@@ -71,8 +60,6 @@ class RecipeFactory {
     );
   }
 
-  // ===== SHARED RECIPE FACTORIES =====
-
   /// Create a shared recipe (read-only for others)
   static Recipe createShared({
     required String title,
@@ -115,8 +102,6 @@ class RecipeFactory {
       ),
     );
   }
-
-  // ===== COLLABORATIVE RECIPE FACTORIES =====
 
   /// Create a collaborative recipe (can be co-edited)
   static Recipe createCollaborative({
@@ -165,8 +150,6 @@ class RecipeFactory {
       ),
     );
   }
-
-  // ===== REALTIME RECIPE FACTORIES =====
 
   /// Create a realtime recipe (live editing)
   static Recipe createRealtime({
@@ -220,8 +203,6 @@ class RecipeFactory {
       ),
     );
   }
-
-  // ===== CONVERSION METHODS =====
 
   /// Convert personal recipe to shared
   static Recipe convertToShared(
@@ -337,8 +318,6 @@ class RecipeFactory {
     );
   }
 
-  // ===== TEMPLATE RECIPES =====
-
   /// Create an empty recipe template
   static Recipe createEmptyTemplate({
     String title = 'Nytt recept',
@@ -387,8 +366,6 @@ class RecipeFactory {
       type: RecipeType.personal,
     );
   }
-
-  // ===== VALIDATION HELPERS =====
 
   /// Validate factory parameters
   static bool validateBasicRecipeData({

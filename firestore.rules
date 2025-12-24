@@ -759,9 +759,18 @@ service cloud.firestore {
     // ========================================
 
     match /recipe_comments/{commentId} {
-      // Can read if you have access to the parent recipe
-      // (This requires checking the shared recipe permissions)
-      allow read: if isAuthenticated();
+      // SECURITY FIX: Comments require access to parent shared recipe
+      // Users can read comments if:
+      // - They are the comment author, OR
+      // - They have access to the shared recipe (owner or member)
+      allow read: if isAuthenticated() && (
+        // Comment author can always read their own comments
+        request.auth.uid == resource.data.authorId ||
+        // User is the owner of the shared recipe
+        request.auth.uid == get(/databases/$(database)/documents/shared_recipes/$(resource.data.recipeId)).data.sharedByUserId ||
+        // User is a member of the shared recipe
+        exists(/databases/$(database)/documents/shared_recipes/$(resource.data.recipeId)/members/$(request.auth.uid))
+      );
 
       // Can create if authenticated and providing required fields
       allow create: if isAuthenticated()
@@ -1098,6 +1107,8 @@ service cloud.firestore {
     match /user_notifications/{notificationId} {
       // Can read only your own notifications
       allow read: if isAuthenticated()
+        && request.auth.uid == resource.data.userId;
+
       // Users can create notifications if:
       // - Sending to themselves (system notifications), OR
       // - They are friends with the recipient
@@ -1160,7 +1171,9 @@ service cloud.firestore {
 
       // Only system/server can create audit logs (fire-and-forget from app)
       // In practice, client-side creates are allowed but validated
+      // SECURITY: User can only create audit logs for themselves (prevents tampering)
       allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.userId
         && hasRequiredFields(['userId', 'operation', 'resourceType', 'timestamp']);
 
       // No updates or deletes allowed (immutable audit trail)
@@ -1290,6 +1303,50 @@ service cloud.firestore {
 
       // No deletes from client - cleanup handled by Cloud Functions
       allow delete: if false;
+    }
+
+    // ========================================
+    // SITE CONFIGS - Dynamic parsing configurations
+    // ========================================
+
+    match /site_configs/{domain} {
+      // Authenticated users can read site configs
+      allow read: if isAuthenticated();
+
+      // No client writes - admin only via console/server
+      allow write: if false;
+    }
+
+    // ========================================
+    // PARSING CORRECTIONS - Parser improvement analytics
+    // ========================================
+
+    match /parsing_corrections/{correctionId} {
+      // Users can only read their own corrections (GDPR)
+      allow read: if isAuthenticated()
+        && request.auth.uid == resource.data.userId;
+
+      // Users can only create corrections for themselves
+      // SECURITY: Prevents data poisoning attacks
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.userId
+        && hasRequiredFields(['id', 'userId', 'source', 'timestamp']);
+
+      // No updates allowed - corrections are immutable
+      allow update: if false;
+
+      // Users can delete their own corrections (GDPR Article 17)
+      allow delete: if isAuthenticated()
+        && request.auth.uid == resource.data.userId;
+    }
+
+    // ========================================
+    // PARSE EVENTS - Server-side analytics only
+    // ========================================
+
+    match /parse_events/{eventId} {
+      // No direct client access - logs via callable function only
+      allow read, write: if false;
     }
 
     // ========================================

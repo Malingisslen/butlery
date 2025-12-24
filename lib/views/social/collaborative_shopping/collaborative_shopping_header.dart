@@ -52,8 +52,6 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     );
   }
 
-  // ===== TITLE AND STATUS =====
-
   Widget _buildTitleSection(BuildContext context) {
     return Row(
       children: [
@@ -93,8 +91,6 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     );
   }
 
-  // ===== DESCRIPTION =====
-
   Widget _buildDescriptionSection(BuildContext context) {
     return Text(
       viewModel.listDescription,
@@ -105,8 +101,6 @@ class CollaborativeShoppingHeader extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
     );
   }
-
-  // ===== PROGRESS TRACKING =====
 
   Widget _buildProgressSection(BuildContext context) {
     final progress = viewModel.completionPercentage / 100;
@@ -155,8 +149,6 @@ class CollaborativeShoppingHeader extends StatelessWidget {
       ),
     );
   }
-
-  // ===== METADATA AND ACTIVITY =====
 
   Widget _buildMetadataSection(BuildContext context) {
     return Row(
@@ -208,9 +200,6 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     );
   }
 
-  // ===== UTILITY METHODS =====
-
-  /// Check if header should show expanded view
   bool get shouldShowExpandedView => viewModel.hasDescription;
 
   /// Get estimated header height for layout calculations

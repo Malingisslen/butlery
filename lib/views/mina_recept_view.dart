@@ -26,25 +26,22 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/social_components.dart';
-import 'package:butlery/widgets/common/indicators/notification_badge.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/menus/sort_menu_builder.dart';
+import 'package:butlery/widgets/common/social_components/recipe_list_avatar_badge.dart';
 
 // Service integration for functionality and data management
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/services/offline_service.dart' as offline_service;
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
 
 // Theme system integration
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 
 // Core services and utilities
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// Personal recipe management view with multi-provider architecture.
@@ -212,72 +209,6 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     }
   }
 
-  /// Build user avatar with aggregated notification badges from multiple sources.
-  Widget _buildUserAvatarWithBadge() {
-    return Consumer3<UserService, FriendsViewModel,
-        SharedContentCoordinatorViewModel>(
-      builder: (context, userService, friendsViewModel, sharedContentViewModel,
-          child) {
-        // ✅ SAFETY: Hantera disposed ViewModels gracefully
-        int pendingFriendRequests = 0;
-        int pendingGroupInvitations = 0;
-        int unreadRecipes = 0;
-        int unreadMenus = 0;
-
-        try {
-          final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-          pendingFriendRequests = friendsViewModel.pendingRequestsCount;
-          pendingGroupInvitations =
-              friendsService.invitations.pendingReceivedInvitations.length;
-          unreadRecipes = sharedContentViewModel.recipeViewModel.unreadCount;
-          unreadMenus = sharedContentViewModel.menuViewModel.unreadCount;
-        } catch (e) {
-          AppLogger.warning(
-              '⚠️ Ett eller flera ViewModels är disposed - visar fallback notification badge');
-          // Fallback till 0 om ViewModels är disposed
-        }
-
-        final totalNotifications = pendingFriendRequests +
-            pendingGroupInvitations +
-            unreadRecipes +
-            unreadMenus;
-
-        return Stack(
-          children: [
-            SocialComponents.avatar(
-              user: userService.currentUserProfile,
-              size: ImageSize.medium,
-              showOnlineStatus: true,
-              onTap: () => LayoutComponents.showProfileMenu(
-                context,
-                userImageUrl: userService.currentUserProfile?.avatarUrl,
-                displayName:
-                    userService.currentUserProfile?.displayName ?? 'Användare',
-                email: userService.currentUserProfile?.email,
-                onEditProfile: () =>
-                    Navigator.pushNamed(context, Routes.profileEdit),
-                onViewFriends: () =>
-                    Navigator.pushNamed(context, Routes.friends),
-                onViewShared: () => Navigator.pushNamed(context, Routes.shared),
-                onViewNotifications: () =>
-                    Navigator.pushNamed(context, Routes.friendRequests),
-                onViewMessages: () =>
-                    Navigator.pushNamed(context, Routes.messages),
-              ),
-            ),
-            // ✅ TOTAL NOTIFICATION BADGE - Positioned on edge of avatar circle
-            if (totalNotifications > 0)
-              Positioned(
-                top: 2,
-                right: 2,
-                child: NotificationBadge(count: totalNotifications),
-              ),
-          ],
-        );
-      },
-    );
-  }
-
   /// Build recipe interface with filtering, search, sorting, and social integration.
   @override
   Widget build(BuildContext context) {
@@ -301,10 +232,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
           LayoutComponents.offlineStatusIcon(),
 
           // ✅ UPPDATERAD: USER AVATAR med notification badge
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
-            child: _buildUserAvatarWithBadge(),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
+            child: RecipeListAvatarBadge(),
           ),
 
           // Error indicator
@@ -332,36 +262,11 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               ),
               tooltip: 'Sortera',
               onSelected: _onSortChanged,
-              itemBuilder: (context) => [
-                _buildSortMenuItem(
-                  SortCriteria.title,
-                  'Titel',
-                  Icons.title,
-                  viewModel.sortCriteria,
-                  viewModel.sortAscending,
-                ),
-                _buildSortMenuItem(
-                  SortCriteria.time,
-                  'Tid',
-                  Icons.access_time,
-                  viewModel.sortCriteria,
-                  viewModel.sortAscending,
-                ),
-                _buildSortMenuItem(
-                  SortCriteria.rating,
-                  'Betyg',
-                  Icons.star,
-                  viewModel.sortCriteria,
-                  viewModel.sortAscending,
-                ),
-                _buildSortMenuItem(
-                  SortCriteria.mealType,
-                  'Måltidstyp',
-                  Icons.restaurant,
-                  viewModel.sortCriteria,
-                  viewModel.sortAscending,
-                ),
-              ],
+              itemBuilder: (context) => SortMenuBuilder.buildItems(
+                context: context,
+                currentSort: viewModel.sortCriteria,
+                sortAscending: viewModel.sortAscending,
+              ),
             ),
           ),
         ],
@@ -419,42 +324,15 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
       );
     }
 
-    // Error state
+    // Error state - uses StateWidget for consistency
     if (viewModel.hasError) {
-      return Center(
-        child: Padding(
-          padding: AppDimensions.screenPadding,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppDimensions.paddingL),
-                decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.1),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusM),
-                  border: Border.all(color: AppColors.error),
-                ),
-                child: Text(
-                  viewModel.error!,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.error,
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppDimensions.spacingXl),
-              ActionButtons.primaryButton(
-                context,
-                label: 'Försök igen',
-                onPressed: () {
-                  viewModel.clearError();
-                  viewModel.refresh();
-                },
-              ),
-            ],
-          ),
-        ),
+      return StateWidget.error(
+        message: viewModel.error!,
+        onAction: () {
+          viewModel.clearError();
+          viewModel.refresh();
+        },
+        actionLabel: 'Försök igen',
       );
     }
 
@@ -538,48 +416,5 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         ],
       ),
     );
-  }
-
-  PopupMenuItem<SortCriteria> _buildSortMenuItem(
-    SortCriteria criteria,
-    String label,
-    IconData icon,
-    SortCriteria currentSort,
-    bool sortAscending,
-  ) {
-    final isSelected = currentSort == criteria;
-
-    return PopupMenuItem(
-      value: criteria,
-      child: Row(
-        mainAxisSize:
-            MainAxisSize.min, // ✅ FIX: Prevent infinite width expansion
-        children: [
-          Icon(
-            icon,
-            color: isSelected ? Theme.of(context).colorScheme.primary : null,
-          ),
-          const SizedBox(width: AppDimensions.spacingS),
-          Flexible(
-            // ✅ FIX: Allow text to shrink on small screens
-            child: Text(label),
-          ),
-          const SizedBox(
-              width: AppDimensions
-                  .spacingM), // ✅ FIX: Replace Spacer with fixed spacing
-          if (isSelected)
-            Icon(
-              sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-              size: AppDimensions.iconSizeM,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }

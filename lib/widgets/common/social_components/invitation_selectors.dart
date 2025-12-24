@@ -1,22 +1,11 @@
-// lib/widgets/common/social_components/invitation_selectors.dart
-
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
-/// Focused module for invitation target selection widgets
-/// This module handles ONLY selection interfaces for invitation targets:
-/// - Target selectors with search and filtering
-/// - Multi-select and single-select interfaces
-/// - Search fields and type filters
-/// - Selection interaction logic
-/// ❌ DOES NOT CONTAIN: Display widgets, states, actions, target lists
+/// Invitation target selection widgets.
 class InvitationSelectors {
-  // ===== TARGET SELECTORS =====
-
-  /// Build target selector
-  /// Interactive selector for invitation targets
+  /// Build target selector.
   static Widget targetSelector(
     BuildContext context, {
     required List<InvitationTarget> availableTargets,
@@ -163,10 +152,7 @@ class InvitationSelectors {
     );
   }
 
-  // ===== SEARCH AND FILTERING =====
-
-  /// Build target search field
-  /// Search input for filtering targets
+  /// Build target search field.
   static Widget targetSearchField({
     Function(String)? onSearchChanged,
     String? hint = 'Sök målgrupper...',
@@ -324,10 +310,7 @@ class InvitationSelectors {
     );
   }
 
-  // ===== SELECTION MANAGEMENT =====
-
-  /// Build target selection summary
-  /// Shows summary of selected targets
+  /// Build target selection summary.
   static Widget targetSelectionSummary(
     BuildContext context, {
     required List<InvitationTarget> selectedTargets,

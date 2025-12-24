@@ -16,7 +16,7 @@ import 'package:butlery/core/rate_limiting/rate_limiter.dart';
 class PersonalRecipeModule {
   final RecipeRepository _recipeRepository;
   final UserRepository _userRepository;
-  final JsonCacheHelper _cacheHelper;
+  final JsonCacheHelper Function() _getCacheHelper;
   final String? Function() _getCurrentUserId;
   final String? Function() _getCurrentUserDisplayName;
   final void Function(String) _setError;
@@ -24,10 +24,12 @@ class PersonalRecipeModule {
   final RecipeServiceAdapter Function() _getServiceAdapter;
   final RateLimiter _rateLimiter = RateLimiter();
 
+  JsonCacheHelper get _cacheHelper => _getCacheHelper();
+
   PersonalRecipeModule({
     required RecipeRepository recipeRepository,
     required UserRepository userRepository,
-    required JsonCacheHelper cacheHelper,
+    required JsonCacheHelper Function() getCacheHelper,
     required String? Function() getCurrentUserId,
     required String? Function() getCurrentUserDisplayName,
     required void Function(String) setError,
@@ -35,7 +37,7 @@ class PersonalRecipeModule {
     required RecipeServiceAdapter Function() getServiceAdapter,
   })  : _recipeRepository = recipeRepository,
         _userRepository = userRepository,
-        _cacheHelper = cacheHelper,
+        _getCacheHelper = getCacheHelper,
         _getCurrentUserId = getCurrentUserId,
         _getCurrentUserDisplayName = getCurrentUserDisplayName,
         _setError = setError,

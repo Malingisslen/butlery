@@ -98,11 +98,6 @@ class AssistedImportViewModel extends ChangeNotifier {
     _title = suggestedTitle ?? '';
   }
 
-  // ===========================================================================
-  // Step Navigation
-  // ===========================================================================
-
-  /// Check if can proceed to next step.
   bool get canProceed {
     switch (_currentStep) {
       case AssistedImportStep.selectIngredients:
@@ -116,10 +111,8 @@ class AssistedImportViewModel extends ChangeNotifier {
     }
   }
 
-  /// Check if can go back.
   bool get canGoBack => _currentStep != AssistedImportStep.selectIngredients;
 
-  /// Proceed to next step.
   void nextStep() {
     if (!canProceed) return;
 
@@ -128,22 +121,18 @@ class AssistedImportViewModel extends ChangeNotifier {
         _currentStep = AssistedImportStep.selectInstructions;
         break;
       case AssistedImportStep.selectInstructions:
-        // Build editable lists from selections
         _buildEditableLists();
         _currentStep = AssistedImportStep.reviewEdit;
         break;
       case AssistedImportStep.reviewEdit:
-        // Final step - nothing to do here
         break;
     }
     notifyListeners();
   }
 
-  /// Go back to previous step.
   void previousStep() {
     switch (_currentStep) {
       case AssistedImportStep.selectIngredients:
-        // Can't go back from first step
         break;
       case AssistedImportStep.selectInstructions:
         _currentStep = AssistedImportStep.selectIngredients;
@@ -155,7 +144,6 @@ class AssistedImportViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Get step number (1-based).
   int get stepNumber {
     switch (_currentStep) {
       case AssistedImportStep.selectIngredients:
@@ -167,32 +155,23 @@ class AssistedImportViewModel extends ChangeNotifier {
     }
   }
 
-  /// Total number of steps.
   int get totalSteps => 3;
 
-  // ===========================================================================
-  // Selection Methods
-  // ===========================================================================
-
-  /// Update ingredient selection.
   void setIngredientSelection(Set<int> indices) {
     _selectedIngredientIndices = indices;
     notifyListeners();
   }
 
-  /// Update instruction selection.
   void setInstructionSelection(Set<int> indices) {
     _selectedInstructionIndices = indices;
     notifyListeners();
   }
 
-  /// Select all highlighted ingredient lines.
   void selectAllHighlightedIngredients() {
     _selectedIngredientIndices = Set.from(likelyIngredientIndices);
     notifyListeners();
   }
 
-  /// Get lines available for instruction selection (excluding ingredients).
   List<String> get availableInstructionLines {
     return lines
         .asMap()
@@ -201,10 +180,6 @@ class AssistedImportViewModel extends ChangeNotifier {
         .map((e) => e.value)
         .toList();
   }
-
-  // ===========================================================================
-  // Field Update Methods
-  // ===========================================================================
 
   void setTitle(String value) {
     _title = value.trim();
@@ -230,10 +205,6 @@ class AssistedImportViewModel extends ChangeNotifier {
     _mealType = value;
     notifyListeners();
   }
-
-  // ===========================================================================
-  // Ingredient/Instruction Editing
-  // ===========================================================================
 
   void updateIngredient(int index, String value) {
     if (index >= 0 && index < _editedIngredients.length) {
@@ -277,43 +248,31 @@ class AssistedImportViewModel extends ChangeNotifier {
     }
   }
 
-  // ===========================================================================
-  // Recipe Building
-  // ===========================================================================
-
-  /// Build editable lists from selections.
   void _buildEditableLists() {
-    // Extract ingredients from selected lines (sorted by index)
     final sortedIngredientIndices = _selectedIngredientIndices.toList()..sort();
     _editedIngredients = sortedIngredientIndices
         .map((i) => lines[i].trim())
         .where((line) => line.isNotEmpty)
         .toList();
 
-    // Extract instructions from selected lines (sorted by index)
     final sortedInstructionIndices = _selectedInstructionIndices.toList()..sort();
     _editedInstructions = sortedInstructionIndices
         .map((i) => lines[i].trim())
         .where((line) => line.isNotEmpty)
         .toList();
 
-    // Clean up instructions (remove step numbers if present)
     _editedInstructions = _editedInstructions
         .map(_cleanInstructionLine)
         .toList();
   }
 
-  /// Clean instruction line (remove leading step numbers).
   String _cleanInstructionLine(String line) {
-    // Remove patterns like "1. ", "Step 1: ", "Steg 1. "
     return line
         .replaceFirst(RegExp(r'^(steg|step)?\s*\d+[\.\):\s]+', caseSensitive: false), '')
         .trim();
   }
 
-  /// Build final Recipe object.
   Recipe buildRecipe() {
-    // Filter out empty items
     final ingredients = _editedIngredients
         .where((i) => i.trim().isNotEmpty)
         .toList();
@@ -335,11 +294,6 @@ class AssistedImportViewModel extends ChangeNotifier {
     );
   }
 
-  // ===========================================================================
-  // Validation
-  // ===========================================================================
-
-  /// Validate current step.
   String? validateCurrentStep() {
     switch (_currentStep) {
       case AssistedImportStep.selectIngredients:
@@ -368,7 +322,6 @@ class AssistedImportViewModel extends ChangeNotifier {
     }
   }
 
-  /// Check if recipe is valid for saving.
   bool get isValidForSave {
     return _title.isNotEmpty &&
         _editedIngredients.isNotEmpty &&

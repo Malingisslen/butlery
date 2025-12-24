@@ -23,22 +23,18 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 enum FriendshipStatus { none, friends, requestSent, requestReceived, blocked }
 
 
-/// Main ViewModel coordinating social relationship operations through service and manager delegation.
+/// Coordinates social relationship operations through service and manager delegation.
 class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin {
   final UnifiedFriendsService _friendsService;
   final UserService _userService;
   final AnalyticsService _analyticsService;
 
-  // ===== MANAGER INSTANCES (FACADE PATTERN) =====
   late final FriendsSearchManager _searchManager;
   late final FriendsProfileCacheManager _profileCacheManager;
   late final FriendsSelectionManager _selectionManager;
 
-  // ===== LIFECYCLE AND SAFETY =====
   bool _isDisposed = false;
   Timer? _debounceTimer;
-
-  // ===== GROUP CREATION STATE (kept in main ViewModel) =====
   bool _isCreatingGroup = false;
   String? _groupCreationError;
 
@@ -49,24 +45,18 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
   })  : _friendsService = friendsService,
         _userService = userService,
         _analyticsService = analyticsService ?? ServiceLocator.get<AnalyticsService>() {
-    // Initialize managers
     _searchManager = FriendsSearchManager(friendsService: friendsService);
     _profileCacheManager = FriendsProfileCacheManager(userService: userService);
     _selectionManager = FriendsSelectionManager();
 
-    // Register service listeners
-    AppLogger.info('🔄 Registering Friends ViewModel service listeners...');
+    AppLogger.info('Registering Friends ViewModel service listeners...');
     _friendsService.addListener(_onFriendsServiceChanged);
     _userService.addListener(_onUserServiceChanged);
-
-    // Register manager listeners
     _searchManager.addListener(_onSearchChanged);
     _profileCacheManager.addListener(_onProfileCacheChanged);
     _selectionManager.addListener(_onSelectionChanged);
+    AppLogger.success('All Friends ViewModel listeners registered successfully');
 
-    AppLogger.success('✅ All Friends ViewModel listeners registered successfully');
-
-    // Load initial profiles
     Future.delayed(Duration.zero, () {
       if (!_isDisposed) {
         _loadUserProfilesForRequests();
@@ -74,30 +64,17 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
     });
   }
 
-  // ===== SOCIAL RELATIONSHIP STATE ACCESSORS =====
-
   List<UserProfile> get friends => _friendsService.friends;
   List<FriendRequest> get incomingRequests => _friendsService.incomingRequests;
   List<FriendRequest> get sentRequests => _friendsService.outgoingRequests;
   int get friendsCount => _friendsService.friends.length;
   int get pendingRequestsCount => _friendsService.incomingRequests.length;
 
-  // ===== FRIEND GROUP MANAGEMENT ACCESSORS =====
-
-  /// Friend groups (categories) for organization
   List<FriendCategory> get groups => _friendsService.categoriesList;
-
-  /// Friend groups containing members
   List<FriendCategory> get groupsWithFriends => _friendsService.categoriesList
       .where((category) => category.friendCount > 0).toList();
-
-  /// Group loading state
   bool get isLoadingGroups => _friendsService.isLoading;
-
-  /// Group operation error message
   String? get groupsError => _friendsService.error;
-
-  /// Total groups count
   int get groupsCount => groups.length;
 
   // ===== SOCIAL SEARCH STATE ACCESSORS (DELEGATES) =====
@@ -249,9 +226,7 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
     return success;
   }
 
-  // ===== ✅ NYTT: GROUP ACTIONS =====
-
-  /// Skapa ny grupp
+  /// Create new group.
   Future<bool> createGroup({
     required String name,
     String? description,
@@ -289,22 +264,22 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
     }
   }
 
-  /// Hämta vänner för en specifik grupp
+  /// Get friends in a specific group.
   List<UserProfile> getFriendsInGroup(String groupId) {
     return _friendsService.categories.getFriendsInCategory(groupId);
   }
 
-  /// Kontrollera om gruppmamn är tillgängligt
+  /// Check if group name is available.
   bool isGroupNameAvailable(String name) {
     return _friendsService.categories.getCategoryByName(name) == null;
   }
 
-  /// Hämta grupper för en specifik vän
+  /// Get groups for a specific friend.
   List<FriendCategory> getGroupsForFriend(String friendUserId) {
     return _friendsService.categories.getCategoriesForFriend(friendUserId);
   }
 
-  /// Sök grupper
+  /// Search groups.
   List<FriendCategory> searchGroups(String query) {
     if (query.trim().isEmpty) return [];
     final lowerQuery = query.toLowerCase();

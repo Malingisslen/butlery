@@ -100,7 +100,7 @@ class MenuPreviewView extends StatelessWidget {
               // Delningsinformation
               Row(
                 children: [
-                  SocialComponents.avatar(
+                  SocialAvatarComponents.avatar(
                     displayName: sharedMenu.sharedByDisplayName,
                     size: ImageSize.small,
                   ),

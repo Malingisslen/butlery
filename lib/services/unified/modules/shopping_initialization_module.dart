@@ -10,7 +10,7 @@ import 'package:butlery/core/utils/logger.dart';
 class ShoppingInitializationModule {
   final AuthRepository authRepository;
   final ShoppingRepository shoppingRepository;
-  final JsonCacheHelper cacheHelper;
+  final JsonCacheHelper Function() getCacheHelper;
   final List<UnifiedShoppingList> lists;
   final String? Function() getActiveListId;
   final void Function(String?) setActiveListId;
@@ -22,7 +22,7 @@ class ShoppingInitializationModule {
   ShoppingInitializationModule({
     required this.authRepository,
     required this.shoppingRepository,
-    required this.cacheHelper,
+    required this.getCacheHelper,
     required this.lists,
     required this.getActiveListId,
     required this.setActiveListId,
@@ -47,7 +47,7 @@ class ShoppingInitializationModule {
       // Set user for cache helper
       final currentUser = authRepository.currentUser;
       if (currentUser != null) {
-        cacheHelper.setCurrentUser(currentUser.uid);
+        getCacheHelper().setCurrentUser(currentUser.uid);
       }
 
       await loadLists();
@@ -90,7 +90,7 @@ class ShoppingInitializationModule {
 
       // Try to load saved active list ID only if no active list is currently set
       const activeListKey = 'active_list_id';
-      final savedActiveListId = await cacheHelper.loadActiveId(activeListKey);
+      final savedActiveListId = await getCacheHelper().loadActiveId(activeListKey);
 
       if (savedActiveListId != null && lists.any((list) => list.id == savedActiveListId)) {
         // Saved list still exists, restore it

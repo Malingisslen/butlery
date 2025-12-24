@@ -120,8 +120,6 @@ class SocialModule implements DIModule {
         FirebaseRatingsRepository(authRepository: container<AuthRepository>()),
       );
 
-      // ==================== SOCIAL RECIPE SYSTEM ====================
-
       // Social recipe repository
       container.registerSingleton<SocialRecipeRepository>(
         FirebaseSocialRecipeRepository(
@@ -158,8 +156,6 @@ class SocialModule implements DIModule {
         ),
       );
 
-      // ==================== SOCIAL COORDINATORS (ISSUE #014) ====================
-
       // Social coordinators for shared content operations
       // These provide facade coordination for social recipe/menu/shopping features
       container.registerLazySingleton<SocialRecipeCoordinator>(
@@ -169,7 +165,7 @@ class SocialModule implements DIModule {
           final recipeService = container<UnifiedRecipeService>();
 
           return SocialRecipeCoordinator(
-            cacheHelper: container<JsonCacheHelper>(),
+            getCacheHelper: () => container<JsonCacheHelper>(),
             getCurrentUserId: () => authRepo.currentUserId,
             getCurrentUserDisplayName: () =>
                 userService.currentUserProfile?.displayName ?? 'Unknown User',
@@ -270,8 +266,6 @@ class SocialModule implements DIModule {
         },
       );
 
-      // ==================== SHARING AND CONNECTIVITY ====================
-
       // Deep link repository and service
       container.registerSingleton<DeepLinkRepository>(
         FirebaseDeepLinkRepository(authRepository: container<AuthRepository>()),
@@ -298,8 +292,6 @@ class SocialModule implements DIModule {
         FirebaseSocialSharingRepository(
             authRepository: container<AuthRepository>()),
       );
-
-      // ==================== SOCIAL OPERATIONS ====================
 
       // Note: SocialMenuOperations depends on services that may not be available yet
       // We'll register it as lazy singleton to defer creation

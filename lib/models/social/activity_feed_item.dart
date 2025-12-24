@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/social/activity_engagement.dart';
 import 'package:butlery/models/social/activity_type.dart';
 
@@ -125,20 +126,20 @@ class ActivityFeedItem {
   factory ActivityFeedItem.fromFirestore(String id, Map<String, dynamic> data) {
     return ActivityFeedItem(
       id: id,
-      userId: (data['userId'] as String?).orEmpty(),
-      userDisplayName: (data['userDisplayName'] as String?).orDefault('Okänd användare'),
-      userAvatarUrl: data['userAvatarUrl'] as String?,
-      type: ActivityType.fromKey((data['type'] as String?).orDefault('unknown')),
-      targetId: (data['targetId'] as String?).orEmpty(),
-      targetType: (data['targetType'] as String?).orEmpty(),
-      targetTitle: (data['targetTitle'] as String?).orEmpty(),
-      targetImageUrl: data['targetImageUrl'] as String?,
-      parentId: data['parentId'] as String?,
-      parentType: data['parentType'] as String?,
-      timestamp: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      visibility: (data['visibility'] as List?)?.cast<String>() ?? ['all_friends'],
-      metadata: (data['metadata'] as Map<String, dynamic>?).orEmpty(),
-      engagement: ActivityEngagement.fromFirestore((data['engagement'] as Map<String, dynamic>?).orEmpty()),
+      userId: SerializationUtils.safeString(data, 'userId'),
+      userDisplayName: SerializationUtils.safeString(data, 'userDisplayName', defaultValue: 'Okänd användare'),
+      userAvatarUrl: SerializationUtils.safeNullableString(data, 'userAvatarUrl'),
+      type: ActivityType.fromKey(SerializationUtils.safeString(data, 'type', defaultValue: 'unknown')),
+      targetId: SerializationUtils.safeString(data, 'targetId'),
+      targetType: SerializationUtils.safeString(data, 'targetType'),
+      targetTitle: SerializationUtils.safeString(data, 'targetTitle'),
+      targetImageUrl: SerializationUtils.safeNullableString(data, 'targetImageUrl'),
+      parentId: SerializationUtils.safeNullableString(data, 'parentId'),
+      parentType: SerializationUtils.safeNullableString(data, 'parentType'),
+      timestamp: SerializationUtils.safeRequiredDateTime(data, 'timestamp'),
+      visibility: SerializationUtils.safeStringList(data, 'visibility', defaultValue: ['all_friends']),
+      metadata: SerializationUtils.safeMap(data, 'metadata'),
+      engagement: ActivityEngagement.fromFirestore(SerializationUtils.safeMap(data, 'engagement')),
     );
   }
 

@@ -18,9 +18,6 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
   @override
   String get serviceName => 'FriendRequestActions';
 
-  // ===== UI COMPONENTS =====
-
-  /// Build floating action button for batch operations
   Widget? buildFloatingActionButton(
     BuildContext context,
     TabController tabController,
@@ -44,9 +41,6 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
     return null;
   }
 
-  // ===== INDIVIDUAL REQUEST OPERATIONS =====
-
-  /// Accept a single friend request
   Future<void> acceptFriendRequest(
     BuildContext context,
     String requestId,
@@ -146,9 +140,6 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
     );
   }
 
-  // ===== BATCH OPERATIONS =====
-
-  /// Accept multiple friend requests with confirmation
   Future<void> acceptMultipleRequests(
     BuildContext context,
     List<String> requestIds,
@@ -261,9 +252,6 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
     );
   }
 
-  // ===== FRIEND MANAGEMENT OPERATIONS =====
-
-  /// Send friend request to user
   Future<void> sendFriendRequest(
     BuildContext context,
     String userId,
@@ -394,9 +382,6 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
     );
   }
 
-  // ===== HELPER OPERATIONS =====
-
-  /// Refresh friend requests list
   Future<void> refreshFriendRequests(BuildContext context) async {
     if (!validateContext(context)) return;
 
@@ -449,9 +434,6 @@ class FriendRequestActions extends BaseActionHandler with ActionStateMixin {
     );
   }
 
-  // ===== CLEANUP =====
-
-  /// Dispose resources
   void dispose() {
     clearError();
   }

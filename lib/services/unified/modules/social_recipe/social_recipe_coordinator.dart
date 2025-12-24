@@ -55,7 +55,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
   final Map<String, bool> _dismissedStatusCache = {};
 
   SocialRecipeCoordinator({
-    required JsonCacheHelper cacheHelper,
+    required JsonCacheHelper Function() getCacheHelper,
     required String? Function() getCurrentUserId,
     required String? Function() getCurrentUserDisplayName,
     required void Function(String) setError,
@@ -106,7 +106,7 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
     );
 
     _queryService = SocialRecipeQueryService(
-      cacheHelper: cacheHelper,
+      getCacheHelper: getCacheHelper,
       getCurrentUserId: getCurrentUserId,
       setError: setError,
       serviceAdapter: _serviceAdapter,

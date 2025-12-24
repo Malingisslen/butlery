@@ -1,18 +1,7 @@
-// lib/models/recipe/recipe_operations.dart
-
 import 'package:butlery/models/recipe_unified.dart';
 
-/// Focused module for recipe content operations
-/// This module handles ONLY recipe content manipulation:
-/// - Ingredient CRUD operations
-/// - Instruction CRUD operations
-/// - Recipe state changes (mark as cooked)
-/// - Content validation and updates
-/// ❌ DOES NOT CONTAIN: Serialization, social features, metadata management
+/// Recipe content operations (ingredients, instructions, state changes).
 class RecipeOperations {
-  
-  // ===== INGREDIENT OPERATIONS =====
-
   /// Add ingredient with user tracking
   static Recipe addIngredient(
     Recipe recipe,
@@ -113,8 +102,6 @@ class RecipeOperations {
       lastEditedByDisplayName: userDisplayName,
     );
   }
-
-  // ===== INSTRUCTION OPERATIONS =====
 
   /// Add instruction with user tracking
   static Recipe addInstruction(
@@ -217,8 +204,6 @@ class RecipeOperations {
     );
   }
 
-  // ===== IMAGE OPERATIONS =====
-
   /// Add image URL
   static Recipe addImageUrl(
     Recipe recipe,
@@ -274,8 +259,6 @@ class RecipeOperations {
     );
   }
 
-  // ===== RECIPE STATE OPERATIONS =====
-
   /// Mark recipe as cooked
   static Recipe markAsCooked(
     Recipe recipe, {
@@ -319,8 +302,6 @@ class RecipeOperations {
     );
   }
 
-  // ===== VALIDATION =====
-
   /// Validate recipe for completeness
   static bool isValidRecipe(Recipe recipe) {
     if (recipe.core.title.trim().isEmpty) return false;
@@ -357,8 +338,6 @@ class RecipeOperations {
     if (recipe.core.portions == null || recipe.core.portions! <= 0) return false;
     return true;
   }
-
-  // ===== STATISTICS =====
 
   /// Get recipe statistics
   static Map<String, int> getRecipeStats(Recipe recipe) {

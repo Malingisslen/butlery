@@ -93,7 +93,7 @@ class SharedMenuCard {
   ) {
     return Row(
       children: [
-        SocialComponents.avatar(
+        SocialAvatarComponents.avatar(
           size: ImageSize.small,
           displayName: sharedMenu.sharedByDisplayName,
         ),

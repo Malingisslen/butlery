@@ -88,7 +88,7 @@ void main() {
       
       // Create coordinator with test dependencies
       coordinator = SocialRecipeCoordinator(
-        cacheHelper: mockCacheHelper,
+        getCacheHelper: () => mockCacheHelper,
         getCurrentUserId: () => currentUserId,
         getCurrentUserDisplayName: () => currentUserDisplayName,
         setError: (error) {}, // Error handling not tested in this suite

@@ -244,7 +244,7 @@ class SocialContentFeatures {
         shareMessage: message,
         listName: shoppingList.name,
         listDescription: shoppingList.description,
-        listItems: shoppingList.items,
+        itemCount: shoppingList.items.length,
       );
 
       // Persist invitation via repository

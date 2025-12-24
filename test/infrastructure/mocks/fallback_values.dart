@@ -16,6 +16,7 @@ import 'package:firebase_auth_mocks/firebase_auth_mocks.dart' as firebase_mocks;
 // Model imports
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/friend_request.dart';
+import 'package:butlery/models/notification_preferences.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/messaging/conversation.dart';
@@ -357,7 +358,7 @@ void registerAllFallbackValues() {
   registerFallbackValue(RecipeOperationResult.success('test'));
   
   // ===== Notification Types =====
-  registerFallbackValue(NotificationPreferences());
+  registerFallbackValue(NotificationPreferences.defaults());
   
   // ===== Enum Values =====
   registerFallbackValue(FriendRequestStatus.pending);

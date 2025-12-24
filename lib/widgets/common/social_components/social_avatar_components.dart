@@ -1,5 +1,3 @@
-// lib/widgets/common/social_components/social_avatar_components.dart
-
 import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart' show ImageSize;
@@ -7,18 +5,9 @@ import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
-/// Social avatar and user display components
-/// This module handles ONLY avatar and user display widgets:
-/// - User avatars with various sizes and styling options
-/// - User cards with avatar and user information
-/// - User list tiles for lists and selection interfaces
-/// - User display utilities and formatting
-/// ❌ DOES NOT CONTAIN: Collaborative indicators, group management, invitations, builders
+/// Social avatar and user display components.
 class SocialAvatarComponents {
-  
-  // ===== USER DISPLAY & AVATARS =====
-
-  /// Build user avatar - MAIN METHOD that replaces UserDisplayWidgets.avatar()
+  /// Build user avatar.
   static Widget avatar({
     UserProfile? user,
     String? imageUrl,
@@ -96,10 +85,7 @@ class SocialAvatarComponents {
     );
   }
 
-  // ===== USER DISPLAY UTILITIES =====
-
-  /// Format user display name consistently
-  /// Provides standardized name formatting for user displays
+  /// Format user display name consistently.
   static String formatUserDisplayName(UserProfile? user) {
     return SocialFacade.formatUserDisplayName(user);
   }
@@ -116,9 +102,7 @@ class SocialAvatarComponents {
     return SocialFacade.getUserAvatarUrl(user);
   }
 
-  // ===== AVATAR VARIANTS =====
-
-  /// Build small avatar (typically for lists)
+  /// Build small avatar (typically for lists).
   static Widget smallAvatar({
     UserProfile? user,
     String? imageUrl,
@@ -178,9 +162,7 @@ class SocialAvatarComponents {
     );
   }
 
-  // ===== USER CARD VARIANTS =====
-
-  /// Build compact user card (minimal information)
+  /// Build compact user card (minimal information).
   static Widget compactUserCard({
     required UserProfile user,
     VoidCallback? onTap,
@@ -219,9 +201,7 @@ class SocialAvatarComponents {
     );
   }
 
-  // ===== AVATAR GRID AND LIST HELPERS =====
-
-  /// Build avatar list for multiple users
+  /// Build avatar list for multiple users.
   static Widget avatarList({
     required List<UserProfile> users,
     ImageSize avatarSize = ImageSize.small,
@@ -311,9 +291,7 @@ class SocialAvatarComponents {
     );
   }
 
-  // ===== AVATAR STATUS AND STATES =====
-
-  /// Build avatar with loading state
+  /// Build avatar with loading state.
   static Widget avatarLoading({
     ImageSize size = ImageSize.medium,
     Color? backgroundColor,

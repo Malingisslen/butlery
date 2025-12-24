@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:clock/clock.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/notifications/notification_repository.dart';
+import 'package:butlery/models/notification_batch.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Notification batching and spam prevention with intelligent grouping, rate limiting, and spam detection.
@@ -276,11 +277,9 @@ class NotificationBatchManager {
     try {
       AppLogger.info('🔔 Processing notification batch: $batchKey');
 
-      // Get the batch from repository
-      final batches = await _repository.getPendingBatches();
-      final matchingBatches = batches.where((b) => b.batchKey == batchKey);
-      final batch = matchingBatches.isNotEmpty ? matchingBatches.first : null;
-      
+      // Get the specific batch directly (avoids fetching all batches)
+      final batch = await _repository.getBatchByKey(batchKey);
+
       if (batch == null) {
         AppLogger.warning('⚠️ Batch not found: $batchKey');
         _cleanupBatchTimer(batchKey);

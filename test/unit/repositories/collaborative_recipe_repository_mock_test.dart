@@ -13,12 +13,14 @@ import 'package:butlery/models/realtime/live_editor.dart';
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
+import '../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
   group('CollaborativeRecipeRepository Mock Tests', () {
     late CollaborativeRecipeRepository repository;
     late FakeFirebaseFirestore fakeFirestore;
-    
+    late MockAuthRepository mockAuthRepository;
+
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
     });
@@ -26,9 +28,19 @@ void main() {
     setUp(() {
       // Create fake Firestore instance
       fakeFirestore = FakeFirebaseFirestore();
-      
-      // Create repository with fake Firestore
-      repository = CollaborativeRecipeRepository(firestore: fakeFirestore);
+
+      // Create mock auth repository with test user
+      mockAuthRepository = MockAuthRepository();
+      mockAuthRepository.setAuthState(
+        userId: 'test-user-123',
+        isAuthenticated: true,
+      );
+
+      // Create repository with fake Firestore and mock auth
+      repository = CollaborativeRecipeRepository(
+        firestore: fakeFirestore,
+        authRepository: mockAuthRepository,
+      );
     });
 
     tearDown(() async {

@@ -562,11 +562,7 @@ void main() {
       test('should update notification preferences successfully', () async {
         // Arrange
         const userId = 'user-123';
-        final preferences = NotificationPreferences(
-          enableRecipeSharing: false,
-          enableFriendRequests: true,
-          enableGroupInvitations: false,
-        );
+        final preferences = NotificationPreferences.defaults();
 
         // Act
         await repository.updateNotificationPreferences(userId, preferences);
@@ -581,7 +577,7 @@ void main() {
 
       test('should reject updating preferences for another user', () async {
         // Arrange
-        final preferences = NotificationPreferences();
+        final preferences = NotificationPreferences.defaults();
 
         // Act & Assert
         expect(
@@ -608,9 +604,9 @@ void main() {
         final preferences = await repository.getNotificationPreferences(userId);
 
         // Assert
-        expect(preferences.enableRecipeSharing, isFalse);
-        expect(preferences.enableFriendRequests, isTrue);
-        expect(preferences.enableGroupInvitations, isFalse);
+        expect(preferences.enabled, isFalse);
+        expect(preferences.soundEnabled, isTrue);
+        expect(preferences.vibrationEnabled, isFalse);
       });
 
       test('should return default preferences when none exist', () async {
@@ -618,10 +614,10 @@ void main() {
         final preferences = await repository.getNotificationPreferences('user-with-no-prefs');
 
         // Assert - All defaults should be true
-        expect(preferences.enableRecipeSharing, isTrue);
-        expect(preferences.enableFriendRequests, isTrue);
-        expect(preferences.enableGroupInvitations, isTrue);
-        expect(preferences.enableComments, isTrue);
+        expect(preferences.enabled, isTrue);
+        expect(preferences.soundEnabled, isTrue);
+        expect(preferences.vibrationEnabled, isTrue);
+        expect(preferences.allowBatching, isTrue);
       });
     });
 

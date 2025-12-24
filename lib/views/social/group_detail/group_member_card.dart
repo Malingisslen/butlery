@@ -28,7 +28,7 @@ class GroupMemberCard {
         vertical: AppDimensions.spacingXs,
       ),
       child: ListTile(
-        leading: SocialComponents.avatar(
+        leading: SocialAvatarComponents.avatar(
           size: ImageSize.medium,
           displayName: member.displayName,
           user: member,

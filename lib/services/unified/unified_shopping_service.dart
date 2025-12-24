@@ -19,6 +19,7 @@ import 'package:butlery/services/unified/operations/personal_shopping_operations
 import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
 import 'package:butlery/services/unified/operations/shopping_share_operations.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/services/offline_service.dart';
 
 // Module imports
 import 'package:butlery/services/unified/modules/shopping_initialization_module.dart';
@@ -39,8 +40,20 @@ class UnifiedShoppingService extends ChangeNotifier
   final FirestoreRepository _firestoreRepository;
   final AuthRepository _authRepository;
   final ShoppingRepository _shoppingRepository;
-  late final JsonCacheHelper _cacheHelper;
+  JsonCacheHelper? _cacheHelper;
   FirebaseFirestore get _firestore => _firestoreRepository.firestore;
+
+  /// Lazy getter for cache helper - initializes from OfflineService when first accessed
+  JsonCacheHelper get cacheHelper {
+    if (_cacheHelper == null) {
+      final offlineService = ServiceLocator.get<OfflineService>();
+      _cacheHelper = JsonCacheHelper(
+        'unified_shopping_lists_cache',
+        offlineService.database.cacheDao,
+      );
+    }
+    return _cacheHelper!;
+  }
 
   // Feature interfaces
   late final PersonalShoppingOperations _personalOps;
@@ -71,8 +84,8 @@ class UnifiedShoppingService extends ChangeNotifier
   }
 
   void _initializeModules() {
-    // Initialize cache helper for active list persistence
-    _cacheHelper = JsonCacheHelper('unified_shopping_lists_cache');
+    // Note: _cacheHelper is lazily initialized via cacheHelper getter
+    // This avoids circular dependency with OfflineService during DI setup
 
     // Initialize feature interfaces
     _personalOps = PersonalShoppingOperations(this);
@@ -84,7 +97,7 @@ class UnifiedShoppingService extends ChangeNotifier
     _initialization = ShoppingInitializationModule(
       authRepository: _authRepository,
       shoppingRepository: _shoppingRepository,
-      cacheHelper: _cacheHelper,
+      getCacheHelper: () => cacheHelper,
       lists: _lists,
       getActiveListId: () => _activeListId,
       setActiveListId: (id) => _activeListId = id,
@@ -362,7 +375,7 @@ class UnifiedShoppingService extends ChangeNotifier
     await safeExecute(
       () async {
         const activeListKey = 'active_list_id';
-        await _cacheHelper.saveActiveId(activeListKey, _activeListId);
+        await cacheHelper.saveActiveId(activeListKey, _activeListId);
         AppLogger.debug(
             '💾 Saved active list ID: $_activeListId', 'ShoppingService');
       },

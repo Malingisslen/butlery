@@ -86,7 +86,6 @@ class CoreModule implements DIModule {
     }
 
     try {
-      // ==================== PLATFORM DEPENDENCIES ====================
       // SharedPreferences must be registered first as many services depend on it
       if (kDebugMode) {
         debugPrint('🔍 [CoreModule] Step 1: Getting SharedPreferences...');
@@ -97,7 +96,6 @@ class CoreModule implements DIModule {
         debugPrint('✅ [CoreModule] SharedPreferences registered');
       }
 
-      // ==================== CORE REPOSITORIES ====================
       // Core repositories form the foundation of the data access layer
       if (kDebugMode) {
         debugPrint('🔍 [CoreModule] Step 2: Registering AuthRepository...');
@@ -132,7 +130,6 @@ class CoreModule implements DIModule {
         debugPrint('✅ [CoreModule] ConsentRepository registered');
       }
 
-      // ==================== DATABASE REPOSITORIES ====================
       // FirestoreRepository provides centralized Firestore access
       if (kDebugMode) {
         debugPrint(
@@ -143,8 +140,6 @@ class CoreModule implements DIModule {
       if (kDebugMode) {
         debugPrint('✅ [CoreModule] FirestoreRepository registered');
       }
-
-      // ==================== CORE SERVICES ====================
 
       // Analytics repository for analytics operations
       // IMPORTANT: Must be registered BEFORE AuthService (which depends on it)
@@ -214,8 +209,6 @@ class CoreModule implements DIModule {
       if (kDebugMode) {
         debugPrint('✅ [CoreModule] PersistenceService registered');
       }
-
-      // ==================== ACCOUNT/GDPR SERVICES ====================
 
       if (kDebugMode) {
         debugPrint('🔍 [CoreModule] Registering GDPR services...');

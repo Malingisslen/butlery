@@ -54,6 +54,8 @@
 
 // lib/models/realtime/live_editor.dart
 
+import 'package:butlery/core/utils/serialization_utils.dart';
+
 /// Comprehensive live editor model with collaborative presence tracking and field-level editing awareness.
 /// Represents an active collaborative editor with complete presence management, activity tracking,
 /// and field-specific editing status for advanced collaborative editing features and conflict prevention.
@@ -111,11 +113,13 @@ class LiveEditor {
   /// Provides reliable deserialization for collaborative editing session management.
   factory LiveEditor.fromFirestore(Map<String, dynamic> data) {
     return LiveEditor(
-      userId: data['userId'] as String,
-      displayName: data['displayName'] as String,
-      lastSeen: DateTime.fromMillisecondsSinceEpoch(data['lastSeen'] as int),
-      currentField: data['currentField'] as String?,
-      isActive: data['isActive'] as bool? ?? true,
+      userId: SerializationUtils.safeString(data, 'userId'),
+      displayName: SerializationUtils.safeString(data, 'displayName'),
+      lastSeen: DateTime.fromMillisecondsSinceEpoch(
+        SerializationUtils.safeInt(data, 'lastSeen'),
+      ),
+      currentField: SerializationUtils.safeNullableString(data, 'currentField'),
+      isActive: SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
     );
   }
 

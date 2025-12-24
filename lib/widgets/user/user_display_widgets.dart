@@ -1,7 +1,3 @@
-// lib/widgets/user/user_display_widgets.dart - FACADE PATTERN
-// Maintains backward compatibility while delegating to focused components
-// Split into focused files: models, avatars, layouts, collections
-
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
 import 'package:butlery/widgets/user/user_avatar_widgets.dart';
@@ -14,10 +10,8 @@ export 'user_avatar_widgets.dart';
 export 'user_layout_widgets.dart';
 export 'user_collection_widgets.dart';
 
-/// Facade class maintaining backward compatibility
-/// Delegates to focused components while preserving existing API
+/// Facade for user display widgets. Delegates to focused components.
 class UserDisplayWidgets {
-  // ===== CORE AVATARS =====
   static Widget avatar({
     String? imageUrl,
     required String displayName,
@@ -71,7 +65,6 @@ class UserDisplayWidgets {
 
   static String getInitials(String name) => UserAvatarWidgets.getInitials(name);
 
-  // ===== TEXT COMPONENTS =====
   static Widget userName({
     required String displayName,
     TextStyle? style,
@@ -113,7 +106,6 @@ class UserDisplayWidgets {
         emailStyle: emailStyle,
       );
 
-  // ===== LAYOUT COMPONENTS =====
   static Widget userRow({
     String? imageUrl,
     required String displayName,
@@ -168,7 +160,6 @@ class UserDisplayWidgets {
         margin: margin,
       );
 
-  // ===== COLLECTION COMPONENTS =====
   static Widget userList({
     required List<UserDisplayData> users,
     Function(UserDisplayData)? onUserTap,

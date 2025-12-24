@@ -40,4 +40,7 @@ abstract class AuthRepository {
 
   /// Stream of authentication state changes.
   Stream<User?> authStateChanges();
+
+  /// Re-authenticate user with password (required before sensitive operations).
+  Future<void> reauthenticateWithPassword(String password);
 }

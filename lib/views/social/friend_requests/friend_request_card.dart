@@ -59,7 +59,7 @@ class FriendRequestCard {
                   // User avatar with online indicator
                   Stack(
                     children: [
-                      SocialComponents.avatar(
+                      SocialAvatarComponents.avatar(
                         size: ImageSize.small,
                         imageUrl: avatarUrl,
                         displayName: displayName,
@@ -249,7 +249,7 @@ class FriendRequestCard {
               // User avatar with online indicator
               Stack(
                 children: [
-                  SocialComponents.avatar(
+                  SocialAvatarComponents.avatar(
                     size: ImageSize.small,
                     imageUrl: avatarUrl,
                     displayName: displayName,

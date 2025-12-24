@@ -1,22 +1,11 @@
-// lib/widgets/common/social_components/invitation_displays.dart
-
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
-/// Focused module for invitation target display widgets
-/// This module handles ONLY display widgets for invitation targets:
-/// - Target cards, chips, tiles, and badges
-/// - Display layouts and formatting
-/// - Visual presentation of target information
-/// ❌ DOES NOT CONTAIN: Selection logic, states, actions, filtering
+/// Invitation target display widgets.
 class InvitationDisplays {
-
-  // ===== BASIC DISPLAYS =====
-
-  /// Build invitation target display
-  /// Main display widget for invitation targets
+  /// Build invitation target display.
   static Widget invitationTargetDisplay({
     required InvitationTarget target,
     VoidCallback? onTap,
@@ -103,9 +92,7 @@ class InvitationDisplays {
     );
   }
 
-  // ===== EXTENDED DISPLAYS =====
-
-  /// Build invitation target display with extended options
+  /// Build invitation target display with extended options.
   static Widget extendedInvitationTargetDisplay({
     required InvitationTarget target,
     VoidCallback? onTap,
@@ -236,8 +223,6 @@ class InvitationDisplays {
       ],
     );
   }
-
-  // ===== HELPER METHODS =====
 
   static IconData _getStatusIcon(String status) {
     switch (status.toLowerCase()) {

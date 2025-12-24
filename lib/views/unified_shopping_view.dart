@@ -125,23 +125,11 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     );
   }
 
-  // ===== COMPREHENSIVE EVENT HANDLERS =====
-
-  /// Advanced item tap handling with shopping status toggling and collaborative coordination.
-  /// [item] Shopping item for status toggling and collaborative synchronization
-  /// Handles item tap events enabling shopping status toggling, collaborative synchronization,
-  /// and comprehensive item management through ViewModel integration and reactive state management.
-  /// **Item Tap Features:**
-  /// - Shopping status toggling with immediate visual feedback and state synchronization
-  /// - Collaborative coordination with real-time synchronization and multi-user support
-  /// - Optimistic updates with rollback capability and error handling coordination
   Future<void> _onItemTap(UnifiedShoppingItem item) async {
     await _viewModel.toggleItemBought(item.id);
   }
 
-  /// Comprehensive item editing with dialog presentation and validation coordination.
-  /// [item] Shopping item for editing and validation coordination
-  /// Handles item editing events enabling comprehensive item modification, validation,
+  /// Show edit dialog for item.
   /// and user feedback through dialog management and ViewModel integration with
   /// success and error handling coordination.
   /// **Item Editing Features:**
@@ -315,30 +303,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView> {
     );
   }
 
-  // ===== USER FEEDBACK AND LIFECYCLE MANAGEMENT =====
-
-  /// Comprehensive error message presentation with user feedback and recovery coordination.
-  /// [message] Swedish localized error message for user display and guidance
-  /// Presents error messages enabling user feedback, error communication,
-  /// and recovery guidance through snackbar integration and consistent
-  /// error messaging with comprehensive user experience coordination.
-  /// **Error Feedback Features:**
-  /// - Swedish localized error messages with clear user communication
-  /// - Consistent error styling with app design system integration
-  /// - User guidance with actionable error information and recovery suggestions
   void _showErrorSnackBar(String message) {
     SnackBarUtils.showError(context, message);
   }
 
-  /// Comprehensive success message presentation with user feedback and confirmation coordination.
-  /// [message] Swedish localized success message for user display and confirmation
-  /// Presents success messages enabling user feedback, operation confirmation,
-  /// and positive reinforcement through snackbar integration and consistent
-  /// success messaging with comprehensive user experience coordination.
-  /// **Success Feedback Features:**
-  /// - Swedish localized success messages with positive user reinforcement
-  /// - Consistent success styling with app design system integration
-  /// - Operation confirmation with clear success indication and user guidance
   void _showSuccessSnackBar(String message) {
     SnackBarUtils.showSuccess(context, message);
   }

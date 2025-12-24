@@ -68,30 +68,24 @@ import 'package:butlery/core/utils/logger.dart';
 /// }
 /// ```
 mixin StateNotifierMixin on ChangeNotifier {
-  // ===== PRIVATE STATE =====
-  
   bool _isLoading = false;
   String? _error;
-  
-  // ===== PUBLIC GETTERS =====
-  
+
   /// Whether the component is currently loading
   bool get isLoading => _isLoading;
-  
+
   /// Current error message, null if no error
   String? get error => _error;
-  
+
   /// Whether the component has an error
   bool get hasError => _error != null;
-  
+
   /// Whether the component is in a success state (not loading, no error)
   bool get isSuccess => !_isLoading && _error == null;
-  
+
   /// Whether the component is ready for user interaction
   bool get isIdle => !_isLoading;
-  
-  // ===== STATE MANAGEMENT METHODS =====
-  
+
   /// Set loading state and notify listeners
   @protected
   void setLoading(bool loading) {
@@ -142,9 +136,7 @@ mixin StateNotifierMixin on ChangeNotifier {
       AppLogger.debug('Success state set');
     }
   }
-  
-  // ===== ASYNC OPERATION HELPERS =====
-  
+
   /// Execute an async operation with automatic state management
   @protected
   Future<T> executeAsync<T>(
@@ -215,9 +207,7 @@ mixin StateNotifierMixin on ChangeNotifier {
       rethrow;
     }
   }
-  
-  // ===== CONDITIONAL EXECUTION =====
-  
+
   /// Execute operation only if not currently loading
   @protected
   Future<T?> executeIfNotLoading<T>(
@@ -273,9 +263,7 @@ mixin StateNotifierMixin on ChangeNotifier {
     
     throw StateError('Should not reach here');
   }
-  
-  // ===== LIFECYCLE MANAGEMENT =====
-  
+
   @override
   void dispose() {
     clearState();

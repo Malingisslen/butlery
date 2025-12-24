@@ -1,19 +1,8 @@
-// lib/models/realtime/realtime_participants.dart
-
 import 'package:butlery/models/permissions/resource_permission.dart';
 
-/// Focused module for realtime participant management
-/// This module handles ONLY participant operations:
-/// - Participant permissions management
-/// - User access control
-/// - Permission validation and updates
-/// - Participant analytics and tracking
-/// ❌ DOES NOT CONTAIN: Recipe content, metadata, serialization
+/// Participant management for realtime resources.
 class RealtimeParticipants {
-  
-  // ===== PARTICIPANT MANAGEMENT =====
-
-  /// Add participant with permission
+  /// Add participant with permission.
   static Map<String, ResourcePermission> addParticipant(
     Map<String, ResourcePermission> participants,
     String userId,
@@ -71,9 +60,6 @@ class RealtimeParticipants {
     return updated;
   }
 
-  // ===== PERMISSION VALIDATION =====
-
-  /// Check if user has permission level or higher
   static bool hasPermission(
     Map<String, ResourcePermission> participants,
     String userId,
@@ -158,9 +144,6 @@ class RealtimeParticipants {
     return actorPermission == ResourcePermission.owner;
   }
 
-  // ===== PARTICIPANT ANALYTICS =====
-
-  /// Get participant statistics
   static Map<String, int> getParticipantStats(Map<String, ResourcePermission> participants) {
     final stats = <String, int>{
       'total': participants.length,
@@ -220,9 +203,6 @@ class RealtimeParticipants {
     return (sizeScore + editRatio).clamp(0, 100);
   }
 
-  // ===== PARTICIPANT VALIDATION =====
-
-  /// Validate participants structure
   static bool isValidParticipants(Map<String, ResourcePermission> participants) {
     if (participants.isEmpty) return false;
     
@@ -264,9 +244,6 @@ class RealtimeParticipants {
     return updated;
   }
 
-  // ===== PERMISSION UTILITIES =====
-
-  /// Get highest permission for user
   static ResourcePermission? getHighestPermission(
     List<Map<String, ResourcePermission>> participantsList,
     String userId,
@@ -337,9 +314,6 @@ class RealtimeParticipants {
     return participants;
   }
 
-  // ===== PERMISSION QUERIES =====
-
-  /// Find participants with specific criteria
   static List<String> findParticipants(
     Map<String, ResourcePermission> participants, {
     ResourcePermission? exactPermission,

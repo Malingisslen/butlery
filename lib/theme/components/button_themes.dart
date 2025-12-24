@@ -120,8 +120,6 @@ class ButtonThemes {
     );
   }
 
-  // ===== BUTTON STYLES =====
-
   /// Primary button style
   static ButtonStyle get primaryButtonStyle => ElevatedButton.styleFrom(
     backgroundColor: AppColors.primaryBlue,

@@ -1,5 +1,3 @@
-// lib/core/responsive/breakpoints.dart
-
 import 'package:flutter/material.dart';
 
 /// Responsive design breakpoints for Butlery app
@@ -48,10 +46,6 @@ class Breakpoints {
   /// Large desktop displays, 4K
   static const double desktopLarge = 1920;
 
-  // ==========================================================================
-  // Device Type Checks (Context-based)
-  // ==========================================================================
-
   /// Returns true if screen width is less than 600px (mobile phone)
   static bool isMobile(BuildContext context) {
     return MediaQuery.of(context).size.width < mobileLarge;
@@ -84,10 +78,6 @@ class Breakpoints {
     return MediaQuery.of(context).size.width >= desktop;
   }
 
-  // ==========================================================================
-  // Device Type Checks (Width-based)
-  // ==========================================================================
-
   /// Returns true if width is less than 600px (mobile phone)
   static bool isMobileWidth(double width) {
     return width < mobileLarge;
@@ -103,10 +93,6 @@ class Breakpoints {
     return width >= tabletLarge;
   }
 
-  // ==========================================================================
-  // Orientation Helpers
-  // ==========================================================================
-
   /// Returns true if device is in portrait orientation
   static bool isPortrait(BuildContext context) {
     return MediaQuery.of(context).orientation == Orientation.portrait;
@@ -116,10 +102,6 @@ class Breakpoints {
   static bool isLandscape(BuildContext context) {
     return MediaQuery.of(context).orientation == Orientation.landscape;
   }
-
-  // ==========================================================================
-  // Device Category
-  // ==========================================================================
 
   /// Returns device category as enum
   static DeviceCategory getDeviceCategory(BuildContext context) {
@@ -156,10 +138,6 @@ class Breakpoints {
       return DeviceCategory.desktopLarge;
     }
   }
-
-  // ==========================================================================
-  // Responsive Value Selection
-  // ==========================================================================
 
   /// Select value based on current breakpoint
   /// Example:
@@ -231,10 +209,6 @@ class Breakpoints {
     }
   }
 
-  // ==========================================================================
-  // Column Count Helpers
-  // ==========================================================================
-
   /// Get recommended grid column count based on screen width
   /// Returns:
   /// - Mobile: 1 column
@@ -262,10 +236,6 @@ class Breakpoints {
       desktopLarge: 3,
     );
   }
-
-  // ==========================================================================
-  // Content Width Constraints
-  // ==========================================================================
 
   /// Maximum content width for readable text
   /// Prevents text lines from becoming too long on wide screens

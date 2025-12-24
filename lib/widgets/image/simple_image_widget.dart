@@ -8,7 +8,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 
-/// Simple image widget for basic image display
 class SimpleImageWidget extends StatelessWidget {
   final String? imageUrl;
   final ImageConfig config;

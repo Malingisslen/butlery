@@ -1,5 +1,3 @@
-// lib/widgets/common/social_components/social_invitation_components.dart
-
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 
@@ -253,9 +251,7 @@ class SocialInvitationComponents {
     );
   }
 
-  // ===== ACTION WIDGETS (DELEGATE TO INVITATION_ACTIONS) =====
-
-  /// Build quick selection buttons
+  /// Build quick selection buttons.
   static Widget quickSelectionButtons({
     VoidCallback? onSelectAll,
     VoidCallback? onSelectNone,
@@ -282,9 +278,7 @@ class SocialInvitationComponents {
     );
   }
 
-  // ===== EXTENDED DISPLAY METHODS (DELEGATE TO INVITATION_DISPLAYS) =====
-
-  /// Build invitation target display with extended options
+  /// Build invitation target display with extended options.
   static Widget extendedInvitationTargetDisplay({
     required InvitationTarget target,
     VoidCallback? onTap,
@@ -374,9 +368,7 @@ class SocialInvitationComponents {
     );
   }
 
-  // ===== STATE WIDGETS (DELEGATE TO INVITATION_STATES) =====
-
-  /// Build target list loading state
+  /// Build target list loading state.
   static Widget targetListLoading({
     String? text = 'Laddar målgrupper...',
   }) {
@@ -477,9 +469,7 @@ class SocialInvitationComponents {
     );
   }
 
-  // ===== MANAGEMENT HELPERS (DELEGATE TO INVITATION_SELECTORS) =====
-
-  /// Build target selection summary
+  /// Build target selection summary.
   /// Shows summary of selected targets
   static Widget targetSelectionSummary(
     BuildContext context, {

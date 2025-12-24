@@ -417,9 +417,9 @@ class FirebaseNotificationsRepository
     final doc = await prefsCollection.doc(userId).get();
 
     if (!doc.exists) {
-      return NotificationPreferences(); // Default preferences
+      return NotificationPreferences.defaults();
     }
 
-    return NotificationPreferences.fromFirestore(doc.data()!);
+    return NotificationPreferences.fromFirestore(doc);
   }
 }

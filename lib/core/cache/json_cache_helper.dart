@@ -1,192 +1,169 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:hive_flutter/hive_flutter.dart';
+
+import 'package:butlery/core/storage/drift/daos/cache_dao.dart';
 import 'package:butlery/core/utils/logger.dart';
 
+/// JSON cache helper that uses Drift database for storage
+/// Replaces the previous Hive-based implementation
 class JsonCacheHelper {
   final String boxBaseName;
-  
+  final CacheDao _cacheDao;
+
   String? _currentUserId;
-  
-  Box<String>? _box;
-  
-  JsonCacheHelper(this.boxBaseName);
-  
+
+  JsonCacheHelper(this.boxBaseName, this._cacheDao);
+
   void setCurrentUser(String? userId) {
-    if (_currentUserId != userId) {
-      _currentUserId = userId;
-      _box = null;
-    }
+    _currentUserId = userId;
   }
-  
-  String get _userSpecificBoxName {
+
+  String get _userId {
     if (_currentUserId == null) {
       throw StateError('User not set - call setCurrentUser() first');
     }
-    return '${boxBaseName}_$_currentUserId';
+    return _currentUserId!;
   }
-  
-  Future<Box<String>> get _openBox async {
-    if (_box?.isOpen == true) {
-      return _box!;
-    }
-    
-    try {
-      if (!Hive.isBoxOpen(_userSpecificBoxName)) {
-        try {
-          await Hive.initFlutter('butlery_cache');
-        } catch (e) {
-          AppLogger.debug('Hive already initialized: $e');
-        }
-      }
-      
-      _box = await Hive.openBox<String>(_userSpecificBoxName);
-      AppLogger.debug('Opened JSON cache box: $_userSpecificBoxName');
-      return _box!;
-    } catch (e) {
-      AppLogger.error('Failed to open JSON cache box $_userSpecificBoxName: $e');
-      rethrow;
-    }
-  }
-  
+
   Future<bool> saveJson(String key, Map<String, dynamic> data) async {
     try {
-      final box = await _openBox;
       final jsonString = jsonEncode(data);
-      await box.put(key, jsonString);
-      
-      AppLogger.debug('Saved JSON to cache: $key in $_userSpecificBoxName');
+      await _cacheDao.putJson(
+        boxName: boxBaseName,
+        userId: _userId,
+        key: key,
+        value: jsonString,
+      );
+
+      AppLogger.debug('Saved JSON to cache: $key in ${boxBaseName}_$_userId');
       return true;
     } catch (e) {
       AppLogger.error('Failed to save JSON cache item $key: $e');
       return false;
     }
   }
-  
+
   Future<Map<String, dynamic>?> loadJson(String key) async {
     try {
-      final box = await _openBox;
-      final jsonString = box.get(key);
-      
+      final jsonString = await _cacheDao.getJson(boxBaseName, _userId, key);
+
       if (jsonString == null) {
         return null;
       }
-      
+
       final data = jsonDecode(jsonString) as Map<String, dynamic>;
-      AppLogger.debug('Loaded JSON from cache: $key from $_userSpecificBoxName');
+      AppLogger.debug('Loaded JSON from cache: $key from ${boxBaseName}_$_userId');
       return data;
     } catch (e) {
       AppLogger.error('Failed to load JSON cache item $key: $e');
       return null;
     }
   }
-  
+
   Future<bool> saveJsonList(String key, List<Map<String, dynamic>> dataList) async {
     try {
-      final box = await _openBox;
       final jsonString = jsonEncode(dataList);
-      await box.put(key, jsonString);
-      
-      AppLogger.debug('Saved JSON list to cache: $key (${dataList.length} items) in $_userSpecificBoxName');
+      await _cacheDao.putJson(
+        boxName: boxBaseName,
+        userId: _userId,
+        key: key,
+        value: jsonString,
+      );
+
+      AppLogger.debug(
+          'Saved JSON list to cache: $key (${dataList.length} items) in ${boxBaseName}_$_userId');
       return true;
     } catch (e) {
       AppLogger.error('Failed to save JSON list $key: $e');
       return false;
     }
   }
-  
+
   Future<List<Map<String, dynamic>>?> loadJsonList(String key) async {
     try {
-      final box = await _openBox;
-      final jsonString = box.get(key);
-      
+      final jsonString = await _cacheDao.getJson(boxBaseName, _userId, key);
+
       if (jsonString == null) {
         return null;
       }
-      
+
       final dataList = jsonDecode(jsonString) as List;
       final result = dataList.cast<Map<String, dynamic>>();
-      AppLogger.debug('Loaded JSON list from cache: $key (${result.length} items) from $_userSpecificBoxName');
+      AppLogger.debug(
+          'Loaded JSON list from cache: $key (${result.length} items) from ${boxBaseName}_$_userId');
       return result;
     } catch (e) {
       AppLogger.error('Failed to load JSON list $key: $e');
       return null;
     }
   }
-  
+
   Future<bool> delete(String key) async {
     try {
-      final box = await _openBox;
-      await box.delete(key);
-      
-      AppLogger.debug('Deleted cache item: $key from $_userSpecificBoxName');
+      await _cacheDao.deleteJson(boxBaseName, _userId, key);
+
+      AppLogger.debug('Deleted cache item: $key from ${boxBaseName}_$_userId');
       return true;
     } catch (e) {
       AppLogger.error('Failed to delete cache item $key: $e');
       return false;
     }
   }
-  
+
   Future<bool> exists(String key) async {
     try {
-      final box = await _openBox;
-      return box.containsKey(key);
+      final value = await _cacheDao.getJson(boxBaseName, _userId, key);
+      return value != null;
     } catch (e) {
       AppLogger.error('Failed to check cache existence $key: $e');
       return false;
     }
   }
-  
+
   Future<List<String>> getAllKeys() async {
     try {
-      final box = await _openBox;
-      return box.keys.cast<String>().toList();
+      return await _cacheDao.getJsonKeys(boxBaseName, _userId);
     } catch (e) {
       AppLogger.error('Failed to get cache keys: $e');
       return [];
     }
   }
-  
+
   Future<bool> clear() async {
     try {
-      final box = await _openBox;
-      await box.clear();
-      
-      AppLogger.info('Cleared all cache data from $_userSpecificBoxName');
+      await _cacheDao.clearJsonBox(boxBaseName, _userId);
+
+      AppLogger.info('Cleared all cache data from ${boxBaseName}_$_userId');
       return true;
     } catch (e) {
       AppLogger.error('Failed to clear cache: $e');
       return false;
     }
   }
-  
+
   Future<JsonCacheStats> getStats() async {
     try {
-      final box = await _openBox;
-      final keys = box.keys.length;
-      final boxName = _userSpecificBoxName;
-      
+      final keyCount = await _cacheDao.countJsonEntries(boxBaseName, _userId);
+
       return JsonCacheStats(
-        boxName: boxName,
-        keyCount: keys,
+        boxName: '${boxBaseName}_$_userId',
+        keyCount: keyCount,
         userId: _currentUserId,
       );
     } catch (e) {
       AppLogger.error('Failed to get cache stats: $e');
       return JsonCacheStats(
-        boxName: _userSpecificBoxName,
+        boxName: '${boxBaseName}_$_userId',
         keyCount: 0,
         userId: _currentUserId,
       );
     }
   }
-  
+
   Future<int> saveJsonBatch(Map<String, Map<String, dynamic>> items) async {
     int successCount = 0;
-    
+
     try {
-      final box = await _openBox;
-      
       final jsonBatch = <String, String>{};
       for (final entry in items.entries) {
         try {
@@ -195,27 +172,29 @@ class JsonCacheHelper {
           AppLogger.warning('Failed to encode item ${entry.key}: $e');
         }
       }
-      
-      await box.putAll(jsonBatch);
+
+      await _cacheDao.putJsonBatch(
+        boxName: boxBaseName,
+        userId: _userId,
+        entries: jsonBatch,
+      );
       successCount = jsonBatch.length;
-      
-      AppLogger.info('Batch saved $successCount JSON items to $_userSpecificBoxName');
+
+      AppLogger.info('Batch saved $successCount JSON items to ${boxBaseName}_$_userId');
     } catch (e) {
       AppLogger.error('Failed to batch save JSON items: $e');
     }
-    
+
     return successCount;
   }
-  
+
   Future<Map<String, Map<String, dynamic>>> loadJsonBatch(List<String> keys) async {
     final result = <String, Map<String, dynamic>>{};
-    
+
     try {
-      final box = await _openBox;
-      
       for (final key in keys) {
         try {
-          final jsonString = box.get(key);
+          final jsonString = await _cacheDao.getJson(boxBaseName, _userId, key);
           if (jsonString != null) {
             final data = jsonDecode(jsonString) as Map<String, dynamic>;
             result[key] = data;
@@ -224,58 +203,56 @@ class JsonCacheHelper {
           AppLogger.warning('Failed to decode item $key: $e');
         }
       }
-      
-      AppLogger.debug('Batch loaded ${result.length}/${keys.length} JSON items from $_userSpecificBoxName');
+
+      AppLogger.debug(
+          'Batch loaded ${result.length}/${keys.length} JSON items from ${boxBaseName}_$_userId');
     } catch (e) {
       AppLogger.error('Failed to batch load JSON items: $e');
     }
-    
+
     return result;
   }
-  
+
   Future<bool> saveActiveId(String activeKey, String? itemId) async {
     try {
-      final box = await _openBox;
-      
       if (itemId != null) {
-        await box.put(activeKey, itemId);
+        await _cacheDao.putJson(
+          boxName: boxBaseName,
+          userId: _userId,
+          key: activeKey,
+          value: itemId,
+        );
         AppLogger.debug('Saved active ID: $activeKey = $itemId');
       } else {
-        await box.delete(activeKey);
+        await _cacheDao.deleteJson(boxBaseName, _userId, activeKey);
         AppLogger.debug('Cleared active ID: $activeKey');
       }
-      
+
       return true;
     } catch (e) {
       AppLogger.error('Failed to save active ID $activeKey: $e');
       return false;
     }
   }
-  
+
   Future<String?> loadActiveId(String activeKey) async {
     try {
-      final box = await _openBox;
-      final activeId = box.get(activeKey);
-      
+      final activeId = await _cacheDao.getJson(boxBaseName, _userId, activeKey);
+
       if (activeId != null) {
         AppLogger.debug('Loaded active ID: $activeKey = $activeId');
       }
-      
+
       return activeId;
     } catch (e) {
       AppLogger.error('Failed to load active ID $activeKey: $e');
       return null;
     }
   }
-  
+
+  /// No-op: Drift manages its own connections
   Future<void> dispose() async {
-    try {
-      await _box?.close();
-      _box = null;
-      AppLogger.debug('Disposed JSON cache helper: $boxBaseName');
-    } catch (e) {
-      AppLogger.error('Failed to dispose JSON cache helper: $e');
-    }
+    AppLogger.debug('Disposed JSON cache helper: $boxBaseName');
   }
 }
 
@@ -296,20 +273,26 @@ class JsonCacheStats {
   }
 }
 
+/// Factory for creating JSON cache helpers
+/// Requires a CacheDao instance from the Drift database
 class JsonCacheFactory {
-  static JsonCacheHelper recipeCache() {
-    return JsonCacheHelper('unified_recipes_cache');
+  final CacheDao _cacheDao;
+
+  JsonCacheFactory(this._cacheDao);
+
+  JsonCacheHelper recipeCache() {
+    return JsonCacheHelper('unified_recipes_cache', _cacheDao);
   }
-  
-  static JsonCacheHelper shoppingCache() {
-    return JsonCacheHelper('unified_shopping_lists_cache');
+
+  JsonCacheHelper shoppingCache() {
+    return JsonCacheHelper('unified_shopping_lists_cache', _cacheDao);
   }
-  
-  static JsonCacheHelper friendsCache() {
-    return JsonCacheHelper('unified_friends_cache');
+
+  JsonCacheHelper friendsCache() {
+    return JsonCacheHelper('unified_friends_cache', _cacheDao);
   }
-  
-  static JsonCacheHelper custom(String baseName) {
-    return JsonCacheHelper(baseName);
+
+  JsonCacheHelper custom(String baseName) {
+    return JsonCacheHelper(baseName, _cacheDao);
   }
 }

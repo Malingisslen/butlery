@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/core/constants/app_strings.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
@@ -17,12 +16,12 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/upload/upload_models.dart';
-import 'package:butlery/widgets/common/dialogs/draft_recovery_dialog.dart';
-import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/recipe/recipe_draft_recovery_handler.dart';
+import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
 
 class SkrivSjalvReceptView extends StatelessWidget {
   final Recipe? initialRecipe;
@@ -82,7 +81,9 @@ class _SkrivSjalvReceptViewContentState
 
     // Check for draft recovery after widget build
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _checkAndShowDraftRecovery();
+      if (mounted) {
+        await RecipeDraftRecoveryHandler.checkAndShowDraftRecovery(context);
+      }
     });
   }
 
@@ -143,124 +144,6 @@ class _SkrivSjalvReceptViewContentState
     }
   }
 
-  /// Check for available drafts and show recovery dialog if needed
-  Future<void> _checkAndShowDraftRecovery() async {
-    if (!mounted) return;
-
-    final viewModel = context.read<RecipeFormViewModel>();
-
-    // Only check for drafts when creating new recipes (not editing existing ones)
-    if (viewModel.isEditMode) {
-      AppLogger.debug(
-          '🔄 DRAFT_RECOVERY: Skipping draft check - editing existing recipe');
-      return;
-    }
-
-    try {
-      final availableDrafts = await viewModel.getAvailableDrafts();
-
-      if (availableDrafts.isEmpty) {
-        AppLogger.debug('🔄 DRAFT_RECOVERY: No drafts available');
-        return;
-      }
-
-      AppLogger.info(
-          '🔄 DRAFT_RECOVERY: Found ${availableDrafts.length} available drafts');
-
-      if (mounted) {
-        final selectedDraftId =
-            await context.showDraftRecovery(availableDrafts);
-
-        if (selectedDraftId != null && mounted) {
-          await _restoreDraft(selectedDraftId);
-        } else {
-          AppLogger.info('🔄 DRAFT_RECOVERY: User chose to start fresh');
-        }
-      }
-    } catch (e) {
-      AppLogger.error('🔄 DRAFT_RECOVERY: Error checking for drafts: $e');
-      // Don't show error to user - draft recovery is optional functionality
-    }
-  }
-
-  /// Restore draft with user feedback
-  Future<void> _restoreDraft(String draftId) async {
-    if (!mounted) return;
-
-    try {
-      // Show loading state
-      SnackBarUtils.showLoading(context, AppStrings.restoringDraft);
-
-      final viewModel = context.read<RecipeFormViewModel>();
-      final success = await viewModel.loadFromDraft(draftId);
-      if (mounted) {
-        if (success) {
-          // Show success feedback with field count
-          final formData = viewModel.serializeCurrentFormData();
-          final fieldCount = _countRestoredFields(formData);
-
-          UtilityComponents.showSuccessSnackbar(
-            context,
-            AppStrings.draftRestoredWithCount(fieldCount),
-          );
-
-          AppLogger.info(
-              '🔄 DRAFT_RECOVERY: Draft restored successfully - $fieldCount fields loaded');
-        } else {
-          UtilityComponents.showErrorSnackbar(
-            context,
-            AppStrings.couldNotRestoreDraft,
-          );
-
-          AppLogger.error(
-              '🔄 DRAFT_RECOVERY: Failed to restore draft: $draftId');
-        }
-      }
-    } catch (e) {
-      AppLogger.error('🔄 DRAFT_RECOVERY: Error restoring draft: $e');
-
-      if (mounted) {
-        UtilityComponents.showErrorSnackbar(
-          context,
-          AppStrings.couldNotRestoreDraft,
-        );
-      }
-    }
-  }
-
-  /// Count non-empty fields in restored form data for user feedback
-  int _countRestoredFields(Map<String, dynamic> formData) {
-    int count = 0;
-
-    // Core fields
-    if (_isNotEmpty(formData['title'])) count++;
-    if (_isNotEmpty(formData['description'])) count++;
-    if (formData['portions'] != null && formData['portions'] > 0) count++;
-    if (formData['timeMinutes'] != null && formData['timeMinutes'] > 0) count++;
-    if (_isNotEmpty(formData['sourceUrl'])) count++;
-
-    // Dynamic lists
-    final ingredients = formData['ingredients'] as List<String>? ?? [];
-    count += ingredients.where((i) => i.trim().isNotEmpty).length;
-
-    final instructions = formData['instructions'] as List<String>? ?? [];
-    count += instructions.where((i) => i.trim().isNotEmpty).length;
-
-    final tags = formData['tags'] as List<String>? ?? [];
-    count += tags.where((t) => t.trim().isNotEmpty).length;
-
-    // Images
-    final imageUrls = formData['imageUrls'] as List<String>? ?? [];
-    count += imageUrls.length;
-
-    return count;
-  }
-
-  /// Helper method for checking non-empty values
-  bool _isNotEmpty(dynamic value) {
-    return value != null && value.toString().trim().isNotEmpty;
-  }
-
   Future<void> _saveRecipe() async {
     // CRITICAL FIX: Prevent multiple simultaneous save operations
     if (_isSaving) {
@@ -305,97 +188,9 @@ class _SkrivSjalvReceptViewContentState
     }
   }
 
-  // FÖRENKLAD SMART BILDVÄLJARE
+  // Image picker - delegated to RecipeImagePicker
   Future<void> _pickImage(RecipeFormViewModel viewModel) async {
-    AppLogger.info('🎯 BUTTON_TAP: _pickImage called');
-
-    final choice = await showModalBottomSheet<String>(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(AppDimensions.paddingL),
-              child: Text(
-                AppStrings.addImage,
-                style: AppTextStyles.titleMedium,
-              ),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: Icon(
-                Icons.photo_camera,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              title: const Text(AppStrings.takePhoto),
-              subtitle: const Text(AppStrings.useCamera),
-              onTap: () => Navigator.pop(context, 'camera'),
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.photo_library,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              title: const Text(AppStrings.fromGallery),
-              subtitle: Text(
-                viewModel.canAddMoreImages
-                    ? AppStrings.selectUpToImages(
-                        RecipeFormViewModel.maxImages -
-                            viewModel.imageUrls.length)
-                    : AppStrings.selectFromGallery,
-              ),
-              onTap: () => Navigator.pop(context, 'gallery'),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.close),
-              title: const Text('Avbryt'),
-              onTap: () => Navigator.pop(context),
-            ),
-          ],
-        ),
-      ),
-    );
-
-    AppLogger.info('🎯 BUTTON_TAP: User choice: $choice');
-
-    if (choice == null || !mounted) {
-      AppLogger.info(
-          '🎯 BUTTON_TAP: Choice was null or not mounted, returning');
-      return;
-    }
-
-    // MEDIUM PRIORITY FIX: Enhanced error handling for image operations
-    try {
-      switch (choice) {
-        case 'camera':
-          AppLogger.info(
-              '🎯 BUTTON_TAP: Calling viewModel.pickImageFromCamera (direct)');
-          await viewModel.pickImageFromCamera(context);
-          break;
-        case 'gallery':
-          // HIGH PRIORITY FIX: Use canAddMoreImages and proper limit checking instead of hardcoded 4
-          if (viewModel.canAddMoreImages &&
-              (RecipeFormViewModel.maxImages - viewModel.imageUrls.length) >
-                  1) {
-            AppLogger.info(
-                '🎯 BUTTON_TAP: Calling viewModel.pickMultipleImagesFromGallery (direct)');
-            await viewModel.pickMultipleImagesFromGallery(context);
-          } else {
-            AppLogger.info(
-                '🎯 BUTTON_TAP: Calling viewModel.pickImageFromGallery (direct single)');
-            await viewModel.pickImageFromGallery(context);
-          }
-          break;
-      }
-    } catch (e) {
-      AppLogger.error('🎯 BUTTON_TAP: Error during image selection: $e');
-      if (mounted) {
-        UtilityComponents.showErrorSnackbar(context,
-            'Kunde inte välja bild. Kontrollera att appen har behörighet att använda kamera/galleri.');
-      }
-    }
+    await RecipeImagePicker.showAndPick(context: context, viewModel: viewModel);
   }
 
   // Helper method to check if there are unsaved changes

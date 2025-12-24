@@ -6,6 +6,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/analytics_service.dart';
@@ -171,6 +172,13 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// Delegates to MenuStateManager for error state cleanup enabling
   /// error recovery and clean user experience after error resolution.
   void clearError() => _stateManager.clearError();
+
+  /// Loads menu content from a SharedMenu for viewing/editing.
+  /// Used when navigating to VeckomenyView with a shared menu from social features.
+  void loadFromSharedMenu(SharedMenu sharedMenu) {
+    _stateManager.setMenu(sharedMenu.menuSnapshot);
+    AppLogger.info('Loaded shared menu: ${sharedMenu.menuTitle}');
+  }
 
   // ===== COMPREHENSIVE MENU STORAGE OPERATIONS =====
 

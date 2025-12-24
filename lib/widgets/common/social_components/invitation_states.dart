@@ -1,20 +1,10 @@
-// lib/widgets/common/social_components/invitation_states.dart
-
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
-/// Focused module for invitation target state widgets
-/// This module handles ONLY state presentations:
-/// - Loading states (list, card, loading)
-/// - Error states with retry options
-/// - Empty states with actions
-/// - Success states with feedback
-/// ❌ DOES NOT CONTAIN: Display widgets, selectors, actions, lists
+/// Invitation target state widgets.
 class InvitationStates {
-  // ===== LOADING STATES =====
-
-  /// Build target list loading state
+  /// Build target list loading state.
   static Widget targetListLoading({
     String? text = 'Laddar målgrupper...',
   }) {
@@ -69,9 +59,7 @@ class InvitationStates {
     );
   }
 
-  // ===== ERROR STATES =====
-
-  /// Build target loading error state
+  /// Build target loading error state.
   static Widget targetLoadingError(
     BuildContext context, {
     String? title = 'Kunde inte ladda målgrupper',
@@ -157,9 +145,7 @@ class InvitationStates {
     );
   }
 
-  // ===== EMPTY STATES =====
-
-  /// Build no targets available state
+  /// Build no targets available state.
   static Widget noTargetsAvailable(
     BuildContext context, {
     String? title = 'Inga målgrupper tillgängliga',
@@ -265,9 +251,7 @@ class InvitationStates {
     );
   }
 
-  // ===== SUCCESS STATES =====
-
-  /// Build targets selected success state
+  /// Build targets selected success state.
   static Widget targetsSelectedSuccess(
     BuildContext context, {
     required int selectedCount,
@@ -347,9 +331,7 @@ class InvitationStates {
     );
   }
 
-  // ===== PROGRESS STATES =====
-
-  /// Build upload progress state
+  /// Build upload progress state.
   static Widget uploadProgress(
     BuildContext context, {
     required double progress, // 0.0 to 1.0

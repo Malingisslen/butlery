@@ -53,7 +53,8 @@ import 'package:butlery/services/unified/operations/realtime_recipe/realtime_not
 /// ```
 class RealtimeRecipeModule {
   final FirebaseFirestore _firestore;
-  final JsonCacheHelper _cacheHelper;
+  final JsonCacheHelper Function() _getCacheHelper;
+  JsonCacheHelper get _cacheHelper => _getCacheHelper();
   final String? Function() _getCurrentUserId;
   final String? Function() _getCurrentUserDisplayName;
   final void Function(String) _setError;
@@ -75,14 +76,14 @@ class RealtimeRecipeModule {
 
   RealtimeRecipeModule({
     required FirebaseFirestore firestore,
-    required JsonCacheHelper cacheHelper,
+    required JsonCacheHelper Function() getCacheHelper,
     required String? Function() getCurrentUserId,
     required String? Function() getCurrentUserDisplayName,
     required void Function(String) setError,
     required void Function() notifyListeners,
     required Future<Recipe?> Function(String) getRecipe,
   })  : _firestore = firestore,
-        _cacheHelper = cacheHelper,
+        _getCacheHelper = getCacheHelper,
         _getCurrentUserId = getCurrentUserId,
         _getCurrentUserDisplayName = getCurrentUserDisplayName,
         _setError = setError,

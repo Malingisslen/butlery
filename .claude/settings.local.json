@@ -23,7 +23,17 @@
       "Bash(\"C:/Users/malla/AppData/Local/Android/sdk/platform-tools/adb.exe\" -s emulator-5556 shell pm clear com.example.butlery)",
       "Bash(timeout 50 bash:*)",
       "Bash(dir:*)",
-      "Bash(timeout 90 bash:*)"
+      "Bash(timeout 90 bash:*)",
+      "Bash(gcloud config:*)",
+      "Bash(set FIREBASE_CONFIG={\"projectId\":\"butlery-app-1\"})",
+      "Bash(set GCLOUD_PROJECT=butlery-app-1)",
+      "Bash(flutter --version:*)",
+      "WebFetch(domain:pub.dev)",
+      "Bash(wc:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(git config:*)",
+      "Bash(grep:*)",
+      "Bash(sort:*)"
     ],
     "deny": [],
     "ask": []

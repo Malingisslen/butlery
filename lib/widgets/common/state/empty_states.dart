@@ -1,5 +1,3 @@
-// lib/widgets/common/state/empty_states.dart
-
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -176,8 +174,6 @@ class EmptyStates {
     }
   }
 }
-
-/// ===== CONFIGURATION CLASSES =====
 
 class _EmptyStateConfig {
   final IconData icon;

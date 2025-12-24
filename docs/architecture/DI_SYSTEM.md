@@ -53,7 +53,7 @@ The system is organized into **7 domain modules**:
 - Authentication (Firebase Auth)
 - Storage (Firebase Storage)
 - Analytics (Firebase Analytics)
-- Persistence (Hive)
+- Persistence (Drift SQLite)
 - Configuration
 
 **Services Registered:**

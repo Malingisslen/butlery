@@ -11,22 +11,16 @@ import 'package:butlery/core/base/base_service.dart';
 /// Recipe sharing formats: complete (full details), compact (messaging/social), markdown (documentation/export).
 enum RecipeShareFormat { complete, compact, markdown }
 
-/// Content sharing service with multi-format output, Swedish localization, and platform-native sharing.
+/// Content sharing service with multi-format output and platform-native sharing.
 class ShareService extends BaseService {
-  
   @override
   String get serviceName => 'ShareService';
-  // ===== FORMATERINGS-KONSTANTER =====
-  // Använder nu AppTheme för formaterings-symboler
 
-  // Lokaliseringar - kommer flyttas till l10n när flerspråksstöd implementeras
   static const String _ingredientsTitle = 'Ingredienser:';
   static const String _instructionsTitle = 'Gör så här:';
   static const String _sourceLabel = 'Källa:';
   static const String _portionsLabel = 'portioner';
   static const String _minutesLabel = 'minuter';
-
-  // Emojis - kan göras konfigurerbar senare
   static const String _recipeEmoji = '🍽';
   static const String _timeEmoji = '⏱';
   static const String _servingsEmoji = '🍴';
@@ -218,9 +212,6 @@ class ShareService extends BaseService {
     return buffer.toString();
   }
 
-  // ===== SHOPPING LIST FORMATTING =====
-
-  /// Formattera inköpslista som text
   String formatShoppingList(List<UnifiedShoppingItem> items) {
     final buffer = StringBuffer();
 
@@ -256,7 +247,6 @@ class ShareService extends BaseService {
     return buffer.toString();
   }
 
-  /// Formattera inköpslista grupperad efter kategori
   String formatShoppingListGrouped(
     Map<String, List<UnifiedShoppingItem>> groupedItems,
   ) {
@@ -280,9 +270,6 @@ class ShareService extends BaseService {
     return buffer.toString();
   }
 
-  // ===== WEEK MENU FORMATTING =====
-
-  /// Formattera veckomeny som text
   String formatWeekMenu(Map<String, Recipe?> weekMenu) {
     final buffer = StringBuffer();
 
@@ -314,39 +301,18 @@ class ShareService extends BaseService {
     return buffer.toString();
   }
 
-  // ===== SMART FORMATTING =====
-
-  /// Välj bästa format baserat på innehåll
   String getSmartFormat(Recipe recipe) {
-    // Använd alltid det kompletta formatet som inkluderar allt innehåll
-    // Detta ger mottagaren all information direkt utan att behöva klicka på länkar
     return formatRecipeComplete(recipe);
   }
 
-  // ===== SHARING METHODS - FIXED =====
-
-  /// Shares recipe using platform-native share sheet with intelligent format selection.
-  /// This method provides seamless recipe sharing through the platform's native sharing interface
-  /// with automatic format selection based on recipe content and optimal user experience. It uses
-  /// the comprehensive error handling provided by BaseService and supports offline operation for
-  /// maximum reliability across different network conditions.
-  /// [recipe] Complete recipe object to share through native platform interface
-  /// Throws [ServiceException] if sharing operation fails or platform sharing is unavailable
-  /// **Sharing Process:**
-  /// 1. **Smart Formatting**: Automatically selects optimal format based on recipe content
-  /// 2. **Native Integration**: Uses platform share sheet for seamless user experience
-  /// 3. **Error Handling**: Comprehensive error management through BaseService architecture
-  /// 4. **Offline Support**: No network requirements for sharing operation
-  /// 5. **Subject Setting**: Recipe title used as sharing subject for email and messaging
-  /// **Platform Compatibility:**
-  /// - iOS: Integrates with iOS share sheet and activity view controller
-  /// - Android: Uses Android intent system for comprehensive app integration
-  /// - Cross-platform: Consistent API across all Flutter-supported platforms
   Future<void> shareRecipe(Recipe recipe) async {
     await executeServiceOperation(
       () async {
         final text = getSmartFormat(recipe);
-        await Share.share(text, subject: recipe.title);
+        await SharePlus.instance.share(ShareParams(
+          text: text,
+          subject: recipe.title,
+        ));
       },
       operationName: 'Share recipe',
       requiresAuth: false,
@@ -354,7 +320,6 @@ class ShareService extends BaseService {
     );
   }
 
-  /// Dela recept med formatval
   Future<void> shareRecipeWithFormat(
     Recipe recipe,
     RecipeShareFormat format,
@@ -367,7 +332,10 @@ class ShareService extends BaseService {
           RecipeShareFormat.markdown => formatRecipeMarkdown(recipe),
         };
 
-        await Share.share(text, subject: recipe.title);
+        await SharePlus.instance.share(ShareParams(
+          text: text,
+          subject: recipe.title,
+        ));
       },
       operationName: 'Share recipe with format',
       requiresAuth: false,
@@ -375,12 +343,14 @@ class ShareService extends BaseService {
     );
   }
 
-  /// Dela inköpslista
   Future<void> shareShoppingList(List<UnifiedShoppingItem> items) async {
     await executeServiceOperation(
       () async {
         final text = formatShoppingList(items);
-        await Share.share(text, subject: 'Inköpslista');
+        await SharePlus.instance.share(ShareParams(
+          text: text,
+          subject: 'Inköpslista',
+        ));
       },
       operationName: 'Share shopping list',
       requiresAuth: false,
@@ -388,15 +358,16 @@ class ShareService extends BaseService {
     );
   }
 
-  /// Dela veckomeny från kategorier (den faktiska strukturen från MenuViewModel)
   Future<void> shareWeekMenuFromCategories(
     Map<String, List<Recipe>> menu,
   ) async {
     final text = formatWeekMenuFromCategories(menu);
-    await Share.share(text, subject: 'Veckomeny');
+    await SharePlus.instance.share(ShareParams(
+      text: text,
+      subject: 'Veckomeny',
+    ));
   }
 
-  /// GET formatted text methods (för views som behöver text)
   String getFormattedRecipe(Recipe recipe, {RecipeShareFormat? format}) {
     return format != null
         ? switch (format) {
@@ -415,7 +386,6 @@ class ShareService extends BaseService {
     return formatWeekMenuFromCategories(menu);
   }
 
-  /// Formattera veckomeny från kategorier
   String formatWeekMenuFromCategories(Map<String, List<Recipe>> menu) {
     final buffer = StringBuffer();
 
@@ -463,14 +433,10 @@ class ShareService extends BaseService {
     return buffer.toString();
   }
 
-  // ===== CLIPBOARD METHODS =====
-
-  /// Kopiera text till urklipp
   Future<void> copyToClipboard(String text) async {
     await Clipboard.setData(ClipboardData(text: text));
   }
 
-  /// Kopiera recept till urklipp
   Future<void> copyRecipe(Recipe recipe, {RecipeShareFormat? format}) async {
     final text = format != null
         ? switch (format) {

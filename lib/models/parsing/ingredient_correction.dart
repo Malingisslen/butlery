@@ -1,0 +1,192 @@
+/// Types of corrections that can be made to ingredients.
+enum IngredientCorrectionType {
+  /// New ingredient added by user (not in original parse)
+  added,
+
+  /// Ingredient removed by user (was in original parse)
+  removed,
+
+  /// Quantity was wrong (e.g., "1" → "2")
+  quantityFixed,
+
+  /// Unit was wrong (e.g., "msk" → "dl")
+  unitFixed,
+
+  /// Ingredient name was wrong (e.g., "skinka" → "rökt skinka")
+  nameFixed,
+
+  /// Multiple fields were corrected
+  multipleFixed,
+
+  /// Only order changed (low priority for training)
+  reordered,
+}
+
+/// Correction record for a single ingredient.
+/// Captures what the parser extracted vs what the user corrected.
+class IngredientCorrection {
+  /// Type of correction made
+  final IngredientCorrectionType type;
+
+  /// Index in original parsed list (null if added)
+  final int? originalIndex;
+
+  /// Index in corrected list (null if removed)
+  final int? correctedIndex;
+
+  /// Original parsed ingredient line (truncated to 200 chars)
+  final String? originalLine;
+
+  /// Original parsed quantity
+  final String? originalQuantity;
+
+  /// Original parsed unit
+  final String? originalUnit;
+
+  /// Original parsed ingredient name
+  final String? originalName;
+
+  /// Corrected ingredient line from user (truncated to 200 chars)
+  final String? correctedLine;
+
+  /// Whether quantity was changed
+  final bool quantityChanged;
+
+  /// Whether unit was changed
+  final bool unitChanged;
+
+  /// Whether name was changed
+  final bool nameChanged;
+
+  const IngredientCorrection({
+    required this.type,
+    this.originalIndex,
+    this.correctedIndex,
+    this.originalLine,
+    this.originalQuantity,
+    this.originalUnit,
+    this.originalName,
+    this.correctedLine,
+    this.quantityChanged = false,
+    this.unitChanged = false,
+    this.nameChanged = false,
+  });
+
+  /// Factory for when user adds a new ingredient
+  factory IngredientCorrection.added({
+    required int correctedIndex,
+    required String correctedLine,
+  }) {
+    return IngredientCorrection(
+      type: IngredientCorrectionType.added,
+      correctedIndex: correctedIndex,
+      correctedLine: _truncate(correctedLine),
+    );
+  }
+
+  /// Factory for when user removes an ingredient
+  factory IngredientCorrection.removed({
+    required int originalIndex,
+    required String originalLine,
+    String? originalQuantity,
+    String? originalUnit,
+    String? originalName,
+  }) {
+    return IngredientCorrection(
+      type: IngredientCorrectionType.removed,
+      originalIndex: originalIndex,
+      originalLine: _truncate(originalLine),
+      originalQuantity: originalQuantity,
+      originalUnit: originalUnit,
+      originalName: originalName,
+    );
+  }
+
+  /// Factory for when user modifies an ingredient
+  factory IngredientCorrection.modified({
+    required int originalIndex,
+    required int correctedIndex,
+    required String originalLine,
+    required String correctedLine,
+    String? originalQuantity,
+    String? originalUnit,
+    String? originalName,
+    required bool quantityChanged,
+    required bool unitChanged,
+    required bool nameChanged,
+  }) {
+    final changeCount =
+        (quantityChanged ? 1 : 0) + (unitChanged ? 1 : 0) + (nameChanged ? 1 : 0);
+
+    IngredientCorrectionType type;
+    if (changeCount > 1) {
+      type = IngredientCorrectionType.multipleFixed;
+    } else if (quantityChanged) {
+      type = IngredientCorrectionType.quantityFixed;
+    } else if (unitChanged) {
+      type = IngredientCorrectionType.unitFixed;
+    } else if (nameChanged) {
+      type = IngredientCorrectionType.nameFixed;
+    } else {
+      type = IngredientCorrectionType.reordered;
+    }
+
+    return IngredientCorrection(
+      type: type,
+      originalIndex: originalIndex,
+      correctedIndex: correctedIndex,
+      originalLine: _truncate(originalLine),
+      originalQuantity: originalQuantity,
+      originalUnit: originalUnit,
+      originalName: originalName,
+      correctedLine: _truncate(correctedLine),
+      quantityChanged: quantityChanged,
+      unitChanged: unitChanged,
+      nameChanged: nameChanged,
+    );
+  }
+
+  /// Truncate string to max 200 characters
+  static String? _truncate(String? text, [int maxLength = 200]) {
+    if (text == null) return null;
+    if (text.length <= maxLength) return text;
+    return '${text.substring(0, maxLength - 3)}...';
+  }
+
+  Map<String, dynamic> toJson() => {
+        'type': type.name,
+        if (originalIndex != null) 'originalIndex': originalIndex,
+        if (correctedIndex != null) 'correctedIndex': correctedIndex,
+        if (originalLine != null) 'originalLine': originalLine,
+        if (originalQuantity != null) 'originalQuantity': originalQuantity,
+        if (originalUnit != null) 'originalUnit': originalUnit,
+        if (originalName != null) 'originalName': originalName,
+        if (correctedLine != null) 'correctedLine': correctedLine,
+        if (quantityChanged) 'quantityChanged': true,
+        if (unitChanged) 'unitChanged': true,
+        if (nameChanged) 'nameChanged': true,
+      };
+
+  factory IngredientCorrection.fromJson(Map<String, dynamic> json) {
+    return IngredientCorrection(
+      type: IngredientCorrectionType.values.firstWhere(
+        (t) => t.name == json['type'],
+        orElse: () => IngredientCorrectionType.multipleFixed,
+      ),
+      originalIndex: json['originalIndex'] as int?,
+      correctedIndex: json['correctedIndex'] as int?,
+      originalLine: json['originalLine'] as String?,
+      originalQuantity: json['originalQuantity'] as String?,
+      originalUnit: json['originalUnit'] as String?,
+      originalName: json['originalName'] as String?,
+      correctedLine: json['correctedLine'] as String?,
+      quantityChanged: json['quantityChanged'] as bool? ?? false,
+      unitChanged: json['unitChanged'] as bool? ?? false,
+      nameChanged: json['nameChanged'] as bool? ?? false,
+    );
+  }
+
+  @override
+  String toString() =>
+      'IngredientCorrection(type: $type, original: $originalLine, corrected: $correctedLine)';
+}

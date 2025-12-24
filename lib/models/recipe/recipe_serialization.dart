@@ -1,20 +1,9 @@
-// lib/models/recipe/recipe_serialization.dart
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
-/// Focused module for recipe serialization
-/// This module handles ONLY serialization concerns:
-/// - JSON serialization/deserialization
-/// - Firestore serialization/deserialization
-/// - Data format conversion
-/// - Serialization validation
-/// ❌ DOES NOT CONTAIN: Recipe operations, factory methods, business logic
+/// Recipe serialization (JSON, Firestore, export/import formats).
 class RecipeSerialization {
-  
-  // ===== JSON SERIALIZATION =====
-
   /// Serialize recipe to JSON format
   static Map<String, dynamic> toJson(Recipe recipe) {
     return {
@@ -42,8 +31,6 @@ class RecipeSerialization {
           : null,
     );
   }
-
-  // ===== FIRESTORE SERIALIZATION =====
 
   /// Serialize recipe to Firestore format
   static Map<String, dynamic> toFirestore(Recipe recipe) {
@@ -78,8 +65,6 @@ class RecipeSerialization {
     return fromMap(doc.id, doc.data() as Map<String, dynamic>);
   }
 
-  // ===== BATCH SERIALIZATION =====
-
   /// Serialize multiple recipes to JSON
   static List<Map<String, dynamic>> toJsonBatch(List<Recipe> recipes) {
     return recipes.map(toJson).toList();
@@ -100,8 +85,6 @@ class RecipeSerialization {
     return docs.map(fromFirestore).toList();
   }
 
-  // ===== PARTIAL SERIALIZATION =====
-
   /// Serialize only core recipe data
   static Map<String, dynamic> toCoreJson(Recipe recipe) {
     return recipe.core.toJson();
@@ -121,8 +104,6 @@ class RecipeSerialization {
   static Map<String, dynamic>? toOfflineJson(Recipe recipe) {
     return recipe.offlineData?.toJson();
   }
-
-  // ===== VALIDATION =====
 
   /// Validate JSON structure before deserialization
   static bool isValidJsonStructure(Map<String, dynamic> json) {
@@ -151,8 +132,6 @@ class RecipeSerialization {
     // Firestore validation is similar to JSON but with timestamp handling
     return isValidJsonStructure(data);
   }
-
-  // ===== DATA SANITIZATION =====
 
   /// Sanitize JSON data before deserialization
   static Map<String, dynamic> sanitizeJsonData(Map<String, dynamic> json) {
@@ -220,8 +199,6 @@ class RecipeSerialization {
     return sanitized;
   }
 
-  // ===== EXPORT/IMPORT FORMATS =====
-
   /// Export recipe to simplified format for sharing
   static Map<String, dynamic> toSimpleExport(Recipe recipe) {
     return {
@@ -271,8 +248,6 @@ class RecipeSerialization {
       type: type,
     );
   }
-
-  // ===== COMPRESSION =====
 
   /// Get compressed representation for storage optimization
   static Map<String, dynamic> toCompressed(Recipe recipe) {

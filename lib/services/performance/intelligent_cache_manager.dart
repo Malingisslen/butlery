@@ -17,6 +17,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// User behavior pattern data
@@ -127,8 +128,7 @@ class CacheEntry<T> {
 
 /// Intelligent cache manager service
 class IntelligentCacheManager {
-  // Dependencies
-  final JsonCacheHelper _behaviorCache;
+  // Dependencies (lazy loaded via getter)
   final Map<String, CacheEntry<Recipe>> _recipeCache = {};
   final Map<String, CacheEntry<UserProfile>> _userCache = {};
   final Map<String, CacheEntry<dynamic>> _genericCache = {};
@@ -149,8 +149,21 @@ class IntelligentCacheManager {
   UnifiedRecipeService? _recipeService;
   UnifiedFriendsService? _friendsService;
   PermissionService? _permissionService;
-  
-  IntelligentCacheManager() : _behaviorCache = JsonCacheFactory.custom('intelligent_cache_behavior');
+
+  IntelligentCacheManager();
+
+  /// Lazy getter for behavior cache - initializes from OfflineService when first accessed
+  JsonCacheHelper get _behaviorCache {
+    if (_behaviorCacheField == null) {
+      final offlineService = ServiceLocator.get<OfflineService>();
+      _behaviorCacheField = JsonCacheHelper(
+        'intelligent_cache_behavior',
+        offlineService.database.cacheDao,
+      );
+    }
+    return _behaviorCacheField!;
+  }
+  JsonCacheHelper? _behaviorCacheField;
   
   /// Initialize the cache manager
   Future<void> initialize() async {

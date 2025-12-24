@@ -95,9 +95,6 @@ enum ErrorType {
 /// - Network error detection and user-friendly messaging
 /// - Error recovery and retry mechanisms
 mixin ErrorHandlingMixin {
-  
-  // ===== BASIC ERROR HANDLING CONSOLIDATION =====
-  
   /// Safely executes an async operation with comprehensive error handling.
   /// This method wraps async operations in standardized try-catch logic,
   /// providing consistent error logging, user messaging, and fallback behavior.
@@ -181,8 +178,6 @@ mixin ErrorHandlingMixin {
     }
   }
 
-  // ===== OPERATION-SPECIFIC ERROR HANDLING =====
-  
   /// Safely executes a create operation with specialized error handling.
   /// Provides standardized error handling for create operations with
   /// user-friendly error messages. Automatically generates appropriate
@@ -257,8 +252,6 @@ mixin ErrorHandlingMixin {
     );
   }
 
-  // ===== LIST OPERATION ERROR HANDLING =====
-  
   /// Safe list operation - consolidates list loading patterns
   Future<List<T>> safeLoadList<T>(
     Future<List<T>> Function() loadOperation,
@@ -289,8 +282,6 @@ mixin ErrorHandlingMixin {
     return result;
   }
 
-  // ===== NETWORK ERROR HANDLING =====
-  
   /// Network operation error handling - consolidates network patterns
   Future<T?> safeNetworkOperation<T>(
     Future<T> Function() networkOperation, {
@@ -322,8 +313,6 @@ mixin ErrorHandlingMixin {
     return defaultValue;
   }
 
-  // ===== PERMISSION ERROR HANDLING =====
-  
   /// Permission-aware operation error handling
   Future<T?> safePermissionOperation<T>(
     Future<T> Function() operation,
@@ -347,8 +336,6 @@ mixin ErrorHandlingMixin {
     }
   }
 
-  // ===== VALIDATION ERROR HANDLING =====
-  
   /// Validation-aware operation error handling
   Future<T?> safeValidatedOperation<T>(
     Future<T> Function() operation,
@@ -369,8 +356,6 @@ mixin ErrorHandlingMixin {
     );
   }
 
-  // ===== BATCH OPERATION ERROR HANDLING =====
-  
   /// Batch operation error handling - consolidates batch patterns
   Future<List<T>> safeBatchOperation<T>(
     List<Future<T> Function()> operations,
@@ -402,8 +387,6 @@ mixin ErrorHandlingMixin {
     return results;
   }
 
-  // ===== ERROR RECOVERY PATTERNS =====
-  
   /// Operation with fallback - consolidates fallback patterns
   Future<T> operationWithFallback<T>(
     Future<T> Function() primaryOperation,
@@ -455,8 +438,6 @@ mixin ErrorHandlingMixin {
     throw Exception('Should never reach here');
   }
 
-  // ===== ERROR CATEGORIZATION =====
-  
   /// Categorize and handle different error types with enhanced DNS-aware error classification.
   /// This enhanced method provides comprehensive error categorization including DNS resolution
   /// failures, network connectivity issues, and service-specific errors. It enables intelligent
@@ -553,8 +534,6 @@ mixin ErrorHandlingMixin {
     }
   }
 
-  // ===== PROTECTED METHODS FOR USER FEEDBACK =====
-  
   /// Handle user-facing errors - to be overridden by mixing class
   void handleUserError(String message) {
     // Default implementation - can be overridden
@@ -566,9 +545,7 @@ mixin ErrorHandlingMixin {
     // Default implementation - can be overridden
     AppLogger.info('User info: $message');
   }
-  
-  // ===== UTILITY METHODS =====
-  
+
   /// Check if error is recoverable with enhanced DNS-aware classification.
   /// This enhanced method provides comprehensive error recoverability assessment
   /// including DNS resolution issues, network connectivity problems, and temporary

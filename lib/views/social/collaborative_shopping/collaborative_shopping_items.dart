@@ -50,8 +50,6 @@ class CollaborativeShoppingItems extends StatelessWidget {
     );
   }
 
-  // ===== EMPTY STATE =====
-
   Widget _buildEmptyState(BuildContext context) {
     return StateWidget.empty(
       title: 'Inga artiklar än',
@@ -61,8 +59,6 @@ class CollaborativeShoppingItems extends StatelessWidget {
       icon: Icons.shopping_cart_outlined,
     );
   }
-
-  // ===== COMPLETED SEPARATOR =====
 
   Widget _buildCompletedSeparator(BuildContext context) {
     return Container(
@@ -92,8 +88,6 @@ class CollaborativeShoppingItems extends StatelessWidget {
       ),
     );
   }
-
-  // ===== ITEM CARDS =====
 
   Widget _buildItemCard(BuildContext context, dynamic item, bool isCompleted) {
     return Card(
@@ -169,9 +163,6 @@ class CollaborativeShoppingItems extends StatelessWidget {
         : Row(mainAxisSize: MainAxisSize.min, children: widgets);
   }
 
-  // ===== UTILITY METHODS =====
-
-  /// Get total number of list items including separators
   int getTotalItemCount() {
     final activeCount = viewModel.activeItems.length;
     final completedCount = viewModel.completedItemsList.length;

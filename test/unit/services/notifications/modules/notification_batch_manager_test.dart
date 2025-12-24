@@ -13,6 +13,7 @@ import 'package:clock/clock.dart';
 import 'package:butlery/services/notifications/modules/notification_batch_manager.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/notifications/notification_repository.dart';
+import 'package:butlery/models/notification_batch.dart';
 
 // Test infrastructure
 import '../../../../test_support/base_unit_test.dart';
