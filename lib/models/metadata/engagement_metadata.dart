@@ -9,6 +9,7 @@
 /// - Shopping lists: Track when users join collaborative lists
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 
 class EngagementMetadata {
   final String userId;
@@ -29,10 +30,10 @@ class EngagementMetadata {
   ) {
     final data = doc.data()!;
     return EngagementMetadata(
-      userId: data['userId'] as String,
-      engagedAt: (data['timestamp'] as Timestamp).toDate(),
-      action: data['action'] as String,
-      targetId: data['targetId'] as String?,
+      userId: SerializationUtils.safeString(data, 'userId'),
+      engagedAt: SerializationUtils.safeRequiredDateTime(data, 'timestamp'),
+      action: SerializationUtils.safeString(data, 'action'),
+      targetId: SerializationUtils.safeNullableString(data, 'targetId'),
     );
   }
 

@@ -1,71 +1,45 @@
-/// URL Import Strategy - Extracts recipes from web URLs using structured data or text parsing.
-/// Implements a multi-tier extraction workflow:
-/// 1. Fetch HTML from URL
-/// 2. Try RecipeScraper (JSON-LD/Microdata structured data)
-/// 3. Try site-specific parser (ICA, Arla, Köket, etc.)
-/// 4. Fallback to WebScraper (for JavaScript-heavy sites)
-/// 5. Fallback to TextImportStrategy (parse as plain text)
-/// 6. Final fallback to LLM extraction (paid, rate-limited)
-
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/extraction/web_scraper.dart';
-import 'package:butlery/services/extraction/platform_detector.dart' as pd;
 import 'package:butlery/services/extraction/site_parsers/site_parser_registry.dart';
-import 'package:butlery/services/import/llm/llm_enhancement_service.dart';
-import 'package:butlery/services/import/models/import_result_v2.dart';
+import 'package:butlery/services/parsing/recipe_parser_service.dart';
+import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/utils/recipe_scraper.dart';
 
-/// Strategy for importing recipes from web URLs (recipe sites, blogs, etc.).
-/// **Extraction Workflow:**
-/// 1. **Static HTML Fetch**: Fast direct HTTP fetch for most recipe sites
-/// 2. **Structured Data Parse**: RecipeScraper extracts JSON-LD/Microdata
-/// 3. **Dynamic Content Fallback**: WebScraper for JavaScript-rendered sites
-/// 4. **Text Parsing Fallback**: TextImportStrategy parses plain text
-/// **Supported Sites:**
-/// - Recipe sites with schema.org markup (ICA.se, Arla.se, Köket.se, AllRecipes, etc.)
-/// - General blogs with structured data
-/// - Social media posts (via WebScraper)
-/// - Any site with recognizable recipe text
+import 'package:butlery/services/import/extractors/schema_org_recipe_extractor.dart';
+import 'package:butlery/services/import/utilities/html_utilities.dart';
+import 'package:butlery/services/import/heuristics/ingredient_line_detector.dart';
+import 'package:butlery/services/import/fetchers/http_content_fetcher.dart';
+import 'package:butlery/services/import/fallbacks/llm_extraction_fallback.dart';
+
+/// Imports recipes from web URLs using multi-tier extraction (structured data, scraping, LLM fallback).
 class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   static const _uuid = Uuid();
 
-  // HTTP timeout for static HTML fetching
-  static const _fetchTimeout = Duration(seconds: 10);
+  final HttpContentFetcher _fetcher;
+  final LlmExtractionFallback _llmFallback;
+  RecipeParserService? _parserService;
 
-  // User agent for HTTP requests (identifies as mobile browser)
-  static const _userAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) '
-      'AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1';
-
-  // Dependency injection for testing
-  final http.Client? _httpClient;
-  final WebScraper Function()? _webScraperFactory;
-
-  /// Lazily initialized LLM service
-  LlmEnhancementService? _llmService;
-
-  /// Creates a URL import strategy with optional dependency injection for testing.
-  /// [httpClient] - Optional HTTP client for mocking network requests
-  /// [webScraperFactory] - Optional factory for creating WebScraper instances (for mocking)
   UrlImportStrategy({
     http.Client? httpClient,
     WebScraper Function()? webScraperFactory,
-  })  : _httpClient = httpClient,
-        _webScraperFactory = webScraperFactory;
+  })  : _fetcher = HttpContentFetcher(
+          httpClient: httpClient,
+          webScraperFactory: webScraperFactory,
+        ),
+        _llmFallback = LlmExtractionFallback();
 
-  /// Get LLM service (lazy initialization with graceful fallback)
-  LlmEnhancementService? get _llmEnhancement {
-    if (_llmService != null) return _llmService;
+  RecipeParserService? get _recipeParser {
+    if (_parserService != null) return _parserService;
     try {
-      _llmService = ServiceLocator.get<LlmEnhancementService>();
-      return _llmService;
+      _parserService = ServiceLocator.get<RecipeParserService>();
+      return _parserService;
     } catch (e) {
-      // LLM service not available - continue without LLM fallback
       return null;
     }
   }
@@ -87,7 +61,6 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
 
     try {
       final uri = Uri.parse(trimmed);
-      // Must have HTTP or HTTPS scheme, a host, and the host must not be empty
       return uri.hasScheme &&
              (uri.scheme == 'http' || uri.scheme == 'https') &&
              uri.hasAuthority &&
@@ -98,174 +71,48 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   @override
-  bool validateInput(String input) {
-    return canHandle(input);
-  }
+  bool validateInput(String input) => canHandle(input);
 
   @override
   Future<ImportResult> import(String input, {Map<String, dynamic>? options}) async {
     try {
       final url = input.trim();
 
-      // Step 1: Try static HTML fetch + structured data extraction (fast path)
-      final htmlResult = await _fetchHtmlWithTimeout(url);
+      // Tier 1: Enhanced parser (if enabled)
+      final parserResult = await _tryEnhancedParser(url, options);
+      if (parserResult != null) return parserResult;
+
+      final htmlResult = await _fetcher.fetchHtmlWithTimeout(url);
 
       if (htmlResult != null) {
-        // Check for site-specific parser
-        final siteParser = SiteParserRegistry.getParser(url);
-
-        Map<String, dynamic>? recipeData;
-        String extractionMethod;
-        String? siteParserDomain;
-
-        if (siteParser != null) {
-          // Use site-specific parser (includes enhancements and fallbacks)
-          recipeData = siteParser.parseRecipe(htmlResult);
-          extractionMethod = 'site_specific';
-          siteParserDomain = siteParser.domain;
-        } else {
-          // Use generic RecipeScraper for structured data (JSON-LD/Microdata)
-          recipeData = extractRecipeFromHtml(htmlResult);
-          extractionMethod = 'schema.org';
-        }
-
-        if (recipeData != null) {
-          // Success! Create recipe from structured data
-          final recipe = _createRecipeFromSchemaOrg(recipeData, url);
-
-          // Extract site-specific enhancements from recipeData
-          final metadata = <String, dynamic>{
-            'strategy': strategyName,
-            'extraction_method': extractionMethod,
-            'data_format': recipeData['@type'] ?? 'Recipe',
-            'url': url,
-            if (siteParserDomain != null) 'site_parser': siteParserDomain,
-          };
-
-          // Only core recipe fields extracted (ingredients, instructions, portions, time)
-          // No additional site-specific fields
-
-          return ImportResult.success(recipe, metadata: metadata);
-        }
+        // Tier 2: Structured data (site-specific or schema.org)
+        final structuredResult = _tryStructuredExtraction(htmlResult, url);
+        if (structuredResult != null) return structuredResult;
       }
 
-      // Step 2: Fallback to WebScraper for JavaScript-heavy sites
-      final webScraperResult = await _tryWebScraper(url);
+      // Tier 3: Web scraper fallback
+      final scraperResult = await _tryWebScraperFallback(url);
+      if (scraperResult != null) return scraperResult;
 
-      if (webScraperResult != null) {
-        // Parse extracted text with TextImportStrategy
-        final textStrategy = TextImportStrategy();
-        final textResult = await textStrategy.import(webScraperResult);
-
-        if (textResult.isSuccess && textResult.recipe != null) {
-          // Add source URL to recipe
-          final recipe = textResult.recipe!.copyWith(
-            sourceUrl: url,
-          );
-
-          final warnings = [
-            ...?(textResult.warnings),
-            'No structured data found - parsed as plain text',
-          ];
-
-          return ImportResult.success(
-            recipe,
-            warnings: warnings,
-            metadata: {
-              'strategy': strategyName,
-              'extraction_method': 'text_fallback',
-              'url': url,
-            },
-          );
-        }
-      }
-
-      // Step 3: Final fallback - try parsing HTML as text
+      // Tier 3.5: HTML text parse
       if (htmlResult != null && htmlResult.length > 100) {
-        final textStrategy = TextImportStrategy();
-
-        // Strip HTML tags and parse as text
-        final plainText = _stripHtmlTags(htmlResult);
-
-        if (plainText.length > 100) {
-          final textResult = await textStrategy.import(plainText);
-
-          if (textResult.isSuccess && textResult.recipe != null) {
-            final recipe = textResult.recipe!.copyWith(
-              sourceUrl: url,
-            );
-
-            final warnings = [
-              ...?(textResult.warnings),
-              'Extracted from HTML text - quality may vary',
-            ];
-
-            return ImportResult.success(
-              recipe,
-              warnings: warnings,
-              metadata: {
-                'strategy': strategyName,
-                'extraction_method': 'html_text_parse',
-                'url': url,
-                'tier': 3,
-              },
-            );
-          }
-        }
+        final textResult = await _tryHtmlTextParse(htmlResult, url);
+        if (textResult != null) return textResult;
       }
 
-      // Step 4: LLM extraction as final paid fallback
+      // Tier 4: LLM extraction
       if (htmlResult != null && htmlResult.length > 100) {
-        final llmResult = await _tryLlmExtraction(htmlResult, url);
-        if (llmResult != null) {
-          return llmResult;
-        }
+        final llmResult = await _llmFallback.tryExtraction(htmlResult, url, strategyName);
+        if (llmResult != null) return llmResult;
       }
 
-      // Step 5: Return for user-assisted import if we have content
+      // Tier 5: User-assisted import
       if (htmlResult != null && htmlResult.length > 100) {
-        final plainText = _stripHtmlTags(htmlResult);
-
-        if (plainText.length > 50) {
-          AppLogger.info(
-            'UrlImportStrategy: Returning for user-assisted import',
-          );
-
-          // Try to extract a suggested title from the HTML
-          final suggestedTitle = _extractTitleFromHtml(htmlResult);
-
-          // Detect likely ingredient lines
-          final lines = plainText.split('\n');
-          final likelyIngredients = <int>[];
-          for (int i = 0; i < lines.length; i++) {
-            if (_looksLikeIngredient(lines[i])) {
-              likelyIngredients.add(i);
-            }
-          }
-
-          return ImportResult.assistance(
-            extractedText: plainText,
-            suggestedTitle: suggestedTitle,
-            likelyIngredientLines: likelyIngredients,
-            metadata: {
-              'strategy': strategyName,
-              'url': url,
-              'tier': 5,
-            },
-          );
-        }
+        final assistedResult = _createUserAssistedResult(htmlResult, url);
+        if (assistedResult != null) return assistedResult;
       }
 
-      // All extraction methods failed and no content for assistance
-      return ImportResult.failure(
-        'Could not extract recipe from URL. The page may not contain a valid recipe.',
-        metadata: {
-          'strategy': strategyName,
-          'url': url,
-          'html_fetched': htmlResult != null,
-          'html_length': htmlResult?.length ?? 0,
-        },
-      );
+      return _createFailureResult(url, htmlResult);
 
     } catch (e) {
       return ImportResult.failure(
@@ -278,413 +125,150 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     }
   }
 
-  /// Fetch HTML from URL with timeout (fast static fetch)
-  Future<String?> _fetchHtmlWithTimeout(String url) async {
-    try {
-      final client = _httpClient ?? http.Client();
-      final shouldCloseClient = _httpClient == null;
+  Future<ImportResult?> _tryEnhancedParser(String url, Map<String, dynamic>? options) async {
+    final parser = _recipeParser;
+    if (parser == null || options?['useEnhancedParser'] != true) return null;
 
-      try {
-        final response = await client.get(
-          Uri.parse(url),
-          headers: {'User-Agent': _userAgent},
-        ).timeout(_fetchTimeout);
+    final htmlContent = await _fetcher.fetchHtmlWithTimeout(url);
+    if (htmlContent == null) return null;
 
-        if (response.statusCode == 200) {
-          return response.body;
-        }
+    final parseResult = await parser.parseFromUrl(url: url, htmlContent: htmlContent);
+    if (!parseResult.success || parseResult.recipe == null) return null;
 
-        return null;
-      } finally {
-        if (shouldCloseClient) {
-          client.close();
-        }
-      }
-    } catch (e) {
-      // Timeout or network error - return null to try WebScraper
-      return null;
+    AppLogger.info('UrlImportStrategy: Enhanced parser extracted "${parseResult.recipe!.title.value}"');
+    return _convertParsedRecipeToImportResult(parseResult, url);
+  }
+
+  ImportResult? _tryStructuredExtraction(String html, String url) {
+    final siteParser = SiteParserRegistry.getParser(url);
+
+    Map<String, dynamic>? recipeData;
+    String extractionMethod;
+    String? siteParserDomain;
+
+    if (siteParser != null) {
+      recipeData = siteParser.parseRecipe(html);
+      extractionMethod = 'site_specific';
+      siteParserDomain = siteParser.domain;
+    } else {
+      recipeData = extractRecipeFromHtml(html);
+      extractionMethod = 'schema.org';
     }
+
+    if (recipeData == null) return null;
+
+    final recipe = SchemaOrgRecipeExtractor.createRecipe(recipeData, url);
+    return ImportResult.success(recipe, metadata: {
+      'strategy': strategyName,
+      'extraction_method': extractionMethod,
+      'data_format': recipeData['@type'] ?? 'Recipe',
+      'url': url,
+      if (siteParserDomain != null) 'site_parser': siteParserDomain,
+    });
   }
 
-  /// Try WebScraper as fallback for JavaScript-heavy sites
-  Future<String?> _tryWebScraper(String url) async {
-    try {
-      final detector = pd.PlatformDetector();
-      final platform = detector.detectPlatform(url);
-      final webUrl = detector.convertToWebUrl(url);
+  Future<ImportResult?> _tryWebScraperFallback(String url) async {
+    final webScraperResult = await _fetcher.tryWebScraper(url);
+    if (webScraperResult == null) return null;
 
-      final webScraper = _webScraperFactory?.call() ?? WebScraper();
+    final textStrategy = TextImportStrategy();
+    final textResult = await textStrategy.import(webScraperResult);
 
-      try {
-        final extractionResult = await webScraper.performExtraction(webUrl, platform);
+    if (!textResult.isSuccess || textResult.recipe == null) return null;
 
-        if (extractionResult.success && extractionResult.extractedText != null) {
-          return extractionResult.extractedText;
-        }
-
-        return null;
-      } finally {
-        webScraper.dispose();
-      }
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /// Strip HTML tags from content (basic text extraction)
-  String _stripHtmlTags(String html) {
-    return html
-        .replaceAll(RegExp(r'<script[^>]*>[\s\S]*?</script>', multiLine: true), ' ')
-        .replaceAll(RegExp(r'<style[^>]*>[\s\S]*?</style>', multiLine: true), ' ')
-        .replaceAll(RegExp(r'<[^>]+>'), ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
-  }
-
-  /// Create Recipe from schema.org structured data
-  Recipe _createRecipeFromSchemaOrg(Map<String, dynamic> data, String sourceUrl) {
-    return Recipe(
-      core: RecipeCore(
-        id: _uuid.v4(),
-        title: _extractTitle(data),
-        description: _extractDescription(data),
-        ingredients: _extractIngredients(data),
-        instructions: _extractInstructions(data),
-        portions: _extractYield(data),
-        timeMinutes: _extractTime(data),
-        mealType: 'Lunch', // Default meal type
-        imageUrls: _extractImages(data),
-        sourceUrl: sourceUrl,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        createdBy: '', // Will be set by PersonalRecipeOperations
-      ),
-      type: RecipeType.personal,
+    final recipe = textResult.recipe!.copyWith(sourceUrl: url);
+    return ImportResult.success(
+      recipe,
+      warnings: [...?(textResult.warnings), 'No structured data found - parsed as plain text'],
+      metadata: {'strategy': strategyName, 'extraction_method': 'text_fallback', 'url': url},
     );
   }
 
-  /// Extract title from schema.org data
-  String _extractTitle(Map<String, dynamic> data) {
-    final name = data['name'];
-    if (name != null && name.toString().trim().isNotEmpty) {
-      return name.toString().trim();
-    }
-    return 'Imported Recipe';
+  Future<ImportResult?> _tryHtmlTextParse(String html, String url) async {
+    final plainText = HtmlUtilities.stripHtmlTags(html);
+    if (plainText.length <= 100) return null;
+
+    final textStrategy = TextImportStrategy();
+    final textResult = await textStrategy.import(plainText);
+
+    if (!textResult.isSuccess || textResult.recipe == null) return null;
+
+    final recipe = textResult.recipe!.copyWith(sourceUrl: url);
+    return ImportResult.success(
+      recipe,
+      warnings: [...?(textResult.warnings), 'Extracted from HTML text - quality may vary'],
+      metadata: {'strategy': strategyName, 'extraction_method': 'html_text_parse', 'url': url, 'tier': 3},
+    );
   }
 
-  /// Extract description from schema.org data
-  String _extractDescription(Map<String, dynamic> data) {
-    final desc = data['description'];
-    return desc?.toString().trim() ?? '';
+  ImportResult? _createUserAssistedResult(String html, String url) {
+    final plainText = HtmlUtilities.stripHtmlTags(html);
+    if (plainText.length <= 50) return null;
+
+    AppLogger.info('UrlImportStrategy: Returning for user-assisted import');
+    final suggestedTitle = HtmlUtilities.extractTitleFromHtml(html);
+    final lines = plainText.split('\n');
+    final likelyIngredients = IngredientLineDetector.findIngredientLines(lines);
+
+    return ImportResult.assistance(
+      extractedText: plainText,
+      suggestedTitle: suggestedTitle,
+      likelyIngredientLines: likelyIngredients,
+      metadata: {'strategy': strategyName, 'url': url, 'tier': 5},
+    );
   }
 
-  /// Extract ingredients from schema.org data
-  List<String> _extractIngredients(Map<String, dynamic> data) {
-    final ingredients = data['recipeIngredient'];
-
-    if (ingredients == null) return [];
-
-    if (ingredients is List) {
-      return ingredients
-          .map((e) => e.toString().trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
-    }
-
-    if (ingredients is String && ingredients.trim().isNotEmpty) {
-      return [ingredients.trim()];
-    }
-
-    return [];
+  ImportResult _createFailureResult(String url, String? htmlResult) {
+    return ImportResult.failure(
+      'Could not extract recipe from URL. The page may not contain a valid recipe.',
+      metadata: {
+        'strategy': strategyName,
+        'url': url,
+        'html_fetched': htmlResult != null,
+        'html_length': htmlResult?.length ?? 0,
+      },
+    );
   }
 
-  /// Extract instructions from schema.org data (handles multiple formats)
-  List<String> _extractInstructions(Map<String, dynamic> data) {
-    final instructions = data['recipeInstructions'];
+  ImportResult _convertParsedRecipeToImportResult(ParseResult parseResult, String url) {
+    final parsed = parseResult.recipe!;
 
-    if (instructions == null) return [];
-
-    // Format 1: List of strings
-    if (instructions is List) {
-      final steps = <String>[];
-
-      for (final instruction in instructions) {
-        if (instruction is String) {
-          steps.add(instruction.trim());
-        } else if (instruction is Map) {
-          // Format 2: HowToStep objects with 'text' property
-          final text = instruction['text'];
-          if (text != null && text.toString().trim().isNotEmpty) {
-            steps.add(text.toString().trim());
-          }
-        }
-      }
-
-      return steps.where((s) => s.isNotEmpty).toList();
+    final cache = ServiceLocator.tryGet<ParsedRecipeCache>();
+    if (cache != null) {
+      cache.store(url, parsed);
+      AppLogger.debug('📊 Stored ParsedRecipe in cache for: $url');
     }
 
-    // Format 3: Single string (split by sentences or newlines)
-    if (instructions is String && instructions.trim().isNotEmpty) {
-      // Try splitting by periods followed by capital letters
-      final steps = instructions
-          .split(RegExp(r'\.\s+(?=[A-Z])'))
-          .map((s) => s.trim())
-          .where((s) => s.isNotEmpty)
-          .toList();
+    final ingredients = parsed.ingredients.value?.map((i) => i.originalLine).toList() ?? [];
+    final instructions = parsed.instructions.value ?? [];
 
-      if (steps.length > 1) {
-        return steps.map((s) => s.endsWith('.') ? s : '$s.').toList();
-      }
+    final recipe = Recipe(
+      core: RecipeCore(
+        id: _uuid.v4(),
+        title: parsed.title.value ?? 'Imported Recipe',
+        description: parsed.description ?? '',
+        ingredients: ingredients,
+        instructions: instructions,
+        portions: parsed.portions.value,
+        timeMinutes: parsed.totalTime.value?.inMinutes,
+        mealType: 'Lunch',
+        imageUrls: parsed.imageUrl != null ? [parsed.imageUrl!] : [],
+        sourceUrl: url,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        createdBy: '',
+      ),
+      type: RecipeType.personal,
+    );
 
-      return [instructions.trim()];
-    }
-
-    return [];
-  }
-
-  /// Extract yield/servings from schema.org data
-  int? _extractYield(Map<String, dynamic> data) {
-    final yield_ = data['recipeYield'];
-
-    if (yield_ == null) return null;
-
-    // Try to extract number from yield string
-    final yieldStr = yield_.toString();
-    final match = RegExp(r'\d+').firstMatch(yieldStr);
-
-    return match != null ? int.tryParse(match.group(0)!) : null;
-  }
-
-  /// Extract total time from schema.org data (ISO 8601 duration)
-  int? _extractTime(Map<String, dynamic> data) {
-    // Try totalTime first
-    final duration = data['totalTime'];
-
-    // Fallback to prepTime + cookTime
-    if (duration == null) {
-      final prepTime = _parseDuration(data['prepTime']);
-      final cookTime = _parseDuration(data['cookTime']);
-
-      if (prepTime != null || cookTime != null) {
-        return (prepTime ?? 0) + (cookTime ?? 0);
-      }
-
-      return null;
-    }
-
-    return _parseDuration(duration);
-  }
-
-  /// Parse ISO 8601 duration (e.g., "PT30M" → 30 minutes)
-  int? _parseDuration(dynamic duration) {
-    if (duration == null) return null;
-
-    final durationStr = duration.toString().trim();
-
-    // ISO 8601 format: PT{hours}H{minutes}M{seconds}S
-    if (!durationStr.startsWith('PT')) return null;
-
-    int totalMinutes = 0;
-
-    // Extract hours
-    final hoursMatch = RegExp(r'(\d+)H').firstMatch(durationStr);
-    if (hoursMatch != null) {
-      totalMinutes += (int.tryParse(hoursMatch.group(1)!) ?? 0) * 60;
-    }
-
-    // Extract minutes
-    final minutesMatch = RegExp(r'(\d+)M').firstMatch(durationStr);
-    if (minutesMatch != null) {
-      totalMinutes += int.tryParse(minutesMatch.group(1)!) ?? 0;
-    }
-
-    return totalMinutes > 0 ? totalMinutes : null;
-  }
-
-  /// Extract image URLs from schema.org data
-  List<String> _extractImages(Map<String, dynamic> data) {
-    final image = data['image'];
-
-    if (image == null) return [];
-
-    // Format 1: Single URL string
-    if (image is String && image.trim().isNotEmpty) {
-      return [image.trim()];
-    }
-
-    // Format 2: List of URLs
-    if (image is List) {
-      return image
-          .map((e) {
-            // Handle both string URLs and objects with 'url' property
-            if (e is String) return e.trim();
-            if (e is Map && e['url'] != null) return e['url'].toString().trim();
-            return null;
-          })
-          .whereType<String>()
-          .where((url) => url.isNotEmpty)
-          .toList();
-    }
-
-    // Format 3: Object with 'url' property
-    if (image is Map && image['url'] != null) {
-      final url = image['url'].toString().trim();
-      if (url.isNotEmpty) {
-        return [url];
-      }
-    }
-
-    return [];
-  }
-
-  /// Extract title from HTML meta tags or title element.
-  String? _extractTitleFromHtml(String html) {
-    // Try og:title first (using simpler pattern)
-    final ogTitleMatch = RegExp(
-      r'<meta[^>]+property="og:title"[^>]+content="([^"]+)"',
-      caseSensitive: false,
-    ).firstMatch(html);
-    if (ogTitleMatch != null) {
-      return _cleanTitle(ogTitleMatch.group(1)!);
-    }
-
-    // Also try with single quotes
-    final ogTitleMatchSingle = RegExp(
-      "<meta[^>]+property='og:title'[^>]+content='([^']+)'",
-      caseSensitive: false,
-    ).firstMatch(html);
-    if (ogTitleMatchSingle != null) {
-      return _cleanTitle(ogTitleMatchSingle.group(1)!);
-    }
-
-    // Try title element
-    final titleMatch = RegExp(
-      r'<title[^>]*>([^<]+)</title>',
-      caseSensitive: false,
-    ).firstMatch(html);
-    if (titleMatch != null) {
-      return _cleanTitle(titleMatch.group(1)!);
-    }
-
-    // Try h1 element
-    final h1Match = RegExp(
-      r'<h1[^>]*>([^<]+)</h1>',
-      caseSensitive: false,
-    ).firstMatch(html);
-    if (h1Match != null) {
-      return _cleanTitle(h1Match.group(1)!);
-    }
-
-    return null;
-  }
-
-  /// Clean up extracted title.
-  String _cleanTitle(String title) {
-    return title
-        .replaceAll(RegExp(r'\s*[-|]\s*.*$'), '') // Remove site name suffix
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
-  }
-
-  /// Check if a line looks like an ingredient.
-  bool _looksLikeIngredient(String line) {
-    final trimmed = line.trim();
-    if (trimmed.isEmpty || trimmed.length < 3 || trimmed.length > 100) {
-      return false;
-    }
-
-    // Swedish measurements
-    final measurements = [
-      'dl', 'cl', 'ml', 'l', 'msk', 'tsk', 'krm',
-      'g', 'gram', 'kg', 'st', 'styck', 'port',
-    ];
-
-    final lower = trimmed.toLowerCase();
-    for (final m in measurements) {
-      if (RegExp(r'\b' + m + r'\b').hasMatch(lower)) {
-        return true;
-      }
-    }
-
-    // Starts with number
-    if (RegExp(r'^\d').hasMatch(trimmed)) {
-      return true;
-    }
-
-    return false;
-  }
-
-  /// Try LLM extraction as final fallback tier (paid, rate-limited).
-  ///
-  /// This is only called when all free extraction methods fail.
-  /// It uses the LlmEnhancementService to extract recipes from HTML.
-  Future<ImportResult?> _tryLlmExtraction(String html, String url) async {
-    final llm = _llmEnhancement;
-    if (llm == null) {
-      AppLogger.debug('UrlImportStrategy: LLM service not available');
-      return null;
-    }
-
-    // Check if LLM is available (not rate limited)
-    final isAvailable = await llm.isAvailable();
-    if (!isAvailable) {
-      AppLogger.info('UrlImportStrategy: LLM rate limited, skipping');
-      return null;
-    }
-
-    AppLogger.info('UrlImportStrategy: Trying LLM extraction for $url');
-
-    try {
-      final llmResult = await llm.extractFromHtml(html, url, currentTier: 3);
-
-      // Handle different result types
-      if (llmResult is ImportSuccess) {
-        AppLogger.info(
-          'UrlImportStrategy: LLM extracted "${llmResult.recipe.title}"',
-        );
-        return ImportResult.success(
-          llmResult.recipe,
-          warnings: [
-            'Extracted using AI - please review for accuracy',
-          ],
-          metadata: {
-            'strategy': strategyName,
-            'extraction_method': 'llm',
-            'url': url,
-            'tier': 4,
-            'usedLlm': true,
-            'requiresReview': true,
-            ...?(llmResult.metadata),
-          },
-        );
-      }
-
-      if (llmResult is ImportFailure) {
-        // Check if rate limited
-        if (llmResult.errorCode == ImportErrorCode.rateLimited ||
-            llmResult.errorCode == ImportErrorCode.llmQuotaExceeded) {
-          AppLogger.info('UrlImportStrategy: LLM rate limited');
-          return null; // Fall through to failure
-        }
-
-        AppLogger.warning(
-          'UrlImportStrategy: LLM extraction failed - ${llmResult.message}',
-        );
-        return null;
-      }
-
-      // ImportNeedsAssistance - LLM couldn't fully extract, needs user help
-      if (llmResult is ImportNeedsAssistance) {
-        AppLogger.info('UrlImportStrategy: LLM needs user assistance');
-        // For now, return null to let the standard failure path handle it
-        // Phase 5 will add proper user-assisted import flow
-        return null;
-      }
-
-      return null;
-    } catch (e) {
-      AppLogger.warning('UrlImportStrategy: LLM extraction error - $e');
-      return null;
-    }
+    return ImportResult.success(recipe, metadata: {
+      'strategy': strategyName,
+      'extraction_method': 'enhanced_parser',
+      'url': url,
+      'tier': 'multi',
+      'fromCache': parseResult.fromCache,
+      'parseTime': parseResult.totalTime.inMilliseconds,
+      'overallQuality': parsed.overallQuality,
+    });
   }
 }

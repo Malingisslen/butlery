@@ -1,22 +1,12 @@
-// lib/widgets/common/social_components/invitation_actions.dart
-
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
-/// Focused module for invitation action widgets
-/// This module handles ONLY action buttons and quick operations:
-/// - Quick selection buttons
-/// - Action buttons for invitation workflows
-/// - Bulk operations
-/// ❌ DOES NOT CONTAIN: Display widgets, selectors, states, lists
+/// Invitation action widgets.
 class InvitationActions {
-  // ===== QUICK ACTIONS =====
-
-  /// Build quick selection buttons
-  /// Buttons for common target selection actions
+  /// Build quick selection buttons.
   static Widget quickSelectionButtons({
     VoidCallback? onSelectAll,
     VoidCallback? onSelectNone,
@@ -157,10 +147,7 @@ class InvitationActions {
     );
   }
 
-  // ===== BULK OPERATIONS =====
-
-  /// Build bulk operation buttons
-  /// Buttons for bulk operations on targets
+  /// Build bulk operation buttons.
   static Widget bulkOperationButtons(
     BuildContext context, {
     required List<InvitationTarget> selectedTargets,
@@ -292,10 +279,7 @@ class InvitationActions {
     );
   }
 
-  // ===== CONTEXT ACTIONS =====
-
-  /// Build target context menu
-  /// Context menu for individual targets
+  /// Build target context menu.
   static Widget targetContextMenu({
     required InvitationTarget target,
     VoidCallback? onView,

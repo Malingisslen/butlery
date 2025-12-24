@@ -123,8 +123,6 @@ class InputThemes {
     );
   }
 
-  // ===== BOX DECORATIONS =====
-
   /// Trending recipe card decoration
   static BoxDecoration get trendingRecipeCardDecoration => BoxDecoration(
     color: AppColors.primaryContainer.withValues(alpha: 0.1),

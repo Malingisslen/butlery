@@ -1,40 +1,41 @@
-// lib/services/offline/offline_user_storage.dart
+import 'dart:convert';
 
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:butlery/core/storage/drift/app_database.dart';
+import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
+import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
+import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Handles user-specific storage operations for offline service
+/// Now uses Drift database instead of Hive
 class OfflineUserStorage {
-  
-  final Box<Recipe> _recipeBox;
-  final Box<String> _syncQueueBox;
-  
+  final RecipeDao _recipeDao;
+  final SyncQueueDao _syncQueueDao;
+
   OfflineUserStorage({
-    required Box<Recipe> recipeBox,
-    required Box<String> syncQueueBox,
-  }) : _recipeBox = recipeBox,
-       _syncQueueBox = syncQueueBox;
+    required AppDatabase database,
+  })  : _recipeDao = database.recipeDao,
+        _syncQueueDao = database.syncQueueDao;
 
   /// Get recipes for specific user
-  List<Recipe> getRecipesForUser(String userId) {
+  Future<List<Recipe>> getRecipesForUser(String userId) async {
     try {
-      final userPrefix = '${userId}_';
-      final userRecipes = <Recipe>[];
+      final offlineRecipes = await _recipeDao.getRecipesForUser(userId);
+      final recipes = <Recipe>[];
 
-      // Find all recipes that belong to this user
-      for (final key in _recipeBox.keys) {
-        if (key.toString().startsWith(userPrefix)) {
-          final recipe = _recipeBox.get(key);
-          if (recipe != null) {
-            userRecipes.add(recipe);
-          }
+      for (final offlineRecipe in offlineRecipes) {
+        try {
+          final json = jsonDecode(offlineRecipe.recipeJson) as Map<String, dynamic>;
+          recipes.add(Recipe.fromJson(json));
+        } catch (e) {
+          AppLogger.warning('Failed to parse recipe ${offlineRecipe.id}: $e');
         }
       }
 
       AppLogger.info(
-          '📦 Hittade ${userRecipes.length} offline recept för användare: $userId');
-      return userRecipes;
+          '📦 Found ${recipes.length} offline recipes for user: $userId');
+      return recipes;
     } catch (e) {
       AppLogger.error('❌ Error getting user recipes: $e');
       return [];
@@ -42,91 +43,89 @@ class OfflineUserStorage {
   }
 
   /// Save recipe with user-specific key
-  Future<void> saveRecipeForUser(Recipe recipe, String userId, {required bool isOnline}) async {
+  Future<void> saveRecipeForUser(Recipe recipe, String userId,
+      {required bool isOnline}) async {
     try {
-      // Create user-specific key: "userId_recipeId"
-      final userSpecificKey = '${userId}_${recipe.id}';
+      final recipeJson = jsonEncode(recipe.toJson());
 
-      // Save with user-specific key
-      await _recipeBox.put(userSpecificKey, recipe);
+      await _recipeDao.upsertRecipe(
+        id: recipe.id,
+        userId: userId,
+        recipeJson: recipeJson,
+        needsSync: !isOnline,
+      );
 
-      // Handle sync queue with user-specific key
       if (!isOnline) {
-        await _syncQueueBox.put(userSpecificKey, userSpecificKey);
+        await _syncQueueDao.enqueue(
+          userId: userId,
+          recipeId: recipe.id,
+          operation: SyncOperation.update,
+        );
       }
 
       AppLogger.info(
-          '💾 Recept sparat offline för användare $userId: ${recipe.title}');
+          '💾 Recipe saved offline for user $userId: ${recipe.title}');
     } catch (e) {
-      AppLogger.error('❌ Fel vid user-specific offline-sparning: $e');
+      AppLogger.error('❌ Error saving recipe offline: $e');
       rethrow;
     }
   }
 
   /// Get specific offline recipe for user
-  Recipe? getRecipeForUser(String recipeId, String userId) {
-    final userSpecificKey = '${userId}_$recipeId';
-    return _recipeBox.get(userSpecificKey);
+  Future<Recipe?> getRecipeForUser(String recipeId, String userId) async {
+    try {
+      final offlineRecipe = await _recipeDao.getRecipe(recipeId, userId);
+      if (offlineRecipe == null) return null;
+
+      final json = jsonDecode(offlineRecipe.recipeJson) as Map<String, dynamic>;
+      return Recipe.fromJson(json);
+    } catch (e) {
+      AppLogger.error('❌ Error getting recipe $recipeId: $e');
+      return null;
+    }
   }
 
   /// Delete recipe for specific user
   Future<void> deleteRecipeForUser(String recipeId, String userId) async {
-    final userSpecificKey = '${userId}_$recipeId';
-    await _recipeBox.delete(userSpecificKey);
-    await _syncQueueBox.delete(userSpecificKey);
+    await _recipeDao.deleteRecipe(recipeId, userId);
+    await _syncQueueDao.removeForRecipe(userId, recipeId);
     AppLogger.info(
-        '🗑️ Recept borttaget offline för användare $userId: $recipeId');
+        '🗑️ Recipe deleted offline for user $userId: $recipeId');
   }
 
   /// Clear data for specific user
   Future<void> clearUserData(String userId) async {
     try {
-      final userPrefix = '${userId}_';
-      final keysToDelete = <dynamic>[];
-
-      // Find all keys that belong to this user
-      for (final key in _recipeBox.keys) {
-        if (key.toString().startsWith(userPrefix)) {
-          keysToDelete.add(key);
-        }
-      }
-
-      // Delete user-specific recipes
-      for (final key in keysToDelete) {
-        await _recipeBox.delete(key);
-      }
-
-      // Clear sync queue for this user
-      final syncKeysToDelete = <dynamic>[];
-      for (final key in _syncQueueBox.keys) {
-        if (key.toString().startsWith(userPrefix)) {
-          syncKeysToDelete.add(key);
-        }
-      }
-
-      for (final key in syncKeysToDelete) {
-        await _syncQueueBox.delete(key);
-      }
+      final count = await _recipeDao.countForUser(userId);
+      await _recipeDao.deleteAllForUser(userId);
+      await _syncQueueDao.clearForUser(userId);
 
       AppLogger.success(
-          '✅ Rensade offline data för användare: $userId (${keysToDelete.length} recept)');
+          '✅ Cleared offline data for user: $userId ($count recipes)');
     } catch (e) {
-      AppLogger.error('❌ Fel vid rensning av user data: $e');
+      AppLogger.error('❌ Error clearing user data: $e');
     }
   }
 
-  /// Get all users who have offline data
-  List<String> getUsersWithOfflineData() {
-    final users = <String>{};
+  /// Get count of offline recipes for user
+  Future<int> getRecipeCountForUser(String userId) async {
+    return await _recipeDao.countForUser(userId);
+  }
 
-    for (final key in _recipeBox.keys) {
-      final keyStr = key.toString();
-      if (keyStr.contains('_')) {
-        final userId = keyStr.split('_').first;
-        users.add(userId);
+  /// Watch recipes for a user (reactive stream)
+  Stream<List<Recipe>> watchRecipesForUser(String userId) {
+    return _recipeDao.watchRecipesForUser(userId).map((offlineRecipes) {
+      final recipes = <Recipe>[];
+      for (final offlineRecipe in offlineRecipes) {
+        try {
+          final json =
+              jsonDecode(offlineRecipe.recipeJson) as Map<String, dynamic>;
+          recipes.add(Recipe.fromJson(json));
+        } catch (e) {
+          AppLogger.warning('Failed to parse recipe ${offlineRecipe.id}: $e');
+        }
       }
-    }
-
-    return users.toList();
+      return recipes;
+    });
   }
 }

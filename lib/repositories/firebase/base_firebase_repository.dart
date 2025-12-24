@@ -1,36 +1,5 @@
-/// Base Firebase repository providing unified CRUD operations for all Firebase collections.
-/// This abstract base class consolidates duplicate code patterns found across multiple
-/// Firebase repositories, providing a consistent interface for data access operations.
-/// It implements the Repository pattern with Firebase Firestore as the underlying
-/// data store, including authentication checks, error handling, and logging.
-/// Architecture Integration:
-/// - Extends Repository interface for consistent data access patterns
-/// - Uses PermissionValidationMixin for security enforcement
-/// - Integrates with AuthRepository for user authentication
-/// - Provides template methods for customization by concrete repositories
-/// Key Features:
-/// - Generic CRUD operations with consistent error handling
-/// - Authentication validation for all write operations
-/// - Batch operations for bulk data manipulation
-/// - Real-time data streaming with Firestore snapshots
-/// - User-scoped and global collection support
-/// - Comprehensive logging for debugging and monitoring
-/// **Usage Example:**
-/// ```dart
-/// class RecipeRepository extends BaseFirebaseRepository<Recipe>
-///     with UserScopedFirebaseRepository<Recipe> {
-///   RecipeRepository({required super.authRepository});
-///   @override
-///   String get collectionName => 'recipes';
-///   @override
-///   Recipe fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
-///     Recipe.fromFirestore(doc);
-///   @override
-///   Map<String, dynamic> toFirestore(Recipe recipe) => recipe.toFirestore();
-///   @override
-///   String getId(Recipe recipe) => recipe.id;
-/// }
-/// ```
+/// Base Firebase repository providing unified CRUD operations with permission validation.
+/// Consolidates common patterns: authentication, error handling, and audit logging.
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
@@ -42,27 +11,6 @@ import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 
-/// Base class for Firebase repositories that eliminates duplicate CRUD patterns.
-/// This class consolidates the 95% duplicate code found across 6 Firebase repositories:
-/// - Unified authentication checks (23 duplications eliminated)
-/// - Unified collection reference patterns (13 duplications eliminated)
-/// - Unified CRUD operations (5 complete implementations consolidated)
-/// - Unified error handling (3 different patterns standardized)
-/// Usage:
-/// ```dart
-/// class MyFirebaseRepository extends BaseFirebaseRepository\<MyModel\> {
-///   MyFirebaseRepository({required super.authRepository});
-///   @override
-///   String get collectionName => 'my_collection';
-///   @override
-///   MyModel fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) =>
-///     MyModel.fromFirestore(doc);
-///   @override
-///   Map<String, dynamic> toFirestore(MyModel entity) => entity.toFirestore();
-///   @override
-///   String getId(MyModel entity) => entity.id;
-/// }
-/// ```
 abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implements Repository<T> {
   final FirebaseFirestore _firestore;
   final AuthRepository _authRepository;
@@ -76,53 +24,22 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
         _authRepository = authRepository,
         _auditRepository = auditRepository;
 
-  // ===== PROTECTED ACCESSORS =====
-
-  /// Protected access to FirebaseFirestore instance for subclasses
   @protected
   FirebaseFirestore get firestore => _firestore;
 
-  /// Protected access to AuthRepository instance for subclasses
   @protected
   AuthRepository get authRepository => _authRepository;
 
-  // ===== ABSTRACT METHODS FOR SUBCLASSES =====
-
-  /// The name of the Firestore collection
   String get collectionName;
-
-  /// Convert Firestore document to entity
   T fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc);
-
-  /// Convert entity to Firestore data
   Map<String, dynamic> toFirestore(T entity);
-
-  /// Extract entity ID for document operations
   String getId(T entity);
 
-  // ===== ABSTRACT PERMISSION VALIDATION METHODS =====
-  // Subclasses MUST implement these to enforce security
-
-  /// Validate if the current user can create this entity
-  /// Returns true if permission granted, false otherwise
   Future<bool> validateCreatePermission(String userId, T entity);
-
-  /// Validate if the current user can read this entity
-  /// Returns true if permission granted, false otherwise
   Future<bool> validateReadPermission(String userId, String resourceId, T? entity);
-
-  /// Validate if the current user can update this entity
-  /// Returns true if permission granted, false otherwise
   Future<bool> validateUpdatePermission(String userId, String resourceId, T entity);
-
-  /// Validate if the current user can delete this entity
-  /// Returns true if permission granted, false otherwise
   Future<bool> validateDeletePermission(String userId, String resourceId);
 
-  // ===== UNIFIED AUTHENTICATION & COLLECTION MANAGEMENT =====
-
-  /// Unified authentication check that replaces 23 duplicate patterns
-  /// Throws consistent exception message across all repositories
   String requireCurrentUserId() {
     final uid = _authRepository.currentUserId;
     if (uid == null) {
@@ -134,42 +51,26 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
     return uid;
   }
 
-  /// Optional authentication check that returns null for graceful handling
   String? get currentUserId => _authRepository.currentUserId;
 
-  /// Get collection reference - handles both user-scoped and global collections
-  /// Replaces 13 duplicate collection reference patterns
   CollectionReference<Map<String, dynamic>> get collection {
-    // For global collections (like public_profiles)
     return _firestore.collection(collectionName);
   }
 
-  /// Get user-scoped collection reference for user-specific data
-  /// Used by repositories that store data under /users/{userId}/{collection}
   CollectionReference<Map<String, dynamic>> getUserCollection(String? userId) {
     final uid = userId ?? requireCurrentUserId();
     return _firestore.collection('users').doc(uid).collection(collectionName);
   }
 
-  /// Template method for getting the appropriate collection reference
-  /// Subclasses can override this to use user-scoped vs global collections
   CollectionReference<Map<String, dynamic>> getCollectionRef() => collection;
 
-  // ===== UNIFIED CRUD OPERATIONS =====
-
-  /// Unified create operation - eliminates 6 duplicate implementations
-  /// ✅ SECURITY: Now includes permission validation and audit logging
   @override
   Future<T> create(T entity) async {
     try {
-      // Step 1: Authenticate user
       final userId = requireCurrentUserId();
       final docId = getId(entity);
-
-      // Step 2: Validate create permission
       final canCreate = await validateCreatePermission(userId, entity);
 
-      // Step 3: Log permission check (console + persistent audit for GDPR)
       await logPermissionCheck(
         userId: userId,
         resource: '${T.toString()}/$docId',
@@ -178,14 +79,12 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
         auditRepository: _auditRepository,
       );
 
-      // Step 4: Enforce permission
       if (!canCreate) {
         throw PermissionDeniedException(
           'User $userId does not have permission to create ${T.toString()}',
         );
       }
 
-      // Step 5: Proceed with create
       final ref = getCollectionRef();
       await ref.doc(docId).set(toFirestore(entity));
 
@@ -197,15 +96,10 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
     }
   }
 
-  /// Unified read operation - eliminates 6 duplicate implementations
-  /// 🔒 SECURITY FIX: Now includes authentication and permission validation (CVSS 9.1 vulnerability fixed)
   @override
   Future<T?> read(String id) async {
     try {
-      // Step 1: Authenticate user (CRITICAL FIX - was missing)
       final userId = requireCurrentUserId();
-
-      // Step 2: Fetch document
       final ref = getCollectionRef();
       final doc = await ref.doc(id).get();
 
@@ -214,13 +108,9 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
         return null;
       }
 
-      // Step 3: Parse entity
       final entity = fromFirestore(doc);
-
-      // Step 4: Validate read permission (CRITICAL FIX - was missing)
       final canRead = await validateReadPermission(userId, id, entity);
 
-      // Step 5: Log permission check (console + persistent audit for GDPR)
       await logPermissionCheck(
         userId: userId,
         resource: '${T.toString()}/$id',
@@ -229,7 +119,6 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
         auditRepository: _auditRepository,
       );
 
-      // Step 6: Enforce permission (CRITICAL FIX - was missing)
       if (!canRead) {
         throw PermissionDeniedException(
           'User $userId does not have permission to read ${T.toString()} $id',
@@ -243,25 +132,18 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
     }
   }
 
-  /// Unified readAll operation - eliminates 6 duplicate implementations
-  /// 🔒 SECURITY FIX: Now filters results based on read permissions (data leak vulnerability fixed)
   @override
   Future<List<T>> readAll() async {
     try {
-      // Step 1: Authenticate user (CRITICAL FIX - was missing)
       final userId = requireCurrentUserId();
-
-      // Step 2: Fetch all documents
       final ref = getCollectionRef();
       final snapshot = await ref.get();
 
-      // Step 3: Filter documents based on read permission (CRITICAL FIX - was missing)
       final allowedEntities = <T>[];
       for (final doc in snapshot.docs) {
         final entity = fromFirestore(doc);
         final canRead = await validateReadPermission(userId, doc.id, entity);
 
-        // Log permission check (console + persistent audit for GDPR)
         await logPermissionCheck(
           userId: userId,
           resource: '${T.toString()}/${doc.id}',
@@ -285,19 +167,13 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
     }
   }
 
-  /// Unified update operation - eliminates 6 duplicate implementations
-  /// ✅ SECURITY: Now includes permission validation and audit logging
   @override
   Future<void> update(T entity) async {
     try {
-      // Step 1: Authenticate user
       final userId = requireCurrentUserId();
       final docId = getId(entity);
-
-      // Step 2: Validate update permission
       final canUpdate = await validateUpdatePermission(userId, docId, entity);
 
-      // Step 3: Log permission check (console + persistent audit for GDPR)
       await logPermissionCheck(
         userId: userId,
         resource: '${T.toString()}/$docId',
@@ -306,14 +182,12 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
         auditRepository: _auditRepository,
       );
 
-      // Step 4: Enforce permission
       if (!canUpdate) {
         throw PermissionDeniedException(
           'User $userId does not have permission to update ${T.toString()} $docId',
         );
       }
 
-      // Step 5: Proceed with update
       final ref = getCollectionRef();
       await ref.doc(docId).update(toFirestore(entity));
 
@@ -324,18 +198,12 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
     }
   }
 
-  /// Unified delete operation - eliminates 6 duplicate implementations
-  /// ✅ SECURITY: Now includes permission validation and audit logging
   @override
   Future<void> delete(String id) async {
     try {
-      // Step 1: Authenticate user
       final userId = requireCurrentUserId();
-
-      // Step 2: Validate delete permission
       final canDelete = await validateDeletePermission(userId, id);
 
-      // Step 3: Log permission check (console + persistent audit for GDPR)
       await logPermissionCheck(
         userId: userId,
         resource: '${T.toString()}/$id',
@@ -344,14 +212,12 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
         auditRepository: _auditRepository,
       );
 
-      // Step 4: Enforce permission
       if (!canDelete) {
         throw PermissionDeniedException(
           'User $userId does not have permission to delete ${T.toString()} $id',
         );
       }
 
-      // Step 5: Proceed with delete
       final ref = getCollectionRef();
       await ref.doc(id).delete();
 
@@ -362,10 +228,6 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
     }
   }
 
-  // ===== COMMON UTILITY METHODS =====
-
-  /// Batch operations for bulk creates/updates
-  /// Replaces duplicate batch patterns found in firebase_recipe_repository.dart
   Future<void> createBatch(List<T> entities) async {
     try {
       requireCurrentUserId();
@@ -384,8 +246,6 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
     }
   }
 
-  /// Unified stream operations for real-time updates
-  /// Template method that can be overridden for custom ordering
   Stream<List<T>> watchAll({String? orderBy, bool descending = false}) {
     try {
       var query = getCollectionRef() as Query<Map<String, dynamic>>;
@@ -403,7 +263,6 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
     }
   }
 
-  /// Check if entity exists without loading full data
   Future<bool> exists(String id) async {
     try {
       final doc = await getCollectionRef().doc(id).get();
@@ -415,7 +274,6 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
     }
   }
 
-  /// Get count of entities in collection
   Future<int> count() async {
     try {
       final snapshot = await getCollectionRef().count().get();
@@ -426,10 +284,7 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
     }
   }
 
-  // ===== GRACEFUL ERROR HANDLING VARIANTS =====
-
-  /// Version of readAll that returns empty list instead of throwing on auth failure
-  /// Handles the "return []" pattern found in multiple repositories
+  /// Returns empty list instead of throwing on auth failure.
   Future<List<T>> readAllSafe() async {
     try {
       if (currentUserId == null) return [];
@@ -440,8 +295,7 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
     }
   }
 
-  /// Version of read that returns null instead of throwing on auth failure
-  /// Handles the "return null" pattern found in multiple repositories
+  /// Returns null instead of throwing on auth failure.
   Future<T?> readSafe(String id) async {
     try {
       if (currentUserId == null) return null;
@@ -453,25 +307,21 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
   }
 }
 
-/// Mixin for repositories that store data in user-scoped collections
-/// Eliminates the user collection path building duplication
+/// Mixin for repositories that store data in user-scoped collections.
 mixin UserScopedFirebaseRepository<T> on BaseFirebaseRepository<T> {
   @override
   CollectionReference<Map<String, dynamic>> getCollectionRef() {
-    return getUserCollection(null); // Use current user
+    return getUserCollection(null);
   }
 
-  /// Get collection for specific user (useful for admin operations)
   CollectionReference<Map<String, dynamic>> getCollectionForUser(
       String userId) {
     return getUserCollection(userId);
   }
 }
 
-/// Mixin for repositories that need batch operations
-/// Consolidates batch operation patterns found across repositories
+/// Mixin for repositories that need batch operations.
 mixin BatchOperationsFirebaseRepository<T> on BaseFirebaseRepository<T> {
-  /// Batch update multiple entities
   Future<void> updateBatch(List<T> entities) async {
     try {
       requireCurrentUserId();
@@ -490,7 +340,6 @@ mixin BatchOperationsFirebaseRepository<T> on BaseFirebaseRepository<T> {
     }
   }
 
-  /// Batch delete multiple entities
   Future<void> deleteBatch(List<String> ids) async {
     try {
       requireCurrentUserId();

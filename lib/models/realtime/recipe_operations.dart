@@ -1,20 +1,8 @@
-// lib/models/realtime/recipe_operations.dart
-
 import 'package:butlery/models/recipe_unified.dart';
 
-/// Focused module for recipe content operations
-/// This module handles ONLY recipe content manipulation:
-/// - Basic info updates (title, description, portions, etc.)
-/// - Ingredient operations (add, remove, update)
-/// - Instruction operations (add, remove, update)
-/// - Image URL management
-/// - Content validation
-/// ❌ DOES NOT CONTAIN: Serialization, metadata, participants, timestamps
+/// Recipe content operations (ingredients, instructions, validation).
 class RecipeOperations {
-  
-  // ===== BASIC INFO OPERATIONS =====
-
-  /// Update recipe basic information
+  /// Update recipe basic information.
   static Recipe updateBasicInfo(
     Recipe recipe, {
     String? title,
@@ -40,9 +28,7 @@ class RecipeOperations {
     );
   }
 
-  // ===== INGREDIENT OPERATIONS =====
-
-  /// Update all ingredients
+  /// Update all ingredients.
   static Recipe updateIngredients(
     Recipe recipe, {
     required List<String> ingredients,
@@ -119,9 +105,7 @@ class RecipeOperations {
     );
   }
 
-  // ===== INSTRUCTION OPERATIONS =====
-
-  /// Update all instructions
+  /// Update all instructions.
   static Recipe updateInstructions(
     Recipe recipe, {
     required List<String> instructions,
@@ -198,9 +182,7 @@ class RecipeOperations {
     );
   }
 
-  // ===== IMAGE OPERATIONS =====
-
-  /// Update all image URLs
+  /// Update all image URLs.
   static Recipe updateImageUrls(
     Recipe recipe, {
     required List<String> imageUrls,
@@ -254,9 +236,7 @@ class RecipeOperations {
     );
   }
 
-  // ===== VALIDATION OPERATIONS =====
-
-  /// Validate recipe content
+  /// Validate recipe content.
   static bool isValidRecipe(Recipe recipe) {
     return recipe.title.isNotEmpty && 
            recipe.ingredients.isNotEmpty && 
@@ -302,9 +282,7 @@ class RecipeOperations {
            recipe.timeMinutes != null;
   }
 
-  // ===== CONTENT ANALYSIS =====
-
-  /// Get recipe statistics
+  /// Get recipe statistics.
   static Map<String, int> getRecipeStats(Recipe recipe) {
     return {
       'ingredientCount': recipe.ingredients.length,

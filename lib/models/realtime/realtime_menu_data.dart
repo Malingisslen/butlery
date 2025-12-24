@@ -8,6 +8,7 @@
 
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Comprehensive realtime menu data with pure data representation and robust serialization for collaborative meal planning.
 /// Represents complete menu data structure with category-based recipe organization, temporal management,
@@ -129,7 +130,7 @@ class RealtimeMenuData {
   /// Create from Firestore data
   factory RealtimeMenuData.fromFirestore(Map<String, dynamic> data) {
     // Parse menuSnapshot from Firestore
-    final menuData = data['menuSnapshot'] as Map<String, dynamic>? ?? {};
+    final menuData = SerializationUtils.safeMap(data, 'menuSnapshot');
     final menuSnapshot = <String, List<Recipe>>{};
 
     for (final entry in menuData.entries) {
@@ -141,15 +142,17 @@ class RealtimeMenuData {
       menuSnapshot[entry.key] = recipes;
     }
 
+    final favoriteIds = data['favoriteRecipeIds'] != null
+        ? SerializationUtils.safeStringList(data, 'favoriteRecipeIds')
+        : null;
+
     return RealtimeMenuData(
-      menuTitle: data['menuTitle'] as String? ?? '',
+      menuTitle: SerializationUtils.safeString(data, 'menuTitle'),
       createdForDate: AppTimestamp.fromFirestore(data['createdForDate']).dateTime,
       menuSnapshot: menuSnapshot,
-      menuNotes: data['menuNotes'] as String?,
-      favoriteRecipeIds: data['favoriteRecipeIds'] != null
-          ? List<String>.from(data['favoriteRecipeIds'])
-          : null,
-      originalPrompt: data['originalPrompt'] as String?,
+      menuNotes: SerializationUtils.safeNullableString(data, 'menuNotes'),
+      favoriteRecipeIds: favoriteIds?.isEmpty == true ? null : favoriteIds,
+      originalPrompt: SerializationUtils.safeNullableString(data, 'originalPrompt'),
     );
   }
 
@@ -174,7 +177,7 @@ class RealtimeMenuData {
   /// Create from JSON data
   factory RealtimeMenuData.fromJson(Map<String, dynamic> json) {
     // Parse menuSnapshot from JSON
-    final menuData = json['menuSnapshot'] as Map<String, dynamic>? ?? {};
+    final menuData = SerializationUtils.safeMap(json, 'menuSnapshot');
     final menuSnapshot = <String, List<Recipe>>{};
 
     for (final entry in menuData.entries) {
@@ -186,15 +189,17 @@ class RealtimeMenuData {
       menuSnapshot[entry.key] = recipes;
     }
 
+    final favoriteIds = json['favoriteRecipeIds'] != null
+        ? SerializationUtils.safeStringList(json, 'favoriteRecipeIds')
+        : null;
+
     return RealtimeMenuData(
-      menuTitle: json['menuTitle'] as String? ?? '',
-      createdForDate: DateTime.parse(json['createdForDate'] as String),
+      menuTitle: SerializationUtils.safeString(json, 'menuTitle'),
+      createdForDate: DateTime.parse(SerializationUtils.safeString(json, 'createdForDate')),
       menuSnapshot: menuSnapshot,
-      menuNotes: json['menuNotes'] as String?,
-      favoriteRecipeIds: json['favoriteRecipeIds'] != null
-          ? List<String>.from(json['favoriteRecipeIds'])
-          : null,
-      originalPrompt: json['originalPrompt'] as String?,
+      menuNotes: SerializationUtils.safeNullableString(json, 'menuNotes'),
+      favoriteRecipeIds: favoriteIds?.isEmpty == true ? null : favoriteIds,
+      originalPrompt: SerializationUtils.safeNullableString(json, 'originalPrompt'),
     );
   }
 

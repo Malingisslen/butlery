@@ -1,5 +1,3 @@
-// lib/core/router/app_router.dart
-
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
@@ -109,14 +107,12 @@ class AppRouter {
       }
 
       switch (routeName) {
-        // ===== BASE ROUTES =====
         case Routes.home:
           return _buildRoute(const MinaReceptView(), settings, Routes.getAnimationType(routeName));
         
         case Routes.auth:
           return _buildRoute(const AuthView(), settings, Routes.getAnimationType(routeName));
 
-        // ===== RECIPE ROUTES =====
         case Routes.laggTill:
           return _buildRoute(const LaggTillReceptView(), settings, Routes.getAnimationType(routeName));
         
@@ -204,7 +200,6 @@ class AppRouter {
             Routes.getAnimationType(routeName)
           );
 
-        // ===== MENU & SHOPPING ROUTES =====
         case Routes.veckomeny:
           final menu = settings.arguments as SharedMenu?;
           return _buildRoute(
@@ -216,7 +211,8 @@ class AppRouter {
         case Routes.realtimeMenu:
           // Navigate to VeckomenyView for collaborative menu
           // The realtime menu ID is passed in arguments for future enhancement
-          // TODO: Enhance VeckomenyView to load and sync with realtime menu
+          // TODO(realtime-menu-sync): Enhance VeckomenyView to load and sync with realtime menu
+          // Status: Deferred - current implementation uses separate realtime menu views
           return _buildRoute(
             const vecko.VeckomenyView(),
             settings,
@@ -226,7 +222,6 @@ class AppRouter {
         case Routes.inkopslista:
           return _buildRoute(const UnifiedShoppingView(), settings, Routes.getAnimationType(routeName));
 
-        // ===== SOCIAL ROUTES =====
         case Routes.profileEdit:
           return _buildRoute(const UserProfileEditView(), settings, Routes.getAnimationType(routeName));
         
@@ -269,7 +264,6 @@ class AppRouter {
         case Routes.sharedShoppingLists:
           return _buildRoute(const SharedShoppingListsView(), settings, Routes.getAnimationType(routeName));
 
-        // ===== MESSAGING ROUTES =====
         case Routes.messages:
           return _buildRoute(const ConversationsListView(), settings, Routes.getAnimationType(routeName));
         

@@ -20,10 +20,7 @@ import 'package:butlery/views/social/group_detail_view.dart';
 /// - GroupCard: Group card with navigation to group detail
 /// **Consolidation**: Merged from 3 separate files (~151 LOC) for better maintainability
 
-// ===== FRIEND CARD =====
-
-/// FriendCard - Individual friend card component
-/// Displays friend information with profile and remove actions.
+/// Individual friend card with profile and remove actions.
 class FriendCard {
   static Widget build(
     BuildContext context,
@@ -40,7 +37,7 @@ class FriendCard {
           Routes.friendProfile,
           arguments: friend,
         ),
-        leading: SocialComponents.avatar(
+        leading: SocialAvatarComponents.avatar(
           user: friend,
           size: ImageSize.medium,
         ),
@@ -53,10 +50,7 @@ class FriendCard {
   }
 }
 
-// ===== FRIEND REQUEST CARD =====
-
-/// FriendRequestCard - Friend request card component
-/// Displays individual friend request with accept/reject actions.
+/// Friend request card with accept/reject actions.
 class FriendRequestCard {
   static Widget build(
     BuildContext context,
@@ -93,10 +87,7 @@ class FriendRequestCard {
   }
 }
 
-// ===== GROUP CARD =====
-
-/// GroupCard - Group card component
-/// Displays group information with navigation to group detail.
+/// Group card with navigation to group detail.
 class GroupCard {
   static Widget build(
     BuildContext context,

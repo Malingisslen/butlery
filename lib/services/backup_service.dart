@@ -13,9 +13,9 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 class BackupService extends BaseService {
   @override
   String get serviceName => 'BackupService';
+
   Future<BackupResult> exportToFile() async {
     try {
-      // Hämta alla recept
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
       final recipes = recipeService.recipes;
 
@@ -23,7 +23,6 @@ class BackupService extends BaseService {
         return BackupResult.error('Inga recept att exportera');
       }
 
-      // Skapa JSON-struktur
       final jsonData = {
         'butlery_backup': {
           'version': '1.0',
@@ -36,12 +35,10 @@ class BackupService extends BaseService {
 
       final jsonString = const JsonEncoder.withIndent('  ').convert(jsonData);
 
-      // Skapa filnamn med timestamp
       final timestamp = DateTime.now();
       final filename =
           'butlery_backup_${timestamp.year}${timestamp.month.toString().padLeft(2, '0')}${timestamp.day.toString().padLeft(2, '0')}_${timestamp.hour.toString().padLeft(2, '0')}${timestamp.minute.toString().padLeft(2, '0')}.json';
 
-      // Olika strategier för olika plattformar
       if (Platform.isAndroid) {
         return await _saveToAndroidDownloads(
           jsonString,
@@ -65,20 +62,14 @@ class BackupService extends BaseService {
     int recipeCount,
   ) async {
     try {
-      // Android 10+ (API 29+) behöver inte storage permission för app-specifika mappar
-      // Vi använder app-specifik extern lagring som användaren kan komma åt
       Directory? directory;
 
-      // Hämta Downloads-mappen direkt
       try {
-        // Detta ger oss path till Downloads
         final List<Directory>? dirs = await getExternalStorageDirectories(
           type: StorageDirectory.downloads,
         );
         if (dirs != null && dirs.isNotEmpty) {
-          // Ta bort Android-specifika delar från path för att få riktig Downloads-mapp
           String path = dirs.first.path;
-          // Byt ut allt efter "Android" med "Download"
           final androidIndex = path.indexOf('/Android');
           if (androidIndex != -1) {
             path = '${path.substring(0, androidIndex)}/Download';
@@ -86,20 +77,17 @@ class BackupService extends BaseService {
           directory = Directory(path);
         }
       } catch (e) {
-        // Fallback till app-specifik mapp
         directory = await getExternalStorageDirectory();
       }
       if (directory == null) {
         return BackupResult.error('Kunde inte hitta lagringsmapp');
       }
 
-      // Skapa Butlery-mapp
       final butleryDir = Directory('${directory.path}/Butlery');
       if (!await butleryDir.exists()) {
         await butleryDir.create(recursive: true);
       }
 
-      // Spara filen
       final file = File('${butleryDir.path}/$filename');
       await file.writeAsString(content);
 
@@ -122,16 +110,13 @@ class BackupService extends BaseService {
     int recipeCount,
   ) async {
     try {
-      // iOS behöver inga särskilda permissions för app documents
       final directory = await getApplicationDocumentsDirectory();
 
-      // Skapa Butlery-mapp
       final butleryDir = Directory('${directory.path}/Butlery');
       if (!await butleryDir.exists()) {
         await butleryDir.create(recursive: true);
       }
 
-      // Spara filen
       final file = File('${butleryDir.path}/$filename');
       await file.writeAsString(content);
 
@@ -150,7 +135,6 @@ class BackupService extends BaseService {
 
   Future<ImportResult> importFromFile() async {
     try {
-      // Låt användaren välja fil
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json'],
@@ -167,22 +151,19 @@ class BackupService extends BaseService {
         return ImportResult.error('Kunde inte läsa filen');
       }
 
-      // Parse JSON
       final jsonString = utf8.decode(file.bytes!);
       final jsonData = json.decode(jsonString);
 
-      // Validera format
       if (!jsonData.containsKey('butlery_backup') &&
           !jsonData.containsKey('butlery_export')) {
         return ImportResult.error('Ogiltig backup-fil - inte från Butlery');
       }
 
-      // Hantera både gamla export-format och nya backup-format
+      // Backward compatibility: support both legacy and current format
       final backupData =
           jsonData['butlery_backup'] ?? jsonData['butlery_export'];
       final recipesJson = backupData['recipes'] as List;
 
-      // Importera recept
       final recipeService = ServiceLocator.get<UnifiedRecipeService>();
       int successCount = 0;
       int skipCount = 0;
@@ -193,7 +174,6 @@ class BackupService extends BaseService {
         try {
           final recipe = Recipe.fromJson(recipeJson);
 
-          // Kolla om receptet redan finns (baserat på titel)
           final existingRecipes = recipeService.recipes;
           final alreadyExists = existingRecipes.any(
             (r) => r.title.toLowerCase() == recipe.title.toLowerCase(),
@@ -205,7 +185,6 @@ class BackupService extends BaseService {
             continue;
           }
 
-          // Skapa nytt recept med ny ID
           final newRecipe = Recipe(
             core: RecipeCore(
               id: '',

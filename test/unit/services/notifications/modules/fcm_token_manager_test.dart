@@ -16,6 +16,7 @@ import 'package:get_it/get_it.dart';
 import 'package:butlery/services/notifications/modules/fcm_token_manager.dart';
 import 'package:butlery/services/notifications/notification_repository.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/models/notification_preferences.dart';
 
 // Test infrastructure
 import '../../../../test_support/base_unit_test.dart';

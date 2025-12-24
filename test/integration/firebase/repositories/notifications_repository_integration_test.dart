@@ -318,16 +318,7 @@ void main() {
       test('should save and retrieve notification preferences', () async {
         // Arrange
         const userId = 'test_user';
-        final preferences = NotificationPreferences(
-          enableRecipeSharing: true,
-          enableFriendRequests: false,
-          enableGroupInvitations: true,
-          enableComments: false,
-          enableRatings: true,
-          enableCollaborativeEditing: false,
-          enableMenuSharing: true,
-          enableGeneralUpdates: false,
-        );
+        final preferences = NotificationPreferences.defaults();
         
         // Act
         await repository.updateNotificationPreferences(userId, preferences);
@@ -335,14 +326,14 @@ void main() {
         // Assert
         final savedPreferences = await repository.getNotificationPreferences(userId);
         
-        expect(savedPreferences.enableRecipeSharing, isTrue);
-        expect(savedPreferences.enableFriendRequests, isFalse);
-        expect(savedPreferences.enableGroupInvitations, isTrue);
-        expect(savedPreferences.enableComments, isFalse);
-        expect(savedPreferences.enableRatings, isTrue);
-        expect(savedPreferences.enableCollaborativeEditing, isFalse);
-        expect(savedPreferences.enableMenuSharing, isTrue);
-        expect(savedPreferences.enableGeneralUpdates, isFalse);
+        expect(savedPreferences.enabled, isTrue);
+        expect(savedPreferences.soundEnabled, isFalse);
+        expect(savedPreferences.vibrationEnabled, isTrue);
+        expect(savedPreferences.allowBatching, isFalse);
+        expect(savedPreferences.enabled, isTrue);
+        expect(savedPreferences.soundEnabled, isFalse);
+        expect(savedPreferences.vibrationEnabled, isTrue);
+        expect(savedPreferences.allowBatching, isFalse);
       });
     });
     

@@ -1,5 +1,3 @@
-// lib/widgets/common/friends/friend_category_widgets.dart
-
 import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
 
@@ -8,18 +6,9 @@ import 'package:butlery/widgets/common/friends/category_selection_widgets.dart';
 import 'package:butlery/widgets/common/friends/category_display_widgets.dart';
 import 'package:butlery/widgets/common/friends/friend_category_manager.dart';
 
-/// FriendCategoryWidgets (Facade)
-/// Maintains backward compatibility while delegating to focused widget classes.
-/// This facade provides the same interface as the original monolithic widget class
-/// while internally using the 3 focused widget classes for better separation of concerns.
-/// Focused Widget Classes:
-/// - CategorySelectionWidgets: Category selection UI components and interaction widgets
-/// - CategoryDisplayWidgets: Category display and presentation components
-/// - FriendCategoryManager: Interactive friend category management with state
+/// Facade for friend category widgets. Delegates to focused widget classes.
 class FriendCategoryWidgets {
-  // ===== MAIN MANAGER WIDGETS (Delegate to FriendCategoryManager) =====
-
-  /// Complete friend category manager for social sharing
+  /// Complete friend category manager for social sharing.
   static Widget friendCategoryManager({
     required List<String> selectedFriendIds,
     required Function(List<String>) onSelectionChanged,
@@ -53,9 +42,7 @@ class FriendCategoryWidgets {
     );
   }
 
-  // ===== CATEGORY SELECTION WIDGETS (Delegate to CategorySelectionWidgets) =====
-
-  /// Build friend category selector
+  /// Build friend category selector.
   static Widget friendCategorySelector(
     BuildContext context, {
     required List<FriendCategory> categories,
@@ -101,9 +88,7 @@ class FriendCategoryWidgets {
     );
   }
 
-  // ===== CATEGORY DISPLAY WIDGETS (Delegate to CategoryDisplayWidgets) =====
-
-  /// Build category list view
+  /// Build category list view.
   static Widget categoryList({
     required List<FriendCategory> categories,
     required Function(FriendCategory) onCategoryTap,
@@ -144,9 +129,7 @@ class FriendCategoryWidgets {
     );
   }
 
-  // ===== ADDITIONAL UTILITY METHODS (Delegate to appropriate classes) =====
-
-  /// Build horizontal category selector strip
+  /// Build horizontal category selector strip.
   static Widget horizontalCategorySelector(
     BuildContext context, {
     required List<FriendCategory> categories,

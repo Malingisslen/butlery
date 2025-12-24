@@ -67,13 +67,12 @@ class FormValidators {
     r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$',
   );
 
-  // NY: Display name regex - tillåter Unicode bokstäver, siffror, mellanslag och vissa tecken
   static final RegExp _displayNameRegex = RegExp(
     r'^[\p{L}\p{N}\s\-_\.]+$',
     unicode: true,
   );
 
-  /// Obligatoriskt fält
+  /// Required field validator.
   static FormFieldValidator<String> required(String fieldName) {
     return (value) {
       if (value == null || value.trim().isEmpty) {
@@ -83,7 +82,7 @@ class FormValidators {
     };
   }
 
-  /// Min längd
+  /// Minimum length validator.
   static FormFieldValidator<String> minLength(int min, String fieldName) {
     return (value) {
       if (value != null && value.trim().length < min) {
@@ -93,7 +92,7 @@ class FormValidators {
     };
   }
 
-  /// Max längd
+  /// Maximum length validator.
   static FormFieldValidator<String> maxLength(int max, String fieldName) {
     return (value) {
       if (value != null && value.length > max) {
@@ -103,7 +102,7 @@ class FormValidators {
     };
   }
 
-  /// Numeriskt värde inom intervall
+  /// Numeric range validator.
   static FormFieldValidator<String> numberRange({
     double? min,
     double? max,
@@ -158,9 +157,7 @@ class FormValidators {
     return numberRange(min: 1, max: 1440, fieldName: 'Tillagningstid');
   }
 
-  // ===== NYA SOCIAL VALIDATORS =====
-
-  /// Display name validator - för användarprofilsn
+  /// Display name validator for user profiles.
   static FormFieldValidator<String> displayName() {
     return (value) {
       if (value == null || value.trim().isEmpty) {
@@ -169,7 +166,6 @@ class FormValidators {
 
       final trimmed = value.trim();
 
-      // Längdvalidering
       if (trimmed.length < 2) {
         return 'Visningsnamn måste vara minst 2 tecken';
       }
@@ -178,17 +174,14 @@ class FormValidators {
         return 'Visningsnamn får vara max 30 tecken';
       }
 
-      // Teckenvalidering
       if (!_displayNameRegex.hasMatch(trimmed)) {
         return 'Visningsnamn får bara innehålla bokstäver, siffror, mellanslag och - _ .';
       }
 
-      // Inte bara mellanslag eller specialtecken
       if (trimmed.replaceAll(RegExp(r'[\s\-_\.]'), '').isEmpty) {
         return 'Visningsnamn måste innehålla minst en bokstav eller siffra';
       }
 
-      // Inte börja/sluta med mellanslag
       if (trimmed != value) {
         return 'Visningsnamn får inte börja eller sluta med mellanslag';
       }
@@ -198,7 +191,7 @@ class FormValidators {
   }
 
 
-  /// Comment validator - för kommentarer på recept
+  /// Comment validator for recipe comments.
   static FormFieldValidator<String> comment() {
     return (value) {
       if (value == null || value.trim().isEmpty) {
@@ -219,7 +212,7 @@ class FormValidators {
     };
   }
 
-  /// Share message validator - för delningsmeddelanden
+  /// Share message validator.
   static FormFieldValidator<String> shareMessage() {
     return (value) {
       if (value == null || value.isEmpty) {
@@ -234,7 +227,7 @@ class FormValidators {
     };
   }
 
-  /// Kombinerar flera validators
+  /// Combines multiple validators.
   static FormFieldValidator<String> combine(
     List<FormFieldValidator<String>> validators,
   ) {
@@ -247,9 +240,7 @@ class FormValidators {
     };
   }
 
-  // ===== DUPLICATED VALIDATION PATTERNS =====
-
-  /// Auth validation - Name field (from auth_view.dart)
+  /// Auth validation - Name field.
   static FormFieldValidator<String> authName() {
     return (value) {
       if (value == null || value.isEmpty) {
@@ -412,9 +403,7 @@ class FormValidators {
     };
   }
 
-  // ===== SPECIFIKA KOMBINATIONER =====
-
-  /// Användarnamn validator - kombination av required och displayName
+  /// Username validator - combination of required and displayName.
   static FormFieldValidator<String> requiredDisplayName() {
     return combine([
       required('Visningsnamn'),
@@ -422,7 +411,7 @@ class FormValidators {
     ]);
   }
 
-  /// Kommentar validator - kombination för required comments
+  /// Comment validator - combination for required comments.
   static FormFieldValidator<String> requiredComment() {
     return combine([
       required('Kommentar'),

@@ -67,7 +67,7 @@ class CommentFormWidget extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SocialComponents.avatar(
+            SocialAvatarComponents.avatar(
               user: socialViewModel.currentUser,
               displayName: 'Du',
               size: ImageSize.small,

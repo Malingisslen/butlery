@@ -32,9 +32,6 @@ class CollaborativeShoppingActions extends BaseActionHandler with ActionStateMix
     required this.onShare,
   });
 
-  // ===== APP BAR ACTIONS =====
-
-  /// Build app bar for collaborative shopping view
   PreferredSizeWidget buildAppBar(BuildContext context) {
     return AppBar(
       title: Text(viewModel.listTitle),
@@ -98,9 +95,6 @@ class CollaborativeShoppingActions extends BaseActionHandler with ActionStateMix
     );
   }
 
-  // ===== ADD ITEM SECTION =====
-
-  /// Build add item section widget
   Widget buildAddItemSection(BuildContext context) {
     if (!viewModel.canEdit) {
       return _buildReadOnlySection(context);
@@ -193,9 +187,6 @@ class CollaborativeShoppingActions extends BaseActionHandler with ActionStateMix
     );
   }
 
-  // ===== ACTION HANDLERS =====
-
-  /// Handle menu action selection using BaseActionHandler
   Future<void> handleMenuAction(BuildContext context, String action) async {
     if (!validateContext(context)) return;
 
@@ -254,9 +245,6 @@ class CollaborativeShoppingActions extends BaseActionHandler with ActionStateMix
     );
   }
 
-  // ===== SHARE ACTIONS =====
-
-  /// Handle share action using BaseActionHandler
   Future<void> handleShare(BuildContext context) async {
     if (!validateContext(context)) return;
 
@@ -342,9 +330,6 @@ class CollaborativeShoppingActions extends BaseActionHandler with ActionStateMix
     showInfoMessage(context, 'E-postdelning kommer snart');
   }
 
-  // ===== UTILITY METHODS =====
-
-  /// Check if add item section should be shown
   bool shouldShowAddItemSection() {
     return viewModel.canView; // Show for viewers (read-only) and editors
   }

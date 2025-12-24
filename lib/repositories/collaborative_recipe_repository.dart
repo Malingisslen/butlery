@@ -3,6 +3,12 @@
 /// for synchronous recipe editing, presence awareness, and live collaboration features. It enables
 /// multiple users to simultaneously edit recipes with real-time synchronization, conflict resolution,
 /// and comprehensive collaboration analytics for seamless cooking community experiences.
+///
+/// **Security Features:**
+/// - Uses PermissionValidationMixin for comprehensive permission checks
+/// - Audit logging for all collaborative operations (GDPR Article 30 compliance)
+/// - Authentication required for all write operations
+///
 /// **Architecture Integration:**
 /// - Uses Firebase Firestore for real-time data synchronization and presence management
 /// - Integrates with RealtimeRecipe and LiveEditor models for collaborative editing
@@ -25,6 +31,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/realtime/realtime_recipe.dart';
 import 'package:butlery/models/realtime/live_editor.dart';
+import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Firebase implementation for real-time collaborative recipe editing with comprehensive presence management.
 /// This repository provides complete real-time collaboration functionality using Firebase Firestore
@@ -52,21 +63,63 @@ import 'package:butlery/models/realtime/live_editor.dart';
 ///   updatePresenceIndicators(presence.docs);
 /// });
 /// ```
-class CollaborativeRecipeRepository {
+class CollaborativeRecipeRepository with PermissionValidationMixin {
   final FirebaseFirestore _firestore;
+  final AuthRepository _authRepository;
+  final FirebaseAuditRepository? _auditRepository;
 
-  CollaborativeRecipeRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+  CollaborativeRecipeRepository({
+    FirebaseFirestore? firestore,
+    required AuthRepository authRepository,
+    FirebaseAuditRepository? auditRepository,
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _authRepository = authRepository,
+        _auditRepository = auditRepository;
 
-  Future<void> createRealtimeRecipe(RealtimeRecipe recipe) {
-    return _firestore
+  String? get _currentUserId => _authRepository.currentUserId;
+
+  String _requireCurrentUserId() {
+    final uid = _currentUserId;
+    if (uid == null) {
+      throw AuthenticationException(
+        'No authenticated user for collaborative operation',
+        details: 'Authentication required for collaborative recipe operations',
+      );
+    }
+    return uid;
+  }
+
+  Future<void> createRealtimeRecipe(RealtimeRecipe recipe) async {
+    final userId = _requireCurrentUserId();
+
+    await logPermissionCheck(
+      userId: userId,
+      resource: 'realtime_recipe/${recipe.id}',
+      operation: 'create',
+      granted: true,
+      auditRepository: _auditRepository,
+    );
+
+    await _firestore
         .collection('realtime_recipes')
         .doc(recipe.id)
         .set(recipe.toFirestore());
+
+    AppLogger.info('RealtimeRecipe created: ${recipe.id}');
   }
 
-  Future<void> updateRealtimeRecipe(RealtimeRecipe recipe) {
-    return _firestore
+  Future<void> updateRealtimeRecipe(RealtimeRecipe recipe) async {
+    final userId = _requireCurrentUserId();
+
+    await logPermissionCheck(
+      userId: userId,
+      resource: 'realtime_recipe/${recipe.id}',
+      operation: 'update',
+      granted: true,
+      auditRepository: _auditRepository,
+    );
+
+    await _firestore
         .collection('realtime_recipes')
         .doc(recipe.id)
         .update(recipe.toFirestore());
@@ -93,8 +146,17 @@ class CollaborativeRecipeRepository {
     String recipeId,
     String userId,
     Map<String, dynamic> data,
-  ) {
-    return _firestore
+  ) async {
+    final currentUserId = _requireCurrentUserId();
+
+    // Users can only set their own presence
+    await validateSelfOperation(
+      currentUserId: currentUserId,
+      targetUserId: userId,
+      operation: 'setPresence',
+    );
+
+    await _firestore
         .collection('realtime_recipes')
         .doc(recipeId)
         .collection('presence')
@@ -106,8 +168,17 @@ class CollaborativeRecipeRepository {
     String recipeId,
     String userId,
     Map<String, dynamic> data,
-  ) {
-    return _firestore
+  ) async {
+    final currentUserId = _requireCurrentUserId();
+
+    // Users can only update their own presence
+    await validateSelfOperation(
+      currentUserId: currentUserId,
+      targetUserId: userId,
+      operation: 'updatePresence',
+    );
+
+    await _firestore
         .collection('realtime_recipes')
         .doc(recipeId)
         .collection('presence')
@@ -147,8 +218,17 @@ class CollaborativeRecipeRepository {
     });
   }
 
-  Future<void> updateUserPresence(String recipeId, String userId, String displayName) {
-    return _firestore
+  Future<void> updateUserPresence(String recipeId, String userId, String displayName) async {
+    final currentUserId = _requireCurrentUserId();
+
+    // Users can only update their own presence
+    await validateSelfOperation(
+      currentUserId: currentUserId,
+      targetUserId: userId,
+      operation: 'updateUserPresence',
+    );
+
+    await _firestore
         .collection('realtime_recipes')
         .doc(recipeId)
         .collection('presence')
@@ -162,8 +242,17 @@ class CollaborativeRecipeRepository {
   }
 
   /// Update presence heartbeat (lightweight update for active users)
-  Future<void> updatePresenceHeartbeat(String recipeId, String userId) {
-    return _firestore
+  Future<void> updatePresenceHeartbeat(String recipeId, String userId) async {
+    final currentUserId = _requireCurrentUserId();
+
+    // Users can only update their own presence
+    await validateSelfOperation(
+      currentUserId: currentUserId,
+      targetUserId: userId,
+      operation: 'updatePresenceHeartbeat',
+    );
+
+    await _firestore
         .collection('realtime_recipes')
         .doc(recipeId)
         .collection('presence')
@@ -174,8 +263,17 @@ class CollaborativeRecipeRepository {
     }, SetOptions(merge: true));
   }
 
-  Future<void> clearUserPresence(String recipeId, String userId) {
-    return _firestore
+  Future<void> clearUserPresence(String recipeId, String userId) async {
+    final currentUserId = _requireCurrentUserId();
+
+    // Users can only clear their own presence
+    await validateSelfOperation(
+      currentUserId: currentUserId,
+      targetUserId: userId,
+      operation: 'clearUserPresence',
+    );
+
+    await _firestore
         .collection('realtime_recipes')
         .doc(recipeId)
         .collection('presence')
@@ -184,8 +282,17 @@ class CollaborativeRecipeRepository {
   }
 
   /// Remove user presence completely from recipe (needed by RealtimeEditorTracker)
-  Future<void> removePresence(String recipeId, String userId) {
-    return _firestore
+  Future<void> removePresence(String recipeId, String userId) async {
+    final currentUserId = _requireCurrentUserId();
+
+    // Users can only remove their own presence
+    await validateSelfOperation(
+      currentUserId: currentUserId,
+      targetUserId: userId,
+      operation: 'removePresence',
+    );
+
+    await _firestore
         .collection('realtime_recipes')
         .doc(recipeId)
         .collection('presence')

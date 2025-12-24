@@ -8,7 +8,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 /// ActionButtons - Utility action buttons with loading support
 /// Provides consistent button styling and loading states for the app.
 class ActionButtons {
-  /// Standard action button med loading support och flera styles
   static Widget actionButton(
     BuildContext context, {
     required String label,
@@ -162,10 +161,7 @@ class ActionButtons {
     final Widget button = SizedBox(
       height: height,
       child: ElevatedButton.icon(
-        onPressed: isLoading ? null : () {
-          // Button pressed - debug logging removed for production
-          onPressed();
-        },
+        onPressed: isLoading ? null : onPressed,
         icon: isLoading
             ? const SizedBox(
                 width: 24,
@@ -294,28 +290,7 @@ class ActionButtons {
         : button;
   }
 
-  /// Standard cancel button that pops the dialog/screen with false result.
-  /// This convenience method eliminates duplication of the cancel button pattern across
-  /// 9+ locations in the codebase. All cancel buttons now have consistent behavior,
-  /// wording, and styling.
-  /// **Parameters:**
-  /// - [label]: Custom label for the cancel button (defaults to 'Avbryt')
-  /// - [result]: Value to return when cancel is pressed (defaults to false)
-  /// **Usage Example:**
-  /// ```dart
-  /// AlertDialog(
-  ///   title: Text('Confirm Action'),
-  ///   content: Text('Are you sure?'),
-  ///   actions: [
-  ///     ActionButtons.cancel(context),
-  ///     ActionButtons.primaryButton(
-  ///       context,
-  ///       label: 'Confirm',
-  ///       onPressed: () => Navigator.pop(context, true),
-  ///     ),
-  ///   ],
-  /// )
-  /// ```
+  /// Cancel button that pops the current context.
   static Widget cancel<T>(
     BuildContext context, {
     String label = 'Avbryt',

@@ -260,7 +260,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
         viewModel.toggleFriendSelection(friend.uid);
       },
       child: ListTile(
-        leading: SocialComponents.avatar(
+        leading: SocialAvatarComponents.avatar(
           user: friend,
           size: ImageSize.medium,
         ),

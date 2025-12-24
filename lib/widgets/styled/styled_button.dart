@@ -91,7 +91,6 @@ class StyledButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Handle loading state
     if (isLoading) {
       return SizedBox(
         width: width,
@@ -108,7 +107,6 @@ class StyledButton extends StatelessWidget {
       );
     }
 
-    // Icon-only button
     if (text.isEmpty && icon != null) {
       return SizedBox(
         width: width ?? AppDimensions.buttonHeight,
@@ -119,7 +117,6 @@ class StyledButton extends StatelessWidget {
       );
     }
 
-    // Regular button with optional icon
     return SizedBox(
       width: width,
       height: height ?? AppDimensions.buttonHeight,
@@ -197,7 +194,6 @@ class StyledButton extends StatelessWidget {
       vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
     );
     
-    // Handle small button padding
     if (height != null && height! < AppDimensions.buttonHeight) {
       effectivePadding = const EdgeInsets.symmetric(
         horizontal: (AppDimensions.spacingSm + AppDimensions.spacingXs),

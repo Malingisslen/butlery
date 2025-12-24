@@ -23,6 +23,15 @@ export { ocrRecipeImage } from "./llm/ocr-recipe-image";
 export { cleanupExpiredCache } from "./cleanup/cleanup-cache";
 export { cleanupOldRateLimits } from "./cleanup/cleanup-rate-limits";
 
+// Parse Event Logging - Server-side analytics (P1-4 security)
+export { logParseEvent } from "./events/log-parse-event";
+
+// Admin Functions - Site config management
+export { seedSiteConfigs, getSiteConfigStats } from "./admin/seed-site-configs";
+
+// Notification Functions - FCM push notifications
+export { sendNotification, sendNotificationBatch } from "./notifications/send-notification";
+
 admin.initializeApp();
 const db = admin.firestore();
 

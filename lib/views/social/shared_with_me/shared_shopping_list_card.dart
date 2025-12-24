@@ -91,7 +91,7 @@ class SharedShoppingListCard {
   ) {
     return Row(
       children: [
-        SocialComponents.avatar(
+        SocialAvatarComponents.avatar(
           size: ImageSize.small,
           displayName: sharedShoppingList.sharedByDisplayName,
         ),

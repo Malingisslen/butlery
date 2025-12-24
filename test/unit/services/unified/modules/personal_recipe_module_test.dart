@@ -53,7 +53,7 @@ void main() {
       module = PersonalRecipeModule(
         recipeRepository: mockRepository,
         userRepository: mockUserRepository,
-        cacheHelper: mockCacheHelper,
+        getCacheHelper: () => mockCacheHelper,
         getCurrentUserId: () => currentUserId,
         getCurrentUserDisplayName: () => currentUserDisplayName,
         setError: (error) => lastError = error,

@@ -82,6 +82,15 @@ import 'package:butlery/services/import/youtube/youtube_import_strategy.dart';
 // TikTok import pipeline
 import 'package:butlery/services/import/pipelines/tiktok_pipeline.dart';
 
+// Recipe parser services (tier-based architecture)
+import 'package:butlery/services/parsing/recipe_parser_service.dart';
+import 'package:butlery/repositories/site_config_repository.dart';
+
+// Parser feedback loop (correction tracking)
+import 'package:butlery/services/parsing/feedback/recipe_diff_calculator.dart';
+import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
+import 'package:butlery/repositories/parsing_correction_repository.dart';
+
 /// Content module providing recipe and menu management services.
 /// This module handles all content-related functionality and depends on
 /// the Core Module for foundational services. It provides:
@@ -133,6 +142,13 @@ class ContentModule implements DIModule {
         YouTubeImportStrategy,
         // TikTok import pipeline
         TikTokPipeline,
+        // Recipe parser services
+        SiteConfigRepository,
+        RecipeParserService,
+        // Parser feedback loop
+        ParsedRecipeCache,
+        RecipeDiffCalculator,
+        ParsingCorrectionRepository,
       ];
 
   @override
@@ -145,19 +161,18 @@ class ContentModule implements DIModule {
     }
 
     try {
-      // ==================== RECIPE REPOSITORIES ====================
-
       // Recipe repository - depends on Auth from Core Module
       container.registerSingleton<RecipeRepository>(
         FirebaseRecipeRepository(authRepository: container<auth.AuthRepository>()),
       );
 
-      // Collaborative recipe repository
+      // Collaborative recipe repository with permission validation and audit logging
       container.registerSingleton<CollaborativeRecipeRepository>(
-        CollaborativeRecipeRepository(),
+        CollaborativeRecipeRepository(
+          authRepository: container<auth.AuthRepository>(),
+          auditRepository: container<FirebaseAuditRepository>(),
+        ),
       );
-
-      // ==================== PERMISSION SYSTEM ====================
 
       // PermissionService - comprehensive authorization system
       // Moved from CollaborationModule to ContentModule to ensure availability in SocialModule
@@ -169,8 +184,6 @@ class ContentModule implements DIModule {
         ),
       );
 
-      // ==================== RECIPE PRESENCE REPOSITORY ====================
-
       // FirebaseRecipePresenceRepository - recipe presence tracking for collaborative editing
       // Moved from CollaborationModule to ContentModule for UnifiedRecipeService availability
       container.registerLazySingleton<FirebaseRecipePresenceRepository>(
@@ -178,8 +191,6 @@ class ContentModule implements DIModule {
           firestoreRepository: container<FirestoreRepository>(),
         ),
       );
-
-      // ==================== UNIFIED RECIPE SYSTEM ====================
 
       // UnifiedRecipeService - core recipe management
       // Note: We use lazy singleton to ensure social dependencies are available
@@ -200,8 +211,6 @@ class ContentModule implements DIModule {
       container.registerLazySingleton<ImportManager>(
         () => ImportManager(container<UnifiedRecipeService>().personal),
       );
-
-      // ==================== IMPORT CACHE SERVICES ====================
 
       // URL normalizer for consistent cache keys
       container.registerSingleton<UrlNormalizer>(UrlNormalizer());
@@ -226,8 +235,6 @@ class ContentModule implements DIModule {
         ),
       );
 
-      // ==================== LLM SERVICES ====================
-
       // LLM service for recipe extraction (Mistral AI via Cloud Functions)
       container.registerLazySingleton<LlmService>(
         () => LlmService(
@@ -242,8 +249,6 @@ class ContentModule implements DIModule {
           rateLimiter: container<ImportRateLimiter>(),
         ),
       );
-
-      // ==================== YOUTUBE IMPORT SERVICES ====================
 
       // YouTube transcript service for fetching video transcripts
       container.registerLazySingleton<YouTubeTranscriptService>(
@@ -265,7 +270,38 @@ class ContentModule implements DIModule {
         ),
       );
 
-      // ==================== CONTENT SERVICES ====================
+      // Site config repository for dynamic CSS selectors from Firestore
+      container.registerLazySingleton<SiteConfigRepository>(
+        () => SiteConfigRepository(),
+      );
+
+      // Recipe parser service with tier-based architecture
+      // Provides quality-based parsing with Swedish text support
+      container.registerLazySingleton<RecipeParserService>(
+        () {
+          final authRepo = container<auth.AuthRepository>();
+          final userId = (authRepo as FirebaseAuthRepository).currentUser?.uid ?? 'anonymous';
+          return RecipeParserService(
+            userId: userId,
+            siteConfigRepository: container<SiteConfigRepository>(),
+            llmService: container<LlmService>(),
+          );
+        },
+      );
+
+      // Parser feedback loop - tracks user corrections for parser improvement
+      // ParsedRecipeCache bridges the gap between import and form editing
+      container.registerLazySingleton<ParsedRecipeCache>(
+        () => ParsedRecipeCache(),
+      );
+
+      container.registerLazySingleton<RecipeDiffCalculator>(
+        () => RecipeDiffCalculator(),
+      );
+
+      container.registerLazySingleton<ParsingCorrectionRepository>(
+        () => ParsingCorrectionRepository(),
+      );
 
       // Menu service for meal planning
       container.registerSingleton<MenuService>(MenuService());
@@ -328,7 +364,7 @@ class ContentModule implements DIModule {
 
       if (kDebugMode) {
         debugPrint(
-          '✅ [ContentModule] Configured 25 services (Recipes, Menus, Import, Cache, RateLimiter, LLM, YouTube, Storage, Offline, Backup, Extraction, Detection)',
+          '✅ [ContentModule] Configured 27 services (Recipes, Menus, Import, Cache, RateLimiter, LLM, YouTube, Storage, Offline, Backup, Extraction, Detection, RecipeParser)',
         );
       }
     } catch (e) {
@@ -382,6 +418,10 @@ class ContentModule implements DIModule {
       // Initialize OfflineService (Hive dependency)
       final offlineService = container<OfflineService>();
       await offlineService.initialize();
+
+      // Initialize RecipeParserService (local cache + site config seeding)
+      final recipeParserService = container<RecipeParserService>();
+      await recipeParserService.init();
 
       // Validate other services are accessible (no explicit initialization needed)
       final services = [
@@ -439,6 +479,8 @@ class ContentModule implements DIModule {
         'YouTubeTranscriptService': container<YouTubeTranscriptService>(),
         'YouTubeImportStrategy': container<YouTubeImportStrategy>(),
         'TikTokPipeline': container<TikTokPipeline>(),
+        'SiteConfigRepository': container<SiteConfigRepository>(),
+        'RecipeParserService': container<RecipeParserService>(),
       };
 
       // Perform health checks on services that support it

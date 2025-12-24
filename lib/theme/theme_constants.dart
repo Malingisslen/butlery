@@ -7,8 +7,6 @@ class ThemeConstants {
   /// Private constructor to prevent instantiation of utility class
   ThemeConstants._();
 
-  // ===== OPACITY CONSTANTS =====
-  
   /// 10% opacity
   static const double opacity10 = 0.1;
   
@@ -42,8 +40,6 @@ class ThemeConstants {
   /// 100% opacity (fully opaque)
   static const double opacity100 = 1.0;
 
-  // ===== BLUR RADIUS CONSTANTS =====
-  
   /// Small blur radius
   static const double blurRadiusSmall = 4.0;
   
@@ -56,8 +52,6 @@ class ThemeConstants {
   /// Extra large blur radius
   static const double blurRadiusXLarge = 16.0;
 
-  // ===== SPREAD RADIUS CONSTANTS =====
-  
   /// Zero spread radius
   static const double spreadRadiusZero = 0.0;
   
@@ -70,8 +64,6 @@ class ThemeConstants {
   /// Large spread radius
   static const double spreadRadiusLarge = 4.0;
 
-  // ===== COMMON COLOR OVERLAYS =====
-  
   /// White overlay with 40% opacity
   static const Color whiteOverlay40 = Color(0x66FFFFFF);
   
@@ -87,8 +79,6 @@ class ThemeConstants {
   /// Black overlay with 60% opacity
   static const Color blackOverlay60 = Color(0x99000000);
 
-  // ===== ANIMATION CURVES =====
-  
   /// Standard ease in out curve
   static const Curve standardCurve = Curves.easeInOut;
   
@@ -101,8 +91,6 @@ class ThemeConstants {
   /// Acceleration curve
   static const Curve accelerationCurve = Curves.easeIn;
 
-  // ===== COMMON DURATIONS =====
-  
   /// Instant (no animation)
   static const Duration durationInstant = Duration.zero;
   
@@ -127,8 +115,6 @@ class ThemeConstants {
   /// Page transition duration (350ms)
   static const Duration durationPageTransition = Duration(milliseconds: 350);
 
-  // ===== ELEVATION SHADOWS =====
-  
   /// No elevation shadow
   static const List<BoxShadow> elevationNone = [];
   

@@ -53,7 +53,6 @@ import 'package:butlery/views/mina_recept_view.dart';
 // Firebase
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'dart:async';
@@ -61,6 +60,7 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:butlery/firebase_options.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -636,52 +636,50 @@ class AuthWrapper extends StatefulWidget {
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
-  User? _currentUser;
-  StreamSubscription<User?>? _authSubscription;
+  late final AuthService _authService;
 
   @override
   void initState() {
     super.initState();
+    _authService = ServiceLocator.get<AuthService>();
 
-    // Get initial Firebase auth state
-    _currentUser = FirebaseAuth.instance.currentUser;
-    if (_currentUser != null) {
+    // Log initial state
+    if (_authService.currentUser != null) {
       AppLogger.debug(
-        'AuthWrapper: User logged in at startup: ${_currentUser!.email}',
+        'AuthWrapper: User logged in at startup: ${_authService.currentUser!.email}',
       );
     }
 
-    // Single clean auth listener - no redundancy, no battery drain
-    _authSubscription = FirebaseAuth.instance.authStateChanges().listen((
-      User? user,
-    ) {
-      if (mounted) {
-        setState(() {
-          _currentUser = user;
-        });
+    // Listen to AuthService ChangeNotifier for auth state changes
+    _authService.addListener(_onAuthStateChanged);
+  }
 
-        if (user != null) {
-          AppLogger.debug('AuthWrapper: User authenticated: ${user.email}');
-        } else {
-          AppLogger.debug('AuthWrapper: User signed out');
-        }
+  void _onAuthStateChanged() {
+    if (mounted) {
+      setState(() {});
+
+      final user = _authService.currentUser;
+      if (user != null) {
+        AppLogger.debug('AuthWrapper: User authenticated: ${user.email}');
+      } else {
+        AppLogger.debug('AuthWrapper: User signed out');
       }
-    });
+    }
   }
 
   @override
   void dispose() {
     AppLogger.debug(
-      'AuthWrapper: Disposing wrapper for user: ${_currentUser?.email ?? 'NULL'}',
+      'AuthWrapper: Disposing wrapper for user: ${_authService.currentUser?.email ?? 'NULL'}',
     );
-    _authSubscription?.cancel();
+    _authService.removeListener(_onAuthStateChanged);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // State-based rendering - auth listener in initState maintains _currentUser
-    final user = _currentUser;
+    // State-based rendering - AuthService ChangeNotifier triggers rebuilds
+    final user = _authService.currentUser;
 
     if (user != null) {
       AppLogger.debug(

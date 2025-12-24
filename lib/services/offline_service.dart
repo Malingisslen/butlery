@@ -6,16 +6,16 @@
 /// **Architecture Integration:**
 /// - Extends [ChangeNotifier] for reactive UI updates with offline state changes
 /// - Uses modular component architecture with specialized offline modules
-/// - Integrates with [Hive] for high-performance local data persistence
+/// - Integrates with [Drift] for high-performance SQL-based local data persistence (replacing Hive)
 /// - Coordinates with [FirestoreRepository] for cloud data synchronization
 /// - Implements [AuthRepository] integration for user-specific data isolation
 /// **Offline Storage Features:**
 /// - **Multi-User Storage**: Isolated data storage for different authenticated users
 /// - **Recipe Persistence**: Complete recipe data with images and metadata preservation
 /// - **Sync Queue Management**: Intelligent queuing of offline changes for online synchronization
-///- **Legacy Compatibility**: Backward-compatible API surface for existing offline implementations
+/// - **Legacy Compatibility**: Backward-compatible API surface for existing offline implementations
 /// - **Resource Management**: Comprehensive cleanup and disposal of offline resources
-/// - **Performance Optimization**: Efficient Hive-based storage with minimal memory footprint
+/// - **Performance Optimization**: Efficient Drift-based storage with SQL performance
 /// **Synchronization and Connectivity:**
 /// - **Intelligent Sync**: Smart synchronization with conflict resolution and retry mechanisms
 /// - **Connectivity Monitoring**: Real-time network status monitoring with automatic sync triggers
@@ -24,7 +24,8 @@
 /// - **Manual Sync**: User-initiated synchronization with detailed progress reporting
 
 import 'package:flutter/foundation.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+
+import 'package:butlery/core/storage/drift/app_database.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
@@ -42,41 +43,11 @@ export 'offline/sync_result.dart';
 /// Offline data management service providing comprehensive multi-user storage and synchronization capabilities.
 /// This service serves as the primary facade for offline functionality, coordinating specialized components
 /// to provide seamless offline/online transitions, user-specific data isolation, and intelligent synchronization.
-/// It implements a modular architecture with focused components handling different aspects of offline management
-/// while maintaining a simple, consistent API surface for application integration.
-/// **Modular Component Architecture:**
-/// Utilizes specialized components for focused functionality:
-/// - [OfflineInitialization] - Hive setup and connectivity monitoring with lifecycle management
-/// - [OfflineUserStorage] - User-specific storage operations with data isolation and security
-/// - [OfflineSyncManager] - Sync operations and retry handling with intelligent conflict resolution
-/// - [SyncResult] - Result type definitions for comprehensive sync operation reporting
-/// **Singleton Pattern with Dependency Injection:**
-/// Implements flexible singleton pattern supporting:
-/// - Default dependency initialization for standard usage patterns
-/// - Optional dependency injection for testing and flexible backend configurations
-/// - Thread-safe singleton management with proper lifecycle handling
-/// **Usage Examples:**
-/// ```dart
-/// final offlineService = OfflineService();
-/// // Initialize offline capabilities
-/// await offlineService.initialize();
-/// // Set current user for data isolation
-/// offlineService.setCurrentUser('user123');
-/// // Save recipe offline
-/// await offlineService.saveRecipeOfflineForUser(recipe, 'user123');
-/// // Listen to offline state changes
-/// offlineService.addListener(() {
-///   if (offlineService.hasQueuedChanges) {
-///     showSyncIndicator();
-///   }
-/// });
-/// // Manual synchronization
-/// final syncResult = await offlineService.syncNow();
-/// ```
+/// Now uses Drift database instead of Hive for improved security and maintainability.
 class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   // Singleton pattern using SingletonServiceMixin approach
   static OfflineService? _instance;
-  
+
   // Private constructor for singleton
   OfflineService._internal({
     FirestoreRepository? firestoreRepository,
@@ -85,7 +56,7 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     _firestoreRepository = firestoreRepository ?? FirestoreRepository();
     _authRepository = authRepository ?? FirebaseAuthRepository();
   }
-  
+
   // Factory constructor with dependency injection
   factory OfflineService({
     FirestoreRepository? firestoreRepository,
@@ -95,14 +66,16 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       firestoreRepository: firestoreRepository,
       authRepository: authRepository,
     );
-    
+
     // Update dependencies if provided on subsequent calls
-    if (firestoreRepository != null) _instance!._firestoreRepository = firestoreRepository;
+    if (firestoreRepository != null) {
+      _instance!._firestoreRepository = firestoreRepository;
+    }
     if (authRepository != null) _instance!._authRepository = authRepository;
-    
+
     return _instance!;
   }
-  
+
   /// Reset singleton for testing
   @visibleForTesting
   static void resetForTesting() {
@@ -120,17 +93,25 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   // User-specific storage state
   String? _currentUserId;
 
+  // Cached sync state for synchronous access
+  bool _cachedHasQueuedChanges = false;
+  int _cachedQueuedChangesCount = 0;
+
   // Getters (safe to call before initialization)
-  bool get isOnline => _isInitializationReady ? _initialization.isOnline : true; // Default to online
-  bool get isInitialized => _isInitializationReady ? _initialization.isInitialized : false;
+  bool get isOnline => _isInitializationReady ? _initialization.isOnline : true;
+  bool get isInitialized =>
+      _isInitializationReady ? _initialization.isInitialized : false;
   bool get isSyncing => _isSyncManagerReady ? _syncManager.isSyncing : false;
-  Box<Recipe> get recipeBox {
-    if (!_isInitializationReady) {
-      throw StateError('OfflineService not initialized - call initialize() first');
-    }
-    return _initialization.recipeBox;
-  }
   String? get currentUserId => _currentUserId;
+
+  /// Access to the Drift database for direct DAO operations
+  AppDatabase get database {
+    if (!_isInitializationReady) {
+      throw StateError(
+          'OfflineService not initialized - call initialize() first');
+    }
+    return _initialization.database;
+  }
 
   // Helper getters to check if components are ready
   bool get _isInitializationReady {
@@ -151,69 +132,92 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     }
   }
 
-  /// Important getters for offline_status_icon.dart
-  bool get hasQueuedChanges => isInitialized && _isSyncManagerReady && _syncManager.hasQueuedChanges;
-  int get queuedChangesCount => (isInitialized && _isSyncManagerReady) ? _syncManager.queuedChangesCount : 0;
+  /// Cached sync state for synchronous UI access
+  /// Call refreshSyncState() to update from database
+  bool get hasQueuedChanges => _cachedHasQueuedChanges;
+  int get queuedChangesCount => _cachedQueuedChangesCount;
+
+  /// Refresh sync state from database (async)
+  Future<void> refreshSyncState() async {
+    if (!isInitialized || !_isSyncManagerReady) {
+      _cachedHasQueuedChanges = false;
+      _cachedQueuedChangesCount = 0;
+      return;
+    }
+
+    _cachedHasQueuedChanges = await _syncManager.hasQueuedChanges;
+    _cachedQueuedChangesCount = await _syncManager.queuedChangesCount;
+    notifyListeners();
+  }
 
   /// Set current user for offline storage
   void setCurrentUser(String? userId) {
     if (_currentUserId != userId) {
       _currentUserId = userId;
-      // Legacy storage integration removed during consolidation
       AppLogger.info(
           '👤 Offline service använder nu user: ${userId ?? "INGEN"}');
-      notifyListeners();
+      // Refresh sync state for new user
+      refreshSyncState();
     }
   }
 
-  /// Initialize Hive and offline service
+  /// Initialize Drift database and offline service
   Future<void> initialize() async {
     if (isInitialized) return;
 
-    // Initialize components
+    // Initialize components with Drift database
     _initialization = OfflineInitialization(
-      onConnectivityChanged: () => notifyListeners(),
+      onConnectivityChanged: () {
+        refreshSyncState();
+      },
       onReconnected: () => _syncManager.syncPendingChanges(isOnline: isOnline),
     );
 
     await _initialization.initialize();
 
     _userStorage = OfflineUserStorage(
-      recipeBox: _initialization.recipeBox,
-      syncQueueBox: _initialization.syncQueueBox,
+      database: _initialization.database,
     );
 
     _syncManager = OfflineSyncManager(
-      recipeBox: _initialization.recipeBox,
-      syncQueueBox: _initialization.syncQueueBox,
+      database: _initialization.database,
       firestoreRepository: _firestoreRepository,
       authRepository: _authRepository,
-      onSyncStateChanged: () => notifyListeners(),
+      onSyncStateChanged: () {
+        refreshSyncState();
+      },
     );
+
+    // Initial sync state refresh
+    await refreshSyncState();
   }
 
   // ===== USER-SPECIFIC METHODS =====
 
   /// Get recipes for specific user
-  List<Recipe> getRecipesForUser(String userId) {
+  Future<List<Recipe>> getRecipesForUser(String userId) async {
     if (!isInitialized) return [];
     return _userStorage.getRecipesForUser(userId);
   }
 
   /// Save recipe with user-specific key
   Future<void> saveRecipeOfflineForUser(Recipe recipe, String userId) async {
-    return _userStorage.saveRecipeForUser(recipe, userId, isOnline: isOnline);
+    await _userStorage.saveRecipeForUser(recipe, userId, isOnline: isOnline);
+    await refreshSyncState();
   }
 
   /// Get specific offline recipe for user
-  Recipe? getOfflineRecipeForUser(String recipeId, String userId) {
+  Future<Recipe?> getOfflineRecipeForUser(
+      String recipeId, String userId) async {
     if (!isInitialized) return null;
     return _userStorage.getRecipeForUser(recipeId, userId);
   }
 
   /// Delete recipe for specific user
-  Future<void> deleteRecipeOfflineForUser(String recipeId, String userId) async {
-    return _userStorage.deleteRecipeForUser(recipeId, userId);
+  Future<void> deleteRecipeOfflineForUser(
+      String recipeId, String userId) async {
+    await _userStorage.deleteRecipeForUser(recipeId, userId);
+    await refreshSyncState();
   }
 
   /// Clear data for specific user
@@ -225,52 +229,71 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     }
 
     await _userStorage.clearUserData(userId);
-    notifyListeners();
+    await refreshSyncState();
   }
 
-  /// Get all users who have offline data
-  List<String> getUsersWithOfflineData() {
-    if (!isInitialized) return [];
-    return _userStorage.getUsersWithOfflineData();
+  /// Get count of offline recipes for user
+  Future<int> getRecipeCountForUser(String userId) async {
+    if (!isInitialized) return 0;
+    return _userStorage.getRecipeCountForUser(userId);
+  }
+
+  /// Watch recipes for a user (reactive stream)
+  Stream<List<Recipe>> watchRecipesForUser(String userId) {
+    if (!isInitialized) return Stream.value([]);
+    return _userStorage.watchRecipesForUser(userId);
   }
 
   // ===== LEGACY METHODS - BACKWARD COMPATIBLE =====
 
   /// Save recipe offline - with user support
   Future<void> saveRecipeOffline(Recipe recipe) async {
-    // Legacy storage integration removed during consolidation
     AppLogger.debug('Recipe offline save request: ${recipe.title}');
+    // Use current user if available
+    if (_currentUserId != null) {
+      await saveRecipeOfflineForUser(recipe, _currentUserId!);
+    }
   }
 
   /// Get all offline recipes - with user support
-  List<Recipe> getAllOfflineRecipes() {
-    // Legacy storage integration removed during consolidation
+  Future<List<Recipe>> getAllOfflineRecipes() async {
+    if (_currentUserId != null) {
+      return getRecipesForUser(_currentUserId!);
+    }
     return [];
   }
 
   /// Get specific offline recipe - with user support
-  Recipe? getOfflineRecipe(String id) {
-    // Legacy storage integration removed during consolidation
+  Future<Recipe?> getOfflineRecipe(String id) async {
+    if (_currentUserId != null) {
+      return getOfflineRecipeForUser(id, _currentUserId!);
+    }
     return null;
   }
 
   /// Delete recipe offline - with user support
   Future<void> deleteRecipeOffline(String id) async {
-    // Legacy storage integration removed during consolidation
     AppLogger.debug('Recipe offline delete request: $id');
+    if (_currentUserId != null) {
+      await deleteRecipeOfflineForUser(id, _currentUserId!);
+    }
   }
 
   /// Clear all offline data - with user support
   Future<void> clearOfflineData() async {
-    // Legacy storage integration removed during consolidation
     AppLogger.debug('Offline data clear request');
+    if (_currentUserId != null) {
+      await clearUserData(_currentUserId!);
+    }
   }
 
   // ===== SYNC METHODS =====
 
   /// Manual synchronization with user feedback
   Future<SyncResult> syncNow() async {
-    return _syncManager.syncNow(isOnline: isOnline);
+    final result = await _syncManager.syncNow(isOnline: isOnline);
+    await refreshSyncState();
+    return result;
   }
 
   // ===== RESOURCE MANAGEMENT =====
@@ -284,7 +307,7 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     super.dispose(); // Call ChangeNotifier dispose
   }
 
-  /// Close Hive boxes
+  /// Close Drift database
   Future<void> close() async {
     if (_isInitializationReady) {
       await _initialization.close();

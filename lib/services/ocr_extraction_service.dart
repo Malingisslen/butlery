@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:butlery/core/base/base_service.dart';
+import 'package:butlery/services/ocr/ocr_usage_tracker.dart';
 
 /// OCR processing result with comprehensive metadata and quality metrics
 class OCRResult {
@@ -147,6 +148,8 @@ class OCRExtractionService extends BaseService {
       timeProvider: testTimeProvider,
     );
     _tesseractCircuitBreaker = CircuitBreaker(timeProvider: testTimeProvider);
+    // Initialize usage tracker
+    _usageTracker = OCRUsageTracker(timeProvider: testTimeProvider);
   }
 
   /// Create OCR service for testing with injectable dependencies
@@ -181,6 +184,7 @@ class OCRExtractionService extends BaseService {
   late final CircuitBreaker _ocrSpaceCircuitBreaker;
   late final CircuitBreaker _googleVisionCircuitBreaker;
   late final CircuitBreaker _tesseractCircuitBreaker;
+  late final OCRUsageTracker _usageTracker;
   final Map<String, OCRResult> _cache = {};
   static const int _maxCacheSize = 100;
   static const Duration _cacheExpiry = Duration(hours: 24);
@@ -226,179 +230,33 @@ class OCRExtractionService extends BaseService {
 
   DateTime get _now => _testTimeProvider?.call() ?? DateTime.now();
 
-  // Usage tracking
-  int _dailyRequestCount = 0;
-  int _monthlyRequestCount = 0;
-  DateTime? _lastRequestDate;
-  DateTime? _monthStartDate;
-  final Map<String, int> _providerUsage = {
-    'ocr_space': 0,
-    'google_vision': 0,
-    'tesseract': 0,
-    'cache_hits': 0,
-  };
-
-  // Usage limits
-  static const int _freeMonthlyLimit = 25000; // OCR.space free tier
-  static const double _warningThreshold = 0.8; // 80% of limit
-
   /// Initialize OCR service
   @override
   Future<void> initialize() async {
     try {
-      _monthStartDate ??= _now;
       debugPrint(
-        '✅ [OCR] Service initialized - Providers: OCR.space, Google Vision, Tesseract',
+        '[OCR] Service initialized - Providers: OCR.space, Google Vision, Tesseract',
       );
       if (_ocrApiKey.isEmpty) {
-        debugPrint('⚠️ [OCR] OCR.space API key not configured');
+        debugPrint('[OCR] OCR.space API key not configured');
       }
       if (_googleVisionKey.isEmpty) {
-        debugPrint('⚠️ [OCR] Google Vision API key not configured');
+        debugPrint('[OCR] Google Vision API key not configured');
       }
       if (_tesseractApiUrl.isEmpty) {
-        debugPrint('⚠️ [OCR] Tesseract API URL not configured');
+        debugPrint('[OCR] Tesseract API URL not configured');
       }
     } catch (e) {
-      debugPrint('❌ [OCR] Init failed: $e');
+      debugPrint('[OCR] Init failed: $e');
       rethrow;
     }
   }
 
-  /// Record OCR usage for tracking and cost monitoring
-  void _recordUsage(String provider) {
-    final now = _now;
-
-    // Reset daily count if new day
-    if (_lastRequestDate == null ||
-        _lastRequestDate!.day != now.day ||
-        _lastRequestDate!.month != now.month ||
-        _lastRequestDate!.year != now.year) {
-      _dailyRequestCount = 0;
-      _lastRequestDate = now;
-    }
-
-    // Reset monthly count if new month
-    if (_monthStartDate == null ||
-        _monthStartDate!.month != now.month ||
-        _monthStartDate!.year != now.year) {
-      _monthlyRequestCount = 0;
-      _monthStartDate = now;
-      debugPrint('📊 [OCR] New month started - usage counters reset');
-    }
-
-    // Increment counters
-    _dailyRequestCount++;
-    _monthlyRequestCount++;
-    _providerUsage[provider] = (_providerUsage[provider] ?? 0) + 1;
-
-    // Log usage and check warnings
-    _logUsageStats();
-    _checkUsageWarnings();
-  }
-
-  /// Log current usage statistics
-  void _logUsageStats() {
-    if (kDebugMode) {
-      final total = _providerUsage.values.reduce((a, b) => a + b);
-      debugPrint(
-        '📊 [OCR Usage] Today: $_dailyRequestCount | Month: $_monthlyRequestCount/$_freeMonthlyLimit',
-      );
-      debugPrint(
-        '📊 [OCR Providers] OCR.space: ${_providerUsage['ocr_space']} | '
-        'Google Vision: ${_providerUsage['google_vision']} | '
-        'Tesseract: ${_providerUsage['tesseract']} | '
-        'Cache hits: ${_providerUsage['cache_hits']} (${(((_providerUsage['cache_hits'] ?? 0) / total) * 100).toInt()}%)',
-      );
-    }
-  }
-
-  /// Check and warn about approaching usage limits
-  void _checkUsageWarnings() {
-    if (_monthlyRequestCount >= _freeMonthlyLimit) {
-      debugPrint(
-        '🚨 [OCR] EXCEEDED FREE TIER! Monthly usage: $_monthlyRequestCount/$_freeMonthlyLimit',
-      );
-      debugPrint(
-        '💡 [OCR] Action required: Upgrade to paid tier (\$19/month) or add fallback provider',
-      );
-    } else if (_monthlyRequestCount >=
-        (_freeMonthlyLimit * _warningThreshold)) {
-      debugPrint(
-        '⚠️ [OCR] Approaching limit: $_monthlyRequestCount/$_freeMonthlyLimit (${((_monthlyRequestCount / _freeMonthlyLimit) * 100).toInt()}%)',
-      );
-      debugPrint('💡 [OCR] Consider: Upgrade soon or optimize caching');
-    }
-  }
+  /// Record OCR usage - delegates to usage tracker
+  void _recordUsage(String provider) => _usageTracker.recordUsage(provider);
 
   /// Get usage statistics (for monitoring dashboard)
-  Map<String, dynamic> getUsageStats() {
-    final total = _providerUsage.values.reduce((a, b) => a + b);
-    final cacheHitRate =
-        total > 0 ? (_providerUsage['cache_hits'] ?? 0) / total : 0.0;
-
-    return {
-      'daily_count': _dailyRequestCount,
-      'monthly_count': _monthlyRequestCount,
-      'monthly_limit': _freeMonthlyLimit,
-      'usage_percentage': (_monthlyRequestCount / _freeMonthlyLimit) * 100,
-      'remaining': _freeMonthlyLimit - _monthlyRequestCount,
-      'provider_usage': Map.from(_providerUsage),
-      'cache_hit_rate': cacheHitRate,
-      'estimated_monthly_cost': _estimateMonthlyCost(),
-      'warnings': _getUsageWarnings(),
-    };
-  }
-
-  /// Estimate monthly cost based on current usage
-  double _estimateMonthlyCost() {
-    if (_monthlyRequestCount <= _freeMonthlyLimit) {
-      return 0.0; // Free tier
-    }
-
-    // OCR.space paid tier: $19/month for 100k requests
-    if (_monthlyRequestCount <= 100000) {
-      return 19.0;
-    }
-
-    // Google Vision overflow: $1.50 per 1000 after 100k
-    final overflow = _monthlyRequestCount - 100000;
-    final googleVisionCost = (overflow / 1000) * 1.50;
-    return 19.0 + googleVisionCost;
-  }
-
-  /// Get usage warnings
-  List<String> _getUsageWarnings() {
-    final warnings = <String>[];
-
-    if (_monthlyRequestCount >= _freeMonthlyLimit) {
-      warnings.add('Exceeded free tier - upgrade to paid tier or add fallback');
-    } else if (_monthlyRequestCount >=
-        (_freeMonthlyLimit * _warningThreshold)) {
-      warnings.add(
-        'Approaching monthly limit (${((_monthlyRequestCount / _freeMonthlyLimit) * 100).toInt()}%)',
-      );
-    }
-
-    if (_providerUsage['ocr_space'] == 0 && _monthlyRequestCount > 0) {
-      warnings.add('OCR.space not being used - check API key configuration');
-    }
-
-    final cacheHitRate = _calculateCacheHitRate();
-    if (cacheHitRate < 0.2 && _monthlyRequestCount > 100) {
-      warnings.add(
-        'Low cache hit rate (${(cacheHitRate * 100).toInt()}%) - many duplicate requests',
-      );
-    }
-
-    return warnings;
-  }
-
-  /// Calculate cache hit rate
-  double _calculateCacheHitRate() {
-    final total = _providerUsage.values.reduce((a, b) => a + b);
-    return total > 0 ? (_providerUsage['cache_hits'] ?? 0) / total : 0.0;
-  }
+  Map<String, dynamic> getUsageStats() => _usageTracker.getUsageStats();
 
   /// Extract text from image using multi-tier OCR strategy
   Future<OCRResult> extractText(Uint8List imageBytes) async {

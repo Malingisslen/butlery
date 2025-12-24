@@ -83,7 +83,7 @@ void main() {
       recipeDatabase[collaborativeRecipe.id] = collaborativeRecipe;
 
       module = SocialRecipeModule(
-        cacheHelper: mockCacheHelper,
+        getCacheHelper: () => mockCacheHelper,
         getCurrentUserId: () => currentUserId,
         getCurrentUserDisplayName: () => currentUserDisplayName,
         setError: (error) {},
@@ -138,7 +138,7 @@ void main() {
       test('should handle creation errors gracefully', () async {
         // Arrange - Create a module that fails on save
         final failingModule = SocialRecipeModule(
-          cacheHelper: mockCacheHelper,
+          getCacheHelper: () => mockCacheHelper,
           getCurrentUserId: () => currentUserId,
           getCurrentUserDisplayName: () => currentUserDisplayName,
           setError: (error) {},

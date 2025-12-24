@@ -20,6 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Production imports
 import 'package:butlery/services/notifications/notification_repository.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
+import 'package:butlery/models/notification_preferences.dart';
 import 'package:get_it/get_it.dart';
 
 // Test infrastructure

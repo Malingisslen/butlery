@@ -25,7 +25,6 @@ import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/core/cache/json_cache_helper.dart';
 
 // Test helper class to wrap service with additional test methods
 class TestableUnifiedRecipeService {
@@ -766,11 +765,8 @@ void main() {
 
     group('Service Status', () {
       test('should provide service status', () async {
-        // Clear the cache to ensure a clean state for this test
-        // Set the user first, then clear their cache
-        final cacheHelper = JsonCacheFactory.recipeCache();
-        cacheHelper.setCurrentUser('test_user_123');
-        await cacheHelper.clear();
+        // Note: Cache clearing now requires Drift database access
+        // Skip cache clearing in unit tests - integration tests handle this
 
         // Create a completely fresh service instance
         final freshService = UnifiedRecipeService(

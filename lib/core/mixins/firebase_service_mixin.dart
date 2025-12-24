@@ -56,8 +56,6 @@ import 'package:butlery/repositories/firestore_repository.dart';
 /// - [executeFirebaseTransaction] - Atomic transaction operations
 /// - [executeFirebaseQuery] - Query operations with pagination support
 mixin FirebaseServiceMixin on ErrorHandlingMixin {
-  // ===== FIREBASE INSTANCE MANAGEMENT =====
-
   /// FirestoreRepository for dependency injection.
   /// Services using this mixin must override this getter to provide their
   /// FirestoreRepository instance. This enables proper dependency injection
@@ -118,8 +116,6 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     }
     return true;
   }
-
-  // ===== FIREBASE OPERATION EXECUTION =====
 
   /// Executes a Firebase operation with comprehensive error handling.
   /// This method provides standardized execution of Firebase operations with
@@ -281,8 +277,6 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     return defaultValue;
   }
 
-  // ===== FIRESTORE DOCUMENT OPERATIONS =====
-
   /// Safe document read with proper error handling
   Future<DocumentSnapshot?> getDocument(
     String path, {
@@ -343,8 +337,6 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     return result ?? false;
   }
 
-  // ===== FIRESTORE COLLECTION OPERATIONS =====
-
   /// Safe collection query with proper error handling
   Future<QuerySnapshot?> queryCollection(
     String path, {
@@ -391,8 +383,6 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     );
   }
 
-  // ===== FIRESTORE BATCH OPERATIONS =====
-
   /// Execute Firebase batch operations with proper error handling
   /// Consolidates batch patterns found in 12+ services
   Future<bool> executeFirebaseBatchOperation(
@@ -434,8 +424,6 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
     return result ?? false;
   }
 
-  // ===== FIRESTORE TRANSACTION OPERATIONS =====
-
   /// Execute transaction with proper error handling
   Future<T?> executeTransaction<T>(
     Future<T> Function(Transaction transaction) operation, {
@@ -448,8 +436,6 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       defaultValue: defaultValue,
     );
   }
-
-  // ===== FIRESTORE REAL-TIME OPERATIONS =====
 
   /// Create document stream with proper error handling
   Stream<DocumentSnapshot> watchDocument(
@@ -499,8 +485,6 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
       handleCategorizedError(error, 'Watch collection: $path');
     });
   }
-
-  // ===== FIREBASE ERROR HANDLING =====
 
   /// Check if error is retryable with DNS-aware error classification.
   /// This enhanced method provides intelligent error classification that distinguishes
@@ -591,8 +575,6 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
 
     return FirebaseErrorType.unknown;
   }
-
-  // ===== FIREBASE CONNECTION STATE =====
 
   /// Check Firebase connectivity with DNS resilience and enhanced error handling.
   /// This enhanced method provides comprehensive Firebase connectivity testing with

@@ -70,9 +70,6 @@
 /// service layer while providing advanced features for dependency management, testing,
 /// and production monitoring in the Swedish cooking application architecture.
 mixin SingletonServiceMixin<T> {
-  
-  // ===== SINGLETON INSTANCE MANAGEMENT =====
-  
   /// Global singleton instance registry
   /// Thread-safe singleton pattern with proper typing
   static final Map<Type, dynamic> _instances = {};
@@ -124,9 +121,7 @@ mixin SingletonServiceMixin<T> {
     
     return _instances.putIfAbsent(type, createInstance) as T;
   }
-  
-  // ===== DEPENDENCY TRACKING =====
-  
+
   static final Map<Type, int> _dependencyHashes = {};
   
   static bool _hasDependenciesChanged<T>(List<Object> dependencies) {
@@ -139,9 +134,7 @@ mixin SingletonServiceMixin<T> {
   static int _hashDependencies(List<Object> dependencies) {
     return Object.hashAll(dependencies.map((d) => d.runtimeType.toString()));
   }
-  
-  // ===== LIFECYCLE MANAGEMENT =====
-  
+
   /// Check if instance exists
   static bool hasInstance<T>() {
     return _instances.containsKey(T) && _disposed[T] != true;
@@ -183,9 +176,7 @@ mixin SingletonServiceMixin<T> {
     _disposed.clear();
     _dependencyHashes.clear();
   }
-  
-  // ===== INSTANCE STATE MANAGEMENT =====
-  
+
   bool _isDisposed = false;
   
   /// Check if this singleton instance is disposed
@@ -201,9 +192,7 @@ mixin SingletonServiceMixin<T> {
   Future<void> onSingletonDispose() async {
     // Override in implementing classes for custom disposal logic
   }
-  
-  // ===== FACTORY CONSTRUCTOR HELPER =====
-  
+
   /// Helper method for implementing factory constructors
   /// Eliminates the need for manual factory constructor implementation
   static T createSingleton<T extends SingletonServiceMixin<T>>(
@@ -224,9 +213,7 @@ mixin SingletonServiceMixin<T> {
       config: config,
     );
   }
-  
-  // ===== DEBUGGING AND MONITORING =====
-  
+
   /// Get debug information about singleton instances
   static Map<String, dynamic> getDebugInfo() {
     return {
@@ -262,9 +249,7 @@ mixin SingletonServiceMixin<T> {
     
     return warnings;
   }
-  
-  // ===== TESTING SUPPORT =====
-  
+
   /// Reset all singleton state (for testing)
   static void resetForTesting() {
     clearAllInstances();

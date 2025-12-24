@@ -63,12 +63,12 @@ import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coo
 class SocialRecipeModule extends BaseService with UserContextMixin {
   @override
   String get serviceName => 'SocialRecipeModule';
-  
+
   // Coordinator that handles all the actual work
   late final SocialRecipeCoordinator _coordinator;
 
   SocialRecipeModule({
-    required JsonCacheHelper cacheHelper,
+    required JsonCacheHelper Function() getCacheHelper,
     required String? Function() getCurrentUserId,
     required String? Function() getCurrentUserDisplayName,
     required void Function(String) setError,
@@ -79,10 +79,10 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
   }) {
     // Set the user ID provider for the mixin
     setUserIdProvider(getCurrentUserId);
-    
+
     // Initialize the coordinator with all dependencies
     _coordinator = SocialRecipeCoordinator(
-      cacheHelper: cacheHelper,
+      getCacheHelper: getCacheHelper,
       getCurrentUserId: getCurrentUserId,
       getCurrentUserDisplayName: getCurrentUserDisplayName,
       setError: setError,

@@ -13,6 +13,7 @@ import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -63,6 +64,9 @@ class UnifiedRecipeService extends ChangeNotifier
   late final PersonalRecipeOperations personal;
   late final SocialRecipeOperations social;
   late final RealtimeRecipeOperations realtime;
+
+  // Explicit initialization tracking (replaces try-catch pattern)
+  bool _socialInitialized = false;
 
   // Content operations helper
   late final RecipeContentOperations _contentOps;
@@ -154,13 +158,24 @@ class UnifiedRecipeService extends ChangeNotifier
 
   // ===== MODULE INITIALIZATION =====
 
-  void _initializeModules() {
-    final cacheHelper = JsonCacheFactory.recipeCache();
+  // Lazy cache helper getter
+  JsonCacheHelper? _cacheHelperField;
+  JsonCacheHelper get _cacheHelper {
+    if (_cacheHelperField == null) {
+      final offlineService = ServiceLocator.get<OfflineService>();
+      _cacheHelperField = JsonCacheHelper(
+        'unified_recipes_cache',
+        offlineService.database.cacheDao,
+      );
+    }
+    return _cacheHelperField!;
+  }
 
+  void _initializeModules() {
     _personalModule = PersonalRecipeModule(
       recipeRepository: _getRecipeRepository(),
       userRepository: ServiceLocator.get<UserRepository>(),
-      cacheHelper: cacheHelper,
+      getCacheHelper: () => _cacheHelper,
       getCurrentUserId: () => currentUserId,
       getCurrentUserDisplayName: () => currentUserDisplayName,
       setError: _setError,
@@ -169,7 +184,7 @@ class UnifiedRecipeService extends ChangeNotifier
     );
 
     _socialModule = SocialRecipeModule(
-      cacheHelper: cacheHelper,
+      getCacheHelper: () => _cacheHelper,
       getCurrentUserId: () => currentUserId,
       getCurrentUserDisplayName: () => currentUserDisplayName,
       setError: _setError,
@@ -180,7 +195,7 @@ class UnifiedRecipeService extends ChangeNotifier
 
     _realtimeModule = RealtimeRecipeModule(
       firestore: _firestore,
-      cacheHelper: cacheHelper,
+      getCacheHelper: () => _cacheHelper,
       getCurrentUserId: () => currentUserId,
       getCurrentUserDisplayName: () => currentUserDisplayName,
       setError: _setError,
@@ -190,7 +205,7 @@ class UnifiedRecipeService extends ChangeNotifier
 
     _cacheModule = RecipeCacheModule(
       firestore: _firestore,
-      cacheHelper: cacheHelper,
+      cacheHelper: _cacheHelper,
       getCurrentUserId: () => currentUserId,
       setError: _setError,
       notifyListeners: notifyListeners,
@@ -245,6 +260,7 @@ class UnifiedRecipeService extends ChangeNotifier
 
     if (initializedSocial != null) {
       social = initializedSocial;
+      _socialInitialized = true;
     } else {
       // Defer initialization
       Future.microtask(() => _initializeSocialOperations());
@@ -252,12 +268,8 @@ class UnifiedRecipeService extends ChangeNotifier
   }
 
   void _initializeSocialOperations() {
-    // Check if already initialized
-    try {
-      // ignore: unnecessary_statements
-      social;
-      return;
-    } catch (_) {}
+    // Check if already initialized using explicit flag
+    if (_socialInitialized) return;
 
     // Try to initialize with available repositories
     final initialized = SocialOperationsInitializer.tryInitialize(
@@ -268,6 +280,7 @@ class UnifiedRecipeService extends ChangeNotifier
 
     if (initialized != null) {
       social = initialized;
+      _socialInitialized = true;
     } else {
       // Create with fallback repositories and schedule retry
       social = SocialOperationsInitializer.initializeWithFallback(
@@ -276,10 +289,14 @@ class UnifiedRecipeService extends ChangeNotifier
         _firestoreRepository,
         _authRepository,
       );
+      _socialInitialized = true;
 
       SocialOperationsInitializer.scheduleRetry(
         this,
-        (operations) => social = operations,
+        (operations) {
+          social = operations;
+          _socialInitialized = true;
+        },
         const Duration(milliseconds: 500),
       );
     }

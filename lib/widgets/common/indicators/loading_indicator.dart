@@ -3,9 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
-/// Reusable loading indicator component
-/// Provides consistent styling for loading indicators.
-/// Used in app bars, buttons, overlays, etc.
+/// Configurable loading indicator with consistent styling.
 class LoadingIndicator extends StatelessWidget {
   final double? size;
   final double? strokeWidth;

@@ -1,5 +1,6 @@
 // lib/models/social/reaction_statistics.dart
 
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/social/reaction_type.dart';
 
 /// Comprehensive reaction statistics model for content engagement analytics
@@ -85,9 +86,9 @@ class ReactionStatistics {
   /// Create from Firestore document
   factory ReactionStatistics.fromFirestore(String contentId, String contentType, Map<String, dynamic> data) {
     final Map<ReactionType, int> counts = {};
-    
+
     // Parse reaction counts from Firestore data
-    final countsData = data['reactionCounts'] as Map<String, dynamic>? ?? {};
+    final countsData = SerializationUtils.safeMap(data, 'reactionCounts');
     for (final entry in countsData.entries) {
       try {
         // Check if this is a valid reaction type key
@@ -96,7 +97,7 @@ class ReactionStatistics {
           // Skip invalid reaction types for forward compatibility
           continue;
         }
-        
+
         final reactionType = ReactionType.fromKey(entry.key);
         final count = entry.value as int? ?? 0;
         if (count > 0) {
@@ -108,15 +109,13 @@ class ReactionStatistics {
       }
     }
 
-    final reactedUsers = (data['reactedUserIds'] as List?)
-        ?.cast<String>()
-        .toSet() ?? <String>{};
+    final reactedUsers = SerializationUtils.safeStringList(data, 'reactedUserIds').toSet();
 
     return ReactionStatistics(
       reactionCounts: counts,
       reactedUserIds: reactedUsers,
       lastUpdated: DateTime.fromMillisecondsSinceEpoch(
-        data['lastUpdated'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+        SerializationUtils.safeInt(data, 'lastUpdated', defaultValue: DateTime.now().millisecondsSinceEpoch),
       ),
       contentId: contentId,
       contentType: contentType,

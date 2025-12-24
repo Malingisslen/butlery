@@ -1,13 +1,3 @@
-/// Shared recipe model with unified base infrastructure, status tracking, and copy-on-write collaboration.
-/// **Features:** Status mixins (view/import/dismiss), collaborative editing, sharing scopes, Firestore/JSON serialization.
-/// ```dart
-/// final sr = SharedRecipe.create(originalRecipeId: id, sharedByUserId: uid,
-///   sharedByDisplayName: 'Anna', sharedToUserIds: [f1, f2], recipeSnapshot: recipe);
-/// final viewed = sr.markViewedBy(userId).markImportedBy(userId);
-/// ```
-
-// lib/models/shared_recipe.dart
-
 import 'package:butlery/models/shared_content/base_shared_content_model.dart';
 import 'package:butlery/models/shared_content/shared_content_status_mixin.dart';
 import 'package:butlery/models/shared_content/copy_on_write_mixin.dart';
@@ -18,54 +8,25 @@ import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 
-/// Enumeration defining the scope of recipe sharing for distribution categorization.
-/// Share scopes determine the distribution pattern and recipient management:
-/// - [individual] - Recipe shared with a specific person for direct personal sharing
-/// - [multiple] - Recipe shared with multiple specific recipients for group distribution
-/// - [friends] - Recipe shared with all friends (future feature for broad social sharing)
 enum ShareScope {
-  individual, // Delad till specifik person
-  multiple, // Delad till flera personer
-  friends, // Delad till alla vänner (framtida feature)
+  individual,
+  multiple,
+  friends,
 }
 
-/// Shared recipe model with unified base infrastructure and recipe-specific features.
+/// Shared recipe model with copy-on-write collaboration support.
 class SharedRecipe extends BaseSharedContentModel<Recipe>
     with SharedContentStatusMixin, CopyOnWriteSupport {
-  // ===== RECIPE-SPECIFIC FIELDS =====
-
-  /// Reference identifier to the original recipe for tracking and linking.
   final String originalRecipeId;
-
-  /// Complete snapshot of the recipe at the time of sharing.
   final Recipe recipeSnapshot;
-
-  /// Scope of the recipe sharing for distribution categorization.
   final ShareScope scope;
-
-  /// Flag indicating whether recipients can import or copy the recipe.
   final bool allowImport;
-
-  /// Flag indicating whether collaborative editing is allowed.
   final bool allowCollaboration;
-
-  // ===== COPY-ON-WRITE FIELDS =====
-
-  /// Flag indicating whether this is an original reference or collaborative version.
   final bool _isOriginalReference;
-
-  /// Flag indicating whether copy-on-write has been triggered for this content.
   final bool _copyOnWriteTriggered;
-
-  /// ID of the static copy created for the original owner when CoW is triggered.
   final String? _originalOwnerStaticCopyId;
-
-  /// Count of users actively collaborating on this content (Issue #014).
-  /// Note: Actual collaborator list now stored in Firestore subcollection to eliminate
-  /// 100-element array limit. Use repository.getCollaborators(recipeId) for full list.
   final int _activeCollaboratorCount;
 
-  /// Creates a new shared recipe with all required metadata.
   SharedRecipe({
     required super.id,
     required super.sharedByUserId,
@@ -91,22 +52,17 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
         _activeCollaboratorCount = activeCollaboratorCount,
         super(sharedAt: sharedAt ?? DateTime.now());
 
-  /// Factory constructor for creating new shared recipes with auto-generated ID and intelligent defaults.
-  /// Note (Issue #014): sharedToUserIds removed from model. Repository layer handles adding
-  /// members to Firestore subcollection after creation.
   factory SharedRecipe.create({
     required String originalRecipeId,
     required String sharedByUserId,
     required String sharedByDisplayName,
-    required List<String>
-        sharedToUserIds, // Still accept for scope determination
+    required List<String> sharedToUserIds,
     String? shareMessage,
     ShareScope? scope,
     bool allowImport = true,
     bool allowCollaboration = false,
     required Recipe recipeSnapshot,
   }) {
-    // Determine scope based on number of recipients
     final determinedScope = scope ??
         (sharedToUserIds.length == 1
             ? ShareScope.individual
@@ -124,8 +80,6 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
       allowCollaboration: allowCollaboration,
     );
   }
-
-  // ===== BASE CLASS IMPLEMENTATIONS =====
 
   @override
   String get contentTypeName => 'recipe';
@@ -152,8 +106,6 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     );
   }
 
-  /// Creates a copy of this shared recipe with updated values.
-  /// Note (Issue #014): Array parameters removed. Status now tracked in Firestore subcollections.
   SharedRecipe copyWith({
     int? viewCount,
     int? importCount,
@@ -187,9 +139,6 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     );
   }
 
-  // ===== COPY-ON-WRITE IMPLEMENTATIONS =====
-
-  /// Copy-on-write getter implementations from CopyOnWriteSupport mixin.
   @override
   bool get isOriginalReference => _isOriginalReference;
 
@@ -215,7 +164,7 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
       isOriginalReference: false,
       copyOnWriteTriggered: true,
       originalOwnerStaticCopyId: staticCopyId,
-      activeCollaboratorCount: 1, // First collaborator
+      activeCollaboratorCount: 1,
     );
   }
 
@@ -224,56 +173,29 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     if (!copyOnWriteTriggered) {
       return this;
     }
-
-    // Increment count (actual list managed in Firestore subcollection)
-    return copyWith(
-      activeCollaboratorCount: activeCollaboratorCount + 1,
-    );
+    return copyWith(activeCollaboratorCount: activeCollaboratorCount + 1);
   }
 
-  // ===== TYPE-SAFE WRAPPER METHODS (REMOVED - ISSUE #014) =====
-  //
-  // Note: Status-checking methods (markViewedBy, markEngagedBy, etc.) removed from base class.
-  // Status tracking now handled by repository layer using Firestore subcollections.
-  // Use repository methods instead:
-  //   - repository.addView(recipeId, userId)
-  //   - repository.addEngagement(recipeId, userId, action: 'import')
-  //   - repository.addDismissal(recipeId, userId)
-  //   - repository.removeDismissal(recipeId, userId)
-
-  // ===== RECIPE-SPECIFIC PROPERTIES =====
-
-  /// Alias getter for the recipe snapshot for backward compatibility.
   Recipe get recipe => recipeSnapshot;
 
-  /// Import count getter for backward compatibility.
   int get importCount => engagementCount;
 
-  // ===== RECIPE-SPECIFIC METHODS =====
-
-  /// Creates a new recipe with proper attribution for importing shared recipes.
   Recipe createImportRecipe({required String newOwnerId}) {
     final attributionText = 'Inspirerat av recept från $sharedByDisplayName';
     return recipeSnapshot.copyWith(sourceUrl: attributionText);
   }
 
-  /// Gets the permission level for this shared recipe based on collaboration settings.
   ResourcePermission get permission {
     return allowCollaboration
         ? ResourcePermission.editor
         : ResourcePermission.viewer;
   }
 
-  /// Determines the appropriate edit mode for the specified user.
-  /// Note (Issue #014): Simplified version. For accurate membership/collaborator checks,
-  /// use repository methods: isMember(recipeId, userId), isCollaborator(recipeId, userId).
   EditMode getEditModeFor(String userId) {
     if (sharedByUserId == userId) {
       return EditMode.owner;
     }
 
-    // Note: Cannot check membership without repository query (arrays removed)
-    // Assume user has access if this method is called
     if (copyOnWriteTriggered && hasActiveCollaborators) {
       return EditMode.collaborative;
     }
@@ -283,9 +205,6 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
         : EditMode.readOnlyWithFork;
   }
 
-  // ===== SERIALIZATION =====
-
-  /// Converts the shared recipe to Firestore-compatible format for persistence.
   Map<String, dynamic> toFirestore() {
     return {
       ...getCommonFirestoreFields(),
@@ -298,7 +217,6 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     };
   }
 
-  /// Creates a shared recipe instance from Firestore repository data.
   factory SharedRecipe.fromMap(String id, Map<String, dynamic> data) {
     try {
       final commonFields =
@@ -382,7 +300,6 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     }
   }
 
-  /// Converts the shared recipe to JSON format for caching and client-side storage.
   Map<String, dynamic> toJson() {
     return {
       ...getCommonJsonFields(),
@@ -395,7 +312,6 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     };
   }
 
-  /// Creates a shared recipe instance from JSON data for caching and deserialization.
   factory SharedRecipe.fromJson(Map<String, dynamic> json) {
     final commonFields = BaseSharedContentModel.parseCommonFieldsFromJson(json);
     final cowFields = CopyOnWriteSupport.parseCopyOnWriteFieldsFromJson(json);
@@ -426,29 +342,17 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     );
   }
 
-  /// Standard object methods for debugging, comparison, and identity management.
-
-  /// Returns a string representation of the shared recipe for debugging and logging.
-  /// Provides essential recipe sharing information in a readable format for development
-  /// and debugging purposes with recipe title and owner name.
-  /// Note (Issue #014): Recipient count removed (array no longer exists).
   @override
   String toString() {
     return 'SharedRecipe(id: $id, recipe: ${recipeSnapshot.title}, sharedBy: $sharedByDisplayName)';
   }
 
-  /// Compares two shared recipes for equality based on unique identifier.
-  /// Uses recipe sharing ID for equality comparison ensuring consistent object
-  /// identity across different instances of the same shared recipe data.
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is SharedRecipe && other.id == id;
   }
 
-  /// Generates hash code based on unique shared recipe identifier.
-  /// Provides consistent hash code generation for use in collections and
-  /// data structures requiring hash-based operations and recipe identification.
   @override
   int get hashCode => id.hashCode;
 }

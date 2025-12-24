@@ -8,7 +8,6 @@ import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
-import 'package:butlery/theme/component_themes.dart';
 
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/state/loading_states.dart';
@@ -21,6 +20,9 @@ import 'package:butlery/views/social/discovery_dashboard/discovery_categories.da
 import 'package:butlery/views/social/discovery_dashboard/trending_content_section.dart';
 import 'package:butlery/views/social/discovery_dashboard/friend_activity_section.dart';
 import 'package:butlery/views/social/discovery_dashboard/recommendations_section.dart';
+import 'package:butlery/views/social/discovery_dashboard/responsive_dashboard_wrapper.dart';
+import 'package:butlery/views/social/discovery_dashboard/popular_with_friends_section.dart';
+import 'package:butlery/views/social/discovery_dashboard/recently_shared_section.dart';
 
 /// Discovery Dashboard View - Unified content discovery with trending content, friend activity, and personalized recommendations.
 class DiscoveryDashboardView extends StatelessWidget {
@@ -247,88 +249,40 @@ class _DiscoveryDashboardViewContentState
       return _buildSearchResults(context, viewModel);
     }
 
-    // ✅ RESPONSIVE: Center and constrain content on large screens
-    return SingleChildScrollView(
-      child: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: LayoutComponents.valueFor(
-              context: context,
-              mobile: double.infinity,
-              tablet: 900,
-              desktop: 1200,
-            ),
-          ),
-          child: Padding(
-            padding: AppDimensions.responsiveContentPadding(context),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DiscoveryCategories.build(context, viewModel),
-                const SizedBox(height: AppDimensions.spacingL),
-                TrendingContentSection.build(context, viewModel),
-                const SizedBox(height: AppDimensions.spacingL),
-                _buildPopularWithFriendsSection(context, viewModel),
-                const SizedBox(height: AppDimensions.spacingL),
-                _buildRecentlySharedSection(context, viewModel),
-              ],
-            ),
-          ),
-        ),
+    return ResponsiveDashboardWrapper(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DiscoveryCategories.build(context, viewModel),
+          const SizedBox(height: AppDimensions.spacingL),
+          TrendingContentSection.build(context, viewModel),
+          const SizedBox(height: AppDimensions.spacingL),
+          PopularWithFriendsSection.build(context, viewModel),
+          const SizedBox(height: AppDimensions.spacingL),
+          RecentlySharedSection.build(context, viewModel),
+        ],
       ),
     );
   }
 
   Widget _buildActivityTab(BuildContext context, DiscoveryDashboardViewModel viewModel) {
-    // ✅ RESPONSIVE: Center and constrain content on large screens
-    return SingleChildScrollView(
-      child: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: LayoutComponents.valueFor(
-              context: context,
-              mobile: double.infinity,
-              tablet: 900,
-              desktop: 1200,
-            ),
-          ),
-          child: Padding(
-            padding: AppDimensions.responsiveContentPadding(context),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FriendActivitySection.build(context, viewModel),
-              ],
-            ),
-          ),
-        ),
+    return ResponsiveDashboardWrapper(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FriendActivitySection.build(context, viewModel),
+        ],
       ),
     );
   }
 
   Widget _buildRecommendationsTab(BuildContext context, DiscoveryDashboardViewModel viewModel) {
-    // ✅ RESPONSIVE: Center and constrain content on large screens
-    return SingleChildScrollView(
-      child: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: LayoutComponents.valueFor(
-              context: context,
-              mobile: double.infinity,
-              tablet: 900,
-              desktop: 1200,
-            ),
-          ),
-          child: Padding(
-            padding: AppDimensions.responsiveContentPadding(context),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                RecommendationsSection.build(context, viewModel),
-              ],
-            ),
-          ),
-        ),
+    return ResponsiveDashboardWrapper(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RecommendationsSection.build(context, viewModel),
+        ],
       ),
     );
   }
@@ -346,26 +300,16 @@ class _DiscoveryDashboardViewContentState
       );
     }
 
-    // ✅ RESPONSIVE: Center and constrain search results on large screens
-    return Center(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: LayoutComponents.valueFor(
-            context: context,
-            mobile: double.infinity,
-            tablet: 900,
-            desktop: 1200,
-          ),
-        ),
-        child: ListView.separated(
-          padding: AppDimensions.responsiveContentPadding(context),
-          itemCount: searchResults.length,
-          separatorBuilder: (context, index) => const SizedBox(height: AppDimensions.spacingS),
-          itemBuilder: (context, index) {
-            final item = searchResults[index];
-            return _buildSearchResultCard(context, item);
-          },
-        ),
+    return ResponsiveDashboardWrapper(
+      scrollable: false,
+      child: ListView.separated(
+        padding: EdgeInsets.zero,
+        itemCount: searchResults.length,
+        separatorBuilder: (context, index) => const SizedBox(height: AppDimensions.spacingS),
+        itemBuilder: (context, index) {
+          final item = searchResults[index];
+          return _buildSearchResultCard(context, item);
+        },
       ),
     );
   }
@@ -408,146 +352,6 @@ class _DiscoveryDashboardViewContentState
     return CircleAvatar(
       backgroundColor: iconData.$2.withValues(alpha: 0.1),
       child: Icon(iconData.$1, color: iconData.$2, size: AppDimensions.iconSizeM),
-    );
-  }
-
-  Widget _buildPopularWithFriendsSection(BuildContext context, DiscoveryDashboardViewModel viewModel) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Icon(
-              Icons.people,
-              color: AppColors.primary,
-              size: AppDimensions.iconSizeM,
-            ),
-            const SizedBox(width: AppDimensions.spacingS),
-            Text('Populärt bland vänner', style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w600)),
-          ],
-        ),
-        const SizedBox(height: AppDimensions.spacingM),
-        Text('Innehåll som dina vänner gillar och delar',
-          style: AppTextStyles.bodySmall.copyWith(color: AppColors.onSurface.withValues(alpha: 0.7))),
-        const SizedBox(height: AppDimensions.spacingM),
-        if (viewModel.trendingRecipes.isNotEmpty)
-          SizedBox(
-            height: 120,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: viewModel.trendingRecipes.length,
-              itemBuilder: (context, index) {
-                final recipe = viewModel.trendingRecipes[index];
-                return Container(
-                  width: 200,
-                  margin: const EdgeInsets.only(right: AppDimensions.spacingM),
-                  padding: const EdgeInsets.all(AppDimensions.spacingM),
-                  decoration: ComponentThemes.trendingRecipeCardDecoration,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        recipe.title,
-                        style: AppTextStyles.titleSmall,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const Spacer(),
-                      Text(
-                        '${recipe.mealType} • ${recipe.portions ?? 0} portioner',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.onSurface.withValues(alpha: 0.7),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          )
-        else
-          Container(
-            height: 120,
-            decoration: ComponentThemes.emptyStateContainerDecoration,
-            child: const Center(
-              child: Text('Inga populära recept än'),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildRecentlySharedSection(BuildContext context, DiscoveryDashboardViewModel viewModel) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Icon(
-              Icons.access_time,
-              color: AppColors.secondary,
-              size: AppDimensions.iconSizeM,
-            ),
-            const SizedBox(width: AppDimensions.spacingS),
-            Text('Nyligen delat', style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w600)),
-          ],
-        ),
-        const SizedBox(height: AppDimensions.spacingM),
-        Text('Senast delade innehåll i ditt nätverk',
-          style: AppTextStyles.bodySmall.copyWith(color: AppColors.onSurface.withValues(alpha: 0.7))),
-        const SizedBox(height: AppDimensions.spacingM),
-        if (viewModel.friendActivity.isNotEmpty)
-          SizedBox(
-            height: 120,
-            child: ListView.builder(
-              itemCount: viewModel.friendActivity.length,
-              itemBuilder: (context, index) {
-                final activity = viewModel.friendActivity[index];
-                final title = activity['title'] as String? ?? 'Okänt innehåll';
-                final user = activity['user'] as String? ?? 'Okänd användare';
-                final type = activity['type'] as String? ?? 'delning';
-                
-                return Container(
-                  margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
-                  padding: const EdgeInsets.all(AppDimensions.spacingM),
-                  decoration: ComponentThemes.activityTimelineItemDecoration,
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 16,
-                        backgroundColor: AppColors.secondary.withValues(alpha: 0.2),
-                        child: Text(
-                          user.substring(0, 1).toUpperCase(),
-                          style: AppTextStyles.bodySmall,
-                        ),
-                      ),
-                      const SizedBox(width: AppDimensions.spacingM),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(title, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
-                              maxLines: 1, overflow: TextOverflow.ellipsis),
-                            Text('$user delade $type',
-                              style: AppTextStyles.bodySmall.copyWith(color: AppColors.onSurface.withValues(alpha: 0.7))),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          )
-        else
-          Container(
-            height: 120,
-            decoration: ComponentThemes.activityTimelineItemDecoration,
-            child: const Center(
-              child: Text('Ingen vänaktivitet än'),
-            ),
-          ),
-      ],
     );
   }
 

@@ -1,46 +1,24 @@
-/// Weekly menu planning view with AI-powered generation and social sharing.
-
-// lib/views/veckomeny_view.dart
+/// Weekly menu planning view with filter-based generation and social sharing.
+library;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-// Data models for menu and social functionality
-import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/shared_menu.dart';
-
-// ViewModel integration for menu state management
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
-import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
-
-// Migrated widget components for modern architecture
-import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/universal_share_dialog.dart';
-import 'package:butlery/widgets/common/input_components.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
-
-// Theme system integration
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-
-// Utility services for user feedback
 import 'package:butlery/core/utils/snackbar_utils.dart';
-
-// Core services and dependency injection
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/utils/logger.dart';
-
-// External services for sharing and social functionality
 import 'package:butlery/services/share_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/menu/veckomeny_dialogs.dart';
+import 'package:butlery/widgets/menu/menu_content_widgets.dart';
 
-/// Weekly menu planning view with AI-powered generation, social sharing, and persistence.
+/// Weekly menu planning view with natural language input and social sharing.
 class VeckomenyView extends StatelessWidget {
   final SharedMenu? sharedMenu;
 
@@ -50,23 +28,20 @@ class VeckomenyView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: _PersistentMenuViewModel.instance,
-      child: const _VeckomenyViewContent(),
+      child: _VeckomenyViewContent(sharedMenu: sharedMenu),
     );
   }
 }
 
-/// Weekly menu view content with state management and service integration.
 class _VeckomenyViewContent extends StatefulWidget {
-  const _VeckomenyViewContent();
+  final SharedMenu? sharedMenu;
+
+  const _VeckomenyViewContent({this.sharedMenu});
 
   @override
   State<_VeckomenyViewContent> createState() => _VeckomenyViewContentState();
 }
 
-/// Weekly menu view content state managing prompt input and menu operations.
-/// Handles prompt input control, service integration,
-/// menu generation coordination, and user interaction handling while maintaining clean state management
-/// and proper resource disposal through comprehensive lifecycle management.
 class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   final TextEditingController _promptController = TextEditingController();
   final ShareService _shareService = ServiceLocator.get<ShareService>();
@@ -77,6 +52,13 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   void initState() {
     super.initState();
     _promptController.addListener(_onPromptChanged);
+
+    // Load shared menu if provided
+    if (widget.sharedMenu != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<MenuViewModel>().loadFromSharedMenu(widget.sharedMenu!);
+      });
+    }
   }
 
   @override
@@ -87,231 +69,26 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   }
 
   void _onPromptChanged() {
-    if (mounted) {
-      setState(() {}); // Update button enabled state based on prompt input
-    }
+    if (mounted) setState(() {});
   }
 
   void _generateMenu() {
-    final viewModel = context.read<MenuViewModel>();
-    viewModel.generateMenu(_promptController.text);
+    context.read<MenuViewModel>().generateMenu(_promptController.text);
   }
 
   void _clearMenu() {
-    final viewModel = context.read<MenuViewModel>();
-    viewModel.clearMenu();
+    context.read<MenuViewModel>().clearMenu();
     _promptController.clear();
-  }
-
-  Future<void> _showSaveMenuDialog() async {
-    final viewModel = context.read<MenuViewModel>();
-
-    if (!viewModel.hasMenu) {
-      SnackBarUtils.showWarning(
-          context, 'Skapa en meny först innan du kan spara den');
-      return;
-    }
-
-    await LayoutComponents.showSaveMenuDialog(
-      context,
-      viewModel: viewModel,
-      availableFriends: _friendsService.friends,
-    );
-  }
-
-  Future<void> _showLoadMenuBottomSheet() async {
-    final viewModel = context.read<MenuViewModel>();
-
-    await LayoutComponents.showLoadMenuDialog(
-      context,
-      viewModel: viewModel,
-    );
   }
 
   Future<void> _shareMenu() async {
     final viewModel = context.read<MenuViewModel>();
-
-    await _shareService.shareWeekMenuFromCategories(
-      viewModel.menu,
-    );
-
+    await _shareService.shareWeekMenuFromCategories(viewModel.menu);
     if (mounted) {
       SnackBarUtils.showSuccess(context, 'Veckomeny delad!');
     }
   }
 
-  Future<void> _showSocialMenuShareDialog() async {
-    final menuViewModel = Provider.of<MenuViewModel>(context, listen: false);
-
-    if (!menuViewModel.hasMenu) {
-      SnackBarUtils.showWarning(
-          context, 'Skapa en meny först innan du kan dela den');
-      return;
-    }
-
-    final menuName = await _showMenuNameDialog();
-    if (!mounted) return;
-    if (menuName == null || menuName.isEmpty) {
-      return;
-    }
-
-    List<UserProfile> availableFriends = [];
-    try {
-      availableFriends = _friendsService.friends;
-    } catch (e) {
-      AppLogger.warning('⚠️ Kunde inte hämta vänner: $e');
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) => UniversalShareDialog.menu(
-        menu: menuViewModel.menu,
-        menuName: menuName,
-        viewModel: ServiceLocator.get<UniversalShareDialogViewModel>(),
-        initialMessage: 'Kolla min veckomeny!',
-        availableFriends: availableFriends,
-      ),
-    );
-  }
-
-  /// Show dialog to capture menu name from user
-  Future<String?> _showMenuNameDialog() async {
-    final TextEditingController nameController = TextEditingController();
-
-    // Generate default name suggestion
-    final menuViewModel = Provider.of<MenuViewModel>(context, listen: false);
-    final recipeCount = menuViewModel.totalRecipeCount;
-    nameController.text = 'Veckomeny ($recipeCount recept)';
-
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Namnge din meny'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Ge din meny ett namn innan du delar den:'),
-            const SizedBox(height: AppDimensions.spacingM),
-            StyledInput(
-              controller: nameController,
-              hint: 'T.ex. "Min veckomeny v.45"',
-              autofocus: true,
-              textInputAction: TextInputAction.done,
-            ),
-          ],
-        ),
-        actions: [
-          ActionButtons.secondaryButton(
-            context,
-            label: 'Avbryt',
-            onPressed: () => Navigator.pop(context),
-          ),
-          ActionButtons.primaryButton(
-            context,
-            label: 'Dela',
-            icon: Icons.share,
-            onPressed: () {
-              final name = nameController.text.trim();
-              if (name.isNotEmpty) {
-                Navigator.pop(context, name);
-              }
-            },
-          ),
-        ],
-      ),
-    );
-
-    // Don't manually dispose - controller will be garbage collected
-    // Disposing here can cause "used after disposed" errors during dialog close animation
-    return result;
-  }
-
-  /// Advanced shopping list creation from menu with ingredient extraction through migrated components.
-  /// Handles shopping list creation enabling ingredient extraction, list selection,
-  /// and comprehensive shopping integration through InputComponents coordination
-  /// with validation, menu processing, and user experience optimization.
-  /// **Shopping List Integration Features:**
-  /// - Menu validation with user guidance and error prevention
-  /// - Ingredient extraction with comprehensive recipe processing and content analysis
-  /// - Migrated component architecture with modern list selection interface
-  /// - Shopping list creation with seamless integration and user-friendly workflow
-  /// - Swedish localized user feedback with warning messages and guidance
-  Future<void> _showShoppingListSelector() async {
-    final viewModel = context.read<MenuViewModel>();
-
-    // Validate menu availability before shopping list creation
-    if (!viewModel.hasMenu || viewModel.menu.isEmpty) {
-      SnackBarUtils.showWarning(
-          context, 'Skapa en meny först innan du kan skapa inköpslista');
-      return;
-    }
-
-    // Display shopping list selector with migrated component architecture
-    await InputComponents.showListSelector(
-      context,
-      menu: viewModel.menu, // Pass menu data for ingredient extraction
-      onListSelected: () {
-        // Shopping list created and ingredients added - close modal and navigate to shopping view
-        Navigator.pop(context);
-        Navigator.pushNamed(context, '/inkopslista');
-      },
-    );
-  }
-
-  /// Comprehensive application exit confirmation with user safety and navigation coordination.
-  /// [context] Build context for dialog presentation and navigation coordination
-  /// Presents exit confirmation dialog enabling user safety, confirmation workflow,
-  /// and comprehensive application exit handling through dialog presentation
-  /// with Swedish localized interface and user experience optimization.
-  /// **Exit Dialog Features:**
-  /// - User safety with confirmation dialog and accidental exit prevention
-  /// - Swedish localized interface with clear confirmation messaging
-  /// - Proper navigation handling with context validation and exit coordination
-  /// - System integration with platform-specific exit functionality
-  Future<void> _showExitDialog(BuildContext context) async {
-    final shouldExit = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Avsluta Butlery?'),
-        content: const Text('Vill du verkligen avsluta appen?'),
-        actions: [
-          ActionButtons.secondaryButton(
-            context,
-            label: 'Avbryt',
-            onPressed: () => Navigator.pop(context, false),
-          ),
-          ActionButtons.primaryButton(
-            context,
-            label: 'Avsluta',
-            onPressed: () => Navigator.pop(context, true),
-          ),
-        ],
-      ),
-    );
-
-    if (shouldExit == true && context.mounted) {
-      SystemNavigator.pop();
-    }
-  }
-
-  /// Comprehensive weekly menu interface construction with migrated components and advanced functionality.
-  /// [context] Build context for theme access and component construction coordination
-  /// Constructs complete weekly menu interface featuring AI-powered generation, social sharing,
-  /// menu persistence, and shopping integration through migrated component architecture
-  /// with comprehensive functionality and Swedish localized user experience.
-  /// **Interface Architecture:**
-  /// - Consumer-based state management with MenuViewModel reactive coordination
-  /// - PopScope integration with exit confirmation and user safety features
-  /// - Migrated LayoutComponents architecture with modern component integration
-  /// - Comprehensive action toolbar with menu operations and social functionality
-  /// - Floating action button integration with shopping list creation
-  /// **Feature Integration:**
-  /// - AI-powered menu generation with prompt input and intelligent recommendations
-  /// - Social sharing with friend selection and collaborative features
-  /// - Menu persistence with save and load functionality through modern dialogs
-  /// - Shopping list integration with ingredient extraction and list creation
-  /// - Loading overlay with generation progress and user feedback
-  /// Returns complete weekly menu interface with comprehensive functionality and modern architecture.
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<MenuViewModel>();
@@ -319,202 +96,22 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) {
-        if (!didPop) {
-          _showExitDialog(context);
-        }
+        if (!didPop) VeckomenyDialogs.showExitDialog(context);
       },
-      // Migrated LayoutComponents integration for modern architecture
       child: LayoutComponents.mainMenu(
         currentIndex: 2,
         title: 'Veckomeny',
-        actions: [
-          // ✨ NY: Ladda meny-knapp
-          IconButton(
-            icon: Icon(Icons.folder_open,
-                size: AppDimensions.iconSizeAction,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.7)),
-            onPressed: _showLoadMenuBottomSheet,
-            tooltip: 'Ladda sparad meny',
-          ),
-
-          // ✨ NY: Spara meny-knapp (endast när meny finns)
-          if (viewModel.hasMenu)
-            IconButton(
-              icon: Icon(Icons.save,
-                  size: AppDimensions.iconSizeAction,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.7)),
-              onPressed: _showSaveMenuDialog,
-              tooltip: 'Spara meny',
-            ),
-
-          // ✨ NY: Enhanced social share ikon
-          if (viewModel.hasMenu)
-            IconButton(
-              icon: Icon(Icons.people_outline,
-                  size: AppDimensions.iconSizeAction,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.7)),
-              onPressed: _showSocialMenuShareDialog,
-              tooltip: _friendsService.friends.isEmpty
-                  ? 'Lägg till vänner för att dela'
-                  : 'Dela med vänner',
-            ),
-
-          // BEFINTLIG: Regular share button
-          if (viewModel.hasMenu)
-            IconButton(
-              icon: Icon(Icons.share,
-                  size: AppDimensions.iconSizeAction,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.7)),
-              onPressed: _shareMenu,
-              tooltip: 'Dela veckomeny',
-            ),
-
-          // Clear menu button
-          if (viewModel.hasMenu)
-            IconButton(
-              icon: Icon(Icons.clear,
-                  size: AppDimensions.iconSizeAction,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.7)),
-              onPressed: _clearMenu,
-              tooltip: 'Rensa meny',
-            ),
-
-          // Error indicator
-          if (viewModel.hasError)
-            IconButton(
-              icon: const Icon(Icons.error, color: AppColors.error),
-              onPressed: () {
-                SnackBarUtils.showError(context, viewModel.error!);
-              },
-              tooltip: 'Visa fel',
-            ),
-        ],
-        body: Stack(
-          children: [
-            // ✅ RESPONSIVE: Center and constrain content on large screens
-            Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: LayoutComponents.valueFor(
-                    context: context,
-                    mobile: double.infinity,
-                    tablet: 900,
-                    desktop: 1200,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: AppDimensions.responsiveContentPadding(context),
-                      child: Column(
-                        children: [
-                          // Prompt-input
-                          _buildPromptInput(viewModel),
-                          SizedBox(
-                            height: LayoutComponents.valueFor(
-                              context: context,
-                              mobile: AppDimensions.spacingL,
-                              tablet: AppDimensions.spacingXl,
-                              desktop: AppDimensions.spacingXl,
-                            ),
-                          ),
-
-                          // Generera-knapp
-                          _buildGenerateButton(viewModel),
-                          SizedBox(
-                            height: LayoutComponents.valueFor(
-                              context: context,
-                              mobile: AppDimensions.spacingXl,
-                              tablet: AppDimensions.spacingXl * 1.5,
-                              desktop: AppDimensions.spacingXxl,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Meny-innehåll
-                    Expanded(
-                      child: Padding(
-                        padding:
-                            AppDimensions.responsiveHorizontalPadding(context),
-                        child: _buildMenuContent(viewModel),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Loading overlay - ✅ RESPONSIVE: Constrained width
-            if (viewModel.isGenerating)
-              ColoredBox(
-                color: AppColors.neutralDark.withValues(alpha: 0.4),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: LayoutComponents.valueFor(
-                        context: context,
-                        mobile: double.infinity,
-                        tablet: 500,
-                        desktop: 600,
-                      ),
-                    ),
-                    child: Container(
-                      padding: AppDimensions.responsiveContentPadding(context),
-                      margin: AppDimensions.responsiveContentPadding(context),
-                      decoration: BoxDecoration(
-                        color: AppColors.cardWhite,
-                        borderRadius:
-                            BorderRadius.circular(AppDimensions.borderRadiusM),
-                        border: Border.all(color: AppColors.divider),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const CircularProgressIndicator(),
-                          SizedBox(
-                            height: LayoutComponents.valueFor(
-                              context: context,
-                              mobile: AppDimensions.spacingM,
-                              tablet: AppDimensions.spacingL,
-                              desktop: AppDimensions.spacingL,
-                            ),
-                          ),
-                          const Text(
-                            'Genererar meny...',
-                            style: AppTextStyles.titleMedium,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-
-        // ✅ UPPDATERAD: Extended FAB med proper theming för svensk text
+        actions: _buildActions(context, viewModel),
+        body: _buildBody(context, viewModel),
         floatingActionButton: viewModel.hasMenu
             ? ActionButtons.actionButton(
                 context,
-                label: 'Till inköpslista',
+                label: 'Till inkopslista',
                 icon: Icons.shopping_cart,
-                onPressed: _showShoppingListSelector,
+                onPressed: () => VeckomenyDialogs.showShoppingListSelector(
+                  context,
+                  viewModel: viewModel,
+                ),
                 style: ActionButtonStyle.primary,
               )
             : null,
@@ -522,285 +119,203 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     );
   }
 
-  /// Comprehensive prompt input construction with AI-powered generation interface and user guidance.
-  /// [viewModel] MenuViewModel instance for generation state access and loading coordination
-  /// Constructs AI-powered prompt input interface featuring user guidance, input validation,
-  /// and generation preparation enabling intelligent menu creation with comprehensive
-  /// user experience and Swedish localized interface coordination.
-  /// **Prompt Input Features:**
-  /// - AI-powered generation interface with user guidance and example prompts
-  /// - Input validation with generation state coordination and interaction control
-  /// - Swedish localized interface with clear instructions and user-friendly design
-  /// - Visual design with consistent theming and modern interface elements
-  /// Returns prompt input widget with AI-powered generation interface and user guidance.
-  Widget _buildPromptInput(MenuViewModel viewModel) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.restaurant_menu,
-                size: AppDimensions.iconSizeAction,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(width: AppDimensions.spacingS),
-              Text(
-                'Vad vill du ha för meny?',
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppDimensions.spacingM),
-          StyledInput(
-            controller: _promptController,
-            enabled: !viewModel.isGenerating,
-            hint: 'Ex: 3 middagar, 2 luncher och 1 frukost',
-            prefixIcon: const Icon(Icons.edit),
-            suffixIcon: _promptController.text.isNotEmpty
-                ? IconButton(
-                    icon: Icon(Icons.clear,
-                        size: AppDimensions.iconSizeAction,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.7)),
-                    onPressed: () {
-                      _promptController.clear();
-                      setState(() {}); // Update UI after clearing
-                    },
-                  )
-                : null,
-            textInputAction: TextInputAction.done,
-            onChanged: (value) {
-              setState(() {}); // Update suffixIcon visibility
-              // Note: onSubmitted functionality moved to generate button press
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Comprehensive generation button construction with loading states and intelligent generation coordination.
-  /// [viewModel] MenuViewModel instance for generation state management and loading coordination
-  /// Constructs AI-powered generation button featuring loading indicators, state management,
-  /// and intelligent generation triggering enabling menu creation with comprehensive
-  /// user feedback and responsive button design through modern component styling.
-  /// **Generation Button Features:**
-  /// - AI-powered generation triggering with intelligent menu creation
-  /// - Loading state integration with progress indicators and interaction control
-  /// - Input validation with button state management and user guidance
-  /// - Modern component styling with consistent theming and visual design
-  /// Returns generation button widget with AI-powered functionality and loading state management.
-  Widget _buildGenerateButton(MenuViewModel viewModel) {
-    return Center(
-      child: ActionButtons.primaryButton(
-        context,
-        label: viewModel.isGenerating
-            ? 'Genererar...'
-            : (viewModel.hasMenu ? 'Generera ny meny' : 'Generera meny'),
-        icon: Icons.restaurant_menu,
-        onPressed: !viewModel.isGenerating && _promptController.text.isNotEmpty
-            ? _generateMenu
-            : null,
-        isLoading: viewModel.isGenerating,
-        loadingText: 'Genererar...',
-      ),
-    );
-  }
-
-  /// Comprehensive menu content construction with AI-generated menu display and empty state management.
-  /// [viewModel] MenuViewModel instance for menu data access and state management
-  /// Constructs complete menu content interface featuring AI-generated menu display,
-  /// menu sections with regeneration functionality, and empty state management
-  /// enabling comprehensive menu presentation with user interaction coordination.
-  /// **Menu Content Features:**
-  /// - AI-generated menu display with organized sections and recipe presentation
-  /// - Menu section regeneration with individual section updates and content refresh
-  /// - Empty state management with user guidance and generation prompts
-  /// - Interactive recipe cards with navigation and detail view integration
-  /// Returns menu content widget with comprehensive menu display and interaction functionality.
-  Widget _buildMenuContent(MenuViewModel viewModel) {
-    if (!viewModel.hasMenu) {
-      return StateWidget.empty(
-        title: 'Ingen meny genererad ännu',
-        subtitle: 'Skriv vad du vill ha eller tryck på knappen nedan',
-        icon: Icons.clear, // Use clear as "no icon" marker
-      );
-    }
-
-    return ListView(
-      children: [
-        // Meny-sammanfattning
-        _buildMenuSummary(viewModel),
-
-        // Meny-sektioner (sorterade i logisk ordning)
-        for (final entry in _getSortedMenuEntries(viewModel.menu)) ...[
-          _buildMenuSection(viewModel, entry.key, entry.value),
-          const Divider(),
-        ],
-
-        // Extra padding för floating button
-        const SizedBox(
-            height: AppDimensions.spacingXxxl + AppDimensions.spacingL),
-      ],
-    );
-  }
-
-  Widget _buildMenuSummary(MenuViewModel viewModel) {
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            border: Border.all(color: AppColors.divider),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.restaurant,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
-                size: AppDimensions.iconSizeAction,
-              ),
-              const SizedBox(width: AppDimensions.spacingS),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Din veckomeny',
-                      style: AppTextStyles.titleMedium.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      ),
-                    ),
-                    Text(
-                      '${viewModel.totalRecipeCount} recept i ${viewModel.menu.length} kategorier',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+  List<Widget> _buildActions(BuildContext context, MenuViewModel viewModel) {
+    return [
+      // Load menu button
+      IconButton(
+        icon: Icon(Icons.folder_open,
+            size: AppDimensions.iconSizeAction,
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+        onPressed: () => VeckomenyDialogs.showLoadMenuBottomSheet(
+          context,
+          viewModel: viewModel,
         ),
-        const SizedBox(height: AppDimensions.spacingL),
-      ],
-    );
-  }
+        tooltip: 'Ladda sparad meny',
+      ),
 
-  Widget _buildMenuSection(
-    MenuViewModel viewModel,
-    String category,
-    List<Recipe> recipes,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: AppDimensions.spacingS),
-        Row(
-          children: [
-            Expanded(
-              child: Text(_capitalizeCategory(category),
-                  style: AppTextStyles.titleLarge),
-            ),
-            IconButton(
-              icon: Icon(Icons.refresh,
-                  size: AppDimensions.iconSizeAction,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.7)),
-              onPressed: viewModel.isGenerating
-                  ? null
-                  : () => viewModel.regenerateSection(category),
-              tooltip: 'Uppdatera ${_capitalizeCategory(category)}',
-            ),
-          ],
-        ),
-        const SizedBox(height: AppDimensions.spacingS),
-        for (final recipe in recipes)
-          ContentCard.compactRecipe(
-            recipe: recipe,
-            onTap: () {
-              Navigator.pushNamed(
-                context,
-                '/receptDetalj',
-                arguments: recipe,
-              );
-            },
+      // Save menu button (only when menu exists)
+      if (viewModel.hasMenu)
+        IconButton(
+          icon: Icon(Icons.save,
+              size: AppDimensions.iconSizeAction,
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+          onPressed: () => VeckomenyDialogs.showSaveMenuDialog(
+            context,
+            viewModel: viewModel,
+            availableFriends: _friendsService.friends,
           ),
-      ],
-    );
-  }
+          tooltip: 'Spara meny',
+        ),
 
-  /// Sorterar meny-sektioner i logisk måltidsordning
-  List<MapEntry<String, List<Recipe>>> _getSortedMenuEntries(
-      Map<String, List<Recipe>> menu) {
-    // Definiera logisk ordning för måltider
-    const mealOrder = [
-      'Frukost',
-      'Lunch',
-      'Middag',
-      'Dessert',
-      'Mellanmål',
-      'Fika',
+      // Social share button
+      if (viewModel.hasMenu)
+        IconButton(
+          icon: Icon(Icons.people_outline,
+              size: AppDimensions.iconSizeAction,
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+          onPressed: () => VeckomenyDialogs.showSocialMenuShareDialog(
+            context,
+            menuViewModel: viewModel,
+            friendsService: _friendsService,
+          ),
+          tooltip: _friendsService.friends.isEmpty
+              ? 'Lagg till vanner for att dela'
+              : 'Dela med vanner',
+        ),
+
+      // Regular share button
+      if (viewModel.hasMenu)
+        IconButton(
+          icon: Icon(Icons.share,
+              size: AppDimensions.iconSizeAction,
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+          onPressed: _shareMenu,
+          tooltip: 'Dela veckomeny',
+        ),
+
+      // Clear menu button
+      if (viewModel.hasMenu)
+        IconButton(
+          icon: Icon(Icons.clear,
+              size: AppDimensions.iconSizeAction,
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+          onPressed: _clearMenu,
+          tooltip: 'Rensa meny',
+        ),
+
+      // Error indicator
+      if (viewModel.hasError)
+        IconButton(
+          icon: const Icon(Icons.error, color: AppColors.error),
+          onPressed: () => SnackBarUtils.showError(context, viewModel.error!),
+          tooltip: 'Visa fel',
+        ),
     ];
-
-    final entries = menu.entries.toList();
-
-    entries.sort((a, b) {
-      final aIndex = mealOrder.indexOf(_capitalizeCategory(a.key));
-      final bIndex = mealOrder.indexOf(_capitalizeCategory(b.key));
-
-      // Om båda finns i ordningslistan, sortera enligt den
-      if (aIndex != -1 && bIndex != -1) {
-        return aIndex.compareTo(bIndex);
-      }
-
-      // Om bara en finns i listan, den kommer först
-      if (aIndex != -1) return -1;
-      if (bIndex != -1) return 1;
-
-      // Om ingen finns i listan, alfabetisk ordning
-      return a.key.compareTo(b.key);
-    });
-
-    return entries;
   }
 
-  /// Kapitaliserar första bokstaven i kategorinamn
-  String _capitalizeCategory(String category) {
-    if (category.isEmpty) return category;
-    return category[0].toUpperCase() + category.substring(1).toLowerCase();
+  Widget _buildBody(BuildContext context, MenuViewModel viewModel) {
+    return Stack(
+      children: [
+        Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: LayoutComponents.valueFor(
+                context: context,
+                mobile: double.infinity,
+                tablet: 900,
+                desktop: 1200,
+              ),
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: AppDimensions.responsiveContentPadding(context),
+                  child: Column(
+                    children: [
+                      MenuContentWidgets.buildPromptInput(
+                        context,
+                        controller: _promptController,
+                        isGenerating: viewModel.isGenerating,
+                        onClear: () {
+                          _promptController.clear();
+                          setState(() {});
+                        },
+                        onChanged: () => setState(() {}),
+                      ),
+                      SizedBox(
+                        height: LayoutComponents.valueFor(
+                          context: context,
+                          mobile: AppDimensions.spacingL,
+                          tablet: AppDimensions.spacingXl,
+                          desktop: AppDimensions.spacingXl,
+                        ),
+                      ),
+                      MenuContentWidgets.buildGenerateButton(
+                        context,
+                        viewModel: viewModel,
+                        hasPrompt: _promptController.text.isNotEmpty,
+                        onGenerate: _generateMenu,
+                      ),
+                      SizedBox(
+                        height: LayoutComponents.valueFor(
+                          context: context,
+                          mobile: AppDimensions.spacingXl,
+                          tablet: AppDimensions.spacingXl * 1.5,
+                          desktop: AppDimensions.spacingXxl,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: AppDimensions.responsiveHorizontalPadding(context),
+                    child: MenuContentWidgets.buildMenuContent(
+                      context,
+                      viewModel: viewModel,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Loading overlay
+        if (viewModel.isGenerating) _buildLoadingOverlay(context),
+      ],
+    );
+  }
+
+  Widget _buildLoadingOverlay(BuildContext context) {
+    return ColoredBox(
+      color: AppColors.neutralDark.withValues(alpha: 0.4),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: LayoutComponents.valueFor(
+              context: context,
+              mobile: double.infinity,
+              tablet: 500,
+              desktop: 600,
+            ),
+          ),
+          child: Container(
+            padding: AppDimensions.responsiveContentPadding(context),
+            margin: AppDimensions.responsiveContentPadding(context),
+            decoration: BoxDecoration(
+              color: AppColors.cardWhite,
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              border: Border.all(color: AppColors.divider),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                SizedBox(
+                  height: LayoutComponents.valueFor(
+                    context: context,
+                    mobile: AppDimensions.spacingM,
+                    tablet: AppDimensions.spacingL,
+                    desktop: AppDimensions.spacingL,
+                  ),
+                ),
+                const Text(
+                  'Genererar meny...',
+                  style: AppTextStyles.titleMedium,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
-/// Persistent MenuViewModel singleton to preserve menu state across navigation.
-/// This class ensures the same MenuViewModel instance is reused when navigating
-/// between views, preventing menu state loss that occurs with factory registration.
-/// The instance is never disposed, allowing menu state to persist throughout
-/// the application lifecycle.
+/// Preserves MenuViewModel state across navigation.
 class _PersistentMenuViewModel {
   static MenuViewModel? _instance;
 
-  /// Get the persistent MenuViewModel instance.
-  /// Creates instance on first access and reuses it for subsequent calls.
   static MenuViewModel get instance {
     _instance ??= MenuViewModel();
     return _instance!;

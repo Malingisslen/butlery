@@ -32,16 +32,16 @@ dependencies:
   get_it: ^9.0.5
 
   # ==================== LOCAL STORAGE ====================
-  hive: ^2.2.3
-  hive_flutter: ^1.1.0
   shared_preferences: ^2.3.2
+  drift: ^2.12.0               # Modern SQL-based local storage
+  sqlite3_flutter_libs: ^0.5.21  # SQLite native libraries for Drift
 
   # ==================== NAVIGATION & UI ====================
   go_router: ^17.0.0
 
   # ==================== NETWORKING ====================
   http: ^1.2.2
-  connectivity_plus: ^6.1.0
+  connectivity_plus: ^7.0.0
 
   # ==================== IMAGE HANDLING ====================
   image_picker: ^1.1.2
@@ -56,12 +56,11 @@ dependencies:
   collection: ^1.18.0
   url_launcher: ^6.3.1
   clock: ^1.1.1  # For testable time-dependent code
-  share_plus: ^10.1.0        # För utgående sharing (skicka till andra appar)
+  share_plus: ^12.0.1        # För utgående sharing (skicka till andra appar)
   path_provider: ^2.1.4
   file_picker: ^10.3.3
   path: ^1.9.0
   flutter_dotenv: ^5.2.1     # För säker API key hantering
-  package_info_plus: ^8.0.2  # För att hämta app version och build info
   crypto: ^3.0.5             # För OCR service image hashing och caching
 
   # ==================== PARSING & PROCESSING ====================
@@ -72,9 +71,6 @@ dependencies:
 
   # ==================== SOCIAL FEATURES (FAS 18) ====================
   timeago: ^3.6.1
-  badges: ^3.1.2
-  flutter_mentions: ^2.0.1  
-  share_handler: ^0.0.22     # UPPDATERAD: Senaste stabila versionen för inkommande shares
   receive_intent: ^0.2.0     # För hantering av deep links och app launch intents
   cloud_functions: ^6.0.4
 
@@ -91,7 +87,8 @@ dev_dependencies:
   
   # ==================== MOCKING (Mocktail preferred over Mockito) ====================
   mocktail: ^1.0.4
-  build_runner: ^2.9.0  # 2.10.1 requires analyzer 8.0+, blocked by Flutter SDK 3.35.1
+  build_runner: ^2.7.1  # Downgraded for drift_dev compatibility
+  drift_dev: ^2.12.0    # Code generator for Drift database (compatible version)
   
   # ==================== FIREBASE MOCKING ====================
   fake_cloud_firestore: ^4.0.0
@@ -100,29 +97,17 @@ dev_dependencies:
   google_sign_in_mocks: ^0.4.1
   
   # ==================== TEST DATA GENERATION ====================
-  faker: ^2.2.0
   fake_async: ^1.3.1  # For controlling time in tests
   
-  # ==================== PROPERTY-BASED TESTING ====================
-  glados: 1.1.7  # Property-based testing for Dart
-  
-  # ==================== VISUAL REGRESSION TESTING ====================
-  # alchemist: ^0.7.0  # Temporarily disabled due to Flutter 3.32.4 compatibility issues
-  golden_toolkit: ^0.15.0  # For testGoldens and screenMatchesGolden functions
-  
   # ==================== INTEGRATION TESTING FRAMEWORK ====================
-  patrol: ^3.13.0
+  patrol: ^4.0.1
   
   # ==================== CODE QUALITY ====================
-  very_good_analysis: ^6.0.0
-  
-  # ==================== API MOCKING ====================
-  http_mock_adapter: ^0.6.1
-  
+  very_good_analysis: ^10.0.0
+
   # ==================== PERFORMANCE & ACCESSIBILITY ====================
   flutter_driver:
     sdk: flutter
-  benchmark_harness: ^2.3.0
 
   # ==================== BUILD TOOLS ====================
   # analyzer provided by test package - let pub determine compatible version

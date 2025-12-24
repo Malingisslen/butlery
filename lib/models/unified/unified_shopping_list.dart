@@ -55,7 +55,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
-import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 
 /// Enumeration defining synchronization status for shopping list data management.
@@ -392,15 +392,6 @@ class UnifiedShoppingList {
     return DateTime.now().difference(lastActivityAt!).inHours < 24;
   }
 
-  // ===== PERMISSION METHODS - REMOVED: Use PermissionService instead =====
-  // All permission methods have been migrated to PermissionService for centralized permission management
-
-  /// List modification methods for shopping list updates with collaborative tracking support.
-
-  /// Creates a copy of this shopping list with updated values while preserving immutability.
-  /// Used for all list modifications while maintaining immutable data patterns and ensuring
-  /// consistent state management for collaborative tracking and synchronization.
-  /// Returns a new [UnifiedShoppingList] instance with updated values.
   UnifiedShoppingList copyWith({
     String? name,
     List<UnifiedShoppingItem>? items,
@@ -635,47 +626,45 @@ class UnifiedShoppingList {
   /// type conversion and collaborative metadata deserialization for client-side caching support.
   /// Returns a new [UnifiedShoppingList] instance with all data properly parsed from JSON.
   factory UnifiedShoppingList.fromJson(Map<String, dynamic> json) {
+    final lastSyncedAtStr = SerializationUtils.safeNullableString(json, 'lastSyncedAt');
+    final lastActivityAtStr = SerializationUtils.safeNullableString(json, 'lastActivityAt');
+
     return UnifiedShoppingList(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      ownerId: json['ownerId'] as String,
-      ownerDisplayName: json['ownerDisplayName'] as String,
-      items: (json['items'] as List<dynamic>?)
-              ?.map((item) =>
-                  UnifiedShoppingItem.fromJson(item as Map<String, dynamic>))
-              .toList() ??
-          [],
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-      lastSyncedAt: json['lastSyncedAt'] != null
-          ? DateTime.parse(json['lastSyncedAt'] as String)
-          : null,
+      id: SerializationUtils.safeString(json, 'id'),
+      name: SerializationUtils.safeString(json, 'name'),
+      ownerId: SerializationUtils.safeString(json, 'ownerId'),
+      ownerDisplayName: SerializationUtils.safeString(json, 'ownerDisplayName'),
+      items: SerializationUtils.safeObjectList(
+        json,
+        'items',
+        (item) => UnifiedShoppingItem.fromJson(item),
+      ),
+      createdAt: DateTime.parse(SerializationUtils.safeString(json, 'createdAt')),
+      updatedAt: DateTime.parse(SerializationUtils.safeString(json, 'updatedAt')),
+      lastSyncedAt: lastSyncedAtStr != null ? DateTime.tryParse(lastSyncedAtStr) : null,
       syncStatus: SyncStatus.values.firstWhere(
-        (s) => s.name == json['syncStatus'],
+        (s) => s.name == SerializationUtils.safeString(json, 'syncStatus'),
         orElse: () => SyncStatus.local,
       ),
       type: ListType.values.firstWhere(
-        (t) => t.name == json['type'],
+        (t) => t.name == SerializationUtils.safeString(json, 'type'),
         orElse: () => ListType.personal,
       ),
-      memberPermissions: (json['memberPermissions'] as Map<String, dynamic>?)
-              ?.map((userId, permissionName) => MapEntry(
-                  userId,
-                  SharedListPermission.values.firstWhere(
-                    (p) => p.name == permissionName,
-                    orElse: () => SharedListPermission.view,
-                  ))) ??
-          {},
-      lastActivityAt: json['lastActivityAt'] != null
-          ? DateTime.parse(json['lastActivityAt'] as String)
-          : null,
-      lastActivityByUserId: json['lastActivityByUserId'] as String?,
-      lastActivityByDisplayName: json['lastActivityByDisplayName'] as String?,
-      description: json['description'] as String?,
-      settings: Map<String, dynamic>.from((json['settings'] as Map?).orEmpty()),
-      categoryIds: List<String>.from((json['categoryIds'] as List?).orEmpty()),
-      allowGuestEditing: (json['allowGuestEditing'] as bool?).orTrue(),
-      autoRemoveCompleted: (json['autoRemoveCompleted'] as bool?).orFalse(),
+      memberPermissions: SerializationUtils.safeMap(json, 'memberPermissions')
+          .map((userId, permissionName) => MapEntry(
+              userId,
+              SharedListPermission.values.firstWhere(
+                (p) => p.name == permissionName,
+                orElse: () => SharedListPermission.view,
+              ))),
+      lastActivityAt: lastActivityAtStr != null ? DateTime.tryParse(lastActivityAtStr) : null,
+      lastActivityByUserId: SerializationUtils.safeNullableString(json, 'lastActivityByUserId'),
+      lastActivityByDisplayName: SerializationUtils.safeNullableString(json, 'lastActivityByDisplayName'),
+      description: SerializationUtils.safeNullableString(json, 'description'),
+      settings: SerializationUtils.safeMap(json, 'settings'),
+      categoryIds: SerializationUtils.safeStringList(json, 'categoryIds'),
+      allowGuestEditing: SerializationUtils.safeBool(json, 'allowGuestEditing', defaultValue: true),
+      autoRemoveCompleted: SerializationUtils.safeBool(json, 'autoRemoveCompleted'),
     );
   }
 
@@ -687,47 +676,46 @@ class UnifiedShoppingList {
   factory UnifiedShoppingList.fromMap(String id, Map<String, dynamic> data) {
     return UnifiedShoppingList(
       id: id,
-      name: data['name'] as String,
-      ownerId: data['ownerId'] as String,
-      ownerDisplayName: data['ownerDisplayName'] as String,
-      items: (data['items'] as List<dynamic>?)
-              ?.map((item) =>
-                  UnifiedShoppingItem.fromFirestore(item as Map<String, dynamic>))
-              .toList() ??
-          [],
-      createdAt: data['createdAt'] is DateTime 
+      name: SerializationUtils.safeString(data, 'name'),
+      ownerId: SerializationUtils.safeString(data, 'ownerId'),
+      ownerDisplayName: SerializationUtils.safeString(data, 'ownerDisplayName'),
+      items: SerializationUtils.safeObjectList(
+        data,
+        'items',
+        (item) => UnifiedShoppingItem.fromFirestore(item),
+      ),
+      createdAt: data['createdAt'] is DateTime
           ? data['createdAt'] as DateTime
-          : (data['createdAt'] != null ? (data['createdAt'] as Timestamp).toDate() : DateTime.now()),
-      updatedAt: data['updatedAt'] is DateTime 
+          : SerializationUtils.safeRequiredDateTime(data, 'createdAt'),
+      updatedAt: data['updatedAt'] is DateTime
           ? data['updatedAt'] as DateTime
-          : (data['updatedAt'] != null ? (data['updatedAt'] as Timestamp).toDate() : DateTime.now()),
-      lastSyncedAt: data['lastSyncedAt'] is DateTime 
+          : SerializationUtils.safeRequiredDateTime(data, 'updatedAt'),
+      lastSyncedAt: data['lastSyncedAt'] is DateTime
           ? data['lastSyncedAt'] as DateTime
-          : (data['lastSyncedAt'] != null ? (data['lastSyncedAt'] as Timestamp).toDate() : null),
+          : SerializationUtils.safeDateTime(data, 'lastSyncedAt'),
       syncStatus: SyncStatus.synced, // From Firebase = synced
       type: ListType.values.firstWhere(
-        (t) => t.name == data['type'],
+        (t) => t.name == SerializationUtils.safeString(data, 'type'),
         orElse: () => ListType.personal,
       ),
-      memberPermissions: (data['memberPermissions'] as Map<String, dynamic>?)
-              ?.map((userId, permissionName) => MapEntry(
-                  userId,
-                  SharedListPermission.values.firstWhere(
-                    (p) => p.name == permissionName,
-                    orElse: () => SharedListPermission.view,
-                  ))) ??
-          {},
-      lastActivityAt: data['lastActivityAt'] is DateTime 
+      memberPermissions: SerializationUtils.safeMap(data, 'memberPermissions')
+          .map((userId, permissionName) => MapEntry(
+              userId,
+              SharedListPermission.values.firstWhere(
+                (p) => p.name == permissionName,
+                orElse: () => SharedListPermission.view,
+              ))),
+      lastActivityAt: data['lastActivityAt'] is DateTime
           ? data['lastActivityAt'] as DateTime
-          : (data['lastActivityAt'] != null ? (data['lastActivityAt'] as Timestamp).toDate() : null),
-      lastActivityByUserId: data['lastActivityByUserId'] as String?,
-      lastActivityByDisplayName: data['lastActivityByDisplayName'] as String?,
-      description: data['description'] as String?,
-      settings: (data['settings'] as Map<String, dynamic>?).orEmpty(),
-      categoryIds: List<String>.from((data['categoryIds'] as List?).orEmpty()),
-      allowGuestEditing: (data['allowGuestEditing'] as bool?).orTrue(),
-      autoRemoveCompleted: (data['autoRemoveCompleted'] as bool?).orFalse(),
-      collaborativeOrigin: data['collaborativeOrigin'] as String?,
+          : SerializationUtils.safeDateTime(data, 'lastActivityAt'),
+      lastActivityByUserId: SerializationUtils.safeNullableString(data, 'lastActivityByUserId'),
+      lastActivityByDisplayName: SerializationUtils.safeNullableString(data, 'lastActivityByDisplayName'),
+      description: SerializationUtils.safeNullableString(data, 'description'),
+      settings: SerializationUtils.safeMap(data, 'settings'),
+      categoryIds: SerializationUtils.safeStringList(data, 'categoryIds'),
+      allowGuestEditing: SerializationUtils.safeBool(data, 'allowGuestEditing', defaultValue: true),
+      autoRemoveCompleted: SerializationUtils.safeBool(data, 'autoRemoveCompleted'),
+      collaborativeOrigin: SerializationUtils.safeNullableString(data, 'collaborativeOrigin'),
     );
   }
 

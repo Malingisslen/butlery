@@ -4,8 +4,8 @@
 
 **Status**: Comprehensive infrastructure in place (Jan 2025)
 **Impact**: 3,000-4,000 lines of duplication eliminated
-**Adoption**: High (48-88% - varies by component)
-**Last Verified**: November 2025
+**Adoption**: High (48-100% - varies by component)
+**Last Verified**: December 2025
 
 ---
 
@@ -17,11 +17,11 @@ The Butlery codebase has **excellent deduplication infrastructure** already impl
 
 ### Available Infrastructure
 
-1. ✅ **ErrorHandlingMixin** (669 lines) - Eliminating 1,100-1,400 lines of duplicate error handling
-2. ✅ **AsyncOperationMixin** (458 lines) - Eliminating ~250-280 lines of boilerplate
-3. ✅ **BaseService** (495 lines) - Eliminating ~500-600 lines of boilerplate
+1. ✅ **ErrorHandlingMixin** (669 lines) - 100% adopted in services
+2. ✅ **AsyncOperationMixin** (458 lines) - 48% adopted (appropriate for ViewModels)
+3. ✅ **BaseService** (495 lines) - Used by non-UI services
 4. ✅ **BaseFirebaseRepository** (~400 lines) - Eliminating 2,000-2,500 lines of CRUD duplication
-5. ✅ **SerializationUtils** (371 lines) - Eliminating 600-800 lines of manual parsing
+5. ✅ **SerializationUtils** (371 lines) - 100% adopted (17 models migrated Dec 2025)
 6. ✅ **ValidationUtils** (384 lines) - Eliminating 1,600-2,400 lines of validation code
 7. ✅ **Default Value Extensions** (~350 lines) - Eliminating 400+ lines of null coalescing
 8. ✅ **Test Helpers** - Common test setup and data factories
@@ -33,7 +33,7 @@ The Butlery codebase has **excellent deduplication infrastructure** already impl
 ### 1. ErrorHandlingMixin
 
 **Location**: `lib/core/mixins/error_handling_mixin.dart`
-**Adoption**: ~15% (needs expansion)
+**Adoption**: 100% (all services have ErrorHandlingMixin or extend BaseService)
 
 **When to use:**
 - Any class that makes async calls
@@ -168,7 +168,7 @@ class MyRepository extends BaseFirebaseRepository<MyModel> {
 ### 5. SerializationUtils
 
 **Location**: `lib/core/utils/serialization_utils.dart`
-**Adoption**: 1.5% (12 files) - High opportunity!
+**Adoption**: 100% (17 models migrated in Dec 2025)
 
 **When to use:**
 - Parsing Firestore documents

@@ -1,23 +1,10 @@
-// lib/models/realtime/recipe_serialization.dart
-
-// ✅ Firebase DocumentSnapshot dependency abstracted to repository layer
-// Note: Repositories handle Firebase-specific parsing and provide clean data maps
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 
-/// Focused module for recipe serialization/deserialization
-/// This module handles ONLY Firestore conversion:
-/// - Recipe to Firestore serialization
-/// - Firestore to Recipe deserialization
-/// - Data validation and sanitization
-/// - Type conversion and safety
-/// ❌ DOES NOT CONTAIN: Business logic, metadata management, operations
+/// Recipe serialization and deserialization.
 class RecipeSerialization {
-  
-  // ===== SERIALIZATION =====
-
-  /// Serialize recipe to Firestore format
+  /// Serialize recipe to Firestore format.
   static Map<String, dynamic> serializeRecipe(Recipe recipe) {
     return recipe.toFirestore();
   }
@@ -74,11 +61,7 @@ class RecipeSerialization {
     return result;
   }
 
-  // ===== DESERIALIZATION =====
-
-  /// Deserialize recipe from Firestore data
   static Recipe deserializeRecipe(Map<String, dynamic> recipeData, String fallbackId) {
-    // Handle both nested core structure and flat structure
     final coreData = recipeData['core'] as Map<String, dynamic>? ?? recipeData;
     
     return Recipe(
@@ -136,11 +119,7 @@ class RecipeSerialization {
     return (recipe, metadataMap);
   }
 
-  // ===== DATA VALIDATION =====
-
-  /// Validate recipe data structure
   static bool isValidRecipeData(Map<String, dynamic> data) {
-    // Check required fields
     if (data['title'] == null || data['title'].toString().isEmpty) {
       return false;
     }
@@ -224,10 +203,6 @@ class RecipeSerialization {
     return sanitized;
   }
 
-  // ===== HELPER METHODS =====
-
-  /// Parse timestamp from various formats (repository-agnostic)
-  /// Repositories should provide DateTime objects, but this handles legacy formats.
   static DateTime? _parseTimestamp(dynamic timestamp) {
     if (timestamp == null) return null;
     
@@ -307,9 +282,6 @@ class RecipeSerialization {
     return result;
   }
 
-  // ===== BATCH OPERATIONS =====
-
-  /// Serialize multiple recipes for batch operations
   static List<Map<String, dynamic>> serializeRecipeBatch(List<Recipe> recipes) {
     return recipes.map(serializeRecipe).toList();
   }

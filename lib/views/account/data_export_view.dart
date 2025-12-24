@@ -407,11 +407,11 @@ class DataExportView extends StatelessWidget {
       await file.writeAsString(viewModel.exportedData!);
 
       // Share file
-      await Share.shareXFiles(
-        [XFile(filePath)],
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(filePath)],
         subject: 'Butlery Data Export',
         text: 'Min exporterade data från Butlery app',
-      );
+      ));
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

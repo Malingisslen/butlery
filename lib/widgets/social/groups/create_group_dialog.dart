@@ -275,7 +275,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
             const SizedBox(height: AppDimensions.spacingM),
             Container(
               constraints: const BoxConstraints(maxHeight: 200),
-              child: SocialComponents.checkableTargetList(
+              child: SocialInvitationComponents.checkableTargetList(
                 targets: availableTargets,
                 selectedTargets: selectedTargets,
                 onSelectionChanged: (selectedTargetsList) {

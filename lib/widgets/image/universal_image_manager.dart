@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/image/image_config.dart';
-import 'package:butlery/widgets/image/image_factory.dart';
 import 'package:butlery/widgets/image/avatar_image_widget.dart';
 import 'package:butlery/widgets/image/recipe_image_widget.dart';
 import 'package:butlery/widgets/image/editable_image_widget.dart';
@@ -578,88 +577,4 @@ class _UniversalImageManagerState extends State<UniversalImageManager> {
       onLongPress: widget.onLongPress,
     );
   }
-}
-
-/// Static methods for quick access (maintains backward compatibility)
-class ImageManager {
-  /// Create avatar
-  static Widget avatar({
-    Key? key,
-    String? imageUrl,
-    String? displayName,
-    String? email,
-    bool isOnline = false,
-    ImageSize size = ImageSize.medium,
-    bool showStatus = false,
-    Color? borderColor,
-    double? borderWidth,
-    Color? backgroundColor,
-    VoidCallback? onTap,
-    Function(String)? onImageSelected,
-  }) {
-    return ImageFactory.avatar(
-      key: key,
-      imageUrl: imageUrl,
-      displayName: displayName,
-      email: email,
-      isOnline: isOnline,
-      size: size,
-      showStatus: showStatus,
-      borderColor: borderColor,
-      borderWidth: borderWidth,
-      backgroundColor: backgroundColor,
-      onTap: onTap,
-      onImageSelected: onImageSelected,
-    );
-  }
-
-  /// Create recipe card
-  static Widget recipeCard({
-    Key? key,
-    required List<String> imageUrls,
-    ImageSize size = ImageSize.card,
-    bool showMultipleIndicator = true,
-    double? customWidth,
-    double? customHeight,
-    BorderRadius? borderRadius,
-    VoidCallback? onTap,
-    Function(int)? onImageTap,
-  }) {
-    return ImageFactory.recipeCard(
-      key: key,
-      imageUrls: imageUrls,
-      size: size,
-      showMultipleIndicator: showMultipleIndicator,
-      customWidth: customWidth,
-      customHeight: customHeight,
-      borderRadius: borderRadius,
-      onTap: onTap,
-      onImageTap: onImageTap,
-    );
-  }
-
-  /// Create recipe detail
-  static Widget recipeDetail({
-    Key? key,
-    required List<String> imageUrls,
-    ImageSize size = ImageSize.large,
-    bool showNavigationDots = true,
-    bool showImageCounter = true,
-    String? heroTag,
-    VoidCallback? onTap,
-    Function(int)? onImageTap,
-  }) {
-    return ImageFactory.recipeDetail(
-      key: key,
-      imageUrls: imageUrls,
-      size: size,
-      showNavigationDots: showNavigationDots,
-      showImageCounter: showImageCounter,
-      heroTag: heroTag,
-      onTap: onTap,
-      onImageTap: onImageTap,
-    );
-  }
-
-  // showImagePicker removed - ImageFactory.showImagePicker was dead code
 }

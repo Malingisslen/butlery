@@ -16,6 +16,7 @@ This guide is split into focused documents for easy navigation:
 - **[MVVM Pattern](MVVM_PATTERN.md)** - Views → ViewModels → Services → Repositories → Firebase
 - **[Dependency Injection](DI_SYSTEM.md)** - 7 modular DI modules with GetIt service locator
 - **[Firebase Integration](FIREBASE_INTEGRATION.md)** - Configuration, repositories, and security
+- **[Drift Storage](DRIFT_STORAGE.md)** - Offline-first local storage with SQLite
 
 ### Systems & Features
 - **[Notification System](NOTIFICATION_SYSTEM.md)** - Complete FCM integration
@@ -107,11 +108,12 @@ The Butlery application follows Clean Architecture principles with clear separat
 - ChangeNotifier for reactive state
 
 **Backend:**
-- Firebase Firestore (database)
+- Firebase Firestore (cloud database)
 - Firebase Auth (authentication)
 - Firebase Storage (file storage)
 - Firebase Cloud Messaging (notifications)
 - Firebase Analytics (metrics)
+- Drift/SQLite (local offline storage)
 
 **Development:**
 - GetIt for dependency injection
@@ -145,6 +147,7 @@ The Butlery application follows Clean Architecture principles with clear separat
 - [MVVM Pattern](MVVM_PATTERN.md) - Complete 4-layer architecture
 - [Dependency Injection](DI_SYSTEM.md) - 7-module DI system
 - [Firebase Integration](FIREBASE_INTEGRATION.md) - Backend architecture
+- [Drift Storage](DRIFT_STORAGE.md) - Offline-first local storage
 
 **Quality Metrics:**
 - [Project Metrics](PROJECT_METRICS.md) - Health scores and coverage

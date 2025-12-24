@@ -13,8 +13,6 @@ import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/views/social/add_members_to_group_view.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -38,6 +36,7 @@ import 'package:butlery/viewmodels/social_group_detail_viewmodel.dart';
 import 'package:butlery/widgets/social/groups/empty_group_delete_dialog.dart';
 import 'package:butlery/widgets/social/groups/ownership_transfer_dialog.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/views/social/group_detail/group_action_buttons.dart';
 
 /// Group detail view with member management and sharing capabilities.
 class GroupDetailView extends StatefulWidget {
@@ -133,9 +132,8 @@ class _GroupDetailViewState extends State<GroupDetailView>
     }
   }
 
-  // ✅ UPPDATERAD: Använd SocialComponents.showEditGroupDialog
   Future<void> _showEditGroupDialog(FriendCategory group) async {
-    final result = await SocialComponents.showEditGroupDialog(
+    final result = await SocialGroupComponents.showEditGroupDialog(
       context: context,
       groupId: group.id,
       currentGroupName: group.name,
@@ -172,13 +170,12 @@ class _GroupDetailViewState extends State<GroupDetailView>
     }
   }
 
-  // ✅ UPPDATERAD: Använd SocialComponents.showDeleteGroupDialog
   Future<void> _showDeleteGroupDialog(FriendCategory group) async {
     if (_isNavigating) {
       return;
     }
 
-    final shouldDelete = await SocialComponents.showDeleteGroupDialog(
+    final shouldDelete = await SocialGroupComponents.showDeleteGroupDialog(
       context: context,
       groupId: group.id,
       groupName: group.name,
@@ -242,86 +239,15 @@ class _GroupDetailViewState extends State<GroupDetailView>
     );
   }
 
-  /// ✅ FIXAD: Action buttons med behörighetskontroll
   Widget _buildActionButtons(FriendCategory group) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // ✅ NEW: Social sharing buttons for group
-        Text(
-          'Dela med gruppen',
-          style: AppTextStyles.titleMedium.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingM),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => _showRecipeSelectionForGroup(group),
-                icon: const Icon(Icons.restaurant_menu),
-                label: const Text('Dela recept'),
-              ),
-            ),
-            const SizedBox(width: AppDimensions.spacingM),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => _showMenuSelectionForGroup(group),
-                icon: const Icon(Icons.calendar_today),
-                label: const Text('Dela meny'),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppDimensions.spacingM),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () => _showShoppingListSelectionForGroup(group),
-            icon: const Icon(Icons.shopping_cart),
-            label: const Text('Dela inköpslista'),
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingL),
-        const Divider(),
-        const SizedBox(height: AppDimensions.spacingL),
-
-        // Management buttons
-        Text(
-          'Hantera grupp',
-          style: AppTextStyles.titleMedium.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingM),
-
-        // Edit button
-        if (ServiceLocator.get<PermissionService>().isGroupAdmin(group.id)) ...[
-          FilledButton.icon(
-            onPressed: () => _showEditGroupDialog(group),
-            icon: const Icon(Icons.edit),
-            label: const Text('Redigera grupp'),
-          ),
-          const SizedBox(height: AppDimensions.spacingL),
-        ],
-
-        // Delete or Leave button
-        if (ServiceLocator.get<PermissionService>().isGroupAdmin(group.id))
-          OutlinedButton.icon(
-            onPressed: () => _showDeleteGroupDialog(group),
-            icon: const Icon(Icons.delete),
-            label: const Text('Ta bort grupp'),
-            style: ComponentThemes.deleteButtonStyle,
-          )
-        else
-          OutlinedButton.icon(
-            onPressed: () => _leaveGroup(group),
-            icon: const Icon(Icons.exit_to_app),
-            label: const Text('Lämna grupp'),
-            style: ComponentThemes.outlinedButtonStyle,
-          ),
-      ],
+    return GroupActionButtons(
+      group: group,
+      onShareRecipe: () => _showRecipeSelectionForGroup(group),
+      onShareMenu: () => _showMenuSelectionForGroup(group),
+      onShareShoppingList: () => _showShoppingListSelectionForGroup(group),
+      onEditGroup: () => _showEditGroupDialog(group),
+      onDeleteGroup: () => _showDeleteGroupDialog(group),
+      onLeaveGroup: () => _leaveGroup(group),
     );
   }
 

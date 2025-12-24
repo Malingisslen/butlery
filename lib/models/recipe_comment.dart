@@ -1,88 +1,23 @@
-/// Recipe comment model with threaded discussions, likes, and cached author metadata.
-/// **Features:** Hierarchical threading, like tracking, soft deletion, author caching, Swedish time formatting.
-/// ```dart
-/// final c = RecipeComment.create(recipeId: id, authorId: uid,
-///   authorDisplayName: 'Anna', text: 'Fantastiskt!', parentCommentId: parentId);
-/// final liked = c.addLike(userId).removeLike(userId);
-/// // Edit and moderate comments
-/// final editedComment = comment.edit('Uppdaterad kommentar med mer detaljer.');
-/// final deletedComment = comment.delete();
-/// // Check comment properties
-/// final isThreaded = comment.hasReplies;
-/// final engagement = comment.likeCount;
-/// final canEdit = comment.canBeEditedBy(currentUserId);
-/// ```
-
-// lib/models/recipe_comment.dart
-
+/// Recipe comment with threading, likes, and cached author metadata.
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
-/// Comprehensive recipe comment model with threaded discussion and social engagement capabilities.
-/// Represents a complete recipe comment with all associated metadata including author information,
-/// threading hierarchy, social engagement data, and moderation features.
+/// Recipe comment with threaded discussions and social engagement.
 class RecipeComment {
-  /// Unique identifier for this comment.
   final String id;
-  
-  /// Recipe identifier that this comment belongs to.
-  /// Links the comment to its parent recipe for organization and retrieval.
-  final String recipeId; // Which recipe this comments on
-  
-  /// User identifier of the comment author.
-  /// References the user who created this comment for ownership and permissions.
-  final String authorId; // Who wrote the comment
-  
-  /// Cached display name of the comment author for UI performance.
-  /// Stored locally to avoid additional user profile lookups during comment display.
-  final String authorDisplayName; // Cache for performance
-  
-  /// Cached avatar URL of the comment author for UI performance.
-  /// Optional cached avatar image for enhanced comment display without additional queries.
-  final String? authorAvatarUrl; // Cache for performance
-  
-  /// The actual comment text content.
-  /// Main comment content provided by the user, supporting rich text and emoji.
-  final String text; // Comment content
-  
-  /// Timestamp when the comment was originally created.
-  /// Used for chronological ordering and time-based display formatting.
+  final String recipeId;
+  final String authorId;
+  final String authorDisplayName;
+  final String? authorAvatarUrl;
+  final String text;
   final DateTime createdAt;
-  
-  /// Timestamp when the comment was last edited.
-  /// Null for unedited comments, set when content is modified after creation.
-  final DateTime? editedAt; // If comment was edited
-  
-  /// List of user IDs who have liked this comment.
-  /// Tracks social engagement and enables like/unlike functionality with user identification.
-  final List<String> likedByUserIds; // Who liked this comment
-  
-  /// Parent comment ID for threaded discussions.
-  /// Null for top-level comments, references parent comment ID for replies.
-  final String? parentCommentId; // For replies (null = top-level)
-  
-  /// Number of direct replies to this comment.
-  /// Cached count for efficient UI display without querying child comments.
-  final int replyCount; // Number of replies
-  
-  /// Soft deletion flag for content moderation.
-  /// Allows content removal while preserving comment structure and audit trail.
-  final bool isDeleted; // Soft delete
+  final DateTime? editedAt;
+  final List<String> likedByUserIds;
+  final String? parentCommentId;
+  final int replyCount;
+  final bool isDeleted;
 
-  /// Creates a new recipe comment with all required metadata and default values.
-  /// [id] Unique identifier for the comment
-  /// [recipeId] Target recipe identifier for comment association
-  /// [authorId] Comment author's user identifier
-  /// [authorDisplayName] Cached author name for UI performance
-  /// [authorAvatarUrl] Optional cached author avatar for enhanced display
-  /// [text] Main comment content with user-provided text
-  /// [createdAt] Creation timestamp, defaults to current time
-  /// [editedAt] Edit timestamp, null for unedited comments
-  /// [likedByUserIds] List of users who liked this comment
-  /// [parentCommentId] Parent comment ID for threading, null for top-level
-  /// [replyCount] Number of direct replies for cached display
-  /// [isDeleted] Soft deletion flag for content moderation
   RecipeComment({
     required this.id,
     required this.recipeId,
@@ -98,16 +33,6 @@ class RecipeComment {
     this.isDeleted = false,
   }) : createdAt = createdAt ?? DateTime.now();
 
-  /// Factory constructor for creating new recipe comments with auto-generated ID.
-  /// Creates a new comment with automatic ID generation and default settings for new comments.
-  /// Comments are created as unedited, undeleted, and with no likes or replies initially.
-  /// [recipeId] Target recipe identifier for comment association
-  /// [authorId] Comment author's user identifier
-  /// [authorDisplayName] Author's display name for caching and UI performance
-  /// [authorAvatarUrl] Optional author avatar URL for enhanced comment display
-  /// [text] Main comment content provided by the user
-  /// [parentCommentId] Optional parent comment ID for threaded replies
-  /// Returns a new [RecipeComment] instance with generated ID and current timestamp.
   factory RecipeComment.create({
     required String recipeId,
     required String authorId,

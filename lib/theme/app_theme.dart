@@ -10,8 +10,6 @@ class AppTheme {
   /// Private constructor to prevent instantiation of utility class
   AppTheme._();
 
-  // ===== MAIN THEME FACTORY =====
-
   /// Creates the complete light theme for the application.
   static ThemeData get lightTheme => _createTheme(AppColors.lightColorScheme);
 

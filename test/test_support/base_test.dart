@@ -5,10 +5,7 @@
 /// common test utilities and mocks.
 library;
 
-import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hive/hive.dart';
-import 'package:butlery/models/recipe_unified.g.dart'; // Manual TypeAdapter
 import '../infrastructure/di/test_service_locator.dart';
 import '../infrastructure/mocks/firestore_singleton.dart';
 import 'test_mode_config.dart';
@@ -24,9 +21,6 @@ abstract class BaseTest {
   /// Whether the service locator has been initialized
   static bool _initialized = false;
 
-  /// Temporary directory for Hive boxes
-  static Directory? _hiveTempDir;
-
   /// Common setup for all tests
   ///
   /// Call this in your test's setUp() method or use setUpAll() for
@@ -36,24 +30,9 @@ abstract class BaseTest {
       // Enable test mode for repositories
       TestModeConfig.enableTestMode();
 
-      // Initialize Hive for tests
-      await _initializeHive();
-
       // Initialize service locator
       await TestServiceLocator.initialize();
       _initialized = true;
-    }
-  }
-
-  /// Initialize Hive for testing
-  static Future<void> _initializeHive() async {
-    // Use a temporary directory for Hive boxes during tests
-    _hiveTempDir = await Directory.systemTemp.createTemp('hive_test_');
-    Hive.init(_hiveTempDir!.path);
-
-    // Register Hive adapters for models that use Hive
-    if (!Hive.isAdapterRegistered(1)) {
-      Hive.registerAdapter(RecipeCoreAdapter());
     }
   }
 
@@ -75,19 +54,6 @@ abstract class BaseTest {
   /// after a test suite completes
   static Future<void> reset() async {
     if (_initialized) {
-      // Close all Hive boxes
-      await Hive.close();
-
-      // Clean up Hive temp directory
-      if (_hiveTempDir != null && _hiveTempDir!.existsSync()) {
-        try {
-          _hiveTempDir!.deleteSync(recursive: true);
-        } catch (e) {
-          // Ignore cleanup errors in tests
-        }
-        _hiveTempDir = null;
-      }
-
       // Reset service locator
       await TestServiceLocator.reset();
 

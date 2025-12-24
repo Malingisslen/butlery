@@ -18,7 +18,7 @@ class GroupDetailHeader {
           // Group avatar and name
           Row(
             children: [
-              SocialComponents.avatar(
+              SocialAvatarComponents.avatar(
                 size: ImageSize.large,
                 displayName: group.name,
               ),

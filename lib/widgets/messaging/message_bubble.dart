@@ -1,26 +1,20 @@
 // lib/widgets/messaging/message_bubble.dart
 
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:butlery/models/messaging/message.dart';
-// MessageStatus and MessageType available through message.dart import
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
-import 'package:butlery/widgets/messaging/fullscreen_image_viewer.dart';
+import 'package:butlery/widgets/messaging/builders/message_content_builder.dart';
+import 'package:butlery/widgets/messaging/components/message_status_widget.dart';
+import 'package:butlery/widgets/messaging/components/system_message_widget.dart';
 
-/// Message bubble component for displaying individual messages in chat
-/// Provides different styling for sent vs received messages with:
-/// - Message content with proper formatting
-/// - Message status indicators (sent, delivered, read)
-/// - Timestamp display and edited indicators
-/// - Recipe/menu share previews
-/// - Reply preview support
-/// - Swipe-to-reply gesture
-/// - Proper Swedish localization
+/// Message bubble component for chat messages.
+/// Uses extracted components from [MessageContentBuilder],
+/// [MessageStatusWidget], and [SystemMessageWidget].
 class MessageBubble extends StatefulWidget {
   final Message message;
   final String currentUserId;
@@ -205,32 +199,7 @@ class _MessageBubbleState extends State<MessageBubble>
   }
 
   Widget _buildSystemMessage(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.paddingS,
-      ),
-      child: Center(
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingM,
-            vertical: AppDimensions.paddingS,
-          ),
-          decoration: BoxDecoration(
-            color: AppColors.textTertiary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-          ),
-          child: Text(
-            widget.message.content,
-            style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.textMedium,
-              fontStyle: FontStyle.italic,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ),
-    );
+    return SystemMessageWidget(content: widget.message.content);
   }
 
   Widget _buildAvatar(BuildContext context) {
@@ -317,491 +286,29 @@ class _MessageBubbleState extends State<MessageBubble>
     final replyTo = widget.replyToMessage;
     if (replyTo == null) return const SizedBox.shrink();
 
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingS),
-      margin: const EdgeInsets.only(bottom: AppDimensions.paddingS),
-      decoration: BoxDecoration(
-        color: (_isFromCurrentUser ? AppColors.cardWhite : AppColors.accent)
-            .withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-        border: const Border(
-          left: BorderSide(
-            color: AppColors.accent,
-            width: 3,
-          ),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            replyTo.senderDisplayName,
-            style: AppTextStyles.labelMedium.copyWith(
-              color: _isFromCurrentUser
-                  ? AppColors.cardWhite.withValues(alpha: 0.8)
-                  : AppColors.primaryBlue,
-            ),
-          ),
-          const SizedBox(height: AppDimensions.spacingXxs),
-          Text(
-            replyTo.displayContent,
-            style: AppTextStyles.labelSmall.copyWith(
-              color: _isFromCurrentUser
-                  ? AppColors.cardWhite.withValues(alpha: 0.7)
-                  : AppColors.textMedium,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
+    return ReplyPreviewWidget(
+      senderName: replyTo.senderDisplayName,
+      content: replyTo.displayContent,
+      isFromCurrentUser: _isFromCurrentUser,
     );
   }
 
   Widget _buildMessageContent(BuildContext context) {
-    switch (widget.message.type) {
-      case MessageType.text:
-        return _buildTextContent(context);
-      case MessageType.recipeShare:
-        return _buildRecipeShareContent(context);
-      case MessageType.menuShare:
-        return _buildMenuShareContent(context);
-      case MessageType.shoppingListShare:
-        return _buildShoppingListShareContent(context);
-      case MessageType.image:
-        return _buildImageContent(context);
-      case MessageType.voice:
-        return _buildVoiceContent(context);
-      case MessageType.system:
-        return _buildTextContent(context); // System messages handled separately
-    }
-  }
-
-  Widget _buildTextContent(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          widget.message.content,
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: _isFromCurrentUser
-                ? AppColors.cardWhite
-                : AppColors.textDark,
-          ),
-        ),
-        if (widget.message.isEdited)
-          Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
-            child: Text(
-              'redigerad',
-              style: AppTextStyles.labelSmall.copyWith(
-                color: _isFromCurrentUser
-                    ? AppColors.cardWhite.withValues(alpha: 0.7)
-                    : AppColors.textMedium,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildRecipeShareContent(BuildContext context) {
-    final recipeTitle = widget.message.metadata?['recipeTitle'] ?? 'Okänt recept';
-    
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingS),
-      decoration: BoxDecoration(
-        color: (_isFromCurrentUser ? AppColors.cardWhite : AppColors.accent)
-            .withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppDimensions.paddingS),
-            decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-            ),
-            child: Icon(
-              Icons.restaurant_menu,
-              color: _isFromCurrentUser 
-                  ? AppColors.cardWhite 
-                  : AppColors.primaryBlue,
-              size: AppDimensions.iconSizeM,
-            ),
-          ),
-          const SizedBox(width: AppDimensions.paddingS),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '🍽️ Recept delat',
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: _isFromCurrentUser 
-                        ? AppColors.cardWhite 
-                        : AppColors.primaryBlue,
-                  ),
-                ),
-                Text(
-                  recipeTitle,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: _isFromCurrentUser 
-                        ? AppColors.cardWhite 
-                        : AppColors.textDark,
-                  ),
-                ),
-                if (widget.message.content.isNotEmpty && widget.message.content != 'Delade ett recept: $recipeTitle')
-                  Text(
-                    widget.message.content,
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: _isFromCurrentUser 
-                          ? AppColors.cardWhite.withValues(alpha: 0.8)
-                          : AppColors.textMedium,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMenuShareContent(BuildContext context) {
-    final menuTitle = widget.message.metadata?['menuTitle'] ?? 'Okänd meny';
-    
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingS),
-      decoration: BoxDecoration(
-        color: (_isFromCurrentUser ? AppColors.cardWhite : AppColors.accent)
-            .withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppDimensions.paddingS),
-            decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-            ),
-            child: Icon(
-              Icons.list_alt,
-              color: _isFromCurrentUser 
-                  ? AppColors.cardWhite 
-                  : AppColors.primaryBlue,
-              size: AppDimensions.iconSizeM,
-            ),
-          ),
-          const SizedBox(width: AppDimensions.paddingS),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '📋 Meny delad',
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: _isFromCurrentUser 
-                        ? AppColors.cardWhite 
-                        : AppColors.primaryBlue,
-                  ),
-                ),
-                Text(
-                  menuTitle,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: _isFromCurrentUser 
-                        ? AppColors.cardWhite 
-                        : AppColors.textDark,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildShoppingListShareContent(BuildContext context) {
-    final listTitle = widget.message.metadata?['listTitle'] ?? 'Okänd inköpslista';
-    
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingS),
-      decoration: BoxDecoration(
-        color: (_isFromCurrentUser ? AppColors.cardWhite : AppColors.accent)
-            .withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppDimensions.paddingS),
-            decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-            ),
-            child: Icon(
-              Icons.shopping_cart,
-              color: _isFromCurrentUser 
-                  ? AppColors.cardWhite 
-                  : AppColors.primaryBlue,
-              size: AppDimensions.iconSizeM,
-            ),
-          ),
-          const SizedBox(width: AppDimensions.paddingS),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '🛒 Inköpslista delad',
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: _isFromCurrentUser 
-                        ? AppColors.cardWhite 
-                        : AppColors.primaryBlue,
-                  ),
-                ),
-                Text(
-                  listTitle,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: _isFromCurrentUser 
-                        ? AppColors.cardWhite 
-                        : AppColors.textDark,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImageContent(BuildContext context) {
-    // For image messages, URL is stored in metadata
-    final imageUrl = widget.message.metadata?['imageUrl'] as String? ?? '';
-
-    if (imageUrl.isEmpty) {
-      // Fallback if no image URL
-      return Text(
-        'Bild kunde inte laddas',
-        style: AppTextStyles.bodyMedium.copyWith(
-          color: _isFromCurrentUser
-              ? AppColors.cardWhite
-              : AppColors.textDark,
-          fontStyle: FontStyle.italic,
-        ),
-      );
-    }
-
-    return Container(
-      constraints: const BoxConstraints(
-        maxWidth: 250,
-        maxHeight: 300,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Image with tap to fullscreen
-          Semantics(
-            label: 'Bildmeddelande, tryck för fullstorlek',
-            button: true,
-            child: GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => FullscreenImageViewer(
-                    imageUrl: imageUrl,
-                    caption: widget.message.content.isNotEmpty ? widget.message.content : null,
-                  ),
-                  fullscreenDialog: true,
-                ),
-              );
-            },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  height: 150,
-                  color: _isFromCurrentUser
-                      ? AppColors.cardWhite.withValues(alpha: 0.2)
-                      : AppColors.accent.withValues(alpha: 0.2),
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: _isFromCurrentUser
-                          ? AppColors.cardWhite
-                          : AppColors.primaryBlue,
-                    ),
-                  ),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  height: 150,
-                  color: _isFromCurrentUser
-                      ? AppColors.cardWhite.withValues(alpha: 0.2)
-                      : AppColors.accent.withValues(alpha: 0.2),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.broken_image,
-                        size: 48,
-                        color: _isFromCurrentUser
-                            ? AppColors.cardWhite.withValues(alpha: 0.7)
-                            : AppColors.textMedium,
-                      ),
-                      const SizedBox(height: AppDimensions.spacingS),
-                      Text(
-                        'Kunde inte ladda bild',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: _isFromCurrentUser
-                              ? AppColors.cardWhite.withValues(alpha: 0.7)
-                              : AppColors.textMedium,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          ),
-
-          // Caption if available
-          if (widget.message.content.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: AppDimensions.paddingS),
-              child: Text(
-                widget.message.content,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: _isFromCurrentUser
-                      ? AppColors.cardWhite
-                      : AppColors.textDark,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVoiceContent(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingS),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.play_arrow,
-            color: _isFromCurrentUser 
-                ? AppColors.cardWhite 
-                : AppColors.primaryBlue,
-          ),
-          const SizedBox(width: AppDimensions.paddingS),
-          Text(
-            'Röstmeddelande',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: _isFromCurrentUser 
-                  ? AppColors.cardWhite 
-                  : AppColors.textDark,
-            ),
-          ),
-        ],
-      ),
+    return MessageContentBuilder.build(
+      context: context,
+      message: widget.message,
+      isFromCurrentUser: _isFromCurrentUser,
     );
   }
 
   Widget _buildMessageStatus(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            _getStatusIcon(),
-            size: AppDimensions.iconSizeXs,
-            color: AppColors.cardWhite.withValues(alpha: 0.7),
-          ),
-          const SizedBox(width: AppDimensions.spacingXxs),
-          Text(
-            _getStatusText(),
-            style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.cardWhite.withValues(alpha: 0.7),
-              fontSize: 10,
-            ),
-          ),
-        ],
-      ),
-    );
+    return MessageStatusWidget(status: widget.message.status);
   }
 
   Widget _buildTimestamp(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        top: AppDimensions.spacingXs,
-        left: _isFromCurrentUser ? 0 : AppDimensions.paddingS,
-        right: _isFromCurrentUser ? AppDimensions.paddingS : 0,
-      ),
-      child: Text(
-        _getFormattedTimestamp(),
-        style: AppTextStyles.labelSmall.copyWith(
-          color: AppColors.textLight,
-          fontSize: 10,
-        ),
-      ),
+    return MessageTimestampWidget(
+      timestamp: widget.message.sentAt,
+      isFromCurrentUser: _isFromCurrentUser,
     );
-  }
-
-  IconData _getStatusIcon() {
-    switch (widget.message.status) {
-      case MessageStatus.sending:
-        return Icons.access_time;
-      case MessageStatus.sent:
-        return Icons.check;
-      case MessageStatus.delivered:
-        return Icons.done_all;
-      case MessageStatus.read:
-        return Icons.done_all;
-      case MessageStatus.failed:
-        return Icons.error_outline;
-    }
-  }
-
-  String _getStatusText() {
-    switch (widget.message.status) {
-      case MessageStatus.sending:
-        return 'Skickar';
-      case MessageStatus.sent:
-        return 'Skickat';
-      case MessageStatus.delivered:
-        return 'Levererat';
-      case MessageStatus.read:
-        return 'Läst';
-      case MessageStatus.failed:
-        return 'Misslyckades';
-    }
-  }
-
-  String _getFormattedTimestamp() {
-    final now = DateTime.now();
-    final messageTime = widget.message.sentAt;
-    final difference = now.difference(messageTime);
-
-    if (difference.inMinutes < 1) {
-      return 'nu';
-    } else if (difference.inHours < 1) {
-      return '${difference.inMinutes}m';
-    } else if (difference.inDays < 1) {
-      return '${difference.inHours}h';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}d';
-    } else {
-      return '${messageTime.day}/${messageTime.month}';
-    }
   }
 }

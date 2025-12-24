@@ -149,8 +149,6 @@ class AppTextStyles {
   );
 
 
-  // ===== SPECIALIZED STYLES =====
-
   /// App bar title style
   static const TextStyle appBarTitle = headlineMedium;
 

@@ -1,7 +1,12 @@
 // lib/services/offline/offline_sync_manager.dart
 
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+
+import 'package:butlery/core/storage/drift/app_database.dart';
+import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
+import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/retry_helper.dart';
@@ -10,98 +15,117 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/offline/sync_result.dart';
 
 /// Handles sync operations for offline service
+/// Now uses Drift database instead of Hive
 class OfflineSyncManager {
-  
-  final Box<Recipe> _recipeBox;
-  final Box<String> _syncQueueBox;
+  final RecipeDao _recipeDao;
+  final SyncQueueDao _syncQueueDao;
   final FirestoreRepository _firestoreRepository;
   final AuthRepository _authRepository;
-  
+
   bool _isSyncing = false;
   final VoidCallback? _onSyncStateChanged;
-  
+
   OfflineSyncManager({
-    required Box<Recipe> recipeBox,
-    required Box<String> syncQueueBox,
+    required AppDatabase database,
     required FirestoreRepository firestoreRepository,
     required AuthRepository authRepository,
     VoidCallback? onSyncStateChanged,
-  }) : _recipeBox = recipeBox,
-       _syncQueueBox = syncQueueBox,
-       _firestoreRepository = firestoreRepository,
-       _authRepository = authRepository,
-       _onSyncStateChanged = onSyncStateChanged;
-  
+  })  : _recipeDao = database.recipeDao,
+        _syncQueueDao = database.syncQueueDao,
+        _firestoreRepository = firestoreRepository,
+        _authRepository = authRepository,
+        _onSyncStateChanged = onSyncStateChanged;
+
   // Getters
   bool get isSyncing => _isSyncing;
-  bool get hasQueuedChanges => _syncQueueBox.isNotEmpty;
-  int get queuedChangesCount => _syncQueueBox.length;
+
+  Future<bool> get hasQueuedChanges async {
+    final userId = _authRepository.currentUserId;
+    if (userId == null) return false;
+    return await _syncQueueDao.hasPending(userId);
+  }
+
+  Future<int> get queuedChangesCount async {
+    final userId = _authRepository.currentUserId;
+    if (userId == null) return 0;
+    return await _syncQueueDao.countPending(userId);
+  }
 
   /// Sync pending changes without circular dependencies
   Future<void> syncPendingChanges({required bool isOnline}) async {
-    if (!isOnline || _syncQueueBox.isEmpty || _isSyncing) return;
+    final userId = _authRepository.currentUserId;
+    if (userId == null) {
+      AppLogger.warning('⚠️ Ingen användare inloggad - hoppar över sync');
+      return;
+    }
+
+    final hasPending = await _syncQueueDao.hasPending(userId);
+    if (!isOnline || !hasPending || _isSyncing) return;
 
     _isSyncing = true;
     _onSyncStateChanged?.call();
 
+    final pendingCount = await _syncQueueDao.countPending(userId);
     AppLogger.info(
-      '🔄 Synkroniserar ${_syncQueueBox.length} väntande ändringar...',
+      '🔄 Synkroniserar $pendingCount väntande ändringar...',
     );
 
     try {
-      final userId = _authRepository.currentUserId;
-      if (userId == null) {
-        AppLogger.warning('⚠️ Ingen användare inloggad - hoppar över sync');
-        return;
-      }
-
       final userRecipesRef = _firestoreRepository.userRecipesCollection(userId);
 
-      final pendingIds = _syncQueueBox.values.toList();
+      final pendingItems = await _syncQueueDao.getPendingForUser(userId);
       int successCount = 0;
       int failureCount = 0;
       final List<String> failedRecipes = [];
 
-      for (final id in pendingIds) {
+      for (final item in pendingItems) {
         Recipe? recipe;
         try {
-          recipe = _recipeBox.get(id);
-          if (recipe != null && recipe.needsSync) {
-            AppLogger.info('📤 Synkar recept: ${recipe.title}');
+          // Get recipe from Drift
+          final offlineRecipe =
+              await _recipeDao.getRecipe(item.recipeId, userId);
 
-            // Use retry logic for Firebase operations
-            await RetryHelper.retryFirebaseOperation(() async {
-              await _firestoreRepository.setDocument(
-                userRecipesRef.doc(recipe!.id),
-                recipe.toFirestore(),
-              );
-            });
+          if (offlineRecipe != null) {
+            final json =
+                jsonDecode(offlineRecipe.recipeJson) as Map<String, dynamic>;
+            recipe = Recipe.fromJson(json);
 
-            // Sync succeeded
-            // Note: unified Recipe doesn't have isModifiedOffline or lastSyncedAt fields
-            // This sync tracking functionality would need to be implemented differently
-            
-            // Save updated recipe offline
-            await _recipeBox.put(id, recipe);
+            if (offlineRecipe.needsSync) {
+              AppLogger.info('📤 Synkar recept: ${recipe.title}');
 
-            // Remove from sync queue
-            await _syncQueueBox.delete(id);
-            successCount++;
-            AppLogger.success('✅ Synkade recept: ${recipe.title}');
-          } else if (recipe == null) {
-            // Cleanup: Remove invalid entries from queue
-            await _syncQueueBox.delete(id);
-            AppLogger.info('🗑️ Tog bort invalid sync entry: $id');
+              // Use retry logic for Firebase operations
+              await RetryHelper.retryFirebaseOperation(() async {
+                await _firestoreRepository.setDocument(
+                  userRecipesRef.doc(recipe!.id),
+                  recipe.toFirestore(),
+                );
+              });
+
+              // Sync succeeded - mark as synced in Drift
+              await _recipeDao.markSynced(item.recipeId, userId);
+
+              // Remove from sync queue
+              await _syncQueueDao.dequeue(item.id);
+              successCount++;
+              AppLogger.success('✅ Synkade recept: ${recipe.title}');
+            } else {
+              // Recipe no longer needs sync - remove from queue
+              await _syncQueueDao.dequeue(item.id);
+              AppLogger.info('✅ Recept ${item.recipeId} behöver inte synkas längre');
+            }
           } else {
-            // Recipe no longer needs sync - remove from queue
-            await _syncQueueBox.delete(id);
-            AppLogger.info('✅ Recept $id behöver inte synkas längre');
+            // Recipe doesn't exist - remove from queue
+            await _syncQueueDao.dequeue(item.id);
+            AppLogger.info('🗑️ Tog bort invalid sync entry: ${item.recipeId}');
           }
         } catch (e) {
           failureCount++;
-          final recipeTitle = recipe?.title ?? id;
+          final recipeTitle = recipe?.title ?? item.recipeId;
           failedRecipes.add('$recipeTitle: ${e.toString()}');
-          AppLogger.error('❌ Fel vid synk av $id: $e');
+          AppLogger.error('❌ Fel vid synk av ${item.recipeId}: $e');
+
+          // Record failure in sync queue
+          await _syncQueueDao.recordFailure(item.id, e.toString());
 
           // Robust error handling: Continue with next recipe
           continue;
@@ -127,16 +151,17 @@ class OfflineSyncManager {
       if (successCount == 0 && failureCount > 0) {
         AppLogger.info(
             '⏰ Alla sync-försök misslyckades, använder exponential backoff...');
-        
+
         // Use exponential backoff for retry attempts
         RetryHelper.retryWithBackoff(() async {
-          if (isOnline && _syncQueueBox.isNotEmpty) {
+          final stillHasPending = await _syncQueueDao.hasPending(userId);
+          if (isOnline && stillHasPending) {
             AppLogger.info('🔄 Retry-försök startar...');
             await syncPendingChanges(isOnline: isOnline);
           }
         }, maxRetries: 3, shouldRetry: (error) {
-          // Only retry if we still have items in the queue
-          return _syncQueueBox.isNotEmpty;
+          // Retry on any error - sync state will be checked inside the operation
+          return true;
         });
       }
     } catch (e) {
@@ -171,7 +196,17 @@ class OfflineSyncManager {
       );
     }
 
-    if (_syncQueueBox.isEmpty) {
+    final userId = _authRepository.currentUserId;
+    if (userId == null) {
+      return const SyncResult(
+        success: false,
+        message: 'Ingen användare inloggad',
+        isRetry: false,
+      );
+    }
+
+    final hasPending = await _syncQueueDao.hasPending(userId);
+    if (!hasPending) {
       AppLogger.info('✅ Inga ändringar att synkronisera');
       return const SyncResult(
         success: true,
@@ -181,11 +216,11 @@ class OfflineSyncManager {
     }
 
     AppLogger.info('🔄 Manuell synkronisering startad...');
-    final itemsToSync = _syncQueueBox.length;
+    final itemsToSync = await _syncQueueDao.countPending(userId);
 
     await syncPendingChanges(isOnline: isOnline);
 
-    final remainingItems = _syncQueueBox.length;
+    final remainingItems = await _syncQueueDao.countPending(userId);
     final syncedItems = itemsToSync - remainingItems;
 
     if (remainingItems == 0) {
@@ -207,5 +242,13 @@ class OfflineSyncManager {
         isRetry: true,
       );
     }
+  }
+
+  /// Get failed operations for diagnostic purposes
+  /// [maxRetries] - Operations with retry count above this are considered failed
+  Future<List<SyncQueueEntry>> getFailedOperations({int maxRetries = 3}) async {
+    final userId = _authRepository.currentUserId;
+    if (userId == null) return [];
+    return await _syncQueueDao.getFailedOperations(userId, maxRetries);
   }
 }

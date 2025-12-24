@@ -1,13 +1,10 @@
-// lib/widgets/common/state/skeleton_components.dart
-
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
-/// SkeletonComponents - Skeleton loading components
-/// Provides animated skeleton loading boxes and related components.
+/// Skeleton loading components.
 class SkeletonComponents {
-  /// Create a skeleton box with shimmer animation
+  /// Create a skeleton box with shimmer animation.
   static Widget skeletonBox({
     double? width,
     double? height,
@@ -22,8 +19,6 @@ class SkeletonComponents {
     );
   }
 }
-
-/// ===== SKELETON BOX COMPONENT =====
 
 class _SkeletonBox extends StatefulWidget {
   final double? width;

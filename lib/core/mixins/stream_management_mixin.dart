@@ -173,9 +173,6 @@ import 'package:butlery/core/utils/logger.dart';
 /// - Stream error handling (found in 25+ services)
 /// - Stream transformation patterns (found in 20+ services)
 mixin StreamManagementMixin {
-  
-  // ===== SUBSCRIPTION TRACKING =====
-  
   /// Active stream subscriptions registry
   final List<StreamSubscription> _subscriptions = [];
   final Map<String, StreamSubscription> _namedSubscriptions = {};
@@ -190,9 +187,7 @@ mixin StreamManagementMixin {
   
   /// Disposal state tracking
   bool _isDisposed = false;
-  
-  // ===== SUBSCRIPTION MANAGEMENT =====
-  
+
   /// Add subscription to management registry
   /// Automatically handles disposal when service is disposed
   void addSubscription(StreamSubscription subscription, {String? name}) {
@@ -244,9 +239,7 @@ mixin StreamManagementMixin {
     final subscription = _namedSubscriptions[name];
     return subscription != null && !_subscriptions.contains(subscription);
   }
-  
-  // ===== TIMER MANAGEMENT =====
-  
+
   /// Add timer to management registry
   void addTimer(Timer timer, {String? name}) {
     if (_isDisposed) {
@@ -322,9 +315,7 @@ mixin StreamManagementMixin {
     addTimer(timer, name: name);
     return timer;
   }
-  
-  // ===== STREAM CONTROLLER MANAGEMENT =====
-  
+
   /// Add StreamController to management registry
   void addStreamController(StreamController controller, {String? name}) {
     if (_isDisposed) {
@@ -398,9 +389,7 @@ mixin StreamManagementMixin {
     addStreamController(controller, name: name);
     return controller;
   }
-  
-  // ===== STREAM HELPERS =====
-  
+
   /// Listen to stream with automatic subscription management
   StreamSubscription<T> listenToStream<T>(
     Stream<T> stream,
@@ -473,9 +462,7 @@ mixin StreamManagementMixin {
       onDone: onDone,
     );
   }
-  
-  // ===== STREAM STATE MONITORING =====
-  
+
   /// Get current stream management statistics
   Map<String, dynamic> getStreamStats() {
     return {
@@ -532,9 +519,7 @@ mixin StreamManagementMixin {
       AppLogger.warning('⚠️ Resource leaks detected: ${leaks.join(', ')}');
     }
   }
-  
-  // ===== DISPOSAL MANAGEMENT =====
-  
+
   /// Dispose all managed resources
   /// This method should be called from the implementing service's dispose method
   Future<void> disposeStreamResources() async {
@@ -586,9 +571,7 @@ mixin StreamManagementMixin {
     
     AppLogger.success('✅ Stream resources disposed successfully');
   }
-  
-  // ===== TESTING SUPPORT =====
-  
+
   /// Reset all stream resources for testing
   Future<void> resetStreamResources() async {
     await disposeStreamResources();

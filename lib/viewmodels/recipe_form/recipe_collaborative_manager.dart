@@ -15,19 +15,18 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
-/// Manages real-time collaborative editing for recipe forms
+
+/// Manages real-time collaborative editing for recipe forms.
 class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMixin {
   final PermissionService _permissionService;
   final CollaborativeRecipeRepository _collaborativeRepository;
   final ConnectivityMonitoringService _connectivityService;
 
-  // ===== COLLABORATIVE STATE (Firebase) =====
   RealtimeRecipe? _realtimeRecipe;
   StreamSubscription? _realtimeSubscription;
   StreamSubscription? _participantsSubscription;
   bool _isCollaborative = false;
   
-  // Permissions state
   EditMode? _editMode;
   SharedRecipe? _sharedRecipe;
   final List<UserProfile> _collaborativeParticipants = [];
@@ -45,8 +44,6 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
        _collaborativeRepository = collaborativeRepository ?? ServiceLocator.get<CollaborativeRecipeRepository>(),
        _connectivityService = connectivityService ?? ServiceLocator.get<ConnectivityMonitoringService>();
 
-  // ===== GETTERS =====
-
   bool get isCollaborative => _isCollaborative;
   bool get isConnectedToFirebase => _isConnectedToFirebase;
   String get connectionStatusText => _connectionStatusText;
@@ -56,14 +53,10 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
   EditMode? get editMode => _editMode;
   SharedRecipe? get sharedRecipe => _sharedRecipe;
 
-  // Permission getters
   bool get canEdit => _editMode == EditMode.edit;
   bool get canView => _editMode == EditMode.view || canEdit;
   bool get hasPermissions => _editMode != null;
 
-  // ===== COLLABORATIVE METHODS =====
-
-  /// Aktivera collaborative mode med riktig Firebase sync
   Future<void> enableCollaborativeMode(Recipe recipe) async {
     if (_isCollaborative) return;
 
@@ -74,20 +67,14 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
       final userDisplayName = _permissionService.currentUser?.displayName ?? 'Okänd';
       if (userId == null) throw Exception('Ingen inloggad användare');
 
-      // Skapa RealtimeRecipe från nuvarande recipe
       _realtimeRecipe = RealtimeRecipe.fromRecipe(
         recipe: recipe,
         ownerId: userId,
         ownerDisplayName: userDisplayName,
       );
 
-      // Spara till Firebase via repository
       await _collaborativeRepository.createRealtimeRecipe(_realtimeRecipe!);
-
-      // Sätt upp real-time listeners
       await _setupRealtimeListeners();
-
-      // Starta presence tracking
       _startPresenceTracking();
 
       _isCollaborative = true;
@@ -100,16 +87,12 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
     }
   }
 
-  /// Bjud in användare till collaborative session
   Future<void> inviteUserToCollaboration(String userId, String userDisplayName,
       ResourcePermission permission) async {
     if (_realtimeRecipe == null) return;
 
     try {
-      // Uppdatera RealtimeRecipe med ny deltagare
       _realtimeRecipe = _realtimeRecipe!.addParticipant(userId, userDisplayName, permission);
-
-      // Spara till Firebase via repository
       await _collaborativeRepository.updateRealtimeRecipe(_realtimeRecipe!);
 
       AppLogger.info('Användare inbjuden till collaboration: $userDisplayName');
@@ -120,15 +103,11 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
     }
   }
 
-  /// Ta bort användare från collaborative session
   Future<void> removeUserFromCollaboration(String userId) async {
     if (_realtimeRecipe == null) return;
 
     try {
-      // Uppdatera RealtimeRecipe utan deltagaren
       _realtimeRecipe = _realtimeRecipe!.removeParticipant(userId);
-
-      // Spara till Firebase via repository
       await _collaborativeRepository.updateRealtimeRecipe(_realtimeRecipe!);
 
       AppLogger.info('Användare borttagen från collaboration: $userId');
@@ -139,7 +118,6 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
     }
   }
 
-  /// Lämna collaborative mode
   Future<void> leaveCollaborativeMode() async {
     if (!_isCollaborative) return;
 
@@ -161,7 +139,6 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
     }
   }
 
-  /// Återanslut till Firebase
   Future<void> reconnectToFirebase() async {
     if (!_isCollaborative || _realtimeRecipe == null) return;
 
@@ -176,17 +153,13 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
     }
   }
 
-  /// Uppdatera recipe data i Firebase
   Future<void> updateRecipeInFirebase(Recipe recipe) async {
     if (!_isCollaborative || _realtimeRecipe == null) return;
 
     _saveDebounceTimer?.cancel();
     _saveDebounceTimer = Timer(const Duration(milliseconds: 500), () async {
       try {
-        // Uppdatera RealtimeRecipe med ny data
         _realtimeRecipe = _realtimeRecipe!.copyWith(recipe: recipe);
-
-        // Spara till Firebase
         await _collaborativeRepository.updateRealtimeRecipe(_realtimeRecipe!);
 
         AppLogger.debug('Recipe data uppdaterad i Firebase');
@@ -199,13 +172,9 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
     });
   }
 
-  // ===== PRIVATE METHODS =====
-
-  /// Sätt upp real-time listeners för collaborative data
   Future<void> _setupRealtimeListeners() async {
     if (_realtimeRecipe == null) return;
 
-    // Lyssna på RealtimeRecipe ändringar
     _realtimeSubscription = _collaborativeRepository
         .getRealtimeRecipeStream(_realtimeRecipe!.id)
         .listen(
@@ -222,7 +191,6 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
       },
     );
 
-    // Lyssna på deltagare
     _participantsSubscription = _collaborativeRepository
         .getParticipantsStream(_realtimeRecipe!.id)
         .listen(
@@ -234,35 +202,28 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
       },
     );
 
-    // Setup Firebase connection monitoring via service  
     _setupConnectivityMonitoring();
   }
 
-  /// Hantera real-time uppdateringar från Firebase
   void _handleRealtimeUpdate(RealtimeRecipe realtimeRecipe) {
     if (_realtimeRecipe == null) return;
 
     final oldRecipe = _realtimeRecipe!;
     _realtimeRecipe = realtimeRecipe;
 
-    // Kontrollera om recipe data har ändrats
     if (oldRecipe.recipe != realtimeRecipe.recipe) {
-      // Notifiera om recipe data ändringar
       notifyListeners();
     }
 
-    // Uppdatera participants
     _loadParticipantsProfiles();
   }
 
-  /// Uppdatera live editors från Firebase
   void _updateLiveEditors(List<LiveEditor> editors) {
     _liveEditors.clear();
     _liveEditors.addAll(editors);
     notifyListeners();
   }
 
-  /// Ladda UserProfile för alla deltagare
   Future<void> _loadParticipantsProfiles() async {
     if (_realtimeRecipe == null) return;
 
@@ -282,15 +243,13 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
     }
   }
 
-  /// Starta presence tracking
   void _startPresenceTracking() {
     _presenceTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       _updatePresence();
     });
-    _updatePresence(); // Initial update
+    _updatePresence();
   }
 
-  /// Uppdatera användarens presence
   void _updatePresence() {
     if (!_isCollaborative || _realtimeRecipe == null) return;
 
@@ -310,7 +269,6 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
     }
   }
 
-  /// Rensa presence
   Future<void> _clearPresence() async {
     if (_realtimeRecipe == null) return;
 
@@ -324,26 +282,18 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
     }
   }
 
-  /// Setup connectivity monitoring via service
   void _setupConnectivityMonitoring() {
-    // Start the service monitoring
     _connectivityService.startMonitoring();
-    
-    // Listen to connectivity changes
     _connectivityService.addListener(_onConnectivityChanged);
-    
-    // Initialize current state
     _onConnectivityChanged();
   }
-  
-  /// Handle connectivity changes from service
+
   void _onConnectivityChanged() {
     _isConnectedToFirebase = _connectivityService.isConnectedToFirebase;
     _connectionStatusText = _connectivityService.connectionStatusText;
     notifyListeners();
   }
 
-  /// Cleanup realtime listeners
   Future<void> _cleanupRealtimeListeners() async {
     await _realtimeSubscription?.cancel();
     await _participantsSubscription?.cancel();

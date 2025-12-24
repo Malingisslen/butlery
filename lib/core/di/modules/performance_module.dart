@@ -19,9 +19,11 @@ import 'package:butlery/services/performance/startup_optimization_manager.dart';
 import 'package:butlery/services/performance/performance_monitoring_service.dart';
 import 'package:butlery/services/performance/firebase_performance_service.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
+import 'package:butlery/services/offline_service.dart';
 
 // Dependencies from Core Module
 import 'package:butlery/core/di/modules/core_module.dart';
+import 'package:butlery/core/di/modules/content_module.dart';
 
 /// Performance optimization module.
 /// This module provides advanced performance optimization features
@@ -31,7 +33,7 @@ class PerformanceModule implements DIModule {
   String get name => 'Performance';
 
   @override
-  List<Type> get dependencies => [CoreModule];
+  List<Type> get dependencies => [CoreModule, ContentModule];
 
   @override
   List<Type> get provides => [
@@ -52,10 +54,14 @@ class PerformanceModule implements DIModule {
     }
 
     try {
-      // JSON cache helper (singleton - shared cache infrastructure)
-      container.registerSingleton<JsonCacheHelper>(
-        JsonCacheFactory.recipeCache(), // Primary cache instance for recipes
-      );
+      // JSON cache helper (lazy singleton - uses CacheDao from OfflineService)
+      container.registerLazySingleton<JsonCacheHelper>(() {
+        final offlineService = container<OfflineService>();
+        return JsonCacheHelper(
+          'unified_recipes_cache',
+          offlineService.database.cacheDao,
+        );
+      });
 
       // Intelligent cache manager (lazy singleton - initialized on first use)
       container.registerLazySingleton<IntelligentCacheManager>(

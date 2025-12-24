@@ -2,13 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/core/form/form_fields_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
+import 'package:butlery/viewmodels/recipe_form/contextual_error_handler.dart';
 import 'package:butlery/core/errors/contextual_error_engine.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
-import 'package:butlery/core/constants/app_strings.dart';
-import 'package:butlery/core/utils/connectivity_check.dart';
-import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// Core state management for recipe form with intelligent auto-save
@@ -23,6 +22,7 @@ class RecipeFormState extends ChangeNotifier {
 
   // Core state
   Recipe? _originalRecipe;
+  ParsedRecipe? _originalParsedRecipe;
   bool _isSaving = false;
   bool _isForking = false;
   String? _error;
@@ -153,6 +153,16 @@ class RecipeFormState extends ChangeNotifier {
 
   // Core getters
   Recipe? get originalRecipe => _originalRecipe;
+
+  /// Original parsed recipe for correction tracking (set during import)
+  ParsedRecipe? get originalParsedRecipe => _originalParsedRecipe;
+
+  /// Set original parsed recipe for correction tracking
+  /// Called when importing a recipe to enable diff calculation on save
+  void setOriginalParsedRecipe(ParsedRecipe? parsed) {
+    _originalParsedRecipe = parsed;
+  }
+
   bool get isSaving => _isSaving;
   bool get isForking => _isForking;
   String? get error => _error;
@@ -431,8 +441,8 @@ class RecipeFormState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ===== CONTEXTUAL ERROR HANDLING =====
-  
+  // ===== CONTEXTUAL ERROR HANDLING (delegated to ContextualErrorHandler) =====
+
   /// Set contextual error with intelligent message generation
   Future<void> setContextualError({
     required ErrorType errorType,
@@ -442,55 +452,31 @@ class RecipeFormState extends ChangeNotifier {
     ErrorSeverity severity = ErrorSeverity.standard,
     Map<String, dynamic>? additionalData,
   }) async {
-    try {
-      // Get current connectivity state for context-aware messaging
-      final connectivity = await _getCurrentConnectivity();
-      
-      final context = ErrorContext.fromCurrentState(
-        errorType: errorType,
-        actionContext: actionContext,
-        connectivity: connectivity,
-        severity: severity,
-        technicalDetails: technicalDetails,
-        recoveryActions: recoveryActions,
-        additionalData: additionalData,
-      );
-      
-      final contextualMessage = ContextualErrorEngine.generateMessage(context);
-      setError(contextualMessage);
-      
-      AppLogger.debug('🚨 CONTEXTUAL_ERROR: Set contextual error for ${actionContext.name}: $errorType');
-    } catch (e) {
-      // Fallback to basic error if contextual generation fails
-      AppLogger.error('Failed to generate contextual error: $e');
-      setError(AppStrings.actionSpecificError(actionContext.swedishDescription, technicalDetails ?? 'Ett fel uppstod'));
-    }
+    final message = await ContextualErrorHandler.generateContextualError(
+      errorType: errorType,
+      actionContext: actionContext,
+      technicalDetails: technicalDetails,
+      recoveryActions: recoveryActions,
+      severity: severity,
+      additionalData: additionalData,
+    );
+    setError(message);
   }
-  
+
   /// Set network-aware error with connectivity context
   Future<void> setNetworkAwareError({
     required String operation,
     String? technicalDetails,
     bool includeRecoveryAction = true,
   }) async {
-    try {
-      final connectivity = await _getCurrentConnectivity();
-      final connectivityType = _getConnectivityTypeName(connectivity);
-      
-      final message = AppStrings.networkAwareError(
-        baseOperation: operation,
-        connectivityType: connectivityType,
-        includeRecoveryAction: includeRecoveryAction,
-      );
-      
-      setError(message);
-      AppLogger.info('🌐 NETWORK_ERROR: Set network-aware error for $operation with $connectivityType connectivity');
-    } catch (e) {
-      AppLogger.error('Failed to generate network-aware error: $e');
-      setError(AppStrings.actionSpecificError(operation, technicalDetails ?? 'Nätverksfel'));
-    }
+    final message = await ContextualErrorHandler.generateNetworkAwareError(
+      operation: operation,
+      technicalDetails: technicalDetails,
+      includeRecoveryAction: includeRecoveryAction,
+    );
+    setError(message);
   }
-  
+
   /// Set permission-aware error with access context
   void setPermissionError({
     required String resource,
@@ -498,68 +484,33 @@ class RecipeFormState extends ChangeNotifier {
     String? reason,
     String? suggestedAction,
   }) {
-    final message = AppStrings.permissionContextualError(
+    final message = ContextualErrorHandler.generatePermissionError(
       resource: resource,
       action: action,
       reason: reason,
       suggestedAction: suggestedAction,
     );
-    
     setError(message);
-    AppLogger.info('🔐 PERMISSION_ERROR: Set permission error for $action on $resource');
   }
-  
+
   /// Set error with recovery suggestions
   void setErrorWithRecovery({
     required String action,
     required String issue,
     String? recoveryAction,
   }) {
-    final message = recoveryAction != null
-      ? AppStrings.actionWithRecovery(action, issue, recoveryAction)
-      : AppStrings.actionSpecificError(action, issue);
-      
+    final message = ContextualErrorHandler.generateErrorWithRecovery(
+      action: action,
+      issue: issue,
+      recoveryAction: recoveryAction,
+    );
     setError(message);
   }
-  
+
   /// Show informational message for offline operations
   void setOfflineInfo(String operation) {
-    // This could be used for success-like messages that aren't errors
-    // For now, we'll treat it as a special type of "error" that's informational
-    final message = AppStrings.networkAwareError(
-      baseOperation: operation,
-      connectivityType: 'none',
-      includeRecoveryAction: true,
-    );
-    
+    final message = ContextualErrorHandler.generateOfflineInfo(operation);
     setError(message);
-    AppLogger.info('📴 OFFLINE_INFO: Set offline info for $operation');
-  }
-  
-  /// Get current connectivity state using ConnectivityCheck utility
-  Future<ConnectivityResult> _getCurrentConnectivity() async {
-    try {
-      return await ConnectivityCheck.checkConnectivity();
-    } catch (e) {
-      AppLogger.error('Failed to check connectivity: $e');
-      return ConnectivityResult.limited; // Fallback assumption
-    }
-  }
-  
-  /// Convert connectivity result to readable type name
-  String _getConnectivityTypeName(ConnectivityResult connectivityResult) {
-    switch (connectivityResult) {
-      case ConnectivityResult.none:
-        return 'none';
-      case ConnectivityResult.limited:
-        return 'limited';
-      case ConnectivityResult.degraded:
-        return 'degraded';
-      case ConnectivityResult.full:
-        return 'full';
-      case ConnectivityResult.unknown:
-        return 'unknown';
-    }
   }
 
   // ===== AUTO-SAVE FUNCTIONALITY =====

@@ -25,9 +25,9 @@ import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/services/notifications/notification_repository.dart'
-    as legacy;
+import 'package:butlery/services/notifications/notification_repository.dart' as legacy;
 // ActivityRepository removed - dead code
+import 'package:butlery/models/notification_batch.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/social_recipe_repository.dart';
 import 'package:butlery/repositories/interfaces/social_sharing_repository.dart';
@@ -122,7 +122,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:permission_handler/permission_handler.dart'; // For Permission and PermissionStatus
-import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -1515,7 +1514,7 @@ class MockTextImportStrategy extends Mock implements TextImportStrategy {
       'Import recipes from text content (social media posts, manual input)';
 
   @override
-  String get inputExample => '''
+  String get inputExample => ''';
 Pannkakor
 Ingredienser:
 3 ägg
@@ -3290,99 +3289,12 @@ class MockSharedPreferences extends Mock implements SharedPreferences {}
 /// Mock implementation of Connectivity
 class MockConnectivity extends Mock implements Connectivity {}
 
-/// Mock implementation of Box (Hive) with functional storage
-///
-/// Provides a working in-memory storage for testing Hive operations.
-/// Supports all common Box operations needed for offline service testing.
-class MockBox<T> extends Mock implements Box<T> {
-  final Map<dynamic, T> _storage = {};
-  bool _isOpen = true;
-
-  // Override common Box methods with actual implementations
-  @override
-  T? get(dynamic key, {T? defaultValue}) {
-    return _storage[key] ?? defaultValue;
-  }
-
-  @override
-  Future<void> put(dynamic key, T value) async {
-    if (!_isOpen) throw StateError('Box is closed');
-    _storage[key] = value;
-  }
-
-  @override
-  Future<void> putAll(Map<dynamic, T> entries) async {
-    if (!_isOpen) throw StateError('Box is closed');
-    _storage.addAll(entries);
-  }
-
-  @override
-  Future<void> delete(dynamic key) async {
-    if (!_isOpen) throw StateError('Box is closed');
-    _storage.remove(key);
-  }
-
-  @override
-  Future<void> deleteAll(Iterable<dynamic> keys) async {
-    if (!_isOpen) throw StateError('Box is closed');
-    for (final key in keys) {
-      _storage.remove(key);
-    }
-  }
-
-  @override
-  Future<int> clear() async {
-    if (!_isOpen) throw StateError('Box is closed');
-    final count = _storage.length;
-    _storage.clear();
-    return count;
-  }
-
-  @override
-  bool get isOpen => _isOpen;
-
-  @override
-  bool get isEmpty => _storage.isEmpty;
-
-  @override
-  bool get isNotEmpty => _storage.isNotEmpty;
-
-  @override
-  int get length => _storage.length;
-
-  @override
-  Iterable<dynamic> get keys => _storage.keys;
-
-  @override
-  Iterable<T> get values => _storage.values;
-
-  @override
-  Map<dynamic, T> toMap() => Map.from(_storage);
-
-  @override
-  bool containsKey(dynamic key) => _storage.containsKey(key);
-
-  @override
-  Future<void> close() async {
-    _isOpen = false;
-  }
-
-  // Test helper methods
-  void setOpen(bool open) {
-    _isOpen = open;
-  }
-
-  void setInitialData(Map<dynamic, T> data) {
-    _storage.clear();
-    _storage.addAll(data);
-  }
-}
 
 /// Mock implementation of Uuid
 class MockUuid extends Mock implements Uuid {}
 
-/// Mock implementation of Share
-class MockShare extends Mock implements Share {}
+/// Mock implementation of SharePlus
+class MockSharePlus extends Mock implements SharePlus {}
 
 /// Mock implementation of RemoteMessage (FCM)
 class MockRemoteMessage extends Mock implements RemoteMessage {}
@@ -3642,8 +3554,8 @@ class FakeNotificationPreferences {
   }
 
   /// Adapter method to convert to production NotificationPreferences
-  legacy.NotificationPreferences toNotificationPreferences() {
-    return legacy.NotificationPreferences(
+  NotificationPreferences toNotificationPreferences() {
+    return NotificationPreferences(
       enabled: enabled,
       categorySettings: const {
         NotificationCategory.friends: true,
@@ -3815,8 +3727,8 @@ class MockLegacyNotificationRepository extends Mock
 
   // Mock methods with correct return types
   @override
-  Future<legacy.NotificationPreferences> getPreferences() async {
-    return legacy.NotificationPreferences.defaults();
+  Future<NotificationPreferences> getPreferences() async {
+    return NotificationPreferences.defaults();
   }
 
   /// ✅ FIXED: Missing methods for Phase 5B - MockLegacyNotificationRepository completion
@@ -4759,16 +4671,7 @@ class MockBuildContext extends Mock implements BuildContext {}
 class MockNotificationRepositoryV2 extends Mock
     implements NotificationsRepository {
   // Configuration state
-  NotificationPreferences _preferences = NotificationPreferences(
-    enableRecipeSharing: true,
-    enableFriendRequests: true,
-    enableGroupInvitations: true,
-    enableComments: true,
-    enableRatings: true,
-    enableCollaborativeEditing: true,
-    enableMenuSharing: true,
-    enableGeneralUpdates: true,
-  );
+  NotificationPreferences _preferences = NotificationPreferences.defaults();
   Map<String, dynamic> _notificationHistory = {};
   List<String> _batchQueue = [];
 
@@ -4841,7 +4744,7 @@ class MockNotificationRepositoryV2 extends Mock
     required Duration batchWindow,
   }) async {}
 
-  Future<List<legacy.NotificationBatch>> getPendingBatches() async => [];
+  Future<List<NotificationBatch>> getPendingBatches() async => [];
 
   Future<void> removeBatch(String batchKey) async {}
 

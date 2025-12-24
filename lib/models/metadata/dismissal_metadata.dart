@@ -9,6 +9,7 @@
 /// - Discovery content: Allow users to dismiss discovery recommendations
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 
 class DismissalMetadata {
   final String userId;
@@ -27,9 +28,9 @@ class DismissalMetadata {
   ) {
     final data = doc.data()!;
     return DismissalMetadata(
-      userId: data['userId'] as String,
-      dismissedAt: (data['timestamp'] as Timestamp).toDate(),
-      reason: data['reason'] as String?,
+      userId: SerializationUtils.safeString(data, 'userId'),
+      dismissedAt: SerializationUtils.safeRequiredDateTime(data, 'timestamp'),
+      reason: SerializationUtils.safeNullableString(data, 'reason'),
     );
   }
 

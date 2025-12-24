@@ -4,7 +4,6 @@
 
 import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:hive/hive.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -48,7 +47,7 @@ enum RecipeType {
 /// This class represents the fundamental recipe data that is shared across
 /// all recipe types in the unified recipe system. It includes all the basic
 /// recipe information such as title, ingredients, instructions, and metadata.
-/// The class is serializable for both local storage (Hive) and network
+/// The class is serializable for both local storage (Drift SQLite) and network
 /// transmission (JSON), enabling efficient caching and synchronization.
 /// Key features:
 /// - Immutable ID for unique identification
@@ -68,7 +67,7 @@ enum RecipeType {
 ///   timeMinutes: 30,
 /// );
 /// ```
-class RecipeCore extends HiveObject with JsonSerializableMixin {
+class RecipeCore with JsonSerializableMixin {
   /// Unique identifier for this recipe.
   /// This ID is immutable and generated once when the recipe is created.
   /// It's used for database references, sharing, and cache management.
@@ -610,9 +609,6 @@ class Recipe {
   bool get isRealtime => type == RecipeType.realtime;
   bool get needsSync => offlineData?.needsSync ?? false;
 
-  // ===== OPERATIONS (DELEGATE TO RECIPE_OPERATIONS) =====
-
-  /// Add ingredient with user tracking
   Recipe addIngredient(
     String ingredient, {
     String? userId,
@@ -712,9 +708,6 @@ class Recipe {
     );
   }
 
-  // ===== FACTORY METHODS (DELEGATE TO RECIPE_FACTORY) =====
-
-  /// Create personal recipe
   factory Recipe.personal({
     required String title,
     required String description,
@@ -788,8 +781,6 @@ class Recipe {
     );
   }
 
-  // ===== SERIALIZATION (DELEGATE TO RECIPE_SERIALIZATION) =====
-
   Map<String, dynamic> toJson() => RecipeSerialization.toJson(this);
   Map<String, dynamic> toFirestore() => RecipeSerialization.toFirestore(this);
 
@@ -800,9 +791,6 @@ class Recipe {
   factory Recipe.fromFirestore(DocumentSnapshot doc) =>
       RecipeSerialization.fromFirestore(doc);
 
-  // ===== CORE COPY METHOD =====
-
-  /// Create copy with updated core data
   Recipe copyWith({
     String? title,
     String? description,

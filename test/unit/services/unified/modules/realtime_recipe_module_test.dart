@@ -51,7 +51,7 @@ void main() {
       // Create module with test callbacks
       realtimeModule = RealtimeRecipeModule(
         firestore: fakeFirestore,
-        cacheHelper: mockCacheHelper,
+        getCacheHelper: () => mockCacheHelper,
         getCurrentUserId: () => currentUserId,
         getCurrentUserDisplayName: () => currentUserDisplayName,
         setError: (error) => lastError = error,

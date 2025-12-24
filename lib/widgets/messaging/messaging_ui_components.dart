@@ -1,23 +1,11 @@
-// lib/widgets/messaging/messaging_ui_components.dart
-
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
-/// Consolidated messaging UI components
-/// This file contains simple utility widgets for messaging UI:
-/// - ErrorText: Styled error text with consistent error color
-/// - ErrorListTile: ListTile for error actions with error theming
-/// - ModalHeaderText: Header text for modal content
-/// - ModalContentContainer: Container wrapper for modal content
-/// - SearchBarContainer: Container for search bar in conversations view
-/// - StyledModalBottomSheet: Helper for showing modal bottom sheets
-/// **Consolidation**: Merged from 6 separate files (146 LOC) for better maintainability
+/// Consolidated messaging UI components.
 
-// ===== ERROR COMPONENTS =====
-
-/// Styled error text with consistent error color
+/// Styled error text with consistent error color.
 class ErrorText extends StatelessWidget {
   final String text;
 
@@ -58,9 +46,7 @@ class ErrorListTile extends StatelessWidget {
   }
 }
 
-// ===== MODAL COMPONENTS =====
-
-/// Styled header text for modal content
+/// Styled header text for modal content.
 class ModalHeaderText extends StatelessWidget {
   final String text;
 
@@ -125,9 +111,7 @@ class StyledModalBottomSheet {
   }
 }
 
-// ===== CONTAINER COMPONENTS =====
-
-/// Styled container for search bar in conversations view
+/// Styled container for search bar in conversations view.
 class SearchBarContainer extends StatelessWidget {
   final Widget child;
 

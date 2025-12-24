@@ -1,0 +1,509 @@
+{
+  "timestamp": "2025-12-19T21:46:00.039168",
+  "stats": {
+    "total_files": 799,
+    "max_file_lines": 500
+  },
+  "summary": {
+    "compliance_rates": {
+      "file_size": 90,
+      "firebase": 100,
+      "theme": 100
+    },
+    "total_violations": 94,
+    "violations_by_type": {
+      "file_size": 77,
+      "firebase": 2,
+      "theme": 15
+    }
+  },
+  "violations": [
+    {
+      "file": "lib/constants/known_ingredients.dart",
+      "type": "fileSize",
+      "message": "File has 561 lines (max: 500)"
+    },
+    {
+      "file": "lib/core/di/modules/content_module.dart",
+      "type": "fileSize",
+      "message": "File has 574 lines (max: 500)"
+    },
+    {
+      "file": "lib/core/mixins/error_handling_mixin.dart",
+      "type": "fileSize",
+      "message": "File has 620 lines (max: 500)"
+    },
+    {
+      "file": "lib/core/mixins/firebase_service_mixin.dart",
+      "type": "fileSize",
+      "message": "File has 837 lines (max: 500)"
+    },
+    {
+      "file": "lib/core/mixins/json_serializable_mixin.dart",
+      "type": "fileSize",
+      "message": "File has 629 lines (max: 500)"
+    },
+    {
+      "file": "lib/core/mixins/stream_management_mixin.dart",
+      "type": "fileSize",
+      "message": "File has 718 lines (max: 500)"
+    },
+    {
+      "file": "lib/core/responsive/responsive_builder.dart",
+      "type": "fileSize",
+      "message": "File has 517 lines (max: 500)"
+    },
+    {
+      "file": "lib/main.dart",
+      "type": "fileSize",
+      "message": "File has 696 lines (max: 500)"
+    },
+    {
+      "file": "lib/main_e2e_emulator.dart",
+      "type": "directFirebaseInstance",
+      "message": "Direct FirebaseFirestore.instance usage outside repository",
+      "line": 118
+    },
+    {
+      "file": "lib/main_e2e_optimized.dart",
+      "type": "fileSize",
+      "message": "File has 758 lines (max: 500)"
+    },
+    {
+      "file": "lib/models/invitations/invitation_target.dart",
+      "type": "fileSize",
+      "message": "File has 648 lines (max: 500)"
+    },
+    {
+      "file": "lib/models/realtime/realtime_menu.dart",
+      "type": "fileSize",
+      "message": "File has 696 lines (max: 500)"
+    },
+    {
+      "file": "lib/models/realtime/realtime_resource.dart",
+      "type": "fileSize",
+      "message": "File has 524 lines (max: 500)"
+    },
+    {
+      "file": "lib/models/recipe_unified.dart",
+      "type": "fileSize",
+      "message": "File has 857 lines (max: 500)"
+    },
+    {
+      "file": "lib/models/shared_menu.dart",
+      "type": "fileSize",
+      "message": "File has 608 lines (max: 500)"
+    },
+    {
+      "file": "lib/models/unified/unified_shopping_item.dart",
+      "type": "fileSize",
+      "message": "File has 631 lines (max: 500)"
+    },
+    {
+      "file": "lib/models/unified/unified_shopping_list.dart",
+      "type": "fileSize",
+      "message": "File has 763 lines (max: 500)"
+    },
+    {
+      "file": "lib/repositories/firebase/base_shared_content_repository.dart",
+      "type": "fileSize",
+      "message": "File has 588 lines (max: 500)"
+    },
+    {
+      "file": "lib/repositories/firebase/firebase_menu_collaboration_repository.dart",
+      "type": "fileSize",
+      "message": "File has 707 lines (max: 500)"
+    },
+    {
+      "file": "lib/repositories/firebase/firebase_recipe_repository.dart",
+      "type": "fileSize",
+      "message": "File has 862 lines (max: 500)"
+    },
+    {
+      "file": "lib/repositories/firebase/firebase_shared_shopping_repository.dart",
+      "type": "fileSize",
+      "message": "File has 774 lines (max: 500)"
+    },
+    {
+      "file": "lib/repositories/firebase/firebase_social_recipe_repository.dart",
+      "type": "fileSize",
+      "message": "File has 550 lines (max: 500)"
+    },
+    {
+      "file": "lib/repositories/firebase/firebase_storage_repository.dart",
+      "type": "fileSize",
+      "message": "File has 586 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/account/data_export_service.dart",
+      "type": "fileSize",
+      "message": "File has 735 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/analytics_service.dart",
+      "type": "fileSize",
+      "message": "File has 664 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/import/import_manager.dart",
+      "type": "fileSize",
+      "message": "File has 721 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/import/text_import_strategy.dart",
+      "type": "fileSize",
+      "message": "File has 569 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/import/url_import_strategy.dart",
+      "type": "fileSize",
+      "message": "File has 684 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/notifications/notification_repository.dart",
+      "type": "fileSize",
+      "message": "File has 805 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/ocr_extraction_service.dart",
+      "type": "fileSize",
+      "message": "File has 818 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/parsing/parsers/swedish_line_classifier.dart",
+      "type": "fileSize",
+      "message": "File has 558 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/unified/modules/firebase_sync_manager.dart",
+      "type": "directFirebaseInstance",
+      "message": "Direct FirebaseFirestore.instance usage outside repository",
+      "line": 218
+    },
+    {
+      "file": "lib/services/unified/modules/personal_recipe_module.dart",
+      "type": "fileSize",
+      "message": "File has 565 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/unified/modules/social_menu/social_menu_coordinator.dart",
+      "type": "fileSize",
+      "message": "File has 623 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/unified/modules/social_recipe/social_recipe_coordinator.dart",
+      "type": "fileSize",
+      "message": "File has 669 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/unified/modules/social_shopping/social_shopping_coordinator.dart",
+      "type": "fileSize",
+      "message": "File has 515 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/unified/operations/friends_invitations_operations.dart",
+      "type": "fileSize",
+      "message": "File has 585 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/unified/operations/friends_management_operations.dart",
+      "type": "fileSize",
+      "message": "File has 536 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/unified/operations/friend_categories_operations.dart",
+      "type": "fileSize",
+      "message": "File has 528 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/unified/operations/modules/rating_statistics.dart",
+      "type": "fileSize",
+      "message": "File has 559 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/unified/operations/modules/recipe_discovery_service.dart",
+      "type": "fileSize",
+      "message": "File has 602 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/unified/operations/realtime_recipe/realtime_notification_module.dart",
+      "type": "fileSize",
+      "message": "File has 592 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/unified/operations/realtime_recipe_operations.dart",
+      "type": "fileSize",
+      "message": "File has 549 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/unified/unified_menu_service.dart",
+      "type": "fileSize",
+      "message": "File has 636 lines (max: 500)"
+    },
+    {
+      "file": "lib/services/unified/unified_recipe_service.dart",
+      "type": "fileSize",
+      "message": "File has 732 lines (max: 500)"
+    },
+    {
+      "file": "lib/theme/app_dimensions.dart",
+      "type": "fileSize",
+      "message": "File has 627 lines (max: 500)"
+    },
+    {
+      "file": "lib/utils/text/ingredient_parser.dart",
+      "type": "fileSize",
+      "message": "File has 722 lines (max: 500)"
+    },
+    {
+      "file": "lib/viewmodels/discovery_dashboard_viewmodel.dart",
+      "type": "fileSize",
+      "message": "File has 539 lines (max: 500)"
+    },
+    {
+      "file": "lib/viewmodels/photo_import_viewmodel.dart",
+      "type": "fileSize",
+      "message": "File has 565 lines (max: 500)"
+    },
+    {
+      "file": "lib/viewmodels/recipe_form/recipe_form_state.dart",
+      "type": "fileSize",
+      "message": "File has 713 lines (max: 500)"
+    },
+    {
+      "file": "lib/viewmodels/recipe_form/recipe_image_manager.dart",
+      "type": "fileSize",
+      "message": "File has 1317 lines (max: 500)"
+    },
+    {
+      "file": "lib/viewmodels/recipe_form_viewmodel.dart",
+      "type": "fileSize",
+      "message": "File has 843 lines (max: 500)"
+    },
+    {
+      "file": "lib/viewmodels/shared_content/shared_content_search_viewmodel.dart",
+      "type": "fileSize",
+      "message": "File has 532 lines (max: 500)"
+    },
+    {
+      "file": "lib/viewmodels/shared_content/shared_shopping_viewmodel.dart",
+      "type": "fileSize",
+      "message": "File has 507 lines (max: 500)"
+    },
+    {
+      "file": "lib/views/account/consent_management_view.dart",
+      "type": "fileSize",
+      "message": "File has 543 lines (max: 500)"
+    },
+    {
+      "file": "lib/views/edit_recipe_view.dart",
+      "type": "fileSize",
+      "message": "File has 689 lines (max: 500)"
+    },
+    {
+      "file": "lib/views/messaging/group_detail_view.dart",
+      "type": "fileSize",
+      "message": "File has 599 lines (max: 500)"
+    },
+    {
+      "file": "lib/views/mina_recept_view.dart",
+      "type": "fileSize",
+      "message": "File has 585 lines (max: 500)"
+    },
+    {
+      "file": "lib/views/receive_share_view.dart",
+      "type": "fileSize",
+      "message": "File has 515 lines (max: 500)"
+    },
+    {
+      "file": "lib/views/recipe_detail/recipe_detail_comments.dart",
+      "type": "fileSize",
+      "message": "File has 773 lines (max: 500)"
+    },
+    {
+      "file": "lib/views/skriv_sjalv_recept_view.dart",
+      "type": "fileSize",
+      "message": "File has 835 lines (max: 500)"
+    },
+    {
+      "file": "lib/views/smart_import_view.dart",
+      "type": "fileSize",
+      "message": "File has 522 lines (max: 500)"
+    },
+    {
+      "file": "lib/views/social/discovery_dashboard_view.dart",
+      "type": "fileSize",
+      "message": "File has 569 lines (max: 500)"
+    },
+    {
+      "file": "lib/views/social/group_detail_view.dart",
+      "type": "fileSize",
+      "message": "File has 626 lines (max: 500)"
+    },
+    {
+      "file": "lib/views/veckomeny_view.dart",
+      "type": "fileSize",
+      "message": "File has 711 lines (max: 500)"
+    },
+    {
+      "file": "lib/widgets/common/dialogs/base_dialog.dart",
+      "type": "fileSize",
+      "message": "File has 522 lines (max: 500)"
+    },
+    {
+      "file": "lib/widgets/common/layout_components.dart",
+      "type": "fileSize",
+      "message": "File has 642 lines (max: 500)"
+    },
+    {
+      "file": "lib/widgets/common/profile/profile_actions.dart",
+      "type": "fileSize",
+      "message": "File has 796 lines (max: 500)"
+    },
+    {
+      "file": "lib/widgets/common/scaffolds/base_scaffold.dart",
+      "type": "fileSize",
+      "message": "File has 639 lines (max: 500)"
+    },
+    {
+      "file": "lib/widgets/common/social/social_facade.dart",
+      "type": "fileSize",
+      "message": "File has 515 lines (max: 500)"
+    },
+    {
+      "file": "lib/widgets/common/social_components/social_builder_components.dart",
+      "type": "fileSize",
+      "message": "File has 501 lines (max: 500)"
+    },
+    {
+      "file": "lib/widgets/common/social_components/social_collaborative_components.dart",
+      "type": "fileSize",
+      "message": "File has 509 lines (max: 500)"
+    },
+    {
+      "file": "lib/widgets/common/social_components/social_invitation_components.dart",
+      "type": "fileSize",
+      "message": "File has 527 lines (max: 500)"
+    },
+    {
+      "file": "lib/widgets/common/social_components.dart",
+      "type": "fileSize",
+      "message": "File has 852 lines (max: 500)"
+    },
+    {
+      "file": "lib/widgets/image/editable_image_widget.dart",
+      "type": "fileSize",
+      "message": "File has 1364 lines (max: 500)"
+    },
+    {
+      "file": "lib/widgets/image/universal_image_manager.dart",
+      "type": "fileSize",
+      "message": "File has 665 lines (max: 500)"
+    },
+    {
+      "file": "lib/widgets/import/assisted_import_dialog.dart",
+      "type": "fileSize",
+      "message": "File has 750 lines (max: 500)"
+    },
+    {
+      "file": "lib/widgets/import/platform_badge_widget.dart",
+      "type": "themeHardcoded",
+      "message": "Hardcoded hex color - consider using theme",
+      "line": 86
+    },
+    {
+      "file": "lib/widgets/import/platform_badge_widget.dart",
+      "type": "themeHardcoded",
+      "message": "Hardcoded hex color - consider using theme",
+      "line": 88
+    },
+    {
+      "file": "lib/widgets/import/platform_badge_widget.dart",
+      "type": "themeHardcoded",
+      "message": "Hardcoded hex color - consider using theme",
+      "line": 90
+    },
+    {
+      "file": "lib/widgets/import/platform_badge_widget.dart",
+      "type": "themeHardcoded",
+      "message": "Hardcoded hex color - consider using theme",
+      "line": 101
+    },
+    {
+      "file": "lib/widgets/import/platform_badge_widget.dart",
+      "type": "themeHardcoded",
+      "message": "Hardcoded hex color - consider using theme",
+      "line": 103
+    },
+    {
+      "file": "lib/widgets/import/platform_badge_widget.dart",
+      "type": "themeHardcoded",
+      "message": "Hardcoded hex color - consider using theme",
+      "line": 105
+    },
+    {
+      "file": "lib/widgets/import/platform_badge_widget.dart",
+      "type": "themeHardcoded",
+      "message": "Hardcoded hex color - consider using theme",
+      "line": 116
+    },
+    {
+      "file": "lib/widgets/import/platform_badge_widget.dart",
+      "type": "themeHardcoded",
+      "message": "Hardcoded hex color - consider using theme",
+      "line": 118
+    },
+    {
+      "file": "lib/widgets/import/platform_badge_widget.dart",
+      "type": "themeHardcoded",
+      "message": "Hardcoded hex color - consider using theme",
+      "line": 120
+    },
+    {
+      "file": "lib/widgets/import/platform_badge_widget.dart",
+      "type": "themeHardcoded",
+      "message": "Hardcoded hex color - consider using theme",
+      "line": 131
+    },
+    {
+      "file": "lib/widgets/import/platform_badge_widget.dart",
+      "type": "themeHardcoded",
+      "message": "Hardcoded hex color - consider using theme",
+      "line": 133
+    },
+    {
+      "file": "lib/widgets/import/platform_badge_widget.dart",
+      "type": "themeHardcoded",
+      "message": "Hardcoded hex color - consider using theme",
+      "line": 135
+    },
+    {
+      "file": "lib/widgets/import/platform_badge_widget.dart",
+      "type": "themeHardcoded",
+      "message": "Hardcoded hex color - consider using theme",
+      "line": 185
+    },
+    {
+      "file": "lib/widgets/import/platform_badge_widget.dart",
+      "type": "themeHardcoded",
+      "message": "Hardcoded hex color - consider using theme",
+      "line": 187
+    },
+    {
+      "file": "lib/widgets/import/platform_badge_widget.dart",
+      "type": "themeHardcoded",
+      "message": "Hardcoded hex color - consider using theme",
+      "line": 189
+    },
+    {
+      "file": "lib/widgets/messaging/message_bubble.dart",
+      "type": "fileSize",
+      "message": "File has 807 lines (max: 500)"
+    },
+    {
+      "file": "lib/widgets/social/group_shared_shopping_list_card.dart",
+      "type": "fileSize",
+      "message": "File has 687 lines (max: 500)"
+    }
+  ]
+}

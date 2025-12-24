@@ -43,6 +43,7 @@
 
 // lib/models/invitations/invitation_target.dart
 
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 
@@ -311,18 +312,18 @@ class InvitationTarget {
   factory InvitationTarget.fromFirestore(Map<String, dynamic> data) {
     return InvitationTarget(
       type: InvitationTargetType.values.firstWhere(
-        (t) => t.name == data['type'],
+        (t) => t.name == SerializationUtils.safeString(data, 'type'),
         orElse: () => InvitationTargetType.individual,
       ),
-      targetId: data['targetId'] as String,
-      displayName: data['displayName'] as String,
-      imageOrEmoji: data['imageOrEmoji'] as String?,
-      memberCount: data['memberCount'] as int?,
+      targetId: SerializationUtils.safeString(data, 'targetId'),
+      displayName: SerializationUtils.safeString(data, 'displayName'),
+      imageOrEmoji: SerializationUtils.safeNullableString(data, 'imageOrEmoji'),
+      memberCount: SerializationUtils.safeNullableInt(data, 'memberCount'),
       memberIds: data['memberIds'] != null
-          ? List<String>.from(data['memberIds'])
+          ? SerializationUtils.safeStringList(data, 'memberIds')
           : null,
       metadata: data['metadata'] != null
-          ? Map<String, dynamic>.from(data['metadata'])
+          ? SerializationUtils.safeMap(data, 'metadata')
           : null,
     );
   }
@@ -352,18 +353,18 @@ class InvitationTarget {
   factory InvitationTarget.fromJson(Map<String, dynamic> json) {
     return InvitationTarget(
       type: InvitationTargetType.values.firstWhere(
-        (t) => t.name == json['type'],
+        (t) => t.name == SerializationUtils.safeString(json, 'type'),
         orElse: () => InvitationTargetType.individual,
       ),
-      targetId: json['targetId'] as String,
-      displayName: json['displayName'] as String,
-      imageOrEmoji: json['imageOrEmoji'] as String?,
-      memberCount: json['memberCount'] as int?,
+      targetId: SerializationUtils.safeString(json, 'targetId'),
+      displayName: SerializationUtils.safeString(json, 'displayName'),
+      imageOrEmoji: SerializationUtils.safeNullableString(json, 'imageOrEmoji'),
+      memberCount: SerializationUtils.safeNullableInt(json, 'memberCount'),
       memberIds: json['memberIds'] != null
-          ? List<String>.from(json['memberIds'])
+          ? SerializationUtils.safeStringList(json, 'memberIds')
           : null,
       metadata: json['metadata'] != null
-          ? Map<String, dynamic>.from(json['metadata'])
+          ? SerializationUtils.safeMap(json, 'metadata')
           : null,
     );
   }

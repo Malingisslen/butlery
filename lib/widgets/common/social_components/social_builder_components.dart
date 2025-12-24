@@ -1,5 +1,3 @@
-// lib/widgets/common/social_components/social_builder_components.dart
-
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
@@ -7,18 +5,9 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/social_components/social_formatters.dart';
 
-/// Social widget builders and helper components
-/// This module handles ONLY social widget builders and utilities:
-/// - Social action buttons and interactive elements
-/// - Social statistics and metrics displays
-/// - Helper functions for formatting and utilities
-/// - Builder utilities for common social widget patterns
-/// ❌ DOES NOT CONTAIN: Avatars, collaborative indicators, groups, invitations
+/// Social widget builders and helper components.
 class SocialBuilderComponents {
-  // ===== SOCIAL BUILDERS =====
-
-  /// Build social action button
-  /// Standardized button for social actions
+  /// Build social action button.
   static Widget socialActionButton({
     required String text,
     required VoidCallback onPressed,
@@ -62,9 +51,7 @@ class SocialBuilderComponents {
     );
   }
 
-  // ===== ACTION BUTTON VARIANTS =====
-
-  /// Build primary social action button
+  /// Build primary social action button.
   static Widget primaryActionButton({
     required String text,
     required VoidCallback onPressed,
@@ -130,9 +117,7 @@ class SocialBuilderComponents {
     );
   }
 
-  // ===== SOCIAL STATS VARIANTS =====
-
-  /// Build user statistics widget
+  /// Build user statistics widget.
   static Widget userStats(
     BuildContext context, {
     required int friendCount,
@@ -268,9 +253,7 @@ class SocialBuilderComponents {
     );
   }
 
-  // ===== SOCIAL HELPERS =====
-
-  /// Format user display name consistently
+  /// Format user display name consistently.
   static String formatUserDisplayName(dynamic user) {
     return SocialFacade.formatUserDisplayName(user);
   }
@@ -304,10 +287,7 @@ class SocialBuilderComponents {
     return SocialFacade.getInvitationTargetTypeIcon(dummyTarget);
   }
 
-  // ===== BUILDER UTILITIES =====
-
-  /// Build social section header
-  /// Standardized header for social sections
+  /// Build social section header.
   static Widget sectionHeader(
     BuildContext context, {
     required String title,
@@ -467,8 +447,6 @@ class SocialBuilderComponents {
       ),
     );
   }
-
-  // ===== UTILITY FUNCTIONS (Delegated to SocialFormatters) =====
 
   static String _formatRelativeTime(DateTime dateTime) =>
       SocialFormatters.formatRelativeTime(dateTime);

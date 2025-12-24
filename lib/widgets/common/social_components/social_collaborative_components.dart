@@ -1,5 +1,3 @@
-// lib/widgets/common/social_components/social_collaborative_components.dart
-
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -7,19 +5,9 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
 
-/// Social collaborative indicators and status components
-/// This module handles ONLY collaborative status and indicator widgets:
-/// - Collaborative status badges and banners
-/// - Smart permissions banners
-/// - Collaborative app bar widgets
-/// - Participants lists and displays
-/// - Collaboration status indicators
-/// ❌ DOES NOT CONTAIN: Avatars, group management, invitations, builders
+/// Social collaborative indicators and status components.
 class SocialCollaborativeComponents {
-  // ===== COLLABORATIVE INDICATORS =====
-
-  /// Build collaborative status badge
-  /// Shows a simple badge indicating collaborative status
+  /// Build collaborative status badge.
   static Widget collaborativeStatusBadge({
     String text = 'Delat',
     IconData icon = Icons.people,
@@ -176,9 +164,7 @@ class SocialCollaborativeComponents {
     );
   }
 
-  // ===== COLLABORATIVE BANNER VARIANTS =====
-
-  /// Build collaborative recipe banner
+  /// Build collaborative recipe banner.
   /// Specialized banner for collaborative recipes
   static Widget collaborativeRecipeBanner({
     required Recipe recipe,
@@ -219,9 +205,7 @@ class SocialCollaborativeComponents {
     );
   }
 
-  // ===== COLLABORATION STATUS HELPERS =====
-
-  /// Build collaboration active indicator
+  /// Build collaboration active indicator.
   /// Shows when collaboration is currently active
   static Widget collaborationActiveIndicator(
     BuildContext context, {
@@ -293,9 +277,7 @@ class SocialCollaborativeComponents {
     );
   }
 
-  // ===== COLLABORATION METRICS =====
-
-  /// Build collaboration metrics widget
+  /// Build collaboration metrics widget.
   /// Shows statistics about collaboration activity
   static Widget collaborationMetrics(
     BuildContext context, {
@@ -417,9 +399,7 @@ class SocialCollaborativeComponents {
     }
   }
 
-  // ===== COLLABORATION PERMISSION INDICATORS =====
-
-  /// Build permission level indicator
+  /// Build permission level indicator.
   /// Shows user's permission level in collaboration
   static Widget permissionLevelIndicator(
     BuildContext context, {

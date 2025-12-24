@@ -1,28 +1,64 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+
 import 'package:butlery/services/offline/offline_user_storage.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/core/storage/drift/app_database.dart';
+import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
+import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
 import '../../../test_support/base_unit_test.dart';
 import '../../../infrastructure/builders/recipe_builder.dart';
-import '../../../infrastructure/mocks/production_mocks.dart';
+
+// Mock classes for Drift DAOs
+class MockAppDatabase extends Mock implements AppDatabase {}
+
+class MockRecipeDao extends Mock implements RecipeDao {}
+
+class MockSyncQueueDao extends Mock implements SyncQueueDao {}
+
+// Fake OfflineRecipe for stubbing
+class FakeOfflineRecipe extends Fake implements OfflineRecipe {
+  @override
+  final String id;
+  @override
+  final String userId;
+  @override
+  final String recipeJson;
+  @override
+  final DateTime updatedAt;
+  @override
+  final bool needsSync;
+
+  FakeOfflineRecipe({
+    required this.id,
+    required this.userId,
+    required this.recipeJson,
+    DateTime? updatedAt,
+    this.needsSync = false,
+  }) : updatedAt = updatedAt ?? DateTime.now();
+}
 
 void main() {
-  group('OfflineUserStorage', () {
+  group('OfflineUserStorage (Drift)', () {
     late OfflineUserStorage storage;
-    late MockBox<Recipe> mockRecipeBox;
-    late MockBox<String> mockSyncQueueBox;
+    late MockAppDatabase mockDatabase;
+    late MockRecipeDao mockRecipeDao;
+    late MockSyncQueueDao mockSyncQueueDao;
 
     setUp(() async {
       await BaseUnitTest.setupUnit();
 
       // Create mocks
-      mockRecipeBox = MockBox<Recipe>();
-      mockSyncQueueBox = MockBox<String>();
+      mockDatabase = MockAppDatabase();
+      mockRecipeDao = MockRecipeDao();
+      mockSyncQueueDao = MockSyncQueueDao();
 
-      // Create storage instance
-      storage = OfflineUserStorage(
-        recipeBox: mockRecipeBox,
-        syncQueueBox: mockSyncQueueBox,
-      );
+      // Wire up database DAOs
+      when(() => mockDatabase.recipeDao).thenReturn(mockRecipeDao);
+      when(() => mockDatabase.syncQueueDao).thenReturn(mockSyncQueueDao);
+
+      // Create storage instance with mock database
+      storage = OfflineUserStorage(database: mockDatabase);
     });
 
     tearDown(() async {
@@ -38,14 +74,30 @@ void main() {
             .build();
         const userId = 'user_456';
 
+        when(() => mockRecipeDao.upsertRecipe(
+              id: any(named: 'id'),
+              userId: any(named: 'userId'),
+              recipeJson: any(named: 'recipeJson'),
+              needsSync: any(named: 'needsSync'),
+            )).thenAnswer((_) async {});
+
         // Act
         await storage.saveRecipeForUser(recipe, userId, isOnline: true);
 
         // Assert
-        final expectedKey = '${userId}_${recipe.id}';
-        expect(mockRecipeBox.containsKey(expectedKey), true);
-        expect(mockRecipeBox.get(expectedKey), recipe);
-        expect(mockSyncQueueBox.isEmpty, true); // Online, no queue
+        verify(() => mockRecipeDao.upsertRecipe(
+              id: recipe.id,
+              userId: userId,
+              recipeJson: any(named: 'recipeJson'),
+              needsSync: false,
+            )).called(1);
+
+        // Should not add to sync queue when online
+        verifyNever(() => mockSyncQueueDao.enqueue(
+              userId: any(named: 'userId'),
+              recipeId: any(named: 'recipeId'),
+              operation: any(named: 'operation'),
+            ));
       });
 
       test('should save recipe and add to sync queue when offline', () async {
@@ -56,22 +108,41 @@ void main() {
             .build();
         const userId = 'user_123';
 
+        when(() => mockRecipeDao.upsertRecipe(
+              id: any(named: 'id'),
+              userId: any(named: 'userId'),
+              recipeJson: any(named: 'recipeJson'),
+              needsSync: any(named: 'needsSync'),
+            )).thenAnswer((_) async {});
+
+        when(() => mockSyncQueueDao.enqueue(
+              userId: any(named: 'userId'),
+              recipeId: any(named: 'recipeId'),
+              operation: any(named: 'operation'),
+            )).thenAnswer((_) async => 1);
+
         // Act
         await storage.saveRecipeForUser(recipe, userId, isOnline: false);
 
         // Assert
-        final expectedKey = '${userId}_${recipe.id}';
-        expect(mockRecipeBox.containsKey(expectedKey), true);
-        expect(mockRecipeBox.get(expectedKey), recipe);
-        expect(mockSyncQueueBox.containsKey(expectedKey), true);
-        expect(mockSyncQueueBox.get(expectedKey), expectedKey);
+        verify(() => mockRecipeDao.upsertRecipe(
+              id: recipe.id,
+              userId: userId,
+              recipeJson: any(named: 'recipeJson'),
+              needsSync: true,
+            )).called(1);
+
+        verify(() => mockSyncQueueDao.enqueue(
+              userId: userId,
+              recipeId: recipe.id,
+              operation: any(named: 'operation'),
+            )).called(1);
       });
 
-      test('should retrieve recipes for specific user', () {
+      test('should retrieve recipes for specific user', () async {
         // Arrange
-        const userId1 = 'user_001';
-        const userId2 = 'user_002';
-        
+        const userId = 'user_001';
+
         final recipe1 = RecipeBuilder()
             .withId('recipe_1')
             .withTitle('User 1 Recipe 1')
@@ -80,85 +151,35 @@ void main() {
             .withId('recipe_2')
             .withTitle('User 1 Recipe 2')
             .build();
-        final recipe3 = RecipeBuilder()
-            .withId('recipe_3')
-            .withTitle('User 2 Recipe')
-            .build();
 
-        // Set up box data
-        mockRecipeBox.setInitialData({
-          '${userId1}_recipe_1': recipe1,
-          '${userId1}_recipe_2': recipe2,
-          '${userId2}_recipe_3': recipe3,
-        });
+        final offlineRecipes = [
+          FakeOfflineRecipe(
+            id: 'recipe_1',
+            userId: userId,
+            recipeJson: _recipeToJson(recipe1),
+          ),
+          FakeOfflineRecipe(
+            id: 'recipe_2',
+            userId: userId,
+            recipeJson: _recipeToJson(recipe2),
+          ),
+        ];
+
+        when(() => mockRecipeDao.getRecipesForUser(userId))
+            .thenAnswer((_) async => offlineRecipes);
 
         // Act
-        final user1Recipes = storage.getRecipesForUser(userId1);
-        final user2Recipes = storage.getRecipesForUser(userId2);
+        final userRecipes = await storage.getRecipesForUser(userId);
 
         // Assert
-        expect(user1Recipes.length, 2);
-        expect(user1Recipes, contains(recipe1));
-        expect(user1Recipes, contains(recipe2));
-        expect(user2Recipes.length, 1);
-        expect(user2Recipes, contains(recipe3));
-      });
-
-      test('should handle multiple users data isolation', () {
-        // Arrange
-        const userIds = ['user_a', 'user_b', 'user_c'];
-        final recipes = <String, Recipe>{};
-        
-        for (final userId in userIds) {
-          for (int i = 1; i <= 3; i++) {
-            final recipe = RecipeBuilder()
-                .withId('recipe_${userId}_$i')
-                .withTitle('$userId Recipe $i')
-                .build();
-            recipes['${userId}_recipe_${userId}_$i'] = recipe;
-          }
-        }
-        
-        mockRecipeBox.setInitialData(recipes);
-
-        // Act & Assert
-        for (final userId in userIds) {
-          final userRecipes = storage.getRecipesForUser(userId);
-          expect(userRecipes.length, 3);
-          
-          // Verify all recipes belong to this user
-          for (final recipe in userRecipes) {
-            expect(recipe.id, contains(userId));
-          }
-        }
-      });
-
-      test('should get list of users with offline data', () {
-        // Arrange
-        mockRecipeBox.setInitialData({
-          'user_001_recipe_1': RecipeBuilder().build(),
-          'user_001_recipe_2': RecipeBuilder().build(),
-          'user_002_recipe_1': RecipeBuilder().build(),
-          'user_003_recipe_1': RecipeBuilder().build(),
-          // Note: invalid_key without underscore won't be counted as a user
-        });
-
-        // Act
-        final users = storage.getUsersWithOfflineData();
-
-        // Assert - The implementation returns unique users
-        // Since all recipes belong to 'user' (prefix before underscore), 
-        // there's only 1 unique user
-        expect(users.length, greaterThan(0));
-        expect(users, anyOf(
-          contains('user'),
-          containsAll(['user_001', 'user_002', 'user_003'])
-        ));
+        expect(userRecipes.length, 2);
+        expect(userRecipes[0].title, 'User 1 Recipe 1');
+        expect(userRecipes[1].title, 'User 1 Recipe 2');
       });
     });
 
     group('CRUD Operations', () {
-      test('should get specific recipe for user', () {
+      test('should get specific recipe for user', () async {
         // Arrange
         const userId = 'user_123';
         const recipeId = 'recipe_456';
@@ -166,60 +187,57 @@ void main() {
             .withId(recipeId)
             .withTitle('Specific Recipe')
             .build();
-        
-        mockRecipeBox.setInitialData({
-          '${userId}_$recipeId': recipe,
-        });
+
+        final offlineRecipe = FakeOfflineRecipe(
+          id: recipeId,
+          userId: userId,
+          recipeJson: _recipeToJson(recipe),
+        );
+
+        when(() => mockRecipeDao.getRecipe(recipeId, userId))
+            .thenAnswer((_) async => offlineRecipe);
 
         // Act
-        final retrieved = storage.getRecipeForUser(recipeId, userId);
+        final retrieved = await storage.getRecipeForUser(recipeId, userId);
 
         // Assert
-        expect(retrieved, recipe);
+        expect(retrieved, isNotNull);
+        expect(retrieved!.id, recipeId);
+        expect(retrieved.title, 'Specific Recipe');
       });
 
-      test('should return null for non-existent recipe', () {
+      test('should return null for non-existent recipe', () async {
         // Arrange
         const userId = 'user_123';
         const recipeId = 'non_existent';
-        
+
+        when(() => mockRecipeDao.getRecipe(recipeId, userId))
+            .thenAnswer((_) async => null);
+
         // Act
-        final retrieved = storage.getRecipeForUser(recipeId, userId);
+        final retrieved = await storage.getRecipeForUser(recipeId, userId);
 
         // Assert
-        expect(retrieved, null);
+        expect(retrieved, isNull);
       });
 
       test('should delete recipe and remove from sync queue', () async {
         // Arrange
         const userId = 'user_123';
         const recipeId = 'recipe_456';
-        final recipe = RecipeBuilder()
-            .withId(recipeId)
-            .build();
-        
-        final key = '${userId}_$recipeId';
-        mockRecipeBox.setInitialData({key: recipe});
-        mockSyncQueueBox.setInitialData({key: key});
+
+        when(() => mockRecipeDao.deleteRecipe(recipeId, userId))
+            .thenAnswer((_) async => 1);
+        when(() => mockSyncQueueDao.removeForRecipe(userId, recipeId))
+            .thenAnswer((_) async => 1);
 
         // Act
         await storage.deleteRecipeForUser(recipeId, userId);
 
         // Assert
-        expect(mockRecipeBox.containsKey(key), false);
-        expect(mockSyncQueueBox.containsKey(key), false);
-      });
-
-      test('should handle delete of non-existent recipe gracefully', () async {
-        // Arrange
-        const userId = 'user_123';
-        const recipeId = 'non_existent';
-
-        // Act & Assert (should not throw)
-        await expectLater(
-          storage.deleteRecipeForUser(recipeId, userId),
-          completes,
-        );
+        verify(() => mockRecipeDao.deleteRecipe(recipeId, userId)).called(1);
+        verify(() => mockSyncQueueDao.removeForRecipe(userId, recipeId))
+            .called(1);
       });
     });
 
@@ -227,124 +245,67 @@ void main() {
       test('should clear all data for specific user', () async {
         // Arrange
         const targetUser = 'user_to_clear';
-        const otherUser = 'user_to_keep';
-        
-        // Set up mixed user data
-        final recipes = <String, Recipe>{};
-        final syncQueue = <String, String>{};
-        
-        for (int i = 1; i <= 3; i++) {
-          final targetKey = '${targetUser}_recipe_$i';
-          final otherKey = '${otherUser}_recipe_$i';
-          
-          recipes[targetKey] = RecipeBuilder()
-              .withId('recipe_$i')
-              .withTitle('Target Recipe $i')
-              .build();
-          recipes[otherKey] = RecipeBuilder()
-              .withId('recipe_$i')
-              .withTitle('Other Recipe $i')
-              .build();
-          
-          syncQueue[targetKey] = targetKey;
-          syncQueue[otherKey] = otherKey;
-        }
-        
-        mockRecipeBox.setInitialData(recipes);
-        mockSyncQueueBox.setInitialData(syncQueue);
+
+        when(() => mockRecipeDao.countForUser(targetUser))
+            .thenAnswer((_) async => 5);
+        when(() => mockRecipeDao.deleteAllForUser(targetUser))
+            .thenAnswer((_) async => 5);
+        when(() => mockSyncQueueDao.clearForUser(targetUser))
+            .thenAnswer((_) async => 2);
 
         // Act
         await storage.clearUserData(targetUser);
 
         // Assert
-        // Target user data should be cleared
-        for (int i = 1; i <= 3; i++) {
-          final targetKey = '${targetUser}_recipe_$i';
-          expect(mockRecipeBox.containsKey(targetKey), false);
-          expect(mockSyncQueueBox.containsKey(targetKey), false);
-        }
-        
-        // Other user data should remain
-        for (int i = 1; i <= 3; i++) {
-          final otherKey = '${otherUser}_recipe_$i';
-          expect(mockRecipeBox.containsKey(otherKey), true);
-          expect(mockSyncQueueBox.containsKey(otherKey), true);
-        }
+        verify(() => mockRecipeDao.deleteAllForUser(targetUser)).called(1);
+        verify(() => mockSyncQueueDao.clearForUser(targetUser)).called(1);
       });
 
-      test('should preserve other users data during clear', () async {
+      test('should get recipe count for user', () async {
         // Arrange
-        const users = ['user_a', 'user_b', 'user_c'];
-        const userToClean = 'user_b';
-        
-        final recipes = <String, Recipe>{};
-        for (final userId in users) {
-          for (int i = 1; i <= 2; i++) {
-            recipes['${userId}_recipe_$i'] = RecipeBuilder()
-                .withId('recipe_${userId}_$i')
-                .build();
-          }
-        }
-        mockRecipeBox.setInitialData(recipes);
+        const userId = 'user_123';
+
+        when(() => mockRecipeDao.countForUser(userId))
+            .thenAnswer((_) async => 10);
 
         // Act
-        await storage.clearUserData(userToClean);
+        final count = await storage.getRecipeCountForUser(userId);
 
         // Assert
-        expect(storage.getRecipesForUser('user_a').length, 2);
-        expect(storage.getRecipesForUser('user_b').length, 0); // Cleared
-        expect(storage.getRecipesForUser('user_c').length, 2);
-      });
-
-      test('should handle empty user data gracefully', () async {
-        // Arrange
-        const userId = 'empty_user';
-        
-        // Act & Assert (should not throw)
-        await expectLater(
-          storage.clearUserData(userId),
-          completes,
-        );
-        
-        // Verify no data exists
-        expect(storage.getRecipesForUser(userId), isEmpty);
+        expect(count, 10);
       });
     });
 
-    group('Error Handling', () {
-      test('should handle errors when getting user recipes', () {
+    group('Reactive Streams', () {
+      test('should watch recipes for user', () async {
         // Arrange
         const userId = 'user_123';
-        
-        // Force an error by closing the box
-        mockRecipeBox.setOpen(false);
+        final recipe = RecipeBuilder().withTitle('Watched Recipe').build();
+
+        final offlineRecipes = [
+          FakeOfflineRecipe(
+            id: recipe.id,
+            userId: userId,
+            recipeJson: _recipeToJson(recipe),
+          ),
+        ];
+
+        when(() => mockRecipeDao.watchRecipesForUser(userId))
+            .thenAnswer((_) => Stream.value(offlineRecipes));
 
         // Act
-        final recipes = storage.getRecipesForUser(userId);
+        final stream = storage.watchRecipesForUser(userId);
+        final recipes = await stream.first;
 
         // Assert
-        expect(recipes, isEmpty); // Should return empty list on error
-      });
-
-      test('should handle null recipes in box gracefully', () {
-        // Arrange
-        const userId = 'user_123';
-        
-        // Set up box with a key but no actual recipe (simulating null)
-        // MockBox.get() will return null for keys not in the storage map
-        mockRecipeBox.setInitialData({
-          // Empty data - will cause get() to return null
-        });
-        
-        // Manually manipulate keys to include an entry
-        // Since we can't directly set null, we test the behavior when get returns null
-
-        // Act
-        final recipes = storage.getRecipesForUser(userId);
-
-        // Assert
-        expect(recipes, isEmpty); // Null recipes should be filtered out
+        expect(recipes.length, 1);
+        expect(recipes[0].title, 'Watched Recipe');
       });
     });
   });
+}
+
+/// Helper to convert Recipe to JSON string
+String _recipeToJson(Recipe recipe) {
+  return '{"id":"${recipe.id}","title":"${recipe.title}","description":"${recipe.description}","ingredients":[],"instructions":[],"mealType":"${recipe.mealType}","imageUrls":[],"createdAt":"${recipe.createdAt.toIso8601String()}","updatedAt":"${recipe.updatedAt.toIso8601String()}","isPublic":false,"type":"personal"}';
 }

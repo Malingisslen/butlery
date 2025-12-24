@@ -1,6 +1,7 @@
 // lib/models/social/content_reaction.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/core/utils/serialization_utils.dart';
 import 'package:butlery/models/social/reaction_type.dart';
 
 /// Universal content reaction model for expressing user sentiment on any content type
@@ -94,12 +95,14 @@ class ContentReaction {
   factory ContentReaction.fromFirestore(String id, Map<String, dynamic> data) {
     return ContentReaction(
       id: id,
-      contentId: data['contentId'] as String? ?? '',
-      contentType: data['contentType'] as String? ?? '',
-      userId: data['userId'] as String? ?? '',
-      reactionType: ReactionType.fromKey(data['reactionType'] as String? ?? 'like'),
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      contentId: SerializationUtils.safeString(data, 'contentId'),
+      contentType: SerializationUtils.safeString(data, 'contentType'),
+      userId: SerializationUtils.safeString(data, 'userId'),
+      reactionType: ReactionType.fromKey(
+        SerializationUtils.safeString(data, 'reactionType', defaultValue: 'like'),
+      ),
+      createdAt: SerializationUtils.safeRequiredDateTime(data, 'createdAt'),
+      updatedAt: SerializationUtils.safeDateTime(data, 'updatedAt'),
     );
   }
 
@@ -130,16 +133,17 @@ class ContentReaction {
 
   /// Create from JSON format following established patterns
   factory ContentReaction.fromJson(Map<String, dynamic> json) {
+    final updatedAtStr = SerializationUtils.safeNullableString(json, 'updatedAt');
     return ContentReaction(
-      id: json['id'] as String,
-      contentId: json['contentId'] as String? ?? '',
-      contentType: json['contentType'] as String? ?? '',
-      userId: json['userId'] as String? ?? '',
-      reactionType: ReactionType.fromKey(json['reactionType'] as String? ?? 'like'),
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: json['updatedAt'] != null 
-          ? DateTime.parse(json['updatedAt'] as String)
-          : null,
+      id: SerializationUtils.safeString(json, 'id'),
+      contentId: SerializationUtils.safeString(json, 'contentId'),
+      contentType: SerializationUtils.safeString(json, 'contentType'),
+      userId: SerializationUtils.safeString(json, 'userId'),
+      reactionType: ReactionType.fromKey(
+        SerializationUtils.safeString(json, 'reactionType', defaultValue: 'like'),
+      ),
+      createdAt: DateTime.parse(SerializationUtils.safeString(json, 'createdAt')),
+      updatedAt: updatedAtStr != null ? DateTime.tryParse(updatedAtStr) : null,
     );
   }
 
