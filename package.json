@@ -1,0 +1,29 @@
+{
+  "name": "butlery",
+  "version": "1.0.0",
+  "description": "**A comprehensive recipe management and meal planning platform built with Flutter and Firebase**",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/malingisslen/butlery.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/malingisslen/butlery/issues"
+  },
+  "homepage": "https://github.com/malingisslen/butlery#readme",
+  "devDependencies": {
+    "lefthook": "^2.0.12"
+  }
+}
