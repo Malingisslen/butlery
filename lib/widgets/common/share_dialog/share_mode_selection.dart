@@ -17,7 +17,6 @@ class ShareModeSelection {
       return const SizedBox.shrink();
     }
 
-    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -28,7 +27,6 @@ class ShareModeSelection {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        
         Column(
           children: [
             // Static Copy Option
@@ -36,7 +34,8 @@ class ShareModeSelection {
               margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
               child: InkWell(
                 onTap: () => onModeChanged(ShareMode.staticCopy),
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusM),
                 child: Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
                   decoration: BoxDecoration(
@@ -45,100 +44,118 @@ class ShareModeSelection {
                           ? Theme.of(context).colorScheme.primary
                           : Theme.of(context).colorScheme.outline,
                     ),
-                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusM),
                     color: selectedMode == ShareMode.staticCopy
-                        ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
+                        ? Theme.of(context)
+                            .colorScheme
+                            .primaryContainer
+                            .withValues(alpha: 0.3)
                         : null,
                   ),
                   child: Row(
                     children: [
                       Icon(
-                        selectedMode == ShareMode.staticCopy ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                        color: selectedMode == ShareMode.staticCopy ? Theme.of(context).colorScheme.primary : null,
+                        selectedMode == ShareMode.staticCopy
+                            ? Icons.radio_button_checked
+                            : Icons.radio_button_unchecked,
+                        color: selectedMode == ShareMode.staticCopy
+                            ? Theme.of(context).colorScheme.primary
+                            : null,
                       ),
-                        const SizedBox(width: AppDimensions.spacingM),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Statisk kopia',
-                                style: AppTextStyles.bodyLarge.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                ),
+                      const SizedBox(width: AppDimensions.spacingM),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Statisk kopia',
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                fontWeight: FontWeight.w500,
                               ),
-                              const SizedBox(height: AppDimensions.spacingXs),
-                              Text(
-                                'Skicka en kopia som mottagaren kan ändra fritt',
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                ),
+                            ),
+                            const SizedBox(height: AppDimensions.spacingXs),
+                            Text(
+                              'Skicka en kopia som mottagaren kan ändra fritt',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              
+            ),
+
             // Realtime Sharing Option
             InkWell(
-                onTap: () => onModeChanged(ShareMode.realtime),
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                child: Container(
-                  padding: const EdgeInsets.all(AppDimensions.paddingL),
-                  decoration: BoxDecoration(
-                    border: Border.all(
+              onTap: () => onModeChanged(ShareMode.realtime),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+              child: Container(
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: selectedMode == ShareMode.realtime
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.outline,
+                  ),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusM),
+                  color: selectedMode == ShareMode.realtime
+                      ? Theme.of(context)
+                          .colorScheme
+                          .primaryContainer
+                          .withValues(alpha: 0.3)
+                      : null,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      selectedMode == ShareMode.realtime
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
                       color: selectedMode == ShareMode.realtime
                           ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.outline,
+                          : null,
                     ),
-                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                    color: selectedMode == ShareMode.realtime
-                        ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3)
-                        : null,
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        selectedMode == ShareMode.realtime ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                        color: selectedMode == ShareMode.realtime ? Theme.of(context).colorScheme.primary : null,
-                      ),
-                        const SizedBox(width: AppDimensions.spacingM),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Realtidsdelning',
-                                style: AppTextStyles.bodyLarge.copyWith(
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: AppDimensions.spacingXs),
-                              Text(
-                                contentType == ShareContentType.shoppingList
-                                    ? 'Alla kan lägga till och checka av varor i realtid'
-                                    : 'Alla kan redigera tillsammans i realtid',
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
+                    const SizedBox(width: AppDimensions.spacingM),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Realtidsdelning',
+                            style: AppTextStyles.bodyLarge.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: AppDimensions.spacingXs),
+                          Text(
+                            contentType == ShareContentType.shoppingList
+                                ? 'Alla kan lägga till och checka av varor i realtid'
+                                : 'Alla kan redigera tillsammans i realtid',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
+              ),
+            ),
           ],
         ),
-        
         const SizedBox(height: AppDimensions.spacingXl),
       ],
     );
   }
-
 }

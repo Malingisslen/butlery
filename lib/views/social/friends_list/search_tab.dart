@@ -18,7 +18,8 @@ class SearchTab {
     if (searchQuery.isEmpty) {
       return StateWidget.empty(
         title: 'Sök efter nya vänner',
-        subtitle: 'Skriv ett namn eller användarnamn i sökfältet ovan för att hitta nya vänner.',
+        subtitle:
+            'Skriv ett namn eller användarnamn i sökfältet ovan för att hitta nya vänner.',
         icon: Icons.search,
       );
     }
@@ -28,7 +29,7 @@ class SearchTab {
     }
 
     if (viewModel.searchResults.isEmpty) {
-      return isGroupsSearch 
+      return isGroupsSearch
           ? StateWidget.noGroupsSearchResults()
           : StateWidget.noFriendsSearchResults();
     }

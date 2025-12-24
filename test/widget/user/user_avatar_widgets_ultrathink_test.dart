@@ -17,7 +17,6 @@ void main() {
   });
 
   group('UserAvatarWidgets Ultrathink Widget Tests', () {
-
     // Helper to create properly sized widget - ultrathink layout solution
     Widget createTestWidget({Widget? child}) {
       return MaterialApp(
@@ -31,7 +30,8 @@ void main() {
     }
 
     group('Avatar Method - Foundation Functionality', () {
-      testWidgets('renders basic avatar with initials - Swedish names', (WidgetTester tester) async {
+      testWidgets('renders basic avatar with initials - Swedish names',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Anna Andersson',
@@ -40,15 +40,17 @@ void main() {
 
         // Core UI elements - Swedish name handling
         expect(find.text('AA'), findsOneWidget);
-        
+
         // Verify container structure
-        final container = tester.widget<Container>(find.byType(Container).first);
+        final container =
+            tester.widget<Container>(find.byType(Container).first);
         expect(container.decoration, isA<BoxDecoration>());
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.shape, equals(BoxShape.circle));
       });
 
-      testWidgets('renders avatar with image URL - network image handling', (WidgetTester tester) async {
+      testWidgets('renders avatar with image URL - network image handling',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             imageUrl: 'https://example.com/avatar.jpg',
@@ -58,15 +60,16 @@ void main() {
 
         // Should have CachedNetworkImage for network handling
         expect(find.byType(CachedNetworkImage), findsOneWidget);
-        
+
         // Should have ClipOval for circular masking
         expect(find.byType(ClipOval), findsOneWidget);
-        
+
         // Placeholder should show initials
         expect(find.text('EE'), findsOneWidget);
       });
 
-      testWidgets('handles empty image URL correctly', (WidgetTester tester) async {
+      testWidgets('handles empty image URL correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             imageUrl: '',
@@ -79,7 +82,8 @@ void main() {
         expect(find.text('JJ'), findsOneWidget);
       });
 
-      testWidgets('handles null image URL correctly', (WidgetTester tester) async {
+      testWidgets('handles null image URL correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             imageUrl: null,
@@ -94,7 +98,8 @@ void main() {
     });
 
     group('Size Calculation - Production Code Alignment', () {
-      testWidgets('applies correct size for ImageSize.small', (WidgetTester tester) async {
+      testWidgets('applies correct size for ImageSize.small',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Test Small',
@@ -104,14 +109,16 @@ void main() {
 
         // Find container with circular decoration (main avatar container)
         final containerFinder = find.byWidgetPredicate(
-          (widget) => widget is Container && 
-                      widget.decoration is BoxDecoration &&
-                      (widget.decoration as BoxDecoration).shape == BoxShape.circle,
+          (widget) =>
+              widget is Container &&
+              widget.decoration is BoxDecoration &&
+              (widget.decoration as BoxDecoration).shape == BoxShape.circle,
         );
         expect(containerFinder, findsWidgets);
       });
 
-      testWidgets('applies correct size for ImageSize.medium', (WidgetTester tester) async {
+      testWidgets('applies correct size for ImageSize.medium',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Test Medium',
@@ -121,17 +128,19 @@ void main() {
 
         // Medium size avatar should be rendered
         expect(find.text('TM'), findsOneWidget);
-        
+
         // Should have circular container
         final containerFinder = find.byWidgetPredicate(
-          (widget) => widget is Container && 
-                      widget.decoration is BoxDecoration &&
-                      (widget.decoration as BoxDecoration).shape == BoxShape.circle,
+          (widget) =>
+              widget is Container &&
+              widget.decoration is BoxDecoration &&
+              (widget.decoration as BoxDecoration).shape == BoxShape.circle,
         );
         expect(containerFinder, findsWidgets);
       });
 
-      testWidgets('applies correct size for ImageSize.large', (WidgetTester tester) async {
+      testWidgets('applies correct size for ImageSize.large',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Test Large',
@@ -143,7 +152,8 @@ void main() {
         expect(find.byType(Container), findsWidgets);
       });
 
-      testWidgets('applies correct size for ImageSize.extraLarge', (WidgetTester tester) async {
+      testWidgets('applies correct size for ImageSize.extraLarge',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Test XLarge',
@@ -155,7 +165,8 @@ void main() {
         expect(find.byType(Container), findsWidgets);
       });
 
-      testWidgets('applies correct size for ImageSize.hero', (WidgetTester tester) async {
+      testWidgets('applies correct size for ImageSize.hero',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Test Hero',
@@ -169,7 +180,8 @@ void main() {
     });
 
     group('Status Indicator System - Swedish UX', () {
-      testWidgets('shows online status indicator correctly', (WidgetTester tester) async {
+      testWidgets('shows online status indicator correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Online Användare',
@@ -180,25 +192,29 @@ void main() {
 
         // Should have Stack for overlay
         expect(find.byType(Stack), findsWidgets);
-        
+
         // Should have Positioned widget for status indicator
         expect(find.byType(Positioned), findsOneWidget);
-        
+
         // Status indicator should be positioned correctly
         final positioned = tester.widget<Positioned>(find.byType(Positioned));
         expect(positioned.right, equals(0));
         expect(positioned.bottom, equals(0));
 
         // Status container should have success color for online
-        final statusContainers = tester.widgetList<Container>(find.byType(Container));
+        final statusContainers =
+            tester.widgetList<Container>(find.byType(Container));
         final statusContainer = statusContainers.firstWhere(
-          (container) => container.decoration is BoxDecoration &&
-            (container.decoration as BoxDecoration).color == AppColors.success,
+          (container) =>
+              container.decoration is BoxDecoration &&
+              (container.decoration as BoxDecoration).color ==
+                  AppColors.success,
         );
         expect(statusContainer, isNotNull);
       });
 
-      testWidgets('shows offline status indicator correctly', (WidgetTester tester) async {
+      testWidgets('shows offline status indicator correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Offline Användare',
@@ -209,17 +225,21 @@ void main() {
 
         // Should have Stack for overlay
         expect(find.byType(Stack), findsWidgets);
-        
+
         // Status container should have tertiary color for offline
-        final statusContainers = tester.widgetList<Container>(find.byType(Container));
+        final statusContainers =
+            tester.widgetList<Container>(find.byType(Container));
         final statusContainer = statusContainers.firstWhere(
-          (container) => container.decoration is BoxDecoration &&
-            (container.decoration as BoxDecoration).color == AppColors.textTertiary,
+          (container) =>
+              container.decoration is BoxDecoration &&
+              (container.decoration as BoxDecoration).color ==
+                  AppColors.textTertiary,
         );
         expect(statusContainer, isNotNull);
       });
 
-      testWidgets('does not show status when disabled', (WidgetTester tester) async {
+      testWidgets('does not show status when disabled',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'No Status User',
@@ -233,7 +253,8 @@ void main() {
         expect(find.byType(Positioned), findsNothing);
       });
 
-      testWidgets('status indicator size scales with avatar size', (WidgetTester tester) async {
+      testWidgets('status indicator size scales with avatar size',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Status Test',
@@ -244,19 +265,23 @@ void main() {
         ));
 
         // Find status indicator container
-        final statusContainers = tester.widgetList<Container>(find.byType(Container));
+        final statusContainers =
+            tester.widgetList<Container>(find.byType(Container));
         final statusContainer = statusContainers.firstWhere(
-          (container) => container.decoration is BoxDecoration &&
-            (container.decoration as BoxDecoration).color == AppColors.success,
+          (container) =>
+              container.decoration is BoxDecoration &&
+              (container.decoration as BoxDecoration).color ==
+                  AppColors.success,
         );
-        
+
         // Status should be 25% of avatar size (verified by finding status container)
         expect(statusContainer, isNotNull);
       });
     });
 
     group('Interactive Behavior - Touch Handling', () {
-      testWidgets('creates InkWell when onTap provided', (WidgetTester tester) async {
+      testWidgets('creates InkWell when onTap provided',
+          (WidgetTester tester) async {
         bool tapped = false;
 
         await tester.pumpWidget(createTestWidget(
@@ -277,7 +302,8 @@ void main() {
         expect(tapped, isTrue);
       });
 
-      testWidgets('does not create InkWell when onTap is null', (WidgetTester tester) async {
+      testWidgets('does not create InkWell when onTap is null',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Static User',
@@ -288,11 +314,13 @@ void main() {
         expect(find.byType(InkWell), findsNothing);
         // MaterialApp still creates a Material widget, so we check for specific transparent Material
         final materials = tester.widgetList<Material>(find.byType(Material));
-        final transparentMaterials = materials.where((m) => m.color == Colors.transparent);
+        final transparentMaterials =
+            materials.where((m) => m.color == Colors.transparent);
         expect(transparentMaterials.length, equals(0));
       });
 
-      testWidgets('applies correct border radius for touch feedback', (WidgetTester tester) async {
+      testWidgets('applies correct border radius for touch feedback',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Touch Test',
@@ -303,12 +331,14 @@ void main() {
 
         final inkWell = tester.widget<InkWell>(find.byType(InkWell));
         final expectedRadius = AppDimensions.iconSizeXxl / 2;
-        expect(inkWell.borderRadius, equals(BorderRadius.circular(expectedRadius)));
+        expect(inkWell.borderRadius,
+            equals(BorderRadius.circular(expectedRadius)));
       });
     });
 
     group('Custom Styling - Design System Integration', () {
-      testWidgets('applies custom background color', (WidgetTester tester) async {
+      testWidgets('applies custom background color',
+          (WidgetTester tester) async {
         const customColor = Colors.red;
 
         await tester.pumpWidget(createTestWidget(
@@ -318,7 +348,8 @@ void main() {
           ),
         ));
 
-        final container = tester.widget<Container>(find.byType(Container).first);
+        final container =
+            tester.widget<Container>(find.byType(Container).first);
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.color, equals(customColor));
       });
@@ -349,23 +380,27 @@ void main() {
           ),
         ));
 
-        final container = tester.widget<Container>(find.byType(Container).first);
+        final container =
+            tester.widget<Container>(find.byType(Container).first);
         final decoration = container.decoration as BoxDecoration;
         final border = decoration.border as Border;
         expect(border.top.color, equals(borderColor));
         expect(border.top.width, equals(borderWidth));
       });
 
-      testWidgets('uses default colors when not specified', (WidgetTester tester) async {
+      testWidgets('uses default colors when not specified',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Default Colors',
           ),
         ));
 
-        final container = tester.widget<Container>(find.byType(Container).first);
+        final container =
+            tester.widget<Container>(find.byType(Container).first);
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(AppColors.primaryBlue.withValues(alpha: 0.1)));
+        expect(decoration.color,
+            equals(AppColors.primaryBlue.withValues(alpha: 0.1)));
 
         final textWidget = tester.widget<Text>(find.text('DC'));
         expect(textWidget.style?.color, equals(AppColors.primaryBlue));
@@ -373,7 +408,8 @@ void main() {
     });
 
     group('Initials Generation - Swedish Character Support', () {
-      testWidgets('generates initials for Swedish characters', (WidgetTester tester) async {
+      testWidgets('generates initials for Swedish characters',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Åsa Öberg',
@@ -383,7 +419,8 @@ void main() {
         expect(find.text('ÅÖ'), findsOneWidget);
       });
 
-      testWidgets('handles mixed case Swedish names', (WidgetTester tester) async {
+      testWidgets('handles mixed case Swedish names',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'björn älg',
@@ -393,7 +430,8 @@ void main() {
         expect(find.text('BÄ'), findsOneWidget);
       });
 
-      testWidgets('handles single word names correctly', (WidgetTester tester) async {
+      testWidgets('handles single word names correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Magnus',
@@ -404,7 +442,8 @@ void main() {
         expect(find.text('MA'), findsOneWidget);
       });
 
-      testWidgets('handles single character names', (WidgetTester tester) async {
+      testWidgets('handles single character names',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'A',
@@ -414,7 +453,8 @@ void main() {
         expect(find.text('A'), findsOneWidget);
       });
 
-      testWidgets('handles empty name with fallback', (WidgetTester tester) async {
+      testWidgets('handles empty name with fallback',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: '',
@@ -434,7 +474,8 @@ void main() {
         expect(find.text('JJ'), findsOneWidget);
       });
 
-      testWidgets('handles names with special characters', (WidgetTester tester) async {
+      testWidgets('handles names with special characters',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Jean-Pierre O\'Connor',
@@ -446,7 +487,8 @@ void main() {
     });
 
     group('EditableAvatar Method - Advanced Functionality', () {
-      testWidgets('renders editable avatar with edit button', (WidgetTester tester) async {
+      testWidgets('renders editable avatar with edit button',
+          (WidgetTester tester) async {
         bool editTapped = false;
 
         await tester.pumpWidget(createTestWidget(
@@ -458,10 +500,10 @@ void main() {
 
         // Should have Stack for edit button overlay (plus MaterialApp may create one)
         expect(find.byType(Stack), findsWidgets);
-        
+
         // Should have edit icon
         expect(find.byIcon(Icons.edit), findsOneWidget);
-        
+
         // Should have positioned edit button
         expect(find.byType(Positioned), findsOneWidget);
 
@@ -472,7 +514,8 @@ void main() {
         expect(editTapped, isTrue);
       });
 
-      testWidgets('applies custom border to editable avatar', (WidgetTester tester) async {
+      testWidgets('applies custom border to editable avatar',
+          (WidgetTester tester) async {
         const customBorderColor = Colors.red;
         const customBorderWidth = 5.0;
 
@@ -489,7 +532,8 @@ void main() {
         expect(find.byIcon(Icons.edit), findsOneWidget);
       });
 
-      testWidgets('uses extraLarge size by default for editable avatar', (WidgetTester tester) async {
+      testWidgets('uses extraLarge size by default for editable avatar',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.editableAvatar(
             displayName: 'Large Avatar',
@@ -503,7 +547,8 @@ void main() {
     });
 
     group('StatusIndicator Method - Standalone Component', () {
-      testWidgets('renders online status indicator', (WidgetTester tester) async {
+      testWidgets('renders online status indicator',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.statusIndicator(
             isOnline: true,
@@ -516,7 +561,8 @@ void main() {
         expect(decoration.shape, equals(BoxShape.circle));
       });
 
-      testWidgets('renders offline status indicator', (WidgetTester tester) async {
+      testWidgets('renders offline status indicator',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.statusIndicator(
             isOnline: false,
@@ -528,7 +574,8 @@ void main() {
         expect(decoration.color, equals(AppColors.textTertiary));
       });
 
-      testWidgets('applies custom size to status indicator', (WidgetTester tester) async {
+      testWidgets('applies custom size to status indicator',
+          (WidgetTester tester) async {
         const customSize = 24.0;
 
         await tester.pumpWidget(createTestWidget(
@@ -545,7 +592,8 @@ void main() {
         expect(decoration.shape, equals(BoxShape.circle));
       });
 
-      testWidgets('uses default size when not specified', (WidgetTester tester) async {
+      testWidgets('uses default size when not specified',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.statusIndicator(
             isOnline: true,
@@ -561,20 +609,23 @@ void main() {
     });
 
     group('Static Utility Methods - Production Code Verification', () {
-      testWidgets('getInitials method handles all edge cases', (WidgetTester tester) async {
+      testWidgets('getInitials method handles all edge cases',
+          (WidgetTester tester) async {
         // Test static method directly
         expect(UserAvatarWidgets.getInitials('Anna Andersson'), equals('AA'));
         expect(UserAvatarWidgets.getInitials('Magnus'), equals('MA'));
         expect(UserAvatarWidgets.getInitials('A'), equals('A'));
         expect(UserAvatarWidgets.getInitials(''), equals('?'));
-        expect(UserAvatarWidgets.getInitials('  Johan   Johansson  '), equals('JJ'));
+        expect(UserAvatarWidgets.getInitials('  Johan   Johansson  '),
+            equals('JJ'));
         expect(UserAvatarWidgets.getInitials('Åsa Öberg'), equals('ÅÖ'));
         expect(UserAvatarWidgets.getInitials('björn älg'), equals('BÄ'));
       });
     });
 
     group('Network Image Error Handling - Advanced Scenarios', () {
-      testWidgets('shows initials when network image fails to load', (WidgetTester tester) async {
+      testWidgets('shows initials when network image fails to load',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             imageUrl: 'https://invalid-url.com/avatar.jpg',
@@ -584,12 +635,13 @@ void main() {
 
         // CachedNetworkImage should be present
         expect(find.byType(CachedNetworkImage), findsOneWidget);
-        
+
         // Error widget should show initials
         expect(find.text('NE'), findsOneWidget);
       });
 
-      testWidgets('shows placeholder while network image loads', (WidgetTester tester) async {
+      testWidgets('shows placeholder while network image loads',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             imageUrl: 'https://example.com/slow-loading-avatar.jpg',
@@ -599,16 +651,20 @@ void main() {
 
         // Should show placeholder initials while loading
         expect(find.text('LU'), findsOneWidget);
-        
+
         // CachedNetworkImage should handle loading state
-        final cachedImage = tester.widget<CachedNetworkImage>(find.byType(CachedNetworkImage));
-        expect(cachedImage.fadeInDuration, equals(const Duration(milliseconds: 300)));
-        expect(cachedImage.fadeOutDuration, equals(const Duration(milliseconds: 300)));
+        final cachedImage =
+            tester.widget<CachedNetworkImage>(find.byType(CachedNetworkImage));
+        expect(cachedImage.fadeInDuration,
+            equals(const Duration(milliseconds: 300)));
+        expect(cachedImage.fadeOutDuration,
+            equals(const Duration(milliseconds: 300)));
       });
     });
 
     group('Font Size Calculation - Typography Precision', () {
-      testWidgets('calculates font size as 40% of avatar size', (WidgetTester tester) async {
+      testWidgets('calculates font size as 40% of avatar size',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Font Test',
@@ -621,7 +677,8 @@ void main() {
         expect(textWidget.style?.fontSize, equals(expectedFontSize));
       });
 
-      testWidgets('applies correct font weight and styling', (WidgetTester tester) async {
+      testWidgets('applies correct font weight and styling',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Style Test',
@@ -635,7 +692,8 @@ void main() {
     });
 
     group('Edge Cases and Error Handling', () {
-      testWidgets('handles null parameters gracefully', (WidgetTester tester) async {
+      testWidgets('handles null parameters gracefully',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           child: UserAvatarWidgets.avatar(
             displayName: 'Null Test',
@@ -652,7 +710,8 @@ void main() {
         expect(find.byType(InkWell), findsNothing);
       });
 
-      testWidgets('maintains aspect ratio for all sizes', (WidgetTester tester) async {
+      testWidgets('maintains aspect ratio for all sizes',
+          (WidgetTester tester) async {
         for (final size in ImageSize.values) {
           await tester.pumpWidget(createTestWidget(
             child: UserAvatarWidgets.avatar(
@@ -663,12 +722,13 @@ void main() {
 
           // Should render avatar with circular container for all sizes
           final containerFinder = find.byWidgetPredicate(
-            (widget) => widget is Container && 
-                        widget.decoration is BoxDecoration &&
-                        (widget.decoration as BoxDecoration).shape == BoxShape.circle,
+            (widget) =>
+                widget is Container &&
+                widget.decoration is BoxDecoration &&
+                (widget.decoration as BoxDecoration).shape == BoxShape.circle,
           );
           expect(containerFinder, findsWidgets);
-          
+
           await tester.pumpWidget(const SizedBox()); // Clear widget tree
         }
       });

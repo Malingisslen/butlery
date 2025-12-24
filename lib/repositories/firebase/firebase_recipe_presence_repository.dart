@@ -26,7 +26,8 @@ class FirebaseRecipePresenceRepository {
 
   FirebaseRecipePresenceRepository({
     FirestoreRepository? firestoreRepository,
-  }) : _firestoreRepository = firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
+  }) : _firestoreRepository =
+            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
 
   /// Get Firestore instance via repository
   FirebaseFirestore get _firestore => _firestoreRepository.firestore;

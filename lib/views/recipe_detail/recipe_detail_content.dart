@@ -33,7 +33,7 @@ class RecipeDetailContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final recipe = viewModel.recipe;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -42,23 +42,23 @@ class RecipeDetailContent extends StatelessWidget {
           _buildDescription(context),
           const SizedBox(height: AppDimensions.spacingXl),
         ],
-        
+
         // Tags
         if (recipe.tags?.isNotEmpty ?? false) ...[
           _buildTags(context),
           const SizedBox(height: AppDimensions.spacingXl),
         ],
-        
+
         // Images
         if (recipe.imageUrls.isNotEmpty) ...[
           _buildImageCarousel(context),
           const SizedBox(height: AppDimensions.spacingXl),
         ],
-        
+
         // Portion scaler
         _buildPortionScaler(context),
         const SizedBox(height: AppDimensions.spacingXl),
-        
+
         // Instructions
         if (recipe.instructions.isNotEmpty) ...[
           _buildInstructions(context),
@@ -134,26 +134,29 @@ class RecipeDetailContent extends StatelessWidget {
           Wrap(
             spacing: AppDimensions.spacingS,
             runSpacing: AppDimensions.spacingS,
-            children: (viewModel.recipe.tags ?? []).map((tag) => Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingS,
-                vertical: AppDimensions.spacingXs,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound),
-                border: Border.all(
-                  color: AppColors.primaryBlue.withValues(alpha: 0.3),
-                ),
-              ),
-              child: Text(
-                tag,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.primaryBlue,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            )).toList(),
+            children: (viewModel.recipe.tags ?? [])
+                .map((tag) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingS,
+                        vertical: AppDimensions.spacingXs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryBlue.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(
+                            AppDimensions.borderRadiusRound),
+                        border: Border.all(
+                          color: AppColors.primaryBlue.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Text(
+                        tag,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.primaryBlue,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ))
+                .toList(),
           ),
         ],
       ),
@@ -194,7 +197,7 @@ class RecipeDetailContent extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Image carousel
           GestureDetector(
             onTap: () => onImageTap(viewModel.recipe.imageUrls, 0),
@@ -208,7 +211,8 @@ class RecipeDetailContent extends StatelessWidget {
                 size: ImageSize.large, // Now properly sized for recipe detail
                 showNavigationDots: true,
                 showImageCounter: true,
-                onImageTap: (index) => onImageTap(viewModel.recipe.imageUrls, index),
+                onImageTap: (index) =>
+                    onImageTap(viewModel.recipe.imageUrls, index),
               ),
             ),
           ),
@@ -256,10 +260,11 @@ class RecipeDetailContent extends StatelessWidget {
           const SizedBox(height: AppDimensions.spacingM),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: viewModel.recipe.instructions.asMap().entries.map((entry) {
+            children:
+                viewModel.recipe.instructions.asMap().entries.map((entry) {
               final index = entry.key;
               final instruction = entry.value;
-              
+
               return Padding(
                 padding: EdgeInsets.only(
                   bottom: index < viewModel.recipe.instructions.length - 1
@@ -273,7 +278,8 @@ class RecipeDetailContent extends StatelessWidget {
                     Container(
                       width: 28,
                       height: 28,
-                      margin: const EdgeInsets.only(right: AppDimensions.spacingS),
+                      margin:
+                          const EdgeInsets.only(right: AppDimensions.spacingS),
                       decoration: const BoxDecoration(
                         color: AppColors.primaryBlue,
                         shape: BoxShape.circle,
@@ -288,7 +294,7 @@ class RecipeDetailContent extends StatelessWidget {
                         ),
                       ),
                     ),
-                    
+
                     // Instruction text
                     Expanded(
                       child: Padding(

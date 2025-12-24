@@ -11,7 +11,8 @@ class RecipePermissionHelper {
   final UnifiedRecipeService _parent;
   final LegacyRecipeOwnershipResolver _legacyResolver;
 
-  RecipePermissionHelper(this._parent) : _legacyResolver = LegacyRecipeOwnershipResolver();
+  RecipePermissionHelper(this._parent)
+      : _legacyResolver = LegacyRecipeOwnershipResolver();
 
   bool canViewRecipe(Recipe recipe) {
     try {
@@ -34,7 +35,9 @@ class RecipePermissionHelper {
 
       // Collaborative recipes: members and owner can view
       if (recipe.isCollaborative) {
-        return recipe.socialData?.memberPermissions?.containsKey(currentUserId) ?? false;
+        return recipe.socialData?.memberPermissions
+                ?.containsKey(currentUserId) ??
+            false;
       }
 
       return false;
@@ -64,7 +67,7 @@ class RecipePermissionHelper {
       if (recipe.isCollaborative) {
         final userPermission = getUserPermission(recipe, currentUserId);
         return userPermission == ResourcePermission.editor ||
-               userPermission == ResourcePermission.admin;
+            userPermission == ResourcePermission.admin;
       }
 
       return false;
@@ -82,14 +85,16 @@ class RecipePermissionHelper {
       final ownerId = _legacyResolver.determineOwnership(recipe, currentUserId);
 
       if (ownerId == null) {
-        AppLogger.warning('⚠️ Could not determine recipe ownership for deletion: ${recipe.id}');
+        AppLogger.warning(
+            '⚠️ Could not determine recipe ownership for deletion: ${recipe.id}');
         return false;
       }
 
       final canDelete = ownerId == currentUserId;
 
       if (!canDelete) {
-        AppLogger.debug('🔍 Delete permission denied - Owner: $ownerId, Current: $currentUserId');
+        AppLogger.debug(
+            '🔍 Delete permission denied - Owner: $ownerId, Current: $currentUserId');
       }
 
       return canDelete;
@@ -143,7 +148,7 @@ class RecipePermissionHelper {
       // Check user permission level
       final userPermission = getUserPermission(recipe, currentUserId);
       return userPermission == ResourcePermission.admin ||
-             userPermission == ResourcePermission.editor;
+          userPermission == ResourcePermission.editor;
     } catch (e) {
       AppLogger.error('❌ Failed to check invitation permission', e);
       return false;
@@ -165,7 +170,9 @@ class RecipePermissionHelper {
       if (recipe.isCollaborative) {
         final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
         if (ownerId == currentUserId) return true;
-        return recipe.socialData?.memberPermissions?.containsKey(currentUserId) ?? false;
+        return recipe.socialData?.memberPermissions
+                ?.containsKey(currentUserId) ??
+            false;
       }
 
       return false;
@@ -189,7 +196,9 @@ class RecipePermissionHelper {
 
       // Collaborative recipes: members can rate
       if (recipe.isCollaborative) {
-        return recipe.socialData?.memberPermissions?.containsKey(currentUserId) ?? false;
+        return recipe.socialData?.memberPermissions
+                ?.containsKey(currentUserId) ??
+            false;
       }
 
       return false;
@@ -226,10 +235,12 @@ class RecipePermissionHelper {
     }
   }
 
-  bool hasMinimumPermission(Recipe recipe, String userId, ResourcePermission minimumLevel) {
+  bool hasMinimumPermission(
+      Recipe recipe, String userId, ResourcePermission minimumLevel) {
     try {
       final userPermission = getUserPermission(recipe, userId);
-      return _getPermissionRank(userPermission) >= _getPermissionRank(minimumLevel);
+      return _getPermissionRank(userPermission) >=
+          _getPermissionRank(minimumLevel);
     } catch (e) {
       AppLogger.error('❌ Failed to check minimum permission', e);
       return false;
@@ -264,32 +275,32 @@ class RecipePermissionHelper {
         case 'view':
         case 'read':
           return canViewRecipe(recipe);
-        
+
         case 'edit':
         case 'modify':
         case 'update':
           return canEditRecipe(recipe);
-        
+
         case 'delete':
         case 'remove':
           return canDeleteRecipe(recipe);
-        
+
         case 'comment':
         case 'add_comment':
           return canCommentOnRecipe(recipe);
-        
+
         case 'rate':
         case 'add_rating':
           return canRateRecipe(recipe);
-        
+
         case 'invite':
         case 'add_member':
           return canInviteMembers(recipe);
-        
+
         case 'manage_members':
         case 'remove_member':
           return canManageMembers(recipe);
-        
+
         default:
           AppLogger.warning('⚠️ Unknown legacy action: $action');
           return false;
@@ -307,27 +318,27 @@ class RecipePermissionHelper {
       case 'owner':
       case 'creator':
         return ResourcePermission.owner;
-      
+
       case 'admin':
       case 'administrator':
       case 'manager':
         return ResourcePermission.admin;
-      
+
       case 'editor':
       case 'contributor':
       case 'writer':
         return ResourcePermission.editor;
-      
+
       case 'viewer':
       case 'reader':
       case 'member':
         return ResourcePermission.viewer;
-      
+
       case 'none':
       case 'no_access':
       case '':
         return ResourcePermission.read;
-      
+
       default:
         AppLogger.warning('⚠️ Unknown legacy permission: $legacyPermission');
         return ResourcePermission.read; // Default to safe option
@@ -355,7 +366,7 @@ class RecipePermissionHelper {
   List<String> getAvailableActions(Recipe recipe, String userId) {
     try {
       final actions = <String>[];
-      
+
       if (canViewRecipe(recipe)) actions.add('view');
       if (canEditRecipe(recipe)) actions.add('edit');
       if (canDeleteRecipe(recipe)) actions.add('delete');
@@ -374,7 +385,7 @@ class RecipePermissionHelper {
   bool allowsGuestViewing(Recipe recipe) {
     try {
       if (recipe.isPersonal) return false;
-      
+
       return recipe.socialData?.allowGuestViewing ?? false;
     } catch (e) {
       AppLogger.error('❌ Failed to check guest viewing permission', e);
@@ -385,14 +396,15 @@ class RecipePermissionHelper {
   Map<String, dynamic> getPermissionSummary(Recipe recipe, String userId) {
     try {
       final permission = getUserPermission(recipe, userId);
-      
+
       return {
         'user_id': userId,
         'recipe_id': recipe.id,
         'recipe_type': recipe.isPersonal ? 'personal' : 'collaborative',
         'user_permission': permission.name,
         'is_owner': (recipe.socialData?.ownerId ?? recipe.createdBy) == userId,
-        'is_member': recipe.socialData?.memberPermissions?.containsKey(userId) ?? false,
+        'is_member':
+            recipe.socialData?.memberPermissions?.containsKey(userId) ?? false,
         'available_actions': getAvailableActions(recipe, userId),
         'permission_description': getPermissionDescription(permission),
         'allows_guest_viewing': allowsGuestViewing(recipe),

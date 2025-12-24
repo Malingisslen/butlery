@@ -28,13 +28,17 @@ class DiscoveryContentManager extends ChangeNotifier {
 
   List<Recipe> get trendingRecipes => List.unmodifiable(_trendingRecipes);
   List<SharedMenu> get trendingMenus => List.unmodifiable(_trendingMenus);
-  List<UnifiedShoppingList> get trendingShoppingLists => List.unmodifiable(_trendingShoppingLists);
+  List<UnifiedShoppingList> get trendingShoppingLists =>
+      List.unmodifiable(_trendingShoppingLists);
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
-  
+
   // Content counts
-  int get trendingContentCount => _trendingRecipes.length + _trendingMenus.length + _trendingShoppingLists.length;
+  int get trendingContentCount =>
+      _trendingRecipes.length +
+      _trendingMenus.length +
+      _trendingShoppingLists.length;
 
   // ===== CONTENT LOADING =====
 
@@ -53,7 +57,8 @@ class DiscoveryContentManager extends ChangeNotifier {
         _loadTrendingShoppingLists(),
       ]);
 
-      AppLogger.success('✅ Loaded trending content: ${_trendingRecipes.length} recipes, ${_trendingMenus.length} menus, ${_trendingShoppingLists.length} lists');
+      AppLogger.success(
+          '✅ Loaded trending content: ${_trendingRecipes.length} recipes, ${_trendingMenus.length} menus, ${_trendingShoppingLists.length} lists');
       notifyListeners();
     } catch (e) {
       _setError('Failed to load trending content: $e');
@@ -136,10 +141,12 @@ class DiscoveryContentManager extends ChangeNotifier {
           'type': 'recipe',
           'title': recipe.title,
           'description': recipe.description,
-          'imageUrl': recipe.imageUrls.isNotEmpty ? recipe.imageUrls.first : null,
+          'imageUrl':
+              recipe.imageUrls.isNotEmpty ? recipe.imageUrls.first : null,
           'ownerName': recipe.socialData?.ownerDisplayName,
           'contentId': recipe.id,
-          'relevanceScore': _calculateRelevanceScore(query, recipe.title, recipe.description),
+          'relevanceScore':
+              _calculateRelevanceScore(query, recipe.title, recipe.description),
         };
       }).toList();
     } catch (e) {
@@ -152,7 +159,8 @@ class DiscoveryContentManager extends ChangeNotifier {
   List<Map<String, dynamic>> searchMenus(String query) {
     return _trendingMenus.where((menu) {
       return menu.menuTitle.toLowerCase().contains(query.toLowerCase()) ||
-             (menu.shareMessage?.toLowerCase().contains(query.toLowerCase()) ?? false);
+          (menu.shareMessage?.toLowerCase().contains(query.toLowerCase()) ??
+              false);
     }).map((menu) {
       return {
         'id': menu.id,
@@ -162,7 +170,8 @@ class DiscoveryContentManager extends ChangeNotifier {
         'imageUrl': null,
         'ownerName': menu.sharedByDisplayName,
         'contentId': menu.id,
-        'relevanceScore': _calculateRelevanceScore(query, menu.menuTitle, menu.shareMessage ?? ''),
+        'relevanceScore': _calculateRelevanceScore(
+            query, menu.menuTitle, menu.shareMessage ?? ''),
       };
     }).toList();
   }
@@ -172,7 +181,8 @@ class DiscoveryContentManager extends ChangeNotifier {
     return _trendingShoppingLists.where((list) {
       final itemNames = list.items.map((item) => item.name).toList();
       return list.name.toLowerCase().contains(query.toLowerCase()) ||
-             itemNames.any((item) => item.toLowerCase().contains(query.toLowerCase()));
+          itemNames
+              .any((item) => item.toLowerCase().contains(query.toLowerCase()));
     }).map((list) {
       return {
         'id': list.id,
@@ -182,7 +192,8 @@ class DiscoveryContentManager extends ChangeNotifier {
         'imageUrl': null,
         'ownerName': 'Delad lista',
         'contentId': list.id,
-        'relevanceScore': _calculateRelevanceScore(query, list.name, list.description ?? ''),
+        'relevanceScore':
+            _calculateRelevanceScore(query, list.name, list.description ?? ''),
       };
     }).toList();
   }
@@ -201,7 +212,7 @@ class DiscoveryContentManager extends ChangeNotifier {
         limit: 10,
         timeWindow: const Duration(days: 14),
       );
-      
+
       _trendingRecipes.addAll(moreRecipes);
       notifyListeners();
     } catch (e) {
@@ -210,18 +221,19 @@ class DiscoveryContentManager extends ChangeNotifier {
   }
 
   /// Calculate relevance score for search results
-  double _calculateRelevanceScore(String query, String title, String description) {
+  double _calculateRelevanceScore(
+      String query, String title, String description) {
     double score = 0.0;
     final queryLower = query.toLowerCase();
-    
+
     if (title.toLowerCase().contains(queryLower)) {
       score += title.toLowerCase() == queryLower ? 10.0 : 5.0;
     }
-    
+
     if (description.toLowerCase().contains(queryLower)) {
       score += 2.0;
     }
-    
+
     return score;
   }
 

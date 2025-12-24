@@ -54,98 +54,98 @@ class FriendProfileView extends StatelessWidget {
                 padding: const EdgeInsets.all(AppDimensions.paddingL),
                 child: Column(
                   children: [
-              // Avatar och grundläggande info
-              Center(
-                child: Column(
-                  children: [
-                    UserDisplayWidgets.avatar(
-                      imageUrl: friend.avatarUrl,
-                      displayName: friend.displayName,
-                      size: ImageSize.extraLarge,
-                    ),
-                    const SizedBox(height: AppDimensions.spacingL),
-                    Text(
-                      friend.displayName,
-                      style: AppTextStyles.headlineMedium.copyWith(
-                        fontWeight: FontWeight.bold,
+                    // Avatar och grundläggande info
+                    Center(
+                      child: Column(
+                        children: [
+                          UserDisplayWidgets.avatar(
+                            imageUrl: friend.avatarUrl,
+                            displayName: friend.displayName,
+                            size: ImageSize.extraLarge,
+                          ),
+                          const SizedBox(height: AppDimensions.spacingL),
+                          Text(
+                            friend.displayName,
+                            style: AppTextStyles.headlineMedium.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
 
-              const SizedBox(height: AppDimensions.spacingL),
+                    const SizedBox(height: AppDimensions.spacingL),
 
-              // Statistik kort
-              CardContent.standard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Statistik',
-                      style: AppTextStyles.titleLarge.copyWith(
-                        fontWeight: FontWeight.bold,
+                    // Statistik kort
+                    CardContent.standard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Statistik',
+                            style: AppTextStyles.titleLarge.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: AppDimensions.spacingL),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              _buildStatItem(
+                                context,
+                                'Vänner',
+                                '${friend.friendsCount}',
+                                Icons.people,
+                              ),
+                              _buildStatItem(
+                                context,
+                                'Recept',
+                                '${friend.publicRecipeCount}',
+                                Icons.restaurant_menu,
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
+
                     const SizedBox(height: AppDimensions.spacingL),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+
+                    // Action buttons
+                    Column(
                       children: [
-                        _buildStatItem(
-                          context,
-                          'Vänner',
-                          '${friend.friendsCount}',
-                          Icons.people,
+                        Row(
+                          children: [
+                            Flexible(
+                              child: OutlinedButton.icon(
+                                onPressed: () => _startConversation(context),
+                                icon: const Icon(Icons.message),
+                                label: const Text('Skicka meddelande'),
+                              ),
+                            ),
+                            const SizedBox(width: AppDimensions.spacingL),
+                            Flexible(
+                              child: ElevatedButton.icon(
+                                onPressed: () => _showRecipeSelection(context),
+                                icon: const Icon(Icons.share),
+                                label: const Text('Dela recept'),
+                              ),
+                            ),
+                          ],
                         ),
-                        _buildStatItem(
-                          context,
-                          'Recept',
-                          '${friend.publicRecipeCount}',
-                          Icons.restaurant_menu,
+                        const SizedBox(height: AppDimensions.spacingM),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () => _showRemoveFriendDialog(context),
+                            style: ComponentThemes.deleteButtonStyle,
+                            icon: const Icon(Icons.person_remove),
+                            label: const Text('Ta bort vän'),
+                          ),
                         ),
                       ],
                     ),
                   ],
-                ),
-              ),
-
-              const SizedBox(height: AppDimensions.spacingL),
-
-              // Action buttons
-              Column(
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: OutlinedButton.icon(
-                          onPressed: () => _startConversation(context),
-                          icon: const Icon(Icons.message),
-                          label: const Text('Skicka meddelande'),
-                        ),
-                      ),
-                      const SizedBox(width: AppDimensions.spacingL),
-                      Flexible(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _showRecipeSelection(context),
-                          icon: const Icon(Icons.share),
-                          label: const Text('Dela recept'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppDimensions.spacingM),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _showRemoveFriendDialog(context),
-                      style: ComponentThemes.deleteButtonStyle,
-                      icon: const Icon(Icons.person_remove),
-                      label: const Text('Ta bort vän'),
-                    ),
-                  ),
-                ],
-              ),
-            ],
                 ),
               ),
             ),

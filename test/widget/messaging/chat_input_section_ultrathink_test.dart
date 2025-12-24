@@ -53,12 +53,11 @@ void main() {
 
     setUp(() {
       mockCallbacks = MockCallbacks();
-      
+
       // Setup default mock behavior
       when(() => mockCallbacks.onSendMessage(any(), type: any(named: 'type')))
           .thenAnswer((_) async {});
-      when(() => mockCallbacks.onAttachment(any()))
-          .thenAnswer((_) async {});
+      when(() => mockCallbacks.onAttachment(any())).thenAnswer((_) async {});
     });
 
     group('Rendering Tests', () {
@@ -78,12 +77,13 @@ void main() {
         expect(find.byType(MessageInputField), findsOneWidget);
         expect(find.byIcon(Icons.attach_file), findsOneWidget);
         expect(find.byIcon(Icons.send), findsOneWidget);
-        
+
         // Swedish hint text from production line 169
         expect(find.text('Skriv ett meddelande...'), findsOneWidget);
       });
 
-      testWidgets('shows container with proper styling', (WidgetTester tester) async {
+      testWidgets('shows container with proper styling',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test container styling from lines 122-132
         await tester.pumpWidget(
           createTestWidget(
@@ -96,10 +96,12 @@ void main() {
         );
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(ChatInputSection),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(ChatInputSection),
+                matching: find.byType(Container),
+              )
+              .first,
         );
 
         expect(container.padding, equals(const EdgeInsets.all(16)));
@@ -166,20 +168,19 @@ void main() {
 
         // Verify callback was called
         verify(() => mockCallbacks.onSendMessage(
-          'Test message',
-          type: MessageType.text,
-        )).called(1);
+              'Test message',
+              type: MessageType.text,
+            )).called(1);
 
         // Verify text was cleared
         final textField = tester.widget<TextField>(find.byType(TextField));
         expect(textField.controller?.text, equals(''));
       });
 
-      testWidgets('restores text on send error',
-          (WidgetTester tester) async {
+      testWidgets('restores text on send error', (WidgetTester tester) async {
         // ULTRATHINK: Test error handling from lines 94-104
         final errorMessage = 'Test message that fails';
-        
+
         // Setup mock to throw error
         when(() => mockCallbacks.onSendMessage(any(), type: any(named: 'type')))
             .thenThrow(Exception('Send failed'));
@@ -226,9 +227,9 @@ void main() {
 
         // Verify callback was NOT called
         verifyNever(() => mockCallbacks.onSendMessage(
-          any(),
-          type: any(named: 'type'),
-        ));
+              any(),
+              type: any(named: 'type'),
+            ));
 
         // Try whitespace only
         await tester.enterText(find.byType(TextField), '   ');
@@ -238,9 +239,9 @@ void main() {
 
         // Still should not send
         verifyNever(() => mockCallbacks.onSendMessage(
-          any(),
-          type: any(named: 'type'),
-        ));
+              any(),
+              type: any(named: 'type'),
+            ));
       });
 
       testWidgets('handles onSubmitted from text field',
@@ -263,9 +264,9 @@ void main() {
 
         // Verify message was sent
         verify(() => mockCallbacks.onSendMessage(
-          'Submitted message',
-          type: MessageType.text,
-        )).called(1);
+              'Submitted message',
+              type: MessageType.text,
+            )).called(1);
       });
     });
 
@@ -284,8 +285,9 @@ void main() {
         );
 
         // Initially no attachment panel
-        expect(find.text('Bilagor: Recept, Meny, Handlingslista, Foto'), findsNothing);
-        
+        expect(find.text('Bilagor: Recept, Meny, Handlingslista, Foto'),
+            findsNothing);
+
         // Icon should be attach_file
         expect(find.byIcon(Icons.attach_file), findsOneWidget);
 
@@ -294,8 +296,9 @@ void main() {
         await tester.pump();
 
         // Attachment panel should be visible
-        expect(find.text('Bilagor: Recept, Meny, Handlingslista, Foto'), findsOneWidget);
-        
+        expect(find.text('Bilagor: Recept, Meny, Handlingslista, Foto'),
+            findsOneWidget);
+
         // Icon should change to close
         expect(find.byIcon(Icons.close), findsOneWidget);
         expect(find.byIcon(Icons.attach_file), findsNothing);
@@ -317,14 +320,16 @@ void main() {
         // Show attachment panel
         await tester.tap(find.byIcon(Icons.attach_file));
         await tester.pump();
-        expect(find.text('Bilagor: Recept, Meny, Handlingslista, Foto'), findsOneWidget);
+        expect(find.text('Bilagor: Recept, Meny, Handlingslista, Foto'),
+            findsOneWidget);
 
         // Focus text field
         await tester.tap(find.byType(TextField));
         await tester.pump();
 
         // Attachment panel should hide
-        expect(find.text('Bilagor: Recept, Meny, Handlingslista, Foto'), findsNothing);
+        expect(find.text('Bilagor: Recept, Meny, Handlingslista, Foto'),
+            findsNothing);
         expect(find.byIcon(Icons.attach_file), findsOneWidget);
       });
 
@@ -344,7 +349,7 @@ void main() {
         // Focus text field first
         await tester.tap(find.byType(TextField));
         await tester.pump();
-        
+
         // Verify field is focused
         final fieldFinder = find.byType(TextField);
         final field = tester.widget<TextField>(fieldFinder);
@@ -360,8 +365,7 @@ void main() {
     });
 
     group('Swedish Localization Tests', () {
-      testWidgets('displays Swedish hint text',
-          (WidgetTester tester) async {
+      testWidgets('displays Swedish hint text', (WidgetTester tester) async {
         // ULTRATHINK: Test Swedish text from line 169
         await tester.pumpWidget(
           createTestWidget(
@@ -376,8 +380,7 @@ void main() {
         expect(find.text('Skriv ett meddelande...'), findsOneWidget);
       });
 
-      testWidgets('displays Swedish tooltips',
-          (WidgetTester tester) async {
+      testWidgets('displays Swedish tooltips', (WidgetTester tester) async {
         // ULTRATHINK: Test Swedish tooltips from lines 160-161, 185
         await tester.pumpWidget(
           createTestWidget(
@@ -429,7 +432,8 @@ void main() {
         await tester.pump();
 
         // Verify Swedish attachment types
-        expect(find.text('Bilagor: Recept, Meny, Handlingslista, Foto'), findsOneWidget);
+        expect(find.text('Bilagor: Recept, Meny, Handlingslista, Foto'),
+            findsOneWidget);
       });
     });
 
@@ -449,13 +453,14 @@ void main() {
 
         // Find AnimatedContainer
         expect(find.byType(AnimatedContainer), findsOneWidget);
-        
+
         final animatedContainer = tester.widget<AnimatedContainer>(
           find.byType(AnimatedContainer),
         );
-        
+
         // Verify animation duration
-        expect(animatedContainer.duration, equals(const Duration(milliseconds: 200)));
+        expect(animatedContainer.duration,
+            equals(const Duration(milliseconds: 200)));
       });
 
       testWidgets('shows correct icon colors based on state',
@@ -570,8 +575,7 @@ void main() {
     });
 
     group('Edge Cases Tests', () {
-      testWidgets('handles rapid text changes',
-          (WidgetTester tester) async {
+      testWidgets('handles rapid text changes', (WidgetTester tester) async {
         // ULTRATHINK: Test rapid state changes
         await tester.pumpWidget(
           createTestWidget(
@@ -601,7 +605,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test conversation ID from line 15
         const testConversationId = 'unique-conversation-123';
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ChatInputSection(
@@ -623,7 +627,8 @@ void main() {
           createTestWidget(
             child: ChatInputSection(
               conversationId: 'test',
-              onSendMessage: (text, {MessageType type = MessageType.text}) async {
+              onSendMessage: (text,
+                  {MessageType type = MessageType.text}) async {
                 // Empty implementation
               },
               onAttachment: (attachment) async {
@@ -666,9 +671,9 @@ void main() {
         await tester.pump();
 
         verify(() => mockCallbacks.onSendMessage(
-          multiLineText,
-          type: MessageType.text,
-        )).called(1);
+              multiLineText,
+              type: MessageType.text,
+            )).called(1);
       });
 
       testWidgets('trims whitespace before sending',
@@ -694,9 +699,9 @@ void main() {
 
         // Should send trimmed text
         verify(() => mockCallbacks.onSendMessage(
-          'Trimmed message',
-          type: MessageType.text,
-        )).called(1);
+              'Trimmed message',
+              type: MessageType.text,
+            )).called(1);
       });
     });
   });

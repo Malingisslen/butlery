@@ -22,8 +22,10 @@ class CommentCrudOperations {
   CommentCrudOperations({
     CommentsRepository? commentsRepository,
     AnalyticsService? analyticsService,
-  }) : _commentsRepository = commentsRepository ?? ServiceLocator.get<CommentsRepository>(),
-       _analyticsService = analyticsService ?? ServiceLocator.get<AnalyticsService>();
+  })  : _commentsRepository =
+            commentsRepository ?? ServiceLocator.get<CommentsRepository>(),
+        _analyticsService =
+            analyticsService ?? ServiceLocator.get<AnalyticsService>();
 
   // ===== COMMENT CREATION =====
 
@@ -53,7 +55,8 @@ class CommentCrudOperations {
       }
 
       if (!canCommentValidator(recipe)) {
-        AppLogger.error('❌ User does not have permission to comment on this recipe');
+        AppLogger.error(
+            '❌ User does not have permission to comment on this recipe');
         return null;
       }
 
@@ -102,9 +105,10 @@ class CommentCrudOperations {
       // Apply limit and before filter manually for now
       var filteredComments = comments;
       if (before != null) {
-        filteredComments = comments.where((c) => c.createdAt.isBefore(before)).toList();
+        filteredComments =
+            comments.where((c) => c.createdAt.isBefore(before)).toList();
       }
-      
+
       if (filteredComments.length > limit) {
         filteredComments = filteredComments.take(limit).toList();
       }
@@ -123,8 +127,7 @@ class CommentCrudOperations {
   }) {
     AppLogger.debug('💬 Creating comment stream for recipe $recipeId');
 
-    return _commentsRepository.getCommentsStream(recipeId)
-        .map((comments) {
+    return _commentsRepository.getCommentsStream(recipeId).map((comments) {
       try {
         // Sort with replies
         final sortedComments = List<RecipeComment>.from(comments);
@@ -194,7 +197,7 @@ class CommentCrudOperations {
     if (a.parentCommentId == null && b.parentCommentId == null) {
       return a.createdAt.compareTo(b.createdAt);
     }
-    
+
     // If one is a reply and one is not, prioritize the parent
     if (a.parentCommentId == null && b.parentCommentId != null) {
       return -1;
@@ -202,7 +205,7 @@ class CommentCrudOperations {
     if (a.parentCommentId != null && b.parentCommentId == null) {
       return 1;
     }
-    
+
     // If both are replies, sort by date
     return a.createdAt.compareTo(b.createdAt);
   }
@@ -215,7 +218,8 @@ class CommentCrudOperations {
       // Use the repository's base getById method if it exists
       // For now, we'll need to get all comments and filter
       // This should be improved in the repository implementation
-      throw UnimplementedError('Direct comment lookup by ID not yet implemented');
+      throw UnimplementedError(
+          'Direct comment lookup by ID not yet implemented');
     } catch (e) {
       AppLogger.error('❌ Failed to get comment by ID', e);
       return null;

@@ -62,13 +62,13 @@ void main() {
     setUpAll(() async {
       // Register fallback values for mocktail
       registerFallbackValue(test_factory.RecipeFactory.build());
-      
+
       // Initialize comprehensive test environment
       await ViewTestHelpers.setupViewTestEnvironment();
-      
+
       // Configure for view testing scenario
       TestServiceLocator.configureForScenario(TestScenario.viewTesting);
-      
+
       // ✅ SERVICELOCATOR BRIDGE: Initialize production ServiceLocator with test container
       // This proven pattern from MinaReceptView and SkrivSjalvReceptView enables FranSocialaMedierView
       // to access our test mocks through ServiceLocator.get<>() calls in provider creation
@@ -86,13 +86,13 @@ void main() {
     late Recipe testRecipe;
 
     // ==================== HELPER METHODS ====================
-    
+
     /// Configure method stubs for all mocks (called once)
     void configureMockStubs() {
       // Simple implementations that use noSuchMethod - no complex mocking needed
       // Test implementations handle their own state management
     }
-    
+
     /// Set default state values for all mocks (called in each setUp)
     void setDefaultMockStates() {
       // Configure TextImportViewModel test state
@@ -107,7 +107,7 @@ void main() {
         );
       }
     }
-    
+
     /// Pump FranSocialaMedierView with ServiceLocator-based setup
     /// FranSocialaMedierView creates TextImportViewModel with ServiceLocator.get<>() internally
     Future<void> pumpFranSocialaMedierView(
@@ -123,10 +123,11 @@ void main() {
           ),
         ),
       );
-      
+
       // Wait for widget initialization and any post-frame callbacks
       await tester.pump(const Duration(milliseconds: 100)); // Initial frame
-      await tester.pump(const Duration(milliseconds: 200)); // PostFrameCallback execution
+      await tester.pump(
+          const Duration(milliseconds: 200)); // PostFrameCallback execution
       await tester.pump(); // Additional pump for widget tree completion
     }
 
@@ -143,10 +144,11 @@ void main() {
 
       // Create our test instances
       mockTextImportViewModel = TestTextImportViewModel();
-      
+
       // Replace TestServiceLocator registrations with our specific instances
       // This ensures ServiceLocator.get<>() returns our configured test mocks
-      TestServiceLocator.registerFactory<TextImportViewModel>(() => mockTextImportViewModel);
+      TestServiceLocator.registerFactory<TextImportViewModel>(
+          () => mockTextImportViewModel);
 
       // Configure method stubs and set default states
       configureMockStubs();
@@ -162,7 +164,8 @@ void main() {
     // ==================== SERVICELOCATOR ARCHITECTURE TESTS ====================
 
     group('ServiceLocator Provider Architecture Tests', () {
-      testWidgets('should initialize TextImportViewModel with ServiceLocator dependencies',
+      testWidgets(
+          'should initialize TextImportViewModel with ServiceLocator dependencies',
           (tester) async {
         // Act: Create widget with ServiceLocator-based providers
         await pumpFranSocialaMedierView(tester);
@@ -170,9 +173,10 @@ void main() {
 
         // Assert: Verify FranSocialaMedierView renders without provider errors
         expect(find.byType(FranSocialaMedierView), findsOneWidget);
-        
+
         // Verify that our test mock is accessible through ServiceLocator
-        expect(production.ServiceLocator.get<TextImportViewModel>(), isA<TestTextImportViewModel>());
+        expect(production.ServiceLocator.get<TextImportViewModel>(),
+            isA<TestTextImportViewModel>());
       });
 
       testWidgets('should handle provider initialization lifecycle correctly',
@@ -181,7 +185,8 @@ void main() {
         await pumpFranSocialaMedierView(tester);
 
         // Assert: Verify ChangeNotifierProvider is created and accessible
-        expect(find.byType(ChangeNotifierProvider<TextImportViewModel>), findsOneWidget);
+        expect(find.byType(ChangeNotifierProvider<TextImportViewModel>),
+            findsOneWidget);
       });
     });
 
@@ -211,12 +216,13 @@ void main() {
 
         // Assert: Verify Swedish instructional text
         ViewTestHelpers.expectSwedishText(tester, 'Tips för bästa resultat');
-        ViewTestHelpers.expectSwedishText(tester, 'Klistra in hela receptet inklusive ingredienser');
-        ViewTestHelpers.expectSwedishText(tester, 'Se till att ingredienser kommer före instruktioner');
+        ViewTestHelpers.expectSwedishText(
+            tester, 'Klistra in hela receptet inklusive ingredienser');
+        ViewTestHelpers.expectSwedishText(
+            tester, 'Se till att ingredienser kommer före instruktioner');
       });
 
-      testWidgets('should show source URL when provided',
-          (tester) async {
+      testWidgets('should show source URL when provided', (tester) async {
         // Arrange: Create widget with source URL
         await pumpFranSocialaMedierView(
           tester,
@@ -249,14 +255,17 @@ void main() {
 
         // Act: Enter text in the text field
         final textField = find.byType(TextFormField);
-        await tester.enterText(textField, 'Köttfärssås\n500g köttfärs\n1 gul lök');
+        await tester.enterText(
+            textField, 'Köttfärssås\n500g köttfärs\n1 gul lök');
         await tester.pump();
 
         // Assert: Text should be entered correctly
-        expect(find.text('Köttfärssås\n500g köttfärs\n1 gul lök'), findsOneWidget);
+        expect(
+            find.text('Köttfärssås\n500g köttfärs\n1 gul lök'), findsOneWidget);
       });
 
-      testWidgets('should show clear button when text is entered', (tester) async {
+      testWidgets('should show clear button when text is entered',
+          (tester) async {
         // Arrange: Set up ViewModel with text
         if (mockTextImportViewModel is TestTextImportViewModel) {
           (mockTextImportViewModel as TestTextImportViewModel).configureState(
@@ -297,7 +306,8 @@ void main() {
         await ViewTestHelpers.waitForViewInitialization(tester);
 
         // Assert: Text field should be disabled
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField =
+            tester.widget<TextFormField>(find.byType(TextFormField));
         expect(textField.enabled, isFalse);
       });
     });
@@ -317,7 +327,8 @@ void main() {
         expect(find.textContaining('Pannkakor'), findsOneWidget);
       });
 
-      testWidgets('should set source URL when provided with initial text', (tester) async {
+      testWidgets('should set source URL when provided with initial text',
+          (tester) async {
         // Act: Create widget with both initial text and source URL
         await pumpFranSocialaMedierView(
           tester,
@@ -330,7 +341,8 @@ void main() {
         expect(find.byType(SourceUrlDisplay), findsOneWidget);
       });
 
-      testWidgets('should trigger automatic parsing for initial text', (tester) async {
+      testWidgets('should trigger automatic parsing for initial text',
+          (tester) async {
         // Arrange: Set up successful parsing scenario
         if (mockTextImportViewModel is TestTextImportViewModel) {
           (mockTextImportViewModel as TestTextImportViewModel).configureState(
@@ -359,7 +371,8 @@ void main() {
     // ==================== PARSING AND NAVIGATION TESTS ====================
 
     group('Parsing and Navigation Tests', () {
-      testWidgets('should enable parse button when text is ready', (tester) async {
+      testWidgets('should enable parse button when text is ready',
+          (tester) async {
         // Arrange: Set up ViewModel with parseable text
         if (mockTextImportViewModel is TestTextImportViewModel) {
           (mockTextImportViewModel as TestTextImportViewModel).configureState(
@@ -375,7 +388,7 @@ void main() {
         // Assert: Parse button should be enabled
         final parseButton = find.text('Förhandsgranska och redigera');
         expect(parseButton, findsOneWidget);
-        
+
         final buttonWidget = tester.widget<ElevatedButton>(
           find.ancestor(
             of: parseButton,
@@ -385,7 +398,8 @@ void main() {
         expect(buttonWidget.onPressed, isNotNull);
       });
 
-      testWidgets('should disable parse button when text is not ready', (tester) async {
+      testWidgets('should disable parse button when text is not ready',
+          (tester) async {
         // Arrange: Set up ViewModel without parseable text
         if (mockTextImportViewModel is TestTextImportViewModel) {
           (mockTextImportViewModel as TestTextImportViewModel).configureState(
@@ -401,7 +415,7 @@ void main() {
         // Assert: Parse button should be disabled
         final parseButton = find.text('Förhandsgranska och redigera');
         expect(parseButton, findsOneWidget);
-        
+
         final buttonWidget = tester.widget<ElevatedButton>(
           find.ancestor(
             of: parseButton,
@@ -452,7 +466,8 @@ void main() {
         expect(find.byType(FranSocialaMedierView), findsOneWidget);
       });
 
-      testWidgets('should navigate to recipe creation on successful parsing', (tester) async {
+      testWidgets('should navigate to recipe creation on successful parsing',
+          (tester) async {
         // Note: In production, successful parsing would navigate to SkrivSjalvReceptView
         // This test verifies the workflow can handle navigation scenarios
         await pumpFranSocialaMedierView(tester);
@@ -466,7 +481,8 @@ void main() {
     // ==================== ERROR HANDLING TESTS ====================
 
     group('Error Handling Tests', () {
-      testWidgets('should display error state when parsing fails', (tester) async {
+      testWidgets('should display error state when parsing fails',
+          (tester) async {
         // Arrange: Set up ViewModel with error state
         if (mockTextImportViewModel is TestTextImportViewModel) {
           (mockTextImportViewModel as TestTextImportViewModel).configureState(
@@ -509,7 +525,8 @@ void main() {
         expect(find.byType(FranSocialaMedierView), findsOneWidget);
       });
 
-      testWidgets('should not show error when there is no error', (tester) async {
+      testWidgets('should not show error when there is no error',
+          (tester) async {
         // Arrange: Set up ViewModel without errors
         if (mockTextImportViewModel is TestTextImportViewModel) {
           (mockTextImportViewModel as TestTextImportViewModel).configureState(
@@ -537,13 +554,15 @@ void main() {
 
         // Assert: Text field should support multiline input and be properly configured
         expect(find.byType(TextFormField), findsOneWidget);
-        
+
         // Verify text field is accessible and properly configured for multiline input
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField =
+            tester.widget<TextFormField>(find.byType(TextFormField));
         expect(textField, isNotNull);
       });
 
-      testWidgets('should have proper button labeling for accessibility', (tester) async {
+      testWidgets('should have proper button labeling for accessibility',
+          (tester) async {
         // Act
         await pumpFranSocialaMedierView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -553,13 +572,15 @@ void main() {
         expect(find.byIcon(Icons.preview), findsOneWidget);
       });
 
-      testWidgets('should handle keyboard navigation correctly', (tester) async {
+      testWidgets('should handle keyboard navigation correctly',
+          (tester) async {
         // Act
         await pumpFranSocialaMedierView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
 
         // Assert: Text field should be accessible for keyboard navigation
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField =
+            tester.widget<TextFormField>(find.byType(TextFormField));
         expect(textField, isNotNull); // Text field exists and is accessible
       });
     });
@@ -570,7 +591,7 @@ void main() {
       testWidgets('should handle large text input efficiently', (tester) async {
         // Arrange: Create large text input
         final largeText = List.generate(100, (i) => 'Ingrediens $i').join('\n');
-        
+
         await pumpFranSocialaMedierView(
           tester,
           initialText: largeText,
@@ -593,7 +614,8 @@ void main() {
         expect(find.byType(FranSocialaMedierView), findsOneWidget);
       });
 
-      testWidgets('should dispose resources properly on widget disposal', (tester) async {
+      testWidgets('should dispose resources properly on widget disposal',
+          (tester) async {
         // Arrange
         await pumpFranSocialaMedierView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -605,7 +627,8 @@ void main() {
         // The actual disposal is handled by the Provider system
       });
 
-      testWidgets('should handle rapid state changes efficiently', (tester) async {
+      testWidgets('should handle rapid state changes efficiently',
+          (tester) async {
         // Arrange
         await pumpFranSocialaMedierView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -630,7 +653,7 @@ void main() {
 class TestTextImportViewModel implements TextImportViewModel {
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
-  
+
   String _inputText = '';
   bool _isParsing = false;
   bool _hasError = false;
@@ -642,22 +665,22 @@ class TestTextImportViewModel implements TextImportViewModel {
 
   @override
   String get inputText => _inputText;
-  
+
   @override
   bool get isParsing => _isParsing;
-  
+
   @override
   bool get hasError => _hasError;
-  
+
   @override
   String? get error => _errorMessage;
-  
+
   @override
   bool get canParse => _canParse;
-  
+
   @override
   Recipe? get parsedRecipe => _parsedRecipe;
-  
+
   @override
   String? get sourceUrl => _sourceUrl;
 
@@ -700,12 +723,12 @@ class TestTextImportViewModel implements TextImportViewModel {
   @override
   Future<bool> parseText() async {
     _isParsing = true;
-    
+
     // Simulate parsing delay
     await Future.delayed(const Duration(milliseconds: 100));
-    
+
     _isParsing = false;
-    
+
     if (_parseResult) {
       _hasError = false;
       _errorMessage = null;

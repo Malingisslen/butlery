@@ -8,7 +8,8 @@ import 'package:butlery/core/utils/logger.dart';
 class ConversationQueryModule {
   final FirebaseFirestore firestore;
   final String collectionName;
-  final Conversation Function(DocumentSnapshot<Map<String, dynamic>>) fromFirestore;
+  final Conversation Function(DocumentSnapshot<Map<String, dynamic>>)
+      fromFirestore;
   final void Function(String) startAutoHealer;
 
   ConversationQueryModule({
@@ -22,21 +23,22 @@ class ConversationQueryModule {
   /// Auto-starts healers for all conversations.
   Stream<List<Conversation>> getUserConversations(String userId) {
     try {
-      return firestore.collection(collectionName)
+      return firestore
+          .collection(collectionName)
           .where('participantIds', arrayContains: userId)
           .orderBy('updatedAt', descending: true)
           .limit(50) // Limit to 50 most recent conversations
           .snapshots()
           .map((snapshot) {
-            final conversations = snapshot.docs.map(fromFirestore).toList();
+        final conversations = snapshot.docs.map(fromFirestore).toList();
 
-            // Auto-start healers for all conversations
-            for (final conversation in conversations) {
-              startAutoHealer(conversation.id);
-            }
+        // Auto-start healers for all conversations
+        for (final conversation in conversations) {
+          startAutoHealer(conversation.id);
+        }
 
-            return conversations;
-          });
+        return conversations;
+      });
     } catch (e) {
       AppLogger.error('Failed to get user conversations for $userId', e);
       return const Stream.empty();
@@ -61,7 +63,8 @@ class ConversationQueryModule {
       final conversation = await readFn(conversationId);
       return conversation?.participantIds ?? [];
     } catch (e) {
-      AppLogger.error('Failed to get conversation participants: $conversationId', e);
+      AppLogger.error(
+          'Failed to get conversation participants: $conversationId', e);
       return [];
     }
   }
@@ -73,7 +76,8 @@ class ConversationQueryModule {
   /// for server-side filtering with `.count()` aggregation.
   Future<int> getUnreadMessageCount(String userId) async {
     try {
-      final conversations = await firestore.collection(collectionName)
+      final conversations = await firestore
+          .collection(collectionName)
           .where('participantIds', arrayContains: userId)
           .orderBy('updatedAt', descending: true) // Most recent first
           .limit(100) // Limit to 100 most recent conversations
@@ -109,7 +113,8 @@ class ConversationQueryModule {
   /// ```
   Future<int> getUnreadConversationsCount(String userId) async {
     try {
-      final conversations = await firestore.collection(collectionName)
+      final conversations = await firestore
+          .collection(collectionName)
           .where('participantIds', arrayContains: userId)
           .orderBy('updatedAt', descending: true) // Most recent first
           .limit(500) // Limit to prevent unbounded fetches (#040)
@@ -120,7 +125,8 @@ class ConversationQueryModule {
           .where((conversation) => conversation.hasUnreadMessages(userId))
           .length;
     } catch (e) {
-      AppLogger.error('Failed to get unread conversations count for $userId', e);
+      AppLogger.error(
+          'Failed to get unread conversations count for $userId', e);
       return 0;
     }
   }

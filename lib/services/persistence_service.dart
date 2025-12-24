@@ -34,7 +34,7 @@ import 'package:butlery/core/base/base_service.dart';
 /// **Storage Architecture:**
 /// Implements a key-based storage system with:
 /// - Structured key naming conventions for organized data access
-/// - JSON serialization for complex data structure persistence  
+/// - JSON serialization for complex data structure persistence
 /// - Atomic operations ensuring data consistency during storage operations
 /// - Comprehensive error handling with graceful degradation strategies
 /// **Data Categories:**
@@ -62,10 +62,10 @@ class PersistenceService extends BaseService {
 
   /// Storage key for recipe collection data in SharedPreferences.
   static const String _recipesKey = 'butlery_recipes';
-  
+
   /// Storage key for current weekly menu planning data.
   static const String _currentMenuKey = 'butlery_current_menu';
-  
+
   /// Storage key for last update timestamp tracking.
   static const String _lastUpdatedKey = 'butlery_last_updated';
 
@@ -154,10 +154,9 @@ class PersistenceService extends BaseService {
       final List<dynamic> recipesJson = jsonDecode(recipesString);
 
       // Konvertera varje Map tillbaka till Recipe-objekt
-      final List<Recipe> recipes =
-          recipesJson
-              .map((json) => Recipe.fromJson(json as Map<String, dynamic>))
-              .toList();
+      final List<Recipe> recipes = recipesJson
+          .map((json) => Recipe.fromJson(json as Map<String, dynamic>))
+          .toList();
 
       AppLogger.success(
         'Laddade ${recipes.length} recept från lokal lagring',

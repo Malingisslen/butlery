@@ -1,5 +1,5 @@
 /// Base class for integration tests with full app initialization
-/// 
+///
 /// Extends BaseTest with integration test specific functionality including
 /// real app bootstrapping, feature flow testing, and end-to-end utilities.
 library;
@@ -10,7 +10,7 @@ import 'package:integration_test/integration_test.dart';
 import 'base_test.dart';
 
 /// Base class for all integration tests
-/// 
+///
 /// Provides:
 /// - Full app initialization
 /// - Feature flow helpers
@@ -19,7 +19,7 @@ import 'base_test.dart';
 abstract class BaseIntegrationTest extends BaseTest {
   /// Whether integration test binding is initialized
   static bool _bindingInitialized = false;
-  
+
   /// Initialize integration test environment
   static void initializeBinding() {
     if (!_bindingInitialized) {
@@ -27,18 +27,18 @@ abstract class BaseIntegrationTest extends BaseTest {
       _bindingInitialized = true;
     }
   }
-  
+
   /// Enhanced setup for integration tests
   static Future<void> setupIntegration() async {
     initializeBinding();
     await BaseTest.setup();
   }
-  
+
   /// Enhanced teardown for integration tests
   static Future<void> teardownIntegration() async {
     await BaseTest.teardown();
   }
-  
+
   /// Run an integration test with automatic setup
   static void testIntegration(
     String description,
@@ -51,7 +51,7 @@ abstract class BaseIntegrationTest extends BaseTest {
       description,
       (WidgetTester tester) async {
         await setupIntegration();
-        
+
         try {
           await body(tester);
         } finally {
@@ -63,7 +63,7 @@ abstract class BaseIntegrationTest extends BaseTest {
       tags: tags,
     );
   }
-  
+
   /// Run an integration test group with automatic setup
   static void groupIntegration(
     String description,
@@ -74,15 +74,15 @@ abstract class BaseIntegrationTest extends BaseTest {
       setUpAll(() async {
         await setupIntegration();
       });
-      
+
       tearDownAll(() async {
         await BaseTest.reset();
       });
-      
+
       body();
     }, skip: skip);
   }
-  
+
   /// Run a complete user journey test
   static void testUserJourney(
     String journeyName,
@@ -94,11 +94,12 @@ abstract class BaseIntegrationTest extends BaseTest {
       journeyName,
       (tester) async {
         int successfulSteps = 0;
-        
+
         for (var i = 0; i < steps.length; i++) {
           final step = steps[i];
-          debugPrint('Executing step ${i + 1}/${steps.length}: ${step.description}');
-          
+          debugPrint(
+              'Executing step ${i + 1}/${steps.length}: ${step.description}');
+
           try {
             await step.execute(tester);
             successfulSteps++;
@@ -107,10 +108,10 @@ abstract class BaseIntegrationTest extends BaseTest {
             rethrow;
           }
         }
-        
+
         // Verify journey completion
         expect(successfulSteps, equals(steps.length),
-          reason: 'All journey steps should complete successfully');
+            reason: 'All journey steps should complete successfully');
       },
       skip: skip,
       timeout: timeout,
@@ -119,7 +120,7 @@ abstract class BaseIntegrationTest extends BaseTest {
 }
 
 /// Helper utilities for integration tests
-/// 
+///
 /// These utilities can be used directly in tests following the AAA pattern:
 /// - Arrange: Set up test data and mocks
 /// - Act: Execute the test action
@@ -134,38 +135,38 @@ class IntegrationTestHelpers {
     // Find and fill email field
     final emailField = find.byKey(const Key('email_field'));
     await tester.enterText(emailField, email);
-    
+
     // Find and fill password field
     final passwordField = find.byKey(const Key('password_field'));
     await tester.enterText(passwordField, password);
-    
+
     // Tap login button
     final loginButton = find.byKey(const Key('login_button'));
     await tester.tap(loginButton);
-    
+
     // Wait for navigation
     await tester.pumpAndSettle(const Duration(seconds: 2));
   }
-  
+
   /// Verify user is logged in
   static Future<bool> isLoggedIn(WidgetTester tester) async {
     // Check for presence of logout button or user avatar
     return find.byKey(const Key('user_avatar')).evaluate().isNotEmpty;
   }
-  
+
   /// Navigate to a screen
   static Future<void> navigateTo(WidgetTester tester, String routeName) async {
     await tester.pumpAndSettle();
     // This would typically use Navigator.pushNamed in a real app
     debugPrint('Navigating to: $routeName');
   }
-  
+
   /// Go back
   static Future<void> goBack(WidgetTester tester) async {
     await tester.pageBack();
     await tester.pumpAndSettle();
   }
-  
+
   /// Wait for a condition with timeout
   static Future<void> waitFor(
     WidgetTester tester,
@@ -174,7 +175,7 @@ class IntegrationTestHelpers {
     String? timeoutMessage,
   }) async {
     final end = DateTime.now().add(timeout);
-    
+
     while (!condition()) {
       if (DateTime.now().isAfter(end)) {
         throw TestFailure(timeoutMessage ?? 'Condition not met within timeout');
@@ -182,7 +183,7 @@ class IntegrationTestHelpers {
       await tester.pump(const Duration(milliseconds: 100));
     }
   }
-  
+
   /// Take a screenshot (for debugging)
   static Future<void> takeScreenshot(String name) async {
     // In a real implementation, this would save a screenshot
@@ -194,7 +195,7 @@ class IntegrationTestHelpers {
 class JourneyStep {
   final String description;
   final Future<void> Function(WidgetTester tester) execute;
-  
+
   const JourneyStep({
     required this.description,
     required this.execute,
@@ -206,7 +207,7 @@ class StepResult {
   final String description;
   final bool success;
   final String? error;
-  
+
   const StepResult(this.description, this.success, this.error);
 }
 
@@ -222,20 +223,20 @@ class CommonJourneySteps {
       execute: (tester) async {
         // Arrange
         // (test data already provided as parameters)
-        
+
         // Act
         await IntegrationTestHelpers.performLogin(
           tester,
           email: email,
           password: password,
         );
-        
+
         // Assert
         expect(await IntegrationTestHelpers.isLoggedIn(tester), isTrue);
       },
     );
   }
-  
+
   /// Navigate to screen step
   static JourneyStep navigateTo(String screenName, String routeName) {
     return JourneyStep(
@@ -246,7 +247,7 @@ class CommonJourneySteps {
       },
     );
   }
-  
+
   /// Tap button step
   static JourneyStep tapButton(String buttonText) {
     return JourneyStep(
@@ -258,7 +259,7 @@ class CommonJourneySteps {
       },
     );
   }
-  
+
   /// Enter text step
   static JourneyStep enterText(String fieldKey, String text) {
     return JourneyStep(
@@ -270,7 +271,7 @@ class CommonJourneySteps {
       },
     );
   }
-  
+
   /// Verify text present step
   static JourneyStep verifyText(String text) {
     return JourneyStep(

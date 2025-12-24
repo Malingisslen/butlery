@@ -34,10 +34,10 @@ class DraftMetadata {
 
   factory DraftMetadata.fromJson(Map<String, dynamic> json) => DraftMetadata(
         draftId: (json['draftId'] as String?).orEmpty(),
-        createdAt: DateTime.parse(
-            (json['createdAt'] as String?).orDefault(DateTime.now().toIso8601String())),
-        lastModifiedAt: DateTime.parse(
-            (json['lastModifiedAt'] as String?).orDefault(DateTime.now().toIso8601String())),
+        createdAt: DateTime.parse((json['createdAt'] as String?)
+            .orDefault(DateTime.now().toIso8601String())),
+        lastModifiedAt: DateTime.parse((json['lastModifiedAt'] as String?)
+            .orDefault(DateTime.now().toIso8601String())),
         title: (json['title'] as String?).orEmpty(),
         fieldCount: (json['fieldCount'] as int?).orZero(),
       );
@@ -86,9 +86,10 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
   Future<void> initialize({bool isTemplate = false}) async {
     _isTemplate = isTemplate;
     await _cleanupOldDrafts();
-    
+
     if (isTemplate) {
-      AppLogger.info('🔄 AUTO_SAVE: Manager initialized for TEMPLATE (auto-save disabled until edit)');
+      AppLogger.info(
+          '🔄 AUTO_SAVE: Manager initialized for TEMPLATE (auto-save disabled until edit)');
     } else {
       AppLogger.info('🔄 AUTO_SAVE: Manager initialized for regular form');
     }
@@ -102,7 +103,8 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
 
     // RACE CONDITION GUARD: Skip if already auto-saving to prevent conflicts
     if (_isAutoSaving && skipIfBusy) {
-      AppLogger.debug('🔄 AUTO_SAVE: Skipping schedule - auto-save already in progress');
+      AppLogger.debug(
+          '🔄 AUTO_SAVE: Skipping schedule - auto-save already in progress');
       return;
     }
 
@@ -174,48 +176,54 @@ class RecipeFormAutoSaveManager extends ChangeNotifier {
   /// Check if content is significant enough for auto-save
   bool _shouldAutoSave(Map<String, dynamic> formData) {
     final filledFields = _countFilledFields(formData);
-    
+
     // For templates, only auto-save after significant editing
     if (_isTemplate) {
       // Promote template to regular form after substantial changes
       if (_hasSignificantTemplateChanges(formData)) {
         _isTemplate = false; // Convert template to regular form
-        AppLogger.info('🔄 AUTO_SAVE: Template promoted to regular form after significant changes');
+        AppLogger.info(
+            '🔄 AUTO_SAVE: Template promoted to regular form after significant changes');
       } else {
-        AppLogger.debug('🔄 AUTO_SAVE: Skipping auto-save for template (insufficient changes)');
+        AppLogger.debug(
+            '🔄 AUTO_SAVE: Skipping auto-save for template (insufficient changes)');
         return false; // Don't auto-save templates until they're significantly modified
       }
     }
-    
+
     return filledFields >= _minFieldsForAutoSave;
   }
 
   /// Check if template has been significantly modified to warrant auto-save
   bool _hasSignificantTemplateChanges(Map<String, dynamic> formData) {
     int changeScore = 0;
-    
+
     // Major edits that indicate user is actively customizing the template
     final title = (formData['title'] as String?).orEmpty();
     final description = (formData['description'] as String?).orEmpty();
     final ingredients = (formData['ingredients'] as List<String>?).orEmpty();
     final instructions = (formData['instructions'] as List<String>?).orEmpty();
-    
+
     // Title or description editing (indicates intentional customization)
     if (title.trim().isNotEmpty) changeScore += 2;
     if (description.trim().isNotEmpty) changeScore += 2;
-    
+
     // Adding new ingredients/instructions (beyond template)
     changeScore += ingredients.where((i) => i.trim().isNotEmpty).length;
     changeScore += instructions.where((i) => i.trim().isNotEmpty).length;
-    
+
     // Images indicate serious editing intent
     final imageUrls = (formData['imageUrls'] as List<String>?).orEmpty();
     changeScore += imageUrls.length * 3;
-    
+
     // Portion/time changes indicate recipe customization
-    if (formData['portions'] != null && formData['portions'] > 0) changeScore += 1;
-    if (formData['timeMinutes'] != null && formData['timeMinutes'] > 0) changeScore += 1;
-    
+    if (formData['portions'] != null && formData['portions'] > 0) {
+      changeScore += 1;
+    }
+    if (formData['timeMinutes'] != null && formData['timeMinutes'] > 0) {
+      changeScore += 1;
+    }
+
     // Need at least 5 points of changes to convert template to auto-saveable form
     const int significantChangeThreshold = 5;
     return changeScore >= significantChangeThreshold;

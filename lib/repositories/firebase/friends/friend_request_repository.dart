@@ -27,6 +27,7 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+
 /// Firebase implementation for friend request management with comprehensive lifecycle and security controls.
 /// This repository provides complete friend request functionality using Firebase Firestore with
 /// sophisticated request lifecycle management, security validation, and real-time updates. It handles
@@ -84,7 +85,8 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
       FriendRequest.fromMap(doc.id, doc.data() ?? {});
 
   @override
-  Map<String, dynamic> toFirestore(FriendRequest entity) => entity.toFirestore();
+  Map<String, dynamic> toFirestore(FriendRequest entity) =>
+      entity.toFirestore();
 
   @override
   String getId(FriendRequest entity) => entity.id;
@@ -92,26 +94,30 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
   // ===== PERMISSION VALIDATION IMPLEMENTATION =====
 
   @override
-  Future<bool> validateCreatePermission(String userId, FriendRequest entity) async {
+  Future<bool> validateCreatePermission(
+      String userId, FriendRequest entity) async {
     // Users can only create friend requests from their own account
     return userId == entity.fromUserId;
   }
 
   @override
-  Future<bool> validateReadPermission(String userId, String resourceId, FriendRequest? entity) async {
+  Future<bool> validateReadPermission(
+      String userId, String resourceId, FriendRequest? entity) async {
     if (entity == null) return false;
     // Users can read requests they sent or received
     return userId == entity.fromUserId || userId == entity.toUserId;
   }
 
   @override
-  Future<bool> validateUpdatePermission(String userId, String resourceId, FriendRequest entity) async {
+  Future<bool> validateUpdatePermission(
+      String userId, String resourceId, FriendRequest entity) async {
     // Sender can cancel, recipient can accept/reject
     return userId == entity.fromUserId || userId == entity.toUserId;
   }
 
   @override
-  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+  Future<bool> validateDeletePermission(
+      String userId, String resourceId) async {
     // Users can delete requests they sent or received
     try {
       final request = await fetchRequest(resourceId);
@@ -133,14 +139,14 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
       targetUserId: request.fromUserId,
       operation: 'send friend request',
     );
-    
+
     // Validate required fields
     validateRequiredFields(
       data: request.toFirestore(),
       requiredFields: ['fromUserId', 'toUserId', 'status', 'sentAt'],
       resourceType: 'friend request',
     );
-    
+
     // Ensure status is pending for new requests
     if (request.status != FriendRequestStatus.pending) {
       throw SecurityViolationException(
@@ -148,9 +154,9 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
         details: 'Status was: ${request.status}',
       );
     }
-    
+
     await _friendRequestsRef.doc(request.id).set(request.toFirestore());
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'friend_request',
@@ -164,17 +170,17 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
   Future<bool> sendFriendRequest(String toUserId, {String? message}) async {
     try {
       final fromId = requireCurrentUserId();
-      
+
       // Can't send request to yourself
       if (fromId == toUserId) {
         throw SecurityViolationException(
           'Cannot send friend request to yourself',
         );
       }
-      
+
       final exists = await requestExists(fromId, toUserId);
       if (exists) return false;
-      
+
       final request = FriendRequest.create(
         fromUserId: fromId,
         toUserId: toUserId,
@@ -190,7 +196,7 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
   /// Update an existing friend request document.
   Future<void> updateRequest(FriendRequest request) async {
     final currentUser = requireCurrentUserId();
-    
+
     // Check permissions based on the status change
     if (request.status == FriendRequestStatus.cancelled) {
       // Only the sender can cancel their own request
@@ -202,8 +208,8 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
           userId: currentUser,
         );
       }
-    } else if (request.status == FriendRequestStatus.accepted || 
-               request.status == FriendRequestStatus.rejected) {
+    } else if (request.status == FriendRequestStatus.accepted ||
+        request.status == FriendRequestStatus.rejected) {
       // Only the recipient can accept/reject
       if (currentUser != request.toUserId) {
         throw PermissionDeniedException(
@@ -219,9 +225,9 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
         details: 'Status was: ${request.status}',
       );
     }
-    
+
     await _friendRequestsRef.doc(request.id).update(request.toFirestore());
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'friend_request',
@@ -241,7 +247,7 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
         resourceId: requestId,
       );
     }
-    
+
     // Validate current user is the recipient
     final currentUser = requireCurrentUserId();
     if (currentUser != req.toUserId) {
@@ -254,7 +260,7 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
       );
       return false;
     }
-    
+
     await updateRequest(req.accept());
     return true;
   }
@@ -301,7 +307,9 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
           .where('toUserId', isEqualTo: uid)
           .where('status', isEqualTo: FriendRequestStatus.pending.name)
           .get();
-      return snap.docs.map((doc) => FriendRequest.fromMap(doc.id, doc.data())).toList();
+      return snap.docs
+          .map((doc) => FriendRequest.fromMap(doc.id, doc.data()))
+          .toList();
     } catch (e) {
       return [];
     }
@@ -315,7 +323,9 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
           .where('fromUserId', isEqualTo: uid)
           .where('status', isEqualTo: FriendRequestStatus.pending.name)
           .get();
-      return snap.docs.map((doc) => FriendRequest.fromMap(doc.id, doc.data())).toList();
+      return snap.docs
+          .map((doc) => FriendRequest.fromMap(doc.id, doc.data()))
+          .toList();
     } catch (e) {
       return [];
     }
@@ -329,8 +339,9 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
         .where('status', isEqualTo: FriendRequestStatus.pending.name)
         .limit(50) // Limit to 50 pending requests
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => FriendRequest.fromMap(doc.id, doc.data())).toList());
+        .map((snapshot) => snapshot.docs
+            .map((doc) => FriendRequest.fromMap(doc.id, doc.data()))
+            .toList());
   }
 
   /// Stream sent friend requests for the current user.
@@ -341,8 +352,9 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
         .where('status', isEqualTo: FriendRequestStatus.pending.name)
         .limit(50) // Limit to 50 pending requests
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => FriendRequest.fromMap(doc.id, doc.data())).toList());
+        .map((snapshot) => snapshot.docs
+            .map((doc) => FriendRequest.fromMap(doc.id, doc.data()))
+            .toList());
   }
 
   /// Get friend request statistics for a user.
@@ -352,7 +364,7 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
         .where('status', isEqualTo: FriendRequestStatus.pending.name)
         .count()
         .get();
-    
+
     final sentQuery = await _friendRequestsRef
         .where('fromUserId', isEqualTo: userId)
         .where('status', isEqualTo: FriendRequestStatus.pending.name)
@@ -373,16 +385,16 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
         .where('status', isEqualTo: FriendRequestStatus.pending.name)
         .limit(1)
         .get();
-    
+
     if (query1.docs.isNotEmpty) return true;
-    
+
     final query2 = await _friendRequestsRef
         .where('fromUserId', isEqualTo: userId2)
         .where('toUserId', isEqualTo: userId1)
         .where('status', isEqualTo: FriendRequestStatus.pending.name)
         .limit(1)
         .get();
-    
+
     return query2.docs.isNotEmpty;
   }
 }

@@ -129,7 +129,8 @@ class UserLayoutWidgets {
     return Card(
       margin: margin ?? const EdgeInsets.all(AppDimensions.paddingL),
       elevation: AppDimensions.elevationLow,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL)),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),

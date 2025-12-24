@@ -22,21 +22,22 @@ import '../../../../infrastructure/di/test_service_locator.dart';
 
 void main() {
   group('RealtimeContentOperations', () {
-    late Map<String, StreamSubscription<DocumentSnapshot>> activeEditingSessions;
+    late Map<String, StreamSubscription<DocumentSnapshot>>
+        activeEditingSessions;
     late Map<String, List<Map<String, dynamic>>> pendingRealtimeEdits;
     late String? lastError;
     late int conflictResolutionCallCount;
     late Map<String, dynamic>? lastAppliedEdit;
-    
+
     setUpAll(() async {
       // Initialize test infrastructure once for all tests
       await BaseUnitTest.setupUnit();
     });
-    
+
     setUp(() async {
       // Initialize service locator for each test
       await TestServiceLocator.initialize();
-      
+
       // Reset test state
       activeEditingSessions = {};
       pendingRealtimeEdits = {};
@@ -44,24 +45,25 @@ void main() {
       conflictResolutionCallCount = 0;
       lastAppliedEdit = null;
     });
-    
+
     tearDown(() async {
       // Reset mocks and service locator after each test
       BaseUnitTest.resetMocks();
       await TestServiceLocator.reset();
     });
-    
+
     tearDownAll(() async {
       // Final cleanup after all tests
       await BaseUnitTest.teardownUnit();
     });
-    
+
     // Helper functions
     void setError(String error) {
       lastError = error;
     }
 
-    Future<void> applyEditWithConflictResolution(String recipeId, Map<String, dynamic> edit) async {
+    Future<void> applyEditWithConflictResolution(
+        String recipeId, Map<String, dynamic> edit) async {
       conflictResolutionCallCount++;
       lastAppliedEdit = edit;
     }
@@ -87,7 +89,7 @@ void main() {
         setError: setError,
       );
     }
-    
+
     group('Core Real-time Edit Operation', () {
       test('should make real-time edit successfully', () async {
         // Arrange
@@ -95,10 +97,10 @@ void main() {
         const currentUserId = 'user-123';
         const currentUserDisplayName = 'Test User';
         final changes = {'title': 'New Title'};
-        
+
         // Add active session
         activeEditingSessions[recipeId] = createMockSubscription();
-        
+
         // Act
         final result = await RealtimeContentOperations.makeRealtimeEdit(
           context: createTestContext(
@@ -108,24 +110,25 @@ void main() {
           recipeId: recipeId,
           changes: changes,
         );
-        
+
         // Assert
         expect(result, isTrue);
         expect(conflictResolutionCallCount, equals(1));
         expect(pendingRealtimeEdits[recipeId], isNotEmpty);
         expect(lastAppliedEdit?['editedBy'], equals(currentUserId));
-        expect(lastAppliedEdit?['editedByDisplayName'], equals(currentUserDisplayName));
+        expect(lastAppliedEdit?['editedByDisplayName'],
+            equals(currentUserDisplayName));
         expect(lastAppliedEdit?['title'], equals('New Title'));
       });
-      
+
       test('should fail when not in editing mode', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const currentUserId = 'user-123';
         final changes = {'title': 'New Title'};
-        
+
         // No active session
-        
+
         // Act
         final result = await RealtimeContentOperations.makeRealtimeEdit(
           context: createTestContext(
@@ -151,7 +154,8 @@ void main() {
         activeEditingSessions[recipeId] = createMockSubscription();
 
         // Make conflict resolution throw error
-        Future<void> failingConflictResolution(String id, Map<String, dynamic> edit) async {
+        Future<void> failingConflictResolution(
+            String id, Map<String, dynamic> edit) async {
           throw Exception('Conflict resolution failed');
         }
 
@@ -171,19 +175,19 @@ void main() {
           recipeId: recipeId,
           changes: changes,
         );
-        
+
         // Assert
         expect(result, isFalse);
         expect(lastError, contains('Kunde inte genomföra realtidsändring'));
       });
     });
-    
+
     group('Basic Field Updates', () {
       setUp(() {
         // Add active session for all field update tests
         activeEditingSessions['recipe-1'] = createMockSubscription();
       });
-      
+
       test('should update title in real-time', () async {
         // Arrange
         const recipeId = 'recipe-1';
@@ -234,7 +238,8 @@ void main() {
         const currentUserId = 'user-123';
 
         // Act
-        final result = await RealtimeContentOperations.updateDescriptionRealtime(
+        final result =
+            await RealtimeContentOperations.updateDescriptionRealtime(
           context: createTestContext(
             currentUserId: currentUserId,
             currentUserDisplayName: null,
@@ -248,7 +253,7 @@ void main() {
         expect(lastAppliedEdit?['description'], equals(newDescription));
         expect(lastAppliedEdit?['field'], equals('description'));
       });
-      
+
       test('should update portions in real-time', () async {
         // Arrange
         const recipeId = 'recipe-1';
@@ -335,12 +340,12 @@ void main() {
         expect(lastError, contains('Tid måste vara större än 0 minuter'));
       });
     });
-    
+
     group('Ingredient Operations', () {
       setUp(() {
         activeEditingSessions['recipe-1'] = createMockSubscription();
       });
-      
+
       test('should add ingredient in real-time', () async {
         // Arrange
         const recipeId = 'recipe-1';
@@ -357,14 +362,14 @@ void main() {
           ingredient: ingredient,
           index: null,
         );
-        
+
         // Assert
         expect(result, isTrue);
         expect(lastAppliedEdit?['operation'], equals('add_ingredient'));
         expect(lastAppliedEdit?['ingredient'], equals(ingredient));
         expect(lastAppliedEdit?['field'], equals('ingredients'));
       });
-      
+
       test('should reject empty ingredient', () async {
         // Arrange
         const recipeId = 'recipe-1';
@@ -381,19 +386,19 @@ void main() {
           ingredient: ingredient,
           index: null,
         );
-        
+
         // Assert
         expect(result, isFalse);
         expect(lastError, contains('Ingrediens kan inte vara tom'));
       });
-      
+
       test('should update ingredient in real-time', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const index = 2;
         const newIngredient = '3 cups flour';
         const currentUserId = 'user-123';
-        
+
         // Act
         final result = await RealtimeContentOperations.updateIngredientRealtime(
           context: createTestContext(
@@ -404,21 +409,21 @@ void main() {
           index: index,
           newIngredient: newIngredient,
         );
-        
+
         // Assert
         expect(result, isTrue);
         expect(lastAppliedEdit?['operation'], equals('update_ingredient'));
         expect(lastAppliedEdit?['index'], equals(index));
         expect(lastAppliedEdit?['ingredient'], equals(newIngredient));
       });
-      
+
       test('should reject invalid index for update', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const index = -1; // Invalid
         const newIngredient = '3 cups flour';
         const currentUserId = 'user-123';
-        
+
         // Act
         final result = await RealtimeContentOperations.updateIngredientRealtime(
           context: createTestContext(
@@ -429,18 +434,18 @@ void main() {
           index: index,
           newIngredient: newIngredient,
         );
-        
+
         // Assert
         expect(result, isFalse);
         expect(lastError, contains('Ogiltigt ingrediens-index'));
       });
-      
+
       test('should remove ingredient in real-time', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const index = 1;
         const currentUserId = 'user-123';
-        
+
         // Act
         final result = await RealtimeContentOperations.removeIngredientRealtime(
           context: createTestContext(
@@ -450,22 +455,23 @@ void main() {
           recipeId: recipeId,
           index: index,
         );
-        
+
         // Assert
         expect(result, isTrue);
         expect(lastAppliedEdit?['operation'], equals('remove_ingredient'));
         expect(lastAppliedEdit?['index'], equals(index));
       });
-      
+
       test('should reorder ingredients in real-time', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const fromIndex = 1;
         const toIndex = 3;
         const currentUserId = 'user-123';
-        
+
         // Act
-        final result = await RealtimeContentOperations.reorderIngredientsRealtime(
+        final result =
+            await RealtimeContentOperations.reorderIngredientsRealtime(
           context: createTestContext(
             currentUserId: currentUserId,
             currentUserDisplayName: null,
@@ -474,23 +480,24 @@ void main() {
           fromIndex: fromIndex,
           toIndex: toIndex,
         );
-        
+
         // Assert
         expect(result, isTrue);
         expect(lastAppliedEdit?['operation'], equals('reorder_ingredient'));
         expect(lastAppliedEdit?['fromIndex'], equals(fromIndex));
         expect(lastAppliedEdit?['toIndex'], equals(toIndex));
       });
-      
+
       test('should handle same index reordering', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const fromIndex = 2;
         const toIndex = 2; // Same as from
         const currentUserId = 'user-123';
-        
+
         // Act
-        final result = await RealtimeContentOperations.reorderIngredientsRealtime(
+        final result =
+            await RealtimeContentOperations.reorderIngredientsRealtime(
           context: createTestContext(
             currentUserId: currentUserId,
             currentUserDisplayName: null,
@@ -499,24 +506,25 @@ void main() {
           fromIndex: fromIndex,
           toIndex: toIndex,
         );
-        
+
         // Assert
         expect(result, isTrue); // No change needed
-        expect(conflictResolutionCallCount, equals(0)); // Should not call conflict resolution
+        expect(conflictResolutionCallCount,
+            equals(0)); // Should not call conflict resolution
       });
     });
-    
+
     group('Instruction Operations', () {
       setUp(() {
         activeEditingSessions['recipe-1'] = createMockSubscription();
       });
-      
+
       test('should add instruction in real-time', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const instruction = 'Preheat oven to 350°F';
         const currentUserId = 'user-123';
-        
+
         // Act
         final result = await RealtimeContentOperations.addInstructionRealtime(
           context: createTestContext(
@@ -527,7 +535,7 @@ void main() {
           instruction: instruction,
           index: 0,
         );
-        
+
         // Assert
         expect(result, isTrue);
         expect(lastAppliedEdit?['operation'], equals('add_instruction'));
@@ -535,16 +543,17 @@ void main() {
         expect(lastAppliedEdit?['index'], equals(0));
         expect(lastAppliedEdit?['field'], equals('instructions'));
       });
-      
+
       test('should update instruction in real-time', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const index = 1;
         const newInstruction = 'Mix ingredients thoroughly';
         const currentUserId = 'user-123';
-        
+
         // Act
-        final result = await RealtimeContentOperations.updateInstructionRealtime(
+        final result =
+            await RealtimeContentOperations.updateInstructionRealtime(
           context: createTestContext(
             currentUserId: currentUserId,
             currentUserDisplayName: null,
@@ -553,22 +562,23 @@ void main() {
           index: index,
           newInstruction: newInstruction,
         );
-        
+
         // Assert
         expect(result, isTrue);
         expect(lastAppliedEdit?['operation'], equals('update_instruction'));
         expect(lastAppliedEdit?['index'], equals(index));
         expect(lastAppliedEdit?['instruction'], equals(newInstruction));
       });
-      
+
       test('should remove instruction in real-time', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const index = 2;
         const currentUserId = 'user-123';
-        
+
         // Act
-        final result = await RealtimeContentOperations.removeInstructionRealtime(
+        final result =
+            await RealtimeContentOperations.removeInstructionRealtime(
           context: createTestContext(
             currentUserId: currentUserId,
             currentUserDisplayName: null,
@@ -576,22 +586,23 @@ void main() {
           recipeId: recipeId,
           index: index,
         );
-        
+
         // Assert
         expect(result, isTrue);
         expect(lastAppliedEdit?['operation'], equals('remove_instruction'));
         expect(lastAppliedEdit?['index'], equals(index));
       });
-      
+
       test('should reorder instructions in real-time', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const fromIndex = 0;
         const toIndex = 2;
         const currentUserId = 'user-123';
-        
+
         // Act
-        final result = await RealtimeContentOperations.reorderInstructionsRealtime(
+        final result =
+            await RealtimeContentOperations.reorderInstructionsRealtime(
           context: createTestContext(
             currentUserId: currentUserId,
             currentUserDisplayName: null,
@@ -600,7 +611,7 @@ void main() {
           fromIndex: fromIndex,
           toIndex: toIndex,
         );
-        
+
         // Assert
         expect(result, isTrue);
         expect(lastAppliedEdit?['operation'], equals('reorder_instruction'));
@@ -608,7 +619,7 @@ void main() {
         expect(lastAppliedEdit?['toIndex'], equals(toIndex));
       });
     });
-    
+
     group('Batch Operations', () {
       test('should apply batch edits', () async {
         // Arrange
@@ -619,9 +630,9 @@ void main() {
           {'field': 'description', 'value': 'New Description'},
           {'operation': 'add_ingredient', 'ingredient': 'Salt'},
         ];
-        
+
         activeEditingSessions[recipeId] = createMockSubscription();
-        
+
         // Act
         final result = await RealtimeContentOperations.applyBatchEdits(
           context: createTestContext(
@@ -631,22 +642,22 @@ void main() {
           recipeId: recipeId,
           edits: edits,
         );
-        
+
         // Assert
         expect(result, isTrue);
         expect(lastAppliedEdit?['operation'], equals('batch_edit'));
         expect(lastAppliedEdit?['edits'], equals(edits));
         expect(lastAppliedEdit?['field'], equals('batch'));
       });
-      
+
       test('should handle empty batch', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const currentUserId = 'user-123';
         final edits = <Map<String, dynamic>>[];
-        
+
         activeEditingSessions[recipeId] = createMockSubscription();
-        
+
         // Act
         final result = await RealtimeContentOperations.applyBatchEdits(
           context: createTestContext(
@@ -662,68 +673,87 @@ void main() {
         expect(conflictResolutionCallCount, equals(0)); // No edits applied
       });
     });
-    
+
     group('Validation Helpers', () {
       test('should validate ingredient content', () {
         // Valid ingredients
-        expect(RealtimeFieldOperations.isValidIngredient('2 cups flour'), isTrue);
-        expect(RealtimeFieldOperations.isValidIngredient('Salt to taste'), isTrue);
-        
+        expect(
+            RealtimeFieldOperations.isValidIngredient('2 cups flour'), isTrue);
+        expect(
+            RealtimeFieldOperations.isValidIngredient('Salt to taste'), isTrue);
+
         // Invalid ingredients
         expect(RealtimeFieldOperations.isValidIngredient(''), isFalse);
         expect(RealtimeFieldOperations.isValidIngredient('  '), isFalse);
-        expect(RealtimeFieldOperations.isValidIngredient('<script>alert()</script>'), isFalse);
-        expect(RealtimeFieldOperations.isValidIngredient('a' * 201), isFalse); // Too long
+        expect(
+            RealtimeFieldOperations.isValidIngredient(
+                '<script>alert()</script>'),
+            isFalse);
+        expect(RealtimeFieldOperations.isValidIngredient('a' * 201),
+            isFalse); // Too long
       });
-      
+
       test('should validate instruction content', () {
         // Valid instructions
-        expect(RealtimeFieldOperations.isValidInstruction('Mix ingredients'), isTrue);
-        expect(RealtimeFieldOperations.isValidInstruction('Bake for 30 minutes at 350°F'), isTrue);
-        
+        expect(RealtimeFieldOperations.isValidInstruction('Mix ingredients'),
+            isTrue);
+        expect(
+            RealtimeFieldOperations.isValidInstruction(
+                'Bake for 30 minutes at 350°F'),
+            isTrue);
+
         // Invalid instructions
         expect(RealtimeFieldOperations.isValidInstruction(''), isFalse);
         expect(RealtimeFieldOperations.isValidInstruction('  '), isFalse);
-        expect(RealtimeFieldOperations.isValidInstruction('<div>test</div>'), isFalse);
-        expect(RealtimeFieldOperations.isValidInstruction('a' * 1001), isFalse); // Too long
+        expect(RealtimeFieldOperations.isValidInstruction('<div>test</div>'),
+            isFalse);
+        expect(RealtimeFieldOperations.isValidInstruction('a' * 1001),
+            isFalse); // Too long
       });
-      
+
       test('should sanitize text content', () {
         // Remove HTML tags
         expect(
           RealtimeFieldOperations.sanitizeTextContent('<b>Bold</b> text'),
           equals('Bold text'),
         );
-        
+
         // Normalize whitespace
         expect(
           RealtimeFieldOperations.sanitizeTextContent('  Multiple   spaces  '),
           equals('Multiple spaces'),
         );
-        
+
         // Combined sanitization - the regex removes tags but keeps content between them
         expect(
-          RealtimeFieldOperations.sanitizeTextContent('  <script>alert()</script>  Text  '),
+          RealtimeFieldOperations.sanitizeTextContent(
+              '  <script>alert()</script>  Text  '),
           equals('alert() Text'),
         );
       });
-      
+
       test('should validate index for list operations', () {
         const listLength = 5;
-        
+
         // Valid indices without append
         expect(RealtimeFieldOperations.isValidIndex(0, listLength), isTrue);
         expect(RealtimeFieldOperations.isValidIndex(4, listLength), isTrue);
-        
+
         // Invalid indices without append
         expect(RealtimeFieldOperations.isValidIndex(-1, listLength), isFalse);
         expect(RealtimeFieldOperations.isValidIndex(5, listLength), isFalse);
-        
+
         // Valid indices with append
-        expect(RealtimeFieldOperations.isValidIndex(5, listLength, allowAppend: true), isTrue);
-        
+        expect(
+            RealtimeFieldOperations.isValidIndex(5, listLength,
+                allowAppend: true),
+            isTrue);
+
         // Invalid indices with append
-        expect(RealtimeFieldOperations.isValidIndex(6, listLength, allowAppend: true), isFalse);
+        expect(
+            RealtimeFieldOperations.isValidIndex(6, listLength,
+                allowAppend: true),
+            isFalse);
       });
     });
   });

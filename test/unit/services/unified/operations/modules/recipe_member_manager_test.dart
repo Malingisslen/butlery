@@ -17,7 +17,7 @@ void main() {
     late RecipeMemberManager memberManager;
     late Recipe testCollaborativeRecipe;
     late Recipe testPersonalRecipe;
-    
+
     setUpAll(() async {
       // Register fallback values for mocktail
       registerFallbackValue(NotificationStrategy.recipeShared);
@@ -40,14 +40,15 @@ void main() {
     setUp(() async {
       await BaseUnitTest.setupUnit();
       await TestServiceLocator.initialize();
-      
+
       // Create mocks
       mockParentService = MockUnifiedRecipeService();
       mockNotificationService = MockNotificationService();
-      
+
       // Create member manager instance
-      memberManager = RecipeMemberManager(mockParentService, mockNotificationService);
-      
+      memberManager =
+          RecipeMemberManager(mockParentService, mockNotificationService);
+
       // Create test data
       testCollaborativeRecipe = Recipe(
         core: RecipeCore(
@@ -73,7 +74,7 @@ void main() {
           allowMemberInvites: true,
         ),
       );
-      
+
       testPersonalRecipe = Recipe(
         core: RecipeCore(
           id: 'personal_1',
@@ -88,16 +89,17 @@ void main() {
         ),
         type: RecipeType.personal,
       );
-      
+
       // Configure mocks
       when(() => mockParentService.currentUserId).thenReturn('user_123');
-      when(() => mockParentService.currentUserDisplayName).thenReturn('Current User');
+      when(() => mockParentService.currentUserDisplayName)
+          .thenReturn('Current User');
       when(() => mockParentService.recipes).thenReturn([
         testCollaborativeRecipe,
         testPersonalRecipe,
       ]);
     });
-    
+
     tearDown(() async {
       await TestServiceLocator.reset();
       BaseUnitTest.resetMocks();
@@ -106,19 +108,19 @@ void main() {
     tearDownAll(() async {
       // Cleanup if needed
     });
-    
+
     group('Member Addition', () {
       test('should add new member successfully', () async {
         // Arrange
         when(() => mockParentService.updateRecipe(any()))
             .thenAnswer((_) async => true);
         when(() => mockNotificationService.sendBatchableNotification(
-          targetUserIds: any(named: 'targetUserIds'),
-          strategy: any(named: 'strategy'),
-          variables: any(named: 'variables'),
-          additionalData: any(named: 'additionalData'),
-        )).thenAnswer((_) async {});
-        
+              targetUserIds: any(named: 'targetUserIds'),
+              strategy: any(named: 'strategy'),
+              variables: any(named: 'variables'),
+              additionalData: any(named: 'additionalData'),
+            )).thenAnswer((_) async {});
+
         // Act
         final success = await memberManager.addMember(
           recipeId: 'collab_1',
@@ -126,50 +128,52 @@ void main() {
           memberDisplayName: 'New Member',
           permission: ResourcePermission.editor,
         );
-        
+
         // Assert
         expect(success, isTrue);
-        
-        final captured = verify(() => mockParentService.updateRecipe(captureAny())).captured;
+
+        final captured =
+            verify(() => mockParentService.updateRecipe(captureAny())).captured;
         final updatedRecipe = captured.first as Recipe;
-        expect(updatedRecipe.socialData?.memberPermissions?['user_999'], 
-               equals(ResourcePermission.editor));
-        
+        expect(updatedRecipe.socialData?.memberPermissions?['user_999'],
+            equals(ResourcePermission.editor));
+
         verify(() => mockNotificationService.sendBatchableNotification(
-          targetUserIds: ['user_999'],
-          strategy: NotificationStrategy.recipeShared,
-          variables: any(named: 'variables'),
-          additionalData: any(named: 'additionalData'),
-        )).called(1);
+              targetUserIds: ['user_999'],
+              strategy: NotificationStrategy.recipeShared,
+              variables: any(named: 'variables'),
+              additionalData: any(named: 'additionalData'),
+            )).called(1);
       });
-      
+
       test('should use default viewer permission when not specified', () async {
         // Arrange
         when(() => mockParentService.updateRecipe(any()))
             .thenAnswer((_) async => true);
         when(() => mockNotificationService.sendBatchableNotification(
-          targetUserIds: any(named: 'targetUserIds'),
-          strategy: any(named: 'strategy'),
-          variables: any(named: 'variables'),
-          additionalData: any(named: 'additionalData'),
-        )).thenAnswer((_) async {});
-        
+              targetUserIds: any(named: 'targetUserIds'),
+              strategy: any(named: 'strategy'),
+              variables: any(named: 'variables'),
+              additionalData: any(named: 'additionalData'),
+            )).thenAnswer((_) async {});
+
         // Act
         final success = await memberManager.addMember(
           recipeId: 'collab_1',
           memberId: 'user_999',
           memberDisplayName: 'New Member',
         );
-        
+
         // Assert
         expect(success, isTrue);
-        
-        final captured = verify(() => mockParentService.updateRecipe(captureAny())).captured;
+
+        final captured =
+            verify(() => mockParentService.updateRecipe(captureAny())).captured;
         final updatedRecipe = captured.first as Recipe;
-        expect(updatedRecipe.socialData?.memberPermissions?['user_999'], 
-               equals(ResourcePermission.viewer));
+        expect(updatedRecipe.socialData?.memberPermissions?['user_999'],
+            equals(ResourcePermission.viewer));
       });
-      
+
       test('should fail when recipe not found', () async {
         // Act
         final success = await memberManager.addMember(
@@ -177,12 +181,12 @@ void main() {
           memberId: 'user_999',
           memberDisplayName: 'New Member',
         );
-        
+
         // Assert
         expect(success, isFalse);
         verifyNever(() => mockParentService.updateRecipe(any()));
       });
-      
+
       test('should fail when recipe not collaborative', () async {
         // Act
         final success = await memberManager.addMember(
@@ -190,11 +194,11 @@ void main() {
           memberId: 'user_999',
           memberDisplayName: 'New Member',
         );
-        
+
         // Assert
         expect(success, isFalse);
       });
-      
+
       test('should fail when member already exists', () async {
         // Act
         final success = await memberManager.addMember(
@@ -202,61 +206,66 @@ void main() {
           memberId: 'user_456', // Already a member
           memberDisplayName: 'Existing Member',
         );
-        
+
         // Assert
         expect(success, isFalse);
       });
-      
+
       test('should fail when user lacks permission to invite', () async {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_789'); // Viewer
-        
+        when(() => mockParentService.currentUserId)
+            .thenReturn('user_789'); // Viewer
+
         // Act
         final success = await memberManager.addMember(
           recipeId: 'collab_1',
           memberId: 'user_999',
           memberDisplayName: 'New Member',
         );
-        
+
         // Assert
         expect(success, isFalse);
       });
     });
-    
+
     group('Member Removal', () {
       test('should remove member successfully', () async {
         // Arrange
         when(() => mockParentService.updateRecipe(any()))
             .thenAnswer((_) async => true);
         when(() => mockNotificationService.sendBatchableNotification(
-          targetUserIds: any(named: 'targetUserIds'),
-          strategy: any(named: 'strategy'),
-          variables: any(named: 'variables'),
-          additionalData: any(named: 'additionalData'),
-        )).thenAnswer((_) async {});
-        
+              targetUserIds: any(named: 'targetUserIds'),
+              strategy: any(named: 'strategy'),
+              variables: any(named: 'variables'),
+              additionalData: any(named: 'additionalData'),
+            )).thenAnswer((_) async {});
+
         // Act
         final success = await memberManager.removeMember(
           recipeId: 'collab_1',
           memberId: 'user_456',
         );
-        
+
         // Assert
         expect(success, isTrue);
-        
-        final captured = verify(() => mockParentService.updateRecipe(captureAny())).captured;
+
+        final captured =
+            verify(() => mockParentService.updateRecipe(captureAny())).captured;
         final updatedRecipe = captured.first as Recipe;
-        expect(updatedRecipe.socialData?.memberPermissions?.containsKey('user_456'), 
-               isFalse);
-        
+        expect(
+            updatedRecipe.socialData?.memberPermissions
+                ?.containsKey('user_456'),
+            isFalse);
+
         verify(() => mockNotificationService.sendBatchableNotification(
-          targetUserIds: ['user_456'],
-          strategy: NotificationStrategy.recipeShared, // Using available strategy
-          variables: any(named: 'variables'),
-          additionalData: any(named: 'additionalData'),
-        )).called(1);
+              targetUserIds: ['user_456'],
+              strategy:
+                  NotificationStrategy.recipeShared, // Using available strategy
+              variables: any(named: 'variables'),
+              additionalData: any(named: 'additionalData'),
+            )).called(1);
       });
-      
+
       test('should prevent owner from being removed', () async {
         // Arrange
         final recipeWithOwnerInMembers = Recipe(
@@ -271,66 +280,69 @@ void main() {
             },
           ),
         );
-        
-        when(() => mockParentService.recipes).thenReturn([recipeWithOwnerInMembers]);
-        
+
+        when(() => mockParentService.recipes)
+            .thenReturn([recipeWithOwnerInMembers]);
+
         // Act
         final success = await memberManager.removeMember(
           recipeId: 'collab_1',
           memberId: 'user_123',
         );
-        
+
         // Assert
         expect(success, isFalse);
       });
-      
+
       test('should fail when member not found', () async {
         // Act
         final success = await memberManager.removeMember(
           recipeId: 'collab_1',
           memberId: 'user_999', // Not a member
         );
-        
+
         // Assert
         expect(success, isFalse);
       });
     });
-    
+
     group('Permission Updates', () {
       test('should update member permission successfully', () async {
         // Arrange
         when(() => mockParentService.updateRecipe(any()))
             .thenAnswer((_) async => true);
         when(() => mockNotificationService.sendBatchableNotification(
-          targetUserIds: any(named: 'targetUserIds'),
-          strategy: any(named: 'strategy'),
-          variables: any(named: 'variables'),
-          additionalData: any(named: 'additionalData'),
-        )).thenAnswer((_) async {});
-        
+              targetUserIds: any(named: 'targetUserIds'),
+              strategy: any(named: 'strategy'),
+              variables: any(named: 'variables'),
+              additionalData: any(named: 'additionalData'),
+            )).thenAnswer((_) async {});
+
         // Act
         final success = await memberManager.updateMemberPermission(
           recipeId: 'collab_1',
           memberId: 'user_789',
           newPermission: ResourcePermission.editor,
         );
-        
+
         // Assert
         expect(success, isTrue);
-        
-        final captured = verify(() => mockParentService.updateRecipe(captureAny())).captured;
+
+        final captured =
+            verify(() => mockParentService.updateRecipe(captureAny())).captured;
         final updatedRecipe = captured.first as Recipe;
-        expect(updatedRecipe.socialData?.memberPermissions?['user_789'], 
-               equals(ResourcePermission.editor));
-        
+        expect(updatedRecipe.socialData?.memberPermissions?['user_789'],
+            equals(ResourcePermission.editor));
+
         verify(() => mockNotificationService.sendBatchableNotification(
-          targetUserIds: ['user_789'],
-          strategy: NotificationStrategy.recipeShared, // Using available strategy
-          variables: any(named: 'variables'),
-          additionalData: any(named: 'additionalData'),
-        )).called(1);
+              targetUserIds: ['user_789'],
+              strategy:
+                  NotificationStrategy.recipeShared, // Using available strategy
+              variables: any(named: 'variables'),
+              additionalData: any(named: 'additionalData'),
+            )).called(1);
       });
-      
+
       test('should prevent changing owner permission', () async {
         // Arrange
         final recipeWithOwnerInMembers = Recipe(
@@ -345,68 +357,70 @@ void main() {
             },
           ),
         );
-        
-        when(() => mockParentService.recipes).thenReturn([recipeWithOwnerInMembers]);
-        
+
+        when(() => mockParentService.recipes)
+            .thenReturn([recipeWithOwnerInMembers]);
+
         // Act
         final success = await memberManager.updateMemberPermission(
           recipeId: 'collab_1',
           memberId: 'user_123',
           newPermission: ResourcePermission.editor,
         );
-        
+
         // Assert
         expect(success, isFalse);
       });
-      
+
       test('should fail when user lacks permission', () async {
         // Arrange
-        when(() => mockParentService.currentUserId).thenReturn('user_456'); // Editor
-        
+        when(() => mockParentService.currentUserId)
+            .thenReturn('user_456'); // Editor
+
         // Act
         final success = await memberManager.updateMemberPermission(
           recipeId: 'collab_1',
           memberId: 'user_789',
           newPermission: ResourcePermission.admin,
         );
-        
+
         // Assert
         expect(success, isFalse);
       });
     });
-    
+
     group('Member Queries', () {
       test('should get all members', () async {
         // Act
         final members = await memberManager.getRecipeMembers('collab_1');
-        
+
         // Assert
         expect(members.length, equals(3)); // Owner + 2 members
         expect(members.any((m) => m['userId'] == 'user_123'), isTrue);
         expect(members.any((m) => m['userId'] == 'user_456'), isTrue);
         expect(members.any((m) => m['userId'] == 'user_789'), isTrue);
       });
-      
+
       test('should get member statistics', () async {
         // Act
         final stats = memberManager.getMemberStatistics('collab_1');
-        
+
         // Assert
         expect(stats['totalMembers'], equals(3)); // Owner + 2 members
         expect(stats['editors'], equals(1));
         expect(stats['viewers'], equals(1));
       });
     });
-    
+
     group('Invitation Management', () {
       test('should check if current user can invite members', () async {
         // Act - Method checks current user permissions
         final canInvite = memberManager.canInviteMembers('collab_1');
-        
+
         // Assert
         expect(canInvite, isTrue); // Current user is owner
       });
-      
+
       test('should respect invitation settings', () async {
         // Arrange
         final restrictedRecipe = Recipe(
@@ -421,18 +435,17 @@ void main() {
             allowMemberInvites: false, // Disabled
           ),
         );
-        
+
         when(() => mockParentService.recipes).thenReturn([restrictedRecipe]);
-        
+
         // Act
         final canInvite = memberManager.canInviteMembers('collab_1');
-        
+
         // Assert
         expect(canInvite, isFalse);
       });
     });
-    
+
     // Bulk operations are not implemented in the actual RecipeMemberManager class
   });
 }
-

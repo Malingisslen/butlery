@@ -9,15 +9,15 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 
 /// User notification preferences model
 class NotificationPreferences {
-  final bool enabled;                    // Master notification toggle
+  final bool enabled; // Master notification toggle
   final Map<NotificationCategory, bool> categorySettings;
   final Map<NotificationType, bool> typeSettings;
-  final bool allowBatching;             // Allow grouping similar notifications
-  final String digestFrequency;         // 'daily', 'weekly', 'never'
-  final TimeOfDay? quietHoursStart;     // Don't send during quiet hours
+  final bool allowBatching; // Allow grouping similar notifications
+  final String digestFrequency; // 'daily', 'weekly', 'never'
+  final TimeOfDay? quietHoursStart; // Don't send during quiet hours
   final TimeOfDay? quietHoursEnd;
-  final bool soundEnabled;              // Notification sounds
-  final bool vibrationEnabled;          // Notification vibration
+  final bool soundEnabled; // Notification sounds
+  final bool vibrationEnabled; // Notification vibration
   final DateTime lastUpdated;
 
   const NotificationPreferences({
@@ -38,24 +38,24 @@ class NotificationPreferences {
     return NotificationPreferences(
       enabled: true,
       categorySettings: {
-        NotificationCategory.friends: true,      // Friend requests are important
-        NotificationCategory.recipes: true,      // Recipe sharing is core feature
+        NotificationCategory.friends: true, // Friend requests are important
+        NotificationCategory.recipes: true, // Recipe sharing is core feature
         NotificationCategory.collaboration: true, // Real-time collaboration
-        NotificationCategory.shopping: false,    // Shopping updates can be noisy
-        NotificationCategory.social: false,      // Activity feeds are optional
-        NotificationCategory.system: true,       // System notifications needed
+        NotificationCategory.shopping: false, // Shopping updates can be noisy
+        NotificationCategory.social: false, // Activity feeds are optional
+        NotificationCategory.system: true, // System notifications needed
       },
       typeSettings: {
-        NotificationType.immediate: true,        // Critical notifications
-        NotificationType.batchable: true,        // Allow grouping
-        NotificationType.silent: true,           // Background sync
-        NotificationType.digest: false,          // Daily summaries off by default
-        NotificationType.optional: false,       // Optional features off
+        NotificationType.immediate: true, // Critical notifications
+        NotificationType.batchable: true, // Allow grouping
+        NotificationType.silent: true, // Background sync
+        NotificationType.digest: false, // Daily summaries off by default
+        NotificationType.optional: false, // Optional features off
       },
       allowBatching: true,
       digestFrequency: 'never',
       quietHoursStart: const TimeOfDay(hour: 22, minute: 0), // 10 PM
-      quietHoursEnd: const TimeOfDay(hour: 8, minute: 0),    // 8 AM
+      quietHoursEnd: const TimeOfDay(hour: 8, minute: 0), // 8 AM
       soundEnabled: true,
       vibrationEnabled: true,
       lastUpdated: DateTime.now(),
@@ -73,17 +73,28 @@ class NotificationPreferences {
   }
 
   /// Create from repository data (removes Firebase dependency)
-  factory NotificationPreferences.fromMap(String id, Map<String, dynamic> data) {
+  factory NotificationPreferences.fromMap(
+      String id, Map<String, dynamic> data) {
     return NotificationPreferences(
       enabled: SerializationUtils.safeBool(data, 'enabled', defaultValue: true),
-      categorySettings: _parseEnumMap(SerializationUtils.safeMap(data, 'categorySettings'), NotificationCategory.values),
-      typeSettings: _parseEnumMap(SerializationUtils.safeMap(data, 'typeSettings'), NotificationType.values),
-      allowBatching: SerializationUtils.safeBool(data, 'allowBatching', defaultValue: true),
-      digestFrequency: SerializationUtils.safeString(data, 'digestFrequency', defaultValue: 'never'),
-      quietHoursStart: _parseTimeOfDay(SerializationUtils.safeNullableMap(data, 'quietHoursStart')),
-      quietHoursEnd: _parseTimeOfDay(SerializationUtils.safeNullableMap(data, 'quietHoursEnd')),
-      soundEnabled: SerializationUtils.safeBool(data, 'soundEnabled', defaultValue: true),
-      vibrationEnabled: SerializationUtils.safeBool(data, 'vibrationEnabled', defaultValue: true),
+      categorySettings: _parseEnumMap(
+          SerializationUtils.safeMap(data, 'categorySettings'),
+          NotificationCategory.values),
+      typeSettings: _parseEnumMap(
+          SerializationUtils.safeMap(data, 'typeSettings'),
+          NotificationType.values),
+      allowBatching: SerializationUtils.safeBool(data, 'allowBatching',
+          defaultValue: true),
+      digestFrequency: SerializationUtils.safeString(data, 'digestFrequency',
+          defaultValue: 'never'),
+      quietHoursStart: _parseTimeOfDay(
+          SerializationUtils.safeNullableMap(data, 'quietHoursStart')),
+      quietHoursEnd: _parseTimeOfDay(
+          SerializationUtils.safeNullableMap(data, 'quietHoursEnd')),
+      soundEnabled:
+          SerializationUtils.safeBool(data, 'soundEnabled', defaultValue: true),
+      vibrationEnabled: SerializationUtils.safeBool(data, 'vibrationEnabled',
+          defaultValue: true),
       lastUpdated: data['lastUpdated'] is DateTime
           ? data['lastUpdated'] as DateTime
           : (data['lastUpdated'] != null
@@ -94,7 +105,8 @@ class NotificationPreferences {
 
   /// Create from Firestore document
   factory NotificationPreferences.fromFirestore(DocumentSnapshot doc) {
-    return NotificationPreferences.fromMap(doc.id, ((doc.data() as Map<String, dynamic>?).orEmpty()));
+    return NotificationPreferences.fromMap(
+        doc.id, ((doc.data() as Map<String, dynamic>?).orEmpty()));
   }
 
   /// Convert to Firestore document
@@ -126,16 +138,19 @@ class NotificationPreferences {
   }
 
   /// Helper: Parse enum map from Firestore
-  static Map<T, bool> _parseEnumMap<T extends Enum>(Map<String, dynamic> data, List<T> enumValues) {
+  static Map<T, bool> _parseEnumMap<T extends Enum>(
+      Map<String, dynamic> data, List<T> enumValues) {
     final result = <T, bool>{};
     for (final enumValue in enumValues) {
-      result[enumValue] = SerializationUtils.safeBool(data, enumValue.toString());
+      result[enumValue] =
+          SerializationUtils.safeBool(data, enumValue.toString());
     }
     return result;
   }
 
   /// Helper: Convert enum map to strings for Firestore
-  static Map<String, bool> _enumMapToStrings<T extends Enum>(Map<T, bool> enumMap) {
+  static Map<String, bool> _enumMapToStrings<T extends Enum>(
+      Map<T, bool> enumMap) {
     return enumMap.map((key, value) => MapEntry(key.toString(), value));
   }
 

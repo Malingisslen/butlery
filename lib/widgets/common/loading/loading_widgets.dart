@@ -37,7 +37,8 @@ class LoadingWidgets {
                 height: AppDimensions.iconSizeM,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
                 ),
               ),
               if (loadingMessage != null) ...[
@@ -81,12 +82,15 @@ class LoadingWidgets {
                     padding: const EdgeInsets.all(AppDimensions.paddingM),
                     decoration: BoxDecoration(
                       color: AppColors.error.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                      border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.borderRadiusM),
+                      border: Border.all(
+                          color: AppColors.error.withValues(alpha: 0.3)),
                     ),
                     child: Text(
                       'Ett oväntat fel uppstod',
-                      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(color: AppColors.error),
                     ),
                   ),
                 ),

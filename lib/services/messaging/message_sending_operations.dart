@@ -2,11 +2,13 @@
 
 import 'package:uuid/uuid.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
+import 'package:butlery/repositories/interfaces/auth_repository.dart'
+    as auth_repo;
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
-import 'package:butlery/services/notifications/notification_service.dart' as notifications;
+import 'package:butlery/services/notifications/notification_service.dart'
+    as notifications;
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
@@ -44,7 +46,8 @@ class MessageSendingOperations {
         AppLogger.error('❌ [MessagingService] User not authenticated');
         throw AuthenticationException('User must be authenticated');
       }
-      AppLogger.debug('📤 [MessagingService] Current user: ${currentUser.uid} (${currentUser.displayName})');
+      AppLogger.debug(
+          '📤 [MessagingService] Current user: ${currentUser.uid} (${currentUser.displayName})');
 
       if (content.trim().isEmpty) {
         AppLogger.error('❌ [MessagingService] Empty content');
@@ -60,11 +63,14 @@ class MessageSendingOperations {
         content: content.trim(),
         replyToMessageId: replyToMessageId,
       );
-      AppLogger.debug('📤 [MessagingService] Message created with ID: ${message.id}');
+      AppLogger.debug(
+          '📤 [MessagingService] Message created with ID: ${message.id}');
 
-      AppLogger.debug('📤 [MessagingService] Calling repository.sendMessage...');
+      AppLogger.debug(
+          '📤 [MessagingService] Calling repository.sendMessage...');
       await messagingRepository.sendMessage(message);
-      AppLogger.success('✅ [MessagingService] Repository.sendMessage completed');
+      AppLogger.success(
+          '✅ [MessagingService] Repository.sendMessage completed');
 
       // Clear typing indicator for this user
       AppLogger.debug('📤 [MessagingService] Clearing typing indicator...');
@@ -74,7 +80,8 @@ class MessageSendingOperations {
       AppLogger.debug('📤 [MessagingService] Sending notification...');
       await sendMessageNotification(message, conversationId);
 
-      AppLogger.success('✅ [MessagingService] Text message sent successfully: ${message.id}');
+      AppLogger.success(
+          '✅ [MessagingService] Text message sent successfully: ${message.id}');
     } catch (e, stackTrace) {
       AppLogger.error('❌ [MessagingService] Failed to send text message', e);
       AppLogger.error('❌ [MessagingService] Stack trace: $stackTrace');
@@ -231,7 +238,8 @@ class MessageSendingOperations {
   }
 
   /// Send notification to other participants in conversation
-  Future<void> sendMessageNotification(Message message, String conversationId) async {
+  Future<void> sendMessageNotification(
+      Message message, String conversationId) async {
     try {
       // Don't send notifications to ourselves
       if (message.isFromCurrentUser(authRepository.currentUserId ?? '')) {
@@ -239,14 +247,17 @@ class MessageSendingOperations {
       }
 
       // Get conversation to determine recipients
-      final conversation = await messagingRepository.getConversation(conversationId);
+      final conversation =
+          await messagingRepository.getConversation(conversationId);
       if (conversation == null) {
-        AppLogger.warning('Cannot send notification - conversation not found: $conversationId');
+        AppLogger.warning(
+            'Cannot send notification - conversation not found: $conversationId');
         return;
       }
 
       // Get notification service
-      final notificationService = ServiceLocator.get<notifications.NotificationService>();
+      final notificationService =
+          ServiceLocator.get<notifications.NotificationService>();
 
       // Determine notification title and body based on conversation type
       String title;

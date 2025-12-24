@@ -33,7 +33,8 @@ class ResultDisplayer {
     }
   }
 
-  static void _showSnackBar(BuildContext context, bool success, String message) {
+  static void _showSnackBar(
+      BuildContext context, bool success, String message) {
     try {
       if (!context.mounted) return;
       final scaffoldMessenger = ScaffoldMessenger.of(context);

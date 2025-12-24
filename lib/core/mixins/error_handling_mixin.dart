@@ -56,27 +56,27 @@ enum ErrorType {
   /// This error type indicates issues resolving domain names to IP addresses,
   /// which can be addressed through DNS failover and direct IP connection strategies.
   dnsResolution,
-  
+
   /// Network connectivity issues affecting communication.
   /// This error type indicates broader network connectivity problems that may require
   /// retry strategies, connection quality assessment, or offline mode activation.
   networkConnectivity,
-  
+
   /// Authentication and permission errors.
   /// This error type indicates authentication failures or insufficient permissions
   /// that require user authentication or permission elevation.
   authentication,
-  
+
   /// Resource not found errors.
   /// This error type indicates that requested resources could not be found,
   /// requiring appropriate user communication and error handling.
   notFound,
-  
+
   /// Temporary service unavailability.
   /// This error type indicates temporary service problems that may resolve
   /// with retry strategies or require user notification about service status.
   serviceUnavailable,
-  
+
   /// Unclassified errors requiring conservative handling.
   /// This error type indicates errors that cannot be clearly classified and
   /// require conservative error handling and user communication.
@@ -128,15 +128,15 @@ mixin ErrorHandlingMixin {
         final opName = operationName ?? 'Operation';
         AppLogger.error('$opName failed: $e', stackTrace);
       }
-      
+
       if (customErrorMessage != null) {
         handleUserError(customErrorMessage);
       }
-      
+
       return defaultValue;
     }
   }
-  
+
   /// Safely executes a synchronous operation with error handling.
   /// Provides the same error handling capabilities as [safeExecute] but for
   /// synchronous operations. Useful for data transformations, validations,
@@ -169,11 +169,11 @@ mixin ErrorHandlingMixin {
         final opName = operationName ?? 'Operation';
         AppLogger.error('$opName failed: $e', stackTrace);
       }
-      
+
       if (customErrorMessage != null) {
         handleUserError(customErrorMessage);
       }
-      
+
       return defaultValue;
     }
   }
@@ -205,7 +205,7 @@ mixin ErrorHandlingMixin {
       customErrorMessage: AppStrings.couldNotCreate(itemType),
     );
   }
-  
+
   /// Update operation error handling - consolidates update patterns
   Future<T?> safeUpdate<T>(
     Future<T> Function() updateOperation,
@@ -219,7 +219,7 @@ mixin ErrorHandlingMixin {
       customErrorMessage: AppStrings.couldNotUpdate(itemType),
     );
   }
-  
+
   /// Delete operation error handling - consolidates delete patterns
   Future<bool> safeDelete(
     Future<void> Function() deleteOperation,
@@ -234,10 +234,10 @@ mixin ErrorHandlingMixin {
       defaultValue: false,
       customErrorMessage: AppStrings.couldNotDelete(itemType),
     );
-    
+
     return result ?? false;
   }
-  
+
   /// Load operation error handling - consolidates load patterns
   Future<T?> safeLoad<T>(
     Future<T> Function() loadOperation,
@@ -263,10 +263,10 @@ mixin ErrorHandlingMixin {
       defaultValue: <T>[],
       customErrorMessage: AppStrings.couldNotLoad(itemType),
     );
-    
+
     return result ?? <T>[];
   }
-  
+
   /// Safe list operation with empty check
   Future<List<T>> safeLoadListWithEmptyCheck<T>(
     Future<List<T>> Function() loadOperation,
@@ -274,11 +274,11 @@ mixin ErrorHandlingMixin {
     bool showEmptyMessage = false,
   }) async {
     final result = await safeLoadList(loadOperation, itemType);
-    
+
     if (result.isEmpty && showEmptyMessage) {
       handleUserInfo(AppStrings.noItemsFound);
     }
-    
+
     return result;
   }
 
@@ -291,25 +291,27 @@ mixin ErrorHandlingMixin {
     Duration retryDelay = const Duration(seconds: 1),
   }) async {
     int attempts = 0;
-    
+
     while (attempts < maxRetries) {
       try {
         return await networkOperation();
       } catch (e, stackTrace) {
         attempts++;
-        
+
         if (attempts >= maxRetries) {
           final opName = operationName ?? 'Network operation';
-          AppLogger.error('$opName failed after $maxRetries attempts: $e', stackTrace);
+          AppLogger.error(
+              '$opName failed after $maxRetries attempts: $e', stackTrace);
           handleUserError(AppStrings.networkError);
           return defaultValue;
         }
-        
-        AppLogger.warning('Network operation attempt $attempts failed, retrying: $e');
+
+        AppLogger.warning(
+            'Network operation attempt $attempts failed, retrying: $e');
         await Future.delayed(retryDelay);
       }
     }
-    
+
     return defaultValue;
   }
 
@@ -323,7 +325,7 @@ mixin ErrorHandlingMixin {
       return await operation();
     } catch (e, stackTrace) {
       AppLogger.error('$operationName failed: $e', stackTrace);
-      
+
       if (e.toString().toLowerCase().contains('permission')) {
         handleUserError(AppStrings.permissionDenied);
       } else if (e.toString().toLowerCase().contains('auth')) {
@@ -331,7 +333,7 @@ mixin ErrorHandlingMixin {
       } else {
         handleUserError(AppStrings.genericError);
       }
-      
+
       return defaultValue;
     }
   }
@@ -348,7 +350,7 @@ mixin ErrorHandlingMixin {
       handleUserError(validationError);
       return defaultValue;
     }
-    
+
     return safeExecute(
       operation,
       operationName: operationName,
@@ -364,14 +366,14 @@ mixin ErrorHandlingMixin {
   }) async {
     final results = <T>[];
     int failures = 0;
-    
+
     for (int i = 0; i < operations.length; i++) {
       final result = await safeExecute(
         operations[i],
         operationName: '$operationName (${i + 1}/${operations.length})',
         logError: true,
       );
-      
+
       if (result != null) {
         results.add(result);
       } else {
@@ -379,11 +381,11 @@ mixin ErrorHandlingMixin {
         if (!continueOnError) break;
       }
     }
-    
+
     if (failures > 0) {
       AppLogger.warning('$operationName completed with $failures failures');
     }
-    
+
     return results;
   }
 
@@ -397,16 +399,17 @@ mixin ErrorHandlingMixin {
       return await primaryOperation();
     } catch (e) {
       AppLogger.warning('$operationName primary failed, trying fallback: $e');
-      
+
       try {
         return await fallbackOperation();
       } catch (fallbackError, fallbackStackTrace) {
-        AppLogger.error('$operationName fallback also failed: $fallbackError', fallbackStackTrace);
+        AppLogger.error('$operationName fallback also failed: $fallbackError',
+            fallbackStackTrace);
         rethrow;
       }
     }
   }
-  
+
   /// Retry operation with exponential backoff
   Future<T> retryOperation<T>(
     Future<T> Function() operation,
@@ -417,24 +420,29 @@ mixin ErrorHandlingMixin {
   }) async {
     int attempts = 0;
     Duration currentDelay = initialDelay;
-    
+
     while (attempts < maxRetries) {
       try {
         return await operation();
       } catch (e, stackTrace) {
         attempts++;
-        
+
         if (attempts >= maxRetries) {
-          AppLogger.error('$operationName failed after $maxRetries attempts: $e', stackTrace);
+          AppLogger.error(
+              '$operationName failed after $maxRetries attempts: $e',
+              stackTrace);
           rethrow;
         }
-        
-        AppLogger.warning('$operationName attempt $attempts failed, retrying in ${currentDelay.inSeconds}s: $e');
+
+        AppLogger.warning(
+            '$operationName attempt $attempts failed, retrying in ${currentDelay.inSeconds}s: $e');
         await Future.delayed(currentDelay);
-        currentDelay = Duration(milliseconds: (currentDelay.inMilliseconds * backoffMultiplier).round());
+        currentDelay = Duration(
+            milliseconds:
+                (currentDelay.inMilliseconds * backoffMultiplier).round());
       }
     }
-    
+
     throw Exception('Should never reach here');
   }
 
@@ -452,11 +460,12 @@ mixin ErrorHandlingMixin {
   void handleCategorizedError(dynamic error, String operation) {
     final errorCategory = classifyError(error);
     final userMessage = getUserMessageForErrorType(errorCategory);
-    
+
     handleUserError(userMessage);
-    
+
     // Enhanced logging with error classification
-    AppLogger.error('Categorized error in $operation [${errorCategory.name}]: $error');
+    AppLogger.error(
+        'Categorized error in $operation [${errorCategory.name}]: $error');
   }
 
   /// Classifies errors into specific categories for intelligent handling.
@@ -468,7 +477,7 @@ mixin ErrorHandlingMixin {
   ErrorType classifyError(dynamic error) {
     if (error is Exception) {
       final errorMessage = error.toString().toLowerCase();
-      
+
       // DNS resolution errors (critical for production DNS issues)
       if (errorMessage.contains('resolve') ||
           errorMessage.contains('dns') ||
@@ -477,29 +486,28 @@ mixin ErrorHandlingMixin {
           errorMessage.contains('name resolution failed')) {
         return ErrorType.dnsResolution;
       }
-      
+
       // Network connectivity errors
-      if (errorMessage.contains('network') || 
+      if (errorMessage.contains('network') ||
           errorMessage.contains('connection') ||
           errorMessage.contains('timeout') ||
           errorMessage.contains('unreachable')) {
         return ErrorType.networkConnectivity;
       }
-      
+
       // Authentication and permission errors
-      if (errorMessage.contains('permission') || 
+      if (errorMessage.contains('permission') ||
           errorMessage.contains('unauthorized') ||
           errorMessage.contains('auth') ||
           errorMessage.contains('forbidden')) {
         return ErrorType.authentication;
       }
-      
+
       // Resource not found errors
-      if (errorMessage.contains('not found') ||
-          errorMessage.contains('404')) {
+      if (errorMessage.contains('not found') || errorMessage.contains('404')) {
         return ErrorType.notFound;
       }
-      
+
       // Service unavailable errors
       if (errorMessage.contains('service unavailable') ||
           errorMessage.contains('503') ||
@@ -508,7 +516,7 @@ mixin ErrorHandlingMixin {
         return ErrorType.serviceUnavailable;
       }
     }
-    
+
     return ErrorType.unknown;
   }
 
@@ -539,7 +547,7 @@ mixin ErrorHandlingMixin {
     // Default implementation - can be overridden
     AppLogger.error('User error: $message');
   }
-  
+
   /// Handle user-facing info messages - to be overridden by mixing class
   void handleUserInfo(String message) {
     // Default implementation - can be overridden
@@ -554,7 +562,7 @@ mixin ErrorHandlingMixin {
   /// Returns `true` if the error indicates a recoverable condition
   bool isRecoverableError(dynamic error) {
     final errorCategory = classifyError(error);
-    
+
     switch (errorCategory) {
       case ErrorType.dnsResolution:
       case ErrorType.networkConnectivity:
@@ -584,7 +592,7 @@ mixin ErrorHandlingMixin {
   bool isNetworkConnectivityError(dynamic error) {
     return classifyError(error) == ErrorType.networkConnectivity;
   }
-  
+
   /// Extract user-friendly message from error with enhanced DNS-aware messaging.
   /// This enhanced method provides user-friendly error messages with specific
   /// handling for DNS resolution issues and other connectivity problems.

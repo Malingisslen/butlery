@@ -28,13 +28,17 @@ class SharedWithMeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     AppLogger.info('SharedWithMeView.build() called');
-    AppLogger.info('Creating ChangeNotifierProvider for SharedContentCoordinatorViewModel');
+    AppLogger.info(
+        'Creating ChangeNotifierProvider for SharedContentCoordinatorViewModel');
 
     return ChangeNotifierProvider<SharedContentCoordinatorViewModel>(
       create: (context) {
-        AppLogger.info('Provider create() called - getting SharedContentCoordinatorViewModel from ServiceLocator');
-        final viewModel = ServiceLocator.get<SharedContentCoordinatorViewModel>();
-        AppLogger.info('SharedContentCoordinatorViewModel obtained from ServiceLocator');
+        AppLogger.info(
+            'Provider create() called - getting SharedContentCoordinatorViewModel from ServiceLocator');
+        final viewModel =
+            ServiceLocator.get<SharedContentCoordinatorViewModel>();
+        AppLogger.info(
+            'SharedContentCoordinatorViewModel obtained from ServiceLocator');
         return viewModel;
       },
       child: const _SharedWithMeViewContent(),
@@ -98,8 +102,10 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
                 child: CustomScrollView(
                   slivers: [
                     SharedContentAppBar.build(context, viewModel),
-                    SharedContentSearchBar.build(context, viewModel, _searchController),
-                    SharedContentTabBar.build(context, viewModel, _tabController),
+                    SharedContentSearchBar.build(
+                        context, viewModel, _searchController),
+                    SharedContentTabBar.build(
+                        context, viewModel, _tabController),
                     _buildContent(context, viewModel),
                   ],
                 ),
@@ -111,7 +117,8 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     );
   }
 
-  Widget _buildContent(BuildContext context, SharedContentCoordinatorViewModel viewModel) {
+  Widget _buildContent(
+      BuildContext context, SharedContentCoordinatorViewModel viewModel) {
     if (viewModel.isGloballyLoading) {
       return const SliverFillRemaining(
         child: Center(
@@ -159,8 +166,8 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     // Check if search is active and no results - check each specialized viewmodel
     final hasSearchQuery = viewModel.searchViewModel.hasSearchQuery;
     final hasFilteredContent = viewModel.recipeViewModel.hasFilteredContent ||
-                                viewModel.menuViewModel.hasFilteredContent ||
-                                viewModel.shoppingViewModel.hasFilteredContent;
+        viewModel.menuViewModel.hasFilteredContent ||
+        viewModel.shoppingViewModel.hasFilteredContent;
 
     if (!hasFilteredContent && hasSearchQuery) {
       return SliverFillRemaining(
@@ -178,9 +185,12 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
       child: TabBarView(
         controller: _tabController,
         children: [
-          SharedContentLists.buildRecipesList(context, viewModel, _searchController),
-          SharedContentLists.buildMenusList(context, viewModel, _searchController),
-          SharedContentLists.buildSharedShoppingListsList(context, viewModel, _searchController),
+          SharedContentLists.buildRecipesList(
+              context, viewModel, _searchController),
+          SharedContentLists.buildMenusList(
+              context, viewModel, _searchController),
+          SharedContentLists.buildSharedShoppingListsList(
+              context, viewModel, _searchController),
         ],
       ),
     );

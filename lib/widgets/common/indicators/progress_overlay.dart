@@ -28,10 +28,10 @@ class ProgressOverlay extends StatelessWidget {
   const ProgressOverlay.avatar({
     super.key,
     required this.text,
-  }) : shape = BoxShape.circle,
-       backgroundColor = null,
-       progressColor = AppColors.neutralLight,
-       textColor = AppColors.neutralLight;
+  })  : shape = BoxShape.circle,
+        backgroundColor = null,
+        progressColor = AppColors.neutralLight,
+        textColor = AppColors.neutralLight;
 
   /// Rectangular progress overlay for general use
   const ProgressOverlay.rectangle({
@@ -48,7 +48,8 @@ class ProgressOverlay extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           shape: shape,
-          color: backgroundColor ?? AppColors.neutralDark.withValues(alpha: 0.7),
+          color:
+              backgroundColor ?? AppColors.neutralDark.withValues(alpha: 0.7),
         ),
         child: Center(
           child: Column(

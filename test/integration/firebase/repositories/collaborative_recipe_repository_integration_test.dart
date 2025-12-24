@@ -15,7 +15,8 @@ import '../../../test_support/stream_stabilizer.dart';
 import '../../../test_support/test_data_isolator.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/mocks/firestore_singleton.dart';
-import '../../../infrastructure/mocks/production_mocks.dart' show MockAuthRepository;
+import '../../../infrastructure/mocks/production_mocks.dart'
+    show MockAuthRepository;
 
 void main() {
   group('Collaborative Recipe Repository Integration', () {

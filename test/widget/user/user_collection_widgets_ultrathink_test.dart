@@ -10,8 +10,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 void main() {
-  group('UserCollectionWidgets Static Class Tests - ULTRATHINK METHODOLOGY', () {
-    
+  group('UserCollectionWidgets Static Class Tests - ULTRATHINK METHODOLOGY',
+      () {
     // Helper to wrap widgets with MaterialApp for proper theming
     Widget createTestWidget(Widget child) {
       return MaterialApp(
@@ -28,7 +28,7 @@ void main() {
         home: Scaffold(
           body: SizedBox(
             height: 800, // Increased height for grid content
-            width: 500,  // Increased width for grid layouts
+            width: 500, // Increased width for grid layouts
             child: child,
           ),
         ),
@@ -37,20 +37,23 @@ void main() {
 
     // Helper to create test user data
     List<UserDisplayData> createTestUsers({int count = 3}) {
-      return List.generate(count, (index) => UserDisplayData(
-        id: 'user_$index',
-        displayName: 'User ${index + 1}',
-        email: 'user${index + 1}@test.com',
-        imageUrl: 'https://example.com/avatar$index.jpg',
-        subtitle: 'Subtitle $index',
-        isOnline: index.isEven,
-      ));
+      return List.generate(
+          count,
+          (index) => UserDisplayData(
+                id: 'user_$index',
+                displayName: 'User ${index + 1}',
+                email: 'user${index + 1}@test.com',
+                imageUrl: 'https://example.com/avatar$index.jpg',
+                subtitle: 'Subtitle $index',
+                isOnline: index.isEven,
+              ));
     }
 
     group('userList() Static Method Tests', () {
-      testWidgets('should create ListView.separated with basic user data', (WidgetTester tester) async {
+      testWidgets('should create ListView.separated with basic user data',
+          (WidgetTester tester) async {
         final users = createTestUsers();
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userList(users: users),
         ));
@@ -70,9 +73,10 @@ void main() {
         expect(listView.childrenDelegate, isA<SliverChildBuilderDelegate>());
       });
 
-      testWidgets('should apply default ListView properties', (WidgetTester tester) async {
+      testWidgets('should apply default ListView properties',
+          (WidgetTester tester) async {
         final users = createTestUsers();
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userList(users: users),
         ));
@@ -80,14 +84,16 @@ void main() {
         final listView = tester.widget<ListView>(find.byType(ListView));
         expect(listView.shrinkWrap, isTrue);
         expect(listView.physics, isA<NeverScrollableScrollPhysics>());
-        expect(listView.padding, equals(const EdgeInsets.all(AppDimensions.paddingL)));
+        expect(listView.padding,
+            equals(const EdgeInsets.all(AppDimensions.paddingL)));
       });
 
-      testWidgets('should accept custom ListView properties', (WidgetTester tester) async {
+      testWidgets('should accept custom ListView properties',
+          (WidgetTester tester) async {
         final users = createTestUsers();
         const customPadding = EdgeInsets.all(20);
         const customPhysics = ClampingScrollPhysics();
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userList(
             users: users,
@@ -103,10 +109,11 @@ void main() {
         expect(listView.padding, equals(customPadding));
       });
 
-      testWidgets('should trigger onUserTap callback', (WidgetTester tester) async {
+      testWidgets('should trigger onUserTap callback',
+          (WidgetTester tester) async {
         final users = createTestUsers();
         UserDisplayData? tappedUser;
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userList(
             users: users,
@@ -118,9 +125,10 @@ void main() {
         expect(tappedUser?.displayName, equals('User 1'));
       });
 
-      testWidgets('should show SizedBox separators between items', (WidgetTester tester) async {
+      testWidgets('should show SizedBox separators between items',
+          (WidgetTester tester) async {
         final users = createTestUsers(count: 2);
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userList(users: users),
         ));
@@ -128,7 +136,7 @@ void main() {
         // ListView.separated should create separators between items
         final listView = tester.widget<ListView>(find.byType(ListView));
         expect(listView.childrenDelegate, isA<SliverChildBuilderDelegate>());
-        
+
         // The ListView should be properly configured with separator builder
         expect(find.byType(ListView), findsOneWidget);
         expect(find.text('User 1'), findsOneWidget);
@@ -137,9 +145,10 @@ void main() {
     });
 
     group('userGrid() Static Method Tests', () {
-      testWidgets('should create GridView.builder with basic user data', (WidgetTester tester) async {
+      testWidgets('should create GridView.builder with basic user data',
+          (WidgetTester tester) async {
         final users = createTestUsers();
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userGrid(users: users),
         ));
@@ -159,9 +168,10 @@ void main() {
         expect(gridView.childrenDelegate, isA<SliverChildBuilderDelegate>());
       });
 
-      testWidgets('should apply default GridView properties', (WidgetTester tester) async {
+      testWidgets('should apply default GridView properties',
+          (WidgetTester tester) async {
         final users = createTestUsers();
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userGrid(users: users),
         ));
@@ -169,25 +179,29 @@ void main() {
         final gridView = tester.widget<GridView>(find.byType(GridView));
         expect(gridView.shrinkWrap, isTrue);
         expect(gridView.physics, isA<NeverScrollableScrollPhysics>());
-        expect(gridView.padding, equals(const EdgeInsets.all(AppDimensions.paddingL)));
-        
-        final delegate = gridView.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
+        expect(gridView.padding,
+            equals(const EdgeInsets.all(AppDimensions.paddingL)));
+
+        final delegate =
+            gridView.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
         expect(delegate.crossAxisCount, equals(2));
         expect(delegate.childAspectRatio, equals(1.2));
         expect(delegate.crossAxisSpacing, equals(AppDimensions.spacingS));
         expect(delegate.mainAxisSpacing, equals(AppDimensions.spacingS));
       });
 
-      testWidgets('should accept custom GridView properties', (WidgetTester tester) async {
+      testWidgets('should accept custom GridView properties',
+          (WidgetTester tester) async {
         final users = createTestUsers();
         const customPadding = EdgeInsets.all(16);
         const customPhysics = BouncingScrollPhysics();
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userGrid(
             users: users,
-            crossAxisCount: 2,  // Wider cells to accommodate content
-            aspectRatio: 0.8,   // Taller cells to fit avatar + text + padding (160px needed)
+            crossAxisCount: 2, // Wider cells to accommodate content
+            aspectRatio:
+                0.8, // Taller cells to fit avatar + text + padding (160px needed)
             padding: customPadding,
             physics: customPhysics,
             shrinkWrap: false,
@@ -198,16 +212,18 @@ void main() {
         expect(gridView.shrinkWrap, isFalse);
         expect(gridView.physics, isA<BouncingScrollPhysics>());
         expect(gridView.padding, equals(customPadding));
-        
-        final delegate = gridView.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
+
+        final delegate =
+            gridView.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
         expect(delegate.crossAxisCount, equals(2));
         expect(delegate.childAspectRatio, equals(0.8));
       });
 
-      testWidgets('should trigger onUserTap callback', (WidgetTester tester) async {
+      testWidgets('should trigger onUserTap callback',
+          (WidgetTester tester) async {
         final users = createTestUsers();
         UserDisplayData? tappedUser;
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userGrid(
             users: users,
@@ -221,7 +237,8 @@ void main() {
     });
 
     group('emptyUserState() Static Method Tests', () {
-      testWidgets('should render with default properties', (WidgetTester tester) async {
+      testWidgets('should render with default properties',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.emptyUserState(),
         ));
@@ -233,7 +250,8 @@ void main() {
         expect(find.text('Inga användare att visa'), findsOneWidget);
       });
 
-      testWidgets('should apply custom text and icon', (WidgetTester tester) async {
+      testWidgets('should apply custom text and icon',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.emptyUserState(
             title: 'Custom Title',
@@ -248,9 +266,10 @@ void main() {
         expect(find.text('Inga användare'), findsNothing);
       });
 
-      testWidgets('should display action button when provided', (WidgetTester tester) async {
+      testWidgets('should display action button when provided',
+          (WidgetTester tester) async {
         bool actionCalled = false;
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.emptyUserState(
             actionLabel: 'Add User',
@@ -260,12 +279,14 @@ void main() {
 
         expect(find.byType(ElevatedButton), findsOneWidget);
         expect(find.text('Add User'), findsOneWidget);
-        
+
         await tester.tap(find.text('Add User'));
         expect(actionCalled, isTrue);
       });
 
-      testWidgets('should not display action button when only actionLabel provided', (WidgetTester tester) async {
+      testWidgets(
+          'should not display action button when only actionLabel provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.emptyUserState(
             actionLabel: 'Add User',
@@ -276,7 +297,9 @@ void main() {
         expect(find.text('Add User'), findsNothing);
       });
 
-      testWidgets('should not display action button when only onAction provided', (WidgetTester tester) async {
+      testWidgets(
+          'should not display action button when only onAction provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.emptyUserState(
             onAction: () {},
@@ -286,7 +309,8 @@ void main() {
         expect(find.byType(ElevatedButton), findsNothing);
       });
 
-      testWidgets('should have correct icon styling', (WidgetTester tester) async {
+      testWidgets('should have correct icon styling',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.emptyUserState(),
         ));
@@ -296,7 +320,8 @@ void main() {
         expect(icon.color, equals(AppColors.textTertiary));
       });
 
-      testWidgets('should have correct text styling', (WidgetTester tester) async {
+      testWidgets('should have correct text styling',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.emptyUserState(),
         ));
@@ -304,13 +329,15 @@ void main() {
         final titleText = tester.widget<Text>(find.text('Inga användare'));
         expect(titleText.style, equals(AppTextStyles.titleMedium));
         expect(titleText.textAlign, equals(TextAlign.center));
-        
-        final subtitleText = tester.widget<Text>(find.text('Inga användare att visa'));
+
+        final subtitleText =
+            tester.widget<Text>(find.text('Inga användare att visa'));
         expect(subtitleText.style, equals(AppTextStyles.titleMedium));
         expect(subtitleText.textAlign, equals(TextAlign.center));
       });
 
-      testWidgets('should have correct button styling', (WidgetTester tester) async {
+      testWidgets('should have correct button styling',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.emptyUserState(
             actionLabel: 'Add User',
@@ -318,15 +345,19 @@ void main() {
           ),
         ));
 
-        final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+        final button =
+            tester.widget<ElevatedButton>(find.byType(ElevatedButton));
         final buttonStyle = button.style!;
-        expect(buttonStyle.backgroundColor?.resolve({}), equals(AppColors.primaryBlue));
-        expect(buttonStyle.foregroundColor?.resolve({}), equals(AppColors.cardWhite));
+        expect(buttonStyle.backgroundColor?.resolve({}),
+            equals(AppColors.primaryBlue));
+        expect(buttonStyle.foregroundColor?.resolve({}),
+            equals(AppColors.cardWhite));
       });
     });
 
     group('userBadge() Static Method Tests', () {
-      testWidgets('should render with required label', (WidgetTester tester) async {
+      testWidgets('should render with required label',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userBadge(label: 'Admin'),
         ));
@@ -342,24 +373,25 @@ void main() {
 
         final container = tester.widget<Container>(find.byType(Container));
         expect(
-          container.padding, 
-          equals(const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingXs,
-            vertical: AppDimensions.spacingXs / 2,
-          ))
-        );
-        
+            container.padding,
+            equals(const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingXs,
+              vertical: AppDimensions.spacingXs / 2,
+            )));
+
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.color, equals(AppColors.primaryBlue));
-        expect(decoration.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadiusS)));
-        
+        expect(decoration.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadiusS)));
+
         final text = tester.widget<Text>(find.text('Admin'));
         expect(text.style?.color, equals(AppColors.cardWhite));
       });
 
-      testWidgets('should accept custom background color', (WidgetTester tester) async {
+      testWidgets('should accept custom background color',
+          (WidgetTester tester) async {
         const customColor = Colors.red;
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userBadge(
             label: 'Admin',
@@ -372,9 +404,10 @@ void main() {
         expect(decoration.color, equals(customColor));
       });
 
-      testWidgets('should accept custom text color', (WidgetTester tester) async {
+      testWidgets('should accept custom text color',
+          (WidgetTester tester) async {
         const customTextColor = Colors.yellow;
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userBadge(
             label: 'Admin',
@@ -388,7 +421,7 @@ void main() {
 
       testWidgets('should accept custom padding', (WidgetTester tester) async {
         const customPadding = EdgeInsets.all(20);
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userBadge(
             label: 'Admin',
@@ -400,7 +433,8 @@ void main() {
         expect(container.padding, equals(customPadding));
       });
 
-      testWidgets('should use AppTextStyles.labelSmall for text', (WidgetTester tester) async {
+      testWidgets('should use AppTextStyles.labelSmall for text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userBadge(label: 'Admin'),
         ));
@@ -421,7 +455,7 @@ void main() {
 
       testWidgets('should handle long label text', (WidgetTester tester) async {
         const longLabel = 'This is a very long badge label that might wrap';
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userBadge(label: longLabel),
         ));
@@ -429,9 +463,10 @@ void main() {
         expect(find.text(longLabel), findsOneWidget);
       });
 
-      testWidgets('should handle Swedish characters', (WidgetTester tester) async {
+      testWidgets('should handle Swedish characters',
+          (WidgetTester tester) async {
         const swedishLabel = 'Ägare';
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userBadge(label: swedishLabel),
         ));
@@ -441,15 +476,16 @@ void main() {
     });
 
     group('Static Class Structure Tests', () {
-      testWidgets('all methods should return Widget instances', (WidgetTester tester) async {
+      testWidgets('all methods should return Widget instances',
+          (WidgetTester tester) async {
         final users = createTestUsers();
-        
+
         // Test that all static methods return Widgets
         final userList = UserCollectionWidgets.userList(users: users);
         final userGrid = UserCollectionWidgets.userGrid(users: users);
         final emptyState = UserCollectionWidgets.emptyUserState();
         final badge = UserCollectionWidgets.userBadge(label: 'Test');
-        
+
         expect(userList, isA<Widget>());
         expect(userGrid, isA<Widget>());
         expect(emptyState, isA<Widget>());
@@ -458,9 +494,10 @@ void main() {
     });
 
     group('Edge Cases and Error Handling', () {
-      testWidgets('should handle very large user lists', (WidgetTester tester) async {
+      testWidgets('should handle very large user lists',
+          (WidgetTester tester) async {
         final largeUserList = createTestUsers(count: 100);
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userList(users: largeUserList),
         ));
@@ -469,9 +506,10 @@ void main() {
         expect(find.text('User 1'), findsOneWidget);
       });
 
-      testWidgets('should handle single user in grid', (WidgetTester tester) async {
+      testWidgets('should handle single user in grid',
+          (WidgetTester tester) async {
         final singleUser = createTestUsers(count: 1);
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userGrid(users: singleUser),
         ));
@@ -480,7 +518,8 @@ void main() {
         expect(find.text('User 1'), findsOneWidget);
       });
 
-      testWidgets('should handle users with null/empty data', (WidgetTester tester) async {
+      testWidgets('should handle users with null/empty data',
+          (WidgetTester tester) async {
         final usersWithEmptyData = [
           UserDisplayData(
             id: 'empty',
@@ -491,18 +530,20 @@ void main() {
             isOnline: false,
           ),
         ];
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userList(users: usersWithEmptyData),
         ));
 
         expect(find.byType(ListView), findsOneWidget);
-        expect(find.text(''), findsWidgets); // Empty strings should still render
+        expect(
+            find.text(''), findsWidgets); // Empty strings should still render
       });
 
-      testWidgets('should handle special characters in badge labels', (WidgetTester tester) async {
+      testWidgets('should handle special characters in badge labels',
+          (WidgetTester tester) async {
         const specialLabel = '!@#\$%^&*()_+-=[]{}|;:,.<>?';
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userBadge(label: specialLabel),
         ));
@@ -510,9 +551,10 @@ void main() {
         expect(find.text(specialLabel), findsOneWidget);
       });
 
-      testWidgets('should handle extreme grid configurations', (WidgetTester tester) async {
+      testWidgets('should handle extreme grid configurations',
+          (WidgetTester tester) async {
         final users = createTestUsers();
-        
+
         await tester.pumpWidget(createTestWidget(
           UserCollectionWidgets.userGrid(
             users: users,
@@ -522,7 +564,8 @@ void main() {
         ));
 
         final gridView = tester.widget<GridView>(find.byType(GridView));
-        final delegate = gridView.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
+        final delegate =
+            gridView.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
         expect(delegate.crossAxisCount, equals(1));
         expect(delegate.childAspectRatio, equals(1.5));
       });

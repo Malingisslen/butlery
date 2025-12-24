@@ -30,8 +30,10 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 
 /// Unified shopping ViewModel coordinating shopping operations through service delegation.
-class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin {
-  final UnifiedShoppingService _shoppingService = ServiceLocator.get<UnifiedShoppingService>();
+class UnifiedShoppingViewModel extends ChangeNotifier
+    with StateNotifierMixin, AsyncOperationMixin {
+  final UnifiedShoppingService _shoppingService =
+      ServiceLocator.get<UnifiedShoppingService>();
   late final ShoppingAnalyticsManager _analyticsManager;
   late final ShoppingItemOperationsManager _itemOpsManager;
 
@@ -44,7 +46,8 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
   List<UnifiedShoppingList> get personalLists => _shoppingService.personalLists;
 
   /// Collaborative shopping lists only
-  List<UnifiedShoppingList> get collaborativeLists => _shoppingService.collaborativeLists;
+  List<UnifiedShoppingList> get collaborativeLists =>
+      _shoppingService.collaborativeLists;
 
   /// Currently active shopping list
   UnifiedShoppingList? get activeList => _shoppingService.activeList;
@@ -97,7 +100,8 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
   int get unboughtItems => (activeList?.unboughtItems).orZero();
 
   /// Shopping completion percentage
-  double get completionPercentage => (activeList?.completionPercentage).orZero();
+  double get completionPercentage =>
+      (activeList?.completionPercentage).orZero();
 
   /// Active list summary
   String get listSummary => activeList?.summary ?? 'Ingen aktiv lista';
@@ -108,7 +112,8 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
   // ===== USER CONTEXT AND IDENTIFICATION =====
 
   /// Current user identifier
-  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
+  String? get currentUserId =>
+      ServiceLocator.get<PermissionService>().currentUserId;
 
   /// Current user display name
   String? get currentUserDisplayName => _shoppingService.currentUserDisplayName;
@@ -173,7 +178,9 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
 
   /// Renames active shopping list
   Future<bool> renameActiveList(String newName) async {
-    if (activeList == null || ValidationUtils.isNullOrWhitespace(newName)) return false;
+    if (activeList == null || ValidationUtils.isNullOrWhitespace(newName)) {
+      return false;
+    }
     return await _shoppingService.renameList(activeList!.id, newName.trim());
   }
 
@@ -216,7 +223,8 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
   }
 
   /// Adds bulk items to specific shopping list using batch operations
-  Future<bool> addItemsToList(String listId, List<UnifiedShoppingItem> items) async {
+  Future<bool> addItemsToList(
+      String listId, List<UnifiedShoppingItem> items) async {
     await setActiveList(listId);
     return await _shoppingService.addItemsBatch(items);
   }
@@ -236,10 +244,11 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
     if (ValidationUtils.isNullOrWhitespace(name)) {
       return false;
     }
-    
+
     // ULTRATHINK PHASE 13A: Enhanced permission checking
-    AppLogger.info('Starting addItem for "${name.trim()}" to list: ${activeList?.name}');
-    
+    AppLogger.info(
+        'Starting addItem for "${name.trim()}" to list: ${activeList?.name}');
+
     if (!canEditActiveList) {
       AppLogger.error('PERMISSION DENIED - User cannot edit active list');
       return false;
@@ -255,13 +264,13 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
         estimatedPrice: estimatedPrice,
         priority: priority,
       );
-      
+
       if (result) {
         AppLogger.success('Successfully added item "${name.trim()}" to list');
       } else {
         AppLogger.error('Failed to add item "${name.trim()}" to list');
       }
-      
+
       return result;
     } catch (e) {
       AppLogger.error('Exception while adding item: $e');
@@ -296,7 +305,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
       AppLogger.warning('PERMISSION DENIED: User cannot edit active list');
       return false;
     }
-    
+
     return await _shoppingService.toggleItemBought(itemId);
   }
 
@@ -306,7 +315,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
       AppLogger.warning('PERMISSION DENIED: User cannot edit active list');
       return false;
     }
-    
+
     return await _shoppingService.removeItemFromActiveList(itemId);
   }
 
@@ -338,7 +347,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
       AppLogger.warning('PERMISSION DENIED: User cannot edit active list');
       return false;
     }
-    
+
     return await _shoppingService.updateItemInActiveList(
       itemId: itemId,
       name: name,
@@ -373,7 +382,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
       return _itemOpsManager.addItemsFromRecipe(
         ingredientData,
         ({required name, required amount, required unit, required category}) =>
-          addItem(name: name, amount: amount, unit: unit, category: category),
+            addItem(name: name, amount: amount, unit: unit, category: category),
       );
     });
   }
@@ -383,8 +392,7 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
       _itemOpsManager.groupItemsByCategory(items);
 
   /// Get list of all used categories
-  List<String> get usedCategories =>
-      _itemOpsManager.getUsedCategories(items);
+  List<String> get usedCategories => _itemOpsManager.getUsedCategories(items);
 
   /// Search items by name or category
   List<UnifiedShoppingItem> searchItems(String query) =>
@@ -395,25 +403,28 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
   /// Kontrollera om användaren kan redigera aktiv lista
   bool get canEditActiveList {
     if (activeList == null || currentUserId == null) {
-      AppLogger.warning('canEditActiveList - activeList: ${activeList?.name}, currentUserId: $currentUserId');
+      AppLogger.warning(
+          'canEditActiveList - activeList: ${activeList?.name}, currentUserId: $currentUserId');
       return false;
     }
-    
+
     // ULTRATHINK PHASE 13A FIX: Use correct DI system
     final permissionService = ServiceLocator.get<PermissionService>();
     final canEdit = permissionService.canEditShoppingList(activeList!.id);
-    
-    AppLogger.info('Permission check - List: ${activeList!.name} (${activeList!.type}), User: $currentUserId, CanEdit: $canEdit');
-    
+
+    AppLogger.info(
+        'Permission check - List: ${activeList!.name} (${activeList!.type}), User: $currentUserId, CanEdit: $canEdit');
+
     return canEdit;
   }
 
   /// Kontrollera om användaren kan hantera aktiv lista
   bool get canManageActiveList {
     if (activeList == null || currentUserId == null) return false;
-    
+
     // ULTRATHINK PHASE 13A FIX: Use correct DI system
-    return ServiceLocator.get<PermissionService>().canManageShoppingList(activeList!.id);
+    return ServiceLocator.get<PermissionService>()
+        .canManageShoppingList(activeList!.id);
   }
 
   /// Få medlemmar i aktiv lista
@@ -439,8 +450,8 @@ class UnifiedShoppingViewModel extends ChangeNotifier with StateNotifierMixin, A
   String exportListAsText() => _analyticsManager.exportListAsText();
 
   /// Export list as text with categories for UI
-  String exportListAsTextWithCategories() =>
-      _analyticsManager.exportListAsTextWithCategories(activeList, itemsByCategory);
+  String exportListAsTextWithCategories() => _analyticsManager
+      .exportListAsTextWithCategories(activeList, itemsByCategory);
 
   // ===== STATE MANAGEMENT =====
 

@@ -93,7 +93,8 @@ class ImageUploadService extends BaseService {
   })  : _queueManager = queueManager ?? UploadQueueManager(),
         _retryManager = retryManager ?? UploadRetryManager(),
         _progressTracker = progressTracker ?? UploadProgressTracker(),
-        _storageService = storageService ?? ServiceLocator.get<StorageService>();
+        _storageService =
+            storageService ?? ServiceLocator.get<StorageService>();
 
   // ===== PUBLIC API: SINGLE UPLOAD =====
 

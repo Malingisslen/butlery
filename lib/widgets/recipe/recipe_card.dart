@@ -50,17 +50,24 @@ class RecipeCard extends StatelessWidget {
       child: Semantics(
         label: 'Recipe: ${recipe.title}',
         child: Container(
-          margin: margin ?? const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+          margin:
+              margin ?? const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
           child: Material(
-            elevation: isSelected ? AppDimensions.elevationMedium : AppDimensions.elevationLow,
+            elevation: isSelected
+                ? AppDimensions.elevationMedium
+                : AppDimensions.elevationLow,
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-            color: isSelected ? AppColors.primaryBlue.withValues(alpha: 0.1) : null,
+            color: isSelected
+                ? AppColors.primaryBlue.withValues(alpha: 0.1)
+                : null,
             child: InkWell(
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
               onTap: onTap != null ? () => onTap!(recipe) : null,
-              onLongPress: onLongPress != null ? () => onLongPress!(recipe) : null,
+              onLongPress:
+                  onLongPress != null ? () => onLongPress!(recipe) : null,
               child: Container(
-                padding: padding ?? const EdgeInsets.all(AppDimensions.paddingM),
+                padding:
+                    padding ?? const EdgeInsets.all(AppDimensions.paddingM),
                 child: _buildCardContent(context),
               ),
             ),
@@ -144,7 +151,9 @@ class RecipeCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Expanded(child: _buildTitle(context, style: AppTextStyles.titleMedium)),
+                  Expanded(
+                      child: _buildTitle(context,
+                          style: AppTextStyles.titleMedium)),
                 ],
               ),
               if (showMetadata) ...[
@@ -196,7 +205,8 @@ class RecipeCard extends StatelessWidget {
                 fit: BoxFit.cover,
                 // PERFORMANCE FIX: Use thumbnail config optimized for 80x80 display
                 config: ImageConfig.thumbnail(
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
               )
             : Icon(
@@ -311,7 +321,8 @@ class RecipeCard extends StatelessWidget {
     return Wrap(
       spacing: AppDimensions.spacingXs,
       runSpacing: AppDimensions.spacingXs,
-      children: (recipe.tags ?? []).take(3).map((tag) => _buildTag(tag)).toList(),
+      children:
+          (recipe.tags ?? []).take(3).map((tag) => _buildTag(tag)).toList(),
     );
   }
 
@@ -336,7 +347,6 @@ class RecipeCard extends StatelessWidget {
       ),
     );
   }
-
 
   Widget _buildContextMenuButton(BuildContext context) {
     return PopupMenuButton<String>(
@@ -397,8 +407,10 @@ class RecipeCard extends StatelessWidget {
 enum RecipeCardStyle {
   /// Compact single-row layout
   compact,
+
   /// Detailed multi-row layout with full information
   detailed,
+
   /// Grid layout optimized for grid views
   grid,
 }

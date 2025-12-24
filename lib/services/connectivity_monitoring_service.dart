@@ -70,7 +70,8 @@ class ConnectivityMonitoringService extends ChangeNotifier
         _isConnectedToFirebase = isConnected;
 
         if (wasConnected != _isConnectedToFirebase) {
-          AppLogger.info('Firebase connection changed: $_isConnectedToFirebase');
+          AppLogger.info(
+              'Firebase connection changed: $_isConnectedToFirebase');
           _updateConnectionStatus();
           notifyListeners();
         }

@@ -12,7 +12,8 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
-class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
+class ChatViewModel extends ChangeNotifier
+    with StreamManagementMixin, ErrorHandlingMixin {
   final MessagingService _messagingService;
   final PresenceService? _presenceService;
 
@@ -32,9 +33,8 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
   // Typing users mapped from IDs to display names
   final Map<String, String> _userDisplayNames = {};
 
-  List<String> get typingUserNames => _typingUserIds
-      .map((id) => _userDisplayNames[id] ?? 'Okänd')
-      .toList();
+  List<String> get typingUserNames =>
+      _typingUserIds.map((id) => _userDisplayNames[id] ?? 'Okänd').toList();
 
   StreamSubscription<List<Message>>? _messagesSubscription;
   StreamSubscription<List<String>>? _typingSubscription;
@@ -61,10 +61,11 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
   List<String> get currentTypingUsers => typingUserNames;
   bool get hasTypingUsers => typingUserNames.isNotEmpty;
   bool get hasMessages => _messages.isNotEmpty;
-  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
+  String? get currentUserId =>
+      ServiceLocator.get<PermissionService>().currentUserId;
   Message? get replyToMessage => _replyToMessage;
   bool get hasReplyTarget => _replyToMessage != null;
-  
+
   String get conversationTitle {
     if (_conversation == null) return 'Laddar...';
     if (currentUserId == null) return _conversation!.title ?? 'Chatt';
@@ -73,19 +74,19 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
 
   String get conversationSubtitle {
     if (_conversation == null) return '';
-    
+
     // For group conversations, show participant count
     if (_conversation!.isGroup) {
       final count = _conversation!.participantIds.length;
       return '$count deltagare';
     }
-    
+
     // For direct conversations, show last seen or online status
     final otherParticipantId = _conversation!.participantIds
         .firstWhere((id) => id != currentUserId, orElse: () => '');
-    
+
     if (otherParticipantId.isEmpty) return '';
-    
+
     // Could return online status or last seen time here
     // For now, just return empty string since we don't track online status
     return '';
@@ -96,7 +97,8 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
   void _initializeChat() {
     if (_isDisposed) return;
 
-    AppLogger.info('🔍 [ChatViewModel] Initializing chat for conversationId: $conversationId');
+    AppLogger.info(
+        '🔍 [ChatViewModel] Initializing chat for conversationId: $conversationId');
     _loadConversation();
     _loadMessages();
     _subscribeToTypingIndicators();
@@ -104,7 +106,7 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
 
   Future<void> _loadConversation() async {
     if (_isDisposed) return;
-    
+
     if (_conversation == null) {
       try {
         _conversation = await _messagingService.getConversation(conversationId);
@@ -120,7 +122,8 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
     if (_isDisposed) return;
 
     try {
-      AppLogger.info('🔍 [ChatViewModel] Starting message stream for conversationId: $conversationId');
+      AppLogger.info(
+          '🔍 [ChatViewModel] Starting message stream for conversationId: $conversationId');
       _messagesSubscription = _messagingService
           .getConversationMessages(
             conversationId: conversationId,
@@ -142,10 +145,13 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
 
     AppLogger.info('📬 [ChatViewModel] Message stream update received');
     AppLogger.debug('📬 [ChatViewModel] ConversationId: $conversationId');
-    AppLogger.debug('📬 [ChatViewModel] Number of messages: ${messages.length}');
+    AppLogger.debug(
+        '📬 [ChatViewModel] Number of messages: ${messages.length}');
     if (messages.isNotEmpty) {
-      AppLogger.debug('📬 [ChatViewModel] First message: ${messages.first.content.substring(0, messages.first.content.length > 50 ? 50 : messages.first.content.length)}...');
-      AppLogger.debug('📬 [ChatViewModel] Last message: ${messages.last.content.substring(0, messages.last.content.length > 50 ? 50 : messages.last.content.length)}...');
+      AppLogger.debug(
+          '📬 [ChatViewModel] First message: ${messages.first.content.substring(0, messages.first.content.length > 50 ? 50 : messages.first.content.length)}...');
+      AppLogger.debug(
+          '📬 [ChatViewModel] Last message: ${messages.last.content.substring(0, messages.last.content.length > 50 ? 50 : messages.last.content.length)}...');
     }
 
     _messages = messages;
@@ -161,7 +167,7 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
 
   void _onMessagesError(dynamic error) {
     if (_isDisposed) return;
-    
+
     AppLogger.error('Messages stream error', error);
     _setError('Kunde inte ladda meddelanden');
   }
@@ -175,7 +181,7 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
   // Message operations
   Future<bool> sendTextMessage(String content) async {
     if (_isDisposed) return false;
-    
+
     if (content.trim().isEmpty) {
       _sendError = 'Meddelandet kan inte vara tomt';
       _safeNotifyListeners();
@@ -197,10 +203,10 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
       if (_replyToMessage != null) {
         _replyToMessage = null;
       }
-      
+
       _isSending = false;
       _safeNotifyListeners();
-      
+
       AppLogger.debug('Text message sent successfully');
       return true;
     } catch (e) {
@@ -218,7 +224,7 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
     String? message,
   }) async {
     if (_isDisposed) return false;
-    
+
     _isSending = true;
     _sendError = null;
     _safeNotifyListeners();
@@ -233,7 +239,7 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
 
       _isSending = false;
       _safeNotifyListeners();
-      
+
       AppLogger.debug('Recipe share sent successfully');
       return true;
     } catch (e) {
@@ -247,7 +253,7 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
 
   Future<bool> deleteMessage(String messageId) async {
     if (_isDisposed) return false;
-    
+
     try {
       await _messagingService.deleteMessage(messageId);
       AppLogger.debug('Message deleted successfully: $messageId');
@@ -310,18 +316,19 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
       if (participantIds.isEmpty) return;
 
       // Subscribe to typing indicators from PresenceService
-      _typingSubscription = _presenceService.getTypingUsersStream(conversationId, participantIds)
+      _typingSubscription = _presenceService
+          .getTypingUsersStream(conversationId, participantIds)
           .listen(
-            (typingUserIds) {
-              if (_isDisposed) return;
-              _typingUserIds = typingUserIds;
-              _loadUserDisplayNames(typingUserIds);
-              _safeNotifyListeners();
-            },
-            onError: (error) {
-              AppLogger.error('Typing subscription error', error);
-            },
-          );
+        (typingUserIds) {
+          if (_isDisposed) return;
+          _typingUserIds = typingUserIds;
+          _loadUserDisplayNames(typingUserIds);
+          _safeNotifyListeners();
+        },
+        onError: (error) {
+          AppLogger.error('Typing subscription error', error);
+        },
+      );
     } catch (e) {
       AppLogger.error('Failed to subscribe to typing indicators', e);
     }
@@ -340,14 +347,14 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
   // Reply functionality
   void setReplyToMessage(Message message) {
     if (_isDisposed) return;
-    
+
     _replyToMessage = message;
     _safeNotifyListeners();
   }
 
   void clearReplyToMessage() {
     if (_isDisposed) return;
-    
+
     _replyToMessage = null;
     _safeNotifyListeners();
   }
@@ -356,7 +363,7 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
     required String content,
   }) async {
     if (_isDisposed || _replyToMessage == null) return false;
-    
+
     _isSending = true;
     _sendError = null;
     _safeNotifyListeners();
@@ -371,7 +378,7 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
       _replyToMessage = null; // Clear reply after sending
       _isSending = false;
       _safeNotifyListeners();
-      
+
       AppLogger.debug('Reply sent successfully');
       return true;
     } catch (e) {
@@ -386,7 +393,7 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
   // Conversation operations
   Future<void> _markAsRead() async {
     if (_isDisposed) return;
-    
+
     try {
       await _messagingService.markConversationAsRead(conversationId);
     } catch (e) {
@@ -403,14 +410,14 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
     if (message.isFromCurrentUser(currentUserId ?? '')) {
       return false; // Never show avatar for own messages
     }
-    
+
     if (previousMessage == null) {
       return true; // Always show for first message
     }
-    
+
     // Show avatar if sender changed or if more than 5 minutes passed
     return previousMessage.senderId != message.senderId ||
-           message.sentAt.difference(previousMessage.sentAt).inMinutes > 5;
+        message.sentAt.difference(previousMessage.sentAt).inMinutes > 5;
   }
 
   Message? getMessageAt(int index) {
@@ -424,14 +431,14 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
 
   Future<void> refresh() async {
     if (_isDisposed) return;
-    
+
     // Stream will automatically update, this is just for UI feedback
     await Future.delayed(const Duration(milliseconds: 500));
   }
 
   void clearError() {
     if (_isDisposed) return;
-    
+
     _error = null;
     _sendError = null;
     _safeNotifyListeners();
@@ -439,7 +446,7 @@ class ChatViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHand
 
   void clearSendError() {
     if (_isDisposed) return;
-    
+
     _sendError = null;
     _safeNotifyListeners();
   }

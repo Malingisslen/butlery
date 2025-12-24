@@ -61,6 +61,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+
 /// Comprehensive unified shopping item with dual-mode support and collaborative features.
 /// Represents a complete shopping item with all associated metadata including basic shopping data,
 /// collaborative tracking information, smart formatting capabilities, and priority management.
@@ -68,23 +69,23 @@ import 'package:butlery/core/utils/serialization_utils.dart';
 class UnifiedShoppingItem {
   /// Unique identifier for this shopping item instance.
   final String id;
-  
+
   /// Name of the shopping item for identification and display.
   /// The primary identifier for the item that users see and interact with.
   final String name;
-  
+
   /// Quantity amount for the shopping item with decimal precision support.
   /// Supports both whole numbers and decimal quantities for precise shopping measurements.
   final double amount;
-  
+
   /// Unit of measurement for the shopping item quantity.
   /// Supports Swedish units with smart formatting and abbreviation mapping for optimal display.
   final String unit;
-  
+
   /// Category classification for shopping item organization.
   /// Used for grouping and organizing items within shopping lists with Swedish category names.
   final String category;
-  
+
   /// Purchase status indicating whether the item has been bought.
   /// Core shopping functionality for tracking completed purchases and list progress.
   final bool bought;
@@ -94,47 +95,47 @@ class UnifiedShoppingItem {
   /// User identifier of the person who added this item to the shopping list.
   /// Enables user attribution and collaborative tracking for shared shopping lists.
   final String? addedByUserId;
-  
+
   /// Cached display name of the user who added this item for UI performance.
   /// Stored locally to avoid additional user profile lookups during item display.
   final String? addedByDisplayName;
-  
+
   /// Timestamp when the item was originally added to the shopping list.
   /// Used for chronological tracking and collaborative audit trails.
   final DateTime? addedAt;
-  
+
   /// User identifier of the person who purchased this item.
   /// Tracks who completed the purchase for collaborative shopping accountability.
   final String? purchasedByUserId;
-  
+
   /// Cached display name of the user who purchased this item for UI performance.
   /// Stored locally to avoid additional user profile lookups during purchase display.
   final String? purchasedByDisplayName;
-  
+
   /// Timestamp when the item was purchased.
   /// Records when the purchase was completed for collaborative tracking and analytics.
   final DateTime? purchasedAt;
-  
+
   /// User identifier of the person who last modified this item.
   /// Tracks the most recent editor for collaborative change attribution.
   final String? lastModifiedByUserId;
-  
+
   /// Cached display name of the user who last modified this item for UI performance.
   /// Stored locally to avoid additional user profile lookups during modification display.
   final String? lastModifiedByDisplayName;
-  
+
   /// Timestamp when the item was last modified.
   /// Used for collaborative tracking and determining item freshness in shared lists.
   final DateTime? lastModifiedAt;
-  
+
   /// Optional note or comment attached to the shopping item.
   /// Allows for additional context, specifications, or collaborative communication about the item.
   final String? note;
-  
+
   /// Estimated price for the shopping item for budget planning.
   /// Optional pricing information for budget tracking and shopping cost estimation.
   final double? estimatedPrice;
-  
+
   /// Priority level for the shopping item with range 1-5 where 5 is highest priority.
   /// Used for item organization and visual prioritization with emoji indicators.
   final int priority;
@@ -276,16 +277,16 @@ class UnifiedShoppingItem {
   /// for the presence of user attribution information.
   /// Returns true if the item includes collaborative tracking data.
   bool get isCollaborative => addedByUserId != null;
-  
+
   /// Checks if this shopping item has been purchased.
   /// Provides convenient access to purchase status for shopping list completion tracking.
   /// Returns true if the item has been marked as bought.
   bool get isPurchased => bought;
-  
+
   /// Alias for purchase status for backward compatibility with legacy code.
   /// Provides compatibility with existing code that uses 'isCompleted' terminology.
   bool get isCompleted => bought;
-  
+
   /// Alias for amount property for backward compatibility with legacy code.
   /// Provides compatibility with existing code that uses 'quantity' terminology.
   double get quantity => amount;
@@ -589,19 +590,27 @@ class UnifiedShoppingItem {
       name: SerializationUtils.safeString(data, 'name'),
       amount: SerializationUtils.safeDouble(data, 'amount'),
       unit: SerializationUtils.safeString(data, 'unit'),
-      category: SerializationUtils.safeString(data, 'category', defaultValue: 'Övrigt'),
+      category: SerializationUtils.safeString(data, 'category',
+          defaultValue: 'Övrigt'),
       bought: SerializationUtils.safeBool(data, 'bought'),
-      addedByUserId: SerializationUtils.safeNullableString(data, 'addedByUserId'),
-      addedByDisplayName: SerializationUtils.safeNullableString(data, 'addedByDisplayName'),
+      addedByUserId:
+          SerializationUtils.safeNullableString(data, 'addedByUserId'),
+      addedByDisplayName:
+          SerializationUtils.safeNullableString(data, 'addedByDisplayName'),
       addedAt: SerializationUtils.safeDateTime(data, 'addedAt'),
-      purchasedByUserId: SerializationUtils.safeNullableString(data, 'purchasedByUserId'),
-      purchasedByDisplayName: SerializationUtils.safeNullableString(data, 'purchasedByDisplayName'),
+      purchasedByUserId:
+          SerializationUtils.safeNullableString(data, 'purchasedByUserId'),
+      purchasedByDisplayName:
+          SerializationUtils.safeNullableString(data, 'purchasedByDisplayName'),
       purchasedAt: SerializationUtils.safeDateTime(data, 'purchasedAt'),
-      lastModifiedByUserId: SerializationUtils.safeNullableString(data, 'lastModifiedByUserId'),
-      lastModifiedByDisplayName: SerializationUtils.safeNullableString(data, 'lastModifiedByDisplayName'),
+      lastModifiedByUserId:
+          SerializationUtils.safeNullableString(data, 'lastModifiedByUserId'),
+      lastModifiedByDisplayName: SerializationUtils.safeNullableString(
+          data, 'lastModifiedByDisplayName'),
       lastModifiedAt: SerializationUtils.safeDateTime(data, 'lastModifiedAt'),
       note: SerializationUtils.safeNullableString(data, 'note'),
-      estimatedPrice: SerializationUtils.safeNullableDouble(data, 'estimatedPrice'),
+      estimatedPrice:
+          SerializationUtils.safeNullableDouble(data, 'estimatedPrice'),
       priority: SerializationUtils.safeInt(data, 'priority', defaultValue: 3),
     );
   }

@@ -234,7 +234,8 @@ class PortionScalerUI {
               const SizedBox(width: AppDimensions.spacingXs),
               Flexible(
                 child: Text(
-                  _buildStatusText(currentPortions, originalPortions, convertToSwedish),
+                  _buildStatusText(
+                      currentPortions, originalPortions, convertToSwedish),
                   style: AppTextStyles.bodySmall.copyWith(
                     color: Theme.of(context).colorScheme.onSecondaryContainer,
                     fontWeight: FontWeight.w500,
@@ -419,7 +420,8 @@ class PortionScalerUI {
     final List<String> status = [];
 
     if (currentPortions != originalPortions) {
-      status.add('Skalat från $originalPortions till $currentPortions portioner');
+      status
+          .add('Skalat från $originalPortions till $currentPortions portioner');
     }
 
     if (convertToSwedish) {

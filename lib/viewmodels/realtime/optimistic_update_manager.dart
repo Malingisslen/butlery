@@ -29,7 +29,8 @@ class OptimisticUpdateManager {
     List<Recipe> Function(List<Recipe>) updateFunction, [
     List<Recipe>? currentRecipes,
   ]) {
-    final baseRecipes = currentRecipes ?? _optimisticChanges[categoryName] ?? [];
+    final baseRecipes =
+        currentRecipes ?? _optimisticChanges[categoryName] ?? [];
     _optimisticChanges[categoryName] = updateFunction(baseRecipes);
     _hasOptimisticChanges = true;
 

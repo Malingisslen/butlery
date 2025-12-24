@@ -128,7 +128,6 @@ class FormValidators {
     };
   }
 
-
   /// URL validator
   static FormFieldValidator<String> url() {
     return (value) {
@@ -189,7 +188,6 @@ class FormValidators {
       return null;
     };
   }
-
 
   /// Comment validator for recipe comments.
   static FormFieldValidator<String> comment() {
@@ -308,7 +306,7 @@ class FormValidators {
   static FormFieldValidator<String> recipeTags() {
     return (value) {
       if (value == null || value.isEmpty) return null;
-      
+
       final tags = value.split(',').map((tag) => tag.trim()).toList();
       for (final tag in tags) {
         if (tag.isEmpty) continue;
@@ -333,32 +331,29 @@ class FormValidators {
     };
   }
 
-
-
-
   /// Password strength validation
   static FormFieldValidator<String> strongPassword() {
     return (value) {
       if (value == null || value.isEmpty) {
         return 'Lösenord krävs';
       }
-      
+
       if (value.length < 8) {
         return 'Lösenordet måste vara minst 8 tecken';
       }
-      
+
       if (!value.contains(RegExp(r'[A-Z]'))) {
         return 'Lösenordet måste innehålla minst en stor bokstav';
       }
-      
+
       if (!value.contains(RegExp(r'[a-z]'))) {
         return 'Lösenordet måste innehålla minst en liten bokstav';
       }
-      
+
       if (!value.contains(RegExp(r'[0-9]'))) {
         return 'Lösenordet måste innehålla minst en siffra';
       }
-      
+
       return null;
     };
   }
@@ -380,21 +375,22 @@ class FormValidators {
   static FormFieldValidator<String> recipeSourceUrl() {
     return (value) {
       if (value == null || value.isEmpty) return null;
-      
+
       // Allow Butlery system URLs (shared/imported content)
       if (value.startsWith('Delad från') ||
           value.startsWith('Importerad från') ||
           value.contains('Butlery')) {
         return null;
       }
-      
+
       // For other URLs, validate as normal URL
       return url()(value);
     };
   }
 
   /// Optional validation - only validate if value is not empty
-  static FormFieldValidator<String> optional(FormFieldValidator<String> validator) {
+  static FormFieldValidator<String> optional(
+      FormFieldValidator<String> validator) {
     return (value) {
       if (value == null || value.isEmpty) {
         return null;

@@ -1,7 +1,7 @@
 // test/widget/social/collaborative_participants_widgets_ultrathink_test.dart
 // ULTRATHINK TEST SUITE: CollaborativeParticipantsWidgets - 188 lines of production code
 // Testing 2 static methods with FutureBuilder patterns and service integration
-// 
+//
 // ULTRATHINK FOCUS: FutureBuilder states, service delegation, UserDisplayWidgets integration, layout logic
 
 import 'package:flutter/material.dart';
@@ -29,7 +29,7 @@ void main() {
 
     setUpAll(() async {
       await BaseWidgetTest.setupWidget();
-      
+
       // Register fallback values for mocktail
       registerFallbackValue(UserProfile(
         uid: 'fallback',
@@ -42,14 +42,15 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
-      
+
       // Create fresh mock for each test
       mockSocialRecipeService = MockSocialRecipeService();
-      
+
       // Register mock service with TestServiceLocator
-      TestServiceLocator.registerMock<SocialRecipeService>(mockSocialRecipeService);
+      TestServiceLocator.registerMock<SocialRecipeService>(
+          mockSocialRecipeService);
     });
-    
+
     tearDown(() async {
       await BaseWidgetTest.teardownWidget();
     });
@@ -82,14 +83,16 @@ void main() {
 
     // Helper to create test users
     List<UserProfile> createTestParticipants(int count) {
-      return List.generate(count, (index) => 
-        UserProfileFactory.build(
-          uid: 'user_$index',
-          displayName: 'User ${index + 1}',
-          email: 'user${index + 1}@example.com',
-          avatarUrl: index % 2 == 0 ? 'https://example.com/avatar$index.jpg' : null,
-        )
-      );
+      return List.generate(
+          count,
+          (index) => UserProfileFactory.build(
+                uid: 'user_$index',
+                displayName: 'User ${index + 1}',
+                email: 'user${index + 1}@example.com',
+                avatarUrl: index % 2 == 0
+                    ? 'https://example.com/avatar$index.jpg'
+                    : null,
+              ));
     }
 
     group('participantsList Method Tests', () {
@@ -97,7 +100,7 @@ void main() {
         testWidgets('shows loading skeleton avatars while waiting',
             (WidgetTester tester) async {
           // ULTRATHINK: Test production code loading state from lines 27-42
-          
+
           final participants = createTestParticipants(3);
           when(() => mockSocialRecipeService.getRecipeParticipants(any()))
               .thenAnswer((_) async {
@@ -117,18 +120,21 @@ void main() {
 
           // ULTRATHINK: Check loading state before future completes
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Should show loading state initially (lines 29-42)
           expect(find.byType(Row), findsOneWidget);
-          expect(find.byType(Container), findsAtLeastNWidgets(2)); // 2 skeleton avatars
-          
+          expect(find.byType(Container),
+              findsAtLeastNWidgets(2)); // 2 skeleton avatars
+
           // ULTRATHINK: Verify skeleton avatar styling (lines 33-40)
-          final containers = tester.widgetList<Container>(find.byType(Container))
-              .where((c) => c.decoration is BoxDecoration && 
-                          (c.decoration as BoxDecoration).shape == BoxShape.circle)
+          final containers = tester
+              .widgetList<Container>(find.byType(Container))
+              .where((c) =>
+                  c.decoration is BoxDecoration &&
+                  (c.decoration as BoxDecoration).shape == BoxShape.circle)
               .toList();
           expect(containers.length, greaterThanOrEqualTo(2));
-          
+
           // Complete the future and verify final state
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
@@ -153,10 +159,10 @@ void main() {
           // Wait for future to complete with error
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Production code catches errors and returns [], showing empty state (person_outline)
           expect(find.byIcon(Icons.person_outline), findsOneWidget);
-          
+
           // ULTRATHINK: Verify empty icon styling
           final icon = tester.widget<Icon>(find.byIcon(Icons.person_outline));
           expect(icon.size, equals(32.0)); // Default avatarSize
@@ -180,10 +186,10 @@ void main() {
 
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Should show empty state icon (lines 57-61)
           expect(find.byIcon(Icons.person_outline), findsOneWidget);
-          
+
           final icon = tester.widget<Icon>(find.byIcon(Icons.person_outline));
           expect(icon.size, equals(32.0));
           expect(icon.color, equals(AppColors.textSecondary));
@@ -207,11 +213,11 @@ void main() {
 
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Should delegate to avatarRow (lines 65-70)
           // The avatarRow will create a Row with UserDisplayWidgets.avatar calls
           expect(find.byType(Row), findsOneWidget);
-          
+
           // Should not show loading or error states
           expect(find.byIcon(Icons.people_outline), findsNothing);
           expect(find.byIcon(Icons.person_outline), findsNothing);
@@ -237,9 +243,10 @@ void main() {
 
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Verify service was called with correct contentId
-          verify(() => mockSocialRecipeService.getRecipeParticipants('recipe123'))
+          verify(() =>
+                  mockSocialRecipeService.getRecipeParticipants('recipe123'))
               .called(1);
         });
 
@@ -261,13 +268,14 @@ void main() {
 
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Verify menu service was called
           verify(() => mockSocialRecipeService.getMenuParticipants('menu456'))
               .called(1);
         });
 
-        testWidgets('calls getShoppingListParticipants for shopping_list content type',
+        testWidgets(
+            'calls getShoppingListParticipants for shopping_list content type',
             (WidgetTester tester) async {
           // ULTRATHINK: Test production code shopping list service call from lines 158-160
           final participants = createTestParticipants(2);
@@ -285,10 +293,10 @@ void main() {
 
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Verify shopping list service was called
-          verify(() => mockSocialRecipeService.getShoppingListParticipants('list789'))
-              .called(1);
+          verify(() => mockSocialRecipeService
+              .getShoppingListParticipants('list789')).called(1);
         });
 
         testWidgets('returns empty list for unknown content type',
@@ -305,14 +313,16 @@ void main() {
 
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Should show empty state for unknown type
           expect(find.byIcon(Icons.person_outline), findsOneWidget);
-          
+
           // ULTRATHINK: No service methods should be called for unknown type
-          verifyNever(() => mockSocialRecipeService.getRecipeParticipants(any()));
+          verifyNever(
+              () => mockSocialRecipeService.getRecipeParticipants(any()));
           verifyNever(() => mockSocialRecipeService.getMenuParticipants(any()));
-          verifyNever(() => mockSocialRecipeService.getShoppingListParticipants(any()));
+          verifyNever(
+              () => mockSocialRecipeService.getShoppingListParticipants(any()));
         });
       });
 
@@ -337,7 +347,7 @@ void main() {
 
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Production code shows empty state (person_outline) with custom size
           final icon = tester.widget<Icon>(find.byIcon(Icons.person_outline));
           expect(icon.size, equals(customSize));
@@ -363,7 +373,7 @@ void main() {
 
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Should delegate maxVisible to avatarRow
           expect(find.byType(Row), findsOneWidget);
         });
@@ -387,7 +397,7 @@ void main() {
           );
 
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Should create Row with MainAxisSize.min (lines 88-90)
           expect(find.byType(Row), findsOneWidget);
           final row = tester.widget<Row>(find.byType(Row));
@@ -409,12 +419,13 @@ void main() {
           );
 
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Should have SizedBox widgets for spacing (line 93)
           expect(find.byType(SizedBox), findsAtLeastNWidgets(1));
-          
+
           // Find SizedBox widgets with expected width
-          final spacingWidgets = tester.widgetList<SizedBox>(find.byType(SizedBox))
+          final spacingWidgets = tester
+              .widgetList<SizedBox>(find.byType(SizedBox))
               .where((box) => box.width == AppDimensions.spacingXs);
           expect(spacingWidgets.length, greaterThan(0));
         });
@@ -436,14 +447,15 @@ void main() {
           );
 
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Should use custom spacing (horizontal = 16, so gap = 16)
           expect(find.byType(SizedBox), findsAtLeastNWidgets(1));
         });
       });
 
       group('UserDisplayWidgets Delegation', () {
-        testWidgets('delegates to UserDisplayWidgets.avatar for each participant',
+        testWidgets(
+            'delegates to UserDisplayWidgets.avatar for each participant',
             (WidgetTester tester) async {
           // ULTRATHINK: Test production code UserDisplayWidgets delegation from lines 94-98
           final participants = createTestParticipants(2);
@@ -458,7 +470,7 @@ void main() {
           );
 
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: UserDisplayWidgets.avatar should be called (lines 94-98)
           // Since we can't directly verify static method calls, we verify the structure
           expect(find.byType(Row), findsOneWidget);
@@ -481,7 +493,7 @@ void main() {
           );
 
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Size conversion should happen via _sizeToImageSize (line 97)
           expect(find.byType(Row), findsOneWidget);
         });
@@ -503,10 +515,10 @@ void main() {
           );
 
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Should show "+2" counter (5 - 3 = 2 remaining)
           expect(find.text('+2'), findsOneWidget);
-          
+
           // ULTRATHINK: Counter should be in circular container (lines 104-114)
           expect(find.byType(Container), findsAtLeastNWidgets(1));
         });
@@ -526,7 +538,7 @@ void main() {
           );
 
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Should not show counter when all participants fit
           expect(find.textContaining('+'), findsNothing);
         });
@@ -548,10 +560,10 @@ void main() {
           );
 
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Should show "+4" counter (7 - 3 = 4)
           expect(find.text('+4'), findsOneWidget);
-          
+
           // ULTRATHINK: Verify counter styling (lines 116-123)
           final counterText = tester.widget<Text>(find.text('+4'));
           expect(counterText.style?.fontSize, equals(size * 0.35)); // Line 119
@@ -575,7 +587,7 @@ void main() {
           );
 
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Should show "+3" counter (5 - 2 = 3) using totalCount
           expect(find.text('+3'), findsOneWidget);
         });
@@ -586,7 +598,7 @@ void main() {
             (WidgetTester tester) async {
           // ULTRATHINK: Test production code _sizeToImageSize from lines 183-188
           final participants = createTestParticipants(1);
-          
+
           // Test small size (≤ 24)
           await tester.pumpWidget(
             createTestWidget(
@@ -599,7 +611,7 @@ void main() {
           );
 
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Size 24 should map to ImageSize.small (line 184)
           expect(find.byType(Row), findsOneWidget);
         });
@@ -620,7 +632,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should create empty Row
         expect(find.byType(Row), findsOneWidget);
         expect(find.textContaining('+'), findsNothing);
@@ -641,7 +653,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should show single participant, no counter
         expect(find.byType(Row), findsOneWidget);
         expect(find.textContaining('+'), findsNothing);
@@ -662,7 +674,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should show "+96" counter (99 - 3 = 96)
         expect(find.text('+96'), findsOneWidget);
       });
@@ -685,13 +697,12 @@ void main() {
 
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Production code catches errors and returns [], showing empty state (person_outline)
         expect(find.byIcon(Icons.person_outline), findsOneWidget);
       });
 
-      testWidgets('respects maxVisible of zero',
-          (WidgetTester tester) async {
+      testWidgets('respects maxVisible of zero', (WidgetTester tester) async {
         // ULTRATHINK: Test production code edge case
         final participants = createTestParticipants(3);
 
@@ -705,7 +716,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should show "+3" counter only (0 visible, 3 remaining)
         expect(find.text('+3'), findsOneWidget);
       });
@@ -732,7 +743,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to UserDisplayWidgets which handles null avatarUrl
         expect(find.byType(Row), findsOneWidget);
       });

@@ -213,11 +213,11 @@ class InvitationDisplays {
     return Column(
       children: [
         ...displayTargets.map((target) => ListTile(
-          dense: true,
-          leading: showIcons ? Icon(_getTargetIcon(target.type)) : null,
-          title: Text(target.displayName),
-          onTap: onTargetTap != null ? () => onTargetTap(target) : null,
-        )),
+              dense: true,
+              leading: showIcons ? Icon(_getTargetIcon(target.type)) : null,
+              title: Text(target.displayName),
+              onTap: onTargetTap != null ? () => onTargetTap(target) : null,
+            )),
         if (remainingCount > 0 && moreItemsText != null)
           Text(moreItemsText.replaceAll('{count}', remainingCount.toString())),
       ],

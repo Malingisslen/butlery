@@ -21,7 +21,8 @@ class DiscoveryFriendActivityManager extends ChangeNotifier {
 
   // ===== GETTERS =====
 
-  List<Map<String, dynamic>> get friendActivity => List.unmodifiable(_friendActivity);
+  List<Map<String, dynamic>> get friendActivity =>
+      List.unmodifiable(_friendActivity);
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
@@ -39,7 +40,8 @@ class DiscoveryFriendActivityManager extends ChangeNotifier {
       AppLogger.info('👥 Loading friend activity');
 
       // Get recent collaborative recipes as friend activity
-      final collaborativeRecipes = await _discoveryService.getRecentlySharedRecipes(
+      final collaborativeRecipes =
+          await _discoveryService.getRecentlySharedRecipes(
         limit: 15,
         timeWindow: const Duration(days: 3),
       );
@@ -50,21 +52,25 @@ class DiscoveryFriendActivityManager extends ChangeNotifier {
           'type': 'recipe_shared',
           'title': recipe.title,
           'description': recipe.description,
-          'imageUrl': recipe.imageUrls.isNotEmpty ? recipe.imageUrls.first : null,
+          'imageUrl':
+              recipe.imageUrls.isNotEmpty ? recipe.imageUrls.first : null,
           'ownerName': recipe.socialData?.ownerDisplayName ?? 'Okänd användare',
-          'ownerAvatarUrl': null, // Avatar URLs will be populated when user profile service integration is complete
+          'ownerAvatarUrl':
+              null, // Avatar URLs will be populated when user profile service integration is complete
           'sharedAt': recipe.createdAt,
           'contentType': 'recipe',
           'contentId': recipe.id,
           'engagement': {
-            'likes': 0, // Like counts will be populated when social engagement metrics are implemented
+            'likes':
+                0, // Like counts will be populated when social engagement metrics are implemented
             'comments': 0,
             'shares': recipe.socialData?.memberPermissions?.length ?? 0,
           },
         };
       }).toList();
 
-      AppLogger.success('✅ Loaded ${_friendActivity.length} friend activity items');
+      AppLogger.success(
+          '✅ Loaded ${_friendActivity.length} friend activity items');
       notifyListeners();
     } catch (e) {
       _setError('Failed to load friend activity: $e');
@@ -90,7 +96,8 @@ class DiscoveryFriendActivityManager extends ChangeNotifier {
       // Get more collaborative recipes
       final moreRecipes = await _discoveryService.getRecentlySharedRecipes(
         limit: 10,
-        timeWindow: const Duration(days: 7), // Expand timeframe for more content
+        timeWindow:
+            const Duration(days: 7), // Expand timeframe for more content
       );
 
       final newActivity = moreRecipes.map((recipe) {
@@ -99,7 +106,8 @@ class DiscoveryFriendActivityManager extends ChangeNotifier {
           'type': 'recipe_shared',
           'title': recipe.title,
           'description': recipe.description,
-          'imageUrl': recipe.imageUrls.isNotEmpty ? recipe.imageUrls.first : null,
+          'imageUrl':
+              recipe.imageUrls.isNotEmpty ? recipe.imageUrls.first : null,
           'ownerName': recipe.socialData?.ownerDisplayName ?? 'Okänd användare',
           'ownerAvatarUrl': null,
           'sharedAt': recipe.createdAt,
@@ -114,7 +122,8 @@ class DiscoveryFriendActivityManager extends ChangeNotifier {
       }).toList();
 
       _friendActivity.addAll(newActivity);
-      AppLogger.success('✅ Loaded ${newActivity.length} more friend activity items');
+      AppLogger.success(
+          '✅ Loaded ${newActivity.length} more friend activity items');
       notifyListeners();
     } catch (e) {
       AppLogger.error('❌ Failed to load more friend activity', e);

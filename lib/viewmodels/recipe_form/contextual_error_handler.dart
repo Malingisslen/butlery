@@ -39,8 +39,8 @@ class ContextualErrorHandler {
     } catch (e) {
       // Fallback to basic error if contextual generation fails
       AppLogger.error('Failed to generate contextual error: $e');
-      return AppStrings.actionSpecificError(
-          actionContext.swedishDescription, technicalDetails ?? 'Ett fel uppstod');
+      return AppStrings.actionSpecificError(actionContext.swedishDescription,
+          technicalDetails ?? 'Ett fel uppstod');
     }
   }
 
@@ -84,7 +84,8 @@ class ContextualErrorHandler {
       suggestedAction: suggestedAction,
     );
 
-    AppLogger.info('PERMISSION_ERROR: Generated permission error for $action on $resource');
+    AppLogger.info(
+        'PERMISSION_ERROR: Generated permission error for $action on $resource');
     return message;
   }
 
@@ -122,7 +123,8 @@ class ContextualErrorHandler {
   }
 
   /// Convert connectivity result to readable type name.
-  static String _getConnectivityTypeName(ConnectivityResult connectivityResult) {
+  static String _getConnectivityTypeName(
+      ConnectivityResult connectivityResult) {
     switch (connectivityResult) {
       case ConnectivityResult.none:
         return 'none';

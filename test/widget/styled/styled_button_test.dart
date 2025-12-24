@@ -25,7 +25,8 @@ void main() {
     }
 
     group('Default Constructor', () {
-      testWidgets('should render with text and no icon', (WidgetTester tester) async {
+      testWidgets('should render with text and no icon',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButton(
             text: 'Test Button',
@@ -39,7 +40,8 @@ void main() {
         expect(find.byType(Icon), findsNothing);
       });
 
-      testWidgets('should be disabled when onPressed is null', (WidgetTester tester) async {
+      testWidgets('should be disabled when onPressed is null',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledButton(
             text: 'Disabled',
@@ -47,7 +49,8 @@ void main() {
           ),
         ));
 
-        final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+        final button =
+            tester.widget<ElevatedButton>(find.byType(ElevatedButton));
         expect(button.onPressed, isNull);
       });
 
@@ -60,14 +63,17 @@ void main() {
         ));
 
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
-        expect(find.text('Loading'), findsNothing); // Text hidden during loading
-        
+        expect(
+            find.text('Loading'), findsNothing); // Text hidden during loading
+
         // Button should be disabled during loading
-        final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+        final button =
+            tester.widget<ElevatedButton>(find.byType(ElevatedButton));
         expect(button.onPressed, isNull);
       });
 
-      testWidgets('should render with icon when provided', (WidgetTester tester) async {
+      testWidgets('should render with icon when provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButton(
             text: 'Icon Button',
@@ -77,15 +83,18 @@ void main() {
         ));
 
         expect(find.text('Icon Button'), findsOneWidget);
-        expect(find.byIcon(Icons.add), findsWidgets); // May find multiple instances due to button structure
-        
+        expect(find.byIcon(Icons.add),
+            findsWidgets); // May find multiple instances due to button structure
+
         // Check that we have a button with both icon and text
-        expect(find.byWidgetPredicate((widget) =>
-          widget is ElevatedButton && widget.child != null
-        ), findsOneWidget);
+        expect(
+            find.byWidgetPredicate(
+                (widget) => widget is ElevatedButton && widget.child != null),
+            findsOneWidget);
       });
 
-      testWidgets('should apply custom width and height', (WidgetTester tester) async {
+      testWidgets('should apply custom width and height',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButton(
             text: 'Custom Size',
@@ -96,19 +105,21 @@ void main() {
         ));
 
         final sizedBox = tester.widget<SizedBox>(
-          find.ancestor(
-            of: find.byType(ElevatedButton),
-            matching: find.byType(SizedBox),
-          ).first,
+          find
+              .ancestor(
+                of: find.byType(ElevatedButton),
+                matching: find.byType(SizedBox),
+              )
+              .first,
         );
-        
+
         expect(sizedBox.width, equals(200));
         expect(sizedBox.height, equals(60));
       });
 
       testWidgets('should apply custom padding', (WidgetTester tester) async {
         const customPadding = EdgeInsets.all(20);
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledButton(
             text: 'Custom Padding',
@@ -117,9 +128,10 @@ void main() {
           ),
         ));
 
-        final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+        final button =
+            tester.widget<ElevatedButton>(find.byType(ElevatedButton));
         final buttonStyle = button.style;
-        
+
         // Note: We can't directly test padding from ButtonStyle due to MaterialStateProperty
         // But we can verify the button was created with custom style
         expect(buttonStyle, isNotNull);
@@ -127,7 +139,8 @@ void main() {
     });
 
     group('Primary Button Constructor', () {
-      testWidgets('should render as primary button', (WidgetTester tester) async {
+      testWidgets('should render as primary button',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButton.primary(
             text: 'Primary',
@@ -136,13 +149,15 @@ void main() {
         ));
 
         expect(find.text('Primary'), findsOneWidget);
-        
+
         // Check height is standard button height
         final sizedBox = tester.widget<SizedBox>(
-          find.ancestor(
-            of: find.byType(ElevatedButton),
-            matching: find.byType(SizedBox),
-          ).first,
+          find
+              .ancestor(
+                of: find.byType(ElevatedButton),
+                matching: find.byType(SizedBox),
+              )
+              .first,
         );
         expect(sizedBox.height, equals(AppDimensions.buttonHeight));
       });
@@ -173,7 +188,8 @@ void main() {
     });
 
     group('Secondary Button Constructor', () {
-      testWidgets('should render as secondary button', (WidgetTester tester) async {
+      testWidgets('should render as secondary button',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButton.secondary(
             text: 'Secondary',
@@ -187,7 +203,8 @@ void main() {
     });
 
     group('Destructive Button Constructor', () {
-      testWidgets('should render with destructive styling', (WidgetTester tester) async {
+      testWidgets('should render with destructive styling',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButton.destructive(
             text: 'Delete',
@@ -196,10 +213,11 @@ void main() {
         ));
 
         expect(find.text('Delete'), findsOneWidget);
-        
-        final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+
+        final button =
+            tester.widget<ElevatedButton>(find.byType(ElevatedButton));
         final style = button.style;
-        
+
         // Verify destructive styling is applied
         expect(style, isNotNull);
         // Note: The actual color testing would require resolving MaterialStateProperty
@@ -220,7 +238,8 @@ void main() {
     });
 
     group('Small Button Constructor', () {
-      testWidgets('should render with small height', (WidgetTester tester) async {
+      testWidgets('should render with small height',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButton.small(
             text: 'Small',
@@ -229,19 +248,22 @@ void main() {
         ));
 
         final sizedBox = tester.widget<SizedBox>(
-          find.ancestor(
-            of: find.byType(ElevatedButton),
-            matching: find.byType(SizedBox),
-          ).first,
+          find
+              .ancestor(
+                of: find.byType(ElevatedButton),
+                matching: find.byType(SizedBox),
+              )
+              .first,
         );
-        
+
         expect(sizedBox.height, equals(36.0));
         expect(find.text('Small'), findsOneWidget);
       });
     });
 
     group('Icon Button Constructor', () {
-      testWidgets('should render icon-only button', (WidgetTester tester) async {
+      testWidgets('should render icon-only button',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButton.icon(
             icon: const Icon(Icons.add),
@@ -251,12 +273,13 @@ void main() {
 
         expect(find.byIcon(Icons.add), findsOneWidget);
         expect(find.byType(IconButton), findsOneWidget);
-        
+
         // Should not have text
         expect(find.byType(Text), findsNothing);
       });
 
-      testWidgets('should render destructive icon button', (WidgetTester tester) async {
+      testWidgets('should render destructive icon button',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButton.icon(
             icon: const Icon(Icons.delete),
@@ -266,12 +289,13 @@ void main() {
         ));
 
         expect(find.byIcon(Icons.delete), findsOneWidget);
-        
+
         final iconButton = tester.widget<IconButton>(find.byType(IconButton));
         expect(iconButton.style, isNotNull);
       });
 
-      testWidgets('should show loading state for icon button', (WidgetTester tester) async {
+      testWidgets('should show loading state for icon button',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledButton.icon(
             icon: Icon(Icons.refresh),
@@ -280,14 +304,16 @@ void main() {
         ));
 
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
-        expect(find.byIcon(Icons.refresh), findsNothing); // Icon hidden during loading
+        expect(find.byIcon(Icons.refresh),
+            findsNothing); // Icon hidden during loading
       });
     });
 
     group('User Interaction', () {
-      testWidgets('should call onPressed callback when tapped', (WidgetTester tester) async {
+      testWidgets('should call onPressed callback when tapped',
+          (WidgetTester tester) async {
         var pressed = false;
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledButton(
             text: 'Tap Me',
@@ -299,9 +325,10 @@ void main() {
         expect(pressed, isTrue);
       });
 
-      testWidgets('should not respond to tap when disabled', (WidgetTester tester) async {
+      testWidgets('should not respond to tap when disabled',
+          (WidgetTester tester) async {
         final pressed = false;
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledButton(
             text: 'Disabled',
@@ -313,9 +340,10 @@ void main() {
         expect(pressed, isFalse);
       });
 
-      testWidgets('should not respond to tap when loading', (WidgetTester tester) async {
+      testWidgets('should not respond to tap when loading',
+          (WidgetTester tester) async {
         var pressed = false;
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledButton(
             text: 'Loading',
@@ -340,7 +368,8 @@ void main() {
     }
 
     group('Swedish Localization', () {
-      testWidgets('cancel button should display Swedish text', (WidgetTester tester) async {
+      testWidgets('cancel button should display Swedish text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButtons.cancel(onPressed: () {}),
         ));
@@ -348,7 +377,8 @@ void main() {
         expect(find.text('Avbryt'), findsOneWidget);
       });
 
-      testWidgets('save button should display Swedish text', (WidgetTester tester) async {
+      testWidgets('save button should display Swedish text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButtons.save(onPressed: () {}),
         ));
@@ -357,7 +387,8 @@ void main() {
         expect(find.byIcon(Icons.save), findsOneWidget);
       });
 
-      testWidgets('delete button should display Swedish text', (WidgetTester tester) async {
+      testWidgets('delete button should display Swedish text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButtons.delete(onPressed: () {}),
         ));
@@ -366,7 +397,8 @@ void main() {
         expect(find.byIcon(Icons.delete), findsOneWidget);
       });
 
-      testWidgets('add button should display Swedish text', (WidgetTester tester) async {
+      testWidgets('add button should display Swedish text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButtons.add(onPressed: () {}),
         ));
@@ -375,7 +407,8 @@ void main() {
         expect(find.byIcon(Icons.add), findsOneWidget);
       });
 
-      testWidgets('edit button should display Swedish text', (WidgetTester tester) async {
+      testWidgets('edit button should display Swedish text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButtons.edit(onPressed: () {}),
         ));
@@ -384,7 +417,8 @@ void main() {
         expect(find.byIcon(Icons.edit), findsOneWidget);
       });
 
-      testWidgets('share button should display Swedish text', (WidgetTester tester) async {
+      testWidgets('share button should display Swedish text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButtons.share(onPressed: () {}),
         ));
@@ -395,7 +429,8 @@ void main() {
     });
 
     group('Custom Text Support', () {
-      testWidgets('should accept custom text for cancel', (WidgetTester tester) async {
+      testWidgets('should accept custom text for cancel',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButtons.cancel(
             text: 'Stäng',
@@ -406,7 +441,8 @@ void main() {
         expect(find.text('Stäng'), findsOneWidget);
       });
 
-      testWidgets('should accept custom text for save', (WidgetTester tester) async {
+      testWidgets('should accept custom text for save',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButtons.save(
             text: 'Skicka',
@@ -419,7 +455,8 @@ void main() {
     });
 
     group('Loading State Support', () {
-      testWidgets('save button should support loading state', (WidgetTester tester) async {
+      testWidgets('save button should support loading state',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButtons.save(
             isLoading: true,
@@ -431,7 +468,8 @@ void main() {
         expect(find.text('Spara'), findsNothing); // Text hidden during loading
       });
 
-      testWidgets('delete button should support loading state', (WidgetTester tester) async {
+      testWidgets('delete button should support loading state',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButtons.delete(
             isLoading: true,
@@ -445,23 +483,27 @@ void main() {
     });
 
     group('Button Type Verification', () {
-      testWidgets('cancel should be secondary button', (WidgetTester tester) async {
+      testWidgets('cancel should be secondary button',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButtons.cancel(onPressed: () {}),
         ));
 
         // Verify it's using secondary style (by checking it's not destructive)
-        final styledButton = tester.widget<StyledButton>(find.byType(StyledButton));
+        final styledButton =
+            tester.widget<StyledButton>(find.byType(StyledButton));
         expect(styledButton.isDestructive, isFalse);
       });
 
-      testWidgets('delete should be destructive button', (WidgetTester tester) async {
+      testWidgets('delete should be destructive button',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledButtons.delete(onPressed: () {}),
         ));
 
         // Verify it's using destructive style
-        final styledButton = tester.widget<StyledButton>(find.byType(StyledButton));
+        final styledButton =
+            tester.widget<StyledButton>(find.byType(StyledButton));
         expect(styledButton.isDestructive, isTrue);
       });
 
@@ -471,7 +513,8 @@ void main() {
         ));
 
         // Verify it's using primary style
-        final styledButton = tester.widget<StyledButton>(find.byType(StyledButton));
+        final styledButton =
+            tester.widget<StyledButton>(find.byType(StyledButton));
         expect(styledButton.isDestructive, isFalse);
         expect(styledButton.height, equals(AppDimensions.buttonHeight));
       });

@@ -1,7 +1,7 @@
 // test/widget/social/avatar_widgets_ultrathink_test.dart
 // ULTRATHINK TEST SUITE: AvatarWidgets - 335 lines of production code
 // Testing 14 static delegation methods in facade pattern for social avatar functionality
-// 
+//
 // ULTRATHINK FOCUS: UserProfile integration, delegation verification, parameter passing, fallback handling
 
 import 'package:flutter/material.dart';
@@ -25,7 +25,7 @@ void main() {
     setUp(() async {
       await TestServiceLocator.initialize();
     });
-    
+
     tearDown(() async {
       await BaseWidgetTest.teardownWidget();
     });
@@ -58,7 +58,8 @@ void main() {
     }
 
     group('Avatar Method Tests', () {
-      testWidgets('avatar delegates to UserDisplayWidgets.avatar with UserProfile',
+      testWidgets(
+          'avatar delegates to UserDisplayWidgets.avatar with UserProfile',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 16-47
         final testUser = createTestUser(
@@ -77,12 +78,13 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to UserDisplayWidgets.avatar structure
         expect(find.byType(Container), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('avatar delegates with individual parameters when user is null',
+      testWidgets(
+          'avatar delegates with individual parameters when user is null',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code fallback parameter logic from lines 30-33
         const testImageUrl = 'https://example.com/test.jpg';
@@ -101,12 +103,13 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should use fallback parameters when user is null
         expect(find.byType(Container), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('avatar uses fallback displayName when both user and displayName are null',
+      testWidgets(
+          'avatar uses fallback displayName when both user and displayName are null',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code fallback logic from line 32
         await tester.pumpWidget(
@@ -119,7 +122,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should use 'Okänd användare' fallback (line 32)
         expect(find.byType(Container), findsAtLeastNWidgets(1));
       });
@@ -128,7 +131,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code clickable logic from line 39
         bool tapCallbackCalled = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarWidgets.avatar(
@@ -140,18 +143,21 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Clickable should pass onTap callback through delegation
         expect(find.byType(Container), findsAtLeastNWidgets(1));
-        expect(tapCallbackCalled, isFalse); // Callback not triggered in widget creation
+        expect(tapCallbackCalled,
+            isFalse); // Callback not triggered in widget creation
       });
     });
 
     group('EditableAvatar Method Tests', () {
-      testWidgets('editableAvatar delegates to UserDisplayWidgets.editableAvatar',
+      testWidgets(
+          'editableAvatar delegates to UserDisplayWidgets.editableAvatar',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 50-71
-        final testUser = createTestUser(avatarUrl: 'https://example.com/edit.jpg');
+        final testUser =
+            createTestUser(avatarUrl: 'https://example.com/edit.jpg');
         bool editCallbackCalled = false;
 
         await tester.pumpWidget(
@@ -165,10 +171,11 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to UserDisplayWidgets.editableAvatar
         expect(find.byType(Container), findsAtLeastNWidgets(1));
-        expect(editCallbackCalled, isFalse); // Callback not triggered in widget creation
+        expect(editCallbackCalled,
+            isFalse); // Callback not triggered in widget creation
       });
 
       testWidgets('editableAvatar uses fallback parameters when user is null',
@@ -188,15 +195,17 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should use manual parameters with fallback logic
         expect(find.byType(Container), findsAtLeastNWidgets(1));
-        expect(editCallbackCalled, isFalse); // Callback not triggered in widget creation
+        expect(editCallbackCalled,
+            isFalse); // Callback not triggered in widget creation
       });
     });
 
     group('UserName Method Tests', () {
-      testWidgets('userName delegates to UserDisplayWidgets.userName with UserProfile',
+      testWidgets(
+          'userName delegates to UserDisplayWidgets.userName with UserProfile',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 74-90
         final testUser = createTestUser();
@@ -212,7 +221,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to UserDisplayWidgets.userName
         expect(find.byType(Text), findsOneWidget);
         expect(find.text('Anna Svensson'), findsOneWidget);
@@ -231,7 +240,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should use 'Okänd användare' fallback
         expect(find.text('Okänd användare'), findsOneWidget);
       });
@@ -253,7 +262,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to UserDisplayWidgets.userInfo with Column structure
         expect(find.byType(Column), findsOneWidget);
         expect(find.text('Anna Svensson'), findsOneWidget);
@@ -273,7 +282,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should use manual parameters
         expect(find.text('Manual Name'), findsOneWidget);
       });
@@ -297,7 +306,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to UserDisplayWidgets.userRow with Row structure
         expect(find.byType(Row), findsAtLeastNWidgets(1));
       });
@@ -318,7 +327,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should pass subtitle through delegation
         expect(find.byType(Row), findsAtLeastNWidgets(1));
       });
@@ -342,7 +351,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to UserDisplayWidgets.userCard
         expect(find.byType(Container), findsAtLeastNWidgets(1));
       });
@@ -362,7 +371,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should use user.isOnline value over manual parameter
         expect(find.byType(Container), findsAtLeastNWidgets(1));
       });
@@ -386,7 +395,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to UserDisplayWidgets.userRow (line 213)
         expect(find.byType(Row), findsAtLeastNWidgets(1));
       });
@@ -407,10 +416,11 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: enabled: false should pass null to onTap (line 219)
         expect(find.byType(Row), findsAtLeastNWidgets(1));
-        expect(tapCallbackCalled, isFalse); // Callback should not be called when disabled
+        expect(tapCallbackCalled,
+            isFalse); // Callback should not be called when disabled
       });
     });
 
@@ -434,7 +444,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to UserDisplayWidgets.userList
         expect(find.byType(Column), findsAtLeastNWidgets(1));
       });
@@ -454,7 +464,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should convert UserProfile to UserDisplayData for delegation
         expect(find.byType(Column), findsOneWidget);
       });
@@ -475,10 +485,11 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should handle UserProfile callback conversion
         expect(find.byType(Column), findsOneWidget);
-        expect(tappedUserId, isNull); // Callback not triggered in widget creation
+        expect(
+            tappedUserId, isNull); // Callback not triggered in widget creation
       });
     });
 
@@ -502,7 +513,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to UserDisplayWidgets.userGrid
         expect(find.byType(GridView), findsOneWidget);
       });
@@ -523,10 +534,11 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should convert UserProfile callback to UserDisplayData callback
         expect(find.byType(GridView), findsOneWidget);
-        expect(tappedUserId, isNull); // Callback not triggered in widget creation
+        expect(
+            tappedUserId, isNull); // Callback not triggered in widget creation
       });
     });
 
@@ -541,7 +553,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should use default Swedish parameters (lines 295-296)
         expect(find.text('Inga användare'), findsOneWidget);
         expect(find.text('Inga användare att visa'), findsOneWidget);
@@ -566,13 +578,14 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should pass all custom parameters to delegation
         expect(find.text(customTitle), findsOneWidget);
         expect(find.text(customSubtitle), findsOneWidget);
       });
 
-      testWidgets('statusIndicator delegates to UserDisplayWidgets.statusIndicator',
+      testWidgets(
+          'statusIndicator delegates to UserDisplayWidgets.statusIndicator',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 311-318
         await tester.pumpWidget(
@@ -585,7 +598,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate status indicator creation
         expect(find.byType(Container), findsOneWidget);
       });
@@ -604,7 +617,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate badge creation
         expect(find.text('Admin'), findsOneWidget);
       });
@@ -630,7 +643,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: All methods should handle null user gracefully with fallbacks
         // Note: userCard and userListTile may render differently
         expect(find.text('Okänd användare'), findsAtLeastNWidgets(4));
@@ -651,9 +664,10 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should handle empty lists without errors
-        expect(find.byType(Column), findsAtLeastNWidgets(1)); // At least main Column
+        expect(find.byType(Column),
+            findsAtLeastNWidgets(1)); // At least main Column
       });
 
       testWidgets('handles complex UserProfile parameters',
@@ -671,16 +685,18 @@ void main() {
           createTestWidget(
             child: AvatarWidgets.userCard(
               user: complexUser,
-              description: 'A very long description that should be handled properly',
+              description:
+                  'A very long description that should be handled properly',
               showStatus: true,
             ),
           ),
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should handle complex parameters without layout issues
-        expect(find.text('Very Long User Name That Might Overflow'), findsOneWidget);
+        expect(find.text('Very Long User Name That Might Overflow'),
+            findsOneWidget);
       });
     });
   });

@@ -21,7 +21,8 @@ Recipe _createTestRecipe({
       title: title ?? 'Köttbullar',
       description: description ?? 'Klassiska svenska köttbullar',
       ingredients: ingredients ?? ['500g köttfärs', '1 ägg', '1 dl ströbröd'],
-      instructions: instructions ?? ['Blanda ingredienser', 'Forma bollar', 'Stek i panna'],
+      instructions: instructions ??
+          ['Blanda ingredienser', 'Forma bollar', 'Stek i panna'],
       mealType: 'middag',
       portions: 4,
       timeMinutes: 30,
@@ -47,7 +48,7 @@ void main() {
         final participants = {
           'user_123': ResourcePermission.owner,
         };
-        
+
         final realtimeRecipe = RealtimeRecipe(
           id: 'rt_recipe_123',
           ownerId: 'user_123',
@@ -63,7 +64,8 @@ void main() {
         expect(realtimeRecipe.ownerDisplayName, equals('Anna Andersson'));
         expect(realtimeRecipe.participants, equals(participants));
         expect(realtimeRecipe.lastEditedBy, equals('user_123'));
-        expect(realtimeRecipe.lastEditedByDisplayName, equals('Anna Andersson'));
+        expect(
+            realtimeRecipe.lastEditedByDisplayName, equals('Anna Andersson'));
         expect(realtimeRecipe.recipe, equals(recipe));
         expect(realtimeRecipe.type, equals(RealtimeResourceType.recipe));
         expect(realtimeRecipe.editCount, equals(0));
@@ -79,7 +81,7 @@ void main() {
         final createdAt = DateTime.now().subtract(const Duration(days: 5));
         final lastEditedAt = DateTime.now();
         final metadata = {'extra': 'data'};
-        
+
         final realtimeRecipe = RealtimeRecipe(
           id: 'rt_recipe_123',
           ownerId: 'user_123',
@@ -106,7 +108,7 @@ void main() {
     group('Factory Methods', () {
       test('should create from recipe', () {
         final recipe = _createTestRecipe();
-        
+
         final realtimeRecipe = RealtimeRecipe.fromRecipe(
           recipe: recipe,
           ownerId: 'user_123',
@@ -120,14 +122,17 @@ void main() {
         expect(realtimeRecipe.ownerDisplayName, equals('Anna Andersson'));
         // Owner is tracked via ownerId field, not in participants map
         expect(realtimeRecipe.participants.containsKey('user_123'), isFalse);
-        expect(realtimeRecipe.participants['user_456'], equals(ResourcePermission.editor));
-        expect(realtimeRecipe.participants['user_789'], equals(ResourcePermission.editor));
-        expect(realtimeRecipe.participants['user_abc'], equals(ResourcePermission.viewer));
+        expect(realtimeRecipe.participants['user_456'],
+            equals(ResourcePermission.editor));
+        expect(realtimeRecipe.participants['user_789'],
+            equals(ResourcePermission.editor));
+        expect(realtimeRecipe.participants['user_abc'],
+            equals(ResourcePermission.viewer));
       });
 
       test('should use recipe ID if available', () {
         final recipe = _createTestRecipe(id: 'existing_recipe_456');
-        
+
         final realtimeRecipe = RealtimeRecipe.fromRecipe(
           recipe: recipe,
           ownerId: 'user_123',
@@ -153,7 +158,7 @@ void main() {
           ),
           type: RecipeType.personal,
         );
-        
+
         final realtimeRecipe = RealtimeRecipe.fromRecipe(
           recipe: recipe,
           ownerId: 'user_123',
@@ -172,7 +177,7 @@ void main() {
         };
         final createdAt = DateTime.now().subtract(const Duration(days: 5));
         final lastEditedAt = DateTime.now();
-        
+
         final realtimeRecipe = RealtimeRecipe.fromData(
           id: 'rt_recipe_123',
           ownerId: 'user_123',
@@ -228,8 +233,10 @@ void main() {
         expect(realtimeRecipe.id, equals('rt_recipe_123'));
         expect(realtimeRecipe.ownerId, equals('user_123'));
         expect(realtimeRecipe.ownerDisplayName, equals('Anna Andersson'));
-        expect(realtimeRecipe.participants['user_123'], equals(ResourcePermission.owner));
-        expect(realtimeRecipe.participants['user_456'], equals(ResourcePermission.editor));
+        expect(realtimeRecipe.participants['user_123'],
+            equals(ResourcePermission.owner));
+        expect(realtimeRecipe.participants['user_456'],
+            equals(ResourcePermission.editor));
         expect(realtimeRecipe.editCount, equals(3));
         expect(realtimeRecipe.recipe.title, equals('Köttbullar'));
       });
@@ -335,7 +342,8 @@ void main() {
         );
 
         expect(updated.recipe.instructions.length, equals(4));
-        expect(updated.recipe.instructions.last, equals('Servera med lingonsylt'));
+        expect(
+            updated.recipe.instructions.last, equals('Servera med lingonsylt'));
       });
 
       test('should remove instruction', () {
@@ -346,7 +354,8 @@ void main() {
         );
 
         expect(updated.recipe.instructions.length, equals(2));
-        expect(updated.recipe.instructions, isNot(contains('Blanda ingredienser')));
+        expect(updated.recipe.instructions,
+            isNot(contains('Blanda ingredienser')));
       });
 
       test('should update image URLs', () {
@@ -402,7 +411,8 @@ void main() {
 
       test('should return recipe properties', () {
         expect(realtimeRecipe.title, equals('Köttbullar'));
-        expect(realtimeRecipe.description, equals('Klassiska svenska köttbullar'));
+        expect(
+            realtimeRecipe.description, equals('Klassiska svenska köttbullar'));
         expect(realtimeRecipe.portions, equals(4));
         expect(realtimeRecipe.timeMinutes, equals(30));
         expect(realtimeRecipe.rating, equals(4.5));
@@ -428,7 +438,7 @@ void main() {
           ),
           type: RecipeType.personal,
         );
-        
+
         final realtimeRecipe = RealtimeRecipe.fromRecipe(
           recipe: recipe,
           ownerId: 'user_123',
@@ -458,7 +468,8 @@ void main() {
           ResourcePermission.editor,
         );
 
-        expect(updated.participants['user_456'], equals(ResourcePermission.editor));
+        expect(updated.participants['user_456'],
+            equals(ResourcePermission.editor));
       });
 
       test('should remove participant', () {
@@ -485,7 +496,8 @@ void main() {
           ResourcePermission.viewer,
         );
 
-        expect(updated.participants['user_456'], equals(ResourcePermission.viewer));
+        expect(updated.participants['user_456'],
+            equals(ResourcePermission.viewer));
       });
 
       test('should check edit permission', () {
@@ -529,7 +541,7 @@ void main() {
 
       test('should copy with new recipe', () {
         final newRecipe = _createTestRecipe(title: 'Frikadeller');
-        
+
         final copied = baseRecipe.copyWith(recipe: newRecipe);
 
         expect(copied.recipe.title, equals('Frikadeller'));
@@ -561,10 +573,14 @@ void main() {
         final copied = baseRecipe.copyWithMetadata();
         final after = DateTime.now();
 
-        expect(copied.lastEditedAt.isAfter(before) || 
-               copied.lastEditedAt.isAtSameMomentAs(before), isTrue);
-        expect(copied.lastEditedAt.isBefore(after) || 
-               copied.lastEditedAt.isAtSameMomentAs(after), isTrue);
+        expect(
+            copied.lastEditedAt.isAfter(before) ||
+                copied.lastEditedAt.isAtSameMomentAs(before),
+            isTrue);
+        expect(
+            copied.lastEditedAt.isBefore(after) ||
+                copied.lastEditedAt.isAtSameMomentAs(after),
+            isTrue);
       });
     });
 
@@ -586,9 +602,12 @@ void main() {
         );
 
         expect(personalCopy.title, equals('Kopia av Köttbullar'));
-        expect(personalCopy.description, equals('Klassiska svenska köttbullar'));
-        expect(personalCopy.ingredients, equals(realtimeRecipe.recipe.ingredients));
-        expect(personalCopy.instructions, equals(realtimeRecipe.recipe.instructions));
+        expect(
+            personalCopy.description, equals('Klassiska svenska köttbullar'));
+        expect(personalCopy.ingredients,
+            equals(realtimeRecipe.recipe.ingredients));
+        expect(personalCopy.instructions,
+            equals(realtimeRecipe.recipe.instructions));
         expect(personalCopy.createdBy, equals('user_456'));
         expect(personalCopy.isPublic, isFalse);
         expect(personalCopy.sourceUrl, equals('Delat från Anna Andersson'));
@@ -624,7 +643,7 @@ void main() {
           ),
           type: RecipeType.personal,
         );
-        
+
         final realtimeRecipe = RealtimeRecipe.fromRecipe(
           recipe: recipe,
           ownerId: 'user_123',
@@ -700,7 +719,7 @@ void main() {
           ),
           type: RecipeType.personal,
         );
-        
+
         final realtimeRecipe = RealtimeRecipe.fromRecipe(
           recipe: recipe,
           ownerId: 'user_123',
@@ -728,7 +747,7 @@ void main() {
           ),
           type: RecipeType.personal,
         );
-        
+
         final realtimeRecipe = RealtimeRecipe.fromRecipe(
           recipe: recipe,
           ownerId: 'user_123',
@@ -758,7 +777,7 @@ void main() {
           ),
           type: RecipeType.personal,
         );
-        
+
         final realtimeRecipe = RealtimeRecipe.fromRecipe(
           recipe: recipe,
           ownerId: 'user_123',
@@ -768,7 +787,7 @@ void main() {
         expect(realtimeRecipe.ingredientsCount, equals(0));
         expect(realtimeRecipe.instructionsCount, equals(0));
         expect(realtimeRecipe.imagesCount, equals(0));
-        
+
         final summary = realtimeRecipe.recipeSummary;
         expect(summary, contains('0 ingredienser'));
         expect(summary, contains('0 steg'));
@@ -798,7 +817,7 @@ void main() {
         // Both should have different results
         expect(update1.title, equals('Update 1'));
         expect(update1.lastEditedBy, equals('user_456'));
-        
+
         expect(update2.title, equals('Update 2'));
         expect(update2.lastEditedBy, equals('user_789'));
 

@@ -179,7 +179,8 @@ class DialogFactory {
           maxLines: maxLines,
           minLines: maxLines > 1 ? 2 : 1,
           autofocus: true,
-          keyboardType: maxLines > 1 ? TextInputType.multiline : TextInputType.text,
+          keyboardType:
+              maxLines > 1 ? TextInputType.multiline : TextInputType.text,
         ),
         actions: [
           TextButton(

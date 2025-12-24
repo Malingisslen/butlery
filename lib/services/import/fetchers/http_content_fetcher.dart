@@ -5,7 +5,8 @@ import 'package:butlery/services/extraction/platform_detector.dart' as pd;
 /// Handles HTTP fetching and web scraping for URL imports.
 class HttpContentFetcher {
   static const _fetchTimeout = Duration(seconds: 10);
-  static const _userAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) '
+  static const _userAgent =
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) '
       'AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1';
 
   final http.Client? _httpClient;
@@ -54,9 +55,11 @@ class HttpContentFetcher {
       final webScraper = _webScraperFactory?.call() ?? WebScraper();
 
       try {
-        final extractionResult = await webScraper.performExtraction(webUrl, platform);
+        final extractionResult =
+            await webScraper.performExtraction(webUrl, platform);
 
-        if (extractionResult.success && extractionResult.extractedText != null) {
+        if (extractionResult.success &&
+            extractionResult.extractedText != null) {
           return extractionResult.extractedText;
         }
 

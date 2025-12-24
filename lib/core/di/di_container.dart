@@ -172,7 +172,7 @@ class DIContainer {
 
     _modules.add(module);
     _modulesByType[module.runtimeType] = module;
-    
+
     if (kDebugMode) {
       AppLogger.debug('📦 Registered module: ${module.name}');
     }
@@ -188,7 +188,7 @@ class DIContainer {
   /// Initialize all registered modules in dependency order.
   /// This method:
   /// 1. Sorts modules by dependencies and priority
-  /// 2. Configures each module (registers services)  
+  /// 2. Configures each module (registers services)
   /// 3. Initializes each module
   /// 4. Validates all modules are healthy
   /// Throws [DIModuleException] if initialization fails.
@@ -201,15 +201,17 @@ class DIContainer {
     }
 
     if (kDebugMode) {
-      AppLogger.info('🚀 Initializing DIContainer with ${_modules.length} modules...');
+      AppLogger.info(
+          '🚀 Initializing DIContainer with ${_modules.length} modules...');
     }
 
     try {
       // Step 1: Sort modules by dependencies and priority
       final sortedModules = _sortModulesByDependencies();
-      
+
       if (kDebugMode) {
-        AppLogger.debug('📋 Module initialization order: ${sortedModules.map((m) => m.name).join(' → ')}');
+        AppLogger.debug(
+            '📋 Module initialization order: ${sortedModules.map((m) => m.name).join(' → ')}');
       }
 
       // Step 2: Configure all modules (register services)
@@ -233,9 +235,10 @@ class DIContainer {
       }
 
       _isInitialized = true;
-      
+
       if (kDebugMode) {
-        AppLogger.success('✅ DIContainer initialization complete - ${healthReport.healthyCount} services healthy');
+        AppLogger.success(
+            '✅ DIContainer initialization complete - ${healthReport.healthyCount} services healthy');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -248,7 +251,7 @@ class DIContainer {
   /// Check health of all services across all modules.
   Future<HealthReport> checkHealth() async {
     final serviceMap = <String, dynamic>{};
-    
+
     for (final module in _modules) {
       for (final serviceType in module.provides) {
         try {
@@ -256,7 +259,8 @@ class DIContainer {
           serviceMap['${module.name}.${serviceType.toString()}'] = service;
         } catch (e) {
           if (kDebugMode) {
-            AppLogger.warning('⚠️ Could not get service $serviceType from module ${module.name}: $e');
+            AppLogger.warning(
+                '⚠️ Could not get service $serviceType from module ${module.name}: $e');
           }
         }
       }
@@ -277,7 +281,7 @@ class DIContainer {
     _modules.clear();
     _modulesByType.clear();
     _isInitialized = false;
-    
+
     if (kDebugMode) {
       AppLogger.info('🔄 DIContainer reset complete');
     }
@@ -289,11 +293,12 @@ class DIContainer {
       if (kDebugMode) {
         AppLogger.debug('🔧 Configuring module: ${module.name}');
       }
-      
+
       await module.configure(_container);
-      
+
       if (kDebugMode) {
-        AppLogger.success('✅ Module configured: ${module.name} (provides ${module.provides.length} services)');
+        AppLogger.success(
+            '✅ Module configured: ${module.name} (provides ${module.provides.length} services)');
       }
     } catch (e) {
       throw DIModuleException(
@@ -311,9 +316,9 @@ class DIContainer {
       if (kDebugMode) {
         AppLogger.info('⚡ Initializing module: ${module.name}');
       }
-      
+
       await module.initialize();
-      
+
       // Perform health check
       final isHealthy = await module.healthCheck();
       if (!isHealthy) {
@@ -323,7 +328,7 @@ class DIContainer {
           'Health check failed after initialization',
         );
       }
-      
+
       if (kDebugMode) {
         AppLogger.success('✅ Module initialized: ${module.name}');
       }
@@ -345,11 +350,11 @@ class DIContainer {
 
     void processModule(DIModule module) {
       final moduleType = module.runtimeType;
-      
+
       if (processed.contains(moduleType)) {
         return; // Already processed
       }
-      
+
       if (processing.contains(moduleType)) {
         throw DIModuleException(
           module.name,

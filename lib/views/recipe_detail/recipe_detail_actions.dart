@@ -150,7 +150,8 @@ class RecipeDetailActions {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         if (!context.mounted) return;
-        _showSnackBar('Kunde inte öppna länk', backgroundColor: AppColors.error);
+        _showSnackBar('Kunde inte öppna länk',
+            backgroundColor: AppColors.error);
       }
     } catch (e) {
       if (!context.mounted) return;

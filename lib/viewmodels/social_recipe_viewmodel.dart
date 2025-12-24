@@ -29,11 +29,12 @@ class SocialRecipeViewModel extends ChangeNotifier {
     required UnifiedFriendsService friendsService,
     required UnifiedRecipeService recipeService,
     required UserService userService,
-  }) : _friendsService = friendsService,
-       _recipeService = recipeService,
-       _userService = userService {
+  })  : _friendsService = friendsService,
+        _recipeService = recipeService,
+        _userService = userService {
     _commentsManager = SocialCommentsManager(_recipeService);
-    _engagementManager = SocialEngagementManager(() => _commentsManager.comments);
+    _engagementManager =
+        SocialEngagementManager(() => _commentsManager.comments);
     _profileManager = SocialProfileManager(_friendsService, _userService);
 
     _commentsManager.addListener(_onManagerChanged);
@@ -157,7 +158,9 @@ class SocialRecipeViewModel extends ChangeNotifier {
   }
 
   // Member management operations (placeholder implementations)
-  Future<bool> addMemberToRecipe(String recipeId, String userId, String userDisplayName, {required permission}) async {
+  Future<bool> addMemberToRecipe(
+      String recipeId, String userId, String userDisplayName,
+      {required permission}) async {
     AppLogger.info('Adding member to recipe: $recipeId');
     return false;
   }
@@ -167,7 +170,8 @@ class SocialRecipeViewModel extends ChangeNotifier {
     return false;
   }
 
-  Future<bool> updateMemberPermission(String recipeId, String userId, permission) async {
+  Future<bool> updateMemberPermission(
+      String recipeId, String userId, permission) async {
     AppLogger.info('Updating member permission for recipe: $recipeId');
     return false;
   }

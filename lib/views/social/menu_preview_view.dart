@@ -107,108 +107,108 @@ class MenuPreviewView extends StatelessWidget {
                   const SizedBox(width: AppDimensions.spacingS),
                   Expanded(
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Delat av ${sharedMenu.sharedByDisplayName}',
+                          style: AppTextStyles.titleMedium.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          timeago.format(sharedMenu.sharedAt, locale: 'sv'),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const StatusBadge.primary(text: 'DELAD MENY'),
+                ],
+              ),
+
+              const SizedBox(height: AppDimensions.spacingL),
+
+              // Meny titel och beskrivning
+              Text(
+                sharedMenu.menuTitle,
+                style: AppTextStyles.headlineSmall.copyWith(
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: AppDimensions.spacingS),
+
+              // Meny statistik
+              Row(
+                children: [
+                  Icon(
+                    Icons.restaurant_menu,
+                    size: AppDimensions.iconSizeM,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                  const SizedBox(width: AppDimensions.spacingXs),
+                  Text(
+                    '${sharedMenu.totalRecipeCount} recept',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingL),
+                  Icon(
+                    Icons.category,
+                    size: AppDimensions.iconSizeM,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                  const SizedBox(width: AppDimensions.spacingXs),
+                  Text(
+                    '${sharedMenu.categories.length} kategorier',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                ],
+              ),
+
+              // Delningsmeddelande
+              if (sharedMenu.shareMessage?.isNotEmpty == true) ...[
+                const SizedBox(height: AppDimensions.spacingL),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppDimensions.paddingL),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusM),
+                    border: Border.all(color: AppColors.divider),
+                  ),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Delat av ${sharedMenu.sharedByDisplayName}',
-                        style:
-                            AppTextStyles.titleMedium.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onPrimaryContainer,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                        'Meddelande:',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
+                      const SizedBox(height: AppDimensions.spacingXs),
                       Text(
-                        timeago.format(sharedMenu.sharedAt, locale: 'sv'),
-                        style: AppTextStyles.bodySmall.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onPrimaryContainer,
-                            ),
+                        '"${sharedMenu.shareMessage}"',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const StatusBadge.primary(text: 'DELAD MENY'),
-              ],
-            ),
-
-            const SizedBox(height: AppDimensions.spacingL),
-
-            // Meny titel och beskrivning
-            Text(
-              sharedMenu.menuTitle,
-              style: AppTextStyles.headlineSmall.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-
-            const SizedBox(height: AppDimensions.spacingS),
-
-            // Meny statistik
-            Row(
-              children: [
-                Icon(
-                  Icons.restaurant_menu,
-                  size: AppDimensions.iconSizeM,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                ),
-                const SizedBox(width: AppDimensions.spacingXs),
-                Text(
-                  '${sharedMenu.totalRecipeCount} recept',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      ),
-                ),
-                const SizedBox(width: AppDimensions.spacingL),
-                Icon(
-                  Icons.category,
-                  size: AppDimensions.iconSizeM,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                ),
-                const SizedBox(width: AppDimensions.spacingXs),
-                Text(
-                  '${sharedMenu.categories.length} kategorier',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      ),
-                ),
-              ],
-            ),
-
-            // Delningsmeddelande
-            if (sharedMenu.shareMessage?.isNotEmpty == true) ...[
-              const SizedBox(height: AppDimensions.spacingL),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppDimensions.paddingL),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                  border: Border.all(color: AppColors.divider),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Meddelande:',
-                      style: AppTextStyles.labelSmall.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Text(
-                      '"${sharedMenu.shareMessage}"',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                            fontStyle: FontStyle.italic,
-                          ),
-                    ),
-                  ],
-                ),
-              ),
-            ], // Close if statement spread array
+              ], // Close if statement spread array
             ], // Close children array of main Column
           ), // Close main Column
         ), // Close Container
@@ -283,7 +283,8 @@ class MenuPreviewView extends StatelessWidget {
         padding: AppDimensions.screenPadding,
         child: Consumer<SharedContentCoordinatorViewModel>(
           builder: (context, viewModel, _) {
-            final isImported = viewModel.menuViewModel.isMenuImported(sharedMenu);
+            final isImported =
+                viewModel.menuViewModel.isMenuImported(sharedMenu);
 
             // Use per-item loading state to avoid spinner on all items
             final isThisMenuOperating =
@@ -294,12 +295,9 @@ class MenuPreviewView extends StatelessWidget {
                 // Import knapp
                 ActionButtons.primaryButton(
                   context,
-                  label: isImported
-                      ? 'Meny importerad'
-                      : 'Importera hela menyn',
-                  icon: isImported
-                      ? Icons.check
-                      : Icons.download,
+                  label:
+                      isImported ? 'Meny importerad' : 'Importera hela menyn',
+                  icon: isImported ? Icons.check : Icons.download,
                   onPressed: isImported || isThisMenuOperating
                       ? null
                       : () => _importMenu(context, viewModel),
@@ -325,8 +323,8 @@ class MenuPreviewView extends StatelessWidget {
                 Text(
                   'När du importerar menyn läggs alla ${sharedMenu.totalRecipeCount} recept till i din samling.',
                   style: AppTextStyles.bodySmall.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -446,7 +444,8 @@ class MenuPreviewView extends StatelessWidget {
     );
 
     if (shouldDismiss == true) {
-      final success = await viewModel.menuViewModel.dismissSharedMenu(sharedMenu);
+      final success =
+          await viewModel.menuViewModel.dismissSharedMenu(sharedMenu);
 
       if (success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -455,7 +454,8 @@ class MenuPreviewView extends StatelessWidget {
             backgroundColor: AppColors.success,
             action: SnackBarAction(
               label: 'Ångra',
-              onPressed: () => viewModel.menuViewModel.undismissSharedMenu(sharedMenu),
+              onPressed: () =>
+                  viewModel.menuViewModel.undismissSharedMenu(sharedMenu),
             ),
           ),
         );
@@ -465,7 +465,8 @@ class MenuPreviewView extends StatelessWidget {
       } else if (context.mounted && viewModel.menuViewModel.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(viewModel.menuViewModel.error ?? 'Kunde inte dölja meny'),
+            content:
+                Text(viewModel.menuViewModel.error ?? 'Kunde inte dölja meny'),
             backgroundColor: AppColors.error,
           ),
         );

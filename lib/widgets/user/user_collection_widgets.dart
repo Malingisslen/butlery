@@ -26,7 +26,8 @@ class UserCollectionWidgets {
       physics: physics ?? const NeverScrollableScrollPhysics(),
       padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
       itemCount: users.length,
-      separatorBuilder: (context, index) => const SizedBox(height: AppDimensions.spacingM),
+      separatorBuilder: (context, index) =>
+          const SizedBox(height: AppDimensions.spacingM),
       itemBuilder: (context, index) {
         final user = users[index];
         return UserLayoutWidgets.userRow(
@@ -96,8 +97,7 @@ class UserCollectionWidgets {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon,
-                size: AppDimensions.iconSizeXl,
-                color: AppColors.textTertiary),
+                size: AppDimensions.iconSizeXl, color: AppColors.textTertiary),
             const SizedBox(height: AppDimensions.spacingXl),
             Text(title,
                 style: AppTextStyles.titleMedium, textAlign: TextAlign.center),

@@ -1,7 +1,8 @@
 // lib/services/unified/operations/modules/recipe_social_stats.dart
 
 import 'package:collection/collection.dart';
-import 'package:butlery/repositories/interfaces/ratings_repository.dart' hide RatingStatistics;
+import 'package:butlery/repositories/interfaces/ratings_repository.dart'
+    hide RatingStatistics;
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -25,18 +26,20 @@ class RecipeSocialStats {
   final UnifiedRecipeService _parent;
   final FirestoreRepository _firestoreRepository;
   final NotificationService? _notificationService;
-  
+
   // Module instances (only the ones we use as instances)
   late final RecipeRatingSystem _ratingSystem;
 
-  RecipeSocialStats(this._parent, RatingsRepository ratingsRepository, this._firestoreRepository, this._notificationService) {
+  RecipeSocialStats(this._parent, RatingsRepository ratingsRepository,
+      this._firestoreRepository, this._notificationService) {
     _ratingSystem = RecipeRatingSystem();
   }
 
   // ===== GETTERS FOR DELEGATION =====
 
   String? get currentUserId => _parent.currentUserId;
-  String get currentUserDisplayName => _parent.currentUserDisplayName ?? 'Okänd användare';
+  String get currentUserDisplayName =>
+      _parent.currentUserDisplayName ?? 'Okänd användare';
   List<Recipe> get recipes => _parent.recipes;
 
   Recipe? _getRecipe(String recipeId) {
@@ -109,9 +112,9 @@ class RecipeSocialStats {
       recipeId: recipeId,
       userId: userId,
     );
-    
+
     if (rating == null) return null;
-    
+
     return {
       'id': rating.id,
       'recipeId': rating.recipeId,
@@ -142,7 +145,8 @@ class RecipeSocialStats {
       );
 
       // Add social engagement metrics using SocialEngagementMetrics
-      final socialMetrics = SocialEngagementMetrics.calculateRecipeEngagement(recipe);
+      final socialMetrics =
+          SocialEngagementMetrics.calculateRecipeEngagement(recipe);
 
       // Combine statistics with social metrics
       final result = {
@@ -256,7 +260,7 @@ class RecipeSocialStats {
     List<String> recipeIds,
   ) async {
     final recipeMap = <String, Recipe>{};
-    
+
     for (final recipeId in recipeIds) {
       final recipe = _getRecipe(recipeId);
       if (recipe != null) {
@@ -273,20 +277,23 @@ class RecipeSocialStats {
   // ===== RATING ANALYTICS =====
 
   /// Analyze rating distribution for recipe
-  Future<Map<String, dynamic>> analyzeRatingDistribution(String recipeId) async {
+  Future<Map<String, dynamic>> analyzeRatingDistribution(
+      String recipeId) async {
     try {
       final ratings = await _ratingSystem.getRecipeRatings(
         recipeId: recipeId,
       );
 
       // Convert RecipeRating objects to Map format
-      final ratingsData = ratings.map((rating) => {
-        'rating': rating.rating,
-        'review': rating.review,
-        'createdAt': rating.createdAt,
-        'userId': rating.userId,
-      }).toList();
-      
+      final ratingsData = ratings
+          .map((rating) => {
+                'rating': rating.rating,
+                'review': rating.review,
+                'createdAt': rating.createdAt,
+                'userId': rating.userId,
+              })
+          .toList();
+
       final stats = RatingStatistics.calculateRatingStatistics(ratingsData);
       final distribution = stats['distribution'] as Map<int, int>;
 
@@ -305,13 +312,15 @@ class RecipeSocialStats {
       );
 
       // Convert RecipeRating objects to Map format
-      final ratingsData = ratings.map((rating) => {
-        'rating': rating.rating,
-        'review': rating.review,
-        'createdAt': rating.createdAt,
-        'userId': rating.userId,
-      }).toList();
-      
+      final ratingsData = ratings
+          .map((rating) => {
+                'rating': rating.rating,
+                'review': rating.review,
+                'createdAt': rating.createdAt,
+                'userId': rating.userId,
+              })
+          .toList();
+
       return RatingStatistics.calculateRatingTrends(ratingsData);
     } catch (e) {
       AppLogger.error('❌ Failed to get rating trends', e);
@@ -398,10 +407,11 @@ class RecipeSocialStats {
   }
 
   /// Compare recipe engagement
-  Map<String, dynamic> compareRecipeEngagement(String recipeId1, String recipeId2) {
+  Map<String, dynamic> compareRecipeEngagement(
+      String recipeId1, String recipeId2) {
     final recipe1 = _getRecipe(recipeId1);
     final recipe2 = _getRecipe(recipeId2);
-    
+
     if (recipe1 == null || recipe2 == null) {
       return {'error': 'One or both recipes not found'};
     }

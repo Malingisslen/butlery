@@ -190,7 +190,8 @@ void main() {
     // ========================================================================
 
     group('HIGH PRIORITY - Scenario 2: URL with Plain HTML Fallback', () {
-      test('should extract from plain HTML when no structured data exists', () async {
+      test('should extract from plain HTML when no structured data exists',
+          () async {
         // Arrange
         final plainHtml = ImportHTMLFixtures.plainHtmlRecipe;
         final testUrl = 'https://example.com/recipe/plain';
@@ -228,10 +229,10 @@ void main() {
         // WebScraper also fails (no fallback available)
         when(() => mockWebScraper.performExtraction(any(), any()))
             .thenAnswer((_) async => ExtractionResult(
-              success: false,
-              error: 'WebScraper also failed',
-              metadata: {},
-            ));
+                  success: false,
+                  error: 'WebScraper also failed',
+                  metadata: {},
+                ));
 
         // Act
         final result = await urlStrategy.import(testUrl);
@@ -248,7 +249,8 @@ void main() {
     // ========================================================================
 
     group('HIGH PRIORITY - Scenario 3: Photo with OCR Extraction', () {
-      test('should extract recipe from photo via OCR with high confidence', () async {
+      test('should extract recipe from photo via OCR with high confidence',
+          () async {
         // Arrange
         final imageBytes = ImportImageFixtures.validRecipeImagePNG;
         final expectedOcrText = ImportOCRFixtures.highConfidenceSwedishRecipe;
@@ -274,7 +276,8 @@ void main() {
                 .codeUnits,
           ),
         );
-        when(() => mockOcrClient.send(any())).thenAnswer((_) async => mockResponse);
+        when(() => mockOcrClient.send(any()))
+            .thenAnswer((_) async => mockResponse);
 
         // Create PhotoImportStrategy with mocked OCR
         final photoStrategy = PhotoImportStrategy(
@@ -308,7 +311,8 @@ void main() {
         await testOcrService.dispose();
       });
 
-      test('should handle low confidence OCR with appropriate warnings', () async {
+      test('should handle low confidence OCR with appropriate warnings',
+          () async {
         // Arrange
         final imageBytes = ImportImageFixtures.poorQualityImage;
         final lowConfidenceText = ImportOCRFixtures.lowConfidenceOCRText;
@@ -333,7 +337,8 @@ void main() {
                 .codeUnits,
           ),
         );
-        when(() => mockOcrClient.send(any())).thenAnswer((_) async => mockResponse);
+        when(() => mockOcrClient.send(any()))
+            .thenAnswer((_) async => mockResponse);
 
         final photoStrategy = PhotoImportStrategy(
           ocrService: testOcrService,
@@ -390,8 +395,12 @@ void main() {
 
         // Assert - Sections parsed
         expect(result.recipe!.ingredients, contains('500 g köttfärs'));
-        expect(result.recipe!.instructions.any((inst) => inst.contains('Blanda köttfärs')), isTrue,
-            reason: 'Instructions should contain first step about mixing ingredients');
+        expect(
+            result.recipe!.instructions
+                .any((inst) => inst.contains('Blanda köttfärs')),
+            isTrue,
+            reason:
+                'Instructions should contain first step about mixing ingredients');
 
         // Assert - Minimal warnings for well-structured text
         expect(result.warnings?.length ?? 0, lessThanOrEqualTo(1));
@@ -473,7 +482,8 @@ void main() {
         stubHttpGet(mockHttpClient, testUrl, jsonLdHtml);
 
         // Act - Use autoImport (no explicit strategy)
-        final ImportManagerResult result = await importManager.autoImport(testUrl);
+        final ImportManagerResult result =
+            await importManager.autoImport(testUrl);
 
         // Assert - URL strategy was used
         expect(result.isSuccess, isTrue);
@@ -484,7 +494,8 @@ void main() {
         verify(() => mockPersonalOps.addUnifiedRecipe(any())).called(1);
       });
 
-      test('should fall back to text strategy when URL strategy fails', () async {
+      test('should fall back to text strategy when URL strategy fails',
+          () async {
         // Arrange
         final testInput = 'https://invalid-url-that-404s.com/recipe';
 
@@ -493,7 +504,8 @@ void main() {
             .thenAnswer((_) async => MockHttpResponseBuilder.notFound());
 
         // Act
-        final ImportManagerResult result = await importManager.autoImport(testInput);
+        final ImportManagerResult result =
+            await importManager.autoImport(testInput);
 
         // Assert - Should try URL first, then fall back to text
         // (In practice, ImportManager will try URL → fail → try Text)
@@ -518,7 +530,8 @@ Blanda allt och stek i smör.
             .thenAnswer((_) async => MockHttpResponseBuilder.notFound());
 
         // Act - autoImport tries strategies until one works
-        final ImportManagerResult result = await importManager.autoImport(mixedInput);
+        final ImportManagerResult result =
+            await importManager.autoImport(mixedInput);
 
         // Assert - Text strategy succeeded even though URL failed
         expect(result.isSuccess, isTrue,
@@ -531,7 +544,8 @@ Blanda allt och stek i smör.
         final plainText = ImportTextFixtures.wellStructuredRecipe;
 
         // Act
-        final ImportManagerResult result = await importManager.autoImport(plainText);
+        final ImportManagerResult result =
+            await importManager.autoImport(plainText);
 
         // Assert - Strategy name tracked
         expect(result.strategy, isNotNull);
@@ -552,7 +566,8 @@ Vispa ihop och stek!
 ''';
 
         // Act
-        final ImportManagerResult result = await importManager.autoImport(testInput);
+        final ImportManagerResult result =
+            await importManager.autoImport(testInput);
 
         // Assert - No data lost during text extraction
         expect(result.recipe!.title, isNotNull);
@@ -580,10 +595,10 @@ Vispa ihop och stek!
         // WebScraper also fails
         when(() => mockWebScraper.performExtraction(any(), any()))
             .thenAnswer((_) async => ExtractionResult(
-              success: false,
-              error: 'Connection timeout',
-              metadata: {},
-            ));
+                  success: false,
+                  error: 'Connection timeout',
+                  metadata: {},
+                ));
 
         // Act
         final result = await urlStrategy.import(testUrl);

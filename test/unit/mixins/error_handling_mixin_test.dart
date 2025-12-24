@@ -34,7 +34,7 @@ void main() {
     setUp(() async {
       await BaseUnitTest.setupUnit();
       await TestServiceLocator.initialize();
-      
+
       testService = TestErrorHandlingService();
     });
 
@@ -48,14 +48,15 @@ void main() {
         final testCases = [
           SocketException('Unable to resolve host firestore.googleapis.com'),
           Exception('DNS resolution failed'),
-          Exception('Unable to resolve host "example.com": No address associated with hostname'),
+          Exception(
+              'Unable to resolve host "example.com": No address associated with hostname'),
           Exception('Name resolution failed'),
           Exception('resolve failed'),
         ];
 
         for (final error in testCases) {
           final result = testService.classifyError(error);
-          expect(result, equals(ErrorType.dnsResolution), 
+          expect(result, equals(ErrorType.dnsResolution),
               reason: 'Should classify DNS error: $error');
         }
       });
@@ -70,7 +71,7 @@ void main() {
 
         for (final error in testCases) {
           final result = testService.classifyError(error);
-          expect(result, equals(ErrorType.networkConnectivity), 
+          expect(result, equals(ErrorType.networkConnectivity),
               reason: 'Should classify network error: $error');
         }
       });
@@ -85,7 +86,7 @@ void main() {
 
         for (final error in testCases) {
           final result = testService.classifyError(error);
-          expect(result, equals(ErrorType.authentication), 
+          expect(result, equals(ErrorType.authentication),
               reason: 'Should classify auth error: $error');
         }
       });
@@ -98,7 +99,7 @@ void main() {
 
         for (final error in testCases) {
           final result = testService.classifyError(error);
-          expect(result, equals(ErrorType.notFound), 
+          expect(result, equals(ErrorType.notFound),
               reason: 'Should classify not found error: $error');
         }
       });
@@ -113,7 +114,7 @@ void main() {
 
         for (final error in testCases) {
           final result = testService.classifyError(error);
-          expect(result, equals(ErrorType.serviceUnavailable), 
+          expect(result, equals(ErrorType.serviceUnavailable),
               reason: 'Should classify service error: $error');
         }
       });
@@ -127,7 +128,7 @@ void main() {
 
         for (final error in testCases) {
           final result = testService.classifyError(error);
-          expect(result, equals(ErrorType.unknown), 
+          expect(result, equals(ErrorType.unknown),
               reason: 'Should classify unknown error: $error');
         }
       });
@@ -136,16 +137,20 @@ void main() {
     group('User Message Generation', () {
       test('getUserMessageForErrorType should return appropriate messages', () {
         final testCases = {
-          ErrorType.dnsResolution: 'Anslutningsproblem upptäckts. Försöker återansluta...',
-          ErrorType.authentication: testService.getUserMessageForErrorType(ErrorType.authentication),
-          ErrorType.notFound: testService.getUserMessageForErrorType(ErrorType.notFound),
-          ErrorType.serviceUnavailable: 'Tjänsten är tillfälligt otillgänglig. Försök igen senare.',
+          ErrorType.dnsResolution:
+              'Anslutningsproblem upptäckts. Försöker återansluta...',
+          ErrorType.authentication:
+              testService.getUserMessageForErrorType(ErrorType.authentication),
+          ErrorType.notFound:
+              testService.getUserMessageForErrorType(ErrorType.notFound),
+          ErrorType.serviceUnavailable:
+              'Tjänsten är tillfälligt otillgänglig. Försök igen senare.',
         };
 
         for (final entry in testCases.entries) {
           final message = testService.getUserMessageForErrorType(entry.key);
           expect(message, isA<String>());
-          expect(message.isNotEmpty, isTrue, 
+          expect(message.isNotEmpty, isTrue,
               reason: 'Message should not be empty for ${entry.key}');
         }
       });
@@ -161,8 +166,7 @@ void main() {
 
         for (final error in recoverableErrors) {
           final result = testService.isRecoverableError(error);
-          expect(result, isTrue, 
-              reason: 'Should be recoverable: $error');
+          expect(result, isTrue, reason: 'Should be recoverable: $error');
         }
       });
 
@@ -175,8 +179,7 @@ void main() {
 
         for (final error in nonRecoverableErrors) {
           final result = testService.isRecoverableError(error);
-          expect(result, isFalse, 
-              reason: 'Should not be recoverable: $error');
+          expect(result, isFalse, reason: 'Should not be recoverable: $error');
         }
       });
     });
@@ -190,8 +193,7 @@ void main() {
 
         for (final error in dnsErrors) {
           final result = testService.isDNSResolutionError(error);
-          expect(result, isTrue, 
-              reason: 'Should detect DNS error: $error');
+          expect(result, isTrue, reason: 'Should detect DNS error: $error');
         }
       });
 
@@ -203,14 +205,16 @@ void main() {
 
         for (final error in nonDnsErrors) {
           final result = testService.isDNSResolutionError(error);
-          expect(result, isFalse, 
+          expect(result, isFalse,
               reason: 'Should not detect as DNS error: $error');
         }
       });
     });
 
     group('Network Connectivity Error Detection', () {
-      test('isNetworkConnectivityError should detect network errors specifically', () {
+      test(
+          'isNetworkConnectivityError should detect network errors specifically',
+          () {
         final networkErrors = [
           SocketException('Network unreachable'),
           Exception('Connection timeout'),
@@ -218,8 +222,7 @@ void main() {
 
         for (final error in networkErrors) {
           final result = testService.isNetworkConnectivityError(error);
-          expect(result, isTrue, 
-              reason: 'Should detect network error: $error');
+          expect(result, isTrue, reason: 'Should detect network error: $error');
         }
       });
 
@@ -231,7 +234,7 @@ void main() {
 
         for (final error in nonNetworkErrors) {
           final result = testService.isNetworkConnectivityError(error);
-          expect(result, isFalse, 
+          expect(result, isFalse,
               reason: 'Should not detect as network error: $error');
         }
       });
@@ -240,18 +243,22 @@ void main() {
     group('Categorized Error Handling', () {
       test('handleCategorizedError should set appropriate user messages', () {
         final testError = SocketException('DNS resolution failed');
-        
+
         testService.handleCategorizedError(testError, 'Test operation');
-        
+
         // The handleCategorizedError should call _handleUserError internally
-        expect(testService.lastUserError, 
+        expect(testService.lastUserError,
             equals('Anslutningsproblem upptäckts. Försöker återansluta...'));
       });
 
-      test('extractUserMessage should return appropriate messages for different errors', () {
+      test(
+          'extractUserMessage should return appropriate messages for different errors',
+          () {
         final testCases = {
-          SocketException('DNS failed'): 'Anslutningsproblem upptäckts. Försöker återansluta...',
-          Exception('Permission denied'): testService.getUserMessageForErrorType(ErrorType.authentication),
+          SocketException('DNS failed'):
+              'Anslutningsproblem upptäckts. Försöker återansluta...',
+          Exception('Permission denied'):
+              testService.getUserMessageForErrorType(ErrorType.authentication),
         };
 
         for (final entry in testCases.entries) {
@@ -304,7 +311,8 @@ void main() {
         expect(attempts, equals(2));
       });
 
-      test('safeNetworkOperation should return default after max retries', () async {
+      test('safeNetworkOperation should return default after max retries',
+          () async {
         final result = await testService.safeNetworkOperation<String>(
           () async => throw SocketException('Persistent network error'),
           operationName: 'Network failure test',

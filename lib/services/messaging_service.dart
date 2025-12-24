@@ -6,7 +6,8 @@
 import 'dart:async';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
+import 'package:butlery/repositories/interfaces/auth_repository.dart'
+    as auth_repo;
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -34,8 +35,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
   MessagingService({
     required MessagingRepository messagingRepository,
     required auth_repo.AuthRepository authRepository,
-  }) : _messagingRepository = messagingRepository,
-       _authRepository = authRepository {
+  })  : _messagingRepository = messagingRepository,
+        _authRepository = authRepository {
     _sendingOps = MessageSendingOperations(
       messagingRepository: _messagingRepository,
       authRepository: _authRepository,
@@ -77,13 +78,17 @@ class MessagingService extends BaseService with StreamManagementMixin {
       }
 
       AppLogger.info('🔍 [MessagingService] startDirectConversation called');
-      AppLogger.debug('🔍 [MessagingService] Current user: ${currentUser.uid} (${currentUser.displayName})');
-      AppLogger.debug('🔍 [MessagingService] Other user: $otherUserId ($otherUserDisplayName)');
+      AppLogger.debug(
+          '🔍 [MessagingService] Current user: ${currentUser.uid} (${currentUser.displayName})');
+      AppLogger.debug(
+          '🔍 [MessagingService] Other user: $otherUserId ($otherUserDisplayName)');
 
       // FIXED: Skip findDirectConversation query lookup - go directly to createDirectConversation
       // which already handles "get or create" with deterministic IDs
-      AppLogger.debug('🔍 [MessagingService] Getting/creating conversation with deterministic ID...');
-      final conversationId = await _messagingRepository.createDirectConversation(
+      AppLogger.debug(
+          '🔍 [MessagingService] Getting/creating conversation with deterministic ID...');
+      final conversationId =
+          await _messagingRepository.createDirectConversation(
         user1Id: currentUser.uid,
         user1DisplayName: currentUser.displayName ?? 'Okänd användare',
         user1AvatarUrl: currentUser.photoURL,
@@ -92,10 +97,13 @@ class MessagingService extends BaseService with StreamManagementMixin {
         user2AvatarUrl: otherUserAvatarUrl,
       );
 
-      AppLogger.success('✅ [MessagingService] Conversation ready: $conversationId');
+      AppLogger.success(
+          '✅ [MessagingService] Conversation ready: $conversationId');
       return conversationId;
     } catch (e) {
-      AppLogger.error('❌ [MessagingService] Failed to start direct conversation with $otherUserId', e);
+      AppLogger.error(
+          '❌ [MessagingService] Failed to start direct conversation with $otherUserId',
+          e);
       rethrow;
     }
   }
@@ -117,7 +125,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
       final allParticipantIds = [...participantIds];
       if (!allParticipantIds.contains(currentUser.uid)) {
         allParticipantIds.add(currentUser.uid);
-        participantDisplayNames[currentUser.uid] = currentUser.displayName ?? 'Okänd användare';
+        participantDisplayNames[currentUser.uid] =
+            currentUser.displayName ?? 'Okänd användare';
         participantAvatarUrls[currentUser.uid] = currentUser.photoURL;
       }
 
@@ -171,7 +180,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
         startAfter: startAfter,
       );
     } catch (e) {
-      AppLogger.error('Failed to get conversation messages page for $conversationId', e);
+      AppLogger.error(
+          'Failed to get conversation messages page for $conversationId', e);
       return [];
     }
   }
@@ -263,10 +273,11 @@ class MessagingService extends BaseService with StreamManagementMixin {
         conversationId: conversationId,
         userId: currentUserId,
       );
-      
+
       AppLogger.debug('Conversation marked as read: $conversationId');
     } catch (e) {
-      AppLogger.error('Failed to mark conversation as read: $conversationId', e);
+      AppLogger.error(
+          'Failed to mark conversation as read: $conversationId', e);
     }
   }
 
@@ -274,7 +285,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
   Future<void> editMessage({
     required String messageId,
     required String newContent,
-  }) async => _managementOps.editMessage(messageId: messageId, newContent: newContent);
+  }) async =>
+      _managementOps.editMessage(messageId: messageId, newContent: newContent);
 
   /// Delete message
   Future<void> deleteMessage(String messageId) async =>
@@ -306,7 +318,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
         _clearTypingIndicator(conversationId, currentUserId);
       });
 
-      AppLogger.debug('Typing indicator set for $currentUserId in $conversationId');
+      AppLogger.debug(
+          'Typing indicator set for $currentUserId in $conversationId');
     } catch (e) {
       AppLogger.error('Failed to set typing indicator', e);
     }
@@ -320,7 +333,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
     await _clearTypingIndicator(conversationId, currentUserId);
   }
 
-  Future<void> _clearTypingIndicator(String conversationId, String userId) async {
+  Future<void> _clearTypingIndicator(
+      String conversationId, String userId) async {
     _typingUsers[conversationId]?.remove(userId);
     if (_typingUsers[conversationId]?.isEmpty == true) {
       _typingUsers.remove(conversationId);
@@ -335,8 +349,9 @@ class MessagingService extends BaseService with StreamManagementMixin {
   List<String> getTypingUsers(String conversationId) {
     final currentUserId = _authRepository.currentUserId;
     return _typingUsers[conversationId]
-        ?.where((userId) => userId != currentUserId)
-        .toList() ?? [];
+            ?.where((userId) => userId != currentUserId)
+            .toList() ??
+        [];
   }
 
   /// Pin a conversation to the top of the list
@@ -364,8 +379,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
       _actionOps.unmuteConversation(conversationId);
 
   /// Mark all conversations as read for current user
-  Future<void> markAllConversationsAsRead() async =>
-      _actionOps.markAllConversationsAsRead(getMyConversations, markConversationAsRead);
+  Future<void> markAllConversationsAsRead() async => _actionOps
+      .markAllConversationsAsRead(getMyConversations, markConversationAsRead);
 
   /// Search messages in conversation
   Future<List<Message>> searchMessages({
@@ -406,7 +421,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
       final currentUserId = _authRepository.currentUserId;
       if (currentUserId == null) return 0;
 
-      return await _messagingRepository.getUnreadConversationsCount(currentUserId);
+      return await _messagingRepository
+          .getUnreadConversationsCount(currentUserId);
     } catch (e) {
       AppLogger.error('Failed to get unread conversations count', e);
       return 0;
@@ -419,7 +435,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
     required List<String> participantIds,
     required Map<String, String> participantDisplayNames,
     required Map<String, String?> participantAvatarUrls,
-  }) async => _managementOps.addParticipantsToGroup(
+  }) async =>
+      _managementOps.addParticipantsToGroup(
         conversationId: conversationId,
         participantIds: participantIds,
         participantDisplayNames: participantDisplayNames,
@@ -430,7 +447,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
   Future<void> removeParticipantFromGroup({
     required String conversationId,
     required String participantId,
-  }) async => _managementOps.removeParticipantFromGroup(
+  }) async =>
+      _managementOps.removeParticipantFromGroup(
         conversationId: conversationId,
         participantId: participantId,
       );
@@ -439,7 +457,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
   Future<void> updateGroupTitle({
     required String conversationId,
     required String newTitle,
-  }) async => _managementOps.updateGroupTitle(
+  }) async =>
+      _managementOps.updateGroupTitle(
         conversationId: conversationId,
         newTitle: newTitle,
       );
@@ -452,7 +471,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
     }
     _typingTimers.clear();
     _typingUsers.clear();
-    
+
     await super.dispose();
   }
 }

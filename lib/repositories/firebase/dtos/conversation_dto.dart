@@ -25,6 +25,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/repositories/firebase/dtos/message_dto.dart';
+
 /// Firebase DTO for conversation data serialization with comprehensive type safety and performance optimization.
 /// This static utility class provides sophisticated bidirectional conversion between Conversation
 /// domain models and Firebase Firestore document format. It ensures data integrity through
@@ -56,20 +57,25 @@ class ConversationDto {
   /// - Last message deserialized using MessageDto for consistency
   /// - Timestamps converted from Firestore Timestamp to DateTime objects
   /// - Metadata preserved as flexible key-value pairs for extensibility
-  static Conversation fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  static Conversation fromFirestore(
+      DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
-    
+
     return Conversation(
       id: doc.id,
       participantIds: List<String>.from(data['participantIds'] ?? []),
-      participantDisplayNames: Map<String, String>.from(data['participantDisplayNames'] ?? {}),
-      participantAvatarUrls: Map<String, String?>.from(data['participantAvatarUrls'] ?? {}),
-      lastMessage: data['lastMessage'] != null 
+      participantDisplayNames:
+          Map<String, String>.from(data['participantDisplayNames'] ?? {}),
+      participantAvatarUrls:
+          Map<String, String?>.from(data['participantAvatarUrls'] ?? {}),
+      lastMessage: data['lastMessage'] != null
           ? MessageDto.fromMap(data['lastMessage'] as Map<String, dynamic>)
           : null,
-      lastReadTimestamps: (data['lastReadTimestamps'] as Map<String, dynamic>?)?.map(
-        (key, value) => MapEntry(key, (value as Timestamp).toDate()),
-      ) ?? {},
+      lastReadTimestamps:
+          (data['lastReadTimestamps'] as Map<String, dynamic>?)?.map(
+                (key, value) => MapEntry(key, (value as Timestamp).toDate()),
+              ) ??
+              {},
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
       title: data['title'] as String?,
@@ -95,8 +101,8 @@ class ConversationDto {
       'participantIds': conversation.participantIds,
       'participantDisplayNames': conversation.participantDisplayNames,
       'participantAvatarUrls': conversation.participantAvatarUrls,
-      'lastMessage': conversation.lastMessage != null 
-          ? MessageDto.toMap(conversation.lastMessage!) 
+      'lastMessage': conversation.lastMessage != null
+          ? MessageDto.toMap(conversation.lastMessage!)
           : null,
       'lastReadTimestamps': conversation.lastReadTimestamps.map(
         (key, value) => MapEntry(key, Timestamp.fromDate(value)),

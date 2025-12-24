@@ -53,7 +53,7 @@ void main() {
     setUpAll(() async {
       // Register fallback values for mocktail
       registerFallbackValue(FakeBuildContext());
-      
+
       // Initialize comprehensive test environment
       await ViewTestHelpers.setupViewTestEnvironment();
     });
@@ -101,11 +101,16 @@ void main() {
           debugShowCheckedModeBanner: false,
           // Add mock routes to prevent navigation errors
           routes: {
-            '/franSocialaMedier': (context) => const Scaffold(body: Text('Social Media Import')),
-            '/photoImport': (context) => const Scaffold(body: Text('Photo Import')),
-            '/importViaUrl': (context) => const Scaffold(body: Text('URL Import')),
-            '/skrivSjalv': (context) => const Scaffold(body: Text('Manual Recipe')),
-            '/importFranArkiv': (context) => const Scaffold(body: Text('Archive Import')),
+            '/franSocialaMedier': (context) =>
+                const Scaffold(body: Text('Social Media Import')),
+            '/photoImport': (context) =>
+                const Scaffold(body: Text('Photo Import')),
+            '/importViaUrl': (context) =>
+                const Scaffold(body: Text('URL Import')),
+            '/skrivSjalv': (context) =>
+                const Scaffold(body: Text('Manual Recipe')),
+            '/importFranArkiv': (context) =>
+                const Scaffold(body: Text('Archive Import')),
           },
         ),
       );
@@ -122,17 +127,15 @@ void main() {
 
         // Assert: Verify core UI structure
         expect(find.byType(SafeArea), findsWidgets);
-        
+
         // Verify main question text in Swedish
         ViewTestHelpers.expectSwedishText(
-          tester, 
-          'Hur vill du lägga till ditt recept?'
-        );
-        
+            tester, 'Hur vill du lägga till ditt recept?');
+
         // Verify text style is applied correctly
         final titleFinder = find.text('Hur vill du lägga till ditt recept?');
         expect(titleFinder, findsOneWidget);
-        
+
         // Verify the widget is actually displayed
         expect(find.byType(LaggTillReceptView), findsOneWidget);
       });
@@ -192,7 +195,8 @@ void main() {
         expect(find.byIcon(Icons.facebook), findsOneWidget);
       });
 
-      testWidgets('should navigate to photo import on Photo tap', (tester) async {
+      testWidgets('should navigate to photo import on Photo tap',
+          (tester) async {
         // Arrange
         await pumpLaggTillReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -303,7 +307,7 @@ void main() {
 
         // Assert: Verify LaggTillReceptView renders correctly
         expect(find.byType(LaggTillReceptView), findsOneWidget);
-        
+
         // Note: PopScope testing requires more complex setup with Navigator state
         // For production testing, we'd verify exit dialog behavior through integration tests
       });
@@ -315,7 +319,7 @@ void main() {
 
         // Act & Assert: Verify widget handles back navigation
         expect(find.byType(LaggTillReceptView), findsOneWidget);
-        
+
         // Note: Back navigation testing requires Navigator.pop() simulation
         // This would be properly tested in integration tests with full navigation stack
       });
@@ -336,7 +340,8 @@ void main() {
         expect(find.byType(Padding), findsWidgets);
       });
 
-      testWidgets('should apply correct dimensions and spacing', (tester) async {
+      testWidgets('should apply correct dimensions and spacing',
+          (tester) async {
         // Act
         await pumpLaggTillReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -344,7 +349,8 @@ void main() {
         // Assert: Verify padding and spacing are applied
         final paddingWidgets = tester.widgetList<Padding>(find.byType(Padding));
         final mainPadding = paddingWidgets.firstWhere(
-          (padding) => padding.padding == const EdgeInsets.all(AppDimensions.paddingL),
+          (padding) =>
+              padding.padding == const EdgeInsets.all(AppDimensions.paddingL),
         );
         expect(mainPadding, isNotNull);
 
@@ -358,9 +364,8 @@ void main() {
         await ViewTestHelpers.waitForViewInitialization(tester);
 
         // Assert: Verify headline text style is applied
-        final titleText = tester.widget<Text>(
-          find.text('Hur vill du lägga till ditt recept?')
-        );
+        final titleText = tester
+            .widget<Text>(find.text('Hur vill du lägga till ditt recept?'));
         expect(titleText.style, AppTextStyles.headlineSmall);
       });
     });
@@ -377,7 +382,7 @@ void main() {
         final swedishTexts = [
           'Hur vill du lägga till ditt recept?',
           'FACEBOOK',
-          'FOTO', 
+          'FOTO',
           'LÄNK',
           'INSTAGRAM',
           'TIKTOK',
@@ -390,7 +395,8 @@ void main() {
         }
       });
 
-      testWidgets('should use proper Swedish character encoding', (tester) async {
+      testWidgets('should use proper Swedish character encoding',
+          (tester) async {
         // Act
         await pumpLaggTillReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -412,7 +418,7 @@ void main() {
 
         // Assert: Verify semantic structure
         expect(find.byType(Semantics), findsWidgets);
-        
+
         // Verify buttons are properly accessible
         for (final iconData in [
           Icons.facebook,
@@ -455,19 +461,20 @@ void main() {
         // Act: Interact with various elements by icon
         final instagramIcon = find.byIcon(Icons.camera_alt);
         final archiveIcon = find.byIcon(Icons.archive);
-        
+
         if (instagramIcon.evaluate().isNotEmpty) {
           await tester.tap(instagramIcon, warnIfMissed: false);
           await tester.pump();
         }
-        
+
         if (archiveIcon.evaluate().isNotEmpty) {
           await tester.tap(archiveIcon, warnIfMissed: false);
           await tester.pump();
         }
 
         // Assert: All elements should still be present
-        ViewTestHelpers.expectSwedishText(tester, 'Hur vill du lägga till ditt recept?');
+        ViewTestHelpers.expectSwedishText(
+            tester, 'Hur vill du lägga till ditt recept?');
         expect(find.byIcon(Icons.camera_alt), findsOneWidget);
         expect(find.byIcon(Icons.archive), findsOneWidget);
       });
@@ -486,7 +493,8 @@ void main() {
         await tester.pumpAndSettle();
 
         // Assert: Layout should adapt
-        expect(find.text('Hur vill du lägga till ditt recept?'), findsOneWidget);
+        expect(
+            find.text('Hur vill du lägga till ditt recept?'), findsOneWidget);
         expect(find.text('ARKIV'), findsOneWidget);
       });
 
@@ -496,7 +504,8 @@ void main() {
         await ViewTestHelpers.waitForViewInitialization(tester);
 
         // Act: Navigate away (simulate disposal)
-        await tester.pumpWidget(const MaterialApp(home: Text('Different Screen')));
+        await tester
+            .pumpWidget(const MaterialApp(home: Text('Different Screen')));
 
         // Assert: Should not cause memory leaks or errors
         expect(find.text('Different Screen'), findsOneWidget);
@@ -508,12 +517,19 @@ void main() {
         await ViewTestHelpers.waitForViewInitialization(tester);
 
         // Assert: Verify all buttons are consistently laid out
-        final gridButtons = ['FACEBOOK', 'FOTO', 'LÄNK', 'INSTAGRAM', 'TIKTOK', 'SKRIV SJÄLV'];
-        
+        final gridButtons = [
+          'FACEBOOK',
+          'FOTO',
+          'LÄNK',
+          'INSTAGRAM',
+          'TIKTOK',
+          'SKRIV SJÄLV'
+        ];
+
         for (final button in gridButtons) {
           expect(find.text(button), findsOneWidget);
         }
-        
+
         // Archive button should be separate and larger
         expect(find.text('ARKIV'), findsOneWidget);
       });

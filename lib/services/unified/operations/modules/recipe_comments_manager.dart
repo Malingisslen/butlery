@@ -26,10 +26,10 @@ class RecipeCommentsManager {
   final UnifiedRecipeService _parent;
   final NotificationService? _notificationService;
   // Firebase instance removed - using repository pattern
-  
+
   // Stream controllers for managed streams
   final Map<String, StreamController<List<RecipeComment>>> _commentStreams = {};
-  
+
   // Module instances (only the ones we use as instances)
   late final CommentCrudOperations _crudOperations;
 
@@ -40,7 +40,8 @@ class RecipeCommentsManager {
   // ===== GETTERS FOR VALIDATION =====
 
   String? get currentUserId => _parent.currentUserId;
-  String get currentUserDisplayName => _parent.currentUserDisplayName ?? 'Okänd användare';
+  String get currentUserDisplayName =>
+      _parent.currentUserDisplayName ?? 'Okänd användare';
   List<Recipe> get recipes => _parent.recipes;
 
   Recipe? _getRecipe(String recipeId) {
@@ -89,7 +90,7 @@ class RecipeCommentsManager {
         final comment = await _crudOperations.getCommentById(
           commentId: commentId,
         );
-        
+
         if (comment != null) {
           await CommentNotifications.sendCommentNotifications(
             notificationService: _notificationService,
@@ -181,7 +182,7 @@ class RecipeCommentsManager {
       final comment = await _crudOperations.getCommentById(
         commentId: commentId,
       );
-      
+
       if (comment != null) {
         _notifyCommentStreams(comment.recipeId);
       }
@@ -252,7 +253,7 @@ class RecipeCommentsManager {
       final comment = await _crudOperations.getCommentById(
         commentId: commentId,
       );
-      
+
       if (comment != null) {
         _notifyCommentStreams(comment.recipeId);
       }
@@ -294,14 +295,14 @@ class RecipeCommentsManager {
     );
   }
 
-
   // ===== STREAM MANAGEMENT =====
 
   /// Notify all active comment streams for a recipe
   void _notifyCommentStreams(String recipeId) {
     // The Firestore listeners will automatically update the streams
     // This method is kept for potential future use
-    AppLogger.debug('🔄 Comment streams will update automatically for recipe $recipeId');
+    AppLogger.debug(
+        '🔄 Comment streams will update automatically for recipe $recipeId');
   }
 
   // ===== CLEANUP =====
@@ -309,9 +310,9 @@ class RecipeCommentsManager {
   /// Dispose of all comment streams
   void dispose() {
     AppLogger.info('💬 Disposing RecipeCommentsManager');
-    
+
     CommentUtilities.cleanupCommentStreams(_commentStreams);
-    
+
     AppLogger.debug('✅ All comment streams disposed');
   }
 }

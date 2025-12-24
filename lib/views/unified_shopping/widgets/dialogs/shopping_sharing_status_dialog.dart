@@ -55,17 +55,14 @@ class ShoppingShareStatusDialog extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildListInfoSection(context),
-
               if (currentUserId != null && list.isCollaborative) ...[
                 const SizedBox(height: AppDimensions.spacingL),
                 _buildPermissionSection(context, currentUserId),
               ],
-
               if (list.isCollaborative) ...[
                 const SizedBox(height: AppDimensions.spacingL),
                 _buildMembersSection(context, userService),
               ],
-
               if (list.lastActivityAt != null) ...[
                 const SizedBox(height: AppDimensions.spacingL),
                 _buildActivitySection(context),
@@ -75,7 +72,9 @@ class ShoppingShareStatusDialog extends StatelessWidget {
         ),
       ),
       actions: [
-        if (list.isCollaborative && currentUserId != null && _canManageSharing(currentUserId))
+        if (list.isCollaborative &&
+            currentUserId != null &&
+            _canManageSharing(currentUserId))
           ActionButtons.secondaryButton(
             context,
             label: 'Hantera delning',
@@ -130,32 +129,37 @@ class ShoppingShareStatusDialog extends StatelessWidget {
 
     if (isOwner) {
       permissionLabel = 'Administratör (Ägare)';
-      permissionDescription = 'Du äger denna lista och kan hantera alla aspekter av den';
+      permissionDescription =
+          'Du äger denna lista och kan hantera alla aspekter av den';
       permissionIcon = Icons.admin_panel_settings;
       permissionColor = AppColors.primaryBlue;
     } else {
       switch (userPermission) {
         case SharedListPermission.view:
           permissionLabel = 'Kan bara se';
-          permissionDescription = 'Du kan se listan och alla artiklar men inte redigera';
+          permissionDescription =
+              'Du kan se listan och alla artiklar men inte redigera';
           permissionIcon = Icons.visibility;
           permissionColor = AppColors.textMedium;
           break;
         case SharedListPermission.edit:
           permissionLabel = 'Kan redigera';
-          permissionDescription = 'Du kan lägga till, ta bort och ändra artiklar i listan';
+          permissionDescription =
+              'Du kan lägga till, ta bort och ändra artiklar i listan';
           permissionIcon = Icons.edit;
           permissionColor = AppColors.accent;
           break;
         case SharedListPermission.admin:
           permissionLabel = 'Administratör';
-          permissionDescription = 'Du kan redigera listan och hantera medlemmarnas behörigheter';
+          permissionDescription =
+              'Du kan redigera listan och hantera medlemmarnas behörigheter';
           permissionIcon = Icons.admin_panel_settings;
           permissionColor = AppColors.primaryBlue;
           break;
         default:
           permissionLabel = 'Ej specificerad';
-          permissionDescription = 'Din behörighetsnivå är inte tydligt definierad';
+          permissionDescription =
+              'Din behörighetsnivå är inte tydligt definierad';
           permissionIcon = Icons.help;
           permissionColor = AppColors.textMedium;
       }
@@ -170,7 +174,8 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(permissionIcon, color: permissionColor, size: AppDimensions.iconSizeM),
+                Icon(permissionIcon,
+                    color: permissionColor, size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
                   'Din behörighet',
@@ -217,7 +222,9 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.people, color: AppColors.primaryBlue, size: AppDimensions.iconSizeM),
+                const Icon(Icons.people,
+                    color: AppColors.primaryBlue,
+                    size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
                   'Medlemmar (${allMembers.length})',
@@ -239,7 +246,8 @@ class ShoppingShareStatusDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildMemberRow(String userId, SharedListPermission permission, bool isOwner) {
+  Widget _buildMemberRow(
+      String userId, SharedListPermission permission, bool isOwner) {
     final String displayName = userDisplayNames[userId] ?? 'Okänd användare';
 
     String permissionLabel;
@@ -300,11 +308,13 @@ class ShoppingShareStatusDialog extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    Icon(permissionIcon, size: AppDimensions.iconSizeS, color: permissionColor),
+                    Icon(permissionIcon,
+                        size: AppDimensions.iconSizeS, color: permissionColor),
                     const SizedBox(width: AppDimensions.spacingXs),
                     Text(
                       permissionLabel,
-                      style: AppTextStyles.bodySmall.copyWith(color: permissionColor),
+                      style: AppTextStyles.bodySmall
+                          .copyWith(color: permissionColor),
                     ),
                   ],
                 ),
@@ -326,7 +336,9 @@ class ShoppingShareStatusDialog extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.history, color: AppColors.primaryBlue, size: AppDimensions.iconSizeM),
+                const Icon(Icons.history,
+                    color: AppColors.primaryBlue,
+                    size: AppDimensions.iconSizeM),
                 const SizedBox(width: AppDimensions.spacingS),
                 Text(
                   'Senaste aktivitet',

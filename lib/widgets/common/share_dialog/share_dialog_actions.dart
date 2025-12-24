@@ -23,7 +23,7 @@ class ShareDialogActions {
       selectedMode,
       supportsRealtimeSharing,
     );
-    
+
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(

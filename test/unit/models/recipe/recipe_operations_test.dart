@@ -81,7 +81,8 @@ void main() {
         );
 
         expect(updated.core.ingredients.length, equals(2));
-        expect(updated.core.ingredients, equals(['Ingredient 1', 'Ingredient 3']));
+        expect(
+            updated.core.ingredients, equals(['Ingredient 1', 'Ingredient 3']));
       });
 
       test('should not remove with invalid index', () {
@@ -111,7 +112,8 @@ void main() {
           userId: 'user_123',
         );
 
-        expect(updated.core.ingredients, equals(['Ingredient 2', 'Ingredient 3', 'Ingredient 1']));
+        expect(updated.core.ingredients,
+            equals(['Ingredient 2', 'Ingredient 3', 'Ingredient 1']));
       });
 
       test('should not reorder with invalid indices', () {
@@ -179,7 +181,8 @@ void main() {
           0,
         );
 
-        expect(updated.core.instructions, equals(['Step 3', 'Step 1', 'Step 2']));
+        expect(
+            updated.core.instructions, equals(['Step 3', 'Step 1', 'Step 2']));
       });
     });
 
@@ -192,7 +195,8 @@ void main() {
         );
 
         expect(updated.core.imageUrls.length, equals(1));
-        expect(updated.core.imageUrls.first, equals('https://example.com/image.jpg'));
+        expect(updated.core.imageUrls.first,
+            equals('https://example.com/image.jpg'));
       });
 
       test('should not add empty image URL', () {
@@ -230,10 +234,14 @@ void main() {
         final after = DateTime.now();
 
         expect(updated.core.lastCookedAt, isNotNull);
-        expect(updated.core.lastCookedAt!.isAfter(before) || 
-               updated.core.lastCookedAt!.isAtSameMomentAs(before), isTrue);
-        expect(updated.core.lastCookedAt!.isBefore(after) || 
-               updated.core.lastCookedAt!.isAtSameMomentAs(after), isTrue);
+        expect(
+            updated.core.lastCookedAt!.isAfter(before) ||
+                updated.core.lastCookedAt!.isAtSameMomentAs(before),
+            isTrue);
+        expect(
+            updated.core.lastCookedAt!.isBefore(after) ||
+                updated.core.lastCookedAt!.isAtSameMomentAs(after),
+            isTrue);
       });
 
       test('should update basic recipe information', () {
@@ -334,7 +342,7 @@ void main() {
           ingredients: ['A'],
           instructions: ['B'],
           mealType: 'Lunch',
-          portions: null,  // No portions
+          portions: null, // No portions
         );
         expect(RecipeOperations.isPublishable(noPortions), isFalse);
 
@@ -368,10 +376,10 @@ void main() {
         final simple = RecipeFactory.createPersonal(
           title: 'Simple',
           description: 'Simple recipe',
-          ingredients: ['A', 'B'],  // 2 ingredients: no bonus
-          instructions: ['Step 1'],  // 1 instruction: no bonus
+          ingredients: ['A', 'B'], // 2 ingredients: no bonus
+          instructions: ['Step 1'], // 1 instruction: no bonus
           mealType: 'Lunch',
-          timeMinutes: 15,  // < 30 minutes: no bonus
+          timeMinutes: 15, // < 30 minutes: no bonus
         );
         expect(RecipeOperations.getComplexityScore(simple), equals(1));
 
@@ -424,7 +432,7 @@ void main() {
         );
 
         final estimatedTime = RecipeOperations.estimatePreparationTime(recipe);
-        
+
         // Base 15 + (3 ingredients * 2) + 3 chop/dice/mince * 5 + 2 marinate/rest * 10
         // = 15 + 6 + 15 + 20 = 56
         expect(estimatedTime, equals(56));
@@ -436,14 +444,14 @@ void main() {
           description: 'Test',
           ingredients: ['Lök', 'Vitlök'],
           instructions: [
-            'Hacka löken',  // Contains 'chop' in Swedish (would need translation)
-            'Låt det vila',  // Contains 'rest' in Swedish (would need translation)
+            'Hacka löken', // Contains 'chop' in Swedish (would need translation)
+            'Låt det vila', // Contains 'rest' in Swedish (would need translation)
           ],
           mealType: 'Middag',
         );
 
         final estimatedTime = RecipeOperations.estimatePreparationTime(recipe);
-        
+
         // Currently only checks English keywords
         // Base 15 + (2 ingredients * 2) = 19
         expect(estimatedTime, equals(19));
@@ -475,8 +483,9 @@ void main() {
         );
 
         expect(RecipeOperations.isValidRecipe(longRecipe), isTrue);
-        expect(RecipeOperations.getComplexityScore(longRecipe), equals(5)); // Max complexity
-        
+        expect(RecipeOperations.getComplexityScore(longRecipe),
+            equals(5)); // Max complexity
+
         final stats = RecipeOperations.getRecipeStats(longRecipe);
         expect(stats['ingredientCount'], equals(100));
         expect(stats['instructionCount'], equals(50));
@@ -484,13 +493,13 @@ void main() {
 
       test('should preserve immutability in all operations', () {
         final original = testRecipe;
-        
+
         RecipeOperations.addIngredient(original, 'New');
         expect(original.core.ingredients.length, equals(3));
-        
+
         RecipeOperations.removeInstruction(original, 0);
         expect(original.core.instructions.length, equals(3));
-        
+
         RecipeOperations.markAsCooked(original);
         expect(original.core.lastCookedAt, isNull);
       });

@@ -24,7 +24,8 @@ void main() {
     }
 
     group('Construction Tests', () {
-      testWidgets('creates widget with required count parameter', (tester) async {
+      testWidgets('creates widget with required count parameter',
+          (tester) async {
         const testCount = 5;
 
         await tester.pumpWidget(
@@ -122,7 +123,7 @@ void main() {
         );
         expect(find.text('99'), findsOneWidget);
 
-        // Test exactly 100  
+        // Test exactly 100
         await tester.pumpWidget(
           createTestWidget(
             const NotificationBadge(count: 100),
@@ -148,7 +149,8 @@ void main() {
     });
 
     group('Container Styling Tests', () {
-      testWidgets('applies correct container decoration with defaults', (tester) async {
+      testWidgets('applies correct container decoration with defaults',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             const NotificationBadge(count: 5),
@@ -160,7 +162,8 @@ void main() {
 
         expect(decoration.color, AppColors.error);
         expect(decoration.shape, BoxShape.circle);
-        expect(container.padding, const EdgeInsets.all(AppDimensions.spacingXs));
+        expect(
+            container.padding, const EdgeInsets.all(AppDimensions.spacingXs));
       });
 
       testWidgets('applies custom background color', (tester) async {
@@ -181,7 +184,8 @@ void main() {
         expect(decoration.color, customColor);
       });
 
-      testWidgets('applies correct border styling with defaults', (tester) async {
+      testWidgets('applies correct border styling with defaults',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             const NotificationBadge(count: 5),
@@ -224,7 +228,8 @@ void main() {
 
         final container = tester.widget<Container>(find.byType(Container));
 
-        expect(container.constraints, const BoxConstraints(minWidth: 20, minHeight: 20));
+        expect(container.constraints,
+            const BoxConstraints(minWidth: 20, minHeight: 20));
       });
     });
 
@@ -261,7 +266,8 @@ void main() {
         expect(text.style?.color, customTextColor);
       });
 
-      testWidgets('maintains font weight and alignment with custom colors', (tester) async {
+      testWidgets('maintains font weight and alignment with custom colors',
+          (tester) async {
         const customTextColor = Colors.purple;
 
         await tester.pumpWidget(
@@ -310,13 +316,15 @@ void main() {
         final border = decoration.border as Border;
 
         // Check padding uses AppDimensions.spacingXs
-        expect(container.padding, const EdgeInsets.all(AppDimensions.spacingXs));
+        expect(
+            container.padding, const EdgeInsets.all(AppDimensions.spacingXs));
 
         // Check border uses AppDimensions.borderWidthThick
         expect(border.top.width, AppDimensions.borderWidthThick);
 
         // Check minimum constraints
-        expect(container.constraints, const BoxConstraints(minWidth: 20, minHeight: 20));
+        expect(container.constraints,
+            const BoxConstraints(minWidth: 20, minHeight: 20));
       });
 
       testWidgets('uses AppColors constants correctly', (tester) async {
@@ -349,7 +357,8 @@ void main() {
         expect(text.style?.fontSize, AppTextStyles.labelSmall.fontSize);
       });
 
-      testWidgets('integrates with theme colorScheme correctly', (tester) async {
+      testWidgets('integrates with theme colorScheme correctly',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             const NotificationBadge(count: 5),
@@ -375,23 +384,28 @@ void main() {
 
         // Should have Container as root
         expect(find.byType(Container), findsOneWidget);
-        
+
         // Should have Text as child
         expect(find.byType(Text), findsOneWidget);
 
         // Should have the correct parent-child relationship
         final container = find.byType(Container);
         final text = find.byType(Text);
-        
+
         expect(find.descendant(of: container, matching: text), findsOneWidget);
       });
 
-      testWidgets('maintains structure with different parameters', (tester) async {
+      testWidgets('maintains structure with different parameters',
+          (tester) async {
         const variations = [
           NotificationBadge(count: 0),
           NotificationBadge(count: 50, backgroundColor: Colors.blue),
           NotificationBadge(count: 100, textColor: Colors.red),
-          NotificationBadge(count: 999, backgroundColor: Colors.green, textColor: Colors.white, borderColor: Colors.black),
+          NotificationBadge(
+              count: 999,
+              backgroundColor: Colors.green,
+              textColor: Colors.white,
+              borderColor: Colors.black),
         ];
 
         for (final variation in variations) {
@@ -454,7 +468,8 @@ void main() {
         }
       });
 
-      testWidgets('renders correctly in different layout contexts', (tester) async {
+      testWidgets('renders correctly in different layout contexts',
+          (tester) async {
         // Test in Row
         await tester.pumpWidget(
           createTestWidget(

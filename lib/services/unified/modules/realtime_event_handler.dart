@@ -13,7 +13,6 @@ import 'package:butlery/core/utils/logger.dart';
 /// - Real-time notification triggering
 /// ❌ DOES NOT CONTAIN: Session management, content operations, conflict resolution, editor tracking
 class RealtimeEventHandler {
-
   // ===== REAL-TIME CHANGE PROCESSING =====
 
   /// Handle real-time recipe changes from Firestore
@@ -22,7 +21,8 @@ class RealtimeEventHandler {
     required String? Function() getCurrentUserId,
     required Future<void> Function(Recipe) saveToCache,
     required void Function() notifyListeners,
-    required Future<void> Function(String, String?, Map<String, dynamic>) sendRealtimeEditNotification,
+    required Future<void> Function(String, String?, Map<String, dynamic>)
+        sendRealtimeEditNotification,
   }) {
     try {
       if (!snapshot.exists) {
@@ -32,7 +32,7 @@ class RealtimeEventHandler {
 
       final recipeId = snapshot.id;
       final data = snapshot.data() as Map<String, dynamic>?;
-      
+
       if (data == null) {
         AppLogger.warning('No data in snapshot for recipe $recipeId');
         return;
@@ -49,10 +49,12 @@ class RealtimeEventHandler {
       }
 
       // Process external edit
-      AppLogger.debug('Processing external edit for recipe $recipeId by $editedBy');
+      AppLogger.debug(
+          'Processing external edit for recipe $recipeId by $editedBy');
 
       // Update local cache
-      final recipe = Recipe.fromMap(snapshot.id, snapshot.data()! as Map<String, dynamic>);
+      final recipe =
+          Recipe.fromMap(snapshot.id, snapshot.data()! as Map<String, dynamic>);
       saveToCache(recipe);
 
       // Notify listeners of the change
@@ -73,7 +75,8 @@ class RealtimeEventHandler {
     required String? currentUserId,
     required Future<void> Function(Recipe) saveToCache,
     required void Function() notifyListeners,
-    required Future<void> Function(String, String?, Map<String, dynamic>) sendRealtimeEditNotification,
+    required Future<void> Function(String, String?, Map<String, dynamic>)
+        sendRealtimeEditNotification,
   }) {
     try {
       // Validate edit data
@@ -84,7 +87,8 @@ class RealtimeEventHandler {
 
       // Check edit type for appropriate processing
       final editType = data['editType'] as String?;
-      AppLogger.debug('Processing external edit of type: $editType for recipe $recipeId');
+      AppLogger.debug(
+          'Processing external edit of type: $editType for recipe $recipeId');
 
       // Create recipe from data for caching
       try {
@@ -92,7 +96,7 @@ class RealtimeEventHandler {
           'id': recipeId,
           ...data,
         });
-        
+
         saveToCache(recipe);
       } catch (e) {
         AppLogger.warning('Could not create recipe from edit data: $e');
@@ -112,11 +116,11 @@ class RealtimeEventHandler {
   static bool isValidEditData(Map<String, dynamic> data) {
     // Basic validation of edit data
     if (data.isEmpty) return false;
-    
+
     // Check for required fields
     final editedAt = data['editedAt'];
     final editedBy = data['editedBy'];
-    
+
     return editedAt != null && editedBy != null;
   }
 
@@ -130,13 +134,13 @@ class RealtimeEventHandler {
     required void Function(String) setError,
   }) {
     AppLogger.error('❌ Real-time sync error for recipe $recipeId: $error');
-    
+
     // Log detailed error information
     _logDetailedError(recipeId, error);
-    
+
     // Stop the problematic session
     stopRealtimeEditing(recipeId);
-    
+
     // Notify user of the error with user-friendly message
     final userMessage = _getUserFriendlyErrorMessage(error);
     setError('Realtidssynkronisering misslyckades: $userMessage');
@@ -150,7 +154,7 @@ class RealtimeEventHandler {
     required void Function(String) setError,
   }) {
     AppLogger.error('❌ Permission error for recipe $recipeId: $error');
-    
+
     stopRealtimeEditing(recipeId);
     setError('Du har inte behörighet att redigera detta recept');
   }
@@ -173,17 +177,19 @@ class RealtimeEventHandler {
       'errorMessage': error.toString(),
       'timestamp': DateTime.now().toIso8601String(),
     };
-    
+
     AppLogger.error('Detailed real-time error: $errorDetails');
   }
 
   /// Convert technical error to user-friendly message
   static String _getUserFriendlyErrorMessage(dynamic error) {
     final errorString = error.toString().toLowerCase();
-    
-    if (errorString.contains('permission') || errorString.contains('unauthorized')) {
+
+    if (errorString.contains('permission') ||
+        errorString.contains('unauthorized')) {
       return 'Behörighet saknas';
-    } else if (errorString.contains('network') || errorString.contains('connection')) {
+    } else if (errorString.contains('network') ||
+        errorString.contains('connection')) {
       return 'Nätverksfel';
     } else if (errorString.contains('timeout')) {
       return 'Tidsgräns överskriden';
@@ -208,9 +214,10 @@ class RealtimeEventHandler {
 
       // Extract edit details for notification
       final editDetails = extractEditDetails(data);
-      
-      AppLogger.debug('🔔 Real-time edit notification sent for recipe $recipeId by $editedBy: $editDetails');
-      
+
+      AppLogger.debug(
+          '🔔 Real-time edit notification sent for recipe $recipeId by $editedBy: $editDetails');
+
       // Note: Actual notification integration is handled by RealtimeNotificationModule
       // in the RealtimeRecipeModule. This static method is mainly used for logging.
     } catch (e) {
@@ -223,7 +230,7 @@ class RealtimeEventHandler {
     final editType = data['editType'] as String? ?? 'unknown';
     final field = data['field'] as String? ?? 'unknown';
     final operation = data['operation'] as String?;
-    
+
     return {
       'editType': editType,
       'field': field,
@@ -239,14 +246,14 @@ class RealtimeEventHandler {
     required String? currentUserId,
   }) {
     final editedBy = editData['editedBy'] as String?;
-    
+
     // Don't send notification for own edits
     if (editedBy == currentUserId) return false;
-    
+
     // Don't send for certain edit types
     final editType = editData['editType'] as String?;
     if (editType == 'presence_update') return false;
-    
+
     return true;
   }
 
@@ -272,7 +279,7 @@ class RealtimeEventHandler {
   /// Check if snapshot contains valid data
   static bool isValidSnapshot(DocumentSnapshot snapshot) {
     if (!snapshot.exists) return false;
-    
+
     final data = snapshot.data() as Map<String, dynamic>?;
     return data != null && data.isNotEmpty;
   }
@@ -288,7 +295,7 @@ class RealtimeEventHandler {
     required String? currentUserId,
   }) {
     final editedBy = editData['editedBy'] as String?;
-    
+
     // Process edits from other users
     return editedBy != null && editedBy != currentUserId;
   }
@@ -308,11 +315,11 @@ class RealtimeEventHandler {
   static bool isRecentEdit(Map<String, dynamic> editData) {
     final editedAt = editData['editedAt'] as Timestamp?;
     if (editedAt == null) return true; // Process if no timestamp
-    
+
     final editTime = editedAt.toDate();
     final now = DateTime.now();
     final timeDifference = now.difference(editTime);
-    
+
     // Process edits from the last 5 minutes
     return timeDifference.inMinutes <= 5;
   }
@@ -320,7 +327,7 @@ class RealtimeEventHandler {
   /// Get event priority for processing order
   static int getEventPriority(Map<String, dynamic> editData) {
     final editType = editData['editType'] as String? ?? 'unknown';
-    
+
     switch (editType) {
       case 'realtime_edit':
         return 1; // Highest priority

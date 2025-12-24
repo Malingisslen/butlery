@@ -21,7 +21,8 @@ class GroupShoppingListSelectionDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
-    final lists = shoppingService.personalLists;  // Only show personal lists (not already collaborative)
+    final lists = shoppingService
+        .personalLists; // Only show personal lists (not already collaborative)
 
     return AlertDialog(
       title: Text(
@@ -118,7 +119,8 @@ class _ShoppingListItem extends StatelessWidget {
           ),
         ],
       ),
-      trailing: const Icon(Icons.arrow_forward_ios, size: AppDimensions.iconSizeS),
+      trailing:
+          const Icon(Icons.arrow_forward_ios, size: AppDimensions.iconSizeS),
       onTap: onTap,
     );
   }

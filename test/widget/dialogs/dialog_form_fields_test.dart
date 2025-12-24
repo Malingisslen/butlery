@@ -42,7 +42,8 @@ void main() {
         expect(find.text('Ange ditt namn här'), findsOneWidget);
       });
 
-      testWidgets('displays prefix icon when provided', (WidgetTester tester) async {
+      testWidgets('displays prefix icon when provided',
+          (WidgetTester tester) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
@@ -60,7 +61,8 @@ void main() {
         expect(find.byIcon(Icons.email), findsOneWidget);
       });
 
-      testWidgets('enforces max length constraint', (WidgetTester tester) async {
+      testWidgets('enforces max length constraint',
+          (WidgetTester tester) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
@@ -109,7 +111,8 @@ void main() {
         await tester.pump();
 
         // Should show validation error
-        expect(find.text('Obligatoriskt fält får inte vara tom'), findsOneWidget);
+        expect(
+            find.text('Obligatoriskt fält får inte vara tom'), findsOneWidget);
       });
 
       testWidgets('validates minimum length', (WidgetTester tester) async {
@@ -133,7 +136,7 @@ void main() {
 
         // Enter short text
         await tester.enterText(find.byType(TextFormField), 'AB');
-        
+
         // Validate
         formKey.currentState!.validate();
         await tester.pump();
@@ -158,13 +161,15 @@ void main() {
         );
 
         // Enter multiline text
-        await tester.enterText(find.byType(TextFormField), 'Line 1\nLine 2\nLine 3');
+        await tester.enterText(
+            find.byType(TextFormField), 'Line 1\nLine 2\nLine 3');
         await tester.pump();
 
         expect(controller.text, equals('Line 1\nLine 2\nLine 3'));
       });
 
-      testWidgets('disables field when enabled is false', (WidgetTester tester) async {
+      testWidgets('disables field when enabled is false',
+          (WidgetTester tester) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
@@ -179,7 +184,8 @@ void main() {
           ),
         );
 
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField =
+            tester.widget<TextFormField>(find.byType(TextFormField));
         expect(textField.enabled, isFalse);
       });
 
@@ -209,7 +215,7 @@ void main() {
 
         // Enter invalid email
         await tester.enterText(find.byType(TextFormField), 'invalid');
-        
+
         // Validate
         formKey.currentState!.validate();
         await tester.pump();
@@ -242,7 +248,8 @@ void main() {
     });
 
     group('Specialized Fields', () {
-      testWidgets('renders name field with defaults', (WidgetTester tester) async {
+      testWidgets('renders name field with defaults',
+          (WidgetTester tester) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
@@ -278,7 +285,8 @@ void main() {
         expect(find.text('Valfri beskrivning...'), findsOneWidget);
       });
 
-      testWidgets('renders amount field with numeric keyboard', (WidgetTester tester) async {
+      testWidgets('renders amount field with numeric keyboard',
+          (WidgetTester tester) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
@@ -296,7 +304,8 @@ void main() {
         expect(find.byIcon(Icons.numbers), findsOneWidget);
       });
 
-      testWidgets('validates amount field min/max', (WidgetTester tester) async {
+      testWidgets('validates amount field min/max',
+          (WidgetTester tester) async {
         final controller = TextEditingController();
         final formKey = GlobalKey<FormState>();
 
@@ -328,7 +337,8 @@ void main() {
         expect(find.textContaining('Max 100'), findsOneWidget);
       });
 
-      testWidgets('renders email field with validation', (WidgetTester tester) async {
+      testWidgets('renders email field with validation',
+          (WidgetTester tester) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
@@ -400,7 +410,8 @@ void main() {
         expect(find.byIcon(Icons.search), findsOneWidget);
       });
 
-      testWidgets('renders phone field with formatting', (WidgetTester tester) async {
+      testWidgets('renders phone field with formatting',
+          (WidgetTester tester) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(
@@ -418,16 +429,18 @@ void main() {
         expect(find.byIcon(Icons.phone_outlined), findsOneWidget);
 
         // Test that only allowed characters are accepted
-        await tester.enterText(find.byType(TextFormField), 'abc+46701234567xyz');
+        await tester.enterText(
+            find.byType(TextFormField), 'abc+46701234567xyz');
         await tester.pump();
-        
+
         // Letters should be filtered out
         expect(controller.text, contains('+46701234567'));
       });
 
       // ULTRATHINK COMPREHENSIVE PHONE FIELD TESTS
       group('Phone Field - Comprehensive Coverage', () {
-        testWidgets('should display Swedish default values', (WidgetTester tester) async {
+        testWidgets('should display Swedish default values',
+            (WidgetTester tester) async {
           final controller = TextEditingController();
 
           await tester.pumpWidget(
@@ -446,7 +459,8 @@ void main() {
           expect(find.byIcon(Icons.phone_outlined), findsOneWidget);
         });
 
-        testWidgets('should use phone keyboard type', (WidgetTester tester) async {
+        testWidgets('should use phone keyboard type',
+            (WidgetTester tester) async {
           final controller = TextEditingController();
 
           await tester.pumpWidget(
@@ -465,7 +479,8 @@ void main() {
           expect(find.byType(TextFormField), findsOneWidget);
         });
 
-        testWidgets('should filter allowed characters only', (WidgetTester tester) async {
+        testWidgets('should filter allowed characters only',
+            (WidgetTester tester) async {
           final controller = TextEditingController();
 
           await tester.pumpWidget(
@@ -479,14 +494,16 @@ void main() {
           );
 
           // Test various inputs with allowed/disallowed characters
-          await tester.enterText(find.byType(TextFormField), 'abc+46()70-123 45 67xyz!@#');
+          await tester.enterText(
+              find.byType(TextFormField), 'abc+46()70-123 45 67xyz!@#');
           await tester.pump();
 
           // Only allowed characters: [0-9+\-\s()]
           expect(controller.text, equals('+46()70-123 45 67'));
         });
 
-        testWidgets('should validate required phone field when empty', (WidgetTester tester) async {
+        testWidgets('should validate required phone field when empty',
+            (WidgetTester tester) async {
           final controller = TextEditingController();
           final formKey = GlobalKey<FormState>();
 
@@ -511,7 +528,8 @@ void main() {
           expect(find.text('Telefonnummer får inte vara tom'), findsOneWidget);
         });
 
-        testWidgets('should not validate optional phone field when empty', (WidgetTester tester) async {
+        testWidgets('should not validate optional phone field when empty',
+            (WidgetTester tester) async {
           final controller = TextEditingController();
           final formKey = GlobalKey<FormState>();
 
@@ -537,7 +555,8 @@ void main() {
           expect(find.text('Telefonnummer får inte vara tom'), findsNothing);
         });
 
-        testWidgets('should validate phone with less than 10 digits', (WidgetTester tester) async {
+        testWidgets('should validate phone with less than 10 digits',
+            (WidgetTester tester) async {
           final controller = TextEditingController();
           final formKey = GlobalKey<FormState>();
 
@@ -556,7 +575,7 @@ void main() {
 
           // Enter phone with only 9 digits
           await tester.enterText(find.byType(TextFormField), '+46 123 45 67');
-          
+
           // Validate
           formKey.currentState!.validate();
           await tester.pump();
@@ -564,7 +583,8 @@ void main() {
           expect(find.text('Ogiltigt telefonnummer'), findsOneWidget);
         });
 
-        testWidgets('should accept valid phone with exactly 10 digits', (WidgetTester tester) async {
+        testWidgets('should accept valid phone with exactly 10 digits',
+            (WidgetTester tester) async {
           final controller = TextEditingController();
           final formKey = GlobalKey<FormState>();
 
@@ -583,7 +603,7 @@ void main() {
 
           // Enter phone with exactly 10 digits
           await tester.enterText(find.byType(TextFormField), '+46701234567');
-          
+
           // Validate
           final isValid = formKey.currentState!.validate();
           await tester.pump();
@@ -592,7 +612,8 @@ void main() {
           expect(find.text('Ogiltigt telefonnummer'), findsNothing);
         });
 
-        testWidgets('should accept valid phone with more than 10 digits', (WidgetTester tester) async {
+        testWidgets('should accept valid phone with more than 10 digits',
+            (WidgetTester tester) async {
           final controller = TextEditingController();
           final formKey = GlobalKey<FormState>();
 
@@ -610,8 +631,9 @@ void main() {
           );
 
           // Enter phone with 13 digits (international format)
-          await tester.enterText(find.byType(TextFormField), '+46 70 123 45 67 89');
-          
+          await tester.enterText(
+              find.byType(TextFormField), '+46 70 123 45 67 89');
+
           // Validate
           final isValid = formKey.currentState!.validate();
           await tester.pump();
@@ -620,17 +642,18 @@ void main() {
           expect(find.text('Ogiltigt telefonnummer'), findsNothing);
         });
 
-        testWidgets('should accept various valid Swedish phone formats', (WidgetTester tester) async {
+        testWidgets('should accept various valid Swedish phone formats',
+            (WidgetTester tester) async {
           final controller = TextEditingController();
           final formKey = GlobalKey<FormState>();
 
           final validFormats = [
-            '+46701234567',           // International without spaces
-            '+46 70 123 45 67',       // International with spaces
-            '070-123 45 67',          // National with dash and spaces
-            '070 123 45 67',          // National with spaces
-            '(070) 123 45 67',        // With parentheses
-            '+46(0)701234567',        // International with (0)
+            '+46701234567', // International without spaces
+            '+46 70 123 45 67', // International with spaces
+            '070-123 45 67', // National with dash and spaces
+            '070 123 45 67', // National with spaces
+            '(070) 123 45 67', // With parentheses
+            '+46(0)701234567', // International with (0)
           ];
 
           for (final format in validFormats) {
@@ -649,7 +672,7 @@ void main() {
 
             controller.clear();
             await tester.enterText(find.byType(TextFormField), format);
-            
+
             final isValid = formKey.currentState!.validate();
             await tester.pump();
 
@@ -657,7 +680,8 @@ void main() {
           }
         });
 
-        testWidgets('should handle max length constraint', (WidgetTester tester) async {
+        testWidgets('should handle max length constraint',
+            (WidgetTester tester) async {
           final controller = TextEditingController();
           final formKey = GlobalKey<FormState>();
 
@@ -674,7 +698,7 @@ void main() {
             ),
           );
 
-          // Try to enter very long phone number (more than 20 chars)  
+          // Try to enter very long phone number (more than 20 chars)
           const longPhone = '+46701234567890123456789';
           await tester.enterText(find.byType(TextFormField), longPhone);
           await tester.pump();
@@ -682,10 +706,12 @@ void main() {
           // Note: TextFormField doesn't enforce maxLength by default, only validates
           // The production code sets maxLengthLimit: 20 for validation, not input limiting
           // Input filtering only affects character types, not length
-          expect(controller.text, equals(longPhone)); // All characters are allowed types
+          expect(controller.text,
+              equals(longPhone)); // All characters are allowed types
         });
 
-        testWidgets('should be disabled when enabled is false', (WidgetTester tester) async {
+        testWidgets('should be disabled when enabled is false',
+            (WidgetTester tester) async {
           final controller = TextEditingController();
 
           await tester.pumpWidget(
@@ -699,11 +725,13 @@ void main() {
             ),
           );
 
-          final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+          final textField =
+              tester.widget<TextFormField>(find.byType(TextFormField));
           expect(textField.enabled, isFalse);
         });
 
-        testWidgets('should support custom label and hint', (WidgetTester tester) async {
+        testWidgets('should support custom label and hint',
+            (WidgetTester tester) async {
           final controller = TextEditingController();
 
           await tester.pumpWidget(
@@ -722,7 +750,8 @@ void main() {
           expect(find.text('08-123 456 78'), findsOneWidget);
         });
 
-        testWidgets('should handle edge case - only special characters', (WidgetTester tester) async {
+        testWidgets('should handle edge case - only special characters',
+            (WidgetTester tester) async {
           final controller = TextEditingController();
           final formKey = GlobalKey<FormState>();
 
@@ -741,7 +770,7 @@ void main() {
 
           // Enter only special characters (no digits)
           await tester.enterText(find.byType(TextFormField), '+()- ');
-          
+
           // Validate
           formKey.currentState!.validate();
           await tester.pump();
@@ -750,7 +779,9 @@ void main() {
           expect(find.text('Ogiltigt telefonnummer'), findsOneWidget);
         });
 
-        testWidgets('should handle edge case - mixed valid and invalid characters', (WidgetTester tester) async {
+        testWidgets(
+            'should handle edge case - mixed valid and invalid characters',
+            (WidgetTester tester) async {
           final controller = TextEditingController();
 
           await tester.pumpWidget(
@@ -764,14 +795,17 @@ void main() {
           );
 
           // Mix of allowed and disallowed characters
-          await tester.enterText(find.byType(TextFormField), 'abc+46xyz701()def234567ghi!@#');
+          await tester.enterText(
+              find.byType(TextFormField), 'abc+46xyz701()def234567ghi!@#');
           await tester.pump();
 
           // Only allowed characters should remain
           expect(controller.text, equals('+46701()234567'));
         });
 
-        testWidgets('should validate boundary case - exactly 10 digits with formatting', (WidgetTester tester) async {
+        testWidgets(
+            'should validate boundary case - exactly 10 digits with formatting',
+            (WidgetTester tester) async {
           final controller = TextEditingController();
           final formKey = GlobalKey<FormState>();
 
@@ -788,10 +822,10 @@ void main() {
             ),
           );
 
-          // Enter exactly 10 digits with formatting: (070) 123-45-67 
+          // Enter exactly 10 digits with formatting: (070) 123-45-67
           // Digits: 0,7,0,1,2,3,4,5,6,7 = 10 digits
           await tester.enterText(find.byType(TextFormField), '(070) 123-45-67');
-          
+
           // Validate - should pass (10 digits)
           final isValid = formKey.currentState!.validate();
           await tester.pump();
@@ -800,7 +834,9 @@ void main() {
           expect(find.text('Ogiltigt telefonnummer'), findsNothing);
         });
 
-        testWidgets('should support Swedish character handling in validation messages', (WidgetTester tester) async {
+        testWidgets(
+            'should support Swedish character handling in validation messages',
+            (WidgetTester tester) async {
           final controller = TextEditingController();
           final formKey = GlobalKey<FormState>();
 
@@ -820,7 +856,7 @@ void main() {
 
           // Enter invalid phone
           await tester.enterText(find.byType(TextFormField), '123');
-          
+
           // Validate
           formKey.currentState!.validate();
           await tester.pump();
@@ -842,9 +878,12 @@ void main() {
                 value: selectedValue,
                 labelText: 'Kategori',
                 items: [
-                  const DropdownMenuItem(value: 'Förrätt', child: Text('Förrätt')),
-                  const DropdownMenuItem(value: 'Huvudrätt', child: Text('Huvudrätt')),
-                  const DropdownMenuItem(value: 'Efterrätt', child: Text('Efterrätt')),
+                  const DropdownMenuItem(
+                      value: 'Förrätt', child: Text('Förrätt')),
+                  const DropdownMenuItem(
+                      value: 'Huvudrätt', child: Text('Huvudrätt')),
+                  const DropdownMenuItem(
+                      value: 'Efterrätt', child: Text('Efterrätt')),
                 ],
                 onChanged: (value) => selectedValue = value,
               ),
@@ -866,9 +905,12 @@ void main() {
                 value: selectedValue,
                 labelText: 'Kategori',
                 items: [
-                  const DropdownMenuItem(value: 'Förrätt', child: Text('Förrätt')),
-                  const DropdownMenuItem(value: 'Huvudrätt', child: Text('Huvudrätt')),
-                  const DropdownMenuItem(value: 'Efterrätt', child: Text('Efterrätt')),
+                  const DropdownMenuItem(
+                      value: 'Förrätt', child: Text('Förrätt')),
+                  const DropdownMenuItem(
+                      value: 'Huvudrätt', child: Text('Huvudrätt')),
+                  const DropdownMenuItem(
+                      value: 'Efterrätt', child: Text('Efterrätt')),
                 ],
                 onChanged: (value) => selectedValue = value,
               ),
@@ -892,9 +934,12 @@ void main() {
                   value: selectedValue,
                   labelText: 'Kategori',
                   items: [
-                    const DropdownMenuItem(value: 'Förrätt', child: Text('Förrätt')),
-                    const DropdownMenuItem(value: 'Huvudrätt', child: Text('Huvudrätt')),
-                    const DropdownMenuItem(value: 'Efterrätt', child: Text('Efterrätt')),
+                    const DropdownMenuItem(
+                        value: 'Förrätt', child: Text('Förrätt')),
+                    const DropdownMenuItem(
+                        value: 'Huvudrätt', child: Text('Huvudrätt')),
+                    const DropdownMenuItem(
+                        value: 'Efterrätt', child: Text('Efterrätt')),
                   ],
                   onChanged: (value) => selectedValue = value,
                   required: true,
@@ -1036,7 +1081,8 @@ void main() {
     });
 
     group('Accessibility', () {
-      testWidgets('form fields have semantic labels', (WidgetTester tester) async {
+      testWidgets('form fields have semantic labels',
+          (WidgetTester tester) async {
         final controller = TextEditingController();
 
         await tester.pumpWidget(

@@ -15,19 +15,19 @@ enum UserActionContext {
   recipeValidation('validerar recept'),
   recipeCollaborativeSync('synkroniserar delat recept'),
   recipeDraftRestore('återställer utkast'),
-  
-  // Image contexts  
+
+  // Image contexts
   recipeImageUpload('laddar upp bilder'),
   recipeImageProcessing('bearbetar bilder'),
   recipeImageDelete('tar bort bild'),
-  
+
   // Shopping contexts
   shoppingListCreate('skapar handlista'),
   shoppingItemAdd('lägger till vara'),
   shoppingListSync('synkroniserar handlista'),
   shoppingListShare('delar handlista'),
   shoppingListDelete('tar bort handlista'),
-  
+
   // Social contexts
   friendInvite('skickar väninvitation'),
   groupCreate('skapar grupp'),
@@ -35,7 +35,7 @@ enum UserActionContext {
   socialSync('synkroniserar socialt innehåll'),
   userProfileUpdate('uppdaterar profil'),
   permissionRequest('begär behörighet'),
-  
+
   // System contexts
   appStartup('startar app'),
   dataSync('synkroniserar data'),
@@ -43,16 +43,16 @@ enum UserActionContext {
   offline('offline-operation');
 
   const UserActionContext(this.swedishDescription);
-  
+
   /// Human-readable Swedish description of the action
   final String swedishDescription;
 }
 
 /// Error severity levels for progressive disclosure
 enum ErrorSeverity {
-  minimal('minimal'),     // Just show icon/indicator
-  standard('standard'),   // Show standard message  
-  detailed('detailed'),   // Show detailed message with context
+  minimal('minimal'), // Just show icon/indicator
+  standard('standard'), // Show standard message
+  detailed('detailed'), // Show detailed message with context
   diagnostic('diagnostic'); // Show full diagnostic information
 
   const ErrorSeverity(this.level);
@@ -72,7 +72,7 @@ class ErrorContext {
 
   const ErrorContext({
     required this.errorType,
-    required this.actionContext, 
+    required this.actionContext,
     required this.connectivity,
     this.severity = ErrorSeverity.standard,
     this.technicalDetails,
@@ -80,7 +80,7 @@ class ErrorContext {
     this.additionalData,
     required this.timestamp,
   });
-  
+
   /// Create error context from current system state
   factory ErrorContext.fromCurrentState({
     required ErrorType errorType,
@@ -111,19 +111,21 @@ class ContextualErrorEngine {
   /// Generate contextual error message based on comprehensive error context
   static String generateMessage(ErrorContext context) {
     try {
-      AppLogger.debug('🚨 ERROR_ENGINE: Generating contextual message for ${context.actionContext.name} - ${context.errorType.name}');
-      
+      AppLogger.debug(
+          '🚨 ERROR_ENGINE: Generating contextual message for ${context.actionContext.name} - ${context.errorType.name}');
+
       final baseMessage = _generateBaseMessage(context);
       final recoveryGuidance = _generateRecoveryGuidance(context);
-      final fullMessage = recoveryGuidance.isNotEmpty 
-        ? '$baseMessage\n\n$recoveryGuidance'
-        : baseMessage;
-      
-      AppLogger.info('🚨 ERROR_ENGINE: Generated message: ${fullMessage.length > 100 ? '${fullMessage.substring(0, 100)}...' : fullMessage}');
+      final fullMessage = recoveryGuidance.isNotEmpty
+          ? '$baseMessage\n\n$recoveryGuidance'
+          : baseMessage;
+
+      AppLogger.info(
+          '🚨 ERROR_ENGINE: Generated message: ${fullMessage.length > 100 ? '${fullMessage.substring(0, 100)}...' : fullMessage}');
       return fullMessage;
-      
     } catch (e) {
-      AppLogger.error('🚨 ERROR_ENGINE: Failed to generate contextual message: $e');
+      AppLogger.error(
+          '🚨 ERROR_ENGINE: Failed to generate contextual message: $e');
       return _getFallbackMessage(context.actionContext);
     }
   }
@@ -131,61 +133,65 @@ class ContextualErrorEngine {
   /// Generate the main error message with context and connectivity awareness
   static String _generateBaseMessage(ErrorContext context) {
     final action = context.actionContext.swedishDescription;
-    
+
     switch (context.errorType) {
       case ErrorType.networkConnectivity:
         return _getNetworkErrorMessage(action, context.connectivity);
-        
+
       case ErrorType.authentication:
         return _getAuthenticationErrorMessage(action, context);
-        
+
       case ErrorType.notFound:
         return _getNotFoundErrorMessage(action, context);
-        
+
       case ErrorType.serviceUnavailable:
         return _getServiceUnavailableMessage(action, context);
-        
+
       case ErrorType.dnsResolution:
         return _getDnsErrorMessage(action, context);
-        
+
       case ErrorType.unknown:
         return _getUnknownErrorMessage(action, context);
     }
   }
 
   /// Generate network-aware error messages
-  static String _getNetworkErrorMessage(String action, ConnectivityResult connectivity) {
+  static String _getNetworkErrorMessage(
+      String action, ConnectivityResult connectivity) {
     switch (connectivity) {
       case ConnectivityResult.none:
         return 'Ingen internetanslutning medan $action. Ändringar sparas lokalt och synkroniseras automatiskt när du är online igen.';
-        
+
       case ConnectivityResult.limited:
         return 'Begränsad internetanslutning medan $action. Vissa funktioner kan vara otillgängliga.';
-        
+
       case ConnectivityResult.degraded:
         return 'Anslutningsproblem medan $action. DNS-problem upptäckta, kontrollerar anslutningen automatiskt.';
-        
+
       case ConnectivityResult.full:
         return 'Tillfälligt nätverksfel medan $action. Kontrollerar anslutningen och försöker igen automatiskt.';
-        
+
       case ConnectivityResult.unknown:
         return 'Okänd anslutningsstatus medan $action. Kontrollera internetanslutningen och försök igen.';
     }
   }
 
   /// Generate authentication error messages with context
-  static String _getAuthenticationErrorMessage(String action, ErrorContext context) {
+  static String _getAuthenticationErrorMessage(
+      String action, ErrorContext context) {
     final baseMessage = 'Du saknar behörighet för $action';
-    
+
     // Check for specific permission context from additional data
-    final permissionLevel = context.additionalData?['permissionLevel'] as String?;
+    final permissionLevel =
+        context.additionalData?['permissionLevel'] as String?;
     final resourceOwner = context.additionalData?['resourceOwner'] as String?;
-    final isAuthenticated = context.additionalData?['isAuthenticated'] as bool? ?? true;
-    
+    final isAuthenticated =
+        context.additionalData?['isAuthenticated'] as bool? ?? true;
+
     if (!isAuthenticated) {
       return '$baseMessage eftersom du inte är inloggad.';
     }
-    
+
     if (permissionLevel != null) {
       switch (permissionLevel) {
         case 'viewer':
@@ -196,11 +202,11 @@ class ContextualErrorEngine {
           return '$baseMessage. Du har inte delats detta innehåll.';
       }
     }
-    
+
     if (resourceOwner != null) {
       return '$baseMessage. Endast ägaren ($resourceOwner) kan utföra denna åtgärd.';
     }
-    
+
     return '$baseMessage. Kontakta innehållsägaren för utökade rättigheter.';
   }
 
@@ -213,22 +219,23 @@ class ContextualErrorEngine {
     } else if (action.contains('bild')) {
       return 'Bilden kunde inte hittas medan $action. Den kan ha blivit raderad eller flyttad.';
     }
-    
+
     return 'Det begärda innehållet kunde inte hittas medan $action. Det kan ha blivit raderat eller du har inte längre åtkomst.';
   }
 
   /// Generate service unavailable error messages
-  static String _getServiceUnavailableMessage(String action, ErrorContext context) {
+  static String _getServiceUnavailableMessage(
+      String action, ErrorContext context) {
     final isMaintenanceTime = _isMaintenanceTime();
-    
+
     if (isMaintenanceTime) {
       return 'Tjänsten är temporärt otillgänglig för underhåll medan $action. Försök igen om några minuter.';
     }
-    
+
     if (action.contains('synkroniserar') || action.contains('delar')) {
       return 'Synkroniseringstjänsten är temporärt otillgänglig medan $action. Ändringar sparas lokalt och synkroniseras automatiskt senare.';
     }
-    
+
     return 'Tjänsten är temporärt otillgänglig medan $action. Försök igen om ett par minuter.';
   }
 
@@ -239,38 +246,39 @@ class ContextualErrorEngine {
 
   /// Generate unknown error messages with context
   static String _getUnknownErrorMessage(String action, ErrorContext context) {
-    final technicalInfo = context.technicalDetails != null && context.severity != ErrorSeverity.minimal
-      ? ' (Teknisk information: ${context.technicalDetails})'
-      : '';
-    
+    final technicalInfo = context.technicalDetails != null &&
+            context.severity != ErrorSeverity.minimal
+        ? ' (Teknisk information: ${context.technicalDetails})'
+        : '';
+
     return 'Ett oväntat fel uppstod medan $action. Försök igen eller kontakta support om problemet kvarstår.$technicalInfo';
   }
 
   /// Generate recovery guidance based on error context
   static String _generateRecoveryGuidance(ErrorContext context) {
     final recoveryActions = <String>[];
-    
+
     // Add context-specific recovery actions
     recoveryActions.addAll(_getContextSpecificActions(context));
-    
+
     // Add user-provided recovery actions
     if (context.recoveryActions != null) {
       recoveryActions.addAll(context.recoveryActions!);
     }
-    
+
     if (recoveryActions.isEmpty) return '';
-    
-    final actionText = recoveryActions.length == 1 
-      ? 'Förslag: ${recoveryActions.first}'
-      : 'Förslag:\n${recoveryActions.map((action) => '• $action').join('\n')}';
-      
+
+    final actionText = recoveryActions.length == 1
+        ? 'Förslag: ${recoveryActions.first}'
+        : 'Förslag:\n${recoveryActions.map((action) => '• $action').join('\n')}';
+
     return actionText;
   }
 
   /// Get context-specific recovery actions
   static List<String> _getContextSpecificActions(ErrorContext context) {
     final actions = <String>[];
-    
+
     switch (context.actionContext) {
       case UserActionContext.recipeSaving:
         if (context.errorType == ErrorType.networkConnectivity) {
@@ -280,21 +288,22 @@ class ContextualErrorEngine {
           actions.add('Be om redigeringsrättigheter från receptägaren');
         }
         break;
-        
+
       case UserActionContext.recipeImageUpload:
         if (context.errorType == ErrorType.networkConnectivity) {
-          actions.add('Bilderna sparas lokalt och laddas upp automatiskt senare');
+          actions
+              .add('Bilderna sparas lokalt och laddas upp automatiskt senare');
         } else {
           actions.add('Kontrollera att bilderna är mindre än 10MB');
           actions.add('Använd JPG, PNG eller HEIC format');
         }
         break;
-        
+
       case UserActionContext.recipeDraftRestore:
         actions.add('Välj ett annat utkast från listan');
         actions.add('Börja skapa ett nytt recept istället');
         break;
-        
+
       case UserActionContext.friendInvite:
       case UserActionContext.socialSync:
         if (context.errorType == ErrorType.authentication) {
@@ -302,7 +311,7 @@ class ContextualErrorEngine {
           actions.add('Uppdatera dina kontoinställningar');
         }
         break;
-        
+
       default:
         // Generic recovery actions based on error type
         switch (context.errorType) {
@@ -320,7 +329,7 @@ class ContextualErrorEngine {
             actions.add('Försök igen eller kontakta support');
         }
     }
-    
+
     return actions;
   }
 
@@ -351,7 +360,7 @@ class ContextualErrorEngine {
       technicalDetails: technicalDetails,
       recoveryActions: recoveryActions,
     );
-    
+
     return generateMessage(context);
   }
 }

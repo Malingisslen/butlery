@@ -15,7 +15,8 @@ import '../../infrastructure/factories/user_profile_factory.dart';
 // Note: SocialFactory import removed as not used in streamlined tests
 
 // Mock classes
-class MockUniversalShareDialogViewModel extends Mock implements UniversalShareDialogViewModel {}
+class MockUniversalShareDialogViewModel extends Mock
+    implements UniversalShareDialogViewModel {}
 
 void main() {
   // Register fallback values for mocktail - ultrathink pattern from existing tests
@@ -36,7 +37,7 @@ void main() {
 
     setUp(() {
       mockViewModel = MockUniversalShareDialogViewModel();
-      
+
       // Create Swedish test data using factory methods - ultrathink approach
       testRecipe = RecipeFactory.build(
         id: 'recipe_1',
@@ -44,7 +45,11 @@ void main() {
         description: 'Klassiska svenska köttbullar',
         portions: 4,
         ingredients: ['köttfärs', 'ägg', 'mjölk', 'lök'],
-        instructions: ['Blanda ingredienserna', 'Forma köttbullar', 'Stek i pannan'],
+        instructions: [
+          'Blanda ingredienserna',
+          'Forma köttbullar',
+          'Stek i pannan'
+        ],
         tags: ['svenska', 'klassiker'],
       );
 
@@ -67,7 +72,7 @@ void main() {
           email: 'erik@example.com',
         ),
         UserProfileFactory.build(
-          uid: 'friend_2', 
+          uid: 'friend_2',
           displayName: 'Maria Andersson',
           email: 'maria@example.com',
         ),
@@ -78,27 +83,27 @@ void main() {
       // Mock ViewModel behavior
       when(() => mockViewModel.isSharing).thenReturn(false);
       when(() => mockViewModel.shareRecipe(
-        recipe: any(named: 'recipe'),
-        friendUserIds: any(named: 'friendUserIds'),
-        groupIds: any(named: 'groupIds'),
-        message: any(named: 'message'),
-        allowCollaboration: any(named: 'allowCollaboration'),
-      )).thenAnswer((_) async => true);
-      
+            recipe: any(named: 'recipe'),
+            friendUserIds: any(named: 'friendUserIds'),
+            groupIds: any(named: 'groupIds'),
+            message: any(named: 'message'),
+            allowCollaboration: any(named: 'allowCollaboration'),
+          )).thenAnswer((_) async => true);
+
       when(() => mockViewModel.shareMenu(
-        menu: any(named: 'menu'),
-        friendUserIds: any(named: 'friendUserIds'),
-        groupIds: any(named: 'groupIds'),
-        message: any(named: 'message'),
-        allowCollaboration: any(named: 'allowCollaboration'),
-      )).thenAnswer((_) async => true);
-      
+            menu: any(named: 'menu'),
+            friendUserIds: any(named: 'friendUserIds'),
+            groupIds: any(named: 'groupIds'),
+            message: any(named: 'message'),
+            allowCollaboration: any(named: 'allowCollaboration'),
+          )).thenAnswer((_) async => true);
+
       when(() => mockViewModel.shareShoppingList(
-        shoppingList: any(named: 'shoppingList'),
-        friendUserIds: any(named: 'friendUserIds'),
-        groupIds: any(named: 'groupIds'),
-        message: any(named: 'message'),
-      )).thenAnswer((_) async => true);
+            shoppingList: any(named: 'shoppingList'),
+            friendUserIds: any(named: 'friendUserIds'),
+            groupIds: any(named: 'groupIds'),
+            message: any(named: 'message'),
+          )).thenAnswer((_) async => true);
     });
 
     test('recipe factory constructor creates correct widget configuration', () {
@@ -136,7 +141,9 @@ void main() {
       expect(dialog.isBulkSharing, isFalse);
     });
 
-    test('shopping list factory constructor creates correct widget configuration', () {
+    test(
+        'shopping list factory constructor creates correct widget configuration',
+        () {
       final dialog = UniversalShareDialog.shoppingList(
         shoppingList: testShoppingList,
         viewModel: mockViewModel,
@@ -151,9 +158,10 @@ void main() {
       expect(dialog.isBulkSharing, isFalse);
     });
 
-    test('bulk share factory constructor creates correct widget configuration', () {
+    test('bulk share factory constructor creates correct widget configuration',
+        () {
       final bulkContent = [testRecipe, testRecipe];
-      
+
       final dialog = UniversalShareDialog.bulkShare(
         contentItems: bulkContent,
         primaryContentType: ShareContentType.recipe,
@@ -187,12 +195,12 @@ void main() {
         recipe: testRecipe,
         viewModel: mockViewModel,
       );
-      
+
       final menuDialog = UniversalShareDialog.menu(
         menu: testMenu,
         viewModel: mockViewModel,
       );
-      
+
       final shoppingDialog = UniversalShareDialog.shoppingList(
         shoppingList: testShoppingList,
         viewModel: mockViewModel,
@@ -219,7 +227,7 @@ void main() {
     setUp(() async {
       // Initialize test infrastructure using centralized patterns
       mockViewModel = MockUniversalShareDialogViewModel();
-      
+
       // Create Swedish test data using factory methods
       testRecipe = RecipeFactory.build(
         id: 'recipe_1',
@@ -227,7 +235,11 @@ void main() {
         description: 'Klassiska svenska köttbullar',
         portions: 4,
         ingredients: ['köttfärs', 'ägg', 'mjölk', 'lök'],
-        instructions: ['Blanda ingredienserna', 'Forma köttbullar', 'Stek i pannan'],
+        instructions: [
+          'Blanda ingredienserna',
+          'Forma köttbullar',
+          'Stek i pannan'
+        ],
         tags: ['svenska', 'klassiker'],
       );
 
@@ -250,7 +262,7 @@ void main() {
           email: 'erik@example.com',
         ),
         UserProfileFactory.build(
-          uid: 'friend_2', 
+          uid: 'friend_2',
           displayName: 'Maria Andersson',
           email: 'maria@example.com',
         ),
@@ -261,27 +273,27 @@ void main() {
       // Mock ViewModel behavior - successful sharing
       when(() => mockViewModel.isSharing).thenReturn(false);
       when(() => mockViewModel.shareRecipe(
-        recipe: any(named: 'recipe'),
-        friendUserIds: any(named: 'friendUserIds'),
-        groupIds: any(named: 'groupIds'),
-        message: any(named: 'message'),
-        allowCollaboration: any(named: 'allowCollaboration'),
-      )).thenAnswer((_) async => true);
-      
+            recipe: any(named: 'recipe'),
+            friendUserIds: any(named: 'friendUserIds'),
+            groupIds: any(named: 'groupIds'),
+            message: any(named: 'message'),
+            allowCollaboration: any(named: 'allowCollaboration'),
+          )).thenAnswer((_) async => true);
+
       when(() => mockViewModel.shareMenu(
-        menu: any(named: 'menu'),
-        friendUserIds: any(named: 'friendUserIds'),
-        groupIds: any(named: 'groupIds'),
-        message: any(named: 'message'),
-        allowCollaboration: any(named: 'allowCollaboration'),
-      )).thenAnswer((_) async => true);
-      
+            menu: any(named: 'menu'),
+            friendUserIds: any(named: 'friendUserIds'),
+            groupIds: any(named: 'groupIds'),
+            message: any(named: 'message'),
+            allowCollaboration: any(named: 'allowCollaboration'),
+          )).thenAnswer((_) async => true);
+
       when(() => mockViewModel.shareShoppingList(
-        shoppingList: any(named: 'shoppingList'),
-        friendUserIds: any(named: 'friendUserIds'),
-        groupIds: any(named: 'groupIds'),
-        message: any(named: 'message'),
-      )).thenAnswer((_) async => true);
+            shoppingList: any(named: 'shoppingList'),
+            friendUserIds: any(named: 'friendUserIds'),
+            groupIds: any(named: 'groupIds'),
+            message: any(named: 'message'),
+          )).thenAnswer((_) async => true);
     });
 
     group('Essential Structure Tests - Gold Standard', () {
@@ -302,12 +314,13 @@ void main() {
         // Verify essential dialog structure exists
         expect(find.byType(Dialog), findsOneWidget);
         expect(find.byType(Column), findsWidgets);
-        
+
         // Verify clean rendering - no layout exceptions expected (bug fixed)
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should handle different content types correctly', (tester) async {
+      testWidgets('should handle different content types correctly',
+          (tester) async {
         // Test all three content types render without crashing
         final dialogs = [
           UniversalShareDialog.recipe(
@@ -340,7 +353,8 @@ void main() {
         }
       });
 
-      testWidgets('should handle empty friends list gracefully', (tester) async {
+      testWidgets('should handle empty friends list gracefully',
+          (tester) async {
         // Test no friends state - production uses ShareDialogStates.buildNoFriendsState
         await tester.pumpWidget(
           MaterialApp(
@@ -356,12 +370,14 @@ void main() {
 
         // Verify dialog renders no friends state without crashing
         expect(find.byType(Dialog), findsOneWidget);
-        expect(tester.takeException(), isNull); // No exceptions expected after bug fix
+        expect(tester.takeException(),
+            isNull); // No exceptions expected after bug fix
       });
     });
 
     group('Share Actions and Features - Gold Standard', () {
-      testWidgets('should support platform selection for recipes', (tester) async {
+      testWidgets('should support platform selection for recipes',
+          (tester) async {
         // Test ShareMode functionality - recipes support realtime sharing
         await tester.pumpWidget(
           MaterialApp(
@@ -377,10 +393,12 @@ void main() {
 
         // Verify dialog supports realtime sharing for recipes
         expect(find.byType(Dialog), findsOneWidget);
-        expect(tester.takeException(), isNull); // No exceptions expected after bug fix
+        expect(tester.takeException(),
+            isNull); // No exceptions expected after bug fix
       });
 
-      testWidgets('should exclude platform selection for shopping lists', (tester) async {
+      testWidgets('should exclude platform selection for shopping lists',
+          (tester) async {
         // Test ShareMode exclusion - shopping lists don't support realtime
         await tester.pumpWidget(
           MaterialApp(
@@ -396,7 +414,8 @@ void main() {
 
         // Verify dialog renders successfully for shopping lists
         expect(find.byType(Dialog), findsOneWidget);
-        expect(tester.takeException(), isNull); // No exceptions expected after bug fix
+        expect(tester.takeException(),
+            isNull); // No exceptions expected after bug fix
       });
 
       testWidgets('should handle custom messages correctly', (tester) async {
@@ -416,7 +435,8 @@ void main() {
 
         // Verify initial message is set
         expect(find.text('Prova detta recept!'), findsWidgets);
-        expect(tester.takeException(), isNull); // No exceptions expected after bug fix
+        expect(tester.takeException(),
+            isNull); // No exceptions expected after bug fix
       });
 
       testWidgets('should support Swedish localization', (tester) async {
@@ -441,11 +461,12 @@ void main() {
         );
 
         // Verify Swedish text renders correctly
-        expect(find.text('Hej! Prova denna underbara rätt med åäö!'), findsWidgets);
+        expect(find.text('Hej! Prova denna underbara rätt med åäö!'),
+            findsWidgets);
         expect(find.byType(Dialog), findsOneWidget);
-        expect(tester.takeException(), isNull); // No exceptions expected after bug fix
+        expect(tester.takeException(),
+            isNull); // No exceptions expected after bug fix
       });
     });
-
   });
 }

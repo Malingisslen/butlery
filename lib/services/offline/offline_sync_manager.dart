@@ -111,7 +111,8 @@ class OfflineSyncManager {
             } else {
               // Recipe no longer needs sync - remove from queue
               await _syncQueueDao.dequeue(item.id);
-              AppLogger.info('✅ Recept ${item.recipeId} behöver inte synkas längre');
+              AppLogger.info(
+                  '✅ Recept ${item.recipeId} behöver inte synkas längre');
             }
           } else {
             // Recipe doesn't exist - remove from queue
@@ -153,16 +154,19 @@ class OfflineSyncManager {
             '⏰ Alla sync-försök misslyckades, använder exponential backoff...');
 
         // Use exponential backoff for retry attempts
-        RetryHelper.retryWithBackoff(() async {
-          final stillHasPending = await _syncQueueDao.hasPending(userId);
-          if (isOnline && stillHasPending) {
-            AppLogger.info('🔄 Retry-försök startar...');
-            await syncPendingChanges(isOnline: isOnline);
-          }
-        }, maxRetries: 3, shouldRetry: (error) {
-          // Retry on any error - sync state will be checked inside the operation
-          return true;
-        });
+        RetryHelper.retryWithBackoff(
+            () async {
+              final stillHasPending = await _syncQueueDao.hasPending(userId);
+              if (isOnline && stillHasPending) {
+                AppLogger.info('🔄 Retry-försök startar...');
+                await syncPendingChanges(isOnline: isOnline);
+              }
+            },
+            maxRetries: 3,
+            shouldRetry: (error) {
+              // Retry on any error - sync state will be checked inside the operation
+              return true;
+            });
       }
     } catch (e) {
       AppLogger.error('❌ Kritiskt fel vid synkronisering: $e');

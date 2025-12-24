@@ -161,8 +161,8 @@ class UserAvatarWidgets {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: isOnline ? AppColors.success : AppColors.textTertiary,
-        border:
-            Border.all(color: AppColors.cardWhite, width: AppDimensions.borderWidthThin),
+        border: Border.all(
+            color: AppColors.cardWhite, width: AppDimensions.borderWidthThin),
       ),
     );
   }

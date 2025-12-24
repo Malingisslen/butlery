@@ -39,7 +39,8 @@ class ConversationMutationModule {
       final sortedIds = [user1Id, user2Id]..sort();
       final conversationId = 'direct_${sortedIds[0]}_${sortedIds[1]}';
 
-      AppLogger.info('🔍 Creating/getting direct conversation with deterministic ID: $conversationId');
+      AppLogger.info(
+          '🔍 Creating/getting direct conversation with deterministic ID: $conversationId');
 
       // Try to get existing conversation
       try {
@@ -78,11 +79,12 @@ class ConversationMutationModule {
       );
 
       await firestore.collection(collectionName).doc(conversationId).set(
-        ConversationDto.toFirestore(conversation),
-        SetOptions(merge: true),
-      );
+            ConversationDto.toFirestore(conversation),
+            SetOptions(merge: true),
+          );
 
-      AppLogger.success('✅ Direct conversation created with deterministic ID: $conversationId');
+      AppLogger.success(
+          '✅ Direct conversation created with deterministic ID: $conversationId');
       return conversationId;
     } catch (e) {
       AppLogger.error('Failed to create direct conversation', e);
@@ -112,12 +114,14 @@ class ConversationMutationModule {
       // Send system message about group creation
       final systemMessage = Message.system(
         conversationId: createdConversation.id,
-        content: '${participantDisplayNames[creatorId]} skapade gruppen "$title"',
+        content:
+            '${participantDisplayNames[creatorId]} skapade gruppen "$title"',
       );
 
       await sendMessageFn(systemMessage);
 
-      AppLogger.success('✅ Group conversation created: ${createdConversation.id}');
+      AppLogger.success(
+          '✅ Group conversation created: ${createdConversation.id}');
       return createdConversation.id;
     } catch (e) {
       AppLogger.error('Failed to create group conversation', e);
@@ -174,12 +178,22 @@ class ConversationMutationModule {
       }
 
       if (!conversation.isGroup) {
-        throw ValidationException('Cannot add participants to direct conversation');
+        throw ValidationException(
+            'Cannot add participants to direct conversation');
       }
 
-      final updatedParticipantIds = [...conversation.participantIds, ...participantIds];
-      final updatedDisplayNames = {...conversation.participantDisplayNames, ...participantDisplayNames};
-      final updatedAvatarUrls = {...conversation.participantAvatarUrls, ...participantAvatarUrls};
+      final updatedParticipantIds = [
+        ...conversation.participantIds,
+        ...participantIds
+      ];
+      final updatedDisplayNames = {
+        ...conversation.participantDisplayNames,
+        ...participantDisplayNames
+      };
+      final updatedAvatarUrls = {
+        ...conversation.participantAvatarUrls,
+        ...participantAvatarUrls
+      };
       final updatedLastReadTimestamps = {...conversation.lastReadTimestamps};
 
       // Initialize last read timestamps for new participants
@@ -200,7 +214,8 @@ class ConversationMutationModule {
 
       // Send system message about participant addition
       for (final participantId in participantIds) {
-        final displayName = participantDisplayNames[participantId] ?? 'Okänd användare';
+        final displayName =
+            participantDisplayNames[participantId] ?? 'Okänd användare';
         final systemMessage = Message.system(
           conversationId: conversationId,
           content: '$displayName har lagts till i gruppen',
@@ -208,9 +223,11 @@ class ConversationMutationModule {
         await sendMessageFn(systemMessage);
       }
 
-      AppLogger.success('✅ Added ${participantIds.length} participants to conversation $conversationId');
+      AppLogger.success(
+          '✅ Added ${participantIds.length} participants to conversation $conversationId');
     } catch (e) {
-      AppLogger.error('Failed to add participants to conversation $conversationId', e);
+      AppLogger.error(
+          'Failed to add participants to conversation $conversationId', e);
       rethrow;
     }
   }
@@ -231,13 +248,22 @@ class ConversationMutationModule {
       }
 
       if (!conversation.isGroup) {
-        throw ValidationException('Cannot remove participants from direct conversation');
+        throw ValidationException(
+            'Cannot remove participants from direct conversation');
       }
 
-      final updatedParticipantIds = conversation.participantIds.where((id) => id != participantId).toList();
-      final updatedDisplayNames = Map<String, String>.from(conversation.participantDisplayNames)..remove(participantId);
-      final updatedAvatarUrls = Map<String, String?>.from(conversation.participantAvatarUrls)..remove(participantId);
-      final updatedLastReadTimestamps = Map<String, DateTime>.from(conversation.lastReadTimestamps)..remove(participantId);
+      final updatedParticipantIds = conversation.participantIds
+          .where((id) => id != participantId)
+          .toList();
+      final updatedDisplayNames =
+          Map<String, String>.from(conversation.participantDisplayNames)
+            ..remove(participantId);
+      final updatedAvatarUrls =
+          Map<String, String?>.from(conversation.participantAvatarUrls)
+            ..remove(participantId);
+      final updatedLastReadTimestamps =
+          Map<String, DateTime>.from(conversation.lastReadTimestamps)
+            ..remove(participantId);
 
       final updatedConversation = conversation.copyWith(
         participantIds: updatedParticipantIds,
@@ -250,16 +276,19 @@ class ConversationMutationModule {
       await updateFn(updatedConversation);
 
       // Send system message about participant removal
-      final displayName = conversation.participantDisplayNames[participantId] ?? 'Okänd användare';
+      final displayName = conversation.participantDisplayNames[participantId] ??
+          'Okänd användare';
       final systemMessage = Message.system(
         conversationId: conversationId,
         content: '$displayName har lämnat gruppen',
       );
       await sendMessageFn(systemMessage);
 
-      AppLogger.success('✅ Removed participant $participantId from conversation $conversationId');
+      AppLogger.success(
+          '✅ Removed participant $participantId from conversation $conversationId');
     } catch (e) {
-      AppLogger.error('Failed to remove participant from conversation $conversationId', e);
+      AppLogger.error(
+          'Failed to remove participant from conversation $conversationId', e);
       rethrow;
     }
   }
@@ -277,7 +306,8 @@ class ConversationMutationModule {
       const batchSize = 500;
       final messages = messagesQuery.docs;
 
-      AppLogger.info('🗑️ Deleting ${messages.length} messages from conversation $conversationId');
+      AppLogger.info(
+          '🗑️ Deleting ${messages.length} messages from conversation $conversationId');
 
       for (int i = 0; i < messages.length; i += batchSize) {
         final batch = firestore.batch();
@@ -315,7 +345,8 @@ class ConversationMutationModule {
           .doc(userId)
           .set(settings, SetOptions(merge: true));
 
-      AppLogger.debug('Updated conversation settings for user $userId in $conversationId');
+      AppLogger.debug(
+          'Updated conversation settings for user $userId in $conversationId');
     } catch (e) {
       AppLogger.error('Failed to update conversation user settings', e);
       rethrow;

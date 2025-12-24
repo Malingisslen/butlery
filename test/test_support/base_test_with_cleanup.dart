@@ -1,5 +1,5 @@
 /// Enhanced base test class that enforces proper cleanup
-/// 
+///
 /// This base class ensures all tests have proper tearDown and stream cleanup
 /// to prevent memory leaks and test pollution.
 library;
@@ -17,30 +17,30 @@ import 'stream_test_manager.dart';
 abstract class BaseTestWithCleanup {
   /// Track all stream subscriptions for automatic cleanup
   static final List<StreamSubscription> _subscriptions = [];
-  
+
   /// Track all stream controllers for automatic cleanup
   static final List<StreamController> _controllers = [];
-  
+
   /// Track if setup was called
   static bool _setupCalled = false;
-  
+
   /// Setup that MUST be called in setUp()
   static Future<void> setupTestWithCleanup() async {
     _setupCalled = true;
-    
+
     // Initialize base test infrastructure
     await BaseUnitTest.setupUnit();
-    
+
     // Initialize service locator
     await TestServiceLocator.initialize();
-    
+
     // Clear Firestore data for test isolation
     await FirestoreSingleton.clearData();
-    
+
     // Clear any previous subscriptions/controllers (defensive)
     await _cleanupStreams();
   }
-  
+
   /// TearDown that MUST be called in tearDown()
   static Future<void> tearDownTestWithCleanup() async {
     if (!_setupCalled) {
@@ -49,30 +49,30 @@ abstract class BaseTestWithCleanup {
         'Ensure you call setupTestWithCleanup() in your setUp() method.',
       );
     }
-    
+
     try {
       // Clean up all streams using StreamTestManager
       await StreamTestManager.cleanupAll();
-      
+
       // Also clean up our local tracking (for backwards compatibility)
       await _cleanupStreams();
-      
+
       // Clear service locator state
       await TestServiceLocator.clearState();
-      
+
       // Clear Firestore data
       await FirestoreSingleton.clearData();
-      
+
       // Reset all mocks
       resetMocktailState();
-      
+
       // Small delay for garbage collection
       await Future.delayed(Duration(milliseconds: 5));
     } finally {
       _setupCalled = false;
     }
   }
-  
+
   /// Complete reset (for tearDownAll)
   static Future<void> completeReset() async {
     await StreamTestManager.cleanupAll();
@@ -82,21 +82,21 @@ abstract class BaseTestWithCleanup {
     StreamTestManager.reset();
     _setupCalled = false;
   }
-  
+
   /// Register a stream subscription for automatic cleanup
   static void registerSubscription(StreamSubscription subscription) {
     _subscriptions.add(subscription);
     // Also track with StreamTestManager for double safety
     StreamTestManager.track(subscription);
   }
-  
+
   /// Register a stream controller for automatic cleanup
   static void registerController(StreamController controller) {
     _controllers.add(controller);
     // Also track with StreamTestManager for double safety
     StreamTestManager.trackController(controller);
   }
-  
+
   /// Clean up all streams
   static Future<void> _cleanupStreams() async {
     // Cancel all subscriptions
@@ -108,7 +108,7 @@ abstract class BaseTestWithCleanup {
       }
     }
     _subscriptions.clear();
-    
+
     // Close all controllers
     for (final controller in _controllers) {
       try {
@@ -121,7 +121,7 @@ abstract class BaseTestWithCleanup {
     }
     _controllers.clear();
   }
-  
+
   /// Verify cleanup was called (for testing the test infrastructure)
   static void verifyCleanup() {
     if (_setupCalled) {
@@ -131,13 +131,13 @@ abstract class BaseTestWithCleanup {
         'await BaseTestWithCleanup.tearDownTestWithCleanup());',
       );
     }
-    
+
     if (_subscriptions.isNotEmpty) {
       throw StateError(
         'Test has ${_subscriptions.length} uncleaned stream subscriptions!',
       );
     }
-    
+
     if (_controllers.isNotEmpty) {
       throw StateError(
         'Test has ${_controllers.length} uncleaned stream controllers!',
@@ -153,13 +153,13 @@ mixin TestCleanupMixin {
   Future<void> setUpWithCleanup() async {
     await BaseTestWithCleanup.setupTestWithCleanup();
   }
-  
+
   /// Called in tearDown - must be overridden
   @mustCallSuper
   Future<void> tearDownWithCleanup() async {
     await BaseTestWithCleanup.tearDownTestWithCleanup();
   }
-  
+
   /// Called in tearDownAll - optional
   Future<void> tearDownAllWithCleanup() async {
     await BaseTestWithCleanup.completeReset();
@@ -176,15 +176,15 @@ void testGroupWithCleanup(
     setUp(() async {
       await BaseTestWithCleanup.setupTestWithCleanup();
     });
-    
+
     tearDown(() async {
       await BaseTestWithCleanup.tearDownTestWithCleanup();
     });
-    
+
     tearDownAll(() async {
       await BaseTestWithCleanup.completeReset();
     });
-    
+
     body();
   }, skip: skip);
 }

@@ -53,7 +53,8 @@ class PreferencesExportManager {
           'type': data['type'] ?? 'unknown',
           'title': data['title'] ?? '',
           'body': data['body'] ?? '',
-          'created_at': data['createdAt']?.toDate()?.toIso8601String() ?? 'unknown',
+          'created_at':
+              data['createdAt']?.toDate()?.toIso8601String() ?? 'unknown',
           'read_at': data['readAt']?.toDate()?.toIso8601String(),
           'is_read': data['isRead'] ?? false,
           'data': data['data'],
@@ -65,13 +66,15 @@ class PreferencesExportManager {
         'notifications': notifications,
         'note': 'Limited to last 500 notifications for export size',
         'summary': {
-          'unread_count': notifications.where((n) => n['is_read'] == false).length,
+          'unread_count':
+              notifications.where((n) => n['is_read'] == false).length,
           'read_count': notifications.where((n) => n['is_read'] == true).length,
           'notification_types': _summarizeNotificationTypes(notifications),
         },
       };
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export notifications', e);
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to export notifications', e);
       return {
         'error': e.toString(),
         'note': 'Notifications may not be available',
@@ -80,7 +83,8 @@ class PreferencesExportManager {
   }
 
   /// Summarize notification types
-  Map<String, int> _summarizeNotificationTypes(List<Map<String, dynamic>> notifications) {
+  Map<String, int> _summarizeNotificationTypes(
+      List<Map<String, dynamic>> notifications) {
     final typeCounts = <String, int>{};
     for (final notification in notifications) {
       final type = notification['type'] as String;
@@ -91,7 +95,8 @@ class PreferencesExportManager {
 
   /// Export notification preferences
   /// User's notification settings and preferences.
-  Future<Map<String, dynamic>> exportNotificationPreferences(String userId) async {
+  Future<Map<String, dynamic>> exportNotificationPreferences(
+      String userId) async {
     try {
       // Get notification preferences
       final prefsDoc = await _firestore
@@ -100,10 +105,8 @@ class PreferencesExportManager {
           .get();
 
       // Get FCM token (if exists)
-      final fcmDoc = await _firestore
-          .collection('user_fcm_tokens')
-          .doc(userId)
-          .get();
+      final fcmDoc =
+          await _firestore.collection('user_fcm_tokens').doc(userId).get();
 
       String? fcmTokenUpdatedAt;
       if (fcmDoc.exists) {
@@ -124,7 +127,8 @@ class PreferencesExportManager {
         'note': 'FCM token is not included for security reasons',
       };
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export notification preferences', e);
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to export notification preferences', e);
       return {
         'error': e.toString(),
         'note': 'Notification preferences may not be available',

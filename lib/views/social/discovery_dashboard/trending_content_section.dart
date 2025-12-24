@@ -15,7 +15,7 @@ class TrendingContentSection {
     DiscoveryDashboardViewModel viewModel,
   ) {
     final trendingRecipes = viewModel.trendingRecipes;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -41,7 +41,6 @@ class TrendingContentSection {
           ],
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        
         if (trendingRecipes.isEmpty)
           _buildEmptyState()
         else
@@ -50,7 +49,8 @@ class TrendingContentSection {
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: trendingRecipes.take(10).length,
-              separatorBuilder: (context, index) => const SizedBox(width: AppDimensions.spacingM),
+              separatorBuilder: (context, index) =>
+                  const SizedBox(width: AppDimensions.spacingM),
               itemBuilder: (context, index) {
                 final recipe = trendingRecipes[index];
                 return _buildTrendingRecipeCard(context, recipe);
@@ -65,10 +65,12 @@ class TrendingContentSection {
     return Container(
       height: AppDimensions.heightLarge,
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant.withValues(alpha: AppDimensions.opacityMediumLight),
+        color: AppColors.surfaceVariant
+            .withValues(alpha: AppDimensions.opacityMediumLight),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(
-          color: AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
+          color:
+              AppColors.outline.withValues(alpha: AppDimensions.opacityLight),
         ),
       ),
       child: const Center(
@@ -132,7 +134,8 @@ class TrendingContentSection {
                         height: 100,
                         fit: BoxFit.contain,
                         placeholder: (context, url) => ColoredBox(
-                          color: AppColors.primaryContainer.withValues(alpha: 0.3),
+                          color:
+                              AppColors.primaryContainer.withValues(alpha: 0.3),
                           child: const Center(
                             child: SizedBox(
                               width: 30,
@@ -141,12 +144,13 @@ class TrendingContentSection {
                             ),
                           ),
                         ),
-                        errorWidget: (context, url, error) => _buildImagePlaceholder(),
+                        errorWidget: (context, url, error) =>
+                            _buildImagePlaceholder(),
                       ),
                     )
                   : _buildImagePlaceholder(),
             ),
-            
+
             // Recipe info
             Expanded(
               child: Padding(
@@ -196,7 +200,8 @@ class TrendingContentSection {
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.success.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                            borderRadius: BorderRadius.circular(
+                                AppDimensions.borderRadiusS),
                           ),
                           child: Text(
                             'Populär',
@@ -240,7 +245,8 @@ class TrendingContentSection {
     );
   }
 
-  static void _showAllTrending(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+  static void _showAllTrending(
+      BuildContext context, DiscoveryDashboardViewModel viewModel) {
     // Navigate to extended trending content view
     Navigator.push(
       context,
@@ -249,8 +255,9 @@ class TrendingContentSection {
       ),
     );
   }
-  
-  static Widget _buildTrendingContentPage(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+
+  static Widget _buildTrendingContentPage(
+      BuildContext context, DiscoveryDashboardViewModel viewModel) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Populärt innehåll'),
@@ -263,77 +270,83 @@ class TrendingContentSection {
           children: [
             // Extended trending recipes section
             if (viewModel.trendingRecipes.isNotEmpty) ...[
-              _buildSectionHeader('Populära recept', viewModel.trendingRecipes.length),
+              _buildSectionHeader(
+                  'Populära recept', viewModel.trendingRecipes.length),
               const SizedBox(height: AppDimensions.spacingS),
-              ...viewModel.trendingRecipes.take(20).map((recipe) => 
-                Card(
-                  margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
-                  child: ListTile(
-                    leading: const Icon(Icons.restaurant),
-                    title: Text(recipe.core.title),
-                    subtitle: Text(recipe.core.description),
-                    trailing: const Icon(Icons.arrow_forward_ios),
-                    onTap: () => Navigator.pushNamed(
-                      context,
-                      Routes.receptDetalj,
-                      arguments: {'recipe': recipe},
+              ...viewModel.trendingRecipes.take(20).map(
+                    (recipe) => Card(
+                      margin:
+                          const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                      child: ListTile(
+                        leading: const Icon(Icons.restaurant),
+                        title: Text(recipe.core.title),
+                        subtitle: Text(recipe.core.description),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          Routes.receptDetalj,
+                          arguments: {'recipe': recipe},
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
               const SizedBox(height: AppDimensions.spacingL),
             ],
-            
+
             // Extended trending menus section
             if (viewModel.trendingMenus.isNotEmpty) ...[
-              _buildSectionHeader('Populära menyer', viewModel.trendingMenus.length),
+              _buildSectionHeader(
+                  'Populära menyer', viewModel.trendingMenus.length),
               const SizedBox(height: AppDimensions.spacingS),
-              ...viewModel.trendingMenus.take(10).map((menu) => 
-                Card(
-                  margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
-                  child: ListTile(
-                    leading: const Icon(Icons.calendar_month),
-                    title: Text(menu.menuTitle),
-                    subtitle: Text('${menu.totalRecipeCount} recept'),
-                    trailing: const Icon(Icons.arrow_forward_ios),
-                    onTap: () => Navigator.pushNamed(
-                      context,
-                      Routes.menuPreview,
-                      arguments: {'menu': menu},
+              ...viewModel.trendingMenus.take(10).map(
+                    (menu) => Card(
+                      margin:
+                          const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                      child: ListTile(
+                        leading: const Icon(Icons.calendar_month),
+                        title: Text(menu.menuTitle),
+                        subtitle: Text('${menu.totalRecipeCount} recept'),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          Routes.menuPreview,
+                          arguments: {'menu': menu},
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
               const SizedBox(height: AppDimensions.spacingL),
             ],
-            
+
             // Extended trending shopping lists section
             if (viewModel.trendingShoppingLists.isNotEmpty) ...[
-              _buildSectionHeader('Populära inköpslistor', viewModel.trendingShoppingLists.length),
+              _buildSectionHeader('Populära inköpslistor',
+                  viewModel.trendingShoppingLists.length),
               const SizedBox(height: AppDimensions.spacingS),
-              ...viewModel.trendingShoppingLists.take(10).map((list) => 
-                Card(
-                  margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
-                  child: ListTile(
-                    leading: const Icon(Icons.shopping_cart),
-                    title: Text(list.name),
-                    subtitle: Text('${list.items.length} varor'),
-                    trailing: const Icon(Icons.arrow_forward_ios),
-                    onTap: () => Navigator.pushNamed(
-                      context,
-                      Routes.inkopslista,
-                      arguments: {'listId': list.id},
+              ...viewModel.trendingShoppingLists.take(10).map(
+                    (list) => Card(
+                      margin:
+                          const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                      child: ListTile(
+                        leading: const Icon(Icons.shopping_cart),
+                        title: Text(list.name),
+                        subtitle: Text('${list.items.length} varor'),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          Routes.inkopslista,
+                          arguments: {'listId': list.id},
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
             ],
           ],
         ),
       ),
     );
   }
-  
+
   static Widget _buildSectionHeader(String title, int count) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

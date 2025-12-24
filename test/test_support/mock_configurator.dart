@@ -27,7 +27,7 @@ class MockConfigurator {
       isAuthenticated: isAuthenticated,
     );
   }
-  
+
   /// Configure authenticated user state
   static void configureAuthenticatedUser({
     required MockAuthRepository mock,
@@ -40,14 +40,14 @@ class MockConfigurator {
       email: email,
       displayName: displayName,
     );
-    
+
     mock.setAuthState(
       user: user,
       userId: userId,
       isAuthenticated: true,
     );
   }
-  
+
   /// Configure unauthenticated state
   static void configureUnauthenticated(MockAuthRepository mock) {
     mock.setAuthState(
@@ -56,7 +56,7 @@ class MockConfigurator {
       isAuthenticated: false,
     );
   }
-  
+
   /// Configure recipe repository with recipes
   static void configureRecipes({
     required MockRecipeRepository mock,
@@ -70,7 +70,7 @@ class MockConfigurator {
       mock.setRecipeRepositoryState(currentUserId: userId);
     }
   }
-  
+
   /// Configure user repository with profiles
   static void configureUserProfiles({
     required MockUserRepository mock,
@@ -82,7 +82,7 @@ class MockConfigurator {
       currentUserId: currentUserId,
     );
   }
-  
+
   /// Configure permission service mock
   static void configurePermissionService({
     required PermissionService service,
@@ -96,7 +96,7 @@ class MockConfigurator {
         email: 'test@example.com',
         displayName: displayName ?? 'Test User',
       );
-      
+
       authMock.setAuthState(
         user: user,
         userId: userId,
@@ -104,7 +104,7 @@ class MockConfigurator {
       );
     }
   }
-  
+
   /// Configure Firebase Auth mock (for low-level repository tests)
   static void configureFirebaseAuth({
     required dynamic mockFirebaseAuth,
@@ -116,7 +116,7 @@ class MockConfigurator {
       when(() => mockFirebaseAuth.currentUser).thenReturn(currentUser);
     }
   }
-  
+
   /// Configure mock for async auth state changes stream
   static void configureAuthStateStream({
     required MockAuthRepository mock,
@@ -126,7 +126,7 @@ class MockConfigurator {
       (_) => Stream.value(user),
     );
   }
-  
+
   /// Configure mock for successful async operations
   static void configureAsyncSuccess<T>({
     required Mock mock,
@@ -136,7 +136,7 @@ class MockConfigurator {
     // This is a helper for common async stubbing patterns
     // Usage should be documented per mock type
   }
-  
+
   /// Reset all mock states to defaults
   static void resetAllMocks(List<Mock> mocks) {
     for (final mock in mocks) {
@@ -169,7 +169,7 @@ extension MockAuthRepositoryExtensions on MockAuthRepository {
       displayName: displayName,
     );
   }
-  
+
   /// Quick configure as unauthenticated
   void asUnauthenticated() {
     MockConfigurator.configureUnauthenticated(this);
@@ -184,7 +184,7 @@ extension MockRecipeRepositoryExtensions on MockRecipeRepository {
       recipes: recipes,
     );
   }
-  
+
   /// Quick configure with empty recipes
   void withNoRecipes() {
     MockConfigurator.configureRecipes(

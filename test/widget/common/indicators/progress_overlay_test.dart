@@ -14,7 +14,8 @@ void main() {
     });
 
     group('Default Constructor', () {
-      testWidgets('should render with required text', (WidgetTester tester) async {
+      testWidgets('should render with required text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -53,7 +54,8 @@ void main() {
         expect(positioned.bottom, equals(0));
       });
 
-      testWidgets('should use circle shape by default', (WidgetTester tester) async {
+      testWidgets('should use circle shape by default',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -66,12 +68,14 @@ void main() {
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(decoration.shape, equals(BoxShape.circle));
       });
 
-      testWidgets('should use default dark background with alpha', (WidgetTester tester) async {
+      testWidgets('should use default dark background with alpha',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -84,12 +88,15 @@ void main() {
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
-        expect(decoration.color, equals(AppColors.neutralDark.withValues(alpha: 0.7)));
+        expect(decoration.color,
+            equals(AppColors.neutralDark.withValues(alpha: 0.7)));
       });
 
-      testWidgets('should use default light progress color', (WidgetTester tester) async {
+      testWidgets('should use default light progress color',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -108,7 +115,8 @@ void main() {
         expect(progress.color, equals(AppColors.neutralLight));
       });
 
-      testWidgets('should apply custom background color', (WidgetTester tester) async {
+      testWidgets('should apply custom background color',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -124,12 +132,14 @@ void main() {
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(decoration.color, equals(Colors.blue.withValues(alpha: 0.5)));
       });
 
-      testWidgets('should apply custom progress color', (WidgetTester tester) async {
+      testWidgets('should apply custom progress color',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -151,7 +161,8 @@ void main() {
         expect(progress.color, equals(Colors.red));
       });
 
-      testWidgets('should apply custom text color', (WidgetTester tester) async {
+      testWidgets('should apply custom text color',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -173,7 +184,8 @@ void main() {
     });
 
     group('Avatar Constructor', () {
-      testWidgets('should render with avatar constructor', (WidgetTester tester) async {
+      testWidgets('should render with avatar constructor',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -190,7 +202,8 @@ void main() {
         expect(find.byType(ProgressOverlay), findsOneWidget);
       });
 
-      testWidgets('should use circle shape for avatar', (WidgetTester tester) async {
+      testWidgets('should use circle shape for avatar',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -203,12 +216,14 @@ void main() {
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(decoration.shape, equals(BoxShape.circle));
       });
 
-      testWidgets('should use neutral light for avatar progress', (WidgetTester tester) async {
+      testWidgets('should use neutral light for avatar progress',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -227,7 +242,8 @@ void main() {
         expect(progress.color, equals(AppColors.neutralLight));
       });
 
-      testWidgets('should use neutral light for avatar text', (WidgetTester tester) async {
+      testWidgets('should use neutral light for avatar text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -246,7 +262,8 @@ void main() {
     });
 
     group('Rectangle Constructor', () {
-      testWidgets('should render with rectangle constructor', (WidgetTester tester) async {
+      testWidgets('should render with rectangle constructor',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -276,12 +293,14 @@ void main() {
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(decoration.shape, equals(BoxShape.rectangle));
       });
 
-      testWidgets('should accept custom colors for rectangle', (WidgetTester tester) async {
+      testWidgets('should accept custom colors for rectangle',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -299,7 +318,8 @@ void main() {
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(decoration.color, equals(Colors.green.withValues(alpha: 0.8)));
 
@@ -314,7 +334,8 @@ void main() {
     });
 
     group('Progress Indicator', () {
-      testWidgets('should show circular progress indicator', (WidgetTester tester) async {
+      testWidgets('should show circular progress indicator',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -367,7 +388,8 @@ void main() {
         expect(find.byType(Center), findsOneWidget);
       });
 
-      testWidgets('should use Column with min size', (WidgetTester tester) async {
+      testWidgets('should use Column with min size',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -384,7 +406,8 @@ void main() {
         expect(column.mainAxisSize, equals(MainAxisSize.min));
       });
 
-      testWidgets('should have spacing between indicator and text', (WidgetTester tester) async {
+      testWidgets('should have spacing between indicator and text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -403,7 +426,8 @@ void main() {
     });
 
     group('Text Styling', () {
-      testWidgets('should use bodySmall text style', (WidgetTester tester) async {
+      testWidgets('should use bodySmall text style',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -421,7 +445,8 @@ void main() {
         expect(text.style, isNotNull);
       });
 
-      testWidgets('should display text below progress indicator', (WidgetTester tester) async {
+      testWidgets('should display text below progress indicator',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -443,7 +468,8 @@ void main() {
     });
 
     group('Swedish Localization', () {
-      testWidgets('should display Swedish uploading text', (WidgetTester tester) async {
+      testWidgets('should display Swedish uploading text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -459,7 +485,8 @@ void main() {
         expect(find.text('Laddar upp...'), findsOneWidget);
       });
 
-      testWidgets('should display Swedish processing text', (WidgetTester tester) async {
+      testWidgets('should display Swedish processing text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -475,7 +502,8 @@ void main() {
         expect(find.text('Bearbetar...'), findsOneWidget);
       });
 
-      testWidgets('should display Swedish saving text', (WidgetTester tester) async {
+      testWidgets('should display Swedish saving text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -491,7 +519,8 @@ void main() {
         expect(find.text('Sparar...'), findsOneWidget);
       });
 
-      testWidgets('should handle Swedish characters in text', (WidgetTester tester) async {
+      testWidgets('should handle Swedish characters in text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -527,8 +556,9 @@ void main() {
       });
 
       testWidgets('should handle very long text', (WidgetTester tester) async {
-        final longText = 'This is a very long loading message that might wrap to multiple lines';
-        
+        final longText =
+            'This is a very long loading message that might wrap to multiple lines';
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -544,7 +574,8 @@ void main() {
         expect(find.text(longText), findsOneWidget);
       });
 
-      testWidgets('should work with different stack sizes', (WidgetTester tester) async {
+      testWidgets('should work with different stack sizes',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -566,7 +597,8 @@ void main() {
         expect(find.text('Loading'), findsOneWidget);
       });
 
-      testWidgets('should overlay on top of other widgets', (WidgetTester tester) async {
+      testWidgets('should overlay on top of other widgets',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -587,7 +619,8 @@ void main() {
     });
 
     group('Use Cases', () {
-      testWidgets('should work for avatar upload scenario', (WidgetTester tester) async {
+      testWidgets('should work for avatar upload scenario',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -610,7 +643,8 @@ void main() {
 
         expect(find.text('Uploading avatar...'), findsOneWidget);
         // Find the DecoratedBox from ProgressOverlay specifically
-        final decoratedBoxes = tester.widgetList<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBoxes =
+            tester.widgetList<DecoratedBox>(find.byType(DecoratedBox));
         expect(decoratedBoxes, isNotEmpty);
         // The ProgressOverlay's DecoratedBox should have circle shape
         final progressOverlayBox = decoratedBoxes.firstWhere(
@@ -620,7 +654,8 @@ void main() {
         expect(decoration.shape, equals(BoxShape.circle));
       });
 
-      testWidgets('should work for file processing scenario', (WidgetTester tester) async {
+      testWidgets('should work for file processing scenario',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -635,7 +670,8 @@ void main() {
         );
 
         expect(find.text('Processing file...'), findsOneWidget);
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(decoration.shape, equals(BoxShape.rectangle));
       });

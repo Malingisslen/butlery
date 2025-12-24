@@ -62,7 +62,8 @@ class ImageUploadCoordinator {
     Function(int completed, int total)? onProgress,
   }) async {
     if (disposed || uploadsCanceled) {
-      AppLogger.info('☁️ Upload canceled - manager disposed or uploads canceled');
+      AppLogger.info(
+          '☁️ Upload canceled - manager disposed or uploads canceled');
       return [];
     }
 
@@ -71,7 +72,8 @@ class ImageUploadCoordinator {
       return [];
     }
 
-    AppLogger.info('🚀 Starting thread-safe upload of ${pendingImages.length} pending images');
+    AppLogger.info(
+        '🚀 Starting thread-safe upload of ${pendingImages.length} pending images');
     final List<String> uploadedUrls = [];
     int completed = 0;
     final total = pendingImages.length;
@@ -107,7 +109,8 @@ class ImageUploadCoordinator {
       final successfulUrls =
           results.where((url) => url != null).cast<String>().toList();
 
-      AppLogger.info('✅ Completed ${successfulUrls.length}/$total uploads successfully');
+      AppLogger.info(
+          '✅ Completed ${successfulUrls.length}/$total uploads successfully');
       return successfulUrls;
     } catch (e) {
       AppLogger.error('❌ Fatal error during upload: $e');
@@ -159,7 +162,8 @@ class ImageUploadCoordinator {
 
       // CRITICAL FIX: Check cancellation before actual upload
       if (disposed || uploadsCanceled) {
-        AppLogger.info('☁️ Upload canceled during state update for ${file.path}');
+        AppLogger.info(
+            '☁️ Upload canceled during state update for ${file.path}');
         return null;
       }
 

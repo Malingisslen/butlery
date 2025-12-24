@@ -123,14 +123,14 @@ class AvatarImageWidget extends StatelessWidget {
             child: _buildAvatarContent(),
           ),
         ),
-        
+
         // Status indicator
         if (config.showStatusIndicator)
           ImageComponents.buildStatusIndicator(
             isOnline: isOnline,
             config: config,
           ),
-        
+
         // Edit button for editable avatars
         if (isEditable)
           Positioned(
@@ -187,7 +187,7 @@ class AvatarImageWidget extends StatelessWidget {
   Widget _buildInitialsAvatar() {
     final dimensions = config.getDimensions();
     final initials = _getInitials();
-    
+
     return Container(
       width: dimensions.width,
       height: dimensions.height,
@@ -218,7 +218,8 @@ class AvatarImageWidget extends StatelessWidget {
   /// Get initials from display name or email
   String _getInitials() {
     if (displayName != null && displayName!.trim().isNotEmpty) {
-      final words = displayName!.trim()
+      final words = displayName!
+          .trim()
           .split(' ')
           .where((word) => word.isNotEmpty)
           .toList();
@@ -254,7 +255,7 @@ class AvatarImageWidget extends StatelessWidget {
 
       final imagePickerService = ServiceLocator.get<ImagePickerService>();
       final result = await imagePickerService.pickImage(ImageSource.gallery);
-      
+
       if (result != null) {
         onImageSelected!(result.path);
         AppLogger.debug('Avatar image selected: ${result.path}');
@@ -307,7 +308,7 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
           config: widget.config,
           onImageSelected: _handleImageSelected,
         ),
-        
+
         // Loading overlay
         if (_isLoading)
           Positioned.fill(
@@ -330,10 +331,10 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
               ),
             ),
           ),
-        
+
         // Remove button (if image exists)
-        if (widget.imageUrl != null && 
-            widget.imageUrl!.isNotEmpty && 
+        if (widget.imageUrl != null &&
+            widget.imageUrl!.isNotEmpty &&
             widget.onImageRemoved != null)
           Positioned(
             top: -4,
@@ -369,7 +370,8 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
     });
 
     try {
-      await Future.delayed(const Duration(milliseconds: 100)); // Brief delay for UX
+      await Future.delayed(
+          const Duration(milliseconds: 100)); // Brief delay for UX
       widget.onImageSelected(imagePath);
     } finally {
       if (mounted) {

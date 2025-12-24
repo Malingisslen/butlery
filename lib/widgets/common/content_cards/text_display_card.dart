@@ -40,9 +40,7 @@ class TextDisplayCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
         border: Border.all(color: borderColor ?? AppColors.divider),
       ),
-      child: scrollable 
-        ? SingleChildScrollView(child: textWidget)
-        : textWidget,
+      child: scrollable ? SingleChildScrollView(child: textWidget) : textWidget,
     );
   }
 }

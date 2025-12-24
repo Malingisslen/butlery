@@ -19,7 +19,7 @@ void main() {
 
   setUpAll(() async {
     await TestServiceLocator.initialize();
-    
+
     // Register fallback values for mocktail
     registerFallbackValue(RecommendationType.similarToShared);
     registerFallbackValue(FeedbackType.like);
@@ -27,9 +27,10 @@ void main() {
 
   setUp(() async {
     mockRecommendationService = MockRecommendationService();
-    
+
     // Get the permission service from TestServiceLocator (it's already configured)
-    mockPermissionService = TestServiceLocator.get<PermissionService>() as MockPermissionService;
+    mockPermissionService =
+        TestServiceLocator.get<PermissionService>() as MockPermissionService;
 
     recommendationsManager = DiscoveryRecommendationsManager(
       recommendationService: mockRecommendationService,
@@ -62,7 +63,8 @@ void main() {
         title: 'Recommendation ${index + 1}',
         description: 'Description for recommendation ${index + 1}',
         reason: 'Based on your cooking history',
-        type: RecommendationType.values[index % RecommendationType.values.length],
+        type:
+            RecommendationType.values[index % RecommendationType.values.length],
         score: 0.8 - (index * 0.1),
         imageUrl: 'https://example.com/image$index.jpg',
         metadata: {'category': 'italian', 'difficulty': 'easy'},
@@ -88,7 +90,8 @@ void main() {
       expect(recommendationsManager.hasError, isFalse);
       expect(recommendationsManager.hasRecommendations, isTrue);
       expect(recommendationsManager.recommendationsCount, equals(5));
-      expect(recommendationsManager.personalizedRecommendations.length, equals(5));
+      expect(
+          recommendationsManager.personalizedRecommendations.length, equals(5));
     });
 
     test('should set loading state during recommendations loading', () async {
@@ -119,7 +122,8 @@ void main() {
       }
 
       expect(recommendationsManager.hasError, isTrue);
-      expect(recommendationsManager.error, contains('Failed to load recommendations'));
+      expect(recommendationsManager.error,
+          contains('Failed to load recommendations'));
       expect(recommendationsManager.isLoading, isFalse);
       expect(recommendationsManager.hasRecommendations, isFalse);
       expect(recommendationsManager.personalizedRecommendations, isEmpty);
@@ -141,11 +145,13 @@ void main() {
 
       await recommendationsManager.loadPersonalizedRecommendations();
 
-      final recommendation = recommendationsManager.personalizedRecommendations.first;
+      final recommendation =
+          recommendationsManager.personalizedRecommendations.first;
       final original = testRecommendations.first;
 
       expect(recommendation['id'], equals(original.id));
-      expect(recommendation['type'], equals(original.type.toString().split('.').last));
+      expect(recommendation['type'],
+          equals(original.type.toString().split('.').last));
       expect(recommendation['title'], equals(original.title));
       expect(recommendation['description'], equals(original.description));
       expect(recommendation['imageUrl'], equals(original.imageUrl));
@@ -161,14 +167,14 @@ void main() {
     test('should refresh recommendations successfully', () async {
       final initialRecommendations = createTestRecommendations(count: 2);
       final refreshedRecommendations = createTestRecommendations(count: 4);
-      
+
       mockRecommendationService.setRecommendations(initialRecommendations);
       await recommendationsManager.loadPersonalizedRecommendations();
       expect(recommendationsManager.recommendationsCount, equals(2));
 
       mockRecommendationService.setRecommendations(refreshedRecommendations);
       await recommendationsManager.refreshRecommendations();
-      
+
       expect(recommendationsManager.recommendationsCount, equals(4));
       expect(recommendationsManager.hasError, isFalse);
     });
@@ -181,10 +187,12 @@ void main() {
 
       // Simulate loading more content
       final moreRecommendations = createTestRecommendations(count: 2);
-      mockRecommendationService.setRecommendations([...initialRecommendations, ...moreRecommendations]);
+      mockRecommendationService.setRecommendations(
+          [...initialRecommendations, ...moreRecommendations]);
       await recommendationsManager.loadMoreRecommendations();
 
-      expect(recommendationsManager.recommendationsCount, greaterThanOrEqualTo(3));
+      expect(
+          recommendationsManager.recommendationsCount, greaterThanOrEqualTo(3));
     });
 
     test('should handle load more recommendations errors', () async {
@@ -193,10 +201,12 @@ void main() {
       await recommendationsManager.loadMoreRecommendations();
 
       expect(recommendationsManager.hasError, isTrue);
-      expect(recommendationsManager.error, contains('Failed to load more recommendations'));
+      expect(recommendationsManager.error,
+          contains('Failed to load more recommendations'));
     });
 
-    test('should handle missing user ID in load more recommendations', () async {
+    test('should handle missing user ID in load more recommendations',
+        () async {
       mockPermissionService.setPermissionState(currentUserId: null);
 
       await recommendationsManager.loadMoreRecommendations();
@@ -208,7 +218,7 @@ void main() {
     test('should clear all recommendations', () async {
       final testRecommendations = createTestRecommendations(count: 3);
       mockRecommendationService.setRecommendations(testRecommendations);
-      
+
       await recommendationsManager.loadPersonalizedRecommendations();
       expect(recommendationsManager.hasRecommendations, isTrue);
       expect(recommendationsManager.recommendationsCount, equals(3));
@@ -231,7 +241,8 @@ void main() {
       final recommendationId = testRecommendations.first.id;
       await recommendationsManager.likeRecommendation(recommendationId);
 
-      final recommendation = recommendationsManager.getRecommendation(recommendationId);
+      final recommendation =
+          recommendationsManager.getRecommendation(recommendationId);
       expect(recommendation!['isLiked'], isTrue);
       expect(recommendation['isDismissed'], isFalse);
     });
@@ -244,7 +255,8 @@ void main() {
       final recommendationId = testRecommendations.first.id;
       await recommendationsManager.dismissRecommendation(recommendationId);
 
-      final recommendation = recommendationsManager.getRecommendation(recommendationId);
+      final recommendation =
+          recommendationsManager.getRecommendation(recommendationId);
       expect(recommendation!['isDismissed'], isTrue);
       expect(recommendation['isLiked'], isFalse);
     });
@@ -256,11 +268,10 @@ void main() {
 
       final recommendationId = testRecommendations.first.id;
       await recommendationsManager.provideRecommendationFeedback(
-        recommendationId, 
-        FeedbackType.save
-      );
+          recommendationId, FeedbackType.save);
 
-      final recommendation = recommendationsManager.getRecommendation(recommendationId);
+      final recommendation =
+          recommendationsManager.getRecommendation(recommendationId);
       expect(recommendation!['isSaved'], isTrue);
       expect(recommendation['isDismissed'], isFalse);
     });
@@ -276,7 +287,8 @@ void main() {
       await recommendationsManager.likeRecommendation(recommendationId);
 
       expect(recommendationsManager.hasError, isTrue);
-      expect(recommendationsManager.error, contains('Failed to provide feedback'));
+      expect(
+          recommendationsManager.error, contains('Failed to provide feedback'));
     });
 
     test('should handle feedback for non-existent recommendation', () async {
@@ -295,9 +307,11 @@ void main() {
       await recommendationsManager.loadPersonalizedRecommendations();
 
       final recommendationId = testRecommendations.first.id;
-      await recommendationsManager.undoRecommendationDismissal(recommendationId);
+      await recommendationsManager
+          .undoRecommendationDismissal(recommendationId);
 
-      final recommendation = recommendationsManager.getRecommendation(recommendationId);
+      final recommendation =
+          recommendationsManager.getRecommendation(recommendationId);
       expect(recommendation!['isDismissed'], isFalse);
     });
 
@@ -307,7 +321,8 @@ void main() {
       await recommendationsManager.undoRecommendationDismissal('rec_1');
 
       expect(recommendationsManager.hasError, isTrue);
-      expect(recommendationsManager.error, contains('Failed to undo dismissal'));
+      expect(
+          recommendationsManager.error, contains('Failed to undo dismissal'));
     });
 
     test('should handle different feedback types correctly', () async {
@@ -319,21 +334,19 @@ void main() {
 
       // Test not interested feedback
       await recommendationsManager.provideRecommendationFeedback(
-        recommendationId, 
-        FeedbackType.notInterested
-      );
+          recommendationId, FeedbackType.notInterested);
 
-      var recommendation = recommendationsManager.getRecommendation(recommendationId);
+      var recommendation =
+          recommendationsManager.getRecommendation(recommendationId);
       expect(recommendation!['isDismissed'], isTrue);
       expect(recommendation['isLiked'], isFalse);
 
       // Test like feedback (should undo dismissal)
       await recommendationsManager.provideRecommendationFeedback(
-        recommendationId, 
-        FeedbackType.like
-      );
+          recommendationId, FeedbackType.like);
 
-      recommendation = recommendationsManager.getRecommendation(recommendationId);
+      recommendation =
+          recommendationsManager.getRecommendation(recommendationId);
       expect(recommendation!['isLiked'], isTrue);
       expect(recommendation['isDismissed'], isFalse);
     });
@@ -343,7 +356,7 @@ void main() {
     test('should get recommendation by ID', () async {
       final testRecommendations = createTestRecommendations(count: 3);
       mockRecommendationService.setRecommendations(testRecommendations);
-      
+
       await recommendationsManager.loadPersonalizedRecommendations();
 
       final targetId = testRecommendations.first.id;
@@ -357,10 +370,11 @@ void main() {
     test('should return null for non-existent recommendation ID', () async {
       final testRecommendations = createTestRecommendations(count: 2);
       mockRecommendationService.setRecommendations(testRecommendations);
-      
+
       await recommendationsManager.loadPersonalizedRecommendations();
 
-      final recommendation = recommendationsManager.getRecommendation('non_existent_id');
+      final recommendation =
+          recommendationsManager.getRecommendation('non_existent_id');
 
       expect(recommendation, isNull);
     });
@@ -389,17 +403,22 @@ void main() {
         ),
       ];
       mockRecommendationService.setRecommendations(testRecommendations);
-      
+
       await recommendationsManager.loadPersonalizedRecommendations();
 
-      final similarRecommendations = recommendationsManager.getRecommendationsByType('similarToShared');
-      final trendingRecommendations = recommendationsManager.getRecommendationsByType('trendingForYou');
-      final emptyRecommendations = recommendationsManager.getRecommendationsByType('nonExistentType');
+      final similarRecommendations =
+          recommendationsManager.getRecommendationsByType('similarToShared');
+      final trendingRecommendations =
+          recommendationsManager.getRecommendationsByType('trendingForYou');
+      final emptyRecommendations =
+          recommendationsManager.getRecommendationsByType('nonExistentType');
 
       expect(similarRecommendations.length, equals(1));
-      expect(similarRecommendations.first['title'], equals('Recipe Recommendation'));
+      expect(similarRecommendations.first['title'],
+          equals('Recipe Recommendation'));
       expect(trendingRecommendations.length, equals(1));
-      expect(trendingRecommendations.first['title'], equals('Menu Recommendation'));
+      expect(trendingRecommendations.first['title'],
+          equals('Menu Recommendation'));
       expect(emptyRecommendations, isEmpty);
     });
 
@@ -427,11 +446,13 @@ void main() {
         ),
       ];
       mockRecommendationService.setRecommendations(testRecommendations);
-      
+
       await recommendationsManager.loadPersonalizedRecommendations();
 
-      final recipeRecommendations = recommendationsManager.getRecommendationsByContentType('recipe');
-      final menuRecommendations = recommendationsManager.getRecommendationsByContentType('menu');
+      final recipeRecommendations =
+          recommendationsManager.getRecommendationsByContentType('recipe');
+      final menuRecommendations =
+          recommendationsManager.getRecommendationsByContentType('menu');
 
       expect(recipeRecommendations.length, equals(1));
       expect(recipeRecommendations.first['title'], equals('Recipe Content'));
@@ -441,15 +462,18 @@ void main() {
 
     test('should get active (non-dismissed) recommendations', () async {
       final testRecommendations = createTestRecommendations(count: 3);
-      testRecommendations[1].isDismissed = true; // Dismiss second recommendation
+      testRecommendations[1].isDismissed =
+          true; // Dismiss second recommendation
       mockRecommendationService.setRecommendations(testRecommendations);
-      
+
       await recommendationsManager.loadPersonalizedRecommendations();
 
-      final activeRecommendations = recommendationsManager.activeRecommendations;
+      final activeRecommendations =
+          recommendationsManager.activeRecommendations;
 
       expect(activeRecommendations.length, equals(2));
-      expect(activeRecommendations.every((rec) => rec['isDismissed'] != true), isTrue);
+      expect(activeRecommendations.every((rec) => rec['isDismissed'] != true),
+          isTrue);
     });
 
     test('should get liked recommendations', () async {
@@ -457,23 +481,27 @@ void main() {
       testRecommendations[0].isLiked = true; // Like first recommendation
       testRecommendations[2].isLiked = true; // Like third recommendation
       mockRecommendationService.setRecommendations(testRecommendations);
-      
+
       await recommendationsManager.loadPersonalizedRecommendations();
 
       final likedRecommendations = recommendationsManager.likedRecommendations;
 
       expect(likedRecommendations.length, equals(2));
-      expect(likedRecommendations.every((rec) => rec['isLiked'] == true), isTrue);
+      expect(
+          likedRecommendations.every((rec) => rec['isLiked'] == true), isTrue);
     });
 
-    test('should return immutable list from personalizedRecommendations getter', () async {
+    test('should return immutable list from personalizedRecommendations getter',
+        () async {
       final testRecommendations = createTestRecommendations(count: 2);
       mockRecommendationService.setRecommendations(testRecommendations);
-      
+
       await recommendationsManager.loadPersonalizedRecommendations();
 
-      final recommendations = recommendationsManager.personalizedRecommendations;
-      expect(() => recommendations.add({'test': 'item'}), throwsUnsupportedError);
+      final recommendations =
+          recommendationsManager.personalizedRecommendations;
+      expect(
+          () => recommendations.add({'test': 'item'}), throwsUnsupportedError);
     });
   });
 
@@ -504,7 +532,8 @@ void main() {
 
       expect(recommendationsManager.hasError, isTrue);
       expect(recommendationsManager.error, isNotNull);
-      expect(recommendationsManager.error, contains('Failed to load recommendations'));
+      expect(recommendationsManager.error,
+          contains('Failed to load recommendations'));
     });
 
     test('should clear error state on successful operations', () async {
@@ -519,10 +548,11 @@ void main() {
 
       // Second operation succeeds
       mockRecommendationService.setShouldThrowError(false);
-      mockRecommendationService.setRecommendations(createTestRecommendations(count: 1));
-      
+      mockRecommendationService
+          .setRecommendations(createTestRecommendations(count: 1));
+
       await recommendationsManager.loadPersonalizedRecommendations();
-      
+
       expect(recommendationsManager.hasError, isFalse);
       expect(recommendationsManager.error, isNull);
     });
@@ -545,13 +575,13 @@ void main() {
     test('should handle dispose correctly', () async {
       final testRecommendations = createTestRecommendations(count: 2);
       mockRecommendationService.setRecommendations(testRecommendations);
-      
+
       await recommendationsManager.loadPersonalizedRecommendations();
       expect(recommendationsManager.recommendationsCount, equals(2));
-      
+
       // Should not throw when disposing
       recommendationsManager.dispose();
-      
+
       // Don't access ViewModel after dispose - just verify dispose completed
       expect(true, isTrue);
     });
@@ -570,7 +600,8 @@ void main() {
       recommendationsManager.clearRecommendations();
 
       expect(totalNotifications, greaterThan(3)); // At least 4 operations
-      expect(recommendationsManager.recommendationsCount, equals(0)); // Final state
+      expect(recommendationsManager.recommendationsCount,
+          equals(0)); // Final state
       expect(recommendationsManager.hasError, isFalse);
     });
   });
@@ -597,15 +628,19 @@ void main() {
 
       await recommendationsManager.loadPersonalizedRecommendations();
 
-      expect(recommendationsManager.recommendationsCount, lessThanOrEqualTo(50));
+      expect(
+          recommendationsManager.recommendationsCount, lessThanOrEqualTo(50));
       expect(recommendationsManager.hasRecommendations, isTrue);
-      
+
       // Test filtering on large dataset
-      final activeRecommendations = recommendationsManager.activeRecommendations;
-      expect(activeRecommendations.length, equals(recommendationsManager.recommendationsCount));
+      final activeRecommendations =
+          recommendationsManager.activeRecommendations;
+      expect(activeRecommendations.length,
+          equals(recommendationsManager.recommendationsCount));
     });
 
-    test('should handle recommendations with missing optional fields', () async {
+    test('should handle recommendations with missing optional fields',
+        () async {
       final recommendation = Recommendation(
         id: 'minimal_rec',
         contentId: 'minimal_content',
@@ -646,10 +681,12 @@ void main() {
       mockRecommendationService.setRecommendations(testRecommendations);
 
       // Rapid successive calls
-      final futures = List.generate(5, (_) => recommendationsManager.refreshRecommendations());
+      final futures = List.generate(
+          5, (_) => recommendationsManager.refreshRecommendations());
       await Future.wait(futures);
 
-      expect(recommendationsManager.personalizedRecommendations.length, equals(3));
+      expect(
+          recommendationsManager.personalizedRecommendations.length, equals(3));
       expect(recommendationsManager.hasError, isFalse);
     });
 
@@ -667,7 +704,7 @@ void main() {
       } catch (e) {
         // Expected
       }
-      
+
       // Data should be cleared on error
       expect(recommendationsManager.recommendationsCount, equals(0));
       expect(recommendationsManager.hasError, isTrue);
@@ -688,14 +725,17 @@ void main() {
       await recommendationsManager.loadPersonalizedRecommendations();
 
       // Test empty string filters
-      final emptyTypeFilter = recommendationsManager.getRecommendationsByType('');
+      final emptyTypeFilter =
+          recommendationsManager.getRecommendationsByType('');
       expect(emptyTypeFilter, isEmpty);
 
-      final emptyContentFilter = recommendationsManager.getRecommendationsByContentType('');
+      final emptyContentFilter =
+          recommendationsManager.getRecommendationsByContentType('');
       expect(emptyContentFilter, isEmpty);
 
       // Test null-like filters
-      final nullTypeFilter = recommendationsManager.getRecommendationsByType('null');
+      final nullTypeFilter =
+          recommendationsManager.getRecommendationsByType('null');
       expect(nullTypeFilter, isEmpty);
 
       // Test special characters in ID search
@@ -721,7 +761,8 @@ void main() {
       expect(rec!['isDismissed'], isTrue);
       expect(rec['isLiked'], isFalse);
 
-      await recommendationsManager.undoRecommendationDismissal(recommendationId);
+      await recommendationsManager
+          .undoRecommendationDismissal(recommendationId);
       rec = recommendationsManager.getRecommendation(recommendationId);
       expect(rec!['isDismissed'], isFalse);
       // isLiked state should remain false after undo
@@ -739,7 +780,8 @@ void main() {
       expect(recommendationsManager.hasError, isFalse);
 
       // Filter recommendations
-      final activeRecommendations = recommendationsManager.activeRecommendations;
+      final activeRecommendations =
+          recommendationsManager.activeRecommendations;
       expect(activeRecommendations.length, equals(5));
 
       // Provide feedback
@@ -751,7 +793,8 @@ void main() {
 
       // Load more recommendations
       await recommendationsManager.loadMoreRecommendations();
-      expect(recommendationsManager.recommendationsCount, greaterThanOrEqualTo(5));
+      expect(
+          recommendationsManager.recommendationsCount, greaterThanOrEqualTo(5));
 
       // Clear recommendations
       recommendationsManager.clearRecommendations();
@@ -778,7 +821,8 @@ void main() {
       recommendationsManager.clearRecommendations();
 
       expect(totalNotifications, greaterThan(5)); // Multiple operations
-      expect(recommendationsManager.recommendationsCount, equals(0)); // Final state
+      expect(recommendationsManager.recommendationsCount,
+          equals(0)); // Final state
       expect(recommendationsManager.hasError, isFalse);
     });
 
@@ -802,7 +846,7 @@ void main() {
       final recoveryRecommendations = createTestRecommendations(count: 4);
       mockRecommendationService.setRecommendations(recoveryRecommendations);
       await recommendationsManager.loadPersonalizedRecommendations();
-      
+
       expect(recommendationsManager.hasError, isFalse);
       expect(recommendationsManager.recommendationsCount, equals(4));
     });
@@ -849,8 +893,14 @@ void main() {
       expect(recommendationsManager.recommendationsCount, equals(3));
       expect(recommendationsManager.activeRecommendations.length, equals(2));
       expect(recommendationsManager.likedRecommendations.length, equals(1));
-      expect(recommendationsManager.getRecommendationsByContentType('recipe').length, equals(2));
-      expect(recommendationsManager.getRecommendationsByContentType('menu').length, equals(1));
+      expect(
+          recommendationsManager
+              .getRecommendationsByContentType('recipe')
+              .length,
+          equals(2));
+      expect(
+          recommendationsManager.getRecommendationsByContentType('menu').length,
+          equals(1));
     });
   });
 }

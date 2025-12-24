@@ -185,7 +185,8 @@ void main() {
         expect(firestore['reactionCounts']['delicious'], equals(5));
         expect((firestore['reactedUserIds'] as List), contains('user_1'));
         expect((firestore['reactedUserIds'] as List), contains('user_2'));
-        expect(firestore['lastUpdated'], equals(DateTime(2025, 1, 1).millisecondsSinceEpoch));
+        expect(firestore['lastUpdated'],
+            equals(DateTime(2025, 1, 1).millisecondsSinceEpoch));
         expect(firestore['contentId'], equals('recipe_123'));
         expect(firestore['contentType'], equals('recipe'));
       });
@@ -240,12 +241,13 @@ void main() {
       test('should get count for specific reaction type', () {
         expect(stats.getCount(ReactionType.like), equals(20));
         expect(stats.getCount(ReactionType.love), equals(10));
-        expect(stats.getCount(ReactionType.helpful), equals(0)); // Not in the map
+        expect(
+            stats.getCount(ReactionType.helpful), equals(0)); // Not in the map
       });
 
       test('should identify top reaction', () {
         expect(stats.topReaction, equals(ReactionType.like));
-        
+
         // Test with different distribution
         final stats2 = ReactionStatistics.fromCounts(
           {
@@ -268,7 +270,7 @@ void main() {
 
       test('should get top N reactions', () {
         final top3 = stats.getTopReactions(3);
-        
+
         expect(top3.length, equals(3));
         expect(top3[0].key, equals(ReactionType.like));
         expect(top3[0].value, equals(20));
@@ -285,7 +287,7 @@ void main() {
 
       test('should calculate reaction percentages', () {
         final percentages = stats.reactionPercentages;
-        
+
         expect(percentages[ReactionType.like], equals(50.0)); // 20/40
         expect(percentages[ReactionType.love], equals(25.0)); // 10/40
         expect(percentages[ReactionType.delicious], equals(20.0)); // 8/40
@@ -453,7 +455,7 @@ void main() {
         );
 
         final activeTypes = stats.activeReactionTypes;
-        
+
         expect(activeTypes, contains(ReactionType.like));
         expect(activeTypes, contains(ReactionType.love));
         expect(activeTypes, contains(ReactionType.creative));

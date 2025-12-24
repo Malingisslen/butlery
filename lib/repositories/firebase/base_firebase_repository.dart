@@ -11,7 +11,9 @@ import 'package:butlery/repositories/mixins/permission_validation_mixin.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 
-abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implements Repository<T> {
+abstract class BaseFirebaseRepository<T>
+    with PermissionValidationMixin
+    implements Repository<T> {
   final FirebaseFirestore _firestore;
   final AuthRepository _authRepository;
   final FirebaseAuditRepository? _auditRepository;
@@ -36,8 +38,10 @@ abstract class BaseFirebaseRepository<T> with PermissionValidationMixin implemen
   String getId(T entity);
 
   Future<bool> validateCreatePermission(String userId, T entity);
-  Future<bool> validateReadPermission(String userId, String resourceId, T? entity);
-  Future<bool> validateUpdatePermission(String userId, String resourceId, T entity);
+  Future<bool> validateReadPermission(
+      String userId, String resourceId, T? entity);
+  Future<bool> validateUpdatePermission(
+      String userId, String resourceId, T entity);
   Future<bool> validateDeletePermission(String userId, String resourceId);
 
   String requireCurrentUserId() {

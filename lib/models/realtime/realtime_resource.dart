@@ -61,28 +61,40 @@ enum RealtimeResourceType {
 abstract class RealtimeResource {
   /// Unik identifierare för resursen
   final String id;
+
   /// Typ av resurs (recipe, menu, shopping)
   final RealtimeResourceType type;
+
   /// ID för användaren som äger resursen
   final String ownerId;
+
   /// Visningsnamn för ägaren (cached för performance)
   final String ownerDisplayName;
+
   /// Mapp över alla deltagare och deras behörigheter
   final Map<String, ResourcePermission> participants;
+
   /// Lista över deltagarnas ID:n (denormaliserad för Firestore-queries)
   final List<String> participantIds;
+
   /// När resursen skapades
   final DateTime createdAt;
+
   /// När resursen senast uppdaterades
   final DateTime lastEditedAt;
+
   /// Vem som gjorde senaste ändringen
   final String lastEditedBy;
+
   /// Visningsnamn för den som gjorde senaste ändringen (cached)
   final String lastEditedByDisplayName;
+
   /// Antal gånger resursen har redigerats
   final int editCount;
+
   /// Om resursen är aktiv eller arkiverad
   final bool isActive;
+
   /// Extra metadata för framtida utbyggnad
   final Map<String, dynamic> metadata;
 
@@ -109,21 +121,24 @@ abstract class RealtimeResource {
   bool hasPermission(String userId, ResourcePermission requiredPermission) {
     // Owner always has full permission (even if not in participants map)
     if (isOwner(userId)) return true;
-    
+
     final userPermission = participants[userId];
     if (userPermission == null) return false;
     // Ägare har alltid full behörighet
     if (userPermission == ResourcePermission.owner) return true;
     // Kontrollera specifik behörighet
-    if (requiredPermission == ResourcePermission.viewer || requiredPermission == ResourcePermission.read) {
+    if (requiredPermission == ResourcePermission.viewer ||
+        requiredPermission == ResourcePermission.read) {
       return true; // Alla deltagare kan se
-    } else if (requiredPermission == ResourcePermission.editor || requiredPermission == ResourcePermission.write) {
-      return userPermission == ResourcePermission.editor || 
-             userPermission == ResourcePermission.write || 
-             userPermission == ResourcePermission.admin ||
-             userPermission == ResourcePermission.owner;
+    } else if (requiredPermission == ResourcePermission.editor ||
+        requiredPermission == ResourcePermission.write) {
+      return userPermission == ResourcePermission.editor ||
+          userPermission == ResourcePermission.write ||
+          userPermission == ResourcePermission.admin ||
+          userPermission == ResourcePermission.owner;
     } else if (requiredPermission == ResourcePermission.admin) {
-      return userPermission == ResourcePermission.owner || userPermission == ResourcePermission.admin;
+      return userPermission == ResourcePermission.owner ||
+          userPermission == ResourcePermission.admin;
     } else if (requiredPermission == ResourcePermission.owner) {
       return userPermission == ResourcePermission.owner;
     } else {
@@ -158,7 +173,8 @@ abstract class RealtimeResource {
     if (isOwner(userId)) return true;
     final permission = participants[userId];
     return permission != null &&
-        (permission == ResourcePermission.admin || permission == ResourcePermission.owner);
+        (permission == ResourcePermission.admin ||
+            permission == ResourcePermission.owner);
   }
 
   /// Kontrollera om användare kan lämna resursen
@@ -169,29 +185,37 @@ abstract class RealtimeResource {
 
   /// Kontrollera om användare är ägare
   bool isOwner(String userId) => ownerId == userId;
+
   /// Kontrollera om användare är deltagare
   bool isParticipant(String userId) => participants.containsKey(userId);
+
   /// Antal deltagare
   int get participantCount => participants.length;
+
   /// Antal redigerare (inklusive ägare)
   int get editorCount {
     return participants.values
-        .where((p) => ResourcePermissionHelper.canEditContent(p, ResourcePermission.editor))
+        .where((p) => ResourcePermissionHelper.canEditContent(
+            p, ResourcePermission.editor))
         .length;
   }
+
   /// Antal betraktare
   int get viewerCount {
     return participants.values
         .where((p) => p == ResourcePermission.viewer)
         .length;
   }
+
   /// Lista över alla deltagare som kan redigera
   List<String> get editorIds {
     return participants.entries
-        .where((entry) => ResourcePermissionHelper.canEditContent(entry.value, ResourcePermission.editor))
+        .where((entry) => ResourcePermissionHelper.canEditContent(
+            entry.value, ResourcePermission.editor))
         .map((entry) => entry.key)
         .toList();
   }
+
   /// Lista över alla deltagare som bara kan se
   List<String> get viewerIds {
     return participants.entries
@@ -199,6 +223,7 @@ abstract class RealtimeResource {
         .map((entry) => entry.key)
         .toList();
   }
+
   /// Hur länge sedan resursen redigerades
   Duration get timeSinceLastEdit => DateTime.now().difference(lastEditedAt);
 
@@ -220,12 +245,15 @@ abstract class RealtimeResource {
 
   /// Kontrollera om resursen har redigerats nyligen (senaste timmen)
   bool get hasRecentActivity => timeSinceLastEdit.inHours < 1;
+
   /// Kontrollera om resursen är aktiv (redigerats senaste veckan)
   bool get hasWeeklyActivity => timeSinceLastEdit.inDays < 7;
+
   /// Kontrollera om resursen har ändrats sedan specifik tidpunkt
   bool hasChangedSince(DateTime timestamp) {
     return lastEditedAt.isAfter(timestamp);
   }
+
   /// Få sammanfattning av senaste ändringar för UI
   String getChangesSummary() {
     if (editCount == 0) {
@@ -281,6 +309,7 @@ abstract class RealtimeResource {
 
   /// Subclasses måste implementera serialization av sitt innehåll
   Map<String, dynamic> serializeContent();
+
   /// Serialisera gemensam metadata till Firestore
   Map<String, dynamic> toFirestoreMetadata() {
     return {
@@ -301,6 +330,7 @@ abstract class RealtimeResource {
       'metadata': metadata,
     };
   }
+
   /// Komplett Firestore serialization (metadata + content)
   Map<String, dynamic> toFirestore() {
     final data = toFirestoreMetadata();
@@ -314,7 +344,8 @@ abstract class RealtimeResource {
     String documentId,
   ) {
     // Parse participants map
-    final participantsData = data['participants'] as Map<String, dynamic>? ?? {};
+    final participantsData =
+        data['participants'] as Map<String, dynamic>? ?? {};
     final participants = <String, ResourcePermission>{};
     for (final entry in participantsData.entries) {
       try {
@@ -341,10 +372,13 @@ abstract class RealtimeResource {
       'ownerDisplayName': data['ownerDisplayName'] as String? ?? '',
       'participants': participants,
       'participantIds': participantIds,
-      'createdAt': (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      'lastEditedAt': (data['lastEditedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      'createdAt':
+          (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      'lastEditedAt':
+          (data['lastEditedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       'lastEditedBy': data['lastEditedBy'] as String? ?? '',
-      'lastEditedByDisplayName': data['lastEditedByDisplayName'] as String? ?? '',
+      'lastEditedByDisplayName':
+          data['lastEditedByDisplayName'] as String? ?? '',
       'editCount': data['editCount'] as int? ?? 0,
       'isActive': data['isActive'] as bool? ?? true,
       'metadata': Map<String, dynamic>.from(data['metadata'] ?? {}),
@@ -379,7 +413,8 @@ abstract class RealtimeResource {
     String userDisplayName,
     ResourcePermission permission,
   ) {
-    final updatedParticipants = Map<String, ResourcePermission>.from(participants);
+    final updatedParticipants =
+        Map<String, ResourcePermission>.from(participants);
     updatedParticipants[userId] = permission;
 
     // Keep participantIds in sync
@@ -404,7 +439,8 @@ abstract class RealtimeResource {
       throw ArgumentError('Kan inte ta bort ägaren från resursen');
     }
 
-    final updatedParticipants = Map<String, ResourcePermission>.from(participants);
+    final updatedParticipants =
+        Map<String, ResourcePermission>.from(participants);
     updatedParticipants.remove(userId);
 
     // Keep participantIds in sync
@@ -430,7 +466,8 @@ abstract class RealtimeResource {
       throw ArgumentError('Ägaren måste behålla owner-behörighet');
     }
 
-    final updatedParticipants = Map<String, ResourcePermission>.from(participants);
+    final updatedParticipants =
+        Map<String, ResourcePermission>.from(participants);
     updatedParticipants[userId] = newPermission;
 
     return copyWithMetadata(

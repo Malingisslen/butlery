@@ -97,7 +97,8 @@ class AuthService extends ChangeNotifier
       clearError();
       setLoading(true);
 
-      AppLogger.debug('Attempting login for email: ${email.substring(0, 3)}...');
+      AppLogger.debug(
+          'Attempting login for email: ${email.substring(0, 3)}...');
       await _authRepository.signIn(email: email, password: password);
       _currentUser = _authRepository.currentUser;
       AppLogger.debug('Login result - User: ${_currentUser?.email ?? "null"}');

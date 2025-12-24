@@ -25,7 +25,7 @@ class ShareTargetSelection {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        
+
         // Search field
         TextField(
           onChanged: onSearchChanged,
@@ -42,7 +42,7 @@ class ShareTargetSelection {
           style: AppTextStyles.bodyLarge,
         ),
         const SizedBox(height: AppDimensions.spacingXl),
-        
+
         // Friends list
         Container(
           height: 300,
@@ -60,7 +60,7 @@ class ShareTargetSelection {
             onFriendToggled,
           ),
         ),
-        
+
         const SizedBox(height: AppDimensions.spacingXl),
       ],
     );
@@ -76,7 +76,9 @@ class ShareTargetSelection {
     // Filter friends based on search query
     final filteredFriends = friends.where((friend) {
       if (searchQuery.isEmpty) return true;
-      return friend.displayName.toLowerCase().contains(searchQuery.toLowerCase());
+      return friend.displayName
+          .toLowerCase()
+          .contains(searchQuery.toLowerCase());
     }).toList();
 
     if (filteredFriends.isEmpty) {
@@ -113,7 +115,7 @@ class ShareTargetSelection {
       itemBuilder: (context, index) {
         final friend = filteredFriends[index];
         final isSelected = selectedFriendIds.contains(friend.uid);
-        
+
         return ListTile(
           contentPadding: EdgeInsets.zero,
           leading: UserDisplayWidgets.avatar(

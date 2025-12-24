@@ -7,8 +7,8 @@ import 'package:butlery/core/utils/logger.dart';
 /// deprecated in the future.
 class RecipeLegacyValidator {
   final FirebaseFirestore firestore;
-  final Future<DocumentSnapshot<Map<String, dynamic>>> Function(String userId, String recipeId)
-      getUserRecipeDoc;
+  final Future<DocumentSnapshot<Map<String, dynamic>>> Function(
+      String userId, String recipeId) getUserRecipeDoc;
   final Future<void> Function({
     required String currentUserId,
     required String resourceOwnerId,

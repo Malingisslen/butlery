@@ -176,15 +176,15 @@ mixin StreamManagementMixin {
   /// Active stream subscriptions registry
   final List<StreamSubscription> _subscriptions = [];
   final Map<String, StreamSubscription> _namedSubscriptions = {};
-  
+
   /// Active timers registry
   final List<Timer> _timers = [];
   final Map<String, Timer> _namedTimers = {};
-  
+
   /// StreamControllers registry for proper disposal
   final List<StreamController> _controllers = [];
   final Map<String, StreamController> _namedControllers = {};
-  
+
   /// Disposal state tracking
   bool _isDisposed = false;
 
@@ -196,29 +196,30 @@ mixin StreamManagementMixin {
       subscription.cancel();
       return;
     }
-    
+
     _subscriptions.add(subscription);
-    
+
     if (name != null) {
       // Cancel existing named subscription if present
       _namedSubscriptions[name]?.cancel();
       _namedSubscriptions[name] = subscription;
     }
-    
-    AppLogger.debug('📡 Subscription added${name != null ? ' ($name)' : ''}: ${_subscriptions.length} active');
+
+    AppLogger.debug(
+        '📡 Subscription added${name != null ? ' ($name)' : ''}: ${_subscriptions.length} active');
   }
-  
+
   /// Remove and cancel specific subscription
   Future<void> removeSubscription(StreamSubscription subscription) async {
     _subscriptions.remove(subscription);
-    
+
     // Remove from named subscriptions if present
     _namedSubscriptions.removeWhere((key, value) => value == subscription);
-    
+
     await subscription.cancel();
     AppLogger.debug('📡 Subscription removed: ${_subscriptions.length} active');
   }
-  
+
   /// Cancel named subscription
   Future<void> cancelNamedSubscription(String name) async {
     final subscription = _namedSubscriptions.remove(name);
@@ -228,12 +229,12 @@ mixin StreamManagementMixin {
       AppLogger.debug('📡 Named subscription cancelled: $name');
     }
   }
-  
+
   /// Get named subscription if exists
   StreamSubscription? getNamedSubscription(String name) {
     return _namedSubscriptions[name];
   }
-  
+
   /// Check if named subscription exists and is active
   bool hasActiveSubscription(String name) {
     final subscription = _namedSubscriptions[name];
@@ -247,29 +248,30 @@ mixin StreamManagementMixin {
       timer.cancel();
       return;
     }
-    
+
     _timers.add(timer);
-    
+
     if (name != null) {
       // Cancel existing named timer if present
       _namedTimers[name]?.cancel();
       _namedTimers[name] = timer;
     }
-    
-    AppLogger.debug('⏰ Timer added${name != null ? ' ($name)' : ''}: ${_timers.length} active');
+
+    AppLogger.debug(
+        '⏰ Timer added${name != null ? ' ($name)' : ''}: ${_timers.length} active');
   }
-  
+
   /// Remove and cancel specific timer
   void removeTimer(Timer timer) {
     _timers.remove(timer);
-    
+
     // Remove from named timers if present
     _namedTimers.removeWhere((key, value) => value == timer);
-    
+
     timer.cancel();
     AppLogger.debug('⏰ Timer removed: ${_timers.length} active');
   }
-  
+
   /// Cancel named timer
   void cancelNamedTimer(String name) {
     final timer = _namedTimers.remove(name);
@@ -279,7 +281,7 @@ mixin StreamManagementMixin {
       AppLogger.debug('⏰ Named timer cancelled: $name');
     }
   }
-  
+
   /// Create and register periodic timer
   Timer createPeriodicTimer(
     Duration duration,
@@ -293,11 +295,11 @@ mixin StreamManagementMixin {
       }
       callback();
     });
-    
+
     addTimer(timer, name: name);
     return timer;
   }
-  
+
   /// Create and register one-shot timer
   Timer createTimer(
     Duration duration,
@@ -311,7 +313,7 @@ mixin StreamManagementMixin {
       }
       removeTimer(timer);
     });
-    
+
     addTimer(timer, name: name);
     return timer;
   }
@@ -323,29 +325,31 @@ mixin StreamManagementMixin {
       controller.close();
       return;
     }
-    
+
     _controllers.add(controller);
-    
+
     if (name != null) {
       // Close existing named controller if present
       _namedControllers[name]?.close();
       _namedControllers[name] = controller;
     }
-    
-    AppLogger.debug('🎛️ StreamController added${name != null ? ' ($name)' : ''}: ${_controllers.length} active');
+
+    AppLogger.debug(
+        '🎛️ StreamController added${name != null ? ' ($name)' : ''}: ${_controllers.length} active');
   }
-  
+
   /// Remove and close specific StreamController
   Future<void> removeStreamController(StreamController controller) async {
     _controllers.remove(controller);
-    
+
     // Remove from named controllers if present
     _namedControllers.removeWhere((key, value) => value == controller);
-    
+
     await controller.close();
-    AppLogger.debug('🎛️ StreamController removed: ${_controllers.length} active');
+    AppLogger.debug(
+        '🎛️ StreamController removed: ${_controllers.length} active');
   }
-  
+
   /// Close named StreamController
   Future<void> closeNamedController(String name) async {
     final controller = _namedControllers.remove(name);
@@ -355,7 +359,7 @@ mixin StreamManagementMixin {
       AppLogger.debug('🎛️ Named StreamController closed: $name');
     }
   }
-  
+
   /// Create and register StreamController
   StreamController<T> createStreamController<T>({
     String? name,
@@ -368,11 +372,11 @@ mixin StreamManagementMixin {
       onListen: onListen,
       onCancel: onCancel,
     );
-    
+
     addStreamController(controller, name: name);
     return controller;
   }
-  
+
   /// Create and register broadcast StreamController
   StreamController<T> createBroadcastController<T>({
     String? name,
@@ -385,7 +389,7 @@ mixin StreamManagementMixin {
       onListen: onListen,
       onCancel: onCancel,
     );
-    
+
     addStreamController(controller, name: name);
     return controller;
   }
@@ -401,17 +405,19 @@ mixin StreamManagementMixin {
   }) {
     final subscription = stream.listen(
       onData,
-      onError: onError ?? (error) {
-        AppLogger.error('❌ Stream error${name != null ? ' ($name)' : ''}: $error');
-      },
+      onError: onError ??
+          (error) {
+            AppLogger.error(
+                '❌ Stream error${name != null ? ' ($name)' : ''}: $error');
+          },
       onDone: onDone,
       cancelOnError: cancelOnError,
     );
-    
+
     addSubscription(subscription, name: name);
     return subscription;
   }
-  
+
   /// Transform stream with automatic subscription management
   StreamSubscription<R> transformStream<T, R>(
     Stream<T> sourceStream,
@@ -422,7 +428,7 @@ mixin StreamManagementMixin {
     void Function()? onDone,
   }) {
     final transformedStream = transformer(sourceStream);
-    
+
     return listenToStream(
       transformedStream,
       onData,
@@ -431,7 +437,7 @@ mixin StreamManagementMixin {
       onDone: onDone,
     );
   }
-  
+
   /// Merge multiple streams with automatic subscription management
   StreamSubscription<T> mergeStreams<T>(
     List<Stream<T>> streams,
@@ -442,7 +448,7 @@ mixin StreamManagementMixin {
   }) {
     // ignore: close_sinks - controller is managed by createStreamController and disposed in disposeAll()
     final controller = createStreamController<T>(name: '${name}_merger');
-    
+
     // Listen to all source streams
     for (int i = 0; i < streams.length; i++) {
       listenToStream(
@@ -452,7 +458,7 @@ mixin StreamManagementMixin {
         onError: (error) => controller.addError(error),
       );
     }
-    
+
     // Listen to merged stream
     return listenToStream(
       controller.stream,
@@ -473,47 +479,51 @@ mixin StreamManagementMixin {
       'activeControllers': _controllers.length,
       'namedControllers': _namedControllers.length,
       'isDisposed': _isDisposed,
-      'totalManagedResources': _subscriptions.length + _timers.length + _controllers.length,
+      'totalManagedResources':
+          _subscriptions.length + _timers.length + _controllers.length,
     };
   }
-  
+
   /// Check for resource leaks
   List<String> checkForResourceLeaks() {
     final warnings = <String>[];
-    
+
     if (_isDisposed && _subscriptions.isNotEmpty) {
-      warnings.add('${_subscriptions.length} subscriptions not cleaned up after disposal');
+      warnings.add(
+          '${_subscriptions.length} subscriptions not cleaned up after disposal');
     }
-    
+
     if (_isDisposed && _timers.isNotEmpty) {
       warnings.add('${_timers.length} timers not cleaned up after disposal');
     }
-    
+
     if (_isDisposed && _controllers.isNotEmpty) {
-      warnings.add('${_controllers.length} controllers not cleaned up after disposal');
+      warnings.add(
+          '${_controllers.length} controllers not cleaned up after disposal');
     }
-    
+
     // Check for inactive subscriptions still in registry
     final inactiveSubscriptions = _subscriptions.where((sub) {
       try {
-        return sub.isPaused && !sub.isPaused; // This will throw if subscription is cancelled
+        return sub.isPaused &&
+            !sub.isPaused; // This will throw if subscription is cancelled
       } catch (e) {
         return true; // Subscription is cancelled but still in registry
       }
     }).length;
-    
+
     if (inactiveSubscriptions > 0) {
       warnings.add('$inactiveSubscriptions inactive subscriptions in registry');
     }
-    
+
     return warnings;
   }
-  
+
   /// Log current stream state for debugging
   void logStreamState() {
     final stats = getStreamStats();
     AppLogger.info('📊 Stream Management State: $stats');
-    
+
     final leaks = checkForResourceLeaks();
     if (leaks.isNotEmpty) {
       AppLogger.warning('⚠️ Resource leaks detected: ${leaks.join(', ')}');
@@ -527,11 +537,11 @@ mixin StreamManagementMixin {
       AppLogger.warning('⚠️ Stream resources already disposed');
       return;
     }
-    
+
     _isDisposed = true;
-    
+
     AppLogger.info('🧹 Disposing stream resources: ${getStreamStats()}');
-    
+
     // Cancel all subscriptions
     final subscriptionFutures = _subscriptions.map((sub) async {
       try {
@@ -540,11 +550,11 @@ mixin StreamManagementMixin {
         AppLogger.warning('⚠️ Error cancelling subscription: $e');
       }
     });
-    
+
     await Future.wait(subscriptionFutures);
     _subscriptions.clear();
     _namedSubscriptions.clear();
-    
+
     // Cancel all timers
     for (final timer in _timers) {
       try {
@@ -555,7 +565,7 @@ mixin StreamManagementMixin {
     }
     _timers.clear();
     _namedTimers.clear();
-    
+
     // Close all controllers
     final controllerFutures = _controllers.map((controller) async {
       try {
@@ -564,11 +574,11 @@ mixin StreamManagementMixin {
         AppLogger.warning('⚠️ Error closing controller: $e');
       }
     });
-    
+
     await Future.wait(controllerFutures);
     _controllers.clear();
     _namedControllers.clear();
-    
+
     AppLogger.success('✅ Stream resources disposed successfully');
   }
 
@@ -577,7 +587,7 @@ mixin StreamManagementMixin {
     await disposeStreamResources();
     _isDisposed = false;
   }
-  
+
   /// Get all active resource names for testing
   Map<String, List<String>> getActiveResourceNames() {
     return {
@@ -614,7 +624,6 @@ mixin StreamManagementMixin {
 /// }
 /// ```
 mixin StreamPatternMixin on StreamManagementMixin {
-  
   /// Debounce stream events
   StreamSubscription<T> debounceStream<T>(
     Stream<T> stream,
@@ -624,7 +633,7 @@ mixin StreamPatternMixin on StreamManagementMixin {
   }) {
     Timer? debounceTimer;
     T? lastValue;
-    
+
     return listenToStream(
       stream,
       (value) {
@@ -639,7 +648,7 @@ mixin StreamPatternMixin on StreamManagementMixin {
       name: name,
     );
   }
-  
+
   /// Throttle stream events
   StreamSubscription<T> throttleStream<T>(
     Stream<T> stream,
@@ -648,7 +657,7 @@ mixin StreamPatternMixin on StreamManagementMixin {
     String? name,
   }) {
     DateTime? lastEmission;
-    
+
     return listenToStream(
       stream,
       (value) {
@@ -661,7 +670,7 @@ mixin StreamPatternMixin on StreamManagementMixin {
       name: name,
     );
   }
-  
+
   /// Buffer stream events
   StreamSubscription<T> bufferStream<T>(
     Stream<T> stream,
@@ -671,7 +680,7 @@ mixin StreamPatternMixin on StreamManagementMixin {
     int? maxBufferSize,
   }) {
     final buffer = <T>[];
-    
+
     // Periodic flush timer
     createPeriodicTimer(
       duration,
@@ -683,12 +692,12 @@ mixin StreamPatternMixin on StreamManagementMixin {
       },
       name: '${name}_buffer_timer',
     );
-    
+
     return listenToStream(
       stream,
       (value) {
         buffer.add(value);
-        
+
         // Flush buffer if max size reached
         if (maxBufferSize != null && buffer.length >= maxBufferSize) {
           onBuffer(List.from(buffer));

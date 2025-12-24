@@ -6,15 +6,18 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/services/unified/types/recipe_types.dart' show RecipeOperationResult;
+import 'package:butlery/services/unified/types/recipe_types.dart'
+    show RecipeOperationResult;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Personal Recipe ViewModel
 /// Handles ONLY personal recipe operations and management.
 /// This includes creation, editing, deletion, and content management for personal recipes.
-class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, StreamManagementMixin {
-  final UnifiedRecipeService _recipeService = ServiceLocator.get<UnifiedRecipeService>();
+class PersonalRecipeViewModel extends ChangeNotifier
+    with ErrorHandlingMixin, StreamManagementMixin {
+  final UnifiedRecipeService _recipeService =
+      ServiceLocator.get<UnifiedRecipeService>();
 
   String get serviceName => 'PersonalRecipeViewModel';
 
@@ -47,29 +50,30 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
     if (nameError != null) return false;
 
     return await safeExecute(
-      () async {
-        final recipeId = await _recipeService.personal.createRecipe(
-          title: name.trim(),
-          description: description,
-          ingredients: ingredients,
-          instructions: instructions,
-          imageUrls: imageUrls,
-          mealType: mealType,
-          portions: portions,
-          timeMinutes: timeMinutes,
-          rating: rating,
-          tags: tags,
-          sourceUrl: sourceUrl,
-        );
+          () async {
+            final recipeId = await _recipeService.personal.createRecipe(
+              title: name.trim(),
+              description: description,
+              ingredients: ingredients,
+              instructions: instructions,
+              imageUrls: imageUrls,
+              mealType: mealType,
+              portions: portions,
+              timeMinutes: timeMinutes,
+              rating: rating,
+              tags: tags,
+              sourceUrl: sourceUrl,
+            );
 
-        if (recipeId != null) {
-          AppLogger.success('✅ Created personal recipe: ${name.trim()}');
-        }
-        return recipeId != null;
-      },
-      operationName: 'Create Personal Recipe',
-      defaultValue: false,
-    ) ?? false;
+            if (recipeId != null) {
+              AppLogger.success('✅ Created personal recipe: ${name.trim()}');
+            }
+            return recipeId != null;
+          },
+          operationName: 'Create Personal Recipe',
+          defaultValue: false,
+        ) ??
+        false;
   }
 
   // ===== PERSONAL RECIPE MANAGEMENT =====
@@ -120,7 +124,7 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
       final nameError = ValidationUtils.validateRecipeName(name);
       if (nameError != null) return false;
     }
-    
+
     final result = await _recipeService.personal.updateRecipeContent(
       recipeId: recipeId,
       title: name,
@@ -141,31 +145,38 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
   // ===== INGREDIENT MANAGEMENT =====
 
   Future<bool> addIngredient(String recipeId, String ingredient) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId) || ValidationUtils.isNullOrEmpty(ingredient)) {
+    if (ValidationUtils.isNullOrEmpty(recipeId) ||
+        ValidationUtils.isNullOrEmpty(ingredient)) {
       return false;
     }
 
     final recipe = getPersonalRecipeById(recipeId);
     if (recipe == null || !recipe.isPersonal) return false;
 
-    final result = await _recipeService.personal.addIngredient(recipeId, ingredient);
+    final result =
+        await _recipeService.personal.addIngredient(recipeId, ingredient);
     if (result) {
-      AppLogger.info('✅ Added ingredient to personal recipe: ${recipe.core.title}');
+      AppLogger.info(
+          '✅ Added ingredient to personal recipe: ${recipe.core.title}');
     }
     return result;
   }
 
-  Future<bool> updateIngredient(String recipeId, int index, String newIngredient) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId) || ValidationUtils.isNullOrEmpty(newIngredient)) {
+  Future<bool> updateIngredient(
+      String recipeId, int index, String newIngredient) async {
+    if (ValidationUtils.isNullOrEmpty(recipeId) ||
+        ValidationUtils.isNullOrEmpty(newIngredient)) {
       return false;
     }
 
     final recipe = getPersonalRecipeById(recipeId);
     if (recipe == null || !recipe.isPersonal) return false;
 
-    final result = await _recipeService.personal.updateIngredient(recipeId, index, newIngredient);
+    final result = await _recipeService.personal
+        .updateIngredient(recipeId, index, newIngredient);
     if (result) {
-      AppLogger.info('✅ Updated ingredient in personal recipe: ${recipe.core.title}');
+      AppLogger.info(
+          '✅ Updated ingredient in personal recipe: ${recipe.core.title}');
     }
     return result;
   }
@@ -176,9 +187,11 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
     final recipe = getPersonalRecipeById(recipeId);
     if (recipe == null || !recipe.isPersonal) return false;
 
-    final result = await _recipeService.personal.removeIngredient(recipeId, index);
+    final result =
+        await _recipeService.personal.removeIngredient(recipeId, index);
     if (result) {
-      AppLogger.info('🗑️ Removed ingredient from personal recipe: ${recipe.core.title}');
+      AppLogger.info(
+          '🗑️ Removed ingredient from personal recipe: ${recipe.core.title}');
     }
     return result;
   }
@@ -186,25 +199,29 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
   // ===== INSTRUCTION MANAGEMENT =====
 
   Future<bool> addInstruction(String recipeId, String instruction) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId) || ValidationUtils.isNullOrEmpty(instruction)) {
+    if (ValidationUtils.isNullOrEmpty(recipeId) ||
+        ValidationUtils.isNullOrEmpty(instruction)) {
       return false;
     }
 
     final recipe = getPersonalRecipeById(recipeId);
     if (recipe == null || !recipe.isPersonal) return false;
-    
+
     return await _recipeService.personal.addInstruction(recipeId, instruction);
   }
 
-  Future<bool> updateInstruction(String recipeId, int index, String newInstruction) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId) || ValidationUtils.isNullOrEmpty(newInstruction)) {
+  Future<bool> updateInstruction(
+      String recipeId, int index, String newInstruction) async {
+    if (ValidationUtils.isNullOrEmpty(recipeId) ||
+        ValidationUtils.isNullOrEmpty(newInstruction)) {
       return false;
     }
 
     final recipe = getPersonalRecipeById(recipeId);
     if (recipe == null || !recipe.isPersonal) return false;
-    
-    return await _recipeService.personal.updateInstruction(recipeId, index, newInstruction);
+
+    return await _recipeService.personal
+        .updateInstruction(recipeId, index, newInstruction);
   }
 
   Future<bool> removeInstruction(String recipeId, int index) async {
@@ -212,7 +229,7 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
 
     final recipe = getPersonalRecipeById(recipeId);
     if (recipe == null || !recipe.isPersonal) return false;
-    
+
     return await _recipeService.personal.removeInstruction(recipeId, index);
   }
 
@@ -223,7 +240,7 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
 
     final recipe = getPersonalRecipeById(recipeId);
     if (recipe == null || !recipe.isPersonal) return false;
-    
+
     return await _recipeService.personal.markAsCooked(recipeId);
   }
 
@@ -235,16 +252,19 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
     }
 
     return await safeExecute(
-      () async {
-        final result = await _recipeService.personal.addLegacyRecipe(recipe);
-        if (result.isSuccess) {
-          AppLogger.success('✅ Added legacy personal recipe: ${recipe.core.title}');
-        }
-        return result;
-      },
-      operationName: 'Add Legacy Personal Recipe',
-      defaultValue: RecipeOperationResult.failure('Failed to add recipe'),
-    ) ?? RecipeOperationResult.failure('Failed to add recipe');
+          () async {
+            final result =
+                await _recipeService.personal.addLegacyRecipe(recipe);
+            if (result.isSuccess) {
+              AppLogger.success(
+                  '✅ Added legacy personal recipe: ${recipe.core.title}');
+            }
+            return result;
+          },
+          operationName: 'Add Legacy Personal Recipe',
+          defaultValue: RecipeOperationResult.failure('Failed to add recipe'),
+        ) ??
+        RecipeOperationResult.failure('Failed to add recipe');
   }
 
   Future<RecipeOperationResult> updateLegacyRecipe(Recipe recipe) async {
@@ -253,16 +273,20 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
     }
 
     return await safeExecute(
-      () async {
-        final result = await _recipeService.personal.updateLegacyRecipe(recipe);
-        if (result.isSuccess) {
-          AppLogger.info('✅ Updated legacy personal recipe: ${recipe.core.title}');
-        }
-        return result;
-      },
-      operationName: 'Update Legacy Personal Recipe',
-      defaultValue: RecipeOperationResult.failure('Failed to update recipe'),
-    ) ?? RecipeOperationResult.failure('Failed to update recipe');
+          () async {
+            final result =
+                await _recipeService.personal.updateLegacyRecipe(recipe);
+            if (result.isSuccess) {
+              AppLogger.info(
+                  '✅ Updated legacy personal recipe: ${recipe.core.title}');
+            }
+            return result;
+          },
+          operationName: 'Update Legacy Personal Recipe',
+          defaultValue:
+              RecipeOperationResult.failure('Failed to update recipe'),
+        ) ??
+        RecipeOperationResult.failure('Failed to update recipe');
   }
 
   // ===== QUERY UTILITIES =====
@@ -276,7 +300,9 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
   }
 
   List<Recipe> getPersonalRecipesByTag(String tag) {
-    return personalRecipes.where((r) => r.tags?.contains(tag) ?? false).toList();
+    return personalRecipes
+        .where((r) => r.tags?.contains(tag) ?? false)
+        .toList();
   }
 
   List<Recipe> searchPersonalRecipes(String query) {
@@ -301,7 +327,8 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
   Map<String, int> getPersonalMealTypeCounts() {
     final mealTypeCounts = <String, int>{};
     for (final recipe in personalRecipes) {
-      mealTypeCounts[recipe.mealType] = (mealTypeCounts[recipe.mealType] ?? 0) + 1;
+      mealTypeCounts[recipe.mealType] =
+          (mealTypeCounts[recipe.mealType] ?? 0) + 1;
     }
     return mealTypeCounts;
   }
@@ -317,10 +344,11 @@ class PersonalRecipeViewModel extends ChangeNotifier with ErrorHandlingMixin, St
     }
     return tagCounts;
   }
+
   @override
   void dispose() {
     // Cancel all timers
-    // Cancel all stream subscriptions  
+    // Cancel all stream subscriptions
     // Dispose of resources
     disposeStreamResources(); // From StreamManagementMixin
     super.dispose();

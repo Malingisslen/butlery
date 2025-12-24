@@ -32,13 +32,15 @@ class OCRTestImages {
   /// Create a very small image (poor quality)
   static Uint8List get tooSmall => Uint8List.fromList([
         0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
-        ...List.generate(10 * 1024, (i) => i % 256), // 10KB (below 50KB threshold)
+        ...List.generate(
+            10 * 1024, (i) => i % 256), // 10KB (below 50KB threshold)
       ]);
 
   /// Create a very large image (exceeds max size)
   static Uint8List get tooLarge => Uint8List.fromList([
         0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
-        ...List.generate(11 * 1024 * 1024, (i) => i % 256), // 11MB (exceeds 10MB limit)
+        ...List.generate(
+            11 * 1024 * 1024, (i) => i % 256), // 11MB (exceeds 10MB limit)
       ]);
 
   /// Create a medium-quality image (good for testing)
@@ -219,7 +221,8 @@ class OCRTestHelpers {
     if (text.isEmpty) return 0.0;
 
     final textLength = text.trim().length;
-    final lineCount = text.split('\n').where((line) => line.trim().isNotEmpty).length;
+    final lineCount =
+        text.split('\n').where((line) => line.trim().isNotEmpty).length;
 
     if (textLength == 0) return 0.0;
     if (textLength < 10) return 0.3;
@@ -229,9 +232,18 @@ class OCRTestHelpers {
     const baseConfidence = 0.8;
     final structureBonus = lineCount * 0.03 > 0.2 ? 0.2 : lineCount * 0.03;
 
-    const keywords = ['ingrediens', 'tillsätt', 'vispa', 'stek', 'portioner', 'minut'];
-    final keywordMatches = keywords.where((k) => text.toLowerCase().contains(k)).length;
-    final keywordBonus = keywordMatches * 0.03 > 0.15 ? 0.15 : keywordMatches * 0.03;
+    const keywords = [
+      'ingrediens',
+      'tillsätt',
+      'vispa',
+      'stek',
+      'portioner',
+      'minut'
+    ];
+    final keywordMatches =
+        keywords.where((k) => text.toLowerCase().contains(k)).length;
+    final keywordBonus =
+        keywordMatches * 0.03 > 0.15 ? 0.15 : keywordMatches * 0.03;
 
     return (baseConfidence + structureBonus + keywordBonus) > 1.0
         ? 1.0
@@ -242,26 +254,34 @@ class OCRTestHelpers {
 /// Test scenarios for comprehensive testing
 class OCRTestScenarios {
   /// Scenario: Multi-provider fallback (OCR.space fails, Google Vision succeeds)
-  static const String scenario1Description = 'OCR.space fails → Google Vision succeeds';
+  static const String scenario1Description =
+      'OCR.space fails → Google Vision succeeds';
 
   /// Scenario: All providers fail (circuit breakers trip)
-  static const String scenario2Description = 'All providers fail → Circuit breakers open';
+  static const String scenario2Description =
+      'All providers fail → Circuit breakers open';
 
   /// Scenario: Cache hit after successful extraction
-  static const String scenario3Description = 'First extraction succeeds → Second extraction uses cache';
+  static const String scenario3Description =
+      'First extraction succeeds → Second extraction uses cache';
 
   /// Scenario: Low confidence triggers fallback
-  static const String scenario4Description = 'Low confidence result triggers next provider';
+  static const String scenario4Description =
+      'Low confidence result triggers next provider';
 
   /// Scenario: Usage limit warning at 80%
-  static const String scenario5Description = 'Usage reaches 80% → Warning triggered';
+  static const String scenario5Description =
+      'Usage reaches 80% → Warning triggered';
 
   /// Scenario: Cache expiry after 24 hours
-  static const String scenario6Description = 'Cache entry expires after 24 hours';
+  static const String scenario6Description =
+      'Cache entry expires after 24 hours';
 
   /// Scenario: Image quality assessment failure
-  static const String scenario7Description = 'Poor image quality detected → Recommendations provided';
+  static const String scenario7Description =
+      'Poor image quality detected → Recommendations provided';
 
   /// Scenario: Swedish recipe with keywords
-  static const String scenario8Description = 'Swedish recipe text → High confidence with keyword bonus';
+  static const String scenario8Description =
+      'Swedish recipe text → High confidence with keyword bonus';
 }

@@ -97,7 +97,8 @@ class GroupCard {
       child: ListTile(
         onTap: () => _navigateToGroupDetail(context, group),
         leading: CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+          backgroundColor:
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
           child: Text(
             group.emoji ?? '👥',
             style: AppTextStyles.headlineMedium,
@@ -135,7 +136,8 @@ class GroupCard {
     );
   }
 
-  static void _navigateToGroupDetail(BuildContext context, FriendCategory group) {
+  static void _navigateToGroupDetail(
+      BuildContext context, FriendCategory group) {
     Navigator.push(
       context,
       MaterialPageRoute(

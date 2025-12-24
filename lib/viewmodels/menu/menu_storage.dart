@@ -7,7 +7,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
-import 'package:butlery/viewmodels/menu/menu_state_manager.dart' show SavedMenuInfo;
+import 'package:butlery/viewmodels/menu/menu_state_manager.dart'
+    show SavedMenuInfo;
 
 /// Firestore-based menu storage module
 ///
@@ -24,7 +25,8 @@ class MenuStorage {
 
   /// Creates MenuStorage with dependency injection support
   MenuStorage({FirestoreRepository? firestoreRepository})
-      : _firestoreRepository = firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
+      : _firestoreRepository =
+            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
 
   // ===== SAVE OPERATIONS =====
 
@@ -59,10 +61,11 @@ class MenuStorage {
 
     // Save to Firestore
     final docRef = await _firestoreRepository.collection('menus').add(
-      sharedMenu.toFirestore(),
-    );
+          sharedMenu.toFirestore(),
+        );
 
-    AppLogger.success('✅ Menu saved to Firestore: $menuName ($totalRecipeCount recipes)');
+    AppLogger.success(
+        '✅ Menu saved to Firestore: $menuName ($totalRecipeCount recipes)');
     return docRef.id;
   }
 
@@ -74,13 +77,14 @@ class MenuStorage {
     required Map<String, List<Recipe>> menu,
     required String lastPrompt,
     required int totalRecipeCount,
-  }) => saveMenu(
-    menuName: menuName,
-    comment: comment,
-    menu: menu,
-    lastPrompt: lastPrompt,
-    totalRecipeCount: totalRecipeCount,
-  );
+  }) =>
+      saveMenu(
+        menuName: menuName,
+        comment: comment,
+        menu: menu,
+        lastPrompt: lastPrompt,
+        totalRecipeCount: totalRecipeCount,
+      );
 
   // ===== LOAD OPERATIONS =====
 
@@ -98,7 +102,8 @@ class MenuStorage {
       }
 
       // Load from Firestore
-      final doc = await _firestoreRepository.collection('menus').doc(menuId).get();
+      final doc =
+          await _firestoreRepository.collection('menus').doc(menuId).get();
 
       if (!doc.exists || doc.data() == null) {
         AppLogger.debug('Menu not found: $menuId');
@@ -203,7 +208,8 @@ class MenuStorage {
       }
 
       // Verify ownership before deletion
-      final doc = await _firestoreRepository.collection('menus').doc(menuId).get();
+      final doc =
+          await _firestoreRepository.collection('menus').doc(menuId).get();
 
       if (!doc.exists) {
         AppLogger.warning('Menu not found for deletion: $menuId');
@@ -212,7 +218,8 @@ class MenuStorage {
 
       final data = doc.data();
       if (data?['sharedByUserId'] != userId) {
-        AppLogger.warning('Cannot delete menu $menuId - not owned by current user');
+        AppLogger.warning(
+            'Cannot delete menu $menuId - not owned by current user');
         return false;
       }
 
@@ -238,7 +245,8 @@ class MenuStorage {
       if (userId == null) return false;
 
       // Verify ownership
-      final doc = await _firestoreRepository.collection('menus').doc(menuId).get();
+      final doc =
+          await _firestoreRepository.collection('menus').doc(menuId).get();
       if (!doc.exists || doc.data()?['sharedByUserId'] != userId) {
         return false;
       }
@@ -352,7 +360,8 @@ class SavedMenuData {
 
     return SavedMenuData(
       name: (json['name'] as String?).orEmpty(),
-      savedDate: DateTime.fromMillisecondsSinceEpoch((json['savedDate'] as int?).orZero()),
+      savedDate: DateTime.fromMillisecondsSinceEpoch(
+          (json['savedDate'] as int?).orZero()),
       recipeCount: (json['recipeCount'] as int?).orZero(),
       menu: menuMap,
       lastPrompt: (json['lastPrompt'] as String?).orEmpty(),

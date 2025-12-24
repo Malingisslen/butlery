@@ -28,7 +28,8 @@ void main() {
     }
 
     group('Default Constructor', () {
-      testWidgets('should render with child content', (WidgetTester tester) async {
+      testWidgets('should render with child content',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledCard(
             child: Text('Card Content'),
@@ -42,7 +43,7 @@ void main() {
 
       testWidgets('should apply custom padding', (WidgetTester tester) async {
         const customPadding = EdgeInsets.all(32);
-        
+
         await tester.pumpWidget(createTestWidget(
           const StyledCard(
             padding: customPadding,
@@ -51,10 +52,9 @@ void main() {
         ));
 
         // Find the Padding widget with our specific padding value
-        final paddingFinder = find.byWidgetPredicate((widget) =>
-          widget is Padding && widget.padding == customPadding
-        );
-        
+        final paddingFinder = find.byWidgetPredicate(
+            (widget) => widget is Padding && widget.padding == customPadding);
+
         expect(paddingFinder, findsOneWidget);
         final padding = tester.widget<Padding>(paddingFinder);
         expect(padding.padding, equals(customPadding));
@@ -62,7 +62,7 @@ void main() {
 
       testWidgets('should apply custom margin', (WidgetTester tester) async {
         const customMargin = EdgeInsets.all(16);
-        
+
         await tester.pumpWidget(createTestWidget(
           const StyledCard(
             margin: customMargin,
@@ -74,9 +74,10 @@ void main() {
         expect(card.margin, equals(customMargin));
       });
 
-      testWidgets('should apply custom background color', (WidgetTester tester) async {
+      testWidgets('should apply custom background color',
+          (WidgetTester tester) async {
         const customColor = Colors.blue;
-        
+
         await tester.pumpWidget(createTestWidget(
           const StyledCard(
             backgroundColor: customColor,
@@ -90,7 +91,7 @@ void main() {
 
       testWidgets('should apply custom elevation', (WidgetTester tester) async {
         const customElevation = 8.0;
-        
+
         await tester.pumpWidget(createTestWidget(
           const StyledCard(
             elevation: customElevation,
@@ -102,7 +103,8 @@ void main() {
         expect(card.elevation, equals(customElevation));
       });
 
-      testWidgets('should show border when showBorder is true', (WidgetTester tester) async {
+      testWidgets('should show border when showBorder is true',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledCard(
             showBorder: true,
@@ -116,9 +118,10 @@ void main() {
         expect(shape.side.width, equals(AppDimensions.borderWidthStandard));
       });
 
-      testWidgets('should apply custom border color', (WidgetTester tester) async {
+      testWidgets('should apply custom border color',
+          (WidgetTester tester) async {
         const customBorderColor = Colors.red;
-        
+
         await tester.pumpWidget(createTestWidget(
           const StyledCard(
             showBorder: true,
@@ -132,9 +135,10 @@ void main() {
         expect(shape.side.color, equals(customBorderColor));
       });
 
-      testWidgets('should be tappable when onTap is provided', (WidgetTester tester) async {
+      testWidgets('should be tappable when onTap is provided',
+          (WidgetTester tester) async {
         bool tapped = false;
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledCard(
             onTap: () => tapped = true,
@@ -143,12 +147,13 @@ void main() {
         ));
 
         expect(find.byType(InkWell), findsOneWidget);
-        
+
         await tester.tap(find.byType(InkWell));
         expect(tapped, isTrue);
       });
 
-      testWidgets('should not be tappable when onTap is null', (WidgetTester tester) async {
+      testWidgets('should not be tappable when onTap is null',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledCard(
             child: Text('Not Tappable'),
@@ -160,7 +165,8 @@ void main() {
     });
 
     group('Standard Constructor', () {
-      testWidgets('should render with standard elevation', (WidgetTester tester) async {
+      testWidgets('should render with standard elevation',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledCard.standard(
             child: Text('Standard'),
@@ -171,7 +177,8 @@ void main() {
         expect(card.elevation, equals(AppDimensions.elevationLow));
       });
 
-      testWidgets('should have standard border radius', (WidgetTester tester) async {
+      testWidgets('should have standard border radius',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledCard.standard(
             child: Text('Standard'),
@@ -180,7 +187,8 @@ void main() {
 
         final card = tester.widget<Card>(find.byType(Card));
         final shape = card.shape as RoundedRectangleBorder;
-        expect(shape.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadius8)));
+        expect(shape.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius8)));
       });
 
       testWidgets('should not show border', (WidgetTester tester) async {
@@ -197,7 +205,8 @@ void main() {
     });
 
     group('Elevated Constructor', () {
-      testWidgets('should render with medium elevation', (WidgetTester tester) async {
+      testWidgets('should render with medium elevation',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledCard.elevated(
             child: Text('Elevated'),
@@ -208,7 +217,8 @@ void main() {
         expect(card.elevation, equals(AppDimensions.elevationMedium));
       });
 
-      testWidgets('should have larger border radius', (WidgetTester tester) async {
+      testWidgets('should have larger border radius',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledCard.elevated(
             child: Text('Elevated'),
@@ -217,12 +227,14 @@ void main() {
 
         final card = tester.widget<Card>(find.byType(Card));
         final shape = card.shape as RoundedRectangleBorder;
-        expect(shape.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadius12)));
+        expect(shape.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius12)));
       });
     });
 
     group('Outlined Constructor', () {
-      testWidgets('should render with zero elevation', (WidgetTester tester) async {
+      testWidgets('should render with zero elevation',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledCard.outlined(
             child: Text('Outlined'),
@@ -245,9 +257,10 @@ void main() {
         expect(shape.side, isNot(equals(BorderSide.none)));
       });
 
-      testWidgets('should accept custom border color', (WidgetTester tester) async {
+      testWidgets('should accept custom border color',
+          (WidgetTester tester) async {
         const customColor = Colors.purple;
-        
+
         await tester.pumpWidget(createTestWidget(
           const StyledCard.outlined(
             borderColor: customColor,
@@ -262,7 +275,8 @@ void main() {
     });
 
     group('Recipe Constructor', () {
-      testWidgets('should render with recipe-specific styling', (WidgetTester tester) async {
+      testWidgets('should render with recipe-specific styling',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledCard.recipe(
             child: Text('Recipe'),
@@ -271,14 +285,16 @@ void main() {
 
         final card = tester.widget<Card>(find.byType(Card));
         expect(card.elevation, equals(AppDimensions.elevationLow));
-        
+
         final shape = card.shape as RoundedRectangleBorder;
-        expect(shape.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadius12)));
+        expect(shape.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius12)));
       });
     });
 
     group('ListItem Constructor', () {
-      testWidgets('should render with minimal elevation', (WidgetTester tester) async {
+      testWidgets('should render with minimal elevation',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledCard.listItem(
             child: Text('List Item'),
@@ -289,9 +305,10 @@ void main() {
         expect(card.elevation, equals(1));
       });
 
-      testWidgets('should be tappable when onTap provided', (WidgetTester tester) async {
+      testWidgets('should be tappable when onTap provided',
+          (WidgetTester tester) async {
         bool tapped = false;
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledCard.listItem(
             onTap: () => tapped = true,
@@ -305,7 +322,8 @@ void main() {
     });
 
     group('Dialog Constructor', () {
-      testWidgets('should render with high elevation', (WidgetTester tester) async {
+      testWidgets('should render with high elevation',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledCard.dialog(
             child: Text('Dialog'),
@@ -316,7 +334,8 @@ void main() {
         expect(card.elevation, equals(AppDimensions.elevationHigh));
       });
 
-      testWidgets('should have larger border radius', (WidgetTester tester) async {
+      testWidgets('should have larger border radius',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledCard.dialog(
             child: Text('Dialog'),
@@ -325,7 +344,8 @@ void main() {
 
         final card = tester.widget<Card>(find.byType(Card));
         final shape = card.shape as RoundedRectangleBorder;
-        expect(shape.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadius16)));
+        expect(shape.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius16)));
       });
 
       testWidgets('should not be tappable', (WidgetTester tester) async {
@@ -340,7 +360,8 @@ void main() {
     });
 
     group('Selection Constructor', () {
-      testWidgets('should show elevated and bordered when selected', (WidgetTester tester) async {
+      testWidgets('should show elevated and bordered when selected',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledCard.selection(
             isSelected: true,
@@ -350,12 +371,13 @@ void main() {
 
         final card = tester.widget<Card>(find.byType(Card));
         expect(card.elevation, equals(AppDimensions.elevationMedium));
-        
+
         final shape = card.shape as RoundedRectangleBorder;
         expect(shape.side.color, equals(AppColors.primaryBlue));
       });
 
-      testWidgets('should show minimal elevation when not selected', (WidgetTester tester) async {
+      testWidgets('should show minimal elevation when not selected',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledCard.selection(
             isSelected: false,
@@ -365,14 +387,15 @@ void main() {
 
         final card = tester.widget<Card>(find.byType(Card));
         expect(card.elevation, equals(1));
-        
+
         final shape = card.shape as RoundedRectangleBorder;
         expect(shape.side, equals(BorderSide.none));
       });
 
-      testWidgets('should be tappable when onTap provided', (WidgetTester tester) async {
+      testWidgets('should be tappable when onTap provided',
+          (WidgetTester tester) async {
         bool tapped = false;
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledCard.selection(
             isSelected: false,
@@ -402,7 +425,8 @@ void main() {
     }
 
     group('EmptyState Card', () {
-      testWidgets('should render with outlined style', (WidgetTester tester) async {
+      testWidgets('should render with outlined style',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledCards.emptyState(
             child: const Text('No data'),
@@ -411,14 +435,15 @@ void main() {
 
         final card = tester.widget<Card>(find.byType(Card));
         expect(card.elevation, equals(0));
-        
+
         final shape = card.shape as RoundedRectangleBorder;
         expect(shape.side, isNot(equals(BorderSide.none)));
       });
 
-      testWidgets('should be tappable when onAction provided', (WidgetTester tester) async {
+      testWidgets('should be tappable when onAction provided',
+          (WidgetTester tester) async {
         bool actionCalled = false;
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledCards.emptyState(
             child: const Text('No data'),
@@ -432,7 +457,8 @@ void main() {
     });
 
     group('Error Card', () {
-      testWidgets('should render with error colors', (WidgetTester tester) async {
+      testWidgets('should render with error colors',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledCards.error(
             child: const Text('Error occurred'),
@@ -441,14 +467,15 @@ void main() {
 
         final card = tester.widget<Card>(find.byType(Card));
         expect(card.color, equals(AppColors.errorContainer));
-        
+
         final shape = card.shape as RoundedRectangleBorder;
         expect(shape.side.color, equals(AppColors.error));
       });
 
-      testWidgets('should be tappable when onRetry provided', (WidgetTester tester) async {
+      testWidgets('should be tappable when onRetry provided',
+          (WidgetTester tester) async {
         bool retryCalled = false;
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledCards.error(
             child: const Text('Error'),
@@ -462,7 +489,8 @@ void main() {
     });
 
     group('Info Card', () {
-      testWidgets('should render with info colors', (WidgetTester tester) async {
+      testWidgets('should render with info colors',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledCards.info(
             child: const Text('Information'),
@@ -471,14 +499,15 @@ void main() {
 
         final card = tester.widget<Card>(find.byType(Card));
         expect(card.color, equals(AppColors.infoContainer));
-        
+
         final shape = card.shape as RoundedRectangleBorder;
         expect(shape.side.color, equals(AppColors.info));
       });
     });
 
     group('Success Card', () {
-      testWidgets('should render with success colors', (WidgetTester tester) async {
+      testWidgets('should render with success colors',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledCards.success(
             child: const Text('Success!'),
@@ -487,14 +516,15 @@ void main() {
 
         final card = tester.widget<Card>(find.byType(Card));
         expect(card.color, equals(AppColors.successContainer));
-        
+
         final shape = card.shape as RoundedRectangleBorder;
         expect(shape.side.color, equals(AppColors.success));
       });
     });
 
     group('Warning Card', () {
-      testWidgets('should render with warning colors', (WidgetTester tester) async {
+      testWidgets('should render with warning colors',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledCards.warning(
             child: const Text('Warning!'),
@@ -503,28 +533,32 @@ void main() {
 
         final card = tester.widget<Card>(find.byType(Card));
         expect(card.color, equals(AppColors.warningContainer));
-        
+
         final shape = card.shape as RoundedRectangleBorder;
         expect(shape.side.color, equals(AppColors.warning));
       });
     });
 
     group('Loading Card', () {
-      testWidgets('should render loading placeholder with default height', (WidgetTester tester) async {
+      testWidgets('should render loading placeholder with default height',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledCards.loading(),
         ));
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(Card),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(Card),
+                matching: find.byType(Container),
+              )
+              .first,
         );
         expect(container.constraints?.maxHeight, equals(100));
       });
 
-      testWidgets('should accept custom dimensions', (WidgetTester tester) async {
+      testWidgets('should accept custom dimensions',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledCards.loading(
             height: 200,
@@ -533,27 +567,32 @@ void main() {
         ));
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(Card),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(Card),
+                matching: find.byType(Container),
+              )
+              .first,
         );
         expect(container.constraints?.maxHeight, equals(200));
         expect(container.constraints?.maxWidth, equals(300));
       });
 
-      testWidgets('should show gradient animation', (WidgetTester tester) async {
+      testWidgets('should show gradient animation',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledCards.loading(),
         ));
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(Card),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(Card),
+                matching: find.byType(Container),
+              )
+              .first,
         );
-        
+
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.gradient, isNotNull);
         expect(decoration.gradient, isA<LinearGradient>());
@@ -561,7 +600,8 @@ void main() {
     });
 
     group('Image Card', () {
-      testWidgets('should render with image widget', (WidgetTester tester) async {
+      testWidgets('should render with image widget',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledCards.image(
             imageWidget: Container(
@@ -576,7 +616,8 @@ void main() {
         expect(find.byType(Stack), findsWidgets);
       });
 
-      testWidgets('should render overlay when provided', (WidgetTester tester) async {
+      testWidgets('should render overlay when provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           StyledCards.image(
             imageWidget: Container(
@@ -588,7 +629,7 @@ void main() {
         ));
 
         expect(find.text('Overlay'), findsOneWidget);
-        
+
         // Check for dark overlay decoration
         final decoratedBox = tester.widget<DecoratedBox>(
           find.byType(DecoratedBox),
@@ -596,9 +637,10 @@ void main() {
         expect(decoratedBox.decoration, isA<BoxDecoration>());
       });
 
-      testWidgets('should be tappable when onTap provided', (WidgetTester tester) async {
+      testWidgets('should be tappable when onTap provided',
+          (WidgetTester tester) async {
         bool tapped = false;
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledCards.image(
             imageWidget: Container(

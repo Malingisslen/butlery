@@ -26,7 +26,8 @@ class OfflineUserStorage {
 
       for (final offlineRecipe in offlineRecipes) {
         try {
-          final json = jsonDecode(offlineRecipe.recipeJson) as Map<String, dynamic>;
+          final json =
+              jsonDecode(offlineRecipe.recipeJson) as Map<String, dynamic>;
           recipes.add(Recipe.fromJson(json));
         } catch (e) {
           AppLogger.warning('Failed to parse recipe ${offlineRecipe.id}: $e');
@@ -89,8 +90,7 @@ class OfflineUserStorage {
   Future<void> deleteRecipeForUser(String recipeId, String userId) async {
     await _recipeDao.deleteRecipe(recipeId, userId);
     await _syncQueueDao.removeForRecipe(userId, recipeId);
-    AppLogger.info(
-        '🗑️ Recipe deleted offline for user $userId: $recipeId');
+    AppLogger.info('🗑️ Recipe deleted offline for user $userId: $recipeId');
   }
 
   /// Clear data for specific user

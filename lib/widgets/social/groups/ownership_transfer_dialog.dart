@@ -49,8 +49,8 @@ class OwnershipTransferDialog extends StatelessWidget {
           Text(
             'Välj ny ägare:',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: AppDimensions.spacingM),
           // List of available members

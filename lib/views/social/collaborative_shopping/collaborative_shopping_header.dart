@@ -59,8 +59,8 @@ class CollaborativeShoppingHeader extends StatelessWidget {
           child: Text(
             viewModel.listTitle,
             style: AppTextStyles.headlineSmall.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         _buildStatusBadge(context),
@@ -95,8 +95,8 @@ class CollaborativeShoppingHeader extends StatelessWidget {
     return Text(
       viewModel.listDescription,
       style: AppTextStyles.bodyMedium.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
       maxLines: 3,
       overflow: TextOverflow.ellipsis,
     );
@@ -123,21 +123,22 @@ class CollaborativeShoppingHeader extends StatelessWidget {
         Text(
           '${viewModel.completedItems} av ${viewModel.totalItems} klara',
           style: AppTextStyles.bodyMedium.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+            fontWeight: FontWeight.w600,
+          ),
         ),
         Text(
           '${viewModel.completionPercentage.toStringAsFixed(0)}%',
           style: AppTextStyles.bodyMedium.copyWith(
-                fontWeight: FontWeight.w600,
-                color: progressColor,
-              ),
+            fontWeight: FontWeight.w600,
+            color: progressColor,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildProgressBar(BuildContext context, double progress, Color progressColor) {
+  Widget _buildProgressBar(
+      BuildContext context, double progress, Color progressColor) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       child: LinearProgressIndicator(
@@ -192,7 +193,8 @@ class CollaborativeShoppingHeader extends StatelessWidget {
         Expanded(
           child: Text(
             viewModel.activitySummary,
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+            style:
+                AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -206,17 +208,17 @@ class CollaborativeShoppingHeader extends StatelessWidget {
   double getEstimatedHeight(BuildContext context) {
     double baseHeight = AppDimensions.paddingL * 2; // Top and bottom padding
     baseHeight += 24; // Title (headlineSmall height)
-    
+
     if (viewModel.hasDescription) {
       baseHeight += AppDimensions.spacingXs;
       baseHeight += 16 * 3; // Max 3 lines (bodyMedium height)
     }
-    
+
     baseHeight += AppDimensions.spacingM; // Before progress
     baseHeight += 40; // Progress section
     baseHeight += AppDimensions.spacingM; // Before metadata
     baseHeight += 20; // Metadata section
-    
+
     return baseHeight;
   }
 

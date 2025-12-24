@@ -8,7 +8,6 @@ import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
-
 class CreateSharedListViewModel extends ChangeNotifier {
   final UnifiedShoppingService _shoppingService;
   final UnifiedFriendsService _friendsService;
@@ -26,8 +25,10 @@ class CreateSharedListViewModel extends ChangeNotifier {
   CreateSharedListViewModel({
     UnifiedShoppingService? shoppingService,
     UnifiedFriendsService? friendsService,
-  })  : _shoppingService = shoppingService ?? ServiceLocator.get<UnifiedShoppingService>(),
-        _friendsService = friendsService ?? ServiceLocator.get<UnifiedFriendsService>();
+  })  : _shoppingService =
+            shoppingService ?? ServiceLocator.get<UnifiedShoppingService>(),
+        _friendsService =
+            friendsService ?? ServiceLocator.get<UnifiedFriendsService>();
 
   // ===== GETTERS (UI State) =====
 

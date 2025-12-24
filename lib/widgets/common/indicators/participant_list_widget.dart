@@ -145,7 +145,8 @@ class ParticipantListWidget extends StatelessWidget {
                     color: activity.isOnline
                         ? AppColors.success
                         : AppColors.textTertiary,
-                    borderRadius: BorderRadius.circular(AppDimensions.spacingXs),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.spacingXs),
                     border: Border.all(
                       color: Theme.of(context).colorScheme.surface,
                       width: 1,

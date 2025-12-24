@@ -303,4 +303,3 @@ class UtilityComponents {
     SnackbarWidgets.showWarningSnackbar(context, message);
   }
 }
-

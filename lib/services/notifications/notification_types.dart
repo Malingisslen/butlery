@@ -41,39 +41,39 @@ enum NotificationType {
   /// Real-time notifications that require immediate user attention
   /// Examples: Friend requests, direct recipe shares, collaboration invites
   immediate,
-  
+
   /// Notifications that can be intelligently grouped to prevent spam
   /// Examples: Multiple comments, likes, activity updates from same user
   batchable,
-  
+
   /// Background data updates without user notification
   /// Examples: Recipe sync, shopping list item updates, presence updates
   silent,
-  
+
   /// Periodic summaries sent on schedule (daily/weekly)
   /// Examples: Friend activity digest, recipe recommendations, trends
   digest,
-  
+
   /// User can choose to enable/disable, with sensible defaults
   /// Examples: Friends coming online, profile milestones, achievements
   optional,
 }
 
 enum NotificationPriority {
-  critical,  // Friend requests, direct shares
-  high,      // Comments, collaboration
-  medium,    // Activity updates, likes
-  low,       // Digest summaries, optional features
+  critical, // Friend requests, direct shares
+  high, // Comments, collaboration
+  medium, // Activity updates, likes
+  low, // Digest summaries, optional features
 }
 
 enum NotificationCategory {
-  friends,           // Friend system interactions
-  recipes,           // Recipe sharing and collaboration
-  collaboration,     // Real-time editing and presence
-  shopping,          // Shopping list sharing and updates
-  messaging,         // Direct messages and conversations
-  social,            // General social activity
-  system,            // App updates and maintenance
+  friends, // Friend system interactions
+  recipes, // Recipe sharing and collaboration
+  collaboration, // Real-time editing and presence
+  shopping, // Shopping list sharing and updates
+  messaging, // Direct messages and conversations
+  social, // General social activity
+  system, // App updates and maintenance
 }
 
 /// Notification delivery strategy configuration
@@ -81,9 +81,9 @@ class NotificationStrategy {
   final NotificationType type;
   final NotificationPriority priority;
   final NotificationCategory category;
-  final Duration? batchWindow;  // For batchable notifications
-  final int? maxBatchSize;      // Maximum notifications to batch
-  final bool requiresInternet;  // Whether to queue offline
+  final Duration? batchWindow; // For batchable notifications
+  final int? maxBatchSize; // Maximum notifications to batch
+  final bool requiresInternet; // Whether to queue offline
   final Map<String, String> localization; // Swedish/English templates
 
   const NotificationStrategy({
@@ -261,12 +261,13 @@ class NotificationTemplate {
   }) {
     // Use Swedish by default (app is primarily Swedish)
     final titleTemplate = strategy.localization['title_sv'] ?? 'Ny aktivitet';
-    final bodyTemplate = strategy.localization['body_sv'] ?? 'Du har ny aktivitet i Butlery';
+    final bodyTemplate =
+        strategy.localization['body_sv'] ?? 'Du har ny aktivitet i Butlery';
 
     // Substitute variables in templates
     String title = titleTemplate;
     String body = bodyTemplate;
-    
+
     variables.forEach((key, value) {
       title = title.replaceAll('{$key}', value);
       body = body.replaceAll('{$key}', value);
@@ -311,7 +312,7 @@ class NotificationAction {
 
   /// Decline friend request action
   static const declineFriend = NotificationAction(
-    id: 'decline_friend', 
+    id: 'decline_friend',
     title: 'Avvisa',
   );
 

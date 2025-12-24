@@ -34,7 +34,8 @@ class _ImportViaUrlViewContent extends StatefulWidget {
 
 class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
   final TextEditingController _urlController = TextEditingController();
-  final TextEditingController _extractedTextController = TextEditingController();
+  final TextEditingController _extractedTextController =
+      TextEditingController();
 
   @override
   void initState() {
@@ -101,59 +102,63 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
               padding: AppDimensions.responsiveContentPadding(context),
               child: Column(
                 children: [
-            // URL input
-            StyledInput(
-              controller: _urlController,
-              enabled: !viewModel.isLoading,
-              label: 'Klistra in recept-URL',
-              hint: 'https://example.com/recept',
-              keyboardType: TextInputType.url,
-              textInputAction: TextInputAction.done,
-              // Note: onFieldSubmitted functionality moved to fetch button
-            ),
-            const SizedBox(height: AppDimensions.spacingXl),
+                  // URL input
+                  StyledInput(
+                    controller: _urlController,
+                    enabled: !viewModel.isLoading,
+                    label: 'Klistra in recept-URL',
+                    hint: 'https://example.com/recept',
+                    keyboardType: TextInputType.url,
+                    textInputAction: TextInputAction.done,
+                    // Note: onFieldSubmitted functionality moved to fetch button
+                  ),
+                  const SizedBox(height: AppDimensions.spacingXl),
 
-            // Hämta-knapp
-            ActionButtons.primaryButton(
-              context,
-              label: 'Hämta text',
-              onPressed: viewModel.canFetch && !viewModel.isLoading ? _fetchPage : null,
-              isLoading: viewModel.isLoading,
-              loadingText: 'Hämtar...',
-              isExpanded: true,
-            ),
+                  // Hämta-knapp
+                  ActionButtons.primaryButton(
+                    context,
+                    label: 'Hämta text',
+                    onPressed: viewModel.canFetch && !viewModel.isLoading
+                        ? _fetchPage
+                        : null,
+                    isLoading: viewModel.isLoading,
+                    loadingText: 'Hämtar...',
+                    isExpanded: true,
+                  ),
 
-            // Error visning
-            if (viewModel.hasError) ...[
-              const SizedBox(height: AppDimensions.spacingXl),
-              StateWidget.error(
-                message: viewModel.error!,
-              ),
-            ],
+                  // Error visning
+                  if (viewModel.hasError) ...[
+                    const SizedBox(height: AppDimensions.spacingXl),
+                    StateWidget.error(
+                      message: viewModel.error!,
+                    ),
+                  ],
 
-            // Extraherad text (editable)
-            if (viewModel.hasExtractedText) ...[
-              const SizedBox(height: AppDimensions.spacingXl),
-              const Text('Extraherad text:', style: AppTextStyles.headlineSmall),
-              const SizedBox(height: AppDimensions.spacingS),
-              Expanded(
-                child: StyledInput(
-                  controller: _extractedTextController..text = viewModel.extractedText,
-                  maxLines: null,
-                  minLines: 10,
-                  label: 'Redigera text innan import',
-                  hint: 'Du kan redigera den extraherade texten här...',
-                  keyboardType: TextInputType.multiline,
-                ),
-              ),
-              const SizedBox(height: AppDimensions.spacingXl),
-              ActionButtons.primaryButton(
-                context,
-                label: 'Gå vidare till klistra-in',
-                onPressed: _navigateToTextImport,
-                isExpanded: true,
-              ),
-            ],
+                  // Extraherad text (editable)
+                  if (viewModel.hasExtractedText) ...[
+                    const SizedBox(height: AppDimensions.spacingXl),
+                    const Text('Extraherad text:',
+                        style: AppTextStyles.headlineSmall),
+                    const SizedBox(height: AppDimensions.spacingS),
+                    Expanded(
+                      child: StyledInput(
+                        controller: _extractedTextController
+                          ..text = viewModel.extractedText,
+                        maxLines: null,
+                        minLines: 10,
+                        label: 'Redigera text innan import',
+                        hint: 'Du kan redigera den extraherade texten här...',
+                        keyboardType: TextInputType.multiline,
+                      ),
+                    ),
+                    const SizedBox(height: AppDimensions.spacingXl),
+                    ActionButtons.primaryButton(
+                      context,
+                      label: 'Gå vidare till klistra-in',
+                      onPressed: _navigateToTextImport,
+                      isExpanded: true,
+                    ),
+                  ],
                 ],
               ),
             ),

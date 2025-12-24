@@ -51,13 +51,15 @@ class ProfileViewModel extends ChangeNotifier
   UserProfile? get currentUserProfile => _userService.currentUserProfile;
 
   /// User display name
-  String? get displayName => currentUserProfile?.displayName ?? currentUser?.displayName;
+  String? get displayName =>
+      currentUserProfile?.displayName ?? currentUser?.displayName;
 
   /// User email
   String? get email => currentUser?.email;
 
   /// User photo URL
-  String? get photoUrl => currentUserProfile?.avatarUrl ?? currentUser?.photoURL;
+  String? get photoUrl =>
+      currentUserProfile?.avatarUrl ?? currentUser?.photoURL;
 
   /// Whether user is authenticated
   bool get isAuthenticated => currentUser != null;

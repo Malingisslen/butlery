@@ -95,7 +95,8 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          cacheExtent: 2000, // Performance optimization: cache more items for smooth scrolling
+          cacheExtent:
+              2000, // Performance optimization: cache more items for smooth scrolling
           addRepaintBoundaries: true, // Optimization: reduce repaints
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: widget.crossAxisCount,
@@ -140,7 +141,8 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
               size: AppDimensions.iconSizeXxl,
               color: AppColors.textDark.withValues(alpha: 0.4),
             ),
-            const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+            const SizedBox(
+                height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
             Text(
               'No images yet',
               style: AppTextStyles.bodyLarge.copyWith(
@@ -168,7 +170,8 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
       padding: const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: const BoxDecoration(
         color: AppColors.primaryBlue,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimensions.borderRadius16)),
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppDimensions.borderRadius16)),
       ),
       child: Row(
         children: [
@@ -426,7 +429,8 @@ class StaggeredImageGalleryWidget extends StatelessWidget {
                 size: AppDimensions.iconSizeXxl,
                 color: AppColors.textDark.withValues(alpha: 0.4),
               ),
-              const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+              const SizedBox(
+                  height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
               Text(
                 'No images to display',
                 style: AppTextStyles.bodyLarge.copyWith(

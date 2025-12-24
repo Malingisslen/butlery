@@ -109,7 +109,9 @@ class FormScaffold extends StatelessWidget {
               if (showCancelButton) ...[
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: isLoading ? null : (onCancel ?? () => Navigator.pop(context)),
+                    onPressed: isLoading
+                        ? null
+                        : (onCancel ?? () => Navigator.pop(context)),
                     child: const Text(AppStrings.cancel),
                   ),
                 ),
@@ -125,7 +127,8 @@ class FormScaffold extends StatelessWidget {
                             width: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                         : const Text(AppStrings.save),

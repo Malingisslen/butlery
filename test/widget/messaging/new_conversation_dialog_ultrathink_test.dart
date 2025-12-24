@@ -19,7 +19,9 @@ import 'package:butlery/core/di/di_container.dart';
 
 // Mocks
 class MockUnifiedFriendsService extends Mock implements UnifiedFriendsService {}
+
 class MockMessagingService extends Mock implements MessagingService {}
+
 class MockCallbacks extends Mock {
   void onConversationCreated(String conversationId);
 }
@@ -30,7 +32,7 @@ void main() {
     late MockMessagingService mockMessagingService;
     late MockCallbacks mockCallbacks;
     late List<UserProfile> testFriends;
-    
+
     // Setup service locator
     final getIt = GetIt.instance;
 
@@ -69,21 +71,21 @@ void main() {
       if (getIt.isRegistered<MessagingService>()) {
         getIt.unregister<MessagingService>();
       }
-      
+
       // Create mocks
       mockFriendsService = MockUnifiedFriendsService();
       mockMessagingService = MockMessagingService();
       mockCallbacks = MockCallbacks();
-      
+
       // Register mocks with GetIt
       getIt.registerSingleton<UnifiedFriendsService>(mockFriendsService);
       getIt.registerSingleton<MessagingService>(mockMessagingService);
-      
+
       // Initialize production ServiceLocator with real DIContainer
       // Since DIContainer uses GetIt.instance internally, it will use our registered mocks
       final container = DIContainer();
       ServiceLocator.initialize(container);
-      
+
       // Setup test data
       testFriends = [
         UserProfile(
@@ -111,20 +113,20 @@ void main() {
           lastActiveAt: DateTime.now(),
         ),
       ];
-      
+
       // Setup default mock behavior
       when(() => mockFriendsService.friends).thenReturn(testFriends);
       when(() => mockCallbacks.onConversationCreated(any())).thenReturn(null);
       when(() => mockMessagingService.startDirectConversation(
-        otherUserId: any(named: 'otherUserId'),
-        otherUserDisplayName: any(named: 'otherUserDisplayName'),
-      )).thenAnswer((_) async => 'conv123');
+            otherUserId: any(named: 'otherUserId'),
+            otherUserDisplayName: any(named: 'otherUserDisplayName'),
+          )).thenAnswer((_) async => 'conv123');
       when(() => mockMessagingService.createGroupConversation(
-        participantIds: any(named: 'participantIds'),
-        participantDisplayNames: any(named: 'participantDisplayNames'),
-        participantAvatarUrls: any(named: 'participantAvatarUrls'),
-        title: any(named: 'title'),
-      )).thenAnswer((_) async => 'group123');
+            participantIds: any(named: 'participantIds'),
+            participantDisplayNames: any(named: 'participantDisplayNames'),
+            participantAvatarUrls: any(named: 'participantAvatarUrls'),
+            title: any(named: 'title'),
+          )).thenAnswer((_) async => 'group123');
     });
 
     tearDown(() {
@@ -150,7 +152,7 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Should show Swedish title "Ny konversation"
@@ -167,16 +169,16 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Should show search field with Swedish placeholder
         final textField = find.byType(TextField);
         expect(textField, findsOneWidget);
-        
+
         final widget = tester.widget<TextField>(textField);
         expect(widget.decoration?.hintText, equals('Sök vänner...'));
-        
+
         // Should have search icon
         expect(find.byIcon(Icons.search), findsOneWidget);
       });
@@ -191,15 +193,15 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Should show Cancel button with Swedish text
         expect(find.text('Avbryt'), findsOneWidget);
-        
+
         // Should show Create button with Swedish text
         expect(find.text('Skapa'), findsOneWidget);
-        
+
         // Should use StyledButton.primary
         expect(find.byType(StyledButton), findsOneWidget);
       });
@@ -209,7 +211,7 @@ void main() {
         // ULTRATHINK: Widget loads friends synchronously, so loading is very brief
         // This test verifies the widget handles the transition properly
         when(() => mockFriendsService.friends).thenReturn([]);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: NewConversationDialog(
@@ -217,7 +219,7 @@ void main() {
             ),
           ),
         );
-        
+
         // Widget should transition quickly to showing empty state
         await tester.pumpAndSettle();
 
@@ -238,19 +240,19 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Should show all friends
         expect(find.text('Anna Andersson'), findsOneWidget);
         expect(find.text('Erik Eriksson'), findsOneWidget);
         expect(find.text('Maria Svensson'), findsOneWidget);
-        
+
         // Should show emails as subtitles
         expect(find.text('anna@example.com'), findsOneWidget);
         expect(find.text('erik@example.com'), findsOneWidget);
         expect(find.text('maria@example.com'), findsOneWidget);
-        
+
         // Should have checkboxes
         expect(find.byType(CheckboxListTile), findsNWidgets(3));
       });
@@ -259,7 +261,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test empty state from lines 146-176
         when(() => mockFriendsService.friends).thenReturn([]);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: NewConversationDialog(
@@ -267,19 +269,20 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Should show empty state icon
         expect(find.byIcon(Icons.people_outline), findsOneWidget);
-        
+
         // Should show Swedish empty state messages
         expect(find.text('Inga vänner ännu'), findsOneWidget);
-        expect(find.text('Lägg till vänner först för att starta konversationer.'), findsOneWidget);
+        expect(
+            find.text('Lägg till vänner först för att starta konversationer.'),
+            findsOneWidget);
       });
 
-      testWidgets('shows avatar with initials',
-          (WidgetTester tester) async {
+      testWidgets('shows avatar with initials', (WidgetTester tester) async {
         // ULTRATHINK: Test avatar from lines 211-217
         await tester.pumpWidget(
           createTestWidget(
@@ -288,7 +291,7 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Should show CircleAvatar with initials
@@ -300,8 +303,7 @@ void main() {
     });
 
     group('Search Functionality Tests', () {
-      testWidgets('filters friends by name',
-          (WidgetTester tester) async {
+      testWidgets('filters friends by name', (WidgetTester tester) async {
         // ULTRATHINK: Test search filter from lines 74-88
         await tester.pumpWidget(
           createTestWidget(
@@ -310,7 +312,7 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Enter search query
@@ -323,8 +325,7 @@ void main() {
         expect(find.text('Maria Svensson'), findsNothing);
       });
 
-      testWidgets('filters friends by email',
-          (WidgetTester tester) async {
+      testWidgets('filters friends by email', (WidgetTester tester) async {
         // ULTRATHINK: Test email filtering from line 83
         await tester.pumpWidget(
           createTestWidget(
@@ -333,7 +334,7 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Enter email search query
@@ -356,7 +357,7 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Enter non-matching search
@@ -377,7 +378,7 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Filter friends
@@ -397,8 +398,7 @@ void main() {
     });
 
     group('Selection Tests', () {
-      testWidgets('can select single friend',
-          (WidgetTester tester) async {
+      testWidgets('can select single friend', (WidgetTester tester) async {
         // ULTRATHINK: Test selection from lines 200-210
         await tester.pumpWidget(
           createTestWidget(
@@ -407,11 +407,12 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Initially, create button should be disabled
-        final createButton = tester.widget<StyledButton>(find.byType(StyledButton));
+        final createButton =
+            tester.widget<StyledButton>(find.byType(StyledButton));
         expect(createButton.onPressed, isNull);
 
         // Select a friend
@@ -419,12 +420,12 @@ void main() {
         await tester.pumpAndSettle();
 
         // Create button should now be enabled
-        final updatedButton = tester.widget<StyledButton>(find.byType(StyledButton));
+        final updatedButton =
+            tester.widget<StyledButton>(find.byType(StyledButton));
         expect(updatedButton.onPressed, isNotNull);
       });
 
-      testWidgets('can select multiple friends',
-          (WidgetTester tester) async {
+      testWidgets('can select multiple friends', (WidgetTester tester) async {
         // ULTRATHINK: Test multiple selection
         await tester.pumpWidget(
           createTestWidget(
@@ -433,24 +434,24 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Select multiple friends
         await tester.tap(find.text('Anna Andersson'));
         await tester.pumpAndSettle();
-        
+
         await tester.tap(find.text('Erik Eriksson'));
         await tester.pumpAndSettle();
 
         // Both should be selected
-        final checkboxes = tester.widgetList<CheckboxListTile>(find.byType(CheckboxListTile));
+        final checkboxes =
+            tester.widgetList<CheckboxListTile>(find.byType(CheckboxListTile));
         final selectedCount = checkboxes.where((cb) => cb.value == true).length;
         expect(selectedCount, equals(2));
       });
 
-      testWidgets('can deselect friends',
-          (WidgetTester tester) async {
+      testWidgets('can deselect friends', (WidgetTester tester) async {
         // ULTRATHINK: Test deselection from lines 205-206
         await tester.pumpWidget(
           createTestWidget(
@@ -459,20 +460,19 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Select then deselect
         await tester.tap(find.text('Anna Andersson'));
         await tester.pumpAndSettle();
-        
+
         await tester.tap(find.text('Anna Andersson'));
         await tester.pumpAndSettle();
 
         // Should be deselected
-        final checkbox = tester.widget<CheckboxListTile>(
-          find.byKey(const ValueKey('friend1'))
-        );
+        final checkbox = tester
+            .widget<CheckboxListTile>(find.byKey(const ValueKey('friend1')));
         expect(checkbox.value, isFalse);
       });
     });
@@ -488,7 +488,7 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Select single friend
@@ -501,10 +501,10 @@ void main() {
 
         // Verify direct conversation was created
         verify(() => mockMessagingService.startDirectConversation(
-          otherUserId: 'friend1',
-          otherUserDisplayName: 'Anna Andersson',
-        )).called(1);
-        
+              otherUserId: 'friend1',
+              otherUserDisplayName: 'Anna Andersson',
+            )).called(1);
+
         // Verify callback
         verify(() => mockCallbacks.onConversationCreated('conv123')).called(1);
       });
@@ -519,7 +519,7 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Select multiple friends
@@ -534,21 +534,21 @@ void main() {
 
         // Verify group conversation was created
         verify(() => mockMessagingService.createGroupConversation(
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-          title: any(named: 'title', that: contains('Gruppchatt med')),
-        )).called(1);
+              participantIds: any(named: 'participantIds'),
+              participantDisplayNames: any(named: 'participantDisplayNames'),
+              participantAvatarUrls: any(named: 'participantAvatarUrls'),
+              title: any(named: 'title', that: contains('Gruppchatt med')),
+            )).called(1);
       });
 
       testWidgets('handles conversation creation error',
           (WidgetTester tester) async {
         // ULTRATHINK: Test error handling from lines 273-281
         when(() => mockMessagingService.startDirectConversation(
-          otherUserId: any(named: 'otherUserId'),
-          otherUserDisplayName: any(named: 'otherUserDisplayName'),
-        )).thenThrow(Exception('Network error'));
-        
+              otherUserId: any(named: 'otherUserId'),
+              otherUserDisplayName: any(named: 'otherUserDisplayName'),
+            )).thenThrow(Exception('Network error'));
+
         await tester.pumpWidget(
           createTestWidget(
             child: NewConversationDialog(
@@ -556,7 +556,7 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Select friend
@@ -568,13 +568,15 @@ void main() {
         await tester.pumpAndSettle();
 
         // Should show error snackbar with Swedish message
-        expect(find.text('Kunde inte skapa konversation: Exception: Network error'), findsOneWidget);
+        expect(
+            find.text(
+                'Kunde inte skapa konversation: Exception: Network error'),
+            findsOneWidget);
       });
     });
 
     group('Dialog Actions Tests', () {
-      testWidgets('cancel button closes dialog',
-          (WidgetTester tester) async {
+      testWidgets('cancel button closes dialog', (WidgetTester tester) async {
         // ULTRATHINK: Test cancel from lines 109-111
         await tester.pumpWidget(
           createTestWidget(
@@ -585,7 +587,8 @@ void main() {
                     showDialog(
                       context: context,
                       builder: (_) => NewConversationDialog(
-                        onConversationCreated: mockCallbacks.onConversationCreated,
+                        onConversationCreated:
+                            mockCallbacks.onConversationCreated,
                       ),
                     );
                   },
@@ -623,7 +626,7 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Select a friend
@@ -631,14 +634,15 @@ void main() {
         await tester.pumpAndSettle();
 
         // Before clicking create, button should be enabled
-        StyledButton button = tester.widget<StyledButton>(find.byType(StyledButton));
+        StyledButton button =
+            tester.widget<StyledButton>(find.byType(StyledButton));
         expect(button.onPressed, isNotNull);
 
         // Simulate slow network by delaying the response
         when(() => mockMessagingService.startDirectConversation(
-          otherUserId: any(named: 'otherUserId'),
-          otherUserDisplayName: any(named: 'otherUserDisplayName'),
-        )).thenAnswer((_) async {
+              otherUserId: any(named: 'otherUserId'),
+              otherUserDisplayName: any(named: 'otherUserDisplayName'),
+            )).thenAnswer((_) async {
           await Future.delayed(const Duration(seconds: 1));
           return 'conv123';
         });
@@ -650,7 +654,7 @@ void main() {
         // Button should be disabled during creation
         button = tester.widget<StyledButton>(find.byType(StyledButton));
         expect(button.onPressed, isNull);
-        
+
         // Wait for the async operation to complete to avoid pending timers
         await tester.pumpAndSettle(const Duration(seconds: 2));
       });
@@ -670,9 +674,9 @@ void main() {
             lastActiveAt: DateTime.now(),
           ),
         ];
-        
+
         when(() => mockFriendsService.friends).thenReturn(friendsWithEmptyName);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: NewConversationDialog(
@@ -680,7 +684,7 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Should show ? for empty name
@@ -697,7 +701,7 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Enter special characters

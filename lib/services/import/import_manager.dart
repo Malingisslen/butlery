@@ -152,11 +152,14 @@ class ImportManager {
 
       // ===== STEP 2: Try YouTube strategy for YouTube URLs =====
       final youtubeStrategy = _youtubeStrategy;
-      debugPrint('🎬 YouTube strategy check: strategy=${youtubeStrategy != null}, canHandle=${youtubeStrategy?.canHandle(input)}');
+      debugPrint(
+          '🎬 YouTube strategy check: strategy=${youtubeStrategy != null}, canHandle=${youtubeStrategy?.canHandle(input)}');
       if (youtubeStrategy != null && youtubeStrategy.canHandle(input)) {
         debugPrint('🎬 Using YouTubeImportStrategy for: $input');
-        final result = await _parseWithStrategy(youtubeStrategy, input, options);
-        debugPrint('🎬 YouTube result: isSuccess=${result.isSuccess}, needsAssistance=${result.needsAssistance}, error=${result.errorMessage}');
+        final result =
+            await _parseWithStrategy(youtubeStrategy, input, options);
+        debugPrint(
+            '🎬 YouTube result: isSuccess=${result.isSuccess}, needsAssistance=${result.needsAssistance}, error=${result.errorMessage}');
 
         // Handle all YouTube results - don't fall back to WebScraper for YouTube URLs
         if (result.isSuccess || result.needsAssistance) {
@@ -166,7 +169,8 @@ class ImportManager {
 
         // Check for "needs screenshot" case - this is a valid result, not a fallback-worthy failure
         if (result.metadata?['needsScreenshot'] == true) {
-          debugPrint('🎬 YouTube video needs screenshot - returning assistance request');
+          debugPrint(
+              '🎬 YouTube video needs screenshot - returning assistance request');
           // Convert to user-assisted import with helpful message
           return ImportManagerResult.assistance(
             extractedText: result.errorMessage ?? 'Video saknar undertexter',
@@ -178,7 +182,8 @@ class ImportManager {
           );
         }
 
-        debugPrint('🎬 YouTube strategy failed, falling back to other strategies');
+        debugPrint(
+            '🎬 YouTube strategy failed, falling back to other strategies');
         // YouTube strategy failed, continue with other strategies
       }
 
@@ -497,7 +502,8 @@ class ImportManager {
 
       // DEBUG: Log cache hit
       debugPrint('✅ CACHE HIT - returning cached recipe');
-      debugPrint('   Domain: ${cacheEntry.domain}, Age: ${cacheEntry.ageInDays}d');
+      debugPrint(
+          '   Domain: ${cacheEntry.domain}, Age: ${cacheEntry.ageInDays}d');
 
       return ImportManagerResult.success(
         recipe,

@@ -24,14 +24,14 @@
 ///     recipeId: 'test-recipe-123',
 ///     isCollaborative: true,
 ///   );
-///   
+///
 ///   await tester.pumpWidget(
 ///     ViewTestHelpers.createTestViewWidget(
 ///       child: const EditRecipeView(),
 ///       providers: providers,
 ///     ),
 ///   );
-///   
+///
 ///   ProviderTestUtils.verifyProvidersAvailable(tester, [
 ///     RecipeFormViewModel,
 ///     CollaborativeStatusViewModel,
@@ -142,9 +142,12 @@ class ProviderTestUtils {
     );
 
     return [
-      ChangeNotifierProvider<RecipeFormViewModel>.value(value: recipeFormViewModel),
-      ChangeNotifierProvider<CollaborativeStatusViewModel>.value(value: collaborativeStatusViewModel),
-      ChangeNotifierProvider<SocialRecipeViewModel>.value(value: socialRecipeViewModel),
+      ChangeNotifierProvider<RecipeFormViewModel>.value(
+          value: recipeFormViewModel),
+      ChangeNotifierProvider<CollaborativeStatusViewModel>.value(
+          value: collaborativeStatusViewModel),
+      ChangeNotifierProvider<SocialRecipeViewModel>.value(
+          value: socialRecipeViewModel),
     ];
   }
 
@@ -178,7 +181,8 @@ class ProviderTestUtils {
     );
 
     final providers = <ChangeNotifierProvider>[
-      ChangeNotifierProvider<UnifiedShoppingViewModel>.value(value: shoppingViewModel),
+      ChangeNotifierProvider<UnifiedShoppingViewModel>.value(
+          value: shoppingViewModel),
     ];
 
     // Add collaborative features if needed
@@ -243,12 +247,12 @@ class ProviderTestUtils {
     List<Type> providerTypes,
   ) {
     final context = tester.element(find.byType(MaterialApp).first);
-    
+
     for (final type in providerTypes) {
       try {
         final provider = Provider.of(context, listen: false);
-        expect(provider, isNotNull, 
-          reason: 'Provider of type $type is not available in widget tree');
+        expect(provider, isNotNull,
+            reason: 'Provider of type $type is not available in widget tree');
       } catch (e) {
         fail('Provider of type $type failed verification: $e');
       }
@@ -271,26 +275,28 @@ class ProviderTestUtils {
 
       try {
         final provider = Provider.of(context, listen: false);
-        
+
         // Verify each expected state property
         for (final stateEntry in expectedState.entries) {
           final property = stateEntry.key;
           final expectedValue = stateEntry.value;
-          
+
           // Use reflection or type-specific checks to verify state
           _verifyProviderProperty(provider, property, expectedValue);
         }
       } catch (e) {
-        fail('Provider initialization verification failed for $providerType: $e');
+        fail(
+            'Provider initialization verification failed for $providerType: $e');
       }
     }
   }
 
   /// Verify specific provider property value.
-  static void _verifyProviderProperty(dynamic provider, String property, dynamic expectedValue) {
+  static void _verifyProviderProperty(
+      dynamic provider, String property, dynamic expectedValue) {
     // Implementation would depend on specific provider types and their properties
     // This is a placeholder for type-specific property verification
-    
+
     // Example implementations:
     if (provider is MockAuthViewModel && property == 'isAuthenticated') {
       expect(provider.isAuthenticated, equals(expectedValue));
@@ -306,7 +312,8 @@ class ProviderTestUtils {
   ///
   /// Clears provider state between tests to prevent test pollution
   /// and ensure each test starts with predictable state.
-  static Future<void> resetProviderStates(List<ChangeNotifier> providers) async {
+  static Future<void> resetProviderStates(
+      List<ChangeNotifier> providers) async {
     for (final provider in providers) {
       if (provider is MockBaseViewModel) {
         provider.setLoadingState(false);
@@ -419,7 +426,8 @@ class ProviderTestUtils {
 // ==================== MOCK IMPLEMENTATIONS ====================
 
 /// Mock collaborative status view model for testing.
-class MockCollaborativeStatusViewModel extends Mock implements CollaborativeStatusViewModel {
+class MockCollaborativeStatusViewModel extends Mock
+    implements CollaborativeStatusViewModel {
   bool _isCollaborative = false;
   bool _hasConflicts = false;
   bool _canEdit = true;

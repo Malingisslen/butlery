@@ -15,40 +15,35 @@ class InputThemes {
     return InputDecorationTheme(
       filled: false,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         borderSide: const BorderSide(
           color: AppColors.textMedium,
           width: 1,
         ),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         borderSide: const BorderSide(
           color: AppColors.textMedium,
           width: 1,
         ),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         borderSide: const BorderSide(
           color: AppColors.primaryBlue,
           width: 1.5,
         ),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         borderSide: const BorderSide(
           color: AppColors.error,
           width: 1,
         ),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         borderSide: const BorderSide(
           color: AppColors.error,
           width: 1.5,
@@ -71,8 +66,7 @@ class InputThemes {
       elevation: 1,
       shadowColor: Colors.black12,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
       ),
       margin: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingMd,
@@ -95,8 +89,7 @@ class InputThemes {
       ),
       minVerticalPadding: AppDimensions.spacingSm,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
       ),
     );
   }
@@ -117,30 +110,29 @@ class InputThemes {
         vertical: AppDimensions.paddingS,
       ),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
       ),
     );
   }
 
   /// Trending recipe card decoration
   static BoxDecoration get trendingRecipeCardDecoration => BoxDecoration(
-    color: AppColors.primaryContainer.withValues(alpha: 0.1),
-    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-    border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-  );
+        color: AppColors.primaryContainer.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+      );
 
   /// Activity timeline item decoration
   static BoxDecoration get activityTimelineItemDecoration => BoxDecoration(
-    color: AppColors.secondaryContainer.withValues(alpha: 0.1),
-    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-    border: Border.all(color: AppColors.secondary.withValues(alpha: 0.2)),
-  );
+        color: AppColors.secondaryContainer.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.2)),
+      );
 
   /// Empty state container decoration
   static BoxDecoration get emptyStateContainerDecoration => BoxDecoration(
-    color: AppColors.primaryContainer.withValues(alpha: 0.1),
-    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-    border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-  );
+        color: AppColors.primaryContainer.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+      );
 }

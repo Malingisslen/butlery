@@ -174,8 +174,7 @@ class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
 
   /// Check if category exists in current menu
   bool hasCategorySelected() {
-    return _selectedCategory != null && 
-           categories.contains(_selectedCategory);
+    return _selectedCategory != null && categories.contains(_selectedCategory);
   }
 
   /// Get recipe count for selected category
@@ -208,11 +207,11 @@ class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
   String get menuDateDisplay {
     final date = _currentMenu?.createdForDate ?? _currentMenu?.createdAt;
     if (date == null) return 'Inget datum';
-    
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final menuDate = DateTime(date.year, date.month, date.day);
-    
+
     if (menuDate == today) {
       return 'Idag';
     } else if (menuDate.isAfter(today)) {
@@ -223,10 +222,11 @@ class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
       return diff == 1 ? 'Igår' : '$diff dagar sedan';
     }
   }
+
   @override
   void dispose() {
     // Cancel all timers
-    // Cancel all stream subscriptions  
+    // Cancel all stream subscriptions
     // Dispose of resources
     disposeStreamResources(); // From StreamManagementMixin
     super.dispose();

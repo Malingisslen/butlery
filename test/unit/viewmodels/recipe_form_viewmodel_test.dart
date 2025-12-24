@@ -33,7 +33,8 @@ import '../../infrastructure/mocks/service_mocks.dart';
 import '../../infrastructure/builders/recipe_builder.dart';
 import '../../infrastructure/factories/mock_factory.dart';
 import 'package:butlery/core/di/di_container.dart';
-import 'package:butlery/core/providers/application_provider.dart' as prod_locator;
+import 'package:butlery/core/providers/application_provider.dart'
+    as prod_locator;
 
 // ============= USING CENTRALIZED MOCKS =============
 // Removed local mock classes:
@@ -47,30 +48,30 @@ void main() {
     late MockAnalyticsService mockAnalyticsService;
     late MockPersonalRecipeOperations mockPersonalOps;
     late Recipe testRecipe;
-    
+
     setUpAll(() async {
       // Initialize test infrastructure once for all tests
       await BaseUnitTest.setupUnit();
-      
+
       // Register fallback values for mocktail
       registerFallbackValue(RecipeBuilder().build());
     });
-    
+
     setUp(() async {
       // Reset and initialize service locator for each test
       await TestServiceLocator.reset();
       await TestServiceLocator.initialize();
-      
-      // Bridge production ServiceLocator to TestServiceLocator 
+
+      // Bridge production ServiceLocator to TestServiceLocator
       // Required because RecipeCollaborativeManager calls ServiceLocator.get() directly
       final productionContainer = DIContainer();
       prod_locator.ServiceLocator.initialize(productionContainer);
-      
+
       // Create mocks using factory
       mockRecipeService = MockFactory.createUnifiedRecipeService();
       mockAnalyticsService = MockFactory.createAnalyticsService();
       mockPersonalOps = MockPersonalRecipeOperations();
-      
+
       // Create test recipe for editing tests
       // Note: Recipe ID contains user ID for ownership checks in MockPermissionService
       testRecipe = RecipeBuilder()
@@ -81,52 +82,57 @@ void main() {
           .withPortions(4)
           .withTimeMinutes(30)
           .withRating(4.5)
-          .withTags(['test', 'recipe'])
-          .withImageUrls(['image1.jpg', 'image2.jpg'])
-          .build();
-      
+          .withTags(['test', 'recipe']).withImageUrls(
+              ['image1.jpg', 'image2.jpg']).build();
+
       // Configure mock service state
       mockRecipeService.setRecipeState(
         recipes: [testRecipe],
         currentUserId: 'test-user-123',
         personalOperations: mockPersonalOps,
       );
-      
+
       // Setup default mock behaviors for personal operations
-      when(() => mockPersonalOps.addUnifiedRecipe(any()))
-          .thenAnswer((_) async => RecipeOperationResult.success('Recipe created'));
-      
-      when(() => mockPersonalOps.updateUnifiedRecipe(any()))
-          .thenAnswer((_) async => RecipeOperationResult.success('Recipe updated'));
-      
+      when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer(
+          (_) async => RecipeOperationResult.success('Recipe created'));
+
+      when(() => mockPersonalOps.updateUnifiedRecipe(any())).thenAnswer(
+          (_) async => RecipeOperationResult.success('Recipe updated'));
+
       when(() => mockPersonalOps.deleteRecipe(any()))
           .thenAnswer((_) async => true);
-      
+
       // Register mocks in service locator
       TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
       TestServiceLocator.registerMock<AnalyticsService>(mockAnalyticsService);
-      
+
       // Register additional dependencies for RecipeImageManager
       final mockStorageService = MockStorageService();
       final mockImagePickerService = MockImagePickerService();
       TestServiceLocator.registerMock<StorageService>(mockStorageService);
-      TestServiceLocator.registerMock<ImagePickerService>(mockImagePickerService);
-      
+      TestServiceLocator.registerMock<ImagePickerService>(
+          mockImagePickerService);
+
       // Register additional dependencies for RecipeCollaborativeManager
       // These are required by the managers inside RecipeFormViewModel
       final mockCollaborativeRepo = MockCollaborativeRecipeRepository();
       final mockConnectivityService = MockConnectivityMonitoringService();
-      
+
       // Setup connectivity service mock behaviors
-      when(() => mockConnectivityService.isConnectedToInternet).thenReturn(true);
-      when(() => mockConnectivityService.isConnectedToFirebase).thenReturn(true);
+      when(() => mockConnectivityService.isConnectedToInternet)
+          .thenReturn(true);
+      when(() => mockConnectivityService.isConnectedToFirebase)
+          .thenReturn(true);
       when(() => mockConnectivityService.isFullyConnected).thenReturn(true);
-      when(() => mockConnectivityService.connectionStatusText).thenReturn('Ansluten');
+      when(() => mockConnectivityService.connectionStatusText)
+          .thenReturn('Ansluten');
       when(() => mockConnectivityService.startMonitoring()).thenReturn(null);
-      
-      TestServiceLocator.registerMock<CollaborativeRecipeRepository>(mockCollaborativeRepo);
-      TestServiceLocator.registerMock<ConnectivityMonitoringService>(mockConnectivityService);
-      
+
+      TestServiceLocator.registerMock<CollaborativeRecipeRepository>(
+          mockCollaborativeRepo);
+      TestServiceLocator.registerMock<ConnectivityMonitoringService>(
+          mockConnectivityService);
+
       // Register PermissionService mock for delete operations
       final mockPermissionService = MockPermissionService();
       // Configure permission service using configuration method
@@ -138,13 +144,13 @@ void main() {
       // Note: isRecipeOwner, canEditRecipe, etc. have concrete implementations
       // that use the configured state, so we don't stub them
       TestServiceLocator.registerMock<PermissionService>(mockPermissionService);
-      
+
       // Create viewModel for creation mode (default)
       viewModel = RecipeFormViewModel(
         recipeService: mockRecipeService,
       );
     });
-    
+
     tearDown(() async {
       // Dispose viewModel (skip if already disposed in test)
       try {
@@ -152,25 +158,28 @@ void main() {
       } catch (e) {
         // Already disposed in test, ignore
       }
-      
+
       // Reset test infrastructure
       await TestServiceLocator.reset();
       BaseUnitTest.resetMocks();
     });
-    
+
     tearDownAll(() async {
       // Final cleanup after all tests
       await BaseUnitTest.teardownUnit();
     });
-    
+
     group('Initialization', () {
       test('should initialize in creation mode by default', () {
         // Debug initial state
-        print('DEBUG: Initial ingredients count: ${viewModel.ingredientsManager.length}');
-        print('DEBUG: Initial instructions count: ${viewModel.instructionsManager.length}');
+        print(
+            'DEBUG: Initial ingredients count: ${viewModel.ingredientsManager.length}');
+        print(
+            'DEBUG: Initial instructions count: ${viewModel.instructionsManager.length}');
         print('DEBUG: Initial tags count: ${viewModel.tagsManager.length}');
-        print('DEBUG: Initial ingredients values: ${viewModel.ingredientsManager.values}');
-        
+        print(
+            'DEBUG: Initial ingredients values: ${viewModel.ingredientsManager.values}');
+
         // Assert
         expect(viewModel.isEditing, isFalse);
         expect(viewModel.originalRecipe, isNull);
@@ -178,14 +187,14 @@ void main() {
         expect(viewModel.description, isEmpty);
         expect(viewModel.mealType, equals('Middag')); // Default meal type
       });
-      
+
       test('should initialize in editing mode with existing recipe', () async {
         // Arrange & Act - create new viewModel in edit mode
         final editViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-            initialRecipe: testRecipe,
+          initialRecipe: testRecipe,
         );
-        
+
         // Assert
         expect(editViewModel.isEditing, isTrue);
         expect(editViewModel.originalRecipe, equals(testRecipe));
@@ -194,11 +203,11 @@ void main() {
         expect(editViewModel.mealType, equals('Middag'));
         expect(editViewModel.portions, equals(4));
         expect(editViewModel.timeMinutes, equals(30));
-        
+
         // Cleanup
         editViewModel.dispose();
       });
-      
+
       test('should initialize with default values', () {
         // Assert
         expect(viewModel.isSaving, isFalse);
@@ -210,260 +219,261 @@ void main() {
         expect(viewModel.tags, hasLength(1));
       });
     });
-    
+
     group('Form Field Management', () {
       test('should update title', () {
         // Arrange
         bool notified = false;
         viewModel.addListener(() => notified = true);
-        
+
         // Act
         viewModel.setTitle('New Title');
-        
+
         // Assert
         expect(viewModel.title, equals('New Title'));
         // hasUnsavedChanges only works in edit mode
         expect(viewModel.hasUnsavedChanges, isFalse); // Not in edit mode
         expect(notified, isTrue);
       });
-      
+
       test('should update description', () {
         // Act
         viewModel.setDescription('New Description');
-        
+
         // Assert
         expect(viewModel.description, equals('New Description'));
         // hasUnsavedChanges only works in edit mode
         expect(viewModel.hasUnsavedChanges, isFalse); // Not in edit mode
       });
-      
+
       test('should update meal type', () {
         // Act
         viewModel.setMealType('Frukost');
-        
+
         // Assert
         expect(viewModel.mealType, equals('Frukost'));
         // hasUnsavedChanges only works in edit mode
         expect(viewModel.hasUnsavedChanges, isFalse); // Not in edit mode
       });
-      
+
       test('should update portions', () {
         // Act
         viewModel.setPortions(6);
-        
+
         // Assert
         expect(viewModel.portions, equals(6));
         // hasUnsavedChanges doesn't check portions
         expect(viewModel.hasUnsavedChanges, isFalse);
       });
-      
+
       test('should update time minutes', () {
         // Act
         viewModel.setTimeMinutes(45);
-        
+
         // Assert
         expect(viewModel.timeMinutes, equals(45));
         // hasUnsavedChanges doesn't check timeMinutes
         expect(viewModel.hasUnsavedChanges, isFalse);
       });
-      
+
       test('should update rating', () {
         // Act
         viewModel.setRating(3.5);
-        
+
         // Assert
         expect(viewModel.rating, equals(3.5));
         // hasUnsavedChanges doesn't check rating
         expect(viewModel.hasUnsavedChanges, isFalse);
       });
     });
-    
+
     group('Dynamic Lists Management', () {
       test('should add ingredient', () {
         // Arrange
         final initialLength = viewModel.ingredientsManager.length;
-        
+
         // Act
         viewModel.addIngredient();
-        
+
         // Assert
         expect(viewModel.ingredientsManager.length, equals(initialLength + 1));
         expect(viewModel.ingredientsManager.values.last, isEmpty);
       });
-      
+
       test('should update ingredient at index', () {
         // Arrange
         viewModel.addIngredient();
-        
+
         // Act
         viewModel.updateIngredient(0, '2 dl mjölk');
-        
+
         // Assert
         expect(viewModel.ingredientsManager.values[0], equals('2 dl mjölk'));
         // hasUnsavedChanges doesn't check ingredients
         expect(viewModel.hasUnsavedChanges, isFalse);
       });
-      
+
       test('should remove ingredient at index', () {
         // Arrange
         viewModel.addIngredient();
         viewModel.updateIngredient(0, 'First');
         viewModel.updateIngredient(1, 'Second');
-        
+
         // Act
         viewModel.removeIngredient(0);
-        
+
         // Assert
         expect(viewModel.ingredientsManager.values, hasLength(1));
         expect(viewModel.ingredientsManager.values[0], equals('Second'));
       });
-      
+
       test('should add instruction', () {
         // Arrange
         final initialLength = viewModel.instructionsManager.length;
-        
+
         // Act
         viewModel.addInstruction();
-        
+
         // Assert
         expect(viewModel.instructionsManager.length, equals(initialLength + 1));
         expect(viewModel.instructionsManager.values.last, isEmpty);
       });
-      
+
       test('should update instruction at index', () {
         // Arrange
         viewModel.addInstruction();
-        
+
         // Act
         viewModel.updateInstruction(0, 'Koka pastan');
-        
+
         // Assert
         expect(viewModel.instructionsManager.values[0], equals('Koka pastan'));
         // hasUnsavedChanges doesn't check instructions
         expect(viewModel.hasUnsavedChanges, isFalse);
       });
-      
+
       test('should remove instruction at index', () {
         // Arrange
         viewModel.addInstruction();
         viewModel.updateInstruction(0, 'Step 1');
         viewModel.updateInstruction(1, 'Step 2');
-        
+
         // Act
         viewModel.removeInstruction(0);
-        
+
         // Assert
         expect(viewModel.instructionsManager.values, hasLength(1));
         expect(viewModel.instructionsManager.values[0], equals('Step 2'));
       });
-      
+
       test('should add tag', () {
         // Arrange
         final initialLength = viewModel.tagsManager.length;
-        
+
         // Act
         viewModel.addTag();
-        
+
         // Assert
         expect(viewModel.tagsManager.length, equals(initialLength + 1));
         expect(viewModel.tagsManager.values.last, isEmpty);
       });
-      
+
       test('should update tag at index', () {
         // Arrange
         viewModel.addTag();
-        
+
         // Act
         viewModel.updateTag(0, 'vegetarisk');
-        
+
         // Assert
         expect(viewModel.tagsManager.values[0], equals('vegetarisk'));
         // hasUnsavedChanges doesn't check tags
         expect(viewModel.hasUnsavedChanges, isFalse);
       });
-      
+
       test('should remove tag at index', () {
         // Arrange
         viewModel.addTag();
         viewModel.updateTag(0, 'tag1');
         viewModel.updateTag(1, 'tag2');
-        
+
         // Act
         viewModel.removeTag(0);
-        
+
         // Assert
         expect(viewModel.tagsManager.values, hasLength(1));
         expect(viewModel.tagsManager.values[0], equals('tag2'));
       });
     });
-    
+
     group('Validation', () {
       test('should validate required fields', () {
         // Arrange - add items to the managers
         viewModel.addIngredient();
         viewModel.addInstruction();
-        
+
         // Initial state should be invalid (no title)
         expect(viewModel.isValid, isFalse);
-        
+
         // Act - fill required fields
         viewModel.setTitle('Valid Title');
-        viewModel.setDescription('Valid Description'); // Not required for isValid
-        
+        viewModel
+            .setDescription('Valid Description'); // Not required for isValid
+
         // Update the first item in each list (index 0)
         viewModel.updateIngredient(0, 'Valid Ingredient');
         viewModel.updateInstruction(0, 'Valid Instruction');
-        
+
         // Assert - now should be valid
         expect(viewModel.isValid, isTrue);
       });
-      
+
       test('should detect unsaved changes in edit mode', () {
         // Arrange - create viewModel in edit mode
         final editViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-            initialRecipe: testRecipe,
+          initialRecipe: testRecipe,
         );
-        
+
         expect(editViewModel.hasUnsavedChanges, isFalse);
-        
+
         // Act - change title
         editViewModel.setTitle('Changed Title');
-        
+
         // Assert
         expect(editViewModel.hasUnsavedChanges, isTrue);
-        
+
         // Cleanup
         editViewModel.dispose();
       });
-      
+
       test('should validate title is not empty', () {
         // Arrange - add items first
         viewModel.addIngredient();
         viewModel.addInstruction();
-        
+
         // Set all fields except title
         viewModel.setDescription('Description');
         viewModel.updateIngredient(0, 'Ingredient');
         viewModel.updateInstruction(0, 'Instruction');
-        
+
         // Assert - missing title (empty string)
         expect(viewModel.isValid, isFalse);
-        
+
         // Act - add title
         viewModel.setTitle('Title');
-        
+
         // Assert - now valid
         expect(viewModel.isValid, isTrue);
       });
     });
-    
+
     group('Save Recipe', () {
       setUp(() {
         // Add items first since the lists start empty
         viewModel.addIngredient();
         viewModel.addInstruction();
-        
+
         // Setup valid form data
         viewModel.setTitle('New Recipe');
         viewModel.setDescription('Recipe Description');
@@ -472,196 +482,197 @@ void main() {
         viewModel.setMealType('Middag');
         viewModel.setPortions(4);
       });
-      
+
       test('should save new recipe successfully', () async {
         // Act
         final result = await viewModel.saveRecipe();
-        
+
         // Assert
         expect(result, isNotNull);
         expect(viewModel.isSaving, isFalse);
         verify(() => mockPersonalOps.addUnifiedRecipe(any())).called(1);
       });
-      
+
       test('should update existing recipe in edit mode', () async {
         // Arrange - create viewModel in edit mode
         final editViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-            initialRecipe: testRecipe,
+          initialRecipe: testRecipe,
         );
-        
+
         // Act
         editViewModel.setTitle('Updated Title');
         final result = await editViewModel.saveRecipe();
-        
+
         // Assert
         expect(result, isNotNull);
         verify(() => mockPersonalOps.updateUnifiedRecipe(any())).called(1);
-        
+
         // Cleanup
         editViewModel.dispose();
       });
-      
+
       test('should handle save failure', () async {
         // Arrange
-        when(() => mockPersonalOps.addUnifiedRecipe(any()))
-            .thenAnswer((_) async => RecipeOperationResult.failure('Save failed'));
-        
+        when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer(
+            (_) async => RecipeOperationResult.failure('Save failed'));
+
         // Act
         final result = await viewModel.saveRecipe();
-        
+
         // Assert
         expect(result, isNull);
         expect(viewModel.hasError, isTrue);
         // The error message is in Swedish: "Kunde inte spara recept: ..."
         expect(viewModel.error, contains('Kunde inte spara recept'));
       });
-      
+
       test('should not save with invalid form', () async {
         // Arrange - clear required fields
         viewModel.setTitle('');
-        
+
         // Act
         final result = await viewModel.saveRecipe();
-        
+
         // Assert
         expect(result, isNull);
         expect(viewModel.hasError, isTrue);
         expect(viewModel.error, contains('Fyll i alla obligatoriska fält'));
         verifyNever(() => mockPersonalOps.addUnifiedRecipe(any()));
       });
-      
+
       test('should update isSaving state during save', () async {
         // Arrange
         expect(viewModel.isSaving, isFalse);
-        
+
         // Act & Assert
         // We can't check isSaving during the async operation reliably
         // Just verify it returns to false after completion
         await viewModel.saveRecipe();
-        
+
         // Assert - should not be saving after completion
         expect(viewModel.isSaving, isFalse);
       });
     });
-    
+
     group('Fork Recipe', () {
       test('should fork recipe successfully', () async {
         // Arrange - create viewModel in edit mode
         final editViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-            initialRecipe: testRecipe,
+          initialRecipe: testRecipe,
         );
-        
+
         // Act
         final result = await editViewModel.forkRecipe();
-        
+
         // Assert
         expect(result, isNotNull);
         expect(editViewModel.isForking, isFalse);
         verify(() => mockPersonalOps.addUnifiedRecipe(any())).called(1);
-        
+
         // Cleanup
         editViewModel.dispose();
       });
-      
+
       test('should handle fork failure', () async {
         // Arrange
         final editViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-            initialRecipe: testRecipe,
+          initialRecipe: testRecipe,
         );
-        
-        when(() => mockPersonalOps.addUnifiedRecipe(any()))
-            .thenAnswer((_) async => RecipeOperationResult.failure('Fork failed'));
-        
+
+        when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer(
+            (_) async => RecipeOperationResult.failure('Fork failed'));
+
         // Act
         final result = await editViewModel.forkRecipe();
-        
+
         // Assert
         expect(result, isNull);
         // Error state should be set
         expect(editViewModel.error, isNotNull);
-        
+
         // Cleanup
         editViewModel.dispose();
       });
     });
-    
+
     group('Delete Recipe', () {
       test('should delete recipe successfully', () async {
         // Arrange - create viewModel in edit mode
         final editViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-            initialRecipe: testRecipe,
+          initialRecipe: testRecipe,
         );
-        
+
         // Setup mock for deleteRecipe in recipeService
         when(() => mockRecipeService.deleteRecipe(any()))
             .thenAnswer((_) async => true);
-        
+
         // Act
         final result = await editViewModel.deleteRecipe();
-        
+
         // Assert
         expect(result, isTrue);
-        verify(() => mockRecipeService.deleteRecipe('recipe-test-user-123-001')).called(1);
-        
+        verify(() => mockRecipeService.deleteRecipe('recipe-test-user-123-001'))
+            .called(1);
+
         // Cleanup
         editViewModel.dispose();
       });
-      
+
       test('should handle delete failure', () async {
         // Arrange
         final editViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-            initialRecipe: testRecipe,
+          initialRecipe: testRecipe,
         );
-        
+
         when(() => mockPersonalOps.deleteRecipe(any()))
             .thenAnswer((_) async => false);
-        
+
         // Act
         final result = await editViewModel.deleteRecipe();
-        
+
         // Assert
         expect(result, isFalse);
         expect(editViewModel.hasError, isTrue);
-        
+
         // Cleanup
         editViewModel.dispose();
       });
-      
+
       test('should not delete if not in edit mode', () async {
         // Act
         final result = await viewModel.deleteRecipe();
-        
+
         // Assert
         expect(result, isFalse);
         verifyNever(() => mockPersonalOps.deleteRecipe(any()));
       });
     });
-    
+
     group('Image Management', () {
       test('should add image URL', () async {
         // Act
         await viewModel.addImageFromUrl('https://example.com/image.jpg');
-        
+
         // Assert
         expect(viewModel.imageUrls, contains('https://example.com/image.jpg'));
         // hasUnsavedChanges only works for title/description/mealType in edit mode
         expect(viewModel.hasUnsavedChanges, isFalse);
       });
-      
+
       test('should remove image at index', () async {
         // Arrange - use valid URLs with absolute paths
         await viewModel.addImageFromUrl('https://example.com/image1.jpg');
         await viewModel.addImageFromUrl('https://example.com/image2.jpg');
         await viewModel.addImageFromUrl('https://example.com/image3.jpg');
-        
+
         // Act
         await viewModel.removeImageAt(1);
-        
+
         // Assert
         expect(viewModel.imageUrls.length, equals(2));
         expect(viewModel.imageUrls, contains('https://example.com/image1.jpg'));
@@ -669,16 +680,16 @@ void main() {
         // hasUnsavedChanges only works for title/description/mealType in edit mode
         expect(viewModel.hasUnsavedChanges, isFalse);
       });
-      
+
       test('should reorder images', () async {
         // Arrange - use valid URLs with absolute paths
         await viewModel.addImageFromUrl('https://example.com/image1.jpg');
         await viewModel.addImageFromUrl('https://example.com/image2.jpg');
         await viewModel.addImageFromUrl('https://example.com/image3.jpg');
-        
+
         // Act
         viewModel.reorderImages(0, 2);
-        
+
         // Assert - check order after reordering
         final urls = viewModel.imageUrls;
         expect(urls.length, equals(3));
@@ -688,76 +699,76 @@ void main() {
         expect(urls.contains('https://example.com/image2.jpg'), isTrue);
         expect(urls.contains('https://example.com/image3.jpg'), isTrue);
       });
-      
+
       test('should set primary image', () async {
         // Arrange - use valid URLs with absolute paths
         await viewModel.addImageFromUrl('https://example.com/image1.jpg');
         await viewModel.addImageFromUrl('https://example.com/image2.jpg');
-        
+
         // Act
         viewModel.setPrimaryImage('https://example.com/image2.jpg');
-        
+
         // Assert - image2 should be moved to first position
         final urls = viewModel.imageUrls;
         expect(urls.isNotEmpty, isTrue);
         expect(urls.first, equals('https://example.com/image2.jpg'));
       });
-      
+
       test('should respect max image limit', () {
         // Arrange
         final maxImages = RecipeFormViewModel.maxImages;
         for (int i = 0; i < maxImages; i++) {
           viewModel.imageUrls.add('image$i.jpg');
         }
-        
+
         // Assert
         expect(viewModel.imageUrls.length <= maxImages, isTrue);
       });
     });
-    
+
     group('Error Handling', () {
       test('should clear error when setting valid data', () async {
         // Arrange - add items first
         viewModel.addIngredient();
         viewModel.addInstruction();
-        
+
         // Trigger validation error with empty title
         viewModel.setTitle('');
         await viewModel.saveRecipe(); // This will set an error
         expect(viewModel.hasError, isTrue);
-        
+
         // Act - set valid data
         viewModel.setTitle('Valid Title');
         viewModel.setDescription('Valid Description');
         viewModel.updateIngredient(0, 'Valid Ingredient');
         viewModel.updateInstruction(0, 'Valid Instruction');
-        
+
         // Save again with valid data - this should succeed
         final result = await viewModel.saveRecipe();
-        
+
         // Assert - save should succeed
         expect(result, isNotNull);
         // After successful save, verify save was called
         verify(() => mockPersonalOps.addUnifiedRecipe(any())).called(1);
       });
-      
+
       test('should handle service exceptions', () async {
         // Arrange
         when(() => mockPersonalOps.addUnifiedRecipe(any()))
             .thenThrow(Exception('Network error'));
-        
+
         // Add items first
         viewModel.addIngredient();
         viewModel.addInstruction();
-        
+
         viewModel.setTitle('Title');
         viewModel.setDescription('Description');
         viewModel.updateIngredient(0, 'Ingredient');
         viewModel.updateInstruction(0, 'Instruction');
-        
+
         // Act
         final result = await viewModel.saveRecipe();
-        
+
         // Assert
         expect(result, isNull);
         // Note: Due to ErrorHandlingMixin's safeExecute, exceptions are caught
@@ -766,32 +777,32 @@ void main() {
         expect(viewModel.isSaving, isFalse); // Should reset saving state
       });
     });
-    
+
     group('Lifecycle', () {
       test('should dispose without errors', () {
         // Create a new viewModel for this test
         final testViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-          );
-        
+        );
+
         // Act & Assert
         expect(() => testViewModel.dispose(), returnsNormally);
       });
-      
+
       test('should clean up listeners on dispose', () {
         // Create a new viewModel for this test
         final testViewModel = RecipeFormViewModel(
           recipeService: mockRecipeService,
-          );
-        
+        );
+
         // Arrange
         testViewModel.addListener(() {
           // Listener registered but should not be called after dispose
         });
-        
+
         // Act
         testViewModel.dispose();
-        
+
         // Try to trigger notification (should throw error)
         expect(
           () => testViewModel.notifyListeners(),
@@ -799,29 +810,29 @@ void main() {
         );
       });
     });
-    
+
     group('Backward Compatibility', () {
       test('should set portions from double', () {
         // Act
         viewModel.setPortionsFromDouble(4.5);
-        
+
         // Assert
         expect(viewModel.portions, equals(4));
       });
-      
+
       test('should set time from double', () {
         // Act
         viewModel.setTimeMinutesFromDouble(30.7);
-        
+
         // Assert
         expect(viewModel.timeMinutes, equals(30));
       });
-      
+
       test('should handle null double values', () {
         // Act
         viewModel.setPortionsFromDouble(null);
         viewModel.setTimeMinutesFromDouble(null);
-        
+
         // Assert
         expect(viewModel.portions, isNull);
         expect(viewModel.timeMinutes, isNull);

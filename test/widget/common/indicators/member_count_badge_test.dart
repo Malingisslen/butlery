@@ -13,7 +13,8 @@ void main() {
     });
 
     group('Rendering', () {
-      testWidgets('should render with required count', (WidgetTester tester) async {
+      testWidgets('should render with required count',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -26,7 +27,8 @@ void main() {
         expect(find.text('+5'), findsOneWidget);
       });
 
-      testWidgets('should display plus sign before count', (WidgetTester tester) async {
+      testWidgets('should display plus sign before count',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -38,9 +40,10 @@ void main() {
         expect(find.text('+10'), findsOneWidget);
       });
 
-      testWidgets('should render different count values', (WidgetTester tester) async {
+      testWidgets('should render different count values',
+          (WidgetTester tester) async {
         final counts = [1, 5, 10, 99, 100, 999];
-        
+
         for (final count in counts) {
           await tester.pumpWidget(
             MaterialApp(
@@ -56,7 +59,8 @@ void main() {
     });
 
     group('Styling', () {
-      testWidgets('should use default size when not specified', (WidgetTester tester) async {
+      testWidgets('should use default size when not specified',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -74,7 +78,7 @@ void main() {
 
       testWidgets('should apply custom size', (WidgetTester tester) async {
         const customSize = 48.0;
-        
+
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -107,9 +111,10 @@ void main() {
         expect(decoration.shape, equals(BoxShape.circle));
       });
 
-      testWidgets('should use theme surface container color', (WidgetTester tester) async {
+      testWidgets('should use theme surface container color',
+          (WidgetTester tester) async {
         const testColor = Color(0xFF123456);
-        
+
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -128,7 +133,8 @@ void main() {
         expect(decoration.color, equals(testColor));
       });
 
-      testWidgets('should have divider color border', (WidgetTester tester) async {
+      testWidgets('should have divider color border',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -156,7 +162,8 @@ void main() {
         expect(find.byType(Center), findsOneWidget);
       });
 
-      testWidgets('should use bodySmall text style with fontWeight 600', (WidgetTester tester) async {
+      testWidgets('should use bodySmall text style with fontWeight 600',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -171,7 +178,8 @@ void main() {
     });
 
     group('Count Display', () {
-      testWidgets('should display single digit counts', (WidgetTester tester) async {
+      testWidgets('should display single digit counts',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -183,7 +191,8 @@ void main() {
         expect(find.text('+7'), findsOneWidget);
       });
 
-      testWidgets('should display double digit counts', (WidgetTester tester) async {
+      testWidgets('should display double digit counts',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -195,7 +204,8 @@ void main() {
         expect(find.text('+42'), findsOneWidget);
       });
 
-      testWidgets('should display triple digit counts', (WidgetTester tester) async {
+      testWidgets('should display triple digit counts',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -234,9 +244,10 @@ void main() {
     });
 
     group('Size Variations', () {
-      testWidgets('should work with very small size', (WidgetTester tester) async {
+      testWidgets('should work with very small size',
+          (WidgetTester tester) async {
         const smallSize = 20.0;
-        
+
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -257,7 +268,7 @@ void main() {
 
       testWidgets('should work with large size', (WidgetTester tester) async {
         const largeSize = 64.0;
-        
+
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -276,9 +287,10 @@ void main() {
         expect(renderBox.size.height, equals(largeSize));
       });
 
-      testWidgets('should maintain circular shape at different sizes', (WidgetTester tester) async {
+      testWidgets('should maintain circular shape at different sizes',
+          (WidgetTester tester) async {
         final sizes = [20.0, 32.0, 48.0, 64.0];
-        
+
         for (final size in sizes) {
           await tester.pumpWidget(
             MaterialApp(
@@ -409,7 +421,8 @@ void main() {
         expect(find.text('+5'), findsOneWidget);
       });
 
-      testWidgets('should adapt to custom theme colors', (WidgetTester tester) async {
+      testWidgets('should adapt to custom theme colors',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -430,7 +443,8 @@ void main() {
     });
 
     group('Use Cases', () {
-      testWidgets('should display small additional count', (WidgetTester tester) async {
+      testWidgets('should display small additional count',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -442,7 +456,8 @@ void main() {
         expect(find.text('+2'), findsOneWidget);
       });
 
-      testWidgets('should display large group overflow', (WidgetTester tester) async {
+      testWidgets('should display large group overflow',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -454,7 +469,8 @@ void main() {
         expect(find.text('+50'), findsOneWidget);
       });
 
-      testWidgets('should work as team member overflow indicator', (WidgetTester tester) async {
+      testWidgets('should work as team member overflow indicator',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -476,7 +492,8 @@ void main() {
     });
 
     group('Edge Cases', () {
-      testWidgets('should handle very large counts', (WidgetTester tester) async {
+      testWidgets('should handle very large counts',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -488,7 +505,8 @@ void main() {
         expect(find.text('+9999'), findsOneWidget);
       });
 
-      testWidgets('should handle count with custom theme text style', (WidgetTester tester) async {
+      testWidgets('should handle count with custom theme text style',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -507,7 +525,8 @@ void main() {
         expect(text.style?.fontWeight, equals(FontWeight.w600));
       });
 
-      testWidgets('should maintain visibility with transparent background', (WidgetTester tester) async {
+      testWidgets('should maintain visibility with transparent background',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -523,7 +542,7 @@ void main() {
         );
 
         expect(find.text('+5'), findsOneWidget);
-        
+
         // Border should still be visible
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;

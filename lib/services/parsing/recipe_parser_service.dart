@@ -99,7 +99,8 @@ class RecipeParserService extends BaseService {
   /// Get the cache (must be initialized first via init())
   LocalRecipeCache get _cache {
     if (_cacheField == null) {
-      throw StateError('RecipeParserService not initialized - call init() first');
+      throw StateError(
+          'RecipeParserService not initialized - call init() first');
     }
     return _cacheField!;
   }
@@ -426,22 +427,18 @@ class RecipeParserService extends BaseService {
     required int parseTimeMs,
   }) {
     // Fire and forget - don't await, don't fail on error
-    _functions
-        .httpsCallable('logParseEvent')
-        .call<Map<String, dynamic>>({
-          'url': url,
-          'source': source,
-          'success': success,
-          'fromCache': fromCache,
-          'parseTimeMs': parseTimeMs,
-          'parserVersion': parserVersion,
-        })
-        .then((_) {
-          // Success - do nothing
-        })
-        .catchError((e) {
-          // Silently ignore analytics errors - don't disrupt parsing
-          AppLogger.debug('$serviceName: Parse event logging failed: $e');
-        });
+    _functions.httpsCallable('logParseEvent').call<Map<String, dynamic>>({
+      'url': url,
+      'source': source,
+      'success': success,
+      'fromCache': fromCache,
+      'parseTimeMs': parseTimeMs,
+      'parserVersion': parserVersion,
+    }).then((_) {
+      // Success - do nothing
+    }).catchError((e) {
+      // Silently ignore analytics errors - don't disrupt parsing
+      AppLogger.debug('$serviceName: Parse event logging failed: $e');
+    });
   }
 }

@@ -219,9 +219,8 @@ class _LineItem extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     // Determine colors based on state
-    final modeColor = mode == SelectionMode.ingredients
-        ? Colors.green
-        : colorScheme.primary;
+    final modeColor =
+        mode == SelectionMode.ingredients ? Colors.green : colorScheme.primary;
 
     Color backgroundColor;
     Color borderColor;
@@ -321,9 +320,7 @@ class _LineItem extends StatelessWidget {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      mode == SelectionMode.ingredients
-                          ? 'Trolig'
-                          : 'Steg',
+                      mode == SelectionMode.ingredients ? 'Trolig' : 'Steg',
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: modeColor,
                         fontWeight: FontWeight.w500,

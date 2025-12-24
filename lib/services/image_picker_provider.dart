@@ -12,7 +12,7 @@ abstract class ImagePickerProvider {
     double? maxHeight,
     int? imageQuality,
   });
-  
+
   /// Pick multiple images from gallery
   Future<List<XFile>> pickMultiImage({
     double? maxWidth,
@@ -25,7 +25,7 @@ abstract class ImagePickerProvider {
 abstract class PermissionProvider {
   /// Check permission status
   Future<PermissionStatus> checkPermission(Permission permission);
-  
+
   /// Request permission
   Future<PermissionStatus> requestPermission(Permission permission);
 }
@@ -33,10 +33,10 @@ abstract class PermissionProvider {
 /// Default implementation using ImagePicker
 class DefaultImagePickerProvider implements ImagePickerProvider {
   final ImagePicker _picker;
-  
-  DefaultImagePickerProvider({ImagePicker? picker}) 
-    : _picker = picker ?? ImagePicker();
-  
+
+  DefaultImagePickerProvider({ImagePicker? picker})
+      : _picker = picker ?? ImagePicker();
+
   @override
   Future<XFile?> pickImage({
     required ImageSource source,
@@ -45,14 +45,16 @@ class DefaultImagePickerProvider implements ImagePickerProvider {
     int? imageQuality,
   }) async {
     try {
-      AppLogger.debug('🎯 PICKER_PROVIDER: Calling ImagePicker.pickImage with source: ${source.name}');
+      AppLogger.debug(
+          '🎯 PICKER_PROVIDER: Calling ImagePicker.pickImage with source: ${source.name}');
       final result = await _picker.pickImage(
         source: source,
         maxWidth: maxWidth,
         maxHeight: maxHeight,
         imageQuality: imageQuality,
       );
-      AppLogger.debug('🎯 PICKER_PROVIDER: ImagePicker returned: ${result?.path ?? "null"}');
+      AppLogger.debug(
+          '🎯 PICKER_PROVIDER: ImagePicker returned: ${result?.path ?? "null"}');
       return result;
     } catch (e, stackTrace) {
       AppLogger.error('💥 PICKER_PROVIDER ERROR: Exception in pickImage: $e');
@@ -60,7 +62,7 @@ class DefaultImagePickerProvider implements ImagePickerProvider {
       return null;
     }
   }
-  
+
   @override
   Future<List<XFile>> pickMultiImage({
     double? maxWidth,
@@ -81,7 +83,7 @@ class DefaultPermissionProvider implements PermissionProvider {
   Future<PermissionStatus> checkPermission(Permission permission) async {
     return await permission.status;
   }
-  
+
   @override
   Future<PermissionStatus> requestPermission(Permission permission) async {
     return await permission.request();

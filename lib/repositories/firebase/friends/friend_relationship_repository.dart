@@ -27,6 +27,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
+
 /// Firebase implementation for friend relationship management with bidirectional consistency and analytics.
 /// This repository provides comprehensive friend relationship functionality using Firebase Firestore
 /// with sophisticated bidirectional relationship management, social analytics, and real-time updates.
@@ -47,7 +48,7 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 /// final relationshipRepo = FriendRelationshipRepository(
 ///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
-/// // Create mutual friendship  
+/// // Create mutual friendship
 /// await relationshipRepo.addMutualFriends(userId1, userId2);
 /// // Check friendship status
 /// final areFriends = await relationshipRepo.areFriends(userId1, userId2);
@@ -72,10 +73,7 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
         );
 
   CollectionReference<Map<String, dynamic>> _userFriendsRef(String userId) =>
-      firestore
-          .collection('users')
-          .doc(userId)
-          .collection('friends');
+      firestore.collection('users').doc(userId).collection('friends');
 
   // ===== BASE CLASS IMPLEMENTATION =====
 
@@ -95,27 +93,31 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   // ===== PERMISSION VALIDATION IMPLEMENTATION =====
 
   @override
-  Future<bool> validateCreatePermission(String userId, UserProfile entity) async {
+  Future<bool> validateCreatePermission(
+      String userId, UserProfile entity) async {
     // Friend relationships are created through specific methods (addMutualFriends)
     // Not through generic CRUD, so we allow it and validate in specific methods
     return true;
   }
 
   @override
-  Future<bool> validateReadPermission(String userId, String resourceId, UserProfile? entity) async {
+  Future<bool> validateReadPermission(
+      String userId, String resourceId, UserProfile? entity) async {
     // Anyone authenticated can read public profiles (for friend discovery)
     // Privacy is controlled via isSearchable flag in the profile
     return true;
   }
 
   @override
-  Future<bool> validateUpdatePermission(String userId, String resourceId, UserProfile entity) async {
+  Future<bool> validateUpdatePermission(
+      String userId, String resourceId, UserProfile entity) async {
     // Users can only update their own profile
     return userId == entity.uid;
   }
 
   @override
-  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+  Future<bool> validateDeletePermission(
+      String userId, String resourceId) async {
     // Users can only delete their own profile
     return userId == resourceId;
   }
@@ -207,7 +209,7 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   Future<List<String>> getMutualFriends(String userId1, String userId2) async {
     final friends1 = await fetchFriendIds(userId1);
     final friends2 = await fetchFriendIds(userId2);
-    
+
     return friends1.where((id) => friends2.contains(id)).toList();
   }
 
@@ -246,13 +248,14 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   }
 
   /// Get recently added friends (within last N days).
-  Future<List<UserProfile>> getRecentFriends(String userId, {int days = 7}) async {
+  Future<List<UserProfile>> getRecentFriends(String userId,
+      {int days = 7}) async {
     final cutoffDate = DateTime.now().subtract(Duration(days: days));
     final snapshot = await _userFriendsRef(userId)
         .where('addedAt', isGreaterThan: Timestamp.fromDate(cutoffDate))
         .orderBy('addedAt', descending: true)
         .get();
-    
+
     final friendIds = snapshot.docs.map((doc) => doc.id).toList();
     return await fetchFriendProfiles(friendIds);
   }
@@ -261,7 +264,7 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   Future<Map<String, dynamic>> getFriendStatistics(String userId) async {
     final friendIds = await fetchFriendIds(userId);
     final recentFriends = await getRecentFriends(userId);
-    
+
     return {
       'totalFriends': friendIds.length,
       'recentFriends': recentFriends.length,
@@ -273,10 +276,11 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   Future<List<UserProfile>> searchFriends(String userId, String query) async {
     final friends = await getFriendsWithProfiles(userId);
     final lowercaseQuery = query.toLowerCase();
-    
+
     return friends.where((friend) {
       return friend.displayName.toLowerCase().contains(lowercaseQuery) ||
-             (friend.email.toLowerCase().contains(lowercaseQuery) && friend.allowEmailSearch);
+          (friend.email.toLowerCase().contains(lowercaseQuery) &&
+              friend.allowEmailSearch);
     }).toList();
   }
 }

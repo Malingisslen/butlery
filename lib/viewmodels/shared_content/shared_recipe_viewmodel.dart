@@ -80,7 +80,8 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     final visibleRecipes = recipes
         .where((recipe) =>
             !_socialRecipeCoordinator.isRecipeDismissed(recipe.id) &&
-            (showImported || !_socialRecipeCoordinator.isRecipeImported(recipe.id)))
+            (showImported ||
+                !_socialRecipeCoordinator.isRecipeImported(recipe.id)))
         .toList();
 
     AppLogger.info(
@@ -128,10 +129,12 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     final visibleRecipes = recipes
         .where((recipe) =>
             !_socialRecipeCoordinator.isRecipeDismissed(recipe.id) &&
-            (showImported || !_socialRecipeCoordinator.isRecipeImported(recipe.id)))
+            (showImported ||
+                !_socialRecipeCoordinator.isRecipeImported(recipe.id)))
         .toList();
 
-    AppLogger.info('✅ Loaded ${recipes.length} shared recipes (${visibleRecipes.length} visible, showImported: $showImported)');
+    AppLogger.info(
+        '✅ Loaded ${recipes.length} shared recipes (${visibleRecipes.length} visible, showImported: $showImported)');
     return visibleRecipes;
   }
 

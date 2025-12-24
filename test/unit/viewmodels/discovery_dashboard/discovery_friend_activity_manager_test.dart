@@ -146,7 +146,7 @@ void main() {
 
       final activity = activityManager.friendActivity.first;
       final engagement = activity['engagement'] as Map<String, dynamic>;
-      
+
       expect(engagement['likes'], equals(0)); // Placeholder implementation
       expect(engagement['comments'], equals(0)); // Placeholder implementation
       expect(engagement['shares'], equals(2)); // memberPermissions length
@@ -177,14 +177,14 @@ void main() {
     test('should refresh activity successfully', () async {
       final initialRecipes = createTestRecipes(count: 2);
       final refreshedRecipes = createTestRecipes(count: 4);
-      
+
       mockDiscoveryService.setRecentlySharedRecipes(initialRecipes);
       await activityManager.loadFriendActivity();
       expect(activityManager.friendActivityCount, equals(2));
 
       mockDiscoveryService.setRecentlySharedRecipes(refreshedRecipes);
       await activityManager.refreshActivity();
-      
+
       expect(activityManager.friendActivityCount, equals(4));
       expect(activityManager.hasError, isFalse);
     });
@@ -192,13 +192,14 @@ void main() {
     test('should load more activity items for pagination', () async {
       final initialRecipes = createTestRecipes(count: 3);
       final moreRecipes = createTestRecipes(count: 2);
-      
+
       mockDiscoveryService.setRecentlySharedRecipes(initialRecipes);
       await activityManager.loadFriendActivity();
       expect(activityManager.friendActivityCount, equals(3));
 
       // Simulate loading more content
-      mockDiscoveryService.setRecentlySharedRecipes([...initialRecipes, ...moreRecipes]);
+      mockDiscoveryService
+          .setRecentlySharedRecipes([...initialRecipes, ...moreRecipes]);
       await activityManager.loadMoreActivity();
 
       expect(activityManager.friendActivityCount, greaterThanOrEqualTo(3));
@@ -208,13 +209,14 @@ void main() {
       final initialRecipes = createTestRecipes(count: 2);
       mockDiscoveryService.setRecentlySharedRecipes(initialRecipes);
       await activityManager.loadFriendActivity();
-      
+
       mockDiscoveryService.setShouldThrowError(true);
       await activityManager.loadMoreActivity();
 
       expect(activityManager.hasError, isTrue);
       expect(activityManager.error, contains('Failed to load more activity'));
-      expect(activityManager.friendActivityCount, equals(2)); // Original count preserved
+      expect(activityManager.friendActivityCount,
+          equals(2)); // Original count preserved
     });
 
     test('should prevent concurrent load more operations', () async {
@@ -223,11 +225,11 @@ void main() {
 
       // Set loading state
       await activityManager.loadFriendActivity();
-      
+
       // Try to load more while already loading (simulate concurrent calls)
       final future1 = activityManager.loadMoreActivity();
       final future2 = activityManager.loadMoreActivity();
-      
+
       await Future.wait([future1, future2]);
 
       expect(activityManager.friendActivity, isNotEmpty);
@@ -238,7 +240,7 @@ void main() {
     test('should clear all activity', () async {
       final testRecipes = createTestRecipes(count: 3);
       mockDiscoveryService.setRecentlySharedRecipes(testRecipes);
-      
+
       await activityManager.loadFriendActivity();
       expect(activityManager.hasFriendActivity, isTrue);
       expect(activityManager.friendActivityCount, equals(3));
@@ -254,7 +256,7 @@ void main() {
     test('should get activity item by ID', () async {
       final testRecipes = createTestRecipes(count: 3);
       mockDiscoveryService.setRecentlySharedRecipes(testRecipes);
-      
+
       await activityManager.loadFriendActivity();
 
       final targetId = testRecipes.first.id;
@@ -268,7 +270,7 @@ void main() {
     test('should return null for non-existent activity ID', () async {
       final testRecipes = createTestRecipes(count: 2);
       mockDiscoveryService.setRecentlySharedRecipes(testRecipes);
-      
+
       await activityManager.loadFriendActivity();
 
       final activity = activityManager.getActivityItem('non_existent_id');
@@ -279,15 +281,16 @@ void main() {
     test('should filter activity by type', () async {
       final testRecipes = createTestRecipes(count: 3);
       mockDiscoveryService.setRecentlySharedRecipes(testRecipes);
-      
+
       await activityManager.loadFriendActivity();
 
-      final recipeActivities = activityManager.getActivityByType('recipe_shared');
+      final recipeActivities =
+          activityManager.getActivityByType('recipe_shared');
       final otherActivities = activityManager.getActivityByType('other_type');
 
       expect(recipeActivities.length, equals(3));
       expect(otherActivities, isEmpty);
-      
+
       for (final activity in recipeActivities) {
         expect(activity['type'], equals('recipe_shared'));
       }
@@ -296,11 +299,12 @@ void main() {
     test('should return immutable list from friendActivity getter', () async {
       final testRecipes = createTestRecipes(count: 2);
       mockDiscoveryService.setRecentlySharedRecipes(testRecipes);
-      
+
       await activityManager.loadFriendActivity();
 
       final friendActivity = activityManager.friendActivity;
-      expect(() => friendActivity.add({'test': 'item'}), throwsUnsupportedError);
+      expect(
+          () => friendActivity.add({'test': 'item'}), throwsUnsupportedError);
     });
 
     test('should calculate friend activity count correctly', () async {
@@ -359,10 +363,11 @@ void main() {
 
       // Second operation succeeds
       mockDiscoveryService.setShouldThrowError(false);
-      mockDiscoveryService.setRecentlySharedRecipes(createTestRecipes(count: 1));
-      
+      mockDiscoveryService
+          .setRecentlySharedRecipes(createTestRecipes(count: 1));
+
       await activityManager.loadFriendActivity();
-      
+
       expect(activityManager.hasError, isFalse);
       expect(activityManager.error, isNull);
     });
@@ -385,13 +390,13 @@ void main() {
     test('should handle dispose correctly', () async {
       final testRecipes = createTestRecipes(count: 2);
       mockDiscoveryService.setRecentlySharedRecipes(testRecipes);
-      
+
       await activityManager.loadFriendActivity();
       expect(activityManager.friendActivityCount, equals(2));
-      
+
       // Should not throw when disposing
       activityManager.dispose();
-      
+
       // Don't access ViewModel after dispose - just verify dispose completed
       expect(true, isTrue);
     });
@@ -438,10 +443,12 @@ void main() {
 
       expect(activityManager.friendActivityCount, lessThanOrEqualTo(50));
       expect(activityManager.hasFriendActivity, isTrue);
-      
+
       // Test filtering on large dataset
-      final recipeActivities = activityManager.getActivityByType('recipe_shared');
-      expect(recipeActivities.length, equals(activityManager.friendActivityCount));
+      final recipeActivities =
+          activityManager.getActivityByType('recipe_shared');
+      expect(
+          recipeActivities.length, equals(activityManager.friendActivityCount));
     });
 
     test('should handle activity with missing image URLs', () async {
@@ -487,7 +494,8 @@ void main() {
       mockDiscoveryService.setRecentlySharedRecipes(testRecipes);
 
       // Rapid successive calls
-      final futures = List.generate(5, (_) => activityManager.refreshActivity());
+      final futures =
+          List.generate(5, (_) => activityManager.refreshActivity());
       await Future.wait(futures);
 
       expect(activityManager.friendActivity.length, equals(3));
@@ -508,7 +516,7 @@ void main() {
       } catch (e) {
         // Expected
       }
-      
+
       // Data should remain consistent
       expect(activityManager.friendActivityCount, equals(2));
       expect(activityManager.hasError, isTrue);
@@ -532,7 +540,7 @@ void main() {
 
       expect(activityManager.friendActivityCount, equals(2));
       expect(activityManager.hasError, isFalse);
-      
+
       // Verify all activities have required fields
       for (final activity in activityManager.friendActivity) {
         expect(activity['id'], isNotNull);
@@ -573,11 +581,13 @@ void main() {
       expect(activityManager.hasError, isFalse);
 
       // Filter activities
-      final recipeActivities = activityManager.getActivityByType('recipe_shared');
+      final recipeActivities =
+          activityManager.getActivityByType('recipe_shared');
       expect(recipeActivities.length, equals(3));
 
       // Get specific activity
-      final targetActivity = activityManager.getActivityItem(initialRecipes.first.id);
+      final targetActivity =
+          activityManager.getActivityItem(initialRecipes.first.id);
       expect(targetActivity, isNotNull);
 
       // Load more content
@@ -633,7 +643,7 @@ void main() {
       final recoveryRecipes = createTestRecipes(count: 5);
       mockDiscoveryService.setRecentlySharedRecipes(recoveryRecipes);
       await activityManager.loadFriendActivity();
-      
+
       expect(activityManager.hasError, isFalse);
       expect(activityManager.friendActivityCount, equals(5));
     });
@@ -654,12 +664,14 @@ void main() {
       // Pagination succeeds after recovery
       mockDiscoveryService.setShouldThrowError(false);
       final moreRecipes = createTestRecipes(count: 2);
-      mockDiscoveryService.setRecentlySharedRecipes([...initialRecipes, ...moreRecipes]);
+      mockDiscoveryService
+          .setRecentlySharedRecipes([...initialRecipes, ...moreRecipes]);
       await activityManager.loadMoreActivity();
-      
+
       expect(activityManager.friendActivityCount, greaterThanOrEqualTo(3));
       // Note: loadMoreActivity doesn't clear error state on success like loadFriendActivity does
-      expect(activityManager.hasError, isTrue); // Error state persists from previous failure
+      expect(activityManager.hasError,
+          isTrue); // Error state persists from previous failure
     });
   });
 }

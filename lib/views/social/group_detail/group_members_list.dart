@@ -79,7 +79,8 @@ class GroupMembersList {
 
         // Pending invitations section
         if (pendingInvitations.isNotEmpty) ...[
-          if (members.isNotEmpty) const SizedBox(height: AppDimensions.spacingXl),
+          if (members.isNotEmpty)
+            const SizedBox(height: AppDimensions.spacingXl),
           Text(
             'Väntande inbjudningar (${pendingInvitations.length})',
             style: AppTextStyles.titleSmall.copyWith(

@@ -46,6 +46,7 @@ import 'dart:core';
 class TextFormatting {
   /// Private constructor preventing instantiation to enforce static utility usage.
   TextFormatting._();
+
   /// Advanced Unicode text normalization with mathematical symbol cleanup and whitespace standardization
   /// This method provides comprehensive text normalization by removing "fancy" Unicode characters
   /// (such as mathematical bold letters) and mapping them to standard Latin characters, followed
@@ -72,11 +73,11 @@ class TextFormatting {
         final original = m[0]!;
         // Get the actual Unicode code point, not the UTF-16 code unit
         final code = original.runes.first;
-        
+
         // Map mathematical bold/italic/etc letters to standard ASCII
         // Mathematical Bold Capital A (U+1D400) -> A (U+0041)
         // Mathematical Bold Capital B (U+1D401) -> B (U+0042), etc.
-        
+
         // Mathematical Bold Capital Letters: U+1D400-U+1D419 -> A-Z
         if (code >= 0x1D400 && code <= 0x1D419) {
           return String.fromCharCode(code - 0x1D400 + 0x41); // A-Z
@@ -89,7 +90,7 @@ class TextFormatting {
         if (code >= 0x1D7CE && code <= 0x1D7D7) {
           return String.fromCharCode(code - 0x1D7CE + 0x30); // 0-9
         }
-        
+
         // For other mathematical symbols in this range, remove them
         return '';
       },
@@ -227,11 +228,11 @@ class TextFormatting {
     if (value.isInfinite) {
       return value.isNegative ? '-∞' : '∞';
     }
-    
+
     // Handle negative values
     final isNegative = value < 0;
     final absValue = value.abs();
-    
+
     final integerPart = absValue.truncate();
     final fracPart = absValue - integerPart;
 
@@ -275,13 +276,16 @@ class TextFormatting {
 String normalizeText(String input) => TextFormatting.normalizeText(input);
 
 /// Legacy export: Use TextFormatting.isPortionOrTimeLine() instead
-bool isPortionOrTimeLine(String text) => TextFormatting.isPortionOrTimeLine(text);
+bool isPortionOrTimeLine(String text) =>
+    TextFormatting.isPortionOrTimeLine(text);
 
 /// Legacy export: Use TextFormatting.formatFractional() instead
 String formatFractional(double value) => TextFormatting.formatFractional(value);
 
 /// Legacy export: Use TextFormatting.parseSwedishNumber() instead
-double parseSwedishNumber(String number) => TextFormatting.parseSwedishNumber(number);
+double parseSwedishNumber(String number) =>
+    TextFormatting.parseSwedishNumber(number);
 
 /// Legacy export: Use TextFormatting.toSwedishHalfFraction() instead
-String toSwedishHalfFraction(double value) => TextFormatting.toSwedishHalfFraction(value);
+String toSwedishHalfFraction(double value) =>
+    TextFormatting.toSwedishHalfFraction(value);

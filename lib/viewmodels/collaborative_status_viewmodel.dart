@@ -1,6 +1,5 @@
 /// lib/viewmodels/collaborative_status_viewmodel.dart
 
-
 import 'package:flutter/widgets.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social_recipe_service.dart';
@@ -51,11 +50,12 @@ class CollaborativeStatus {
 /// 🤝 Enhanced Collaborative Status ViewModel
 /// Skalbar system för att hantera kollaborativ status över alla content-typer
 /// med robust caching, batch operations och comprehensive error handling
-class CollaborativeStatusViewModel extends ChangeNotifier with ErrorHandlingMixin {
+class CollaborativeStatusViewModel extends ChangeNotifier
+    with ErrorHandlingMixin {
   final SocialRecipeService _socialRecipeService;
 
   // ===== LIFECYCLE MANAGEMENT =====
-  
+
   /// Flag to track if ViewModel has been disposed
   bool _isDisposed = false;
 
@@ -74,14 +74,16 @@ class CollaborativeStatusViewModel extends ChangeNotifier with ErrorHandlingMixi
 
   CollaborativeStatusViewModel({
     SocialRecipeService? socialRecipeService,
-  })  : _socialRecipeService = socialRecipeService ?? ServiceLocator.get<SocialRecipeService>();
+  }) : _socialRecipeService =
+            socialRecipeService ?? ServiceLocator.get<SocialRecipeService>();
 
   // ===== PUBLIC GETTERS =====
 
-  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
+  String? get currentUserId =>
+      ServiceLocator.get<PermissionService>().currentUserId;
 
   // ===== SAFE NOTIFICATION HELPER =====
-  
+
   /// Safely notify listeners only if not disposed
   void _safeNotifyListeners() {
     if (!_isDisposed) {
@@ -188,7 +190,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier with ErrorHandlingMixi
 
     // Sätt loading state
     _statusCache[key] = CollaborativeStatus.loading();
-    
+
     // Defer notification to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _safeNotifyListeners();
@@ -256,7 +258,7 @@ class CollaborativeStatusViewModel extends ChangeNotifier with ErrorHandlingMixi
           '❌ Failed ${type.name} collaborative check for $contentId', e);
 
       _statusCache[key] = CollaborativeStatus.error(e.toString());
-      
+
       // Defer notification to avoid setState during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _safeNotifyListeners();
@@ -396,12 +398,12 @@ class CollaborativeStatusViewModel extends ChangeNotifier with ErrorHandlingMixi
   void invalidateContent(String contentId, CollaborativeContentType type) {
     final key = _buildCacheKey(contentId, type);
     _statusCache.remove(key);
-    
+
     // Defer notification to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _safeNotifyListeners();
     });
-    
+
     AppLogger.info('🗑️ Invalidated cache för ${type.name} $contentId');
   }
 
@@ -416,12 +418,12 @@ class CollaborativeStatusViewModel extends ChangeNotifier with ErrorHandlingMixi
   void clearAllCache() {
     _statusCache.clear();
     _checkingKeys.clear();
-    
+
     // Defer notification to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _safeNotifyListeners();
     });
-    
+
     AppLogger.info('🗑️ Cleared all collaborative status cache');
   }
 

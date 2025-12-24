@@ -1,5 +1,5 @@
 /// Recipe Factory for generating test recipes
-/// 
+///
 /// Provides factory methods for creating Recipe instances
 /// with configurable properties for testing.
 library;
@@ -11,7 +11,7 @@ import 'package:butlery/models/permissions/resource_permission.dart';
 class RecipeFactory {
   /// Private constructor to prevent instantiation
   RecipeFactory._();
-  
+
   /// Build a Recipe with configurable properties
   static Recipe build({
     String? id,
@@ -55,7 +55,7 @@ class RecipeFactory {
       isPublic: isPublic,
       lastCookedAt: lastCookedAt,
     );
-    
+
     return Recipe(
       core: core,
       type: type,
@@ -64,7 +64,7 @@ class RecipeFactory {
       offlineData: offlineData,
     );
   }
-  
+
   /// Build a list of recipes
   static List<Recipe> buildList({
     int count = 3,
@@ -79,7 +79,7 @@ class RecipeFactory {
       ),
     );
   }
-  
+
   /// Build a personal recipe
   static Recipe buildPersonal({
     String? id,
@@ -93,7 +93,7 @@ class RecipeFactory {
       type: RecipeType.personal,
     );
   }
-  
+
   /// Build a collaborative recipe
   static Recipe buildCollaborative({
     String? id,
@@ -108,16 +108,17 @@ class RecipeFactory {
       socialData: RecipeSocialData(
         ownerId: 'test_user',
         ownerDisplayName: 'Test User',
-        memberPermissions: permissions ?? {
-          'user1': ResourcePermission.editor,
-          'user2': ResourcePermission.viewer,
-        },
+        memberPermissions: permissions ??
+            {
+              'user1': ResourcePermission.editor,
+              'user2': ResourcePermission.viewer,
+            },
         allowGuestViewing: false,
         allowMemberInvites: true,
       ),
     );
   }
-  
+
   /// Build a shared recipe
   static Recipe buildShared({
     String? id,
@@ -136,7 +137,7 @@ class RecipeFactory {
       ),
     );
   }
-  
+
   /// Build a realtime recipe
   static Recipe buildRealtime({
     String? id,
@@ -157,7 +158,7 @@ class RecipeFactory {
       ),
     );
   }
-  
+
   /// Build a recipe with cooking history
   static Recipe buildWithCookingHistory({
     String? id,
@@ -167,7 +168,8 @@ class RecipeFactory {
     return build(
       id: id,
       title: title,
-      lastCookedAt: lastCookedAt ?? DateTime.now().subtract(const Duration(days: 1)),
+      lastCookedAt:
+          lastCookedAt ?? DateTime.now().subtract(const Duration(days: 1)),
     );
   }
 }

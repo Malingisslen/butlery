@@ -33,7 +33,7 @@ import 'package:butlery/models/recipe_unified.dart';
 ///   collaboratorIds: ['user1', 'user2'],
 ///   collaboratorDisplayNames: {'user1': 'Anna', 'user2': 'Erik'},
 /// );
-/// // Add recipe collaboratively  
+/// // Add recipe collaboratively
 /// await repo.addRecipeToMenu(
 ///   menuId: menuId,
 ///   category: 'Huvudrätt',
@@ -44,9 +44,8 @@ import 'package:butlery/models/recipe_unified.dart';
 /// await repo.rateMenu(menuId: menuId, rating: 5.0, comment: 'Fantastisk!');
 /// ```
 abstract class MenuCollaborationRepository extends Repository<SharedMenu> {
-  
   // ===== COLLABORATION MANAGEMENT =====
-  
+
   /// Enable real-time collaboration for a menu with atomic updates
   /// Abstracts Firebase update operations with collaboration metadata
   /// including serverTimestamp and collaboration settings.

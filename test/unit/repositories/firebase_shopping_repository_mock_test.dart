@@ -1,5 +1,5 @@
 /// Unit tests for services using ShoppingRepository
-/// 
+///
 /// Tests business logic using mocked repository, avoiding Firebase implementation details.
 /// For Firebase-specific tests, see integration tests.
 library;
@@ -15,7 +15,7 @@ import '../../infrastructure/mocks/production_mocks.dart';
 void main() {
   group('ShoppingRepository Mock Tests', () {
     late MockShoppingRepository mockRepository;
-    
+
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(UnifiedShoppingList.personal(
@@ -30,18 +30,18 @@ void main() {
         category: 'Test',
       ));
     });
-    
+
     setUp(() async {
       await TestServiceLocator.initialize();
       mockRepository = MockShoppingRepository();
       TestServiceLocator.registerMock(mockRepository);
     });
-    
+
     tearDown(() async {
       BaseUnitTest.resetMocks();
       await TestServiceLocator.reset();
     });
-    
+
     group('CRUD Operations', () {
       test('should create shopping list', () async {
         // Arrange
@@ -50,22 +50,21 @@ void main() {
           ownerId: 'test-user-123',
           ownerDisplayName: 'Test User',
         );
-        
-        when(() => mockRepository.create(list))
-            .thenAnswer((_) async => list);
-        
+
+        when(() => mockRepository.create(list)).thenAnswer((_) async => list);
+
         // Act
         final created = await mockRepository.create(list);
-        
+
         // Assert
         expect(created.name, equals('Weekly Groceries'));
         expect(created.ownerId, equals('test-user-123'));
         expect(created.isPersonal, isTrue);
         expect(created.isCollaborative, isFalse);
-        
+
         verify(() => mockRepository.create(list)).called(1);
       });
-      
+
       test('should read shopping list by ID', () async {
         // Arrange
         const listId = 'list-1';
@@ -75,36 +74,35 @@ void main() {
           ownerId: 'test-user-123',
           ownerDisplayName: 'Test User',
         );
-        
+
         when(() => mockRepository.read(listId))
             .thenAnswer((_) async => expectedList);
-        
+
         // Act
         final list = await mockRepository.read(listId);
-        
+
         // Assert
         expect(list, isNotNull);
         expect(list!.id, equals(listId));
         expect(list.name, equals('Test List'));
-        
+
         verify(() => mockRepository.read(listId)).called(1);
       });
-      
+
       test('should return null for non-existent list', () async {
         // Arrange
         const listId = 'non-existent';
-        
-        when(() => mockRepository.read(listId))
-            .thenAnswer((_) async => null);
-        
+
+        when(() => mockRepository.read(listId)).thenAnswer((_) async => null);
+
         // Act
         final list = await mockRepository.read(listId);
-        
+
         // Assert
         expect(list, isNull);
         verify(() => mockRepository.read(listId)).called(1);
       });
-      
+
       test('should read all shopping lists', () async {
         // Arrange
         final lists = [
@@ -123,22 +121,21 @@ void main() {
             },
           ),
         ];
-        
-        when(() => mockRepository.readAll())
-            .thenAnswer((_) async => lists);
-        
+
+        when(() => mockRepository.readAll()).thenAnswer((_) async => lists);
+
         // Act
         final result = await mockRepository.readAll();
-        
+
         // Assert
         expect(result, hasLength(2));
         expect(result[0].isPersonal, isTrue);
         expect(result[1].isCollaborative, isTrue);
         expect(result[1].memberPermissions, hasLength(3)); // Owner + 2 friends
-        
+
         verify(() => mockRepository.readAll()).called(1);
       });
-      
+
       test('should update shopping list', () async {
         // Arrange
         final list = UnifiedShoppingList(
@@ -147,47 +144,45 @@ void main() {
           ownerId: 'test-user-123',
           ownerDisplayName: 'Test User',
         );
-        
-        when(() => mockRepository.update(list))
-            .thenAnswer((_) async {});
-        
+
+        when(() => mockRepository.update(list)).thenAnswer((_) async {});
+
         // Act
         await mockRepository.update(list);
-        
+
         // Assert
         verify(() => mockRepository.update(list)).called(1);
       });
-      
+
       test('should delete shopping list', () async {
         // Arrange
         const listId = 'list-1';
-        
-        when(() => mockRepository.delete(listId))
-            .thenAnswer((_) async {});
-        
+
+        when(() => mockRepository.delete(listId)).thenAnswer((_) async {});
+
         // Act
         await mockRepository.delete(listId);
-        
+
         // Assert
         verify(() => mockRepository.delete(listId)).called(1);
       });
     });
-    
+
     group('Active List Management', () {
       test('should set active list', () async {
         // Arrange
         const listId = 'list-1';
-        
+
         when(() => mockRepository.setActiveList(listId))
             .thenAnswer((_) async {});
-        
+
         // Act
         await mockRepository.setActiveList(listId);
-        
+
         // Assert
         verify(() => mockRepository.setActiveList(listId)).called(1);
       });
-      
+
       test('should get active list', () async {
         // Arrange
         final activeList = UnifiedShoppingList(
@@ -196,34 +191,34 @@ void main() {
           ownerId: 'test-user-123',
           ownerDisplayName: 'Test User',
         );
-        
+
         when(() => mockRepository.getActiveList())
             .thenAnswer((_) async => activeList);
-        
+
         // Act
         final list = await mockRepository.getActiveList();
-        
+
         // Assert
         expect(list, isNotNull);
         expect(list!.name, equals('Active List'));
-        
+
         verify(() => mockRepository.getActiveList()).called(1);
       });
-      
+
       test('should return null when no active list', () async {
         // Arrange
         when(() => mockRepository.getActiveList())
             .thenAnswer((_) async => null);
-        
+
         // Act
         final list = await mockRepository.getActiveList();
-        
+
         // Assert
         expect(list, isNull);
         verify(() => mockRepository.getActiveList()).called(1);
       });
     });
-    
+
     group('Item Operations', () {
       test('should add item to shopping list', () async {
         // Arrange
@@ -234,32 +229,32 @@ void main() {
           unit: 'liter',
           category: 'Dairy',
         );
-        
+
         when(() => mockRepository.addItem(listId, item))
             .thenAnswer((_) async {});
-        
+
         // Act
         await mockRepository.addItem(listId, item);
-        
+
         // Assert
         verify(() => mockRepository.addItem(listId, item)).called(1);
       });
-      
+
       test('should remove item from shopping list', () async {
         // Arrange
         const listId = 'list-1';
         const itemId = 'item-1';
-        
+
         when(() => mockRepository.removeItem(listId, itemId))
             .thenAnswer((_) async {});
-        
+
         // Act
         await mockRepository.removeItem(listId, itemId);
-        
+
         // Assert
         verify(() => mockRepository.removeItem(listId, itemId)).called(1);
       });
-      
+
       test('should handle collaborative item with metadata', () async {
         // Arrange
         const listId = 'list-1';
@@ -274,18 +269,18 @@ void main() {
           estimatedPrice: 45.0,
           priority: 4,
         );
-        
+
         when(() => mockRepository.addItem(listId, item))
             .thenAnswer((_) async {});
-        
+
         // Act
         await mockRepository.addItem(listId, item);
-        
+
         // Assert
         verify(() => mockRepository.addItem(listId, item)).called(1);
       });
     });
-    
+
     group('Template Operations', () {
       test('should save list as template', () async {
         // Arrange
@@ -294,15 +289,15 @@ void main() {
         const description = 'My weekly shopping template';
         final tags = ['weekly', 'groceries'];
         const isPublic = true;
-        
+
         when(() => mockRepository.saveAsTemplate(
-          listId: listId,
-          templateName: templateName,
-          description: description,
-          tags: tags,
-          isPublic: isPublic,
-        )).thenAnswer((_) async => 'template-1');
-        
+              listId: listId,
+              templateName: templateName,
+              description: description,
+              tags: tags,
+              isPublic: isPublic,
+            )).thenAnswer((_) async => 'template-1');
+
         // Act
         final templateId = await mockRepository.saveAsTemplate(
           listId: listId,
@@ -311,18 +306,18 @@ void main() {
           tags: tags,
           isPublic: isPublic,
         );
-        
+
         // Assert
         expect(templateId, equals('template-1'));
         verify(() => mockRepository.saveAsTemplate(
-          listId: listId,
-          templateName: templateName,
-          description: description,
-          tags: tags,
-          isPublic: isPublic,
-        )).called(1);
+              listId: listId,
+              templateName: templateName,
+              description: description,
+              tags: tags,
+              isPublic: isPublic,
+            )).called(1);
       });
-      
+
       test('should update template', () async {
         // Arrange
         const templateId = 'template-1';
@@ -330,15 +325,15 @@ void main() {
         const description = 'Updated description';
         final tags = ['updated', 'template'];
         const isPublic = false;
-        
+
         when(() => mockRepository.updateTemplate(
-          templateId: templateId,
-          name: name,
-          description: description,
-          tags: tags,
-          isPublic: isPublic,
-        )).thenAnswer((_) async {});
-        
+              templateId: templateId,
+              name: name,
+              description: description,
+              tags: tags,
+              isPublic: isPublic,
+            )).thenAnswer((_) async {});
+
         // Act
         await mockRepository.updateTemplate(
           templateId: templateId,
@@ -347,31 +342,31 @@ void main() {
           tags: tags,
           isPublic: isPublic,
         );
-        
+
         // Assert
         verify(() => mockRepository.updateTemplate(
-          templateId: templateId,
-          name: name,
-          description: description,
-          tags: tags,
-          isPublic: isPublic,
-        )).called(1);
+              templateId: templateId,
+              name: name,
+              description: description,
+              tags: tags,
+              isPublic: isPublic,
+            )).called(1);
       });
-      
+
       test('should delete template', () async {
         // Arrange
         const templateId = 'template-1';
-        
+
         when(() => mockRepository.deleteTemplate(templateId))
             .thenAnswer((_) async {});
-        
+
         // Act
         await mockRepository.deleteTemplate(templateId);
-        
+
         // Assert
         verify(() => mockRepository.deleteTemplate(templateId)).called(1);
       });
-      
+
       test('should get user templates', () async {
         // Arrange
         final templates = [
@@ -394,27 +389,27 @@ void main() {
             'isPublic': true,
           },
         ];
-        
+
         when(() => mockRepository.getUserTemplates())
             .thenAnswer((_) async => templates);
-        
+
         // Act
         final result = await mockRepository.getUserTemplates();
-        
+
         // Assert
         expect(result, hasLength(2));
         expect(result[0]['name'], equals('Weekly Template'));
         expect(result[1]['isPublic'], isTrue);
-        
+
         verify(() => mockRepository.getUserTemplates()).called(1);
       });
-      
+
       test('should get public templates with filters', () async {
         // Arrange
         const limit = 10;
         const searchQuery = 'weekly';
         final tags = ['groceries'];
-        
+
         final templates = [
           {
             'id': 'template-1',
@@ -428,61 +423,61 @@ void main() {
             'createdByDisplayName': 'Erik Svensson',
           },
         ];
-        
+
         when(() => mockRepository.getPublicTemplates(
-          limit: limit,
-          searchQuery: searchQuery,
-          tags: tags,
-        )).thenAnswer((_) async => templates);
-        
+              limit: limit,
+              searchQuery: searchQuery,
+              tags: tags,
+            )).thenAnswer((_) async => templates);
+
         // Act
         final result = await mockRepository.getPublicTemplates(
           limit: limit,
           searchQuery: searchQuery,
           tags: tags,
         );
-        
+
         // Assert
         expect(result, hasLength(1));
         expect(result[0]['name'], contains('Weekly'));
         expect(result[0]['isPublic'], isTrue);
-        
+
         verify(() => mockRepository.getPublicTemplates(
-          limit: limit,
-          searchQuery: searchQuery,
-          tags: tags,
-        )).called(1);
+              limit: limit,
+              searchQuery: searchQuery,
+              tags: tags,
+            )).called(1);
       });
-      
+
       test('should create list from template', () async {
         // Arrange
         const templateId = 'template-1';
         const listName = 'This Week Shopping';
         const description = 'Shopping for this week';
-        
+
         when(() => mockRepository.createListFromTemplate(
-          templateId: templateId,
-          listName: listName,
-          description: description,
-        )).thenAnswer((_) async => 'new-list-1');
-        
+              templateId: templateId,
+              listName: listName,
+              description: description,
+            )).thenAnswer((_) async => 'new-list-1');
+
         // Act
         final listId = await mockRepository.createListFromTemplate(
           templateId: templateId,
           listName: listName,
           description: description,
         );
-        
+
         // Assert
         expect(listId, equals('new-list-1'));
         verify(() => mockRepository.createListFromTemplate(
-          templateId: templateId,
-          listName: listName,
-          description: description,
-        )).called(1);
+              templateId: templateId,
+              listName: listName,
+              description: description,
+            )).called(1);
       });
     });
-    
+
     group('Configuration Methods', () {
       test('should configure shopping state', () {
         // Arrange
@@ -491,14 +486,14 @@ void main() {
           ownerId: 'test-user',
           ownerDisplayName: 'Test User',
         );
-        
+
         final sharedList = UnifiedShoppingList.collaborative(
           name: 'Shared List',
           ownerId: 'test-user',
           ownerDisplayName: 'Test User',
           memberPermissions: {'friend-1': SharedListPermission.edit},
         );
-        
+
         // Act
         mockRepository.setShoppingState(
           currentUserId: 'test-user',
@@ -510,7 +505,7 @@ void main() {
           personalLists: {personalList.id: personalList},
           sharedLists: {sharedList.id: sharedList},
         );
-        
+
         // Assert
         expect(mockRepository.currentUserId, equals('test-user'));
         expect(mockRepository.activeListId, equals(personalList.id));
@@ -518,7 +513,7 @@ void main() {
         expect(mockRepository.personalLists, hasLength(1));
         expect(mockRepository.sharedLists, hasLength(1));
       });
-      
+
       test('should add and remove lists', () {
         // Arrange
         final list = UnifiedShoppingList.personal(
@@ -526,22 +521,22 @@ void main() {
           ownerId: 'test-user',
           ownerDisplayName: 'Test User',
         );
-        
+
         // Act - Add list
         mockRepository.addList(list);
-        
+
         // Assert - List added
         expect(mockRepository.listsById[list.id], equals(list));
         expect(mockRepository.personalLists[list.id], equals(list));
-        
+
         // Act - Remove list
         mockRepository.removeList(list.id);
-        
+
         // Assert - List removed
         expect(mockRepository.listsById.containsKey(list.id), isFalse);
         expect(mockRepository.personalLists.containsKey(list.id), isFalse);
       });
-      
+
       test('should update list items', () {
         // Arrange
         final list = UnifiedShoppingList.personal(
@@ -550,7 +545,7 @@ void main() {
           ownerDisplayName: 'Test User',
           items: [],
         );
-        
+
         final items = [
           UnifiedShoppingItem.basic(
             name: 'Milk',
@@ -565,12 +560,12 @@ void main() {
             category: 'Bakery',
           ),
         ];
-        
+
         mockRepository.addList(list);
-        
+
         // Act
         mockRepository.updateListItems(list.id, items);
-        
+
         // Assert
         final updatedList = mockRepository.getListById(list.id);
         expect(updatedList, isNotNull);
@@ -578,7 +573,7 @@ void main() {
         expect(updatedList.items[0].name, equals('Milk'));
         expect(updatedList.items[1].name, equals('Bread'));
       });
-      
+
       test('should add templates', () {
         // Arrange
         const templateId = 'template-1';
@@ -588,15 +583,15 @@ void main() {
           'isPublic': true,
           'items': [],
         };
-        
+
         // Act
         mockRepository.addTemplate(templateId, template);
-        
+
         // Assert
         expect(mockRepository.templates[templateId], equals(template));
         expect(mockRepository.publicTemplates[templateId], equals(template));
       });
-      
+
       test('should handle private templates', () {
         // Arrange
         const templateId = 'template-1';
@@ -606,16 +601,16 @@ void main() {
           'isPublic': false,
           'items': [],
         };
-        
+
         // Act
         mockRepository.addTemplate(templateId, template);
-        
+
         // Assert
         expect(mockRepository.templates[templateId], equals(template));
         expect(mockRepository.publicTemplates.containsKey(templateId), isFalse);
       });
     });
-    
+
     group('Helper Methods', () {
       test('should get list by ID', () {
         // Arrange
@@ -625,14 +620,14 @@ void main() {
           ownerDisplayName: 'Test User',
         );
         mockRepository.addList(list);
-        
+
         // Act
         final result = mockRepository.getListById(list.id);
-        
+
         // Assert
         expect(result, equals(list));
       });
-      
+
       test('should get all lists', () {
         // Arrange
         final list1 = UnifiedShoppingList.personal(
@@ -645,19 +640,19 @@ void main() {
           ownerId: 'test-user',
           ownerDisplayName: 'Test User',
         );
-        
+
         mockRepository.addList(list1);
         mockRepository.addList(list2);
-        
+
         // Act
         final result = mockRepository.getAllLists();
-        
+
         // Assert
         expect(result, hasLength(2));
         expect(result.any((l) => l.id == list1.id), isTrue);
         expect(result.any((l) => l.id == list2.id), isTrue);
       });
-      
+
       test('should get personal lists only', () {
         // Arrange
         final personal = UnifiedShoppingList.personal(
@@ -671,19 +666,19 @@ void main() {
           ownerDisplayName: 'Test User',
           memberPermissions: {'friend-1': SharedListPermission.edit},
         );
-        
+
         mockRepository.addList(personal);
         mockRepository.addList(shared);
-        
+
         // Act
         final result = mockRepository.getPersonalLists();
-        
+
         // Assert
         expect(result, hasLength(1));
         expect(result[0].isPersonal, isTrue);
         expect(result[0].name, equals('Personal'));
       });
-      
+
       test('should get shared lists only', () {
         // Arrange
         final personal = UnifiedShoppingList.personal(
@@ -697,19 +692,19 @@ void main() {
           ownerDisplayName: 'Test User',
           memberPermissions: {'friend-1': SharedListPermission.edit},
         );
-        
+
         mockRepository.addList(personal);
         mockRepository.addList(shared);
-        
+
         // Act
         final result = mockRepository.getSharedLists();
-        
+
         // Assert
         expect(result, hasLength(1));
         expect(result[0].isCollaborative, isTrue);
         expect(result[0].name, equals('Shared'));
       });
-      
+
       test('should get active list', () {
         // Arrange
         final list = UnifiedShoppingList.personal(
@@ -717,25 +712,25 @@ void main() {
           ownerId: 'test-user',
           ownerDisplayName: 'Test User',
         );
-        
+
         mockRepository.addList(list);
         mockRepository.setShoppingState(activeListId: list.id);
-        
+
         // Act
         final result = mockRepository.getActiveListSync();
-        
+
         // Assert
         expect(result, equals(list));
         expect(result!.name, equals('Active List'));
       });
-      
+
       test('should return null for no active list', () {
         // Arrange
         mockRepository.setShoppingState(activeListId: null);
-        
+
         // Act
         final result = mockRepository.getActiveListSync();
-        
+
         // Assert
         expect(result, isNull);
       });

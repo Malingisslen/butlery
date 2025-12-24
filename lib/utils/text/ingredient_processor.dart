@@ -239,9 +239,7 @@ class IngredientProcessor {
   static List<ProcessedIngredient> parseAndNormalizeMany(
     List<String> cleanIngredients,
   ) {
-    return cleanIngredients
-        .map((clean) => parseAndNormalize(clean))
-        .toList();
+    return cleanIngredients.map((clean) => parseAndNormalize(clean)).toList();
   }
 
   /// Batch normalize ingredient names (Pattern C)
@@ -249,9 +247,7 @@ class IngredientProcessor {
   static List<NormalizationResult> normalizeIngredientNames(
     List<String> parsedNames,
   ) {
-    return parsedNames
-        .map((name) => normalizeIngredientName(name))
-        .toList();
+    return parsedNames.map((name) => normalizeIngredientName(name)).toList();
   }
 
   /// Helper: Get just the cleaned text without full processing
@@ -323,7 +319,8 @@ class IngredientProcessor {
   /// // - "stora" removed (preparation word)
   /// // - "glutenfri" preserved (diet descriptor)
   /// ```
-  static List<String>? normalizeIngredientsForRecipe(List<String>? ingredients) {
+  static List<String>? normalizeIngredientsForRecipe(
+      List<String>? ingredients) {
     if (ingredients == null) return null;
     if (ingredients.isEmpty) return [];
 

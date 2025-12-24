@@ -95,7 +95,7 @@ mixin StateNotifierMixin on ChangeNotifier {
       AppLogger.debug('State changed: loading=$loading');
     }
   }
-  
+
   /// Set error state, clear loading, and notify listeners
   @protected
   void setError(String message) {
@@ -104,7 +104,7 @@ mixin StateNotifierMixin on ChangeNotifier {
     notifyListeners();
     AppLogger.error('State error: $message');
   }
-  
+
   /// Clear error state and notify listeners
   @protected
   void clearError() {
@@ -114,7 +114,7 @@ mixin StateNotifierMixin on ChangeNotifier {
       AppLogger.debug('Error cleared');
     }
   }
-  
+
   /// Clear all state (loading and error) and notify listeners
   @protected
   void clearState() {
@@ -125,7 +125,7 @@ mixin StateNotifierMixin on ChangeNotifier {
       AppLogger.debug('All state cleared');
     }
   }
-  
+
   /// Set success state (clear loading and error) and notify listeners
   @protected
   void setSuccess() {
@@ -149,20 +149,19 @@ mixin StateNotifierMixin on ChangeNotifier {
         clearError();
       }
       setLoading(true);
-      
+
       final result = await operation();
-      
+
       setSuccess();
       return result;
     } catch (e) {
-      final errorMessage = errorPrefix != null 
-        ? '$errorPrefix: $e'
-        : e.toString();
+      final errorMessage =
+          errorPrefix != null ? '$errorPrefix: $e' : e.toString();
       setError(errorMessage);
       rethrow;
     }
   }
-  
+
   /// Execute an async operation without changing loading state (for background operations)
   @protected
   Future<T> executeAsyncSilent<T>(
@@ -173,14 +172,13 @@ mixin StateNotifierMixin on ChangeNotifier {
       final result = await operation();
       return result;
     } catch (e) {
-      final errorMessage = errorPrefix != null 
-        ? '$errorPrefix: $e'
-        : e.toString();
+      final errorMessage =
+          errorPrefix != null ? '$errorPrefix: $e' : e.toString();
       setError(errorMessage);
       rethrow;
     }
   }
-  
+
   /// Execute multiple async operations in parallel with state management
   @protected
   Future<List<T>> executeAsyncParallel<T>(
@@ -193,16 +191,15 @@ mixin StateNotifierMixin on ChangeNotifier {
         clearError();
       }
       setLoading(true);
-      
+
       final futures = operations.map((op) => op()).toList();
       final results = await Future.wait(futures);
-      
+
       setSuccess();
       return results;
     } catch (e) {
-      final errorMessage = errorPrefix != null 
-        ? '$errorPrefix: $e'
-        : e.toString();
+      final errorMessage =
+          errorPrefix != null ? '$errorPrefix: $e' : e.toString();
       setError(errorMessage);
       rethrow;
     }
@@ -218,10 +215,10 @@ mixin StateNotifierMixin on ChangeNotifier {
       AppLogger.debug('Skipping operation: already loading');
       return null;
     }
-    
+
     return await executeAsync(operation, errorPrefix: errorPrefix);
   }
-  
+
   /// Execute operation and retry on failure with exponential backoff
   @protected
   Future<T> executeWithRetry<T>(
@@ -232,35 +229,36 @@ mixin StateNotifierMixin on ChangeNotifier {
   }) async {
     int attempts = 0;
     Duration currentDelay = initialDelay;
-    
+
     while (attempts < maxRetries) {
       try {
         if (attempts == 0) {
           clearError();
           setLoading(true);
         }
-        
+
         final result = await operation();
-        
+
         setSuccess();
         return result;
       } catch (e) {
         attempts++;
-        
+
         if (attempts >= maxRetries) {
-          final errorMessage = errorPrefix != null 
-            ? '$errorPrefix (after $attempts attempts): $e'
-            : 'After $attempts attempts: $e';
+          final errorMessage = errorPrefix != null
+              ? '$errorPrefix (after $attempts attempts): $e'
+              : 'After $attempts attempts: $e';
           setError(errorMessage);
           rethrow;
         }
-        
-        AppLogger.warning('Operation failed, retrying in ${currentDelay.inSeconds}s (attempt $attempts/$maxRetries): $e');
+
+        AppLogger.warning(
+            'Operation failed, retrying in ${currentDelay.inSeconds}s (attempt $attempts/$maxRetries): $e');
         await Future.delayed(currentDelay);
         currentDelay *= 2; // Exponential backoff
       }
     }
-    
+
     throw StateError('Should not reach here');
   }
 
@@ -275,14 +273,14 @@ mixin StateNotifierMixin on ChangeNotifier {
 extension StateNotifierExtensions on StateNotifierMixin {
   /// Check if the component is ready for new operations
   bool get canExecuteOperation => !isLoading;
-  
+
   /// Get state description for debugging
   String get stateDescription {
     if (isLoading) return 'Loading';
     if (hasError) return 'Error: $error';
     return 'Ready';
   }
-  
+
   /// Execute operation with custom error message formatting
   Future<T> executeWithCustomError<T>(
     Future<T> Function() operation,
@@ -291,9 +289,9 @@ extension StateNotifierExtensions on StateNotifierMixin {
     try {
       clearError();
       setLoading(true);
-      
+
       final result = await operation();
-      
+
       setSuccess();
       return result;
     } catch (e) {
@@ -306,13 +304,13 @@ extension StateNotifierExtensions on StateNotifierMixin {
 /// Specialized state notifier for network operations
 mixin NetworkStateNotifierMixin on StateNotifierMixin {
   bool _isOnline = true;
-  
+
   /// Whether the component is online
   bool get isOnline => _isOnline;
-  
+
   /// Whether the component is offline
   bool get isOffline => !_isOnline;
-  
+
   /// Set online/offline state
   @protected
   void setNetworkState(bool online) {
@@ -322,7 +320,7 @@ mixin NetworkStateNotifierMixin on StateNotifierMixin {
       AppLogger.info('Network state: ${online ? 'online' : 'offline'}');
     }
   }
-  
+
   /// Execute operation with network state awareness
   @protected
   Future<T> executeNetworkOperation<T>(
@@ -333,7 +331,7 @@ mixin NetworkStateNotifierMixin on StateNotifierMixin {
       setError(offlineMessage);
       throw StateError(offlineMessage);
     }
-    
+
     return await executeAsync(operation);
   }
 }
@@ -342,16 +340,16 @@ mixin NetworkStateNotifierMixin on StateNotifierMixin {
 mixin PaginatedStateNotifierMixin on StateNotifierMixin {
   bool _isLoadingMore = false;
   bool _hasMoreData = true;
-  
+
   /// Whether more data is being loaded
   bool get isLoadingMore => _isLoadingMore;
-  
+
   /// Whether more data is available
   bool get hasMoreData => _hasMoreData;
-  
+
   /// Whether the component can load more data
   bool get canLoadMore => !_isLoadingMore && _hasMoreData && !isLoading;
-  
+
   /// Set loading more state
   @protected
   void setLoadingMore(bool loading) {
@@ -361,7 +359,7 @@ mixin PaginatedStateNotifierMixin on StateNotifierMixin {
       AppLogger.debug('Loading more: $loading');
     }
   }
-  
+
   /// Set whether more data is available
   @protected
   void setHasMoreData(bool hasMore) {
@@ -371,7 +369,7 @@ mixin PaginatedStateNotifierMixin on StateNotifierMixin {
       AppLogger.debug('Has more data: $hasMore');
     }
   }
-  
+
   /// Execute load more operation
   @protected
   Future<T> executeLoadMore<T>(
@@ -382,24 +380,23 @@ mixin PaginatedStateNotifierMixin on StateNotifierMixin {
       AppLogger.debug('Cannot load more: already loading or no more data');
       return null as T;
     }
-    
+
     try {
       setLoadingMore(true);
-      
+
       final result = await operation();
-      
+
       return result;
     } catch (e) {
-      final errorMessage = errorPrefix != null 
-        ? '$errorPrefix: $e'
-        : e.toString();
+      final errorMessage =
+          errorPrefix != null ? '$errorPrefix: $e' : e.toString();
       setError(errorMessage);
       rethrow;
     } finally {
       setLoadingMore(false);
     }
   }
-  
+
   /// Reset pagination state
   @protected
   void resetPagination() {
@@ -408,7 +405,7 @@ mixin PaginatedStateNotifierMixin on StateNotifierMixin {
     notifyListeners();
     AppLogger.debug('Pagination reset');
   }
-  
+
   @override
   void dispose() {
     resetPagination();

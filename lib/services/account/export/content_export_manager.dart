@@ -142,7 +142,8 @@ class ContentExportManager {
         'shopping_lists': lists,
       };
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export shopping lists', e);
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to export shopping lists', e);
       return {'error': e.toString()};
     }
   }

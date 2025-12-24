@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+
 /// Dialog for selecting recipes for menu categories
 class MenuRecipeSelectionDialog extends StatefulWidget {
   final String categoryName;
@@ -20,7 +21,8 @@ class MenuRecipeSelectionDialog extends StatefulWidget {
   });
 
   @override
-  State<MenuRecipeSelectionDialog> createState() => _MenuRecipeSelectionDialogState();
+  State<MenuRecipeSelectionDialog> createState() =>
+      _MenuRecipeSelectionDialogState();
 }
 
 class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
@@ -57,7 +59,8 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
                       vertical: AppDimensions.paddingM,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.borderRadiusM),
                     ),
                   ),
                   icon: const Icon(Icons.add),
@@ -139,7 +142,8 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
                   itemCount: filteredRecipes.length,
                   itemBuilder: (context, index) {
                     final unifiedRecipe = filteredRecipes[index];
-                    final isSelected = _selectedRecipeIds.contains(unifiedRecipe.id);
+                    final isSelected =
+                        _selectedRecipeIds.contains(unifiedRecipe.id);
 
                     return MenuRecipeListItem(
                       key: ValueKey(unifiedRecipe.id),
@@ -202,11 +206,12 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
     );
   }
 
-  void _addSelectedRecipes(BuildContext context, RecipeListViewModel viewModel) {
+  void _addSelectedRecipes(
+      BuildContext context, RecipeListViewModel viewModel) {
     final selectedUnifiedRecipes = viewModel.recipes
         .where((recipe) => _selectedRecipeIds.contains(recipe.id))
         .toList();
-    
+
     Navigator.pop(context, selectedUnifiedRecipes);
   }
 }
@@ -252,7 +257,8 @@ class MenuRecipeListItem extends StatelessWidget {
         value: isSelected,
         onChanged: (value) => onSelectionChanged(value ?? false),
         activeColor: AppColors.primaryBlue,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS)),
       ),
       onTap: () => onSelectionChanged(!isSelected),
     );
@@ -331,9 +337,10 @@ class MenuRecipeListItem extends StatelessWidget {
       ),
     );
   }
+
   void dispose() {
     // Cancel all timers
-    // Cancel all stream subscriptions  
+    // Cancel all stream subscriptions
     // Dispose of resources    super.dispose();
   }
 }

@@ -30,11 +30,13 @@ void main() {
 
     group('JSON-LD Extraction', () {
       test('should parse complete recipe with JSON-LD', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], equals('Klassiska kanelbullar'));
-        expect(recipe['description'], contains('Traditionella svenska kanelbullar'));
+        expect(recipe['description'],
+            contains('Traditionella svenska kanelbullar'));
         expect(recipe['recipeYield'], equals('25 bullar'));
         expect(recipe['totalTime'], equals('PT45M'));
         expect(recipe['recipeCategory'], equals('Fika'));
@@ -42,7 +44,8 @@ void main() {
       });
 
       test('should extract ingredients from JSON-LD', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
 
         expect(recipe, isNotNull);
         expect(recipe!['recipeIngredient'], isA<List>());
@@ -54,7 +57,8 @@ void main() {
       });
 
       test('should extract instructions from JSON-LD', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
 
         expect(recipe, isNotNull);
         expect(recipe!['recipeInstructions'], isA<List>());
@@ -77,28 +81,32 @@ void main() {
 
     group('Recept Enhancements', () {
       test('should extract difficulty level', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
 
         expect(recipe, isNotNull);
         expect(recipe!['difficulty'], equals('Medel'));
       });
 
       test('should extract category (meal type)', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
 
         expect(recipe, isNotNull);
         expect(recipe!['category'], equals('Fika'));
       });
 
       test('should extract cuisine type', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
 
         expect(recipe, isNotNull);
         expect(recipe!['cuisine'], equals('Svensk'));
       });
 
       test('should extract cooking tips', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
 
         expect(recipe, isNotNull);
         expect(recipe!['cookingTips'], isA<List>());
@@ -108,7 +116,8 @@ void main() {
       });
 
       test('should extract serving suggestions', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
 
         expect(recipe, isNotNull);
         expect(recipe!['servingSuggestions'], isA<List>());
@@ -118,7 +127,8 @@ void main() {
       });
 
       test('should extract category and cuisine from separate recipe', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeWithCategoryAndCuisine);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeWithCategoryAndCuisine);
 
         expect(recipe, isNotNull);
         if (recipe != null) {
@@ -135,7 +145,8 @@ void main() {
 
     group('Formatting Cleanup', () {
       test('should clean "ca" and "cirka" from portions', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeWithReceptQuirks);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeWithReceptQuirks);
 
         expect(recipe, isNotNull);
         expect(recipe!['recipeYield'], equals('4 portioner'));
@@ -144,7 +155,8 @@ void main() {
       });
 
       test('should trim whitespace from ingredients', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeWithReceptQuirks);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeWithReceptQuirks);
 
         expect(recipe, isNotNull);
         final ingredients = recipe!['recipeIngredient'] as List;
@@ -161,7 +173,8 @@ void main() {
       });
 
       test('should trim whitespace from instructions', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeWithReceptQuirks);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeWithReceptQuirks);
 
         expect(recipe, isNotNull);
         final instructions = recipe!['recipeInstructions'] as List;
@@ -177,7 +190,8 @@ void main() {
       });
 
       test('should filter out empty ingredients', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeWithReceptQuirks);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeWithReceptQuirks);
 
         expect(recipe, isNotNull);
         final ingredients = recipe!['recipeIngredient'] as List;
@@ -195,7 +209,8 @@ void main() {
 
     group('CSS Fallback Extraction', () {
       test('should extract recipe without JSON-LD using CSS selectors', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeWithoutJsonLd);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeWithoutJsonLd);
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], equals('Klassiska svenska pannkakor'));
@@ -203,7 +218,8 @@ void main() {
       });
 
       test('should extract ingredients from HTML when JSON-LD missing', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeWithoutJsonLd);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeWithoutJsonLd);
 
         expect(recipe, isNotNull);
         final ingredients = recipe!['recipeIngredient'] as List;
@@ -214,7 +230,8 @@ void main() {
       });
 
       test('should extract instructions from HTML when JSON-LD missing', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeWithoutJsonLd);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeWithoutJsonLd);
 
         expect(recipe, isNotNull);
         final instructions = recipe!['recipeInstructions'] as List;
@@ -223,7 +240,9 @@ void main() {
         // Check for instruction content
         final instructionTexts = instructions.map((inst) {
           if (inst is String) return inst;
-          if (inst is Map && inst['text'] != null) return inst['text'].toString();
+          if (inst is Map && inst['text'] != null) {
+            return inst['text'].toString();
+          }
           return '';
         }).toList();
 
@@ -232,7 +251,8 @@ void main() {
       });
 
       test('should extract metadata from HTML when JSON-LD missing', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeWithoutJsonLd);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeWithoutJsonLd);
 
         expect(recipe, isNotNull);
         expect(recipe!['recipeYield'], isNotNull);
@@ -248,14 +268,16 @@ void main() {
 
     group('Error Recovery', () {
       test('should fallback to CSS selectors when JSON-LD is malformed', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeWithMalformedJson);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeWithMalformedJson);
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], equals('Köttfärssås'));
       });
 
       test('should extract ingredients from HTML when JSON parse fails', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeWithMalformedJson);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeWithMalformedJson);
 
         expect(recipe, isNotNull);
         final ingredients = recipe!['recipeIngredient'] as List;
@@ -265,7 +287,8 @@ void main() {
       });
 
       test('should extract instructions from HTML when JSON parse fails', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeWithMalformedJson);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeWithMalformedJson);
 
         expect(recipe, isNotNull);
         final instructions = recipe!['recipeInstructions'] as List;
@@ -279,7 +302,8 @@ void main() {
 
     group('Quality Validation', () {
       test('should accept recipe with complete metadata (high quality)', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeCompleteMetadata);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeCompleteMetadata);
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], isNotEmpty);
@@ -308,7 +332,8 @@ void main() {
 
     group('Swedish Text Handling', () {
       test('should preserve Swedish characters (Å, Ä, Ö)', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeWithSwedishChars);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeWithSwedishChars);
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], equals('Älggryta med svamp och lingon'));
@@ -320,7 +345,8 @@ void main() {
       });
 
       test('should clean smart quotes from Swedish text', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
 
         expect(recipe, isNotNull);
         final description = recipe!['description'] as String?;
@@ -333,7 +359,8 @@ void main() {
       });
 
       test('should normalize whitespace in Swedish text', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeWithSwedishChars);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeWithSwedishChars);
 
         expect(recipe, isNotNull);
         final name = recipe!['name'] as String;
@@ -361,7 +388,8 @@ void main() {
 
       test('should handle missing optional fields gracefully', () {
         // Use recipe with Swedish characters which has minimal enhancements
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeWithSwedishChars);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeWithSwedishChars);
 
         expect(recipe, isNotNull);
         // Some optional fields might be missing
@@ -369,7 +397,8 @@ void main() {
       });
 
       test('should handle recipe with complete data', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeCompleteMetadata);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeCompleteMetadata);
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], isNotEmpty);
@@ -379,7 +408,8 @@ void main() {
       });
 
       test('should extract image from recipe', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
 
         expect(recipe, isNotNull);
         expect(recipe!['image'], isNotNull);
@@ -393,7 +423,8 @@ void main() {
 
     group('Time Conversion', () {
       test('should parse ISO 8601 duration from JSON-LD', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.kanelbullarComplete);
 
         expect(recipe, isNotNull);
         expect(recipe!['prepTime'], equals('PT30M'));
@@ -402,14 +433,16 @@ void main() {
       });
 
       test('should handle long cooking times (hours)', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeWithSwedishChars);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeWithSwedishChars);
 
         expect(recipe, isNotNull);
         expect(recipe!['totalTime'], equals('PT2H30M'));
       });
 
       test('should handle short cooking times (minutes only)', () {
-        final recipe = parser.parseRecipe(ReceptTestFixtures.recipeWithCategoryAndCuisine);
+        final recipe =
+            parser.parseRecipe(ReceptTestFixtures.recipeWithCategoryAndCuisine);
 
         expect(recipe, isNotNull);
         expect(recipe!['totalTime'], equals('PT20M'));

@@ -25,8 +25,7 @@ class RecipeDao extends DatabaseAccessor<AppDatabase> with _$RecipeDaoMixin {
   /// Get all recipes that need syncing for a user
   Future<List<OfflineRecipe>> getRecipesNeedingSync(String userId) {
     return (select(offlineRecipes)
-          ..where(
-              (r) => r.userId.equals(userId) & r.needsSync.equals(true)))
+          ..where((r) => r.userId.equals(userId) & r.needsSync.equals(true)))
         .get();
   }
 

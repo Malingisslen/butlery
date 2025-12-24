@@ -4,7 +4,7 @@
 /// It provides real Firebase functionality without affecting production data.
 /// ULTRATHINK ANALYSIS:
 /// - Production main.dart initializes Firebase with production config
-/// - E2E tests need real Firebase operations for authentication/data flows  
+/// - E2E tests need real Firebase operations for authentication/data flows
 /// - Emulator approach provides realistic Firebase testing with isolation
 library;
 
@@ -22,7 +22,7 @@ import 'package:butlery/main.dart';
 // Firebase configuration - using a test/demo project
 import 'package:butlery/firebase_options.dart';
 
-// Bootstrap system  
+// Bootstrap system
 import 'package:butlery/core/bootstrap/application_bootstrap.dart';
 import 'package:butlery/core/bootstrap/stages/platform_stage.dart';
 import 'package:butlery/core/bootstrap/stages/core_stage.dart';
@@ -70,7 +70,7 @@ Future<void> main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    
+
     if (kDebugMode) {
       debugPrint('✅ Firebase initialized for E2E emulator testing');
     }
@@ -83,12 +83,12 @@ Future<void> main() async {
       debugPrint('⚠️ Firebase App Check skipped for E2E emulator testing');
     }
 
-    // Initialize modular system 
+    // Initialize modular system
     await _initializeE2EEmulatorSystem();
 
     // Start the application
     runApp(const ButleryApp());
-    
+
     if (kDebugMode) {
       debugPrint('✅ E2E Emulator system started successfully');
     }
@@ -99,7 +99,8 @@ Future<void> main() async {
     }
 
     // Show error app with E2E-specific message
-    runApp(_E2EEmulatorErrorApp('E2E Emulator initialization failed: $e\n\nStack trace:\n$stackTrace'));
+    runApp(_E2EEmulatorErrorApp(
+        'E2E Emulator initialization failed: $e\n\nStack trace:\n$stackTrace'));
   }
 }
 
@@ -113,20 +114,20 @@ Future<void> _connectToE2EEmulators() async {
     }
 
     const emulatorHost = 'localhost';
-    
+
     // Connect Firestore emulator (port 8080)
     FirebaseFirestore.instance.useFirestoreEmulator(emulatorHost, 8080);
-    
-    // Connect Auth emulator (port 9099) 
+
+    // Connect Auth emulator (port 9099)
     await FirebaseAuth.instance.useAuthEmulator(emulatorHost, 9099);
-    
+
     // Connect Storage emulator (port 9199)
     await FirebaseStorage.instance.useStorageEmulator(emulatorHost, 9199);
-    
+
     if (kDebugMode) {
       debugPrint('✅ Connected to Firebase emulators successfully');
       debugPrint('   - Firestore: localhost:8080');
-      debugPrint('   - Auth: localhost:9099');  
+      debugPrint('   - Auth: localhost:9099');
       debugPrint('   - Storage: localhost:9199');
     }
   } catch (e) {
@@ -146,7 +147,7 @@ Future<void> _initializeE2EEmulatorSystem() async {
     debugPrint('🔧 Initializing E2E Emulator modular system...');
   }
 
-  // Create DI modules in dependency order - same as production  
+  // Create DI modules in dependency order - same as production
   final modules = [
     CoreModule(),
     ContentModule(),
@@ -161,7 +162,7 @@ Future<void> _initializeE2EEmulatorSystem() async {
   final stages = [
     PlatformStage(),
     CoreStage(),
-    ContentStage(), 
+    ContentStage(),
     SocialStage(),
     UIStage(),
   ];
@@ -178,10 +179,10 @@ Future<void> _initializeE2EEmulatorSystem() async {
   }
 }
 
-/// Error app widget for E2E emulator initialization failures  
+/// Error app widget for E2E emulator initialization failures
 class _E2EEmulatorErrorApp extends StatelessWidget {
   final String message;
-  
+
   const _E2EEmulatorErrorApp(this.message);
 
   @override

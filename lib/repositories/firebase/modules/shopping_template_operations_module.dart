@@ -14,7 +14,8 @@ class ShoppingTemplateOperationsModule {
   final CollectionReference<Map<String, dynamic>> templatesRef;
   final String Function() requireCurrentUserId;
   final Future<UnifiedShoppingList?> Function(String id) readList;
-  final Future<UnifiedShoppingList> Function(UnifiedShoppingList entity) createList;
+  final Future<UnifiedShoppingList> Function(UnifiedShoppingList entity)
+      createList;
   final Future<void> Function({
     required String currentUserId,
     required String resourceOwnerId,
@@ -159,10 +160,12 @@ class ShoppingTemplateOperationsModule {
         .limit(50) // Limit user templates to 50 most recent
         .get();
 
-    return snapshot.docs.map((doc) => {
-      'id': doc.id,
-      ...doc.data(),
-    }).toList();
+    return snapshot.docs
+        .map((doc) => {
+              'id': doc.id,
+              ...doc.data(),
+            })
+        .toList();
   }
 
   /// Get public templates with optional search and tag filtering
@@ -173,7 +176,8 @@ class ShoppingTemplateOperationsModule {
   }) async {
     // Increase query limit to account for filtering, but cap at reasonable maximum
     final queryLimit = searchQuery != null || (tags != null && tags.isNotEmpty)
-        ? (limit * 3).clamp(20, 100) // Get more docs to filter from, but cap at 100
+        ? (limit * 3)
+            .clamp(20, 100) // Get more docs to filter from, but cap at 100
         : limit;
 
     final query = templatesRef
@@ -184,17 +188,20 @@ class ShoppingTemplateOperationsModule {
     // Note: Firestore doesn't support text search, so we'll filter client-side
     final snapshot = await query.get();
 
-    var templates = snapshot.docs.map((doc) => {
-      'id': doc.id,
-      ...doc.data(),
-    }).toList();
+    var templates = snapshot.docs
+        .map((doc) => {
+              'id': doc.id,
+              ...doc.data(),
+            })
+        .toList();
 
     // Client-side filtering for search query
     if (searchQuery != null && searchQuery.trim().isNotEmpty) {
       final lowerQuery = searchQuery.toLowerCase();
       templates = templates.where((template) {
         final name = (template['name'] as String? ?? '').toLowerCase();
-        final description = (template['description'] as String? ?? '').toLowerCase();
+        final description =
+            (template['description'] as String? ?? '').toLowerCase();
         return name.contains(lowerQuery) || description.contains(lowerQuery);
       }).toList();
     }
@@ -244,15 +251,18 @@ class ShoppingTemplateOperationsModule {
     }
 
     // Create shopping list from template
-    final templateItems = List<Map<String, dynamic>>.from(templateData['items'] ?? []);
-    final items = templateItems.map((itemData) =>
-        UnifiedShoppingItem.fromFirestore(itemData)).toList();
+    final templateItems =
+        List<Map<String, dynamic>>.from(templateData['items'] ?? []);
+    final items = templateItems
+        .map((itemData) => UnifiedShoppingItem.fromFirestore(itemData))
+        .toList();
 
     final newList = UnifiedShoppingList(
       name: listName.trim(),
       description: description?.trim(),
       ownerId: uid,
-      ownerDisplayName: authRepository.currentUser?.displayName ?? 'Unknown User',
+      ownerDisplayName:
+          authRepository.currentUser?.displayName ?? 'Unknown User',
       items: items,
     );
 

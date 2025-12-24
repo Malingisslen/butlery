@@ -8,22 +8,22 @@ import '../../../../infrastructure/builders/realtime_recipe_builder.dart';
 void main() {
   group('RecipeParticipants', () {
     late RealtimeRecipeBuilder recipeBuilder;
-    
+
     setUp(() async {
       await BaseUnitTest.setupUnit();
       recipeBuilder = RealtimeRecipeBuilder();
     });
-    
+
     tearDown(() async {
       await BaseUnitTest.teardownUnit();
     });
-    
+
     group('Collaboration Management', () {
       test('should add collaborator with editor permission', () {
         // Arrange
         final recipe = recipeBuilder.build();
         const userId = 'editor_123';
-        
+
         // Act
         final updated = RecipeParticipants.addParticipant(
           recipe,
@@ -31,17 +31,18 @@ void main() {
           userDisplayName: 'Editor User',
           permission: ResourcePermission.editor,
         );
-        
+
         // Assert
         expect(updated.participants[userId], ResourcePermission.editor);
-        expect(updated.participants.length, 1); // Only new editor (owner not in participants)
+        expect(updated.participants.length,
+            1); // Only new editor (owner not in participants)
       });
-      
+
       test('should add collaborator with viewer permission', () {
         // Arrange
         final recipe = recipeBuilder.build();
         const userId = 'viewer_456';
-        
+
         // Act
         final updated = RecipeParticipants.addParticipant(
           recipe,
@@ -49,33 +50,34 @@ void main() {
           userDisplayName: 'Viewer User',
           permission: ResourcePermission.viewer,
         );
-        
+
         // Assert
         expect(updated.participants[userId], ResourcePermission.viewer);
       });
-      
+
       test('should remove collaborator successfully', () {
         // Arrange
         final recipe = recipeBuilder
             .withParticipant('collab_123', ResourcePermission.editor)
             .withParticipant('collab_456', ResourcePermission.viewer)
             .build();
-        
+
         // Act
         final updated = RecipeParticipants.removeParticipant(
           recipe,
           userId: 'collab_123',
         );
-        
+
         // Assert
         expect(updated.participants.containsKey('collab_123'), false);
         expect(updated.participants.containsKey('collab_456'), true);
       });
-      
+
       test('should prevent owner removal', () {
         // Arrange
-        final recipe = recipeBuilder.withOwner('owner_123', 'Recipe Owner').build();
-        
+        final recipe =
+            recipeBuilder.withOwner('owner_123', 'Recipe Owner').build();
+
         // Act & Assert
         expect(
           () => RecipeParticipants.removeParticipant(
@@ -85,30 +87,30 @@ void main() {
           throwsA(isA<RecipeOperationError>()),
         );
       });
-      
+
       test('should update collaborator permissions', () {
         // Arrange
         final recipe = recipeBuilder
             .withParticipant('user_123', ResourcePermission.viewer)
             .build();
-        
+
         // Act
         final updated = RecipeParticipants.updateParticipantPermission(
           recipe,
           userId: 'user_123',
           newPermission: ResourcePermission.editor,
         );
-        
+
         // Assert
         expect(updated.participants['user_123'], ResourcePermission.editor);
       });
-      
+
       test('should handle duplicate collaborator gracefully', () {
         // Arrange
         final recipe = recipeBuilder
             .withParticipant('existing_user', ResourcePermission.viewer)
             .build();
-        
+
         // Act & Assert - Adding same user should throw
         expect(
           () => RecipeParticipants.addParticipant(
@@ -120,11 +122,11 @@ void main() {
           throwsA(isA<RecipeOperationError>()),
         );
       });
-      
+
       test('should enforce maximum collaborator limit', () {
         // Arrange
         var recipe = recipeBuilder.build();
-        
+
         // Add many collaborators (owner not in participants)
         for (int i = 0; i < 50; i++) {
           recipe = RecipeParticipants.addParticipant(
@@ -134,7 +136,7 @@ void main() {
             permission: ResourcePermission.viewer,
           );
         }
-        
+
         // Act & Assert - Should prevent adding more
         expect(
           () => RecipeParticipants.addParticipant(
@@ -147,7 +149,7 @@ void main() {
         );
       });
     });
-    
+
     group('Access Control', () {
       test('should check view permissions correctly', () {
         // Arrange
@@ -155,113 +157,125 @@ void main() {
             .withParticipant('viewer_123', ResourcePermission.viewer)
             .withParticipant('editor_456', ResourcePermission.editor)
             .build();
-        
+
         // Act & Assert
         expect(RecipeParticipants.canUserView(recipe, 'owner_123'), true);
         expect(RecipeParticipants.canUserView(recipe, 'viewer_123'), true);
         expect(RecipeParticipants.canUserView(recipe, 'editor_456'), true);
         expect(RecipeParticipants.canUserView(recipe, 'unknown_user'), false);
       });
-      
+
       test('should check edit permissions correctly', () {
         // Arrange
         final recipe = recipeBuilder
             .withParticipant('viewer_123', ResourcePermission.viewer)
             .withParticipant('editor_456', ResourcePermission.editor)
             .build();
-        
+
         // Act & Assert
         expect(RecipeParticipants.canUserEdit(recipe, 'owner_123'), true);
         expect(RecipeParticipants.canUserEdit(recipe, 'editor_456'), true);
         expect(RecipeParticipants.canUserEdit(recipe, 'viewer_123'), false);
         expect(RecipeParticipants.canUserEdit(recipe, 'unknown_user'), false);
       });
-      
+
       test('should check invitation privileges', () {
         // Arrange
         final recipe = recipeBuilder
             .withParticipant('editor_123', ResourcePermission.editor)
             .withParticipant('viewer_456', ResourcePermission.viewer)
             .build();
-        
+
         // Act & Assert
         expect(RecipeParticipants.canUserInvite(recipe, 'owner_123'), true);
-        expect(RecipeParticipants.canUserInvite(recipe, 'editor_123'), false); // Only admin/owner can invite
+        expect(RecipeParticipants.canUserInvite(recipe, 'editor_123'),
+            false); // Only admin/owner can invite
         expect(RecipeParticipants.canUserInvite(recipe, 'viewer_456'), false);
       });
-      
+
       test('should check admin rights', () {
         // Arrange
         final recipe = recipeBuilder
             .withParticipant('editor_123', ResourcePermission.editor)
             .build();
-        
+
         // Act & Assert
-        expect(RecipeParticipants.canUserManagePermissions(recipe, 'owner_123'), true);
-        expect(RecipeParticipants.canUserManagePermissions(recipe, 'editor_123'), false);
+        expect(RecipeParticipants.canUserManagePermissions(recipe, 'owner_123'),
+            true);
+        expect(
+            RecipeParticipants.canUserManagePermissions(recipe, 'editor_123'),
+            false);
       });
-      
+
       test('should validate permission hierarchy', () {
         // Arrange
         final recipe = recipeBuilder
             .withParticipant('viewer', ResourcePermission.viewer)
             .withParticipant('editor', ResourcePermission.editor)
             .build();
-        
+
         // Act & Assert - Viewer < Editor < Owner
         expect(RecipeParticipants.canUserView(recipe, 'viewer'), true);
         expect(RecipeParticipants.canUserEdit(recipe, 'viewer'), false);
         expect(RecipeParticipants.canUserView(recipe, 'editor'), true);
         expect(RecipeParticipants.canUserEdit(recipe, 'editor'), true);
       });
-      
+
       test('should handle anonymous user access', () {
         // Arrange
         final recipe = recipeBuilder.build();
-        
+
         // Act & Assert
         expect(RecipeParticipants.canUserView(recipe, ''), false);
         expect(RecipeParticipants.canUserEdit(recipe, ''), false);
         expect(RecipeParticipants.canUserInvite(recipe, ''), false);
       });
-      
+
       test('should recognize owner override permissions', () {
         // Arrange
-        final recipe = recipeBuilder.withOwner('super_owner', 'Owner Name').build();
-        
+        final recipe =
+            recipeBuilder.withOwner('super_owner', 'Owner Name').build();
+
         // Act & Assert - Owner has all permissions via isOwner check
         expect(RecipeParticipants.canUserView(recipe, 'super_owner'), true);
         expect(RecipeParticipants.canUserEdit(recipe, 'super_owner'), true);
-        expect(RecipeParticipants.canUserInvite(recipe, 'super_owner'), true); // Owner can invite
-        expect(RecipeParticipants.canUserManagePermissions(recipe, 'super_owner'), true); // Owner can manage
+        expect(RecipeParticipants.canUserInvite(recipe, 'super_owner'),
+            true); // Owner can invite
+        expect(
+            RecipeParticipants.canUserManagePermissions(recipe, 'super_owner'),
+            true); // Owner can manage
       });
-      
+
       test('should validate permission inheritance', () {
         // Arrange
         final recipe = recipeBuilder
             .withParticipant('editor_123', ResourcePermission.editor)
             .build();
-        
+
         // Act & Assert - Editor inherits viewer permissions
         expect(RecipeParticipants.canUserView(recipe, 'editor_123'), true);
         expect(RecipeParticipants.canUserEdit(recipe, 'editor_123'), true);
-        expect(RecipeParticipants.canUserInvite(recipe, 'editor_123'), false); // Only admin/owner can invite
-        expect(RecipeParticipants.canUserManagePermissions(recipe, 'editor_123'), false);
+        expect(RecipeParticipants.canUserInvite(recipe, 'editor_123'),
+            false); // Only admin/owner can invite
+        expect(
+            RecipeParticipants.canUserManagePermissions(recipe, 'editor_123'),
+            false);
       });
     });
-    
+
     group('Collaboration Status', () {
       test('should generate collaboration status string', () {
         // Arrange
         final recipe = recipeBuilder.asCollaborativeSwedishDinner().build();
-        
+
         // Act
         final status = RecipeParticipants.getCollaborationStatus(recipe);
-        
+
         // Assert
-        expect(status, anyOf(contains('Kollaborativt'), contains('redigerare')));
+        expect(
+            status, anyOf(contains('Kollaborativt'), contains('redigerare')));
       });
-      
+
       test('should provide complete collaboration info', () {
         // Arrange
         final recipe = recipeBuilder
@@ -269,50 +283,54 @@ void main() {
             .withParticipant('editor_2', ResourcePermission.editor)
             .withParticipant('viewer_1', ResourcePermission.viewer)
             .build();
-        
+
         // Act
         final info = RecipeParticipants.getCollaborationInfo(recipe);
-        
+
         // Assert
-        expect(info['participantCount'], 3); // 3 participants (owner not in participants map)
+        expect(info['participantCount'],
+            3); // 3 participants (owner not in participants map)
         expect(info['editorCount'], 2);
         expect(info['viewerCount'], 1);
         expect(info['isCollaborative'], true);
       });
-      
+
       test('should suggest permissions for new users', () {
         // Arrange
         // Recipes not needed for this test - getSuggestedPermissionForNewParticipant is static
-        
+
         // Act
-        final smallSuggestion = RecipeParticipants.getSuggestedPermissionForNewParticipant();
-        final largeSuggestion = RecipeParticipants.getSuggestedPermissionForNewParticipant();
-        
+        final smallSuggestion =
+            RecipeParticipants.getSuggestedPermissionForNewParticipant();
+        final largeSuggestion =
+            RecipeParticipants.getSuggestedPermissionForNewParticipant();
+
         // Assert
         expect(smallSuggestion, ResourcePermission.viewer); // Default is viewer
         expect(largeSuggestion, ResourcePermission.viewer); // Same default
       });
-      
+
       test('should handle empty collaborator scenarios', () {
         // Arrange
         final recipe = recipeBuilder.build(); // Only owner
-        
+
         // Act
         final status = RecipeParticipants.getCollaborationStatus(recipe);
         final info = RecipeParticipants.getCollaborationInfo(recipe);
-        
+
         // Assert - Owner not in participants map, so private recipe
         expect(status, 'Privat recept');
-        expect(info['participantCount'], 0); // No participants (owner not counted)
+        expect(
+            info['participantCount'], 0); // No participants (owner not counted)
         expect(info['isCollaborative'], false);
       });
     });
-    
+
     group('Error Handling', () {
       test('should validate user ID not empty', () {
         // Arrange
         final recipe = recipeBuilder.build();
-        
+
         // Act & Assert
         expect(
           () => RecipeParticipants.addParticipant(
@@ -324,11 +342,11 @@ void main() {
           throwsA(isA<RecipeOperationError>()),
         );
       });
-      
+
       test('should handle invalid user operations', () {
         // Arrange
         final recipe = recipeBuilder.build();
-        
+
         // Act & Assert - Update non-existent user
         expect(
           () => RecipeParticipants.updateParticipantPermission(
@@ -339,13 +357,11 @@ void main() {
           throwsA(isA<RecipeOperationError>()),
         );
       });
-      
+
       test('should prevent permission violations', () {
         // Arrange
-        final recipe = recipeBuilder
-            .withOwner('owner_456', 'Owner')
-            .build();
-        
+        final recipe = recipeBuilder.withOwner('owner_456', 'Owner').build();
+
         // Act & Assert - Can't change owner permission
         expect(
           () => RecipeParticipants.updateParticipantPermission(
@@ -356,29 +372,30 @@ void main() {
           throwsA(isA<RecipeOperationError>()),
         );
       });
-      
+
       test('should enforce owner protection', () {
         // Arrange
         final recipe = recipeBuilder
             .withOwner('protected_owner', 'Protected')
             .withParticipant('user_123', ResourcePermission.editor)
             .build();
-        
+
         // Act - Updating to owner permission is allowed by the service
         final updated = RecipeParticipants.updateParticipantPermission(
           recipe,
           userId: 'user_123',
           newPermission: ResourcePermission.owner,
         );
-        
+
         // Assert - Permission was updated
         expect(updated.participants['user_123'], ResourcePermission.owner);
       });
-      
+
       test('should provide error messages in Swedish', () {
         // Arrange
-        final recipe = recipeBuilder.withOwner('owner_123', 'Test Owner').build();
-        
+        final recipe =
+            recipeBuilder.withOwner('owner_123', 'Test Owner').build();
+
         // Act & Assert - RecipeParticipants checks owner BEFORE participant check
         try {
           RecipeParticipants.removeParticipant(recipe, userId: 'owner_123');

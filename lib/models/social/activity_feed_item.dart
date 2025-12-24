@@ -17,46 +17,46 @@ export 'package:butlery/models/social/activity_type.dart';
 class ActivityFeedItem {
   /// Unique identifier for this activity
   final String id;
-  
+
   /// User who performed the activity
   final String userId;
-  
+
   /// Display name of user who performed the activity
   final String userDisplayName;
-  
+
   /// User's avatar URL (for display optimization)
   final String? userAvatarUrl;
-  
+
   /// Type of activity performed
   final ActivityType type;
-  
+
   /// ID of the target content (recipe, menu, comment, etc.)
   final String targetId;
-  
+
   /// Type of target content for proper handling
   final String targetType;
-  
+
   /// Display title of the target content
   final String targetTitle;
-  
+
   /// URL for target content image (recipes, menus)
   final String? targetImageUrl;
-  
+
   /// Parent content ID (for comments, replies, etc.)
   final String? parentId;
-  
+
   /// Parent content type (for nested activities)
   final String? parentType;
-  
+
   /// When this activity occurred
   final DateTime timestamp;
-  
+
   /// Friend categories that can see this activity
   final List<String> visibility;
-  
+
   /// Activity-specific metadata (reaction type, share targets, etc.)
   final Map<String, dynamic> metadata;
-  
+
   /// Engagement metrics for this activity
   final ActivityEngagement engagement;
 
@@ -127,19 +127,25 @@ class ActivityFeedItem {
     return ActivityFeedItem(
       id: id,
       userId: SerializationUtils.safeString(data, 'userId'),
-      userDisplayName: SerializationUtils.safeString(data, 'userDisplayName', defaultValue: 'Okänd användare'),
-      userAvatarUrl: SerializationUtils.safeNullableString(data, 'userAvatarUrl'),
-      type: ActivityType.fromKey(SerializationUtils.safeString(data, 'type', defaultValue: 'unknown')),
+      userDisplayName: SerializationUtils.safeString(data, 'userDisplayName',
+          defaultValue: 'Okänd användare'),
+      userAvatarUrl:
+          SerializationUtils.safeNullableString(data, 'userAvatarUrl'),
+      type: ActivityType.fromKey(
+          SerializationUtils.safeString(data, 'type', defaultValue: 'unknown')),
       targetId: SerializationUtils.safeString(data, 'targetId'),
       targetType: SerializationUtils.safeString(data, 'targetType'),
       targetTitle: SerializationUtils.safeString(data, 'targetTitle'),
-      targetImageUrl: SerializationUtils.safeNullableString(data, 'targetImageUrl'),
+      targetImageUrl:
+          SerializationUtils.safeNullableString(data, 'targetImageUrl'),
       parentId: SerializationUtils.safeNullableString(data, 'parentId'),
       parentType: SerializationUtils.safeNullableString(data, 'parentType'),
       timestamp: SerializationUtils.safeRequiredDateTime(data, 'timestamp'),
-      visibility: SerializationUtils.safeStringList(data, 'visibility', defaultValue: ['all_friends']),
+      visibility: SerializationUtils.safeStringList(data, 'visibility',
+          defaultValue: ['all_friends']),
       metadata: SerializationUtils.safeMap(data, 'metadata'),
-      engagement: ActivityEngagement.fromFirestore(SerializationUtils.safeMap(data, 'engagement')),
+      engagement: ActivityEngagement.fromFirestore(
+          SerializationUtils.safeMap(data, 'engagement')),
     );
   }
 
@@ -211,9 +217,11 @@ class ActivityFeedItem {
     return ActivityFeedItem(
       id: json['id'] as String,
       userId: (json['userId'] as String?).orEmpty(),
-      userDisplayName: (json['userDisplayName'] as String?).orDefault('Okänd användare'),
+      userDisplayName:
+          (json['userDisplayName'] as String?).orDefault('Okänd användare'),
       userAvatarUrl: json['userAvatarUrl'] as String?,
-      type: ActivityType.fromKey((json['type'] as String?).orDefault('unknown')),
+      type:
+          ActivityType.fromKey((json['type'] as String?).orDefault('unknown')),
       targetId: (json['targetId'] as String?).orEmpty(),
       targetType: (json['targetType'] as String?).orEmpty(),
       targetTitle: (json['targetTitle'] as String?).orEmpty(),
@@ -221,7 +229,8 @@ class ActivityFeedItem {
       parentId: json['parentId'] as String?,
       parentType: json['parentType'] as String?,
       timestamp: DateTime.parse(json['timestamp'] as String),
-      visibility: (json['visibility'] as List?)?.cast<String>() ?? ['all_friends'],
+      visibility:
+          (json['visibility'] as List?)?.cast<String>() ?? ['all_friends'],
       metadata: typedMetadata,
       engagement: ActivityEngagement.fromJson(typedEngagement),
     );
@@ -268,7 +277,7 @@ class ActivityFeedItem {
   String get timeAgo {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
-    
+
     if (difference.inDays > 7) {
       return '${timestamp.day}/${timestamp.month}';
     } else if (difference.inDays > 0) {
@@ -319,8 +328,9 @@ class ActivityFeedItem {
   bool isVisibleTo(List<String> userFriendCategories) {
     if (visibility.contains('all_friends')) return true;
     if (visibility.contains('public')) return true;
-    
-    return visibility.any((category) => userFriendCategories.contains(category));
+
+    return visibility
+        .any((category) => userFriendCategories.contains(category));
   }
 
   /// Get age of this activity

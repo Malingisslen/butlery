@@ -805,10 +805,10 @@ void main() {
 
       test('should validate image size correctly', () async {
         // Arrange
-        final validSizeFile =
-            MockFactory.createXFile('/test/small.jpg', length: 1024 * 1024); // 1MB
-        final largeSizeFile =
-            MockFactory.createXFile('/test/large.jpg', length: 10 * 1024 * 1024); // 10MB
+        final validSizeFile = MockFactory.createXFile('/test/small.jpg',
+            length: 1024 * 1024); // 1MB
+        final largeSizeFile = MockFactory.createXFile('/test/large.jpg',
+            length: 10 * 1024 * 1024); // 10MB
 
         // Act & Assert
         expect(await imageManager.isValidImageSize(validSizeFile), isTrue);
@@ -1181,4 +1181,3 @@ void main() {
     });
   });
 }
-

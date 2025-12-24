@@ -25,29 +25,29 @@ class MockBaseViewModel extends Mock implements BaseViewModel {
   bool _isDisposed = false;
   bool _isBusy = false;
   String? _errorMessage;
-  
+
   bool get isBusy => _isBusy;
-  
+
   String? get errorMessage => _errorMessage;
-  
+
   @override
   bool get hasError => _errorMessage != null;
-  
+
   @override
   bool get isDisposed => _isDisposed;
-  
+
   @override
   void addListener(VoidCallback listener) {
     if (!_isDisposed) {
       _listeners.add(listener);
     }
   }
-  
+
   @override
   void removeListener(VoidCallback listener) {
     _listeners.remove(listener);
   }
-  
+
   @override
   void notifyListeners() {
     if (!_isDisposed) {
@@ -56,32 +56,32 @@ class MockBaseViewModel extends Mock implements BaseViewModel {
       }
     }
   }
-  
+
   @override
   void dispose() {
     _isDisposed = true;
     _listeners.clear();
   }
-  
+
   @override
   bool get hasListeners => _listeners.isNotEmpty;
-  
+
   // Helper methods for testing
   void setLoadingState(bool loading) {
     _isBusy = loading;
     notifyListeners();
   }
-  
+
   void setErrorState(String? error) {
     _errorMessage = error;
     notifyListeners();
   }
-  
+
   void setBusy(bool value) {
     _isBusy = value;
     notifyListeners();
   }
-  
+
   @override
   void setError(String? error) {
     _errorMessage = error;
@@ -94,14 +94,14 @@ class MockAuthViewModel extends MockBaseViewModel implements AuthViewModel {
   bool _isAuthenticated = false;
   String? _currentUserId;
   String? _userEmail;
-  
+
   @override
   bool get isAuthenticated => _isAuthenticated;
-  
+
   String? get currentUserId => _currentUserId;
-  
+
   String? get userEmail => _userEmail;
-  
+
   void setAuthState({
     bool isAuthenticated = false,
     String? userId,
@@ -115,20 +115,21 @@ class MockAuthViewModel extends MockBaseViewModel implements AuthViewModel {
 }
 
 /// Mock for RecipeListViewModel
-class MockRecipeListViewModel extends MockBaseViewModel implements RecipeListViewModel {
+class MockRecipeListViewModel extends MockBaseViewModel
+    implements RecipeListViewModel {
   List<Recipe> _recipes = [];
   String _searchQuery = '';
   bool _isLoading = false;
-  
+
   @override
   List<Recipe> get recipes => _recipes;
-  
+
   @override
   String get searchQuery => _searchQuery;
-  
+
   @override
   bool get isLoading => _isLoading;
-  
+
   void setRecipeListState({
     List<Recipe>? recipes,
     String? searchQuery,
@@ -142,16 +143,17 @@ class MockRecipeListViewModel extends MockBaseViewModel implements RecipeListVie
 }
 
 /// Mock for RecipeDetailViewModel
-class MockRecipeDetailViewModel extends MockBaseViewModel implements RecipeDetailViewModel {
+class MockRecipeDetailViewModel extends MockBaseViewModel
+    implements RecipeDetailViewModel {
   Recipe? _recipe;
   bool _isLoading = false;
-  
+
   @override
   Recipe get recipe => _recipe ?? RecipeFactory.build();
-  
+
   @override
   bool get isLoading => _isLoading;
-  
+
   void setRecipeDetailState({
     Recipe? recipe,
     bool? isLoading,
@@ -163,23 +165,24 @@ class MockRecipeDetailViewModel extends MockBaseViewModel implements RecipeDetai
 }
 
 /// Mock for RecipeFormViewModel
-class MockRecipeFormViewModel extends MockBaseViewModel implements RecipeFormViewModel {
+class MockRecipeFormViewModel extends MockBaseViewModel
+    implements RecipeFormViewModel {
   Recipe? _recipe;
   bool _isLoading = false;
   String? _editMode;
   EditMode? _editModeEnum;
-  
+
   Recipe? get recipe => _recipe;
-  
+
   @override
   bool get isLoading => _isLoading;
-  
+
   @override
   String? get editMode => _editMode;
-  
+
   @override
   EditMode? get editModeEnum => _editModeEnum;
-  
+
   void setRecipeFormState({
     Recipe? recipe,
     bool? isLoading,
@@ -195,15 +198,16 @@ class MockRecipeFormViewModel extends MockBaseViewModel implements RecipeFormVie
 }
 
 /// Mock for UnifiedShoppingViewModel
-class MockUnifiedShoppingViewModel extends MockBaseViewModel implements UnifiedShoppingViewModel {
+class MockUnifiedShoppingViewModel extends MockBaseViewModel
+    implements UnifiedShoppingViewModel {
   List<UnifiedShoppingList> _shoppingLists = [];
   bool _isLoading = false;
-  
+
   List<UnifiedShoppingList> get shoppingLists => _shoppingLists;
-  
+
   @override
   bool get isLoading => _isLoading;
-  
+
   void setShoppingState({
     List<UnifiedShoppingList>? lists,
     bool? isLoading,
@@ -217,10 +221,10 @@ class MockUnifiedShoppingViewModel extends MockBaseViewModel implements UnifiedS
 /// Mock for MenuViewModel
 class MockMenuViewModel extends MockBaseViewModel implements MenuViewModel {
   bool _isLoading = false;
-  
+
   @override
   bool get isLoading => _isLoading;
-  
+
   void setMenuState({
     bool? isLoading,
   }) {
@@ -230,7 +234,8 @@ class MockMenuViewModel extends MockBaseViewModel implements MenuViewModel {
 }
 
 /// Mock for UserProfileViewModel
-class MockUserProfileViewModel extends MockBaseViewModel implements UserProfileViewModel {
+class MockUserProfileViewModel extends MockBaseViewModel
+    implements UserProfileViewModel {
   UserProfile? _userProfile;
   bool _isLoading = false;
   String _displayName = 'Test Användare';
@@ -243,107 +248,107 @@ class MockUserProfileViewModel extends MockBaseViewModel implements UserProfileV
   String? _error;
   bool _hasProfile = true;
   bool _isFormValid = true;
-  
+
   // UserProfileViewModel interface implementation
-  
+
   @override
   String get displayName => _displayName;
-  
+
   @override
   String? get avatarUrl => _avatarUrl;
-  
+
   @override
   bool get isSearchable => _isSearchable;
-  
+
   @override
   bool get allowEmailSearch => _allowEmailSearch;
-  
+
   @override
   bool get isLoading => _isLoading;
-  
+
   @override
   bool get isUploadingAvatar => _isUploadingAvatar;
-  
+
   @override
   bool get hasUnsavedChanges => _hasUnsavedChanges;
-  
+
   @override
   String? get displayNameError => _displayNameError;
-  
+
   @override
   String? get error => _error ?? _displayNameError;
-  
+
   @override
   bool get hasError => _error != null || _displayNameError != null;
-  
+
   @override
   UserProfile? get currentProfile => _userProfile;
-  
+
   @override
   bool get hasProfile => _hasProfile;
-  
+
   @override
   bool get isFormValid => _isFormValid;
-  
+
   // Mock methods for UserProfileViewModel interface
-  
+
   @override
   void updateDisplayName(String value) {
     _displayName = value.trim();
     _hasUnsavedChanges = true;
     notifyListeners();
   }
-  
+
   @override
   void updateIsSearchable(bool value) {
     _isSearchable = value;
     _hasUnsavedChanges = true;
     notifyListeners();
   }
-  
+
   @override
   void updateAllowEmailSearch(bool value) {
     _allowEmailSearch = value;
     _hasUnsavedChanges = true;
     notifyListeners();
   }
-  
+
   @override
   Future<bool> uploadAvatar() async {
     _isUploadingAvatar = true;
     notifyListeners();
-    
+
     await Future.delayed(const Duration(milliseconds: 100));
-    
+
     _isUploadingAvatar = false;
     _avatarUrl = 'https://example.com/test-avatar.jpg';
     _hasUnsavedChanges = true;
     notifyListeners();
-    
+
     return true;
   }
-  
+
   @override
   void removeAvatar() {
     _avatarUrl = null;
     _hasUnsavedChanges = true;
     notifyListeners();
   }
-  
+
   @override
   Future<bool> saveProfile() async {
     _isLoading = true;
     notifyListeners();
-    
+
     await Future.delayed(const Duration(milliseconds: 100));
-    
+
     _isLoading = false;
     _hasUnsavedChanges = false;
     notifyListeners();
-    
+
     return true;
   }
-  
+
   @override
   void resetForm() {
     _displayName = 'Test Användare';
@@ -354,31 +359,31 @@ class MockUserProfileViewModel extends MockBaseViewModel implements UserProfileV
     _error = null;
     notifyListeners();
   }
-  
+
   @override
   Future<bool> checkDisplayNameAvailability() async {
     await Future.delayed(const Duration(milliseconds: 100));
-    
+
     if (_displayName.toLowerCase().contains('taken')) {
       _displayNameError = 'Detta namn är redan taget';
       notifyListeners();
       return false;
     }
-    
+
     _displayNameError = null;
     notifyListeners();
     return true;
   }
-  
+
   @override
   void clearError() {
     _error = null;
     _displayNameError = null;
     notifyListeners();
   }
-  
+
   // Test helper methods
-  
+
   void setUserProfileState({
     UserProfile? profile,
     bool? isLoading,
@@ -410,16 +415,17 @@ class MockUserProfileViewModel extends MockBaseViewModel implements UserProfileV
 }
 
 /// Mock for FriendsViewModel
-class MockFriendsViewModel extends MockBaseViewModel implements FriendsViewModel {
+class MockFriendsViewModel extends MockBaseViewModel
+    implements FriendsViewModel {
   List<UserProfile> _friends = [];
   bool _isLoading = false;
-  
+
   @override
   List<UserProfile> get friends => _friends;
-  
+
   @override
   bool get isLoading => _isLoading;
-  
+
   void setFriendsState({
     List<UserProfile>? friends,
     bool? isLoading,
@@ -430,7 +436,7 @@ class MockFriendsViewModel extends MockBaseViewModel implements FriendsViewModel
     if (error != null) _errorMessage = error;
     notifyListeners();
   }
-  
+
   @override
   Future<void> refresh() async {
     // Mock implementation - just return completed future
@@ -445,28 +451,28 @@ class MockSocialRecipeViewModel extends Mock implements SocialRecipeViewModel {
   bool _isLoading = false;
   bool _isLoadingComments = false;
   int _commentCount = 0;
-  
+
   bool get isLoading => _isLoading;
-  
+
   @override
   bool get isLoadingComments => _isLoadingComments;
-  
+
   int get commentCount => _commentCount;
-  
+
   bool get isDisposed => _isDisposed;
-  
+
   @override
   void addListener(VoidCallback listener) {
     if (!_isDisposed) {
       _listeners.add(listener);
     }
   }
-  
+
   @override
   void removeListener(VoidCallback listener) {
     _listeners.remove(listener);
   }
-  
+
   @override
   void notifyListeners() {
     if (!_isDisposed) {
@@ -475,16 +481,16 @@ class MockSocialRecipeViewModel extends Mock implements SocialRecipeViewModel {
       }
     }
   }
-  
+
   @override
   void dispose() {
     _isDisposed = true;
     _listeners.clear();
   }
-  
+
   @override
   bool get hasListeners => _listeners.isNotEmpty;
-  
+
   void setSocialRecipeState({
     bool? isLoading,
     bool? isLoadingComments,
@@ -497,10 +503,11 @@ class MockSocialRecipeViewModel extends Mock implements SocialRecipeViewModel {
   }
 }
 
-class MockGroupContentViewModel extends MockBaseViewModel implements GroupContentViewModel {
+class MockGroupContentViewModel extends MockBaseViewModel
+    implements GroupContentViewModel {
   // Activity feed data
   List<Map<String, dynamic>> _groupActivityFeed = [];
-  
+
   // State management
   bool _isLoading = false;
   bool _hasError = false;
@@ -510,92 +517,92 @@ class MockGroupContentViewModel extends MockBaseViewModel implements GroupConten
   String _searchQuery = '';
   int _currentTabIndex = 0;
   FriendCategory? _currentGroup;
-  
+
   // GroupContentViewModel interface implementation
-  
+
   @override
   List<Map<String, dynamic>> get groupActivityFeed => _groupActivityFeed;
-  
+
   @override
   bool get isLoading => _isLoading;
-  
+
   @override
   bool get hasError => _hasError;
-  
+
   @override
   String? get error => _error;
-  
+
   @override
   bool get hasGroupContent => _hasGroupContent;
-  
+
   @override
   bool get hasFilteredContent => _hasFilteredContent;
-  
+
   @override
   String get searchQuery => _searchQuery;
-  
+
   @override
   int get currentTabIndex => _currentTabIndex;
   FriendCategory? get currentGroup => _currentGroup;
-  
+
   // GroupContentViewModel methods
-  
+
   @override
   Future<void> initialize(FriendCategory group) async {
     _currentGroup = group;
     _isLoading = true;
     notifyListeners();
-    
+
     await Future.delayed(const Duration(milliseconds: 100));
-    
+
     _isLoading = false;
     notifyListeners();
   }
-  
+
   @override
   void setTabIndex(int index) {
     _currentTabIndex = index;
     notifyListeners();
   }
-  
+
   @override
   Future<void> loadGroupContent() async {
     _isLoading = true;
     _hasError = false;
     _error = null;
     notifyListeners();
-    
+
     await Future.delayed(const Duration(milliseconds: 100));
-    
+
     _isLoading = false;
     notifyListeners();
   }
-  
+
   @override
   void clearSearch() {
     _searchQuery = '';
     _hasFilteredContent = _hasGroupContent;
     notifyListeners();
   }
-  
+
   @override
   Future<void> refresh() async {
     await Future.delayed(const Duration(milliseconds: 100));
     notifyListeners();
   }
-  
+
   // Test helper methods
-  
+
   void setGroupActivityFeed(List<Map<String, dynamic>> activities) {
     _groupActivityFeed = activities;
     notifyListeners();
   }
-  
+
   void clearGroupActivityFeed() {
     _groupActivityFeed.clear();
     notifyListeners();
   }
-  
+
   void setGroupContentState({
     bool? isLoading,
     bool? hasError,
@@ -636,7 +643,7 @@ class WidgetMockFactory {
     );
     return mock;
   }
-  
+
   /// Create a mock recipe list view model with sample recipes
   static MockRecipeListViewModel createMockRecipeListViewModel({
     List<Recipe>? recipes,
@@ -651,7 +658,7 @@ class WidgetMockFactory {
     );
     return mock;
   }
-  
+
   /// Create a mock recipe detail view model
   static MockRecipeDetailViewModel createMockRecipeDetailViewModel({
     Recipe? recipe,
@@ -664,7 +671,7 @@ class WidgetMockFactory {
     );
     return mock;
   }
-  
+
   /// Create a mock shopping view model with sample lists
   static MockUnifiedShoppingViewModel createMockShoppingViewModel({
     List<UnifiedShoppingList>? lists,
@@ -677,7 +684,7 @@ class WidgetMockFactory {
     );
     return mock;
   }
-  
+
   /// Create a mock group content view model with activity feed
   static MockGroupContentViewModel createMockGroupContentViewModel({
     List<Map<String, dynamic>>? activityFeed,
@@ -692,7 +699,7 @@ class WidgetMockFactory {
     }
     return mock;
   }
-  
+
   /// Create test recipes with various configurations
   static List<Recipe> createTestRecipes({int count = 3}) {
     return List.generate(
@@ -701,8 +708,14 @@ class WidgetMockFactory {
         id: 'recipe_$index',
         title: 'Testrätt ${index + 1}',
         description: 'En läcker svensk maträtt nummer ${index + 1}',
-        ingredients: ['Ingrediens ${index * 2 + 1}', 'Ingrediens ${index * 2 + 2}'],
-        instructions: ['Steg 1 för recept ${index + 1}', 'Steg 2 för recept ${index + 1}'],
+        ingredients: [
+          'Ingrediens ${index * 2 + 1}',
+          'Ingrediens ${index * 2 + 2}'
+        ],
+        instructions: [
+          'Steg 1 för recept ${index + 1}',
+          'Steg 2 för recept ${index + 1}'
+        ],
         mealType: index % 2 == 0 ? 'Lunch' : 'Middag',
         portions: 4 + index,
         timeMinutes: 30 + (index * 10),
@@ -712,7 +725,7 @@ class WidgetMockFactory {
       ),
     );
   }
-  
+
   /// Create test shopping lists with various configurations
   static List<UnifiedShoppingList> createTestShoppingLists({int count = 2}) {
     return List.generate(
@@ -730,17 +743,26 @@ class WidgetMockFactory {
             amount: 1.0 + itemIndex,
             unit: itemIndex % 2 == 0 ? 'st' : 'kg',
             bought: itemIndex == 0,
-            category: itemIndex % 3 == 0 ? 'Mejeri' : itemIndex % 3 == 1 ? 'Frukt & Grönt' : 'Skafferi',
+            category: itemIndex % 3 == 0
+                ? 'Mejeri'
+                : itemIndex % 3 == 1
+                    ? 'Frukt & Grönt'
+                    : 'Skafferi',
           ),
         ),
         createdAt: DateTime.now().subtract(Duration(days: index)),
         updatedAt: DateTime.now(),
         type: index == 1 ? ListType.collaborative : ListType.personal,
-        memberPermissions: index == 1 ? {'user_2': SharedListPermission.edit, 'user_3': SharedListPermission.view} : {},
+        memberPermissions: index == 1
+            ? {
+                'user_2': SharedListPermission.edit,
+                'user_3': SharedListPermission.view
+              }
+            : {},
       ),
     );
   }
-  
+
   /// Create a test user profile
   static UserProfile createTestUserProfile({
     String? id,

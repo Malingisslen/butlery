@@ -55,13 +55,15 @@ import 'package:butlery/models/recipe_unified.dart';
 /// - [added] - New recipe creation with complete recipe data initialization
 /// - [modified] - Existing recipe update with partial or complete data changes
 /// - [removed] - Recipe deletion with final state preservation for audit trails
-enum RecipeChangeType { 
+enum RecipeChangeType {
   /// Recipe creation with new data initialization
-  added, 
+  added,
+
   /// Recipe modification with existing data updates
-  modified, 
+  modified,
+
   /// Recipe deletion with state preservation for audit
-  removed 
+  removed
 }
 
 /// Comprehensive recipe change tracking model with audit trail and collaboration support.
@@ -72,7 +74,7 @@ class RecipeChange {
   /// Categorizes the modification for proper handling in synchronization,
   /// audit trails, and collaboration systems with accurate state management.
   final RecipeChangeType type;
-  
+
   /// Complete recipe state at the time of change.
   /// Preserves the full recipe data for accurate change tracking, version control,
   /// and audit trail maintenance with complete state information.
@@ -82,7 +84,7 @@ class RecipeChange {
   /// [type] The category of change performed (added, modified, removed)
   /// [recipe] Complete recipe state at the time of change for audit trail preservation
   RecipeChange({
-    required this.type, 
+    required this.type,
     required this.recipe,
   });
 
@@ -92,12 +94,12 @@ class RecipeChange {
   /// Returns true when the change type indicates new recipe creation,
   /// useful for filtering and processing addition-specific operations.
   bool get isAddition => type == RecipeChangeType.added;
-  
+
   /// Checks if this change represents a recipe modification operation.
   /// Returns true when the change type indicates existing recipe updates,
   /// useful for filtering and processing modification-specific operations.
   bool get isModification => type == RecipeChangeType.modified;
-  
+
   /// Checks if this change represents a recipe removal operation.
   /// Returns true when the change type indicates recipe deletion,
   /// useful for filtering and processing removal-specific operations.
@@ -139,9 +141,9 @@ class RecipeChange {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is RecipeChange && 
-           other.type == type && 
-           other.recipe.id == recipe.id;
+    return other is RecipeChange &&
+        other.type == type &&
+        other.recipe.id == recipe.id;
   }
 
   /// Generates hash code based on change type and recipe identifier.

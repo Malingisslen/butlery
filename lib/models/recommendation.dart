@@ -81,8 +81,10 @@ class Recommendation {
       score: SerializationUtils.safeDouble(map, 'score'),
       imageUrl: SerializationUtils.safeNullableString(map, 'imageUrl'),
       metadata: SerializationUtils.safeNullableMap(map, 'metadata'),
-      createdAt: SerializationUtils.safeDateTime(map, 'createdAt') ?? DateTime.now(),
-      isDismissed: SerializationUtils.safeBool(map, 'isDismissed', defaultValue: false),
+      createdAt:
+          SerializationUtils.safeDateTime(map, 'createdAt') ?? DateTime.now(),
+      isDismissed:
+          SerializationUtils.safeBool(map, 'isDismissed', defaultValue: false),
       isLiked: SerializationUtils.safeBool(map, 'isLiked', defaultValue: false),
     );
   }

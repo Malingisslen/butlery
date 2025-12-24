@@ -84,7 +84,8 @@ class GroupDetailViewModel extends ChangeNotifier
   bool get isLeavingGroup => _isLeavingGroup;
   bool get isUpdatingTitle => _isUpdatingTitle;
   bool get hasConversation => _conversation != null;
-  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
+  String? get currentUserId =>
+      ServiceLocator.get<PermissionService>().currentUserId;
 
   /// Check if current user is group admin/creator
   bool get isAdmin {
@@ -122,25 +123,24 @@ class GroupDetailViewModel extends ChangeNotifier
       _loadConversation();
 
       // Listen to conversations list stream and filter for this conversation
-      _conversationSubscription = _messagingService
-          .getMyConversations()
-          .listen(
-            (conversations) {
-              // Find the conversation by ID, or use the cached one as fallback
-              Conversation? conversation;
-              try {
-                conversation = conversations.firstWhere((c) => c.id == _conversationId);
-              } catch (_) {
-                // Conversation not in list, keep using cached version
-                conversation = _conversation;
-              }
+      _conversationSubscription = _messagingService.getMyConversations().listen(
+        (conversations) {
+          // Find the conversation by ID, or use the cached one as fallback
+          Conversation? conversation;
+          try {
+            conversation =
+                conversations.firstWhere((c) => c.id == _conversationId);
+          } catch (_) {
+            // Conversation not in list, keep using cached version
+            conversation = _conversation;
+          }
 
-              if (conversation != null) {
-                _onConversationUpdate(conversation);
-              }
-            },
-            onError: _onConversationError,
-          );
+          if (conversation != null) {
+            _onConversationUpdate(conversation);
+          }
+        },
+        onError: _onConversationError,
+      );
     } catch (e) {
       AppLogger.error('❌ Failed to initialize conversation stream', e);
       _setError('Kunde inte ladda gruppinformation');
@@ -150,7 +150,8 @@ class GroupDetailViewModel extends ChangeNotifier
   /// Load conversation data initially
   Future<void> _loadConversation() async {
     try {
-      final conversation = await _messagingService.getConversation(_conversationId);
+      final conversation =
+          await _messagingService.getConversation(_conversationId);
       if (!_isDisposed && conversation != null) {
         _conversation = conversation;
         _isLoading = false;

@@ -1,7 +1,7 @@
 // test/widget/image/image_config_ultrathink_test.dart
 // ULTRATHINK TEST SUITE: ImageConfig - 360 lines of production code
 // Testing 9 factory constructors, 3 enums (ImageType, ImageDisplayMode, ImageSize), and 4 utility methods
-// 
+//
 // ULTRATHINK FOCUS: Configuration validation, factory constructor patterns, dimension calculations, border radius logic
 
 import 'package:flutter/material.dart';
@@ -24,7 +24,7 @@ void main() {
     setUp(() async {
       await TestServiceLocator.initialize();
     });
-    
+
     tearDown(() async {
       await BaseWidgetTest.teardownWidget();
     });
@@ -42,7 +42,7 @@ void main() {
         expect(ImageType.hero, isNotNull);
         expect(ImageType.thumbnail, isNotNull);
         expect(ImageType.cached, isNotNull);
-        
+
         // ULTRATHINK: Verify enum has exactly 9 values as per production code
         expect(ImageType.values.length, equals(9));
       });
@@ -56,7 +56,7 @@ void main() {
         expect(ImageDisplayMode.carousel, isNotNull);
         expect(ImageDisplayMode.grid, isNotNull);
         expect(ImageDisplayMode.picker, isNotNull);
-        
+
         // ULTRATHINK: Verify enum has exactly 6 values as per production code
         expect(ImageDisplayMode.values.length, equals(6));
       });
@@ -72,7 +72,7 @@ void main() {
         expect(ImageSize.hero, isNotNull);
         expect(ImageSize.thumbnail, isNotNull);
         expect(ImageSize.custom, isNotNull);
-        
+
         // ULTRATHINK: Verify enum has exactly 8 values as per production code
         expect(ImageSize.values.length, equals(8));
       });
@@ -83,7 +83,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code factory from lines 86-111
         final config = ImageConfig.avatar();
-        
+
         expect(config.type, equals(ImageType.avatar));
         expect(config.mode, equals(ImageDisplayMode.readonly));
         expect(config.size, equals(ImageSize.medium)); // Default size
@@ -91,14 +91,16 @@ void main() {
         expect(config.showLoadingIndicator, isTrue);
         expect(config.showMultipleIndicator, isFalse); // Avatar-specific
         expect(config.showEditControls, isFalse); // Avatar-specific
-        expect(config.showStatusIndicator, isFalse); // Default showStatus = false
+        expect(
+            config.showStatusIndicator, isFalse); // Default showStatus = false
         expect(config.showNavigationDots, isFalse); // Avatar-specific
         expect(config.showImageCounter, isFalse); // Avatar-specific
         expect(config.enableHapticFeedback, isFalse); // Avatar-specific
         expect(config.maxImages, equals(1)); // Avatar-specific
-        
+
         // ULTRATHINK: Border radius uses AppDimensions.borderRadius100 (line 106)
-        expect(config.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadius100)));
+        expect(config.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius100)));
       });
 
       testWidgets('ImageConfig.avatar with custom parameters',
@@ -111,7 +113,7 @@ void main() {
           borderWidth: 2.0,
           backgroundColor: Colors.blue,
         );
-        
+
         expect(config.size, equals(ImageSize.large));
         expect(config.showStatusIndicator, isTrue); // Custom showStatus
         expect(config.borderColor, equals(Colors.red));
@@ -123,54 +125,64 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code factory from lines 113-138
         final config = ImageConfig.recipeCard();
-        
+
         expect(config.type, equals(ImageType.recipeCard));
         expect(config.mode, equals(ImageDisplayMode.readonly));
-        expect(config.size, equals(ImageSize.card)); // Default size for recipe cards
+        expect(config.size,
+            equals(ImageSize.card)); // Default size for recipe cards
         expect(config.showPlaceholder, isTrue);
         expect(config.showLoadingIndicator, isTrue);
-        expect(config.showMultipleIndicator, isTrue); // Default for recipe cards
+        expect(
+            config.showMultipleIndicator, isTrue); // Default for recipe cards
         expect(config.showEditControls, isFalse); // Default for recipe cards
-        expect(config.showStatusIndicator, isFalse); // Recipe cards don't show status
-        expect(config.showNavigationDots, isFalse); // Recipe cards don't need dots
-        expect(config.showImageCounter, isFalse); // Recipe cards don't need counter
+        expect(config.showStatusIndicator,
+            isFalse); // Recipe cards don't show status
+        expect(
+            config.showNavigationDots, isFalse); // Recipe cards don't need dots
+        expect(config.showImageCounter,
+            isFalse); // Recipe cards don't need counter
         expect(config.enableHapticFeedback, isTrue);
         expect(config.maxImages, equals(5));
-        
+
         // ULTRATHINK: Border radius uses AppDimensions.borderRadius12 (line 127)
-        expect(config.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadius12)));
+        expect(config.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius12)));
       });
 
       testWidgets('ImageConfig.recipeDetail creates correct configuration',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code factory from lines 140-162
         final config = ImageConfig.recipeDetail();
-        
+
         expect(config.type, equals(ImageType.recipeDetail));
         expect(config.mode, equals(ImageDisplayMode.carousel));
-        expect(config.size, equals(ImageSize.large)); // Default size for detail view
+        expect(config.size,
+            equals(ImageSize.large)); // Default size for detail view
         expect(config.showPlaceholder, isTrue);
         expect(config.showLoadingIndicator, isTrue);
-        expect(config.showMultipleIndicator, isFalse); // Detail view uses dots/counter instead
+        expect(config.showMultipleIndicator,
+            isFalse); // Detail view uses dots/counter instead
         expect(config.showEditControls, isFalse); // Detail view is readonly
         expect(config.showStatusIndicator, isFalse);
         expect(config.showNavigationDots, isTrue); // Default for detail view
         expect(config.showImageCounter, isTrue); // Default for detail view
         expect(config.enableHapticFeedback, isTrue);
         expect(config.maxImages, equals(5));
-        
+
         // ULTRATHINK: Border radius uses AppDimensions.borderRadius16 (line 150)
-        expect(config.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadius16)));
+        expect(config.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius16)));
       });
 
       testWidgets('ImageConfig.recipeEdit creates correct configuration',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code factory from lines 164-185
         final config = ImageConfig.recipeEdit();
-        
+
         expect(config.type, equals(ImageType.recipeEdit));
         expect(config.mode, equals(ImageDisplayMode.editable));
-        expect(config.size, equals(ImageSize.large)); // Default size for edit mode
+        expect(
+            config.size, equals(ImageSize.large)); // Default size for edit mode
         expect(config.showPlaceholder, isTrue);
         expect(config.showLoadingIndicator, isTrue);
         expect(config.showMultipleIndicator, isFalse);
@@ -180,38 +192,42 @@ void main() {
         expect(config.showImageCounter, isTrue);
         expect(config.enableHapticFeedback, isTrue);
         expect(config.maxImages, equals(5)); // Default max images
-        
+
         // ULTRATHINK: Border radius uses AppDimensions.borderRadius16 (line 174)
-        expect(config.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadius16)));
+        expect(config.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius16)));
       });
 
       testWidgets('ImageConfig.gallery creates correct configuration',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code factory from lines 187-206
         final config = ImageConfig.gallery();
-        
+
         expect(config.type, equals(ImageType.gallery));
         expect(config.mode, equals(ImageDisplayMode.grid));
         expect(config.size, equals(ImageSize.thumbnail)); // Default for gallery
         expect(config.showPlaceholder, isTrue);
         expect(config.showLoadingIndicator, isTrue);
-        expect(config.showMultipleIndicator, isFalse); // Gallery doesn't need indicators
+        expect(config.showMultipleIndicator,
+            isFalse); // Gallery doesn't need indicators
         expect(config.showEditControls, isFalse); // Default for gallery
         expect(config.showStatusIndicator, isFalse);
         expect(config.showNavigationDots, isFalse); // Gallery doesn't need dots
-        expect(config.showImageCounter, isFalse); // Gallery doesn't need counter
+        expect(
+            config.showImageCounter, isFalse); // Gallery doesn't need counter
         expect(config.enableHapticFeedback, isTrue);
         expect(config.maxImages, equals(50)); // Gallery allows many images
-        
+
         // ULTRATHINK: Border radius uses AppDimensions.borderRadius8 (line 195)
-        expect(config.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadius8)));
+        expect(config.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius8)));
       });
 
       testWidgets('ImageConfig.picker creates correct configuration',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code factory from lines 208-227
         final config = ImageConfig.picker();
-        
+
         expect(config.type, equals(ImageType.picker));
         expect(config.mode, equals(ImageDisplayMode.picker));
         expect(config.size, equals(ImageSize.medium)); // Default for picker
@@ -224,16 +240,17 @@ void main() {
         expect(config.showImageCounter, isFalse); // Picker doesn't need counter
         expect(config.enableHapticFeedback, isTrue);
         expect(config.maxImages, equals(5)); // Default max images
-        
+
         // ULTRATHINK: Border radius uses AppDimensions.borderRadius12 (line 216)
-        expect(config.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadius12)));
+        expect(config.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius12)));
       });
 
       testWidgets('ImageConfig.hero creates correct configuration',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code factory from lines 229-253
         final config = ImageConfig.hero();
-        
+
         expect(config.type, equals(ImageType.hero));
         expect(config.mode, equals(ImageDisplayMode.expandable));
         expect(config.size, equals(ImageSize.hero));
@@ -252,7 +269,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code factory from lines 255-274
         final config = ImageConfig.thumbnail();
-        
+
         expect(config.type, equals(ImageType.thumbnail));
         expect(config.mode, equals(ImageDisplayMode.readonly));
         expect(config.size, equals(ImageSize.thumbnail));
@@ -261,20 +278,24 @@ void main() {
         expect(config.showMultipleIndicator, isFalse);
         expect(config.showEditControls, isFalse); // Thumbnail is readonly
         expect(config.showStatusIndicator, isFalse);
-        expect(config.showNavigationDots, isFalse); // Thumbnail doesn't need dots
-        expect(config.showImageCounter, isFalse); // Thumbnail doesn't need counter
-        expect(config.enableHapticFeedback, isFalse); // Thumbnail doesn't need haptic
+        expect(
+            config.showNavigationDots, isFalse); // Thumbnail doesn't need dots
+        expect(
+            config.showImageCounter, isFalse); // Thumbnail doesn't need counter
+        expect(config.enableHapticFeedback,
+            isFalse); // Thumbnail doesn't need haptic
         expect(config.maxImages, equals(1)); // Thumbnail shows single image
-        
+
         // ULTRATHINK: Border radius uses AppDimensions.borderRadius8 (line 263)
-        expect(config.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadius8)));
+        expect(config.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius8)));
       });
 
       testWidgets('ImageConfig.cached creates correct configuration',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code factory from lines 276-299
         final config = ImageConfig.cached();
-        
+
         expect(config.type, equals(ImageType.cached));
         expect(config.mode, equals(ImageDisplayMode.readonly));
         expect(config.size, equals(ImageSize.medium)); // Default size
@@ -285,7 +306,8 @@ void main() {
         expect(config.showStatusIndicator, isFalse);
         expect(config.showNavigationDots, isFalse); // Cached doesn't need dots
         expect(config.showImageCounter, isFalse); // Cached doesn't need counter
-        expect(config.enableHapticFeedback, isFalse); // Cached doesn't need haptic
+        expect(
+            config.enableHapticFeedback, isFalse); // Cached doesn't need haptic
         expect(config.maxImages, equals(1)); // Cached shows single image
       });
     });
@@ -294,35 +316,37 @@ void main() {
       testWidgets('getDimensions returns correct sizes',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code getDimensions method from lines 302-322
-        
+
         // Small size (line 305)
         var config = ImageConfig.cached(size: ImageSize.small);
         expect(config.getDimensions(), equals(const Size(40, 40)));
-        
+
         // Medium size (line 307)
         config = ImageConfig.cached(size: ImageSize.medium);
         expect(config.getDimensions(), equals(const Size(80, 80)));
-        
+
         // Large size (line 310) - responsive sizing
         config = ImageConfig.cached(size: ImageSize.large);
-        expect(config.getDimensions(), equals(const Size(double.infinity, 280)));
-        
+        expect(
+            config.getDimensions(), equals(const Size(double.infinity, 280)));
+
         // Extra large size (line 312)
         config = ImageConfig.cached(size: ImageSize.extraLarge);
         expect(config.getDimensions(), equals(const Size(160, 160)));
-        
+
         // Card size (line 314)
         config = ImageConfig.cached(size: ImageSize.card);
         expect(config.getDimensions(), equals(const Size(200, 140)));
-        
+
         // Hero size (line 316)
         config = ImageConfig.cached(size: ImageSize.hero);
-        expect(config.getDimensions(), equals(const Size(double.infinity, 300)));
-        
+        expect(
+            config.getDimensions(), equals(const Size(double.infinity, 300)));
+
         // Thumbnail size (line 318)
         config = ImageConfig.cached(size: ImageSize.thumbnail);
         expect(config.getDimensions(), equals(const Size(60, 60)));
-        
+
         // Custom size (line 320)
         config = ImageConfig.cached(
           size: ImageSize.custom,
@@ -330,7 +354,7 @@ void main() {
           customHeight: 100,
         );
         expect(config.getDimensions(), equals(const Size(150, 100)));
-        
+
         // Custom size with defaults (customWidth/Height ?? 80)
         config = ImageConfig.cached(size: ImageSize.custom);
         expect(config.getDimensions(), equals(const Size(80, 80)));
@@ -339,19 +363,19 @@ void main() {
       testWidgets('getAspectRatio returns correct ratios',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code getAspectRatio method from lines 325-331
-        
+
         // Square size should return 1.0
         var config = ImageConfig.cached(size: ImageSize.medium);
         expect(config.getAspectRatio(), equals(1.0)); // 80/80 = 1.0
-        
+
         // Rectangle size
         config = ImageConfig.cached(size: ImageSize.card);
         expect(config.getAspectRatio(), equals(200.0 / 140.0));
-        
+
         // Infinite width should return 16/9 (line 328)
         config = ImageConfig.cached(size: ImageSize.large);
         expect(config.getAspectRatio(), equals(16.0 / 9.0));
-        
+
         // Hero size (infinite width)
         config = ImageConfig.cached(size: ImageSize.hero);
         expect(config.getAspectRatio(), equals(16.0 / 9.0));
@@ -360,27 +384,27 @@ void main() {
       testWidgets('isSquare returns correct boolean',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code isSquare getter from lines 334-337
-        
+
         // Square sizes
         var config = ImageConfig.cached(size: ImageSize.small);
         expect(config.isSquare, isTrue); // 40x40
-        
+
         config = ImageConfig.cached(size: ImageSize.medium);
         expect(config.isSquare, isTrue); // 80x80
-        
+
         config = ImageConfig.cached(size: ImageSize.extraLarge);
         expect(config.isSquare, isTrue); // 160x160
-        
+
         config = ImageConfig.cached(size: ImageSize.thumbnail);
         expect(config.isSquare, isTrue); // 60x60
-        
+
         // Non-square sizes
         config = ImageConfig.cached(size: ImageSize.card);
         expect(config.isSquare, isFalse); // 200x140
-        
+
         config = ImageConfig.cached(size: ImageSize.large);
         expect(config.isSquare, isFalse); // infinity x 280
-        
+
         config = ImageConfig.cached(size: ImageSize.hero);
         expect(config.isSquare, isFalse); // infinity x 300
       });
@@ -392,7 +416,7 @@ void main() {
         // ULTRATHINK: Test production code effectiveBorderRadius getter from lines 340-360
         final customRadius = BorderRadius.circular(25.0);
         final config = ImageConfig.cached(borderRadius: customRadius);
-        
+
         // When borderRadius is specified, it should return the custom value (line 341)
         expect(config.effectiveBorderRadius, equals(customRadius));
       });
@@ -400,51 +424,51 @@ void main() {
       testWidgets('effectiveBorderRadius returns type-specific defaults',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code type-specific border radius logic
-        
+
         // Avatar type (line 345)
         var config = ImageConfig.avatar();
-        expect(config.effectiveBorderRadius, 
-          equals(BorderRadius.circular(AppDimensions.borderRadius100)));
-        
+        expect(config.effectiveBorderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius100)));
+
         // Recipe card type (line 347)
         config = ImageConfig.recipeCard();
-        expect(config.effectiveBorderRadius, 
-          equals(BorderRadius.circular(AppDimensions.borderRadius12)));
-        
+        expect(config.effectiveBorderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius12)));
+
         // Recipe detail type (line 349)
         config = ImageConfig.recipeDetail();
-        expect(config.effectiveBorderRadius, 
-          equals(BorderRadius.circular(AppDimensions.borderRadius16)));
-        
+        expect(config.effectiveBorderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius16)));
+
         // Recipe edit type (line 349)
         config = ImageConfig.recipeEdit();
-        expect(config.effectiveBorderRadius, 
-          equals(BorderRadius.circular(AppDimensions.borderRadius16)));
-        
+        expect(config.effectiveBorderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius16)));
+
         // Gallery type (line 352)
         config = ImageConfig.gallery();
-        expect(config.effectiveBorderRadius, 
-          equals(BorderRadius.circular(AppDimensions.borderRadius8)));
-        
+        expect(config.effectiveBorderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius8)));
+
         // Thumbnail type (line 352)
         config = ImageConfig.thumbnail();
-        expect(config.effectiveBorderRadius, 
-          equals(BorderRadius.circular(AppDimensions.borderRadius8)));
-        
+        expect(config.effectiveBorderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius8)));
+
         // Picker type (line 355)
         config = ImageConfig.picker();
-        expect(config.effectiveBorderRadius, 
-          equals(BorderRadius.circular(AppDimensions.borderRadius12)));
-        
+        expect(config.effectiveBorderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius12)));
+
         // Hero type (line 358)
         config = ImageConfig.hero();
-        expect(config.effectiveBorderRadius, 
-          equals(BorderRadius.circular(AppDimensions.borderRadius0)));
-        
+        expect(config.effectiveBorderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius0)));
+
         // Cached type (line 358)
         config = ImageConfig.cached();
-        expect(config.effectiveBorderRadius, 
-          equals(BorderRadius.circular(AppDimensions.borderRadius0)));
+        expect(config.effectiveBorderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadius0)));
       });
     });
 
@@ -457,7 +481,7 @@ void main() {
           customWidth: null,
           customHeight: null,
         );
-        
+
         // Should fallback to 80x80 when custom dimensions are null
         expect(config.getDimensions(), equals(const Size(80, 80)));
       });
@@ -471,19 +495,19 @@ void main() {
           showNavigationDots: false,
           maxImages: 10,
         );
-        
+
         expect(recipeEditConfig.size, equals(ImageSize.extraLarge));
         expect(recipeEditConfig.showEditControls, isFalse);
         expect(recipeEditConfig.showNavigationDots, isFalse);
         expect(recipeEditConfig.maxImages, equals(10));
-        
+
         final heroConfig = ImageConfig.hero(
           heroTag: 'recipe_hero',
           customWidth: 300,
           customHeight: 200,
           borderRadius: BorderRadius.circular(20),
         );
-        
+
         expect(heroConfig.heroTag, equals('recipe_hero'));
         expect(heroConfig.customWidth, equals(300));
         expect(heroConfig.customHeight, equals(200));
@@ -493,7 +517,7 @@ void main() {
       testWidgets('complex configuration combinations',
           (WidgetTester tester) async {
         // ULTRATHINK: Test complex real-world configuration scenarios
-        
+
         // Avatar with status and custom styling
         final avatarConfig = ImageConfig.avatar(
           size: ImageSize.large,
@@ -501,30 +525,31 @@ void main() {
           borderColor: Colors.green,
           borderWidth: 3.0,
         );
-        
+
         expect(avatarConfig.showStatusIndicator, isTrue);
         expect(avatarConfig.borderColor, equals(Colors.green));
         expect(avatarConfig.borderWidth, equals(3.0));
-        expect(avatarConfig.getDimensions(), equals(const Size(double.infinity, 280)));
+        expect(avatarConfig.getDimensions(),
+            equals(const Size(double.infinity, 280)));
         expect(avatarConfig.getAspectRatio(), equals(16.0 / 9.0));
         expect(avatarConfig.isSquare, isFalse);
-        
+
         // Gallery with custom edit controls
         final galleryConfig = ImageConfig.gallery(
           size: ImageSize.card,
           showEditControls: true,
         );
-        
+
         expect(galleryConfig.showEditControls, isTrue);
         expect(galleryConfig.getDimensions(), equals(const Size(200, 140)));
         expect(galleryConfig.isSquare, isFalse);
-        
+
         // Picker with custom max images
         final pickerConfig = ImageConfig.picker(
           size: ImageSize.small,
           maxImages: 15,
         );
-        
+
         expect(pickerConfig.maxImages, equals(15));
         expect(pickerConfig.getDimensions(), equals(const Size(40, 40)));
         expect(pickerConfig.isSquare, isTrue);

@@ -6,7 +6,8 @@ import 'package:butlery/models/parsing/tier_result.dart';
 import 'package:butlery/services/parsing/parsers/swedish_line_classifier.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
-import 'package:butlery/utils/text/ingredient_parser.dart' hide ParsedIngredient;
+import 'package:butlery/utils/text/ingredient_parser.dart'
+    hide ParsedIngredient;
 
 /// Tier 3: Rule-based Swedish text parsing.
 ///
@@ -174,15 +175,18 @@ class RuleBasedTier extends ParsingTier with QualityScoring {
 
     return ParsedRecipe(
       title: structure.title != null && structure.title!.isNotEmpty
-          ? FieldResult.mediumConfidence(structure.title!, 'Extracted from text')
+          ? FieldResult.mediumConfidence(
+              structure.title!, 'Extracted from text')
           : FieldResult.failed('No title found'),
       portions: structure.portions != null
-          ? FieldResult.mediumConfidence(structure.portions!, 'Extracted from text')
+          ? FieldResult.mediumConfidence(
+              structure.portions!, 'Extracted from text')
           : FieldResult.lowConfidence(4, 'Defaulting to 4 portions'),
       ingredients: ingredients,
       instructions: instructions,
       totalTime: structure.totalTime != null
-          ? FieldResult.mediumConfidence(structure.totalTime!, 'Extracted from text')
+          ? FieldResult.mediumConfidence(
+              structure.totalTime!, 'Extracted from text')
           : FieldResult.failed('No time found'),
       metadata: metadata,
     );

@@ -35,17 +35,22 @@ class FriendsStateManager extends ChangeNotifier {
   FriendsStateManager({
     required FirebaseFriendsRepository repository,
     required FriendCategoryRepository categoryRepository,
-  }) : _repository = repository,
-       _categoryRepository = categoryRepository;
+  })  : _repository = repository,
+        _categoryRepository = categoryRepository;
 
   List<UserProfile> get friends => List.unmodifiable(_friends);
-  List<FriendRequest> get incomingRequests => List.unmodifiable(_incomingRequests);
-  List<FriendRequest> get outgoingRequests => List.unmodifiable(_outgoingRequests);
+  List<FriendRequest> get incomingRequests =>
+      List.unmodifiable(_incomingRequests);
+  List<FriendRequest> get outgoingRequests =>
+      List.unmodifiable(_outgoingRequests);
   List<FriendCategory> get categories => List.unmodifiable(_categories);
-  List<GroupInvitation> get sentInvitations => List.unmodifiable(_sentInvitations);
-  List<GroupInvitation> get receivedInvitations => List.unmodifiable(_receivedInvitations);
+  List<GroupInvitation> get sentInvitations =>
+      List.unmodifiable(_sentInvitations);
+  List<GroupInvitation> get receivedInvitations =>
+      List.unmodifiable(_receivedInvitations);
   Set<String> get blockedUsers => Set.unmodifiable(_blockedUsers);
-  Map<String, Set<String>> get friendCategoryRelationships => <String, Set<String>>{};
+  Map<String, Set<String>> get friendCategoryRelationships =>
+      <String, Set<String>>{};
 
   bool get isInitialized => _isInitialized;
   bool get isLoading => _isLoading;
@@ -78,11 +83,11 @@ class FriendsStateManager extends ChangeNotifier {
 
       _isInitialized = true;
       _isLoading = false;
-
     } catch (e, stackTrace) {
       _error = 'Failed to load friends data: $e';
       _isLoading = false;
-      AppLogger.error('❌ Failed to initialize FriendsStateManager: $e', stackTrace);
+      AppLogger.error(
+          '❌ Failed to initialize FriendsStateManager: $e', stackTrace);
     }
 
     notifyListeners();
@@ -93,12 +98,14 @@ class FriendsStateManager extends ChangeNotifier {
       final friendIds = await _repository.fetchFriendIds(userId);
 
       if (friendIds.isNotEmpty) {
-        final filteredFriendIds = friendIds.where((id) => id != userId).toList();
+        final filteredFriendIds =
+            friendIds.where((id) => id != userId).toList();
 
         if (filteredFriendIds.isNotEmpty) {
-          final friendProfiles = await _repository.fetchFriendProfiles(filteredFriendIds);
+          final friendProfiles =
+              await _repository.fetchFriendProfiles(filteredFriendIds);
           _friends = friendProfiles;
-          } else {
+        } else {
           _friends = [];
         }
       } else {
@@ -120,7 +127,8 @@ class FriendsStateManager extends ChangeNotifier {
       _incomingRequests = results[0];
       _outgoingRequests = results[1];
 
-      AppLogger.debug('Loaded ${_incomingRequests.length} incoming requests, ${_outgoingRequests.length} outgoing requests');
+      AppLogger.debug(
+          'Loaded ${_incomingRequests.length} incoming requests, ${_outgoingRequests.length} outgoing requests');
     } catch (e) {
       AppLogger.warning('Failed to load friend requests: $e');
       _incomingRequests = [];
@@ -131,7 +139,8 @@ class FriendsStateManager extends ChangeNotifier {
   Future<void> _loadCategories(String userId) async {
     try {
       _categories = await _categoryRepository.fetchCategories(userId);
-      AppLogger.debug('Loaded ${_categories.length} categories using FriendCategoryRepository');
+      AppLogger.debug(
+          'Loaded ${_categories.length} categories using FriendCategoryRepository');
     } catch (e) {
       AppLogger.warning('Failed to load categories: $e');
       _categories = [];
@@ -140,7 +149,8 @@ class FriendsStateManager extends ChangeNotifier {
 
   Future<void> _loadGroupInvitations(String userId) async {
     try {
-      final receivedInvitations = await _repository.fetchReceivedInvitations(userId);
+      final receivedInvitations =
+          await _repository.fetchReceivedInvitations(userId);
       _receivedInvitations = receivedInvitations;
 
       final sentInvitations = await _repository.fetchSentInvitations(userId);
@@ -152,7 +162,6 @@ class FriendsStateManager extends ChangeNotifier {
   }
 
   void clearAllData() {
-
     _incomingRequestsSubscription?.cancel();
     _sentRequestsSubscription?.cancel();
     _groupInvitationsSubscription?.cancel();
@@ -184,12 +193,15 @@ class FriendsStateManager extends ChangeNotifier {
       _sentRequestsSubscription?.cancel();
       _groupInvitationsSubscription?.cancel();
       _categoriesSubscription?.cancel();
-      AppLogger.debug('🧹 Cancelled existing real-time listeners before setting up new ones');
+      AppLogger.debug(
+          '🧹 Cancelled existing real-time listeners before setting up new ones');
 
-      _incomingRequestsSubscription = _repository.incomingRequestsStream(userId).listen(
+      _incomingRequestsSubscription =
+          _repository.incomingRequestsStream(userId).listen(
         (requests) {
           _incomingRequests = requests;
-          AppLogger.debug('Real-time update: ${_incomingRequests.length} incoming requests');
+          AppLogger.debug(
+              'Real-time update: ${_incomingRequests.length} incoming requests');
           notifyListeners();
         },
         onError: (e) {
@@ -200,7 +212,8 @@ class FriendsStateManager extends ChangeNotifier {
       _sentRequestsSubscription = _repository.sentRequestsStream(userId).listen(
         (requests) {
           _outgoingRequests = requests;
-          AppLogger.debug('Real-time update: ${_outgoingRequests.length} outgoing requests');
+          AppLogger.debug(
+              'Real-time update: ${_outgoingRequests.length} outgoing requests');
           notifyListeners();
         },
         onError: (e) {
@@ -208,7 +221,8 @@ class FriendsStateManager extends ChangeNotifier {
         },
       );
 
-      _groupInvitationsSubscription = _repository.receivedInvitationsStream(userId).listen(
+      _groupInvitationsSubscription =
+          _repository.receivedInvitationsStream(userId).listen(
         (invitations) {
           _receivedInvitations = invitations;
           notifyListeners();
@@ -218,7 +232,8 @@ class FriendsStateManager extends ChangeNotifier {
         },
       );
 
-      _categoriesSubscription = _categoryRepository.categoriesStream(userId).listen(
+      _categoriesSubscription =
+          _categoryRepository.categoriesStream(userId).listen(
         (categories) {
           _categories = categories;
           AppLogger.debug('Real-time update: ${_categories.length} categories');
@@ -228,7 +243,6 @@ class FriendsStateManager extends ChangeNotifier {
           AppLogger.warning('Categories stream error: $e');
         },
       );
-
     } catch (e) {
       AppLogger.warning('Failed to setup real-time listeners: $e');
     }
@@ -284,7 +298,8 @@ class FriendsStateManager extends ChangeNotifier {
   void addFriend(UserProfile friend) {
     if (!_friends.any((f) => f.uid == friend.uid)) {
       _friends.add(friend);
-      AppLogger.debug('Added friend to state: ${friend.displayName} (${friend.uid})');
+      AppLogger.debug(
+          'Added friend to state: ${friend.displayName} (${friend.uid})');
       notifyListeners();
     }
   }
@@ -406,7 +421,8 @@ class FriendsStateManager extends ChangeNotifier {
     }
   }
 
-  void updateReceivedInvitation(String invitationId, GroupInvitation invitation) {
+  void updateReceivedInvitation(
+      String invitationId, GroupInvitation invitation) {
     final index = _receivedInvitations.indexWhere((i) => i.id == invitationId);
     if (index != -1) {
       _receivedInvitations[index] = invitation;
@@ -436,7 +452,8 @@ class FriendsStateManager extends ChangeNotifier {
     _groupInvitationsSubscription = null;
     _categoriesSubscription = null;
 
-    AppLogger.debug('FriendsStateManager disposed - cleaned up ${_friends.length} friends data');
+    AppLogger.debug(
+        'FriendsStateManager disposed - cleaned up ${_friends.length} friends data');
     super.dispose();
   }
 }

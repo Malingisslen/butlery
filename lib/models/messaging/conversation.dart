@@ -191,7 +191,7 @@ class Conversation {
   }) {
     final now = DateTime.now();
     final conversationId = const Uuid().v4();
-    
+
     return Conversation(
       id: conversationId,
       participantIds: [user1Id, user2Id],
@@ -232,13 +232,13 @@ class Conversation {
   }) {
     final now = DateTime.now();
     final conversationId = const Uuid().v4();
-    
+
     // Initialize last read timestamps for all participants
     final lastReadTimestamps = <String, DateTime>{};
     for (final participantId in participantIds) {
       lastReadTimestamps[participantId] = now;
     }
-    
+
     return Conversation(
       id: conversationId,
       participantIds: participantIds,
@@ -254,7 +254,6 @@ class Conversation {
       },
     );
   }
-
 
   /// Utility methods for conversation manipulation and immutable updates.
 
@@ -279,8 +278,10 @@ class Conversation {
     return Conversation(
       id: id,
       participantIds: participantIds ?? this.participantIds,
-      participantDisplayNames: participantDisplayNames ?? this.participantDisplayNames,
-      participantAvatarUrls: participantAvatarUrls ?? this.participantAvatarUrls,
+      participantDisplayNames:
+          participantDisplayNames ?? this.participantDisplayNames,
+      participantAvatarUrls:
+          participantAvatarUrls ?? this.participantAvatarUrls,
       lastMessage: lastMessage ?? this.lastMessage,
       lastReadTimestamps: lastReadTimestamps ?? this.lastReadTimestamps,
       createdAt: createdAt,
@@ -306,13 +307,13 @@ class Conversation {
     if (isGroup) {
       return title ?? 'Gruppchatt';
     }
-    
+
     // For direct conversations, show the other participant's name
     final otherParticipantId = participantIds.firstWhere(
       (id) => id != currentUserId,
       orElse: () => currentUserId,
     );
-    
+
     return participantDisplayNames[otherParticipantId] ?? 'Okänd användare';
   }
 
@@ -324,12 +325,12 @@ class Conversation {
     if (isGroup) {
       return null; // Group conversations don't have a single avatar
     }
-    
+
     final otherParticipantId = participantIds.firstWhere(
       (id) => id != currentUserId,
       orElse: () => currentUserId,
     );
-    
+
     return participantAvatarUrls[otherParticipantId];
   }
 
@@ -339,7 +340,7 @@ class Conversation {
   /// Used for direct message routing, typing indicators, and 1:1 conversation features.
   String? getOtherParticipantId(String currentUserId) {
     if (isGroup) return null;
-    
+
     return participantIds.firstWhere(
       (id) => id != currentUserId,
       orElse: () => currentUserId,
@@ -354,10 +355,10 @@ class Conversation {
   /// than user's last read time. Used for conversation list unread indicators.
   bool hasUnreadMessages(String userId) {
     if (lastMessage == null) return false;
-    
+
     final lastReadTime = lastReadTimestamps[userId];
     if (lastReadTime == null) return true;
-    
+
     return lastMessage!.sentAt.isAfter(lastReadTime);
   }
 
@@ -368,11 +369,13 @@ class Conversation {
   int getUnreadCount(String userId, List<Message> recentMessages) {
     final lastReadTime = lastReadTimestamps[userId];
     if (lastReadTime == null) return recentMessages.length;
-    
-    return recentMessages.where((message) => 
-      message.sentAt.isAfter(lastReadTime) && 
-      message.senderId != userId // Don't count own messages
-    ).length;
+
+    return recentMessages
+        .where((message) =>
+                message.sentAt.isAfter(lastReadTime) &&
+                message.senderId != userId // Don't count own messages
+            )
+        .length;
   }
 
   /// Checks if the specified user is a participant in this conversation.
@@ -392,12 +395,12 @@ class Conversation {
     if (lastMessage == null) {
       return 'Ingen meddelanden än';
     }
-    
+
     final message = lastMessage!;
     if (message.isSystemMessage) {
       return message.content;
     }
-    
+
     final senderName = message.senderDisplayName;
     return '$senderName: ${message.displayContent}';
   }
@@ -410,7 +413,7 @@ class Conversation {
     final now = DateTime.now();
     final lastActivity = lastMessage?.sentAt ?? updatedAt;
     final difference = now.difference(lastActivity);
-    
+
     if (difference.inMinutes < 1) {
       return 'Nu';
     } else if (difference.inHours < 1) {

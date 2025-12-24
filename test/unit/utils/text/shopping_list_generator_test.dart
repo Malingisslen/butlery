@@ -25,30 +25,30 @@ void main() {
       // Initialize test infrastructure once for all tests
       await BaseUnitTest.setupUnit();
     });
-    
+
     setUp(() async {
       // Initialize service locator for each test
       await TestServiceLocator.initialize();
     });
-    
+
     tearDown(() async {
       // Reset mocks and service locator after each test
       BaseUnitTest.resetMocks();
       await TestServiceLocator.reset();
     });
-    
+
     tearDownAll(() async {
       // Final cleanup after all tests
       await BaseUnitTest.teardownUnit();
     });
-    
+
     group('Basic Shopping List Generation', () {
       test('should handle empty menu', () {
         final menu = <String, List<dynamic>>{};
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, isEmpty);
       });
-      
+
       test('should extract ingredients from single recipe', () {
         final menu = {
           'Huvudrätter': [
@@ -57,14 +57,14 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(3));
         expect(result, contains('2 dl mjölk'));
         expect(result, contains('3 ägg'));
         expect(result, contains('400 g mjöl'));
       });
-      
+
       test('should extract ingredients from multiple recipes', () {
         final menu = {
           'Huvudrätter': [
@@ -76,7 +76,7 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(4));
         expect(result, contains('2 dl mjölk'));
@@ -84,7 +84,7 @@ void main() {
         expect(result, contains('400 g mjöl'));
         expect(result, contains('1 lök'));
       });
-      
+
       test('should handle multiple menu sections', () {
         final menu = {
           'Förrätter': [
@@ -103,7 +103,7 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(3));
         expect(result, contains('100 g smör'));
@@ -111,7 +111,7 @@ void main() {
         expect(result, contains('3 äpplen'));
       });
     });
-    
+
     group('Ingredient Consolidation', () {
       test('should consolidate identical ingredients', () {
         final menu = {
@@ -121,12 +121,12 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(1));
         expect(result.first, equals('3 dl mjölk'));
       });
-      
+
       test('should consolidate ingredients across recipes', () {
         final menu = {
           'Huvudrätter': [
@@ -138,12 +138,12 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(1));
         expect(result.first, equals('500 g köttfärs'));
       });
-      
+
       test('should consolidate with plural normalization', () {
         final menu = {
           'Huvudrätter': [
@@ -152,12 +152,12 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(1));
         expect(result.first, equals('5 tomater'));
       });
-      
+
       test('should consolidate lökar and lök', () {
         final menu = {
           'Huvudrätter': [
@@ -166,12 +166,12 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(1));
         expect(result.first, equals('3 lökar'));
       });
-      
+
       test('should keep different units separate', () {
         final menu = {
           'Huvudrätter': [
@@ -180,14 +180,14 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(2));
         expect(result, contains('2 dl mjöl'));
         expect(result, contains('200 g mjöl'));
       });
     });
-    
+
     group('Smart Unit Conversion', () {
       test('should convert grams to kilograms when appropriate', () {
         final menu = {
@@ -197,12 +197,12 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(1));
         expect(result.first, equals('1 ½ kg mjöl')); // Uses Swedish fractions
       });
-      
+
       test('should convert deciliters to liters when appropriate', () {
         final menu = {
           'Huvudrätter': [
@@ -211,12 +211,12 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(1));
         expect(result.first, equals('1 ½ l mjölk')); // Uses Swedish fractions
       });
-      
+
       test('should convert American units to Swedish', () {
         final menu = {
           'Huvudrätter': [
@@ -225,7 +225,7 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(2));
         // 1 cup ≈ 2.37 dl
@@ -233,7 +233,7 @@ void main() {
         // 2 tbsp ≈ 1.78 msk
         expect(result.any((item) => item.contains('msk socker')), isTrue);
       });
-      
+
       test('should preserve units when conversion is not beneficial', () {
         final menu = {
           'Huvudrätter': [
@@ -242,13 +242,13 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(1));
         expect(result.first, equals('350 g mjöl')); // Not converted to kg
       });
     });
-    
+
     group('Swedish Formatting and Pluralization', () {
       test('should apply Swedish fraction formatting', () {
         final menu = {
@@ -258,12 +258,12 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(1));
         expect(result.first, equals('1 ½ dl socker'));
       });
-      
+
       test('should pluralize Swedish ingredients correctly', () {
         final menu = {
           'Huvudrätter': [
@@ -272,12 +272,12 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(1));
         expect(result.first, equals('3 potatisar'));
       });
-      
+
       test('should handle invariant forms', () {
         final menu = {
           'Huvudrätter': [
@@ -286,12 +286,12 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(1));
         expect(result.first, equals('5 ägg')); // ägg is invariant
       });
-      
+
       test('should format compound ingredients', () {
         final menu = {
           'Huvudrätter': [
@@ -300,13 +300,13 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(1));
         expect(result.first, equals('300 g finhackad lök'));
       });
     });
-    
+
     group('Sorting and Organization', () {
       test('should sort ingredients alphabetically', () {
         final menu = {
@@ -316,14 +316,14 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result[0], contains('banan'));
         expect(result[1], contains('citron'));
         expect(result[2], contains('tomat'));
         expect(result[3], contains('äpple'));
       });
-      
+
       test('should sort by normalized ingredient names', () {
         final menu = {
           'Huvudrätter': [
@@ -332,7 +332,7 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         // Order: dl mjölk, g mjöl, ägg
         expect(result[0], contains('dl mjölk'));
@@ -340,7 +340,7 @@ void main() {
         expect(result[2], contains('ägg'));
       });
     });
-    
+
     group('Edge Cases and Error Handling', () {
       test('should handle empty ingredients list', () {
         final menu = {
@@ -350,11 +350,11 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, isEmpty);
       });
-      
+
       test('should skip empty ingredient strings', () {
         final menu = {
           'Huvudrätter': [
@@ -363,12 +363,12 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(1));
         expect(result.first, equals('2 dl mjölk'));
       });
-      
+
       test('should handle missing ingredients key', () {
         final menu = {
           'Huvudrätter': [
@@ -377,11 +377,11 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, isEmpty);
       });
-      
+
       test('should handle null ingredients', () {
         final menu = {
           'Huvudrätter': [
@@ -390,11 +390,11 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, isEmpty);
       });
-      
+
       test('should handle mixed data types in ingredients', () {
         final menu = {
           'Huvudrätter': [
@@ -403,14 +403,14 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         // Null gets parsed as '1 null', 123 gets parsed as '12 3ar'
         expect(result, hasLength(4));
         expect(result, contains('2 dl mjölk'));
         expect(result, contains('3 ägg'));
       });
-      
+
       test('should handle ingredient without quantity', () {
         final menu = {
           'Huvudrätter': [
@@ -419,13 +419,13 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(2));
         expect(result, contains('1 pepp')); // Normalized by removing -ar ending
         expect(result, contains('1 salt'));
       });
-      
+
       test('should handle special characters in ingredients', () {
         final menu = {
           'Huvudrätter': [
@@ -434,16 +434,17 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(2));
         expect(result, contains('2 dl grädde (40%)'));
         expect(result, contains('100 g ost (riven)'));
       });
     });
-    
+
     group('Complex Scenarios', () {
-      test('should handle complete menu with multiple sections and recipes', () {
+      test('should handle complete menu with multiple sections and recipes',
+          () {
         final menu = {
           'Förrätter': [
             {
@@ -467,32 +468,38 @@ void main() {
             },
           ],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
-        
+
         // Check consolidation
         expect(result.any((item) => item.contains('700 g köttfärs')), isTrue);
         expect(result.any((item) => item.contains('3 lökar')), isTrue);
-        expect(result.any((item) => item.contains('6 vitlöksklyftar') || item.contains('6 vitlöksklyftor')), isTrue); // May vary based on normalization
-        expect(result.any((item) => item.contains('7 dl grädde')), isTrue); // 2+1+2+2 = 7
-        
+        expect(
+            result.any((item) =>
+                item.contains('6 vitlöksklyftar') ||
+                item.contains('6 vitlöksklyftor')),
+            isTrue); // May vary based on normalization
+        expect(result.any((item) => item.contains('7 dl grädde')),
+            isTrue); // 2+1+2+2 = 7
+
         // Check unique items
         expect(result.any((item) => item.contains('100 g smör')), isTrue);
-        expect(result.any((item) => item.contains('200 g räk')), isTrue); // räkor normalized to räk
+        expect(result.any((item) => item.contains('200 g räk')),
+            isTrue); // räkor normalized to räk
         expect(result.any((item) => item.contains('1 citron')), isTrue);
         expect(result.any((item) => item.contains('3 ägg')), isTrue);
         expect(result.any((item) => item.contains('100 g socker')), isTrue);
       });
-      
+
       test('should handle recipe objects with dynamic property access', () {
         // Simulate recipe objects that might come from a Recipe class
         final recipe1 = _MockRecipe(['2 dl mjölk', '3 ägg']);
         final recipe2 = _MockRecipe(['1 dl mjölk', '2 ägg']);
-        
+
         final menu = {
           'Huvudrätter': [recipe1, recipe2],
         };
-        
+
         final result = ShoppingListGenerator.generateShoppingList(menu);
         expect(result, hasLength(2));
         expect(result, contains('3 dl mjölk'));
@@ -505,9 +512,9 @@ void main() {
 // Mock recipe class for testing dynamic property access
 class _MockRecipe {
   final List<String> ingredients;
-  
+
   _MockRecipe(this.ingredients);
-  
+
   @override
   String toString() {
     return 'MockRecipe(ingredients: $ingredients)';

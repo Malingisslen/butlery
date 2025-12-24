@@ -47,7 +47,8 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
       AppLogger.debug('🔍 [MenuDialog] Starting initialization');
       AppLogger.debug('   Service initialized: ${_menuService.isInitialized}');
       AppLogger.debug('   Current user: $currentUserId');
-      AppLogger.debug('   Is authenticated: ${permissionService.isAuthenticated}');
+      AppLogger.debug(
+          '   Is authenticated: ${permissionService.isAuthenticated}');
 
       // Initialize menu service if not already initialized, otherwise refresh
       if (!_menuService.isInitialized) {
@@ -64,13 +65,15 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
       AppLogger.debug('   📋 Loaded $menuCount menus from service');
 
       if (menuCount == 0) {
-        AppLogger.warning('⚠️ [MenuDialog] Menu service initialized but returned 0 menus');
+        AppLogger.warning(
+            '⚠️ [MenuDialog] Menu service initialized but returned 0 menus');
         AppLogger.debug('   This could mean:');
         AppLogger.debug('   1. User has no menus created yet');
         AppLogger.debug('   2. Firestore query returned empty');
         AppLogger.debug('   3. Parse errors occurred (check logs above)');
       } else {
-        AppLogger.success('✅ [MenuDialog] Successfully loaded $menuCount menus');
+        AppLogger.success(
+            '✅ [MenuDialog] Successfully loaded $menuCount menus');
       }
 
       if (mounted) {
@@ -229,7 +232,8 @@ class _MenuListItem extends StatelessWidget {
           ),
         ],
       ),
-      trailing: const Icon(Icons.arrow_forward_ios, size: AppDimensions.iconSizeS),
+      trailing:
+          const Icon(Icons.arrow_forward_ios, size: AppDimensions.iconSizeS),
       onTap: onTap,
     );
   }

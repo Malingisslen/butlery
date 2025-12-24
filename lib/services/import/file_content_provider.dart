@@ -11,7 +11,7 @@ abstract class FileContentProvider {
     bool withData = true,
     bool withReadStream = false,
   });
-  
+
   /// Import from raw content for testing
   Future<FilePickerResult?> provideContent(
     Uint8List content,
@@ -38,7 +38,7 @@ class DefaultFileContentProvider implements FileContentProvider {
       withReadStream: withReadStream,
     );
   }
-  
+
   @override
   Future<FilePickerResult?> provideContent(
     Uint8List content,
@@ -62,21 +62,20 @@ class DefaultFileContentProvider implements FileContentProvider {
 
 /// Mock FilePickerResult for testing
 class _MockFilePickerResult extends FilePickerResult {
-  _MockFilePickerResult({required List<PlatformFile> files}) 
-      : super(files);
+  _MockFilePickerResult({required List<PlatformFile> files}) : super(files);
 }
 
 /// Mock PlatformFile for testing
 class _MockPlatformFile extends PlatformFile {
   final String? _extension;
-  
+
   _MockPlatformFile({
     required super.name,
     required super.size,
     super.bytes,
     String? extension,
   }) : _extension = extension;
-  
+
   @override
   String? get extension => _extension;
 }

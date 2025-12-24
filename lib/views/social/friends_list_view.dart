@@ -32,8 +32,10 @@ class FriendsListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(value: ServiceLocator.get<FriendsViewModel>()),
-        ChangeNotifierProvider.value(value: ServiceLocator.get<UnifiedFriendsService>()),
+        ChangeNotifierProvider.value(
+            value: ServiceLocator.get<FriendsViewModel>()),
+        ChangeNotifierProvider.value(
+            value: ServiceLocator.get<UnifiedFriendsService>()),
       ],
       child: const _FriendsListViewContent(),
     );
@@ -136,108 +138,119 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                   children: [
                     // TabBar with proper styling
                     ColoredBox(
-                color: Theme.of(context).colorScheme.surface,
-                child: TabBar(
-                  controller: _tabController,
-                  isScrollable: false, // Center the tabs
-                  tabAlignment: TabAlignment.fill, // Fill available space
-                  labelColor: Theme.of(context).colorScheme.primary,
-                  unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
-                  indicatorColor: Theme.of(context).colorScheme.primary,
-                  indicatorWeight: AppDimensions.borderWidthThick,
-                  tabs: [
-                    const Tab(
-                      icon: Icon(Icons.people),
-                      text: 'Vänner',
-                    ),
-                    Tab(
-                      icon: Badge(
-                        isLabelVisible: friendsService.invitations.pendingReceivedInvitations.isNotEmpty,
-                        label: Text('${friendsService.invitations.pendingReceivedInvitations.length}'),
-                        child: const Icon(Icons.groups),
+                      color: Theme.of(context).colorScheme.surface,
+                      child: TabBar(
+                        controller: _tabController,
+                        isScrollable: false, // Center the tabs
+                        tabAlignment: TabAlignment.fill, // Fill available space
+                        labelColor: Theme.of(context).colorScheme.primary,
+                        unselectedLabelColor:
+                            Theme.of(context).colorScheme.onSurfaceVariant,
+                        indicatorColor: Theme.of(context).colorScheme.primary,
+                        indicatorWeight: AppDimensions.borderWidthThick,
+                        tabs: [
+                          const Tab(
+                            icon: Icon(Icons.people),
+                            text: 'Vänner',
+                          ),
+                          Tab(
+                            icon: Badge(
+                              isLabelVisible: friendsService.invitations
+                                  .pendingReceivedInvitations.isNotEmpty,
+                              label: Text(
+                                  '${friendsService.invitations.pendingReceivedInvitations.length}'),
+                              child: const Icon(Icons.groups),
+                            ),
+                            text: 'Grupper',
+                          ),
+                          Tab(
+                            icon: Badge(
+                              isLabelVisible:
+                                  viewModel.incomingRequests.isNotEmpty,
+                              label:
+                                  Text('${viewModel.incomingRequests.length}'),
+                              child: const Icon(Icons.search),
+                            ),
+                            text: 'Hitta Vänner',
+                          ),
+                        ],
                       ),
-                      text: 'Grupper',
                     ),
-                    Tab(
-                      icon: Badge(
-                        isLabelVisible: viewModel.incomingRequests.isNotEmpty,
-                        label: Text('${viewModel.incomingRequests.length}'),
-                        child: const Icon(Icons.search),
-                      ),
-                      text: 'Hitta Vänner',
-                    ),
-                  ],
-                ),
-              ),
-              // Error display
-              if (viewModel.hasError) ...[
-                const SizedBox(height: AppDimensions.spacingL),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(AppDimensions.paddingL),
-                    decoration: BoxDecoration(
-                      color: AppColors.error.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                      border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.error_outline, color: AppColors.error),
-                        const SizedBox(width: AppDimensions.spacingS),
-                        Expanded(
-                          child: Text(
-                            viewModel.error!,
-                            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+                    // Error display
+                    if (viewModel.hasError) ...[
+                      const SizedBox(height: AppDimensions.spacingL),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: AppDimensions.paddingL),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(AppDimensions.paddingL),
+                          decoration: BoxDecoration(
+                            color: AppColors.error.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(
+                                AppDimensions.borderRadiusM),
+                            border: Border.all(
+                                color: AppColors.error.withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.error_outline,
+                                  color: AppColors.error),
+                              const SizedBox(width: AppDimensions.spacingS),
+                              Expanded(
+                                child: Text(
+                                  viewModel.error!,
+                                  style: AppTextStyles.bodyMedium
+                                      .copyWith(color: AppColors.error),
+                                ),
+                              ),
+                              ActionButtons.secondaryButton(
+                                context,
+                                label: 'Stäng',
+                                onPressed: viewModel.clearError,
+                              ),
+                            ],
                           ),
                         ),
-                        ActionButtons.secondaryButton(
-                          context,
-                          label: 'Stäng',
-                          onPressed: viewModel.clearError,
-                        ),
-                      ],
+                      ),
+                      const SizedBox(height: AppDimensions.spacingL),
+                    ],
+
+                    // Search functionality for groups and friend discovery tabs
+                    if (_currentTabIndex == 1)
+                      SearchFilterWidget.searchOnly(
+                        searchQuery: _searchQuery,
+                        onSearchChanged: _onSearchChanged,
+                        searchHint: 'Sök efter grupper...',
+                        autofocus: false,
+                        padding: const EdgeInsets.all(AppDimensions.spacingL),
+                        showStats: true,
+                        resultCount: viewModel.searchResults.length,
+                      ),
+                    if (_currentTabIndex == 2)
+                      SearchFilterWidget.searchOnly(
+                        searchQuery: _searchQuery,
+                        onSearchChanged: _onSearchChanged,
+                        searchHint: 'Sök efter nya vänner...',
+                        autofocus: false,
+                        padding: const EdgeInsets.all(AppDimensions.spacingL),
+                        showStats: true,
+                        resultCount: viewModel.searchResults.length,
+                      ),
+
+                    // Tab content
+                    Expanded(
+                      child: IndexedStack(
+                        index: _currentTabIndex,
+                        children: [
+                          _buildFriendsTab(viewModel), // Vänner
+                          _buildGroupsTab(
+                              friendsService), // Grupper (with search)
+                          _buildDiscoveryTab(viewModel), // Hitta Vänner
+                        ],
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.spacingL),
-              ],
-
-              // Search functionality for groups and friend discovery tabs
-              if (_currentTabIndex == 1)
-                SearchFilterWidget.searchOnly(
-                  searchQuery: _searchQuery,
-                  onSearchChanged: _onSearchChanged,
-                  searchHint: 'Sök efter grupper...',
-                  autofocus: false,
-                  padding: const EdgeInsets.all(AppDimensions.spacingL),
-                  showStats: true,
-                  resultCount: viewModel.searchResults.length,
-                ),
-              if (_currentTabIndex == 2)
-                SearchFilterWidget.searchOnly(
-                  searchQuery: _searchQuery,
-                  onSearchChanged: _onSearchChanged,
-                  searchHint: 'Sök efter nya vänner...',
-                  autofocus: false,
-                  padding: const EdgeInsets.all(AppDimensions.spacingL),
-                  showStats: true,
-                  resultCount: viewModel.searchResults.length,
-                ),
-
-              // Tab content
-              Expanded(
-                child: IndexedStack(
-                  index: _currentTabIndex,
-                  children: [
-                    _buildFriendsTab(viewModel), // Vänner
-                    _buildGroupsTab(friendsService), // Grupper (with search)
-                    _buildDiscoveryTab(viewModel), // Hitta Vänner
                   ],
-                ),
-              ),
-            ],
                 ),
               ),
             ),
@@ -249,7 +262,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                     children: [
                       Center(
                         child: Icon(
-                          Icons.groups, 
+                          Icons.groups,
                           size: AppDimensions.iconSizeL,
                         ),
                       ),
@@ -274,18 +287,18 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
 
   Widget _buildDiscoveryTab(FriendsViewModel viewModel) {
     // Friend discovery hub with search and requests
-    return _searchQuery.isEmpty 
+    return _searchQuery.isEmpty
         ? RequestsTab.build(context, viewModel)
-        : SearchTab.build(context, viewModel, _searchQuery, isGroupsSearch: false);
+        : SearchTab.build(context, viewModel, _searchQuery,
+            isGroupsSearch: false);
   }
 
   Widget _buildGroupsTab(UnifiedFriendsService friendsService) {
     // Groups tab with search functionality
-    return _searchQuery.isEmpty 
+    return _searchQuery.isEmpty
         ? GroupsTab.build(context, friendsService)
         : GroupSearchTab.build(context, friendsService, _searchQuery);
   }
-
 
   Future<void> _showCreateGroupDialog(FriendsViewModel viewModel) async {
     try {
@@ -310,5 +323,4 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
       }
     }
   }
-
 }

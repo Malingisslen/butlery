@@ -81,7 +81,6 @@ import 'package:butlery/services/social_media_extractor.dart';
 /// - Content quality analysis with extraction optimization recommendations
 /// - Swedish localized error messages and user feedback coordination
 class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
-
   /// Initializes URL import ViewModel with comprehensive ImportManager integration and web scraping preparation.
   /// [importManager] ImportManager instance for URL import strategy coordination and recipe parsing
   /// Establishes URL import infrastructure with ImportManager integration, enabling comprehensive
@@ -167,20 +166,22 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     // Detect platform for optimized extraction
     final platformDetector = pd.PlatformDetector();
     final platform = platformDetector.detectPlatform(url);
-    
+
     // Convert mobile URLs to web versions if needed
     final webUrl = platformDetector.convertToWebUrl(url);
-    
+
     // Use WebScraper service for advanced content extraction
     final webScraper = WebScraper();
-    
+
     try {
-      final extractionResult = await webScraper.performExtraction(webUrl, platform);
-      
+      final extractionResult =
+          await webScraper.performExtraction(webUrl, platform);
+
       if (extractionResult.success && extractionResult.extractedText != null) {
         return extractionResult.extractedText!;
       } else {
-        throw Exception(extractionResult.error ?? 'Kunde inte extrahera innehåll från sidan');
+        throw Exception(extractionResult.error ??
+            'Kunde inte extrahera innehåll från sidan');
       }
     } finally {
       // Always dispose WebScraper to prevent memory leaks
@@ -218,7 +219,7 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
 
     try {
       final uri = Uri.parse(trimmedUrl);
-      
+
       if (!uri.hasScheme) {
         errors.add('URL måste inkludera http:// eller https://');
       } else if (uri.scheme != 'http' && uri.scheme != 'https') {
@@ -265,7 +266,7 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
       'tasty.co',
       'recipetineats.com',
       'simplyrecipes.com',
-      
+
       // Swedish recipe sites
       'ica.se',
       'arla.se',
@@ -312,11 +313,15 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     }
 
     if (url.length > 200) {
-      suggestions.add('⚠️ Mycket lång URL - försök kopiera huvudreceptsidans URL');
+      suggestions
+          .add('⚠️ Mycket lång URL - försök kopiera huvudreceptsidans URL');
     }
 
-    if (url.contains('instagram.com') || url.contains('facebook.com') || url.contains('tiktok.com')) {
-      suggestions.add('📱 Social media-länk - innehållsextraktion kan vara begränsad');
+    if (url.contains('instagram.com') ||
+        url.contains('facebook.com') ||
+        url.contains('tiktok.com')) {
+      suggestions
+          .add('📱 Social media-länk - innehållsextraktion kan vara begränsad');
     }
 
     if (suggestions.length == 1 && isKnownRecipeSite()) {
@@ -376,24 +381,32 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
       issues.add('Ingen ingredienssektion hittades');
     }
 
-    if (text.contains('instruktion') || text.contains('instruction') || 
-        text.contains('steg') || text.contains('step') ||
-        text.contains('gör så här') || text.contains('method')) {
+    if (text.contains('instruktion') ||
+        text.contains('instruction') ||
+        text.contains('steg') ||
+        text.contains('step') ||
+        text.contains('gör så här') ||
+        text.contains('method')) {
       score += 25;
       positives.add('Innehåller instruktioner');
     } else {
       issues.add('Inga instruktioner hittades');
     }
 
-    if (text.contains('minut') || text.contains('minute') || 
-        text.contains('timme') || text.contains('hour') ||
-        text.contains('tid') || text.contains('time')) {
+    if (text.contains('minut') ||
+        text.contains('minute') ||
+        text.contains('timme') ||
+        text.contains('hour') ||
+        text.contains('tid') ||
+        text.contains('time')) {
       score += 15;
       positives.add('Innehåller tidsinformation');
     }
 
-    if (text.contains('portion') || text.contains('serve') || 
-        text.contains('servering') || text.contains('yield')) {
+    if (text.contains('portion') ||
+        text.contains('serve') ||
+        text.contains('servering') ||
+        text.contains('yield')) {
       score += 10;
       positives.add('Innehåller portionsinformation');
     }
@@ -445,13 +458,13 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
   /// - Web scraping status and HTTP request debugging information
   @override
   Map<String, dynamic> get debugState => {
-    ...super.debugState,
-    'urlValidationErrors': getUrlValidationErrors(),
-    'isKnownRecipeSite': isKnownRecipeSite(),
-    'urlSuggestions': getUrlSuggestions(),
-    'contentAnalysis': analyzeExtractedContent(),
-    'urlLength': url.length,
-    'hasExtractedContent': hasExtractedText,
-    'extractedContentLength': hasExtractedText ? extractedText.length : 0,
-  };
+        ...super.debugState,
+        'urlValidationErrors': getUrlValidationErrors(),
+        'isKnownRecipeSite': isKnownRecipeSite(),
+        'urlSuggestions': getUrlSuggestions(),
+        'contentAnalysis': analyzeExtractedContent(),
+        'urlLength': url.length,
+        'hasExtractedContent': hasExtractedText,
+        'extractedContentLength': hasExtractedText ? extractedText.length : 0,
+      };
 }

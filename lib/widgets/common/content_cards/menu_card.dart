@@ -17,7 +17,8 @@ import 'package:butlery/models/recipe_unified.dart';
 /// - Menu preview with recipe list
 /// ❌ DOES NOT CONTAIN: Recipe cards, friend cards, shopping list cards, generic content logic
 class MenuCard extends StatelessWidget {
-  final dynamic menu; // Can be SharedMenu, RealtimeMenu, or Map<String, List<Recipe>>
+  final dynamic
+      menu; // Can be SharedMenu, RealtimeMenu, or Map<String, List<Recipe>>
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final bool showPreview;
@@ -55,8 +56,11 @@ class MenuCard extends StatelessWidget {
               padding: padding ?? _getDefaultPadding(),
               decoration: BoxDecoration(
                 color: AppColors.backgroundLight,
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                border: Border.all(color: AppColors.textLight, width: AppDimensions.borderWidthThin),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusM),
+                border: Border.all(
+                    color: AppColors.textLight,
+                    width: AppDimensions.borderWidthThin),
               ),
               child: _buildContent(context),
             ),
@@ -108,7 +112,7 @@ class MenuCard extends StatelessWidget {
               _buildMenuHeader(context),
               if (showMetadata) ...[
                 const SizedBox(height: AppDimensions.spacingXs),
-                _buildMenuMetadata(context),  
+                _buildMenuMetadata(context),
               ],
             ],
           ),
@@ -148,7 +152,7 @@ class MenuCard extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: style == MenuCardStyle.compact 
+            style: style == MenuCardStyle.compact
                 ? AppTextStyles.bodyLarge
                 : AppTextStyles.titleMedium,
             maxLines: style == MenuCardStyle.compact ? 1 : 2,
@@ -162,7 +166,7 @@ class MenuCard extends StatelessWidget {
   Widget _buildMenuMetadata(BuildContext context) {
     final recipeCount = _getRecipeCount();
     final duration = _getMenuDuration();
-    
+
     final metadata = <String>[];
     if (recipeCount > 0) {
       metadata.add('$recipeCount recept');
@@ -183,7 +187,7 @@ class MenuCard extends StatelessWidget {
 
   Widget _buildMenuPreview(BuildContext context) {
     final allRecipes = _getMenuRecipes();
-    
+
     if (allRecipes.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -201,7 +205,8 @@ class MenuCard extends StatelessWidget {
             const SizedBox(width: AppDimensions.spacingS),
             Text(
               'Inga recept i menyn',
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+              style:
+                  AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
             ),
           ],
         ),
@@ -209,45 +214,47 @@ class MenuCard extends StatelessWidget {
     }
 
     final recipesToShow = allRecipes.take(3).toList();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Recept i menyn:',
-          style: AppTextStyles.labelMedium.copyWith(color: AppColors.textMedium),
+          style:
+              AppTextStyles.labelMedium.copyWith(color: AppColors.textMedium),
         ),
         const SizedBox(height: AppDimensions.spacingS),
         ...recipesToShow.map((recipe) => Padding(
-          padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
-          child: Row(
-            children: [
-              Container(
-                width: 4,
-                height: 4,
-                decoration: const BoxDecoration(
-                  color: AppColors.textMedium,
-                  shape: BoxShape.circle,
-                ),
+              padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+              child: Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 4,
+                    decoration: const BoxDecoration(
+                      color: AppColors.textMedium,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: AppDimensions.spacingS),
+                  Expanded(
+                    child: Text(
+                      _getRecipeTitle(recipe),
+                      style: AppTextStyles.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: AppDimensions.spacingS),
-              Expanded(
-                child: Text(
-                  _getRecipeTitle(recipe),
-                  style: AppTextStyles.bodySmall,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        )),
+            )),
         if (allRecipes.length > 3)
           Padding(
             padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
             child: Text(
               '+ ${allRecipes.length - 3} fler recept',
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+              style:
+                  AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
             ),
           ),
       ],
@@ -257,7 +264,7 @@ class MenuCard extends StatelessWidget {
   Widget _buildSharingStatus(BuildContext context) {
     final isShared = _isMenuShared();
     final memberCount = _getMenuMemberCount();
-    
+
     if (!isShared) {
       return const SizedBox.shrink();
     }
@@ -284,9 +291,7 @@ class MenuCard extends StatelessWidget {
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Text(
-            memberCount > 0 
-                ? 'Delad med $memberCount personer'
-                : 'Delad meny',
+            memberCount > 0 ? 'Delad med $memberCount personer' : 'Delad meny',
             style: AppTextStyles.bodySmall.copyWith(color: Colors.blue[700]),
           ),
         ],
@@ -296,7 +301,7 @@ class MenuCard extends StatelessWidget {
 
   Widget _buildSharingIndicator(BuildContext context) {
     final isShared = _isMenuShared();
-    
+
     if (!isShared) {
       return const SizedBox.shrink();
     }
@@ -317,7 +322,7 @@ class MenuCard extends StatelessWidget {
 
   // Helper methods to extract data from the menu object
   // These will need to be updated when the actual menu model is available
-  
+
   String _getMenuTitle() {
     if (menu is SharedMenu) {
       final sharedMenu = menu as SharedMenu;
@@ -337,7 +342,8 @@ class MenuCard extends StatelessWidget {
       return sharedMenu.totalRecipeCount;
     } else if (menu is RealtimeMenu) {
       final realtimeMenu = menu as RealtimeMenu;
-      return realtimeMenu.menuSnapshot.values.fold(0, (total, recipes) => total + recipes.length);
+      return realtimeMenu.menuSnapshot.values
+          .fold(0, (total, recipes) => total + recipes.length);
     } else if (menu is Map<String, List<Recipe>>) {
       final menuMap = menu as Map<String, List<Recipe>>;
       return menuMap.values.fold(0, (total, recipes) => total + recipes.length);
@@ -359,7 +365,9 @@ class MenuCard extends StatelessWidget {
   List<Recipe> _getMenuRecipes() {
     if (menu is SharedMenu) {
       final sharedMenu = menu as SharedMenu;
-      return sharedMenu.menuSnapshot.values.expand((recipes) => recipes).toList();
+      return sharedMenu.menuSnapshot.values
+          .expand((recipes) => recipes)
+          .toList();
     } else if (menu is RealtimeMenu) {
       final realtimeMenu = menu as RealtimeMenu;
       return realtimeMenu.allUniqueRecipes;
@@ -424,7 +432,7 @@ class MenuCard extends StatelessWidget {
 
 /// Menu card display styles
 enum MenuCardStyle {
-  detailed,  // Full visning med alla detaljer
-  compact,   // Kompakt visning för listor
-  grid,      // För grid-layout
+  detailed, // Full visning med alla detaljer
+  compact, // Kompakt visning för listor
+  grid, // För grid-layout
 }

@@ -41,7 +41,8 @@ class _SmartImportViewContent extends StatefulWidget {
   const _SmartImportViewContent();
 
   @override
-  State<_SmartImportViewContent> createState() => _SmartImportViewContentState();
+  State<_SmartImportViewContent> createState() =>
+      _SmartImportViewContentState();
 }
 
 class _SmartImportViewContentState extends State<_SmartImportViewContent> {
@@ -104,7 +105,8 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                             if (viewModel.detection != null &&
                                 viewModel.detection!.input.isNotEmpty) ...[
                               const SizedBox(height: 12),
-                              PlatformBadgeWidget(detection: viewModel.detection),
+                              PlatformBadgeWidget(
+                                  detection: viewModel.detection),
                             ],
 
                             // Progress indicator
@@ -135,7 +137,8 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                             _ActionSection(
                               viewModel: viewModel,
                               onImport: () => _handleImport(context, viewModel),
-                              onManualImport: () => _handleManualImport(context, viewModel),
+                              onManualImport: () =>
+                                  _handleManualImport(context, viewModel),
                               onPaste: () => _handlePaste(viewModel),
                             ),
                           ],
@@ -221,16 +224,17 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
   ) async {
     // Check if this is a "needs screenshot" case (short error message, no real content)
     final text = helpResult.extractedText;
-    debugPrint('📋 AssistedImportDialog: extractedText="${text.length > 50 ? '${text.substring(0, 50)}...' : text}" (${text.length} chars)');
+    debugPrint(
+        '📋 AssistedImportDialog: extractedText="${text.length > 50 ? '${text.substring(0, 50)}...' : text}" (${text.length} chars)');
 
     // Detect if this is a short error message rather than actual recipe content
     final isNeedsScreenshot = text.length < 150 &&
         (text.toLowerCase().contains('skärmbild') ||
-         text.toLowerCase().contains('screenshot') ||
-         text.toLowerCase().contains('undertexter') ||
-         text.toLowerCase().contains('transcript') ||
-         text.toLowerCase().contains('saknar') ||
-         text.isEmpty);
+            text.toLowerCase().contains('screenshot') ||
+            text.toLowerCase().contains('undertexter') ||
+            text.toLowerCase().contains('transcript') ||
+            text.toLowerCase().contains('saknar') ||
+            text.isEmpty);
 
     debugPrint('📋 isNeedsScreenshot: $isNeedsScreenshot');
 
@@ -271,7 +275,8 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     final action = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        icon: Icon(Icons.videocam_off, size: 48, color: theme.colorScheme.primary),
+        icon: Icon(Icons.videocam_off,
+            size: 48, color: theme.colorScheme.primary),
         title: const Text('Videon saknar text'),
         content: const Text(
           'Den här videon har inga undertexter som vi kan läsa.\n\n'
@@ -486,9 +491,8 @@ class _ActionSection extends StatelessWidget {
 
         // Import button
         FilledButton.icon(
-          onPressed: viewModel.canImport && !viewModel.isImporting
-              ? onImport
-              : null,
+          onPressed:
+              viewModel.canImport && !viewModel.isImporting ? onImport : null,
           icon: viewModel.isImporting
               ? SizedBox(
                   width: 18,

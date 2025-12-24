@@ -3,7 +3,8 @@
 import 'dart:io';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
+import 'package:butlery/repositories/interfaces/auth_repository.dart'
+    as auth_repo;
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:image_picker/image_picker.dart';
@@ -64,7 +65,8 @@ class MessagingMediaService extends BaseService {
     Function(double progress)? onProgress,
   }) async {
     try {
-      AppLogger.info('🖼️ Picking image from ${source == ImageSource.camera ? "camera" : "gallery"}');
+      AppLogger.info(
+          '🖼️ Picking image from ${source == ImageSource.camera ? "camera" : "gallery"}');
 
       // Pick image
       final XFile? pickedFile = await _imagePicker.pickImage(
@@ -123,14 +125,15 @@ class MessagingMediaService extends BaseService {
       final result = await _uploadService.uploadImage(
         file: imageFile,
         userId: currentUserId,
-        path: 'messages/$conversationId/${DateTime.now().millisecondsSinceEpoch}_${path.basename(imagePath)}',
-        onProgress: onProgress != null
-            ? (status) => onProgress(status.progress)
-            : null,
+        path:
+            'messages/$conversationId/${DateTime.now().millisecondsSinceEpoch}_${path.basename(imagePath)}',
+        onProgress:
+            onProgress != null ? (status) => onProgress(status.progress) : null,
       );
 
       if (!result.success || result.url == null || result.url!.isEmpty) {
-        AppLogger.error('❌ Failed to upload image: ${result.error ?? "no URL returned"}');
+        AppLogger.error(
+            '❌ Failed to upload image: ${result.error ?? "no URL returned"}');
         return false;
       }
 
@@ -196,7 +199,8 @@ class MessagingMediaService extends BaseService {
         onProgress?.call(i + 1, pickedFiles.length);
       }
 
-      AppLogger.success('✅ Successfully sent $successCount/${pickedFiles.length} images');
+      AppLogger.success(
+          '✅ Successfully sent $successCount/${pickedFiles.length} images');
       return successCount;
     } catch (e) {
       AppLogger.error('❌ Failed to pick and send multiple images', e);
@@ -226,7 +230,8 @@ class MessagingMediaService extends BaseService {
   /// [imagePath] Local file path
   /// [maxSizeMB] Maximum allowed size in MB (default 10MB)
   /// Returns null if valid, error message if invalid
-  Future<String?> validateImage(String imagePath, {double maxSizeMB = 10.0}) async {
+  Future<String?> validateImage(String imagePath,
+      {double maxSizeMB = 10.0}) async {
     try {
       final file = File(imagePath);
 

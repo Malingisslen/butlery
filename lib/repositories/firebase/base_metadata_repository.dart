@@ -81,7 +81,8 @@ abstract class BaseMetadataRepository<M> with PermissionValidationMixin {
 
       await logPermissionCheck(
         userId: currentUserId,
-        resource: '$parentCollectionName/$resourceId/$subcollectionName/$userId',
+        resource:
+            '$parentCollectionName/$resourceId/$subcollectionName/$userId',
         operation: 'add_$metadataType',
         granted: canAccess,
         details: additionalData?.toString(),
@@ -126,7 +127,8 @@ abstract class BaseMetadataRepository<M> with PermissionValidationMixin {
 
       await logPermissionCheck(
         userId: currentUserId,
-        resource: '$parentCollectionName/$resourceId/$subcollectionName/$userId',
+        resource:
+            '$parentCollectionName/$resourceId/$subcollectionName/$userId',
         operation: 'remove_$metadataType',
         granted: canAccess,
         auditRepository: _auditRepository,
@@ -172,7 +174,8 @@ abstract class BaseMetadataRepository<M> with PermissionValidationMixin {
 
       await logPermissionCheck(
         userId: currentUserId,
-        resource: '$parentCollectionName/$resourceId/$subcollectionName/$userId',
+        resource:
+            '$parentCollectionName/$resourceId/$subcollectionName/$userId',
         operation: 'get_$metadataType',
         granted: canAccess,
         auditRepository: _auditRepository,

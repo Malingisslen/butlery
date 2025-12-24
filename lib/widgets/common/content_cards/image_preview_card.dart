@@ -34,18 +34,19 @@ class ImagePreviewCard extends StatelessWidget {
     super.key,
     required this.child,
     this.height,
-  }) : backgroundColor = AppColors.cardWhite,
-       borderRadius = const BorderRadius.all(Radius.circular(AppDimensions.borderRadiusL)),
-       boxShadow = const [
-         BoxShadow(
-           color: Color.fromRGBO(0, 0, 0, 0.1),
-           blurRadius: AppDimensions.elevationLow,
-           offset: Offset(0, 2),
-         ),
-       ],
-       showBorder = false,
-       borderColor = null,
-       borderWidth = null;
+  })  : backgroundColor = AppColors.cardWhite,
+        borderRadius = const BorderRadius.all(
+            Radius.circular(AppDimensions.borderRadiusL)),
+        boxShadow = const [
+          BoxShadow(
+            color: Color.fromRGBO(0, 0, 0, 0.1),
+            blurRadius: AppDimensions.elevationLow,
+            offset: Offset(0, 2),
+          ),
+        ],
+        showBorder = false,
+        borderColor = null,
+        borderWidth = null;
 
   /// Empty state card with border
   ImagePreviewCard.empty({
@@ -53,12 +54,13 @@ class ImagePreviewCard extends StatelessWidget {
     required this.child,
     this.height,
     required BuildContext context,
-  }) : backgroundColor = Theme.of(context).colorScheme.surfaceContainerHighest,
-       borderRadius = const BorderRadius.all(Radius.circular(AppDimensions.borderRadiusL)),
-       boxShadow = null,
-       showBorder = true,
-       borderColor = Theme.of(context).colorScheme.outline,
-       borderWidth = 2.0;
+  })  : backgroundColor = Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius = const BorderRadius.all(
+            Radius.circular(AppDimensions.borderRadiusL)),
+        boxShadow = null,
+        showBorder = true,
+        borderColor = Theme.of(context).colorScheme.outline,
+        borderWidth = 2.0;
 
   @override
   Widget build(BuildContext context) {
@@ -66,15 +68,16 @@ class ImagePreviewCard extends StatelessWidget {
       height: height ?? AppDimensions.imageHeightMedium,
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: borderRadius ?? BorderRadius.circular(AppDimensions.borderRadiusL),
+        borderRadius:
+            borderRadius ?? BorderRadius.circular(AppDimensions.borderRadiusL),
         boxShadow: boxShadow,
-        border: showBorder 
-          ? Border.all(
-              color: borderColor ?? Theme.of(context).colorScheme.outline,
-              width: borderWidth ?? 1.0,
-              style: BorderStyle.solid,
-            )
-          : null,
+        border: showBorder
+            ? Border.all(
+                color: borderColor ?? Theme.of(context).colorScheme.outline,
+                width: borderWidth ?? 1.0,
+                style: BorderStyle.solid,
+              )
+            : null,
       ),
       child: child,
     );

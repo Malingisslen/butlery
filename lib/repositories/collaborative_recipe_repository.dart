@@ -125,7 +125,8 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
         .update(recipe.toFirestore());
   }
 
-  Stream<DocumentSnapshot<Map<String, dynamic>>> watchRealtimeRecipe(String id) {
+  Stream<DocumentSnapshot<Map<String, dynamic>>> watchRealtimeRecipe(
+      String id) {
     return _firestore.collection('realtime_recipes').doc(id).snapshots();
   }
 
@@ -138,7 +139,8 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
         .snapshots();
   }
 
-  Future<DocumentSnapshot<Map<String, dynamic>>> getUserDocument(String userId) {
+  Future<DocumentSnapshot<Map<String, dynamic>>> getUserDocument(
+      String userId) {
     return _firestore.collection('users').doc(userId).get();
   }
 
@@ -186,7 +188,8 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
         .set(data, SetOptions(merge: true));
   }
 
-  Future<DocumentSnapshot<Map<String, dynamic>>> fetchRealtimeRecipe(String id) {
+  Future<DocumentSnapshot<Map<String, dynamic>>> fetchRealtimeRecipe(
+      String id) {
     return _firestore.collection('realtime_recipes').doc(id).get();
   }
 
@@ -218,7 +221,8 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
     });
   }
 
-  Future<void> updateUserPresence(String recipeId, String userId, String displayName) async {
+  Future<void> updateUserPresence(
+      String recipeId, String userId, String displayName) async {
     final currentUserId = _requireCurrentUserId();
 
     // Users can only update their own presence
@@ -308,10 +312,10 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
         .collection('presence')
         .where('isActive', isEqualTo: true)
         .get();
-    
+
     return snapshot.docs.map((doc) {
       final data = doc.data();
-      
+
       // Handle both int and Timestamp/DateTime for lastSeen
       int? lastSeenMillis;
       final lastSeenValue = data['lastSeen'];
@@ -322,10 +326,11 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
       } else if (lastSeenValue is DateTime) {
         lastSeenMillis = lastSeenValue.millisecondsSinceEpoch;
       }
-      
+
       final now = DateTime.now().millisecondsSinceEpoch;
-      final isCurrentlyActive = lastSeenMillis != null && (now - lastSeenMillis) < 60000; // Within 1 minute
-      
+      final isCurrentlyActive = lastSeenMillis != null &&
+          (now - lastSeenMillis) < 60000; // Within 1 minute
+
       return {
         'userId': doc.id,
         'displayName': data['displayName'] as String? ?? 'Unknown',
@@ -344,12 +349,12 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
         .collection('presence')
         .doc(userId)
         .get();
-    
+
     if (!doc.exists) return false;
-    
+
     final data = doc.data()!;
     final isActive = data['isActive'] as bool? ?? false;
-    
+
     // Handle both int and Timestamp/DateTime for lastSeen
     int? lastSeenMillis;
     final lastSeenValue = data['lastSeen'];
@@ -360,9 +365,9 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
     } else if (lastSeenValue is DateTime) {
       lastSeenMillis = lastSeenValue.millisecondsSinceEpoch;
     }
-    
+
     if (!isActive || lastSeenMillis == null) return false;
-    
+
     // Consider user active if seen within last minute
     final now = DateTime.now().millisecondsSinceEpoch;
     return (now - lastSeenMillis) < 60000;
@@ -370,21 +375,22 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
 
   /// Clean up inactive editors (older than 5 minutes)
   Future<void> cleanupInactiveEditors(String recipeId) async {
-    final fiveMinutesAgo = DateTime.now().millisecondsSinceEpoch - (5 * 60 * 1000);
-    
+    final fiveMinutesAgo =
+        DateTime.now().millisecondsSinceEpoch - (5 * 60 * 1000);
+
     // Get all presence documents
     final snapshot = await _firestore
         .collection('realtime_recipes')
         .doc(recipeId)
         .collection('presence')
         .get();
-    
+
     // Batch operation for cleanup
     final batch = _firestore.batch();
-    
+
     for (final doc in snapshot.docs) {
       final data = doc.data();
-      
+
       // Handle both int and Timestamp/DateTime for lastSeen
       int? lastSeenMillis;
       final lastSeenValue = data['lastSeen'];
@@ -395,13 +401,13 @@ class CollaborativeRecipeRepository with PermissionValidationMixin {
       } else if (lastSeenValue is DateTime) {
         lastSeenMillis = lastSeenValue.millisecondsSinceEpoch;
       }
-      
+
       // Mark as inactive if last seen more than 5 minutes ago
       if (lastSeenMillis != null && lastSeenMillis < fiveMinutesAgo) {
         batch.update(doc.reference, {'isActive': false});
       }
     }
-    
+
     await batch.commit();
   }
 }

@@ -72,7 +72,8 @@ class SharedShoppingList
     required String shareMessage,
     required String listName,
     String? listDescription,
-    @Deprecated('Items stored in subcollection') List<UnifiedShoppingItem>? listItems,
+    @Deprecated('Items stored in subcollection')
+    List<UnifiedShoppingItem>? listItems,
     int? itemCount,
   }) {
     return SharedShoppingList(

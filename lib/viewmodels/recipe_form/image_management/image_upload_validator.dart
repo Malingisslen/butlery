@@ -139,8 +139,8 @@ class ImageUploadValidator {
   /// Check if image URL is a local file path
   bool isLocalFilePath(String url) {
     return url.startsWith('/') ||
-           url.startsWith('file://') ||
-           url.contains('blob:'); // Web blob URLs
+        url.startsWith('file://') ||
+        url.contains('blob:'); // Web blob URLs
   }
 
   /// Validate that image URL is displayable (either local file or uploaded URL)

@@ -9,7 +9,8 @@ import 'package:butlery/models/parsing/site_config.dart';
 import 'package:butlery/models/parsing/tier_result.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
-import 'package:butlery/utils/text/ingredient_parser.dart' hide ParsedIngredient;
+import 'package:butlery/utils/text/ingredient_parser.dart'
+    hide ParsedIngredient;
 import 'package:butlery/core/utils/logger.dart';
 
 /// Tier 2: Site-specific CSS selector extraction.
@@ -206,7 +207,10 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
 
     try {
       final elements = document.querySelectorAll(selector);
-      return elements.map((e) => e.text.trim()).where((t) => t.isNotEmpty).toList();
+      return elements
+          .map((e) => e.text.trim())
+          .where((t) => t.isNotEmpty)
+          .toList();
     } catch (e) {
       AppLogger.warning('$tierName: Invalid selector "$selector": $e');
       return [];
@@ -243,9 +247,7 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
 
     for (final text in texts) {
       // Clean up text
-      final cleaned = text
-          .replaceAll(RegExp(r'\s+'), ' ')
-          .trim();
+      final cleaned = text.replaceAll(RegExp(r'\s+'), ' ').trim();
 
       if (cleaned.isEmpty) continue;
 
@@ -317,8 +319,10 @@ class SiteConfigTier extends ParsingTier with QualityScoring {
     }
 
     // Try to extract minutes
-    final minMatch = RegExp(r'(\d+)\s*(?:min|m\b)', caseSensitive: false).firstMatch(text);
-    final hourMatch = RegExp(r'(\d+)\s*(?:tim|h\b|hour)', caseSensitive: false).firstMatch(text);
+    final minMatch =
+        RegExp(r'(\d+)\s*(?:min|m\b)', caseSensitive: false).firstMatch(text);
+    final hourMatch = RegExp(r'(\d+)\s*(?:tim|h\b|hour)', caseSensitive: false)
+        .firstMatch(text);
 
     var totalMinutes = 0;
 

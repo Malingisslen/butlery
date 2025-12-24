@@ -24,9 +24,11 @@ class NotificationBatch {
 
   /// Create from repository data map (removes Firebase dependency)
   factory NotificationBatch.fromMap(String id, Map<String, dynamic> data) {
-    final notificationsList = (data['notifications'] as List<dynamic>?).orEmpty();
+    final notificationsList =
+        (data['notifications'] as List<dynamic>?).orEmpty();
     final notifications = notificationsList
-        .map((item) => NotificationTemplateSerializer.fromMap(item as Map<String, dynamic>))
+        .map((item) => NotificationTemplateSerializer.fromMap(
+            item as Map<String, dynamic>))
         .toList();
 
     return NotificationBatch(
@@ -44,7 +46,8 @@ class NotificationBatch {
 
   /// Create from Firestore document
   factory NotificationBatch.fromFirestore(DocumentSnapshot doc) {
-    return NotificationBatch.fromMap(doc.id, ((doc.data() as Map<String, dynamic>?).orEmpty()));
+    return NotificationBatch.fromMap(
+        doc.id, ((doc.data() as Map<String, dynamic>?).orEmpty()));
   }
 }
 
@@ -56,11 +59,13 @@ extension NotificationTemplateExtension on NotificationTemplate {
       'body': body,
       'data': data,
       'imageUrl': imageUrl,
-      'actions': actions?.map((a) => {
-        'id': a.id,
-        'title': a.title,
-        'data': a.data,
-      }).toList(),
+      'actions': actions
+          ?.map((a) => {
+                'id': a.id,
+                'title': a.title,
+                'data': a.data,
+              })
+          .toList(),
     };
   }
 }

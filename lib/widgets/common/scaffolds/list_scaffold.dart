@@ -55,7 +55,8 @@ class ListScaffold<T> extends StatelessWidget {
 
     Widget body = ListView.builder(
       itemCount: items.length,
-      itemBuilder: (context, index) => itemBuilder(context, items[index], index),
+      itemBuilder: (context, index) =>
+          itemBuilder(context, items[index], index),
     );
 
     if (onRefresh != null) {

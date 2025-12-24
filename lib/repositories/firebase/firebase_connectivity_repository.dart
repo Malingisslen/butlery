@@ -28,6 +28,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:butlery/repositories/interfaces/connectivity_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+
 /// Firebase implementation for sophisticated connectivity monitoring with quality assessment.
 /// This repository provides comprehensive connectivity monitoring by combining network connectivity
 /// detection with Firebase-specific connection testing. It offers real-time connectivity streams,
@@ -74,16 +75,16 @@ import 'package:butlery/core/utils/logger.dart';
 class FirebaseConnectivityRepository implements ConnectivityRepository {
   /// Firestore instance for Firebase connectivity testing and monitoring.
   final FirebaseFirestore _firestore;
-  
+
   /// Network connectivity detection service from connectivity_plus plugin.
   final Connectivity _connectivity;
-  
+
   /// Stream controller for broadcasting connectivity status changes.
   StreamController<bool>? _connectionController;
-  
+
   /// Subscription to network connectivity changes from the platform.
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
-  
+
   /// Timer for periodic Firebase connection health checks.
   Timer? _firebaseCheckTimer;
 
@@ -95,8 +96,8 @@ class FirebaseConnectivityRepository implements ConnectivityRepository {
     FirebaseFirestore? firestore,
     AuthRepository? authRepository,
     Connectivity? connectivity,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance,
-       _connectivity = connectivity ?? Connectivity();
+  })  : _firestore = firestore ?? FirebaseFirestore.instance,
+        _connectivity = connectivity ?? Connectivity();
 
   @override
   Stream<bool> get connectionStream {
@@ -129,9 +130,9 @@ class FirebaseConnectivityRepository implements ConnectivityRepository {
         .snapshots()
         .map<bool>((snapshot) => snapshot.data()?['connected'] ?? false)
         .handleError((error) {
-          AppLogger.error('Firebase connection monitoring error', error);
-          return false;
-        });
+      AppLogger.error('Firebase connection monitoring error', error);
+      return false;
+    });
   }
 
   @override
@@ -182,10 +183,11 @@ class FirebaseConnectivityRepository implements ConnectivityRepository {
   }
 
   void _startMonitoring() {
-    _connectivitySubscription = _connectivity.onConnectivityChanged.listen((results) {
+    _connectivitySubscription =
+        _connectivity.onConnectivityChanged.listen((results) {
       final hasConnection = !results.contains(ConnectivityResult.none);
       _connectionController?.add(hasConnection);
-      
+
       if (hasConnection) {
         // When network is available, also check Firebase
         _checkFirebaseConnection();

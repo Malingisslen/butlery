@@ -73,11 +73,14 @@ void main() {
     group('Initialization and Default State', () {
       test('should initialize with correct default state', () {
         // Assert - All default values
-        expect(viewModel.isExporting, false, reason: 'Should not be exporting initially');
+        expect(viewModel.isExporting, false,
+            reason: 'Should not be exporting initially');
         expect(viewModel.exportedData, null, reason: 'No data exported yet');
         expect(viewModel.errorMessage, null, reason: 'No error initially');
-        expect(viewModel.exportTimestamp, null, reason: 'No export timestamp yet');
-        expect(viewModel.hasExportedData, false, reason: 'No exported data yet');
+        expect(viewModel.exportTimestamp, null,
+            reason: 'No export timestamp yet');
+        expect(viewModel.hasExportedData, false,
+            reason: 'No exported data yet');
         expect(viewModel.estimatedSizeKB, 0, reason: 'No data size yet');
       });
 
@@ -103,9 +106,12 @@ void main() {
 
         // Assert
         expect(result, true, reason: 'Export should succeed');
-        expect(viewModel.exportedData, testExportData, reason: 'Data should be stored');
-        expect(viewModel.hasExportedData, true, reason: 'Should have exported data');
-        expect(viewModel.exportTimestamp, isNotNull, reason: 'Timestamp should be set');
+        expect(viewModel.exportedData, testExportData,
+            reason: 'Data should be stored');
+        expect(viewModel.hasExportedData, true,
+            reason: 'Should have exported data');
+        expect(viewModel.exportTimestamp, isNotNull,
+            reason: 'Timestamp should be set');
         expect(viewModel.errorMessage, null, reason: 'No error should occur');
 
         verify(() => mockExportService.exportUserData()).called(1);
@@ -121,16 +127,20 @@ void main() {
 
         // Assert
         expect(result, false, reason: 'Export should fail');
-        expect(viewModel.exportedData, null, reason: 'No data should be stored');
-        expect(viewModel.hasExportedData, false, reason: 'Should not have data');
-        expect(viewModel.errorMessage, isNotNull, reason: 'Error message should be set');
+        expect(viewModel.exportedData, null,
+            reason: 'No data should be stored');
+        expect(viewModel.hasExportedData, false,
+            reason: 'Should not have data');
+        expect(viewModel.errorMessage, isNotNull,
+            reason: 'Error message should be set');
         expect(viewModel.errorMessage, contains('Ett fel uppstod'),
             reason: 'User-friendly Swedish error');
 
         verify(() => mockExportService.exportUserData()).called(1);
       });
 
-      test('should handle authentication errors with specific message', () async {
+      test('should handle authentication errors with specific message',
+          () async {
         // Arrange
         when(() => mockExportService.exportUserData())
             .thenThrow(Exception('No authenticated user'));
@@ -184,11 +194,18 @@ void main() {
 
         // Assert
         expect(viewModel.exportTimestamp, isNotNull);
-        expect(viewModel.exportTimestamp!.isAfter(beforeExport.subtract(const Duration(seconds: 1))), true);
-        expect(viewModel.exportTimestamp!.isBefore(afterExport.add(const Duration(seconds: 1))), true);
+        expect(
+            viewModel.exportTimestamp!
+                .isAfter(beforeExport.subtract(const Duration(seconds: 1))),
+            true);
+        expect(
+            viewModel.exportTimestamp!
+                .isBefore(afterExport.add(const Duration(seconds: 1))),
+            true);
       });
 
-      test('should prevent duplicate concurrent exports (AsyncOperationMixin)', () async {
+      test('should prevent duplicate concurrent exports (AsyncOperationMixin)',
+          () async {
         // Arrange
         var exportCallCount = 0;
         when(() => mockExportService.exportUserData()).thenAnswer((_) async {
@@ -204,7 +221,8 @@ void main() {
         await Future.wait([future1, future2]);
 
         // Assert - AsyncOperationMixin should prevent duplicate 'export' operations
-        expect(exportCallCount, 1, reason: 'Named operation should prevent duplicates');
+        expect(exportCallCount, 1,
+            reason: 'Named operation should prevent duplicates');
       });
     });
 
@@ -228,10 +246,13 @@ void main() {
         // Assert
         expect(result, true, reason: 'Retry should succeed');
         expect(viewModel.hasError, false, reason: 'Error should be cleared');
-        expect(viewModel.errorMessage, null, reason: 'Error message should be cleared');
-        expect(viewModel.hasExportedData, true, reason: 'Data should be exported');
+        expect(viewModel.errorMessage, null,
+            reason: 'Error message should be cleared');
+        expect(viewModel.hasExportedData, true,
+            reason: 'Data should be exported');
 
-        verify(() => mockExportService.exportUserData()).called(2); // Initial + retry
+        verify(() => mockExportService.exportUserData())
+            .called(2); // Initial + retry
       });
 
       test('should clear error before retry', () async {
@@ -268,13 +289,15 @@ void main() {
         final sizeKB = viewModel.estimatedSizeKB;
         final expectedSizeKB = (testExportData.length / 1024).ceil();
 
-        expect(sizeKB, expectedSizeKB, reason: 'Size should be calculated correctly');
+        expect(sizeKB, expectedSizeKB,
+            reason: 'Size should be calculated correctly');
         expect(sizeKB, greaterThan(0), reason: 'Size should be positive');
       });
 
       test('should return 0 size when no data exported', () {
         // Assert
-        expect(viewModel.estimatedSizeKB, 0, reason: 'Size should be 0 without data');
+        expect(viewModel.estimatedSizeKB, 0,
+            reason: 'Size should be 0 without data');
       });
 
       test('should format size text as KB for small files', () async {
@@ -289,7 +312,8 @@ void main() {
         // Assert
         final sizeText = viewModel.exportSizeText;
         expect(sizeText, contains('KB'), reason: 'Small files should use KB');
-        expect(sizeText, isNot(contains('MB')), reason: 'Should not use MB for small files');
+        expect(sizeText, isNot(contains('MB')),
+            reason: 'Should not use MB for small files');
       });
 
       test('should format size text as MB for large files', () async {
@@ -304,7 +328,8 @@ void main() {
         // Assert
         final sizeText = viewModel.exportSizeText;
         expect(sizeText, contains('MB'), reason: 'Large files should use MB');
-        expect(sizeText, contains('2.0'), reason: 'Should show correct MB value');
+        expect(sizeText, contains('2.0'),
+            reason: 'Should show correct MB value');
       });
 
       test('should format MB with one decimal place', () async {
@@ -318,7 +343,8 @@ void main() {
 
         // Assert
         final sizeText = viewModel.exportSizeText;
-        expect(sizeText, matches(r'\d+\.\d MB'), reason: 'Should format with one decimal');
+        expect(sizeText, matches(r'\d+\.\d MB'),
+            reason: 'Should format with one decimal');
       });
     });
 
@@ -327,7 +353,8 @@ void main() {
     group('Export Timestamp Text', () {
       test('should return empty string when no export', () {
         // Assert
-        expect(viewModel.exportTimestampText, '', reason: 'No timestamp without export');
+        expect(viewModel.exportTimestampText, '',
+            reason: 'No timestamp without export');
       });
 
       test('should format as "Just nu" for very recent export', () async {
@@ -376,15 +403,18 @@ void main() {
             .thenAnswer((_) async => testExportData);
         await viewModel.exportData();
 
-        expect(viewModel.hasExportedData, true, reason: 'Should have data initially');
+        expect(viewModel.hasExportedData, true,
+            reason: 'Should have data initially');
 
         // Act
         viewModel.clearExportedData();
 
         // Assert
         expect(viewModel.exportedData, null, reason: 'Data should be cleared');
-        expect(viewModel.exportTimestamp, null, reason: 'Timestamp should be cleared');
-        expect(viewModel.hasExportedData, false, reason: 'Should not have data');
+        expect(viewModel.exportTimestamp, null,
+            reason: 'Timestamp should be cleared');
+        expect(viewModel.hasExportedData, false,
+            reason: 'Should not have data');
         expect(viewModel.errorMessage, null, reason: 'Error should be cleared');
         expect(viewModel.estimatedSizeKB, 0, reason: 'Size should be 0');
       });
@@ -424,9 +454,11 @@ void main() {
 
         // Assert - All state should be reset
         expect(viewModel.exportedData, null, reason: 'Data should be cleared');
-        expect(viewModel.exportTimestamp, null, reason: 'Timestamp should be cleared');
+        expect(viewModel.exportTimestamp, null,
+            reason: 'Timestamp should be cleared');
         expect(viewModel.errorMessage, null, reason: 'Error should be cleared');
-        expect(viewModel.hasExportedData, false, reason: 'Should not have data');
+        expect(viewModel.hasExportedData, false,
+            reason: 'Should not have data');
         expect(viewModel.hasError, false, reason: 'Should not have error');
       });
 
@@ -482,14 +514,18 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 10));
 
         // Should be loading at this point
-        expect(viewModel.isLoading, true, reason: 'Should be loading during operation');
-        expect(viewModel.isExporting, true, reason: 'isExporting alias should work');
+        expect(viewModel.isLoading, true,
+            reason: 'Should be loading during operation');
+        expect(viewModel.isExporting, true,
+            reason: 'isExporting alias should work');
 
         await exportFuture;
 
         // Assert
-        expect(viewModel.isLoading, false, reason: 'Should not be loading after completion');
-        expect(loadingStateChanges, contains(true), reason: 'Loading state should have been true');
+        expect(viewModel.isLoading, false,
+            reason: 'Should not be loading after completion');
+        expect(loadingStateChanges, contains(true),
+            reason: 'Loading state should have been true');
       });
 
       test('should set error state on operation failure', () async {
@@ -520,11 +556,13 @@ void main() {
         await viewModel.exportData();
 
         // Assert
-        expect(viewModel.hasError, false, reason: 'Error should be cleared on success');
+        expect(viewModel.hasError, false,
+            reason: 'Error should be cleared on success');
         expect(viewModel.error, null);
       });
 
-      test('should use named operation to prevent concurrent exports', () async {
+      test('should use named operation to prevent concurrent exports',
+          () async {
         // Arrange
         var exportStartCount = 0;
         when(() => mockExportService.exportUserData()).thenAnswer((_) async {
@@ -694,7 +732,8 @@ void main() {
         await viewModel.exportData();
 
         // Assert
-        expect(viewModel.errorMessage, equals('Du måste vara inloggad för att exportera data'));
+        expect(viewModel.errorMessage,
+            equals('Du måste vara inloggad för att exportera data'));
       });
 
       test('should format network error in Swedish', () async {
@@ -732,7 +771,8 @@ void main() {
         await viewModel.exportData();
 
         // Assert
-        expect(viewModel.errorMessage, contains('Ett fel uppstod vid export av data'));
+        expect(viewModel.errorMessage,
+            contains('Ett fel uppstod vid export av data'));
         expect(viewModel.errorMessage, contains('Försök igen'));
       });
     });

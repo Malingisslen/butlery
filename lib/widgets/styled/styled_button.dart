@@ -37,9 +37,9 @@ class StyledButton extends StatelessWidget {
     this.isLoading = false,
     this.icon,
     this.width,
-  }) : isDestructive = false,
-       height = AppDimensions.buttonHeight,
-       padding = null;
+  })  : isDestructive = false,
+        height = AppDimensions.buttonHeight,
+        padding = null;
 
   /// Secondary outlined button
   const StyledButton.secondary({
@@ -49,9 +49,9 @@ class StyledButton extends StatelessWidget {
     this.isLoading = false,
     this.icon,
     this.width,
-  }) : isDestructive = false,
-       height = AppDimensions.buttonHeight,
-       padding = null;
+  })  : isDestructive = false,
+        height = AppDimensions.buttonHeight,
+        padding = null;
 
   /// Destructive button (delete, remove actions)
   const StyledButton.destructive({
@@ -61,9 +61,9 @@ class StyledButton extends StatelessWidget {
     this.isLoading = false,
     this.icon,
     this.width,
-  }) : isDestructive = true,
-       height = AppDimensions.buttonHeight,
-       padding = null;
+  })  : isDestructive = true,
+        height = AppDimensions.buttonHeight,
+        padding = null;
 
   /// Small button for compact spaces
   const StyledButton.small({
@@ -72,10 +72,10 @@ class StyledButton extends StatelessWidget {
     this.onPressed,
     this.isLoading = false,
     this.icon,
-  }) : isDestructive = false,
-       width = null,
-       height = 36.0,
-       padding = null;
+  })  : isDestructive = false,
+        width = null,
+        height = 36.0,
+        padding = null;
 
   /// Icon-only button
   const StyledButton.icon({
@@ -84,10 +84,10 @@ class StyledButton extends StatelessWidget {
     this.onPressed,
     this.isLoading = false,
     this.isDestructive = false,
-  }) : text = '',
-       width = null,
-       height = AppDimensions.buttonHeight,
-       padding = null;
+  })  : text = '',
+        width = null,
+        height = AppDimensions.buttonHeight,
+        padding = null;
 
   @override
   Widget build(BuildContext context) {
@@ -189,18 +189,19 @@ class StyledButton extends StatelessWidget {
   }
 
   ButtonStyle _getButtonStyle(BuildContext context) {
-    EdgeInsetsGeometry effectivePadding = padding ?? const EdgeInsets.symmetric(
-      horizontal: AppDimensions.spacingMd,
-      vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
-    );
-    
+    EdgeInsetsGeometry effectivePadding = padding ??
+        const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingMd,
+          vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+        );
+
     if (height != null && height! < AppDimensions.buttonHeight) {
       effectivePadding = const EdgeInsets.symmetric(
         horizontal: (AppDimensions.spacingSm + AppDimensions.spacingXs),
         vertical: AppDimensions.spacingSm,
       );
     }
-    
+
     return ElevatedButton.styleFrom(
       padding: effectivePadding,
       shape: RoundedRectangleBorder(
@@ -215,10 +216,11 @@ class StyledButton extends StatelessWidget {
     return ElevatedButton.styleFrom(
       backgroundColor: AppColors.errorContainer,
       foregroundColor: AppColors.onErrorContainer,
-      padding: padding ?? const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
-      ),
+      padding: padding ??
+          const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingMd,
+            vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+          ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
       ),
@@ -230,7 +232,6 @@ class StyledButton extends StatelessWidget {
 
 /// Specialized button variants for common patterns
 class StyledButtons {
-  
   /// Cancel button (typically used in dialogs)
   static Widget cancel({
     VoidCallback? onPressed,

@@ -142,8 +142,7 @@ class OCRUsageTracker {
     final warnings = <String>[];
 
     if (_monthlyRequestCount >= freeMonthlyLimit) {
-      warnings
-          .add('Exceeded free tier - upgrade to paid tier or add fallback');
+      warnings.add('Exceeded free tier - upgrade to paid tier or add fallback');
     } else if (_monthlyRequestCount >= (freeMonthlyLimit * _warningThreshold)) {
       final percentUsed =
           ((_monthlyRequestCount / freeMonthlyLimit) * 100).toInt();
@@ -157,7 +156,8 @@ class OCRUsageTracker {
     final cacheHitRate = calculateCacheHitRate();
     if (cacheHitRate < 0.2 && _monthlyRequestCount > 100) {
       final hitPercent = (cacheHitRate * 100).toInt();
-      warnings.add('Low cache hit rate ($hitPercent%) - many duplicate requests');
+      warnings
+          .add('Low cache hit rate ($hitPercent%) - many duplicate requests');
     }
 
     return warnings;

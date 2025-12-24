@@ -166,7 +166,8 @@ void main() {
     });
 
     group('User-Specific Methods (Not Initialized)', () {
-      test('should return empty list for getRecipesForUser when not initialized',
+      test(
+          'should return empty list for getRecipesForUser when not initialized',
           () async {
         final recipes = await offlineService.getRecipesForUser('user_123');
 
@@ -177,8 +178,8 @@ void main() {
       test(
           'should return null for getOfflineRecipeForUser when not initialized',
           () async {
-        final recipe =
-            await offlineService.getOfflineRecipeForUser('recipe_123', 'user_123');
+        final recipe = await offlineService.getOfflineRecipeForUser(
+            'recipe_123', 'user_123');
 
         // Assert
         expect(recipe, isNull);

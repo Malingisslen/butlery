@@ -77,8 +77,8 @@ import 'package:butlery/models/user_profile.dart';
 /// AppRouter.navigateTo(context, Routes.laggTill);
 /// // Navigate with arguments
 /// AppRouter.navigateTo(
-///   context, 
-///   Routes.receptDetalj, 
+///   context,
+///   Routes.receptDetalj,
 ///   arguments: recipe
 /// );
 /// // Navigate and replace current route
@@ -92,41 +92,50 @@ import 'package:butlery/models/user_profile.dart';
 /// - Authentication failures redirect to login
 /// - All errors provide navigation back to home screen
 class AppRouter {
-  static final FirebaseAuthRepository _authRepository = FirebaseAuthRepository();
+  static final FirebaseAuthRepository _authRepository =
+      FirebaseAuthRepository();
 
   /// Main route generator that handles all app navigation
   static Route<dynamic> generateRoute(RouteSettings settings) {
     try {
       final routeName = Routes.resolveRoute(settings.name ?? '/');
-      
+
       // Check authentication for protected routes
       if (Routes.requiresAuth(routeName)) {
         if (!_isUserAuthenticated()) {
-          return _buildRoute(const AuthView(), settings, RouteAnimationType.fade);
+          return _buildRoute(
+              const AuthView(), settings, RouteAnimationType.fade);
         }
       }
 
       switch (routeName) {
         case Routes.home:
-          return _buildRoute(const MinaReceptView(), settings, Routes.getAnimationType(routeName));
-        
+          return _buildRoute(const MinaReceptView(), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.auth:
-          return _buildRoute(const AuthView(), settings, Routes.getAnimationType(routeName));
+          return _buildRoute(
+              const AuthView(), settings, Routes.getAnimationType(routeName));
 
         case Routes.laggTill:
-          return _buildRoute(const LaggTillReceptView(), settings, Routes.getAnimationType(routeName));
-        
+          return _buildRoute(const LaggTillReceptView(), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.importViaUrl:
-          return _buildRoute(const ImportViaUrlView(), settings, Routes.getAnimationType(routeName));
-        
+          return _buildRoute(const ImportViaUrlView(), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.photoImport:
-          return _buildRoute(const PhotoImportView(), settings, Routes.getAnimationType(routeName));
-        
+          return _buildRoute(const PhotoImportView(), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.fileImport:
-          return _buildRoute(const FileImportView(), settings, Routes.getAnimationType(routeName));
+          return _buildRoute(const FileImportView(), settings,
+              Routes.getAnimationType(routeName));
 
         case Routes.smartImport:
-          return _buildRoute(const SmartImportView(), settings, Routes.getAnimationType(routeName));
+          return _buildRoute(const SmartImportView(), settings,
+              Routes.getAnimationType(routeName));
 
         case Routes.skrivSjalv:
           // Handle arguments for template or initial recipe
@@ -135,22 +144,22 @@ class AppRouter {
             final initialRecipe = arguments['initialRecipe'];
             final isTemplate = arguments['isTemplate'] as bool? ?? false;
             return _buildRoute(
-              SkrivSjalvReceptView(
-                initialRecipe: initialRecipe,
-                isTemplate: isTemplate,
-              ), 
-              settings, 
-              Routes.getAnimationType(routeName)
-            );
+                SkrivSjalvReceptView(
+                  initialRecipe: initialRecipe,
+                  isTemplate: isTemplate,
+                ),
+                settings,
+                Routes.getAnimationType(routeName));
           }
-          return _buildRoute(const SkrivSjalvReceptView(), settings, Routes.getAnimationType(routeName));
-        
+          return _buildRoute(const SkrivSjalvReceptView(), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.franSocialaMedier:
           // Handle different argument types
           final arguments = settings.arguments;
           String? initialText;
           String? sourceUrl;
-          
+
           if (arguments is String) {
             // Simple text argument from photo import
             initialText = arguments;
@@ -159,120 +168,133 @@ class AppRouter {
             initialText = arguments['text'] as String?;
             sourceUrl = arguments['sourceUrl'] as String?;
           }
-          
+
           return _buildRoute(
-            FranSocialaMedierView(
-              initialText: initialText,
-              sourceUrl: sourceUrl,
-            ), 
-            settings, 
-            Routes.getAnimationType(routeName)
-          );
-        
+              FranSocialaMedierView(
+                initialText: initialText,
+                sourceUrl: sourceUrl,
+              ),
+              settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.importFranArkiv:
-          return _buildRoute(const ImporteraFranArkivView(), settings, Routes.getAnimationType(routeName));
-        
+          return _buildRoute(const ImporteraFranArkivView(), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.receptDetalj:
           final recipe = settings.arguments as Recipe?;
           if (recipe == null) {
             return _errorRoute('Recipe argument missing for detail view');
           }
-          return _buildRoute(RecipeDetailView(recipe: recipe), settings, Routes.getAnimationType(routeName));
-        
+          return _buildRoute(RecipeDetailView(recipe: recipe), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.redigeraRecept:
           final recipe = settings.arguments as Recipe?;
           if (recipe == null) {
             return _errorRoute('Recipe argument missing for edit view');
           }
-          return _buildRoute(EditRecipeView(recipe: recipe), settings, Routes.getAnimationType(routeName));
-        
+          return _buildRoute(EditRecipeView(recipe: recipe), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.receiveShare:
           final shareData = settings.arguments as Map<String, dynamic>?;
           if (shareData == null) {
             return _errorRoute('Share data missing');
           }
           return _buildRoute(
-            ReceiveShareView(
-              content: shareData['content'] as String? ?? '',
-              type: shareData['type'] as String? ?? 'text',
-            ),
-            settings,
-            Routes.getAnimationType(routeName)
-          );
+              ReceiveShareView(
+                content: shareData['content'] as String? ?? '',
+                type: shareData['type'] as String? ?? 'text',
+              ),
+              settings,
+              Routes.getAnimationType(routeName));
 
         case Routes.veckomeny:
           final menu = settings.arguments as SharedMenu?;
           return _buildRoute(
-            menu != null ? vecko.VeckomenyView(sharedMenu: menu) : const vecko.VeckomenyView(),
-            settings,
-            Routes.getAnimationType(routeName)
-          );
+              menu != null
+                  ? vecko.VeckomenyView(sharedMenu: menu)
+                  : const vecko.VeckomenyView(),
+              settings,
+              Routes.getAnimationType(routeName));
 
         case Routes.realtimeMenu:
           // Navigate to VeckomenyView for collaborative menu
           // The realtime menu ID is passed in arguments for future enhancement
           // TODO(realtime-menu-sync): Enhance VeckomenyView to load and sync with realtime menu
           // Status: Deferred - current implementation uses separate realtime menu views
-          return _buildRoute(
-            const vecko.VeckomenyView(),
-            settings,
-            Routes.getAnimationType(routeName)
-          );
+          return _buildRoute(const vecko.VeckomenyView(), settings,
+              Routes.getAnimationType(routeName));
 
         case Routes.inkopslista:
-          return _buildRoute(const UnifiedShoppingView(), settings, Routes.getAnimationType(routeName));
+          return _buildRoute(const UnifiedShoppingView(), settings,
+              Routes.getAnimationType(routeName));
 
         case Routes.profileEdit:
-          return _buildRoute(const UserProfileEditView(), settings, Routes.getAnimationType(routeName));
-        
+          return _buildRoute(const UserProfileEditView(), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.friends:
-          return _buildRoute(const FriendsListView(), settings, Routes.getAnimationType(routeName));
-        
+          return _buildRoute(const FriendsListView(), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.discovery:
-          return _buildRoute(const DiscoveryDashboardView(), settings, Routes.getAnimationType(routeName));
-        
+          return _buildRoute(const DiscoveryDashboardView(), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.friendRequests:
-          return _buildRoute(const FriendRequestsView(), settings, Routes.getAnimationType(routeName));
-        
+          return _buildRoute(const FriendRequestsView(), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.shared:
-          return _buildRoute(const SharedWithMeView(), settings, Routes.getAnimationType(routeName));
-        
+          return _buildRoute(const SharedWithMeView(), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.collaborativeShopping:
           final listId = settings.arguments as String?;
           if (listId == null) {
-            return _errorRoute('List ID argument missing for collaborative shopping');
+            return _errorRoute(
+                'List ID argument missing for collaborative shopping');
           }
-          return _buildRoute(CollaborativeShoppingView(listId: listId), settings, Routes.getAnimationType(routeName));
-        
+          return _buildRoute(CollaborativeShoppingView(listId: listId),
+              settings, Routes.getAnimationType(routeName));
+
         case Routes.menuPreview:
           final menu = settings.arguments as SharedMenu?;
           if (menu == null) {
             return _errorRoute('Menu argument missing for preview');
           }
-          return _buildRoute(MenuPreviewView(sharedMenu: menu), settings, Routes.getAnimationType(routeName));
-        
+          return _buildRoute(MenuPreviewView(sharedMenu: menu), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.createSharedShopping:
-          return _buildRoute(const CreateSharedShoppingListView(), settings, Routes.getAnimationType(routeName));
-        
+          return _buildRoute(const CreateSharedShoppingListView(), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.friendProfile:
           final userProfile = settings.arguments as UserProfile?;
           if (userProfile == null) {
             return _errorRoute('User profile argument missing');
           }
-          return _buildRoute(FriendProfileView(friend: userProfile), settings, Routes.getAnimationType(routeName));
+          return _buildRoute(FriendProfileView(friend: userProfile), settings,
+              Routes.getAnimationType(routeName));
 
         case Routes.sharedShoppingLists:
-          return _buildRoute(const SharedShoppingListsView(), settings, Routes.getAnimationType(routeName));
+          return _buildRoute(const SharedShoppingListsView(), settings,
+              Routes.getAnimationType(routeName));
 
         case Routes.messages:
-          return _buildRoute(const ConversationsListView(), settings, Routes.getAnimationType(routeName));
-        
+          return _buildRoute(const ConversationsListView(), settings,
+              Routes.getAnimationType(routeName));
+
         case Routes.chat:
           final conversationId = settings.arguments as String?;
           if (conversationId == null) {
             return _errorRoute('Conversation ID argument missing for chat');
           }
-          return _buildRoute(ChatViewFacade(conversationId: conversationId), settings, Routes.getAnimationType(routeName));
+          return _buildRoute(ChatViewFacade(conversationId: conversationId),
+              settings, Routes.getAnimationType(routeName));
 
         default:
           return _errorRoute('Unknown route: ${settings.name}');
@@ -288,7 +310,8 @@ class AppRouter {
   }
 
   /// Build route with appropriate animation based on route type
-  static Route<dynamic> _buildRoute(Widget page, RouteSettings settings, RouteAnimationType animationType) {
+  static Route<dynamic> _buildRoute(
+      Widget page, RouteSettings settings, RouteAnimationType animationType) {
     switch (animationType) {
       case RouteAnimationType.fade:
         return PageRouteBuilder(
@@ -308,7 +331,8 @@ class AppRouter {
             const begin = Offset(0.0, 1.0);
             const end = Offset.zero;
             const curve = Curves.easeInOut;
-            final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
             final offsetAnimation = animation.drive(tween);
             return SlideTransition(position: offsetAnimation, child: child);
           },
@@ -323,7 +347,8 @@ class AppRouter {
             const begin = Offset(1.0, 0.0);
             const end = Offset.zero;
             const curve = Curves.easeInOut;
-            final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
             final offsetAnimation = animation.drive(tween);
             return SlideTransition(position: offsetAnimation, child: child);
           },
@@ -338,7 +363,8 @@ class AppRouter {
             const begin = 0.0;
             const end = 1.0;
             const curve = Curves.elasticOut;
-            final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            final tween =
+                Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
             final scaleAnimation = animation.drive(tween);
             return ScaleTransition(scale: scaleAnimation, child: child);
           },
@@ -356,7 +382,8 @@ class AppRouter {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: AppDimensions.iconSizeXl, color: AppColors.error),
+              const Icon(Icons.error_outline,
+                  size: AppDimensions.iconSizeXl, color: AppColors.error),
               const SizedBox(height: AppDimensions.spacingXl),
               Text(
                 message ?? 'Sidan kunde inte hittas',
@@ -365,7 +392,8 @@ class AppRouter {
               ),
               const SizedBox(height: AppDimensions.spacingMd),
               ElevatedButton(
-                onPressed: () => Navigator.of(context).pushReplacementNamed(Routes.home),
+                onPressed: () =>
+                    Navigator.of(context).pushReplacementNamed(Routes.home),
                 child: const Text('Tillbaka till start'),
               ),
             ],
@@ -376,7 +404,8 @@ class AppRouter {
         const begin = 0.0;
         const end = 1.0;
         const curve = Curves.elasticOut;
-        final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        final tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
         final scaleAnimation = animation.drive(tween);
         return ScaleTransition(scale: scaleAnimation, child: child);
       },
@@ -390,18 +419,26 @@ class AppRouter {
   }
 
   /// Navigate to a route programmatically
-  static Future<dynamic> navigateTo(BuildContext context, String routeName, {Object? arguments}) {
+  static Future<dynamic> navigateTo(BuildContext context, String routeName,
+      {Object? arguments}) {
     return Navigator.of(context).pushNamed(routeName, arguments: arguments);
   }
 
   /// Navigate and replace current route
-  static Future<dynamic> navigateAndReplace(BuildContext context, String routeName, {Object? arguments}) {
-    return Navigator.of(context).pushReplacementNamed(routeName, arguments: arguments);
+  static Future<dynamic> navigateAndReplace(
+      BuildContext context, String routeName,
+      {Object? arguments}) {
+    return Navigator.of(context)
+        .pushReplacementNamed(routeName, arguments: arguments);
   }
 
   /// Navigate and clear stack
-  static Future<dynamic> navigateAndClearStack(BuildContext context, String routeName, {Object? arguments}) {
-    return Navigator.of(context).pushNamedAndRemoveUntil(routeName, (route) => false, arguments: arguments);
+  static Future<dynamic> navigateAndClearStack(
+      BuildContext context, String routeName,
+      {Object? arguments}) {
+    return Navigator.of(context).pushNamedAndRemoveUntil(
+        routeName, (route) => false,
+        arguments: arguments);
   }
 
   /// Go back

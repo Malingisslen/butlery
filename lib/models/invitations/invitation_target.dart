@@ -254,7 +254,6 @@ class InvitationTarget {
     }
   }
 
-
   /// Gets the creation date from metadata for group targets.
   /// Parses the ISO 8601 creation date string from group metadata, returning
   /// null if date is not available or parsing fails. Used for group information display.

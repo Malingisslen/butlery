@@ -165,9 +165,9 @@ class ConnectivityCheck {
   static const _enhancedDnsServers = [
     'google.com',
     'cloudflare.com',
-    '1.1.1.1',      // Cloudflare DNS
-    '8.8.8.8',      // Google DNS
-    '9.9.9.9',      // Quad9 DNS
+    '1.1.1.1', // Cloudflare DNS
+    '8.8.8.8', // Google DNS
+    '9.9.9.9', // Quad9 DNS
     '208.67.222.222', // OpenDNS
   ];
 
@@ -204,21 +204,22 @@ class ConnectivityCheck {
     try {
       // First try the repository-based check (standard approach)
       final connectivityRepo = ServiceLocator.get<ConnectivityRepository>();
-      final repoResult = await connectivityRepo.checkFirebaseConnection()
+      final repoResult = await connectivityRepo
+          .checkFirebaseConnection()
           .timeout(const Duration(seconds: 5));
-      
+
       if (repoResult) {
         return true;
       }
-      
+
       AppLogger.debug('Repository Firebase check failed, trying DNS failover');
-      
+
       // If repository check fails, try DNS failover approach
       return await _testFirebaseWithDNSFailover();
-      
     } catch (e) {
-      AppLogger.debug('Firebase connectivity test failed, trying DNS failover: $e');
-      
+      AppLogger.debug(
+          'Firebase connectivity test failed, trying DNS failover: $e');
+
       // If repository completely fails, try DNS failover
       return await _testFirebaseWithDNSFailover();
     }
@@ -239,7 +240,7 @@ class ConnectivityCheck {
     for (final entry in _firebaseEndpoints.entries) {
       final domain = entry.key;
       final ipAddresses = entry.value;
-      
+
       // First try domain resolution
       try {
         final result = await InternetAddress.lookup(domain)
@@ -249,11 +250,12 @@ class ConnectivityCheck {
           return true;
         }
       } on SocketException catch (_) {
-        AppLogger.debug('Domain resolution failed for $domain, trying IP fallback');
+        AppLogger.debug(
+            'Domain resolution failed for $domain, trying IP fallback');
       } catch (e) {
         AppLogger.debug('Domain test error for $domain: $e');
       }
-      
+
       // If domain fails, try direct IP addresses
       for (final ip in ipAddresses) {
         try {
@@ -272,7 +274,7 @@ class ConnectivityCheck {
         }
       }
     }
-    
+
     AppLogger.debug('All Firebase connectivity tests failed');
     return false;
   }
@@ -327,7 +329,8 @@ class ConnectivityCheck {
       final hasFirebase = await hasFirebaseConnectivity();
       if (!hasFirebase) {
         // If Firebase fails but internet works, it might be DNS issues - mark as limited
-        AppLogger.warning('Internet available but Firebase unreachable - possible DNS issues');
+        AppLogger.warning(
+            'Internet available but Firebase unreachable - possible DNS issues');
         return ConnectivityResult.limited;
       }
 
@@ -416,25 +419,25 @@ enum ConnectivityResult {
   /// DNS servers, requiring the application to switch to complete offline mode with local-only
   /// functionality and queued operations for later synchronization.
   none,
-  
+
   /// Internet connectivity available but Firebase services unreachable.
   /// This state indicates that basic internet connectivity exists but Firebase database services
   /// are not accessible, enabling basic online features while disabling Firebase-dependent
   /// functionality such as real-time synchronization and social features.
   limited,
-  
+
   /// Partial connectivity with DNS resolution issues but some services reachable.
   /// This state indicates connectivity problems likely related to DNS resolution failures,
   /// where some services may work through direct IP connections while domain-based
   /// services fail. Enables conservative operation with enhanced error handling.
   degraded,
-  
+
   /// Complete connectivity with both internet and Firebase database access.
   /// This state indicates optimal connectivity conditions with both internet and Firebase services
   /// available, enabling all application features including real-time synchronization, social
   /// interactions, and collaborative functionality.
   full,
-  
+
   /// Connectivity status cannot be determined due to validation errors.
   /// This state indicates that connectivity validation encountered errors preventing accurate
   /// status determination, requiring conservative feature management and appropriate user

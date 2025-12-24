@@ -119,9 +119,8 @@ class ParsingCorrectionRepository {
   /// Must be called when user requests data deletion.
   Future<void> deleteUserCorrections(String userId) async {
     try {
-      final snapshot = await _collection
-          .where('userId', isEqualTo: userId)
-          .get();
+      final snapshot =
+          await _collection.where('userId', isEqualTo: userId).get();
 
       if (snapshot.docs.isEmpty) {
         AppLogger.info('No parsing corrections to delete for user: $userId');

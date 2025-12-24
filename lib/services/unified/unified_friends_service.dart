@@ -79,21 +79,22 @@ import 'package:butlery/services/unified/friends/friends_utility_operations.dart
 /// - FriendsInternalOperations: Provides internal methods for operations classes
 /// - Feature operations: Handle specific business logic
 /// Maintains 100% backward compatibility while providing clean modular architecture.
-class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
+class UnifiedFriendsService extends ChangeNotifier
+    with StreamManagementMixin, ErrorHandlingMixin {
   // Dependencies
   final FirestoreRepository _firestoreRepository;
   final AuthRepository _authRepository;
   late final FirebaseFriendsRepository _friendsRepository;
   late final FriendRelationshipRepository _relationshipRepository;
   late final FriendCategoryRepository _categoryRepository;
-  
+
   // Focused modules (Phase 9 refactoring)
   late final FriendsStateManager _stateManager;
   late final FriendsServiceCoordinator _serviceCoordinator;
   late final FriendsInternalOperations _internalOps;
   late final FriendsFirebaseSyncOperations _firebaseSyncOps;
   late final FriendsUtilityOperations _utilityOps;
-  
+
   // Feature interfaces
   late final FriendsManagementOperations _managementOps;
   late final FriendsCategoriesOperations _categoriesOps;
@@ -106,29 +107,29 @@ class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin, E
     required AuthRepository authRepository,
   })  : _firestoreRepository = firestoreRepository,
         _authRepository = authRepository {
-    
     // Create Firebase friends repository
     _friendsRepository = FirebaseFriendsRepository(
       authRepository: _authRepository,
     );
-    
+
     // Create friend relationship repository (for counter updates)
     _relationshipRepository = FriendRelationshipRepository(
       authRepository: _authRepository,
     );
-    
+
     // Create friend category repository (for group/category management)
     _categoryRepository = FriendCategoryRepository(
       authRepository: _authRepository,
     );
-    
+
     // Initialize focused modules
     _initializeModules();
-    
+
     // Initialize feature interfaces
     _initializeFeatureInterfaces();
-    
-    AppLogger.info('✅ UnifiedFriendsService facade initialized with modular architecture');
+
+    AppLogger.info(
+        '✅ UnifiedFriendsService facade initialized with modular architecture');
   }
 
   // ===== GETTERS (Delegated to State Manager) =====
@@ -138,18 +139,22 @@ class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin, E
   List<FriendRequest> get outgoingRequests => _stateManager.outgoingRequests;
   List<FriendCategory> get categoriesList => _stateManager.categories;
   List<GroupInvitation> get sentInvitations => _stateManager.sentInvitations;
-  List<GroupInvitation> get receivedInvitations => _stateManager.receivedInvitations;
+  List<GroupInvitation> get receivedInvitations =>
+      _stateManager.receivedInvitations;
   Set<String> get blockedUsers => _stateManager.blockedUsers;
-  Map<String, Set<String>> get friendCategoryRelationships => _stateManager.friendCategoryRelationships;
+  Map<String, Set<String>> get friendCategoryRelationships =>
+      _stateManager.friendCategoryRelationships;
 
   bool get isInitialized => _stateManager.isInitialized;
   bool get isLoading => _stateManager.isLoading;
   String? get error => _stateManager.error;
   bool get hasError => _stateManager.hasError;
-  
-  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
+
+  String? get currentUserId =>
+      ServiceLocator.get<PermissionService>().currentUserId;
   FirebaseFirestore get firestore => _firestoreRepository.firestore;
-  FriendRelationshipRepository get relationshipRepository => _relationshipRepository;
+  FriendRelationshipRepository get relationshipRepository =>
+      _relationshipRepository;
 
   // ===== FEATURE INTERFACE GETTERS =====
 
@@ -175,7 +180,8 @@ class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin, E
       (user) async {
         if (user != null) {
           // User logged in - reload friends data
-          AppLogger.info('🔄 User logged in - reloading friends data for: ${user.uid}');
+          AppLogger.info(
+              '🔄 User logged in - reloading friends data for: ${user.uid}');
           await _stateManager.initialize();
 
           // Run migration to ensure owners are members of their groups
@@ -202,7 +208,8 @@ class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin, E
     // Initialize the service coordinator
     await _serviceCoordinator.initialize();
 
-    AppLogger.success('✅ UnifiedFriendsService facade initialized with auth state handling');
+    AppLogger.success(
+        '✅ UnifiedFriendsService facade initialized with auth state handling');
   }
 
   // ===== PRIVATE INITIALIZATION METHODS =====
@@ -213,10 +220,10 @@ class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin, E
       repository: _friendsRepository,
       categoryRepository: _categoryRepository,
     );
-    
+
     // Initialize service coordinator
     _serviceCoordinator = FriendsServiceCoordinator();
-    
+
     // Initialize internal operations
     _internalOps = FriendsInternalOperations(
       categoryRepository: _categoryRepository,
@@ -246,7 +253,8 @@ class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin, E
       notifyListeners();
     });
 
-    AppLogger.debug('Focused modules initialized with Firebase repository and category repository');
+    AppLogger.debug(
+        'Focused modules initialized with Firebase repository and category repository');
   }
 
   void _initializeFeatureInterfaces() {
@@ -254,7 +262,7 @@ class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin, E
     _categoriesOps = FriendsCategoriesOperations(this);
     _invitationsOps = FriendsInvitationsOperations(this);
     _groupSharingOps = SocialGroupSharingOperations(this);
-    
+
     AppLogger.debug('Feature interfaces initialized');
   }
 
@@ -268,135 +276,167 @@ class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin, E
   List<UserProfile> get friendsInternal => _internalOps.friendsInternal;
 
   /// Internal getter for categories list (for operations classes)
-  List<FriendCategory> getAllCategoriesInternal() => _internalOps.getAllCategoriesInternal();
+  List<FriendCategory> getAllCategoriesInternal() =>
+      _internalOps.getAllCategoriesInternal();
 
   /// Internal getter for sent invitations (for operations classes)
-  List<GroupInvitation> getAllSentInvitationsInternal() => _internalOps.getAllSentInvitationsInternal();
+  List<GroupInvitation> getAllSentInvitationsInternal() =>
+      _internalOps.getAllSentInvitationsInternal();
 
   /// Internal getter for friend-category relationships (for operations classes)
-  Map<String, Set<String>> get friendCategoryRelationshipsInternal => _stateManager.relationshipsInternal;
+  Map<String, Set<String>> get friendCategoryRelationshipsInternal =>
+      _stateManager.relationshipsInternal;
 
   /// Internal method to notify listeners (for operations classes)
   void notifyListenersInternal() => _internalOps.notifyListenersInternal();
 
   /// Internal method to get category by ID (for operations classes)
-  FriendCategory? getCategoryByIdInternal(String categoryId) => _internalOps.getCategoryByIdInternal(categoryId);
+  FriendCategory? getCategoryByIdInternal(String categoryId) =>
+      _internalOps.getCategoryByIdInternal(categoryId);
 
   /// Internal method to add category (for operations classes)
-  void addCategoryInternal(FriendCategory category) => _internalOps.addCategoryInternal(category);
+  void addCategoryInternal(FriendCategory category) =>
+      _internalOps.addCategoryInternal(category);
 
   /// Internal method to update category (for operations classes)
-  void updateCategoryInternal(String categoryId, FriendCategory category) => _internalOps.updateCategoryInternal(categoryId, category);
+  void updateCategoryInternal(String categoryId, FriendCategory category) =>
+      _internalOps.updateCategoryInternal(categoryId, category);
 
   /// Internal method to remove category (for operations classes)
-  void removeCategoryInternal(String categoryId) => _internalOps.removeCategoryInternal(categoryId);
+  void removeCategoryInternal(String categoryId) =>
+      _internalOps.removeCategoryInternal(categoryId);
 
   /// Internal method to sync category to Firebase (for operations classes)
-  Future<void> syncCategoryToFirebaseInternal(FriendCategory category) async => await _internalOps.syncCategoryToFirebaseInternal(category);
+  Future<void> syncCategoryToFirebaseInternal(FriendCategory category) async =>
+      await _internalOps.syncCategoryToFirebaseInternal(category);
 
   /// Internal method to delete category from Firebase (for operations classes)
-  Future<void> deleteCategoryFromFirebaseInternal(String categoryId) async => await _internalOps.deleteCategoryFromFirebaseInternal(categoryId);
+  Future<void> deleteCategoryFromFirebaseInternal(String categoryId) async =>
+      await _internalOps.deleteCategoryFromFirebaseInternal(categoryId);
 
   /// Internal method to add friend to category (for operations classes)
-  void addFriendToCategoryInternal(String friendId, String categoryId) => _internalOps.addFriendToCategoryInternal(friendId, categoryId);
+  void addFriendToCategoryInternal(String friendId, String categoryId) =>
+      _internalOps.addFriendToCategoryInternal(friendId, categoryId);
 
   /// Internal method to remove friend from category (for operations classes)
-  void removeFriendFromCategoryInternal(String friendId, String categoryId) => _internalOps.removeFriendFromCategoryInternal(friendId, categoryId);
+  void removeFriendFromCategoryInternal(String friendId, String categoryId) =>
+      _internalOps.removeFriendFromCategoryInternal(friendId, categoryId);
 
   /// Internal method to get friends in category (for operations classes)
-  Set<String> getFriendsInCategoryInternal(String categoryId) => _internalOps.getFriendsInCategoryInternal(categoryId);
+  Set<String> getFriendsInCategoryInternal(String categoryId) =>
+      _internalOps.getFriendsInCategoryInternal(categoryId);
 
   /// Internal method to get categories for friend (for operations classes)
-  Set<String> getCategoriesForFriendInternal(String friendId) => _internalOps.getCategoriesForFriendInternal(friendId);
+  Set<String> getCategoriesForFriendInternal(String friendId) =>
+      _internalOps.getCategoriesForFriendInternal(friendId);
 
   /// Internal method to add sent invitation (for operations classes)
-  void addSentInvitationInternal(GroupInvitation invitation) => _internalOps.addSentInvitationInternal(invitation);
+  void addSentInvitationInternal(GroupInvitation invitation) =>
+      _internalOps.addSentInvitationInternal(invitation);
 
   /// Internal method to get sent invitation by ID (for operations classes)
-  GroupInvitation? getSentInvitationByIdInternal(String invitationId) => _internalOps.getSentInvitationByIdInternal(invitationId);
+  GroupInvitation? getSentInvitationByIdInternal(String invitationId) =>
+      _internalOps.getSentInvitationByIdInternal(invitationId);
 
   /// Internal method to update sent invitation (for operations classes)
-  void updateSentInvitationInternal(String invitationId, GroupInvitation invitation) => _internalOps.updateSentInvitationInternal(invitationId, invitation);
+  void updateSentInvitationInternal(
+          String invitationId, GroupInvitation invitation) =>
+      _internalOps.updateSentInvitationInternal(invitationId, invitation);
 
   /// Internal method to send email invitation (for operations classes)
-  Future<bool> sendEmailInvitationInternal({required String email, required GroupInvitation invitation}) async => await _internalOps.sendEmailInvitationInternal(email: email, invitation: invitation);
+  Future<bool> sendEmailInvitationInternal(
+          {required String email, required GroupInvitation invitation}) async =>
+      await _internalOps.sendEmailInvitationInternal(
+          email: email, invitation: invitation);
 
   /// Internal method to send SMS invitation (for operations classes)
-  Future<bool> sendSMSInvitationInternal({required String phoneNumber, required GroupInvitation invitation}) async => await _internalOps.sendSMSInvitationInternal(phoneNumber: phoneNumber, invitation: invitation);
+  Future<bool> sendSMSInvitationInternal(
+          {required String phoneNumber,
+          required GroupInvitation invitation}) async =>
+      await _internalOps.sendSMSInvitationInternal(
+          phoneNumber: phoneNumber, invitation: invitation);
 
   /// Internal method to create invitation link (for operations classes)
-  String createInvitationLinkInternal(String invitationId) => _internalOps.createInvitationLinkInternal(invitationId);
+  String createInvitationLinkInternal(String invitationId) =>
+      _internalOps.createInvitationLinkInternal(invitationId);
 
   /// Internal method to update invitation status (for operations classes)
-  Future<void> updateInvitationStatusInternal(String invitationId, GroupInvitationStatus status) async => await _internalOps.updateInvitationStatusInternal(invitationId, status);
+  Future<void> updateInvitationStatusInternal(
+          String invitationId, GroupInvitationStatus status) async =>
+      await _internalOps.updateInvitationStatusInternal(invitationId, status);
 
   /// Internal method to get received group invitations (for operations classes)
-  List<GroupInvitation> getReceivedGroupInvitationsInternal(String userId) => _internalOps.getReceivedGroupInvitationsInternal(userId);
+  List<GroupInvitation> getReceivedGroupInvitationsInternal(String userId) =>
+      _internalOps.getReceivedGroupInvitationsInternal(userId);
 
   /// Internal getter for friends repository (for operations classes to save invitations)
   FirebaseFriendsRepository get friendsRepositoryInternal => _friendsRepository;
 
   /// Internal getter for category repository (for operations classes to fetch groups)
-  FriendCategoryRepository get friendsCategoryRepositoryInternal => _categoryRepository;
+  FriendCategoryRepository get friendsCategoryRepositoryInternal =>
+      _categoryRepository;
 
   /// Internal getter for current user display name (for operations classes)
-  String? get currentUserDisplayName => _internalOps.getCurrentUserDisplayNameInternal();
+  String? get currentUserDisplayName =>
+      _internalOps.getCurrentUserDisplayNameInternal();
 
   /// Internal method to refresh data (for operations classes)
   Future<void> refresh() async => await _serviceCoordinator.refresh();
 
   // ===== ADDITIONAL INTERNAL METHODS FOR FRIENDS MANAGEMENT =====
-  
+
   // ===== ULTRATHINK FIX: INTERNAL METHODS THAT ACTUALLY MODIFY STATE =====
-  
+
   /// Internal method to add outgoing friend request
   void addOutgoingRequestInternal(FriendRequest request) {
     _stateManager.addOutgoingRequest(request);
-    AppLogger.debug('✅ Added outgoing request to ${request.toUserId} via state manager');
+    AppLogger.debug(
+        '✅ Added outgoing request to ${request.toUserId} via state manager');
   }
-  
+
   /// Internal method to remove outgoing friend request
   void removeOutgoingRequestInternal(String requestId) {
     _stateManager.removeOutgoingRequest(requestId);
     AppLogger.debug('✅ Removed outgoing request $requestId via state manager');
   }
-  
+
   /// Internal method to add incoming friend request
   void addIncomingRequestInternal(FriendRequest request) {
     _stateManager.addIncomingRequest(request);
-    AppLogger.debug('✅ Added incoming request from ${request.fromUserId} via state manager');
+    AppLogger.debug(
+        '✅ Added incoming request from ${request.fromUserId} via state manager');
   }
-  
+
   /// Internal method to remove incoming friend request
   void removeIncomingRequestInternal(String requestId) {
     _stateManager.removeIncomingRequest(requestId);
     AppLogger.debug('✅ Removed incoming request $requestId via state manager');
   }
-  
+
   /// Internal method to add friend
   void addFriendInternal(UserProfile friend) {
     _stateManager.addFriend(friend);
     AppLogger.debug('✅ Added friend ${friend.displayName} via state manager');
   }
-  
+
   /// Internal method to remove friend
   void removeFriendInternal(String friendId) {
     _stateManager.removeFriend(friendId);
     AppLogger.debug('✅ Removed friend $friendId via state manager');
   }
-  
+
   /// Internal method to add blocked user
   void addBlockedUserInternal(String userId) {
     _stateManager.addBlockedUser(userId);
     AppLogger.debug('✅ Blocked user $userId via state manager');
   }
-  
+
   /// Internal method to remove blocked user
   void removeBlockedUserInternal(String userId) {
     _stateManager.removeBlockedUser(userId);
     AppLogger.debug('✅ Unblocked user $userId via state manager');
   }
-  
+
   /// Sync friend request to Firebase
   Future<void> syncFriendRequestToFirebase(FriendRequest request) async =>
       await _firebaseSyncOps.syncFriendRequestToFirebase(request);
@@ -450,10 +490,12 @@ class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin, E
   List<UserProfile> get friendsList => friends;
 
   /// Get category by ID (for ViewModels)
-  FriendCategory? getCategoryById(String categoryId) => _stateManager.getCategoryById(categoryId);
+  FriendCategory? getCategoryById(String categoryId) =>
+      _stateManager.getCategoryById(categoryId);
 
   /// Cancel sent invitation (for ViewModels)
-  Future<bool> cancelSentInvitation(String invitationId) async => await invitations.cancelInvitation(invitationId);
+  Future<bool> cancelSentInvitation(String invitationId) async =>
+      await invitations.cancelInvitation(invitationId);
 
   // ===== CLEANUP (Delegated to Service Coordinator) =====
 
@@ -461,13 +503,13 @@ class UnifiedFriendsService extends ChangeNotifier with StreamManagementMixin, E
   void dispose() {
     // Clear friends state manager first
     _stateManager.clearAllData();
-    
+
     // Dispose service coordinator
     _serviceCoordinator.dispose();
-    
+
     // Dispose stream subscriptions (async, so we'll do it without await)
     disposeStreamResources();
-    
+
     super.dispose();
   }
 }

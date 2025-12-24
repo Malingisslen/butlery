@@ -1,5 +1,5 @@
 /// Base class for unit tests with enhanced utilities and patterns
-/// 
+///
 /// Extends BaseTest with unit test specific functionality including
 /// mock management, assertion helpers, and AAA pattern support.
 library;
@@ -10,7 +10,7 @@ import 'base_test.dart';
 import '../infrastructure/mocks/firestore_singleton.dart';
 
 /// Base class for all unit tests
-/// 
+///
 /// Provides:
 /// - AAA (Arrange, Act, Assert) pattern helpers
 /// - Mock verification utilities
@@ -19,32 +19,32 @@ import '../infrastructure/mocks/firestore_singleton.dart';
 abstract class BaseUnitTest extends BaseTest {
   /// List of mocks to automatically reset between tests
   static final List<Mock> _registeredMocks = [];
-  
+
   /// Register a mock for automatic reset between tests
   static void registerMock(Mock mock) {
     if (!_registeredMocks.contains(mock)) {
       _registeredMocks.add(mock);
     }
   }
-  
+
   /// Register multiple mocks at once
   static void registerMocks(List<Mock> mocks) {
     for (final mock in mocks) {
       registerMock(mock);
     }
   }
-  
+
   /// Reset all registered mocks
   static void resetMocks() {
     // Reset the global mocktail state for all mocks
     resetMocktailState();
   }
-  
+
   /// Clear all mock registrations
   static void clearMocks() {
     _registeredMocks.clear();
   }
-  
+
   /// Enhanced setup for unit tests
   static Future<void> setupUnit() async {
     await BaseTest.setup();
@@ -52,19 +52,19 @@ abstract class BaseUnitTest extends BaseTest {
     // Clear Firestore data at the start of each test for isolation
     await FirestoreSingleton.clearData();
   }
-  
+
   /// Enhanced teardown for unit tests
   static Future<void> teardownUnit() async {
     resetMocks();
     await BaseTest.teardown();
   }
-  
+
   /// Complete reset for unit tests
   static Future<void> resetUnit() async {
     clearMocks();
     await BaseTest.reset();
   }
-  
+
   /// Run a unit test with automatic setup/teardown
   static void testUnit(
     String description,
@@ -88,7 +88,7 @@ abstract class BaseUnitTest extends BaseTest {
       tags: tags,
     );
   }
-  
+
   /// Run a unit test group with automatic setup
   static void groupUnit(
     String description,
@@ -99,26 +99,26 @@ abstract class BaseUnitTest extends BaseTest {
       setUpAll(() async {
         await setupUnit();
       });
-      
+
       tearDown(() async {
         await teardownUnit();
       });
-      
+
       tearDownAll(() async {
         await resetUnit();
       });
-      
+
       body();
     }, skip: skip);
   }
-  
+
   /// Verify that no unexpected interactions occurred with mocks
   static void verifyNoMoreInteractionsWithAll() {
     for (final mock in _registeredMocks) {
       verifyNoMoreInteractions(mock);
     }
   }
-  
+
   /// Verify that no interactions occurred with any registered mock
   static void verifyZeroInteractionsWithAll() {
     for (final mock in _registeredMocks) {
@@ -131,21 +131,22 @@ abstract class BaseUnitTest extends BaseTest {
 class UnitTestMatchers {
   /// Matcher for successful async operations
   static final Matcher completes = completion(anything);
-  
+
   /// Matcher for operations that should not throw
   static final Matcher doesNotThrow = isNot(throwsA(anything));
-  
+
   /// Matcher for non-null values
   static final Matcher notNull = isNotNull;
-  
+
   /// Matcher for empty collections
   static final Matcher empty = isEmpty;
-  
+
   /// Matcher for non-empty collections
   static final Matcher notEmpty = isNotEmpty;
-  
+
   /// Create a matcher for a specific exception type with message
-  static Matcher throwsExceptionWithMessage<T extends Exception>(String message) {
+  static Matcher throwsExceptionWithMessage<T extends Exception>(
+      String message) {
     return throwsA(
       allOf([
         isA<T>(),
@@ -153,7 +154,7 @@ class UnitTestMatchers {
       ]),
     );
   }
-  
+
   /// Create a matcher for async operations that complete with a value
   static Matcher completesWith<T>(dynamic expected) {
     return completion(equals(expected));
@@ -166,12 +167,12 @@ extension AssertionExtensions on dynamic {
   void shouldEqual(dynamic expected, [String? reason]) {
     expect(this, equals(expected), reason: reason);
   }
-  
+
   /// Assert this value is not null
   void shouldNotBeNull([String? reason]) {
     expect(this, isNotNull, reason: reason);
   }
-  
+
   /// Assert this collection contains an item
   void shouldContain(dynamic item, [String? reason]) {
     expect(this, contains(item), reason: reason);

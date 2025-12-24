@@ -14,7 +14,8 @@ void main() {
     });
 
     group('Default Skeleton Box', () {
-      testWidgets('should render skeleton box with default properties', (WidgetTester tester) async {
+      testWidgets('should render skeleton box with default properties',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -26,7 +27,8 @@ void main() {
         expect(find.byType(Container), findsOneWidget);
       });
 
-      testWidgets('should have default border radius', (WidgetTester tester) async {
+      testWidgets('should have default border radius',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -55,16 +57,19 @@ void main() {
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.gradient, isA<LinearGradient>());
-        
+
         final gradient = decoration.gradient as LinearGradient;
-        expect(gradient.colors, equals(const [
-          AppColors.neutralMedium,
-          AppColors.neutralLight,
-          AppColors.neutralMedium,
-        ]));
+        expect(
+            gradient.colors,
+            equals(const [
+              AppColors.neutralMedium,
+              AppColors.neutralLight,
+              AppColors.neutralMedium,
+            ]));
       });
 
-      testWidgets('should have animation controller', (WidgetTester tester) async {
+      testWidgets('should have animation controller',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -76,7 +81,7 @@ void main() {
         // Pump frames to trigger animation
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 750));
-        
+
         // Animation should be running
         expect(find.byType(Container), findsOneWidget);
       });
@@ -85,7 +90,7 @@ void main() {
     group('Custom Dimensions', () {
       testWidgets('should apply custom width', (WidgetTester tester) async {
         const customWidth = 200.0;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -102,7 +107,7 @@ void main() {
 
       testWidgets('should apply custom height', (WidgetTester tester) async {
         const customHeight = 100.0;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -117,10 +122,11 @@ void main() {
         expect(container.constraints?.maxHeight, equals(customHeight));
       });
 
-      testWidgets('should apply both custom width and height', (WidgetTester tester) async {
+      testWidgets('should apply both custom width and height',
+          (WidgetTester tester) async {
         const customWidth = 150.0;
         const customHeight = 75.0;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -141,9 +147,10 @@ void main() {
     });
 
     group('Custom Border Radius', () {
-      testWidgets('should apply custom border radius', (WidgetTester tester) async {
+      testWidgets('should apply custom border radius',
+          (WidgetTester tester) async {
         final customRadius = BorderRadius.circular(16.0);
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -159,14 +166,15 @@ void main() {
         expect(decoration.borderRadius, equals(customRadius));
       });
 
-      testWidgets('should apply asymmetric border radius', (WidgetTester tester) async {
+      testWidgets('should apply asymmetric border radius',
+          (WidgetTester tester) async {
         const customRadius = BorderRadius.only(
           topLeft: Radius.circular(8),
           topRight: Radius.circular(8),
           bottomLeft: Radius.circular(0),
           bottomRight: Radius.circular(0),
         );
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -186,7 +194,7 @@ void main() {
     group('Custom Margin', () {
       testWidgets('should apply custom margin', (WidgetTester tester) async {
         const customMargin = EdgeInsets.all(16.0);
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -201,14 +209,15 @@ void main() {
         expect(container.margin, equals(customMargin));
       });
 
-      testWidgets('should apply asymmetric margin', (WidgetTester tester) async {
+      testWidgets('should apply asymmetric margin',
+          (WidgetTester tester) async {
         const customMargin = EdgeInsets.only(
           left: 8,
           right: 16,
           top: 4,
           bottom: 12,
         );
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -340,7 +349,8 @@ void main() {
     });
 
     group('Use Cases', () {
-      testWidgets('should work as text placeholder', (WidgetTester tester) async {
+      testWidgets('should work as text placeholder',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -361,7 +371,8 @@ void main() {
         expect(find.byType(Container), findsNWidgets(3));
       });
 
-      testWidgets('should work as image placeholder', (WidgetTester tester) async {
+      testWidgets('should work as image placeholder',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -374,12 +385,14 @@ void main() {
           ),
         );
 
-        final renderBox = tester.renderObject<RenderBox>(find.byType(Container));
+        final renderBox =
+            tester.renderObject<RenderBox>(find.byType(Container));
         expect(renderBox.size.width, equals(100));
         expect(renderBox.size.height, equals(100));
       });
 
-      testWidgets('should work as avatar placeholder', (WidgetTester tester) async {
+      testWidgets('should work as avatar placeholder',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -397,7 +410,8 @@ void main() {
         expect(decoration.borderRadius, equals(BorderRadius.circular(24)));
       });
 
-      testWidgets('should work as card placeholder', (WidgetTester tester) async {
+      testWidgets('should work as card placeholder',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -450,7 +464,8 @@ void main() {
         expect(renderBox.size.height, equals(0));
       });
 
-      testWidgets('should handle very large dimensions', (WidgetTester tester) async {
+      testWidgets('should handle very large dimensions',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -477,7 +492,8 @@ void main() {
         expect(find.byType(Container), findsOneWidget);
       });
 
-      testWidgets('should dispose animation controller properly', (WidgetTester tester) async {
+      testWidgets('should dispose animation controller properly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(

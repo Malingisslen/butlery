@@ -22,7 +22,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 
 void main() {
   group('ShareDialogHeader Tests - ULTRATHINK METHODOLOGY', () {
-
     late Recipe testRecipe;
     late Map<String, List<Recipe>> testMenu;
     late UnifiedShoppingList testShoppingList;
@@ -46,7 +45,7 @@ void main() {
             core: RecipeCore(
               title: 'Pannkakor',
               description: 'Fluffiga pannkakor',
-              ingredients: [], 
+              ingredients: [],
               instructions: [],
               mealType: 'Frukost',
             ),
@@ -65,20 +64,23 @@ void main() {
     });
 
     group('Static Class Structure and Method Availability', () {
-      testWidgets('should have build static method available', (WidgetTester tester) async {
+      testWidgets('should have build static method available',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test static method accessibility
         expect(ShareDialogHeader.build, isNotNull);
         expect(ShareDialogHeader.build, isA<Function>());
       });
 
-      testWidgets('should be a pure static class without instance methods', (WidgetTester tester) async {
+      testWidgets('should be a pure static class without instance methods',
+          (WidgetTester tester) async {
         // ULTRATHINK: Verify class design - should not be instantiable for practical use
         expect(ShareDialogHeader.build, isA<Function>());
       });
     });
 
     group('Recipe Content Type Testing (lines 77-83)', () {
-      testWidgets('should render recipe header with correct Swedish title', (WidgetTester tester) async {
+      testWidgets('should render recipe header with correct Swedish title',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test ShareContentType.recipe path (line 77)
         await tester.pumpWidget(
           MaterialApp(
@@ -99,7 +101,8 @@ void main() {
         expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
       });
 
-      testWidgets('should handle recipe with Swedish characters in title', (WidgetTester tester) async {
+      testWidgets('should handle recipe with Swedish characters in title',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test Swedish character support (åäö)
         final swedishRecipe = Recipe(
           core: RecipeCore(
@@ -131,11 +134,13 @@ void main() {
         expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
       });
 
-      testWidgets('should display recipe title with ellipsis for long titles', (WidgetTester tester) async {
+      testWidgets('should display recipe title with ellipsis for long titles',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test text overflow handling (lines 54-55)
         final longTitleRecipe = Recipe(
           core: RecipeCore(
-            title: 'En väldigt lång recept titel som kanske inte får plats på en rad och behöver ellipsis',
+            title:
+                'En väldigt lång recept titel som kanske inte får plats på en rad och behöver ellipsis',
             description: 'Recept med lång titel',
             ingredients: [],
             instructions: [],
@@ -162,15 +167,17 @@ void main() {
         );
 
         expect(find.text('Dela recept med vänner'), findsOneWidget);
-        
+
         final Text subtitleText = tester.widget(
-          find.text('En väldigt lång recept titel som kanske inte får plats på en rad och behöver ellipsis'),
+          find.text(
+              'En väldigt lång recept titel som kanske inte får plats på en rad och behöver ellipsis'),
         );
         expect(subtitleText.maxLines, equals(1));
         expect(subtitleText.overflow, equals(TextOverflow.ellipsis));
       });
 
-      testWidgets('should handle empty recipe title gracefully', (WidgetTester tester) async {
+      testWidgets('should handle empty recipe title gracefully',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test edge case with empty title
         final emptyTitleRecipe = Recipe(
           core: RecipeCore(
@@ -204,7 +211,9 @@ void main() {
     });
 
     group('Menu Content Type Testing (lines 84-92)', () {
-      testWidgets('should render menu header with correct Swedish title and count', (WidgetTester tester) async {
+      testWidgets(
+          'should render menu header with correct Swedish title and count',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test ShareContentType.menu path (line 84)
         await tester.pumpWidget(
           MaterialApp(
@@ -226,14 +235,20 @@ void main() {
         expect(find.byIcon(Icons.restaurant), findsOneWidget);
       });
 
-      testWidgets('should calculate menu totals correctly for various sizes', (WidgetTester tester) async {
+      testWidgets('should calculate menu totals correctly for various sizes',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test recipe counting algorithm (lines 86-87)
         final largeMenu = <String, List<Recipe>>{
           'Måndag': [testRecipe, testRecipe, testRecipe], // 3 recipes
-          'Tisdag': [testRecipe], // 1 recipe  
+          'Tisdag': [testRecipe], // 1 recipe
           'Onsdag': <Recipe>[], // 0 recipes
           'Torsdag': [testRecipe, testRecipe], // 2 recipes
-          'Fredag': [testRecipe, testRecipe, testRecipe, testRecipe], // 4 recipes
+          'Fredag': [
+            testRecipe,
+            testRecipe,
+            testRecipe,
+            testRecipe
+          ], // 4 recipes
         };
 
         await tester.pumpWidget(
@@ -256,7 +271,8 @@ void main() {
         expect(find.byIcon(Icons.restaurant), findsOneWidget);
       });
 
-      testWidgets('should handle empty menu gracefully', (WidgetTester tester) async {
+      testWidgets('should handle empty menu gracefully',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test empty menu edge case
         final emptyMenu = <String, List<Recipe>>{};
 
@@ -281,7 +297,9 @@ void main() {
     });
 
     group('Shopping List Content Type Testing (lines 93-99)', () {
-      testWidgets('should render shopping list header with correct Swedish title', (WidgetTester tester) async {
+      testWidgets(
+          'should render shopping list header with correct Swedish title',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test ShareContentType.shoppingList path (line 93)
         await tester.pumpWidget(
           MaterialApp(
@@ -302,7 +320,8 @@ void main() {
         expect(find.byIcon(Icons.shopping_cart_outlined), findsOneWidget);
       });
 
-      testWidgets('should handle shopping list with Swedish characters in name', (WidgetTester tester) async {
+      testWidgets('should handle shopping list with Swedish characters in name',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test Swedish character support
         final swedishShoppingList = UnifiedShoppingList(
           name: 'Månadshandling för kött och kött',
@@ -330,10 +349,13 @@ void main() {
         expect(find.byIcon(Icons.shopping_cart_outlined), findsOneWidget);
       });
 
-      testWidgets('should display shopping list name with ellipsis for long names', (WidgetTester tester) async {
+      testWidgets(
+          'should display shopping list name with ellipsis for long names',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test text overflow handling for shopping list names
         final longNameShoppingList = UnifiedShoppingList(
-          name: 'En väldigt lång inköpslista namn som kanske inte får plats på en rad',
+          name:
+              'En väldigt lång inköpslista namn som kanske inte får plats på en rad',
           ownerId: 'user789',
           ownerDisplayName: 'Long Name User',
           items: [],
@@ -357,15 +379,17 @@ void main() {
         );
 
         expect(find.text('Dela inköpslista'), findsOneWidget);
-        
+
         final Text subtitleText = tester.widget(
-          find.text('En väldigt lång inköpslista namn som kanske inte får plats på en rad'),
+          find.text(
+              'En väldigt lång inköpslista namn som kanske inte får plats på en rad'),
         );
         expect(subtitleText.maxLines, equals(1));
         expect(subtitleText.overflow, equals(TextOverflow.ellipsis));
       });
 
-      testWidgets('should handle empty shopping list name gracefully', (WidgetTester tester) async {
+      testWidgets('should handle empty shopping list name gracefully',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test edge case with empty name
         final emptyNameShoppingList = UnifiedShoppingList(
           name: '',
@@ -395,7 +419,8 @@ void main() {
     });
 
     group('Layout Structure and Widget Tree', () {
-      testWidgets('should create expected widget tree structure', (WidgetTester tester) async {
+      testWidgets('should create expected widget tree structure',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test complete widget tree structure (lines 18-69)
         await tester.pumpWidget(
           MaterialApp(
@@ -414,14 +439,17 @@ void main() {
         // Verify widget hierarchy: Container > Row > [Icon, SizedBox, Expanded Column, IconButton]
         expect(find.byType(Container), findsOneWidget);
         expect(find.byType(Row), findsOneWidget);
-        expect(find.byType(Icon), findsNWidgets(2)); // Content icon + close icon
-        expect(find.byType(SizedBox), findsAtLeastNWidgets(1)); // May have multiple SizedBox
+        expect(
+            find.byType(Icon), findsNWidgets(2)); // Content icon + close icon
+        expect(find.byType(SizedBox),
+            findsAtLeastNWidgets(1)); // May have multiple SizedBox
         expect(find.byType(Expanded), findsOneWidget);
         expect(find.byType(Column), findsOneWidget);
         expect(find.byType(IconButton), findsOneWidget);
       });
 
-      testWidgets('should apply Container decoration with proper styling', (WidgetTester tester) async {
+      testWidgets('should apply Container decoration with proper styling',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test Container decoration (lines 18-26)
         await tester.pumpWidget(
           MaterialApp(
@@ -439,12 +467,14 @@ void main() {
 
         final Container container = tester.widget(find.byType(Container));
         final BoxDecoration decoration = container.decoration as BoxDecoration;
-        
+
         expect(decoration.borderRadius, isA<BorderRadius>());
-        expect(container.padding, equals(const EdgeInsets.all(AppDimensions.paddingL)));
+        expect(container.padding,
+            equals(const EdgeInsets.all(AppDimensions.paddingL)));
       });
 
-      testWidgets('should apply correct spacing and layout constraints', (WidgetTester tester) async {
+      testWidgets('should apply correct spacing and layout constraints',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test spacing and layout (line 34)
         await tester.pumpWidget(
           MaterialApp(
@@ -462,15 +492,17 @@ void main() {
 
         // Find the specific SizedBox with width (the spacing SizedBox in the Row)
         final sizedBoxes = tester.widgetList<SizedBox>(find.byType(SizedBox));
-        final spacingSizedBox = sizedBoxes.firstWhere((box) => box.width != null);
+        final spacingSizedBox =
+            sizedBoxes.firstWhere((box) => box.width != null);
         // Note: Production uses AppDimensions.spacingM but renders as 20.0 (likely paddingXl or iconSizeAction)
         expect(spacingSizedBox.width, equals(20.0));
-        
+
         final Expanded expanded = tester.widget(find.byType(Expanded));
         expect(expanded.child, isA<Column>());
       });
 
-      testWidgets('should configure Column with correct crossAxisAlignment', (WidgetTester tester) async {
+      testWidgets('should configure Column with correct crossAxisAlignment',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test Column configuration (lines 36-37)
         await tester.pumpWidget(
           MaterialApp(
@@ -493,7 +525,8 @@ void main() {
     });
 
     group('Theme Integration and Styling', () {
-      testWidgets('should apply theme colors correctly', (WidgetTester tester) async {
+      testWidgets('should apply theme colors correctly',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test theme color integration (lines 21, 31, 42, 64)
         await tester.pumpWidget(
           MaterialApp(
@@ -538,7 +571,8 @@ void main() {
         expect(find.byIcon(Icons.close), findsOneWidget);
       });
 
-      testWidgets('should apply AppTextStyles correctly', (WidgetTester tester) async {
+      testWidgets('should apply AppTextStyles correctly',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test text styling (lines 41-43, 48-53)
         await tester.pumpWidget(
           MaterialApp(
@@ -554,15 +588,18 @@ void main() {
           ),
         );
 
-        final titleText = tester.widget<Text>(find.text('Dela recept med vänner'));
-        final subtitleText = tester.widget<Text>(find.text('Köttbullar med potatis'));
-        
+        final titleText =
+            tester.widget<Text>(find.text('Dela recept med vänner'));
+        final subtitleText =
+            tester.widget<Text>(find.text('Köttbullar med potatis'));
+
         expect(titleText.style?.fontWeight, equals(FontWeight.w600));
         expect(subtitleText.maxLines, equals(1));
         expect(subtitleText.overflow, equals(TextOverflow.ellipsis));
       });
 
-      testWidgets('should apply icon sizing correctly', (WidgetTester tester) async {
+      testWidgets('should apply icon sizing correctly',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test icon sizing (line 32)
         await tester.pumpWidget(
           MaterialApp(
@@ -578,13 +615,15 @@ void main() {
           ),
         );
 
-        final contentIcon = tester.widget<Icon>(find.byIcon(Icons.restaurant_menu));
+        final contentIcon =
+            tester.widget<Icon>(find.byIcon(Icons.restaurant_menu));
         expect(contentIcon.size, equals(AppDimensions.iconSizeAction));
       });
     });
 
     group('Close Button Functionality', () {
-      testWidgets('should render close button with correct icon', (WidgetTester tester) async {
+      testWidgets('should render close button with correct icon',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test close button rendering (lines 60-66)
         await tester.pumpWidget(
           MaterialApp(
@@ -602,12 +641,13 @@ void main() {
 
         expect(find.byType(IconButton), findsOneWidget);
         expect(find.byIcon(Icons.close), findsOneWidget);
-        
+
         final IconButton closeButton = tester.widget(find.byType(IconButton));
         expect(closeButton.onPressed, isNotNull);
       });
 
-      testWidgets('should maintain close button accessibility', (WidgetTester tester) async {
+      testWidgets('should maintain close button accessibility',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test accessibility considerations
         await tester.pumpWidget(
           MaterialApp(
@@ -625,7 +665,7 @@ void main() {
 
         final IconButton closeButton = tester.widget(find.byType(IconButton));
         expect(closeButton.onPressed, isNotNull);
-        
+
         // Close button should be tappable
         await tester.tap(find.byType(IconButton));
         await tester.pump();
@@ -633,9 +673,10 @@ void main() {
     });
 
     group('Content Type Icon Verification', () {
-      testWidgets('should display correct icons for each content type', (WidgetTester tester) async {
+      testWidgets('should display correct icons for each content type',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test icon mapping for all content types
-        
+
         // Recipe icon
         await tester.pumpWidget(
           MaterialApp(
@@ -651,7 +692,7 @@ void main() {
           ),
         );
         expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
-        
+
         // Menu icon
         await tester.pumpWidget(
           MaterialApp(
@@ -667,7 +708,7 @@ void main() {
           ),
         );
         expect(find.byIcon(Icons.restaurant), findsOneWidget);
-        
+
         // Shopping list icon
         await tester.pumpWidget(
           MaterialApp(
@@ -687,7 +728,8 @@ void main() {
     });
 
     group('Edge Cases and Error Handling', () {
-      testWidgets('should handle multiple rebuilds consistently', (WidgetTester tester) async {
+      testWidgets('should handle multiple rebuilds consistently',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test widget consistency across rebuilds
         Widget buildHeader(ShareContentType type, dynamic content) {
           return MaterialApp(
@@ -704,27 +746,32 @@ void main() {
         }
 
         // Initial build with recipe
-        await tester.pumpWidget(buildHeader(ShareContentType.recipe, testRecipe));
+        await tester
+            .pumpWidget(buildHeader(ShareContentType.recipe, testRecipe));
         expect(find.text('Dela recept med vänner'), findsOneWidget);
-        
+
         // Switch to menu
         await tester.pumpWidget(buildHeader(ShareContentType.menu, testMenu));
         expect(find.text('Dela veckomeny med vänner'), findsOneWidget);
         expect(find.text('Dela recept med vänner'), findsNothing);
-        
+
         // Switch to shopping list
-        await tester.pumpWidget(buildHeader(ShareContentType.shoppingList, testShoppingList));
+        await tester.pumpWidget(
+            buildHeader(ShareContentType.shoppingList, testShoppingList));
         expect(find.text('Dela inköpslista'), findsOneWidget);
         expect(find.text('Dela veckomeny med vänner'), findsNothing);
       });
 
-      testWidgets('should maintain proper layout with very long content', (WidgetTester tester) async {
+      testWidgets('should maintain proper layout with very long content',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test layout stability with extreme content
         final extremeMenu = Map<String, List<Recipe>>.fromEntries(
-          List.generate(50, (i) => MapEntry(
-            'Väldigt lång kategorinamn nummer $i med svenska tecken åäö',
-            List<Recipe>.generate(10, (j) => testRecipe),
-          )),
+          List.generate(
+              50,
+              (i) => MapEntry(
+                    'Väldigt lång kategorinamn nummer $i med svenska tecken åäö',
+                    List<Recipe>.generate(10, (j) => testRecipe),
+                  )),
         );
 
         await tester.pumpWidget(
@@ -746,7 +793,8 @@ void main() {
         expect(find.byIcon(Icons.restaurant), findsOneWidget);
       });
 
-      testWidgets('should work with minimal content data', (WidgetTester tester) async {
+      testWidgets('should work with minimal content data',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test minimal viable content
         final minimalRecipe = Recipe(
           core: RecipeCore(
@@ -778,7 +826,8 @@ void main() {
         expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
       });
 
-      testWidgets('should handle special characters throughout content', (WidgetTester tester) async {
+      testWidgets('should handle special characters throughout content',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test special character support beyond Swedish
         final specialCharRecipe = Recipe(
           core: RecipeCore(
@@ -806,23 +855,27 @@ void main() {
         );
 
         expect(find.text('Dela recept med vänner'), findsOneWidget);
-        expect(find.text('🍕 Pizza Margherita 🇮🇹 with émojis & symbols!'), findsOneWidget);
+        expect(find.text('🍕 Pizza Margherita 🇮🇹 with émojis & symbols!'),
+            findsOneWidget);
         expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
       });
     });
 
     group('Build Method Parameter Validation', () {
-      testWidgets('should require all three parameters', (WidgetTester tester) async {
+      testWidgets('should require all three parameters',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test parameter requirements (lines 11-15)
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
               builder: (context) {
-                expect(() => ShareDialogHeader.build(
-                  context,
-                  ShareContentType.recipe,
-                  testRecipe,
-                ), returnsNormally);
+                expect(
+                    () => ShareDialogHeader.build(
+                          context,
+                          ShareContentType.recipe,
+                          testRecipe,
+                        ),
+                    returnsNormally);
                 return Container();
               },
             ),
@@ -830,7 +883,8 @@ void main() {
         );
       });
 
-      testWidgets('should handle BuildContext properly', (WidgetTester tester) async {
+      testWidgets('should handle BuildContext properly',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test BuildContext usage for theme access
         await tester.pumpWidget(
           MaterialApp(
@@ -851,7 +905,8 @@ void main() {
         expect(find.byType(Container), findsOneWidget);
       });
 
-      testWidgets('should work with different ShareContentType values', (WidgetTester tester) async {
+      testWidgets('should work with different ShareContentType values',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test enum parameter handling
         for (final contentType in ShareContentType.values) {
           dynamic content;
@@ -866,7 +921,7 @@ void main() {
               content = testShoppingList;
               break;
           }
-          
+
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(

@@ -115,7 +115,8 @@ class UniversalShareDialog extends StatefulWidget {
   /// Factory constructor för bulk sharing av flera items
   factory UniversalShareDialog.bulkShare({
     required List<dynamic> contentItems,
-    required ShareContentType primaryContentType, // Typ för majoriteten av items
+    required ShareContentType
+        primaryContentType, // Typ för majoriteten av items
     required UniversalShareDialogViewModel viewModel,
     String? initialMessage,
     List<UserProfile>? availableFriends,
@@ -141,7 +142,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
   late final TextEditingController _messageController;
   late final bool _supportsRealtimeSharing;
   late final bool _hasFriends;
-  
+
   // Delningsstate
   late ShareMode _selectedMode;
   ShareTargetType _selectedTab = ShareTargetType.friends;
@@ -153,21 +154,24 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
   @override
   void initState() {
     super.initState();
-    
+
     // Initiera controllers
-    _messageController = TextEditingController(text: widget.initialMessage ?? '');
-    
+    _messageController =
+        TextEditingController(text: widget.initialMessage ?? '');
+
     // Bestäm om realtidsdelning stöds
-    _supportsRealtimeSharing = ShareDialogHelpers.supportsRealtimeSharing(widget.contentType);
-    
+    _supportsRealtimeSharing =
+        ShareDialogHelpers.supportsRealtimeSharing(widget.contentType);
+
     // Set default share mode - collaborative for shopping lists, static copy for others
-    _selectedMode = (widget.contentType == ShareContentType.shoppingList && _supportsRealtimeSharing) 
+    _selectedMode = (widget.contentType == ShareContentType.shoppingList &&
+            _supportsRealtimeSharing)
         ? ShareMode.realtime
         : ShareMode.staticCopy;
 
     // Kontrollera om vi har vänner eller grupper
-    _hasFriends = (widget.availableFriends?.isNotEmpty ?? false) || 
-                  (widget.availableGroups?.isNotEmpty ?? false);
+    _hasFriends = (widget.availableFriends?.isNotEmpty ?? false) ||
+        (widget.availableGroups?.isNotEmpty ?? false);
   }
 
   @override
@@ -237,8 +241,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Share mode selection
-          if (_supportsRealtimeSharing)
-            _buildShareModeSelection(),
+          if (_supportsRealtimeSharing) _buildShareModeSelection(),
 
           // Message input
           _buildMessageInput(),
@@ -274,9 +277,11 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
   Widget _buildTargetSelection() {
     // PHASE 2: Get existing collaborators if this is a shopping list
     Set<String>? existingCollaborators;
-    if (widget.contentType == ShareContentType.shoppingList && widget.content is UnifiedShoppingList) {
+    if (widget.contentType == ShareContentType.shoppingList &&
+        widget.content is UnifiedShoppingList) {
       final shoppingList = widget.content as UnifiedShoppingList;
-      existingCollaborators = shoppingList.collaborators.toSet(); // Get current collaborators
+      existingCollaborators =
+          shoppingList.collaborators.toSet(); // Get current collaborators
     }
 
     return ShareTargetSelectionEnhanced.build(
@@ -318,7 +323,8 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
           });
         }
       },
-      existingCollaborators: existingCollaborators, // PHASE 2: Pass existing collaborators info
+      existingCollaborators:
+          existingCollaborators, // PHASE 2: Pass existing collaborators info
     );
   }
 
@@ -404,7 +410,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
 
         // Show success and close dialog
         Navigator.pop(context, true);
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(successMessage),
@@ -417,7 +423,8 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
           SnackBar(
             content: Text(widget.viewModel.errorMessage!),
             backgroundColor: AppColors.error,
-            duration: const Duration(seconds: 4), // Longer duration for validation messages
+            duration: const Duration(
+                seconds: 4), // Longer duration for validation messages
           ),
         );
       }

@@ -19,12 +19,13 @@ class ConfirmationDialogs {
     Color? confirmColor,
   }) async {
     return await ConfirmationDialog.show(
-      context,
-      title: title,
-      message: message,
-      primaryActionText: confirmText,
-      secondaryActionText: cancelText,
-    ) ?? false;
+          context,
+          title: title,
+          message: message,
+          primaryActionText: confirmText,
+          secondaryActionText: cancelText,
+        ) ??
+        false;
   }
 
   /// ⚠️ Destructive confirmation dialog (red confirm button)
@@ -36,13 +37,14 @@ class ConfirmationDialogs {
     String cancelText = 'Avbryt',
   }) async {
     return await DestructiveConfirmationDialog.show(
-      context,
-      title: title,
-      message: message,
-      itemName: '', // Can be enhanced if needed
-      primaryActionText: confirmText,
-      secondaryActionText: cancelText,
-    ) ?? false;
+          context,
+          title: title,
+          message: message,
+          itemName: '', // Can be enhanced if needed
+          primaryActionText: confirmText,
+          secondaryActionText: cancelText,
+        ) ??
+        false;
   }
 
   /// 🔄 Loading confirmation dialog
@@ -166,7 +168,7 @@ class ConfirmationDialogs {
     int? maxLength,
   }) async {
     final controller = TextEditingController(text: initialValue ?? '');
-    
+
     return await showDialog<String?>(
       context: context,
       builder: (context) => AlertDialog(

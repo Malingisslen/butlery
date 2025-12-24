@@ -64,7 +64,8 @@ class WebScraper {
         completer.complete(
           ExtractionResult(
             success: false,
-            error: 'Timeout: Could not load page within ${_extractionTimeout.inSeconds} seconds',
+            error:
+                'Timeout: Could not load page within ${_extractionTimeout.inSeconds} seconds',
           ),
         );
         Future.delayed(const Duration(milliseconds: 500), () {

@@ -41,10 +41,10 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 class NotificationRepository {
   final FirebaseFirestore _firestore;
   final String _userId;
-  
+
   // Cache for notification preferences
   NotificationPreferences? _cachedPreferences;
-  
+
   // Collections
   static const String _preferencesCollection = 'notification_preferences';
   static const String _historyCollection = 'notification_history';
@@ -52,7 +52,8 @@ class NotificationRepository {
 
   NotificationRepository({
     required String userId,
-  }) : _firestore = GetIt.instance<FirebaseFirestore>(), _userId = userId;
+  })  : _firestore = GetIt.instance<FirebaseFirestore>(),
+        _userId = userId;
 
   /// Get user's notification preferences with caching
   Future<NotificationPreferences> getPreferences() async {
@@ -71,7 +72,7 @@ class NotificationRepository {
           .get();
 
       NotificationPreferences preferences;
-      
+
       if (doc.exists && doc.data() != null) {
         preferences = NotificationPreferences.fromMap(doc.id, doc.data()!);
         AppLogger.info('✅ Loaded preferences from Firestore');
@@ -84,16 +85,17 @@ class NotificationRepository {
 
       // Cache the preferences
       _cachedPreferences = preferences;
-      
+
       // Also save to local storage for offline access
       await _savePreferencesLocally(preferences);
 
       return preferences;
     } catch (e) {
       AppLogger.error('❌ Failed to load notification preferences', e);
-      
+
       // Fallback to local storage
-      return await _loadPreferencesLocally() ?? NotificationPreferences.defaults();
+      return await _loadPreferencesLocally() ??
+          NotificationPreferences.defaults();
     }
   }
 
@@ -103,10 +105,10 @@ class NotificationRepository {
       AppLogger.info('📋 Updating notification preferences for user: $_userId');
 
       await _savePreferences(preferences);
-      
+
       // Update cache
       _cachedPreferences = preferences;
-      
+
       // Save locally for offline access
       await _savePreferencesLocally(preferences);
 
@@ -126,7 +128,8 @@ class NotificationRepository {
   }
 
   /// Save preferences to local storage
-  Future<void> _savePreferencesLocally(NotificationPreferences preferences) async {
+  Future<void> _savePreferencesLocally(
+      NotificationPreferences preferences) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final prefsJson = preferences.toJson();
@@ -141,7 +144,7 @@ class NotificationRepository {
     try {
       final prefs = await SharedPreferences.getInstance();
       final prefsJson = prefs.getString('notification_preferences_$_userId');
-      
+
       if (prefsJson != null) {
         return NotificationPreferences.fromJson(prefsJson);
       }
@@ -152,7 +155,8 @@ class NotificationRepository {
   }
 
   /// Check if user wants to receive specific notification type
-  Future<bool> shouldReceiveNotification(NotificationCategory category, NotificationType type) async {
+  Future<bool> shouldReceiveNotification(
+      NotificationCategory category, NotificationType type) async {
     try {
       final preferences = await getPreferences();
       return preferences.isEnabled(category, type);
@@ -215,7 +219,8 @@ class NotificationRepository {
       await _firestore
           .collection(_historyCollection)
           .doc(notificationId)
-          .update({'delivered': true, 'deliveredAt': FieldValue.serverTimestamp()});
+          .update(
+              {'delivered': true, 'deliveredAt': FieldValue.serverTimestamp()});
     } catch (e) {
       AppLogger.warning('⚠️ Failed to mark notification as delivered: $e');
     }
@@ -240,19 +245,18 @@ class NotificationRepository {
     required Duration batchWindow,
   }) async {
     try {
-      final batchDoc = _firestore
-          .collection(_batchingCollection)
-          .doc(batchKey);
+      final batchDoc = _firestore.collection(_batchingCollection).doc(batchKey);
 
       await _firestore.runTransaction((transaction) async {
         final doc = await transaction.get(batchDoc);
-        
+
         if (doc.exists && doc.data() != null) {
           // Add to existing batch
           final data = doc.data();
-          final notifications = List<Map<String, dynamic>>.from((data?['notifications'] as List?).orEmpty());
+          final notifications = List<Map<String, dynamic>>.from(
+              (data?['notifications'] as List?).orEmpty());
           notifications.add(notification.toMap());
-          
+
           transaction.update(batchDoc, {
             'notifications': notifications,
             'count': notifications.length,
@@ -301,10 +305,8 @@ class NotificationRepository {
   /// Get a single batch by key (more efficient than fetching all batches)
   Future<NotificationBatch?> getBatchByKey(String batchKey) async {
     try {
-      final doc = await _firestore
-          .collection(_batchingCollection)
-          .doc(batchKey)
-          .get();
+      final doc =
+          await _firestore.collection(_batchingCollection).doc(batchKey).get();
 
       if (!doc.exists || doc.data() == null) {
         return null;
@@ -320,10 +322,7 @@ class NotificationRepository {
   /// Remove batch after sending
   Future<void> removeBatch(String batchKey) async {
     try {
-      await _firestore
-          .collection(_batchingCollection)
-          .doc(batchKey)
-          .delete();
+      await _firestore.collection(_batchingCollection).doc(batchKey).delete();
 
       AppLogger.info('📋 Removed processed batch: $batchKey');
     } catch (e) {
@@ -335,7 +334,8 @@ class NotificationRepository {
   /// Clear old notification history (for cleanup)
   Future<void> cleanupOldHistory({Duration? olderThan}) async {
     try {
-      final cutoffDate = DateTime.now().subtract(olderThan ?? const Duration(days: 30));
+      final cutoffDate =
+          DateTime.now().subtract(olderThan ?? const Duration(days: 30));
       final cutoffTimestamp = Timestamp.fromDate(cutoffDate);
 
       final query = await _firestore
@@ -352,7 +352,8 @@ class NotificationRepository {
 
       if (query.docs.isNotEmpty) {
         await batch.commit();
-        AppLogger.info('📋 Cleaned up ${query.docs.length} old notification history entries');
+        AppLogger.info(
+            '📋 Cleaned up ${query.docs.length} old notification history entries');
       }
     } catch (e) {
       AppLogger.error('❌ Failed to cleanup notification history', e);
@@ -368,21 +369,23 @@ class NotificationRepository {
   // ✅ FIXED: Added advanced token management methods for FCM token manager
 
   /// Batch update device information for FCM token management
-  Future<void> batchUpdateDevices(String collection, List<Map<String, dynamic>> updates) async {
+  Future<void> batchUpdateDevices(
+      String collection, List<Map<String, dynamic>> updates) async {
     try {
       if (updates.isEmpty) return;
-      
+
       final batch = _firestore.batch();
-      
-      for (final update in updates.take(500)) { // Firestore batch limit
+
+      for (final update in updates.take(500)) {
+        // Firestore batch limit
         final docId = update['id'] as String;
         final data = Map<String, dynamic>.from(update);
         data.remove('id'); // Remove id from data
-        
+
         final docRef = _firestore.collection(collection).doc(docId);
         batch.update(docRef, data);
       }
-      
+
       await batch.commit();
       AppLogger.info('📱 Batch updated ${updates.length} device records');
     } catch (e) {
@@ -392,9 +395,11 @@ class NotificationRepository {
   }
 
   /// Cleanup old devices for a specific user
-  Future<void> cleanupOldDevices(String collection, String userId, {Duration? olderThan}) async {
+  Future<void> cleanupOldDevices(String collection, String userId,
+      {Duration? olderThan}) async {
     try {
-      final cutoffDate = DateTime.now().subtract(olderThan ?? const Duration(days: 30));
+      final cutoffDate =
+          DateTime.now().subtract(olderThan ?? const Duration(days: 30));
       final cutoffTimestamp = Timestamp.fromDate(cutoffDate);
 
       final query = await _firestore
@@ -410,8 +415,9 @@ class NotificationRepository {
           batch.update(doc.reference, {'isActive': false});
         }
         await batch.commit();
-        
-        AppLogger.info('🧹 Cleaned up ${query.docs.length} old devices for user $userId');
+
+        AppLogger.info(
+            '🧹 Cleaned up ${query.docs.length} old devices for user $userId');
       }
     } catch (e) {
       AppLogger.warning('⚠️ Failed to cleanup old devices: $e');
@@ -420,29 +426,29 @@ class NotificationRepository {
 
   /// Query devices with advanced filtering
   Future<List<Map<String, dynamic>>> queryDevices(
-    String collection, 
-    Map<String, dynamic> filters,
-    {int? limit}
-  ) async {
+      String collection, Map<String, dynamic> filters,
+      {int? limit}) async {
     try {
       Query query = _firestore.collection(collection);
-      
+
       // Apply filters
       filters.forEach((key, value) {
         if (value != null) {
           query = query.where(key, isEqualTo: value);
         }
       });
-      
+
       if (limit != null) {
         query = query.limit(limit);
       }
-      
+
       final snapshot = await query.get();
-      return snapshot.docs.map((doc) => {
-        'id': doc.id,
-        ...doc.data() as Map<String, dynamic>,
-      }).toList();
+      return snapshot.docs
+          .map((doc) => {
+                'id': doc.id,
+                ...doc.data() as Map<String, dynamic>,
+              })
+          .toList();
     } catch (e) {
       AppLogger.error('❌ Failed to query devices', e);
       return [];
@@ -452,10 +458,7 @@ class NotificationRepository {
   /// Update device last seen timestamp
   Future<void> updateDeviceLastSeen(String collection, String deviceId) async {
     try {
-      await _firestore
-          .collection(collection)
-          .doc(deviceId)
-          .update({
+      await _firestore.collection(collection).doc(deviceId).update({
         'lastSeen': Timestamp.now(),
         'isActive': true,
       });
@@ -482,8 +485,9 @@ class NotificationRepository {
           });
         }
         await batch.commit();
-        
-        AppLogger.info('📱 Deactivated ${query.docs.length} devices for user $userId');
+
+        AppLogger.info(
+            '📱 Deactivated ${query.docs.length} devices for user $userId');
       }
     } catch (e) {
       AppLogger.error('❌ Failed to deactivate user devices', e);
@@ -493,13 +497,14 @@ class NotificationRepository {
   // ===== FCM TOKEN MANAGEMENT METHODS =====
 
   /// Save FCM token to Firestore
-  Future<void> saveTokenToFirestore(String collection, String docId, Map<String, dynamic> tokenData) async {
+  Future<void> saveTokenToFirestore(
+      String collection, String docId, Map<String, dynamic> tokenData) async {
     try {
       await _firestore
           .collection(collection)
           .doc(docId)
           .set(tokenData, SetOptions(merge: true));
-      
+
       AppLogger.debug('✅ Saved FCM token to Firestore');
     } catch (e) {
       AppLogger.error('❌ Failed to save token to Firestore', e);
@@ -508,13 +513,14 @@ class NotificationRepository {
   }
 
   /// Update device information
-  Future<void> updateDeviceInfo(String collection, String docId, Map<String, dynamic> deviceData) async {
+  Future<void> updateDeviceInfo(
+      String collection, String docId, Map<String, dynamic> deviceData) async {
     try {
       await _firestore
           .collection(collection)
           .doc(docId)
           .set(deviceData, SetOptions(merge: true));
-      
+
       AppLogger.debug('✅ Updated device info');
     } catch (e) {
       AppLogger.warning('⚠️ Failed to update device info: $e');
@@ -524,19 +530,17 @@ class NotificationRepository {
   /// Update token timestamp
   Future<void> updateTokenTimestamp(String collection, String docId) async {
     try {
-      await _firestore
-          .collection(collection)
-          .doc(docId)
-          .update({
-            'lastUpdated': FieldValue.serverTimestamp(),
-          });
+      await _firestore.collection(collection).doc(docId).update({
+        'lastUpdated': FieldValue.serverTimestamp(),
+      });
     } catch (e) {
       AppLogger.warning('⚠️ Failed to update token timestamp: $e');
     }
   }
 
   /// Remove old token by marking as inactive
-  Future<void> removeOldToken(String collection, String userId, String oldToken) async {
+  Future<void> removeOldToken(
+      String collection, String userId, String oldToken) async {
     try {
       final query = await _firestore
           .collection(collection)
@@ -551,7 +555,8 @@ class NotificationRepository {
 
       if (query.docs.isNotEmpty) {
         await batch.commit();
-        AppLogger.debug('🧹 Marked ${query.docs.length} old tokens as inactive');
+        AppLogger.debug(
+            '🧹 Marked ${query.docs.length} old tokens as inactive');
       }
     } catch (e) {
       AppLogger.warning('⚠️ Failed to remove old token: $e');
@@ -559,7 +564,8 @@ class NotificationRepository {
   }
 
   /// Get all active tokens for a user
-  Future<List<String>> getAllUserTokens(String collection, String userId) async {
+  Future<List<String>> getAllUserTokens(
+      String collection, String userId) async {
     try {
       final query = await _firestore
           .collection(collection)
@@ -567,9 +573,7 @@ class NotificationRepository {
           .where('isActive', isEqualTo: true)
           .get();
 
-      return query.docs
-          .map((doc) => doc.data()['token'] as String)
-          .toList();
+      return query.docs.map((doc) => doc.data()['token'] as String).toList();
     } catch (e) {
       AppLogger.error('❌ Failed to get user tokens', e);
       return [];

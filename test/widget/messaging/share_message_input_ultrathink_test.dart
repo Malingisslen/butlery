@@ -52,7 +52,10 @@ void main() {
         // Should render main Column structure
         expect(find.byType(Column), findsOneWidget);
         expect(find.byType(TextField), findsOneWidget);
-        expect(find.byType(SizedBox), findsNWidgets(3)); // Three SizedBox widgets (2 from ShareMessageInput + 1 shrink from framework)
+        expect(
+            find.byType(SizedBox),
+            findsNWidgets(
+                3)); // Three SizedBox widgets (2 from ShareMessageInput + 1 shrink from framework)
 
         controller.dispose();
       });
@@ -76,7 +79,8 @@ void main() {
         );
 
         // Should render without issues when all parameters provided
-        expect(find.byType(ShareMessageInput), findsNothing); // Static class, no instance
+        expect(find.byType(ShareMessageInput),
+            findsNothing); // Static class, no instance
         expect(find.byType(Column), findsOneWidget);
         expect(find.byType(TextField), findsOneWidget);
 
@@ -85,8 +89,7 @@ void main() {
     });
 
     group('Swedish Localization Tests', () {
-      testWidgets('shows Swedish title text',
-          (WidgetTester tester) async {
+      testWidgets('shows Swedish title text', (WidgetTester tester) async {
         // ULTRATHINK: Test production code from lines 16-21
         final controller = TextEditingController();
 
@@ -127,15 +130,15 @@ void main() {
 
         // Should show Swedish hint text
         final textField = tester.widget<TextField>(find.byType(TextField));
-        expect(textField.decoration?.hintText, equals('Skriv ett meddelande...'));
+        expect(
+            textField.decoration?.hintText, equals('Skriv ett meddelande...'));
 
         controller.dispose();
       });
     });
 
     group('Title Styling Tests', () {
-      testWidgets('title has correct text style',
-          (WidgetTester tester) async {
+      testWidgets('title has correct text style', (WidgetTester tester) async {
         // ULTRATHINK: Test production code from lines 17-20
         final controller = TextEditingController();
 
@@ -151,7 +154,8 @@ void main() {
           ),
         );
 
-        final titleText = tester.widget<Text>(find.text('Meddelande (valfritt)'));
+        final titleText =
+            tester.widget<Text>(find.text('Meddelande (valfritt)'));
         expect(titleText.style?.fontWeight, equals(FontWeight.w600));
         // Style should be based on AppTextStyles.titleMedium with copyWith
 
@@ -275,12 +279,15 @@ void main() {
         );
 
         final sizedBoxes = tester.widgetList<SizedBox>(find.byType(SizedBox));
-        expect(sizedBoxes.length, equals(3)); // 2 from ShareMessageInput + 1 shrink from framework
+        expect(sizedBoxes.length,
+            equals(3)); // 2 from ShareMessageInput + 1 shrink from framework
 
         // Find SizedBoxes with specific heights from ShareMessageInput
-        final spacingMBoxes = sizedBoxes.where((box) => box.height == AppDimensions.spacingM);
-        final spacingXlBoxes = sizedBoxes.where((box) => box.height == AppDimensions.spacingXl);
-        
+        final spacingMBoxes =
+            sizedBoxes.where((box) => box.height == AppDimensions.spacingM);
+        final spacingXlBoxes =
+            sizedBoxes.where((box) => box.height == AppDimensions.spacingXl);
+
         // Should have one SizedBox with spacingM height and one with spacingXl height
         expect(spacingMBoxes.length, equals(1));
         expect(spacingXlBoxes.length, equals(1));
@@ -474,11 +481,11 @@ void main() {
         controller.dispose();
       });
 
-      testWidgets('handles very long text input',
-          (WidgetTester tester) async {
+      testWidgets('handles very long text input', (WidgetTester tester) async {
         // ULTRATHINK: Test with long text input
         final controller = TextEditingController();
-        final longText = 'Detta är ett mycket långt meddelande som testar ' * 20;
+        final longText =
+            'Detta är ett mycket långt meddelande som testar ' * 20;
 
         await tester.pumpWidget(
           createTestWidget(
@@ -592,7 +599,8 @@ void main() {
         await tester.pump();
 
         // Should be able to modify text
-        await tester.enterText(find.byType(TextField), 'Modified sharing message');
+        await tester.enterText(
+            find.byType(TextField), 'Modified sharing message');
         await tester.pump();
 
         expect(controller.text, equals('Modified sharing message'));

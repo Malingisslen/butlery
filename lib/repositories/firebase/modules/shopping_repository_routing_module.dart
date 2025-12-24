@@ -27,7 +27,8 @@ class ShoppingRepositoryRoutingModule {
     required bool granted,
     String? details,
   }) logPermissionCheck;
-  final UnifiedShoppingList Function(DocumentSnapshot<Map<String, dynamic>> doc) fromFirestore;
+  final UnifiedShoppingList Function(DocumentSnapshot<Map<String, dynamic>> doc)
+      fromFirestore;
 
   ShoppingRepositoryRoutingModule({
     required this.firestore,
@@ -40,7 +41,8 @@ class ShoppingRepositoryRoutingModule {
   });
 
   /// Create collaborative list in shared collection
-  Future<UnifiedShoppingList> createCollaborativeList(UnifiedShoppingList entity) async {
+  Future<UnifiedShoppingList> createCollaborativeList(
+      UnifiedShoppingList entity) async {
     final uid = requireCurrentUserId();
 
     // Validate required fields for collaborative lists
@@ -80,15 +82,18 @@ class ShoppingRepositoryRoutingModule {
       resource: 'collaborative_shopping_list',
       operation: 'create',
       granted: true,
-      details: 'List: ${listToSave.name}, Members: ${entity.memberPermissions.length}',
+      details:
+          'List: ${listToSave.name}, Members: ${entity.memberPermissions.length}',
     );
 
-    AppLogger.success('Created collaborative list "${listToSave.name}" with ${entity.items.length} items in shared collection');
+    AppLogger.success(
+        'Created collaborative list "${listToSave.name}" with ${entity.items.length} items in shared collection');
     return listToSave;
   }
 
   /// Update collaborative list in shared collection
-  Future<UnifiedShoppingList> updateCollaborativeList(UnifiedShoppingList entity) async {
+  Future<UnifiedShoppingList> updateCollaborativeList(
+      UnifiedShoppingList entity) async {
     final uid = requireCurrentUserId();
 
     // Validate entity exists
@@ -113,7 +118,8 @@ class ShoppingRepositoryRoutingModule {
       details: 'List: ${entity.name}',
     );
 
-    AppLogger.info('Updated collaborative list "${entity.name}" with ${entity.items.length} items in shared collection');
+    AppLogger.info(
+        'Updated collaborative list "${entity.name}" with ${entity.items.length} items in shared collection');
     return entity;
   }
 }

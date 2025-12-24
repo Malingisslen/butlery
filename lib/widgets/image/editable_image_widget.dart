@@ -265,8 +265,8 @@ class _EditableImageWidgetState extends State<EditableImageWidget> {
         if (widget.config.showEditControls)
           EditActionsPanel(
             canAddImage: widget.imageUrls.length < widget.config.maxImages,
-            canSetPrimary:
-                widget.imageUrls.length > 1 && _currentIndex != widget.primaryIndex,
+            canSetPrimary: widget.imageUrls.length > 1 &&
+                _currentIndex != widget.primaryIndex,
             onAddImage: _addImage,
             onSetPrimary: _setPrimary,
             onRemoveImage: _removeImage,

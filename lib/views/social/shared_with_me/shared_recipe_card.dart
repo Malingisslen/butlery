@@ -23,7 +23,8 @@ class SharedRecipeCard {
     final isImported = viewModel.recipeViewModel.isRecipeImported(sharedRecipe);
 
     return Material(
-      elevation: isRead ? AppDimensions.elevationLow : AppDimensions.elevationMedium,
+      elevation:
+          isRead ? AppDimensions.elevationLow : AppDimensions.elevationMedium,
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -101,23 +102,16 @@ class SharedRecipeCard {
             children: [
               Text(
                 'Delat av ${sharedRecipe.sharedByDisplayName}',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(
-                      fontWeight: isRead
-                          ? FontWeight.normal
-                          : FontWeight.w600,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: isRead ? FontWeight.normal : FontWeight.w600,
                       color: Theme.of(context).colorScheme.primary,
                     ),
               ),
               Text(
                 timeago.format(sharedRecipe.sharedAt, locale: 'sv'),
                 style: AppTextStyles.bodySmall.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -140,7 +134,8 @@ class SharedRecipeCard {
               padding: const EdgeInsets.all(AppDimensions.spacingXs),
               constraints: const BoxConstraints(
                 minWidth: AppDimensions.iconSizeAction + AppDimensions.spacingS,
-                minHeight: AppDimensions.iconSizeAction + AppDimensions.spacingS,
+                minHeight:
+                    AppDimensions.iconSizeAction + AppDimensions.spacingS,
               ),
               child: Icon(
                 Icons.close,
@@ -166,7 +161,8 @@ class SharedRecipeCard {
 
   static Widget _buildRecipeContent(BuildContext context, dynamic recipe) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center, // Center image with content
+      crossAxisAlignment:
+          CrossAxisAlignment.center, // Center image with content
       children: [
         if (recipe.hasImages)
           ClipRRect(
@@ -188,9 +184,7 @@ class SharedRecipeCard {
               child: recipe.primaryImageUrl == null
                   ? Icon(
                       Icons.restaurant,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurfaceVariant,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       size: AppDimensions.iconSizeM,
                     )
                   : null,
@@ -258,8 +252,8 @@ class SharedRecipeCard {
       child: Text(
         '"$message"',
         style: AppTextStyles.bodySmall.copyWith(
-              fontStyle: FontStyle.italic,
-            ),
+          fontStyle: FontStyle.italic,
+        ),
       ),
     );
   }
@@ -308,7 +302,7 @@ class SharedRecipeCard {
             icon: isImported
                 ? Icons.check
                 : viewModel.recipeViewModel.isOperating
-                    ? null  // Loading handled by facade
+                    ? null // Loading handled by facade
                     : Icons.download,
             loading: viewModel.recipeViewModel.isOperating,
             compact: true,

@@ -180,8 +180,9 @@ mixin QualityScoring {
     if (instructions.length >= 5) score += 0.1;
 
     // Longer instructions = more detailed
-    final avgLength = instructions.map((s) => s.length).reduce((a, b) => a + b) /
-        instructions.length;
+    final avgLength =
+        instructions.map((s) => s.length).reduce((a, b) => a + b) /
+            instructions.length;
     if (avgLength > 50) score += 0.2;
     if (avgLength > 100) score += 0.2;
 

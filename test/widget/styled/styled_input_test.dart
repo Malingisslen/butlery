@@ -29,7 +29,8 @@ void main() {
     }
 
     group('Default Constructor', () {
-      testWidgets('should render basic text field', (WidgetTester tester) async {
+      testWidgets('should render basic text field',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledInput(
             label: 'Test Label',
@@ -40,7 +41,7 @@ void main() {
         expect(find.byType(StyledInput), findsOneWidget);
         expect(find.byType(TextFormField), findsOneWidget);
         expect(find.text('Test Label'), findsOneWidget);
-        
+
         // Hint text is not visible until field is focused
         await tester.tap(find.byType(TextFormField));
         await tester.pump();
@@ -49,7 +50,7 @@ void main() {
 
       testWidgets('should handle text input', (WidgetTester tester) async {
         final controller = TextEditingController();
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledInput(
             controller: controller,
@@ -60,9 +61,10 @@ void main() {
         expect(controller.text, equals('Test Input'));
       });
 
-      testWidgets('should call onChanged callback', (WidgetTester tester) async {
+      testWidgets('should call onChanged callback',
+          (WidgetTester tester) async {
         String? changedValue;
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledInput(
             onChanged: (value) => changedValue = value,
@@ -101,13 +103,14 @@ void main() {
           ),
         ));
 
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField =
+            tester.widget<TextFormField>(find.byType(TextFormField));
         expect(textField.enabled, isFalse);
       });
 
       testWidgets('should handle read-only state', (WidgetTester tester) async {
         final controller = TextEditingController(text: 'Initial');
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledInput(
             readOnly: true,
@@ -121,9 +124,10 @@ void main() {
         expect(controller.text, equals('Initial'));
       });
 
-      testWidgets('should handle obscured text behavior', (WidgetTester tester) async {
+      testWidgets('should handle obscured text behavior',
+          (WidgetTester tester) async {
         final controller = TextEditingController();
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledInput(
             obscureText: true,
@@ -133,12 +137,13 @@ void main() {
 
         await tester.enterText(find.byType(TextFormField), 'password123');
         expect(controller.text, equals('password123'));
-        
+
         // The text should be obscured visually (we can't directly test the obscureText property)
         // but we can verify the controller received the text
       });
 
-      testWidgets('should handle prefix and suffix icons', (WidgetTester tester) async {
+      testWidgets('should handle prefix and suffix icons',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledInput(
             prefixIcon: Icon(Icons.search),
@@ -150,9 +155,10 @@ void main() {
         expect(find.byIcon(Icons.clear), findsOneWidget);
       });
 
-      testWidgets('should handle max length constraint', (WidgetTester tester) async {
+      testWidgets('should handle max length constraint',
+          (WidgetTester tester) async {
         final controller = TextEditingController();
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledInput(
             maxLength: 5,
@@ -166,7 +172,8 @@ void main() {
         expect(controller.text, equals('12345'));
       });
 
-      testWidgets('should handle multiline configuration', (WidgetTester tester) async {
+      testWidgets('should handle multiline configuration',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledInput(
             maxLines: 3,
@@ -180,7 +187,7 @@ void main() {
 
       testWidgets('should handle onTap callback', (WidgetTester tester) async {
         var tapped = false;
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledInput(
             onTap: () => tapped = true,
@@ -198,20 +205,22 @@ void main() {
           }
           return null;
         }
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledInput(
             validator: validator,
           ),
         ));
 
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField =
+            tester.widget<TextFormField>(find.byType(TextFormField));
         expect(textField.validator, equals(validator));
       });
     });
 
     group('Text Constructor', () {
-      testWidgets('should render standard text input', (WidgetTester tester) async {
+      testWidgets('should render standard text input',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledInput.text(
             label: 'Name',
@@ -224,7 +233,7 @@ void main() {
 
       testWidgets('should not be obscured', (WidgetTester tester) async {
         final controller = TextEditingController();
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledInput.text(
             controller: controller,
@@ -238,7 +247,8 @@ void main() {
     });
 
     group('Password Constructor', () {
-      testWidgets('should render password input with lock icon', (WidgetTester tester) async {
+      testWidgets('should render password input with lock icon',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledInput.password(
             label: 'Password',
@@ -249,9 +259,10 @@ void main() {
         expect(find.text('Password'), findsOneWidget);
       });
 
-      testWidgets('should obscure text by default', (WidgetTester tester) async {
+      testWidgets('should obscure text by default',
+          (WidgetTester tester) async {
         final controller = TextEditingController();
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledInput.password(
             controller: controller,
@@ -263,9 +274,10 @@ void main() {
         // Password should be obscured visually
       });
 
-      testWidgets('should allow toggling obscure text', (WidgetTester tester) async {
+      testWidgets('should allow toggling obscure text',
+          (WidgetTester tester) async {
         final controller = TextEditingController();
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledInput.password(
             obscureText: false,
@@ -280,7 +292,8 @@ void main() {
     });
 
     group('Email Constructor', () {
-      testWidgets('should render email input with email icon', (WidgetTester tester) async {
+      testWidgets('should render email input with email icon',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledInput.email(
             label: 'Email',
@@ -293,7 +306,7 @@ void main() {
 
       testWidgets('should accept email input', (WidgetTester tester) async {
         final controller = TextEditingController();
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledInput.email(
             controller: controller,
@@ -306,7 +319,8 @@ void main() {
     });
 
     group('Phone Constructor', () {
-      testWidgets('should render phone input with phone icon', (WidgetTester tester) async {
+      testWidgets('should render phone input with phone icon',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledInput.phone(
             label: 'Phone',
@@ -319,7 +333,7 @@ void main() {
 
       testWidgets('should accept phone input', (WidgetTester tester) async {
         final controller = TextEditingController();
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledInput.phone(
             controller: controller,
@@ -345,18 +359,20 @@ void main() {
 
       testWidgets('should accept multiline text', (WidgetTester tester) async {
         final controller = TextEditingController();
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledInput.multiline(
             controller: controller,
           ),
         ));
 
-        await tester.enterText(find.byType(TextFormField), 'Line 1\nLine 2\nLine 3');
+        await tester.enterText(
+            find.byType(TextFormField), 'Line 1\nLine 2\nLine 3');
         expect(controller.text, equals('Line 1\nLine 2\nLine 3'));
       });
 
-      testWidgets('should accept custom line configuration', (WidgetTester tester) async {
+      testWidgets('should accept custom line configuration',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledInput.multiline(
             maxLines: 10,
@@ -381,9 +397,10 @@ void main() {
         expect(find.byType(TextFormField), findsOneWidget);
       });
 
-      testWidgets('should filter non-digit characters', (WidgetTester tester) async {
+      testWidgets('should filter non-digit characters',
+          (WidgetTester tester) async {
         final controller = TextEditingController();
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledInput.number(
             controller: controller,
@@ -398,7 +415,8 @@ void main() {
     });
 
     group('Search Constructor', () {
-      testWidgets('should render search input with search icon', (WidgetTester tester) async {
+      testWidgets('should render search input with search icon',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledInput.search(
             hint: 'Search...',
@@ -406,7 +424,7 @@ void main() {
         ));
 
         expect(find.byIcon(Icons.search), findsOneWidget);
-        
+
         // Focus to see hint
         await tester.tap(find.byType(TextFormField));
         await tester.pump();
@@ -424,7 +442,7 @@ void main() {
 
       testWidgets('should accept search text', (WidgetTester tester) async {
         final controller = TextEditingController();
-        
+
         await tester.pumpWidget(createTestWidget(
           StyledInput.search(
             controller: controller,
@@ -466,7 +484,8 @@ void main() {
         expect(find.byType(TextFormField), findsOneWidget);
       });
 
-      testWidgets('should handle disabled styling', (WidgetTester tester) async {
+      testWidgets('should handle disabled styling',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           const StyledInput(
             enabled: false,
@@ -474,7 +493,8 @@ void main() {
           ),
         ));
 
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField =
+            tester.widget<TextFormField>(find.byType(TextFormField));
         expect(textField.enabled, isFalse);
         // Disabled field should have different styling
       });
@@ -517,7 +537,8 @@ void main() {
       expect(find.text('Field Label'), findsOneWidget);
     });
 
-    testWidgets('should show required asterisk when isRequired is true', (WidgetTester tester) async {
+    testWidgets('should show required asterisk when isRequired is true',
+        (WidgetTester tester) async {
       await tester.pumpWidget(createTestWidget(
         const StyledFormField(
           label: 'Required Field',
@@ -530,7 +551,8 @@ void main() {
       expect(find.text(' *'), findsOneWidget);
     });
 
-    testWidgets('should show error text when provided', (WidgetTester tester) async {
+    testWidgets('should show error text when provided',
+        (WidgetTester tester) async {
       await tester.pumpWidget(createTestWidget(
         const StyledFormField(
           errorText: 'Field error',
@@ -541,7 +563,8 @@ void main() {
       expect(find.text('Field error'), findsOneWidget);
     });
 
-    testWidgets('should show helper text when no error', (WidgetTester tester) async {
+    testWidgets('should show helper text when no error',
+        (WidgetTester tester) async {
       await tester.pumpWidget(createTestWidget(
         const StyledFormField(
           helperText: 'Helper text',
@@ -552,7 +575,8 @@ void main() {
       expect(find.text('Helper text'), findsOneWidget);
     });
 
-    testWidgets('should not show helper text when error exists', (WidgetTester tester) async {
+    testWidgets('should not show helper text when error exists',
+        (WidgetTester tester) async {
       await tester.pumpWidget(createTestWidget(
         const StyledFormField(
           helperText: 'Helper text',
@@ -575,13 +599,15 @@ void main() {
 
       // Check for spacing widgets
       expect(find.byType(SizedBox), findsWidgets);
-      
+
       // Find SizedBox widgets used for spacing
       final spacingBoxes = tester.widgetList<SizedBox>(find.byType(SizedBox));
-      
+
       // Should have spacing after label and at bottom
-      expect(spacingBoxes.any((box) => box.height == AppDimensions.spacingSm), isTrue);
-      expect(spacingBoxes.any((box) => box.height == AppDimensions.spacingMd), isTrue);
+      expect(spacingBoxes.any((box) => box.height == AppDimensions.spacingSm),
+          isTrue);
+      expect(spacingBoxes.any((box) => box.height == AppDimensions.spacingMd),
+          isTrue);
     });
 
     testWidgets('should layout vertically', (WidgetTester tester) async {

@@ -68,13 +68,13 @@ class MenuSocialManager {
   Future<bool> importSharedMenu(String sharedMenuId) async {
     try {
       final success = await _socialMenuOps.importSharedMenu(sharedMenuId);
-      
+
       if (success) {
         AppLogger.success('✅ Meny importerad från vän: $sharedMenuId');
       } else {
         AppLogger.warning('⚠️ Kunde inte importera meny: $sharedMenuId');
       }
-      
+
       return success;
     } catch (e) {
       AppLogger.error('Import shared menu failed', e);
@@ -99,10 +99,11 @@ class MenuSocialManager {
     try {
       final importedMenusData = await _socialMenuOps.getMenusSharedWithMe();
       final menuInfos = <SavedMenuInfo>[];
-      
+
       // Filter for imported menus only
-      final importedOnly = importedMenusData.where((menu) => 
-          menu['isImported'] == true).toList();
+      final importedOnly = importedMenusData
+          .where((menu) => menu['isImported'] == true)
+          .toList();
 
       for (final menuData in importedOnly) {
         try {
@@ -166,9 +167,11 @@ class MenuSocialManager {
         'menusShared': stats['menusShared'] ?? 0,
         'menusReceived': sharedMenus.length,
         'menusImported': importedMenus.length,
-        'totalSocialInteractions': 
-            (stats['menusShared'] ?? 0) + sharedMenus.length + importedMenus.length,
-        'lastActivity': _getLastSocialActivity(stats, sharedMenus, importedMenus),
+        'totalSocialInteractions': (stats['menusShared'] ?? 0) +
+            sharedMenus.length +
+            importedMenus.length,
+        'lastActivity':
+            _getLastSocialActivity(stats, sharedMenus, importedMenus),
       };
     } catch (e) {
       AppLogger.error('Get social activity summary failed', e);
@@ -240,9 +243,10 @@ class MenuSocialManager {
   /// Check if menu can be shared
   bool canShareMenu(Map<String, List<Recipe>> menu) {
     if (menu.isEmpty) return false;
-    
+
     // Check that menu has at least one recipe
-    final totalRecipes = menu.values.fold(0, (total, recipes) => total + recipes.length);
+    final totalRecipes =
+        menu.values.fold(0, (total, recipes) => total + recipes.length);
     return totalRecipes > 0;
   }
 

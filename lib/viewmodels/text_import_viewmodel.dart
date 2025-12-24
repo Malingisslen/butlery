@@ -56,7 +56,6 @@ import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 /// - Import workflow management from text input to saved recipe
 /// - Swedish localized error messages and user feedback coordination
 class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
-
   /// Initializes text import ViewModel with comprehensive ImportManager integration and text import preparation.
   /// [importManager] ImportManager instance for text import strategy coordination and recipe parsing
   /// Establishes text import infrastructure with ImportManager integration, enabling comprehensive
@@ -199,7 +198,7 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   /// ```
   void addIngredientToRecipe(String ingredient) {
     if (parsedRecipe == null || ingredient.trim().isEmpty) return;
-    
+
     final currentIngredients = List<String>.from(parsedRecipe!.ingredients);
     currentIngredients.add(ingredient.trim());
     updateParsedRecipe(ingredients: currentIngredients);
@@ -210,8 +209,12 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   /// Performs ingredient removal with bounds validation, list management,
   /// and immediate state coordination for safe recipe editing functionality.
   void removeIngredientFromRecipe(int index) {
-    if (parsedRecipe == null || index < 0 || index >= parsedRecipe!.ingredients.length) return;
-    
+    if (parsedRecipe == null ||
+        index < 0 ||
+        index >= parsedRecipe!.ingredients.length) {
+      return;
+    }
+
     final currentIngredients = List<String>.from(parsedRecipe!.ingredients);
     currentIngredients.removeAt(index);
     updateParsedRecipe(ingredients: currentIngredients);
@@ -223,8 +226,12 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   /// Performs ingredient update with bounds validation, content trimming,
   /// and immediate state coordination for precise recipe editing functionality.
   void updateIngredientInRecipe(int index, String ingredient) {
-    if (parsedRecipe == null || index < 0 || index >= parsedRecipe!.ingredients.length) return;
-    
+    if (parsedRecipe == null ||
+        index < 0 ||
+        index >= parsedRecipe!.ingredients.length) {
+      return;
+    }
+
     final currentIngredients = List<String>.from(parsedRecipe!.ingredients);
     currentIngredients[index] = ingredient.trim();
     updateParsedRecipe(ingredients: currentIngredients);
@@ -241,7 +248,7 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   /// ```
   void addInstructionToRecipe(String instruction) {
     if (parsedRecipe == null || instruction.trim().isEmpty) return;
-    
+
     final currentInstructions = List<String>.from(parsedRecipe!.instructions);
     currentInstructions.add(instruction.trim());
     updateParsedRecipe(instructions: currentInstructions);
@@ -252,8 +259,12 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   /// Performs instruction removal with bounds validation, sequential ordering,
   /// and immediate state coordination for safe cooking instruction management.
   void removeInstructionFromRecipe(int index) {
-    if (parsedRecipe == null || index < 0 || index >= parsedRecipe!.instructions.length) return;
-    
+    if (parsedRecipe == null ||
+        index < 0 ||
+        index >= parsedRecipe!.instructions.length) {
+      return;
+    }
+
     final currentInstructions = List<String>.from(parsedRecipe!.instructions);
     currentInstructions.removeAt(index);
     updateParsedRecipe(instructions: currentInstructions);
@@ -265,8 +276,12 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   /// Performs instruction update with bounds validation, content trimming,
   /// and immediate state coordination for precise cooking instruction management.
   void updateInstructionInRecipe(int index, String instruction) {
-    if (parsedRecipe == null || index < 0 || index >= parsedRecipe!.instructions.length) return;
-    
+    if (parsedRecipe == null ||
+        index < 0 ||
+        index >= parsedRecipe!.instructions.length) {
+      return;
+    }
+
     final currentInstructions = List<String>.from(parsedRecipe!.instructions);
     currentInstructions[index] = instruction.trim();
     updateParsedRecipe(instructions: currentInstructions);
@@ -283,7 +298,7 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   /// ```
   void addTagToRecipe(String tag) {
     if (parsedRecipe == null || tag.trim().isEmpty) return;
-    
+
     final currentTags = List<String>.from(parsedRecipe!.tags ?? []);
     if (!currentTags.contains(tag.trim())) {
       currentTags.add(tag.trim());
@@ -297,7 +312,7 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   /// and immediate state coordination for flexible recipe tagging functionality.
   void removeTagFromRecipe(String tag) {
     if (parsedRecipe == null) return;
-    
+
     final currentTags = List<String>.from(parsedRecipe!.tags ?? []);
     currentTags.remove(tag);
     updateParsedRecipe(tags: currentTags);
@@ -364,11 +379,15 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
       suggestions.add('Inkludera ingredienslista för bättre tolkning');
     }
 
-    if (!text.contains('instruktion') && !text.contains('steg') && !text.contains('gör så här')) {
+    if (!text.contains('instruktion') &&
+        !text.contains('steg') &&
+        !text.contains('gör så här')) {
       suggestions.add('Inkludera tillagningsinstruktioner eller steg');
     }
 
-    if (!text.contains('minut') && !text.contains('timme') && !text.contains('tid')) {
+    if (!text.contains('minut') &&
+        !text.contains('timme') &&
+        !text.contains('tid')) {
       suggestions.add('Inkludera tillagningstid om tillgänglig');
     }
 
@@ -396,10 +415,10 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   /// - Text analysis results for parsing optimization
   @override
   Map<String, dynamic> get debugState => {
-    ...super.debugState,
-    'inputSuggestions': getInputSuggestions(),
-    'inputValidationResult': hasValidInput,
-    'textLength': inputText.length,
-    'hasParsingErrors': hasError,
-  };
+        ...super.debugState,
+        'inputSuggestions': getInputSuggestions(),
+        'inputValidationResult': hasValidInput,
+        'textLength': inputText.length,
+        'hasParsingErrors': hasError,
+      };
 }

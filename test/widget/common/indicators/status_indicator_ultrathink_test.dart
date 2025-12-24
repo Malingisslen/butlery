@@ -18,6 +18,7 @@ void main() {
         ),
       );
     }
+
     group('Construction Tests', () {
       testWidgets('creates widget with required parameters', (tester) async {
         const testIcon = Icons.star;
@@ -122,7 +123,8 @@ void main() {
         final decoration = container.decoration as BoxDecoration;
 
         expect(decoration.color, testColor.withValues(alpha: 0.1));
-        expect(decoration.borderRadius, BorderRadius.circular(AppDimensions.borderRadiusS));
+        expect(decoration.borderRadius,
+            BorderRadius.circular(AppDimensions.borderRadiusS));
       });
 
       testWidgets('applies default padding when not specified', (tester) async {
@@ -190,7 +192,8 @@ void main() {
     });
 
     group('Icon Properties Tests', () {
-      testWidgets('applies correct icon properties with defaults', (tester) async {
+      testWidgets('applies correct icon properties with defaults',
+          (tester) async {
         const testIcon = Icons.star;
         const testColor = Colors.blue;
 
@@ -276,7 +279,8 @@ void main() {
     });
 
     group('Alpha Transparency Tests', () {
-      testWidgets('applies correct alpha transparency to background', (tester) async {
+      testWidgets('applies correct alpha transparency to background',
+          (tester) async {
         const testColor = Colors.red;
 
         await tester.pumpWidget(
@@ -290,12 +294,14 @@ void main() {
 
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
-        
+
         expect(decoration.color, testColor.withValues(alpha: 0.1));
-        expect((decoration.color!.a * 255.0).round() & 0xff, (255 * 0.1).round());
+        expect(
+            (decoration.color!.a * 255.0).round() & 0xff, (255 * 0.1).round());
       });
 
-      testWidgets('icon retains full opacity while background has alpha', (tester) async {
+      testWidgets('icon retains full opacity while background has alpha',
+          (tester) async {
         const testColor = Colors.green;
 
         await tester.pumpWidget(
@@ -317,10 +323,12 @@ void main() {
 
         // Background should have alpha transparency
         expect(decoration.color, testColor.withValues(alpha: 0.1));
-        expect((decoration.color!.a * 255.0).round() & 0xff, (255 * 0.1).round());
+        expect(
+            (decoration.color!.a * 255.0).round() & 0xff, (255 * 0.1).round());
       });
 
-      testWidgets('alpha transparency works with different colors', (tester) async {
+      testWidgets('alpha transparency works with different colors',
+          (tester) async {
         const colors = [
           Colors.red,
           Colors.blue,
@@ -341,9 +349,10 @@ void main() {
 
           final container = tester.widget<Container>(find.byType(Container));
           final decoration = container.decoration as BoxDecoration;
-          
+
           expect(decoration.color, color.withValues(alpha: 0.1));
-          expect((decoration.color!.a * 255.0).round() & 0xff, (255 * 0.1).round());
+          expect((decoration.color!.a * 255.0).round() & 0xff,
+              (255 * 0.1).round());
         }
       });
     });
@@ -367,7 +376,8 @@ void main() {
         expect(container.padding, EdgeInsets.all(AppDimensions.spacingS));
 
         // Check border radius uses AppDimensions.borderRadiusS
-        expect(decoration.borderRadius, BorderRadius.circular(AppDimensions.borderRadiusS));
+        expect(decoration.borderRadius,
+            BorderRadius.circular(AppDimensions.borderRadiusS));
 
         // Check default icon size uses AppDimensions.iconSizeAction
         expect(icon.size, AppDimensions.iconSizeAction);
@@ -397,7 +407,8 @@ void main() {
         expect(icon.size, customIconSize);
 
         // Border radius should still use theme constant
-        expect(decoration.borderRadius, BorderRadius.circular(AppDimensions.borderRadiusS));
+        expect(decoration.borderRadius,
+            BorderRadius.circular(AppDimensions.borderRadiusS));
       });
     });
 
@@ -414,23 +425,30 @@ void main() {
 
         // Should have Container as root
         expect(find.byType(Container), findsOneWidget);
-        
+
         // Should have Icon as child
         expect(find.byType(Icon), findsOneWidget);
 
         // Should have the correct parent-child relationship
         final container = find.byType(Container);
         final icon = find.byType(Icon);
-        
+
         expect(find.descendant(of: container, matching: icon), findsOneWidget);
       });
 
-      testWidgets('maintains consistent structure with different parameters', (tester) async {
+      testWidgets('maintains consistent structure with different parameters',
+          (tester) async {
         const variations = [
           StatusIndicator(icon: Icons.star, color: Colors.blue),
-          StatusIndicator(icon: Icons.warning, color: Colors.red, padding: 10.0),
-          StatusIndicator(icon: Icons.check, color: Colors.green, iconSize: 20.0),
-          StatusIndicator(icon: Icons.info, color: Colors.orange, padding: 8.0, iconSize: 24.0),
+          StatusIndicator(
+              icon: Icons.warning, color: Colors.red, padding: 10.0),
+          StatusIndicator(
+              icon: Icons.check, color: Colors.green, iconSize: 20.0),
+          StatusIndicator(
+              icon: Icons.info,
+              color: Colors.orange,
+              padding: 8.0,
+              iconSize: 24.0),
         ];
 
         for (final variation in variations) {
@@ -464,14 +482,15 @@ void main() {
           );
 
           expect(find.byType(StatusIndicator), findsOneWidget);
-          
+
           final container = tester.widget<Container>(find.byType(Container));
           final decoration = container.decoration as BoxDecoration;
           expect(decoration.color, color.withValues(alpha: 0.1));
         }
       });
 
-      testWidgets('handles very small positive values correctly', (tester) async {
+      testWidgets('handles very small positive values correctly',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             const StatusIndicator(
@@ -484,10 +503,10 @@ void main() {
         );
 
         expect(find.byType(StatusIndicator), findsOneWidget);
-        
+
         final container = tester.widget<Container>(find.byType(Container));
         final icon = tester.widget<Icon>(find.byIcon(Icons.star));
-        
+
         expect(container.padding, const EdgeInsets.all(0.1));
         expect(icon.size, 0.1);
       });

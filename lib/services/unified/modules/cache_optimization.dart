@@ -10,7 +10,6 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 /// await CacheOptimization.optimizeCacheByLRU(cacheHelper, maxSize: 1000);
 /// ```
 class CacheOptimization {
-
   static Timer startPeriodicCleanup({
     required Duration cleanupInterval,
     required JsonCacheHelper cacheHelper,
@@ -28,7 +27,6 @@ class CacheOptimization {
     cleanupTimer?.cancel();
     AppLogger.debug('Periodic cache cleanup stopped');
   }
-
 
   static Future<Map<String, int>> _performCacheCleanup({
     required JsonCacheHelper cacheHelper,
@@ -55,20 +53,24 @@ class CacheOptimization {
         );
 
         cleanupResults['null_entries_removed'] =
-            (cleanupResults['null_entries_removed']).orZero() + (cleanupResult['null']).orZero();
+            (cleanupResults['null_entries_removed']).orZero() +
+                (cleanupResult['null']).orZero();
         cleanupResults['corrupted_entries_removed'] =
-            (cleanupResults['corrupted_entries_removed']).orZero() + (cleanupResult['corrupted']).orZero();
+            (cleanupResults['corrupted_entries_removed']).orZero() +
+                (cleanupResult['corrupted']).orZero();
         cleanupResults['permission_invalid_removed'] =
-            (cleanupResults['permission_invalid_removed']).orZero() + (cleanupResult['permission']).orZero();
+            (cleanupResults['permission_invalid_removed']).orZero() +
+                (cleanupResult['permission']).orZero();
         cleanupResults['old_recipes_removed'] =
-            (cleanupResults['old_recipes_removed']).orZero() + (cleanupResult['old']).orZero();
+            (cleanupResults['old_recipes_removed']).orZero() +
+                (cleanupResult['old']).orZero();
       }
 
       cleanupResults['total_removed'] =
           (cleanupResults['null_entries_removed']).orZero() +
-          (cleanupResults['corrupted_entries_removed']).orZero() +
-          (cleanupResults['permission_invalid_removed']).orZero() +
-          (cleanupResults['old_recipes_removed']).orZero();
+              (cleanupResults['corrupted_entries_removed']).orZero() +
+              (cleanupResults['permission_invalid_removed']).orZero() +
+              (cleanupResults['old_recipes_removed']).orZero();
 
       final totalRemoved = (cleanupResults['total_removed']).orZero();
       if (totalRemoved > 0) {
@@ -90,7 +92,7 @@ class CacheOptimization {
     required String? Function() getCurrentUserId,
   }) async {
     final result = <String, int>{};
-    
+
     try {
       final recipeData = await cacheHelper.loadJson(key);
       if (recipeData == null) {
@@ -113,7 +115,6 @@ class CacheOptimization {
     return result;
   }
 
-
   static bool _shouldRemoveFromCache(Recipe recipe, String? currentUserId) {
     if (currentUserId == null) return false;
 
@@ -122,7 +123,8 @@ class CacheOptimization {
     }
 
     if (recipe.isCollaborative) {
-      final memberPermissions = (recipe.socialData?.memberPermissions).orEmpty();
+      final memberPermissions =
+          (recipe.socialData?.memberPermissions).orEmpty();
       if (!memberPermissions.containsKey(currentUserId)) {
         return true;
       }
@@ -146,7 +148,8 @@ class CacheOptimization {
     }
 
     if (recipe.isCollaborative) {
-      final memberPermissions = (recipe.socialData?.memberPermissions).orEmpty();
+      final memberPermissions =
+          (recipe.socialData?.memberPermissions).orEmpty();
       if (!memberPermissions.containsKey(currentUserId)) {
         return 'permission';
       }
@@ -161,13 +164,13 @@ class CacheOptimization {
     return 'unknown';
   }
 
-
   static Future<int> cleanupInvalidPermissions({
     required JsonCacheHelper cacheHelper,
     required String currentUserId,
   }) async {
     try {
-      AppLogger.debug('Cleaning up invalid permissions for user: $currentUserId');
+      AppLogger.debug(
+          'Cleaning up invalid permissions for user: $currentUserId');
 
       final allKeys = await cacheHelper.getAllKeys();
       int removedCount = 0;
@@ -183,7 +186,8 @@ class CacheOptimization {
           if (recipe.isPersonal) {
             hasAccess = recipe.core.createdBy == currentUserId;
           } else if (recipe.isCollaborative) {
-            final memberPermissions = (recipe.socialData?.memberPermissions).orEmpty();
+            final memberPermissions =
+                (recipe.socialData?.memberPermissions).orEmpty();
             hasAccess = memberPermissions.containsKey(currentUserId);
           }
 
@@ -215,7 +219,8 @@ class CacheOptimization {
     required String? currentUserId,
   }) async {
     try {
-      AppLogger.debug('Cleaning up old recipes (max age: ${maxAge.inDays} days)');
+      AppLogger.debug(
+          'Cleaning up old recipes (max age: ${maxAge.inDays} days)');
 
       final allKeys = await cacheHelper.getAllKeys();
       int removedCount = 0;
@@ -232,7 +237,8 @@ class CacheOptimization {
           if (recipe.isPersonal && daysSinceUpdate > maxAge.inDays) {
             await cacheHelper.delete(key);
             removedCount++;
-            AppLogger.debug('Removed old recipe: ${recipe.title} ($daysSinceUpdate days old)');
+            AppLogger.debug(
+                'Removed old recipe: ${recipe.title} ($daysSinceUpdate days old)');
           }
         } catch (e) {
           await cacheHelper.delete(key);
@@ -251,7 +257,8 @@ class CacheOptimization {
     }
   }
 
-  static Future<int> cleanupCorruptedEntries(JsonCacheHelper cacheHelper) async {
+  static Future<int> cleanupCorruptedEntries(
+      JsonCacheHelper cacheHelper) async {
     try {
       AppLogger.debug('Cleaning up corrupted cache entries');
 
@@ -276,7 +283,8 @@ class CacheOptimization {
       }
 
       if (removedCount > 0) {
-        AppLogger.info('Corrupted entry cleanup: removed $removedCount entries');
+        AppLogger.info(
+            'Corrupted entry cleanup: removed $removedCount entries');
       }
 
       return removedCount;
@@ -286,7 +294,6 @@ class CacheOptimization {
     }
   }
 
-
   static Future<int> optimizeCacheByLRU({
     required JsonCacheHelper cacheHelper,
     required int maxCacheSize,
@@ -295,7 +302,8 @@ class CacheOptimization {
       final allKeys = await cacheHelper.getAllKeys();
       if (allKeys.length <= maxCacheSize) return 0;
 
-      AppLogger.debug('Optimizing cache by LRU (current: ${allKeys.length}, max: $maxCacheSize)');
+      AppLogger.debug(
+          'Optimizing cache by LRU (current: ${allKeys.length}, max: $maxCacheSize)');
 
       final recipesByAge = <String, DateTime>{};
 
@@ -339,7 +347,8 @@ class CacheOptimization {
       final allKeys = await cacheHelper.getAllKeys();
       if (allKeys.length <= maxCacheSize) return 0;
 
-      AppLogger.debug('Optimizing cache by priority (current: ${allKeys.length}, max: $maxCacheSize)');
+      AppLogger.debug(
+          'Optimizing cache by priority (current: ${allKeys.length}, max: $maxCacheSize)');
 
       final recipesByPriority = <String, int>{};
 
@@ -356,7 +365,8 @@ class CacheOptimization {
       }
 
       final sortedKeys = recipesByPriority.keys.toList()
-        ..sort((a, b) => recipesByPriority[a]!.compareTo(recipesByPriority[b]!));
+        ..sort(
+            (a, b) => recipesByPriority[a]!.compareTo(recipesByPriority[b]!));
 
       final keysToRemove = sortedKeys.take(allKeys.length - maxCacheSize);
       int removedCount = 0;
@@ -366,7 +376,8 @@ class CacheOptimization {
         removedCount++;
       }
 
-      AppLogger.info('Priority optimization: removed $removedCount low-priority recipes');
+      AppLogger.info(
+          'Priority optimization: removed $removedCount low-priority recipes');
       return removedCount;
     } catch (e) {
       AppLogger.error('Error optimizing cache by priority: $e');
@@ -385,7 +396,8 @@ class CacheOptimization {
       priority += 50;
     }
 
-    final daysSinceUpdate = DateTime.now().difference(recipe.core.updatedAt).inDays;
+    final daysSinceUpdate =
+        DateTime.now().difference(recipe.core.updatedAt).inDays;
     if (daysSinceUpdate < 7) {
       priority += 30;
     } else if (daysSinceUpdate < 30) {
@@ -395,12 +407,11 @@ class CacheOptimization {
     }
 
     final contentScore = (recipe.core.ingredients.length * 2) +
-                        (recipe.core.instructions.length * 3);
+        (recipe.core.instructions.length * 3);
     priority += (contentScore / 10).round().clamp(0, 20);
 
     return priority;
   }
-
 
   static Future<Map<String, dynamic>> assessCacheHealth({
     required JsonCacheHelper cacheHelper,
@@ -422,14 +433,16 @@ class CacheOptimization {
         try {
           final recipeData = await cacheHelper.loadJson(key);
           if (recipeData == null) {
-            assessment['corrupted_entries'] = (assessment['corrupted_entries'] as int) + 1;
+            assessment['corrupted_entries'] =
+                (assessment['corrupted_entries'] as int) + 1;
             continue;
           }
 
           final recipe = Recipe.fromJson(recipeData);
 
           if (_shouldRemoveFromCache(recipe, currentUserId)) {
-            assessment['permission_issues'] = (assessment['permission_issues'] as int) + 1;
+            assessment['permission_issues'] =
+                (assessment['permission_issues'] as int) + 1;
           }
 
           final daysSinceUpdate = now.difference(recipe.core.updatedAt).inDays;
@@ -437,26 +450,31 @@ class CacheOptimization {
             assessment['old_entries'] = (assessment['old_entries'] as int) + 1;
           }
         } catch (e) {
-          assessment['corrupted_entries'] = (assessment['corrupted_entries'] as int) + 1;
+          assessment['corrupted_entries'] =
+              (assessment['corrupted_entries'] as int) + 1;
         }
       }
 
       final recommendations = assessment['recommendations'] as List<String>;
-      
+
       if ((assessment['corrupted_entries'] as int) > 0) {
-        recommendations.add('Clean up ${assessment['corrupted_entries']} corrupted entries');
+        recommendations.add(
+            'Clean up ${assessment['corrupted_entries']} corrupted entries');
       }
-      
+
       if ((assessment['permission_issues'] as int) > 0) {
-        recommendations.add('Remove ${assessment['permission_issues']} recipes with permission issues');
+        recommendations.add(
+            'Remove ${assessment['permission_issues']} recipes with permission issues');
       }
-      
+
       if ((assessment['old_entries'] as int) > 10) {
-        recommendations.add('Consider removing ${assessment['old_entries']} old entries');
+        recommendations
+            .add('Consider removing ${assessment['old_entries']} old entries');
       }
-      
+
       if (allKeys.length > 1000) {
-        recommendations.add('Cache size is large (${allKeys.length} entries), consider optimization');
+        recommendations.add(
+            'Cache size is large (${allKeys.length} entries), consider optimization');
       }
 
       return assessment;

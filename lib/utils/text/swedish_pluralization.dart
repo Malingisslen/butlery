@@ -53,6 +53,7 @@ import 'package:butlery/utils/text/text_formatting.dart';
 class SwedishPluralization {
   /// Private constructor preventing instantiation to enforce static utility usage.
   SwedishPluralization._();
+
   /// Comprehensive database of Swedish irregular plurals and invariant forms for cooking applications
   /// This extensive mapping provides accurate Swedish pluralization for cooking ingredients, measurements,
   /// and food terminology. It includes both irregular plural forms and invariant forms (words that don't
@@ -145,7 +146,7 @@ class SwedishPluralization {
     'krossad': 'krossade',
     'krossade': 'krossade', // Already plural form
     'burk krossade tomater': 'burkar krossade tomater',
-    
+
     // Common -a to -or plurals
     'flicka': 'flickor',
     'flaska': 'flaskor',
@@ -190,9 +191,9 @@ class SwedishPluralization {
       // Try both patterns: remove -or and remove -or + add a
       final withoutOr = name.substring(0, name.length - 2);
       final withA = '${withoutOr}a';
-      
+
       // Check if the -a form is known in our database
-      if (irregularPlurals.containsKey(withA.toLowerCase()) && 
+      if (irregularPlurals.containsKey(withA.toLowerCase()) &&
           irregularPlurals[withA.toLowerCase()] == lower) {
         return withA;
       }
@@ -446,7 +447,8 @@ class SwedishPluralization {
 /// These legacy exports will be removed in a future version once all code has been migrated.
 
 /// Legacy export: Use SwedishPluralization.irregularPlurals instead
-const Map<String, String> irregularPlurals = SwedishPluralization.irregularPlurals;
+const Map<String, String> irregularPlurals =
+    SwedishPluralization.irregularPlurals;
 
 /// Legacy export: Use SwedishPluralization.formatIngredient() instead
 String pluralizeSwedish(String singular, double count) {

@@ -5,7 +5,8 @@ import 'package:butlery/models/recipe_change.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Repository interface for recipe data operations.
-abstract class RecipeRepository extends Repository<Recipe> with StreamManagementMixin {
+abstract class RecipeRepository extends Repository<Recipe>
+    with StreamManagementMixin {
   /// Stream of recipes for the specified user.
   Stream<List<Recipe>> watchRecipes(String userId);
 

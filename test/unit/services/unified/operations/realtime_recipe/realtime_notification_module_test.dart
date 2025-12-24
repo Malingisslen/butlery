@@ -9,7 +9,8 @@ import '../../../../../test_support/base_unit_test.dart';
 import '../../../../../infrastructure/di/test_service_locator.dart';
 import '../../../../../infrastructure/builders/recipe_builder.dart';
 import '../../../../../infrastructure/mocks/production_mocks.dart';
-import 'package:butlery/core/providers/application_provider.dart' as app_provider;
+import 'package:butlery/core/providers/application_provider.dart'
+    as app_provider;
 
 void main() {
   group('RealtimeNotificationModule', () {
@@ -43,7 +44,7 @@ void main() {
 
       // Create mocks
       mockParent = MockNotificationParent();
-      
+
       // Initialize production ServiceLocator with MockDIContainer
       app_provider.ServiceLocator.reset();
       app_provider.ServiceLocator.initialize(MockDIContainer());

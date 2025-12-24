@@ -32,14 +32,15 @@ class ConversationBuilder {
     final defaultId = id ?? 'conv_${DateTime.now().millisecondsSinceEpoch}';
     final defaultParticipantIds = participantIds ?? ['user1', 'user2'];
     final now = DateTime.now();
-    
+
     return Conversation(
       id: defaultId,
       participantIds: defaultParticipantIds,
-      participantDisplayNames: participantDisplayNames ?? {
-        'user1': 'Anna Andersson',
-        'user2': 'Erik Svensson',
-      },
+      participantDisplayNames: participantDisplayNames ??
+          {
+            'user1': 'Anna Andersson',
+            'user2': 'Erik Svensson',
+          },
       participantAvatarUrls: participantAvatarUrls ?? {},
       lastMessage: lastMessage,
       createdAt: createdAt ?? now,
@@ -50,7 +51,7 @@ class ConversationBuilder {
       metadata: metadata ?? {},
     );
   }
-  
+
   static Conversation buildDirect({
     String? id,
     String? user1Id,
@@ -61,7 +62,7 @@ class ConversationBuilder {
   }) {
     final userId1 = user1Id ?? 'user1';
     final userId2 = user2Id ?? 'user2';
-    
+
     return build(
       id: id,
       participantIds: [userId1, userId2],
@@ -73,7 +74,7 @@ class ConversationBuilder {
       isGroup: false,
     );
   }
-  
+
   static Conversation buildGroup({
     String? id,
     String? title,
@@ -82,12 +83,13 @@ class ConversationBuilder {
     Message? lastMessage,
   }) {
     final ids = participantIds ?? ['user1', 'user2', 'user3'];
-    final names = participantDisplayNames ?? {
-      'user1': 'Anna Andersson',
-      'user2': 'Erik Svensson',
-      'user3': 'Maria Johansson',
-    };
-    
+    final names = participantDisplayNames ??
+        {
+          'user1': 'Anna Andersson',
+          'user2': 'Erik Svensson',
+          'user3': 'Maria Johansson',
+        };
+
     return build(
       id: id,
       title: title ?? 'Matgruppen',
@@ -112,7 +114,7 @@ class MessageBuilder {
     Map<String, dynamic>? data,
   }) {
     final now = DateTime.now();
-    
+
     return Message(
       id: id ?? 'msg_${DateTime.now().millisecondsSinceEpoch}',
       conversationId: conversationId ?? 'conv_test',
@@ -134,7 +136,7 @@ void main() {
     late MockAuthRepository mockAuthRepository;
     late StreamController<List<Conversation>> conversationsStreamController;
     const testUserId = 'test-user-123';
-    
+
     // Test conversations
     final testDirectConversation = ConversationBuilder.buildDirect(
       id: 'conv_direct_1',
@@ -148,7 +150,7 @@ void main() {
         senderDisplayName: 'Anna Andersson',
       ),
     );
-    
+
     final testGroupConversation = ConversationBuilder.buildGroup(
       id: 'conv_group_1',
       title: 'Köttbullsälskare',
@@ -164,7 +166,7 @@ void main() {
         senderDisplayName: 'Erik Svensson',
       ),
     );
-    
+
     final testSearchConversation = ConversationBuilder.buildDirect(
       id: 'conv_search_1',
       user1Id: testUserId,
@@ -177,7 +179,7 @@ void main() {
         senderDisplayName: 'Åsa Ängström',
       ),
     );
-    
+
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(ConversationBuilder.build());
@@ -186,42 +188,43 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
-      
+
       // Create mocks
       mockMessagingService = MockMessagingService();
       mockAuthRepository = MockAuthRepository();
-      conversationsStreamController = StreamController<List<Conversation>>.broadcast();
-      
+      conversationsStreamController =
+          StreamController<List<Conversation>>.broadcast();
+
       // Configure default mock behavior
       mockAuthRepository.setAuthState(
         userId: testUserId,
         isAuthenticated: true,
       );
-      
+
       when(() => mockMessagingService.getMyConversations())
           .thenAnswer((_) => conversationsStreamController.stream);
-      
+
       when(() => mockMessagingService.markConversationAsRead(any()))
           .thenAnswer((_) async => {});
-      
+
       when(() => mockMessagingService.startDirectConversation(
-        otherUserId: any(named: 'otherUserId'),
-        otherUserDisplayName: any(named: 'otherUserDisplayName'),
-        otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-      )).thenAnswer((_) async => 'new_conv_direct');
-      
+            otherUserId: any(named: 'otherUserId'),
+            otherUserDisplayName: any(named: 'otherUserDisplayName'),
+            otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+          )).thenAnswer((_) async => 'new_conv_direct');
+
       when(() => mockMessagingService.createGroupConversation(
-        participantIds: any(named: 'participantIds'),
-        participantDisplayNames: any(named: 'participantDisplayNames'),
-        participantAvatarUrls: any(named: 'participantAvatarUrls'),
-        title: any(named: 'title'),
-      )).thenAnswer((_) async => 'new_conv_group');
-      
+            participantIds: any(named: 'participantIds'),
+            participantDisplayNames: any(named: 'participantDisplayNames'),
+            participantAvatarUrls: any(named: 'participantAvatarUrls'),
+            title: any(named: 'title'),
+          )).thenAnswer((_) async => 'new_conv_group');
+
       when(() => mockMessagingService.removeParticipantFromGroup(
-        conversationId: any(named: 'conversationId'),
-        participantId: any(named: 'participantId'),
-      )).thenAnswer((_) async => {});
-      
+            conversationId: any(named: 'conversationId'),
+            participantId: any(named: 'participantId'),
+          )).thenAnswer((_) async => {});
+
       // Create viewModel
       viewModel = ConversationsViewModel(
         messagingService: mockMessagingService,
@@ -263,16 +266,17 @@ void main() {
         // Arrange
         when(() => mockMessagingService.getMyConversations())
             .thenThrow(Exception('Stream setup failed'));
-        
+
         // Act
         final errorViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
         );
-        
+
         // Assert
-        expect(errorViewModel.conversationsError, equals('Kunde inte ladda konversationer'));
+        expect(errorViewModel.conversationsError,
+            equals('Kunde inte ladda konversationer'));
         expect(errorViewModel.isLoadingConversations, isFalse);
-        
+
         // Cleanup
         errorViewModel.dispose();
       });
@@ -280,11 +284,11 @@ void main() {
       test('should load conversations from stream successfully', () async {
         // Arrange
         final conversations = [testDirectConversation, testGroupConversation];
-        
+
         // Act
         conversationsStreamController.add(conversations);
         await Future.delayed(Duration.zero); // Allow stream to process
-        
+
         // Assert
         expect(viewModel.conversations.length, equals(2));
         expect(viewModel.isLoading, isFalse);
@@ -306,11 +310,11 @@ void main() {
           testGroupConversation,
           testSearchConversation,
         ];
-        
+
         // Act
         conversationsStreamController.add(conversations);
         await Future.delayed(Duration.zero);
-        
+
         // Assert
         expect(viewModel.conversations.length, equals(3));
         expect(viewModel.conversations[0].id, equals('conv_direct_1'));
@@ -322,7 +326,7 @@ void main() {
         // Act
         conversationsStreamController.add([]);
         await Future.delayed(Duration.zero);
-        
+
         // Assert
         expect(viewModel.conversations, isEmpty);
         expect(viewModel.hasConversations, isFalse);
@@ -335,7 +339,7 @@ void main() {
         conversationsStreamController.add([testDirectConversation]);
         await Future.delayed(Duration.zero);
         expect(viewModel.conversations.length, equals(1));
-        
+
         // Act - Second update
         conversationsStreamController.add([
           testDirectConversation,
@@ -343,7 +347,7 @@ void main() {
         ]);
         await Future.delayed(Duration.zero);
         expect(viewModel.conversations.length, equals(2));
-        
+
         // Act - Third update
         conversationsStreamController.add([testGroupConversation]);
         await Future.delayed(Duration.zero);
@@ -356,7 +360,8 @@ void main() {
         await Future.delayed(Duration.zero);
 
         // Assert - Stream error, check stream state
-        expect(viewModel.conversationsError, equals('Kunde inte ladda konversationer'));
+        expect(viewModel.conversationsError,
+            equals('Kunde inte ladda konversationer'));
         expect(viewModel.isLoadingConversations, isFalse);
       });
 
@@ -365,19 +370,20 @@ void main() {
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
         );
-        
+
         // Load initial data
         conversationsStreamController.add([testDirectConversation]);
         await Future.delayed(Duration.zero);
         expect(testViewModel.conversations.length, equals(1));
-        
+
         // Now dispose
         testViewModel.dispose();
-        
+
         // Act - Try to update after dispose
-        conversationsStreamController.add([testDirectConversation, testGroupConversation]);
+        conversationsStreamController
+            .add([testDirectConversation, testGroupConversation]);
         await Future.delayed(Duration.zero);
-        
+
         // Assert - Should not crash, conversations should remain as before dispose
         // We can't access conversations after dispose as it violates ChangeNotifier contract
         // The test passes if it doesn't crash
@@ -390,11 +396,11 @@ void main() {
           testSearchConversation,
           testDirectConversation,
         ];
-        
+
         // Act
         conversationsStreamController.add(conversations);
         await Future.delayed(Duration.zero);
-        
+
         // Assert
         expect(viewModel.conversations[0].id, equals('conv_group_1'));
         expect(viewModel.conversations[1].id, equals('conv_search_1'));
@@ -416,7 +422,7 @@ void main() {
       test('should search by conversation title', () {
         // Act
         viewModel.updateSearchQuery('köttbull');
-        
+
         // Assert
         expect(viewModel.conversations.length, equals(1));
         expect(viewModel.conversations[0].title, equals('Köttbullsälskare'));
@@ -426,7 +432,7 @@ void main() {
       test('should search by last message content', () {
         // Act
         viewModel.updateSearchQuery('räksmörgås');
-        
+
         // Assert
         expect(viewModel.conversations.length, equals(1));
         expect(viewModel.conversations[0].id, equals('conv_search_1'));
@@ -435,7 +441,7 @@ void main() {
       test('should perform case-insensitive search', () {
         // Act
         viewModel.updateSearchQuery('KÖTTBULL');
-        
+
         // Assert
         expect(viewModel.conversations.length, equals(1));
         expect(viewModel.conversations[0].title, equals('Köttbullsälskare'));
@@ -445,10 +451,10 @@ void main() {
         // Arrange
         viewModel.updateSearchQuery('köttbull');
         expect(viewModel.conversations.length, equals(1));
-        
+
         // Act
         viewModel.clearSearch();
-        
+
         // Assert
         expect(viewModel.conversations.length, equals(3));
         expect(viewModel.searchQuery, isEmpty);
@@ -457,7 +463,7 @@ void main() {
       test('should handle empty search query', () {
         // Act
         viewModel.updateSearchQuery('');
-        
+
         // Assert
         expect(viewModel.conversations.length, equals(3));
         expect(viewModel.searchQuery, isEmpty);
@@ -466,17 +472,18 @@ void main() {
       test('should search with Swedish characters', () {
         // Act
         viewModel.updateSearchQuery('åsa ängström');
-        
+
         // Assert
         expect(viewModel.conversations.length, equals(1));
-        expect(viewModel.conversations[0].participantDisplayNames['search_user'], 
-               equals('Åsa Ängström'));
+        expect(
+            viewModel.conversations[0].participantDisplayNames['search_user'],
+            equals('Åsa Ängström'));
       });
 
       test('should return empty list when no search results', () {
         // Act
         viewModel.updateSearchQuery('nonexistent');
-        
+
         // Assert
         expect(viewModel.conversations, isEmpty);
         expect(viewModel.hasConversations, isFalse);
@@ -491,17 +498,17 @@ void main() {
           otherUserDisplayName: 'Erik Eriksson',
           otherUserAvatarUrl: 'https://example.com/avatar.jpg',
         );
-        
+
         // Assert
         expect(conversationId, equals('new_conv_direct'));
         expect(viewModel.isLoading, isFalse);
         expect(viewModel.error, isNull);
-        
+
         verify(() => mockMessagingService.startDirectConversation(
-          otherUserId: 'other_user_123',
-          otherUserDisplayName: 'Erik Eriksson',
-          otherUserAvatarUrl: 'https://example.com/avatar.jpg',
-        )).called(1);
+              otherUserId: 'other_user_123',
+              otherUserDisplayName: 'Erik Eriksson',
+              otherUserAvatarUrl: 'https://example.com/avatar.jpg',
+            )).called(1);
       });
 
       test('should create direct conversation without avatar URL', () async {
@@ -510,35 +517,34 @@ void main() {
           otherUserId: 'other_user_123',
           otherUserDisplayName: 'Erik Eriksson',
         );
-        
+
         // Assert
         expect(conversationId, equals('new_conv_direct'));
-        
+
         verify(() => mockMessagingService.startDirectConversation(
-          otherUserId: 'other_user_123',
-          otherUserDisplayName: 'Erik Eriksson',
-          otherUserAvatarUrl: null,
-        )).called(1);
+              otherUserId: 'other_user_123',
+              otherUserDisplayName: 'Erik Eriksson',
+              otherUserAvatarUrl: null,
+            )).called(1);
       });
 
       test('should handle error during direct conversation creation', () async {
         // Arrange
         when(() => mockMessagingService.startDirectConversation(
-          otherUserId: any(named: 'otherUserId'),
-          otherUserDisplayName: any(named: 'otherUserDisplayName'),
-          otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-        )).thenThrow(Exception('Network error'));
-        
+              otherUserId: any(named: 'otherUserId'),
+              otherUserDisplayName: any(named: 'otherUserDisplayName'),
+              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+            )).thenThrow(Exception('Network error'));
+
         // Act
         final conversationId = await viewModel.startDirectConversation(
           otherUserId: 'other_user_123',
           otherUserDisplayName: 'Erik Eriksson',
         );
-        
+
         // Assert
         expect(conversationId, isNull);
-        expect(viewModel.error, 
-               contains('Kunde inte starta konversation'));
+        expect(viewModel.error, contains('Kunde inte starta konversation'));
         expect(viewModel.isLoading, isFalse);
       });
 
@@ -548,13 +554,13 @@ void main() {
         viewModel.addListener(() {
           if (viewModel.isLoading) wasCreating = true;
         });
-        
+
         // Act
         await viewModel.startDirectConversation(
           otherUserId: 'other_user_123',
           otherUserDisplayName: 'Erik Eriksson',
         );
-        
+
         // Assert
         expect(wasCreating, isTrue);
         expect(viewModel.isLoading, isFalse);
@@ -566,49 +572,49 @@ void main() {
           messagingService: mockMessagingService,
         );
         testViewModel.dispose();
-        
+
         // Act
         final conversationId = await testViewModel.startDirectConversation(
           otherUserId: 'other_user_123',
           otherUserDisplayName: 'Erik Eriksson',
         );
-        
+
         // Assert
         expect(conversationId, isNull);
         verifyNever(() => mockMessagingService.startDirectConversation(
-          otherUserId: any(named: 'otherUserId'),
-          otherUserDisplayName: any(named: 'otherUserDisplayName'),
-          otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-        ));
+              otherUserId: any(named: 'otherUserId'),
+              otherUserDisplayName: any(named: 'otherUserDisplayName'),
+              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+            ));
       });
 
       test('should clear creation error on successful creation', () async {
         // Arrange - Set initial error
         when(() => mockMessagingService.startDirectConversation(
-          otherUserId: any(named: 'otherUserId'),
-          otherUserDisplayName: any(named: 'otherUserDisplayName'),
-          otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-        )).thenThrow(Exception('First attempt failed'));
-        
+              otherUserId: any(named: 'otherUserId'),
+              otherUserDisplayName: any(named: 'otherUserDisplayName'),
+              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+            )).thenThrow(Exception('First attempt failed'));
+
         await viewModel.startDirectConversation(
           otherUserId: 'user1',
           otherUserDisplayName: 'User 1',
         );
         expect(viewModel.error, isNotNull);
-        
+
         // Reset mock for successful attempt
         when(() => mockMessagingService.startDirectConversation(
-          otherUserId: any(named: 'otherUserId'),
-          otherUserDisplayName: any(named: 'otherUserDisplayName'),
-          otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-        )).thenAnswer((_) async => 'new_conv');
-        
+              otherUserId: any(named: 'otherUserId'),
+              otherUserDisplayName: any(named: 'otherUserDisplayName'),
+              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+            )).thenAnswer((_) async => 'new_conv');
+
         // Act
         await viewModel.startDirectConversation(
           otherUserId: 'user2',
           otherUserDisplayName: 'User 2',
         );
-        
+
         // Assert
         expect(viewModel.error, isNull);
       });
@@ -631,7 +637,7 @@ void main() {
           },
           title: 'Matlagningsgruppen',
         );
-        
+
         // Assert
         expect(conversationId, equals('new_conv_group'));
         expect(viewModel.isLoading, isFalse);
@@ -647,7 +653,7 @@ void main() {
         final avatarUrls = Map.fromEntries(
           participantIds.map((id) => MapEntry(id, null)),
         );
-        
+
         // Act
         final conversationId = await viewModel.createGroupConversation(
           participantIds: participantIds,
@@ -655,16 +661,16 @@ void main() {
           participantAvatarUrls: avatarUrls,
           title: 'Stor grupp',
         );
-        
+
         // Assert
         expect(conversationId, equals('new_conv_group'));
-        
+
         verify(() => mockMessagingService.createGroupConversation(
-          participantIds: participantIds,
-          participantDisplayNames: displayNames,
-          participantAvatarUrls: avatarUrls,
-          title: 'Stor grupp',
-        )).called(1);
+              participantIds: participantIds,
+              participantDisplayNames: displayNames,
+              participantAvatarUrls: avatarUrls,
+              title: 'Stor grupp',
+            )).called(1);
       });
 
       test('should handle participant display names and avatars', () async {
@@ -681,31 +687,31 @@ void main() {
           },
           title: 'Svenska tecken',
         );
-        
+
         // Assert
         verify(() => mockMessagingService.createGroupConversation(
-          participantIds: ['user1', 'user2'],
-          participantDisplayNames: {
-            'user1': 'Åsa Ängström',
-            'user2': 'Örjan Öberg',
-          },
-          participantAvatarUrls: {
-            'user1': 'https://example.com/asa.jpg',
-            'user2': null,
-          },
-          title: 'Svenska tecken',
-        )).called(1);
+              participantIds: ['user1', 'user2'],
+              participantDisplayNames: {
+                'user1': 'Åsa Ängström',
+                'user2': 'Örjan Öberg',
+              },
+              participantAvatarUrls: {
+                'user1': 'https://example.com/asa.jpg',
+                'user2': null,
+              },
+              title: 'Svenska tecken',
+            )).called(1);
       });
 
       test('should handle error during group creation', () async {
         // Arrange
         when(() => mockMessagingService.createGroupConversation(
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-          title: any(named: 'title'),
-        )).thenThrow(Exception('Creation failed'));
-        
+              participantIds: any(named: 'participantIds'),
+              participantDisplayNames: any(named: 'participantDisplayNames'),
+              participantAvatarUrls: any(named: 'participantAvatarUrls'),
+              title: any(named: 'title'),
+            )).thenThrow(Exception('Creation failed'));
+
         // Act
         final conversationId = await viewModel.createGroupConversation(
           participantIds: ['user1'],
@@ -713,11 +719,10 @@ void main() {
           participantAvatarUrls: {'user1': null},
           title: 'Test Group',
         );
-        
+
         // Assert
         expect(conversationId, isNull);
-        expect(viewModel.error, 
-               contains('Kunde inte skapa gruppchatt'));
+        expect(viewModel.error, contains('Kunde inte skapa gruppchatt'));
         expect(viewModel.isLoading, isFalse);
       });
 
@@ -727,7 +732,7 @@ void main() {
         viewModel.addListener(() {
           if (viewModel.isLoading) wasCreating = true;
         });
-        
+
         // Act
         await viewModel.createGroupConversation(
           participantIds: ['user1'],
@@ -735,7 +740,7 @@ void main() {
           participantAvatarUrls: {'user1': null},
           title: 'Test Group',
         );
-        
+
         // Assert
         expect(wasCreating, isTrue);
         expect(viewModel.isLoading, isFalse);
@@ -747,7 +752,7 @@ void main() {
           messagingService: mockMessagingService,
         );
         testViewModel.dispose();
-        
+
         // Act
         final conversationId = await testViewModel.createGroupConversation(
           participantIds: ['user1'],
@@ -755,15 +760,15 @@ void main() {
           participantAvatarUrls: {'user1': null},
           title: 'Test Group',
         );
-        
+
         // Assert
         expect(conversationId, isNull);
         verifyNever(() => mockMessagingService.createGroupConversation(
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-          title: any(named: 'title'),
-        ));
+              participantIds: any(named: 'participantIds'),
+              participantDisplayNames: any(named: 'participantDisplayNames'),
+              participantAvatarUrls: any(named: 'participantAvatarUrls'),
+              title: any(named: 'title'),
+            ));
       });
     });
 
@@ -771,7 +776,7 @@ void main() {
       test('should mark conversation as read successfully', () async {
         // Act
         await viewModel.markConversationAsRead('conv_123');
-        
+
         // Assert
         verify(() => mockMessagingService.markConversationAsRead('conv_123'))
             .called(1);
@@ -781,13 +786,13 @@ void main() {
         // Arrange
         when(() => mockMessagingService.markConversationAsRead(any()))
             .thenThrow(Exception('Mark as read failed'));
-        
+
         // Act & Assert - Should not throw
         await expectLater(
           viewModel.markConversationAsRead('conv_123'),
           completes,
         );
-        
+
         // Error should not be visible to user
         expect(viewModel.error, isNull);
       });
@@ -795,10 +800,9 @@ void main() {
       test('should handle marking invalid conversation ID', () async {
         // Act
         await viewModel.markConversationAsRead('');
-        
+
         // Assert
-        verify(() => mockMessagingService.markConversationAsRead(''))
-            .called(1);
+        verify(() => mockMessagingService.markConversationAsRead('')).called(1);
       });
 
       test('should not mark as read when disposed', () async {
@@ -807,10 +811,10 @@ void main() {
           messagingService: mockMessagingService,
         );
         testViewModel.dispose();
-        
+
         // Act
         await testViewModel.markConversationAsRead('conv_123');
-        
+
         // Assert
         verifyNever(() => mockMessagingService.markConversationAsRead(any()));
       });
@@ -820,13 +824,13 @@ void main() {
       test('should leave group successfully', () async {
         // Act
         final result = await viewModel.leaveGroup('group_123');
-        
+
         // Assert
         expect(result, isTrue);
         verify(() => mockMessagingService.removeParticipantFromGroup(
-          conversationId: 'group_123',
-          participantId: testUserId,
-        )).called(1);
+              conversationId: 'group_123',
+              participantId: testUserId,
+            )).called(1);
       });
 
       test('should handle when user not authenticated', () async {
@@ -835,28 +839,28 @@ void main() {
           userId: null,
           isAuthenticated: false,
         );
-        
+
         // Act
         final result = await viewModel.leaveGroup('group_123');
-        
+
         // Assert
         expect(result, isFalse);
         verifyNever(() => mockMessagingService.removeParticipantFromGroup(
-          conversationId: any(named: 'conversationId'),
-          participantId: any(named: 'participantId'),
-        ));
+              conversationId: any(named: 'conversationId'),
+              participantId: any(named: 'participantId'),
+            ));
       });
 
       test('should handle error when leaving group', () async {
         // Arrange
         when(() => mockMessagingService.removeParticipantFromGroup(
-          conversationId: any(named: 'conversationId'),
-          participantId: any(named: 'participantId'),
-        )).thenThrow(Exception('Leave failed'));
-        
+              conversationId: any(named: 'conversationId'),
+              participantId: any(named: 'participantId'),
+            )).thenThrow(Exception('Leave failed'));
+
         // Act
         final result = await viewModel.leaveGroup('group_123');
-        
+
         // Assert
         expect(result, isFalse);
       });
@@ -865,13 +869,13 @@ void main() {
         // Test success
         final successResult = await viewModel.leaveGroup('group_success');
         expect(successResult, isTrue);
-        
+
         // Test failure
         when(() => mockMessagingService.removeParticipantFromGroup(
-          conversationId: any(named: 'conversationId'),
-          participantId: any(named: 'participantId'),
-        )).thenThrow(Exception('Failed'));
-        
+              conversationId: any(named: 'conversationId'),
+              participantId: any(named: 'participantId'),
+            )).thenThrow(Exception('Failed'));
+
         final failureResult = await viewModel.leaveGroup('group_fail');
         expect(failureResult, isFalse);
       });
@@ -882,16 +886,16 @@ void main() {
           messagingService: mockMessagingService,
         );
         testViewModel.dispose();
-        
+
         // Act
         final result = await testViewModel.leaveGroup('group_123');
-        
+
         // Assert
         expect(result, isFalse);
         verifyNever(() => mockMessagingService.removeParticipantFromGroup(
-          conversationId: any(named: 'conversationId'),
-          participantId: any(named: 'participantId'),
-        ));
+              conversationId: any(named: 'conversationId'),
+              participantId: any(named: 'participantId'),
+            ));
       });
     });
 
@@ -901,7 +905,7 @@ void main() {
         final stopwatch = Stopwatch()..start();
         await viewModel.refresh();
         stopwatch.stop();
-        
+
         // Assert
         expect(stopwatch.elapsedMilliseconds, greaterThanOrEqualTo(500));
       });
@@ -922,10 +926,10 @@ void main() {
       test('should clear conversation creation error', () async {
         // Arrange - Create an operation error
         when(() => mockMessagingService.startDirectConversation(
-          otherUserId: any(named: 'otherUserId'),
-          otherUserDisplayName: any(named: 'otherUserDisplayName'),
-          otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-        )).thenThrow(Exception('Creation error'));
+              otherUserId: any(named: 'otherUserId'),
+              otherUserDisplayName: any(named: 'otherUserDisplayName'),
+              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+            )).thenThrow(Exception('Creation error'));
 
         await viewModel.startDirectConversation(
           otherUserId: 'user',
@@ -935,7 +939,7 @@ void main() {
 
         // Act
         viewModel.clearAllErrors();
-        
+
         // Assert
         expect(viewModel.error, isNull);
       });
@@ -944,26 +948,26 @@ void main() {
         // Set stream error
         conversationsStreamController.addError('Stream error');
         await Future.delayed(Duration.zero);
-        
+
         // Set creation error
         when(() => mockMessagingService.startDirectConversation(
-          otherUserId: any(named: 'otherUserId'),
-          otherUserDisplayName: any(named: 'otherUserDisplayName'),
-          otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-        )).thenThrow(Exception('Creation error'));
-        
+              otherUserId: any(named: 'otherUserId'),
+              otherUserDisplayName: any(named: 'otherUserDisplayName'),
+              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+            )).thenThrow(Exception('Creation error'));
+
         await viewModel.startDirectConversation(
           otherUserId: 'user',
           otherUserDisplayName: 'User',
         );
-        
+
         // Both errors should be set
         expect(viewModel.error, isNotNull);
         expect(viewModel.error, isNotNull);
-        
+
         // Clear all errors
         viewModel.clearAllErrors();
-        
+
         // Both should be cleared
         expect(viewModel.error, isNull);
         expect(viewModel.error, isNull);
@@ -976,7 +980,7 @@ void main() {
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
         );
-        
+
         // Act & Assert - Should not throw on first dispose
         expect(() => testViewModel.dispose(), returnsNormally);
       });
@@ -987,7 +991,7 @@ void main() {
           messagingService: mockMessagingService,
         );
         testViewModel.dispose();
-        
+
         // Act & Assert - Should not throw
         expect(() => testViewModel.updateSearchQuery('test'), returnsNormally);
         expect(() => testViewModel.clearSearch(), returnsNormally);
@@ -999,10 +1003,10 @@ void main() {
         final testViewModel = ConversationsViewModel(
           messagingService: mockMessagingService,
         );
-        
+
         // Act - First dispose should work
         expect(() => testViewModel.dispose(), returnsNormally);
-        
+
         // Note: Flutter's ChangeNotifier will throw on subsequent dispose calls
         // This is expected behavior, not a bug in our code
       });
@@ -1013,7 +1017,7 @@ void main() {
           messagingService: mockMessagingService,
         );
         testViewModel.dispose();
-        
+
         // Act
         testViewModel.updateSearchQuery('test');
         testViewModel.clearSearch();
@@ -1031,24 +1035,24 @@ void main() {
           participantAvatarUrls: {'user1': null},
           title: 'Group',
         );
-        
+
         // Assert - No operations should have been performed
         verifyNever(() => mockMessagingService.markConversationAsRead(any()));
         verifyNever(() => mockMessagingService.removeParticipantFromGroup(
-          conversationId: any(named: 'conversationId'),
-          participantId: any(named: 'participantId'),
-        ));
+              conversationId: any(named: 'conversationId'),
+              participantId: any(named: 'participantId'),
+            ));
         verifyNever(() => mockMessagingService.startDirectConversation(
-          otherUserId: any(named: 'otherUserId'),
-          otherUserDisplayName: any(named: 'otherUserDisplayName'),
-          otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
-        ));
+              otherUserId: any(named: 'otherUserId'),
+              otherUserDisplayName: any(named: 'otherUserDisplayName'),
+              otherUserAvatarUrl: any(named: 'otherUserAvatarUrl'),
+            ));
         verifyNever(() => mockMessagingService.createGroupConversation(
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-          title: any(named: 'title'),
-        ));
+              participantIds: any(named: 'participantIds'),
+              participantDisplayNames: any(named: 'participantDisplayNames'),
+              participantAvatarUrls: any(named: 'participantAvatarUrls'),
+              title: any(named: 'title'),
+            ));
       });
     });
   });

@@ -100,7 +100,8 @@ void main() {
       int? dismissalCount,
     }) {
       // Calculate itemCount from items list if not provided
-      final finalItemCount = itemCount ?? items?.length ?? createTestItems().length;
+      final finalItemCount =
+          itemCount ?? items?.length ?? createTestItems().length;
 
       return SharedShoppingList(
         id: id ?? testListId,
@@ -139,7 +140,8 @@ void main() {
           .set(sharedList.toFirestore());
 
       // Create subcollection documents (Issue #014)
-      final listRef = fakeFirestore.collection('shared_shopping_lists').doc(sharedList.id);
+      final listRef =
+          fakeFirestore.collection('shared_shopping_lists').doc(sharedList.id);
 
       // Seed members subcollection
       if (memberUserIds != null) {
@@ -198,7 +200,10 @@ void main() {
       // Seed items subcollection (Issue #015)
       if (items != null) {
         for (final item in items) {
-          await listRef.collection('items').doc(item.id).set(item.toFirestore());
+          await listRef
+              .collection('items')
+              .doc(item.id)
+              .set(item.toFirestore());
         }
       }
     }
@@ -620,7 +625,8 @@ void main() {
         );
       });
 
-      test('addItem should add item to subcollection and increment count', () async {
+      test('addItem should add item to subcollection and increment count',
+          () async {
         // Arrange
         final item = createTestItem('Mjölk');
 
@@ -755,7 +761,8 @@ void main() {
         expect(listDoc.data()?['itemCount'], equals(0));
       });
 
-      test('toggleItemBought should update bought status with metadata', () async {
+      test('toggleItemBought should update bought status with metadata',
+          () async {
         // Arrange
         final testItem = createTestItem('Mjölk');
         await seedSharedShoppingList(
@@ -768,11 +775,12 @@ void main() {
 
         // Assert
         final itemData = (await fakeFirestore
-            .collection('shared_shopping_lists')
-            .doc(testListId)
-            .collection('items')
-            .doc(testItem.id)
-            .get()).data();
+                .collection('shared_shopping_lists')
+                .doc(testListId)
+                .collection('items')
+                .doc(testItem.id)
+                .get())
+            .data();
 
         expect(itemData?['bought'], isTrue);
         expect(itemData?['purchasedByUserId'], equals(testUserId));
@@ -783,17 +791,20 @@ void main() {
 
         // Assert - Metadata cleared
         final updatedData = (await fakeFirestore
-            .collection('shared_shopping_lists')
-            .doc(testListId)
-            .collection('items')
-            .doc(testItem.id)
-            .get()).data();
+                .collection('shared_shopping_lists')
+                .doc(testListId)
+                .collection('items')
+                .doc(testItem.id)
+                .get())
+            .data();
 
         expect(updatedData?['bought'], isFalse);
         expect(updatedData?['purchasedByUserId'], isNull);
       });
 
-      test('clearCompletedItems should remove bought items and recalculate count', () async {
+      test(
+          'clearCompletedItems should remove bought items and recalculate count',
+          () async {
         // Arrange
         final items = [
           createTestItem('Mjölk').copyWith(bought: true),
@@ -823,7 +834,8 @@ void main() {
         expect(listDoc.data()?['itemCount'], equals(1));
       });
 
-      test('clearCompletedItems should return 0 if no completed items', () async {
+      test('clearCompletedItems should return 0 if no completed items',
+          () async {
         // Arrange - All items unbought
         final items = [
           createTestItem('Mjölk').copyWith(bought: false),

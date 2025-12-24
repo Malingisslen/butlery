@@ -1,5 +1,5 @@
 /// Test data builder for UserProfile objects
-/// 
+///
 /// Provides fluent API for creating test user instances with Swedish defaults.
 library;
 
@@ -22,52 +22,51 @@ class UserBuilder {
   DateTime _joinedAt = DateTime.now();
   DateTime _lastActiveAt = DateTime.now();
   Map<String, dynamic> _metadata = {};
-  
+
   UserBuilder();
-  
+
   /// Set user ID
   UserBuilder withId(String uid) {
     _uid = uid;
     return this;
   }
-  
+
   /// Set display name
   UserBuilder withName(String name) {
     _displayName = name;
     return this;
   }
-  
+
   /// Set email
   UserBuilder withEmail(String email) {
     _email = email;
     return this;
   }
-  
-  
+
   /// Set avatar URL
   UserBuilder withAvatarUrl(String avatarUrl) {
     _avatarUrl = avatarUrl;
     return this;
   }
-  
+
   /// Set searchable status
   UserBuilder isSearchable(bool searchable) {
     _isSearchable = searchable;
     return this;
   }
-  
+
   /// Set friend count
   UserBuilder withFriendCount(int count) {
     _friendsCount = count;
     return this;
   }
-  
+
   /// Set public recipes count
   UserBuilder withPublicRecipesCount(int count) {
     _publicRecipesCount = count;
     return this;
   }
-  
+
   /// Configure as Swedish user
   UserBuilder asSwedishUser() {
     _displayName = 'Sven Svensson';
@@ -79,7 +78,7 @@ class UserBuilder {
     };
     return this;
   }
-  
+
   /// Configure as premium user
   UserBuilder asPremiumUser() {
     _metadata['isPremium'] = true;
@@ -87,7 +86,7 @@ class UserBuilder {
     _notificationsEnabled = true;
     return this;
   }
-  
+
   /// Configure as chef user
   UserBuilder asChef() {
     _displayName = 'Chef Anders';
@@ -95,7 +94,7 @@ class UserBuilder {
     _metadata['isVerifiedChef'] = true;
     return this;
   }
-  
+
   /// Build the UserProfile instance
   UserProfile build() {
     return UserProfile(

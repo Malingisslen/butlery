@@ -33,9 +33,10 @@ void main() {
     ];
 
     group('Rendering', () {
-      testWidgets('should render with required props', (WidgetTester tester) async {
+      testWidgets('should render with required props',
+          (WidgetTester tester) async {
         final activeFilters = <String>{};
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -55,7 +56,8 @@ void main() {
         expect(find.text('Option 3'), findsOneWidget);
       });
 
-      testWidgets('should render title with correct styling', (WidgetTester tester) async {
+      testWidgets('should render title with correct styling',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -100,7 +102,8 @@ void main() {
         expect(find.text('Option 3'), findsOneWidget);
       });
 
-      testWidgets('should render icons when provided', (WidgetTester tester) async {
+      testWidgets('should render icons when provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -118,7 +121,8 @@ void main() {
         expect(find.byIcon(Icons.favorite), findsOneWidget);
       });
 
-      testWidgets('should not render icon when not provided', (WidgetTester tester) async {
+      testWidgets('should not render icon when not provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -139,7 +143,8 @@ void main() {
     });
 
     group('Selection State', () {
-      testWidgets('should show unselected chips by default', (WidgetTester tester) async {
+      testWidgets('should show unselected chips by default',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -159,7 +164,8 @@ void main() {
         expect(find.text('Option 3'), findsOneWidget);
       });
 
-      testWidgets('should show selected chips based on activeFilters', (WidgetTester tester) async {
+      testWidgets('should show selected chips based on activeFilters',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -180,9 +186,10 @@ void main() {
         // Cannot directly test selected state due to widget tree structure
       });
 
-      testWidgets('should update selection when activeFilters changes', (WidgetTester tester) async {
+      testWidgets('should update selection when activeFilters changes',
+          (WidgetTester tester) async {
         final activeFilters = <String>{};
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -209,7 +216,8 @@ void main() {
         );
 
         // Initially unselected
-        final chips = tester.widgetList<FilterChip>(find.byType(FilterChip)).toList();
+        final chips =
+            tester.widgetList<FilterChip>(find.byType(FilterChip)).toList();
         expect(chips[0].selected, false);
 
         // Tap to select
@@ -217,15 +225,18 @@ void main() {
         await tester.pumpAndSettle();
 
         // Should be selected after tap
-        final updatedChips = tester.widgetList<FilterChip>(find.byType(FilterChip)).toList();
-        expect(updatedChips[0].selected, false); // The widget hasn't rebuilt with new state
+        final updatedChips =
+            tester.widgetList<FilterChip>(find.byType(FilterChip)).toList();
+        expect(updatedChips[0].selected,
+            false); // The widget hasn't rebuilt with new state
       });
     });
 
     group('Interactions', () {
-      testWidgets('should call onToggle when chip is tapped', (WidgetTester tester) async {
+      testWidgets('should call onToggle when chip is tapped',
+          (WidgetTester tester) async {
         String? toggledId;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -248,10 +259,11 @@ void main() {
         expect(toggledId, equals('option2'));
       });
 
-      testWidgets('should toggle selection on tap', (WidgetTester tester) async {
+      testWidgets('should toggle selection on tap',
+          (WidgetTester tester) async {
         final activeFilters = <String>{'option1'};
         final toggledIds = <String>[];
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -297,11 +309,13 @@ void main() {
         final padding = tester.widget<Padding>(find.byType(Padding).first);
         expect(
           padding.padding,
-          equals(const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL)),
+          equals(
+              const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL)),
         );
       });
 
-      testWidgets('should use Wrap for chip layout', (WidgetTester tester) async {
+      testWidgets('should use Wrap for chip layout',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -318,7 +332,8 @@ void main() {
         expect(find.byType(Wrap), findsOneWidget);
       });
 
-      testWidgets('should have correct spacing in Wrap', (WidgetTester tester) async {
+      testWidgets('should have correct spacing in Wrap',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -337,7 +352,8 @@ void main() {
         expect(wrap.runSpacing, equals(AppDimensions.spacingXs));
       });
 
-      testWidgets('should have spacing between title and chips', (WidgetTester tester) async {
+      testWidgets('should have spacing between title and chips',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -351,14 +367,16 @@ void main() {
           ),
         );
 
-        final sizedBoxes = tester.widgetList<SizedBox>(find.byType(SizedBox)).toList();
+        final sizedBoxes =
+            tester.widgetList<SizedBox>(find.byType(SizedBox)).toList();
         expect(sizedBoxes[0].height, equals(AppDimensions.spacingM));
         expect(sizedBoxes[1].height, equals(AppDimensions.spacingXs));
       });
     });
 
     group('Swedish Localization', () {
-      testWidgets('should display Swedish meal type filters', (WidgetTester tester) async {
+      testWidgets('should display Swedish meal type filters',
+          (WidgetTester tester) async {
         const swedishOptions = [
           FilterOption(id: 'breakfast', label: 'Frukost'),
           FilterOption(id: 'lunch', label: 'Lunch'),
@@ -384,7 +402,8 @@ void main() {
         expect(find.text('Middag'), findsOneWidget);
       });
 
-      testWidgets('should handle Swedish characters', (WidgetTester tester) async {
+      testWidgets('should handle Swedish characters',
+          (WidgetTester tester) async {
         const swedishOptions = [
           FilterOption(id: 'vegetarian', label: 'Vegetarisk'),
           FilterOption(id: 'gluten-free', label: 'Glutenfri'),
@@ -412,7 +431,8 @@ void main() {
     });
 
     group('Edge Cases', () {
-      testWidgets('should handle empty options list', (WidgetTester tester) async {
+      testWidgets('should handle empty options list',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -430,7 +450,8 @@ void main() {
         expect(find.byType(FilterChip), findsNothing);
       });
 
-      testWidgets('should handle very long labels', (WidgetTester tester) async {
+      testWidgets('should handle very long labels',
+          (WidgetTester tester) async {
         const longOptions = [
           FilterOption(
             id: 'long',
@@ -457,7 +478,8 @@ void main() {
         );
       });
 
-      testWidgets('should handle many options with wrapping', (WidgetTester tester) async {
+      testWidgets('should handle many options with wrapping',
+          (WidgetTester tester) async {
         final manyOptions = List.generate(
           20,
           (i) => FilterOption(id: 'option$i', label: 'Option $i'),
@@ -481,9 +503,10 @@ void main() {
         expect(find.byType(FilterChip), findsNWidgets(20));
       });
 
-      testWidgets('should handle all filters being selected', (WidgetTester tester) async {
+      testWidgets('should handle all filters being selected',
+          (WidgetTester tester) async {
         final allSelected = {'option1', 'option2', 'option3'};
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -503,7 +526,8 @@ void main() {
         }
       });
 
-      testWidgets('should handle special characters in labels', (WidgetTester tester) async {
+      testWidgets('should handle special characters in labels',
+          (WidgetTester tester) async {
         const specialOptions = [
           FilterOption(id: 'special', label: '< 30 min'),
           FilterOption(id: 'special2', label: '> 60 min'),
@@ -530,7 +554,8 @@ void main() {
     });
 
     group('Icon Layout Issue', () {
-      testWidgets('should fix horizontal spacing for icon in Row', (WidgetTester tester) async {
+      testWidgets('should fix horizontal spacing for icon in Row',
+          (WidgetTester tester) async {
         const optionsWithIcons = [
           FilterOption(
             id: 'timer',
@@ -555,7 +580,7 @@ void main() {
         // Find the Row containing the icon and text
         final rows = tester.widgetList<Row>(find.byType(Row)).toList();
         expect(rows, isNotEmpty);
-        
+
         // The Row should contain Icon, SizedBox (with wrong height), and Text
         // This is a bug - should be width not height for horizontal spacing
         final row = rows.first;
@@ -563,15 +588,17 @@ void main() {
         expect(row.children[0], isA<Icon>());
         expect(row.children[1], isA<SizedBox>());
         expect(row.children[2], isA<Text>());
-        
+
         // The SizedBox incorrectly uses height instead of width
         final sizedBox = row.children[1] as SizedBox;
-        expect(sizedBox.height, equals(AppDimensions.spacingXs)); // BUG: Should be width
+        expect(sizedBox.height,
+            equals(AppDimensions.spacingXs)); // BUG: Should be width
       });
     });
 
     group('Real World Examples', () {
-      testWidgets('should work with RecipeFilters time filters', (WidgetTester tester) async {
+      testWidgets('should work with RecipeFilters time filters',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -591,7 +618,8 @@ void main() {
         expect(find.byIcon(Icons.timer), findsNWidgets(3));
       });
 
-      testWidgets('should work with RecipeFilters meal types', (WidgetTester tester) async {
+      testWidgets('should work with RecipeFilters meal types',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(

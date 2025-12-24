@@ -240,8 +240,7 @@ class SwedishLineClassifier {
         text: line,
         type: LineType.ingredient,
         confidence: ingredientScore,
-        secondaryType:
-            instructionScore > 0.3 ? LineType.instruction : null,
+        secondaryType: instructionScore > 0.3 ? LineType.instruction : null,
       );
     }
 
@@ -250,8 +249,7 @@ class SwedishLineClassifier {
         text: line,
         type: LineType.instruction,
         confidence: instructionScore,
-        secondaryType:
-            ingredientScore > 0.3 ? LineType.ingredient : null,
+        secondaryType: ingredientScore > 0.3 ? LineType.ingredient : null,
       );
     }
 
@@ -282,10 +280,7 @@ class SwedishLineClassifier {
   /// Extract classified lines by type.
   List<ClassifiedLine> extractByType(String text, LineType type) {
     final lines = text.split(RegExp(r'\r?\n'));
-    return lines
-        .map(classifyLine)
-        .where((c) => c.type == type)
-        .toList();
+    return lines.map(classifyLine).where((c) => c.type == type).toList();
   }
 
   /// Get confidence-weighted recipe structure from text.
@@ -373,8 +368,10 @@ class SwedishLineClassifier {
 
     // Swedish units are strong indicator
     for (final unit in _swedishUnits) {
-      if (words.contains(unit) || lower.contains(' $unit ') ||
-          lower.contains(' $unit,') || lower.endsWith(' $unit')) {
+      if (words.contains(unit) ||
+          lower.contains(' $unit ') ||
+          lower.contains(' $unit,') ||
+          lower.endsWith(' $unit')) {
         score += 0.3;
         break;
       }
@@ -550,8 +547,7 @@ class ParsedRecipeStructure {
   bool get isValid => ingredients.isNotEmpty && instructions.isNotEmpty;
 
   @override
-  String toString() =>
-      'ParsedRecipeStructure(title: $title, '
+  String toString() => 'ParsedRecipeStructure(title: $title, '
       '${ingredients.length} ingredients, '
       '${instructions.length} instructions, '
       'portions: $portions, time: $totalTime)';

@@ -22,9 +22,12 @@ class GroupsTab {
       builder: (context, child) {
         // Only show groups where the current user is a member
         final groups = friendsService.categories.getMemberCategories();
-        final pendingInvitations = friendsService.invitations.pendingReceivedInvitations;
+        final pendingInvitations =
+            friendsService.invitations.pendingReceivedInvitations;
 
-        if (friendsService.isLoading && groups.isEmpty && pendingInvitations.isEmpty) {
+        if (friendsService.isLoading &&
+            groups.isEmpty &&
+            pendingInvitations.isEmpty) {
           return StateWidget.loading(message: 'Laddar grupper...');
         }
 
@@ -95,7 +98,8 @@ class GroupsTab {
                 SliverFillRemaining(
                   child: StateWidget.empty(
                     title: 'Inga grupper än',
-                    subtitle: 'Skapa din första grupp eller vänta på inbjudningar från vänner.',
+                    subtitle:
+                        'Skapa din första grupp eller vänta på inbjudningar från vänner.',
                     icon: Icons.groups_outlined,
                   ),
                 ),

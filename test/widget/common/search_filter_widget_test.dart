@@ -15,7 +15,7 @@ void main() {
     final testActiveTimeFilters = <String>{'< 30 min', '30-60 min'};
     final testActiveMealTypeFilters = <String>{'Middag', 'Lunch'};
     final testActiveRatingFilters = <String>{'4+', '5'};
-    
+
     // Helper function for creating full mode widgets - ultrathink pattern
     Widget createFullModeWidget({
       String searchQuery = '',
@@ -50,7 +50,7 @@ void main() {
         ),
       );
     }
-    
+
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
     });
@@ -60,7 +60,8 @@ void main() {
     });
 
     group('Factory Constructor Tests', () {
-      testWidgets('searchOnly factory creates correct configuration', (WidgetTester tester) async {
+      testWidgets('searchOnly factory creates correct configuration',
+          (WidgetTester tester) async {
         final widget = SearchFilterWidget.searchOnly(
           searchQuery: 'köttbullar',
           onSearchChanged: (query) {
@@ -79,7 +80,8 @@ void main() {
         expect(widget.showFilters, isNull);
       });
 
-      testWidgets('withFilters factory creates correct configuration', (WidgetTester tester) async {
+      testWidgets('withFilters factory creates correct configuration',
+          (WidgetTester tester) async {
         final widget = SearchFilterWidget.withFilters(
           searchQuery: 'mormors recept',
           onSearchChanged: (query) {
@@ -109,7 +111,8 @@ void main() {
         expect(widget.resultCount, equals(42));
       });
 
-      testWidgets('factory constructors handle optional parameters correctly', (WidgetTester tester) async {
+      testWidgets('factory constructors handle optional parameters correctly',
+          (WidgetTester tester) async {
         // Test minimal searchOnly configuration
         final minimalSearchWidget = SearchFilterWidget.searchOnly(
           searchQuery: '',
@@ -143,7 +146,8 @@ void main() {
     });
 
     group('Search-Only Mode Rendering', () {
-      testWidgets('renders only SearchInputWidget in search-only mode', (WidgetTester tester) async {
+      testWidgets('renders only SearchInputWidget in search-only mode',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -166,7 +170,8 @@ void main() {
         expect(find.text('Sök italienska rätter...'), findsOneWidget);
       });
 
-      testWidgets('handles search input in search-only mode', (WidgetTester tester) async {
+      testWidgets('handles search input in search-only mode',
+          (WidgetTester tester) async {
         String capturedQuery = '';
         bool searchChanged = false;
 
@@ -193,7 +198,9 @@ void main() {
         expect(capturedQuery, equals('fisksoppa'));
       });
 
-      testWidgets('does not show stats in search-only mode - facade design pattern', (WidgetTester tester) async {
+      testWidgets(
+          'does not show stats in search-only mode - facade design pattern',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -214,8 +221,8 @@ void main() {
     });
 
     group('Full Mode Component Integration', () {
-
-      testWidgets('renders all components in full mode', (WidgetTester tester) async {
+      testWidgets('renders all components in full mode',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createFullModeWidget(
             searchQuery: 'lax',
@@ -233,7 +240,8 @@ void main() {
         expect(find.byType(SearchStatsWidget), findsOneWidget);
       });
 
-      testWidgets('hides filter panel when showFilters is false', (WidgetTester tester) async {
+      testWidgets('hides filter panel when showFilters is false',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createFullModeWidget(
             showFilters: false,
@@ -247,7 +255,8 @@ void main() {
         expect(find.byType(FiltersPanelWidget), findsOneWidget);
       });
 
-      testWidgets('shows filter panel when showFilters is true', (WidgetTester tester) async {
+      testWidgets('shows filter panel when showFilters is true',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createFullModeWidget(
             showFilters: true,
@@ -261,7 +270,8 @@ void main() {
         expect(find.byType(FiltersPanelWidget), findsOneWidget);
       });
 
-      testWidgets('toggle filters button triggers callback', (WidgetTester tester) async {
+      testWidgets('toggle filters button triggers callback',
+          (WidgetTester tester) async {
         bool toggleCalled = false;
 
         await tester.pumpWidget(
@@ -281,7 +291,8 @@ void main() {
     });
 
     group('State Management and Lifecycle', () {
-      testWidgets('manages TextEditingController lifecycle correctly', (WidgetTester tester) async {
+      testWidgets('manages TextEditingController lifecycle correctly',
+          (WidgetTester tester) async {
         // Create widget
         await tester.pumpWidget(
           MaterialApp(
@@ -304,7 +315,8 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('synchronizes external search query changes', (WidgetTester tester) async {
+      testWidgets('synchronizes external search query changes',
+          (WidgetTester tester) async {
         String currentQuery = 'pannkakor';
 
         // Initial render
@@ -326,7 +338,7 @@ void main() {
 
         // Simulate external state change by re-rendering with new query
         currentQuery = 'våfflor';
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -344,7 +356,8 @@ void main() {
         expect(find.text('våfflor'), findsOneWidget);
       });
 
-      testWidgets('handles rapid search input without issues', (WidgetTester tester) async {
+      testWidgets('handles rapid search input without issues',
+          (WidgetTester tester) async {
         int callbackCount = 0;
         String lastQuery = '';
 
@@ -365,10 +378,10 @@ void main() {
         // Rapid typing
         await tester.enterText(find.byType(TextField), 'k');
         await tester.pump(const Duration(milliseconds: 10));
-        
+
         await tester.enterText(find.byType(TextField), 'kö');
         await tester.pump(const Duration(milliseconds: 10));
-        
+
         await tester.enterText(find.byType(TextField), 'kött');
         await tester.pump(const Duration(milliseconds: 10));
 
@@ -379,7 +392,8 @@ void main() {
     });
 
     group('Filter Count Integration', () {
-      testWidgets('calculates active filter count correctly', (WidgetTester tester) async {
+      testWidgets('calculates active filter count correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createFullModeWidget(
             activeTimeFilters: {'< 30 min', '30-60 min'},
@@ -393,11 +407,12 @@ void main() {
         // Widget should be created without issues
         expect(find.byType(SearchFilterWidget), findsOneWidget);
         expect(find.byType(SearchStatsWidget), findsOneWidget);
-        
+
         // Total filters: 2 + 1 + 2 = 5 active filters should be reflected in stats
       });
 
-      testWidgets('handles empty filter sets correctly', (WidgetTester tester) async {
+      testWidgets('handles empty filter sets correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createFullModeWidget(
             activeTimeFilters: <String>{},
@@ -414,7 +429,8 @@ void main() {
     });
 
     group('Swedish Localization Patterns', () {
-      testWidgets('displays Swedish search hints correctly', (WidgetTester tester) async {
+      testWidgets('displays Swedish search hints correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -430,7 +446,8 @@ void main() {
         expect(find.text('Sök recept...'), findsOneWidget);
       });
 
-      testWidgets('handles Swedish search queries correctly', (WidgetTester tester) async {
+      testWidgets('handles Swedish search queries correctly',
+          (WidgetTester tester) async {
         const swedishQueries = [
           'köttbullar',
           'fiskgryta',
@@ -441,7 +458,7 @@ void main() {
 
         for (final query in swedishQueries) {
           String capturedQuery = '';
-          
+
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
@@ -462,7 +479,8 @@ void main() {
     });
 
     group('Edge Cases and Error Handling', () {
-      testWidgets('handles null filter callbacks gracefully', (WidgetTester tester) async {
+      testWidgets('handles null filter callbacks gracefully',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -488,8 +506,10 @@ void main() {
         expect(find.byType(SearchFilterWidget), findsOneWidget);
       });
 
-      testWidgets('handles very long search queries', (WidgetTester tester) async {
-        const longQuery = 'en mycket lång sökning som innehåller många svenska ord och tecken för att testa hur widgeten hanterar långa strängar';
+      testWidgets('handles very long search queries',
+          (WidgetTester tester) async {
+        const longQuery =
+            'en mycket lång sökning som innehåller många svenska ord och tecken för att testa hur widgeten hanterar långa strängar';
         String capturedQuery = '';
 
         await tester.pumpWidget(
@@ -509,7 +529,8 @@ void main() {
         expect(capturedQuery, equals(longQuery));
       });
 
-      testWidgets('maintains state consistency during widget updates', (WidgetTester tester) async {
+      testWidgets('maintains state consistency during widget updates',
+          (WidgetTester tester) async {
         String currentQuery = 'initial';
         bool showFilters = false;
 
@@ -541,11 +562,11 @@ void main() {
         // Initial state should be displayed
         expect(find.text(currentQuery), findsOneWidget);
         expect(find.byType(SearchFilterWidget), findsOneWidget);
-        
+
         // Update the widget with new query - simulating external state change
         currentQuery = 'updated';
         showFilters = true;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -566,7 +587,7 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpAndSettle();
 
         // Should show updated state

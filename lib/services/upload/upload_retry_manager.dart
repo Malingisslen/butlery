@@ -200,8 +200,7 @@ class UploadRetryManager {
   /// Record success and potentially reset circuit breaker
   void recordSuccess() {
     // Check if any circuit breakers were open
-    final hadOpenBreaker =
-        _circuitBreakers.values.any((state) => state.isOpen);
+    final hadOpenBreaker = _circuitBreakers.values.any((state) => state.isOpen);
 
     if (hadOpenBreaker) {
       // Reset all circuit breakers on success

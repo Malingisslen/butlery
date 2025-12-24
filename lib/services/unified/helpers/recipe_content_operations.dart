@@ -20,17 +20,21 @@ class RecipeContentOperations {
 
   Future<bool> addIngredient(String recipeId, String ingredient) async {
     if (isInRealtimeSession(recipeId)) {
-      return await realtimeModule.addIngredientRealtime(recipeId, ingredient, null);
+      return await realtimeModule.addIngredientRealtime(
+          recipeId, ingredient, null);
     } else {
       return await personalModule.addIngredient(recipeId, ingredient);
     }
   }
 
-  Future<bool> updateIngredient(String recipeId, int index, String newIngredient) async {
+  Future<bool> updateIngredient(
+      String recipeId, int index, String newIngredient) async {
     if (isInRealtimeSession(recipeId)) {
-      return await realtimeModule.updateIngredientRealtime(recipeId, index, newIngredient);
+      return await realtimeModule.updateIngredientRealtime(
+          recipeId, index, newIngredient);
     } else {
-      return await personalModule.updateIngredient(recipeId, index, newIngredient);
+      return await personalModule.updateIngredient(
+          recipeId, index, newIngredient);
     }
   }
 
@@ -46,17 +50,21 @@ class RecipeContentOperations {
 
   Future<bool> addInstruction(String recipeId, String instruction) async {
     if (isInRealtimeSession(recipeId)) {
-      return await realtimeModule.addInstructionRealtime(recipeId, instruction, null);
+      return await realtimeModule.addInstructionRealtime(
+          recipeId, instruction, null);
     } else {
       return await personalModule.addInstruction(recipeId, instruction);
     }
   }
 
-  Future<bool> updateInstruction(String recipeId, int index, String newInstruction) async {
+  Future<bool> updateInstruction(
+      String recipeId, int index, String newInstruction) async {
     if (isInRealtimeSession(recipeId)) {
-      return await realtimeModule.updateInstructionRealtime(recipeId, index, newInstruction);
+      return await realtimeModule.updateInstructionRealtime(
+          recipeId, index, newInstruction);
     } else {
-      return await personalModule.updateInstruction(recipeId, index, newInstruction);
+      return await personalModule.updateInstruction(
+          recipeId, index, newInstruction);
     }
   }
 

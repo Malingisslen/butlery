@@ -67,8 +67,8 @@ class CollaborativeConnectionWidgets {
               builder: (context) => Text(
                 statusEmoji,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontSize: AppDimensions.iconSizeM.toDouble(),
-                ),
+                      fontSize: AppDimensions.iconSizeM.toDouble(),
+                    ),
               ),
             ),
             const SizedBox(width: AppDimensions.spacingS),

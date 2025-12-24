@@ -90,27 +90,28 @@ void main() {
 
         // Verify item text is displayed
         expect(find.text(basicItem.displayText), findsOneWidget);
-        
+
         // Verify checkbox is not checked
         expect(find.byIcon(Icons.check), findsNothing);
-        
+
         // Verify action buttons
         expect(find.byIcon(Icons.edit), findsOneWidget);
         expect(find.byIcon(Icons.delete), findsOneWidget);
       });
 
-      testWidgets('renders completed item with strikethrough', (WidgetTester tester) async {
+      testWidgets('renders completed item with strikethrough',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: Builder(
                 builder: (context) => ShoppingItemTiles.buildItemTile(
                   context,
-                completedItem,
-                true,
-                (_) {},
-                (_) {},
-                (_) {},
+                  completedItem,
+                  true,
+                  (_) {},
+                  (_) {},
+                  (_) {},
                 ),
               ),
             ),
@@ -119,9 +120,10 @@ void main() {
 
         // Verify checkmark is displayed
         expect(find.byIcon(Icons.check), findsOneWidget);
-        
+
         // Verify text has strikethrough decoration
-        final textWidget = tester.widget<Text>(find.text(completedItem.displayText));
+        final textWidget =
+            tester.widget<Text>(find.text(completedItem.displayText));
         expect(textWidget.style?.decoration, TextDecoration.lineThrough);
       });
 
@@ -132,11 +134,11 @@ void main() {
               body: Builder(
                 builder: (context) => ShoppingItemTiles.buildItemTile(
                   context,
-                itemWithNote,
-                false,
-                (_) {},
-                (_) {},
-                (_) {},
+                  itemWithNote,
+                  false,
+                  (_) {},
+                  (_) {},
+                  (_) {},
                 ),
               ),
             ),
@@ -150,18 +152,19 @@ void main() {
     });
 
     group('buildItemTile - Priority Indicators', () {
-      testWidgets('shows no priority indicator for normal priority', (WidgetTester tester) async {
+      testWidgets('shows no priority indicator for normal priority',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: Builder(
                 builder: (context) => ShoppingItemTiles.buildItemTile(
                   context,
-                basicItem,
-                false,
-                (_) {},
-                (_) {},
-                (_) {},
+                  basicItem,
+                  false,
+                  (_) {},
+                  (_) {},
+                  (_) {},
                 ),
               ),
             ),
@@ -177,30 +180,31 @@ void main() {
               final decoration = widget.decoration;
               final margin = widget.margin;
               // Priority indicator has left margin and circular decoration
-              return decoration is BoxDecoration && 
-                     decoration.shape == BoxShape.circle &&
-                     margin is EdgeInsets &&
-                     margin.left == 8;
+              return decoration is BoxDecoration &&
+                  decoration.shape == BoxShape.circle &&
+                  margin is EdgeInsets &&
+                  margin.left == 8;
             }
             return false;
           },
         );
-        
+
         expect(priorityIndicators, findsNothing);
       });
 
-      testWidgets('shows warning color for high priority (4)', (WidgetTester tester) async {
+      testWidgets('shows warning color for high priority (4)',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: Builder(
                 builder: (context) => ShoppingItemTiles.buildItemTile(
                   context,
-                highPriorityItem,
-                false,
-                (_) {},
-                (_) {},
-                (_) {},
+                  highPriorityItem,
+                  false,
+                  (_) {},
+                  (_) {},
+                  (_) {},
                 ),
               ),
             ),
@@ -214,35 +218,36 @@ void main() {
               final decoration = widget.decoration;
               final margin = widget.margin;
               // Priority indicator has left margin and circular decoration
-              return decoration is BoxDecoration && 
-                     decoration.shape == BoxShape.circle &&
-                     margin is EdgeInsets &&
-                     margin.left == 8;
+              return decoration is BoxDecoration &&
+                  decoration.shape == BoxShape.circle &&
+                  margin is EdgeInsets &&
+                  margin.left == 8;
             }
             return false;
           },
         );
-        
+
         expect(priorityIndicator, findsOneWidget);
-        
+
         // Verify the color
         final container = tester.widget<Container>(priorityIndicator);
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.color, AppColors.warning);
       });
 
-      testWidgets('shows error color for urgent priority (5)', (WidgetTester tester) async {
+      testWidgets('shows error color for urgent priority (5)',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: Builder(
                 builder: (context) => ShoppingItemTiles.buildItemTile(
                   context,
-                urgentPriorityItem,
-                false,
-                (_) {},
-                (_) {},
-                (_) {},
+                  urgentPriorityItem,
+                  false,
+                  (_) {},
+                  (_) {},
+                  (_) {},
                 ),
               ),
             ),
@@ -256,17 +261,17 @@ void main() {
               final decoration = widget.decoration;
               final margin = widget.margin;
               // Priority indicator has left margin and circular decoration
-              return decoration is BoxDecoration && 
-                     decoration.shape == BoxShape.circle &&
-                     margin is EdgeInsets &&
-                     margin.left == 8;
+              return decoration is BoxDecoration &&
+                  decoration.shape == BoxShape.circle &&
+                  margin is EdgeInsets &&
+                  margin.left == 8;
             }
             return false;
           },
         );
-        
+
         expect(priorityIndicator, findsOneWidget);
-        
+
         // Verify the color
         final container = tester.widget<Container>(priorityIndicator);
         final decoration = container.decoration as BoxDecoration;
@@ -284,11 +289,11 @@ void main() {
               body: Builder(
                 builder: (context) => ShoppingItemTiles.buildItemTile(
                   context,
-                basicItem,
-                false,
-                (item) => tappedItem = item,
-                (_) {},
-                (_) {},
+                  basicItem,
+                  false,
+                  (item) => tappedItem = item,
+                  (_) {},
+                  (_) {},
                 ),
               ),
             ),
@@ -311,11 +316,11 @@ void main() {
               body: Builder(
                 builder: (context) => ShoppingItemTiles.buildItemTile(
                   context,
-                basicItem,
-                false,
-                (_) {},
-                (item) => editedItem = item,
-                (_) {},
+                  basicItem,
+                  false,
+                  (_) {},
+                  (item) => editedItem = item,
+                  (_) {},
                 ),
               ),
             ),
@@ -338,11 +343,11 @@ void main() {
               body: Builder(
                 builder: (context) => ShoppingItemTiles.buildItemTile(
                   context,
-                basicItem,
-                false,
-                (_) {},
-                (_) {},
-                (item) => deletedItem = item,
+                  basicItem,
+                  false,
+                  (_) {},
+                  (_) {},
+                  (item) => deletedItem = item,
                 ),
               ),
             ),
@@ -356,18 +361,19 @@ void main() {
         expect(deletedItem, equals(basicItem));
       });
 
-      testWidgets('shows correct tooltips on action buttons', (WidgetTester tester) async {
+      testWidgets('shows correct tooltips on action buttons',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: Builder(
                 builder: (context) => ShoppingItemTiles.buildItemTile(
                   context,
-                basicItem,
-                false,
-                (_) {},
-                (_) {},
-                (_) {},
+                  basicItem,
+                  false,
+                  (_) {},
+                  (_) {},
+                  (_) {},
                 ),
               ),
             ),
@@ -388,64 +394,70 @@ void main() {
     });
 
     group('buildItemTile - Visual States', () {
-      testWidgets('applies correct styles for non-completed item', (WidgetTester tester) async {
+      testWidgets('applies correct styles for non-completed item',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: Builder(
                 builder: (context) => ShoppingItemTiles.buildItemTile(
                   context,
-                basicItem,
-                false,
-                (_) {},
-                (_) {},
-                (_) {},
+                  basicItem,
+                  false,
+                  (_) {},
+                  (_) {},
+                  (_) {},
                 ),
               ),
             ),
           ),
         );
 
-        final textWidget = tester.widget<Text>(find.text(basicItem.displayText));
+        final textWidget =
+            tester.widget<Text>(find.text(basicItem.displayText));
         expect(textWidget.style?.color, AppColors.textDark);
-        expect(textWidget.style?.decoration, anyOf(isNull, TextDecoration.none));
+        expect(
+            textWidget.style?.decoration, anyOf(isNull, TextDecoration.none));
       });
 
-      testWidgets('applies correct styles for completed item', (WidgetTester tester) async {
+      testWidgets('applies correct styles for completed item',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: Builder(
                 builder: (context) => ShoppingItemTiles.buildItemTile(
                   context,
-                completedItem,
-                true,
-                (_) {},
-                (_) {},
-                (_) {},
+                  completedItem,
+                  true,
+                  (_) {},
+                  (_) {},
+                  (_) {},
                 ),
               ),
             ),
           ),
         );
 
-        final textWidget = tester.widget<Text>(find.text(completedItem.displayText));
+        final textWidget =
+            tester.widget<Text>(find.text(completedItem.displayText));
         expect(textWidget.style?.color, AppColors.neutralMedium);
         expect(textWidget.style?.decoration, TextDecoration.lineThrough);
       });
 
-      testWidgets('applies correct styles for note on completed item', (WidgetTester tester) async {
+      testWidgets('applies correct styles for note on completed item',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: Builder(
                 builder: (context) => ShoppingItemTiles.buildItemTile(
                   context,
-                itemWithNote,
-                true,
-                (_) {},
-                (_) {},
-                (_) {},
+                  itemWithNote,
+                  true,
+                  (_) {},
+                  (_) {},
+                  (_) {},
                 ),
               ),
             ),
@@ -456,10 +468,12 @@ void main() {
         expect(noteWidget.style?.decoration, TextDecoration.lineThrough);
       });
 
-      testWidgets('handles long text with ellipsis', (WidgetTester tester) async {
+      testWidgets('handles long text with ellipsis',
+          (WidgetTester tester) async {
         final longItem = UnifiedShoppingItem(
           id: 'long-test',
-          name: 'Detta är en väldigt lång produktnamn som borde klippas av med ellipsis för att inte ta upp för mycket plats',
+          name:
+              'Detta är en väldigt lång produktnamn som borde klippas av med ellipsis för att inte ta upp för mycket plats',
           amount: 1,
           unit: 'st',
           category: 'Test',
@@ -493,7 +507,8 @@ void main() {
     });
 
     group('buildEmptyState', () {
-      testWidgets('renders empty state with all components', (WidgetTester tester) async {
+      testWidgets('renders empty state with all components',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -512,7 +527,8 @@ void main() {
         expect(find.byIcon(Icons.shopping_cart_outlined), findsOneWidget);
 
         // Verify icon size
-        final icon = tester.widget<Icon>(find.byIcon(Icons.shopping_cart_outlined));
+        final icon =
+            tester.widget<Icon>(find.byIcon(Icons.shopping_cart_outlined));
         expect(icon.size, 64);
       });
 
@@ -531,7 +547,8 @@ void main() {
 
         // Verify centering - the empty state creates a Center widget
         final center = find.byType(Center);
-        expect(center, findsWidgets); // There might be multiple Center widgets in the tree
+        expect(center,
+            findsWidgets); // There might be multiple Center widgets in the tree
 
         // Verify text alignment
         final titleWidget = tester.widget<Text>(find.text('Test Title'));
@@ -541,7 +558,8 @@ void main() {
         expect(messageWidget.textAlign, TextAlign.center);
       });
 
-      testWidgets('applies correct styles to empty state', (WidgetTester tester) async {
+      testWidgets('applies correct styles to empty state',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -569,18 +587,19 @@ void main() {
     });
 
     group('Accessibility', () {
-      testWidgets('has proper semantics for buttons', (WidgetTester tester) async {
+      testWidgets('has proper semantics for buttons',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: Builder(
                 builder: (context) => ShoppingItemTiles.buildItemTile(
                   context,
-                basicItem,
-                false,
-                (_) {},
-                (_) {},
-                (_) {},
+                  basicItem,
+                  false,
+                  (_) {},
+                  (_) {},
+                  (_) {},
                 ),
               ),
             ),
@@ -591,30 +610,31 @@ void main() {
         // Tooltips become semantics labels when present
         final editButton = find.widgetWithIcon(IconButton, Icons.edit);
         final deleteButton = find.widgetWithIcon(IconButton, Icons.delete);
-        
+
         expect(editButton, findsOneWidget);
         expect(deleteButton, findsOneWidget);
-        
+
         // Verify tooltips are set
         final editButtonWidget = tester.widget<IconButton>(editButton);
         final deleteButtonWidget = tester.widget<IconButton>(deleteButton);
-        
+
         expect(editButtonWidget.tooltip, 'Redigera');
         expect(deleteButtonWidget.tooltip, 'Ta bort');
       });
 
-      testWidgets('maintains minimum touch target size', (WidgetTester tester) async {
+      testWidgets('maintains minimum touch target size',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: Builder(
                 builder: (context) => ShoppingItemTiles.buildItemTile(
                   context,
-                basicItem,
-                false,
-                (_) {},
-                (_) {},
-                (_) {},
+                  basicItem,
+                  false,
+                  (_) {},
+                  (_) {},
+                  (_) {},
                 ),
               ),
             ),
@@ -647,11 +667,11 @@ void main() {
               body: Builder(
                 builder: (context) => ShoppingItemTiles.buildItemTile(
                   context,
-                zeroItem,
-                false,
-                (_) {},
-                (_) {},
-                (_) {},
+                  zeroItem,
+                  false,
+                  (_) {},
+                  (_) {},
+                  (_) {},
                 ),
               ),
             ),
@@ -678,11 +698,11 @@ void main() {
               body: Builder(
                 builder: (context) => ShoppingItemTiles.buildItemTile(
                   context,
-                emptyNoteItem,
-                false,
-                (_) {},
-                (_) {},
-                (_) {},
+                  emptyNoteItem,
+                  false,
+                  (_) {},
+                  (_) {},
+                  (_) {},
                 ),
               ),
             ),
@@ -702,11 +722,11 @@ void main() {
               body: Builder(
                 builder: (context) => ShoppingItemTiles.buildItemTile(
                   context,
-                basicItem,
-                false,
-                (_) => tapCount++,
-                (_) {},
-                (_) {},
+                  basicItem,
+                  false,
+                  (_) => tapCount++,
+                  (_) {},
+                  (_) {},
                 ),
               ),
             ),

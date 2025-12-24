@@ -130,7 +130,8 @@ class _AssistedImportDialogContent extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context, AssistedImportViewModel viewModel) {
+  Widget _buildContent(
+      BuildContext context, AssistedImportViewModel viewModel) {
     switch (viewModel.currentStep) {
       case AssistedImportStep.selectIngredients:
         return _IngredientSelectionStep(viewModel: viewModel);

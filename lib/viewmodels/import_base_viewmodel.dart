@@ -7,7 +7,8 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 
-abstract class ImportBaseViewModel extends BaseViewModel with AsyncOperationMixin {
+abstract class ImportBaseViewModel extends BaseViewModel
+    with AsyncOperationMixin {
   final ImportManager _importManager;
 
   Recipe? _parsedRecipe;
@@ -56,7 +57,7 @@ abstract class ImportBaseViewModel extends BaseViewModel with AsyncOperationMixi
       () async {
         final strategy = importManager.getTextImportStrategy();
         final result = await strategy.import(text);
-        
+
         if (result.isSuccess && result.recipe != null) {
           // Apply source URL attribution if provided
           if (url != null) {
@@ -66,7 +67,8 @@ abstract class ImportBaseViewModel extends BaseViewModel with AsyncOperationMixi
           }
           return result.recipe;
         } else {
-          throw Exception(result.errorMessage ?? 'Failed to parse recipe from text');
+          throw Exception(
+              result.errorMessage ?? 'Failed to parse recipe from text');
         }
       },
       errorPrefix: 'Failed to parse recipe',
@@ -168,7 +170,7 @@ abstract class ImportBaseViewModel extends BaseViewModel with AsyncOperationMixi
 
   void clearAll() {
     if (isDisposed) return;
-    
+
     _parsedRecipe = null;
     _sourceUrl = null;
     clearError();
@@ -177,12 +179,12 @@ abstract class ImportBaseViewModel extends BaseViewModel with AsyncOperationMixi
 
   @override
   Map<String, dynamic> get debugState => {
-    ...super.debugState,
-    'hasParsedRecipe': hasParsedRecipe,
-    'sourceUrl': _sourceUrl,
-    'canImport': canImport,
-    'importType': importType,
-  };
+        ...super.debugState,
+        'hasParsedRecipe': hasParsedRecipe,
+        'sourceUrl': _sourceUrl,
+        'canImport': canImport,
+        'importType': importType,
+      };
 
   @override
   void dispose() {
@@ -202,21 +204,21 @@ mixin TextImportMixin on ImportBaseViewModel {
 
   void updateInputText(String text) {
     if (isDisposed) return;
-    
+
     _inputText = text;
     clearError();
-    
+
     // Clear previous results if text changed significantly
     if (text.trim().isEmpty) {
       clearImportData();
     }
-    
+
     notifyListeners();
   }
 
   void clearInput() {
     if (isDisposed) return;
-    
+
     _inputText = '';
     clearImportData();
   }
@@ -237,12 +239,12 @@ mixin TextImportMixin on ImportBaseViewModel {
 
   @override
   Map<String, dynamic> get debugState => {
-    ...super.debugState,
-    'inputText': _inputText.length > 50 
-        ? '${_inputText.substring(0, 50)}...' 
-        : _inputText,
-    'hasValidInput': hasValidInput,
-  };
+        ...super.debugState,
+        'inputText': _inputText.length > 50
+            ? '${_inputText.substring(0, 50)}...'
+            : _inputText,
+        'hasValidInput': hasValidInput,
+      };
 }
 
 mixin UrlImportMixin on ImportBaseViewModel {
@@ -259,14 +261,14 @@ mixin UrlImportMixin on ImportBaseViewModel {
 
   void updateUrl(String url) {
     if (isDisposed) return;
-    
+
     _url = url;
     clearError();
-    
+
     // Clear previous results if URL changed
     _extractedText = '';
     clearImportData();
-    
+
     notifyListeners();
   }
 
@@ -316,7 +318,7 @@ mixin UrlImportMixin on ImportBaseViewModel {
 
   void clearUrl() {
     if (isDisposed) return;
-    
+
     _url = '';
     _extractedText = '';
     clearImportData();
@@ -324,9 +326,9 @@ mixin UrlImportMixin on ImportBaseViewModel {
 
   @override
   Map<String, dynamic> get debugState => {
-    ...super.debugState,
-    'url': _url,
-    'hasExtractedText': hasExtractedText,
-    'canFetch': canFetch,
-  };
+        ...super.debugState,
+        'url': _url,
+        'hasExtractedText': hasExtractedText,
+        'canFetch': canFetch,
+      };
 }

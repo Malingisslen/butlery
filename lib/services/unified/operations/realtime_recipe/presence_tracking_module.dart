@@ -276,7 +276,8 @@ class PresenceTrackingModule {
   /// Fixed (#042): Track subscription internally for proper cleanup
   StreamSubscription<void>? startAutomaticPresenceTracking(
     String recipeId, {
-    Duration heartbeatInterval = const Duration(seconds: 60), // Optimized: 50% write reduction (#037)
+    Duration heartbeatInterval =
+        const Duration(seconds: 60), // Optimized: 50% write reduction (#037)
   }) {
     // Cancel existing subscription for this recipe if any
     _heartbeatSubscriptions[recipeId]?.cancel();
@@ -437,7 +438,8 @@ class PresenceTrackingModule {
   /// Clean up stale presence data
   void _cleanupStalePresence() {
     final now = DateTime.now();
-    const staleThreshold = Duration(minutes: 10); // Optimized: less aggressive cleanup (#037)
+    const staleThreshold =
+        Duration(minutes: 10); // Optimized: less aggressive cleanup (#037)
     final keysToRemove = <String>[];
 
     for (final entry in _presenceTimestamps.entries) {

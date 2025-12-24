@@ -53,7 +53,8 @@ class LlmEnhancementService extends BaseService {
     }
 
     // Check rate limit first
-    final operation = ImportOperation.withLlm('enhance', LlmOperationType.enhancement);
+    final operation =
+        ImportOperation.withLlm('enhance', LlmOperationType.enhancement);
     final limitCheck = await _rateLimiter.checkLimit(operation);
 
     if (limitCheck.isDenied) {
@@ -225,7 +226,8 @@ class LlmEnhancementService extends BaseService {
     );
 
     // Check rate limit
-    final operation = ImportOperation.withLlm('website', LlmOperationType.fullExtraction);
+    final operation =
+        ImportOperation.withLlm('website', LlmOperationType.fullExtraction);
     final limitCheck = await _rateLimiter.checkLimit(operation);
 
     if (limitCheck.isDenied) {
@@ -290,7 +292,8 @@ class LlmEnhancementService extends BaseService {
     );
 
     // Check rate limit
-    final operation = ImportOperation.withLlm('video', LlmOperationType.fullExtraction);
+    final operation =
+        ImportOperation.withLlm('video', LlmOperationType.fullExtraction);
     final limitCheck = await _rateLimiter.checkLimit(operation);
 
     if (limitCheck.isDenied) {
@@ -374,19 +377,23 @@ class LlmEnhancementService extends BaseService {
   String _inferMealType(List<String> tags) {
     final lowercaseTags = tags.map((t) => t.toLowerCase()).toList();
 
-    if (lowercaseTags.any((t) => t.contains('frukost') || t.contains('breakfast'))) {
+    if (lowercaseTags
+        .any((t) => t.contains('frukost') || t.contains('breakfast'))) {
       return 'breakfast';
     }
     if (lowercaseTags.any((t) => t.contains('lunch'))) {
       return 'lunch';
     }
-    if (lowercaseTags.any((t) => t.contains('middag') || t.contains('dinner'))) {
+    if (lowercaseTags
+        .any((t) => t.contains('middag') || t.contains('dinner'))) {
       return 'dinner';
     }
-    if (lowercaseTags.any((t) => t.contains('dessert') || t.contains('efterrätt'))) {
+    if (lowercaseTags
+        .any((t) => t.contains('dessert') || t.contains('efterrätt'))) {
       return 'dessert';
     }
-    if (lowercaseTags.any((t) => t.contains('snacks') || t.contains('mellanmål'))) {
+    if (lowercaseTags
+        .any((t) => t.contains('snacks') || t.contains('mellanmål'))) {
       return 'snack';
     }
 

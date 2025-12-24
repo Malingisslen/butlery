@@ -78,8 +78,7 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
       'Import recipes from photos using OCR (recipe cards, cookbook pages, handwritten recipes)';
 
   @override
-  String get inputExample =>
-      'photo (with imageBytes in options parameter)';
+  String get inputExample => 'photo (with imageBytes in options parameter)';
 
   @override
   bool canHandle(String input) {
@@ -94,7 +93,8 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   @override
-  Future<ImportResult> import(String input, {Map<String, dynamic>? options}) async {
+  Future<ImportResult> import(String input,
+      {Map<String, dynamic>? options}) async {
     try {
       // Step 1: Extract image bytes from options parameter
       final imageBytes = _extractImageBytes(options);
@@ -212,7 +212,6 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
           sourceType: options?['sourceType'] as String?,
         ),
       );
-
     } catch (e) {
       return ImportResult.failure(
         'Photo import error: ${e.toString()}',
@@ -322,7 +321,8 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
     if (ocrResult.isSuccessful) {
       metadata['ocr_method'] = ocrResult.processingMethod;
       metadata['ocr_confidence'] = ocrResult.confidence;
-      metadata['ocr_confidence_level'] = _getConfidenceLevel(ocrResult.confidence);
+      metadata['ocr_confidence_level'] =
+          _getConfidenceLevel(ocrResult.confidence);
       metadata['swedish_optimized'] = true;
 
       // Add extracted text length
@@ -384,7 +384,8 @@ class PhotoImportStrategy extends ImportStrategy with ImportValidationMixin {
     }
 
     // Add image quality suggestions
-    if (ocrResult.isSuccessful && ocrResult.confidence < _mediumConfidenceThreshold) {
+    if (ocrResult.isSuccessful &&
+        ocrResult.confidence < _mediumConfidenceThreshold) {
       warnings.add(
         'Tip: For better results, use good lighting, clear focus, and avoid shadows.',
       );

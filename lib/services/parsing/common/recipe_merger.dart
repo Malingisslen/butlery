@@ -16,7 +16,8 @@ class RecipeMerger {
   /// Takes the highest-confidence value for each field.
   ParsedRecipe? merge(List<TierResult> results) {
     // Filter to successful results
-    final successful = results.where((r) => r.success && r.recipe != null).toList();
+    final successful =
+        results.where((r) => r.success && r.recipe != null).toList();
 
     if (successful.isEmpty) return null;
 
@@ -38,16 +39,18 @@ class RecipeMerger {
     }
 
     // Update metadata to reflect merging
-    final tierResults = results.map((r) => TierResult(
-      tierName: r.tierName,
-      recipe: null, // Don't include full recipes in metadata
-      success: r.success,
-      quality: r.quality,
-      duration: r.duration,
-      costSek: r.costSek,
-      tokensUsed: r.tokensUsed,
-      failureReason: r.failureReason,
-    )).toList();
+    final tierResults = results
+        .map((r) => TierResult(
+              tierName: r.tierName,
+              recipe: null, // Don't include full recipes in metadata
+              success: r.success,
+              quality: r.quality,
+              duration: r.duration,
+              costSek: r.costSek,
+              tokensUsed: r.tokensUsed,
+              failureReason: r.failureReason,
+            ))
+        .toList();
 
     return merged.copyWith(
       metadata: merged.metadata.copyWith(
@@ -61,7 +64,8 @@ class RecipeMerger {
     return ParsedRecipe(
       title: _mergeField(primary.title, secondary.title),
       portions: _mergeField(primary.portions, secondary.portions),
-      ingredients: _mergeIngredients(primary.ingredients, secondary.ingredients),
+      ingredients:
+          _mergeIngredients(primary.ingredients, secondary.ingredients),
       instructions: _mergeField(primary.instructions, secondary.instructions),
       totalTime: _mergeField(primary.totalTime, secondary.totalTime),
       metadata: primary.metadata, // Keep primary metadata
@@ -86,7 +90,8 @@ class RecipeMerger {
     }
 
     // Both have values - use higher confidence
-    if (secondary.confidenceScore > primary.confidenceScore + _confidenceThreshold) {
+    if (secondary.confidenceScore >
+        primary.confidenceScore + _confidenceThreshold) {
       return secondary;
     }
 
@@ -143,9 +148,8 @@ class RecipeMerger {
 
   double _averageConfidence(List<ParsedIngredient> ingredients) {
     if (ingredients.isEmpty) return 0.0;
-    final total = ingredients
-        .map((i) => i.confidence.score)
-        .reduce((a, b) => a + b);
+    final total =
+        ingredients.map((i) => i.confidence.score).reduce((a, b) => a + b);
     return total / ingredients.length;
   }
 
@@ -228,17 +232,18 @@ class RecipeMerger {
       title: base.title.confidenceScore < threshold && patch.title.hasValue
           ? patch.title
           : base.title,
-      portions: base.portions.confidenceScore < threshold && patch.portions.hasValue
-          ? patch.portions
-          : base.portions,
-      ingredients:
-          base.ingredients.confidenceScore < threshold && patch.ingredients.hasValue
-              ? patch.ingredients
-              : base.ingredients,
-      instructions:
-          base.instructions.confidenceScore < threshold && patch.instructions.hasValue
-              ? patch.instructions
-              : base.instructions,
+      portions:
+          base.portions.confidenceScore < threshold && patch.portions.hasValue
+              ? patch.portions
+              : base.portions,
+      ingredients: base.ingredients.confidenceScore < threshold &&
+              patch.ingredients.hasValue
+          ? patch.ingredients
+          : base.ingredients,
+      instructions: base.instructions.confidenceScore < threshold &&
+              patch.instructions.hasValue
+          ? patch.instructions
+          : base.instructions,
       totalTime:
           base.totalTime.confidenceScore < threshold && patch.totalTime.hasValue
               ? patch.totalTime

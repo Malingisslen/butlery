@@ -53,32 +53,32 @@ enum MessageType {
   /// Represents regular text-based communication including plain text, emojis,
   /// and formatted text content for standard conversational messaging.
   text,
-  
+
   /// Recipe sharing message containing recipe reference and metadata.
   /// Specialized message type for sharing recipes between users with embedded
   /// recipe information, thumbnail, and direct navigation to recipe content.
   recipeShare,
-  
+
   /// Menu sharing message containing menu reference and planning information.
   /// Specialized message type for sharing meal planning menus with embedded
   /// menu details and collaborative meal planning capabilities.
   menuShare,
-  
+
   /// Shopping list sharing message containing list reference and collaborative features.
   /// Specialized message type for sharing shopping lists with embedded list
   /// information and real-time collaborative shopping functionality.
   shoppingListShare,
-  
+
   /// System-generated message for conversation events and administrative notifications.
   /// Automated messages representing conversation events such as user joining,
   /// leaving, administrative actions, and system announcements with special formatting.
   system,
-  
+
   /// Image message containing photo or visual content for rich communication.
   /// Media message type for sharing images, photos, and visual content with
   /// thumbnail preview and full-size viewing capabilities.
   image,
-  
+
   /// Voice message containing audio content for personal communication.
   /// Audio message type for voice recordings with playback controls, duration
   /// display, and waveform visualization for enhanced audio messaging experience.
@@ -93,22 +93,22 @@ enum MessageStatus {
   /// Initial status when message is created and queued for delivery, indicating
   /// active transmission process with loading indicators and retry capabilities.
   sending,
-  
+
   /// Message has been successfully sent to messaging server for distribution.
   /// Indicates message has left sender's device and is queued on server for delivery
   /// to recipients with single checkmark indicator and server acknowledgment.
   sent,
-  
+
   /// Message has been delivered to recipient's device and messaging client.
   /// Confirms message reached the intended recipient's device with double checkmark
   /// indicator and delivery confirmation for transmission success tracking.
   delivered,
-  
+
   /// Message has been read and viewed by the recipient user.
   /// Final status indicating recipient has opened and viewed the message content
   /// with read indicator and engagement confirmation for communication success.
   read,
-  
+
   /// Message sending failed due to delivery error or network issues.
   /// Error status indicating message could not be delivered, requiring retry
   /// or manual intervention with error indicator and retry action availability.
@@ -143,7 +143,7 @@ extension MessageTypeExtension on MessageType {
         return 'Röstmeddelande';
     }
   }
-  
+
   /// Gets emoji icon representing the message type for visual identification and UI consistency.
   /// Provides distinctive emoji icons for each message type enabling quick visual identification
   /// in message lists, conversation bubbles, and type indicators with culturally appropriate
@@ -193,7 +193,7 @@ extension MessageStatusExtension on MessageStatus {
         return 'Misslyckades';
     }
   }
-  
+
   /// Gets emoji icon representing the delivery status for visual delivery tracking and UI consistency.
   /// Provides distinctive delivery status indicators for each status stage enabling clear visual
   /// communication of message delivery progression with universally recognized symbols for delivery

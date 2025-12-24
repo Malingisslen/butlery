@@ -85,7 +85,8 @@ class LlmTier extends ParsingTier with QualityScoring {
 
       // P0-2: Validate response for suspicious patterns
       if (!_validateForSuspiciousPatterns(extractedRecipe)) {
-        AppLogger.warning('$tierName: P0-2 validation failed - suspicious patterns');
+        AppLogger.warning(
+            '$tierName: P0-2 validation failed - suspicious patterns');
         return TierResult(
           tierName: tierName,
           recipe: null,

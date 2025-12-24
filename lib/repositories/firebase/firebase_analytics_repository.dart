@@ -11,22 +11,22 @@ import 'package:butlery/core/utils/logger.dart';
 class FirebaseAnalyticsRepository implements AnalyticsRepository {
   final FirebaseAnalytics _analytics;
   FirebaseAnalyticsObserver? _observer;
-  
+
   /// Creates a FirebaseAnalyticsRepository with optional custom FirebaseAnalytics instance.
   /// If no instance is provided, it uses the default FirebaseAnalytics.instance.
   /// This allows for dependency injection in tests while maintaining production simplicity.
   FirebaseAnalyticsRepository({
     FirebaseAnalytics? analytics,
   }) : _analytics = analytics ?? FirebaseAnalytics.instance;
-  
+
   @override
   Future<void> initialize() async {
     try {
       _observer = FirebaseAnalyticsObserver(analytics: _analytics);
-      
+
       // Disable analytics collection in debug mode
       await _analytics.setAnalyticsCollectionEnabled(!kDebugMode);
-      
+
       AppLogger.info(
         '📊 Firebase Analytics initialized (collection ${!kDebugMode ? "enabled" : "disabled"})',
       );
@@ -35,10 +35,10 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       rethrow;
     }
   }
-  
+
   @override
   dynamic get observer => _observer;
-  
+
   @override
   Future<void> logEvent({
     required String name,
@@ -53,7 +53,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       AppLogger.error('Analytics event logging failed: $e');
     }
   }
-  
+
   @override
   Future<void> logLogin({required String loginMethod}) async {
     try {
@@ -62,7 +62,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       AppLogger.error('Analytics login logging failed: $e');
     }
   }
-  
+
   @override
   Future<void> logSignUp({required String signUpMethod}) async {
     try {
@@ -71,7 +71,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       AppLogger.error('Analytics sign up logging failed: $e');
     }
   }
-  
+
   @override
   Future<void> logLogout() async {
     try {
@@ -80,7 +80,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       AppLogger.error('Analytics logout logging failed: $e');
     }
   }
-  
+
   @override
   Future<void> setUserProperty({
     required String name,
@@ -92,7 +92,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       AppLogger.error('Analytics user property setting failed: $e');
     }
   }
-  
+
   @override
   Future<void> setAnalyticsCollectionEnabled(bool enabled) async {
     try {
@@ -101,7 +101,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       AppLogger.error('Analytics collection setting failed: $e');
     }
   }
-  
+
   @override
   Future<void> logImportStarted({
     required String source,
@@ -116,7 +116,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       },
     );
   }
-  
+
   @override
   Future<void> logImportSuccess({
     required String source,
@@ -133,7 +133,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       },
     );
   }
-  
+
   @override
   Future<void> logExtractionError({
     required String url,
@@ -142,7 +142,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     String? errorType,
   }) async {
     final String category = _categorizeError(error);
-    
+
     await logEvent(
       name: 'extraction_error',
       parameters: {
@@ -157,10 +157,10 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         'timestamp': DateTime.now().toIso8601String(),
       },
     );
-    
+
     AppLogger.info('📊 Extraction error logged: $platform - $category');
   }
-  
+
   @override
   Future<void> logManualCopyFallback({
     required String platform,
@@ -175,7 +175,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       },
     );
   }
-  
+
   @override
   Future<void> logRecipeCreated({
     required String source,
@@ -190,7 +190,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       },
     );
   }
-  
+
   @override
   Future<void> logRecipeShared({
     required String method,
@@ -203,7 +203,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       },
     );
   }
-  
+
   @override
   Future<void> logRecipeCooked({
     required String recipeId,
@@ -219,15 +219,14 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         'recipe_title': recipeTitle,
         'meal_type': mealType,
         'is_first_time': isFirstTime ? 'true' : 'false',
-        if (daysSinceLastCooked != null)
-          'days_since_last': daysSinceLastCooked,
+        if (daysSinceLastCooked != null) 'days_since_last': daysSinceLastCooked,
         'timestamp': DateTime.now().toIso8601String(),
       },
     );
-    
+
     await setUserProperty(name: 'has_marked_cooked', value: 'true');
   }
-  
+
   @override
   Future<void> logMenuGenerated({
     required int recipeCount,
@@ -242,7 +241,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       },
     );
   }
-  
+
   @override
   Future<void> logRecipeDeleted({
     required String recipeId,
@@ -253,9 +252,9 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
     int? daysSinceCreated,
   }) async {
     final now = DateTime.now();
-    final actualDaysSinceCreated = daysSinceCreated ?? 
-      now.difference(createdAt).inDays;
-    
+    final actualDaysSinceCreated =
+        daysSinceCreated ?? now.difference(createdAt).inDays;
+
     await logEvent(
       name: 'recipe_deleted',
       parameters: {
@@ -268,10 +267,10 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         'timestamp': now.toIso8601String(),
       },
     );
-    
+
     AppLogger.info('📊 Recipe deletion logged: $recipeTitle ($mealType)');
   }
-  
+
   @override
   Future<void> logAccountDeleted(Map<String, dynamic> parameters) async {
     // Convert dynamic map to Object map for Firebase Analytics
@@ -281,13 +280,13 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
         analyticsParams[key] = value as Object;
       }
     });
-    
+
     await logEvent(
       name: 'account_deleted',
       parameters: analyticsParams,
     );
   }
-  
+
   @override
   Future<void> setUserProperties({
     int? recipeCount,
@@ -304,28 +303,28 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       } else if (recipeCount > 5) {
         userType = 'casual';
       }
-      
+
       await setUserProperty(name: 'user_type', value: userType);
       await setUserProperty(
         name: 'recipe_count_range',
         value: _getRecipeCountRange(recipeCount),
       );
     }
-    
+
     if (hasUsedImport != null) {
       await setUserProperty(
         name: 'has_used_import',
         value: hasUsedImport.toString(),
       );
     }
-    
+
     if (hasSharedRecipe != null) {
       await setUserProperty(
         name: 'has_shared_recipe',
         value: hasSharedRecipe.toString(),
       );
     }
-    
+
     if (hasCooked != null) {
       await setUserProperty(
         name: 'has_marked_cooked',
@@ -333,11 +332,11 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       );
     }
   }
-  
+
   /// Categorize error for analytics
   String _categorizeError(String error) {
     final errorLower = error.toLowerCase();
-    
+
     if (errorLower.contains('timeout')) {
       return 'timeout';
     } else if (errorLower.contains('ingen text')) {
@@ -354,7 +353,7 @@ class FirebaseAnalyticsRepository implements AnalyticsRepository {
       return 'other';
     }
   }
-  
+
   /// Get recipe count range for analytics
   String _getRecipeCountRange(int count) {
     if (count == 0) return '0';

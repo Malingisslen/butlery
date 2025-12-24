@@ -15,7 +15,7 @@
 ///
 /// **Test Strategy:**
 /// - Production-code-first analysis: Test actual implementation behavior
-/// - ServiceLocator pattern with centralized mock infrastructure 
+/// - ServiceLocator pattern with centralized mock infrastructure
 /// - Comprehensive state testing: loading, progress, success, error, mixed results states
 /// - Service integration validation for FileImportStrategy and UnifiedRecipeService
 /// - Swedish localization validation for all text elements and messages
@@ -50,6 +50,7 @@ import 'package:butlery/core/providers/application_provider.dart' as production;
 
 // Mock classes for file import testing
 class MockFileImportStrategy extends Mock implements FileImportStrategy {}
+
 class MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
 
 void main() {
@@ -62,14 +63,14 @@ void main() {
     setUpAll(() async {
       // Initialize comprehensive test environment
       await TestServiceLocator.initialize();
-      
+
       // Configure for view testing scenario
       TestServiceLocator.configureForScenario(TestScenario.viewTesting);
-      
+
       // Initialize production ServiceLocator with our test container
       final testDIContainer = DIContainer();
       production.ServiceLocator.initialize(testDIContainer);
-      
+
       // Register fallback values for mocktail
       registerFallbackValue('test-recipe-id');
     });
@@ -87,7 +88,7 @@ void main() {
           home: const FileImportView(),
         ),
       );
-      
+
       // Wait for widget initialization
       await tester.pump();
     }
@@ -96,25 +97,27 @@ void main() {
       // Create fresh mocks for each test
       mockFileImportStrategy = MockFileImportStrategy();
       mockUnifiedRecipeService = MockUnifiedRecipeService();
-      
+
       // Register mocks with TestServiceLocator
-      TestServiceLocator.registerSingleton<UnifiedRecipeService>(mockUnifiedRecipeService);
-      
+      TestServiceLocator.registerSingleton<UnifiedRecipeService>(
+          mockUnifiedRecipeService);
+
       // Set up default mock behaviors
-      when(() => mockFileImportStrategy.importMultiple()).thenAnswer((_) async => []);
+      when(() => mockFileImportStrategy.importMultiple())
+          .thenAnswer((_) async => []);
       when(() => mockUnifiedRecipeService.createPersonalRecipe(
-        title: any(named: 'title'),
-        description: any(named: 'description'),
-        ingredients: any(named: 'ingredients'),
-        instructions: any(named: 'instructions'),
-        mealType: any(named: 'mealType'),
-        portions: any(named: 'portions'),
-        timeMinutes: any(named: 'timeMinutes'),
-        tags: any(named: 'tags'),
-        rating: any(named: 'rating'),
-        sourceUrl: any(named: 'sourceUrl'),
-        imageUrls: any(named: 'imageUrls'),
-      )).thenAnswer((_) async => 'test-recipe-id');
+            title: any(named: 'title'),
+            description: any(named: 'description'),
+            ingredients: any(named: 'ingredients'),
+            instructions: any(named: 'instructions'),
+            mealType: any(named: 'mealType'),
+            portions: any(named: 'portions'),
+            timeMinutes: any(named: 'timeMinutes'),
+            tags: any(named: 'tags'),
+            rating: any(named: 'rating'),
+            sourceUrl: any(named: 'sourceUrl'),
+            imageUrls: any(named: 'imageUrls'),
+          )).thenAnswer((_) async => 'test-recipe-id');
     });
 
     // ==================== WIDGET RENDERING TESTS ====================
@@ -129,38 +132,44 @@ void main() {
         expect(find.byType(FileImportView), findsOneWidget);
         expect(find.byType(Scaffold), findsOneWidget);
         expect(find.byType(AppBar), findsOneWidget);
-        
+
         // Verify Swedish title
         expect(find.text('Importera från fil'), findsOneWidget);
       });
 
-      testWidgets('should render instruction card with Swedish text', (tester) async {
+      testWidgets('should render instruction card with Swedish text',
+          (tester) async {
         // Act
         await pumpFileImportView(tester);
 
         // Assert: Verify instruction content
-        expect(find.text('Importera recept från CSV eller Excel'), findsOneWidget);
-        expect(find.text('Din fil bör innehålla kolumner för:'), findsOneWidget);
+        expect(
+            find.text('Importera recept från CSV eller Excel'), findsOneWidget);
+        expect(
+            find.text('Din fil bör innehålla kolumner för:'), findsOneWidget);
         expect(find.text('Valfria kolumner:'), findsOneWidget);
-        
+
         // Verify required fields
         expect(find.text('Titel (title/namn)'), findsOneWidget);
-        expect(find.text('Ingredienser (ingredients/ingredienser)'), findsOneWidget);
-        expect(find.text('Instruktioner (instructions/instruktioner)'), findsOneWidget);
-        
-        // Verify optional fields  
+        expect(find.text('Ingredienser (ingredients/ingredienser)'),
+            findsOneWidget);
+        expect(find.text('Instruktioner (instructions/instruktioner)'),
+            findsOneWidget);
+
+        // Verify optional fields
         expect(find.text('Tillagningstid (cookingtime/tid)'), findsOneWidget);
         expect(find.text('Portioner (servings/portioner)'), findsOneWidget);
       });
 
-      testWidgets('should render import button when not loading', (tester) async {
+      testWidgets('should render import button when not loading',
+          (tester) async {
         // Act
         await pumpFileImportView(tester);
 
         // Assert: Verify import button
         expect(find.text('Välj fil och importera'), findsOneWidget);
         expect(find.byIcon(Icons.file_upload), findsOneWidget);
-        
+
         // Loading indicator should not be present initially
         expect(find.byType(CircularProgressIndicator), findsNothing);
       });
@@ -171,16 +180,15 @@ void main() {
     group('State Management Tests', () {
       testWidgets('should handle loading state during import', (tester) async {
         // Arrange: Set up delayed response to keep loading state
-        when(() => mockFileImportStrategy.importMultiple()).thenAnswer(
-          (_) async {
-            await Future.delayed(const Duration(milliseconds: 100));
-            return [RecipeFactory.build(title: 'Test Recipe')];
-          }
-        );
+        when(() => mockFileImportStrategy.importMultiple())
+            .thenAnswer((_) async {
+          await Future.delayed(const Duration(milliseconds: 100));
+          return [RecipeFactory.build(title: 'Test Recipe')];
+        });
 
         // Act
         await pumpFileImportView(tester);
-        
+
         // Trigger import
         await tester.tap(find.text('Välj fil och importera'));
         await tester.pump();
@@ -188,18 +196,20 @@ void main() {
         // Assert: Loading state should be active
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
         expect(find.text('Väljer fil...'), findsOneWidget);
-        
+
         // Import button should be hidden during loading
         expect(find.text('Välj fil och importera'), findsNothing);
       });
 
-      testWidgets('should display progress during recipe import', (tester) async {
+      testWidgets('should display progress during recipe import',
+          (tester) async {
         // Arrange: Set up successful import with multiple recipes
         final testRecipes = [
           RecipeFactory.build(title: 'Recipe 1'),
           RecipeFactory.build(title: 'Recipe 2'),
         ];
-        when(() => mockFileImportStrategy.importMultiple()).thenAnswer((_) async => testRecipes);
+        when(() => mockFileImportStrategy.importMultiple())
+            .thenAnswer((_) async => testRecipes);
 
         // Act
         await pumpFileImportView(tester);
@@ -212,7 +222,8 @@ void main() {
 
       testWidgets('should handle empty file selection', (tester) async {
         // Arrange: Mock empty file response
-        when(() => mockFileImportStrategy.importMultiple()).thenAnswer((_) async => []);
+        when(() => mockFileImportStrategy.importMultiple())
+            .thenAnswer((_) async => []);
 
         // Act
         await pumpFileImportView(tester);
@@ -223,8 +234,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Assert: Should show appropriate Swedish message
-        expect(find.text('Ingen fil vald eller filen innehåller inga recept'), findsOneWidget);
-        
+        expect(find.text('Ingen fil vald eller filen innehåller inga recept'),
+            findsOneWidget);
+
         // Loading should be finished
         expect(find.byType(CircularProgressIndicator), findsNothing);
       });
@@ -233,15 +245,17 @@ void main() {
     // ==================== SUCCESS WORKFLOW TESTS ====================
 
     group('Success Workflow Tests', () {
-      testWidgets('should handle successful import with single recipe', (tester) async {
+      testWidgets('should handle successful import with single recipe',
+          (tester) async {
         // Arrange: Mock successful single recipe import
         final testRecipe = RecipeFactory.build(title: 'Successful Recipe');
-        when(() => mockFileImportStrategy.importMultiple()).thenAnswer((_) async => [testRecipe]);
+        when(() => mockFileImportStrategy.importMultiple())
+            .thenAnswer((_) async => [testRecipe]);
 
         // Act
         await pumpFileImportView(tester);
         await tester.tap(find.text('Välj fil och importera'));
-        
+
         // Process through loading states
         await tester.pump(); // Initial loading
         await tester.pumpAndSettle(); // Complete async operations
@@ -249,28 +263,32 @@ void main() {
         // Assert: Success indicators should be present
         expect(find.byIcon(Icons.check_circle), findsOneWidget);
         expect(find.text('1 lyckades'), findsOneWidget);
-        expect(find.text('Import klar: 1 lyckades, 0 misslyckades'), findsOneWidget);
+        expect(find.text('Import klar: 1 lyckades, 0 misslyckades'),
+            findsOneWidget);
 
         // Verify service interaction
         verify(() => mockUnifiedRecipeService.createPersonalRecipe(
-          title: 'Successful Recipe',
-          description: any(named: 'description'),
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          tags: any(named: 'tags'),
-          rating: any(named: 'rating'),
-          sourceUrl: any(named: 'sourceUrl'),
-          imageUrls: any(named: 'imageUrls'),
-        )).called(1);
+              title: 'Successful Recipe',
+              description: any(named: 'description'),
+              ingredients: any(named: 'ingredients'),
+              instructions: any(named: 'instructions'),
+              mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              tags: any(named: 'tags'),
+              rating: any(named: 'rating'),
+              sourceUrl: any(named: 'sourceUrl'),
+              imageUrls: any(named: 'imageUrls'),
+            )).called(1);
       });
 
-      testWidgets('should handle successful import with multiple recipes', (tester) async {
+      testWidgets('should handle successful import with multiple recipes',
+          (tester) async {
         // Arrange: Mock multiple recipe success
-        final testRecipes = List.generate(3, (i) => RecipeFactory.build(title: 'Recipe ${i + 1}'));
-        when(() => mockFileImportStrategy.importMultiple()).thenAnswer((_) async => testRecipes);
+        final testRecipes = List.generate(
+            3, (i) => RecipeFactory.build(title: 'Recipe ${i + 1}'));
+        when(() => mockFileImportStrategy.importMultiple())
+            .thenAnswer((_) async => testRecipes);
 
         // Act
         await pumpFileImportView(tester);
@@ -279,22 +297,23 @@ void main() {
 
         // Assert: All recipes should be processed successfully
         expect(find.text('3 lyckades'), findsOneWidget);
-        expect(find.text('Import klar: 3 lyckades, 0 misslyckades'), findsOneWidget);
-        
+        expect(find.text('Import klar: 3 lyckades, 0 misslyckades'),
+            findsOneWidget);
+
         // Verify all service calls
         verify(() => mockUnifiedRecipeService.createPersonalRecipe(
-          title: any(named: 'title'),
-          description: any(named: 'description'),
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          tags: any(named: 'tags'),
-          rating: any(named: 'rating'),
-          sourceUrl: any(named: 'sourceUrl'),
-          imageUrls: any(named: 'imageUrls'),
-        )).called(3);
+              title: any(named: 'title'),
+              description: any(named: 'description'),
+              ingredients: any(named: 'ingredients'),
+              instructions: any(named: 'instructions'),
+              mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              tags: any(named: 'tags'),
+              rating: any(named: 'rating'),
+              sourceUrl: any(named: 'sourceUrl'),
+              imageUrls: any(named: 'imageUrls'),
+            )).called(3);
       });
     });
 
@@ -314,28 +333,30 @@ void main() {
         // Assert: Should display Swedish error message
         expect(find.textContaining('Import misslyckades:'), findsOneWidget);
         expect(find.textContaining('File read error'), findsOneWidget);
-        
+
         // Loading should be finished
         expect(find.byType(CircularProgressIndicator), findsNothing);
       });
 
-      testWidgets('should handle individual recipe creation failure', (tester) async {
+      testWidgets('should handle individual recipe creation failure',
+          (tester) async {
         // Arrange: Mock file success but service failure
         final testRecipe = RecipeFactory.build(title: 'Failing Recipe');
-        when(() => mockFileImportStrategy.importMultiple()).thenAnswer((_) async => [testRecipe]);
+        when(() => mockFileImportStrategy.importMultiple())
+            .thenAnswer((_) async => [testRecipe]);
         when(() => mockUnifiedRecipeService.createPersonalRecipe(
-          title: any(named: 'title'),
-          description: any(named: 'description'),
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          tags: any(named: 'tags'),
-          rating: any(named: 'rating'),
-          sourceUrl: any(named: 'sourceUrl'),
-          imageUrls: any(named: 'imageUrls'),
-        )).thenThrow(Exception('Service error'));
+              title: any(named: 'title'),
+              description: any(named: 'description'),
+              ingredients: any(named: 'ingredients'),
+              instructions: any(named: 'instructions'),
+              mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              tags: any(named: 'tags'),
+              rating: any(named: 'rating'),
+              sourceUrl: any(named: 'sourceUrl'),
+              imageUrls: any(named: 'imageUrls'),
+            )).thenThrow(Exception('Service error'));
 
         // Act
         await pumpFileImportView(tester);
@@ -345,45 +366,48 @@ void main() {
         // Assert: Should show failure indicators
         expect(find.byIcon(Icons.error), findsOneWidget);
         expect(find.text('1 misslyckades'), findsOneWidget);
-        expect(find.text('Import klar: 0 lyckades, 1 misslyckades'), findsOneWidget);
+        expect(find.text('Import klar: 0 lyckades, 1 misslyckades'),
+            findsOneWidget);
       });
 
-      testWidgets('should handle mixed success and failure results', (tester) async {
+      testWidgets('should handle mixed success and failure results',
+          (tester) async {
         // Arrange: Mock mixed results scenario
         final testRecipes = [
           RecipeFactory.build(title: 'Success Recipe'),
           RecipeFactory.build(title: 'Failure Recipe'),
         ];
-        when(() => mockFileImportStrategy.importMultiple()).thenAnswer((_) async => testRecipes);
-        
+        when(() => mockFileImportStrategy.importMultiple())
+            .thenAnswer((_) async => testRecipes);
+
         // First call succeeds, second fails
         when(() => mockUnifiedRecipeService.createPersonalRecipe(
-          title: 'Success Recipe',
-          description: any(named: 'description'),
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          tags: any(named: 'tags'),
-          rating: any(named: 'rating'),
-          sourceUrl: any(named: 'sourceUrl'),
-          imageUrls: any(named: 'imageUrls'),
-        )).thenAnswer((_) async => 'success-recipe-id');
-        
+              title: 'Success Recipe',
+              description: any(named: 'description'),
+              ingredients: any(named: 'ingredients'),
+              instructions: any(named: 'instructions'),
+              mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              tags: any(named: 'tags'),
+              rating: any(named: 'rating'),
+              sourceUrl: any(named: 'sourceUrl'),
+              imageUrls: any(named: 'imageUrls'),
+            )).thenAnswer((_) async => 'success-recipe-id');
+
         when(() => mockUnifiedRecipeService.createPersonalRecipe(
-          title: 'Failure Recipe',
-          description: any(named: 'description'),
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          tags: any(named: 'tags'),
-          rating: any(named: 'rating'),
-          sourceUrl: any(named: 'sourceUrl'),
-          imageUrls: any(named: 'imageUrls'),
-        )).thenThrow(Exception('Individual recipe failure'));
+              title: 'Failure Recipe',
+              description: any(named: 'description'),
+              ingredients: any(named: 'ingredients'),
+              instructions: any(named: 'instructions'),
+              mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              tags: any(named: 'tags'),
+              rating: any(named: 'rating'),
+              sourceUrl: any(named: 'sourceUrl'),
+              imageUrls: any(named: 'imageUrls'),
+            )).thenThrow(Exception('Individual recipe failure'));
 
         // Act
         await pumpFileImportView(tester);
@@ -395,7 +419,8 @@ void main() {
         expect(find.byIcon(Icons.error), findsOneWidget);
         expect(find.text('1 lyckades'), findsOneWidget);
         expect(find.text('1 misslyckades'), findsOneWidget);
-        expect(find.text('Import klar: 1 lyckades, 1 misslyckades'), findsOneWidget);
+        expect(find.text('Import klar: 1 lyckades, 1 misslyckades'),
+            findsOneWidget);
       });
     });
 
@@ -405,11 +430,12 @@ void main() {
       testWidgets('should auto-navigate on complete success', (tester) async {
         // Arrange: Mock successful import
         final testRecipe = RecipeFactory.build(title: 'Success Recipe');
-        when(() => mockFileImportStrategy.importMultiple()).thenAnswer((_) async => [testRecipe]);
+        when(() => mockFileImportStrategy.importMultiple())
+            .thenAnswer((_) async => [testRecipe]);
 
         // Create navigator observer for navigation testing
         final mockObserver = MockNavigatorObserver();
-        
+
         // Act: Use MaterialApp with observer
         await tester.pumpWidget(
           MaterialApp(
@@ -417,41 +443,44 @@ void main() {
             navigatorObservers: [mockObserver],
           ),
         );
-        
+
         await tester.tap(find.text('Välj fil och importera'));
-        
+
         // Fast-forward through the 2-second delay for auto-navigation
         await tester.pump();
         await tester.pump(const Duration(seconds: 3));
 
         // Assert: Navigation should have been attempted
         // Note: In a real test, we would verify the navigation occurred
-        expect(find.byType(FileImportView), findsOneWidget); // Widget still present during test
+        expect(find.byType(FileImportView),
+            findsOneWidget); // Widget still present during test
       });
 
-      testWidgets('should not auto-navigate on partial failure', (tester) async {
+      testWidgets('should not auto-navigate on partial failure',
+          (tester) async {
         // Arrange: Mock mixed results (should not navigate)
         final testRecipes = [RecipeFactory.build()];
-        when(() => mockFileImportStrategy.importMultiple()).thenAnswer((_) async => testRecipes);
+        when(() => mockFileImportStrategy.importMultiple())
+            .thenAnswer((_) async => testRecipes);
         when(() => mockUnifiedRecipeService.createPersonalRecipe(
-          title: any(named: 'title'),
-          description: any(named: 'description'),
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          tags: any(named: 'tags'),
-          rating: any(named: 'rating'),
-          sourceUrl: any(named: 'sourceUrl'),
-          imageUrls: any(named: 'imageUrls'),
-        )).thenThrow(Exception('Service failure'));
+              title: any(named: 'title'),
+              description: any(named: 'description'),
+              ingredients: any(named: 'ingredients'),
+              instructions: any(named: 'instructions'),
+              mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              tags: any(named: 'tags'),
+              rating: any(named: 'rating'),
+              sourceUrl: any(named: 'sourceUrl'),
+              imageUrls: any(named: 'imageUrls'),
+            )).thenThrow(Exception('Service failure'));
 
         // Act
         await pumpFileImportView(tester);
         await tester.tap(find.text('Välj fil och importera'));
         await tester.pumpAndSettle();
-        
+
         // Wait additional time to ensure no auto-navigation
         await tester.pump(const Duration(seconds: 3));
 
@@ -464,26 +493,29 @@ void main() {
     // ==================== SWEDISH LOCALIZATION TESTS ====================
 
     group('Swedish Localization Tests', () {
-      testWidgets('should display all Swedish text elements correctly', (tester) async {
+      testWidgets('should display all Swedish text elements correctly',
+          (tester) async {
         // Act
         await pumpFileImportView(tester);
 
         // Assert: Verify Swedish UI text
         expect(find.text('Importera från fil'), findsOneWidget);
-        expect(find.text('Importera recept från CSV eller Excel'), findsOneWidget);
-        expect(find.text('Din fil bör innehålla kolumner för:'), findsOneWidget);
+        expect(
+            find.text('Importera recept från CSV eller Excel'), findsOneWidget);
+        expect(
+            find.text('Din fil bör innehålla kolumner för:'), findsOneWidget);
         expect(find.text('Valfria kolumner:'), findsOneWidget);
         expect(find.text('Välj fil och importera'), findsOneWidget);
       });
 
-      testWidgets('should show Swedish status messages during import', (tester) async {
+      testWidgets('should show Swedish status messages during import',
+          (tester) async {
         // Arrange: Mock slow import for status message testing
-        when(() => mockFileImportStrategy.importMultiple()).thenAnswer(
-          (_) async {
-            await Future.delayed(const Duration(milliseconds: 50));
-            return [RecipeFactory.build()];
-          }
-        );
+        when(() => mockFileImportStrategy.importMultiple())
+            .thenAnswer((_) async {
+          await Future.delayed(const Duration(milliseconds: 50));
+          return [RecipeFactory.build()];
+        });
 
         // Act
         await pumpFileImportView(tester);
@@ -492,7 +524,7 @@ void main() {
 
         // Assert: Swedish status messages should appear
         expect(find.text('Väljer fil...'), findsOneWidget);
-        
+
         // Process further
         await tester.pump();
         expect(find.text('Importerar 1 recept...'), findsOneWidget);
@@ -510,21 +542,22 @@ void main() {
 
         // Assert: Swedish completion messages
         expect(find.text('1 lyckades'), findsOneWidget);
-        expect(find.text('Import klar: 1 lyckades, 0 misslyckades'), findsOneWidget);
+        expect(find.text('Import klar: 1 lyckades, 0 misslyckades'),
+            findsOneWidget);
       });
     });
 
     // ==================== LIFECYCLE AND RESOURCE MANAGEMENT TESTS ====================
 
     group('Lifecycle and Resource Management Tests', () {
-      testWidgets('should handle widget disposal during async operation', (tester) async {
+      testWidgets('should handle widget disposal during async operation',
+          (tester) async {
         // Arrange: Mock long-running operation
-        when(() => mockFileImportStrategy.importMultiple()).thenAnswer(
-          (_) async {
-            await Future.delayed(const Duration(seconds: 1));
-            return [RecipeFactory.build()];
-          }
-        );
+        when(() => mockFileImportStrategy.importMultiple())
+            .thenAnswer((_) async {
+          await Future.delayed(const Duration(seconds: 1));
+          return [RecipeFactory.build()];
+        });
 
         // Act: Start operation then dispose widget
         await pumpFileImportView(tester);
@@ -539,20 +572,21 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should maintain consistent state during rapid interactions', (tester) async {
+      testWidgets('should maintain consistent state during rapid interactions',
+          (tester) async {
         // Arrange: Mock quick response
         when(() => mockFileImportStrategy.importMultiple())
             .thenAnswer((_) async => [RecipeFactory.build()]);
 
         // Act: Multiple rapid taps (should not cause issues)
         await pumpFileImportView(tester);
-        
+
         // Multiple quick interactions
         for (int i = 0; i < 3; i++) {
           await tester.tap(find.text('Välj fil och importera'));
           await tester.pump();
         }
-        
+
         await tester.pumpAndSettle();
 
         // Assert: State should remain consistent

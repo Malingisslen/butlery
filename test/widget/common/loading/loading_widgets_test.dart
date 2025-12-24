@@ -19,9 +19,10 @@ void main() {
     }
 
     group('loadingOverlay', () {
-      testWidgets('should return child when not loading', (WidgetTester tester) async {
+      testWidgets('should return child when not loading',
+          (WidgetTester tester) async {
         const childText = 'Content Widget';
-        
+
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: false,
@@ -33,7 +34,8 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsNothing);
       });
 
-      testWidgets('should return SizedBox.shrink when not loading and no child', (WidgetTester tester) async {
+      testWidgets('should return SizedBox.shrink when not loading and no child',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: false,
@@ -45,7 +47,8 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsNothing);
       });
 
-      testWidgets('should show loading overlay when loading', (WidgetTester tester) async {
+      testWidgets('should show loading overlay when loading',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: true,
@@ -56,9 +59,10 @@ void main() {
         expect(find.byType(ColoredBox), findsOneWidget);
       });
 
-      testWidgets('should stack overlay over child when loading', (WidgetTester tester) async {
+      testWidgets('should stack overlay over child when loading',
+          (WidgetTester tester) async {
         const childText = 'Background Content';
-        
+
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: true,
@@ -72,9 +76,10 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('should show loading message when provided', (WidgetTester tester) async {
+      testWidgets('should show loading message when provided',
+          (WidgetTester tester) async {
         const loadingMessage = 'Laddar data...';
-        
+
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: true,
@@ -86,7 +91,8 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('should not show message when null', (WidgetTester tester) async {
+      testWidgets('should not show message when null',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: true,
@@ -99,9 +105,10 @@ void main() {
         expect(find.byType(Text), findsNothing);
       });
 
-      testWidgets('should use custom overlay color when provided', (WidgetTester tester) async {
+      testWidgets('should use custom overlay color when provided',
+          (WidgetTester tester) async {
         const customColor = Colors.red;
-        
+
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: true,
@@ -113,7 +120,8 @@ void main() {
         expect(coloredBox.color, equals(customColor));
       });
 
-      testWidgets('should use default overlay color when not provided', (WidgetTester tester) async {
+      testWidgets('should use default overlay color when not provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: true,
@@ -121,10 +129,12 @@ void main() {
         ));
 
         final coloredBox = tester.widget<ColoredBox>(find.byType(ColoredBox));
-        expect(coloredBox.color, equals(AppColors.neutralDark.withValues(alpha: 0.3)));
+        expect(coloredBox.color,
+            equals(AppColors.neutralDark.withValues(alpha: 0.3)));
       });
 
-      testWidgets('should have proper container styling', (WidgetTester tester) async {
+      testWidgets('should have proper container styling',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: true,
@@ -137,14 +147,17 @@ void main() {
             matching: find.byType(Container),
           ),
         );
-        
-        expect(container.padding, equals(const EdgeInsets.all(AppDimensions.paddingL)));
+
+        expect(container.padding,
+            equals(const EdgeInsets.all(AppDimensions.paddingL)));
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.color, equals(AppColors.cardWhite));
-        expect(decoration.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadiusL)));
+        expect(decoration.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadiusL)));
       });
 
-      testWidgets('should have correct progress indicator size', (WidgetTester tester) async {
+      testWidgets('should have correct progress indicator size',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: true,
@@ -152,17 +165,20 @@ void main() {
         ));
 
         final sizedBox = tester.widget<SizedBox>(
-          find.ancestor(
-            of: find.byType(CircularProgressIndicator),
-            matching: find.byType(SizedBox),
-          ).first,
+          find
+              .ancestor(
+                of: find.byType(CircularProgressIndicator),
+                matching: find.byType(SizedBox),
+              )
+              .first,
         );
-        
+
         expect(sizedBox.width, equals(AppDimensions.iconSizeM));
         expect(sizedBox.height, equals(AppDimensions.iconSizeM));
       });
 
-      testWidgets('should have correct progress indicator styling', (WidgetTester tester) async {
+      testWidgets('should have correct progress indicator styling',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: true,
@@ -172,15 +188,17 @@ void main() {
         final progressIndicator = tester.widget<CircularProgressIndicator>(
           find.byType(CircularProgressIndicator),
         );
-        
+
         expect(progressIndicator.strokeWidth, equals(2));
-        final valueColor = progressIndicator.valueColor as AlwaysStoppedAnimation<Color>;
+        final valueColor =
+            progressIndicator.valueColor as AlwaysStoppedAnimation<Color>;
         expect(valueColor.value, equals(AppColors.primaryBlue));
       });
 
-      testWidgets('should transition from loading to not loading', (WidgetTester tester) async {
+      testWidgets('should transition from loading to not loading',
+          (WidgetTester tester) async {
         const childText = 'Content';
-        
+
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: true,
@@ -207,9 +225,10 @@ void main() {
     });
 
     group('errorBoundary', () {
-      testWidgets('should render child when no error', (WidgetTester tester) async {
+      testWidgets('should render child when no error',
+          (WidgetTester tester) async {
         const childText = 'Normal Widget';
-        
+
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.errorBoundary(
             child: const Text(childText),
@@ -219,7 +238,8 @@ void main() {
         expect(find.text(childText), findsOneWidget);
       });
 
-      testWidgets('should show default error widget on error', (WidgetTester tester) async {
+      testWidgets('should show default error widget on error',
+          (WidgetTester tester) async {
         // Note: The current implementation won't actually catch build errors
         // due to Flutter's error handling mechanism, but we test the intended behavior
         await tester.pumpWidget(createTestApp(
@@ -232,7 +252,8 @@ void main() {
         expect(find.byType(Builder), findsWidgets);
       });
 
-      testWidgets('should show Swedish error message', (WidgetTester tester) async {
+      testWidgets('should show Swedish error message',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.errorBoundary(
             child: const Text('Test'),
@@ -246,9 +267,10 @@ void main() {
         expect(find.byType(Text), findsWidgets);
       });
 
-      testWidgets('should use custom error widget when provided', (WidgetTester tester) async {
+      testWidgets('should use custom error widget when provided',
+          (WidgetTester tester) async {
         const customErrorText = 'Custom Error Message';
-        
+
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.errorBoundary(
             child: const Text('Content'),
@@ -260,9 +282,10 @@ void main() {
         expect(find.text('Content'), findsOneWidget);
       });
 
-      testWidgets('should handle onError callback', (WidgetTester tester) async {
+      testWidgets('should handle onError callback',
+          (WidgetTester tester) async {
         var errorCallbackCalled = false;
-        
+
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.errorBoundary(
             child: const Text('Test Widget'),
@@ -278,9 +301,10 @@ void main() {
     });
 
     group('responsiveWrapper', () {
-      testWidgets('should wrap child with container', (WidgetTester tester) async {
+      testWidgets('should wrap child with container',
+          (WidgetTester tester) async {
         const childText = 'Responsive Content';
-        
+
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.responsiveWrapper(
             child: const Text(childText),
@@ -301,9 +325,10 @@ void main() {
         expect(find.byType(Center), findsWidgets);
       });
 
-      testWidgets('should apply custom max width when provided', (WidgetTester tester) async {
+      testWidgets('should apply custom max width when provided',
+          (WidgetTester tester) async {
         const customMaxWidth = 400.0;
-        
+
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.responsiveWrapper(
             child: const Text('Content'),
@@ -312,18 +337,21 @@ void main() {
         ));
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(Center),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(Center),
+                matching: find.byType(Container),
+              )
+              .first,
         );
-        
+
         expect(container.constraints?.maxWidth, equals(customMaxWidth));
       });
 
-      testWidgets('should apply custom padding when provided', (WidgetTester tester) async {
+      testWidgets('should apply custom padding when provided',
+          (WidgetTester tester) async {
         const customPadding = EdgeInsets.all(24.0);
-        
+
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.responsiveWrapper(
             child: const Text('Content'),
@@ -332,16 +360,19 @@ void main() {
         ));
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(Center),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(Center),
+                matching: find.byType(Container),
+              )
+              .first,
         );
-        
+
         expect(container.padding, equals(customPadding));
       });
 
-      testWidgets('should use default padding when not provided', (WidgetTester tester) async {
+      testWidgets('should use default padding when not provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.responsiveWrapper(
             child: const Text('Content'),
@@ -349,20 +380,24 @@ void main() {
         ));
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(Center),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(Center),
+                matching: find.byType(Container),
+              )
+              .first,
         );
-        
-        expect(container.padding, equals(const EdgeInsets.all(AppDimensions.paddingL)));
+
+        expect(container.padding,
+            equals(const EdgeInsets.all(AppDimensions.paddingL)));
       });
 
-      testWidgets('should handle small screen width', (WidgetTester tester) async {
+      testWidgets('should handle small screen width',
+          (WidgetTester tester) async {
         // Set up a small screen size
         tester.view.physicalSize = const Size(400, 800);
         tester.view.devicePixelRatio = 1.0;
-        
+
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.responsiveWrapper(
             child: const Text('Mobile Content'),
@@ -370,12 +405,14 @@ void main() {
         ));
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(Center),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(Center),
+                matching: find.byType(Container),
+              )
+              .first,
         );
-        
+
         // On small screens (< 768), should use infinity max width
         expect(container.constraints?.maxWidth, equals(double.infinity));
 
@@ -384,11 +421,12 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      testWidgets('should handle large screen width', (WidgetTester tester) async {
+      testWidgets('should handle large screen width',
+          (WidgetTester tester) async {
         // Set up a large screen size
         tester.view.physicalSize = const Size(1200, 800);
         tester.view.devicePixelRatio = 1.0;
-        
+
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.responsiveWrapper(
             child: const Text('Desktop Content'),
@@ -396,12 +434,14 @@ void main() {
         ));
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(Center),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(Center),
+                matching: find.byType(Container),
+              )
+              .first,
         );
-        
+
         // On large screens (> 768), should use 600 max width
         expect(container.constraints?.maxWidth, equals(600));
 
@@ -412,9 +452,10 @@ void main() {
     });
 
     group('Swedish Localization', () {
-      testWidgets('should display Swedish loading message', (WidgetTester tester) async {
+      testWidgets('should display Swedish loading message',
+          (WidgetTester tester) async {
         const swedishMessage = 'Laddar recept...';
-        
+
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: true,
@@ -425,9 +466,10 @@ void main() {
         expect(find.text(swedishMessage), findsOneWidget);
       });
 
-      testWidgets('should handle Swedish characters in loading message', (WidgetTester tester) async {
+      testWidgets('should handle Swedish characters in loading message',
+          (WidgetTester tester) async {
         const swedishMessage = 'Hämtar användaruppgifter från servern...';
-        
+
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: true,
@@ -440,9 +482,10 @@ void main() {
     });
 
     group('Edge Cases', () {
-      testWidgets('should handle rapid loading state changes', (WidgetTester tester) async {
+      testWidgets('should handle rapid loading state changes',
+          (WidgetTester tester) async {
         const childText = 'Content';
-        
+
         // Start not loading
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
@@ -450,7 +493,7 @@ void main() {
             child: const Text(childText),
           ),
         ));
-        
+
         // Change to loading
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
@@ -458,7 +501,7 @@ void main() {
             child: const Text(childText),
           ),
         ));
-        
+
         // Change back to not loading
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
@@ -466,12 +509,13 @@ void main() {
             child: const Text(childText),
           ),
         ));
-        
+
         expect(find.byType(CircularProgressIndicator), findsNothing);
         expect(find.text(childText), findsOneWidget);
       });
 
-      testWidgets('should handle null child with loading true', (WidgetTester tester) async {
+      testWidgets('should handle null child with loading true',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: true,
@@ -484,7 +528,8 @@ void main() {
         expect(find.byType(ColoredBox), findsOneWidget);
       });
 
-      testWidgets('should handle empty loading message', (WidgetTester tester) async {
+      testWidgets('should handle empty loading message',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: true,
@@ -496,9 +541,10 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('should handle very long loading message', (WidgetTester tester) async {
+      testWidgets('should handle very long loading message',
+          (WidgetTester tester) async {
         final longMessage = 'A' * 200;
-        
+
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: true,
@@ -509,7 +555,8 @@ void main() {
         expect(find.text(longMessage), findsOneWidget);
       });
 
-      testWidgets('should handle transparent overlay color', (WidgetTester tester) async {
+      testWidgets('should handle transparent overlay color',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestApp(
           LoadingWidgets.loadingOverlay(
             isLoading: true,

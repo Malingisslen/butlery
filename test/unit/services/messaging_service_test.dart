@@ -31,7 +31,7 @@ class TimeoutException implements Exception {
 class ResourceNotFoundException extends PermissionDeniedException {
   final String resourceType;
   final String resourceId;
-  
+
   ResourceNotFoundException(
     super.message, {
     required this.resourceType,
@@ -147,7 +147,7 @@ void main() {
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       await TestServiceLocator.initialize();
-      
+
       // Register fallback values for mocktail
       registerFallbackValue(FakeMessage(
         id: 'test',
@@ -168,7 +168,7 @@ void main() {
     setUp(() {
       mockMessagingRepo = MockMessagingRepository();
       mockAuthRepo = MockAuthRepository();
-      
+
       // Create mock user with proper configuration
       mockUser = MockFactory.createMockUser(
         uid: 'test-user-id',
@@ -204,7 +204,10 @@ void main() {
           FakeConversation(
             id: 'conv-1',
             participantIds: ['test-user-id', 'user-2'],
-            participantDisplayNames: {'test-user-id': 'Test User', 'user-2': 'User 2'},
+            participantDisplayNames: {
+              'test-user-id': 'Test User',
+              'user-2': 'User 2'
+            },
           ),
           FakeConversation(
             id: 'conv-2',
@@ -213,7 +216,7 @@ void main() {
             title: 'Group Chat',
           ),
         ];
-        
+
         when(() => mockMessagingRepo.getUserConversations('test-user-id'))
             .thenAnswer((_) => Stream.value(conversations));
 
@@ -223,7 +226,8 @@ void main() {
         // Assert
         expect(stream, isNotNull);
         expect(stream, isA<Stream<List<Conversation>>>());
-        verify(() => mockMessagingRepo.getUserConversations('test-user-id')).called(1);
+        verify(() => mockMessagingRepo.getUserConversations('test-user-id'))
+            .called(1);
       });
 
       test('should return empty stream when not authenticated', () {
@@ -244,20 +248,20 @@ void main() {
         const otherUserDisplayName = 'John Doe';
         const otherUserAvatarUrl = 'https://example.com/john.jpg';
         const conversationId = 'new-conv-123';
-        
+
         when(() => mockMessagingRepo.findDirectConversation(
-          user1Id: 'test-user-id',
-          user2Id: otherUserId,
-        )).thenAnswer((_) async => null);
-        
+              user1Id: 'test-user-id',
+              user2Id: otherUserId,
+            )).thenAnswer((_) async => null);
+
         when(() => mockMessagingRepo.createDirectConversation(
-          user1Id: 'test-user-id',
-          user1DisplayName: 'Test User',
-          user1AvatarUrl: 'https://example.com/avatar.jpg',
-          user2Id: otherUserId,
-          user2DisplayName: otherUserDisplayName,
-          user2AvatarUrl: otherUserAvatarUrl,
-        )).thenAnswer((_) async => conversationId);
+              user1Id: 'test-user-id',
+              user1DisplayName: 'Test User',
+              user1AvatarUrl: 'https://example.com/avatar.jpg',
+              user2Id: otherUserId,
+              user2DisplayName: otherUserDisplayName,
+              user2AvatarUrl: otherUserAvatarUrl,
+            )).thenAnswer((_) async => conversationId);
 
         // Act
         final result = await messagingService.startDirectConversation(
@@ -269,28 +273,28 @@ void main() {
         // Assert
         expect(result, equals(conversationId));
         verify(() => mockMessagingRepo.findDirectConversation(
-          user1Id: 'test-user-id',
-          user2Id: otherUserId,
-        )).called(1);
+              user1Id: 'test-user-id',
+              user2Id: otherUserId,
+            )).called(1);
         verify(() => mockMessagingRepo.createDirectConversation(
-          user1Id: 'test-user-id',
-          user1DisplayName: 'Test User',
-          user1AvatarUrl: 'https://example.com/avatar.jpg',
-          user2Id: otherUserId,
-          user2DisplayName: otherUserDisplayName,
-          user2AvatarUrl: otherUserAvatarUrl,
-        )).called(1);
+              user1Id: 'test-user-id',
+              user1DisplayName: 'Test User',
+              user1AvatarUrl: 'https://example.com/avatar.jpg',
+              user2Id: otherUserId,
+              user2DisplayName: otherUserDisplayName,
+              user2AvatarUrl: otherUserAvatarUrl,
+            )).called(1);
       });
 
       test('should return existing direct conversation if exists', () async {
         // Arrange
         const otherUserId = 'user-789';
         const existingConversationId = 'existing-conv-456';
-        
+
         when(() => mockMessagingRepo.findDirectConversation(
-          user1Id: 'test-user-id',
-          user2Id: otherUserId,
-        )).thenAnswer((_) async => existingConversationId);
+              user1Id: 'test-user-id',
+              user2Id: otherUserId,
+            )).thenAnswer((_) async => existingConversationId);
 
         // Act
         final result = await messagingService.startDirectConversation(
@@ -301,17 +305,17 @@ void main() {
         // Assert
         expect(result, equals(existingConversationId));
         verify(() => mockMessagingRepo.findDirectConversation(
-          user1Id: 'test-user-id',
-          user2Id: otherUserId,
-        )).called(1);
+              user1Id: 'test-user-id',
+              user2Id: otherUserId,
+            )).called(1);
         verifyNever(() => mockMessagingRepo.createDirectConversation(
-          user1Id: any(named: 'user1Id'),
-          user1DisplayName: any(named: 'user1DisplayName'),
-          user1AvatarUrl: any(named: 'user1AvatarUrl'),
-          user2Id: any(named: 'user2Id'),
-          user2DisplayName: any(named: 'user2DisplayName'),
-          user2AvatarUrl: any(named: 'user2AvatarUrl'),
-        ));
+              user1Id: any(named: 'user1Id'),
+              user1DisplayName: any(named: 'user1DisplayName'),
+              user1AvatarUrl: any(named: 'user1AvatarUrl'),
+              user2Id: any(named: 'user2Id'),
+              user2DisplayName: any(named: 'user2DisplayName'),
+              user2AvatarUrl: any(named: 'user2AvatarUrl'),
+            ));
       });
 
       test('should create group conversation', () async {
@@ -329,14 +333,14 @@ void main() {
         };
         const title = 'Recipe Planning Group';
         const conversationId = 'group-conv-123';
-        
+
         when(() => mockMessagingRepo.createGroupConversation(
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-          title: title,
-          creatorId: 'test-user-id',
-        )).thenAnswer((_) async => conversationId);
+              participantIds: any(named: 'participantIds'),
+              participantDisplayNames: any(named: 'participantDisplayNames'),
+              participantAvatarUrls: any(named: 'participantAvatarUrls'),
+              title: title,
+              creatorId: 'test-user-id',
+            )).thenAnswer((_) async => conversationId);
 
         // Act
         final result = await messagingService.createGroupConversation(
@@ -349,17 +353,20 @@ void main() {
         // Assert
         expect(result, equals(conversationId));
         verify(() => mockMessagingRepo.createGroupConversation(
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-          title: title,
-          creatorId: 'test-user-id',
-        )).called(1);
+              participantIds: any(named: 'participantIds'),
+              participantDisplayNames: any(named: 'participantDisplayNames'),
+              participantAvatarUrls: any(named: 'participantAvatarUrls'),
+              title: title,
+              creatorId: 'test-user-id',
+            )).called(1);
       });
 
       test('should add current user to group if not included', () async {
         // Arrange
-        const participantIds = ['user-1', 'user-2']; // Current user not included
+        const participantIds = [
+          'user-1',
+          'user-2'
+        ]; // Current user not included
         final participantDisplayNames = <String, String>{
           'user-1': 'User One',
           'user-2': 'User Two',
@@ -370,14 +377,14 @@ void main() {
         };
         const title = 'Group Chat';
         const conversationId = 'group-conv-456';
-        
+
         when(() => mockMessagingRepo.createGroupConversation(
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-          title: title,
-          creatorId: 'test-user-id',
-        )).thenAnswer((_) async => conversationId);
+              participantIds: any(named: 'participantIds'),
+              participantDisplayNames: any(named: 'participantDisplayNames'),
+              participantAvatarUrls: any(named: 'participantAvatarUrls'),
+              title: title,
+              creatorId: 'test-user-id',
+            )).thenAnswer((_) async => conversationId);
 
         // Act
         final result = await messagingService.createGroupConversation(
@@ -389,16 +396,19 @@ void main() {
 
         // Assert
         expect(result, equals(conversationId));
-        
+
         // Verify current user was added
-        final capturedCall = verify(() => mockMessagingRepo.createGroupConversation(
-          participantIds: captureAny(named: 'participantIds'),
-          participantDisplayNames: captureAny(named: 'participantDisplayNames'),
-          participantAvatarUrls: captureAny(named: 'participantAvatarUrls'),
-          title: title,
-          creatorId: 'test-user-id',
-        )).captured;
-        
+        final capturedCall =
+            verify(() => mockMessagingRepo.createGroupConversation(
+                  participantIds: captureAny(named: 'participantIds'),
+                  participantDisplayNames:
+                      captureAny(named: 'participantDisplayNames'),
+                  participantAvatarUrls:
+                      captureAny(named: 'participantAvatarUrls'),
+                  title: title,
+                  creatorId: 'test-user-id',
+                )).captured;
+
         final capturedParticipantIds = capturedCall[0] as List<String>;
         expect(capturedParticipantIds, contains('test-user-id'));
       });
@@ -410,7 +420,7 @@ void main() {
           id: conversationId,
           participantIds: ['test-user-id', 'user-2'],
         );
-        
+
         when(() => mockMessagingRepo.getConversation(conversationId))
             .thenAnswer((_) async => conversation);
 
@@ -419,13 +429,14 @@ void main() {
 
         // Assert
         expect(result, equals(conversation));
-        verify(() => mockMessagingRepo.getConversation(conversationId)).called(1);
+        verify(() => mockMessagingRepo.getConversation(conversationId))
+            .called(1);
       });
 
       test('should handle conversation retrieval error gracefully', () async {
         // Arrange
         const conversationId = 'error-conv';
-        
+
         when(() => mockMessagingRepo.getConversation(conversationId))
             .thenThrow(Exception('Network error'));
 
@@ -436,7 +447,8 @@ void main() {
         expect(result, isNull);
       });
 
-      test('should throw when not authenticated for conversation creation', () async {
+      test('should throw when not authenticated for conversation creation',
+          () async {
         // Arrange
         mockAuthRepo.setAuthState(user: null, userId: null);
 
@@ -471,11 +483,11 @@ void main() {
             content: 'Hi there!',
           ),
         ];
-        
+
         when(() => mockMessagingRepo.getConversationMessages(
-          conversationId: conversationId,
-          limit: any(named: 'limit'),
-        )).thenAnswer((_) => Stream.value(messages));
+              conversationId: conversationId,
+              limit: any(named: 'limit'),
+            )).thenAnswer((_) => Stream.value(messages));
 
         // Act
         final stream = messagingService.getConversationMessages(
@@ -487,9 +499,9 @@ void main() {
         expect(stream, isNotNull);
         expect(stream, isA<Stream<List<Message>>>());
         verify(() => mockMessagingRepo.getConversationMessages(
-          conversationId: conversationId,
-          limit: 50,
-        )).called(1);
+              conversationId: conversationId,
+              limit: 50,
+            )).called(1);
       });
 
       test('should get paginated conversation messages', () async {
@@ -505,12 +517,12 @@ void main() {
             content: 'Older message',
           ),
         ];
-        
+
         when(() => mockMessagingRepo.getConversationMessagesPage(
-          conversationId: conversationId,
-          limit: 50,
-          startAfter: startAfter,
-        )).thenAnswer((_) async => messages);
+              conversationId: conversationId,
+              limit: 50,
+              startAfter: startAfter,
+            )).thenAnswer((_) async => messages);
 
         // Act
         final result = await messagingService.getConversationMessagesPage(
@@ -522,10 +534,10 @@ void main() {
         // Assert
         expect(result, equals(messages));
         verify(() => mockMessagingRepo.getConversationMessagesPage(
-          conversationId: conversationId,
-          limit: 50,
-          startAfter: startAfter,
-        )).called(1);
+              conversationId: conversationId,
+              limit: 50,
+              startAfter: startAfter,
+            )).called(1);
       });
 
       test('should send text message', () async {
@@ -561,7 +573,8 @@ void main() {
         );
 
         // Assert
-        final captured = verify(() => mockMessagingRepo.sendMessage(captureAny())).captured;
+        final captured =
+            verify(() => mockMessagingRepo.sendMessage(captureAny())).captured;
         final sentMessage = captured.first as Message;
         expect(sentMessage.replyToMessageId, equals(replyToMessageId));
       });
@@ -584,12 +597,12 @@ void main() {
       test('should handle message send error gracefully', () async {
         // Arrange
         const conversationId = 'conv-error';
-        
+
         when(() => mockMessagingRepo.getConversationMessagesPage(
-          conversationId: conversationId,
-          limit: any(named: 'limit'),
-          startAfter: any(named: 'startAfter'),
-        )).thenThrow(Exception('Network error'));
+              conversationId: conversationId,
+              limit: any(named: 'limit'),
+              startAfter: any(named: 'startAfter'),
+            )).thenThrow(Exception('Network error'));
 
         // Act
         final result = await messagingService.getConversationMessagesPage(
@@ -620,7 +633,8 @@ void main() {
         );
 
         // Assert
-        final captured = verify(() => mockMessagingRepo.sendMessage(captureAny())).captured;
+        final captured =
+            verify(() => mockMessagingRepo.sendMessage(captureAny())).captured;
         final sentMessage = captured.first as Message;
         expect(sentMessage.type, equals(MessageType.recipeShare));
         expect(sentMessage.metadata?['recipeId'], equals(recipeId));
@@ -643,7 +657,8 @@ void main() {
         );
 
         // Assert
-        final captured = verify(() => mockMessagingRepo.sendMessage(captureAny())).captured;
+        final captured =
+            verify(() => mockMessagingRepo.sendMessage(captureAny())).captured;
         final sentMessage = captured.first as Message;
         expect(sentMessage.type, equals(MessageType.menuShare));
         expect(sentMessage.metadata?['menuId'], equals(menuId));
@@ -665,7 +680,8 @@ void main() {
         );
 
         // Assert
-        final captured = verify(() => mockMessagingRepo.sendMessage(captureAny())).captured;
+        final captured =
+            verify(() => mockMessagingRepo.sendMessage(captureAny())).captured;
         final sentMessage = captured.first as Message;
         expect(sentMessage.type, equals(MessageType.shoppingListShare));
         expect(sentMessage.metadata?['listId'], equals(listId));
@@ -677,20 +693,20 @@ void main() {
         // Arrange
         const messageId = 'msg-edit-123';
         const newContent = 'Edited content';
-        
+
         when(() => mockMessagingRepo.getMessage(messageId))
             .thenAnswer((_) async => FakeMessage(
-              id: messageId,
-              conversationId: 'conv-123',
-              senderId: 'test-user-id',
-              senderDisplayName: 'Test User',
-              content: 'Original content',
-            ));
-        
+                  id: messageId,
+                  conversationId: 'conv-123',
+                  senderId: 'test-user-id',
+                  senderDisplayName: 'Test User',
+                  content: 'Original content',
+                ));
+
         when(() => mockMessagingRepo.updateMessageContent(
-          messageId: messageId,
-          newContent: newContent,
-        )).thenAnswer((_) async {});
+              messageId: messageId,
+              newContent: newContent,
+            )).thenAnswer((_) async {});
 
         // Act
         await messagingService.editMessage(
@@ -700,24 +716,24 @@ void main() {
 
         // Assert
         verify(() => mockMessagingRepo.updateMessageContent(
-          messageId: messageId,
-          newContent: newContent,
-        )).called(1);
+              messageId: messageId,
+              newContent: newContent,
+            )).called(1);
       });
 
       test('should delete message', () async {
         // Arrange
         const messageId = 'msg-delete-123';
-        
+
         when(() => mockMessagingRepo.getMessage(messageId))
             .thenAnswer((_) async => FakeMessage(
-              id: messageId,
-              conversationId: 'conv-123',
-              senderId: 'test-user-id',
-              senderDisplayName: 'Test User',
-              content: 'To be deleted',
-            ));
-        
+                  id: messageId,
+                  conversationId: 'conv-123',
+                  senderId: 'test-user-id',
+                  senderDisplayName: 'Test User',
+                  content: 'To be deleted',
+                ));
+
         when(() => mockMessagingRepo.deleteMessage(messageId))
             .thenAnswer((_) async {});
 
@@ -731,20 +747,20 @@ void main() {
       test('should mark messages as read', () async {
         // Arrange
         const conversationId = 'conv-read';
-        
+
         when(() => mockMessagingRepo.markConversationAsRead(
-          conversationId: conversationId,
-          userId: 'test-user-id',
-        )).thenAnswer((_) async {});
+              conversationId: conversationId,
+              userId: 'test-user-id',
+            )).thenAnswer((_) async {});
 
         // Act
         await messagingService.markConversationAsRead(conversationId);
 
         // Assert
         verify(() => mockMessagingRepo.markConversationAsRead(
-          conversationId: conversationId,
-          userId: 'test-user-id',
-        )).called(1);
+              conversationId: conversationId,
+              userId: 'test-user-id',
+            )).called(1);
       });
 
       test('should search messages in conversation', () async {
@@ -760,12 +776,12 @@ void main() {
             content: 'Check out this recipe',
           ),
         ];
-        
+
         when(() => mockMessagingRepo.searchMessages(
-          conversationId: conversationId,
-          query: query,
-          limit: any(named: 'limit'),
-        )).thenAnswer((_) async => messages);
+              conversationId: conversationId,
+              query: query,
+              limit: any(named: 'limit'),
+            )).thenAnswer((_) async => messages);
 
         // Act
         final result = await messagingService.searchMessages(
@@ -776,10 +792,10 @@ void main() {
         // Assert
         expect(result, equals(messages));
         verify(() => mockMessagingRepo.searchMessages(
-          conversationId: conversationId,
-          query: query,
-          limit: 20,
-        )).called(1);
+              conversationId: conversationId,
+              query: query,
+              limit: 20,
+            )).called(1);
       });
     });
 
@@ -812,7 +828,7 @@ void main() {
       test('should get unread message count', () async {
         // Arrange
         const unreadCount = 5;
-        
+
         when(() => mockMessagingRepo.getUnreadMessageCount('test-user-id'))
             .thenAnswer((_) async => unreadCount);
 
@@ -826,8 +842,9 @@ void main() {
       test('should get total unread conversations count', () async {
         // Arrange
         const totalUnread = 3;
-        
-        when(() => mockMessagingRepo.getUnreadConversationsCount('test-user-id'))
+
+        when(() =>
+                mockMessagingRepo.getUnreadConversationsCount('test-user-id'))
             .thenAnswer((_) async => totalUnread);
 
         // Act
@@ -851,13 +868,13 @@ void main() {
           'new-user-123': 'https://example.com/new1.jpg',
           'new-user-456': 'https://example.com/new2.jpg',
         };
-        
+
         when(() => mockMessagingRepo.addParticipants(
-          conversationId: conversationId,
-          participantIds: participantIds,
-          participantDisplayNames: participantDisplayNames,
-          participantAvatarUrls: participantAvatarUrls,
-        )).thenAnswer((_) async {});
+              conversationId: conversationId,
+              participantIds: participantIds,
+              participantDisplayNames: participantDisplayNames,
+              participantAvatarUrls: participantAvatarUrls,
+            )).thenAnswer((_) async {});
 
         // Act
         await messagingService.addParticipantsToGroup(
@@ -869,22 +886,22 @@ void main() {
 
         // Assert
         verify(() => mockMessagingRepo.addParticipants(
-          conversationId: conversationId,
-          participantIds: participantIds,
-          participantDisplayNames: participantDisplayNames,
-          participantAvatarUrls: participantAvatarUrls,
-        )).called(1);
+              conversationId: conversationId,
+              participantIds: participantIds,
+              participantDisplayNames: participantDisplayNames,
+              participantAvatarUrls: participantAvatarUrls,
+            )).called(1);
       });
 
       test('should remove participant from group conversation', () async {
         // Arrange
         const conversationId = 'conv-group-remove';
         const participantId = 'remove-user-123';
-        
+
         when(() => mockMessagingRepo.removeParticipant(
-          conversationId: conversationId,
-          participantId: participantId,
-        )).thenAnswer((_) async {});
+              conversationId: conversationId,
+              participantId: participantId,
+            )).thenAnswer((_) async {});
 
         // Act
         await messagingService.removeParticipantFromGroup(
@@ -894,9 +911,9 @@ void main() {
 
         // Assert
         verify(() => mockMessagingRepo.removeParticipant(
-          conversationId: conversationId,
-          participantId: participantId,
-        )).called(1);
+              conversationId: conversationId,
+              participantId: participantId,
+            )).called(1);
       });
 
       // Note: Leave conversation functionality is handled via removeParticipantFromGroup
@@ -944,12 +961,12 @@ void main() {
     });
 
     group('Firebase/Firestore Errors', () {
-      test('should handle permission denied when accessing conversations', () async {
+      test('should handle permission denied when accessing conversations',
+          () async {
         // Arrange
         when(() => mockMessagingRepo.getUserConversations('test-user-id'))
-            .thenAnswer((_) => Stream.error(
-                PermissionDeniedException('User does not have permission to access conversations')
-            ));
+            .thenAnswer((_) => Stream.error(PermissionDeniedException(
+                'User does not have permission to access conversations')));
 
         // Act
         final stream = messagingService.getMyConversations();
@@ -965,11 +982,11 @@ void main() {
         // Arrange
         const conversationId = 'non-existent-conv';
         when(() => mockMessagingRepo.getConversationMessages(
-          conversationId: conversationId,
-          limit: any(named: 'limit'),
-        )).thenAnswer((_) => Stream.error(
-            Exception('Document not found: /conversations/$conversationId')
-        ));
+                  conversationId: conversationId,
+                  limit: any(named: 'limit'),
+                ))
+            .thenAnswer((_) => Stream.error(Exception(
+                'Document not found: /conversations/$conversationId')));
 
         // Act
         final stream = messagingService.getConversationMessages(
@@ -1003,7 +1020,8 @@ void main() {
       test('should handle quota exceeded errors', () async {
         // Arrange
         when(() => mockMessagingRepo.getUnreadMessageCount('test-user-id'))
-            .thenAnswer((_) async => throw Exception('Quota exceeded: Too many read operations'));
+            .thenAnswer((_) async =>
+                throw Exception('Quota exceeded: Too many read operations'));
 
         // Act & Assert
         await expectLater(
@@ -1016,9 +1034,11 @@ void main() {
         // Arrange
         const conversationId = 'conv-transaction';
         when(() => mockMessagingRepo.markConversationAsRead(
-          conversationId: conversationId,
-          userId: 'test-user-id',
-        )).thenAnswer((_) async => throw Exception('Transaction timeout after 5 seconds'));
+                  conversationId: conversationId,
+                  userId: 'test-user-id',
+                ))
+            .thenAnswer((_) async =>
+                throw Exception('Transaction timeout after 5 seconds'));
 
         // Act & Assert
         await expectLater(
@@ -1035,10 +1055,10 @@ void main() {
         const content = 'Message to nowhere';
         when(() => mockMessagingRepo.sendMessage(any()))
             .thenAnswer((_) async => throw ResourceNotFoundException(
-              'Conversation not found',
-              resourceType: 'conversation',
-              resourceId: conversationId,
-            ));
+                  'Conversation not found',
+                  resourceType: 'conversation',
+                  resourceId: conversationId,
+                ));
 
         // Act & Assert
         await expectLater(
@@ -1069,8 +1089,8 @@ void main() {
         // Arrange
         const conversationId = 'conv-long';
         final content = 'a' * 10001; // Exceeds typical message limit
-        when(() => mockMessagingRepo.sendMessage(any()))
-            .thenAnswer((_) async => throw ValidationException('Message exceeds 10000 character limit'));
+        when(() => mockMessagingRepo.sendMessage(any())).thenAnswer((_) async =>
+            throw ValidationException('Message exceeds 10000 character limit'));
 
         // Act & Assert
         await expectLater(
@@ -1086,8 +1106,9 @@ void main() {
         // Arrange
         const conversationId = 'conv-attachment';
         const attachmentPath = '/path/to/file.jpg';
-        when(() => mockMessagingRepo.sendMessage(any()))
-            .thenAnswer((_) async => throw Exception('Failed to upload attachment: Storage quota exceeded'));
+        when(() => mockMessagingRepo.sendMessage(any())).thenAnswer((_) async =>
+            throw Exception(
+                'Failed to upload attachment: Storage quota exceeded'));
 
         // Act & Assert
         // Note: sendImageMessage doesn't exist - using sendTextMessage with error simulation
@@ -1104,8 +1125,8 @@ void main() {
         // Arrange
         const conversationId = 'conv-timeout';
         const content = 'Timeout message';
-        when(() => mockMessagingRepo.sendMessage(any()))
-            .thenAnswer((_) async => throw TimeoutException('Request timed out after 30 seconds'));
+        when(() => mockMessagingRepo.sendMessage(any())).thenAnswer((_) async =>
+            throw TimeoutException('Request timed out after 30 seconds'));
 
         // Act & Assert
         await expectLater(
@@ -1121,8 +1142,8 @@ void main() {
         // Arrange
         const conversationId = 'conv-metadata';
         const recipeId = ''; // Empty recipe ID
-        when(() => mockMessagingRepo.sendMessage(any()))
-            .thenAnswer((_) async => throw ValidationException('Invalid recipe ID'));
+        when(() => mockMessagingRepo.sendMessage(any())).thenAnswer(
+            (_) async => throw ValidationException('Invalid recipe ID'));
 
         // Act & Assert
         await expectLater(
@@ -1137,16 +1158,20 @@ void main() {
     });
 
     group('Conversation Management Errors', () {
-      test('should handle creating conversation with invalid participants', () async {
+      test('should handle creating conversation with invalid participants',
+          () async {
         // Arrange
         final participantIds = <String>[]; // Empty participants list
         when(() => mockMessagingRepo.createGroupConversation(
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-          title: any(named: 'title'),
-          creatorId: any(named: 'creatorId'),
-        )).thenAnswer((_) async => throw ValidationException('At least 2 participants required'));
+                  participantIds: any(named: 'participantIds'),
+                  participantDisplayNames:
+                      any(named: 'participantDisplayNames'),
+                  participantAvatarUrls: any(named: 'participantAvatarUrls'),
+                  title: any(named: 'title'),
+                  creatorId: any(named: 'creatorId'),
+                ))
+            .thenAnswer((_) async =>
+                throw ValidationException('At least 2 participants required'));
 
         // Act & Assert
         await expectLater(
@@ -1167,13 +1192,13 @@ void main() {
         // Note: MockMessagingRepository doesn't have updateGroupTitle method
         // Using updateConversation as a workaround
         when(() => mockMessagingRepo.updateConversation(
-          conversationId: conversationId,
-          title: newTitle,
-        )).thenAnswer((_) async => throw ResourceNotFoundException(
-          'Conversation not found',
-          resourceType: 'conversation',
-          resourceId: conversationId,
-        ));
+              conversationId: conversationId,
+              title: newTitle,
+            )).thenAnswer((_) async => throw ResourceNotFoundException(
+              'Conversation not found',
+              resourceType: 'conversation',
+              resourceId: conversationId,
+            ));
 
         // Act & Assert
         await expectLater(
@@ -1190,9 +1215,11 @@ void main() {
         const conversationId = 'conv-admin';
         const userId = 'test-user-id';
         when(() => mockMessagingRepo.removeParticipant(
-          conversationId: conversationId,
-          participantId: userId,
-        )).thenAnswer((_) async => throw PermissionDeniedException('Cannot leave: You are the only admin'));
+                  conversationId: conversationId,
+                  participantId: userId,
+                ))
+            .thenAnswer((_) async => throw PermissionDeniedException(
+                'Cannot leave: You are the only admin'));
 
         // Act & Assert
         await expectLater(
@@ -1209,11 +1236,14 @@ void main() {
         const conversationId = 'conv-duplicate';
         final participantIds = ['user-1', 'user-1']; // Duplicate user
         when(() => mockMessagingRepo.addParticipants(
-          conversationId: conversationId,
-          participantIds: participantIds,
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-        )).thenAnswer((_) async => throw ValidationException('Duplicate participant IDs'));
+                  conversationId: conversationId,
+                  participantIds: participantIds,
+                  participantDisplayNames:
+                      any(named: 'participantDisplayNames'),
+                  participantAvatarUrls: any(named: 'participantAvatarUrls'),
+                ))
+            .thenAnswer((_) async =>
+                throw ValidationException('Duplicate participant IDs'));
 
         // Act & Assert
         await expectLater(
@@ -1227,16 +1257,21 @@ void main() {
         );
       });
 
-      test('should handle conversation creation with too many participants', () async {
+      test('should handle conversation creation with too many participants',
+          () async {
         // Arrange
-        final participantIds = List.generate(101, (i) => 'user-$i'); // 101 users
+        final participantIds =
+            List.generate(101, (i) => 'user-$i'); // 101 users
         when(() => mockMessagingRepo.createGroupConversation(
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-          title: any(named: 'title'),
-          creatorId: any(named: 'creatorId'),
-        )).thenAnswer((_) async => throw ValidationException('Maximum 100 participants allowed'));
+                  participantIds: any(named: 'participantIds'),
+                  participantDisplayNames:
+                      any(named: 'participantDisplayNames'),
+                  participantAvatarUrls: any(named: 'participantAvatarUrls'),
+                  title: any(named: 'title'),
+                  creatorId: any(named: 'creatorId'),
+                ))
+            .thenAnswer((_) async =>
+                throw ValidationException('Maximum 100 participants allowed'));
 
         // Act & Assert
         await expectLater(
@@ -1258,11 +1293,11 @@ void main() {
         // Arrange
         const conversationId = 'conv-stream-error';
         when(() => mockMessagingRepo.getConversationMessages(
-          conversationId: conversationId,
-          limit: any(named: 'limit'),
-        )).thenAnswer((_) => Stream.error(
-            Exception('WebSocket connection lost')
-        ));
+                  conversationId: conversationId,
+                  limit: any(named: 'limit'),
+                ))
+            .thenAnswer(
+                (_) => Stream.error(Exception('WebSocket connection lost')));
 
         // Act
         final stream = messagingService.getConversationMessages(
@@ -1279,13 +1314,13 @@ void main() {
       test('should handle connection lost during typing indicator', () async {
         // Arrange
         const conversationId = 'conv-typing-error';
-        
+
         // Act
         await messagingService.setTypingIndicator(conversationId);
-        
+
         // Simulate connection loss (typing indicators are ephemeral)
         // The service should handle this gracefully
-        
+
         // Assert - Should not throw, typing indicators fail silently
         expect(true, isTrue);
       });
@@ -1294,7 +1329,7 @@ void main() {
         // Arrange
         // Note: updatePresence doesn't exist in MessagingService
         // This test is for future implementation
-        
+
         // Act & Assert
         // Skip test - method not implemented yet
         expect(true, isTrue);
@@ -1305,20 +1340,20 @@ void main() {
         const conversationId = 'conv-cancel';
         final controller = StreamController<List<Message>>();
         when(() => mockMessagingRepo.getConversationMessages(
-          conversationId: conversationId,
-          limit: any(named: 'limit'),
-        )).thenAnswer((_) => controller.stream);
+              conversationId: conversationId,
+              limit: any(named: 'limit'),
+            )).thenAnswer((_) => controller.stream);
 
         // Act
         final stream = messagingService.getConversationMessages(
           conversationId: conversationId,
         );
         final subscription = stream.listen((_) {});
-        
+
         // Cancel subscription and emit error
         await subscription.cancel();
         controller.addError(Exception('Stream cancelled'));
-        
+
         // Assert - Stream should be cancelled, no error should propagate
         expect(subscription.isPaused, isFalse);
         await controller.close();
@@ -1347,12 +1382,12 @@ void main() {
         const messageId = 'other-user-msg';
         when(() => mockMessagingRepo.getMessage(messageId))
             .thenAnswer((_) async => FakeMessage(
-              id: messageId,
-              conversationId: 'conv-123',
-              senderId: 'other-user-id', // Different user
-              senderDisplayName: 'Other User',
-              content: 'Not my message',
-            ));
+                  id: messageId,
+                  conversationId: 'conv-123',
+                  senderId: 'other-user-id', // Different user
+                  senderDisplayName: 'Other User',
+                  content: 'Not my message',
+                ));
 
         // Act & Assert
         await expectLater(
@@ -1365,7 +1400,7 @@ void main() {
         // Arrange
         // Note: addReaction doesn't exist in MessagingService
         // This test is for future implementation
-        
+
         // Act & Assert
         // Skip test - method not implemented yet
         expect(true, isTrue);
@@ -1375,13 +1410,13 @@ void main() {
         // Arrange
         const conversationId = 'invalid-conv';
         when(() => mockMessagingRepo.markConversationAsRead(
-          conversationId: conversationId,
-          userId: 'test-user-id',
-        )).thenAnswer((_) async => throw ResourceNotFoundException(
-          'Conversation not found',
-          resourceType: 'conversation',
-          resourceId: conversationId,
-        ));
+              conversationId: conversationId,
+              userId: 'test-user-id',
+            )).thenAnswer((_) async => throw ResourceNotFoundException(
+              'Conversation not found',
+              resourceType: 'conversation',
+              resourceId: conversationId,
+            ));
 
         // Act & Assert
         await expectLater(
@@ -1394,15 +1429,15 @@ void main() {
         // Arrange
         const messageId = 'msg-empty-edit';
         const newContent = '   '; // Only whitespace
-        
+
         when(() => mockMessagingRepo.getMessage(messageId))
             .thenAnswer((_) async => FakeMessage(
-              id: messageId,
-              conversationId: 'conv-123',
-              senderId: 'test-user-id',
-              senderDisplayName: 'Test User',
-              content: 'Original',
-            ));
+                  id: messageId,
+                  conversationId: 'conv-123',
+                  senderId: 'test-user-id',
+                  senderDisplayName: 'Test User',
+                  content: 'Original',
+                ));
 
         // Act & Assert
         await expectLater(
@@ -1418,7 +1453,7 @@ void main() {
         // Arrange
         // Note: removeReaction doesn't exist in MessagingService
         // This test is for future implementation
-        
+
         // Act & Assert
         // Skip test - method not implemented yet
         expect(true, isTrue);
@@ -1431,26 +1466,28 @@ void main() {
         const conversationId = 'conv-concurrent';
         final messages = List.generate(10, (i) => 'Message $i');
         var sendCount = 0;
-        
-        when(() => mockMessagingRepo.sendMessage(any()))
-            .thenAnswer((_) async {
-              sendCount++;
-              if (sendCount == 5) {
-                throw Exception('Rate limit exceeded');
-              }
-            });
+
+        when(() => mockMessagingRepo.sendMessage(any())).thenAnswer((_) async {
+          sendCount++;
+          if (sendCount == 5) {
+            throw Exception('Rate limit exceeded');
+          }
+        });
 
         // Act
-        final futures = messages.map((content) =>
-          messagingService.sendTextMessage(
-            conversationId: conversationId,
-            content: content,
-          ).catchError((_) => null)
-        ).toList();
+        final futures = messages
+            .map((content) => messagingService
+                .sendTextMessage(
+                  conversationId: conversationId,
+                  content: content,
+                )
+                .catchError((_) => null))
+            .toList();
 
         // Assert
         final results = await Future.wait(futures);
-        expect(results.length, greaterThan(0)); // Some messages should have been sent
+        expect(results.length,
+            greaterThan(0)); // Some messages should have been sent
         expect(sendCount, greaterThanOrEqualTo(5));
       });
 
@@ -1458,11 +1495,11 @@ void main() {
         // Arrange
         const conversationId = 'conv-update-concurrent';
         var updateCount = 0;
-        
+
         when(() => mockMessagingRepo.updateConversation(
-          conversationId: conversationId,
-          title: any(named: 'title'),
-        )).thenAnswer((_) async {
+              conversationId: conversationId,
+              title: any(named: 'title'),
+            )).thenAnswer((_) async {
           updateCount++;
           if (updateCount > 1) {
             throw Exception('Concurrent modification detected');
@@ -1471,15 +1508,19 @@ void main() {
         });
 
         // Act
-        final future1 = messagingService.updateGroupTitle(
-          conversationId: conversationId,
-          newTitle: 'Title 1',
-        ).catchError((_) => null);
-        
-        final future2 = messagingService.updateGroupTitle(
-          conversationId: conversationId,
-          newTitle: 'Title 2',
-        ).catchError((_) => null);
+        final future1 = messagingService
+            .updateGroupTitle(
+              conversationId: conversationId,
+              newTitle: 'Title 1',
+            )
+            .catchError((_) => null);
+
+        final future2 = messagingService
+            .updateGroupTitle(
+              conversationId: conversationId,
+              newTitle: 'Title 2',
+            )
+            .catchError((_) => null);
 
         // Assert
         await Future.wait<void>([future1, future2]);
@@ -1491,15 +1532,14 @@ void main() {
         var callCount = 0;
         when(() => mockMessagingRepo.getUnreadMessageCount('test-user-id'))
             .thenAnswer((_) async {
-              callCount++;
-              await Future.delayed(const Duration(milliseconds: 10));
-              return callCount * 5; // Different count each call
-            });
+          callCount++;
+          await Future.delayed(const Duration(milliseconds: 10));
+          return callCount * 5; // Different count each call
+        });
 
         // Act
-        final futures = List.generate(5, (_) =>
-          messagingService.getUnreadMessageCount()
-        );
+        final futures =
+            List.generate(5, (_) => messagingService.getUnreadMessageCount());
         final results = await Future.wait(futures);
 
         // Assert
@@ -1511,13 +1551,13 @@ void main() {
         // Arrange
         const conversationId = 'conv-add-concurrent';
         var addCount = 0;
-        
+
         when(() => mockMessagingRepo.addParticipants(
-          conversationId: conversationId,
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-        )).thenAnswer((_) async {
+              conversationId: conversationId,
+              participantIds: any(named: 'participantIds'),
+              participantDisplayNames: any(named: 'participantDisplayNames'),
+              participantAvatarUrls: any(named: 'participantAvatarUrls'),
+            )).thenAnswer((_) async {
           addCount++;
           if (addCount > 1) {
             throw Exception('Participants already being modified');
@@ -1531,7 +1571,7 @@ void main() {
           participantDisplayNames: {'user-a': 'User A'},
           participantAvatarUrls: {},
         ).catchError((_) => null);
-        
+
         final future2 = messagingService.addParticipantsToGroup(
           conversationId: conversationId,
           participantIds: ['user-b'],
@@ -1548,29 +1588,29 @@ void main() {
         // Arrange
         const messageId = 'msg-delete-concurrent';
         var deleteCount = 0;
-        
+
         when(() => mockMessagingRepo.getMessage(messageId))
             .thenAnswer((_) async => FakeMessage(
-              id: messageId,
-              conversationId: 'conv-123',
-              senderId: 'test-user-id',
-              senderDisplayName: 'Test User',
-              content: 'To delete',
-            ));
-        
+                  id: messageId,
+                  conversationId: 'conv-123',
+                  senderId: 'test-user-id',
+                  senderDisplayName: 'Test User',
+                  content: 'To delete',
+                ));
+
         when(() => mockMessagingRepo.deleteMessage(messageId))
             .thenAnswer((_) async {
-              deleteCount++;
-              if (deleteCount > 1) {
-                throw NotFoundException('Message already deleted');
-              }
-            });
+          deleteCount++;
+          if (deleteCount > 1) {
+            throw NotFoundException('Message already deleted');
+          }
+        });
 
         // Act
-        final futures = List.generate(3, (_) =>
-          messagingService.deleteMessage(messageId)
-            .catchError((_) {})
-        );
+        final futures = List.generate(
+            3,
+            (_) =>
+                messagingService.deleteMessage(messageId).catchError((_) {}));
 
         // Assert
         await Future.wait(futures);
@@ -1587,16 +1627,15 @@ void main() {
 
     // Error handling tests merged from messaging_service_error_test.dart
     group('Firebase/Firestore Errors', () {
-      test('should handle permission denied when accessing conversations', () async {
+      test('should handle permission denied when accessing conversations',
+          () async {
         // Arrange
         when(() => mockMessagingRepo.getUserConversations('test-user-id'))
-            .thenAnswer((_) => Stream.error(
-                PermissionDeniedException(
+            .thenAnswer((_) => Stream.error(PermissionDeniedException(
                   'User does not have permission to access conversations',
                   resource: 'conversations',
                   userId: 'test-user-id',
-                )
-            ));
+                )));
 
         // Act
         final stream = messagingService.getMyConversations();
@@ -1612,11 +1651,11 @@ void main() {
         // Arrange
         const conversationId = 'non-existent-conv';
         when(() => mockMessagingRepo.getConversationMessages(
-          conversationId: conversationId,
-          limit: any(named: 'limit'),
-        )).thenAnswer((_) => Stream.error(
-            Exception('Document not found: /conversations/$conversationId')
-        ));
+                  conversationId: conversationId,
+                  limit: any(named: 'limit'),
+                ))
+            .thenAnswer((_) => Stream.error(Exception(
+                'Document not found: /conversations/$conversationId')));
 
         // Act
         final stream = messagingService.getConversationMessages(

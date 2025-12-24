@@ -69,7 +69,7 @@ Future<void> main() async {
 
     // Start the application
     runApp(const ButleryApp());
-    
+
     if (kDebugMode) {
       debugPrint('✅ E2E Mock system started successfully');
     }
@@ -80,7 +80,8 @@ Future<void> main() async {
     }
 
     // Show error app with E2E-specific message
-    runApp(_E2EMockErrorApp('E2E Mock initialization failed: $e\n\nStack trace:\n$stackTrace'));
+    runApp(_E2EMockErrorApp(
+        'E2E Mock initialization failed: $e\n\nStack trace:\n$stackTrace'));
   }
 }
 
@@ -95,7 +96,7 @@ Future<void> _initializeE2EMockSystem() async {
   // Create DI modules in dependency order - same as production
   final modules = [
     CoreModule(),
-    ContentModule(), 
+    ContentModule(),
     SocialModule(),
     MessagingModule(),
     CollaborationModule(),
@@ -127,7 +128,7 @@ Future<void> _initializeE2EMockSystem() async {
 /// Error app widget for E2E mock initialization failures
 class _E2EMockErrorApp extends StatelessWidget {
   final String message;
-  
+
   const _E2EMockErrorApp(this.message);
 
   @override

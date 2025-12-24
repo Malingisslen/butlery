@@ -198,15 +198,19 @@ class UnifiedMenuService extends ChangeNotifier
             // Convert realtime menu to SharedMenu for display
             // Skip if user is the owner (already loaded in menus collection)
             if (data['ownerId'] != userId) {
-              final menuSnapshotData = data['menuSnapshot'] as Map<String, dynamic>?;
+              final menuSnapshotData =
+                  data['menuSnapshot'] as Map<String, dynamic>?;
               if (menuSnapshotData != null) {
                 final menu = SharedMenu(
                   id: doc.id,
                   menuSnapshot: _parseMenuSnapshot(menuSnapshotData),
-                  menuTitle: menuSnapshotData['title'] as String? ?? 'Kollaborativ meny',
+                  menuTitle: menuSnapshotData['title'] as String? ??
+                      'Kollaborativ meny',
                   sharedByUserId: data['ownerId'] as String? ?? '',
-                  sharedByDisplayName: data['ownerDisplayName'] as String? ?? 'Okänd',
-                  sharedAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+                  sharedByDisplayName:
+                      data['ownerDisplayName'] as String? ?? 'Okänd',
+                  sharedAt: (data['createdAt'] as Timestamp?)?.toDate() ??
+                      DateTime.now(),
                   allowCollaboration: true,
                   realtimeMenuId: doc.id,
                 );
@@ -231,9 +235,11 @@ class UnifiedMenuService extends ChangeNotifier
   }
 
   /// Parse menu snapshot from Firestore data
-  Map<String, List<Recipe>> _parseMenuSnapshot(Map<String, dynamic> menuSnapshot) {
+  Map<String, List<Recipe>> _parseMenuSnapshot(
+      Map<String, dynamic> menuSnapshot) {
     final result = <String, List<Recipe>>{};
-    final categories = menuSnapshot['categories'] as Map<String, dynamic>? ?? {};
+    final categories =
+        menuSnapshot['categories'] as Map<String, dynamic>? ?? {};
 
     for (final entry in categories.entries) {
       final recipes = <Recipe>[];
@@ -408,8 +414,7 @@ class UnifiedMenuService extends ChangeNotifier
         String? realtimeMenuId;
         if (allowCollaboration) {
           AppLogger.info('🔄 Creating RealtimeMenu for collaborative editing');
-          final realtimeMenuService =
-              ServiceLocator.get<RealtimeMenuService>();
+          final realtimeMenuService = ServiceLocator.get<RealtimeMenuService>();
           final realtimeMenu = await realtimeMenuService.createRealtimeMenu(
             menuTitle: menuTitle,
             menuSnapshot: menuSnapshot,

@@ -159,7 +159,8 @@ class InstagramContentExtractor {
   }
 
   /// Extract content using multi-strategy approach (h1 → spans → article text)
-  Future<String?> _extractExpandedContent(InAppWebViewController controller) async {
+  Future<String?> _extractExpandedContent(
+      InAppWebViewController controller) async {
     try {
       final result = await controller.evaluateJavascript(
         source: '''
@@ -240,7 +241,8 @@ class InstagramContentExtractor {
         final extractedText = result.toString();
         debugPrint('✅ Instagram text found!');
         debugPrint('📝 Extracted text (${extractedText.length} characters):');
-        debugPrint('${extractedText.substring(0, extractedText.length > 200 ? 200 : extractedText.length)}...');
+        debugPrint(
+            '${extractedText.substring(0, extractedText.length > 200 ? 200 : extractedText.length)}...');
 
         return extractedText;
       }

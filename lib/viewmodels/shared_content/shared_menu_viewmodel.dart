@@ -136,7 +136,8 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
             (showImported || !_socialMenuCoordinator.isMenuImported(menu.id)))
         .toList();
 
-    AppLogger.info('✅ Loaded ${menus.length} shared menus (${visibleMenus.length} visible, showImported: $showImported)');
+    AppLogger.info(
+        '✅ Loaded ${menus.length} shared menus (${visibleMenus.length} visible, showImported: $showImported)');
     return visibleMenus;
   }
 

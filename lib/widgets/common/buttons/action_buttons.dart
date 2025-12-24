@@ -171,7 +171,8 @@ class ActionButtons {
                   color: AppColors.onPrimary,
                 ),
               )
-            : Icon(icon, size: AppDimensions.iconSizeXl, color: AppColors.onPrimary),
+            : Icon(icon,
+                size: AppDimensions.iconSizeXl, color: AppColors.onPrimary),
         label: Text(
           isLoading ? (loadingText ?? 'Laddar...') : label,
           style: AppTextStyles.labelLarge.copyWith(
@@ -324,9 +325,9 @@ class FloatingActionButtonWidget extends StatelessWidget {
   const FloatingActionButtonWidget.message({
     super.key,
     required this.onPressed,
-  }) : child = const Icon(Icons.message),
-       backgroundColor = AppColors.primaryBlue,
-       foregroundColor = AppColors.cardWhite;
+  })  : child = const Icon(Icons.message),
+        backgroundColor = AppColors.primaryBlue,
+        foregroundColor = AppColors.cardWhite;
 
   @override
   Widget build(BuildContext context) {

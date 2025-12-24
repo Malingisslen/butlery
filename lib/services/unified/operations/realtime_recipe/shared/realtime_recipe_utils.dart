@@ -20,8 +20,10 @@ class RealtimeRecipeUtils {
       'ownerDisplayName': recipe.socialData?.ownerDisplayName ?? 'Unknown',
       'editCount': 1,
       'lastEditedAt': DateTime.now().toIso8601String(),
-      'lastEditedByUserId': recipe.realtimeData?.lastEditedByUserId ?? recipe.core.createdBy,
-      'lastEditedByDisplayName': recipe.realtimeData?.lastEditedByDisplayName ?? 'Unknown',
+      'lastEditedByUserId':
+          recipe.realtimeData?.lastEditedByUserId ?? recipe.core.createdBy,
+      'lastEditedByDisplayName':
+          recipe.realtimeData?.lastEditedByDisplayName ?? 'Unknown',
     };
   }
 
@@ -32,7 +34,7 @@ class RealtimeRecipeUtils {
       // If it's a RealtimeRecipe object, return its recipe property
       return realtimeRecipe.recipe;
     }
-    
+
     // Otherwise, treat it as a Map (for backward compatibility)
     if (realtimeRecipe is Map<String, dynamic>) {
       return Recipe(
@@ -50,14 +52,15 @@ class RealtimeRecipeUtils {
         type: RecipeType.realtime,
       );
     }
-    
+
     // If it's neither, throw an error
-    throw ArgumentError('Invalid realtimeRecipe type: ${realtimeRecipe.runtimeType}');
+    throw ArgumentError(
+        'Invalid realtimeRecipe type: ${realtimeRecipe.runtimeType}');
   }
 
   /// Apply changes to realtime recipe data structure
   static Map<String, dynamic> applyChangesToRealtimeRecipe(
-    Map<String, dynamic> recipe, 
+    Map<String, dynamic> recipe,
     Map<String, dynamic> changes,
     String? editDescription,
     String? currentUserId,
@@ -80,7 +83,7 @@ class RealtimeRecipeUtils {
 
   /// Merge two recipe versions for conflict resolution
   static Recipe mergeRecipeVersions(
-    Recipe local, 
+    Recipe local,
     Recipe remote,
     String? currentUserId,
     String? currentUserDisplayName,
@@ -112,7 +115,8 @@ class RealtimeRecipeUtils {
       if (!recipe.isCollaborative) return [];
 
       // Get members who are currently active (have edited in last 5 minutes)
-      final recentThreshold = DateTime.now().subtract(const Duration(minutes: 5));
+      final recentThreshold =
+          DateTime.now().subtract(const Duration(minutes: 5));
       final activeEditors = <String>[];
 
       if (recipe.realtimeData?.lastEditedAt?.isAfter(recentThreshold) == true) {
@@ -123,9 +127,11 @@ class RealtimeRecipeUtils {
       }
 
       // Add other members who might be viewing (presence simulation)
-      final allMembers = recipe.socialData?.memberPermissions?.keys.toList() ?? [];
+      final allMembers =
+          recipe.socialData?.memberPermissions?.keys.toList() ?? [];
       for (final memberId in allMembers) {
-        if (!activeEditors.contains(memberId) && isUserActivelyViewing(memberId, recipe.id)) {
+        if (!activeEditors.contains(memberId) &&
+            isUserActivelyViewing(memberId, recipe.id)) {
           activeEditors.add(memberId);
         }
       }
@@ -143,7 +149,8 @@ class RealtimeRecipeUtils {
 
       final memberCount = recipe.socialData?.memberPermissions?.length ?? 0;
       final activeEditors = getActiveEditorsFromRecipe(recipe);
-      final lastEditedAt = recipe.realtimeData?.lastEditedAt ?? recipe.updatedAt;
+      final lastEditedAt =
+          recipe.realtimeData?.lastEditedAt ?? recipe.updatedAt;
       final daysSinceLastEdit = DateTime.now().difference(lastEditedAt).inDays;
 
       return {
@@ -152,7 +159,11 @@ class RealtimeRecipeUtils {
         'lastEditedAt': lastEditedAt,
         'daysSinceLastEdit': daysSinceLastEdit,
         'isActivelyCollaborated': activeEditors.length > 1,
-        'collaborationLevel': memberCount > 5 ? 'high' : memberCount > 2 ? 'medium' : 'low',
+        'collaborationLevel': memberCount > 5
+            ? 'high'
+            : memberCount > 2
+                ? 'medium'
+                : 'low',
         'editCount': recipe.realtimeData?.editCount ?? 1,
       };
     } catch (e) {
@@ -169,9 +180,7 @@ class RealtimeRecipeUtils {
     if (changes.containsKey('instructions')) changedFields.add('instruktioner');
     if (changes.containsKey('imageUrls')) changedFields.add('bilder');
 
-    return changedFields.isNotEmpty 
-        ? changedFields.join(', ')
-        : 'receptet';
+    return changedFields.isNotEmpty ? changedFields.join(', ') : 'receptet';
   }
 
   /// Validate recipe can be used for realtime operations
@@ -188,7 +197,9 @@ class RealtimeRecipeUtils {
   }
 
   /// Validate user permissions for realtime operations
-  static String? validateUserPermissions(String? currentUserId, String recipeId, {
+  static String? validateUserPermissions(
+    String? currentUserId,
+    String recipeId, {
     required bool requireEdit,
     required bool requireOwner,
   }) {
@@ -234,10 +245,13 @@ class RealtimeRecipeUtils {
     ));
 
     // Add last update event if different from creation
-    if (recipe.updatedAt.isAfter(recipe.createdAt.add(const Duration(seconds: 1)))) {
+    if (recipe.updatedAt
+        .isAfter(recipe.createdAt.add(const Duration(seconds: 1)))) {
       history.add(createEditHistoryEntry(
         timestamp: recipe.updatedAt,
-        userId: recipe.realtimeData?.lastEditedByUserId ?? recipe.core.createdBy ?? '',
+        userId: recipe.realtimeData?.lastEditedByUserId ??
+            recipe.core.createdBy ??
+            '',
         userName: recipe.realtimeData?.lastEditedByDisplayName ?? 'Unknown',
         action: 'Updated recipe',
         details: 'Recipe content modified',
@@ -245,7 +259,8 @@ class RealtimeRecipeUtils {
     }
 
     // Add collaborative events if it's a collaborative recipe
-    if (recipe.isCollaborative && recipe.socialData?.memberPermissions?.isNotEmpty == true) {
+    if (recipe.isCollaborative &&
+        recipe.socialData?.memberPermissions?.isNotEmpty == true) {
       for (final member in recipe.socialData!.memberPermissions!.entries) {
         if (member.key != recipe.socialData!.ownerId) {
           // Simulate member addition event
@@ -254,7 +269,8 @@ class RealtimeRecipeUtils {
             userId: recipe.socialData!.ownerId ?? '',
             userName: recipe.socialData!.ownerDisplayName ?? 'Unknown',
             action: 'Added collaborator',
-            details: 'Added user with ${member.value.toString().split('.').last} permission',
+            details:
+                'Added user with ${member.value.toString().split('.').last} permission',
             targetUserId: member.key,
           ));
         }
@@ -262,7 +278,8 @@ class RealtimeRecipeUtils {
     }
 
     // Sort by timestamp (newest first)
-    history.sort((a, b) => (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime));
+    history.sort((a, b) =>
+        (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime));
 
     return history;
   }

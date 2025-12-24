@@ -26,7 +26,8 @@ class MessageContentBuilder {
       case MessageType.menuShare:
         return _buildMenuShareContent(context, message, isFromCurrentUser);
       case MessageType.shoppingListShare:
-        return _buildShoppingListShareContent(context, message, isFromCurrentUser);
+        return _buildShoppingListShareContent(
+            context, message, isFromCurrentUser);
       case MessageType.image:
         return _buildImageContent(context, message, isFromCurrentUser);
       case MessageType.voice:
@@ -141,7 +142,9 @@ class MessageContentBuilder {
             ),
             child: Icon(
               icon,
-              color: isFromCurrentUser ? AppColors.cardWhite : AppColors.primaryBlue,
+              color: isFromCurrentUser
+                  ? AppColors.cardWhite
+                  : AppColors.primaryBlue,
               size: AppDimensions.iconSizeM,
             ),
           ),
@@ -161,8 +164,9 @@ class MessageContentBuilder {
                 Text(
                   title,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color:
-                        isFromCurrentUser ? AppColors.cardWhite : AppColors.textDark,
+                    color: isFromCurrentUser
+                        ? AppColors.cardWhite
+                        : AppColors.textDark,
                   ),
                 ),
                 if (subtitle != null)
@@ -245,8 +249,9 @@ class MessageContentBuilder {
               child: Text(
                 message.content,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  color:
-                      isFromCurrentUser ? AppColors.cardWhite : AppColors.textDark,
+                  color: isFromCurrentUser
+                      ? AppColors.cardWhite
+                      : AppColors.textDark,
                 ),
               ),
             ),
@@ -267,7 +272,9 @@ class MessageContentBuilder {
       child: Center(
         child: isLoading
             ? CircularProgressIndicator(
-                color: isFromCurrentUser ? AppColors.cardWhite : AppColors.primaryBlue,
+                color: isFromCurrentUser
+                    ? AppColors.cardWhite
+                    : AppColors.primaryBlue,
               )
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -306,13 +313,15 @@ class MessageContentBuilder {
         children: [
           Icon(
             Icons.play_arrow,
-            color: isFromCurrentUser ? AppColors.cardWhite : AppColors.primaryBlue,
+            color:
+                isFromCurrentUser ? AppColors.cardWhite : AppColors.primaryBlue,
           ),
           const SizedBox(width: AppDimensions.paddingS),
           Text(
             'Rostmeddelande',
             style: AppTextStyles.bodyMedium.copyWith(
-              color: isFromCurrentUser ? AppColors.cardWhite : AppColors.textDark,
+              color:
+                  isFromCurrentUser ? AppColors.cardWhite : AppColors.textDark,
             ),
           ),
         ],

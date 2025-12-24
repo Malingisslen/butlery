@@ -15,9 +15,10 @@ void main() {
     }
 
     group('Main Layout Methods', () {
-      testWidgets('mainMenu creates scaffold with all required components', (WidgetTester tester) async {
+      testWidgets('mainMenu creates scaffold with all required components',
+          (WidgetTester tester) async {
         const testBody = Text('Test Body Content');
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: LayoutComponents.mainMenu(
@@ -34,7 +35,8 @@ void main() {
         expect(find.text('Test Titel'), findsOneWidget);
       });
 
-      testWidgets('mainMenu handles all parameter combinations', (WidgetTester tester) async {
+      testWidgets('mainMenu handles all parameter combinations',
+          (WidgetTester tester) async {
         final floatingActionButton = FloatingActionButton(
           onPressed: () {},
           child: const Icon(Icons.add),
@@ -62,7 +64,8 @@ void main() {
         expect(find.text('Full Test'), findsOneWidget);
       });
 
-      testWidgets('mainMenu handles null parameters gracefully', (WidgetTester tester) async {
+      testWidgets('mainMenu handles null parameters gracefully',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: LayoutComponents.mainMenu(
@@ -75,7 +78,8 @@ void main() {
         expect(find.byType(Scaffold), findsWidgets);
       });
 
-      testWidgets('simpleLayout creates clean scaffold without navigation', (WidgetTester tester) async {
+      testWidgets('simpleLayout creates clean scaffold without navigation',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: LayoutComponents.simpleLayout(
@@ -90,7 +94,8 @@ void main() {
         expect(find.byType(Scaffold), findsWidgets);
       });
 
-      testWidgets('simpleLayout supports custom app bar and actions', (WidgetTester tester) async {
+      testWidgets('simpleLayout supports custom app bar and actions',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: LayoutComponents.simpleLayout(
@@ -116,27 +121,30 @@ void main() {
     });
 
     group('Profile Menu Interface', () {
-      testWidgets('profileMenu method exists and is callable', (WidgetTester tester) async {
+      testWidgets('profileMenu method exists and is callable',
+          (WidgetTester tester) async {
         // Test that the static method exists and has correct signature
         // This validates the facade interface without requiring ServiceLocator
-        
+
         expect(LayoutComponents.profileMenu, isA<Function>());
         expect(LayoutComponents.showProfileMenu, isA<Function>());
       });
     });
 
     group('Status Indicator Interface', () {
-      testWidgets('status indicator methods exist and are callable', (WidgetTester tester) async {
+      testWidgets('status indicator methods exist and are callable',
+          (WidgetTester tester) async {
         // Test that the static methods exist and have correct signatures
         // This validates the facade interface without requiring Provider dependencies
-        
+
         expect(LayoutComponents.offlineIndicator, isA<Function>());
         expect(LayoutComponents.offlineStatusIcon, isA<Function>());
       });
     });
 
     group('Grid Layout System', () {
-      testWidgets('squareButtonGrid creates 2x3 grid with 6 buttons', (WidgetTester tester) async {
+      testWidgets('squareButtonGrid creates 2x3 grid with 6 buttons',
+          (WidgetTester tester) async {
         final buttons = [
           {'label': 'Instagram', 'icon': Icons.camera, 'onPressed': () {}},
           {'label': 'Facebook', 'icon': Icons.share, 'onPressed': () {}},
@@ -152,7 +160,8 @@ void main() {
               body: Column(
                 children: [
                   Builder(
-                    builder: (context) => LayoutComponents.recipeUploadButtonGrid(
+                    builder: (context) =>
+                        LayoutComponents.recipeUploadButtonGrid(
                       context,
                       buttons: buttons,
                       archiveButton: {
@@ -177,10 +186,11 @@ void main() {
         expect(find.text('Fil'), findsOneWidget);
       });
 
-      testWidgets('squareButtonGrid validates button count requirement', (WidgetTester tester) async {
+      testWidgets('squareButtonGrid validates button count requirement',
+          (WidgetTester tester) async {
         // Test that the method validates button count
         // We can verify the requirement exists without triggering the exception in widget tree
-        
+
         final insufficientButtons = [
           {'label': 'Test1', 'icon': Icons.add, 'onPressed': () {}},
           {'label': 'Test2', 'icon': Icons.add, 'onPressed': () {}},
@@ -204,13 +214,18 @@ void main() {
         expect(find.text('Validation Test'), findsOneWidget);
       });
 
-      testWidgets('squareButtonGrid handles Swedish button labels', (WidgetTester tester) async {
+      testWidgets('squareButtonGrid handles Swedish button labels',
+          (WidgetTester tester) async {
         final swedishButtons = [
           {'label': 'Kamera', 'icon': Icons.camera, 'onPressed': () {}},
           {'label': 'Dela', 'icon': Icons.share, 'onPressed': () {}},
           {'label': 'Sök', 'icon': Icons.search, 'onPressed': () {}},
           {'label': 'Favoriter', 'icon': Icons.favorite, 'onPressed': () {}},
-          {'label': 'Inställningar', 'icon': Icons.settings, 'onPressed': () {}},
+          {
+            'label': 'Inställningar',
+            'icon': Icons.settings,
+            'onPressed': () {}
+          },
           {'label': 'Hjälp', 'icon': Icons.help, 'onPressed': () {}},
         ];
 
@@ -221,7 +236,8 @@ void main() {
               body: Column(
                 children: [
                   Builder(
-                    builder: (context) => LayoutComponents.recipeUploadButtonGrid(
+                    builder: (context) =>
+                        LayoutComponents.recipeUploadButtonGrid(
                       context,
                       buttons: swedishButtons,
                       archiveButton: {
@@ -245,24 +261,27 @@ void main() {
     });
 
     group('Dialog Interface Methods', () {
-      testWidgets('dialog methods exist and are callable', (WidgetTester tester) async {
+      testWidgets('dialog methods exist and are callable',
+          (WidgetTester tester) async {
         // Test that the static methods exist and have correct signatures
         // This validates the facade interface without requiring complex mocks
-        
+
         expect(LayoutComponents.showSaveMenuDialog, isA<Function>());
         expect(LayoutComponents.showLoadMenuDialog, isA<Function>());
       });
     });
 
     group('Profile Menu Bottom Sheet Interface', () {
-      testWidgets('showProfileMenu method exists with correct signature', (WidgetTester tester) async {
+      testWidgets('showProfileMenu method exists with correct signature',
+          (WidgetTester tester) async {
         // Validate the interface exists without triggering ServiceLocator dependencies
         expect(LayoutComponents.showProfileMenu, isA<Function>());
       });
     });
 
     group('Responsive Design Behavior', () {
-      testWidgets('components adapt to small screen sizes', (WidgetTester tester) async {
+      testWidgets('components adapt to small screen sizes',
+          (WidgetTester tester) async {
         tester.view.physicalSize = const Size(320, 568);
         tester.view.devicePixelRatio = 1.0;
 
@@ -283,7 +302,8 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      testWidgets('components adapt to tablet screen sizes', (WidgetTester tester) async {
+      testWidgets('components adapt to tablet screen sizes',
+          (WidgetTester tester) async {
         tester.view.physicalSize = const Size(768, 1024);
         tester.view.devicePixelRatio = 1.0;
 
@@ -307,7 +327,8 @@ void main() {
     });
 
     group('Swedish Localization Support', () {
-      testWidgets('components support Swedish characters', (WidgetTester tester) async {
+      testWidgets('components support Swedish characters',
+          (WidgetTester tester) async {
         // Test individual components with Swedish characters
         await tester.pumpWidget(
           createTestWidget(
@@ -319,7 +340,8 @@ void main() {
         expect(find.text('Innehåll med åäö ÅÄÖ'), findsOneWidget);
       });
 
-      testWidgets('Swedish locale is properly configured', (WidgetTester tester) async {
+      testWidgets('Swedish locale is properly configured',
+          (WidgetTester tester) async {
         // Verify Swedish locale is available for components
         await tester.pumpWidget(
           MaterialApp(

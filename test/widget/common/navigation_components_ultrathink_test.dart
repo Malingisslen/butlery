@@ -18,10 +18,11 @@ void main() {
     }
 
     group('Recipe Selection Dialog Interfaces', () {
-      testWidgets('showRecipeSelector method exists with correct signature', (WidgetTester tester) async {
+      testWidgets('showRecipeSelector method exists with correct signature',
+          (WidgetTester tester) async {
         // Verify the method exists and has correct return type
         expect(NavigationComponents.showRecipeSelector, isA<Function>());
-        
+
         // Test basic interface validation without requiring complex dependencies
         final userProfile = UserProfile(
           uid: 'test-user-id',
@@ -54,7 +55,9 @@ void main() {
         expect(find.text('Test Recipe Selector'), findsOneWidget);
       });
 
-      testWidgets('showMenuRecipeSelector method exists with correct signature and generic return type', (WidgetTester tester) async {
+      testWidgets(
+          'showMenuRecipeSelector method exists with correct signature and generic return type',
+          (WidgetTester tester) async {
         // Verify method exists and has correct return type Future<List<Recipe>?>
         expect(NavigationComponents.showMenuRecipeSelector, isA<Function>());
 
@@ -83,7 +86,8 @@ void main() {
     });
 
     group('Realtime Indicator Widget Interfaces', () {
-      testWidgets('editIndicator method exists and returns widget interface', (WidgetTester tester) async {
+      testWidgets('editIndicator method exists and returns widget interface',
+          (WidgetTester tester) async {
         // Test method exists and returns Widget
         expect(NavigationComponents.editIndicator, isA<Function>());
 
@@ -106,7 +110,8 @@ void main() {
         expect(fullIndicator, isA<Widget>());
       });
 
-      testWidgets('participantList method exists and returns widget interface', (WidgetTester tester) async {
+      testWidgets('participantList method exists and returns widget interface',
+          (WidgetTester tester) async {
         expect(NavigationComponents.participantList, isA<Function>());
 
         final List<ParticipantActivity> activities = [
@@ -117,7 +122,7 @@ void main() {
             isOnline: true,
           ),
           ParticipantActivity(
-            userId: 'user-2', 
+            userId: 'user-2',
             displayName: 'Erik',
             lastSeen: DateTime.now().subtract(const Duration(minutes: 2)),
             isOnline: false,
@@ -142,7 +147,8 @@ void main() {
         expect(minimalParticipantList, isA<Widget>());
       });
 
-      testWidgets('realtimeStatus method exists and returns widget interface', (WidgetTester tester) async {
+      testWidgets('realtimeStatus method exists and returns widget interface',
+          (WidgetTester tester) async {
         expect(NavigationComponents.realtimeStatus, isA<Function>());
 
         // Test online status - interface validation
@@ -164,7 +170,9 @@ void main() {
         expect(offlineStatus, isA<Widget>());
       });
 
-      testWidgets('realtimeStatusBanner method exists and returns widget interface', (WidgetTester tester) async {
+      testWidgets(
+          'realtimeStatusBanner method exists and returns widget interface',
+          (WidgetTester tester) async {
         expect(NavigationComponents.realtimeStatusBanner, isA<Function>());
 
         // Test banner with retry callback - interface validation
@@ -187,7 +195,9 @@ void main() {
     });
 
     group('Confirmation Dialog Interfaces', () {
-      testWidgets('showConfirmationDialog method exists with correct parameters', (WidgetTester tester) async {
+      testWidgets(
+          'showConfirmationDialog method exists with correct parameters',
+          (WidgetTester tester) async {
         expect(NavigationComponents.showConfirmationDialog, isA<Function>());
 
         await tester.pumpWidget(
@@ -227,8 +237,11 @@ void main() {
         expect(find.text('Test Confirmation'), findsOneWidget);
       });
 
-      testWidgets('showDestructiveConfirmationDialog method validates Swedish defaults', (WidgetTester tester) async {
-        expect(NavigationComponents.showDestructiveConfirmationDialog, isA<Function>());
+      testWidgets(
+          'showDestructiveConfirmationDialog method validates Swedish defaults',
+          (WidgetTester tester) async {
+        expect(NavigationComponents.showDestructiveConfirmationDialog,
+            isA<Function>());
 
         await tester.pumpWidget(
           createTestWidget(
@@ -237,7 +250,8 @@ void main() {
                 onPressed: () async {
                   // Test with Swedish defaults
                   expect(
-                    () => NavigationComponents.showDestructiveConfirmationDialog(
+                    () =>
+                        NavigationComponents.showDestructiveConfirmationDialog(
                       context,
                       title: 'Radera objekt',
                       message: 'Detta går inte att ångra',
@@ -247,7 +261,8 @@ void main() {
 
                   // Test with custom text
                   expect(
-                    () => NavigationComponents.showDestructiveConfirmationDialog(
+                    () =>
+                        NavigationComponents.showDestructiveConfirmationDialog(
                       context,
                       title: 'Custom Destructive',
                       message: 'Custom message',
@@ -266,8 +281,11 @@ void main() {
         expect(find.text('Test Destructive Confirmation'), findsOneWidget);
       });
 
-      testWidgets('showLoadingConfirmationDialog method exists with correct signature', (WidgetTester tester) async {
-        expect(NavigationComponents.showLoadingConfirmationDialog, isA<Function>());
+      testWidgets(
+          'showLoadingConfirmationDialog method exists with correct signature',
+          (WidgetTester tester) async {
+        expect(NavigationComponents.showLoadingConfirmationDialog,
+            isA<Function>());
 
         await tester.pumpWidget(
           createTestWidget(
@@ -292,7 +310,8 @@ void main() {
         expect(find.text('Test Loading Confirmation'), findsOneWidget);
       });
 
-      testWidgets('showListSelectionDialog supports generic type parameter', (WidgetTester tester) async {
+      testWidgets('showListSelectionDialog supports generic type parameter',
+          (WidgetTester tester) async {
         expect(NavigationComponents.showListSelectionDialog, isA<Function>());
 
         await tester.pumpWidget(
@@ -335,7 +354,8 @@ void main() {
         expect(find.text('Test List Selection'), findsOneWidget);
       });
 
-      testWidgets('showTextInputDialog method supports all input parameters', (WidgetTester tester) async {
+      testWidgets('showTextInputDialog method supports all input parameters',
+          (WidgetTester tester) async {
         expect(NavigationComponents.showTextInputDialog, isA<Function>());
 
         await tester.pumpWidget(
@@ -379,7 +399,8 @@ void main() {
     });
 
     group('Swedish Localization Support', () {
-      testWidgets('all method interfaces support Swedish parameters', (WidgetTester tester) async {
+      testWidgets('all method interfaces support Swedish parameters',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             child: Column(
@@ -391,13 +412,15 @@ void main() {
                 ),
                 NavigationComponents.realtimeStatus(
                   isOnline: true,
-                  statusDescription: 'Ansluten och synkroniserad med molntjänsten',
+                  statusDescription:
+                      'Ansluten och synkroniserad med molntjänsten',
                   statusEmoji: '🔗',
                   showText: true,
                 ),
                 NavigationComponents.realtimeStatusBanner(
                   isOnline: false,
-                  statusDescription: 'Ingen internetanslutning - arbetar offline',
+                  statusDescription:
+                      'Ingen internetanslutning - arbetar offline',
                   statusEmoji: '📶',
                 ),
                 Builder(
@@ -407,7 +430,8 @@ void main() {
                       NavigationComponents.showConfirmationDialog(
                         context,
                         title: 'Spara ändringar?',
-                        message: 'Du har gjort ändringar som inte är sparade än.',
+                        message:
+                            'Du har gjort ändringar som inte är sparade än.',
                         confirmText: 'Spara nu',
                         cancelText: 'Kasta bort',
                       );
@@ -426,7 +450,8 @@ void main() {
     });
 
     group('Parameter Delegation Validation', () {
-      testWidgets('editIndicator delegates all parameters correctly', (WidgetTester tester) async {
+      testWidgets('editIndicator delegates all parameters correctly',
+          (WidgetTester tester) async {
         // Test that all parameters are accepted without errors
         final testWidget = NavigationComponents.editIndicator(
           editorName: 'Test Editor',
@@ -441,8 +466,8 @@ void main() {
         expect(find.byWidget(testWidget), findsOneWidget);
       });
 
-      testWidgets('participantList delegates all parameters correctly', (WidgetTester tester) async {
-
+      testWidgets('participantList delegates all parameters correctly',
+          (WidgetTester tester) async {
         final List<ParticipantActivity> activities = [
           ParticipantActivity(
             userId: 'user-1',
@@ -464,7 +489,8 @@ void main() {
         expect(find.byWidget(testWidget), findsOneWidget);
       });
 
-      testWidgets('realtimeStatus delegates all parameters correctly', (WidgetTester tester) async {
+      testWidgets('realtimeStatus delegates all parameters correctly',
+          (WidgetTester tester) async {
         final testWidget = NavigationComponents.realtimeStatus(
           isOnline: true,
           statusDescription: 'Connected and synchronized',
@@ -477,7 +503,8 @@ void main() {
         expect(find.byWidget(testWidget), findsOneWidget);
       });
 
-      testWidgets('realtimeStatusBanner delegates all parameters correctly', (WidgetTester tester) async {
+      testWidgets('realtimeStatusBanner delegates all parameters correctly',
+          (WidgetTester tester) async {
         final testWidget = NavigationComponents.realtimeStatusBanner(
           isOnline: false,
           statusDescription: 'Connection lost - tap to retry',
@@ -491,7 +518,8 @@ void main() {
     });
 
     group('Facade Pattern Interface Validation', () {
-      testWidgets('all static methods exist and are callable', (WidgetTester tester) async {
+      testWidgets('all static methods exist and are callable',
+          (WidgetTester tester) async {
         // Recipe Selection Dialog Methods
         expect(NavigationComponents.showRecipeSelector, isA<Function>());
         expect(NavigationComponents.showMenuRecipeSelector, isA<Function>());
@@ -504,13 +532,16 @@ void main() {
 
         // Confirmation Dialog Methods
         expect(NavigationComponents.showConfirmationDialog, isA<Function>());
-        expect(NavigationComponents.showDestructiveConfirmationDialog, isA<Function>());
-        expect(NavigationComponents.showLoadingConfirmationDialog, isA<Function>());
+        expect(NavigationComponents.showDestructiveConfirmationDialog,
+            isA<Function>());
+        expect(NavigationComponents.showLoadingConfirmationDialog,
+            isA<Function>());
         expect(NavigationComponents.showListSelectionDialog, isA<Function>());
         expect(NavigationComponents.showTextInputDialog, isA<Function>());
       });
 
-      testWidgets('return types are correctly maintained through facade', (WidgetTester tester) async {
+      testWidgets('return types are correctly maintained through facade',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             child: Builder(
@@ -538,34 +569,40 @@ void main() {
                   ElevatedButton(
                     onPressed: () async {
                       // Async return types validation
-                      final Future<void> recipeSelector = NavigationComponents.showRecipeSelector(
+                      final Future<void> recipeSelector =
+                          NavigationComponents.showRecipeSelector(
                         context,
                         friend: UserProfile(
                           uid: 'friend-id',
                           displayName: 'Test Friend',
                           email: 'friend@test.com',
-                          joinedAt: DateTime.now().subtract(const Duration(days: 10)),
+                          joinedAt:
+                              DateTime.now().subtract(const Duration(days: 10)),
                           lastActiveAt: DateTime.now(),
                         ),
                       );
 
-                      final Future<List<Recipe>?> menuRecipeSelector = NavigationComponents.showMenuRecipeSelector(
+                      final Future<List<Recipe>?> menuRecipeSelector =
+                          NavigationComponents.showMenuRecipeSelector(
                         context,
                         categoryName: 'Test Category',
                       );
 
-                      final Future<bool> confirmationDialog = NavigationComponents.showConfirmationDialog(
+                      final Future<bool> confirmationDialog =
+                          NavigationComponents.showConfirmationDialog(
                         context,
                         title: 'Test',
                         message: 'Test message',
                       );
 
-                      final Future<String?> textInputDialog = NavigationComponents.showTextInputDialog(
+                      final Future<String?> textInputDialog =
+                          NavigationComponents.showTextInputDialog(
                         context,
                         title: 'Test Input',
                       );
 
-                      final Future<int?> listSelectionDialog = NavigationComponents.showListSelectionDialog<String>(
+                      final Future<int?> listSelectionDialog =
+                          NavigationComponents.showListSelectionDialog<String>(
                         context,
                         title: 'Test List',
                         items: ['Item 1', 'Item 2'],
@@ -592,7 +629,8 @@ void main() {
     });
 
     group('Responsive Design Behavior', () {
-      testWidgets('navigation components adapt to small screen sizes', (WidgetTester tester) async {
+      testWidgets('navigation components adapt to small screen sizes',
+          (WidgetTester tester) async {
         tester.view.physicalSize = const Size(320, 568);
         tester.view.devicePixelRatio = 1.0;
 
@@ -622,7 +660,8 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      testWidgets('navigation components adapt to tablet screen sizes', (WidgetTester tester) async {
+      testWidgets('navigation components adapt to tablet screen sizes',
+          (WidgetTester tester) async {
         tester.view.physicalSize = const Size(768, 1024);
         tester.view.devicePixelRatio = 1.0;
 

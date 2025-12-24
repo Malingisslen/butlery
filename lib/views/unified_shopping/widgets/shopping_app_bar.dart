@@ -28,7 +28,10 @@ class ShoppingAppBar {
           IconButton(
             icon: Icon(
               Icons.add,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.7),
             ),
             onPressed: onCreateList,
             tooltip: 'Ny lista',
@@ -38,9 +41,12 @@ class ShoppingAppBar {
           IconButton(
             icon: Icon(
               Icons.people_outline,
-              color: canShare 
-                ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)
-                : AppColors.textTertiary,
+              color: canShare
+                  ? Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.7)
+                  : AppColors.textTertiary,
             ),
             onPressed: canShare ? onShowShareDialog : null,
             tooltip: canShare ? 'Dela med vänner' : 'Inga artiklar att dela',
@@ -50,9 +56,12 @@ class ShoppingAppBar {
           IconButton(
             icon: Icon(
               Icons.share,
-              color: canShare 
-                ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)
-                : AppColors.textTertiary,
+              color: canShare
+                  ? Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.7)
+                  : AppColors.textTertiary,
             ),
             onPressed: canShare ? onShareExternally : null,
             tooltip: canShare ? 'Dela externt' : 'Inga artiklar att dela',
@@ -102,7 +111,7 @@ class ShoppingAppBar {
         final permissionService = ServiceLocator.get<PermissionService>();
         final currentUserId = permissionService.currentUser?.uid;
         if (currentUserId == null) return Icons.people;
-        
+
         final userPermission = activeList.memberPermissions[currentUserId];
         switch (userPermission) {
           case SharedListPermission.view:
@@ -113,7 +122,9 @@ class ShoppingAppBar {
             return Icons.admin_panel_settings;
           default:
             // If not in permissions map, check if owner
-            return activeList.ownerId == currentUserId ? Icons.admin_panel_settings : Icons.people;
+            return activeList.ownerId == currentUserId
+                ? Icons.admin_panel_settings
+                : Icons.people;
         }
       case ListType.template:
         return Icons.bookmark;
@@ -132,7 +143,7 @@ class ShoppingAppBar {
         final permissionService = ServiceLocator.get<PermissionService>();
         final currentUserId = permissionService.currentUser?.uid;
         if (currentUserId == null) return AppColors.primaryBlue;
-        
+
         final userPermission = activeList.memberPermissions[currentUserId];
         switch (userPermission) {
           case SharedListPermission.view:
@@ -143,7 +154,9 @@ class ShoppingAppBar {
             return AppColors.primaryBlue; // Blue for admin
           default:
             // If not in permissions map, check if owner (admin)
-            return activeList.ownerId == currentUserId ? AppColors.primaryBlue : AppColors.accent;
+            return activeList.ownerId == currentUserId
+                ? AppColors.primaryBlue
+                : AppColors.accent;
         }
       case ListType.template:
         return AppColors.textMedium;
@@ -162,10 +175,13 @@ class ShoppingAppBar {
         final permissionService = ServiceLocator.get<PermissionService>();
         final currentUserId = permissionService.currentUser?.uid;
         if (currentUserId == null) return 'Delad lista';
-        
+
         final userPermission = activeList.memberPermissions[currentUserId];
-        final memberCount = activeList.memberPermissions.length + (activeList.memberPermissions.containsKey(activeList.ownerId) ? 0 : 1);
-        
+        final memberCount = activeList.memberPermissions.length +
+            (activeList.memberPermissions.containsKey(activeList.ownerId)
+                ? 0
+                : 1);
+
         String permissionText;
         switch (userPermission) {
           case SharedListPermission.view:
@@ -179,9 +195,11 @@ class ShoppingAppBar {
             break;
           default:
             // If not in permissions map, check if owner
-            permissionText = activeList.ownerId == currentUserId ? 'Administratör' : 'Kan redigera';
+            permissionText = activeList.ownerId == currentUserId
+                ? 'Administratör'
+                : 'Kan redigera';
         }
-        
+
         return 'Delad med $memberCount medlemmar - $permissionText';
       case ListType.template:
         return 'Mall-lista';

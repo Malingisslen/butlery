@@ -1,7 +1,7 @@
 // test/widget/social/collaborative_live_widgets_ultrathink_test.dart
-// ULTRATHINK TEST SUITE: CollaborativeLiveWidgets - 119 lines of production code  
+// ULTRATHINK TEST SUITE: CollaborativeLiveWidgets - 119 lines of production code
 // Testing 2 static methods + 1 private StatefulWidget for collaborative live editing
-// 
+//
 // ULTRATHINK FOCUS: Animation logic, visibility controls, theme integration, collaborative UX
 
 import 'package:flutter/material.dart';
@@ -24,7 +24,7 @@ void main() {
     setUp(() async {
       await TestServiceLocator.initialize();
     });
-    
+
     tearDown(() async {
       await BaseWidgetTest.teardownWidget();
     });
@@ -69,13 +69,13 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Verify TweenAnimationBuilder structure (lines 22-57)
         expect(find.byType(TweenAnimationBuilder<double>), findsOneWidget);
         expect(find.byType(Opacity), findsOneWidget);
         expect(find.byType(Container), findsAtLeastNWidgets(1));
         expect(find.byType(Row), findsOneWidget);
-        
+
         // ULTRATHINK: Check Swedish text from production code (line 46)
         expect(find.text('Anna redigerar receptet'), findsOneWidget);
       });
@@ -87,16 +87,16 @@ void main() {
           tester,
           (context) => CollaborativeLiveWidgets.editIndicator(
             editorName: 'Anna',
-            editingWhat: 'receptet', 
+            editingWhat: 'receptet',
             isVisible: false,
           ),
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should return SizedBox.shrink for invisible state (line 18)
         expect(find.byType(SizedBox), findsOneWidget);
-        
+
         // Should not find any indicator components
         expect(find.byType(TweenAnimationBuilder<double>), findsNothing);
         expect(find.byType(Container), findsNothing);
@@ -107,7 +107,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code color customization from lines 14, 20
         const customColor = Colors.blue;
-        
+
         await pumpLiveWidget(
           tester,
           (context) => CollaborativeLiveWidgets.editIndicator(
@@ -119,7 +119,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Custom color should be applied (line 20: color ?? AppColors.warning)
         expect(find.byType(Container), findsAtLeastNWidgets(1));
         expect(find.text('Anna redigerar receptet'), findsOneWidget);
@@ -139,7 +139,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should use AppColors.warning as default (line 20)
         expect(find.byType(Container), findsAtLeastNWidgets(1));
         expect(find.text('Anna redigerar receptet'), findsOneWidget);
@@ -158,15 +158,15 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
-        // ULTRATHINK: Verify main container styling 
+
+        // ULTRATHINK: Verify main container styling
         final containers = tester.widgetList<Container>(find.byType(Container));
         expect(containers.length, greaterThanOrEqualTo(1));
-        
+
         // ULTRATHINK: Check Row with MainAxisSize.min (line 41)
         final row = tester.widget<Row>(find.byType(Row));
         expect(row.mainAxisSize, equals(MainAxisSize.min));
-        
+
         // ULTRATHINK: Verify text styling (lines 47-50)
         final text = tester.widget<Text>(find.text('Anna redigerar receptet'));
         expect(text.style?.fontWeight, equals(FontWeight.w500));
@@ -185,13 +185,14 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should contain pulsing dot (line 43: pulsingDot(indicatorColor))
         expect(find.byType(SizedBox), findsAtLeastNWidgets(1));
-        
+
         // ULTRATHINK: Should have spacing between dot and text (line 44)
         final spacings = tester.widgetList<SizedBox>(find.byType(SizedBox));
-        expect(spacings.any((box) => box.width == AppDimensions.spacingXs), isTrue);
+        expect(spacings.any((box) => box.width == AppDimensions.spacingXs),
+            isTrue);
       });
 
       testWidgets('handles different editor names and editing contexts',
@@ -214,9 +215,10 @@ void main() {
           );
 
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Each combination should render correctly
-          final expectedText = '${testCase['name']} redigerar ${testCase['what']}';
+          final expectedText =
+              '${testCase['name']} redigerar ${testCase['what']}';
           expect(find.text(expectedText), findsOneWidget);
         }
       });
@@ -225,7 +227,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code animation duration customization from lines 16, 23
         const customDuration = Duration(milliseconds: 500);
-        
+
         await pumpLiveWidget(
           tester,
           (context) => CollaborativeLiveWidgets.editIndicator(
@@ -237,11 +239,10 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: TweenAnimationBuilder should use custom duration (line 23)
         final animationBuilder = tester.widget<TweenAnimationBuilder<double>>(
-          find.byType(TweenAnimationBuilder<double>)
-        );
+            find.byType(TweenAnimationBuilder<double>));
         expect(animationBuilder.duration, equals(customDuration));
       });
     });
@@ -251,19 +252,19 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code pulsingDot structure from lines 61-67
         const testColor = Colors.red;
-        
+
         await pumpLiveWidget(
           tester,
           (context) => CollaborativeLiveWidgets.pulsingDot(testColor),
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Verify SizedBox dimensions (lines 62-66)
         final sizedBox = tester.widget<SizedBox>(find.byType(SizedBox));
         expect(sizedBox.width, equals(8));
         expect(sizedBox.height, equals(8));
-        
+
         // ULTRATHINK: Should contain _PulsingDot widget (line 65)
         expect(find.byType(SizedBox), findsOneWidget);
       });
@@ -272,14 +273,14 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code color parameter passing from line 65
         const testColor = Colors.green;
-        
+
         await pumpLiveWidget(
           tester,
           (context) => CollaborativeLiveWidgets.pulsingDot(testColor),
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Color should be passed to _PulsingDot (line 65)
         expect(find.byType(SizedBox), findsOneWidget);
       });
@@ -288,18 +289,18 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code StatefulWidget creation from line 65
         const testColor = Colors.blue;
-        
+
         await pumpLiveWidget(
           tester,
           (context) => CollaborativeLiveWidgets.pulsingDot(testColor),
         );
-        
+
         await tester.pump(); // Let animations initialize
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should create animated widget structure
         expect(find.byType(SizedBox), findsOneWidget);
-        
+
         // Allow animation to progress
         await tester.pump(const Duration(milliseconds: 100));
         expect(tester.takeException(), isNull);
@@ -309,21 +310,21 @@ void main() {
     group('_PulsingDot StatefulWidget Tests', () {
       testWidgets('initializes animation controller with correct settings',
           (WidgetTester tester) async {
-        // ULTRATHINK: Test production code animation initialization from lines 88-95  
+        // ULTRATHINK: Test production code animation initialization from lines 88-95
         const testColor = Colors.orange;
-        
+
         await pumpLiveWidget(
           tester,
           (context) => CollaborativeLiveWidgets.pulsingDot(testColor),
         );
-        
+
         await tester.pump(); // Initialize animations
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Animation should be running (controller.repeat in line 95)
         await tester.pump(const Duration(milliseconds: 500));
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should find container with circular shape (lines 109-118)
         expect(find.byType(SizedBox), findsOneWidget);
       });
@@ -332,18 +333,18 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code AnimatedBuilder from lines 106-119
         const testColor = Colors.purple;
-        
+
         await pumpLiveWidget(
           tester,
           (context) => CollaborativeLiveWidgets.pulsingDot(testColor),
         );
-        
+
         await tester.pump(); // Build initial state
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should build Container with BoxShape.circle (line 114)
         expect(find.byType(SizedBox), findsOneWidget);
-        
+
         // Animation should progress
         await tester.pump(const Duration(milliseconds: 200));
         expect(tester.takeException(), isNull);
@@ -353,24 +354,24 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code dispose lifecycle from lines 99-102
         const testColor = Colors.cyan;
-        
+
         await pumpLiveWidget(
           tester,
           (context) => CollaborativeLiveWidgets.pulsingDot(testColor),
         );
-        
+
         await tester.pump();
         expect(tester.takeException(), isNull);
-        
+
         // Remove widget to trigger dispose
         await pumpLiveWidget(
           tester,
           (context) => const SizedBox.shrink(),
         );
-        
+
         await tester.pump();
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: dispose() should clean up controller without errors (line 100)
       });
 
@@ -378,21 +379,21 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code repeat(reverse: true) from line 95
         const testColor = Colors.indigo;
-        
+
         await pumpLiveWidget(
           tester,
           (context) => CollaborativeLiveWidgets.pulsingDot(testColor),
         );
-        
+
         await tester.pump(); // Initialize
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Test animation progression over multiple cycles
         for (int i = 0; i < 5; i++) {
           await tester.pump(const Duration(milliseconds: 200));
           expect(tester.takeException(), isNull);
         }
-        
+
         // ULTRATHINK: Animation should still be running smoothly
         expect(find.byType(SizedBox), findsOneWidget);
       });
@@ -412,7 +413,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should still render with empty name (line 46)
         expect(find.text(' redigerar receptet'), findsOneWidget);
       });
@@ -430,9 +431,10 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should handle Swedish characters correctly
-        expect(find.text('Åsa Ström redigerar köttbullar & potatis'), findsOneWidget);
+        expect(find.text('Åsa Ström redigerar köttbullar & potatis'),
+            findsOneWidget);
       });
 
       testWidgets('multiple indicators can be displayed simultaneously',
@@ -450,7 +452,7 @@ void main() {
               ),
               CollaborativeLiveWidgets.editIndicator(
                 editorName: 'Johan',
-                editingWhat: 'instruktionerna', 
+                editingWhat: 'instruktionerna',
                 isVisible: true,
                 color: Colors.blue,
               ),
@@ -459,7 +461,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Both indicators should render independently
         expect(find.text('Anna redigerar ingredienserna'), findsOneWidget);
         expect(find.text('Johan redigerar instruktionerna'), findsOneWidget);
@@ -482,10 +484,10 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should handle constrained layouts gracefully
         expect(find.byType(Row), findsOneWidget);
-        
+
         // Row should have MainAxisSize.min (line 41)
         final row = tester.widget<Row>(find.byType(Row));
         expect(row.mainAxisSize, equals(MainAxisSize.min));

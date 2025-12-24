@@ -70,7 +70,8 @@ class ShoppingItemManagementModule {
 
     try {
       // Verify the active list exists
-      lists.firstWhere((list) => list.id == activeListId, orElse: () => throw StateError('Active list not found'));
+      lists.firstWhere((list) => list.id == activeListId,
+          orElse: () => throw StateError('Active list not found'));
 
       final item = UnifiedShoppingItem(
         name: name,
@@ -101,7 +102,8 @@ class ShoppingItemManagementModule {
   }
 
   /// Add multiple items to active list using batch operations for better performance
-  Future<bool> addItemsBatchToActiveList(List<UnifiedShoppingItem> items) async {
+  Future<bool> addItemsBatchToActiveList(
+      List<UnifiedShoppingItem> items) async {
     final activeListId = getActiveListId();
     if (activeListId == null) {
       return false;
@@ -153,7 +155,8 @@ class ShoppingItemManagementModule {
         return false;
       }
 
-      final itemIndex = lists[listIndex].items.indexWhere((item) => item.id == itemId);
+      final itemIndex =
+          lists[listIndex].items.indexWhere((item) => item.id == itemId);
       if (itemIndex == -1) {
         return false;
       }
@@ -176,7 +179,8 @@ class ShoppingItemManagementModule {
       await repository.addItem(activeListId, updatedItem);
 
       // Update local state
-      final updatedItems = List<UnifiedShoppingItem>.from(lists[listIndex].items);
+      final updatedItems =
+          List<UnifiedShoppingItem>.from(lists[listIndex].items);
       updatedItems[itemIndex] = updatedItem;
 
       lists[listIndex] = lists[listIndex].copyWith(items: updatedItems);
@@ -197,7 +201,8 @@ class ShoppingItemManagementModule {
 
     try {
       // Verify the active list exists
-      lists.firstWhere((list) => list.id == activeListId, orElse: () => throw StateError('Active list not found'));
+      lists.firstWhere((list) => list.id == activeListId,
+          orElse: () => throw StateError('Active list not found'));
 
       // Remove from Firebase first
       await repository.removeItem(activeListId, itemId);
@@ -205,7 +210,8 @@ class ShoppingItemManagementModule {
       // Update local state
       final listIndex = lists.indexWhere((list) => list.id == activeListId);
       if (listIndex >= 0) {
-        final updatedItems = lists[listIndex].items.where((item) => item.id != itemId).toList();
+        final updatedItems =
+            lists[listIndex].items.where((item) => item.id != itemId).toList();
 
         lists[listIndex] = lists[listIndex].copyWith(items: updatedItems);
 
@@ -235,7 +241,8 @@ class ShoppingItemManagementModule {
       return false;
     }
 
-    final itemIndex = lists[listIndex].items.indexWhere((item) => item.id == itemId);
+    final itemIndex =
+        lists[listIndex].items.indexWhere((item) => item.id == itemId);
     if (itemIndex == -1) {
       return false;
     }
@@ -256,8 +263,10 @@ class ShoppingItemManagementModule {
       return true;
     } catch (e) {
       // ROLLBACK: Revert to original state on failure
-      final rollbackItems = List<UnifiedShoppingItem>.from(lists[listIndex].items);
-      final rollbackIndex = rollbackItems.indexWhere((item) => item.id == itemId);
+      final rollbackItems =
+          List<UnifiedShoppingItem>.from(lists[listIndex].items);
+      final rollbackIndex =
+          rollbackItems.indexWhere((item) => item.id == itemId);
       if (rollbackIndex != -1) {
         rollbackItems[rollbackIndex] = currentItem;
         lists[listIndex] = lists[listIndex].copyWith(items: rollbackItems);
@@ -273,5 +282,6 @@ class ShoppingItemManagementModule {
     required String recipeId,
     required String recipeName,
     required List<dynamic> items,
-  }) async => true;
+  }) async =>
+      true;
 }

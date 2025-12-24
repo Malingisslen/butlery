@@ -21,7 +21,7 @@ class MemberCountBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final badgeSize = size ?? AppDimensions.iconSizeXl;
-    
+
     return Container(
       width: badgeSize,
       height: badgeSize,

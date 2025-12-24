@@ -33,7 +33,7 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
   String get strategyName => 'Archive Import';
 
   @override
-  String get description => 
+  String get description =>
       'Import recipes from the Butlery curated recipe archive';
 
   @override
@@ -42,10 +42,10 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
   @override
   bool canHandle(String input) {
     final trimmed = input.trim();
-    
+
     // Check for archive prefix
     if (trimmed.toLowerCase().startsWith('archive:')) return true;
-    
+
     // Check if it's a valid recipe ID in archive
     return _findRecipeById(trimmed) != null;
   }
@@ -57,11 +57,12 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
   }
 
   @override
-  Future<ImportResult> import(String input, {Map<String, dynamic>? options}) async {
+  Future<ImportResult> import(String input,
+      {Map<String, dynamic>? options}) async {
     try {
       final trimmed = input.trim();
       Recipe? sourceRecipe;
-      
+
       // Handle archive prefix
       if (trimmed.toLowerCase().startsWith('archive:')) {
         final recipeName = trimmed.substring(8); // Remove 'archive:' prefix
@@ -70,7 +71,7 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
         // Try to find by ID first, then by name
         sourceRecipe = _findRecipeById(trimmed) ?? _findRecipeByName(trimmed);
       }
-      
+
       if (sourceRecipe == null) {
         return ImportResult.failure(
           'Recipe not found in archive: $trimmed',
@@ -106,12 +107,12 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
       );
 
       final warnings = <String>[];
-      
+
       // Validate imported recipe
       if (!isValidRecipeName(importedRecipe.title)) {
         warnings.add('Recipe name validation failed');
       }
-      
+
       if (!isValidIngredients(importedRecipe.ingredients)) {
         warnings.add('Ingredients validation failed');
       }
@@ -136,12 +137,12 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
   /// Import multiple recipes by their IDs
   Future<List<ImportResult>> importMultiple(List<String> recipeIds) async {
     final results = <ImportResult>[];
-    
+
     for (final recipeId in recipeIds) {
       final result = await import(recipeId);
       results.add(result);
     }
-    
+
     return results;
   }
 
@@ -158,14 +159,14 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
       mealType: mealType,
       maxTimeMinutes: maxTimeMinutes,
     );
-    
+
     final results = <ImportResult>[];
-    
+
     for (final recipe in matchingRecipes) {
       final result = await import(recipe.id);
       results.add(result);
     }
-    
+
     return results;
   }
 
@@ -229,43 +230,46 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
     int? maxTimeMinutes,
   }) {
     var results = List<Recipe>.from(archive.archivedRecipes);
-    
+
     // Filter by search query
     if (query != null && query.trim().isNotEmpty) {
       final lowerQuery = query.toLowerCase();
       results = results.where((recipe) {
         return recipe.title.toLowerCase().contains(lowerQuery) ||
-               recipe.description.toLowerCase().contains(lowerQuery) ||
-               recipe.ingredients.any((ingredient) => 
-                   ingredient.toLowerCase().contains(lowerQuery)) ||
-               (recipe.tags?.any((tag) => 
-                   tag.toLowerCase().contains(lowerQuery)) ?? false);
+            recipe.description.toLowerCase().contains(lowerQuery) ||
+            recipe.ingredients.any((ingredient) =>
+                ingredient.toLowerCase().contains(lowerQuery)) ||
+            (recipe.tags
+                    ?.any((tag) => tag.toLowerCase().contains(lowerQuery)) ??
+                false);
       }).toList();
     }
-    
+
     // Filter by tags
     if (tags != null && tags.isNotEmpty) {
       results = results.where((recipe) {
-        return recipe.tags != null && 
-               tags.every((tag) => recipe.tags!.contains(tag));
+        return recipe.tags != null &&
+            tags.every((tag) => recipe.tags!.contains(tag));
       }).toList();
     }
-    
+
     // Filter by meal type
     if (mealType != null && mealType.trim().isNotEmpty) {
-      results = results.where((recipe) => 
-          recipe.mealType.toLowerCase() == mealType.toLowerCase()
-      ).toList();
+      results = results
+          .where((recipe) =>
+              recipe.mealType.toLowerCase() == mealType.toLowerCase())
+          .toList();
     }
-    
+
     // Filter by max time
     if (maxTimeMinutes != null) {
-      results = results.where((recipe) => 
-          recipe.timeMinutes != null && 
-          recipe.timeMinutes! <= maxTimeMinutes
-      ).toList();
+      results = results
+          .where((recipe) =>
+              recipe.timeMinutes != null &&
+              recipe.timeMinutes! <= maxTimeMinutes)
+          .toList();
     }
-    
+
     return results;
   }
 }

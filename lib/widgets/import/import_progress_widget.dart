@@ -137,7 +137,9 @@ class _StepIndicator extends StatelessWidget {
           height: 36,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isActive ? colorScheme.primary : colorScheme.surfaceContainerHighest,
+            color: isActive
+                ? colorScheme.primary
+                : colorScheme.surfaceContainerHighest,
             border: Border.all(
               color: isActive ? colorScheme.primary : colorScheme.outline,
               width: 2,
@@ -174,9 +176,8 @@ class _StepIndicator extends StatelessWidget {
         Text(
           label,
           style: theme.textTheme.labelSmall?.copyWith(
-            color: isActive
-                ? colorScheme.primary
-                : colorScheme.onSurfaceVariant,
+            color:
+                isActive ? colorScheme.primary : colorScheme.onSurfaceVariant,
             fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
           ),
         ),

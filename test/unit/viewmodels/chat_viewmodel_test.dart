@@ -30,14 +30,15 @@ class ConversationBuilder {
     final defaultId = id ?? 'conv_${DateTime.now().millisecondsSinceEpoch}';
     final defaultParticipantIds = participantIds ?? ['user1', 'user2'];
     final now = DateTime.now();
-    
+
     return Conversation(
       id: defaultId,
       participantIds: defaultParticipantIds,
-      participantDisplayNames: participantDisplayNames ?? {
-        'user1': 'Anna Andersson',
-        'user2': 'Erik Svensson',
-      },
+      participantDisplayNames: participantDisplayNames ??
+          {
+            'user1': 'Anna Andersson',
+            'user2': 'Erik Svensson',
+          },
       participantAvatarUrls: participantAvatarUrls ?? {},
       lastMessage: lastMessage,
       createdAt: createdAt ?? now,
@@ -48,7 +49,7 @@ class ConversationBuilder {
       metadata: metadata ?? {},
     );
   }
-  
+
   static Conversation buildGroupConversation({
     String? id,
     String? title,
@@ -56,12 +57,13 @@ class ConversationBuilder {
     Map<String, String>? participantDisplayNames,
   }) {
     final ids = participantIds ?? ['user1', 'user2', 'user3'];
-    final names = participantDisplayNames ?? {
-      'user1': 'Anna Andersson',
-      'user2': 'Erik Svensson', 
-      'user3': 'Maria Johansson',
-    };
-    
+    final names = participantDisplayNames ??
+        {
+          'user1': 'Anna Andersson',
+          'user2': 'Erik Svensson',
+          'user3': 'Maria Johansson',
+        };
+
     return build(
       id: id,
       title: title ?? 'Gruppchatt',
@@ -88,7 +90,7 @@ class MessageBuilder {
     bool isDeleted = false,
   }) {
     final now = DateTime.now();
-    
+
     return Message(
       id: id ?? 'msg_${DateTime.now().millisecondsSinceEpoch}',
       conversationId: conversationId ?? 'conv_123',
@@ -105,7 +107,7 @@ class MessageBuilder {
       isEdited: isDeleted,
     );
   }
-  
+
   static Message buildRecipeShare({
     String? id,
     String? senderId,
@@ -135,7 +137,7 @@ void main() {
     late StreamController<List<Message>> messagesStreamController;
     const testConversationId = 'conv_test_123';
     const testUserId = 'test-user-123';
-    
+
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(ConversationBuilder.build());
@@ -144,62 +146,63 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
-      
+
       // Create mocks
       mockMessagingService = MockMessagingService();
       mockAuthRepository = MockAuthRepository();
       messagesStreamController = StreamController<List<Message>>.broadcast();
-      
+
       // Configure auth repository
       mockAuthRepository.setAuthState(
         isAuthenticated: true,
         userId: testUserId,
       );
-      
+
       // Configure the messaging service with a message stream
-      messagesStreamController = mockMessagingService.createMessageStream(testConversationId);
-      
+      messagesStreamController =
+          mockMessagingService.createMessageStream(testConversationId);
+
       // Setup default mock behaviors
       when(() => mockMessagingService.getConversation(any()))
           .thenAnswer((_) async => ConversationBuilder.build(
-            id: testConversationId,
-            participantIds: [testUserId, 'user2'],
-          ));
-      
+                id: testConversationId,
+                participantIds: [testUserId, 'user2'],
+              ));
+
       when(() => mockMessagingService.getConversationMessages(
-        conversationId: any(named: 'conversationId'),
-        limit: any(named: 'limit'),
-      )).thenAnswer((_) => messagesStreamController.stream);
-      
+            conversationId: any(named: 'conversationId'),
+            limit: any(named: 'limit'),
+          )).thenAnswer((_) => messagesStreamController.stream);
+
       when(() => mockMessagingService.sendTextMessage(
-        conversationId: any(named: 'conversationId'),
-        content: any(named: 'content'),
-        replyToMessageId: any(named: 'replyToMessageId'),
-      )).thenAnswer((_) async => MessageBuilder.build());
-      
+            conversationId: any(named: 'conversationId'),
+            content: any(named: 'content'),
+            replyToMessageId: any(named: 'replyToMessageId'),
+          )).thenAnswer((_) async => MessageBuilder.build());
+
       when(() => mockMessagingService.sendRecipeShare(
-        conversationId: any(named: 'conversationId'),
-        recipeId: any(named: 'recipeId'),
-        recipeTitle: any(named: 'recipeTitle'),
-        message: any(named: 'message'),
-      )).thenAnswer((_) async => MessageBuilder.buildRecipeShare());
-      
+            conversationId: any(named: 'conversationId'),
+            recipeId: any(named: 'recipeId'),
+            recipeTitle: any(named: 'recipeTitle'),
+            message: any(named: 'message'),
+          )).thenAnswer((_) async => MessageBuilder.buildRecipeShare());
+
       when(() => mockMessagingService.deleteMessage(any()))
           .thenAnswer((_) async => true);
-      
+
       when(() => mockMessagingService.markConversationAsRead(any()))
           .thenAnswer((_) async {});
-      
+
       when(() => mockMessagingService.setTypingIndicator(any()))
           .thenAnswer((_) async {});
-      
+
       when(() => mockMessagingService.clearTypingIndicator(any()))
           .thenAnswer((_) async {});
-      
+
       // Register mocks in test service locator
       TestServiceLocator.registerMock<MessagingService>(mockMessagingService);
       TestServiceLocator.registerMock<AuthRepository>(mockAuthRepository);
-      
+
       // Create viewModel with initial conversation to avoid async loading in setup
       final initialConversation = ConversationBuilder.build(
         id: testConversationId,
@@ -209,7 +212,7 @@ void main() {
           'user2': 'Anna Andersson',
         },
       );
-      
+
       viewModel = ChatViewModel(
         messagingService: mockMessagingService,
         conversationId: testConversationId,
@@ -231,23 +234,24 @@ void main() {
     group('Initialization', () {
       test('should initialize with default state', () {
         // Arrange - viewModel created in setUp
-        
+
         // Act - no action needed, checking initial state
-        
+
         // Assert
         expect(viewModel.conversationId, equals(testConversationId));
         expect(viewModel.messages, isEmpty);
-        expect(viewModel.isLoading, isTrue);  // Still loading messages initially
+        expect(viewModel.isLoading, isTrue); // Still loading messages initially
         expect(viewModel.error, isNull);
         expect(viewModel.isSending, isFalse);
         expect(viewModel.sendError, isNull);
         expect(viewModel.typingUserNames, isEmpty);
         expect(viewModel.currentUserId, equals(testUserId));
         expect(viewModel.replyToMessage, isNull);
-        expect(viewModel.conversation, isNotNull);  // Has initial conversation
+        expect(viewModel.conversation, isNotNull); // Has initial conversation
       });
 
-      test('should load conversation on initialization when not provided', () async {
+      test('should load conversation on initialization when not provided',
+          () async {
         // Arrange
         final testConversation = ConversationBuilder.build(
           id: testConversationId,
@@ -255,17 +259,18 @@ void main() {
         );
         when(() => mockMessagingService.getConversation(testConversationId))
             .thenAnswer((_) async => testConversation);
-        
+
         // Act - create viewModel without initial conversation
         final newViewModel = ChatViewModel(
           messagingService: mockMessagingService,
           conversationId: testConversationId,
         );
         await Future.delayed(const Duration(milliseconds: 100));
-        
+
         // Assert
-        verify(() => mockMessagingService.getConversation(testConversationId)).called(1);
-        
+        verify(() => mockMessagingService.getConversation(testConversationId))
+            .called(1);
+
         // Clean up
         newViewModel.dispose();
       });
@@ -277,34 +282,34 @@ void main() {
           title: 'Initial Chatt',
           participantIds: [testUserId, 'user2'],
         );
-        
+
         // Act
         final newViewModel = ChatViewModel(
           messagingService: mockMessagingService,
           conversationId: testConversationId,
           initialConversation: initialConversation,
         );
-        
+
         // Assert
         expect(newViewModel.conversation, equals(initialConversation));
-        
+
         // Clean up
         newViewModel.dispose();
       });
 
       test('should setup message stream subscription', () async {
         // Arrange - done in setUp
-        
+
         // Act - trigger messages update
         final messages = [
           MessageBuilder.build(content: 'Hej!'),
           MessageBuilder.build(content: 'Hur mår du?'),
         ];
         messagesStreamController.add(messages);
-        
+
         // Wait for stream to propagate
         await Future.delayed(const Duration(milliseconds: 50));
-        
+
         // Assert - after stream event
         expect(viewModel.messages.length, equals(2));
       });
@@ -328,10 +333,10 @@ void main() {
           conversationId: testConversationId,
           initialConversation: conversation,
         );
-        
+
         // Act & Assert
         expect(vmWithConversation.conversationTitle, equals('Test Grupp'));
-        
+
         // Clean up
         vmWithConversation.dispose();
       });
@@ -342,10 +347,10 @@ void main() {
           messagingService: mockMessagingService,
           conversationId: testConversationId,
         );
-        
+
         // Act & Assert
         expect(vmWithoutConversation.conversationTitle, equals('Laddar...'));
-        
+
         // Clean up
         vmWithoutConversation.dispose();
       });
@@ -358,10 +363,10 @@ void main() {
           conversationId: testConversationId,
           initialConversation: groupConversation,
         );
-        
+
         // Act & Assert
         expect(vmWithGroup.conversationSubtitle, equals('3 deltagare'));
-        
+
         // Clean up
         vmWithGroup.dispose();
       });
@@ -405,49 +410,49 @@ void main() {
       test('should send text message successfully', () async {
         // Arrange
         const messageContent = 'Hej allihopa!';
-        
+
         // Act
         final result = await viewModel.sendTextMessage(messageContent);
-        
+
         // Assert
         expect(result, isTrue);
         expect(viewModel.isSending, isFalse);
         expect(viewModel.sendError, isNull);
         verify(() => mockMessagingService.sendTextMessage(
-          conversationId: testConversationId,
-          content: messageContent,
-          replyToMessageId: null,
-        )).called(1);
+              conversationId: testConversationId,
+              content: messageContent,
+              replyToMessageId: null,
+            )).called(1);
       });
 
       test('should reject empty message', () async {
         // Arrange
         const emptyMessage = '  ';
-        
+
         // Act
         final result = await viewModel.sendTextMessage(emptyMessage);
-        
+
         // Assert
         expect(result, isFalse);
         expect(viewModel.sendError, equals('Meddelandet kan inte vara tomt'));
         verifyNever(() => mockMessagingService.sendTextMessage(
-          conversationId: any(named: 'conversationId'),
-          content: any(named: 'content'),
-          replyToMessageId: any(named: 'replyToMessageId'),
-        ));
+              conversationId: any(named: 'conversationId'),
+              content: any(named: 'content'),
+              replyToMessageId: any(named: 'replyToMessageId'),
+            ));
       });
 
       test('should handle send message error', () async {
         // Arrange
         when(() => mockMessagingService.sendTextMessage(
-          conversationId: any(named: 'conversationId'),
-          content: any(named: 'content'),
-          replyToMessageId: any(named: 'replyToMessageId'),
-        )).thenThrow(Exception('Network error'));
-        
+              conversationId: any(named: 'conversationId'),
+              content: any(named: 'content'),
+              replyToMessageId: any(named: 'replyToMessageId'),
+            )).thenThrow(Exception('Network error'));
+
         // Act
         final result = await viewModel.sendTextMessage('Test');
-        
+
         // Assert
         expect(result, isFalse);
         expect(viewModel.sendError, contains('Kunde inte skicka meddelandet'));
@@ -459,31 +464,31 @@ void main() {
         const recipeId = 'recipe_123';
         const recipeTitle = 'Köttbullar';
         const message = 'Prova detta!';
-        
+
         // Act
         final result = await viewModel.sendRecipeShare(
           recipeId: recipeId,
           recipeTitle: recipeTitle,
           message: message,
         );
-        
+
         // Assert
         expect(result, isTrue);
         verify(() => mockMessagingService.sendRecipeShare(
-          conversationId: testConversationId,
-          recipeId: recipeId,
-          recipeTitle: recipeTitle,
-          message: message,
-        )).called(1);
+              conversationId: testConversationId,
+              recipeId: recipeId,
+              recipeTitle: recipeTitle,
+              message: message,
+            )).called(1);
       });
 
       test('should delete message successfully', () async {
         // Arrange
         const messageId = 'msg_123';
-        
+
         // Act
         final result = await viewModel.deleteMessage(messageId);
-        
+
         // Assert
         expect(result, isTrue);
         verify(() => mockMessagingService.deleteMessage(messageId)).called(1);
@@ -493,10 +498,10 @@ void main() {
         // Arrange
         when(() => mockMessagingService.deleteMessage(any()))
             .thenThrow(Exception('Permission denied'));
-        
+
         // Act
         final result = await viewModel.deleteMessage('msg_123');
-        
+
         // Assert
         expect(result, isFalse);
       });
@@ -511,10 +516,10 @@ void main() {
         );
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act
         viewModel.setReplyToMessage(message);
-        
+
         // Assert
         expect(viewModel.replyToMessage, equals(message));
         expect(viewModel.hasReplyTarget, isTrue);
@@ -525,10 +530,10 @@ void main() {
         // Arrange
         final message = MessageBuilder.build();
         viewModel.setReplyToMessage(message);
-        
+
         // Act
         viewModel.clearReplyToMessage();
-        
+
         // Assert
         expect(viewModel.replyToMessage, isNull);
         expect(viewModel.hasReplyTarget, isFalse);
@@ -539,43 +544,43 @@ void main() {
         final originalMessage = MessageBuilder.build(id: 'original_msg');
         viewModel.setReplyToMessage(originalMessage);
         const replyContent = 'Detta är ett svar';
-        
+
         // Act
         final result = await viewModel.sendReply(content: replyContent);
-        
+
         // Assert
         expect(result, isTrue);
         expect(viewModel.replyToMessage, isNull); // Should clear after sending
         verify(() => mockMessagingService.sendTextMessage(
-          conversationId: testConversationId,
-          content: replyContent,
-          replyToMessageId: 'original_msg',
-        )).called(1);
+              conversationId: testConversationId,
+              content: replyContent,
+              replyToMessageId: 'original_msg',
+            )).called(1);
       });
 
       test('should not send reply without target', () async {
         // Arrange - no reply target set
-        
+
         // Act
         final result = await viewModel.sendReply(content: 'Test reply');
-        
+
         // Assert
         expect(result, isFalse);
         verifyNever(() => mockMessagingService.sendTextMessage(
-          conversationId: any(named: 'conversationId'),
-          content: any(named: 'content'),
-          replyToMessageId: any(named: 'replyToMessageId'),
-        ));
+              conversationId: any(named: 'conversationId'),
+              content: any(named: 'content'),
+              replyToMessageId: any(named: 'replyToMessageId'),
+            ));
       });
 
       test('should clear reply after successful send', () async {
         // Arrange
         final message = MessageBuilder.build();
         viewModel.setReplyToMessage(message);
-        
+
         // Act
         await viewModel.sendTextMessage('Reply text');
-        
+
         // Assert
         expect(viewModel.replyToMessage, isNull);
       });
@@ -585,17 +590,21 @@ void main() {
       test('should set typing indicator', () {
         // Arrange & Act
         viewModel.setTyping();
-        
+
         // Assert
-        verify(() => mockMessagingService.setTypingIndicator(testConversationId)).called(1);
+        verify(() =>
+                mockMessagingService.setTypingIndicator(testConversationId))
+            .called(1);
       });
 
       test('should clear typing indicator', () {
         // Arrange & Act
         viewModel.clearTyping();
-        
+
         // Assert
-        verify(() => mockMessagingService.clearTypingIndicator(testConversationId)).called(1);
+        verify(() =>
+                mockMessagingService.clearTypingIndicator(testConversationId))
+            .called(1);
       });
 
       // TODO: Re-enable when typing indicator feature is re-implemented
@@ -634,11 +643,11 @@ void main() {
           MessageBuilder.build(content: 'Andra'),
           MessageBuilder.build(content: 'Tredje'),
         ];
-        
+
         // Act
         messagesStreamController.add(messages);
         await Future.delayed(const Duration(milliseconds: 50));
-        
+
         // Assert
         expect(viewModel.messages, equals(messages));
         expect(viewModel.isLoading, isFalse);
@@ -650,7 +659,7 @@ void main() {
         // Arrange & Act
         messagesStreamController.addError('Connection lost');
         await Future.delayed(const Duration(milliseconds: 50));
-        
+
         // Assert
         expect(viewModel.error, equals('Kunde inte ladda meddelanden'));
         expect(viewModel.isLoading, isFalse);
@@ -659,13 +668,15 @@ void main() {
       test('should mark conversation as read when messages arrive', () async {
         // Arrange
         final messages = [MessageBuilder.build()];
-        
+
         // Act
         messagesStreamController.add(messages);
         await Future.delayed(const Duration(milliseconds: 50));
-        
+
         // Assert
-        verify(() => mockMessagingService.markConversationAsRead(testConversationId)).called(1);
+        verify(() =>
+                mockMessagingService.markConversationAsRead(testConversationId))
+            .called(1);
       });
     });
 
@@ -675,17 +686,20 @@ void main() {
         final message1 = MessageBuilder.build(senderId: 'user2');
         final message2 = MessageBuilder.build(senderId: 'user2');
         final message3 = MessageBuilder.build(senderId: 'user3');
-        
+
         // Act & Assert
-        expect(viewModel.shouldShowAvatar(message1, null), isTrue); // First message
-        expect(viewModel.shouldShowAvatar(message2, message1), isFalse); // Same sender
-        expect(viewModel.shouldShowAvatar(message3, message2), isTrue); // Different sender
+        expect(viewModel.shouldShowAvatar(message1, null),
+            isTrue); // First message
+        expect(viewModel.shouldShowAvatar(message2, message1),
+            isFalse); // Same sender
+        expect(viewModel.shouldShowAvatar(message3, message2),
+            isTrue); // Different sender
       });
 
       test('should not show avatar for own messages', () {
         // Arrange
         final ownMessage = MessageBuilder.build(senderId: testUserId);
-        
+
         // Act & Assert
         expect(viewModel.shouldShowAvatar(ownMessage, null), isFalse);
       });
@@ -697,10 +711,10 @@ void main() {
           MessageBuilder.build(content: 'Second'),
         ];
         messagesStreamController.add(messages);
-        
+
         // Wait for stream to update
         await Future.delayed(const Duration(milliseconds: 50));
-        
+
         // Act & Assert
         expect(viewModel.getMessageAt(0)?.content, equals('First'));
         expect(viewModel.getMessageAt(1)?.content, equals('Second'));
@@ -715,10 +729,10 @@ void main() {
           MessageBuilder.build(content: 'Second'),
         ];
         messagesStreamController.add(messages);
-        
+
         // Wait for stream to update
         await Future.delayed(const Duration(milliseconds: 50));
-        
+
         // Act & Assert
         expect(viewModel.getPreviousMessage(0), isNull);
         expect(viewModel.getPreviousMessage(1)?.content, equals('First'));
@@ -728,11 +742,12 @@ void main() {
     group('Error Handling', () {
       test('should clear all errors', () {
         // Arrange - set some errors
-        viewModel.clearSendError(); // This sets sendError through private method
-        
+        viewModel
+            .clearSendError(); // This sets sendError through private method
+
         // Act
         viewModel.clearError();
-        
+
         // Assert
         expect(viewModel.error, isNull);
         expect(viewModel.sendError, isNull);
@@ -742,10 +757,10 @@ void main() {
         // Arrange
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act
         viewModel.clearSendError();
-        
+
         // Assert
         expect(viewModel.sendError, isNull);
         expect(notificationCount, greaterThan(0));
@@ -755,17 +770,17 @@ void main() {
         // Arrange
         when(() => mockMessagingService.getConversation(any()))
             .thenThrow(Exception('Not found'));
-        
+
         // Act
         final newViewModel = ChatViewModel(
           messagingService: mockMessagingService,
           conversationId: 'invalid_id',
         );
         await Future.delayed(const Duration(milliseconds: 100));
-        
+
         // Assert
         expect(newViewModel.error, equals('Kunde inte ladda konversation'));
-        
+
         // Clean up
         newViewModel.dispose();
       });
@@ -775,7 +790,7 @@ void main() {
       test('should handle refresh', () async {
         // Arrange & Act
         await viewModel.refresh();
-        
+
         // Assert - refresh just waits, stream handles updates
         expect(viewModel.isLoading, isTrue); // Still loading initially
       });
@@ -788,10 +803,10 @@ void main() {
           conversationId: testConversationId,
           initialConversation: conversation,
         );
-        
+
         // Act & Assert
         expect(vmWithConversation.canSendMessages, isTrue);
-        
+
         // Clean up
         vmWithConversation.dispose();
       });
@@ -802,10 +817,10 @@ void main() {
           messagingService: mockMessagingService,
           conversationId: testConversationId,
         );
-        
+
         // Act & Assert
         expect(vmWithoutConversation.canSendMessages, isFalse);
-        
+
         // Clean up
         vmWithoutConversation.dispose();
       });
@@ -813,9 +828,11 @@ void main() {
       test('should manually mark as read', () async {
         // Arrange & Act
         await viewModel.markAsRead();
-        
+
         // Assert
-        verify(() => mockMessagingService.markConversationAsRead(testConversationId)).called(1);
+        verify(() =>
+                mockMessagingService.markConversationAsRead(testConversationId))
+            .called(1);
       });
     });
 
@@ -826,16 +843,16 @@ void main() {
           id: testConversationId,
           participantIds: [testUserId, 'user2'],
         );
-            
+
         final testViewModel = ChatViewModel(
           messagingService: mockMessagingService,
           conversationId: testConversationId,
           initialConversation: testConversation,
         );
-        
+
         // Act & Assert - verify dispose doesn't throw
         expect(() => testViewModel.dispose(), returnsNormally);
-        
+
         // Note: clearTypingIndicator is not called because ChatViewModel sets
         // _isDisposed = true before calling clearTyping(), which then returns early.
         // This appears to be a bug in the ChatViewModel implementation.
@@ -847,14 +864,14 @@ void main() {
           messagingService: mockMessagingService,
           conversationId: testConversationId,
         );
-        
+
         // Act
         testViewModel.dispose();
-        
+
         // Try to add messages after dispose
         messagesStreamController.add([MessageBuilder.build()]);
         await Future.delayed(const Duration(milliseconds: 50));
-        
+
         // Assert - messages should not update after dispose
         expect(testViewModel.messages, isEmpty);
       });
@@ -867,11 +884,11 @@ void main() {
         );
         var notificationCount = 0;
         testViewModel.addListener(() => notificationCount++);
-        
+
         // Act
         testViewModel.dispose();
         testViewModel.clearError(); // Try to trigger notification after dispose
-        
+
         // Assert
         expect(notificationCount, equals(0));
       });

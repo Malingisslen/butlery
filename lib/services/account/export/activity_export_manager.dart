@@ -51,7 +51,8 @@ class ActivityExportManager {
 
       return data;
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export comments and ratings', e);
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to export comments and ratings', e);
       return {'error': e.toString()};
     }
   }
@@ -82,7 +83,8 @@ class ActivityExportManager {
         'note': 'Limited to last 500 activities for export size',
       };
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export activity history', e);
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to export activity history', e);
       return {'error': e.toString()};
     }
   }

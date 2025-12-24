@@ -79,7 +79,8 @@ class RecipeImagePicker {
               subtitle: Text(
                 viewModel.canAddMoreImages
                     ? AppStrings.selectUpToImages(
-                        RecipeFormViewModel.maxImages - viewModel.imageUrls.length,
+                        RecipeFormViewModel.maxImages -
+                            viewModel.imageUrls.length,
                       )
                     : AppStrings.selectFromGallery,
               ),
@@ -112,10 +113,12 @@ class RecipeImagePicker {
         // Use canAddMoreImages and proper limit checking
         if (viewModel.canAddMoreImages &&
             (RecipeFormViewModel.maxImages - viewModel.imageUrls.length) > 1) {
-          AppLogger.info('[$_logTag] Calling viewModel.pickMultipleImagesFromGallery');
+          AppLogger.info(
+              '[$_logTag] Calling viewModel.pickMultipleImagesFromGallery');
           await viewModel.pickMultipleImagesFromGallery(context);
         } else {
-          AppLogger.info('[$_logTag] Calling viewModel.pickImageFromGallery (single)');
+          AppLogger.info(
+              '[$_logTag] Calling viewModel.pickImageFromGallery (single)');
           await viewModel.pickImageFromGallery(context);
         }
         break;

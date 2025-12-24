@@ -172,64 +172,65 @@ class GlobalRecipeCache extends BaseService {
     required String sourceType,
   }) async {
     return await executeServiceOperation(
-      () async {
-        // Generate cache keys
-        final urlHash = _urlNormalizer.looksLikeUrl(input)
-            ? _urlNormalizer.hash(input)
-            : null;
+          () async {
+            // Generate cache keys
+            final urlHash = _urlNormalizer.looksLikeUrl(input)
+                ? _urlNormalizer.hash(input)
+                : null;
 
-        final fingerprint = _fingerprinter.generateFromMap(recipeData);
+            final fingerprint = _fingerprinter.generateFromMap(recipeData);
 
-        if (urlHash == null && fingerprint == null) {
-          AppLogger.warning(
-            'GlobalRecipeCache: Cannot cache - no valid key generated',
-          );
-          return false;
-        }
+            if (urlHash == null && fingerprint == null) {
+              AppLogger.warning(
+                'GlobalRecipeCache: Cannot cache - no valid key generated',
+              );
+              return false;
+            }
 
-        // Determine TTL
-        final ttlDays = _ttlBySource[sourceType] ?? 90;
+            // Determine TTL
+            final ttlDays = _ttlBySource[sourceType] ?? 90;
 
-        // Extract domain if URL
-        final domain = _urlNormalizer.looksLikeUrl(input)
-            ? _urlNormalizer.extractDomain(input)
-            : null;
+            // Extract domain if URL
+            final domain = _urlNormalizer.looksLikeUrl(input)
+                ? _urlNormalizer.extractDomain(input)
+                : null;
 
-        // Create cache entry
-        final entry = CacheEntry(
-          urlHash: urlHash,
-          contentFingerprint: fingerprint ?? '',
-          domain: domain,
-          sourceType: sourceType,
-          recipe: recipeData,
-          extractionMeta: extractionMeta,
-          ttlDays: ttlDays,
-        );
-
-        // Use URL hash as document ID if available, otherwise generate from fingerprint
-        final docId = urlHash ?? 'fp_$fingerprint';
-
-        await _collection.doc(docId).set(
-              entry.toFirestore(),
-              SetOptions(merge: false), // Overwrite if exists
+            // Create cache entry
+            final entry = CacheEntry(
+              urlHash: urlHash,
+              contentFingerprint: fingerprint ?? '',
+              domain: domain,
+              sourceType: sourceType,
+              recipe: recipeData,
+              extractionMeta: extractionMeta,
+              ttlDays: ttlDays,
             );
 
-        AppLogger.info(
-          'GlobalRecipeCache: Cached recipe from $domain '
-          '(source: $sourceType, ttl: ${ttlDays}d)',
-        );
-        AppLogger.analytics('cache_save', {
-          'domain': domain,
-          'sourceType': sourceType,
-          'pipeline': extractionMeta.pipeline,
-          'tier': extractionMeta.tier,
-        });
+            // Use URL hash as document ID if available, otherwise generate from fingerprint
+            final docId = urlHash ?? 'fp_$fingerprint';
 
-        return true;
-      },
-      operationName: 'Save to cache',
-      requiresAuth: true,
-    ) ?? false;
+            await _collection.doc(docId).set(
+                  entry.toFirestore(),
+                  SetOptions(merge: false), // Overwrite if exists
+                );
+
+            AppLogger.info(
+              'GlobalRecipeCache: Cached recipe from $domain '
+              '(source: $sourceType, ttl: ${ttlDays}d)',
+            );
+            AppLogger.analytics('cache_save', {
+              'domain': domain,
+              'sourceType': sourceType,
+              'pipeline': extractionMeta.pipeline,
+              'tier': extractionMeta.tier,
+            });
+
+            return true;
+          },
+          operationName: 'Save to cache',
+          requiresAuth: true,
+        ) ??
+        false;
   }
 
   /// Get cache statistics for monitoring.

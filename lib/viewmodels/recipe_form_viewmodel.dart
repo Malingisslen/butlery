@@ -395,7 +395,8 @@ class RecipeFormViewModel extends ChangeNotifier
     await _imageManager.showImagePickerDialog(context, recipeId: recipeId);
     AppLogger.info('VIEWMODEL: _imageManager.showImagePickerDialog completed');
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      AppLogger.info('VIEWMODEL: Running _syncImageUrls in post-frame callback');
+      AppLogger.info(
+          'VIEWMODEL: Running _syncImageUrls in post-frame callback');
       _coordinator.syncImageUrls(isCollaborative: isCollaborative);
     });
   }

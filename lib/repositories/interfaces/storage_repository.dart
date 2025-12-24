@@ -18,7 +18,7 @@ abstract class StorageRepository {
     Map<String, String>? metadata,
     Function(double progress)? onProgress,
   });
-  
+
   /// Upload image data (bytes) to storage
   /// Returns the download URL of the uploaded file, or null if upload fails
   Future<String?> uploadImageData({
@@ -28,7 +28,7 @@ abstract class StorageRepository {
     Map<String, String>? metadata,
     Function(double progress)? onProgress,
   });
-  
+
   /// Upload multiple images in batch
   Future<List<String>> uploadMultipleImages({
     required List<File> imageFiles,
@@ -36,23 +36,23 @@ abstract class StorageRepository {
     required String basePath,
     Function(int completed, int total)? onProgress,
   });
-  
+
   /// Delete an image from storage
   Future<bool> deleteImage(String imageUrl);
-  
+
   /// Delete multiple images from storage
   Future<void> deleteMultipleImages(List<String> imageUrls);
-  
+
   /// Get storage information for a user
   Future<StorageInfo?> getUserStorageInfo(String userId);
-  
+
   /// Get a reference from a storage URL
   /// Returns null if URL is invalid
   dynamic getReference(String url);
-  
+
   /// Create a storage reference for a given path
   dynamic createReference(String path);
-  
+
   /// Compress an image file
   /// Returns compressed image data, or null if compression fails
   Future<Uint8List?> compressImage({
@@ -61,7 +61,7 @@ abstract class StorageRepository {
     int maxHeight = 1080,
     int quality = 85,
   });
-  
+
   /// Create and upload a thumbnail for an image
   Future<String?> createAndUploadThumbnail({
     required File imageFile,
@@ -70,19 +70,19 @@ abstract class StorageRepository {
     int thumbnailSize = 300,
     int thumbnailQuality = 70,
   });
-  
+
   /// Delete a thumbnail image
   Future<void> deleteThumbnail(String imageUrl);
-  
+
   /// Generate a unique filename for storage
   String generateFileName({
     required String originalPath,
     String? prefix,
   });
-  
+
   /// Check if a file is a valid image
   bool isValidImageFile(File file);
-  
+
   /// Format bytes into human-readable string
   String formatBytes(int bytes);
 }
@@ -92,13 +92,13 @@ class StorageInfo {
   final int totalBytes;
   final int fileCount;
   final String formattedSize;
-  
+
   StorageInfo({
     required this.totalBytes,
     required this.fileCount,
     required this.formattedSize,
   });
-  
+
   /// Create a copy with optional parameter overrides
   StorageInfo copyWith({
     int? totalBytes,
@@ -111,22 +111,22 @@ class StorageInfo {
       formattedSize: formattedSize ?? this.formattedSize,
     );
   }
-  
+
   @override
   String toString() {
     return 'StorageInfo(totalBytes: $totalBytes, fileCount: $fileCount, formattedSize: $formattedSize)';
   }
-  
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    
+
     return other is StorageInfo &&
-      other.totalBytes == totalBytes &&
-      other.fileCount == fileCount &&
-      other.formattedSize == formattedSize;
+        other.totalBytes == totalBytes &&
+        other.fileCount == fileCount &&
+        other.formattedSize == formattedSize;
   }
-  
+
   @override
   int get hashCode => Object.hash(totalBytes, fileCount, formattedSize);
 }

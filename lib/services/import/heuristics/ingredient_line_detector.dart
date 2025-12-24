@@ -4,8 +4,19 @@ class IngredientLineDetector {
 
   /// Swedish measurement terms used for ingredient detection.
   static const measurements = [
-    'dl', 'cl', 'ml', 'l', 'msk', 'tsk', 'krm',
-    'g', 'gram', 'kg', 'st', 'styck', 'port',
+    'dl',
+    'cl',
+    'ml',
+    'l',
+    'msk',
+    'tsk',
+    'krm',
+    'g',
+    'gram',
+    'kg',
+    'st',
+    'styck',
+    'port',
   ];
 
   /// Returns true if the line looks like an ingredient line.

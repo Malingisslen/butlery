@@ -17,7 +17,7 @@ class RecommendationsSection {
     DiscoveryDashboardViewModel viewModel,
   ) {
     final recommendations = viewModel.personalizedRecommendations;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -43,14 +43,14 @@ class RecommendationsSection {
           ],
         ),
         const SizedBox(height: AppDimensions.spacingM),
-        
         if (recommendations.isEmpty)
           _buildEmptyState()
         else
           Column(
             children: recommendations
                 .take(4) // Show max 4 recommendations
-                .map((recommendation) => _buildRecommendationCard(context, recommendation))
+                .map((recommendation) =>
+                    _buildRecommendationCard(context, recommendation))
                 .toList(),
           ),
       ],
@@ -92,7 +92,8 @@ class RecommendationsSection {
     );
   }
 
-  static Widget _buildRecommendationCard(BuildContext context, Map<String, dynamic> recommendation) {
+  static Widget _buildRecommendationCard(
+      BuildContext context, Map<String, dynamic> recommendation) {
     final String title = recommendation['title'] ?? '';
     final String description = recommendation['description'] ?? '';
     final String reason = recommendation['reason'] ?? '';
@@ -130,33 +131,38 @@ class RecommendationsSection {
                 height: 70,
                 decoration: BoxDecoration(
                   color: AppColors.secondaryContainer.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 child: imageUrl != null
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.borderRadiusS),
                         child: CachedNetworkImage(
                           imageUrl: imageUrl,
                           width: 70,
                           height: 70,
                           fit: BoxFit.contain,
                           placeholder: (context, url) => ColoredBox(
-                            color: AppColors.secondaryContainer.withValues(alpha: 0.3),
+                            color: AppColors.secondaryContainer
+                                .withValues(alpha: 0.3),
                             child: const Center(
                               child: SizedBox(
                                 width: 24,
                                 height: 24,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               ),
                             ),
                           ),
-                          errorWidget: (context, url, error) => _buildContentPlaceholder(),
+                          errorWidget: (context, url, error) =>
+                              _buildContentPlaceholder(),
                         ),
                       )
                     : _buildContentPlaceholder(),
               ),
               const SizedBox(width: AppDimensions.spacingM),
-              
+
               // Recommendation details
               Expanded(
                 child: Column(
@@ -170,7 +176,8 @@ class RecommendationsSection {
                       ),
                       decoration: BoxDecoration(
                         color: AppColors.secondary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.borderRadiusS),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -193,7 +200,7 @@ class RecommendationsSection {
                       ),
                     ),
                     const SizedBox(height: AppDimensions.spacingS),
-                    
+
                     // Title
                     Text(
                       title,
@@ -204,7 +211,7 @@ class RecommendationsSection {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: AppDimensions.spacingXs),
-                    
+
                     // Reason
                     Text(
                       reason,
@@ -216,7 +223,7 @@ class RecommendationsSection {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: AppDimensions.spacingXs),
-                    
+
                     // Description (if available)
                     if (description.isNotEmpty) ...[
                       Text(
@@ -229,7 +236,7 @@ class RecommendationsSection {
                       ),
                       const SizedBox(height: AppDimensions.spacingXs),
                     ],
-                    
+
                     // Match score indicator
                     Row(
                       children: [
@@ -255,13 +262,14 @@ class RecommendationsSection {
                   ],
                 ),
               ),
-              
+
               // Action buttons
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    onPressed: () => _likeRecommendation(context, recommendation),
+                    onPressed: () =>
+                        _likeRecommendation(context, recommendation),
                     icon: Icon(
                       Icons.favorite_border,
                       color: AppColors.error.withValues(alpha: 0.7),
@@ -270,7 +278,8 @@ class RecommendationsSection {
                     tooltip: 'Gilla',
                   ),
                   IconButton(
-                    onPressed: () => _dismissRecommendation(context, recommendation),
+                    onPressed: () =>
+                        _dismissRecommendation(context, recommendation),
                     icon: Icon(
                       Icons.close,
                       color: AppColors.onSurface.withValues(alpha: 0.4),
@@ -310,7 +319,8 @@ class RecommendationsSection {
     }
   }
 
-  static void _openRecommendation(BuildContext context, Map<String, dynamic> recommendation) {
+  static void _openRecommendation(
+      BuildContext context, Map<String, dynamic> recommendation) {
     final String contentType = recommendation['contentType'] ?? '';
     final String contentId = recommendation['contentId'] ?? '';
 
@@ -339,7 +349,8 @@ class RecommendationsSection {
     }
   }
 
-  static Future<void> _likeRecommendation(BuildContext context, Map<String, dynamic> recommendation) async {
+  static Future<void> _likeRecommendation(
+      BuildContext context, Map<String, dynamic> recommendation) async {
     try {
       // Send feedback to recommendation service
       final recommendationId = recommendation['id'] as String?;
@@ -348,15 +359,18 @@ class RecommendationsSection {
         // For now, we'll show success feedback to user
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Tack för din feedback! Vi förbättrar rekommendationerna.'),
+            content: Text(
+                'Tack för din feedback! Vi förbättrar rekommendationerna.'),
             backgroundColor: AppColors.success,
             duration: Duration(seconds: 2),
           ),
         );
-        
+
         // Provide like feedback through recommendation service
-        final recommendationService = ServiceLocator.get<RecommendationService>();
-        await recommendationService.provideFeedback(recommendationId, FeedbackType.like);
+        final recommendationService =
+            ServiceLocator.get<RecommendationService>();
+        await recommendationService.provideFeedback(
+            recommendationId, FeedbackType.like);
       }
     } catch (e) {
       // Check if context is still valid
@@ -371,14 +385,16 @@ class RecommendationsSection {
     }
   }
 
-  static Future<void> _dismissRecommendation(BuildContext context, Map<String, dynamic> recommendation) async {
+  static Future<void> _dismissRecommendation(
+      BuildContext context, Map<String, dynamic> recommendation) async {
     try {
       final recommendationId = recommendation['id'] as String?;
       if (recommendationId != null) {
         // Record dismissal
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Rekommendation dold. Vi visar inte liknande innehåll.'),
+            content: const Text(
+                'Rekommendation dold. Vi visar inte liknande innehåll.'),
             backgroundColor: AppColors.info,
             duration: const Duration(seconds: 3),
             action: SnackBarAction(
@@ -387,9 +403,10 @@ class RecommendationsSection {
             ),
           ),
         );
-        
+
         // Dismiss recommendation through recommendation service
-        final recommendationService = ServiceLocator.get<RecommendationService>();
+        final recommendationService =
+            ServiceLocator.get<RecommendationService>();
         await recommendationService.dismissRecommendation(recommendationId);
       }
     } catch (e) {
@@ -404,8 +421,9 @@ class RecommendationsSection {
       }
     }
   }
-  
-  static Future<void> _undoDismissal(BuildContext context, String recommendationId) async {
+
+  static Future<void> _undoDismissal(
+      BuildContext context, String recommendationId) async {
     try {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -414,7 +432,7 @@ class RecommendationsSection {
           duration: Duration(seconds: 2),
         ),
       );
-      
+
       // Undo dismissal through recommendation service
       final recommendationService = ServiceLocator.get<RecommendationService>();
       await recommendationService.undoDismissal(recommendationId);
@@ -431,7 +449,8 @@ class RecommendationsSection {
     }
   }
 
-  static void _showAllRecommendations(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+  static void _showAllRecommendations(
+      BuildContext context, DiscoveryDashboardViewModel viewModel) {
     Navigator.pushNamed(
       context,
       '/recommendations',

@@ -12,10 +12,10 @@ void main() {
   group('FriendsManagementOperations', () {
     late MockUnifiedFriendsService mockParentService;
     late FriendsManagementOperations managementOperations;
-    
+
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
-      
+
       // Register fallback values for mocktail
       registerFallbackValue(UserProfile(
         uid: 'test',
@@ -35,7 +35,7 @@ void main() {
     setUp(() async {
       // Create mocks
       mockParentService = MockUnifiedFriendsService();
-      
+
       // Configure mock state using configuration methods
       mockParentService.setFriendsState(
         friends: [],
@@ -43,11 +43,11 @@ void main() {
         outgoingRequests: [],
         isInitialized: true,
       );
-      
+
       // Create operations instance
       managementOperations = FriendsManagementOperations(mockParentService);
     });
-    
+
     tearDown(() async {
       BaseUnitTest.resetMocks();
     });
@@ -55,14 +55,15 @@ void main() {
     tearDownAll(() async {
       await BaseUnitTest.teardownUnit();
     });
-    
+
     group('Core Functionality', () {
       test('should initialize with parent service', () {
         // Assert
         expect(managementOperations, isNotNull);
-        expect(managementOperations.serviceName, equals('FriendsManagementOperations'));
+        expect(managementOperations.serviceName,
+            equals('FriendsManagementOperations'));
       });
-      
+
       test('should check if user is blocked', () {
         // Arrange
         mockParentService.setFriendsState(
@@ -70,12 +71,12 @@ void main() {
           incomingRequests: [],
           outgoingRequests: [],
         );
-        
+
         // Act & Assert
         expect(managementOperations.isBlocked('blocked_user_123'), isTrue);
         expect(managementOperations.isBlocked('not_blocked_user'), isFalse);
       });
-      
+
       test('should get friend statistics', () {
         // Arrange
         final friend1 = UserProfile(
@@ -86,13 +87,13 @@ void main() {
           lastActiveAt: DateTime.now(),
         );
         final friend2 = UserProfile(
-          uid: 'friend_2', 
+          uid: 'friend_2',
           email: 'friend2@example.com',
           displayName: 'Friend 2',
           joinedAt: DateTime.now(),
           lastActiveAt: DateTime.now(),
         );
-        
+
         final pendingRequest = FriendRequest(
           id: 'request_1',
           fromUserId: 'sender',
@@ -100,16 +101,16 @@ void main() {
           status: FriendRequestStatus.pending,
           sentAt: DateTime.now(),
         );
-        
+
         mockParentService.setFriendsState(
           friends: [friend1, friend2],
           incomingRequests: [pendingRequest],
           outgoingRequests: [],
         );
-        
+
         // Act
         final stats = managementOperations.getFriendStats();
-        
+
         // Assert
         expect(stats['totalFriends'], equals(2));
         expect(stats['incomingRequests'], equals(1));
@@ -117,7 +118,7 @@ void main() {
         expect(stats['blockedUsers'], equals(3));
       });
     });
-    
+
     group('Friend Removal', () {
       test('should remove friend successfully', () async {
         // Arrange
@@ -128,7 +129,7 @@ void main() {
           joinedAt: DateTime.now(),
           lastActiveAt: DateTime.now(),
         );
-        
+
         mockParentService.setFriendsState(
           friends: [friend],
         );
@@ -136,32 +137,34 @@ void main() {
             .thenReturn(null);
         when(() => mockParentService.removeFriendFromFirebase('friend_123'))
             .thenAnswer((_) async => {});
-        
+
         // Act
         final success = await managementOperations.removeFriend('friend_123');
-        
+
         // Assert
         expect(success, isTrue);
-        verify(() => mockParentService.removeFriendInternal('friend_123')).called(1);
-        verify(() => mockParentService.removeFriendFromFirebase('friend_123')).called(1);
+        verify(() => mockParentService.removeFriendInternal('friend_123'))
+            .called(1);
+        verify(() => mockParentService.removeFriendFromFirebase('friend_123'))
+            .called(1);
       });
-      
+
       test('should not remove non-existent friend', () async {
         // Arrange
         mockParentService.setFriendsState(
           friends: [],
         );
-        
+
         // Act
         final success = await managementOperations.removeFriend('not_a_friend');
-        
+
         // Assert
         expect(success, isFalse);
         verifyNever(() => mockParentService.removeFriendInternal(any()));
         verifyNever(() => mockParentService.removeFriendFromFirebase(any()));
       });
     });
-    
+
     group('User Blocking', () {
       test('should block user successfully', () async {
         // Arrange
@@ -174,16 +177,17 @@ void main() {
             .thenReturn(null);
         when(() => mockParentService.syncBlockedUsers())
             .thenAnswer((_) async => {});
-        
+
         // Act
         final success = await managementOperations.blockUser('user_to_block');
-        
+
         // Assert
         expect(success, isTrue);
-        verify(() => mockParentService.addBlockedUserInternal('user_to_block')).called(1);
+        verify(() => mockParentService.addBlockedUserInternal('user_to_block'))
+            .called(1);
         verify(() => mockParentService.syncBlockedUsers()).called(1);
       });
-      
+
       test('should unblock user successfully', () async {
         // Arrange
         mockParentService.setFriendsState(
@@ -193,17 +197,19 @@ void main() {
             .thenReturn(null);
         when(() => mockParentService.syncBlockedUsers())
             .thenAnswer((_) async => {});
-        
+
         // Act
         final success = await managementOperations.unblockUser('blocked_user');
-        
+
         // Assert
         expect(success, isTrue);
-        verify(() => mockParentService.removeBlockedUserInternal('blocked_user')).called(1);
+        verify(() =>
+                mockParentService.removeBlockedUserInternal('blocked_user'))
+            .called(1);
         verify(() => mockParentService.syncBlockedUsers()).called(1);
       });
     });
-    
+
     // TODO: Add more comprehensive tests for:
     // - Friend request sending (needs proper service mocking)
     // - Friend request acceptance/rejection (needs proper service mocking)

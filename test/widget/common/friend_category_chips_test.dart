@@ -13,11 +13,11 @@ void main() {
     late FriendCategory emojiCategory;
     late FriendCategory noEmojiCategory;
     late List<String> friendIds;
-    
+
     setUp(() {
       // Create Swedish test data using centralized factory - ultrathink pattern
       friendIds = ['friend_erik', 'friend_maria', 'friend_lars', 'friend_anna'];
-      
+
       testCategory = SocialFactory.createFriendCategory(
         id: 'category_familj',
         name: 'Familj',
@@ -27,7 +27,7 @@ void main() {
         createdBy: 'user_test',
         sortOrder: 1,
       );
-      
+
       emptyCategory = SocialFactory.createFriendCategory(
         id: 'category_empty',
         name: 'Tom kategori',
@@ -36,7 +36,7 @@ void main() {
         memberIds: [], // Empty list
         createdBy: 'user_test',
       );
-      
+
       emojiCategory = SocialFactory.createFriendCategory(
         id: 'category_work',
         name: 'Jobbet',
@@ -45,7 +45,7 @@ void main() {
         memberIds: ['colleague_1', 'colleague_2'],
         createdBy: 'user_test',
       );
-      
+
       // Create category with null emoji manually to avoid SocialFactory default
       noEmojiCategory = FriendCategory(
         id: 'category_neighbors',
@@ -60,7 +60,9 @@ void main() {
     });
 
     group('Factory Delegation Tests - Gold Standard', () {
-      testWidgets('should delegate to CategorySelectionWidgets.friendCategoryChip correctly', (tester) async {
+      testWidgets(
+          'should delegate to CategorySelectionWidgets.friendCategoryChip correctly',
+          (tester) async {
         // Test facade delegation - ultrathink focus on architecture verification
         bool onTapCalled = false;
 
@@ -90,11 +92,12 @@ void main() {
         // Test interaction delegation
         await tester.tap(find.byType(FilterChip));
         await tester.pump();
-        
+
         expect(onTapCalled, isTrue); // Verify callback delegation works
       });
 
-      testWidgets('should handle all parameter combinations correctly', (tester) async {
+      testWidgets('should handle all parameter combinations correctly',
+          (tester) async {
         // Test parameter delegation integrity - ultrathink comprehensive coverage
         final testConfigs = [
           {'isSelected': true, 'showCount': true, 'enabled': true},
@@ -125,8 +128,9 @@ void main() {
 
           // Verify delegation creates stable widget structure
           expect(find.byType(FilterChip), findsOneWidget);
-          expect(tester.takeException(), isNull); // No exceptions for any config
-          
+          expect(
+              tester.takeException(), isNull); // No exceptions for any config
+
           // Clear for next iteration
           await tester.pumpWidget(Container());
         }
@@ -156,7 +160,8 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should display friend count when showCount is true', (tester) async {
+      testWidgets('should display friend count when showCount is true',
+          (tester) async {
         // Test friend count display functionality
         await tester.pumpWidget(
           MaterialApp(
@@ -180,7 +185,8 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should hide friend count when showCount is false', (tester) async {
+      testWidgets('should hide friend count when showCount is false',
+          (tester) async {
         // Test count hiding functionality
         await tester.pumpWidget(
           MaterialApp(
@@ -204,7 +210,8 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should display correct icon for category with emoji', (tester) async {
+      testWidgets('should display correct icon for category with emoji',
+          (tester) async {
         // Test emoji icon logic - ultrathink production analysis verification
         await tester.pumpWidget(
           MaterialApp(
@@ -227,7 +234,8 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should display default icon for category without emoji', (tester) async {
+      testWidgets('should display default icon for category without emoji',
+          (tester) async {
         // Test default icon fallback
         await tester.pumpWidget(
           MaterialApp(
@@ -321,7 +329,7 @@ void main() {
         // Verify tap works when enabled
         await tester.tap(find.byType(FilterChip));
         await tester.pump();
-        
+
         expect(onTapCalled, isTrue);
         expect(tester.takeException(), isNull);
       });
@@ -348,7 +356,8 @@ void main() {
 
         // Verify FilterChip is disabled
         final filterChip = tester.widget<FilterChip>(find.byType(FilterChip));
-        expect(filterChip.onSelected, isNull); // Disabled when onSelected is null
+        expect(
+            filterChip.onSelected, isNull); // Disabled when onSelected is null
         expect(onTapCalled, isFalse); // Tap should not be called when disabled
         expect(tester.takeException(), isNull);
       });
@@ -437,7 +446,8 @@ void main() {
         // Verify single friend count
         expect(find.text('Grannar'), findsOneWidget);
         expect(find.text('(1)'), findsOneWidget); // One friend
-        expect(find.byIcon(Icons.group), findsOneWidget); // No emoji, default icon
+        expect(
+            find.byIcon(Icons.group), findsOneWidget); // No emoji, default icon
         expect(tester.takeException(), isNull);
       });
 
@@ -471,11 +481,13 @@ void main() {
         // Verify default icon is used for null emoji
         expect(find.text('Ingen Emoji'), findsOneWidget);
         expect(find.byIcon(Icons.group), findsOneWidget); // Default icon
-        expect(find.byIcon(Icons.emoji_emotions), findsNothing); // No emoji icon
+        expect(
+            find.byIcon(Icons.emoji_emotions), findsNothing); // No emoji icon
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should handle empty string emoji gracefully', (tester) async {
+      testWidgets('should handle empty string emoji gracefully',
+          (tester) async {
         // Test empty string emoji - create manually to test exact behavior
         final emptyEmojiCategory = FriendCategory(
           id: 'category_empty_emoji',
@@ -504,14 +516,16 @@ void main() {
 
         // Verify emoji icon is used for empty string (empty string != null in production code)
         expect(find.text('Tom Emoji'), findsOneWidget);
-        expect(find.byIcon(Icons.emoji_emotions), findsOneWidget); // Empty string is != null, so emoji icon
+        expect(find.byIcon(Icons.emoji_emotions),
+            findsOneWidget); // Empty string is != null, so emoji icon
         expect(find.byIcon(Icons.group), findsNothing);
         expect(tester.takeException(), isNull);
       });
     });
 
     group('Large Data Tests - Gold Standard', () {
-      testWidgets('should handle large friend counts correctly', (tester) async {
+      testWidgets('should handle large friend counts correctly',
+          (tester) async {
         // Test high friend count - ultrathink performance edge case
         final largeFriendList = List.generate(50, (i) => 'friend_$i');
         final largeCategory = SocialFactory.createFriendCategory(
@@ -544,11 +558,13 @@ void main() {
         expect(tester.takeException(), isNull); // No performance issues
       });
 
-      testWidgets('should handle long category names correctly', (tester) async {
+      testWidgets('should handle long category names correctly',
+          (tester) async {
         // Test long name handling
         final longNameCategory = SocialFactory.createFriendCategory(
           id: 'category_long_name',
-          name: 'Mycket Långa Kategorier Med Många Ord Som Kanske Inte Får Plats',
+          name:
+              'Mycket Långa Kategorier Med Många Ord Som Kanske Inte Får Plats',
           emoji: '📝',
           memberIds: ['friend_1', 'friend_2'],
           createdBy: 'user_test',
@@ -576,7 +592,7 @@ void main() {
         // Verify long name is handled - production has RenderFlex overflow issue
         expect(find.textContaining('Mycket Långa Kategorier'), findsOneWidget);
         expect(find.text('(2)'), findsOneWidget);
-        
+
         // Accept overflow as known production issue for now - test core functionality
         // This is similar to layout constraints issue found in other widgets
         final exception = tester.takeException();

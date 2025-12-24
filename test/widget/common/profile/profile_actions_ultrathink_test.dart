@@ -38,12 +38,17 @@ void main() {
 
     void setupDefaultMocks() {
       // Mock BackupService
-      when(() => mockBackupService.exportToFile()).thenAnswer((_) async => BackupResult.success(message: 'Mock backup complete', filePath: 'mock/path', recipeCount: 10));
-      when(() => mockBackupService.importFromFile()).thenAnswer((_) async => const ImportResult(successCount: 5, skipCount: 0));
-      
+      when(() => mockBackupService.exportToFile()).thenAnswer((_) async =>
+          BackupResult.success(
+              message: 'Mock backup complete',
+              filePath: 'mock/path',
+              recipeCount: 10));
+      when(() => mockBackupService.importFromFile()).thenAnswer(
+          (_) async => const ImportResult(successCount: 5, skipCount: 0));
+
       // Mock AuthRepository
       when(() => mockAuthRepository.signOut()).thenAnswer((_) async {});
-      
+
       // Mock all other services
       when(() => mockAuthService.currentUser).thenReturn(null);
       when(() => mockUserService.currentUserProfile).thenReturn(null);
@@ -107,9 +112,11 @@ void main() {
     }
 
     group('Basic Menu Items - Foundation UI', () {
-      testWidgets('renders basic menu item with Swedish text and styling', (WidgetTester tester) async {
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildMenuItem(
+      testWidgets('renders basic menu item with Swedish text and styling',
+          (WidgetTester tester) async {
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildMenuItem(
             context,
             title: 'Notifikationer',
             subtitle: 'Hantera dina meddelanden',
@@ -126,12 +133,15 @@ void main() {
 
         // Styling verification
         final inkWell = tester.widget<InkWell>(find.byType(InkWell));
-        expect(inkWell.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadiusM)));
+        expect(inkWell.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadiusM)));
       });
 
-      testWidgets('renders notification menu item with badge count', (WidgetTester tester) async {
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildNotificationMenuItem(
+      testWidgets('renders notification menu item with badge count',
+          (WidgetTester tester) async {
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildNotificationMenuItem(
             context,
             title: 'Meddelanden',
             subtitle: 'Du har nya meddelanden',
@@ -148,17 +158,22 @@ void main() {
         expect(find.text('5'), findsOneWidget);
 
         // Badge styling
-        final badgeContainer = tester.widgetList<Container>(
-          find.byType(Container),
-        ).firstWhere((container) =>
-            container.decoration is BoxDecoration &&
-            (container.decoration as BoxDecoration).color == AppColors.error);
+        final badgeContainer = tester
+            .widgetList<Container>(
+              find.byType(Container),
+            )
+            .firstWhere((container) =>
+                container.decoration is BoxDecoration &&
+                (container.decoration as BoxDecoration).color ==
+                    AppColors.error);
         expect(badgeContainer, isNotNull);
       });
 
-      testWidgets('handles notification badge count over 99', (WidgetTester tester) async {
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildNotificationMenuItem(
+      testWidgets('handles notification badge count over 99',
+          (WidgetTester tester) async {
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildNotificationMenuItem(
             context,
             title: 'Meddelanden',
             subtitle: 'Många meddelanden',
@@ -171,9 +186,11 @@ void main() {
         expect(find.text('150'), findsNothing);
       });
 
-      testWidgets('hides badge when count is zero', (WidgetTester tester) async {
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildNotificationMenuItem(
+      testWidgets('hides badge when count is zero',
+          (WidgetTester tester) async {
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildNotificationMenuItem(
             context,
             title: 'Meddelanden',
             subtitle: 'Inga nya meddelanden',
@@ -193,20 +210,22 @@ void main() {
     });
 
     group('Data Backup Section - Swedish UX', () {
-      testWidgets('renders complete backup section with Swedish text', (WidgetTester tester) async {
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildDataBackupSection(context),
+      testWidgets('renders complete backup section with Swedish text',
+          (WidgetTester tester) async {
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildDataBackupSection(context),
         );
 
         // Section header
         expect(find.text('Data & Backup'), findsOneWidget);
-        
+
         // Backup and restore buttons
         expect(find.text('Ladda ner backup'), findsOneWidget);
         expect(find.text('Spara alla recept som JSON'), findsOneWidget);
         expect(find.text('Återställ från backup'), findsOneWidget);
         expect(find.text('Importera recept från JSON'), findsOneWidget);
-        
+
         // Icons
         expect(find.byIcon(Icons.download), findsOneWidget);
         expect(find.byIcon(Icons.upload), findsOneWidget);
@@ -217,11 +236,17 @@ void main() {
         expect(divider.color, equals(AppColors.divider));
       });
 
-      testWidgets('handles successful backup operation', (WidgetTester tester) async {
-        when(() => mockBackupService.exportToFile()).thenAnswer((_) async => BackupResult.success(message: 'Backup complete', filePath: 'mock/path', recipeCount: 10));
+      testWidgets('handles successful backup operation',
+          (WidgetTester tester) async {
+        when(() => mockBackupService.exportToFile()).thenAnswer((_) async =>
+            BackupResult.success(
+                message: 'Backup complete',
+                filePath: 'mock/path',
+                recipeCount: 10));
 
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildDataBackupSection(context),
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildDataBackupSection(context),
         );
 
         // Tap backup button
@@ -235,11 +260,14 @@ void main() {
         expect(find.text('Backup skapad framgångsrikt!'), findsOneWidget);
       });
 
-      testWidgets('handles backup failure with error message', (WidgetTester tester) async {
-        when(() => mockBackupService.exportToFile()).thenAnswer((_) async => BackupResult.error('Network error'));
+      testWidgets('handles backup failure with error message',
+          (WidgetTester tester) async {
+        when(() => mockBackupService.exportToFile())
+            .thenAnswer((_) async => BackupResult.error('Network error'));
 
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildDataBackupSection(context),
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildDataBackupSection(context),
         );
 
         await tester.tap(find.text('Ladda ner backup'));
@@ -253,11 +281,14 @@ void main() {
         expect(find.textContaining('Backup misslyckades'), findsOneWidget);
       });
 
-      testWidgets('handles successful restore operation', (WidgetTester tester) async {
-        when(() => mockBackupService.importFromFile()).thenAnswer((_) async => const ImportResult(successCount: 5, skipCount: 0));
+      testWidgets('handles successful restore operation',
+          (WidgetTester tester) async {
+        when(() => mockBackupService.importFromFile()).thenAnswer(
+            (_) async => const ImportResult(successCount: 5, skipCount: 0));
 
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildDataBackupSection(context),
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildDataBackupSection(context),
         );
 
         await tester.tap(find.text('Återställ från backup'));
@@ -267,11 +298,14 @@ void main() {
         expect(find.text('Återställning genomförd!'), findsOneWidget);
       });
 
-      testWidgets('handles restore failure with error message', (WidgetTester tester) async {
-        when(() => mockBackupService.importFromFile()).thenAnswer((_) async => ImportResult.error('File error'));
+      testWidgets('handles restore failure with error message',
+          (WidgetTester tester) async {
+        when(() => mockBackupService.importFromFile())
+            .thenAnswer((_) async => ImportResult.error('File error'));
 
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildDataBackupSection(context),
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildDataBackupSection(context),
         );
 
         await tester.tap(find.text('Återställ från backup'));
@@ -281,14 +315,17 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 100));
 
-        expect(find.textContaining('Återställning misslyckades'), findsOneWidget);
+        expect(
+            find.textContaining('Återställning misslyckades'), findsOneWidget);
       });
     });
 
     group('Logout Section - Security Flow', () {
-      testWidgets('renders logout section with Swedish button', (WidgetTester tester) async {
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildLogoutSection(context),
+      testWidgets('renders logout section with Swedish button',
+          (WidgetTester tester) async {
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildLogoutSection(context),
         );
 
         // Logout button
@@ -299,23 +336,30 @@ void main() {
         expect(find.byType(Divider), findsOneWidget);
       });
 
-      testWidgets('shows logout confirmation dialog', (WidgetTester tester) async {
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildLogoutSection(context),
+      testWidgets('shows logout confirmation dialog',
+          (WidgetTester tester) async {
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildLogoutSection(context),
         );
 
         await tester.tap(find.text('Logga ut'));
         await tester.pumpAndSettle();
 
-        // Check dialog content  
-        expect(find.text('Logga ut'), findsNWidgets(3)); // Original button + dialog title + confirmation button
-        expect(find.text('Är du säker på att du vill logga ut?'), findsOneWidget);
+        // Check dialog content
+        expect(
+            find.text('Logga ut'),
+            findsNWidgets(
+                3)); // Original button + dialog title + confirmation button
+        expect(
+            find.text('Är du säker på att du vill logga ut?'), findsOneWidget);
         expect(find.text('Avbryt'), findsOneWidget);
       });
 
       testWidgets('handles logout cancellation', (WidgetTester tester) async {
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildLogoutSection(context),
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildLogoutSection(context),
         );
 
         await tester.tap(find.text('Logga ut'));
@@ -332,8 +376,9 @@ void main() {
       testWidgets('handles successful logout', (WidgetTester tester) async {
         when(() => mockAuthRepository.signOut()).thenAnswer((_) async {});
 
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildLogoutSection(context),
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildLogoutSection(context),
         );
 
         await tester.tap(find.text('Logga ut'));
@@ -348,11 +393,14 @@ void main() {
         verify(() => mockAuthRepository.signOut()).called(1);
       });
 
-      testWidgets('handles logout failure with error message', (WidgetTester tester) async {
-        when(() => mockAuthRepository.signOut()).thenThrow(Exception('Network error'));
+      testWidgets('handles logout failure with error message',
+          (WidgetTester tester) async {
+        when(() => mockAuthRepository.signOut())
+            .thenThrow(Exception('Network error'));
 
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildLogoutSection(context),
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildLogoutSection(context),
         );
 
         await tester.tap(find.text('Logga ut'));
@@ -373,17 +421,20 @@ void main() {
     });
 
     group('Account Management Section - GDPR Compliance', () {
-      testWidgets('renders account management section with warning', (WidgetTester tester) async {
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildAccountManagementSection(context),
+      testWidgets('renders account management section with warning',
+          (WidgetTester tester) async {
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildAccountManagementSection(context),
         );
 
         // Section header
         expect(find.text('Kontohantering'), findsOneWidget);
-        
+
         // Delete account button
         expect(find.text('Radera konto'), findsOneWidget);
-        expect(find.text('Ta bort ditt konto och all data permanent'), findsOneWidget);
+        expect(find.text('Ta bort ditt konto och all data permanent'),
+            findsOneWidget);
         expect(find.byIcon(Icons.delete_forever), findsOneWidget);
 
         // Styling verification - check for error-colored container
@@ -393,19 +444,21 @@ void main() {
             final decoration = container.decoration as BoxDecoration;
             final color = decoration.color;
             // Check if color has error-like properties (red channel high, alpha modified)
-            return color != null && 
-                   (color.r * 255.0).round() > 200 && 
-                   (color.g * 255.0).round() < 100 && 
-                   (color.b * 255.0).round() < 100;
+            return color != null &&
+                (color.r * 255.0).round() > 200 &&
+                (color.g * 255.0).round() < 100 &&
+                (color.b * 255.0).round() < 100;
           }
           return false;
         }).isNotEmpty;
         expect(deleteContainer, isTrue);
       });
 
-      testWidgets('shows comprehensive delete account confirmation dialog', (WidgetTester tester) async {
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildAccountManagementSection(context),
+      testWidgets('shows comprehensive delete account confirmation dialog',
+          (WidgetTester tester) async {
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildAccountManagementSection(context),
         );
 
         await tester.tap(find.text('Radera konto'));
@@ -417,18 +470,21 @@ void main() {
         expect(find.text('• Ta bort alla dina recept'), findsOneWidget);
         expect(find.text('• Ta bort alla dina menyer'), findsOneWidget);
         expect(find.text('• Ta bort alla dina shoppinglistor'), findsOneWidget);
-        expect(find.text('• Ta bort alla vänner och meddelanden'), findsOneWidget);
+        expect(
+            find.text('• Ta bort alla vänner och meddelanden'), findsOneWidget);
         expect(find.text('• Ta bort all delad innehåll'), findsOneWidget);
         expect(find.text('Denna åtgärd kan INTE ångras!'), findsOneWidget);
-        
+
         // Action buttons
         expect(find.text('Avbryt'), findsOneWidget);
         expect(find.text('Jag förstår, radera mitt konto'), findsOneWidget);
       });
 
-      testWidgets('handles account deletion cancellation', (WidgetTester tester) async {
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildAccountManagementSection(context),
+      testWidgets('handles account deletion cancellation',
+          (WidgetTester tester) async {
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildAccountManagementSection(context),
         );
 
         await tester.tap(find.text('Radera konto'));
@@ -444,9 +500,11 @@ void main() {
     });
 
     group('Button Styling and Layout', () {
-      testWidgets('applies correct styling to data buttons', (WidgetTester tester) async {
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildDataBackupSection(context),
+      testWidgets('applies correct styling to data buttons',
+          (WidgetTester tester) async {
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildDataBackupSection(context),
         );
 
         // Check container styling for backup button
@@ -454,21 +512,24 @@ void main() {
         final dataButtonContainers = containers.where((container) =>
             container.decoration is BoxDecoration &&
             (container.decoration as BoxDecoration).borderRadius != null);
-        
+
         expect(dataButtonContainers.length, greaterThanOrEqualTo(2));
 
         // Check that containers have proper border radius
         for (final container in dataButtonContainers) {
           final decoration = container.decoration as BoxDecoration;
           if (decoration.borderRadius != null) {
-            expect(decoration.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadiusM)));
+            expect(decoration.borderRadius,
+                equals(BorderRadius.circular(AppDimensions.borderRadiusM)));
           }
         }
       });
 
-      testWidgets('displays correct text styles throughout sections', (WidgetTester tester) async {
-        await pumpProfileWidget(tester, (context) => 
-          Column(
+      testWidgets('displays correct text styles throughout sections',
+          (WidgetTester tester) async {
+        await pumpProfileWidget(
+          tester,
+          (context) => Column(
             children: [
               ProfileActions.buildDataBackupSection(context),
               ProfileActions.buildAccountManagementSection(context),
@@ -478,17 +539,22 @@ void main() {
 
         // Check section headers use correct style
         final dataBackupText = tester.widget<Text>(find.text('Data & Backup'));
-        expect(dataBackupText.style?.fontSize, equals(AppTextStyles.displaySmall.fontSize));
+        expect(dataBackupText.style?.fontSize,
+            equals(AppTextStyles.displaySmall.fontSize));
 
-        final accountMgmtText = tester.widget<Text>(find.text('Kontohantering'));
-        expect(accountMgmtText.style?.fontSize, equals(AppTextStyles.displaySmall.fontSize));
+        final accountMgmtText =
+            tester.widget<Text>(find.text('Kontohantering'));
+        expect(accountMgmtText.style?.fontSize,
+            equals(AppTextStyles.displaySmall.fontSize));
       });
 
-      testWidgets('handles InkWell interactions correctly', (WidgetTester tester) async {
+      testWidgets('handles InkWell interactions correctly',
+          (WidgetTester tester) async {
         bool tapped = false;
-        
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildMenuItem(
+
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildMenuItem(
             context,
             title: 'Test Item',
             subtitle: 'Test Description',
@@ -507,9 +573,11 @@ void main() {
     });
 
     group('Edge Cases and Error Handling', () {
-      testWidgets('handles null onTap callbacks gracefully', (WidgetTester tester) async {
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildMenuItem(
+      testWidgets('handles null onTap callbacks gracefully',
+          (WidgetTester tester) async {
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildMenuItem(
             context,
             title: 'Disabled Item',
             subtitle: 'This item is disabled',
@@ -527,12 +595,15 @@ void main() {
         expect(inkWell.onTap, isNull);
       });
 
-      testWidgets('handles very long text content with proper overflow', (WidgetTester tester) async {
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildMenuItem(
+      testWidgets('handles very long text content with proper overflow',
+          (WidgetTester tester) async {
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildMenuItem(
             context,
             title: 'Very Long Title That Should Handle Overflow Correctly',
-            subtitle: 'This is a very long subtitle that tests how the widget handles text overflow and wrapping behavior in different screen sizes',
+            subtitle:
+                'This is a very long subtitle that tests how the widget handles text overflow and wrapping behavior in different screen sizes',
             icon: Icons.text_fields,
             onTap: () {},
           ),
@@ -540,12 +611,15 @@ void main() {
 
         // Should render without overflow errors
         expect(find.textContaining('Very Long Title'), findsOneWidget);
-        expect(find.textContaining('This is a very long subtitle'), findsOneWidget);
+        expect(find.textContaining('This is a very long subtitle'),
+            findsOneWidget);
       });
 
-      testWidgets('maintains proper spacing and dimensions', (WidgetTester tester) async {
-        await pumpProfileWidget(tester, (context) => 
-          ProfileActions.buildDataBackupSection(context),
+      testWidgets('maintains proper spacing and dimensions',
+          (WidgetTester tester) async {
+        await pumpProfileWidget(
+          tester,
+          (context) => ProfileActions.buildDataBackupSection(context),
         );
 
         // Check for proper spacing elements
@@ -565,9 +639,15 @@ void main() {
 
 // Mock classes - use existing production mocks
 class MockBackupService extends Mock implements BackupService {}
+
 class MockAuthRepository extends Mock implements AuthRepository {}
+
 class MockAuthService extends Mock implements AuthService {}
+
 class MockUserService extends Mock implements UserService {}
+
 class MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
+
 class MockOfflineService extends Mock implements OfflineService {}
+
 class MockAnalyticsService extends Mock implements AnalyticsService {}

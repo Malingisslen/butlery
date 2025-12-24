@@ -33,7 +33,8 @@ void main() {
     }
 
     group('Constructor Tests', () {
-      testWidgets('creates widget with main constructor and required text', (tester) async {
+      testWidgets('creates widget with main constructor and required text',
+          (tester) async {
         const testText = 'Loading...';
 
         await tester.pumpWidget(
@@ -47,7 +48,8 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('creates widget with main constructor and all parameters', (tester) async {
+      testWidgets('creates widget with main constructor and all parameters',
+          (tester) async {
         const testText = 'Processing...';
         const testBackgroundColor = Colors.red;
         const testProgressColor = Colors.white;
@@ -69,7 +71,8 @@ void main() {
         expect(find.text(testText), findsOneWidget);
       });
 
-      testWidgets('creates widget with .avatar() named constructor', (tester) async {
+      testWidgets('creates widget with .avatar() named constructor',
+          (tester) async {
         const testText = 'Uploading avatar...';
 
         await tester.pumpWidget(
@@ -83,7 +86,8 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('creates widget with .rectangle() named constructor', (tester) async {
+      testWidgets('creates widget with .rectangle() named constructor',
+          (tester) async {
         const testText = 'Processing file...';
 
         await tester.pumpWidget(
@@ -99,20 +103,23 @@ void main() {
     });
 
     group('Shape Configuration Tests', () {
-      testWidgets('main constructor uses circle shape by default', (tester) async {
+      testWidgets('main constructor uses circle shape by default',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             const ProgressOverlay(text: 'Loading...'),
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
 
         expect(decoration.shape, BoxShape.circle);
       });
 
-      testWidgets('main constructor accepts custom rectangle shape', (tester) async {
+      testWidgets('main constructor accepts custom rectangle shape',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             const ProgressOverlay(
@@ -122,33 +129,38 @@ void main() {
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
 
         expect(decoration.shape, BoxShape.rectangle);
       });
 
-      testWidgets('.avatar() constructor enforces circle shape', (tester) async {
+      testWidgets('.avatar() constructor enforces circle shape',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             const ProgressOverlay.avatar(text: 'Uploading...'),
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
 
         expect(decoration.shape, BoxShape.circle);
       });
 
-      testWidgets('.rectangle() constructor enforces rectangle shape', (tester) async {
+      testWidgets('.rectangle() constructor enforces rectangle shape',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             const ProgressOverlay.rectangle(text: 'Processing...'),
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
 
         expect(decoration.shape, BoxShape.rectangle);
@@ -156,16 +168,19 @@ void main() {
     });
 
     group('Color Configuration Tests', () {
-      testWidgets('main constructor applies correct default colors', (tester) async {
+      testWidgets('main constructor applies correct default colors',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             const ProgressOverlay(text: 'Loading...'),
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
-        final progressIndicator = tester.widget<CircularProgressIndicator>(find.byType(CircularProgressIndicator));
+        final progressIndicator = tester.widget<CircularProgressIndicator>(
+            find.byType(CircularProgressIndicator));
         final text = tester.widget<Text>(find.text('Loading...'));
 
         expect(decoration.color, AppColors.neutralDark.withValues(alpha: 0.7));
@@ -189,9 +204,11 @@ void main() {
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
-        final progressIndicator = tester.widget<CircularProgressIndicator>(find.byType(CircularProgressIndicator));
+        final progressIndicator = tester.widget<CircularProgressIndicator>(
+            find.byType(CircularProgressIndicator));
         final text = tester.widget<Text>(find.text('Loading...'));
 
         expect(decoration.color, customBackgroundColor);
@@ -199,16 +216,19 @@ void main() {
         expect(text.style?.color, customTextColor);
       });
 
-      testWidgets('.avatar() constructor applies preset colors', (tester) async {
+      testWidgets('.avatar() constructor applies preset colors',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             const ProgressOverlay.avatar(text: 'Uploading...'),
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
-        final progressIndicator = tester.widget<CircularProgressIndicator>(find.byType(CircularProgressIndicator));
+        final progressIndicator = tester.widget<CircularProgressIndicator>(
+            find.byType(CircularProgressIndicator));
         final text = tester.widget<Text>(find.text('Uploading...'));
 
         // Avatar constructor sets backgroundColor to null, should use default
@@ -217,7 +237,8 @@ void main() {
         expect(text.style?.color, AppColors.neutralLight);
       });
 
-      testWidgets('.rectangle() constructor allows color customization', (tester) async {
+      testWidgets('.rectangle() constructor allows color customization',
+          (tester) async {
         const customBackgroundColor = Colors.purple;
         const customProgressColor = Colors.orange;
         const customTextColor = Colors.pink;
@@ -233,9 +254,11 @@ void main() {
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
-        final progressIndicator = tester.widget<CircularProgressIndicator>(find.byType(CircularProgressIndicator));
+        final progressIndicator = tester.widget<CircularProgressIndicator>(
+            find.byType(CircularProgressIndicator));
         final text = tester.widget<Text>(find.text('Processing...'));
 
         expect(decoration.color, customBackgroundColor);
@@ -245,20 +268,23 @@ void main() {
     });
 
     group('Progress Indicator Tests', () {
-      testWidgets('applies correct CircularProgressIndicator properties', (tester) async {
+      testWidgets('applies correct CircularProgressIndicator properties',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             const ProgressOverlay(text: 'Loading...'),
           ),
         );
 
-        final progressIndicator = tester.widget<CircularProgressIndicator>(find.byType(CircularProgressIndicator));
+        final progressIndicator = tester.widget<CircularProgressIndicator>(
+            find.byType(CircularProgressIndicator));
 
         expect(progressIndicator.strokeWidth, 2);
         expect(progressIndicator.color, AppColors.neutralLight);
       });
 
-      testWidgets('CircularProgressIndicator accepts custom color', (tester) async {
+      testWidgets('CircularProgressIndicator accepts custom color',
+          (tester) async {
         const customProgressColor = Colors.yellow;
 
         await tester.pumpWidget(
@@ -270,13 +296,15 @@ void main() {
           ),
         );
 
-        final progressIndicator = tester.widget<CircularProgressIndicator>(find.byType(CircularProgressIndicator));
+        final progressIndicator = tester.widget<CircularProgressIndicator>(
+            find.byType(CircularProgressIndicator));
 
         expect(progressIndicator.color, customProgressColor);
         expect(progressIndicator.strokeWidth, 2); // Should remain constant
       });
 
-      testWidgets('all constructor variants create CircularProgressIndicator', (tester) async {
+      testWidgets('all constructor variants create CircularProgressIndicator',
+          (tester) async {
         const constructors = [
           ProgressOverlay(text: 'Test'),
           ProgressOverlay.avatar(text: 'Test'),
@@ -324,7 +352,8 @@ void main() {
         expect(text.style?.color, AppColors.neutralLight);
       });
 
-      testWidgets('applies custom text color while maintaining style', (tester) async {
+      testWidgets('applies custom text color while maintaining style',
+          (tester) async {
         const customTextColor = Colors.cyan;
 
         await tester.pumpWidget(
@@ -343,7 +372,8 @@ void main() {
       });
 
       testWidgets('handles long text content', (tester) async {
-        const longText = 'This is a very long loading message that might wrap to multiple lines in the overlay display';
+        const longText =
+            'This is a very long loading message that might wrap to multiple lines in the overlay display';
 
         await tester.pumpWidget(
           createTestWidget(
@@ -375,11 +405,16 @@ void main() {
         final decoratedBox = find.byType(DecoratedBox);
         final column = find.byType(Column);
 
-        expect(find.descendant(of: positioned, matching: decoratedBox), findsOneWidget);
-        expect(find.descendant(of: decoratedBox, matching: column), findsOneWidget);
-        
+        expect(find.descendant(of: positioned, matching: decoratedBox),
+            findsOneWidget);
+        expect(find.descendant(of: decoratedBox, matching: column),
+            findsOneWidget);
+
         // Check that CircularProgressIndicator is within Column
-        expect(find.descendant(of: column, matching: find.byType(CircularProgressIndicator)), findsOneWidget);
+        expect(
+            find.descendant(
+                of: column, matching: find.byType(CircularProgressIndicator)),
+            findsOneWidget);
       });
 
       testWidgets('Column has correct properties', (tester) async {
@@ -392,7 +427,8 @@ void main() {
         final column = tester.widget<Column>(find.byType(Column));
 
         expect(column.mainAxisSize, MainAxisSize.min);
-        expect(column.children.length, 3); // CircularProgressIndicator, SizedBox, Text
+        expect(column.children.length,
+            3); // CircularProgressIndicator, SizedBox, Text
       });
 
       testWidgets('SizedBox has correct spacing', (tester) async {
@@ -443,9 +479,11 @@ void main() {
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
-        final progressIndicator = tester.widget<CircularProgressIndicator>(find.byType(CircularProgressIndicator));
+        final progressIndicator = tester.widget<CircularProgressIndicator>(
+            find.byType(CircularProgressIndicator));
         final text = tester.widget<Text>(find.text('Loading...'));
 
         expect(decoration.color, AppColors.neutralDark.withValues(alpha: 0.7));
@@ -486,9 +524,11 @@ void main() {
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
-        final progressIndicator = tester.widget<CircularProgressIndicator>(find.byType(CircularProgressIndicator));
+        final progressIndicator = tester.widget<CircularProgressIndicator>(
+            find.byType(CircularProgressIndicator));
         final text = tester.widget<Text>(find.text(testText));
 
         expect(decoration.shape, testShape);
@@ -497,37 +537,42 @@ void main() {
         expect(text.style?.color, testTextColor);
       });
 
-      testWidgets('.avatar() constructor has correct fixed properties', (tester) async {
+      testWidgets('.avatar() constructor has correct fixed properties',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             const ProgressOverlay.avatar(text: 'Avatar upload'),
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
-        final progressIndicator = tester.widget<CircularProgressIndicator>(find.byType(CircularProgressIndicator));
+        final progressIndicator = tester.widget<CircularProgressIndicator>(
+            find.byType(CircularProgressIndicator));
         final text = tester.widget<Text>(find.text('Avatar upload'));
 
         // Shape is fixed to circle
         expect(decoration.shape, BoxShape.circle);
-        
+
         // Colors are preset to neutralLight
         expect(progressIndicator.color, AppColors.neutralLight);
         expect(text.style?.color, AppColors.neutralLight);
-        
+
         // Background uses default (null becomes neutralDark with alpha)
         expect(decoration.color, AppColors.neutralDark.withValues(alpha: 0.7));
       });
 
-      testWidgets('.rectangle() constructor has correct fixed properties', (tester) async {
+      testWidgets('.rectangle() constructor has correct fixed properties',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             const ProgressOverlay.rectangle(text: 'File processing'),
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
 
         // Shape is fixed to rectangle
@@ -588,7 +633,8 @@ void main() {
         }
       });
 
-      testWidgets('maintains functionality in Stack layout context', (tester) async {
+      testWidgets('maintains functionality in Stack layout context',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             const ProgressOverlay(text: 'Loading overlay'),
@@ -597,7 +643,8 @@ void main() {
 
         expect(find.byType(ProgressOverlay), findsOneWidget);
         expect(find.text('Loading overlay'), findsOneWidget);
-        expect(find.text('Background'), findsOneWidget); // From our test wrapper
+        expect(
+            find.text('Background'), findsOneWidget); // From our test wrapper
       });
     });
   });

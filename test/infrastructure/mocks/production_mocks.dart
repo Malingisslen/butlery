@@ -25,7 +25,8 @@ import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/services/notifications/notification_repository.dart' as legacy;
+import 'package:butlery/services/notifications/notification_repository.dart'
+    as legacy;
 // ActivityRepository removed - dead code
 import 'package:butlery/models/notification_batch.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
@@ -3288,7 +3289,6 @@ class MockSharedPreferences extends Mock implements SharedPreferences {}
 
 /// Mock implementation of Connectivity
 class MockConnectivity extends Mock implements Connectivity {}
-
 
 /// Mock implementation of Uuid
 class MockUuid extends Mock implements Uuid {}

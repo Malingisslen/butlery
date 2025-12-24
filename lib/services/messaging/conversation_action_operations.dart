@@ -1,7 +1,8 @@
 // lib/services/messaging/conversation_action_operations.dart
 
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
+import 'package:butlery/repositories/interfaces/auth_repository.dart'
+    as auth_repo;
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -38,7 +39,8 @@ class ConversationActionOperations {
       }
 
       if (!conversation.participantIds.contains(currentUserId)) {
-        throw PermissionDeniedException('User is not a participant in this conversation');
+        throw PermissionDeniedException(
+            'User is not a participant in this conversation');
       }
 
       // Store pin setting in user's conversation metadata

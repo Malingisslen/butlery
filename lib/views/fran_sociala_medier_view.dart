@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+
 /// Text import view for parsing recipes from copied text.
 class FranSocialaMedierView extends StatelessWidget {
   final String? initialText;
@@ -56,19 +57,21 @@ class _FranSocialaMedierViewContent extends StatefulWidget {
   });
 
   @override
-  State<_FranSocialaMedierViewContent> createState() => _FranSocialaMedierViewContentState();
+  State<_FranSocialaMedierViewContent> createState() =>
+      _FranSocialaMedierViewContentState();
 }
 
-class _FranSocialaMedierViewContentState extends State<_FranSocialaMedierViewContent> {
+class _FranSocialaMedierViewContentState
+    extends State<_FranSocialaMedierViewContent> {
   late TextEditingController _textController;
   bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    
+
     _textController = TextEditingController(text: widget.initialText ?? '');
-    
+
     // Uppdatera ViewModel med initial text efter att widgeten är byggd
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.initialText != null && widget.initialText!.isNotEmpty) {
@@ -129,40 +132,40 @@ class _FranSocialaMedierViewContentState extends State<_FranSocialaMedierViewCon
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-            // Instruktionstext
-            _buildInstructions(context),
-            const SizedBox(height: AppDimensions.spacingXl),
+                  // Instruktionstext
+                  _buildInstructions(context),
+                  const SizedBox(height: AppDimensions.spacingXl),
 
-            // Visa om receptet kommer från URL
-            if (viewModel.sourceUrl != null) ...[
-              SourceUrlDisplay(sourceUrl: viewModel.sourceUrl!),
-              const SizedBox(height: AppDimensions.spacingM),
-            ],
+                  // Visa om receptet kommer från URL
+                  if (viewModel.sourceUrl != null) ...[
+                    SourceUrlDisplay(sourceUrl: viewModel.sourceUrl!),
+                    const SizedBox(height: AppDimensions.spacingM),
+                  ],
 
-            // Textfält för recept
-            _buildTextInput(context, viewModel),
-            const SizedBox(height: AppDimensions.spacingXl),
+                  // Textfält för recept
+                  _buildTextInput(context, viewModel),
+                  const SizedBox(height: AppDimensions.spacingXl),
 
-            // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
-            UtilityComponents.primaryButton(
-              context,
-              label: 'Förhandsgranska och redigera',
-              icon: Icons.preview,
-              onPressed: viewModel.isParsing || !viewModel.canParse
-                  ? null
-                  : () => _parseAndNavigate(context),
-              isLoading: viewModel.isParsing,
-              loadingText: 'Tolkar text...',
-              isExpanded: true,
-            ),
+                  // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
+                  UtilityComponents.primaryButton(
+                    context,
+                    label: 'Förhandsgranska och redigera',
+                    icon: Icons.preview,
+                    onPressed: viewModel.isParsing || !viewModel.canParse
+                        ? null
+                        : () => _parseAndNavigate(context),
+                    isLoading: viewModel.isParsing,
+                    loadingText: 'Tolkar text...',
+                    isExpanded: true,
+                  ),
 
-            // Error message
-            if (viewModel.hasError) ...[
-              const SizedBox(height: AppDimensions.spacingM),
-              StateWidget.error(
-                message: viewModel.error!,
-              ),
-            ],
+                  // Error message
+                  if (viewModel.hasError) ...[
+                    const SizedBox(height: AppDimensions.spacingM),
+                    StateWidget.error(
+                      message: viewModel.error!,
+                    ),
+                  ],
                 ],
               ),
             ),

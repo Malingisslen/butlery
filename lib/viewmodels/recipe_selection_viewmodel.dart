@@ -57,7 +57,7 @@ import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 class RecipeSelectionViewModel extends ChangeNotifier
     with StreamManagementMixin, StateNotifierMixin, AsyncOperationMixin {
   final UnifiedRecipeService _recipeService;
-  
+
   /// Target friend for recipe sharing and social distribution coordination.
   /// Stores the friend profile for targeted sharing enabling friend-specific
   /// functionality and social recipe distribution management.
@@ -77,7 +77,7 @@ class RecipeSelectionViewModel extends ChangeNotifier
   RecipeSelectionViewModel({
     required UnifiedRecipeService recipeService,
     required this.targetFriend,
-  })  : _recipeService = recipeService;
+  }) : _recipeService = recipeService;
 
   // ===== RECIPE COLLECTION STATE =====
 
@@ -85,12 +85,12 @@ class RecipeSelectionViewModel extends ChangeNotifier
   /// Stores all available recipes enabling recipe discovery, selection functionality,
   /// and comprehensive recipe management throughout selection operations.
   List<Recipe> _allRecipes = [];
-  
+
   /// Filtered recipe collection based on search criteria for display coordination.
   /// Stores search-filtered recipe results enabling responsive search functionality
   /// and recipe discovery throughout selection interface operations.
   List<Recipe> _filteredRecipes = [];
-  
+
   /// Current search query for recipe filtering and discovery functionality.
   /// Stores user search input enabling recipe search functionality
   /// and content discovery throughout recipe selection operations.
@@ -110,16 +110,16 @@ class RecipeSelectionViewModel extends ChangeNotifier
   /// Indicates active sharing operation for loading indicators and interaction
   /// control during recipe sharing and delivery processes.
   bool _isSharing = false;
-  
+
   /// Already shared recipe IDs for sharing status tracking and visual feedback.
   /// Stores recipes already shared with target friend enabling sharing status display,
   /// duplicate prevention, and comprehensive sharing state management.
   final Set<String> _alreadySharedRecipeIds = {};
-  
+
   // Additional getters for dialog compatibility
   bool get hasSelectedRecipes => _selectedRecipeIds.isNotEmpty;
   int get selectedCount => _selectedRecipeIds.length;
-  
+
   // Search and filtering compatibility methods
   void updateSearch(String query) => updateSearchQuery(query);
   bool get hasSearchResults => _filteredRecipes.isNotEmpty;
@@ -132,21 +132,26 @@ class RecipeSelectionViewModel extends ChangeNotifier
   List<Recipe> get allRecipes => _allRecipes;
   List<Recipe> get filteredRecipes => _filteredRecipes;
   String get searchQuery => _searchQuery;
+
   /// isLoading, error, hasError provided by StateNotifierMixin
-  bool get isSharing => _isSharing;  // Operation-specific state for sharing
+  bool get isSharing => _isSharing; // Operation-specific state for sharing
   bool get hasRecipes => _allRecipes.isNotEmpty;
   bool get hasFilteredRecipes => _filteredRecipes.isNotEmpty;
   bool get canShare => _selectedRecipeIds.isNotEmpty && !_isSharing;
   Set<String> get selectedRecipeIds => _selectedRecipeIds;
-  Set<String> get alreadySharedRecipeIds => _alreadySharedRecipeIds; // ✅ NY: För UI
+  Set<String> get alreadySharedRecipeIds =>
+      _alreadySharedRecipeIds; // ✅ NY: För UI
 
   /// Lista över valda recept (inklusive kompletta Recipe-objekt)
   List<Recipe> get selectedRecipes {
-    return _allRecipes.where((recipe) => _selectedRecipeIds.contains(recipe.id)).toList();
+    return _allRecipes
+        .where((recipe) => _selectedRecipeIds.contains(recipe.id))
+        .toList();
   }
 
   /// Indikator om receptet redan är delat med vald vän
-  bool isRecipeAlreadyShared(String recipeId) => _alreadySharedRecipeIds.contains(recipeId);
+  bool isRecipeAlreadyShared(String recipeId) =>
+      _alreadySharedRecipeIds.contains(recipeId);
 
   /// Ladda alla recept
   Future<void> loadRecipes() async {
@@ -237,7 +242,8 @@ class RecipeSelectionViewModel extends ChangeNotifier
     clearError();
 
     try {
-      AppLogger.info('📤 Delar ${_selectedRecipeIds.length} recept med ${targetFriend.displayName}');
+      AppLogger.info(
+          '📤 Delar ${_selectedRecipeIds.length} recept med ${targetFriend.displayName}');
 
       final recipes = selectedRecipes;
       for (final recipe in recipes) {
@@ -246,7 +252,7 @@ class RecipeSelectionViewModel extends ChangeNotifier
           memberIds: [targetFriend.uid],
           memberDisplayNames: {targetFriend.uid: targetFriend.displayName},
         );
-        
+
         final shareResult = success != null;
 
         if (!shareResult) {
@@ -290,8 +296,8 @@ class RecipeSelectionViewModel extends ChangeNotifier
       filtered = filtered.where((recipe) {
         return recipe.title.toLowerCase().contains(query) ||
             recipe.description.toLowerCase().contains(query) ||
-            recipe.ingredients.any((ingredient) =>
-                ingredient.toLowerCase().contains(query));
+            recipe.ingredients
+                .any((ingredient) => ingredient.toLowerCase().contains(query));
       }).toList();
     }
 
@@ -311,7 +317,6 @@ class RecipeSelectionViewModel extends ChangeNotifier
     AppLogger.debug(
         '🔍 Filtrerade recept: ${_filteredRecipes.length}/${_allRecipes.length}');
   }
-
 
   /// Uppdatera recept från service
   Future<void> refresh() async {
@@ -370,9 +375,9 @@ class RecipeSelectionViewModel extends ChangeNotifier
       ]);
       final collaborativeRecipes = results[0];
       final sharedWithMeRecipes = results[1];
-      
+
       final sharedRecipeIds = <String>{};
-      
+
       // Check recipes shared by current user with target friend
       for (final recipe in collaborativeRecipes) {
         if (recipe.socialData?.memberPermissions != null) {
@@ -383,7 +388,7 @@ class RecipeSelectionViewModel extends ChangeNotifier
           }
         }
       }
-      
+
       // Check recipes shared with current user (bidirectional sharing detection)
       for (final recipe in sharedWithMeRecipes) {
         if (recipe.socialData?.memberPermissions != null) {
@@ -393,20 +398,22 @@ class RecipeSelectionViewModel extends ChangeNotifier
           }
         }
       }
-      
+
       _alreadySharedRecipeIds.clear();
       _alreadySharedRecipeIds.addAll(sharedRecipeIds);
-      
-      AppLogger.debug('Found ${sharedRecipeIds.length} recipes already shared with ${targetFriend.displayName}');
+
+      AppLogger.debug(
+          'Found ${sharedRecipeIds.length} recipes already shared with ${targetFriend.displayName}');
     } catch (e) {
       AppLogger.error('Error loading shared recipes', e);
       _alreadySharedRecipeIds.clear();
     }
   }
+
   @override
   void dispose() {
     // Cancel all timers
-    // Cancel all stream subscriptions  
+    // Cancel all stream subscriptions
     // Dispose of resources
     disposeStreamResources(); // From StreamManagementMixin
     super.dispose();

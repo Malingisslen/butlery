@@ -7,7 +7,8 @@ import 'package:butlery/theme/component_themes.dart';
 
 /// Popular with friends section showing trending recipes among user's friends.
 class PopularWithFriendsSection {
-  static Widget build(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+  static Widget build(
+      BuildContext context, DiscoveryDashboardViewModel viewModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -39,7 +40,8 @@ class PopularWithFriendsSection {
         const SizedBox(width: AppDimensions.spacingS),
         Text(
           'Populärt bland vänner',
-          style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w600),
+          style:
+              AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w600),
         ),
       ],
     );

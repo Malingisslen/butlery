@@ -19,7 +19,6 @@ class AppTextStyles {
     color: AppColors.textDark,
   );
 
-
   /// Headline Medium - For section headers and content categories
   static const TextStyle headlineMedium = TextStyle(
     fontSize: 24, // Increased from 20
@@ -53,7 +52,6 @@ class AppTextStyles {
 
   /// Title Small - Alias for headlineSmall
   static const TextStyle titleSmall = headlineSmall;
-
 
   /// Body Large - For main content text and instructions
   static const TextStyle bodyLarge = TextStyle(
@@ -117,10 +115,10 @@ class AppTextStyles {
 
   /// Button text style
   static const TextStyle buttonText = labelLarge;
-  
+
   /// Label text style for form fields
   static const TextStyle labelText = labelMedium;
-  
+
   /// Caption text style for helper text
   static const TextStyle captionText = labelSmall;
 
@@ -148,7 +146,6 @@ class AppTextStyles {
     fontWeight: FontWeight.w500,
   );
 
-
   /// App bar title style
   static const TextStyle appBarTitle = headlineMedium;
 
@@ -157,7 +154,6 @@ class AppTextStyles {
 
   /// Card title style (alias)
   static const TextStyle cardTitleStyle = cardTitle;
-
 
   /// List tile title style
   static const TextStyle listTileTitle = titleMedium;
@@ -174,13 +170,10 @@ class AppTextStyles {
   /// Snackbar text style
   static const TextStyle snackbarText = bodyMedium;
 
-
   /// Hint text style
   static TextStyle hintText = bodyMedium.copyWith(
     color: AppColors.textLight,
   );
-
-
 
   /// Creates a complete Material 3 TextTheme
   static TextTheme createTextTheme() {
@@ -198,5 +191,4 @@ class AppTextStyles {
       labelSmall: labelSmall,
     );
   }
-
 }

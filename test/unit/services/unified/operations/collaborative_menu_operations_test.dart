@@ -10,13 +10,13 @@ import '../../../../infrastructure/builders/recipe_builder.dart';
 import '../../../../infrastructure/mocks/production_mocks.dart';
 
 /// Repository-Level Testing for CollaborativeMenuOperations
-/// 
+///
 /// ARCHITECTURAL COMPLIANCE:
 /// ✅ Follows HYBRID_TESTING_STRATEGY.md: "Mock at repository level, never mock Firebase directly"
 /// ✅ Tests business logic and repository interactions, not Firebase implementation
 /// ✅ Uses centralized mocks from production_mocks.dart (no duplication)
 /// ✅ Tests intention not exact implementation to avoid brittle tests
-/// 
+///
 /// ULTRATHINK PRINCIPLES APPLIED:
 /// - Repository pattern abstracts Firebase FieldValue operations
 /// - Clean separation between business logic and data persistence
@@ -28,7 +28,7 @@ void main() {
     late MockUnifiedMenuService mockParent;
     late MockMenuCollaborationRepository mockRepository;
     late MockPermissionService mockPermissionService;
-    
+
     // Test data
     late Recipe testRecipe;
     const String testMenuId = 'test-menu-123';
@@ -60,7 +60,7 @@ void main() {
     setUp(() async {
       await TestServiceLocator.initialize();
       setUpMocks();
-      
+
       testRecipe = RecipeBuilder()
           .withId('recipe-123')
           .withTitle('Test Collaborative Recipe')
@@ -74,21 +74,26 @@ void main() {
     });
 
     group('Collaboration Management', () {
-      test('enableMenuCollaboration should delegate to repository and start listener on success', () async {
+      test(
+          'enableMenuCollaboration should delegate to repository and start listener on success',
+          () async {
         // Arrange
         const collaboratorIds = ['user-1', 'user-2'];
-        final collaboratorDisplayNames = {'user-1': 'User One', 'user-2': 'User Two'};
-        
+        final collaboratorDisplayNames = {
+          'user-1': 'User One',
+          'user-2': 'User Two'
+        };
+
         when(() => mockRepository.enableCollaboration(
-          menuId: any(named: 'menuId'),
-          collaboratorIds: any(named: 'collaboratorIds'),
-          collaboratorDisplayNames: any(named: 'collaboratorDisplayNames'),
-        )).thenAnswer((_) async => true);
+              menuId: any(named: 'menuId'),
+              collaboratorIds: any(named: 'collaboratorIds'),
+              collaboratorDisplayNames: any(named: 'collaboratorDisplayNames'),
+            )).thenAnswer((_) async => true);
 
         when(() => mockRepository.startCollaborationListener(
-          any(), 
-          any(),
-        )).thenReturn(null);
+              any(),
+              any(),
+            )).thenReturn(null);
 
         // Act
         final result = await operations.enableMenuCollaboration(
@@ -99,28 +104,30 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        
+
         verify(() => mockRepository.enableCollaboration(
-          menuId: testMenuId,
-          collaboratorIds: collaboratorIds,
-          collaboratorDisplayNames: collaboratorDisplayNames,
-        )).called(1);
-        
+              menuId: testMenuId,
+              collaboratorIds: collaboratorIds,
+              collaboratorDisplayNames: collaboratorDisplayNames,
+            )).called(1);
+
         verify(() => mockRepository.startCollaborationListener(
-          testMenuId,
-          any(),
-        )).called(1);
+              testMenuId,
+              any(),
+            )).called(1);
       });
 
-      test('enableMenuCollaboration should not start listener on repository failure', () async {
+      test(
+          'enableMenuCollaboration should not start listener on repository failure',
+          () async {
         // Arrange
         const collaboratorIds = ['user-1'];
-        
+
         when(() => mockRepository.enableCollaboration(
-          menuId: any(named: 'menuId'),
-          collaboratorIds: any(named: 'collaboratorIds'),
-          collaboratorDisplayNames: any(named: 'collaboratorDisplayNames'),
-        )).thenAnswer((_) async => false);
+              menuId: any(named: 'menuId'),
+              collaboratorIds: any(named: 'collaboratorIds'),
+              collaboratorDisplayNames: any(named: 'collaboratorDisplayNames'),
+            )).thenAnswer((_) async => false);
 
         // Act
         final result = await operations.enableMenuCollaboration(
@@ -130,30 +137,32 @@ void main() {
 
         // Assert
         expect(result, isFalse);
-        
+
         verify(() => mockRepository.enableCollaboration(
-          menuId: testMenuId,
-          collaboratorIds: collaboratorIds,
-          collaboratorDisplayNames: null,
-        )).called(1);
-        
-        verifyNever(() => mockRepository.startCollaborationListener(any(), any()));
+              menuId: testMenuId,
+              collaboratorIds: collaboratorIds,
+              collaboratorDisplayNames: null,
+            )).called(1);
+
+        verifyNever(
+            () => mockRepository.startCollaborationListener(any(), any()));
       });
     });
 
     group('Recipe Management', () {
-      test('addRecipeToCollaborativeMenu should delegate to repository', () async {
+      test('addRecipeToCollaborativeMenu should delegate to repository',
+          () async {
         // Arrange
         const category = 'Huvudrätter';
         const suggestion = 'Great recipe for family dinner!';
-        
+
         when(() => mockRepository.addRecipeToMenu(
-          menuId: any(named: 'menuId'),
-          category: any(named: 'category'),
-          recipe: any(named: 'recipe'),
-          suggestedBy: any(named: 'suggestedBy'),
-          suggestion: any(named: 'suggestion'),
-        )).thenAnswer((_) async => true);
+              menuId: any(named: 'menuId'),
+              category: any(named: 'category'),
+              recipe: any(named: 'recipe'),
+              suggestedBy: any(named: 'suggestedBy'),
+              suggestion: any(named: 'suggestion'),
+            )).thenAnswer((_) async => true);
 
         // Act
         final result = await operations.addRecipeToCollaborativeMenu(
@@ -166,28 +175,29 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        
+
         verify(() => mockRepository.addRecipeToMenu(
-          menuId: testMenuId,
-          category: category,
-          recipe: testRecipe,
-          suggestedBy: testUserId,
-          suggestion: suggestion,
-        )).called(1);
+              menuId: testMenuId,
+              category: category,
+              recipe: testRecipe,
+              suggestedBy: testUserId,
+              suggestion: suggestion,
+            )).called(1);
       });
 
-      test('removeRecipeFromCollaborativeMenu should delegate to repository', () async {
+      test('removeRecipeFromCollaborativeMenu should delegate to repository',
+          () async {
         // Arrange
         const category = 'Huvudrätter';
         const recipeId = 'recipe-to-remove-123';
         const reason = 'Not suitable for the menu';
-        
+
         when(() => mockRepository.removeRecipeFromMenu(
-          menuId: any(named: 'menuId'),
-          category: any(named: 'category'),
-          recipeId: any(named: 'recipeId'),
-          reason: any(named: 'reason'),
-        )).thenAnswer((_) async => true);
+              menuId: any(named: 'menuId'),
+              category: any(named: 'category'),
+              recipeId: any(named: 'recipeId'),
+              reason: any(named: 'reason'),
+            )).thenAnswer((_) async => true);
 
         // Act
         final result = await operations.removeRecipeFromCollaborativeMenu(
@@ -199,27 +209,29 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        
+
         verify(() => mockRepository.removeRecipeFromMenu(
-          menuId: testMenuId,
-          category: category,
-          recipeId: recipeId,
-          reason: reason,
-        )).called(1);
+              menuId: testMenuId,
+              category: category,
+              recipeId: recipeId,
+              reason: reason,
+            )).called(1);
       });
     });
 
     group('Rating System', () {
-      test('rateMenu should delegate to repository and update local cache on success', () async {
+      test(
+          'rateMenu should delegate to repository and update local cache on success',
+          () async {
         // Arrange
         const rating = 4.5;
         const comment = 'Excellent menu!';
-        
+
         when(() => mockRepository.rateMenu(
-          menuId: any(named: 'menuId'),
-          rating: any(named: 'rating'),
-          comment: any(named: 'comment'),
-        )).thenAnswer((_) async => true);
+              menuId: any(named: 'menuId'),
+              rating: any(named: 'rating'),
+              comment: any(named: 'comment'),
+            )).thenAnswer((_) async => true);
 
         // Act
         final result = await operations.rateMenu(
@@ -230,13 +242,13 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        
+
         verify(() => mockRepository.rateMenu(
-          menuId: testMenuId,
-          rating: rating,
-          comment: comment,
-        )).called(1);
-        
+              menuId: testMenuId,
+              rating: rating,
+              comment: comment,
+            )).called(1);
+
         // Verify local cache was updated
         expect(operations.toString(), contains('CollaborativeMenuOperations'));
       });
@@ -247,7 +259,7 @@ void main() {
           {'userId': 'user-1', 'rating': 4.0, 'comment': 'Good!'},
           {'userId': 'user-2', 'rating': 5.0, 'comment': 'Perfect!'},
         ];
-        
+
         when(() => mockRepository.getMenuRatings(any()))
             .thenAnswer((_) async => expectedRatings);
 
@@ -262,7 +274,7 @@ void main() {
       test('getMenuAverageRating should delegate to repository', () async {
         // Arrange
         const expectedAverage = 4.25;
-        
+
         when(() => mockRepository.getMenuAverageRating(any()))
             .thenAnswer((_) async => expectedAverage);
 
@@ -276,14 +288,16 @@ void main() {
     });
 
     group('Comment System', () {
-      test('addMenuComment should delegate to repository and clear local cache on success', () async {
+      test(
+          'addMenuComment should delegate to repository and clear local cache on success',
+          () async {
         // Arrange
         const comment = 'This looks delicious!';
-        
+
         when(() => mockRepository.addMenuComment(
-          menuId: any(named: 'menuId'),
-          comment: any(named: 'comment'),
-        )).thenAnswer((_) async => true);
+              menuId: any(named: 'menuId'),
+              comment: any(named: 'comment'),
+            )).thenAnswer((_) async => true);
 
         // Act
         final result = await operations.addMenuComment(
@@ -293,21 +307,25 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        
+
         verify(() => mockRepository.addMenuComment(
-          menuId: testMenuId,
-          comment: comment,
-        )).called(1);
+              menuId: testMenuId,
+              comment: comment,
+            )).called(1);
       });
 
       test('getMenuCommentsStream should delegate to repository', () async {
         // Arrange
         final expectedComments = [
           {'id': 'comment-1', 'comment': 'Great menu!', 'userId': 'user-1'},
-          {'id': 'comment-2', 'comment': 'Thanks for sharing!', 'userId': 'user-2'},
+          {
+            'id': 'comment-2',
+            'comment': 'Thanks for sharing!',
+            'userId': 'user-2'
+          },
         ];
         final streamController = StreamController<List<Map<String, dynamic>>>();
-        
+
         when(() => mockRepository.getMenuCommentsStream(any()))
             .thenAnswer((_) => streamController.stream);
 
@@ -317,19 +335,20 @@ void main() {
 
         // Assert
         await expectLater(stream, emits(expectedComments));
-        verify(() => mockRepository.getMenuCommentsStream(testMenuId)).called(1);
-        
+        verify(() => mockRepository.getMenuCommentsStream(testMenuId))
+            .called(1);
+
         await streamController.close();
       });
 
       test('toggleCommentLike should delegate to repository', () async {
         // Arrange
         const commentId = 'comment-123';
-        
+
         when(() => mockRepository.toggleCommentLike(
-          menuId: any(named: 'menuId'),
-          commentId: any(named: 'commentId'),
-        )).thenAnswer((_) async => true);
+              menuId: any(named: 'menuId'),
+              commentId: any(named: 'commentId'),
+            )).thenAnswer((_) async => true);
 
         // Act
         final result = await operations.toggleCommentLike(
@@ -339,26 +358,28 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        
+
         verify(() => mockRepository.toggleCommentLike(
-          menuId: testMenuId,
-          commentId: commentId,
-        )).called(1);
+              menuId: testMenuId,
+              commentId: commentId,
+            )).called(1);
       });
     });
 
     group('Template Management', () {
-      test('createMenuTemplate should delegate to repository and update local cache on success', () async {
+      test(
+          'createMenuTemplate should delegate to repository and update local cache on success',
+          () async {
         // Arrange
         const templateName = 'Weekly Family Menu';
         const expectedTemplateId = 'template-123';
-        
+
         when(() => mockRepository.createMenuTemplate(
-          templateName: any(named: 'templateName'),
-          menuSnapshot: any(named: 'menuSnapshot'),
-          description: any(named: 'description'),
-          tags: any(named: 'tags'),
-        )).thenAnswer((_) async => expectedTemplateId);
+              templateName: any(named: 'templateName'),
+              menuSnapshot: any(named: 'menuSnapshot'),
+              description: any(named: 'description'),
+              tags: any(named: 'tags'),
+            )).thenAnswer((_) async => expectedTemplateId);
 
         // Act
         final result = await operations.createMenuTemplate(
@@ -368,11 +389,11 @@ void main() {
 
         // Assert
         expect(result, equals(expectedTemplateId));
-        
+
         verify(() => mockRepository.createMenuTemplate(
-          templateName: templateName,
-          menuSnapshot: any(named: 'menuSnapshot'),
-        )).called(1);
+              templateName: templateName,
+              menuSnapshot: any(named: 'menuSnapshot'),
+            )).called(1);
       });
 
       test('createMenuFromTemplate should delegate to repository', () async {
@@ -380,14 +401,14 @@ void main() {
         const templateId = 'template-456';
         const menuTitle = 'My New Menu from Template';
         const expectedMenuId = 'new-menu-789';
-        
+
         when(() => mockRepository.createMenuFromTemplate(
-          templateId: any(named: 'templateId'),
-          menuTitle: any(named: 'menuTitle'),
-          sharedToUserIds: any(named: 'sharedToUserIds'),
-          shareMessage: any(named: 'shareMessage'),
-          enableCollaboration: any(named: 'enableCollaboration'),
-        )).thenAnswer((_) async => expectedMenuId);
+              templateId: any(named: 'templateId'),
+              menuTitle: any(named: 'menuTitle'),
+              sharedToUserIds: any(named: 'sharedToUserIds'),
+              shareMessage: any(named: 'shareMessage'),
+              enableCollaboration: any(named: 'enableCollaboration'),
+            )).thenAnswer((_) async => expectedMenuId);
 
         // Act
         final result = await operations.createMenuFromTemplate(
@@ -397,16 +418,17 @@ void main() {
 
         // Assert
         expect(result, equals(expectedMenuId));
-        
+
         verify(() => mockRepository.createMenuFromTemplate(
-          templateId: templateId,
-          menuTitle: menuTitle,
-        )).called(1);
+              templateId: templateId,
+              menuTitle: menuTitle,
+            )).called(1);
       });
     });
 
     group('Resource Management', () {
-      test('dispose should cleanup repository listeners and local caches', () async {
+      test('dispose should cleanup repository listeners and local caches',
+          () async {
         // Arrange
         when(() => mockRepository.disposeAllListeners()).thenReturn(null);
 

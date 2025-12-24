@@ -52,7 +52,8 @@ class JsonCacheHelper {
       }
 
       final data = jsonDecode(jsonString) as Map<String, dynamic>;
-      AppLogger.debug('Loaded JSON from cache: $key from ${boxBaseName}_$_userId');
+      AppLogger.debug(
+          'Loaded JSON from cache: $key from ${boxBaseName}_$_userId');
       return data;
     } catch (e) {
       AppLogger.error('Failed to load JSON cache item $key: $e');
@@ -60,7 +61,8 @@ class JsonCacheHelper {
     }
   }
 
-  Future<bool> saveJsonList(String key, List<Map<String, dynamic>> dataList) async {
+  Future<bool> saveJsonList(
+      String key, List<Map<String, dynamic>> dataList) async {
     try {
       final jsonString = jsonEncode(dataList);
       await _cacheDao.putJson(
@@ -180,7 +182,8 @@ class JsonCacheHelper {
       );
       successCount = jsonBatch.length;
 
-      AppLogger.info('Batch saved $successCount JSON items to ${boxBaseName}_$_userId');
+      AppLogger.info(
+          'Batch saved $successCount JSON items to ${boxBaseName}_$_userId');
     } catch (e) {
       AppLogger.error('Failed to batch save JSON items: $e');
     }
@@ -188,7 +191,8 @@ class JsonCacheHelper {
     return successCount;
   }
 
-  Future<Map<String, Map<String, dynamic>>> loadJsonBatch(List<String> keys) async {
+  Future<Map<String, Map<String, dynamic>>> loadJsonBatch(
+      List<String> keys) async {
     final result = <String, Map<String, dynamic>>{};
 
     try {

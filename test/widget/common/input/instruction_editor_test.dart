@@ -13,7 +13,9 @@ void main() {
     });
 
     group('Basic Rendering', () {
-      testWidgets('should render single empty field when no initial instructions', (WidgetTester tester) async {
+      testWidgets(
+          'should render single empty field when no initial instructions',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -26,14 +28,20 @@ void main() {
 
         expect(find.byType(TextFormField), findsOneWidget);
         expect(find.text('Instruktion 1'), findsOneWidget);
-        
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+
+        final textField =
+            tester.widget<TextFormField>(find.byType(TextFormField));
         expect(textField.controller?.text, '');
       });
 
-      testWidgets('should render fields for initial instructions', (WidgetTester tester) async {
-        final instructions = ['Förvärm ugnen till 200°C', 'Blanda ingredienserna', 'Baka i 30 minuter'];
-        
+      testWidgets('should render fields for initial instructions',
+          (WidgetTester tester) async {
+        final instructions = [
+          'Förvärm ugnen till 200°C',
+          'Blanda ingredienserna',
+          'Baka i 30 minuter'
+        ];
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -48,15 +56,17 @@ void main() {
         expect(find.text('Instruktion 1'), findsOneWidget);
         expect(find.text('Instruktion 2'), findsOneWidget);
         expect(find.text('Instruktion 3'), findsOneWidget);
-        
+
         // Check that text fields contain the initial instructions
-        final textFields = tester.widgetList<TextFormField>(find.byType(TextFormField));
+        final textFields =
+            tester.widgetList<TextFormField>(find.byType(TextFormField));
         expect(textFields.elementAt(0).controller?.text, instructions[0]);
         expect(textFields.elementAt(1).controller?.text, instructions[1]);
         expect(textFields.elementAt(2).controller?.text, instructions[2]);
       });
 
-      testWidgets('should have correct field properties', (WidgetTester tester) async {
+      testWidgets('should have correct field properties',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -71,7 +81,8 @@ void main() {
         expect(find.byType(TextFormField), findsOneWidget);
       });
 
-      testWidgets('should have correct decoration properties', (WidgetTester tester) async {
+      testWidgets('should have correct decoration properties',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -86,7 +97,8 @@ void main() {
         expect(find.text('Instruktion 1'), findsOneWidget);
       });
 
-      testWidgets('should have correct padding between fields', (WidgetTester tester) async {
+      testWidgets('should have correct padding between fields',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -103,7 +115,7 @@ void main() {
             matching: find.byType(Padding),
           ),
         );
-        
+
         expect(paddings.length, 2);
         for (final padding in paddings) {
           expect(
@@ -115,7 +127,8 @@ void main() {
     });
 
     group('Field Properties', () {
-      testWidgets('should support multiline input', (WidgetTester tester) async {
+      testWidgets('should support multiline input',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -127,14 +140,17 @@ void main() {
         );
 
         // Test that multiline text can be entered
-        await tester.enterText(find.byType(TextFormField), 'Line 1\nLine 2\nLine 3');
+        await tester.enterText(
+            find.byType(TextFormField), 'Line 1\nLine 2\nLine 3');
         await tester.pump();
 
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField =
+            tester.widget<TextFormField>(find.byType(TextFormField));
         expect(textField.controller?.text, 'Line 1\nLine 2\nLine 3');
       });
 
-      testWidgets('should handle text input action newline', (WidgetTester tester) async {
+      testWidgets('should handle text input action newline',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -155,7 +171,8 @@ void main() {
     });
 
     group('Change Notifications', () {
-      testWidgets('should call onChanged when text is modified', (WidgetTester tester) async {
+      testWidgets('should call onChanged when text is modified',
+          (WidgetTester tester) async {
         List<String>? changedInstructions;
 
         await tester.pumpWidget(
@@ -178,7 +195,8 @@ void main() {
         expect(changedInstructions, ['Modified text']);
       });
 
-      testWidgets('should filter out empty instructions in onChanged', (WidgetTester tester) async {
+      testWidgets('should filter out empty instructions in onChanged',
+          (WidgetTester tester) async {
         List<String>? changedInstructions;
 
         await tester.pumpWidget(
@@ -202,7 +220,8 @@ void main() {
         expect(changedInstructions, ['First', 'Third']);
       });
 
-      testWidgets('should trim whitespace from instructions', (WidgetTester tester) async {
+      testWidgets('should trim whitespace from instructions',
+          (WidgetTester tester) async {
         List<String>? changedInstructions;
 
         await tester.pumpWidget(
@@ -225,7 +244,8 @@ void main() {
         expect(changedInstructions, ['Trimmed text']);
       });
 
-      testWidgets('should call onChanged multiple times during text entry', (WidgetTester tester) async {
+      testWidgets('should call onChanged multiple times during text entry',
+          (WidgetTester tester) async {
         final callbackInstructions = <List<String>>[];
 
         await tester.pumpWidget(
@@ -245,12 +265,13 @@ void main() {
         await tester.enterText(find.byType(TextFormField), 'Modified text');
         await tester.pump();
 
-        // Should have called onChanged 
+        // Should have called onChanged
         expect(callbackInstructions.isNotEmpty, true);
         expect(callbackInstructions.last, ['Modified text']);
       });
 
-      testWidgets('should handle null onChanged gracefully', (WidgetTester tester) async {
+      testWidgets('should handle null onChanged gracefully',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -272,7 +293,8 @@ void main() {
     });
 
     group('Field Management', () {
-      testWidgets('should maintain separate controllers for each field', (WidgetTester tester) async {
+      testWidgets('should maintain separate controllers for each field',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -284,16 +306,20 @@ void main() {
         );
 
         // Type different text in each field
-        await tester.enterText(find.byType(TextFormField).at(0), 'Modified First');
-        await tester.enterText(find.byType(TextFormField).at(1), 'Modified Second');
+        await tester.enterText(
+            find.byType(TextFormField).at(0), 'Modified First');
+        await tester.enterText(
+            find.byType(TextFormField).at(1), 'Modified Second');
         await tester.pump();
 
-        final textFields = tester.widgetList<TextFormField>(find.byType(TextFormField));
+        final textFields =
+            tester.widgetList<TextFormField>(find.byType(TextFormField));
         expect(textFields.elementAt(0).controller?.text, 'Modified First');
         expect(textFields.elementAt(1).controller?.text, 'Modified Second');
       });
 
-      testWidgets('should create empty controller when no initial instructions', (WidgetTester tester) async {
+      testWidgets('should create empty controller when no initial instructions',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -305,16 +331,19 @@ void main() {
         );
 
         expect(find.byType(TextFormField), findsOneWidget);
-        
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+
+        final textField =
+            tester.widget<TextFormField>(find.byType(TextFormField));
         expect(textField.controller?.text, '');
       });
     });
 
     group('Layout Integration', () {
-      testWidgets('should work in SingleChildScrollView', (WidgetTester tester) async {
-        final longInstructions = List.generate(20, (i) => 'Instruction ${i + 1}');
-        
+      testWidgets('should work in SingleChildScrollView',
+          (WidgetTester tester) async {
+        final longInstructions =
+            List.generate(20, (i) => 'Instruction ${i + 1}');
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -330,7 +359,8 @@ void main() {
         expect(find.byType(TextFormField), findsNWidgets(20));
       });
 
-      testWidgets('should work in Column with other widgets', (WidgetTester tester) async {
+      testWidgets('should work in Column with other widgets',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -361,7 +391,10 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: InstructionEditor(
-                initialInstructions: ['Första instruktionen', 'Andra instruktionen'],
+                initialInstructions: [
+                  'Första instruktionen',
+                  'Andra instruktionen'
+                ],
               ),
             ),
           ),
@@ -371,9 +404,11 @@ void main() {
         expect(find.text('Instruktion 2'), findsOneWidget);
       });
 
-      testWidgets('should handle Swedish text correctly', (WidgetTester tester) async {
-        const swedishText = 'Förvärm ugnen till 200°C och ställ in på över- och undervärme';
-        
+      testWidgets('should handle Swedish text correctly',
+          (WidgetTester tester) async {
+        const swedishText =
+            'Förvärm ugnen till 200°C och ställ in på över- och undervärme';
+
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -384,13 +419,15 @@ void main() {
           ),
         );
 
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField =
+            tester.widget<TextFormField>(find.byType(TextFormField));
         expect(textField.controller?.text, swedishText);
       });
     });
 
     group('Edge Cases', () {
-      testWidgets('should handle empty initial instructions list', (WidgetTester tester) async {
+      testWidgets('should handle empty initial instructions list',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -405,7 +442,8 @@ void main() {
         expect(find.text('Instruktion 1'), findsOneWidget);
       });
 
-      testWidgets('should handle single empty string in initial instructions', (WidgetTester tester) async {
+      testWidgets('should handle single empty string in initial instructions',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -417,14 +455,16 @@ void main() {
         );
 
         expect(find.byType(TextFormField), findsOneWidget);
-        
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+
+        final textField =
+            tester.widget<TextFormField>(find.byType(TextFormField));
         expect(textField.controller?.text, '');
       });
 
-      testWidgets('should handle very long instruction text', (WidgetTester tester) async {
+      testWidgets('should handle very long instruction text',
+          (WidgetTester tester) async {
         final longText = 'A' * 1000;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -435,11 +475,13 @@ void main() {
           ),
         );
 
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField =
+            tester.widget<TextFormField>(find.byType(TextFormField));
         expect(textField.controller?.text, longText);
       });
 
-      testWidgets('should handle edge cases gracefully', (WidgetTester tester) async {
+      testWidgets('should handle edge cases gracefully',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -459,7 +501,8 @@ void main() {
     });
 
     group('Widget Lifecycle', () {
-      testWidgets('should dispose controllers properly', (WidgetTester tester) async {
+      testWidgets('should dispose controllers properly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -483,7 +526,8 @@ void main() {
         expect(find.byType(InstructionEditor), findsNothing);
       });
 
-      testWidgets('should handle widget replacement', (WidgetTester tester) async {
+      testWidgets('should handle widget replacement',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(

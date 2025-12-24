@@ -114,7 +114,7 @@ class DiscoverySearchSection {
   ) {
     final searchResults = viewModel.searchResults;
     final query = viewModel.searchQuery;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingM,
@@ -145,11 +145,17 @@ class DiscoverySearchSection {
             ),
           ),
           if (searchResults.isNotEmpty) ...[
-            _buildSearchResultTypeChip('Recept', searchResults.where((r) => r['type'] == 'recipe').length),
+            _buildSearchResultTypeChip('Recept',
+                searchResults.where((r) => r['type'] == 'recipe').length),
             const SizedBox(width: AppDimensions.spacingXs),
-            _buildSearchResultTypeChip('Menyer', searchResults.where((r) => r['type'] == 'menu').length),
+            _buildSearchResultTypeChip('Menyer',
+                searchResults.where((r) => r['type'] == 'menu').length),
             const SizedBox(width: AppDimensions.spacingXs),
-            _buildSearchResultTypeChip('Listor', searchResults.where((r) => r['type'] == 'shopping_list').length),
+            _buildSearchResultTypeChip(
+                'Listor',
+                searchResults
+                    .where((r) => r['type'] == 'shopping_list')
+                    .length),
           ],
         ],
       ),
@@ -158,7 +164,7 @@ class DiscoverySearchSection {
 
   static Widget _buildSearchResultTypeChip(String label, int count) {
     if (count == 0) return const SizedBox.shrink();
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.spacingS,
@@ -308,7 +314,7 @@ class DiscoverySearchSection {
       ),
     );
   }
-  
+
   /// Simulate voice search input (placeholder implementation)
   static void _simulateVoiceInput(BuildContext context) {
     // Show processing state
@@ -329,7 +335,7 @@ class DiscoverySearchSection {
         duration: Duration(seconds: 2),
       ),
     );
-    
+
     // Simulate speech-to-text result after 2 seconds
     Future.delayed(const Duration(seconds: 2), () {
       if (context.mounted) {
@@ -345,7 +351,8 @@ class DiscoverySearchSection {
                 // For now, just show the search was initiated
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Sökning startad! (Röstsökning är en förhandsversion)'),
+                    content: Text(
+                        'Sökning startad! (Röstsökning är en förhandsversion)'),
                     backgroundColor: AppColors.info,
                   ),
                 );

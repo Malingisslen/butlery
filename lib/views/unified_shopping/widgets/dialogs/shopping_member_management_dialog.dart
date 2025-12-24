@@ -25,10 +25,12 @@ class ShoppingMemberManagementDialog extends StatefulWidget {
   });
 
   @override
-  State<ShoppingMemberManagementDialog> createState() => _ShoppingMemberManagementDialogState();
+  State<ShoppingMemberManagementDialog> createState() =>
+      _ShoppingMemberManagementDialogState();
 }
 
-class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagementDialog> {
+class _ShoppingMemberManagementDialogState
+    extends State<ShoppingMemberManagementDialog> {
   final _searchController = TextEditingController();
   bool _isLoading = false;
   String? _error;
@@ -42,7 +44,8 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
   void initState() {
     super.initState();
 
-    _localPermissions = Map<String, SharedListPermission>.from(widget.list.memberPermissions);
+    _localPermissions =
+        Map<String, SharedListPermission>.from(widget.list.memberPermissions);
 
     if (!_localPermissions.containsKey(widget.list.ownerId)) {
       _localPermissions[widget.list.ownerId] = SharedListPermission.admin;
@@ -69,7 +72,8 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
     setState(() {});
   }
 
-  Future<void> _updateMemberPermission(String userId, SharedListPermission newPermission) async {
+  Future<void> _updateMemberPermission(
+      String userId, SharedListPermission newPermission) async {
     if (_isLoading) return;
 
     setState(() {
@@ -79,7 +83,8 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
 
     try {
       final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
-      final success = await shoppingService.collaborative.updateMemberPermission(
+      final success =
+          await shoppingService.collaborative.updateMemberPermission(
         listId: widget.list.id,
         userId: userId,
         permission: newPermission,
@@ -93,7 +98,8 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Behörighet uppdaterad för ${widget.userDisplayNames[userId] ?? 'användare'}'),
+              content: Text(
+                  'Behörighet uppdaterad för ${widget.userDisplayNames[userId] ?? 'användare'}'),
               backgroundColor: AppColors.primaryBlue,
               duration: const Duration(seconds: 2),
             ),
@@ -120,7 +126,8 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Ta bort medlem'),
-        content: Text('Är du säker på att du vill ta bort $userName från listan?'),
+        content:
+            Text('Är du säker på att du vill ta bort $userName från listan?'),
         actions: [
           ActionButtons.secondaryButton(
             context,
@@ -195,7 +202,8 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
       final addedMembers = <String>[];
 
       for (final friendId in _selectedFriends) {
-        final friend = widget.availableFriends.firstWhere((f) => f.uid == friendId);
+        final friend =
+            widget.availableFriends.firstWhere((f) => f.uid == friendId);
         final success = await shoppingService.collaborative.addMember(
           listId: widget.list.id,
           userId: friendId,
@@ -223,7 +231,8 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
         if (addedMembers.isNotEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${addedMembers.length} ${addedMembers.length == 1 ? 'medlem' : 'medlemmar'} tillagda'),
+              content: Text(
+                  '${addedMembers.length} ${addedMembers.length == 1 ? 'medlem' : 'medlemmar'} tillagda'),
               backgroundColor: AppColors.primaryBlue,
               duration: const Duration(seconds: 2),
             ),
@@ -247,7 +256,8 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
 
   @override
   Widget build(BuildContext context) {
-    final allMembers = Map<String, SharedListPermission>.from(_localPermissions);
+    final allMembers =
+        Map<String, SharedListPermission>.from(_localPermissions);
 
     return AlertDialog(
       title: const Row(
@@ -273,28 +283,30 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
                 padding: const EdgeInsets.all(AppDimensions.paddingM),
                 decoration: BoxDecoration(
                   color: AppColors.error.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusM),
                 ),
                 child: Text(
                   _error!,
-                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+                  style:
+                      AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
                 ),
               ),
               const SizedBox(height: AppDimensions.spacingM),
             ],
-
             Text(
               'Nuvarande medlemmar (${allMembers.length})',
-              style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w600),
+              style: AppTextStyles.titleMedium
+                  .copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: AppDimensions.spacingM),
-
             Expanded(
               flex: 2,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   border: Border.all(color: AppColors.divider),
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusM),
                 ),
                 child: ListView.builder(
                   itemCount: allMembers.length,
@@ -303,24 +315,24 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
                     final userId = entry.key;
                     final permission = entry.value;
                     final isOwner = userId == widget.list.ownerId;
-                    final userName = widget.userDisplayNames[userId] ?? 'Okänd användare';
+                    final userName =
+                        widget.userDisplayNames[userId] ?? 'Okänd användare';
 
-                    return _buildMemberListTile(userId, userName, permission, isOwner);
+                    return _buildMemberListTile(
+                        userId, userName, permission, isOwner);
                   },
                 ),
               ),
             ),
-
             const SizedBox(height: AppDimensions.spacingL),
             const Divider(),
             const SizedBox(height: AppDimensions.spacingM),
-
             Text(
               'Lägg till vänner',
-              style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w600),
+              style: AppTextStyles.titleMedium
+                  .copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: AppDimensions.spacingM),
-
             StyledInput(
               controller: _searchController,
               hint: 'Sök vänner...',
@@ -328,13 +340,13 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
               onChanged: (_) => _updateFilteredFriends(),
             ),
             const SizedBox(height: AppDimensions.spacingM),
-
             Expanded(
               flex: 1,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   border: Border.all(color: AppColors.divider),
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusM),
                 ),
                 child: _filteredFriends.isEmpty
                     ? Center(
@@ -356,14 +368,14 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
                       ),
               ),
             ),
-
             if (_selectedFriends.isNotEmpty) ...[
               const SizedBox(height: AppDimensions.spacingM),
               SizedBox(
                 width: double.infinity,
                 child: ActionButtons.primaryButton(
                   context,
-                  label: 'Lägg till ${_selectedFriends.length} vän${_selectedFriends.length == 1 ? '' : 'ner'}',
+                  label:
+                      'Lägg till ${_selectedFriends.length} vän${_selectedFriends.length == 1 ? '' : 'ner'}',
                   icon: Icons.person_add,
                   isLoading: _isLoading,
                   onPressed: _isLoading ? null : _addSelectedMembers,
@@ -384,7 +396,8 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
     );
   }
 
-  Widget _buildMemberListTile(String userId, String userName, SharedListPermission permission, bool isOwner) {
+  Widget _buildMemberListTile(String userId, String userName,
+      SharedListPermission permission, bool isOwner) {
     return ListTile(
       leading: CircleAvatar(
         radius: 20,
@@ -402,20 +415,26 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
         style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w500),
       ),
       subtitle: isOwner
-          ? Text('Ägare', style: AppTextStyles.bodySmall.copyWith(color: AppColors.primaryBlue))
+          ? Text('Ägare',
+              style: AppTextStyles.bodySmall
+                  .copyWith(color: AppColors.primaryBlue))
           : DropdownButton<SharedListPermission>(
               value: permission,
-              onChanged: _isLoading ? null : (newPermission) {
-                if (newPermission != null) {
-                  _updateMemberPermission(userId, newPermission);
-                }
-              },
+              onChanged: _isLoading
+                  ? null
+                  : (newPermission) {
+                      if (newPermission != null) {
+                        _updateMemberPermission(userId, newPermission);
+                      }
+                    },
               items: const [
                 DropdownMenuItem(
                   value: SharedListPermission.view,
                   child: Row(
                     children: [
-                      Icon(Icons.visibility, size: AppDimensions.iconSizeS, color: AppColors.textMedium),
+                      Icon(Icons.visibility,
+                          size: AppDimensions.iconSizeS,
+                          color: AppColors.textMedium),
                       SizedBox(width: AppDimensions.spacingXs),
                       Text('Kan se'),
                     ],
@@ -425,7 +444,9 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
                   value: SharedListPermission.edit,
                   child: Row(
                     children: [
-                      Icon(Icons.edit, size: AppDimensions.iconSizeS, color: AppColors.accent),
+                      Icon(Icons.edit,
+                          size: AppDimensions.iconSizeS,
+                          color: AppColors.accent),
                       SizedBox(width: AppDimensions.spacingXs),
                       Text('Kan redigera'),
                     ],
@@ -435,7 +456,9 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
                   value: SharedListPermission.admin,
                   child: Row(
                     children: [
-                      Icon(Icons.admin_panel_settings, size: AppDimensions.iconSizeS, color: AppColors.primaryBlue),
+                      Icon(Icons.admin_panel_settings,
+                          size: AppDimensions.iconSizeS,
+                          color: AppColors.primaryBlue),
                       SizedBox(width: AppDimensions.spacingXs),
                       Text('Admin'),
                     ],
@@ -443,11 +466,14 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
                 ),
               ],
             ),
-      trailing: !isOwner ? IconButton(
-        onPressed: _isLoading ? null : () => _removeMember(userId, userName),
-        icon: const Icon(Icons.person_remove, color: AppColors.error),
-        tooltip: 'Ta bort medlem',
-      ) : null,
+      trailing: !isOwner
+          ? IconButton(
+              onPressed:
+                  _isLoading ? null : () => _removeMember(userId, userName),
+              icon: const Icon(Icons.person_remove, color: AppColors.error),
+              tooltip: 'Ta bort medlem',
+            )
+          : null,
     );
   }
 
@@ -459,7 +485,9 @@ class _ShoppingMemberManagementDialogState extends State<ShoppingMemberManagemen
         radius: 20,
         backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
         child: Text(
-          friend.displayName.isNotEmpty ? friend.displayName[0].toUpperCase() : '?',
+          friend.displayName.isNotEmpty
+              ? friend.displayName[0].toUpperCase()
+              : '?',
           style: AppTextStyles.labelMedium.copyWith(
             color: AppColors.primaryBlue,
             fontWeight: FontWeight.w600,

@@ -17,7 +17,7 @@ void main() {
     setUp(() {
       testRecipe1 = RecipeFactory.build(id: 'recipe_1', title: 'Köttbullar');
       testRecipe2 = RecipeFactory.build(id: 'recipe_2', title: 'Pannkakor');
-      
+
       testMenuSnapshot = <String, List<Recipe>>{
         'Måndag': [testRecipe1],
         'Tisdag': [testRecipe2],
@@ -41,12 +41,13 @@ void main() {
         expect(result['ownerDisplayName'], equals('Anna Andersson'));
         expect(result['lastEditedBy'], equals('user_123'));
         expect(result['lastEditedByDisplayName'], equals('Anna Andersson'));
-        
+
         final data = result['data'] as RealtimeMenuData;
         expect(data.menuTitle, equals('Veckans meny'));
         expect(data.menuSnapshot, equals(testMenuSnapshot));
-        
-        final participants = result['participants'] as Map<String, ResourcePermission>;
+
+        final participants =
+            result['participants'] as Map<String, ResourcePermission>;
         expect(participants['user_123'], equals(ResourcePermission.owner));
       });
 
@@ -60,8 +61,10 @@ void main() {
           viewerUserIds: ['viewer_1', 'viewer_2', 'viewer_3'],
         );
 
-        final participants = result['participants'] as Map<String, ResourcePermission>;
-        expect(participants.length, equals(6)); // 1 owner + 2 editors + 3 viewers
+        final participants =
+            result['participants'] as Map<String, ResourcePermission>;
+        expect(
+            participants.length, equals(6)); // 1 owner + 2 editors + 3 viewers
         expect(participants['owner_123'], equals(ResourcePermission.owner));
         expect(participants['editor_1'], equals(ResourcePermission.editor));
         expect(participants['editor_2'], equals(ResourcePermission.editor));
@@ -72,7 +75,7 @@ void main() {
 
       test('should create menu with all optional parameters', () {
         final createdForDate = DateTime(2025, 1, 20);
-        
+
         final result = RealtimeMenuFactory.createFromMenuCategories(
           menuTitle: 'Full meny',
           menuSnapshot: testMenuSnapshot,
@@ -95,26 +98,30 @@ void main() {
 
       test('should use current date when createdForDate not provided', () {
         final before = DateTime.now();
-        
+
         final result = RealtimeMenuFactory.createFromMenuCategories(
           menuTitle: 'Test',
           menuSnapshot: testMenuSnapshot,
           ownerId: 'user_123',
           ownerDisplayName: 'Test User',
         );
-        
+
         final after = DateTime.now();
-        
+
         final data = result['data'] as RealtimeMenuData;
-        expect(data.createdForDate.isAfter(before) || 
-               data.createdForDate.isAtSameMomentAs(before), isTrue);
-        expect(data.createdForDate.isBefore(after) || 
-               data.createdForDate.isAtSameMomentAs(after), isTrue);
+        expect(
+            data.createdForDate.isAfter(before) ||
+                data.createdForDate.isAtSameMomentAs(before),
+            isTrue);
+        expect(
+            data.createdForDate.isBefore(after) ||
+                data.createdForDate.isAtSameMomentAs(after),
+            isTrue);
       });
 
       test('should generate unique IDs', () {
         final ids = <String>{};
-        
+
         for (int i = 0; i < 100; i++) {
           final result = RealtimeMenuFactory.createFromMenuCategories(
             menuTitle: 'Menu $i',
@@ -124,7 +131,7 @@ void main() {
           );
           ids.add(result['id'] as String);
         }
-        
+
         expect(ids.length, equals(100)); // All IDs should be unique
       });
     });
@@ -149,7 +156,10 @@ void main() {
           'isActive': true,
           'metadata': {'key': 'value'},
           'menuTitle': 'Repository Menu',
-          'createdForDate': {'_seconds': 1736899200, '_nanoseconds': 0}, // Firestore timestamp
+          'createdForDate': {
+            '_seconds': 1736899200,
+            '_nanoseconds': 0
+          }, // Firestore timestamp
           'menuSnapshot': {
             'Måndag': [testRecipe1.toFirestore()],
           },
@@ -157,8 +167,9 @@ void main() {
       });
 
       test('should parse repository data correctly', () {
-        final result = RealtimeMenuFactory.parseRepositoryData('menu_123', repositoryData);
-        
+        final result =
+            RealtimeMenuFactory.parseRepositoryData('menu_123', repositoryData);
+
         expect(result['id'], equals('menu_123'));
         expect(result['ownerId'], equals('user_456'));
         expect(result['ownerDisplayName'], equals('Erik Eriksson'));
@@ -169,12 +180,13 @@ void main() {
         expect(result['editCount'], equals(5));
         expect(result['isActive'], isTrue);
         expect(result['metadata'], equals({'key': 'value'}));
-        
-        final participants = result['participants'] as Map<String, ResourcePermission>;
+
+        final participants =
+            result['participants'] as Map<String, ResourcePermission>;
         expect(participants['user_456'], equals(ResourcePermission.owner));
         expect(participants['user_789'], equals(ResourcePermission.editor));
         expect(participants['user_abc'], equals(ResourcePermission.viewer));
-        
+
         final data = result['data'] as RealtimeMenuData;
         expect(data.menuTitle, equals('Repository Menu'));
       });
@@ -189,14 +201,16 @@ void main() {
           'lastEditedAt': DateTime.now(),
           'createdForDate': {'_seconds': 1736899200, '_nanoseconds': 0},
         };
-        
-        final result = RealtimeMenuFactory.parseRepositoryData('menu_456', minimalData);
-        
+
+        final result =
+            RealtimeMenuFactory.parseRepositoryData('menu_456', minimalData);
+
         expect(result['editCount'], equals(0)); // Default value
         expect(result['isActive'], isTrue); // Default value
         expect(result['metadata'], equals({})); // Default empty map
-        
-        final participants = result['participants'] as Map<String, ResourcePermission>;
+
+        final participants =
+            result['participants'] as Map<String, ResourcePermission>;
         expect(participants, isEmpty); // No participants data provided
       });
 
@@ -215,12 +229,15 @@ void main() {
           'lastEditedByDisplayName': 'Test',
           'createdForDate': {'_seconds': 1736899200, '_nanoseconds': 0},
         };
-        
-        final result = RealtimeMenuFactory.parseRepositoryData('test_id', dataWithInvalidPermission);
-        
-        final participants = result['participants'] as Map<String, ResourcePermission>;
+
+        final result = RealtimeMenuFactory.parseRepositoryData(
+            'test_id', dataWithInvalidPermission);
+
+        final participants =
+            result['participants'] as Map<String, ResourcePermission>;
         expect(participants['user_123'], equals(ResourcePermission.owner));
-        expect(participants['user_456'], equals(ResourcePermission.viewer)); // Defaults to viewer
+        expect(participants['user_456'],
+            equals(ResourcePermission.viewer)); // Defaults to viewer
         expect(participants['user_789'], equals(ResourcePermission.admin));
       });
     });
@@ -254,7 +271,7 @@ void main() {
 
       test('should parse JSON data correctly', () {
         final result = RealtimeMenuFactory.parseJsonData(jsonData);
-        
+
         expect(result['id'], equals('json_menu_123'));
         expect(result['ownerId'], equals('user_json'));
         expect(result['ownerDisplayName'], equals('JSON User'));
@@ -265,11 +282,12 @@ void main() {
         expect(result['editCount'], equals(10));
         expect(result['isActive'], isFalse);
         expect(result['metadata'], equals({'source': 'json'}));
-        
-        final participants = result['participants'] as Map<String, ResourcePermission>;
+
+        final participants =
+            result['participants'] as Map<String, ResourcePermission>;
         expect(participants['user_json'], equals(ResourcePermission.owner));
         expect(participants['user_editor'], equals(ResourcePermission.editor));
-        
+
         final data = result['data'] as RealtimeMenuData;
         expect(data.menuTitle, equals('JSON Menu'));
         expect(data.createdForDate, equals(DateTime(2025, 1, 20)));
@@ -286,14 +304,15 @@ void main() {
           'lastEditedByDisplayName': 'Minimal User',
           'createdForDate': '2025-01-01T00:00:00.000',
         };
-        
+
         final result = RealtimeMenuFactory.parseJsonData(minimalJson);
-        
+
         expect(result['editCount'], equals(0));
         expect(result['isActive'], isTrue);
         expect(result['metadata'], equals({}));
-        
-        final participants = result['participants'] as Map<String, ResourcePermission>;
+
+        final participants =
+            result['participants'] as Map<String, ResourcePermission>;
         expect(participants, isEmpty);
       });
     });
@@ -311,9 +330,9 @@ void main() {
           createdForDate: DateTime(2025, 1, 5),
           menuSnapshot: testMenuSnapshot,
         );
-        
+
         final before = DateTime.now();
-        
+
         final result = RealtimeMenuFactory.createCopyParameters(
           id: 'menu_copy',
           ownerId: 'user_123',
@@ -330,9 +349,9 @@ void main() {
           newLastEditedBy: 'user_789',
           newLastEditedByDisplayName: 'Lars Larsson',
         );
-        
+
         final after = DateTime.now();
-        
+
         expect(result['id'], equals('menu_copy'));
         expect(result['ownerId'], equals('user_123'));
         expect(result['ownerDisplayName'], equals('Anna'));
@@ -344,12 +363,18 @@ void main() {
         expect(result['isActive'], isTrue);
         expect(result['metadata'], equals({'key': 'value'}));
         expect(result['data'], equals(originalData));
-        
+
         // Check lastEditedAt was updated to now
         final lastEditedAt = result['lastEditedAt'] as DateTime;
         expect(lastEditedAt.isAfter(originalLastEditedAt), isTrue);
-        expect(lastEditedAt.isAfter(before) || lastEditedAt.isAtSameMomentAs(before), isTrue);
-        expect(lastEditedAt.isBefore(after) || lastEditedAt.isAtSameMomentAs(after), isTrue);
+        expect(
+            lastEditedAt.isAfter(before) ||
+                lastEditedAt.isAtSameMomentAs(before),
+            isTrue);
+        expect(
+            lastEditedAt.isBefore(after) ||
+                lastEditedAt.isAtSameMomentAs(after),
+            isTrue);
       });
 
       test('should preserve original data while updating edit metadata', () {
@@ -361,7 +386,7 @@ void main() {
           favoriteRecipeIds: ['recipe_1'],
           originalPrompt: 'Original prompt',
         );
-        
+
         final result = RealtimeMenuFactory.createCopyParameters(
           id: 'same_id',
           ownerId: 'owner_id',
@@ -378,19 +403,19 @@ void main() {
           newLastEditedBy: 'new_editor',
           newLastEditedByDisplayName: 'New Editor',
         );
-        
+
         // Data should be preserved exactly
         final preservedData = result['data'] as RealtimeMenuData;
         expect(preservedData.menuTitle, equals('Original Menu'));
         expect(preservedData.menuNotes, equals('Original notes'));
         expect(preservedData.favoriteRecipeIds, equals(['recipe_1']));
         expect(preservedData.originalPrompt, equals('Original prompt'));
-        
+
         // Only edit metadata should change
         expect(result['lastEditedBy'], equals('new_editor'));
         expect(result['lastEditedByDisplayName'], equals('New Editor'));
         expect(result['editCount'], equals(11));
-        
+
         // Other metadata preserved
         expect(result['isActive'], isFalse);
         expect(result['metadata'], equals({'old': 'data'}));
@@ -405,7 +430,7 @@ void main() {
           ownerId: 'user_123',
           ownerDisplayName: 'User',
         );
-        
+
         final data = result['data'] as RealtimeMenuData;
         expect(data.menuSnapshot, isEmpty);
         expect(data.allUniqueRecipes, isEmpty);
@@ -418,7 +443,7 @@ void main() {
           ownerId: 'user_åsa',
           ownerDisplayName: 'Åsa Öström',
         );
-        
+
         expect(result['ownerDisplayName'], equals('Åsa Öström'));
         final data = result['data'] as RealtimeMenuData;
         expect(data.menuTitle, equals('Åsas veckomeny med ÄÖÅ'));
@@ -427,7 +452,7 @@ void main() {
       test('should handle very large participant lists', () {
         final editorIds = List.generate(100, (i) => 'editor_$i');
         final viewerIds = List.generate(200, (i) => 'viewer_$i');
-        
+
         final result = RealtimeMenuFactory.createFromMenuCategories(
           menuTitle: 'Large Team Menu',
           menuSnapshot: testMenuSnapshot,
@@ -436,16 +461,19 @@ void main() {
           editorUserIds: editorIds,
           viewerUserIds: viewerIds,
         );
-        
-        final participants = result['participants'] as Map<String, ResourcePermission>;
-        expect(participants.length, equals(301)); // 1 owner + 100 editors + 200 viewers
-        
+
+        final participants =
+            result['participants'] as Map<String, ResourcePermission>;
+        expect(participants.length,
+            equals(301)); // 1 owner + 100 editors + 200 viewers
+
         // Check some random participants
         expect(participants['editor_50'], equals(ResourcePermission.editor));
         expect(participants['viewer_150'], equals(ResourcePermission.viewer));
       });
 
-      test('should handle duplicate user IDs in different permission lists', () {
+      test('should handle duplicate user IDs in different permission lists',
+          () {
         final result = RealtimeMenuFactory.createFromMenuCategories(
           menuTitle: 'Test',
           menuSnapshot: testMenuSnapshot,
@@ -454,8 +482,9 @@ void main() {
           editorUserIds: ['user_1', 'user_2'],
           viewerUserIds: ['user_2', 'user_3'], // user_2 appears in both
         );
-        
-        final participants = result['participants'] as Map<String, ResourcePermission>;
+
+        final participants =
+            result['participants'] as Map<String, ResourcePermission>;
         // user_2 should have viewer permission (last one wins)
         expect(participants['user_2'], equals(ResourcePermission.viewer));
         expect(participants['user_1'], equals(ResourcePermission.editor));

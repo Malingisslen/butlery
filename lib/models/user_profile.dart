@@ -118,7 +118,7 @@ class UserProfile with JsonSerializableMixin {
   /// Check if FCM token is valid (not older than 30 days)
   bool get hasFreshFCMToken {
     if (fcmToken == null || fcmTokenUpdatedAt == null) return false;
-    
+
     final now = DateTime.now();
     final tokenAge = now.difference(fcmTokenUpdatedAt!);
     return tokenAge.inDays < 30; // FCM tokens should be refreshed regularly
@@ -158,7 +158,9 @@ class UserProfile with JsonSerializableMixin {
       'isOnline': isOnline,
       // Notification fields
       'fcmToken': fcmToken,
-      'fcmTokenUpdatedAt': fcmTokenUpdatedAt != null ? AppTimestamp.fromDateTime(fcmTokenUpdatedAt!).toFirestore() : null,
+      'fcmTokenUpdatedAt': fcmTokenUpdatedAt != null
+          ? AppTimestamp.fromDateTime(fcmTokenUpdatedAt!).toFirestore()
+          : null,
       'notificationsEnabled': notificationsEnabled,
     };
   }
@@ -179,7 +181,9 @@ class UserProfile with JsonSerializableMixin {
       'isOnline': isOnline,
       // Notification fields
       'fcmToken': fcmToken,
-      'fcmTokenUpdatedAt': fcmTokenUpdatedAt != null ? serializeDateTime(fcmTokenUpdatedAt!) : null,
+      'fcmTokenUpdatedAt': fcmTokenUpdatedAt != null
+          ? serializeDateTime(fcmTokenUpdatedAt!)
+          : null,
       'notificationsEnabled': notificationsEnabled,
     };
   }
@@ -191,20 +195,26 @@ class UserProfile with JsonSerializableMixin {
       displayName: utils.SerializationUtils.safeString(data, 'displayName'),
       email: utils.SerializationUtils.safeString(data, 'email'),
       avatarUrl: utils.SerializationUtils.safeNullableString(data, 'avatarUrl'),
-      isSearchable: utils.SerializationUtils.safeBool(data, 'isSearchable', defaultValue: true),
-      allowEmailSearch: utils.SerializationUtils.safeBool(data, 'allowEmailSearch'),
-      publicRecipeCount: utils.SerializationUtils.safeInt(data, 'publicRecipeCount'),
+      isSearchable: utils.SerializationUtils.safeBool(data, 'isSearchable',
+          defaultValue: true),
+      allowEmailSearch:
+          utils.SerializationUtils.safeBool(data, 'allowEmailSearch'),
+      publicRecipeCount:
+          utils.SerializationUtils.safeInt(data, 'publicRecipeCount'),
       friendsCount: utils.SerializationUtils.safeInt(data, 'friendsCount'),
       joinedAt: utils.SerializationUtils.safeDateTime(data, 'joinedAt').orNow(),
-      lastActiveAt: utils.SerializationUtils.safeDateTime(data, 'lastActiveAt').orNow(),
+      lastActiveAt:
+          utils.SerializationUtils.safeDateTime(data, 'lastActiveAt').orNow(),
       isOnline: utils.SerializationUtils.safeBool(data, 'isOnline'),
       // Notification fields
       fcmToken: utils.SerializationUtils.safeNullableString(data, 'fcmToken'),
-      fcmTokenUpdatedAt: utils.SerializationUtils.safeDateTime(data, 'fcmTokenUpdatedAt'),
-      notificationsEnabled: utils.SerializationUtils.safeBool(data, 'notificationsEnabled', defaultValue: true),
+      fcmTokenUpdatedAt:
+          utils.SerializationUtils.safeDateTime(data, 'fcmTokenUpdatedAt'),
+      notificationsEnabled: utils.SerializationUtils.safeBool(
+          data, 'notificationsEnabled',
+          defaultValue: true),
     );
   }
-
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
@@ -217,11 +227,13 @@ class UserProfile with JsonSerializableMixin {
       publicRecipeCount: (json['publicRecipeCount'] as int?).orZero(),
       friendsCount: (json['friendsCount'] as int?).orZero(),
       joinedAt: UserProfile._deserializeDateTime(json['joinedAt']).orNow(),
-      lastActiveAt: UserProfile._deserializeDateTime(json['lastActiveAt']).orNow(),
+      lastActiveAt:
+          UserProfile._deserializeDateTime(json['lastActiveAt']).orNow(),
       isOnline: (json['isOnline'] as bool?).orFalse(),
       // Notification fields
       fcmToken: json['fcmToken'] as String?,
-      fcmTokenUpdatedAt: UserProfile._deserializeDateTime(json['fcmTokenUpdatedAt']),
+      fcmTokenUpdatedAt:
+          UserProfile._deserializeDateTime(json['fcmTokenUpdatedAt']),
       notificationsEnabled: (json['notificationsEnabled'] as bool?).orTrue(),
     );
   }

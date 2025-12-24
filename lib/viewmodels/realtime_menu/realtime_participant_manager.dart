@@ -24,9 +24,10 @@ class RealtimeParticipantManager {
     required RealtimeMenuService menuService,
     required ParticipantTracker participantTracker,
     PermissionService? permissionService,
-  }) : _menuService = menuService,
-       _participantTracker = participantTracker,
-       _permissionService = permissionService ?? ServiceLocator.get<PermissionService>();
+  })  : _menuService = menuService,
+        _participantTracker = participantTracker,
+        _permissionService =
+            permissionService ?? ServiceLocator.get<PermissionService>();
 
   // ===== PERMISSION GETTERS =====
 
@@ -127,7 +128,8 @@ class RealtimeParticipantManager {
       throw Exception('Kan inte ändra sina egna behörigheter');
     }
 
-    AppLogger.info('👤 Updating participant permission: $userId -> $newPermission');
+    AppLogger.info(
+        '👤 Updating participant permission: $userId -> $newPermission');
 
     try {
       await _menuService.updateParticipantPermission(
@@ -236,13 +238,14 @@ class RealtimeParticipantManager {
   // ===== PERMISSION ANALYSIS =====
 
   /// Get participant permission level
-  ResourcePermission? getParticipantPermission(String userId, RealtimeMenu menu) {
+  ResourcePermission? getParticipantPermission(
+      String userId, RealtimeMenu menu) {
     return menu.participants[userId];
   }
 
   /// Get all participants with specific permission
   List<String> getParticipantsWithPermission(
-    RealtimeMenu menu, 
+    RealtimeMenu menu,
     ResourcePermission permission,
   ) {
     return menu.participants.entries
@@ -256,11 +259,11 @@ class RealtimeParticipantManager {
     RealtimeMenu menu,
   ) {
     final grouped = <ResourcePermission, List<String>>{};
-    
+
     for (final entry in menu.participants.entries) {
       grouped.putIfAbsent(entry.value, () => []).add(entry.key);
     }
-    
+
     return grouped;
   }
 
@@ -269,11 +272,11 @@ class RealtimeParticipantManager {
     RealtimeMenu menu,
   ) {
     final counts = <ResourcePermission, int>{};
-    
+
     for (final permission in menu.participants.values) {
       counts[permission] = (counts[permission] ?? 0) + 1;
     }
-    
+
     return counts;
   }
 
@@ -282,7 +285,7 @@ class RealtimeParticipantManager {
   /// Get participant statistics
   Map<String, dynamic> getParticipantStats(RealtimeMenu menu) {
     final permissionCounts = countParticipantsByPermission(menu);
-    
+
     return {
       'totalParticipants': menu.participants.length,
       'owners': permissionCounts[ResourcePermission.owner] ?? 0,
@@ -298,7 +301,7 @@ class RealtimeParticipantManager {
   String getParticipationSummary(RealtimeMenu menu) {
     final total = menu.participants.length;
     final online = onlineParticipants.length;
-    
+
     if (total == 1) {
       return 'Bara du';
     } else if (online == total) {
@@ -332,7 +335,7 @@ class RealtimeParticipantManager {
           permission: participant['permission'] as ResourcePermission,
         );
       }
-      
+
       AppLogger.success('✅ ${participants.length} participants added');
     } catch (e) {
       AppLogger.error('❌ Failed to add multiple participants', e);
@@ -351,7 +354,7 @@ class RealtimeParticipantManager {
 
     // Filter out current user
     final filteredIds = userIds.where((id) => id != currentUserId).toList();
-    
+
     if (filteredIds.isEmpty) {
       AppLogger.warning('⚠️ No valid participants to remove');
       return;
@@ -363,7 +366,7 @@ class RealtimeParticipantManager {
       for (final userId in filteredIds) {
         await removeParticipant(menuId: menuId, userId: userId);
       }
-      
+
       AppLogger.success('✅ ${filteredIds.length} participants removed');
     } catch (e) {
       AppLogger.error('❌ Failed to remove multiple participants', e);

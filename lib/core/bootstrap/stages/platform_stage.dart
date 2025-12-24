@@ -37,9 +37,9 @@ class PlatformStage implements BootstrapStage {
     try {
       // Ensure Flutter bindings are initialized
       WidgetsFlutterBinding.ensureInitialized();
-      
+
       // Basic environment validation - modular DI system enabled
-      
+
       if (kDebugMode) {
         debugPrint('✅ [PlatformStage] Platform services ready');
       }
@@ -64,7 +64,7 @@ class PlatformStage implements BootstrapStage {
 
       // Basic validation - modular system is always enabled now
       // No feature flag validation needed since legacy system is removed
-      
+
       return true;
     } catch (e) {
       if (kDebugMode) {

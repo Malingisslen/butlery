@@ -27,7 +27,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  
+
   String _selectedEmoji = '👥';
   final Set<String> _selectedFriendIds = <String>{};
   List<UserProfile> _selectedFriends = <UserProfile>[];
@@ -39,9 +39,8 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
     super.initState();
     if (widget.preSelectedMembers != null) {
       _selectedFriends = List.from(widget.preSelectedMembers!);
-      _selectedFriendIds.addAll(
-        widget.preSelectedMembers!.map((member) => member.uid)
-      );
+      _selectedFriendIds
+          .addAll(widget.preSelectedMembers!.map((member) => member.uid));
     }
   }
 
@@ -86,7 +85,8 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
 
       if (categoryId != null) {
         // Get the created category to return it
-        final createdCategory = friendsService.categories.getCategoryById(categoryId);
+        final createdCategory =
+            friendsService.categories.getCategoryById(categoryId);
 
         if (mounted) {
           Navigator.of(context).pop(createdCategory);
@@ -150,9 +150,9 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                           }
                         },
                       ),
-                      
+
                       const SizedBox(height: AppDimensions.spacingL),
-                      
+
                       // ✅ CONSOLIDATED: Group name using standardized form field
                       DialogFormFields.buildNameField(
                         controller: _nameController,
@@ -161,8 +161,8 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                         prefixIcon: Icons.group,
                         maxLength: 50,
                       ),
-                      
-                      // ✅ CONSOLIDATED: Description using standardized form field  
+
+                      // ✅ CONSOLIDATED: Description using standardized form field
                       DialogFormFields.buildDescriptionField(
                         controller: _descriptionController,
                         labelText: 'Beskrivning (valfritt)',
@@ -170,12 +170,12 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                         maxLength: 200,
                         maxLines: 3,
                       ),
-                      
+
                       const SizedBox(height: AppDimensions.spacingL),
-                      
+
                       // 🆕 FRIEND SELECTION UI
                       _buildFriendSelectionSection(),
-                      
+
                       // Selected members info
                       if (_selectedFriendIds.isNotEmpty) ...[
                         const SizedBox(height: AppDimensions.spacingM),
@@ -187,11 +187,12 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                         Text(
                           'Dessa vänner kommer att få en inbjudan till gruppen.',
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
-                      
+
                       // Error display
                       if (_error != null) ...[
                         const SizedBox(height: AppDimensions.spacingM),
@@ -201,7 +202,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                   ),
                 ),
               ),
-              
+
               // Actions
               DialogFooter(
                 primaryActionText: _isCreating ? 'Skapar...' : 'Skapa grupp',
@@ -229,7 +230,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
       builder: (context, child) {
         final friendsService = ServiceLocator.get<UnifiedFriendsService>();
         final availableFriends = friendsService.friendsList;
-        
+
         if (availableFriends.isEmpty) {
           return Column(
             children: [
@@ -250,13 +251,13 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
         }
 
         // Convert UserProfile to InvitationTarget for SocialComponents
-        final availableTargets = availableFriends.map((friend) => 
-          InvitationTarget.individual(friend)
-        ).toList();
+        final availableTargets = availableFriends
+            .map((friend) => InvitationTarget.individual(friend))
+            .toList();
 
-        final selectedTargets = _selectedFriends.map((friend) => 
-          InvitationTarget.individual(friend)
-        ).toList();
+        final selectedTargets = _selectedFriends
+            .map((friend) => InvitationTarget.individual(friend))
+            .toList();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,8 +282,8 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                 onSelectionChanged: (selectedTargetsList) {
                   // Convert back to UserProfile
                   final selectedFriends = selectedTargetsList
-                      .map((target) => availableFriends
-                          .firstWhere((friend) => friend.uid == target.targetId))
+                      .map((target) => availableFriends.firstWhere(
+                          (friend) => friend.uid == target.targetId))
                       .toList();
                   _onFriendSelectionChanged(selectedFriends);
                 },

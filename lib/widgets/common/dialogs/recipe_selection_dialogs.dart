@@ -39,8 +39,8 @@ class RecipeSelectionDialogs {
   }) async {
     return await showDialog<List<Recipe>>(
       context: context,
-      builder: (context) => MenuRecipeSelectionDialog(categoryName: categoryName),
+      builder: (context) =>
+          MenuRecipeSelectionDialog(categoryName: categoryName),
     );
   }
 }
-

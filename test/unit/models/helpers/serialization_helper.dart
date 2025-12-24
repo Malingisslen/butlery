@@ -1,5 +1,5 @@
 /// Serialization test helper for model tests
-/// 
+///
 /// Provides utilities for testing JSON and Firestore serialization
 /// with comprehensive validation and edge case handling.
 library;
@@ -44,7 +44,7 @@ class SerializationHelper {
       'lastCookedAt': '2024-01-03T18:00:00Z',
     };
   }
-  
+
   /// Create valid user profile JSON
   static Map<String, dynamic> createValidUserProfileJson() {
     return {
@@ -64,7 +64,7 @@ class SerializationHelper {
       'notificationsEnabled': true,
     };
   }
-  
+
   /// Create valid shopping list JSON
   static Map<String, dynamic> createValidShoppingListJson() {
     return {
@@ -105,7 +105,7 @@ class SerializationHelper {
       'isCollaborative': true,
     };
   }
-  
+
   /// Create invalid JSON with missing required fields
   static Map<String, dynamic> createInvalidJson({
     List<String>? missingFields,
@@ -114,15 +114,15 @@ class SerializationHelper {
     final json = <String, dynamic>{
       'id': 'test_123',
     };
-    
+
     // Add invalid values if specified
     if (invalidValues != null) {
       json.addAll(invalidValues);
     }
-    
+
     return json;
   }
-  
+
   /// Create Firestore data with proper types
   static Map<String, dynamic> createFirestoreData({
     required String id,
@@ -134,17 +134,17 @@ class SerializationHelper {
       'title': 'Test Title',
       'description': 'Test Description',
     };
-    
+
     if (includeTimestamps) {
       data['createdAt'] = Timestamp.fromDate(DateTime(2024, 1, 1));
-      data['updatedAt'] = includeServerTimestamp 
+      data['updatedAt'] = includeServerTimestamp
           ? FieldValue.serverTimestamp()
           : Timestamp.fromDate(DateTime(2024, 1, 2));
     }
-    
+
     return data;
   }
-  
+
   /// Validate JSON structure
   static bool validateJsonStructure(
     Map<String, dynamic> json,
@@ -157,18 +157,23 @@ class SerializationHelper {
     }
     return true;
   }
-  
+
   /// Check if timestamp fields are properly formatted
   static bool hasValidTimestamps(Map<String, dynamic> json) {
-    final timestampFields = ['createdAt', 'updatedAt', 'lastActiveAt', 'joinedAt'];
-    
+    final timestampFields = [
+      'createdAt',
+      'updatedAt',
+      'lastActiveAt',
+      'joinedAt'
+    ];
+
     for (final field in timestampFields) {
       if (json.containsKey(field)) {
         final value = json[field];
         if (value is! String && value is! Timestamp && value is! DateTime) {
           return false;
         }
-        
+
         if (value is String) {
           try {
             DateTime.parse(value);
@@ -178,10 +183,10 @@ class SerializationHelper {
         }
       }
     }
-    
+
     return true;
   }
-  
+
   /// Create test data with Swedish characters
   static Map<String, dynamic> createSwedishTestData() {
     return {
@@ -202,39 +207,39 @@ class SerializationHelper {
       'tags': ['fisk', 'smörgås', 'lunch'],
     };
   }
-  
+
   /// Test edge cases in JSON
   static List<Map<String, dynamic>> getEdgeCaseJsons() {
     return [
       // Empty strings
       {'id': '', 'title': '', 'description': ''},
-      
+
       // Very long strings
       {'id': 'test', 'title': 'A' * 1000, 'description': 'B' * 5000},
-      
+
       // Special characters
       {'id': 'test', 'title': '!@#\$%^&*()', 'description': ''},
-      
+
       // Unicode characters
       {'id': 'test', 'title': '你好世界 🌍', 'description': 'مرحبا بالعالم'},
-      
+
       // Null values where optional
       {'id': 'test', 'title': 'Test', 'description': 'Test', 'avatarUrl': null},
-      
+
       // Empty arrays
       {'id': 'test', 'ingredients': [], 'instructions': [], 'tags': []},
-      
+
       // Large numbers
       {'id': 'test', 'portions': 999999, 'timeMinutes': 999999},
-      
+
       // Negative numbers
       {'id': 'test', 'portions': -1, 'timeMinutes': -30},
-      
+
       // Decimal numbers
       {'id': 'test', 'rating': 3.14159, 'quantity': 2.5},
     ];
   }
-  
+
   /// Convert DateTime to various formats for testing
   static Map<String, dynamic> createDateTimeVariations(DateTime date) {
     return {
@@ -245,14 +250,15 @@ class SerializationHelper {
       'null': null,
     };
   }
-  
+
   /// Validate that two objects have same data (ignoring types)
-  static bool haveSameData(dynamic obj1, dynamic obj2, List<String> fieldsToCheck) {
+  static bool haveSameData(
+      dynamic obj1, dynamic obj2, List<String> fieldsToCheck) {
     // Simple implementation comparing string representations
     // In a real implementation, we would check each field individually
     // but for now we just verify the objects are equivalent
     if (fieldsToCheck.isEmpty) return true;
-    
+
     return obj1.toString() == obj2.toString();
   }
 }

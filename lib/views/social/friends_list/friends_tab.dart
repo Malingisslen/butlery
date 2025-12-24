@@ -20,7 +20,8 @@ class FriendsTab {
       data: viewModel.friends,
       loadingMessage: 'Laddar vänner...',
       emptyTitle: 'Inga vänner än',
-      emptySubtitle: 'Lägg till vänner för att komma igång med social funktionalitet.',
+      emptySubtitle:
+          'Lägg till vänner för att komma igång med social funktionalitet.',
       emptyIcon: Icons.people_outline,
       builder: (context, friends) => RefreshIndicator(
         onRefresh: () async {

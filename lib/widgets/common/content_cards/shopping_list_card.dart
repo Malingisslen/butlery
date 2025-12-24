@@ -151,7 +151,7 @@ class ShoppingListCard extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: style == ShoppingListCardStyle.compact 
+            style: style == ShoppingListCardStyle.compact
                 ? AppTextStyles.bodyLarge
                 : AppTextStyles.titleMedium,
             maxLines: style == ShoppingListCardStyle.compact ? 1 : 2,
@@ -166,7 +166,7 @@ class ShoppingListCard extends StatelessWidget {
     final totalItems = _getTotalItems();
     final completedItems = _getCompletedItems();
     final createdDate = _getCreatedDate();
-    
+
     final metadata = <String>[];
     if (totalItems > 0) {
       metadata.add('$totalItems föremål');
@@ -190,7 +190,7 @@ class ShoppingListCard extends StatelessWidget {
 
   Widget _buildListPreview(BuildContext context) {
     final items = _getListItems();
-    
+
     if (items.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(AppDimensions.spacingM),
@@ -208,7 +208,8 @@ class ShoppingListCard extends StatelessWidget {
             const SizedBox(width: AppDimensions.spacingS),
             Text(
               'Inga föremål i listan',
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+              style:
+                  AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
             ),
           ],
         ),
@@ -220,39 +221,49 @@ class ShoppingListCard extends StatelessWidget {
       children: [
         Text(
           'Föremål på listan:',
-          style: AppTextStyles.labelMedium.copyWith(color: AppColors.textMedium),
+          style:
+              AppTextStyles.labelMedium.copyWith(color: AppColors.textMedium),
         ),
         const SizedBox(height: AppDimensions.spacingS),
         ...items.take(4).map((item) => Padding(
-          padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
-          child: Row(
-            children: [
-              Icon(
-                _isItemCompleted(item) ? Icons.check_circle : Icons.radio_button_unchecked,
-                size: AppDimensions.iconSizeS,
-                color: _isItemCompleted(item) ? Colors.green : AppColors.textMedium,
-              ),
-              const SizedBox(width: AppDimensions.spacingS),
-              Expanded(
-                child: Text(
-                  _getItemTitle(item),
-                  style: AppTextStyles.bodySmall.copyWith(
-                    decoration: _isItemCompleted(item) ? TextDecoration.lineThrough : null,
-                    color: _isItemCompleted(item) ? AppColors.textMedium : AppColors.textDark,
+              padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+              child: Row(
+                children: [
+                  Icon(
+                    _isItemCompleted(item)
+                        ? Icons.check_circle
+                        : Icons.radio_button_unchecked,
+                    size: AppDimensions.iconSizeS,
+                    color: _isItemCompleted(item)
+                        ? Colors.green
+                        : AppColors.textMedium,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  const SizedBox(width: AppDimensions.spacingS),
+                  Expanded(
+                    child: Text(
+                      _getItemTitle(item),
+                      style: AppTextStyles.bodySmall.copyWith(
+                        decoration: _isItemCompleted(item)
+                            ? TextDecoration.lineThrough
+                            : null,
+                        color: _isItemCompleted(item)
+                            ? AppColors.textMedium
+                            : AppColors.textDark,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        )),
+            )),
         if (items.length > 4)
           Padding(
             padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
             child: Text(
               '+ ${items.length - 4} fler föremål',
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+              style:
+                  AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
             ),
           ),
       ],
@@ -262,7 +273,7 @@ class ShoppingListCard extends StatelessWidget {
   Widget _buildSharingStatus(BuildContext context) {
     final isShared = _isListShared();
     final memberCount = _getListMemberCount();
-    
+
     if (!isShared) {
       return const SizedBox.shrink();
     }
@@ -289,9 +300,7 @@ class ShoppingListCard extends StatelessWidget {
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Text(
-            memberCount > 0 
-                ? 'Delad med $memberCount personer'
-                : 'Delad lista',
+            memberCount > 0 ? 'Delad med $memberCount personer' : 'Delad lista',
             style: AppTextStyles.bodySmall.copyWith(color: Colors.blue[700]),
           ),
         ],
@@ -301,7 +310,7 @@ class ShoppingListCard extends StatelessWidget {
 
   Widget _buildSharingIndicator(BuildContext context) {
     final isShared = _isListShared();
-    
+
     if (!isShared) {
       return const SizedBox.shrink();
     }
@@ -313,7 +322,7 @@ class ShoppingListCard extends StatelessWidget {
         shape: BoxShape.circle,
       ),
       child: const Icon(
-        Icons.people,  
+        Icons.people,
         size: AppDimensions.iconSizeS,
         color: Colors.white,
       ),
@@ -323,7 +332,7 @@ class ShoppingListCard extends StatelessWidget {
   Widget _buildCompletionIndicator(BuildContext context) {
     final totalItems = _getTotalItems();
     final completedItems = _getCompletedItems();
-    
+
     if (totalItems == 0) {
       return const SizedBox.shrink();
     }
@@ -350,9 +359,7 @@ class ShoppingListCard extends StatelessWidget {
           ),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
-            isComplete 
-                ? 'Klar' 
-                : '${(completionPercentage * 100).round()}%',
+            isComplete ? 'Klar' : '${(completionPercentage * 100).round()}%',
             style: AppTextStyles.labelSmall.copyWith(
               color: isComplete ? Colors.green[700] : Colors.orange[700],
             ),
@@ -364,7 +371,7 @@ class ShoppingListCard extends StatelessWidget {
 
   // Helper methods to extract data from the shopping list object
   // These will need to be updated when the actual shopping list model is available
-  
+
   String _getListTitle() {
     return shoppingList.name;
   }
@@ -404,7 +411,7 @@ class ShoppingListCard extends StatelessWidget {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
-    
+
     if (difference.inDays == 0) {
       return 'Idag';
     } else if (difference.inDays == 1) {
@@ -446,7 +453,7 @@ class ShoppingListCard extends StatelessWidget {
 
 /// Shopping list card display styles
 enum ShoppingListCardStyle {
-  detailed,  // Full visning med alla detaljer
-  compact,   // Kompakt visning för listor
-  grid,      // För grid-layout
+  detailed, // Full visning med alla detaljer
+  compact, // Kompakt visning för listor
+  grid, // För grid-layout
 }

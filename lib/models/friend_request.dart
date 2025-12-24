@@ -103,8 +103,9 @@ class FriendRequest with JsonSerializableMixin {
       'toUserId': toUserId,
       'status': status.name,
       'sentAt': AppTimestamp.fromDateTime(sentAt).toFirestore(),
-      'respondedAt':
-          respondedAt != null ? AppTimestamp.fromDateTime(respondedAt!).toFirestore() : null,
+      'respondedAt': respondedAt != null
+          ? AppTimestamp.fromDateTime(respondedAt!).toFirestore()
+          : null,
       'message': message,
     };
   }
@@ -121,7 +122,8 @@ class FriendRequest with JsonSerializableMixin {
         FriendRequestStatus.pending,
         (e) => e.name,
       ),
-      sentAt: utils.SerializationUtils.safeDateTime(data, 'sentAt') ?? DateTime.now(),
+      sentAt: utils.SerializationUtils.safeDateTime(data, 'sentAt') ??
+          DateTime.now(),
       respondedAt: utils.SerializationUtils.safeDateTime(data, 'respondedAt'),
       message: utils.SerializationUtils.safeNullableString(data, 'message'),
     );
@@ -149,7 +151,8 @@ class FriendRequest with JsonSerializableMixin {
         (s) => s.name == json['status'],
         orElse: () => FriendRequestStatus.pending,
       ),
-      sentAt: FriendRequest._deserializeDateTime(json['sentAt']) ?? DateTime.now(),
+      sentAt:
+          FriendRequest._deserializeDateTime(json['sentAt']) ?? DateTime.now(),
       respondedAt: FriendRequest._deserializeDateTime(json['respondedAt']),
       message: json['message'] as String?,
     );
@@ -170,7 +173,6 @@ class FriendRequest with JsonSerializableMixin {
     }
     return null;
   }
-
 
   @override
   String toString() {

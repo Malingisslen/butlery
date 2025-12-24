@@ -14,7 +14,8 @@ import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 
 // Mock classes
-class MockConnectivityRepository extends Mock implements ConnectivityRepository {}
+class MockConnectivityRepository extends Mock
+    implements ConnectivityRepository {}
 
 void main() {
   group('ConnectivityCheck DNS Failover Tests', () {
@@ -23,11 +24,12 @@ void main() {
     setUp(() async {
       await BaseUnitTest.setupUnit();
       await TestServiceLocator.initialize();
-      
+
       mockConnectivityRepo = MockConnectivityRepository();
-      
+
       // Register mock in test service locator
-      TestServiceLocator.registerMock<ConnectivityRepository>(mockConnectivityRepo);
+      TestServiceLocator.registerMock<ConnectivityRepository>(
+          mockConnectivityRepo);
     });
 
     tearDown(() async {
@@ -36,11 +38,12 @@ void main() {
     });
 
     group('hasInternetConnection', () {
-      test('should return true when google.com resolves successfully', () async {
+      test('should return true when google.com resolves successfully',
+          () async {
         // This is an integration test that depends on actual network connectivity
         // In a real test environment, we would mock InternetAddress.lookup
         final result = await ConnectivityCheck.hasInternetConnection();
-        
+
         // We can't predict the network state, so we just verify the method runs
         expect(result, isA<bool>());
       });
@@ -54,10 +57,11 @@ void main() {
     });
 
     group('hasRobustInternetConnection', () {
-      test('should test multiple DNS servers for enhanced reliability', () async {
+      test('should test multiple DNS servers for enhanced reliability',
+          () async {
         // Integration test for enhanced DNS server diversity
         final result = await ConnectivityCheck.hasRobustInternetConnection();
-        
+
         expect(result, isA<bool>());
       });
 
@@ -91,11 +95,13 @@ void main() {
         final result = await ConnectivityCheck.hasFirebaseConnectivity();
 
         // Assert
-        expect(result, isA<bool>()); // May be true or false depending on actual DNS
+        expect(result,
+            isA<bool>()); // May be true or false depending on actual DNS
         verify(() => mockConnectivityRepo.checkFirebaseConnection()).called(1);
       });
 
-      test('should handle repository exceptions and attempt DNS failover', () async {
+      test('should handle repository exceptions and attempt DNS failover',
+          () async {
         // Arrange
         when(() => mockConnectivityRepo.checkFirebaseConnection())
             .thenThrow(const SocketException('DNS resolution failed'));
@@ -125,7 +131,7 @@ void main() {
       test('should test multiple enhanced DNS servers', () async {
         // Integration test for enhanced DNS server diversity
         final result = await ConnectivityCheck.hasEnhancedDNSResolution();
-        
+
         expect(result, isA<bool>());
       });
 
@@ -156,7 +162,8 @@ void main() {
         ], contains(result));
       });
 
-      test('should return limited when internet works but firebase fails', () async {
+      test('should return limited when internet works but firebase fails',
+          () async {
         // Arrange
         when(() => mockConnectivityRepo.checkFirebaseConnection())
             .thenAnswer((_) async => false);
@@ -224,9 +231,12 @@ void main() {
 
         // Test all major connectivity methods
         final internetResult = await ConnectivityCheck.hasInternetConnection();
-        final robustResult = await ConnectivityCheck.hasRobustInternetConnection();
-        final firebaseResult = await ConnectivityCheck.hasFirebaseConnectivity();
-        final enhancedDnsResult = await ConnectivityCheck.hasEnhancedDNSResolution();
+        final robustResult =
+            await ConnectivityCheck.hasRobustInternetConnection();
+        final firebaseResult =
+            await ConnectivityCheck.hasFirebaseConnectivity();
+        final enhancedDnsResult =
+            await ConnectivityCheck.hasEnhancedDNSResolution();
         final connectivityResult = await ConnectivityCheck.checkConnectivity();
 
         // All methods should return valid results without throwing
@@ -243,7 +253,8 @@ void main() {
             .thenThrow(const SocketException('Network unreachable'));
 
         // All methods should handle failures gracefully
-        final firebaseResult = await ConnectivityCheck.hasFirebaseConnectivity();
+        final firebaseResult =
+            await ConnectivityCheck.hasFirebaseConnectivity();
         final connectivityResult = await ConnectivityCheck.checkConnectivity();
 
         expect(firebaseResult, isA<bool>());

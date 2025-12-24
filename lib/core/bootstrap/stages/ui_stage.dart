@@ -23,7 +23,8 @@ class UIStage implements BootstrapStage {
   String get name => 'UI';
 
   @override
-  List<Type> get requiredModules => [CoreModule]; // Basic UI needs core services
+  List<Type> get requiredModules =>
+      [CoreModule]; // Basic UI needs core services
 
   @override
   Duration get timeout => const Duration(seconds: 15);
@@ -64,7 +65,7 @@ class UIStage implements BootstrapStage {
         }
         return; // Don't throw for optional stages
       }
-      
+
       throw BootstrapException(
         name,
         'execution',
@@ -86,7 +87,8 @@ class UIStage implements BootstrapStage {
 
       // Universal OCR service validation is handled internally by OCRExtractionService
       if (kDebugMode) {
-        debugPrint('✅ [UIStage] Universal OCR service configured - multi-provider fallback available');
+        debugPrint(
+            '✅ [UIStage] Universal OCR service configured - multi-provider fallback available');
       }
     } catch (e) {
       // OCR validation failure should not prevent app startup
@@ -102,14 +104,14 @@ class UIStage implements BootstrapStage {
     try {
       // Validate that basic UI setup is complete
       // Most validation is handled by earlier stages and DI health checks
-      
+
       // Basic validation - we reached this point successfully
       return true;
     } catch (e) {
       if (kDebugMode) {
         debugPrint('❌ [UIStage] Validation failed: $e');
       }
-      
+
       // Return true for optional stages to allow app to continue
       return isOptional;
     }

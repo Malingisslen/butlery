@@ -14,19 +14,20 @@ import 'package:get_it/get_it.dart';
 class NotificationAnalyticsManager {
   final FirebaseFirestore _firestore;
   final String _userId;
-  
+
   // Collections for analytics data
   static const String _deliveryCollection = 'notification_delivery';
   static const String _engagementCollection = 'notification_engagement';
   static const String _metricsCollection = 'notification_metrics';
-  
+
   // In-memory cache for recent events to batch writes
   final List<Map<String, dynamic>> _pendingEvents = [];
   static const int _batchSize = 10;
 
   NotificationAnalyticsManager({
     required String userId,
-  }) : _firestore = GetIt.instance<FirebaseFirestore>(), _userId = userId;
+  })  : _firestore = GetIt.instance<FirebaseFirestore>(),
+        _userId = userId;
 
   // ===== DELIVERY TRACKING =====
 
@@ -52,7 +53,7 @@ class NotificationAnalyticsManager {
 
       // Batch this write for performance
       _pendingEvents.add(deliveryEvent);
-      
+
       AppLogger.debug('📊 Recorded notification sent: $notificationId');
       await _flushPendingEventsIfNeeded();
     } catch (e) {
@@ -70,10 +71,10 @@ class NotificationAnalyticsManager {
           .collection(_deliveryCollection)
           .doc(notificationId)
           .update({
-            'status': 'delivered',
-            'deliveredAt': FieldValue.serverTimestamp(),
-            'deliveryMetadata': deliveryMetadata ?? {},
-          });
+        'status': 'delivered',
+        'deliveredAt': FieldValue.serverTimestamp(),
+        'deliveryMetadata': deliveryMetadata ?? {},
+      });
 
       AppLogger.debug('📊 Recorded notification delivered: $notificationId');
     } catch (e) {
@@ -92,13 +93,14 @@ class NotificationAnalyticsManager {
           .collection(_deliveryCollection)
           .doc(notificationId)
           .update({
-            'status': 'failed',
-            'failedAt': FieldValue.serverTimestamp(),
-            'errorCode': errorCode,
-            'errorMessage': errorMessage,
-          });
+        'status': 'failed',
+        'failedAt': FieldValue.serverTimestamp(),
+        'errorCode': errorCode,
+        'errorMessage': errorMessage,
+      });
 
-      AppLogger.debug('📊 Recorded notification failed: $notificationId ($errorCode)');
+      AppLogger.debug(
+          '📊 Recorded notification failed: $notificationId ($errorCode)');
     } catch (e) {
       AppLogger.warning('⚠️ Failed to record notification failure: $e');
     }
@@ -120,18 +122,16 @@ class NotificationAnalyticsManager {
         'context': context ?? {},
       };
 
-      await _firestore
-          .collection(_engagementCollection)
-          .add(engagementEvent);
+      await _firestore.collection(_engagementCollection).add(engagementEvent);
 
       // Also update the delivery record
       await _firestore
           .collection(_deliveryCollection)
           .doc(notificationId)
           .update({
-            'opened': true,
-            'openedAt': FieldValue.serverTimestamp(),
-          });
+        'opened': true,
+        'openedAt': FieldValue.serverTimestamp(),
+      });
 
       AppLogger.info('📊 Recorded notification opened: $notificationId');
     } catch (e) {
@@ -153,9 +153,7 @@ class NotificationAnalyticsManager {
         'reason': dismissalReason,
       };
 
-      await _firestore
-          .collection(_engagementCollection)
-          .add(engagementEvent);
+      await _firestore.collection(_engagementCollection).add(engagementEvent);
 
       AppLogger.debug('📊 Recorded notification dismissed: $notificationId');
     } catch (e) {
@@ -179,11 +177,10 @@ class NotificationAnalyticsManager {
         'actionData': actionData ?? {},
       };
 
-      await _firestore
-          .collection(_engagementCollection)
-          .add(engagementEvent);
+      await _firestore.collection(_engagementCollection).add(engagementEvent);
 
-      AppLogger.info('📊 Recorded notification action taken: $notificationId ($actionId)');
+      AppLogger.info(
+          '📊 Recorded notification action taken: $notificationId ($actionId)');
     } catch (e) {
       AppLogger.warning('⚠️ Failed to record notification action: $e');
     }
@@ -194,16 +191,20 @@ class NotificationAnalyticsManager {
   /// Generate daily metrics (scheduled function or background job)
   Future<void> generateDailyMetrics({DateTime? date}) async {
     try {
-      final targetDate = date ?? DateTime.now().subtract(const Duration(days: 1));
-      final startOfDay = DateTime(targetDate.year, targetDate.month, targetDate.day);
+      final targetDate =
+          date ?? DateTime.now().subtract(const Duration(days: 1));
+      final startOfDay =
+          DateTime(targetDate.year, targetDate.month, targetDate.day);
       final endOfDay = startOfDay.add(const Duration(days: 1));
 
-      AppLogger.info('📊 Generating daily metrics for ${startOfDay.toString().substring(0, 10)}');
+      AppLogger.info(
+          '📊 Generating daily metrics for ${startOfDay.toString().substring(0, 10)}');
 
       // Query delivery data for the day
       final deliveryQuery = await _firestore
           .collection(_deliveryCollection)
-          .where('sentAt', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+          .where('sentAt',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
           .where('sentAt', isLessThan: Timestamp.fromDate(endOfDay))
           .get();
 
@@ -226,7 +227,7 @@ class NotificationAnalyticsManager {
   }) async {
     try {
       final since = DateTime.now().subtract(period ?? const Duration(days: 7));
-      
+
       final query = await _firestore
           .collection(_deliveryCollection)
           .where('category', isEqualTo: category.name)
@@ -246,7 +247,7 @@ class NotificationAnalyticsManager {
   }) async {
     try {
       final since = DateTime.now().subtract(period ?? const Duration(days: 30));
-      
+
       // Get delivery stats
       final deliveryQuery = await _firestore
           .collection(_deliveryCollection)
@@ -261,7 +262,8 @@ class NotificationAnalyticsManager {
           .where('timestamp', isGreaterThan: Timestamp.fromDate(since))
           .get();
 
-      return _calculateEngagementSummary(deliveryQuery.docs, engagementQuery.docs);
+      return _calculateEngagementSummary(
+          deliveryQuery.docs, engagementQuery.docs);
     } catch (e) {
       AppLogger.error('❌ Failed to get user engagement summary', e);
       return {};
@@ -290,14 +292,17 @@ class NotificationAnalyticsManager {
 
       // Overall counts
       metrics['total_sent']++;
-      
+
       if (status == 'delivered') metrics['total_delivered']++;
       if (status == 'failed') metrics['total_failed']++;
       if (opened) metrics['total_opened']++;
 
       // By category
       final categoryMetrics = metrics['by_category'][category] ??= {
-        'sent': 0, 'delivered': 0, 'failed': 0, 'opened': 0,
+        'sent': 0,
+        'delivered': 0,
+        'failed': 0,
+        'opened': 0,
       };
       categoryMetrics['sent']++;
       if (status == 'delivered') categoryMetrics['delivered']++;
@@ -306,7 +311,10 @@ class NotificationAnalyticsManager {
 
       // By type
       final typeMetrics = metrics['by_type'][type] ??= {
-        'sent': 0, 'delivered': 0, 'failed': 0, 'opened': 0,
+        'sent': 0,
+        'delivered': 0,
+        'failed': 0,
+        'opened': 0,
       };
       typeMetrics['sent']++;
       if (status == 'delivered') typeMetrics['delivered']++;
@@ -317,28 +325,31 @@ class NotificationAnalyticsManager {
     // Calculate rates
     final totalSent = metrics['total_sent'] as int;
     if (totalSent > 0) {
-      metrics['delivery_rate'] = (metrics['total_delivered'] as int) / totalSent;
+      metrics['delivery_rate'] =
+          (metrics['total_delivered'] as int) / totalSent;
       metrics['failure_rate'] = (metrics['total_failed'] as int) / totalSent;
       metrics['open_rate'] = (metrics['total_opened'] as int) / totalSent;
     }
 
-    metrics['summary'] = 'Sent: $totalSent, Delivered: ${metrics['total_delivered']}, Opened: ${metrics['total_opened']}';
+    metrics['summary'] =
+        'Sent: $totalSent, Delivered: ${metrics['total_delivered']}, Opened: ${metrics['total_opened']}';
 
     return metrics;
   }
 
   /// Calculate performance statistics
-  Map<String, dynamic> _calculatePerformanceStats(List<QueryDocumentSnapshot> docs) {
+  Map<String, dynamic> _calculatePerformanceStats(
+      List<QueryDocumentSnapshot> docs) {
     if (docs.isEmpty) {
       return {'error': 'No data available'};
     }
 
     int sent = 0, delivered = 0, opened = 0, failed = 0;
-    
+
     for (final doc in docs) {
       final data = doc.data() as Map<String, dynamic>;
       sent++;
-      
+
       final status = data['status'] as String;
       if (status == 'delivered') delivered++;
       if (status == 'failed') failed++;
@@ -360,8 +371,10 @@ class NotificationAnalyticsManager {
     List<QueryDocumentSnapshot> engagementDocs,
   ) {
     // Count notifications received
-    final received = deliveryDocs.where((doc) => 
-        (doc.data() as Map<String, dynamic>)['status'] == 'delivered').length;
+    final received = deliveryDocs
+        .where((doc) =>
+            (doc.data() as Map<String, dynamic>)['status'] == 'delivered')
+        .length;
 
     // Count engagement actions
     final actions = <String, int>{};
@@ -380,7 +393,8 @@ class NotificationAnalyticsManager {
       'notifications_dismissed': dismissed,
       'actions_taken': actionsTaken,
       'open_rate': received > 0 ? opened / received : 0.0,
-      'engagement_rate': received > 0 ? (opened + actionsTaken) / received : 0.0,
+      'engagement_rate':
+          received > 0 ? (opened + actionsTaken) / received : 0.0,
       'dismissal_rate': received > 0 ? dismissed / received : 0.0,
     };
   }
@@ -388,16 +402,14 @@ class NotificationAnalyticsManager {
   /// Save calculated metrics to Firestore
   Future<void> _saveMetrics(DateTime date, Map<String, dynamic> metrics) async {
     try {
-      final dateKey = '${date.year}_${date.month.toString().padLeft(2, '0')}_${date.day.toString().padLeft(2, '0')}';
-      
-      await _firestore
-          .collection(_metricsCollection)
-          .doc(dateKey)
-          .set({
-            'date': Timestamp.fromDate(date),
-            'metrics': metrics,
-            'calculatedAt': FieldValue.serverTimestamp(),
-          });
+      final dateKey =
+          '${date.year}_${date.month.toString().padLeft(2, '0')}_${date.day.toString().padLeft(2, '0')}';
+
+      await _firestore.collection(_metricsCollection).doc(dateKey).set({
+        'date': Timestamp.fromDate(date),
+        'metrics': metrics,
+        'calculatedAt': FieldValue.serverTimestamp(),
+      });
 
       AppLogger.debug('✅ Saved daily metrics for $dateKey');
     } catch (e) {
@@ -418,14 +430,14 @@ class NotificationAnalyticsManager {
 
     try {
       final batch = _firestore.batch();
-      
+
       for (final event in _pendingEvents) {
         final docRef = _firestore.collection(_deliveryCollection).doc();
         batch.set(docRef, event);
       }
 
       await batch.commit();
-      
+
       AppLogger.debug('📊 Flushed ${_pendingEvents.length} analytics events');
       _pendingEvents.clear();
     } catch (e) {
@@ -438,7 +450,8 @@ class NotificationAnalyticsManager {
   /// Clean up old analytics data
   Future<void> cleanupOldData({Duration? olderThan}) async {
     try {
-      final cutoffDate = DateTime.now().subtract(olderThan ?? const Duration(days: 90));
+      final cutoffDate =
+          DateTime.now().subtract(olderThan ?? const Duration(days: 90));
       final cutoffTimestamp = Timestamp.fromDate(cutoffDate);
 
       // Clean up delivery records
@@ -454,8 +467,9 @@ class NotificationAnalyticsManager {
           batch.delete(doc.reference);
         }
         await batch.commit();
-        
-        AppLogger.info('🧹 Cleaned up ${deliveryQuery.docs.length} old delivery records');
+
+        AppLogger.info(
+            '🧹 Cleaned up ${deliveryQuery.docs.length} old delivery records');
       }
 
       // Clean up engagement records
@@ -471,8 +485,9 @@ class NotificationAnalyticsManager {
           batch.delete(doc.reference);
         }
         await batch.commit();
-        
-        AppLogger.info('🧹 Cleaned up ${engagementQuery.docs.length} old engagement records');
+
+        AppLogger.info(
+            '🧹 Cleaned up ${engagementQuery.docs.length} old engagement records');
       }
     } catch (e) {
       AppLogger.error('❌ Failed to cleanup old analytics data', e);
@@ -483,7 +498,8 @@ class NotificationAnalyticsManager {
 
   /// Dispose resources and flush pending events
   Future<void> dispose() async {
-    AppLogger.info('📊 Disposing NotificationAnalyticsManager for user $_userId');
+    AppLogger.info(
+        '📊 Disposing NotificationAnalyticsManager for user $_userId');
 
     // Flush any pending events
     await _flushPendingEvents();

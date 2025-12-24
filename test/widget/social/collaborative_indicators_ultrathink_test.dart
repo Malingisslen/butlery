@@ -1,7 +1,7 @@
 // test/widget/social/collaborative_indicators_ultrathink_test.dart
 // ULTRATHINK TEST SUITE: CollaborativeIndicators - 219 lines of production code
 // Testing 12 static delegation methods in facade pattern
-// 
+//
 // ULTRATHINK FOCUS: Delegation verification, parameter passing, return value consistency
 
 import 'package:flutter/material.dart';
@@ -23,8 +23,11 @@ import '../../infrastructure/helpers/base_widget_test.dart';
 import '../../infrastructure/factories/user_profile_factory.dart';
 
 // Mock classes for dependencies
-class MockCollaborativeStatusViewModel extends Mock implements CollaborativeStatusViewModel {}
+class MockCollaborativeStatusViewModel extends Mock
+    implements CollaborativeStatusViewModel {}
+
 class MockRecipeFormViewModel extends Mock implements RecipeFormViewModel {}
+
 class MockSocialRecipeService extends Mock implements SocialRecipeService {}
 
 void main() {
@@ -35,7 +38,7 @@ void main() {
 
     setUpAll(() async {
       await BaseWidgetTest.setupWidget();
-      
+
       // Register fallback values for mocktail
       registerFallbackValue(EditMode.view);
       registerFallbackValue(UserProfile(
@@ -49,16 +52,17 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
-      
+
       // Create fresh mocks for each test
       mockCollaborativeStatusViewModel = MockCollaborativeStatusViewModel();
       mockRecipeFormViewModel = MockRecipeFormViewModel();
       mockSocialRecipeService = MockSocialRecipeService();
-      
+
       // Register mocks with TestServiceLocator
-      TestServiceLocator.registerMock<SocialRecipeService>(mockSocialRecipeService);
+      TestServiceLocator.registerMock<SocialRecipeService>(
+          mockSocialRecipeService);
     });
-    
+
     tearDown(() async {
       await BaseWidgetTest.teardownWidget();
     });
@@ -90,19 +94,22 @@ void main() {
 
     // Helper to create test users
     List<UserProfile> createTestParticipants(int count) {
-      return List.generate(count, (index) => 
-        UserProfileFactory.build(
-          uid: 'user_$index',
-          displayName: 'User ${index + 1}',
-          email: 'user${index + 1}@example.com',
-          avatarUrl: index % 2 == 0 ? 'https://example.com/avatar$index.jpg' : null,
-        )
-      );
+      return List.generate(
+          count,
+          (index) => UserProfileFactory.build(
+                uid: 'user_$index',
+                displayName: 'User ${index + 1}',
+                email: 'user${index + 1}@example.com',
+                avatarUrl: index % 2 == 0
+                    ? 'https://example.com/avatar$index.jpg'
+                    : null,
+              ));
     }
 
     group('Status Methods Delegation', () {
       group('collaborativeStatusBadge Method', () {
-        testWidgets('delegates to CollaborativeStatusWidgets.statusBadge with default parameters',
+        testWidgets(
+            'delegates to CollaborativeStatusWidgets.statusBadge with default parameters',
             (WidgetTester tester) async {
           // ULTRATHINK: Test production code delegation from lines 33-44
           await tester.pumpWidget(
@@ -112,7 +119,7 @@ void main() {
           );
 
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Should create the delegated statusBadge widget structure
           expect(find.byType(Container), findsOneWidget);
           expect(find.byType(Row), findsOneWidget);
@@ -140,11 +147,11 @@ void main() {
           );
 
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Verify custom parameters are delegated correctly
           expect(find.text(customText), findsOneWidget);
           expect(find.byIcon(customIcon), findsOneWidget);
-          
+
           // ULTRATHINK: Should have correct widget structure with custom values
           final icon = tester.widget<Icon>(find.byIcon(customIcon));
           expect(icon.color, equals(customColor));
@@ -152,7 +159,8 @@ void main() {
       });
 
       group('collaborativeBanner Method', () {
-        testWidgets('delegates to CollaborativeStatusWidgets.banner with required parameters',
+        testWidgets(
+            'delegates to CollaborativeStatusWidgets.banner with required parameters',
             (WidgetTester tester) async {
           // ULTRATHINK: Test production code delegation from lines 48-67
           const title = 'Test Title';
@@ -168,7 +176,7 @@ void main() {
           );
 
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Should create the delegated banner widget structure
           expect(find.byType(Container), findsOneWidget);
           expect(find.byType(InkWell), findsOneWidget);
@@ -190,7 +198,8 @@ void main() {
           await tester.pumpWidget(
             createTestWidget(
               child: Builder(
-                builder: (context) => CollaborativeIndicators.collaborativeBanner(
+                builder: (context) =>
+                    CollaborativeIndicators.collaborativeBanner(
                   title: title,
                   subtitle: subtitle,
                   contentId: contentId,
@@ -205,11 +214,11 @@ void main() {
           );
 
           expect(tester.takeException(), isNull);
-          
+
           // ULTRATHINK: Verify all parameters are passed through
           expect(find.text(title), findsOneWidget);
           expect(find.text(subtitle), findsOneWidget);
-          
+
           // Test tap callback functionality
           await tester.tap(find.byType(InkWell));
           expect(tapCallbackCalled, isTrue);
@@ -218,16 +227,18 @@ void main() {
     });
 
     group('AppBar Methods Delegation', () {
-      testWidgets('collaborativeAppBar delegates to CollaborativeStatusWidgets.appBar',
+      testWidgets(
+          'collaborativeAppBar delegates to CollaborativeStatusWidgets.appBar',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 71-88
         const contentId = 'recipe_123';
         const title = 'Test Recipe';
-        
+
         // Mock the collaborative status for AppBar rendering
-        when(() => mockCollaborativeStatusViewModel.getRecipeCollaborativeStatus(any(), any()))
+        when(() => mockCollaborativeStatusViewModel
+                .getRecipeCollaborativeStatus(any(), any()))
             .thenReturn(const CollaborativeStatus(isCollaborative: false));
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: Builder(
@@ -244,26 +255,29 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should create AppBar through delegation
         expect(find.byType(AppBar), findsOneWidget);
         expect(find.text(title), findsOneWidget);
       });
 
-      testWidgets('smartCollaborativeBanner delegates to CollaborativeStatusWidgets.smartBanner',
+      testWidgets(
+          'smartCollaborativeBanner delegates to CollaborativeStatusWidgets.smartBanner',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 92-109
         const contentId = 'recipe_456';
         const title = 'Smart Banner Test';
-        
+
         // Mock the collaborative status to avoid complex provider setup
-        when(() => mockCollaborativeStatusViewModel.getRecipeCollaborativeStatus(any(), any()))
+        when(() => mockCollaborativeStatusViewModel
+                .getRecipeCollaborativeStatus(any(), any()))
             .thenReturn(const CollaborativeStatus(isCollaborative: false));
 
         await tester.pumpWidget(
           createTestWidget(
             child: Builder(
-              builder: (context) => CollaborativeIndicators.smartCollaborativeBanner(
+              builder: (context) =>
+                  CollaborativeIndicators.smartCollaborativeBanner(
                 context: context,
                 contentId: contentId,
                 title: title,
@@ -273,23 +287,25 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to Consumer<CollaborativeStatusViewModel>
-        expect(find.byType(Consumer<CollaborativeStatusViewModel>), findsOneWidget);
-        
+        expect(find.byType(Consumer<CollaborativeStatusViewModel>),
+            findsOneWidget);
+
         // Verify the ViewModel method was called
-        verify(() => mockCollaborativeStatusViewModel.getRecipeCollaborativeStatus(contentId, null))
-            .called(1);
+        verify(() => mockCollaborativeStatusViewModel
+            .getRecipeCollaborativeStatus(contentId, null)).called(1);
       });
     });
 
     group('Participants Methods Delegation', () {
-      testWidgets('collaborativeParticipants delegates to CollaborativeParticipantsWidgets.participantsList',
+      testWidgets(
+          'collaborativeParticipants delegates to CollaborativeParticipantsWidgets.participantsList',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 129-142
         const contentId = 'recipe_789';
         const contentType = 'recipe';
-        
+
         final participants = createTestParticipants(2);
         when(() => mockSocialRecipeService.getRecipeParticipants(any()))
             .thenAnswer((_) async => participants);
@@ -297,7 +313,8 @@ void main() {
         await tester.pumpWidget(
           createTestWidget(
             child: Builder(
-              builder: (context) => CollaborativeIndicators.collaborativeParticipants(
+              builder: (context) =>
+                  CollaborativeIndicators.collaborativeParticipants(
                 context: context,
                 contentId: contentId,
                 contentType: contentType,
@@ -310,15 +327,17 @@ void main() {
 
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to FutureBuilder pattern from CollaborativeParticipantsWidgets
         expect(find.byType(Row), findsOneWidget);
-        
+
         // Verify service was called through delegation
-        verify(() => mockSocialRecipeService.getRecipeParticipants(contentId)).called(1);
+        verify(() => mockSocialRecipeService.getRecipeParticipants(contentId))
+            .called(1);
       });
 
-      testWidgets('participantAvatars delegates to CollaborativeParticipantsWidgets.avatarRow',
+      testWidgets(
+          'participantAvatars delegates to CollaborativeParticipantsWidgets.avatarRow',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 204-217
         final participants = createTestParticipants(3);
@@ -336,17 +355,18 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to avatarRow with Row structure
         expect(find.byType(Row), findsOneWidget);
-        
+
         final row = tester.widget<Row>(find.byType(Row));
         expect(row.mainAxisSize, equals(MainAxisSize.min));
       });
     });
 
     group('Live and Permission Methods Delegation', () {
-      testWidgets('liveEditIndicator delegates to CollaborativeLiveWidgets.editIndicator',
+      testWidgets(
+          'liveEditIndicator delegates to CollaborativeLiveWidgets.editIndicator',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 146-159
         const editorName = 'Anna';
@@ -364,13 +384,14 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to TweenAnimationBuilder pattern
         expect(find.byType(TweenAnimationBuilder<double>), findsOneWidget);
         expect(find.textContaining(editorName), findsOneWidget);
       });
 
-      testWidgets('permissionsBanner delegates to CollaborativePermissionsWidgets.permissionsBanner',
+      testWidgets(
+          'permissionsBanner delegates to CollaborativePermissionsWidgets.permissionsBanner',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 163-172
         const editMode = EditMode.readOnlyWithFork;
@@ -387,23 +408,27 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to banner structure based on EditMode
         expect(find.byType(Container), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('smartPermissionsBanner delegates to CollaborativePermissionsWidgets.smartPermissionsBanner',
+      testWidgets(
+          'smartPermissionsBanner delegates to CollaborativePermissionsWidgets.smartPermissionsBanner',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 176-183
-        
+
         // Setup mock ViewModel with required properties
-        when(() => mockRecipeFormViewModel.editMode).thenReturn('collaborative');
-        when(() => mockRecipeFormViewModel.editModeEnum).thenReturn(EditMode.collaborative);
+        when(() => mockRecipeFormViewModel.editMode)
+            .thenReturn('collaborative');
+        when(() => mockRecipeFormViewModel.editModeEnum)
+            .thenReturn(EditMode.collaborative);
 
         await tester.pumpWidget(
           createTestWidget(
             child: Builder(
-              builder: (context) => CollaborativeIndicators.smartPermissionsBanner(
+              builder: (context) =>
+                  CollaborativeIndicators.smartPermissionsBanner(
                 context: context,
                 viewModel: mockRecipeFormViewModel,
               ),
@@ -412,14 +437,15 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to ViewModel-based logic
         expect(find.byType(Container), findsAtLeastNWidgets(1));
       });
     });
 
     group('Connection and Utility Methods', () {
-      testWidgets('collaborativeConnectionStatus delegates to CollaborativeConnectionWidgets.connectionStatus',
+      testWidgets(
+          'collaborativeConnectionStatus delegates to CollaborativeConnectionWidgets.connectionStatus',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 187-200
         const isOnline = false;
@@ -440,20 +466,21 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to offline banner structure
         expect(find.byType(Container), findsOneWidget);
         expect(find.text('Offline'), findsOneWidget);
         expect(find.text(statusText), findsOneWidget);
         expect(find.text(statusEmoji), findsOneWidget);
         expect(find.byType(TextButton), findsOneWidget);
-        
+
         // Test retry callback delegation
         await tester.tap(find.byType(TextButton));
         expect(retryPressed, isTrue);
       });
 
-      testWidgets('refreshCollaborativeStatus delegates to CollaborativeStatusWidgets.refreshStatus',
+      testWidgets(
+          'refreshCollaborativeStatus delegates to CollaborativeStatusWidgets.refreshStatus',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 113-122
         const contentId = 'recipe_999';
@@ -476,7 +503,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should delegate to ViewModel invalidation
         // Since this is a void method, we verify it doesn't crash
         expect(find.byType(SizedBox), findsOneWidget);
@@ -494,7 +521,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should use default values from production code
         expect(find.text('Delat'), findsOneWidget); // Default text
         expect(find.byIcon(Icons.people), findsOneWidget); // Default icon
@@ -513,7 +540,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should create empty Row
         expect(find.byType(Row), findsOneWidget);
         final row = tester.widget<Row>(find.byType(Row));
@@ -536,11 +563,10 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should show "+47" counter through delegation
         expect(find.text('+47'), findsOneWidget);
       });
     });
   });
 }
-

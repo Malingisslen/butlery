@@ -92,7 +92,6 @@ class TestServiceLocator {
   /// Private constructor to prevent instantiation
   TestServiceLocator._();
 
-
   /// Initialize the test service locator with mocks
   static Future<void> initialize() async {
     if (ServiceLocator._initialized) {
@@ -112,10 +111,10 @@ class TestServiceLocator {
 
     // Skip production ServiceLocator initialization for E2E tests to avoid circular dependencies
     if (kDebugMode) {
-      debugPrint('✅ TestServiceLocator initialized - skipping production ServiceLocator for E2E testing');
+      debugPrint(
+          '✅ TestServiceLocator initialized - skipping production ServiceLocator for E2E testing');
     }
   }
-
 
   /// Clear state without resetting registrations
   static Future<void> clearState() async {
@@ -253,7 +252,6 @@ class TestServiceLocator {
       // Ignore errors here
     }
   }
-
 
   /// Register a custom mock (for test-specific overrides)
   static void registerMock<T extends Object>(T mock) {
@@ -449,12 +447,12 @@ class TestServiceLocator {
     getIt.registerSingleton(
       MockFactory.createConnectivityService(),
     );
-    
+
     // Connectivity Monitoring Service
     getIt.registerSingleton<ConnectivityMonitoringService>(
       MockFactory.createConnectivityMonitoringService(),
     );
-    
+
     // Social Menu Operations (needed by MenuViewModel)
     getIt.registerSingleton<SocialMenuOperations>(
       MockSocialMenuOperations(),
@@ -609,7 +607,7 @@ class TestServiceLocator {
   /// Configure for collaborative view testing scenarios
   static void _configureCollaborative() {
     _configureAuthenticated(); // Base authenticated state
-    
+
     // TODO: Temporarily disabled until import is fixed
     // final getIt = ServiceLocator._getIt;
 
@@ -674,7 +672,7 @@ class TestServiceLocator {
         _configureViewTesting();
         break;
     }
-    
+
     await registerViewTestingServices();
   }
 
@@ -747,11 +745,11 @@ class MockCollaborativeStatusService {
   bool _isCollaborative = false;
   bool _hasConflicts = false;
   List<String> _activeCollaborators = [];
-  
+
   bool get isCollaborative => _isCollaborative;
   bool get hasConflicts => _hasConflicts;
   List<String> get activeCollaborators => List.from(_activeCollaborators);
-  
+
   void setCollaborativeState({
     bool? isCollaborative,
     bool? hasConflicts,
@@ -761,7 +759,7 @@ class MockCollaborativeStatusService {
     if (hasConflicts != null) _hasConflicts = hasConflicts;
     if (collaborators != null) _activeCollaborators = collaborators;
   }
-  
+
   Future<void> resolveConflict() async {
     await Future.delayed(const Duration(milliseconds: 200));
     _hasConflicts = false;
@@ -772,22 +770,24 @@ class MockCollaborativeStatusService {
 class MockViewNavigationService {
   final List<String> _navigationHistory = [];
   String? _currentRoute;
-  
+
   List<String> get navigationHistory => List.from(_navigationHistory);
   String? get currentRoute => _currentRoute;
-  
-  Future<void> navigateTo(String route, {Map<String, dynamic>? arguments}) async {
+
+  Future<void> navigateTo(String route,
+      {Map<String, dynamic>? arguments}) async {
     _navigationHistory.add(route);
     _currentRoute = route;
   }
-  
+
   Future<void> goBack() async {
     if (_navigationHistory.isNotEmpty) {
       _navigationHistory.removeLast();
-      _currentRoute = _navigationHistory.isNotEmpty ? _navigationHistory.last : null;
+      _currentRoute =
+          _navigationHistory.isNotEmpty ? _navigationHistory.last : null;
     }
   }
-  
+
   void clearHistory() {
     _navigationHistory.clear();
     _currentRoute = null;
@@ -814,15 +814,15 @@ class MockSwedishLocalizationService {
     'friends': 'Vänner',
     'share': 'Dela',
   };
-  
+
   String translate(String key) {
     return _swedishTranslations[key] ?? key;
   }
-  
+
   String get currentLocale => 'sv_SE';
-  
+
   bool get isSwedish => true;
-  
+
   void addTranslation(String key, String translation) {
     _swedishTranslations[key] = translation;
   }

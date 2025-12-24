@@ -1,5 +1,5 @@
 /// Base E2E Test Infrastructure for Butlery Flutter Application
-/// 
+///
 /// Simple infrastructure for End-to-End testing with three-tier configuration support:
 /// Mock (isolated), Emulator (Firebase emulator), and Staging (production-like).
 
@@ -7,25 +7,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// E2E Configuration Types
-/// 
+///
 /// Defines the three tiers of E2E testing with different Firebase integration levels.
 enum E2EConfig {
   /// Mock configuration - fastest execution, no Firebase dependencies
   mock,
-  
+
   /// Emulator configuration - real Firebase operations via emulator
   emulator,
-  
+
   /// Staging configuration - production-like with staging Firebase project
   staging,
 }
 
 /// Base E2E Test Infrastructure
-/// 
+///
 /// Provides essential utilities for E2E testing without over-engineering.
 abstract class BaseE2ETest {
   /// Create E2E test application widget
-  /// 
+  ///
   /// Creates a lightweight test app based on the specified E2E configuration.
   /// Uses TestApp to avoid Firebase initialization timeouts during tests.
   static Widget createE2EApp({required E2EConfig config}) {
@@ -40,9 +40,9 @@ abstract class BaseE2ETest {
       debugShowCheckedModeBanner: false,
     );
   }
-  
+
   /// Wait for widget to be ready for interaction
-  /// 
+  ///
   /// Waits for the widget tree to settle before proceeding with test interactions.
   static Future<void> waitForReady(WidgetTester tester) async {
     await tester.pumpAndSettle();
@@ -52,12 +52,12 @@ abstract class BaseE2ETest {
 }
 
 /// Lightweight test application widget for E2E testing
-/// 
+///
 /// Provides a minimal app structure without Firebase initialization or complex
 /// bootstrap processes that could cause timeouts during E2E test execution.
 class _TestApp extends StatelessWidget {
   final E2EConfig config;
-  
+
   const _TestApp({required this.config});
 
   String get configName {
@@ -115,7 +115,7 @@ class _TestApp extends StatelessWidget {
       ),
     );
   }
-  
+
   Color _getConfigColor() {
     switch (config) {
       case E2EConfig.mock:
@@ -126,7 +126,7 @@ class _TestApp extends StatelessWidget {
         return Colors.red;
     }
   }
-  
+
   IconData _getConfigIcon() {
     switch (config) {
       case E2EConfig.mock:
@@ -137,7 +137,7 @@ class _TestApp extends StatelessWidget {
         return Icons.rocket_launch;
     }
   }
-  
+
   String _getConfigDescription() {
     switch (config) {
       case E2EConfig.mock:
@@ -151,7 +151,7 @@ class _TestApp extends StatelessWidget {
 }
 
 /// Test entry point for infrastructure validation
-/// 
+///
 /// This file contains infrastructure classes for E2E testing.
 /// Individual E2E tests import and use these classes.
 void main() {
@@ -162,17 +162,18 @@ void main() {
       expect(E2EConfig.emulator, isNotNull);
       expect(E2EConfig.staging, isNotNull);
     });
-    
+
     testWidgets('E2E test app can be created for all configs', (tester) async {
       for (final config in E2EConfig.values) {
         final app = BaseE2ETest.createE2EApp(config: config);
         expect(app, isA<MaterialApp>());
-        
+
         await tester.pumpWidget(app);
         await BaseE2ETest.waitForReady(tester);
-        
+
         // Verify config-specific elements
-        expect(find.text('Butlery E2E Test - ${config.name.toUpperCase()}'), findsOneWidget);
+        expect(find.text('Butlery E2E Test - ${config.name.toUpperCase()}'),
+            findsOneWidget);
         expect(find.text('Test Button'), findsOneWidget);
       }
     });

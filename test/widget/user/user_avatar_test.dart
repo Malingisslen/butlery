@@ -7,7 +7,8 @@ import 'package:butlery/widgets/user/user_display_models.dart';
 void main() {
   group('UserAvatar Widget Tests', () {
     group('Basic Rendering', () {
-      testWidgets('renders with initials when no image URL', (WidgetTester tester) async {
+      testWidgets('renders with initials when no image URL',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -20,13 +21,14 @@ void main() {
 
         // Should show initials
         expect(find.text('AA'), findsOneWidget);
-        
+
         // Should have default background color
         final container = find.byType(Container).first;
         expect(container, findsWidgets);
       });
 
-      testWidgets('renders with image when URL provided', (WidgetTester tester) async {
+      testWidgets('renders with image when URL provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -40,12 +42,13 @@ void main() {
 
         // Should have CachedNetworkImage
         expect(find.byType(CachedNetworkImage), findsOneWidget);
-        
+
         // Should still have initials as placeholder
         expect(find.text('EE'), findsOneWidget);
       });
 
-      testWidgets('handles single word names correctly', (WidgetTester tester) async {
+      testWidgets('handles single word names correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -75,7 +78,8 @@ void main() {
         expect(find.text('A'), findsOneWidget);
       });
 
-      testWidgets('handles empty name with fallback', (WidgetTester tester) async {
+      testWidgets('handles empty name with fallback',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -90,7 +94,8 @@ void main() {
         expect(find.text('?'), findsOneWidget);
       });
 
-      testWidgets('handles names with extra spaces', (WidgetTester tester) async {
+      testWidgets('handles names with extra spaces',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -154,7 +159,8 @@ void main() {
         expect(find.text('TU'), findsOneWidget);
       });
 
-      testWidgets('renders extra large size correctly', (WidgetTester tester) async {
+      testWidgets('renders extra large size correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -186,12 +192,13 @@ void main() {
 
         // Should have Stack for status overlay (might have multiple stacks in tree)
         expect(find.byType(Stack), findsWidgets);
-        
+
         // Should have Positioned widget for status dot
         expect(find.byType(Positioned), findsOneWidget);
       });
 
-      testWidgets('shows offline status indicator', (WidgetTester tester) async {
+      testWidgets('shows offline status indicator',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -206,12 +213,13 @@ void main() {
 
         // Should have Stack for status overlay (might have multiple stacks in tree)
         expect(find.byType(Stack), findsWidgets);
-        
+
         // Should have Positioned widget for status dot
         expect(find.byType(Positioned), findsOneWidget);
       });
 
-      testWidgets('does not show status when disabled', (WidgetTester tester) async {
+      testWidgets('does not show status when disabled',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -230,7 +238,8 @@ void main() {
     });
 
     group('Interactivity', () {
-      testWidgets('handles tap when onTap provided', (WidgetTester tester) async {
+      testWidgets('handles tap when onTap provided',
+          (WidgetTester tester) async {
         bool tapped = false;
 
         await tester.pumpWidget(
@@ -254,7 +263,8 @@ void main() {
         expect(tapped, isTrue);
       });
 
-      testWidgets('no InkWell when onTap not provided', (WidgetTester tester) async {
+      testWidgets('no InkWell when onTap not provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -271,7 +281,8 @@ void main() {
     });
 
     group('Custom Styling', () {
-      testWidgets('applies custom background color', (WidgetTester tester) async {
+      testWidgets('applies custom background color',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -323,7 +334,8 @@ void main() {
     });
 
     group('Swedish Character Support', () {
-      testWidgets('handles Swedish characters in names', (WidgetTester tester) async {
+      testWidgets('handles Swedish characters in names',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -338,7 +350,8 @@ void main() {
         expect(find.text('ÅÖ'), findsOneWidget);
       });
 
-      testWidgets('handles mixed case Swedish names', (WidgetTester tester) async {
+      testWidgets('handles mixed case Swedish names',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -360,7 +373,8 @@ void main() {
           const MaterialApp(
             home: Scaffold(
               body: UserAvatar(
-                displayName: 'Anna-Maria Elisabeth von Schwarzenberg-Hohenzollern',
+                displayName:
+                    'Anna-Maria Elisabeth von Schwarzenberg-Hohenzollern',
               ),
             ),
           ),
@@ -370,7 +384,8 @@ void main() {
         expect(find.text('AE'), findsOneWidget);
       });
 
-      testWidgets('handles names with special characters', (WidgetTester tester) async {
+      testWidgets('handles names with special characters',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -385,7 +400,8 @@ void main() {
         expect(find.text('JO'), findsOneWidget);
       });
 
-      testWidgets('handles empty image URL same as null', (WidgetTester tester) async {
+      testWidgets('handles empty image URL same as null',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -419,8 +435,8 @@ void main() {
           (widget) {
             if (widget is Container) {
               final decoration = widget.decoration;
-              return decoration is BoxDecoration && 
-                     decoration.shape == BoxShape.circle;
+              return decoration is BoxDecoration &&
+                  decoration.shape == BoxShape.circle;
             }
             return false;
           },
@@ -431,7 +447,8 @@ void main() {
     });
 
     group('Accessibility', () {
-      testWidgets('provides semantic label for screen readers', (WidgetTester tester) async {
+      testWidgets('provides semantic label for screen readers',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(

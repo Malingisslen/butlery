@@ -34,45 +34,47 @@ import '../../infrastructure/di/test_service_locator.dart';
 
 void main() {
   group('View Helper Infrastructure Meta-Tests', () {
-    
     // ==================== VIEW TEST HELPERS VALIDATION ====================
-    
+
     group('ViewTestHelpers', () {
-      testWidgets('should set up view test environment correctly', (tester) async {
+      testWidgets('should set up view test environment correctly',
+          (tester) async {
         // Test the environment setup
         await ViewTestHelpers.setupViewTestEnvironment();
-        
+
         // Verify TestServiceLocator is initialized
         expect(TestServiceLocator.isRegistered<MockAuthService>(), isTrue);
-        
+
         // Clean up
         await ViewTestHelpers.teardownViewTestEnvironment();
       });
 
-      testWidgets('should create test view widget with Swedish localization', (tester) async {
+      testWidgets('should create test view widget with Swedish localization',
+          (tester) async {
         await ViewTestHelpers.setupViewTestEnvironment();
-        
+
         // Create a simple test widget
         final testWidget = ViewTestHelpers.createTestViewWidget(
           child: const Text('Test Svenska'),
         );
-        
+
         await tester.pumpWidget(testWidget);
-        
+
         // Verify Swedish localization is set up
-        final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
+        final materialApp =
+            tester.widget<MaterialApp>(find.byType(MaterialApp));
         expect(materialApp.locale?.languageCode, equals('sv'));
         expect(materialApp.locale?.countryCode, equals('SE'));
-        
+
         // Verify text is rendered
         expect(find.text('Test Svenska'), findsOneWidget);
-        
+
         await ViewTestHelpers.teardownViewTestEnvironment();
       });
 
       testWidgets('should handle Swedish text input correctly', (tester) async {
         await ViewTestHelpers.setupViewTestEnvironment();
-        
+
         final testWidget = ViewTestHelpers.createTestViewWidget(
           child: Scaffold(
             body: TextFormField(
@@ -81,9 +83,9 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpWidget(testWidget);
-        
+
         // Test Swedish character input
         const swedishText = 'Hej på dig! Kött och fågel.';
         await ViewTestHelpers.enterSwedishText(
@@ -91,139 +93,144 @@ void main() {
           find.byKey(const Key('test_field')),
           swedishText,
         );
-        
+
         // Verify Swedish text was entered correctly
         expect(find.text(swedishText), findsOneWidget);
-        
+
         await ViewTestHelpers.teardownViewTestEnvironment();
       });
 
       testWidgets('should track state transitions correctly', (tester) async {
         await ViewTestHelpers.setupViewTestEnvironment();
-        
+
         bool conditionMet = false;
-        
+
         // Test pumpUntilState utility
         final future = ViewTestHelpers.pumpUntilState(
           tester,
           () => conditionMet,
           timeout: const Duration(seconds: 1),
         );
-        
+
         // Simulate condition being met after delay
         Future.delayed(const Duration(milliseconds: 200), () {
           conditionMet = true;
         });
-        
+
         await future; // Should complete successfully
         expect(conditionMet, isTrue);
-        
+
         await ViewTestHelpers.teardownViewTestEnvironment();
       });
     });
 
     // ==================== PROVIDER TEST UTILS VALIDATION ====================
-    
+
     group('ProviderTestUtils', () {
       testWidgets('should set up auth providers correctly', (tester) async {
         await ViewTestHelpers.setupViewTestEnvironment();
-        
+
         final providers = ProviderTestUtils.setupAuthProviders(
           isAuthenticated: true,
           userId: 'test-123',
           email: 'test@example.com',
         );
-        
+
         expect(providers, isNotEmpty);
         expect(providers.length, equals(1));
         expect(providers.first, isA<ChangeNotifierProvider>());
-        
+
         await ViewTestHelpers.teardownViewTestEnvironment();
       });
 
-      testWidgets('should set up recipe edit providers correctly', (tester) async {
+      testWidgets('should set up recipe edit providers correctly',
+          (tester) async {
         await ViewTestHelpers.setupViewTestEnvironment();
-        
+
         final providers = ProviderTestUtils.setupRecipeEditProviders(
           recipeId: 'test-recipe',
           isCollaborative: true,
           hasConflicts: true,
         );
-        
+
         expect(providers, isNotEmpty);
-        expect(providers.length, greaterThan(1)); // Multiple providers for recipe editing
-        
+        expect(providers.length,
+            greaterThan(1)); // Multiple providers for recipe editing
+
         await ViewTestHelpers.teardownViewTestEnvironment();
       });
 
       testWidgets('should validate provider availability', (tester) async {
         await ViewTestHelpers.setupViewTestEnvironment();
-        
+
         final providers = ProviderTestUtils.setupAuthProviders();
         final testWidget = ViewTestHelpers.createTestViewWidget(
           child: const Text('Test'),
           providers: providers,
         );
-        
+
         await tester.pumpWidget(testWidget);
-        
+
         // This should not throw an exception - skip for now as it requires AuthService import
         // ProviderTestUtils.verifyProvidersAvailable(tester, [AuthService]);
-        
+
         await ViewTestHelpers.teardownViewTestEnvironment();
       });
     });
 
     // ==================== MOCK VIEW MODELS VALIDATION ====================
-    
+
     group('TestableViewModels', () {
       test('TestableAuthViewModel should track state transitions', () {
         final viewModel = TestableAuthViewModel();
-        
+
         // Initial state
         expect(viewModel.isAuthenticated, isFalse);
         expect(viewModel.getStateTransitions(), isEmpty);
-        
+
         // Change state and verify tracking
         viewModel.setAuthenticationState(isAuthenticated: true, userId: 'test');
-        
+
         final transitions = viewModel.getStateTransitions();
         expect(transitions, contains(contains('auth_state_authenticated')));
-        
+
         // Verify disposal tracking
         expect(viewModel.isProperlyDisposed, isFalse);
         viewModel.dispose();
         expect(viewModel.isProperlyDisposed, isTrue);
       });
 
-      test('TestableRecipeFormViewModel should simulate collaborative conflicts', () {
+      test(
+          'TestableRecipeFormViewModel should simulate collaborative conflicts',
+          () {
         final viewModel = TestableRecipeFormViewModel();
-        
+
         // Initial state
         expect(viewModel.hasEditConflict, isFalse);
         expect(viewModel.conflictingUserName, isNull);
-        
+
         // Simulate conflict
         viewModel.simulateCollaborativeConflict(
           conflictingUser: 'Anna Andersson',
           conflictType: ConflictType.simultaneousEdit,
         );
-        
+
         expect(viewModel.hasEditConflict, isTrue);
         expect(viewModel.conflictingUserName, equals('Anna Andersson'));
         expect(viewModel.conflictType, equals(ConflictType.simultaneousEdit));
-        
+
         // Verify state transition tracking
         final transitions = viewModel.getStateTransitions();
         expect(transitions, contains(contains('collaborative_conflict')));
       });
 
-      test('TestableRecipeFormViewModel should handle error injection', () async {
+      test('TestableRecipeFormViewModel should handle error injection',
+          () async {
         final viewModel = TestableRecipeFormViewModel();
-        
+
         // Inject error for next operation
         viewModel.injectError('Test error message');
-        
+
         // Attempt save operation - should fail with injected error
         expect(
           () => viewModel.simulateSave(shouldSucceed: true),
@@ -233,11 +240,12 @@ void main() {
     });
 
     // ==================== INTERACTION HELPERS VALIDATION ====================
-    
+
     group('InteractionHelpers', () {
-      testWidgets('should handle Swedish text input with special characters', (tester) async {
+      testWidgets('should handle Swedish text input with special characters',
+          (tester) async {
         await ViewTestHelpers.setupViewTestEnvironment();
-        
+
         final testWidget = ViewTestHelpers.createTestViewWidget(
           child: Scaffold(
             body: TextFormField(
@@ -245,9 +253,9 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpWidget(testWidget);
-        
+
         // Test special Swedish characters
         const swedishText = 'Åsa äter ödla på kött';
         await InteractionHelpers.typeSwedishText(
@@ -255,15 +263,15 @@ void main() {
           find.byKey(const Key('swedish_field')),
           swedishText,
         );
-        
+
         expect(find.text(swedishText), findsOneWidget);
-        
+
         await ViewTestHelpers.teardownViewTestEnvironment();
       });
 
       testWidgets('should measure interaction performance', (tester) async {
         await ViewTestHelpers.setupViewTestEnvironment();
-        
+
         final testWidget = ViewTestHelpers.createTestViewWidget(
           child: Scaffold(
             body: ElevatedButton(
@@ -272,9 +280,9 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.pumpWidget(testWidget);
-        
+
         // Measure tap performance
         final metrics = await InteractionHelpers.measureInteractionPerformance(
           tester,
@@ -283,20 +291,21 @@ void main() {
             await tester.pump();
           },
         );
-        
+
         expect(metrics.totalDuration, isA<Duration>());
         expect(metrics.frameCount, isA<int>());
-        
+
         await ViewTestHelpers.teardownViewTestEnvironment();
       });
     });
 
     // ==================== VIEW TEST PATTERNS VALIDATION ====================
-    
+
     group('ViewTestPatterns', () {
-      testWidgets('should run auth view test pattern correctly', (tester) async {
+      testWidgets('should run auth view test pattern correctly',
+          (tester) async {
         bool assertionRan = false;
-        
+
         await ViewTestPatterns.runAuthViewTest(
           tester,
           testName: 'meta_test',
@@ -304,7 +313,8 @@ void main() {
             body: Column(
               children: [
                 TextFormField(decoration: InputDecoration(labelText: 'E-post')),
-                TextFormField(decoration: InputDecoration(labelText: 'Lösenord')),
+                TextFormField(
+                    decoration: InputDecoration(labelText: 'Lösenord')),
                 ElevatedButton(
                   onPressed: null,
                   child: Text('Logga in'),
@@ -321,7 +331,7 @@ void main() {
             ViewTestPatterns.expectSwedishAuthForm(tester);
           },
         );
-        
+
         expect(assertionRan, isTrue);
       });
 
@@ -332,124 +342,130 @@ void main() {
           hasStateManagement: true,
           hasErrorHandling: true,
         );
-        
+
         expect(compliantConfig.isUltrathinkCompliant, isTrue);
-        
+
         const nonCompliantConfig = TestConfiguration(
           hasProviderSetup: true,
           hasSwedishLocalization: false, // Missing Swedish localization
           hasStateManagement: true,
           hasErrorHandling: true,
         );
-        
+
         expect(nonCompliantConfig.isUltrathinkCompliant, isFalse);
       });
     });
 
     // ==================== INTEGRATION TESTS ====================
-    
+
     group('Infrastructure Integration', () {
-      testWidgets('should integrate all helper components seamlessly', (tester) async {
+      testWidgets('should integrate all helper components seamlessly',
+          (tester) async {
         // Full integration test using all helper components together
         await ViewTestHelpers.setupViewTestEnvironment();
-        
+
         // Create testable ViewModels
         final authViewModel = TestableViewModelFactory.createAuthViewModel();
-        final recipeFormViewModel = TestableViewModelFactory.createRecipeFormViewModel();
-        
+        final recipeFormViewModel =
+            TestableViewModelFactory.createRecipeFormViewModel();
+
         // Set up providers
         final providers = [
-          ChangeNotifierProvider<TestableAuthViewModel>.value(value: authViewModel),
-          ChangeNotifierProvider<TestableRecipeFormViewModel>.value(value: recipeFormViewModel),
+          ChangeNotifierProvider<TestableAuthViewModel>.value(
+              value: authViewModel),
+          ChangeNotifierProvider<TestableRecipeFormViewModel>.value(
+              value: recipeFormViewModel),
         ];
-        
+
         // Create complex test widget
         final testWidget = ViewTestHelpers.createTestViewWidget(
           child: const TestIntegrationWidget(),
           providers: providers,
         );
-        
+
         await tester.pumpWidget(testWidget);
         await ViewTestHelpers.waitForViewInitialization(tester);
-        
+
         // Perform complex interaction using InteractionHelpers
         await InteractionHelpers.typeSwedishText(
           tester,
           find.byKey(const Key('email_field')),
           'test@exempel.se',
         );
-        
+
         await InteractionHelpers.typeSwedishText(
           tester,
           find.byKey(const Key('password_field')),
           'lösenord123',
         );
-        
+
         await ViewTestHelpers.tapAndSettle(
           tester,
           find.byKey(const Key('login_button')),
         );
-        
+
         // Verify integration worked
         expect(find.text('test@exempel.se'), findsOneWidget);
         expect(find.text('lösenord123'), findsOneWidget);
-        
+
         await ViewTestHelpers.teardownViewTestEnvironment();
       });
 
       testWidgets('should handle performance requirements', (tester) async {
         await ViewTestHelpers.setupViewTestEnvironment();
-        
+
         final testWidget = ViewTestHelpers.createTestViewWidget(
           child: const TestPerformanceWidget(),
         );
-        
+
         // Test performance expectations
         await ViewTestPatterns.expectPerformantRendering(
           tester,
           testWidget,
           renderThreshold: const Duration(milliseconds: 500),
         );
-        
+
         await ViewTestHelpers.teardownViewTestEnvironment();
       });
     });
 
     // ==================== ERROR HANDLING TESTS ====================
-    
+
     group('Error Handling', () {
-      testWidgets('should handle infrastructure failures gracefully', (tester) async {
+      testWidgets('should handle infrastructure failures gracefully',
+          (tester) async {
         // Test graceful failure when setup fails
         try {
           await ViewTestHelpers.setupViewTestEnvironment();
-          
+
           // Simulate infrastructure issue
           await TestServiceLocator.reset();
-          
+
           // Should handle missing dependencies
           final providers = ProviderTestUtils.setupAuthProviders();
           expect(providers, isNotEmpty); // Should still return something
-          
         } finally {
           await ViewTestHelpers.teardownViewTestEnvironment();
         }
       });
 
-      testWidgets('should provide helpful error messages for Swedish text issues', (tester) async {
+      testWidgets(
+          'should provide helpful error messages for Swedish text issues',
+          (tester) async {
         await ViewTestHelpers.setupViewTestEnvironment();
-        
+
         final testWidget = ViewTestHelpers.createTestViewWidget(
           child: const Scaffold(body: Text('Test')),
         );
-        
+
         await tester.pumpWidget(testWidget);
-        
+
         // Test error message for missing Swedish text
         expect(
           () => ViewTestHelpers.expectSwedishText(tester, 'Missing Text'),
           throwsA(isA<TestFailure>()),
         );
-        
+
         await ViewTestHelpers.teardownViewTestEnvironment();
       });
     });
@@ -515,13 +531,13 @@ class TestPerformanceWidget extends StatelessWidget {
 class MockAuthService {
   bool isAuthenticated = false;
   String? currentUserId;
-  
+
   Future<void> login(String email, String password) async {
     await Future.delayed(const Duration(milliseconds: 100));
     isAuthenticated = true;
     currentUserId = 'test-user';
   }
-  
+
   Future<void> logout() async {
     await Future.delayed(const Duration(milliseconds: 50));
     isAuthenticated = false;

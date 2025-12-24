@@ -82,15 +82,15 @@ class AppDatabase extends _$AppDatabase {
   Future<Map<String, int>> getStats() async {
     final recipes = await (selectOnly(offlineRecipes)..addColumns([countAll()]))
         .getSingle();
-    final syncQueue =
-        await (selectOnly(syncQueueEntries)..addColumns([countAll()]))
-            .getSingle();
-    final jsonCache =
-        await (selectOnly(jsonCacheEntries)..addColumns([countAll()]))
-            .getSingle();
-    final parseCache =
-        await (selectOnly(parseCacheEntries)..addColumns([countAll()]))
-            .getSingle();
+    final syncQueue = await (selectOnly(syncQueueEntries)
+          ..addColumns([countAll()]))
+        .getSingle();
+    final jsonCache = await (selectOnly(jsonCacheEntries)
+          ..addColumns([countAll()]))
+        .getSingle();
+    final parseCache = await (selectOnly(parseCacheEntries)
+          ..addColumns([countAll()]))
+        .getSingle();
 
     return {
       'offlineRecipes': recipes.read(countAll()) ?? 0,

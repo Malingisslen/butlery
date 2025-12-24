@@ -13,7 +13,6 @@ import 'package:butlery/services/realtime/modules/recipe_content_operations.dart
 /// - Permission checking and enforcement
 /// ❌ DOES NOT CONTAIN: Recipe content operations, state management, synchronization
 class RecipeParticipants {
-
   // ===== PARTICIPANT MANAGEMENT =====
 
   /// Add participant to realtime recipe
@@ -57,7 +56,8 @@ class RecipeParticipants {
       );
     }
 
-    AppLogger.info('👥 Adding participant: $userDisplayName ($userId) with permission: ${permission.name}');
+    AppLogger.info(
+        '👥 Adding participant: $userDisplayName ($userId) with permission: ${permission.name}');
 
     return recipe.addParticipant(userId, userDisplayName, permission);
   }
@@ -136,7 +136,8 @@ class RecipeParticipants {
       return recipe; // No change needed
     }
 
-    AppLogger.info('👥 Updating permission for user $userId: ${currentPermission?.name} -> ${newPermission.name}');
+    AppLogger.info(
+        '👥 Updating permission for user $userId: ${currentPermission?.name} -> ${newPermission.name}');
 
     return recipe.updateParticipantPermission(userId, newPermission);
   }
@@ -154,7 +155,8 @@ class RecipeParticipants {
   }
 
   /// Get user's permission level
-  static ResourcePermission? getUserPermission(RealtimeRecipe recipe, String userId) {
+  static ResourcePermission? getUserPermission(
+      RealtimeRecipe recipe, String userId) {
     // Owner has highest permission, check first
     if (recipe.ownerId == userId) {
       return ResourcePermission.owner;
@@ -198,9 +200,10 @@ class RecipeParticipants {
   static List<String> getEditorIds(RealtimeRecipe recipe) {
     // Owner is not in participants map anymore
     return recipe.participants.entries
-        .where((entry) => entry.value == ResourcePermission.editor || 
-                          entry.value == ResourcePermission.write ||
-                          entry.value == ResourcePermission.admin)
+        .where((entry) =>
+            entry.value == ResourcePermission.editor ||
+            entry.value == ResourcePermission.write ||
+            entry.value == ResourcePermission.admin)
         .map((entry) => entry.key)
         .toList();
   }
@@ -208,7 +211,9 @@ class RecipeParticipants {
   /// Get viewer user IDs (read-only users)
   static List<String> getViewerIds(RealtimeRecipe recipe) {
     return recipe.participants.entries
-        .where((entry) => entry.value == ResourcePermission.viewer || entry.value == ResourcePermission.read)
+        .where((entry) =>
+            entry.value == ResourcePermission.viewer ||
+            entry.value == ResourcePermission.read)
         .map((entry) => entry.key)
         .toList();
   }
@@ -219,7 +224,7 @@ class RecipeParticipants {
   static Map<String, dynamic> getParticipantSummary(RealtimeRecipe recipe) {
     final editors = getEditorIds(recipe);
     final viewers = getViewerIds(recipe);
-    
+
     return {
       'totalParticipants': getParticipantCount(recipe),
       'editorsCount': editors.length,
@@ -250,7 +255,7 @@ class RecipeParticipants {
         errors.add('Deltagare har tomt användar-ID');
       }
 
-      // Note: Display names are not stored in participants map, 
+      // Note: Display names are not stored in participants map,
       // they are cached separately in the UI layer
     }
 
@@ -292,14 +297,16 @@ class RecipeParticipants {
     }
 
     final participantIds = recipe.participants.keys
-        .where((id) => id != recipe.ownerId) // Exclude owner from participant list
+        .where(
+            (id) => id != recipe.ownerId) // Exclude owner from participant list
         .toList();
 
     return 'Ägare: ${recipe.ownerDisplayName}, Deltagare: ${participantIds.length}st';
   }
 
   /// Find participant permission by user ID
-  static ResourcePermission? findParticipantPermission(RealtimeRecipe recipe, String userId) {
+  static ResourcePermission? findParticipantPermission(
+      RealtimeRecipe recipe, String userId) {
     return recipe.participants[userId];
   }
 
@@ -331,8 +338,8 @@ class RecipeParticipants {
     final userPermission = getUserPermission(recipe, userId);
     if (userPermission == null) return false;
 
-    return getPermissionLevel(userPermission) >= 
-           getPermissionLevel(requiredPermission);
+    return getPermissionLevel(userPermission) >=
+        getPermissionLevel(requiredPermission);
   }
 
   // ===== COLLABORATION UTILITIES =====
@@ -362,7 +369,8 @@ class RecipeParticipants {
     final permission = getUserPermission(recipe, userId);
     if (permission == null) return false;
 
-    return permission == ResourcePermission.admin || permission == ResourcePermission.owner;
+    return permission == ResourcePermission.admin ||
+        permission == ResourcePermission.owner;
   }
 
   /// Check if user can manage permissions

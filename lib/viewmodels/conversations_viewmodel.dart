@@ -13,7 +13,11 @@ import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 
 class ConversationsViewModel extends ChangeNotifier
-    with StreamManagementMixin, ErrorHandlingMixin, StateNotifierMixin, AsyncOperationMixin {
+    with
+        StreamManagementMixin,
+        ErrorHandlingMixin,
+        StateNotifierMixin,
+        AsyncOperationMixin {
   final MessagingService _messagingService;
 
   // State
@@ -40,18 +44,18 @@ class ConversationsViewModel extends ChangeNotifier
   bool get isSearching => _isSearching;
   // isLoading and errorMessage provided by AsyncOperationMixin
   bool get hasConversations => _filteredConversations.isNotEmpty;
-  String? get currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
+  String? get currentUserId =>
+      ServiceLocator.get<PermissionService>().currentUserId;
 
   void _initializeConversations() {
     if (_isDisposed) return;
 
     try {
-      _conversationsSubscription = _messagingService
-          .getMyConversations()
-          .listen(
-            _onConversationsUpdate,
-            onError: _onConversationsError,
-          );
+      _conversationsSubscription =
+          _messagingService.getMyConversations().listen(
+                _onConversationsUpdate,
+                onError: _onConversationsError,
+              );
     } catch (e) {
       AppLogger.error('Failed to initialize conversations', e);
       _setConversationsError('Kunde inte ladda konversationer');
@@ -83,7 +87,7 @@ class ConversationsViewModel extends ChangeNotifier
 
   void updateSearchQuery(String query) {
     if (_isDisposed) return;
-    
+
     _searchQuery = query.trim().toLowerCase();
     _applySearch();
     _safeNotifyListeners();
@@ -91,7 +95,7 @@ class ConversationsViewModel extends ChangeNotifier
 
   void clearSearch() {
     if (_isDisposed) return;
-    
+
     _searchQuery = '';
     _applySearch();
     _safeNotifyListeners();
@@ -102,11 +106,13 @@ class ConversationsViewModel extends ChangeNotifier
       _filteredConversations = List.from(_allConversations);
     } else {
       _filteredConversations = _allConversations.where((conversation) {
-        final title = conversation.getDisplayTitle(currentUserId ?? '').toLowerCase();
-        final lastMessageContent = conversation.lastMessage?.content.toLowerCase() ?? '';
-        
-        return title.contains(_searchQuery) || 
-               lastMessageContent.contains(_searchQuery);
+        final title =
+            conversation.getDisplayTitle(currentUserId ?? '').toLowerCase();
+        final lastMessageContent =
+            conversation.lastMessage?.content.toLowerCase() ?? '';
+
+        return title.contains(_searchQuery) ||
+            lastMessageContent.contains(_searchQuery);
       }).toList();
     }
   }
@@ -121,7 +127,8 @@ class ConversationsViewModel extends ChangeNotifier
     try {
       return await executeAsync<String?>(
         () async {
-          final conversationId = await _messagingService.startDirectConversation(
+          final conversationId =
+              await _messagingService.startDirectConversation(
             otherUserId: otherUserId,
             otherUserDisplayName: otherUserDisplayName,
             otherUserAvatarUrl: otherUserAvatarUrl,
@@ -149,7 +156,8 @@ class ConversationsViewModel extends ChangeNotifier
     try {
       return await executeAsync<String?>(
         () async {
-          final conversationId = await _messagingService.createGroupConversation(
+          final conversationId =
+              await _messagingService.createGroupConversation(
             participantIds: participantIds,
             participantDisplayNames: participantDisplayNames,
             participantAvatarUrls: participantAvatarUrls,
@@ -169,7 +177,7 @@ class ConversationsViewModel extends ChangeNotifier
 
   Future<void> markConversationAsRead(String conversationId) async {
     if (_isDisposed) return;
-    
+
     try {
       await _messagingService.markConversationAsRead(conversationId);
       AppLogger.debug('Conversation marked as read: $conversationId');
@@ -181,7 +189,7 @@ class ConversationsViewModel extends ChangeNotifier
 
   Future<bool> leaveGroup(String conversationId) async {
     if (_isDisposed) return false;
-    
+
     try {
       final currentUser = currentUserId;
       if (currentUser == null) {
@@ -192,7 +200,7 @@ class ConversationsViewModel extends ChangeNotifier
         conversationId: conversationId,
         participantId: currentUser,
       );
-      
+
       AppLogger.success('Left group conversation: $conversationId');
       return true;
     } catch (e) {
@@ -203,7 +211,7 @@ class ConversationsViewModel extends ChangeNotifier
 
   Future<void> refresh() async {
     if (_isDisposed) return;
-    
+
     // Stream will automatically update, this is just for UI feedback
     await Future.delayed(const Duration(milliseconds: 500));
   }

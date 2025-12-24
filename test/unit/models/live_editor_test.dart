@@ -9,7 +9,7 @@ void main() {
     group('Construction', () {
       test('should create with required parameters', () {
         final lastSeen = DateTime(2025, 1, 1, 12, 0);
-        
+
         final editor = LiveEditor(
           userId: 'user_123',
           displayName: 'Anna Andersson',
@@ -25,7 +25,7 @@ void main() {
 
       test('should create with all parameters', () {
         final lastSeen = DateTime(2025, 1, 1, 12, 0);
-        
+
         final editor = LiveEditor(
           userId: 'user_123',
           displayName: 'Anna Andersson',
@@ -199,7 +199,8 @@ void main() {
       });
 
       test('should calculate time since last seen', () {
-        final lastSeen = DateTime.now().subtract(Duration(hours: 2, minutes: 30));
+        final lastSeen =
+            DateTime.now().subtract(Duration(hours: 2, minutes: 30));
         final editor = LiveEditor(
           userId: 'user_123',
           displayName: 'Anna',
@@ -207,7 +208,7 @@ void main() {
         );
 
         final timeSince = editor.timeSinceLastSeen;
-        
+
         // Should be approximately 2.5 hours
         expect(timeSince.inMinutes, greaterThanOrEqualTo(149));
         expect(timeSince.inMinutes, lessThanOrEqualTo(151));
@@ -245,8 +246,14 @@ void main() {
         final after = DateTime.now();
 
         expect(updated.lastSeen.isAfter(oldLastSeen), isTrue);
-        expect(updated.lastSeen.isAfter(before) || updated.lastSeen.isAtSameMomentAs(before), isTrue);
-        expect(updated.lastSeen.isBefore(after) || updated.lastSeen.isAtSameMomentAs(after), isTrue);
+        expect(
+            updated.lastSeen.isAfter(before) ||
+                updated.lastSeen.isAtSameMomentAs(before),
+            isTrue);
+        expect(
+            updated.lastSeen.isBefore(after) ||
+                updated.lastSeen.isAtSameMomentAs(after),
+            isTrue);
       });
     });
 
@@ -265,7 +272,8 @@ void main() {
         expect(editor.isEditingField('title'), isFalse);
       });
 
-      test('should return false for inactive editor even with matching field', () {
+      test('should return false for inactive editor even with matching field',
+          () {
         final editor = LiveEditor(
           userId: 'user_123',
           displayName: 'Anna',
@@ -298,7 +306,8 @@ void main() {
           isActive: true,
         );
 
-        expect(editor.isEditingField('instructions[0].steps[2].description'), isTrue);
+        expect(editor.isEditingField('instructions[0].steps[2].description'),
+            isTrue);
       });
     });
 
@@ -353,7 +362,7 @@ void main() {
         );
 
         final str = editor.toString();
-        
+
         expect(str, contains('LiveEditor'));
         expect(str, contains('user_123'));
         expect(str, contains('Anna Andersson'));
@@ -370,7 +379,7 @@ void main() {
         );
 
         final str = editor.toString();
-        
+
         expect(str, contains('null'));
       });
     });
@@ -422,10 +431,10 @@ void main() {
         );
 
         expect(editor.displayName, equals('Åsa Öström'));
-        
+
         final firestore = editor.toFirestore();
         expect(firestore['displayName'], equals('Åsa Öström'));
-        
+
         final restored = LiveEditor.fromFirestore(firestore);
         expect(restored.displayName, equals('Åsa Öström'));
       });

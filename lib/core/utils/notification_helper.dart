@@ -42,9 +42,11 @@ class NotificationHelper {
     // Check if notification service is available
     if (notificationService == null) {
       if (logWarningOnNull) {
-        AppLogger.warning('⚠️ No notification service available for: $operationName');
+        AppLogger.warning(
+            '⚠️ No notification service available for: $operationName');
       } else {
-        AppLogger.debug('📋 No notification service available for: $operationName');
+        AppLogger.debug(
+            '📋 No notification service available for: $operationName');
       }
       return false;
     }
@@ -54,7 +56,8 @@ class NotificationHelper {
       await send();
 
       // Log success
-      final message = successMessage ?? '✅ $operationName completed successfully';
+      final message =
+          successMessage ?? '✅ $operationName completed successfully';
       AppLogger.info(message);
 
       return true;

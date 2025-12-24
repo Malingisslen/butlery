@@ -64,7 +64,6 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 /// ```
 class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     implements CommentsRepository {
-  
   FirebaseCommentsRepository({
     super.firestore,
     required super.authRepository,
@@ -79,7 +78,8 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       RecipeComment.fromMap(doc.id, doc.data()!);
 
   @override
-  Map<String, dynamic> toFirestore(RecipeComment entity) => entity.toFirestore();
+  Map<String, dynamic> toFirestore(RecipeComment entity) =>
+      entity.toFirestore();
 
   @override
   String getId(RecipeComment entity) => entity.id;
@@ -87,26 +87,30 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
   // ===== PERMISSION VALIDATION IMPLEMENTATION =====
 
   @override
-  Future<bool> validateCreatePermission(String userId, RecipeComment entity) async {
+  Future<bool> validateCreatePermission(
+      String userId, RecipeComment entity) async {
     // Users can only create comments as themselves
     return entity.authorId == userId;
   }
 
   @override
-  Future<bool> validateReadPermission(String userId, String resourceId, RecipeComment? entity) async {
+  Future<bool> validateReadPermission(
+      String userId, String resourceId, RecipeComment? entity) async {
     // All authenticated users can read comments on recipes they have access to
     // The recipe-level access control is enforced separately
     return true;
   }
 
   @override
-  Future<bool> validateUpdatePermission(String userId, String resourceId, RecipeComment entity) async {
+  Future<bool> validateUpdatePermission(
+      String userId, String resourceId, RecipeComment entity) async {
     // Users can only edit their own comments
     return entity.authorId == userId;
   }
 
   @override
-  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+  Future<bool> validateDeletePermission(
+      String userId, String resourceId) async {
     // Users can only delete their own comments
     try {
       final comment = await read(resourceId);
@@ -129,9 +133,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
         .limit(50) // Load max 50 comments (including replies)
         .get();
 
-    return querySnapshot.docs
-        .map((doc) => fromFirestore(doc))
-        .toList();
+    return querySnapshot.docs.map((doc) => fromFirestore(doc)).toList();
   }
 
   @override
@@ -148,17 +150,17 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       targetUserId: userId,
       operation: 'add comment',
     );
-    
+
     // Validate required fields
     if (content.trim().isEmpty) {
       throw SecurityViolationException(
         'Comment content cannot be empty',
       );
     }
-    
+
     // Get the actual display name from the current user
     final displayName = authRepository.currentUser?.displayName ?? 'Anonymous';
-    
+
     final commentData = {
       'recipeId': recipeId,
       'authorId': userId,
@@ -174,7 +176,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
 
     final docRef = await collection.add(commentData);
     final doc = await docRef.get();
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'recipe_comment',
@@ -182,7 +184,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       granted: true,
       details: 'Recipe: $recipeId',
     );
-    
+
     return fromFirestore(doc);
   }
 
@@ -190,14 +192,14 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
   Future<void> updateComment(String commentId, String newContent) async {
     // Validate user owns the comment
     final currentUser = requireCurrentUserId();
-    
+
     // First check if comment exists and user owns it
     final doc = await getDocumentWithPermissionCheck(
       docRef: collection.doc(commentId),
       currentUserId: currentUser,
       resourceType: 'recipe_comment',
     );
-    
+
     final commentData = doc.data() as Map<String, dynamic>;
     await validateOwnership(
       currentUserId: currentUser,
@@ -205,20 +207,20 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       resourceType: 'recipe_comment',
       resourceId: commentId,
     );
-    
+
     // Validate content
     if (newContent.trim().isEmpty) {
       throw SecurityViolationException(
         'Comment content cannot be empty',
       );
     }
-    
+
     await collection.doc(commentId).update({
       'text': newContent,
       'updatedAt': FieldValue.serverTimestamp(),
       'editedAt': FieldValue.serverTimestamp(),
     });
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'recipe_comment',
@@ -231,14 +233,14 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
   Future<void> deleteComment(String commentId) async {
     // Validate user owns the comment
     final currentUser = requireCurrentUserId();
-    
+
     // First check if comment exists and user owns it
     final doc = await getDocumentWithPermissionCheck(
       docRef: collection.doc(commentId),
       currentUserId: currentUser,
       resourceType: 'recipe_comment',
     );
-    
+
     final commentData = doc.data() as Map<String, dynamic>;
     await validateOwnership(
       currentUserId: currentUser,
@@ -246,9 +248,9 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       resourceType: 'recipe_comment',
       resourceId: commentId,
     );
-    
+
     await collection.doc(commentId).delete();
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'recipe_comment',
@@ -264,9 +266,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
         .orderBy('createdAt', descending: false)
         .get();
 
-    return querySnapshot.docs
-        .map((doc) => fromFirestore(doc))
-        .toList();
+    return querySnapshot.docs.map((doc) => fromFirestore(doc)).toList();
   }
 
   @override
@@ -278,14 +278,14 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       targetUserId: userId,
       operation: 'toggle comment like',
     );
-    
+
     // Verify comment exists
     final commentDoc = await getDocumentWithPermissionCheck(
       docRef: collection.doc(commentId),
       currentUserId: currentUser,
       resourceType: 'recipe_comment',
     );
-    
+
     if (!commentDoc.exists) {
       throw ResourceNotFoundException(
         'Comment not found',
@@ -293,7 +293,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
         resourceId: commentId,
       );
     }
-    
+
     final likesCollection = collection.doc(commentId).collection('likes');
     final userLikeDoc = likesCollection.doc(userId);
     final likeSnapshot = await userLikeDoc.get();
@@ -318,7 +318,7 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     }
 
     await batch.commit();
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'recipe_comment',
@@ -335,11 +335,8 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
 
   @override
   Future<bool> hasUserLikedComment(String commentId, String userId) async {
-    final likeDoc = await collection
-        .doc(commentId)
-        .collection('likes')
-        .doc(userId)
-        .get();
+    final likeDoc =
+        await collection.doc(commentId).collection('likes').doc(userId).get();
     return likeDoc.exists;
   }
 
@@ -352,9 +349,8 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
         .orderBy('createdAt', descending: false)
         .limit(50) // Stream max 50 comments (including replies)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => fromFirestore(doc))
-            .toList());
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => fromFirestore(doc)).toList());
   }
 
   @override
@@ -372,10 +368,8 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
     // Count replies (have parentCommentId)
     // Note: Firestore doesn't support isNotEqualTo: null directly with count,
     // so we calculate replies as total - topLevel
-    final totalCount = await collection
-        .where('recipeId', isEqualTo: recipeId)
-        .count()
-        .get();
+    final totalCount =
+        await collection.where('recipeId', isEqualTo: recipeId).count().get();
 
     final repliesCount = (totalCount.count ?? 0) - (topLevelCount.count ?? 0);
 

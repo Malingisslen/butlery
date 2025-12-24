@@ -98,7 +98,9 @@ class RecipeSiteContentExtractor {
         ''',
       );
 
-      if (result != null && result.toString().isNotEmpty && result.toString() != 'null') {
+      if (result != null &&
+          result.toString().isNotEmpty &&
+          result.toString() != 'null') {
         debugPrint('✅ Recipe structured data found!');
         return result.toString();
       }
@@ -152,7 +154,9 @@ class RecipeSiteContentExtractor {
         ''',
       );
 
-      if (result != null && result.toString().isNotEmpty && result.toString() != 'null') {
+      if (result != null &&
+          result.toString().isNotEmpty &&
+          result.toString() != 'null') {
         debugPrint('✅ Recipe microdata found!');
         return result.toString();
       }
@@ -164,7 +168,8 @@ class RecipeSiteContentExtractor {
   }
 
   /// Extract recipe content using CSS selectors with validation
-  Future<String?> _extractRecipeContent(InAppWebViewController controller) async {
+  Future<String?> _extractRecipeContent(
+      InAppWebViewController controller) async {
     // Skip structured data selectors (first 3 in the list)
     for (final selector in selectors.skip(3)) {
       if (isDisposed()) break;
@@ -198,7 +203,9 @@ class RecipeSiteContentExtractor {
           ''',
         );
 
-        if (result != null && result.toString().isNotEmpty && result.toString() != 'null') {
+        if (result != null &&
+            result.toString().isNotEmpty &&
+            result.toString() != 'null') {
           debugPrint('✅ Recipe content found with selector: $selector');
           return result.toString();
         }

@@ -33,7 +33,7 @@ class RecipeDetailMetadata extends StatelessWidget {
       children: [
         // Main metadata
         _buildMetadata(context),
-        
+
         // Source URL (if available)
         if (viewModel.recipe.sourceUrl != null &&
             viewModel.recipe.sourceUrl!.isNotEmpty) ...[
@@ -46,7 +46,7 @@ class RecipeDetailMetadata extends StatelessWidget {
 
   Widget _buildMetadata(BuildContext context) {
     final recipe = viewModel.recipe;
-    
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -73,14 +73,14 @@ class RecipeDetailMetadata extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: AppDimensions.spacingXl),
-          
+
           // Metadata items
           Row(
             children: [
               // Portions (only show if portions are specified)
-              if (currentPortions > 0) 
+              if (currentPortions > 0)
                 Expanded(
                   child: _buildMetadataItem(
                     context,
@@ -90,10 +90,11 @@ class RecipeDetailMetadata extends StatelessWidget {
                     isHighlighted: isScaled,
                   ),
                 ),
-              
+
               // Cooking time
               if ((recipe.timeMinutes ?? 0) > 0) ...[
-                if (currentPortions > 0) const SizedBox(width: AppDimensions.spacingXs),
+                if (currentPortions > 0)
+                  const SizedBox(width: AppDimensions.spacingXs),
                 Expanded(
                   child: _buildMetadataItem(
                     context,
@@ -103,10 +104,11 @@ class RecipeDetailMetadata extends StatelessWidget {
                   ),
                 ),
               ],
-              
+
               // Rating
               if ((recipe.rating ?? 0) > 0) ...[
-                if (currentPortions > 0 || (recipe.timeMinutes ?? 0) > 0) const SizedBox(width: AppDimensions.spacingXs),
+                if (currentPortions > 0 || (recipe.timeMinutes ?? 0) > 0)
+                  const SizedBox(width: AppDimensions.spacingXs),
                 Expanded(
                   child: _buildMetadataItem(
                     context,
@@ -118,20 +120,22 @@ class RecipeDetailMetadata extends StatelessWidget {
               ],
             ],
           ),
-          
+
           // Rating stars (if rating exists)
           if ((recipe.rating ?? 0) > 0) ...[
             const SizedBox(height: AppDimensions.spacingM),
             Row(
               children: [
-                const SizedBox(width: AppDimensions.iconSizeAction + AppDimensions.spacingS),
+                const SizedBox(
+                    width:
+                        AppDimensions.iconSizeAction + AppDimensions.spacingS),
                 _buildStarRating(recipe.rating ?? 0),
               ],
             ),
           ],
-          
+
           const SizedBox(height: AppDimensions.spacingXl),
-          
+
           // "Cooked today" button
           SizedBox(
             width: double.infinity,
@@ -148,10 +152,14 @@ class RecipeDetailMetadata extends StatelessWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.success.withValues(alpha: 0.1),
                 foregroundColor: AppColors.success,
-                minimumSize: const Size(double.infinity, AppDimensions.buttonHeight),
-                padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL, vertical: AppDimensions.paddingM),
+                minimumSize:
+                    const Size(double.infinity, AppDimensions.buttonHeight),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.paddingL,
+                    vertical: AppDimensions.paddingM),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusL),
                 ),
               ),
             ),
@@ -185,14 +193,18 @@ class RecipeDetailMetadata extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: isHighlighted ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurfaceVariant,
+            color: isHighlighted
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.onSurfaceVariant,
             size: AppDimensions.iconSizeAction,
           ),
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
             label,
             style: AppTextStyles.bodySmall.copyWith(
-              color: isHighlighted ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.onSurfaceVariant,
+              color: isHighlighted
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
             ),
             textAlign: TextAlign.center,
@@ -220,7 +232,7 @@ class RecipeDetailMetadata extends StatelessWidget {
     final isArchiveUrl = sourceUrl.contains('archive.today') ||
         sourceUrl.contains('web.archive.org') ||
         sourceUrl.contains('archive.org');
-    
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingL),
@@ -247,9 +259,9 @@ class RecipeDetailMetadata extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: AppDimensions.spacingM),
-          
+
           // URL
           InkWell(
             onTap: () => _launchUrl(context, sourceUrl),
@@ -259,7 +271,8 @@ class RecipeDetailMetadata extends StatelessWidget {
               padding: const EdgeInsets.all(AppDimensions.paddingL),
               decoration: BoxDecoration(
                 color: AppColors.primaryBlue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusM),
                 border: Border.all(
                   color: AppColors.primaryBlue.withValues(alpha: 0.3),
                 ),
@@ -286,7 +299,7 @@ class RecipeDetailMetadata extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Archive notice
           if (isArchiveUrl) ...[
             const SizedBox(height: AppDimensions.spacingM),
@@ -318,17 +331,19 @@ class RecipeDetailMetadata extends StatelessWidget {
     final fullStars = rating.floor();
     final hasHalfStar = rating - fullStars >= 0.5;
     final emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-    
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         // Full stars
-        ...List.generate(fullStars, (index) => const Icon(
-          Icons.star,
-          color: AppColors.warning,
-          size: AppDimensions.iconSizeM,
-        )),
-        
+        ...List.generate(
+            fullStars,
+            (index) => const Icon(
+                  Icons.star,
+                  color: AppColors.warning,
+                  size: AppDimensions.iconSizeM,
+                )),
+
         // Half star
         if (hasHalfStar)
           const Icon(
@@ -336,13 +351,15 @@ class RecipeDetailMetadata extends StatelessWidget {
             color: AppColors.warning,
             size: AppDimensions.iconSizeM,
           ),
-        
+
         // Empty stars
-        ...List.generate(emptyStars, (index) => const Icon(
-          Icons.star_border,
-          color: AppColors.textMedium,
-          size: AppDimensions.iconSizeM,
-        )),
+        ...List.generate(
+            emptyStars,
+            (index) => const Icon(
+                  Icons.star_border,
+                  color: AppColors.textMedium,
+                  size: AppDimensions.iconSizeM,
+                )),
       ],
     );
   }

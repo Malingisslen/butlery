@@ -391,8 +391,8 @@ class ResponsiveListGrid<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final useGrid = Breakpoints.isTablet(context) ||
-        Breakpoints.isDesktop(context);
+    final useGrid =
+        Breakpoints.isTablet(context) || Breakpoints.isDesktop(context);
 
     if (useGrid) {
       return ResponsiveGrid(

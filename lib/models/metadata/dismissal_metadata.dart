@@ -14,7 +14,8 @@ import 'package:butlery/core/utils/serialization_utils.dart';
 class DismissalMetadata {
   final String userId;
   final DateTime dismissedAt;
-  final String? reason; // Optional reason for dismissal ('not_interested', 'already_have', etc.)
+  final String?
+      reason; // Optional reason for dismissal ('not_interested', 'already_have', etc.)
 
   DismissalMetadata({
     required this.userId,
@@ -57,6 +58,5 @@ class DismissalMetadata {
           reason == other.reason;
 
   @override
-  int get hashCode =>
-      userId.hashCode ^ dismissedAt.hashCode ^ reason.hashCode;
+  int get hashCode => userId.hashCode ^ dismissedAt.hashCode ^ reason.hashCode;
 }

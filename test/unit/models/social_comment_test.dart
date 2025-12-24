@@ -10,7 +10,7 @@ void main() {
     group('Construction', () {
       test('should create with required parameters', () {
         final createdAt = DateTime.now();
-        
+
         final comment = SocialComment(
           id: 'comment_123',
           recipeId: 'recipe_456',
@@ -22,7 +22,8 @@ void main() {
         expect(comment.id, equals('comment_123'));
         expect(comment.recipeId, equals('recipe_456'));
         expect(comment.authorId, equals('user_789'));
-        expect(comment.text, equals('Fantastiskt recept! Perfekt för helgmys.'));
+        expect(
+            comment.text, equals('Fantastiskt recept! Perfekt för helgmys.'));
         expect(comment.createdAt, equals(createdAt));
         expect(comment.parentCommentId, isNull);
         expect(comment.isLiked, isFalse);
@@ -31,7 +32,7 @@ void main() {
 
       test('should create with all parameters', () {
         final createdAt = DateTime.now();
-        
+
         final comment = SocialComment(
           id: 'comment_124',
           recipeId: 'recipe_456',
@@ -61,7 +62,8 @@ void main() {
           'likeCount': 10,
         };
 
-        final comment = SocialComment.fromFirestore('comment_123', firestoreData);
+        final comment =
+            SocialComment.fromFirestore('comment_123', firestoreData);
 
         expect(comment.id, equals('comment_123'));
         expect(comment.recipeId, equals('recipe_456'));
@@ -82,7 +84,8 @@ void main() {
           'createdAt': Timestamp.fromDate(DateTime.now()),
         };
 
-        final comment = SocialComment.fromFirestore('comment_123', firestoreData);
+        final comment =
+            SocialComment.fromFirestore('comment_123', firestoreData);
 
         expect(comment.parentCommentId, isNull);
         expect(comment.isLiked, isFalse);
@@ -94,7 +97,8 @@ void main() {
           'createdAt': Timestamp.fromDate(DateTime.now()),
         };
 
-        final comment = SocialComment.fromFirestore('comment_123', firestoreData);
+        final comment =
+            SocialComment.fromFirestore('comment_123', firestoreData);
 
         expect(comment.id, equals('comment_123'));
         expect(comment.recipeId, equals(''));
@@ -300,11 +304,13 @@ void main() {
         expect(firestore['authorId'], equals('user_789'));
         expect(firestore['text'], equals('Great recipe!'));
         expect(firestore['createdAt'], isA<Timestamp>());
-        expect((firestore['createdAt'] as Timestamp).toDate(), equals(createdAt));
+        expect(
+            (firestore['createdAt'] as Timestamp).toDate(), equals(createdAt));
         expect(firestore['parentCommentId'], equals('comment_001'));
         expect(firestore['isLiked'], isTrue);
         expect(firestore['likeCount'], equals(10));
-        expect(firestore.containsKey('id'), isFalse); // ID is not included in Firestore
+        expect(firestore.containsKey('id'),
+            isFalse); // ID is not included in Firestore
       });
 
       test('should serialize to JSON format', () {
@@ -447,11 +453,15 @@ void main() {
           id: 'comment_123',
           recipeId: 'recipe_456',
           authorId: 'user_789',
-          text: 'Jättegott! Åt detta igår med familjen. Önskar fler såna recept!',
+          text:
+              'Jättegott! Åt detta igår med familjen. Önskar fler såna recept!',
           createdAt: DateTime.now(),
         );
 
-        expect(comment.text, equals('Jättegott! Åt detta igår med familjen. Önskar fler såna recept!'));
+        expect(
+            comment.text,
+            equals(
+                'Jättegott! Åt detta igår med familjen. Önskar fler såna recept!'));
       });
 
       test('should handle emoji in text', () {
@@ -488,13 +498,18 @@ void main() {
         };
 
         final beforeCreation = DateTime.now();
-        final comment = SocialComment.fromFirestore('comment_123', firestoreData);
+        final comment =
+            SocialComment.fromFirestore('comment_123', firestoreData);
         final afterCreation = DateTime.now();
 
-        expect(comment.createdAt.isAfter(beforeCreation) || 
-               comment.createdAt.isAtSameMomentAs(beforeCreation), isTrue);
-        expect(comment.createdAt.isBefore(afterCreation) || 
-               comment.createdAt.isAtSameMomentAs(afterCreation), isTrue);
+        expect(
+            comment.createdAt.isAfter(beforeCreation) ||
+                comment.createdAt.isAtSameMomentAs(beforeCreation),
+            isTrue);
+        expect(
+            comment.createdAt.isBefore(afterCreation) ||
+                comment.createdAt.isAtSameMomentAs(afterCreation),
+            isTrue);
       });
     });
   });

@@ -1,7 +1,8 @@
 // lib/services/messaging/message_management_operations.dart
 
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
+import 'package:butlery/repositories/interfaces/auth_repository.dart'
+    as auth_repo;
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -111,7 +112,8 @@ class MessageManagementOperations {
         limit: 1000, // High limit to get all messages
       );
 
-      AppLogger.info('🧹 Deleting ${messages.length} messages from conversation $conversationId');
+      AppLogger.info(
+          '🧹 Deleting ${messages.length} messages from conversation $conversationId');
 
       // Delete messages in batches to avoid overwhelming the system
       const batchSize = 50;
@@ -138,9 +140,11 @@ class MessageManagementOperations {
         }
       }
 
-      AppLogger.success('✅ Successfully cleared conversation messages for user $currentUserId');
+      AppLogger.success(
+          '✅ Successfully cleared conversation messages for user $currentUserId');
     } catch (e) {
-      AppLogger.error('❌ Failed to delete all messages in conversation $conversationId', e);
+      AppLogger.error(
+          '❌ Failed to delete all messages in conversation $conversationId', e);
       rethrow;
     }
   }
@@ -179,7 +183,8 @@ class MessageManagementOperations {
         );
       }
 
-      AppLogger.info('🗑️ Deleting conversation $conversationId for user $currentUserId');
+      AppLogger.info(
+          '🗑️ Deleting conversation $conversationId for user $currentUserId');
 
       // First delete all messages in the conversation
       await deleteAllMessages(conversationId);
@@ -209,7 +214,8 @@ class MessageManagementOperations {
         participantAvatarUrls: participantAvatarUrls,
       );
 
-      AppLogger.success('✅ Added participants to group conversation: $conversationId');
+      AppLogger.success(
+          '✅ Added participants to group conversation: $conversationId');
     } catch (e) {
       AppLogger.error('Failed to add participants to group', e);
       rethrow;
@@ -227,7 +233,8 @@ class MessageManagementOperations {
         participantId: participantId,
       );
 
-      AppLogger.success('✅ Removed participant from group conversation: $conversationId');
+      AppLogger.success(
+          '✅ Removed participant from group conversation: $conversationId');
     } catch (e) {
       AppLogger.error('Failed to remove participant from group', e);
       rethrow;

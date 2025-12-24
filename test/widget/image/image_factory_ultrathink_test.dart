@@ -1,7 +1,7 @@
 // test/widget/image/image_factory_ultrathink_test.dart
 // ULTRATHINK TEST SUITE: ImageFactory - 393 lines of production code
 // Testing pure delegation factory with 15 static methods
-// 
+//
 // ULTRATHINK FOCUS: Factory method delegation, parameter passing, widget creation patterns
 
 import 'package:flutter/material.dart';
@@ -30,7 +30,7 @@ void main() {
     setUp(() async {
       await TestServiceLocator.initialize();
     });
-    
+
     tearDown(() async {
       await BaseWidgetTest.teardownWidget();
     });
@@ -52,7 +52,8 @@ void main() {
     }
 
     group('Avatar Factory Method Tests', () {
-      testWidgets('avatar factory creates AvatarImageWidget.readonly when onImageSelected is null',
+      testWidgets(
+          'avatar factory creates AvatarImageWidget.readonly when onImageSelected is null',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 15-57
         await tester.pumpWidget(
@@ -62,7 +63,8 @@ void main() {
               displayName: 'Test User',
               email: 'test@example.com',
               isOnline: true,
-              size: ImageSize.medium, // ULTRATHINK FIX: Avoid infinite dimensions
+              size:
+                  ImageSize.medium, // ULTRATHINK FIX: Avoid infinite dimensions
               showStatus: true,
               borderColor: Colors.blue,
               borderWidth: 2.0,
@@ -78,7 +80,8 @@ void main() {
         expect(find.byType(AvatarImageWidget), findsOneWidget);
       });
 
-      testWidgets('avatar factory creates AvatarImageWidget.editable when onImageSelected provided',
+      testWidgets(
+          'avatar factory creates AvatarImageWidget.editable when onImageSelected provided',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 29-42
         await tester.pumpWidget(
@@ -86,8 +89,10 @@ void main() {
             child: ImageFactory.avatar(
               imageUrl: 'https://example.com/avatar.jpg',
               displayName: 'Test User',
-              size: ImageSize.medium, // ULTRATHINK FIX: Avoid infinite dimensions
-              onImageSelected: (url) {}, // Provides callback - should create editable
+              size:
+                  ImageSize.medium, // ULTRATHINK FIX: Avoid infinite dimensions
+              onImageSelected:
+                  (url) {}, // Provides callback - should create editable
             ),
           ),
         );
@@ -103,7 +108,7 @@ void main() {
         const testImageUrl = 'https://example.com/test.jpg';
         const testDisplayName = 'John Doe';
         const testEmail = 'john@example.com';
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.avatar(
@@ -122,9 +127,10 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Verify actual widget receives correct parameters
-        final avatarWidget = tester.widget<AvatarImageWidget>(find.byType(AvatarImageWidget));
+        final avatarWidget =
+            tester.widget<AvatarImageWidget>(find.byType(AvatarImageWidget));
         expect(avatarWidget.imageUrl, equals(testImageUrl));
         expect(avatarWidget.displayName, equals(testDisplayName));
         expect(avatarWidget.email, equals(testEmail));
@@ -141,8 +147,11 @@ void main() {
       testWidgets('recipeCard factory creates RecipeImageWidget.card',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 61-83
-        const testImages = ['https://example.com/recipe1.jpg', 'https://example.com/recipe2.jpg'];
-        
+        const testImages = [
+          'https://example.com/recipe1.jpg',
+          'https://example.com/recipe2.jpg'
+        ];
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.recipeCard(
@@ -166,13 +175,17 @@ void main() {
       testWidgets('recipeDetail factory creates RecipeImageWidget.detail',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 86-106
-        const testImages = ['https://example.com/detail1.jpg', 'https://example.com/detail2.jpg'];
-        
+        const testImages = [
+          'https://example.com/detail1.jpg',
+          'https://example.com/detail2.jpg'
+        ];
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.recipeDetail(
               imageUrls: testImages,
-              size: ImageSize.medium, // ULTRATHINK FIX: Avoid infinite dimensions from ImageSize.large
+              size: ImageSize
+                  .medium, // ULTRATHINK FIX: Avoid infinite dimensions from ImageSize.large
               showNavigationDots: true,
               showImageCounter: true,
               heroTag: 'recipe-detail-hero',
@@ -191,12 +204,13 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 109-135
         const testImages = ['https://example.com/edit1.jpg'];
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.recipeEdit(
               imageUrls: testImages,
-              size: ImageSize.medium, // ULTRATHINK FIX: Avoid infinite dimensions from ImageSize.large
+              size: ImageSize
+                  .medium, // ULTRATHINK FIX: Avoid infinite dimensions from ImageSize.large
               showEditControls: true,
               showNavigationDots: false,
               maxImages: 3,
@@ -219,8 +233,11 @@ void main() {
       testWidgets('gallery factory creates ImageGalleryWidget.gallery',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 138-166
-        const testImages = ['https://example.com/gallery1.jpg', 'https://example.com/gallery2.jpg'];
-        
+        const testImages = [
+          'https://example.com/gallery1.jpg',
+          'https://example.com/gallery2.jpg'
+        ];
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.gallery(
@@ -244,11 +261,15 @@ void main() {
         expect(find.byType(ImageGalleryWidget), findsOneWidget);
       });
 
-      testWidgets('staggeredGallery factory creates StaggeredImageGalleryWidget',
+      testWidgets(
+          'staggeredGallery factory creates StaggeredImageGalleryWidget',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 288-308
-        const testImages = ['https://example.com/stag1.jpg', 'https://example.com/stag2.jpg'];
-        
+        const testImages = [
+          'https://example.com/stag1.jpg',
+          'https://example.com/stag2.jpg'
+        ];
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.staggeredGallery(
@@ -274,7 +295,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 169-189
         const testSelectedImages = ['https://example.com/selected1.jpg'];
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.picker(
@@ -300,7 +321,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 192-214
         const testImageUrl = 'https://example.com/hero.jpg';
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.hero(
@@ -327,7 +348,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 217-235
         const testImageUrl = 'https://example.com/thumb.jpg';
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.thumbnail(
@@ -350,7 +371,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 238-260
         const testImageUrl = 'https://example.com/cached.jpg';
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.cached(
@@ -376,13 +397,17 @@ void main() {
       testWidgets('carousel factory creates ImageCarouselWidget',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 263-285
-        const testImages = ['https://example.com/car1.jpg', 'https://example.com/car2.jpg'];
-        
+        const testImages = [
+          'https://example.com/car1.jpg',
+          'https://example.com/car2.jpg'
+        ];
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.carousel(
               imageUrls: testImages,
-              size: ImageSize.medium, // ULTRATHINK FIX: Avoid infinite dimensions from ImageSize.large
+              size: ImageSize
+                  .medium, // ULTRATHINK FIX: Avoid infinite dimensions from ImageSize.large
               showNavigationDots: true,
               showImageCounter: false,
               onImageTap: (index) {},
@@ -401,12 +426,13 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 311-327
         const testImageUrl = 'https://example.com/expandable.jpg';
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.expandable(
               imageUrl: testImageUrl,
-              size: ImageSize.medium, // ULTRATHINK FIX: Avoid infinite dimensions from ImageSize.large
+              size: ImageSize
+                  .medium, // ULTRATHINK FIX: Avoid infinite dimensions from ImageSize.large
               onTap: () {},
               onExpandedChanged: (expanded) {},
               initiallyExpanded: false,
@@ -423,7 +449,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 330-344
         const testImageUrl = 'https://example.com/lazy.jpg';
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.lazy(
@@ -444,7 +470,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code delegation from lines 347-373
         const testImageUrl = 'https://example.com/network.jpg';
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.network(
@@ -489,8 +515,8 @@ void main() {
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.avatar(
-              // All optional parameters null/default
-            ),
+                // All optional parameters null/default
+                ),
           ),
         );
 
@@ -502,7 +528,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code URL handling
         final longUrl = 'https://example.com/${'very-long-filename' * 20}.jpg';
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.thumbnail(
@@ -521,8 +547,11 @@ void main() {
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.recipeCard(
-              imageUrls: const ['https://example.com/single.jpg'], // Single image
-              showMultipleIndicator: true, // Indicator shouldn't show for single image
+              imageUrls: const [
+                'https://example.com/single.jpg'
+              ], // Single image
+              showMultipleIndicator:
+                  true, // Indicator shouldn't show for single image
             ),
           ),
         );
@@ -536,8 +565,11 @@ void main() {
       testWidgets('factory methods preserve all parameter values correctly',
           (WidgetTester tester) async {
         // ULTRATHINK: Comprehensive parameter passing verification
-        const testImages = ['https://example.com/param1.jpg', 'https://example.com/param2.jpg'];
-        
+        const testImages = [
+          'https://example.com/param1.jpg',
+          'https://example.com/param2.jpg'
+        ];
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageFactory.gallery(
@@ -557,9 +589,10 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Verify actual widget receives all parameters
-        final galleryWidget = tester.widget<ImageGalleryWidget>(find.byType(ImageGalleryWidget));
+        final galleryWidget =
+            tester.widget<ImageGalleryWidget>(find.byType(ImageGalleryWidget));
         expect(galleryWidget.imageUrls, equals(testImages));
         expect(galleryWidget.config.size, equals(ImageSize.thumbnail));
         expect(galleryWidget.config.showEditControls, equals(true));

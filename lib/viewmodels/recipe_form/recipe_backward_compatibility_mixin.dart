@@ -57,7 +57,8 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   /// Pick single image from camera (direct, no dialog)
   Future<void> pickImageFromCamera(BuildContext context) async {
     AppLogger.info('🎯 VIEWMODEL: pickImageFromCamera called');
-    final recipeId = state.originalRecipe?.id ?? 'temp_${DateTime.now().millisecondsSinceEpoch}';
+    final recipeId = state.originalRecipe?.id ??
+        'temp_${DateTime.now().millisecondsSinceEpoch}';
     await imageManager.pickImageFromCamera(context, recipeId: recipeId);
     coordinator.syncImageUrls(isCollaborative: isCollaborative);
   }
@@ -65,7 +66,8 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   /// Pick single image from gallery (direct, no dialog)
   Future<void> pickImageFromGallery(BuildContext context) async {
     AppLogger.info('🎯 VIEWMODEL: pickImageFromGallery called');
-    final recipeId = state.originalRecipe?.id ?? 'temp_${DateTime.now().millisecondsSinceEpoch}';
+    final recipeId = state.originalRecipe?.id ??
+        'temp_${DateTime.now().millisecondsSinceEpoch}';
     await imageManager.pickImageFromGallery(context, recipeId: recipeId);
     coordinator.syncImageUrls(isCollaborative: isCollaborative);
   }
@@ -73,8 +75,10 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   /// Pick multiple images from gallery (direct, no dialog)
   Future<void> pickMultipleImagesFromGallery(BuildContext context) async {
     AppLogger.info('🎯 VIEWMODEL: pickMultipleImagesFromGallery called');
-    final recipeId = state.originalRecipe?.id ?? 'temp_${DateTime.now().millisecondsSinceEpoch}';
-    await imageManager.pickMultipleImagesFromGallery(context, recipeId: recipeId);
+    final recipeId = state.originalRecipe?.id ??
+        'temp_${DateTime.now().millisecondsSinceEpoch}';
+    await imageManager.pickMultipleImagesFromGallery(context,
+        recipeId: recipeId);
     coordinator.syncImageUrls(isCollaborative: isCollaborative);
   }
 
@@ -110,7 +114,8 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   List<TextEditingController> get ingredientControllers {
     debugPrint('🎯 VIEWMODEL_DEBUG: ingredientControllers called');
     final controllers = state.ingredientsManager.controllers;
-    debugPrint('🎯 VIEWMODEL_DEBUG: ingredientControllers returning ${controllers.length} controllers');
+    debugPrint(
+        '🎯 VIEWMODEL_DEBUG: ingredientControllers returning ${controllers.length} controllers');
     return controllers;
   }
 
@@ -118,7 +123,8 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   List<TextEditingController> get instructionControllers {
     debugPrint('🎯 VIEWMODEL_DEBUG: instructionControllers called');
     final controllers = state.instructionsManager.controllers;
-    debugPrint('🎯 VIEWMODEL_DEBUG: instructionControllers returning ${controllers.length} controllers');
+    debugPrint(
+        '🎯 VIEWMODEL_DEBUG: instructionControllers returning ${controllers.length} controllers');
     return controllers;
   }
 
@@ -126,7 +132,8 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   List<TextEditingController> get tagControllers {
     debugPrint('🎯 VIEWMODEL_DEBUG: tagControllers called');
     final controllers = state.tagsManager.controllers;
-    debugPrint('🎯 VIEWMODEL_DEBUG: tagControllers returning ${controllers.length} controllers');
+    debugPrint(
+        '🎯 VIEWMODEL_DEBUG: tagControllers returning ${controllers.length} controllers');
     return controllers;
   }
 
@@ -233,28 +240,34 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   Function(int) get removeImageAtFunc => (int index) => removeImageAt(index);
 
   /// Function getter for setting primary image
-  Function(String) get setPrimaryImageFunc => (String url) => setPrimaryImage(url);
+  Function(String) get setPrimaryImageFunc =>
+      (String url) => setPrimaryImage(url);
 
   /// Function getter for updating ingredient
-  Function(int, String) get updateIngredientFunc => (int index, String value) => updateIngredient(index, value);
+  Function(int, String) get updateIngredientFunc =>
+      (int index, String value) => updateIngredient(index, value);
 
   /// Function getter for adding ingredient
   Function() get addIngredientFunc => () => addIngredient();
 
   /// Function getter for removing ingredient
-  Function(int) get removeIngredientFunc => (int index) => removeIngredient(index);
+  Function(int) get removeIngredientFunc =>
+      (int index) => removeIngredient(index);
 
   /// Function getter for updating instruction
-  Function(int, String) get updateInstructionFunc => (int index, String value) => updateInstruction(index, value);
+  Function(int, String) get updateInstructionFunc =>
+      (int index, String value) => updateInstruction(index, value);
 
   /// Function getter for adding instruction
   Function() get addInstructionFunc => () => addInstruction();
 
   /// Function getter for removing instruction
-  Function(int) get removeInstructionFunc => (int index) => removeInstruction(index);
+  Function(int) get removeInstructionFunc =>
+      (int index) => removeInstruction(index);
 
   /// Function getter for updating tag
-  Function(int, String) get updateTagFunc => (int index, String value) => updateTag(index, value);
+  Function(int, String) get updateTagFunc =>
+      (int index, String value) => updateTag(index, value);
 
   /// Function getter for adding tag
   Function() get addTagFunc => () => addTag();

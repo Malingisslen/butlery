@@ -227,7 +227,8 @@ class GroupSharedContentService extends BaseService {
           .limit(20)
           .snapshots()
           .map((snapshot) => snapshot.docs
-              .map((doc) => SharedContentItem.fromFirestore(doc, 'shopping_list'))
+              .map((doc) =>
+                  SharedContentItem.fromFirestore(doc, 'shopping_list'))
               .toList());
     } catch (e) {
       AppLogger.error('Failed to stream shared shopping lists', e);

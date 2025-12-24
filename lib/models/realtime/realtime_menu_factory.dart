@@ -14,7 +14,6 @@ import 'package:uuid/uuid.dart';
 /// data parsing, and parameter organization through focused factory patterns and robust error handling.
 /// This class serves as the construction coordination layer for all realtime menu creation scenarios.
 class RealtimeMenuFactory {
-  
   /// Factory to create new realtime menu from existing MenuViewModel structure
   static Map<String, dynamic> createFromMenuCategories({
     required String menuTitle,
@@ -30,19 +29,19 @@ class RealtimeMenuFactory {
   }) {
     final id = const Uuid().v4();
     final now = DateTime.now();
-    
+
     // Build participants map
     final participants = <String, ResourcePermission>{
       ownerId: ResourcePermission.owner,
     };
-    
+
     // Add editors
     if (editorUserIds != null) {
       for (final userId in editorUserIds) {
         participants[userId] = ResourcePermission.editor;
       }
     }
-    
+
     // Add viewers
     if (viewerUserIds != null) {
       for (final userId in viewerUserIds) {
@@ -74,11 +73,13 @@ class RealtimeMenuFactory {
   /// Parse repository document data to construction parameters
   /// @deprecated Use parseJsonData instead. This method will be removed when repositories are updated.
   /// Repositories should provide clean DateTime objects and Map data.
-  static Map<String, dynamic> parseRepositoryData(String id, Map<String, dynamic> data) {
+  static Map<String, dynamic> parseRepositoryData(
+      String id, Map<String, dynamic> data) {
     // Parse participants
-    final participantsData = data['participants'] as Map<String, dynamic>? ?? {};
+    final participantsData =
+        data['participants'] as Map<String, dynamic>? ?? {};
     final participants = <String, ResourcePermission>{};
-    
+
     for (final entry in participantsData.entries) {
       final permission = ResourcePermission.values.firstWhere(
         (p) => p.name == entry.value,
@@ -95,8 +96,10 @@ class RealtimeMenuFactory {
       'ownerId': data['ownerId'] as String,
       'ownerDisplayName': data['ownerDisplayName'] as String,
       'participants': participants,
-      'createdAt': data['createdAt'] as DateTime, // Repository provides DateTime
-      'lastEditedAt': data['lastEditedAt'] as DateTime, // Repository provides DateTime
+      'createdAt':
+          data['createdAt'] as DateTime, // Repository provides DateTime
+      'lastEditedAt':
+          data['lastEditedAt'] as DateTime, // Repository provides DateTime
       'lastEditedBy': data['lastEditedBy'] as String,
       'lastEditedByDisplayName': data['lastEditedByDisplayName'] as String,
       'editCount': data['editCount'] as int? ?? 0,
@@ -109,9 +112,10 @@ class RealtimeMenuFactory {
   /// Parse JSON data to construction parameters
   static Map<String, dynamic> parseJsonData(Map<String, dynamic> json) {
     // Parse participants
-    final participantsData = json['participants'] as Map<String, dynamic>? ?? {};
+    final participantsData =
+        json['participants'] as Map<String, dynamic>? ?? {};
     final participants = <String, ResourcePermission>{};
-    
+
     for (final entry in participantsData.entries) {
       final permission = ResourcePermission.values.firstWhere(
         (p) => p.name == entry.value,

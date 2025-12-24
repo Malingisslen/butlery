@@ -14,7 +14,8 @@ void main() {
     });
 
     group('Default Constructor', () {
-      testWidgets('should render with required emoji', (WidgetTester tester) async {
+      testWidgets('should render with required emoji',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -43,7 +44,8 @@ void main() {
         expect(renderBox.size.height, equals(48));
       });
 
-      testWidgets('should use default fontSize of 24', (WidgetTester tester) async {
+      testWidgets('should use default fontSize of 24',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -56,7 +58,8 @@ void main() {
         expect(text.style?.fontSize, equals(24));
       });
 
-      testWidgets('should use default blue background with alpha', (WidgetTester tester) async {
+      testWidgets('should use default blue background with alpha',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -67,12 +70,13 @@ void main() {
 
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.color, equals(AppColors.primaryBlue.withValues(alpha: 0.1)));
+        expect(decoration.color,
+            equals(AppColors.primaryBlue.withValues(alpha: 0.1)));
       });
 
       testWidgets('should apply custom size', (WidgetTester tester) async {
         const customSize = 64.0;
-        
+
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -91,7 +95,8 @@ void main() {
         expect(renderBox.size.height, equals(customSize));
       });
 
-      testWidgets('should apply custom background color', (WidgetTester tester) async {
+      testWidgets('should apply custom background color',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -110,7 +115,7 @@ void main() {
 
       testWidgets('should apply custom font size', (WidgetTester tester) async {
         const customFontSize = 32.0;
-        
+
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -145,7 +150,8 @@ void main() {
     });
 
     group('Group Constructor', () {
-      testWidgets('should render with group constructor', (WidgetTester tester) async {
+      testWidgets('should render with group constructor',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -174,7 +180,8 @@ void main() {
         expect(renderBox.size.height, equals(48));
       });
 
-      testWidgets('should use fontSize 24 for group', (WidgetTester tester) async {
+      testWidgets('should use fontSize 24 for group',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -191,7 +198,7 @@ void main() {
     group('Different Emojis', () {
       testWidgets('should display face emojis', (WidgetTester tester) async {
         const emojis = ['😀', '😃', '😄', '😁', '😆'];
-        
+
         for (final emoji in emojis) {
           await tester.pumpWidget(
             MaterialApp(
@@ -207,7 +214,7 @@ void main() {
 
       testWidgets('should display object emojis', (WidgetTester tester) async {
         const emojis = ['🍎', '🍕', '🚗', '⚽', '🎨'];
-        
+
         for (final emoji in emojis) {
           await tester.pumpWidget(
             MaterialApp(
@@ -223,7 +230,7 @@ void main() {
 
       testWidgets('should display flag emojis', (WidgetTester tester) async {
         const emojis = ['🇸🇪', '🇺🇸', '🇬🇧', '🇩🇪', '🇫🇷'];
-        
+
         for (final emoji in emojis) {
           await tester.pumpWidget(
             MaterialApp(
@@ -237,9 +244,10 @@ void main() {
         }
       });
 
-      testWidgets('should display multi-character emojis', (WidgetTester tester) async {
+      testWidgets('should display multi-character emojis',
+          (WidgetTester tester) async {
         const emojis = ['👨‍👩‍👧‍👦', '🏳️‍🌈', '👨‍💻', '👩‍🔬'];
-        
+
         for (final emoji in emojis) {
           await tester.pumpWidget(
             MaterialApp(
@@ -317,7 +325,8 @@ void main() {
     });
 
     group('Visual Consistency', () {
-      testWidgets('should center emoji in container', (WidgetTester tester) async {
+      testWidgets('should center emoji in container',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -344,7 +353,8 @@ void main() {
         expect(renderBox.size.width, equals(renderBox.size.height));
       });
 
-      testWidgets('should scale font with avatar size', (WidgetTester tester) async {
+      testWidgets('should scale font with avatar size',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -449,7 +459,8 @@ void main() {
         expect(renderBox.size.height, equals(200));
       });
 
-      testWidgets('should handle transparent background', (WidgetTester tester) async {
+      testWidgets('should handle transparent background',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(

@@ -70,26 +70,31 @@ class ChatActionHandler {
   }
 
   /// Handle sending new messages
-  Future<void> handleSendMessage(String content, {MessageType type = MessageType.text}) async {
+  Future<void> handleSendMessage(String content,
+      {MessageType type = MessageType.text}) async {
     try {
       if (content.trim().isEmpty) {
-        AppLogger.warning('📤 [ChatActionHandler] Empty content, aborting send');
+        AppLogger.warning(
+            '📤 [ChatActionHandler] Empty content, aborting send');
         return;
       }
 
       AppLogger.info('📤 [ChatActionHandler] Received send request');
       AppLogger.debug('📤 [ChatActionHandler] Content: "$content"');
       AppLogger.debug('📤 [ChatActionHandler] Type: $type');
-      AppLogger.debug('📤 [ChatActionHandler] Conversation ID: $conversationId');
+      AppLogger.debug(
+          '📤 [ChatActionHandler] Conversation ID: $conversationId');
 
       // Send based on message type
       if (type == MessageType.text) {
-        AppLogger.debug('📤 [ChatActionHandler] Calling MessagingService.sendTextMessage...');
+        AppLogger.debug(
+            '📤 [ChatActionHandler] Calling MessagingService.sendTextMessage...');
         await _messagingService.sendTextMessage(
           conversationId: conversationId,
           content: content,
         );
-        AppLogger.success('✅ [ChatActionHandler] MessagingService.sendTextMessage completed');
+        AppLogger.success(
+            '✅ [ChatActionHandler] MessagingService.sendTextMessage completed');
       } else if (type == MessageType.image) {
         AppLogger.debug('📤 [ChatActionHandler] Sending image message...');
         // For images, content would be the path - in production this would upload first
@@ -107,7 +112,8 @@ class ChatActionHandler {
         );
         AppLogger.success('✅ [ChatActionHandler] Other type message sent');
       }
-      AppLogger.success('✅ [ChatActionHandler] Message send operation completed successfully');
+      AppLogger.success(
+          '✅ [ChatActionHandler] Message send operation completed successfully');
     } catch (e, stackTrace) {
       AppLogger.error('❌ [ChatActionHandler] Failed to send message', e);
       AppLogger.error('❌ [ChatActionHandler] Stack trace: $stackTrace');
@@ -127,7 +133,8 @@ class ChatActionHandler {
     // Check if it's a photo attachment with source
     if (attachmentType.startsWith('photo:')) {
       final sourceName = attachmentType.split(':')[1];
-      final source = sourceName == 'camera' ? ImageSource.camera : ImageSource.gallery;
+      final source =
+          sourceName == 'camera' ? ImageSource.camera : ImageSource.gallery;
       await _sharePhoto(source: source);
       return;
     }
@@ -158,7 +165,8 @@ class ChatActionHandler {
       if (!context.mounted) return;
 
       // Get conversation to check if it's a group
-      final conversation = await _messagingService.getConversation(conversationId);
+      final conversation =
+          await _messagingService.getConversation(conversationId);
 
       if (!context.mounted) return;
 
@@ -184,7 +192,8 @@ class ChatActionHandler {
                 const Text('Typ: Direktmeddelande'),
                 if (conversation != null) ...[
                   const SizedBox(height: 8),
-                  Text('Skapad: ${conversation.createdAt.toLocal().toString().split('.')[0]}'),
+                  Text(
+                      'Skapad: ${conversation.createdAt.toLocal().toString().split('.')[0]}'),
                 ],
               ],
             ),
@@ -204,7 +213,7 @@ class ChatActionHandler {
 
   Future<void> _toggleMute() async {
     AppLogger.info('Toggling conversation mute');
-    
+
     try {
       // In production, this would toggle mute status through the messaging repository
       // For now, just show a message that notifications are toggled
@@ -217,26 +226,28 @@ class ChatActionHandler {
 
   Future<void> _leaveConversation() async {
     AppLogger.info('Leaving conversation');
-    
+
     try {
       final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Lämna konversation'),
-          content: const Text('Är du säker på att du vill lämna konversationen?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Avbryt'),
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Lämna konversation'),
+              content: const Text(
+                  'Är du säker på att du vill lämna konversationen?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Avbryt'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Lämna'),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Lämna'),
-            ),
-          ],
-        ),
-      ) ?? false;
-      
+          ) ??
+          false;
+
       if (confirmed) {
         // In production, this would remove the user from the conversation
         // For now, just navigate back
@@ -259,7 +270,7 @@ class ChatActionHandler {
 
   Future<void> _editMessage(Message message) async {
     AppLogger.info('Editing message: ${message.id}');
-    
+
     // Show edit dialog
     final controller = TextEditingController(text: message.content);
     final edited = await showDialog<String>(
@@ -285,8 +296,10 @@ class ChatActionHandler {
         ],
       ),
     );
-    
-    if (edited != null && edited.trim().isNotEmpty && edited != message.content) {
+
+    if (edited != null &&
+        edited.trim().isNotEmpty &&
+        edited != message.content) {
       try {
         await _messagingService.editMessage(
           messageId: message.id,
@@ -317,7 +330,7 @@ class ChatActionHandler {
 
   Future<void> _copyMessage(Message message) async {
     AppLogger.info('Copying message: ${message.content}');
-    
+
     try {
       await Clipboard.setData(ClipboardData(text: message.content));
       _showErrorSnackBar('Meddelande kopierat');
@@ -329,7 +342,7 @@ class ChatActionHandler {
 
   Future<void> _shareRecipe() async {
     AppLogger.info('Sharing recipe');
-    
+
     try {
       final selectedRecipes = await showDialog<List<String>>(
         context: context,
@@ -337,7 +350,7 @@ class ChatActionHandler {
           categoryName: 'Dina recept',
         ),
       );
-      
+
       if (selectedRecipes != null && selectedRecipes.isNotEmpty) {
         // Send recipe share using the messaging service
         await _messagingService.sendRecipeShare(
@@ -355,7 +368,7 @@ class ChatActionHandler {
 
   Future<void> _shareMenu() async {
     AppLogger.info('Sharing menu');
-    
+
     try {
       // For menus, we'll send a special message type
       // The menu selection would be handled by a dedicated dialog
@@ -368,7 +381,7 @@ class ChatActionHandler {
 
   Future<void> _shareShoppingList() async {
     AppLogger.info('Sharing shopping list');
-    
+
     try {
       // Shopping list sharing would involve selecting from user's lists
       _showErrorSnackBar('Inköpslistedelning kommer snart');
@@ -379,7 +392,8 @@ class ChatActionHandler {
   }
 
   Future<void> _sharePhoto({ImageSource source = ImageSource.gallery}) async {
-    AppLogger.info('Sharing photo from ${source == ImageSource.camera ? "camera" : "gallery"}');
+    AppLogger.info(
+        'Sharing photo from ${source == ImageSource.camera ? "camera" : "gallery"}');
 
     try {
       // Show loading indicator
@@ -391,7 +405,8 @@ class ChatActionHandler {
         source: source,
         onProgress: (progress) {
           // Could update UI with progress here
-          AppLogger.debug('Upload progress: ${(progress * 100).toStringAsFixed(0)}%');
+          AppLogger.debug(
+              'Upload progress: ${(progress * 100).toStringAsFixed(0)}%');
         },
       );
 
@@ -408,22 +423,24 @@ class ChatActionHandler {
 
   Future<bool> _showDeleteConfirmation() async {
     return await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Ta bort'),
-        content: const Text('Är du säker på att du vill ta bort meddelandet?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Avbryt'),
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Ta bort'),
+            content:
+                const Text('Är du säker på att du vill ta bort meddelandet?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Avbryt'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Ta bort'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Ta bort'),
-          ),
-        ],
-      ),
-    ) ?? false;
+        ) ??
+        false;
   }
 
   void _showErrorSnackBar(String message) {

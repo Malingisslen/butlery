@@ -11,10 +11,10 @@ import 'package:butlery/core/utils/logger.dart';
 mixin AsyncOperationMixin on StateNotifierMixin {
   /// Set of currently active operation names to prevent duplicates.
   final Set<String> _activeOperations = {};
-  
+
   /// Map of debounced operations with their timers.
   final Map<String, Timer> _pendingOperations = {};
-  
+
   /// Cache of operation results to avoid redundant network requests.
   final Map<String, dynamic> _operationCache = {};
 
@@ -40,7 +40,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
       clearErrorOnStart: clearErrorOnStart,
     );
   }
-  
+
   /// Execute named async operation, preventing duplicate concurrent executions
   Future<T> executeNamedOperation<T>(
     String operationName,
@@ -54,24 +54,24 @@ mixin AsyncOperationMixin on StateNotifierMixin {
       AppLogger.debug('Operation $operationName already active, skipping');
       throw StateError('Operation $operationName is already in progress');
     }
-    
+
     _activeOperations.add(operationName);
-    
+
     try {
       if (clearErrorOnStart) {
         clearError();
       }
       setLoading(true);
-      
+
       final result = await operation();
-      
+
       setSuccess();
       AppLogger.debug('Operation $operationName completed successfully');
       return result;
     } catch (e) {
-      final errorMessage = errorPrefix != null 
-        ? '$errorPrefix: $e'
-        : 'Operation $operationName failed: $e';
+      final errorMessage = errorPrefix != null
+          ? '$errorPrefix: $e'
+          : 'Operation $operationName failed: $e';
       setError(errorMessage);
       AppLogger.error('Operation $operationName failed: $e');
       rethrow;
@@ -79,7 +79,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
       _activeOperations.remove(operationName);
     }
   }
-  
+
   /// Execute operation with caching (prevents duplicate calls)
   Future<T> executeCachedOperation<T>(
     String cacheKey,
@@ -96,17 +96,17 @@ mixin AsyncOperationMixin on StateNotifierMixin {
         return cached;
       }
     }
-    
+
     try {
       final result = await executeNamedOperation(
         'cache_$cacheKey',
         operation,
         errorPrefix: errorPrefix,
       );
-      
+
       // Cache the result
       _operationCache[cacheKey] = result;
-      
+
       // Set cache expiry if specified
       if (cacheExpiry != null) {
         Timer(cacheExpiry, () {
@@ -114,7 +114,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
           AppLogger.debug('Cache expired for $cacheKey');
         });
       }
-      
+
       return result;
     } catch (e) {
       // Remove invalid cache entry
@@ -132,9 +132,9 @@ mixin AsyncOperationMixin on StateNotifierMixin {
   }) async {
     // Cancel existing timer
     _pendingOperations[operationName]?.cancel();
-    
+
     final completer = Completer<T?>();
-    
+
     _pendingOperations[operationName] = Timer(delay, () async {
       try {
         final result = await executeNamedOperation(
@@ -149,10 +149,10 @@ mixin AsyncOperationMixin on StateNotifierMixin {
         _pendingOperations.remove(operationName);
       }
     });
-    
+
     return completer.future;
   }
-  
+
   /// Execute throttled operation (limits frequency of execution)
   Future<T?> executeThrottled<T>(
     String operationName,
@@ -162,15 +162,15 @@ mixin AsyncOperationMixin on StateNotifierMixin {
   }) async {
     final now = DateTime.now();
     final lastExecution = _getLastExecutionTime(operationName);
-    
-    if (lastExecution != null && 
+
+    if (lastExecution != null &&
         now.difference(lastExecution) < throttleDuration) {
       AppLogger.debug('Operation $operationName throttled');
       return null;
     }
-    
+
     _setLastExecutionTime(operationName, now);
-    
+
     return await executeNamedOperation(
       operationName,
       operation,
@@ -187,16 +187,16 @@ mixin AsyncOperationMixin on StateNotifierMixin {
     try {
       clearError();
       setLoading(true);
-      
+
       final futures = <Future<T>>[];
       final operationNames = <String>[];
-      
+
       operations.forEach((name, operation) {
         operationNames.add(name);
         _activeOperations.add(name);
         futures.add(operation());
       });
-      
+
       List<T> results;
       if (stopOnFirstError) {
         results = await Future.wait(futures);
@@ -204,25 +204,27 @@ mixin AsyncOperationMixin on StateNotifierMixin {
         final settledResults = await Future.wait(
           futures.map((f) => f.catchError((e) => e)),
         );
-        
+
         results = [];
         for (int i = 0; i < settledResults.length; i++) {
           final result = settledResults[i];
           if (result is! Exception && result is! Error) {
             results.add(result);
           } else {
-            AppLogger.error('Batch operation ${operationNames[i]} failed: $result');
+            AppLogger.error(
+                'Batch operation ${operationNames[i]} failed: $result');
           }
         }
       }
-      
+
       setSuccess();
-      AppLogger.debug('Batch operations completed: ${results.length} successes');
+      AppLogger.debug(
+          'Batch operations completed: ${results.length} successes');
       return results;
     } catch (e) {
-      final errorMessage = errorPrefix != null 
-        ? '$errorPrefix: $e'
-        : 'Batch operations failed: $e';
+      final errorMessage = errorPrefix != null
+          ? '$errorPrefix: $e'
+          : 'Batch operations failed: $e';
       setError(errorMessage);
       rethrow;
     } finally {
@@ -232,7 +234,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
       }
     }
   }
-  
+
   /// Execute operations in sequence
   Future<List<T>> executeSequence<T>(
     List<Future<T> Function()> operations, {
@@ -242,20 +244,20 @@ mixin AsyncOperationMixin on StateNotifierMixin {
     try {
       clearError();
       setLoading(true);
-      
+
       final results = <T>[];
-      
+
       for (int i = 0; i < operations.length; i++) {
         final operationName = 'sequence_$i';
         _activeOperations.add(operationName);
-        
+
         try {
           final result = await operations[i]();
           results.add(result);
           AppLogger.debug('Sequence operation $i completed');
         } catch (e) {
           AppLogger.error('Sequence operation $i failed: $e');
-          
+
           if (stopOnFirstError) {
             rethrow;
           }
@@ -263,14 +265,15 @@ mixin AsyncOperationMixin on StateNotifierMixin {
           _activeOperations.remove(operationName);
         }
       }
-      
+
       setSuccess();
-      AppLogger.debug('Sequence operations completed: ${results.length} results');
+      AppLogger.debug(
+          'Sequence operations completed: ${results.length} results');
       return results;
     } catch (e) {
-      final errorMessage = errorPrefix != null 
-        ? '$errorPrefix: $e'
-        : 'Sequence operations failed: $e';
+      final errorMessage = errorPrefix != null
+          ? '$errorPrefix: $e'
+          : 'Sequence operations failed: $e';
       setError(errorMessage);
       rethrow;
     }
@@ -285,14 +288,14 @@ mixin AsyncOperationMixin on StateNotifierMixin {
     void Function(dynamic error)? onError,
   }) async {
     _activeOperations.add(operationName);
-    
+
     try {
       final result = await operation();
-      
+
       if (onSuccess != null) {
         onSuccess(result);
       }
-      
+
       AppLogger.debug('Background operation $operationName completed');
       return result;
     } catch (e) {
@@ -315,7 +318,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
     _activeOperations.remove(operationName);
     AppLogger.debug('Operation $operationName cancelled');
   }
-  
+
   /// Cancel all pending operations
   void cancelAllOperations() {
     for (final timer in _pendingOperations.values) {
@@ -325,7 +328,7 @@ mixin AsyncOperationMixin on StateNotifierMixin {
     _activeOperations.clear();
     AppLogger.debug('All operations cancelled');
   }
-  
+
   /// Clear operation cache
   void clearOperationCache([String? cacheKey]) {
     if (cacheKey != null) {
@@ -336,12 +339,12 @@ mixin AsyncOperationMixin on StateNotifierMixin {
       AppLogger.debug('All operation cache cleared');
     }
   }
-  
+
   /// Check if operation is active
   bool isOperationActive(String operationName) {
     return _activeOperations.contains(operationName);
   }
-  
+
   /// Check if operation is pending
   bool isOperationPending(String operationName) {
     return _pendingOperations.containsKey(operationName);
@@ -349,11 +352,11 @@ mixin AsyncOperationMixin on StateNotifierMixin {
 
   /// Storage for operation execution times (for throttling)
   static final Map<String, DateTime> _executionTimes = {};
-  
+
   DateTime? _getLastExecutionTime(String operationName) {
     return _executionTimes[operationName];
   }
-  
+
   void _setLastExecutionTime(String operationName, DateTime time) {
     _executionTimes[operationName] = time;
   }
@@ -380,7 +383,7 @@ extension AsyncOperationExtensions on AsyncOperationMixin {
       errorPrefix: 'Failed to load data',
     );
   }
-  
+
   /// Execute save operation with validation
   Future<T> saveData<T>(
     Future<T> Function() operation,
@@ -391,7 +394,7 @@ extension AsyncOperationExtensions on AsyncOperationMixin {
       errorPrefix: 'Failed to save data',
     );
   }
-  
+
   /// Execute delete operation with confirmation
   Future<T> deleteData<T>(
     Future<T> Function() operation,
@@ -402,7 +405,7 @@ extension AsyncOperationExtensions on AsyncOperationMixin {
       errorPrefix: 'Failed to delete data',
     );
   }
-  
+
   /// Execute search operation with debouncing
   Future<T?> searchData<T>(
     Future<T> Function() operation, {
@@ -415,7 +418,7 @@ extension AsyncOperationExtensions on AsyncOperationMixin {
       errorPrefix: 'Search failed',
     );
   }
-  
+
   /// Execute refresh operation
   Future<T> refreshData<T>(
     Future<T> Function() operation,

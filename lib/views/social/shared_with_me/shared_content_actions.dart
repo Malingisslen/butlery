@@ -22,7 +22,8 @@ class SharedContentActions {
     SharedContentCoordinatorViewModel viewModel,
     SharedRecipe sharedRecipe,
   ) async {
-    final recipeId = await viewModel.recipeViewModel.importSharedRecipe(sharedRecipe);
+    final recipeId =
+        await viewModel.recipeViewModel.importSharedRecipe(sharedRecipe);
 
     if (recipeId != null && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -35,7 +36,8 @@ class SharedContentActions {
     } else if (context.mounted && viewModel.recipeViewModel.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(viewModel.recipeViewModel.error ?? 'Import misslyckades'),
+          content:
+              Text(viewModel.recipeViewModel.error ?? 'Import misslyckades'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -117,7 +119,8 @@ class SharedContentActions {
     );
 
     if (shouldDismiss == true) {
-      final success = await viewModel.recipeViewModel.dismissSharedRecipe(sharedRecipe);
+      final success =
+          await viewModel.recipeViewModel.dismissSharedRecipe(sharedRecipe);
 
       if (success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -127,14 +130,16 @@ class SharedContentActions {
             backgroundColor: AppColors.success,
             action: SnackBarAction(
               label: 'Ångra',
-              onPressed: () => viewModel.recipeViewModel.undismissSharedRecipe(sharedRecipe),
+              onPressed: () =>
+                  viewModel.recipeViewModel.undismissSharedRecipe(sharedRecipe),
             ),
           ),
         );
       } else if (context.mounted && viewModel.recipeViewModel.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(viewModel.recipeViewModel.error ?? 'Kunde inte dölja recept'),
+            content: Text(
+                viewModel.recipeViewModel.error ?? 'Kunde inte dölja recept'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -173,7 +178,8 @@ class SharedContentActions {
     );
 
     if (shouldDismiss == true) {
-      final success = await viewModel.menuViewModel.dismissSharedMenu(sharedMenu);
+      final success =
+          await viewModel.menuViewModel.dismissSharedMenu(sharedMenu);
 
       if (success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -182,14 +188,16 @@ class SharedContentActions {
             backgroundColor: AppColors.success,
             action: SnackBarAction(
               label: 'Ångra',
-              onPressed: () => viewModel.menuViewModel.undismissSharedMenu(sharedMenu),
+              onPressed: () =>
+                  viewModel.menuViewModel.undismissSharedMenu(sharedMenu),
             ),
           ),
         );
       } else if (context.mounted && viewModel.menuViewModel.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(viewModel.menuViewModel.error ?? 'Kunde inte dölja meny'),
+            content:
+                Text(viewModel.menuViewModel.error ?? 'Kunde inte dölja meny'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -203,15 +211,15 @@ class SharedContentActions {
     SharedContentCoordinatorViewModel viewModel,
     SharedShoppingList sharedShoppingList,
   ) async {
-    final collaborativeListId = await viewModel.shoppingViewModel.joinSharedShoppingList(sharedShoppingList);
+    final collaborativeListId = await viewModel.shoppingViewModel
+        .joinSharedShoppingList(sharedShoppingList);
 
     if (collaborativeListId != null && context.mounted) {
-      
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-              '✅ Du är nu medlem i "${sharedShoppingList.listName}"!'),
+          content:
+              Text('✅ Du är nu medlem i "${sharedShoppingList.listName}"!'),
           backgroundColor: AppColors.success,
         ),
       );
@@ -226,11 +234,13 @@ class SharedContentActions {
         if (context.mounted) {
           await AppRouter.navigateTo(
             context,
-            Routes.inkopslista, // Use main shopping interface for collaborative lists
+            Routes
+                .inkopslista, // Use main shopping interface for collaborative lists
           );
         }
       } catch (e) {
-        AppLogger.error('Failed to set active list or navigate to unified shopping: $e');
+        AppLogger.error(
+            'Failed to set active list or navigate to unified shopping: $e');
 
         // FALLBACK: Still try to navigate to shopping interface without setting active list
         try {
@@ -240,11 +250,12 @@ class SharedContentActions {
               Routes.inkopslista,
             );
           }
-          
+
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('✅ Du är nu medlem i "${sharedShoppingList.listName}"! Hitta den delade listan i inköpslistor.'),
+                content: Text(
+                    '✅ Du är nu medlem i "${sharedShoppingList.listName}"! Hitta den delade listan i inköpslistor.'),
                 backgroundColor: AppColors.success,
                 duration: const Duration(seconds: 4),
               ),
@@ -257,7 +268,8 @@ class SharedContentActions {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('⚠️ Du är nu medlem i listan, men kunde inte navigera dit automatiskt. Hitta listan i "Inköpslistor".'),
+                content: Text(
+                    '⚠️ Du är nu medlem i listan, men kunde inte navigera dit automatiskt. Hitta listan i "Inköpslistor".'),
                 backgroundColor: AppColors.warning,
                 duration: Duration(seconds: 5),
               ),
@@ -269,7 +281,8 @@ class SharedContentActions {
       if (viewModel.shoppingViewModel.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(viewModel.shoppingViewModel.error ?? 'Kunde inte gå med i listan'),
+            content: Text(viewModel.shoppingViewModel.error ??
+                'Kunde inte gå med i listan'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -315,23 +328,27 @@ class SharedContentActions {
     );
 
     if (shouldDismiss == true) {
-      final success = await viewModel.shoppingViewModel.dismissSharedShoppingList(sharedShoppingList);
+      final success = await viewModel.shoppingViewModel
+          .dismissSharedShoppingList(sharedShoppingList);
 
       if (success && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✅ "${sharedShoppingList.listName}" dold från din lista'),
+            content:
+                Text('✅ "${sharedShoppingList.listName}" dold från din lista'),
             backgroundColor: AppColors.success,
             action: SnackBarAction(
               label: 'Ångra',
-              onPressed: () => viewModel.shoppingViewModel.undismissSharedShoppingList(sharedShoppingList),
+              onPressed: () => viewModel.shoppingViewModel
+                  .undismissSharedShoppingList(sharedShoppingList),
             ),
           ),
         );
       } else if (context.mounted && viewModel.shoppingViewModel.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(viewModel.shoppingViewModel.error ?? 'Kunde inte dölja inköpslista'),
+            content: Text(viewModel.shoppingViewModel.error ??
+                'Kunde inte dölja inköpslista'),
             backgroundColor: AppColors.error,
           ),
         );

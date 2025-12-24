@@ -84,7 +84,8 @@ void main() {
         expect(result.quantity, 3.0, reason: 'Max from range');
         expect(result.unit, 'dl');
         expect(result.normalizedName, 'glutenfri mjölk',
-            reason: 'Diet descriptor preserved, parentheses/instruction removed');
+            reason:
+                'Diet descriptor preserved, parentheses/instruction removed');
         expect(result.preprocessingFlags?.hadApproximation, true);
         expect(result.preprocessingFlags?.hadRange, true);
         expect(result.preprocessingFlags?.hadParentheses, true);
@@ -218,13 +219,15 @@ void main() {
 
     group('Display and Normalized Strings', () {
       test('toDisplayString uses original name', () {
-        final result = IngredientProcessor.processRawIngredient('2 dl hackad lök');
+        final result =
+            IngredientProcessor.processRawIngredient('2 dl hackad lök');
 
         expect(result.toDisplayString(), '2.0 dl hackad lök');
       });
 
       test('toNormalizedString uses normalized name', () {
-        final result = IngredientProcessor.processRawIngredient('2 dl hackad lök');
+        final result =
+            IngredientProcessor.processRawIngredient('2 dl hackad lök');
 
         expect(result.toNormalizedString(), 'dl lök');
       });

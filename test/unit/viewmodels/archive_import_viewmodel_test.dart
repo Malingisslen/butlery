@@ -14,9 +14,11 @@ import '../../infrastructure/mocks/production_mocks.dart';
 
 // Using centralized MockUnifiedRecipeService from production_mocks.dart
 
-// Using local mock patterns that follow centralized architecture 
+// Using local mock patterns that follow centralized architecture
 // TODO: Resolve import issue with centralized mocks in future cleanup
-class MockPersonalRecipeOperations extends Mock implements PersonalRecipeOperations {}
+class MockPersonalRecipeOperations extends Mock
+    implements PersonalRecipeOperations {}
+
 class MockSearchService extends Mock implements SearchService {}
 
 // Test data builder for archived recipes
@@ -38,7 +40,12 @@ class ArchivedRecipeBuilder {
         title: 'Köttbullar med potatismos',
         description: 'Klassiska svenska köttbullar',
         ingredients: ['500g köttfärs', '1 ägg', '1 kg potatis', '3 dl mjölk'],
-        instructions: ['Forma köttbullar', 'Stek i panna', 'Koka potatis', 'Mosa med mjölk'],
+        instructions: [
+          'Forma köttbullar',
+          'Stek i panna',
+          'Koka potatis',
+          'Mosa med mjölk'
+        ],
         tags: ['kött', 'svensk', 'klassisk'],
         timeMinutes: 45,
         mealType: 'Middag',
@@ -58,7 +65,11 @@ class ArchivedRecipeBuilder {
         title: 'Laxfilé med dillsås',
         description: 'Ugnsbakad lax med hemgjord dillsås',
         ingredients: ['4 laxfiléer', '2 dl gräddfil', 'Färsk dill', 'Citron'],
-        instructions: ['Baka lax i ugn', 'Blanda dillsås', 'Servera med potatis'],
+        instructions: [
+          'Baka lax i ugn',
+          'Blanda dillsås',
+          'Servera med potatis'
+        ],
         tags: ['fisk', 'hälsosam', 'nordisk'],
         timeMinutes: 35,
         mealType: 'Middag',
@@ -68,7 +79,11 @@ class ArchivedRecipeBuilder {
         title: 'Pannkakor',
         description: 'Tunna svenska pannkakor',
         ingredients: ['3 ägg', '3 dl mjölk', '2 dl vetemjöl', '1 tsk salt'],
-        instructions: ['Vispa smet', 'Stek tunna pannkakor', 'Servera med sylt'],
+        instructions: [
+          'Vispa smet',
+          'Stek tunna pannkakor',
+          'Servera med sylt'
+        ],
         tags: ['frukost', 'enkel', 'svensk'],
         timeMinutes: 20,
         mealType: 'Frukost',
@@ -84,7 +99,7 @@ void main() {
     late MockPersonalRecipeOperations mockPersonalOperations;
     late MockSearchService mockSearchService;
     late List<Recipe> testArchivedRecipes;
-    
+
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(RecipeFactory.build());
@@ -93,67 +108,69 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
-      
+
       // Create mocks - using centralized MockUnifiedRecipeService
       mockRecipeService = MockUnifiedRecipeService();
       mockPersonalOperations = MockPersonalRecipeOperations();
       mockSearchService = MockSearchService();
-      
+
       // Setup test data
       testArchivedRecipes = ArchivedRecipeBuilder.buildArchivedRecipes();
-      
+
       // Configure mock service operations using enhanced setRecipeState()
       mockRecipeService.setRecipeState(
         error: null,
         personalOperations: mockPersonalOperations,
       );
-      
+
       // Configure PersonalRecipeOperations mock
       when(() => mockPersonalOperations.addMultipleUnifiedRecipes(any()))
           .thenAnswer((_) async => RecipeOperationResult.success(
-            'Recept importerade',
-          ));
-      
+                'Recept importerade',
+              ));
+
       // Configure SearchService mocks
       when(() => mockSearchService.searchRecipes(any(), any()))
           .thenAnswer((invocation) {
-            final recipes = invocation.positionalArguments[0] as List<Recipe>;
-            final query = invocation.positionalArguments[1] as String;
-            final lowerQuery = query.toLowerCase();
-            
-            return recipes.where((recipe) {
-              return recipe.title.toLowerCase().contains(lowerQuery) ||
-                     recipe.description.toLowerCase().contains(lowerQuery) ||
-                     recipe.ingredients.any((i) => i.toLowerCase().contains(lowerQuery));
-            }).toList();
-          });
-      
+        final recipes = invocation.positionalArguments[0] as List<Recipe>;
+        final query = invocation.positionalArguments[1] as String;
+        final lowerQuery = query.toLowerCase();
+
+        return recipes.where((recipe) {
+          return recipe.title.toLowerCase().contains(lowerQuery) ||
+              recipe.description.toLowerCase().contains(lowerQuery) ||
+              recipe.ingredients
+                  .any((i) => i.toLowerCase().contains(lowerQuery));
+        }).toList();
+      });
+
       when(() => mockSearchService.filterByTags(any(), any()))
           .thenAnswer((invocation) {
-            final recipes = invocation.positionalArguments[0] as List<Recipe>;
-            final tags = invocation.positionalArguments[1] as List<String>;
-            
-            if (tags.isEmpty) return recipes;
-            
-            // AND logic - recipe must have ALL tags
-            return recipes.where((recipe) {
-              if (recipe.tags == null || recipe.tags!.isEmpty) return false;
-              return tags.every((tag) => recipe.tags!.contains(tag));
-            }).toList();
-          });
-      
+        final recipes = invocation.positionalArguments[0] as List<Recipe>;
+        final tags = invocation.positionalArguments[1] as List<String>;
+
+        if (tags.isEmpty) return recipes;
+
+        // AND logic - recipe must have ALL tags
+        return recipes.where((recipe) {
+          if (recipe.tags == null || recipe.tags!.isEmpty) return false;
+          return tags.every((tag) => recipe.tags!.contains(tag));
+        }).toList();
+      });
+
       when(() => mockSearchService.filterByMaxTime(any(), any()))
           .thenAnswer((invocation) {
-            final recipes = invocation.positionalArguments[0] as List<Recipe>;
-            final maxMinutes = invocation.positionalArguments[1] as int?;
-            
-            if (maxMinutes == null) return recipes;
-            
-            return recipes.where((recipe) {
-              return recipe.timeMinutes != null && recipe.timeMinutes! <= maxMinutes;
-            }).toList();
-          });
-      
+        final recipes = invocation.positionalArguments[0] as List<Recipe>;
+        final maxMinutes = invocation.positionalArguments[1] as int?;
+
+        if (maxMinutes == null) return recipes;
+
+        return recipes.where((recipe) {
+          return recipe.timeMinutes != null &&
+              recipe.timeMinutes! <= maxMinutes;
+        }).toList();
+      });
+
       // Create viewModel with mocked archived recipes
       viewModel = _TestableArchiveImportViewModel(
         recipeService: mockRecipeService,
@@ -175,9 +192,9 @@ void main() {
     group('Initialization', () {
       test('should initialize with default state', () {
         // Arrange - viewModel created in setUp
-        
+
         // Act - no action needed, checking initial state
-        
+
         // Assert
         expect(viewModel.selectedTags, isEmpty);
         expect(viewModel.selectedRecipeIds, isEmpty);
@@ -200,7 +217,7 @@ void main() {
       test('should extract available tags from archived recipes', () {
         // Act
         final tags = viewModel.availableTags;
-        
+
         // Assert
         expect(tags, isNotEmpty);
         expect(tags, contains('vegetarisk'));
@@ -214,7 +231,7 @@ void main() {
       test('should show all recipes when no filters applied', () {
         // Act
         final filtered = viewModel.filteredRecipes;
-        
+
         // Assert
         expect(filtered.length, equals(5));
         expect(filtered, equals(testArchivedRecipes));
@@ -226,10 +243,10 @@ void main() {
         // Arrange
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act
         viewModel.updateSearch('pasta');
-        
+
         // Assert
         expect(viewModel.searchQuery, equals('pasta'));
         expect(viewModel.filteredRecipes.length, equals(1));
@@ -240,7 +257,7 @@ void main() {
       test('should find recipes by ingredient', () {
         // Act
         viewModel.updateSearch('lax');
-        
+
         // Assert
         expect(viewModel.filteredRecipes.length, equals(1));
         expect(viewModel.filteredRecipes[0].title, contains('Laxfilé'));
@@ -249,7 +266,7 @@ void main() {
       test('should handle case-insensitive search', () {
         // Act
         viewModel.updateSearch('KÖTTBULLAR');
-        
+
         // Assert
         expect(viewModel.filteredRecipes.length, equals(1));
         expect(viewModel.filteredRecipes[0].title, contains('Köttbullar'));
@@ -259,10 +276,10 @@ void main() {
         // Arrange
         viewModel.updateSearch('pasta');
         expect(viewModel.filteredRecipes.length, equals(1));
-        
+
         // Act
         viewModel.updateSearch('');
-        
+
         // Assert
         expect(viewModel.searchQuery, isEmpty);
         expect(viewModel.filteredRecipes.length, equals(5));
@@ -273,10 +290,10 @@ void main() {
         viewModel.toggleRecipeSelection('archive_1');
         viewModel.toggleRecipeSelection('archive_2');
         expect(viewModel.selectedCount, equals(2));
-        
+
         // Act - search that excludes archive_2
         viewModel.updateSearch('pasta');
-        
+
         // Assert - archive_2 should be deselected
         expect(viewModel.selectedCount, equals(1));
         expect(viewModel.selectedRecipeIds.contains('archive_1'), isTrue);
@@ -289,14 +306,14 @@ void main() {
         // Arrange
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act
         viewModel.toggleTag('vegetarisk');
-        
+
         // Assert
         expect(viewModel.selectedTags.contains('vegetarisk'), isTrue);
         expect(notificationCount, equals(1));
-        
+
         // Toggle off
         viewModel.toggleTag('vegetarisk');
         expect(viewModel.selectedTags.contains('vegetarisk'), isFalse);
@@ -305,17 +322,20 @@ void main() {
       test('should filter recipes by single tag', () {
         // Act
         viewModel.toggleTag('vegetarisk');
-        
+
         // Assert
         expect(viewModel.filteredRecipes.length, equals(2)); // pasta and sallad
-        expect(viewModel.filteredRecipes.every((r) => r.tags?.contains('vegetarisk') ?? false), isTrue);
+        expect(
+            viewModel.filteredRecipes
+                .every((r) => r.tags?.contains('vegetarisk') ?? false),
+            isTrue);
       });
 
       test('should filter recipes by multiple tags with AND logic', () {
         // Act
         viewModel.toggleTag('vegetarisk');
         viewModel.toggleTag('snabb');
-        
+
         // Assert
         expect(viewModel.filteredRecipes.length, equals(1)); // only sallad
         expect(viewModel.filteredRecipes[0].title, equals('Snabb sallad'));
@@ -326,10 +346,10 @@ void main() {
         viewModel.toggleTag('vegetarisk');
         viewModel.toggleTag('pasta');
         expect(viewModel.filteredRecipes.length, equals(1));
-        
+
         // Act - remove pasta tag
         viewModel.toggleTag('pasta');
-        
+
         // Assert
         expect(viewModel.selectedTags.contains('pasta'), isFalse);
         expect(viewModel.filteredRecipes.length, equals(2)); // vegetarisk only
@@ -341,10 +361,10 @@ void main() {
         // Arrange
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act
         viewModel.setTimeFilter(TimeFilter.under15);
-        
+
         // Assert
         expect(viewModel.timeFilter, equals(TimeFilter.under15));
         expect(viewModel.filteredRecipes.length, equals(1)); // only sallad
@@ -355,29 +375,32 @@ void main() {
       test('should filter recipes under 30 minutes', () {
         // Act
         viewModel.setTimeFilter(TimeFilter.under30);
-        
+
         // Assert
-        expect(viewModel.filteredRecipes.length, equals(3)); // pasta, sallad, pannkakor
-        expect(viewModel.filteredRecipes.every((r) => r.timeMinutes! <= 30), isTrue);
+        expect(viewModel.filteredRecipes.length,
+            equals(3)); // pasta, sallad, pannkakor
+        expect(viewModel.filteredRecipes.every((r) => r.timeMinutes! <= 30),
+            isTrue);
       });
 
       test('should filter recipes under 60 minutes', () {
         // Act
         viewModel.setTimeFilter(TimeFilter.under60);
-        
+
         // Assert
         expect(viewModel.filteredRecipes.length, equals(5)); // all recipes
-        expect(viewModel.filteredRecipes.every((r) => r.timeMinutes! <= 60), isTrue);
+        expect(viewModel.filteredRecipes.every((r) => r.timeMinutes! <= 60),
+            isTrue);
       });
 
       test('should show all recipes with TimeFilter.all', () {
         // Arrange
         viewModel.setTimeFilter(TimeFilter.under15);
         expect(viewModel.filteredRecipes.length, equals(1));
-        
+
         // Act
         viewModel.setTimeFilter(TimeFilter.all);
-        
+
         // Assert
         expect(viewModel.filteredRecipes.length, equals(5));
       });
@@ -388,7 +411,7 @@ void main() {
         // Act
         viewModel.updateSearch('pasta');
         viewModel.toggleTag('vegetarisk');
-        
+
         // Assert
         expect(viewModel.filteredRecipes.length, equals(1));
         expect(viewModel.filteredRecipes[0].title, equals('Vegetarisk Pasta'));
@@ -399,7 +422,7 @@ void main() {
         viewModel.toggleTag('vegetarisk');
         viewModel.setTimeFilter(TimeFilter.under30);
         viewModel.updateSearch('snabb');
-        
+
         // Assert
         expect(viewModel.filteredRecipes.length, equals(1));
         expect(viewModel.filteredRecipes[0].title, equals('Snabb sallad'));
@@ -408,7 +431,7 @@ void main() {
       test('should handle no matching results', () {
         // Act
         viewModel.updateSearch('pizza');
-        
+
         // Assert
         expect(viewModel.filteredRecipes, isEmpty);
       });
@@ -419,16 +442,16 @@ void main() {
         // Arrange
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act
         viewModel.toggleRecipeSelection('archive_1');
-        
+
         // Assert
         expect(viewModel.selectedRecipeIds.contains('archive_1'), isTrue);
         expect(viewModel.selectedCount, equals(1));
         expect(viewModel.hasSelection, isTrue);
         expect(notificationCount, equals(1));
-        
+
         // Toggle off
         viewModel.toggleRecipeSelection('archive_1');
         expect(viewModel.selectedRecipeIds.contains('archive_1'), isFalse);
@@ -441,7 +464,7 @@ void main() {
         viewModel.toggleRecipeSelection('archive_1');
         viewModel.toggleRecipeSelection('archive_2');
         viewModel.toggleRecipeSelection('archive_3');
-        
+
         // Assert
         expect(viewModel.selectedCount, equals(3));
         expect(viewModel.hasSelection, isTrue);
@@ -451,18 +474,18 @@ void main() {
         // Arrange
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act - select all
         viewModel.toggleSelectAll();
-        
+
         // Assert
         expect(viewModel.selectedCount, equals(5));
         expect(viewModel.allSelected, isTrue);
         expect(notificationCount, equals(1));
-        
+
         // Act - deselect all
         viewModel.toggleSelectAll();
-        
+
         // Assert
         expect(viewModel.selectedCount, equals(0));
         expect(viewModel.allSelected, isFalse);
@@ -472,10 +495,10 @@ void main() {
         // Arrange
         viewModel.toggleTag('vegetarisk');
         expect(viewModel.filteredRecipes.length, equals(2));
-        
+
         // Act
         viewModel.toggleSelectAll();
-        
+
         // Assert
         expect(viewModel.selectedCount, equals(2));
         expect(viewModel.selectedRecipeIds.contains('archive_1'), isTrue);
@@ -486,10 +509,10 @@ void main() {
         // Arrange
         viewModel.toggleRecipeSelection('archive_1');
         expect(viewModel.allSelected, isFalse);
-        
+
         // Act - select all from partial
         viewModel.toggleSelectAll();
-        
+
         // Assert
         expect(viewModel.selectedCount, equals(5));
         expect(viewModel.allSelected, isTrue);
@@ -501,61 +524,67 @@ void main() {
         // Arrange
         viewModel.toggleRecipeSelection('archive_1');
         viewModel.toggleRecipeSelection('archive_2');
-        
+
         // Act
         await viewModel.importSelectedRecipes();
-        
+
         // Assert
         expect(viewModel.hasError, isFalse);
         expect(viewModel.selectedCount, equals(0)); // cleared after success
-        
+
         // Verify source attribution
-        final capturedRecipes = verify(
-          () => mockPersonalOperations.addMultipleUnifiedRecipes(captureAny())
-        ).captured.first as List<Recipe>;
+        final capturedRecipes = verify(() =>
+                mockPersonalOperations.addMultipleUnifiedRecipes(captureAny()))
+            .captured
+            .first as List<Recipe>;
         expect(capturedRecipes.length, equals(2));
-        expect(capturedRecipes.every((r) => r.sourceUrl == 'Från Butlerys arkiv'), isTrue);
+        expect(
+            capturedRecipes.every((r) => r.sourceUrl == 'Från Butlerys arkiv'),
+            isTrue);
       });
 
       test('should not import when no recipes selected', () async {
         // Act
         await viewModel.importSelectedRecipes();
-        
+
         // Assert
         expect(viewModel.hasError, isTrue);
         expect(viewModel.error, equals('Inga recept valda'));
-        verifyNever(() => mockPersonalOperations.addMultipleUnifiedRecipes(any()));
+        verifyNever(
+            () => mockPersonalOperations.addMultipleUnifiedRecipes(any()));
       });
 
       test('should import all filtered recipes', () async {
         // Arrange
         viewModel.toggleTag('vegetarisk');
         expect(viewModel.filteredRecipes.length, equals(2));
-        
+
         // Act
         await viewModel.importAllRecipes();
-        
+
         // Assert
         expect(viewModel.hasError, isFalse);
-        
+
         // Verify only filtered recipes were imported
-        final capturedRecipes = verify(
-          () => mockPersonalOperations.addMultipleUnifiedRecipes(captureAny())
-        ).captured.first as List<Recipe>;
+        final capturedRecipes = verify(() =>
+                mockPersonalOperations.addMultipleUnifiedRecipes(captureAny()))
+            .captured
+            .first as List<Recipe>;
         expect(capturedRecipes.length, equals(2));
       });
 
       test('should import all recipes when no filters', () async {
         // Act
         await viewModel.importAllRecipes();
-        
+
         // Assert
         expect(viewModel.hasError, isFalse);
-        
+
         // Verify all recipes were imported
-        final capturedRecipes = verify(
-          () => mockPersonalOperations.addMultipleUnifiedRecipes(captureAny())
-        ).captured.first as List<Recipe>;
+        final capturedRecipes = verify(() =>
+                mockPersonalOperations.addMultipleUnifiedRecipes(captureAny()))
+            .captured
+            .first as List<Recipe>;
         expect(capturedRecipes.length, equals(5));
       });
 
@@ -564,12 +593,12 @@ void main() {
         viewModel.toggleRecipeSelection('archive_1');
         when(() => mockPersonalOperations.addMultipleUnifiedRecipes(any()))
             .thenAnswer((_) async => RecipeOperationResult.failure(
-              'Kunde inte importera recept',
-            ));
-        
+                  'Kunde inte importera recept',
+                ));
+
         // Act
         await viewModel.importSelectedRecipes();
-        
+
         // Assert
         expect(viewModel.hasError, isTrue);
         expect(viewModel.error, equals('Kunde inte importera recept'));
@@ -581,10 +610,10 @@ void main() {
         viewModel.toggleRecipeSelection('archive_1');
         when(() => mockPersonalOperations.addMultipleUnifiedRecipes(any()))
             .thenThrow(Exception('Network error'));
-        
+
         // Act
         await viewModel.importSelectedRecipes();
-        
+
         // Assert
         expect(viewModel.hasError, isTrue);
         expect(viewModel.error, contains('Import misslyckades'));
@@ -594,17 +623,18 @@ void main() {
         // Arrange
         viewModel.toggleRecipeSelection('archive_1');
         bool wasImporting = false;
-        
+
         viewModel.addListener(() {
           if (viewModel.isImporting) wasImporting = true;
         });
-        
+
         // Act
         await viewModel.importSelectedRecipes();
-        
+
         // Assert
         expect(wasImporting, isTrue);
-        expect(viewModel.isImporting, isFalse); // Should be false after completion
+        expect(
+            viewModel.isImporting, isFalse); // Should be false after completion
       });
     });
 
@@ -615,10 +645,10 @@ void main() {
         expect(viewModel.hasError, isTrue);
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act
         viewModel.clearError();
-        
+
         // Assert
         expect(viewModel.error, isNull);
         expect(viewModel.hasError, isFalse);
@@ -633,10 +663,10 @@ void main() {
         viewModel.toggleRecipeSelection('archive_1');
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act
         viewModel.clearFilters();
-        
+
         // Assert
         expect(viewModel.searchQuery, isEmpty);
         expect(viewModel.selectedTags, isEmpty);
@@ -651,10 +681,10 @@ void main() {
       test('should cache filtered results', () {
         // Act - first call
         final result1 = viewModel.filteredRecipes;
-        
+
         // Act - second call with same filters
         final result2 = viewModel.filteredRecipes;
-        
+
         // Assert - should return same cached instance
         expect(identical(result1, result2), isTrue);
       });
@@ -662,11 +692,11 @@ void main() {
       test('should invalidate cache on search change', () {
         // Arrange
         final result1 = viewModel.filteredRecipes;
-        
+
         // Act
         viewModel.updateSearch('pasta');
         final result2 = viewModel.filteredRecipes;
-        
+
         // Assert - should be different instances
         expect(identical(result1, result2), isFalse);
         expect(result1.length, equals(5));
@@ -676,11 +706,11 @@ void main() {
       test('should invalidate cache on tag change', () {
         // Arrange
         final result1 = viewModel.filteredRecipes;
-        
+
         // Act
         viewModel.toggleTag('vegetarisk');
         final result2 = viewModel.filteredRecipes;
-        
+
         // Assert - should be different instances
         expect(identical(result1, result2), isFalse);
       });
@@ -688,11 +718,11 @@ void main() {
       test('should invalidate cache on time filter change', () {
         // Arrange
         final result1 = viewModel.filteredRecipes;
-        
+
         // Act
         viewModel.setTimeFilter(TimeFilter.under30);
         final result2 = viewModel.filteredRecipes;
-        
+
         // Assert - should be different instances
         expect(identical(result1, result2), isFalse);
       });
@@ -700,11 +730,11 @@ void main() {
       test('should maintain cache with selection changes', () {
         // Arrange
         final result1 = viewModel.filteredRecipes;
-        
+
         // Act - selection doesn't affect filtering
         viewModel.toggleRecipeSelection('archive_1');
         final result2 = viewModel.filteredRecipes;
-        
+
         // Assert - should return same cached instance
         expect(identical(result1, result2), isTrue);
       });
@@ -718,7 +748,7 @@ void main() {
           searchService: mockSearchService,
           testArchivedRecipes: testArchivedRecipes,
         );
-        
+
         // Act & Assert
         expect(() => testViewModel.dispose(), returnsNormally);
       });
@@ -731,7 +761,7 @@ void main() {
         viewModel.updateSearch('köttbullar');
         viewModel.clearFilters();
         viewModel.toggleTag('svensk');
-        
+
         // Assert - should handle all changes gracefully
         expect(viewModel.selectedTags.contains('svensk'), isTrue);
         expect(viewModel.searchQuery, isEmpty);
@@ -741,14 +771,14 @@ void main() {
       test('should handle concurrent operations', () async {
         // Arrange
         viewModel.toggleRecipeSelection('archive_1');
-        
+
         // Act - concurrent operations
         final import1 = viewModel.importSelectedRecipes();
         viewModel.updateSearch('pasta');
         viewModel.toggleTag('vegetarisk');
-        
+
         await import1;
-        
+
         // Assert
         expect(viewModel.hasError, isFalse);
         expect(viewModel.searchQuery, equals('pasta'));
@@ -761,16 +791,16 @@ void main() {
 // Testable version that allows injecting archived recipes
 class _TestableArchiveImportViewModel extends ArchiveImportViewModel {
   final List<Recipe> testArchivedRecipes;
-  
+
   _TestableArchiveImportViewModel({
     required UnifiedRecipeService recipeService,
     required SearchService searchService,
     required this.testArchivedRecipes,
   }) : super(
-    recipeService: recipeService,
-    searchService: searchService,
-  );
-  
+          recipeService: recipeService,
+          searchService: searchService,
+        );
+
   @override
   List<Recipe> get archivedRecipes => testArchivedRecipes;
 }

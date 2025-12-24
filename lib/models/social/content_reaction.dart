@@ -16,7 +16,7 @@ import 'package:butlery/models/social/reaction_type.dart';
 /// - Provides audit trail with timestamp and user tracking
 /// **Supported Content Types:**
 /// - 'recipe' - Recipe reactions for cooking content
-/// - 'comment' - Comment reactions for discussion engagement  
+/// - 'comment' - Comment reactions for discussion engagement
 /// - 'menu' - Menu reactions for meal planning feedback
 /// - 'shopping_list' - Shopping list reactions for utility feedback
 /// - 'user_profile' - Profile reactions for social appreciation
@@ -39,22 +39,22 @@ import 'package:butlery/models/social/reaction_type.dart';
 class ContentReaction {
   /// Unique identifier for this reaction instance
   final String id;
-  
+
   /// ID of the content being reacted to (recipe ID, comment ID, etc.)
   final String contentId;
-  
+
   /// Type of content being reacted to ('recipe', 'comment', 'menu', etc.)
   final String contentType;
-  
+
   /// ID of the user who created this reaction
   final String userId;
-  
+
   /// Type of reaction expressed (like, love, delicious, etc.)
   final ReactionType reactionType;
-  
+
   /// When this reaction was originally created
   final DateTime createdAt;
-  
+
   /// When this reaction was last modified (for reaction type changes)
   final DateTime? updatedAt;
 
@@ -87,7 +87,8 @@ class ContentReaction {
   }
 
   /// Generate composite ID for reactions (ensures one reaction per user per content)
-  static String _generateId(String contentId, String contentType, String userId) {
+  static String _generateId(
+      String contentId, String contentType, String userId) {
     return '${contentType}_${contentId}_$userId';
   }
 
@@ -99,7 +100,8 @@ class ContentReaction {
       contentType: SerializationUtils.safeString(data, 'contentType'),
       userId: SerializationUtils.safeString(data, 'userId'),
       reactionType: ReactionType.fromKey(
-        SerializationUtils.safeString(data, 'reactionType', defaultValue: 'like'),
+        SerializationUtils.safeString(data, 'reactionType',
+            defaultValue: 'like'),
       ),
       createdAt: SerializationUtils.safeRequiredDateTime(data, 'createdAt'),
       updatedAt: SerializationUtils.safeDateTime(data, 'updatedAt'),
@@ -133,16 +135,19 @@ class ContentReaction {
 
   /// Create from JSON format following established patterns
   factory ContentReaction.fromJson(Map<String, dynamic> json) {
-    final updatedAtStr = SerializationUtils.safeNullableString(json, 'updatedAt');
+    final updatedAtStr =
+        SerializationUtils.safeNullableString(json, 'updatedAt');
     return ContentReaction(
       id: SerializationUtils.safeString(json, 'id'),
       contentId: SerializationUtils.safeString(json, 'contentId'),
       contentType: SerializationUtils.safeString(json, 'contentType'),
       userId: SerializationUtils.safeString(json, 'userId'),
       reactionType: ReactionType.fromKey(
-        SerializationUtils.safeString(json, 'reactionType', defaultValue: 'like'),
+        SerializationUtils.safeString(json, 'reactionType',
+            defaultValue: 'like'),
       ),
-      createdAt: DateTime.parse(SerializationUtils.safeString(json, 'createdAt')),
+      createdAt:
+          DateTime.parse(SerializationUtils.safeString(json, 'createdAt')),
       updatedAt: updatedAtStr != null ? DateTime.tryParse(updatedAtStr) : null,
     );
   }

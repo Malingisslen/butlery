@@ -30,8 +30,8 @@ class GroupDetailHeader {
                     Text(
                       group.name,
                       style: AppTextStyles.headlineSmall.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: AppDimensions.spacingXs),
                     Text(
@@ -39,8 +39,8 @@ class GroupDetailHeader {
                           ? '${group.emoji} ${group.description ?? 'Ingen beskrivning'}'
                           : group.description ?? 'Ingen beskrivning',
                       style: AppTextStyles.bodyMedium.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -71,9 +71,9 @@ class GroupDetailHeader {
                     Text(
                       'Gruppinformation',
                       style: AppTextStyles.titleSmall.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                   ],
                 ),
@@ -123,15 +123,15 @@ class GroupDetailHeader {
           Text(
             '$label: ',
             style: AppTextStyles.bodySmall.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
+              fontWeight: FontWeight.w500,
+            ),
           ),
           Expanded(
             child: Text(
               value,
               style: AppTextStyles.bodySmall.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
         ],

@@ -39,7 +39,8 @@ class GroupDetailActions {
     final shouldRemove = await CommonDialogActions.showActionConfirmation(
       context: context,
       title: 'Ta bort medlem',
-      message: 'Vill du ta bort ${member.displayName} från gruppen "${group.name}"?',
+      message:
+          'Vill du ta bort ${member.displayName} från gruppen "${group.name}"?',
       confirmText: 'Ta bort',
       icon: Icons.person_remove,
       isDangerous: true,
@@ -48,7 +49,8 @@ class GroupDetailActions {
     if (shouldRemove == true) {
       try {
         final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
-        final success = await categoriesService.categories.removeFriendFromCategory(
+        final success =
+            await categoriesService.categories.removeFriendFromCategory(
           member.uid,
           group.id,
         );
@@ -56,7 +58,8 @@ class GroupDetailActions {
         if (success && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${member.displayName} har tagits bort från gruppen'),
+              content:
+                  Text('${member.displayName} har tagits bort från gruppen'),
               backgroundColor: AppColors.success,
             ),
           );
@@ -84,7 +87,8 @@ class GroupDetailActions {
     FriendCategory group,
   ) async {
     final nameController = TextEditingController(text: group.name);
-    final descriptionController = TextEditingController(text: group.description);
+    final descriptionController =
+        TextEditingController(text: group.description);
     final emojiController = TextEditingController(text: group.emoji);
 
     final result = await showDialog<bool>(
@@ -176,7 +180,8 @@ class GroupDetailActions {
     if (shouldDelete == true) {
       try {
         final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
-        final success = await categoriesService.categories.deleteCategory(group.id);
+        final success =
+            await categoriesService.categories.deleteCategory(group.id);
 
         if (success && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -210,16 +215,15 @@ class GroupDetailActions {
     BuildContext context,
     FriendCategory group,
   ) async {
-    
     final shouldLeave = await CommonDialogActions.showActionConfirmation(
       context: context,
       title: 'Lämna grupp',
-      message: 'Vill du lämna gruppen "${group.name}"?\n\nDu kan bli inbjuden igen av andra medlemmar.',
+      message:
+          'Vill du lämna gruppen "${group.name}"?\n\nDu kan bli inbjuden igen av andra medlemmar.',
       confirmText: 'Lämna',
       icon: Icons.exit_to_app,
       isDangerous: true,
     );
-
 
     if (shouldLeave == true) {
       try {
@@ -227,13 +231,12 @@ class GroupDetailActions {
         final permissionService = ServiceLocator.get<PermissionService>();
         final currentUserId = permissionService.currentUserId;
 
-
         if (currentUserId != null) {
-          final success = await categoriesService.categories.removeFriendFromCategory(
+          final success =
+              await categoriesService.categories.removeFriendFromCategory(
             currentUserId,
             group.id,
           );
-
 
           if (success && context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -246,10 +249,8 @@ class GroupDetailActions {
             // Pop back to groups tab (tabIndex: 1)
             Navigator.pop(context, {'navigateToGroups': true});
             return true;
-          } else {
-          }
-        } else {
-        }
+          } else {}
+        } else {}
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

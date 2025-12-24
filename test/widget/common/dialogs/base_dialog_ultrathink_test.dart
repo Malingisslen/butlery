@@ -15,7 +15,8 @@ void main() {
     }
 
     group('ConfirmationDialog Tests', () {
-      testWidgets('creates basic confirmation dialog with required parameters', (WidgetTester tester) async {
+      testWidgets('creates basic confirmation dialog with required parameters',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             child: Builder(
@@ -39,12 +40,14 @@ void main() {
 
         // Verify dialog components
         expect(find.text('Bekräfta åtgärd'), findsOneWidget);
-        expect(find.text('Är du säker på att du vill fortsätta?'), findsOneWidget);
+        expect(
+            find.text('Är du säker på att du vill fortsätta?'), findsOneWidget);
         expect(find.text('OK'), findsOneWidget);
         expect(find.text('Avbryt'), findsOneWidget);
       });
 
-      testWidgets('supports custom button text and title icon', (WidgetTester tester) async {
+      testWidgets('supports custom button text and title icon',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             child: Builder(
@@ -110,7 +113,8 @@ void main() {
         expect(find.text('This will be replaced'), findsNothing);
       });
 
-      testWidgets('convenience show method works correctly', (WidgetTester tester) async {
+      testWidgets('convenience show method works correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             child: Builder(
@@ -138,7 +142,9 @@ void main() {
     });
 
     group('DestructiveConfirmationDialog Tests', () {
-      testWidgets('creates destructive confirmation dialog with warning styling', (WidgetTester tester) async {
+      testWidgets(
+          'creates destructive confirmation dialog with warning styling',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             child: Builder(
@@ -165,13 +171,15 @@ void main() {
         expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
         expect(find.text('Ta bort'), findsOneWidget);
         expect(find.text('Avbryt'), findsOneWidget);
-        
+
         // Verify destructive dialog structure and content
         expect(find.byType(AlertDialog), findsOneWidget);
       });
 
-      testWidgets('supports custom content over default message format', (WidgetTester tester) async {
-        const customDestructiveContent = Text('Custom destructive content with special formatting');
+      testWidgets('supports custom content over default message format',
+          (WidgetTester tester) async {
+        const customDestructiveContent =
+            Text('Custom destructive content with special formatting');
 
         await tester.pumpWidget(
           createTestWidget(
@@ -195,11 +203,13 @@ void main() {
         await tester.tap(find.text('Custom Destructive'));
         await tester.pumpAndSettle();
 
-        expect(find.text('Custom destructive content with special formatting'), findsOneWidget);
+        expect(find.text('Custom destructive content with special formatting'),
+            findsOneWidget);
         expect(find.text('Default message'), findsNothing);
       });
 
-      testWidgets('convenience show method with custom parameters', (WidgetTester tester) async {
+      testWidgets('convenience show method with custom parameters',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             child: Builder(
@@ -229,7 +239,8 @@ void main() {
     });
 
     group('LoadingDialog Tests', () {
-      testWidgets('displays loading dialog with message', (WidgetTester tester) async {
+      testWidgets('displays loading dialog with message',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             child: Builder(
@@ -253,7 +264,8 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('supports cancellable loading dialog', (WidgetTester tester) async {
+      testWidgets('supports cancellable loading dialog',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             child: Builder(
@@ -279,7 +291,8 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('convenience show method works correctly', (WidgetTester tester) async {
+      testWidgets('convenience show method works correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             child: Builder(
@@ -304,14 +317,16 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('convenience hide method exists', (WidgetTester tester) async {
+      testWidgets('convenience hide method exists',
+          (WidgetTester tester) async {
         // Test that the static hide method exists
         expect(LoadingDialog.hide, isA<Function>());
       });
     });
 
     group('Dialog State Management', () {
-      testWidgets('dialogs handle loading states properly', (WidgetTester tester) async {
+      testWidgets('dialogs handle loading states properly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             child: Builder(
@@ -334,11 +349,11 @@ void main() {
 
         // Verify dialog is displayed
         expect(find.text('Testing state management'), findsOneWidget);
-        
+
         // Test button interactions
         final okButton = find.text('OK');
         expect(okButton, findsOneWidget);
-        
+
         // Test cancel button
         final cancelButton = find.text('Avbryt');
         expect(cancelButton, findsOneWidget);
@@ -346,7 +361,8 @@ void main() {
     });
 
     group('Swedish Localization Support', () {
-      testWidgets('all dialog text supports Swedish characters', (WidgetTester tester) async {
+      testWidgets('all dialog text supports Swedish characters',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             child: Builder(
@@ -357,7 +373,8 @@ void main() {
                       context: context,
                       builder: (_) => const ConfirmationDialog(
                         title: 'Förfrågning med ÅÄÖ',
-                        message: 'Vill du spara ändringarna för användarens måltidsplan?',
+                        message:
+                            'Vill du spara ändringarna för användarens måltidsplan?',
                         primaryActionText: 'Spara ändringar',
                         secondaryActionText: 'Avbryt ändringarna',
                       ),
@@ -393,12 +410,14 @@ void main() {
         // Test each dialog type with Swedish characters
         await tester.tap(find.text('Swedish Confirmation'));
         await tester.pumpAndSettle();
-        
+
         expect(find.text('Förfrågning med ÅÄÖ'), findsOneWidget);
-        expect(find.text('Vill du spara ändringarna för användarens måltidsplan?'), findsOneWidget);
+        expect(
+            find.text('Vill du spara ändringarna för användarens måltidsplan?'),
+            findsOneWidget);
         expect(find.text('Spara ändringar'), findsOneWidget);
         expect(find.text('Avbryt ändringarna'), findsOneWidget);
-        
+
         // Close dialog
         await tester.tap(find.text('Avbryt ändringarna'));
         await tester.pumpAndSettle();
@@ -406,10 +425,10 @@ void main() {
         // Test destructive dialog
         await tester.tap(find.text('Swedish Destructive'));
         await tester.pumpAndSettle();
-        
+
         expect(find.text('Radera användarkonto'), findsOneWidget);
         expect(find.byType(AlertDialog), findsOneWidget);
-        
+
         // Close dialog
         await tester.tap(find.text('Avbryt'));
         await tester.pumpAndSettle();
@@ -417,13 +436,15 @@ void main() {
         // Test loading dialog
         await tester.tap(find.text('Swedish Loading'));
         await tester.pump();
-        
-        expect(find.text('Synkroniserar data med moln-tjänsten...'), findsOneWidget);
+
+        expect(find.text('Synkroniserar data med moln-tjänsten...'),
+            findsOneWidget);
       });
     });
 
     group('Responsive Design Behavior', () {
-      testWidgets('dialogs adapt to small screen sizes', (WidgetTester tester) async {
+      testWidgets('dialogs adapt to small screen sizes',
+          (WidgetTester tester) async {
         tester.view.physicalSize = const Size(320, 568);
         tester.view.devicePixelRatio = 1.0;
 
@@ -435,7 +456,8 @@ void main() {
                   context: context,
                   builder: (_) => const ConfirmationDialog(
                     title: 'Small Screen Test',
-                    message: 'This dialog should adapt to small screen constraints',
+                    message:
+                        'This dialog should adapt to small screen constraints',
                   ),
                 ),
                 child: const Text('Small Screen'),
@@ -448,14 +470,17 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Small Screen Test'), findsOneWidget);
-        expect(find.text('This dialog should adapt to small screen constraints'), findsOneWidget);
+        expect(
+            find.text('This dialog should adapt to small screen constraints'),
+            findsOneWidget);
 
         // Reset screen size
         tester.view.resetPhysicalSize();
         tester.view.resetDevicePixelRatio();
       });
 
-      testWidgets('dialogs adapt to tablet screen sizes', (WidgetTester tester) async {
+      testWidgets('dialogs adapt to tablet screen sizes',
+          (WidgetTester tester) async {
         tester.view.physicalSize = const Size(768, 1024);
         tester.view.devicePixelRatio = 1.0;
 
@@ -488,14 +513,16 @@ void main() {
     });
 
     group('Dialog Interface Validation', () {
-      testWidgets('base dialog classes exist and are accessible', (WidgetTester tester) async {
+      testWidgets('base dialog classes exist and are accessible',
+          (WidgetTester tester) async {
         // Verify that all base dialog classes exist and are properly exported
         expect(ConfirmationDialog, isA<Type>());
         expect(DestructiveConfirmationDialog, isA<Type>());
         expect(LoadingDialog, isA<Type>());
       });
 
-      testWidgets('convenience methods have correct signatures', (WidgetTester tester) async {
+      testWidgets('convenience methods have correct signatures',
+          (WidgetTester tester) async {
         // Verify static convenience methods exist with correct types
         expect(ConfirmationDialog.show, isA<Function>());
         expect(DestructiveConfirmationDialog.show, isA<Function>());

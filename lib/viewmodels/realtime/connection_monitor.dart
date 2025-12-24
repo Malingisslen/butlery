@@ -5,7 +5,6 @@ import 'package:butlery/services/realtime_sync_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
-
 /// Status för connection monitoring
 enum ConnectionStatus {
   unknown,
@@ -185,7 +184,7 @@ class ConnectionMonitor {
 
     _debounceTimer?.cancel();
     _debounceTimer = null;
-    
+
     await _connectionSubscription?.cancel();
     _connectionSubscription = null;
 

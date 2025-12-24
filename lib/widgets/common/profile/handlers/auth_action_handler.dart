@@ -65,9 +65,11 @@ class AuthActionHandler {
     try {
       // Re-authenticate user via AuthService
       final authService = ServiceLocator.get<AuthService>();
-      final reauthSuccess = await authService.reauthenticateWithPassword(password);
+      final reauthSuccess =
+          await authService.reauthenticateWithPassword(password);
       if (!reauthSuccess) {
-        throw Exception(authService.errorMessage ?? 'Autentisering misslyckades');
+        throw Exception(
+            authService.errorMessage ?? 'Autentisering misslyckades');
       }
 
       // Perform deletion using ProfileViewModel

@@ -116,10 +116,10 @@ class CollaborativeParticipantsWidgets {
                 builder: (context) => Text(
                   '+$remaining',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontSize: size * 0.35,
-                    color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontSize: size * 0.35,
+                        color: AppColors.primaryBlue,
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ),
             ),

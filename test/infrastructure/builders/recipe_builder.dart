@@ -1,5 +1,5 @@
 /// Test data builder for Recipe objects
-/// 
+///
 /// Provides fluent API for creating test recipes with Swedish-themed defaults
 /// and various preset configurations for different test scenarios.
 library;
@@ -28,11 +28,12 @@ class RecipeBuilder {
   String? createdBy = 'test_user_123';
   RecipeOfflineData? offlineData;
   RecipeSocialData? socialData;
-  
+
   /// Creates a Swedish dinner recipe preset
   RecipeBuilder asSwedishDinner() {
     title = 'Köttbullar med potatismos';
-    description = 'Klassiska svenska köttbullar med krämig potatismos och lingonsylt';
+    description =
+        'Klassiska svenska köttbullar med krämig potatismos och lingonsylt';
     ingredients = [
       '500g köttfärs',
       '1 ägg',
@@ -57,11 +58,12 @@ class RecipeBuilder {
     tags = ['svensk', 'kött', 'traditionell'];
     return this;
   }
-  
+
   /// Creates an Italian pasta recipe preset
   RecipeBuilder asItalianPasta() {
     title = 'Pasta Carbonara';
-    description = 'Klassisk italiensk pasta carbonara med guanciale och pecorino';
+    description =
+        'Klassisk italiensk pasta carbonara med guanciale och pecorino';
     ingredients = [
       '400g spaghetti',
       '200g guanciale',
@@ -84,7 +86,7 @@ class RecipeBuilder {
     tags = ['italiensk', 'pasta', 'snabb'];
     return this;
   }
-  
+
   /// Creates a Swedish breakfast recipe preset
   RecipeBuilder asSwedishBreakfast() {
     title = 'Havregrynsgröt med bär';
@@ -110,7 +112,7 @@ class RecipeBuilder {
     tags = ['frukost', 'vegetarisk', 'snabb'];
     return this;
   }
-  
+
   /// Creates a Swedish dessert recipe preset
   RecipeBuilder asSwedishDessert() {
     title = 'Kladdkaka';
@@ -139,139 +141,139 @@ class RecipeBuilder {
     tags = ['dessert', 'choklad', 'svensk'];
     return this;
   }
-  
+
   /// Set custom title
   RecipeBuilder withTitle(String title) {
     this.title = title;
     return this;
   }
-  
+
   /// Set custom description
   RecipeBuilder withDescription(String description) {
     this.description = description;
     return this;
   }
-  
+
   /// Set custom creator ID
   RecipeBuilder withCreatedBy(String createdBy) {
     this.createdBy = createdBy;
     return this;
   }
-  
+
   /// Set custom ID
   RecipeBuilder withId(String id) {
     this.id = id;
     return this;
   }
-  
+
   /// Set custom ingredients
   RecipeBuilder withIngredients(List<String> ingredients) {
     this.ingredients = ingredients;
     return this;
   }
-  
+
   /// Set custom instructions
   RecipeBuilder withInstructions(List<String> instructions) {
     this.instructions = instructions;
     return this;
   }
-  
+
   /// Set custom meal type
   RecipeBuilder withMealType(String mealType) {
     this.mealType = mealType;
     return this;
   }
-  
+
   /// Set custom portions
   RecipeBuilder withPortions(int? portions) {
     this.portions = portions;
     return this;
   }
-  
+
   /// Set custom time in minutes
   RecipeBuilder withTimeMinutes(int? timeMinutes) {
     this.timeMinutes = timeMinutes;
     return this;
   }
-  
+
   /// Set custom rating
   RecipeBuilder withRating(double? rating) {
     this.rating = rating;
     return this;
   }
-  
+
   /// Set custom tags
   RecipeBuilder withTags(List<String>? tags) {
     this.tags = tags;
     return this;
   }
-  
+
   /// Set recipe type
   RecipeBuilder withType(RecipeType type) {
     this.type = type;
     return this;
   }
-  
+
   /// Set as shared recipe
   RecipeBuilder asShared() {
     type = RecipeType.shared;
     return this;
   }
-  
+
   /// Set as collaborative recipe
   RecipeBuilder asCollaborative() {
     type = RecipeType.collaborative;
     return this;
   }
-  
+
   /// Set as realtime recipe
   RecipeBuilder asRealtime() {
     type = RecipeType.realtime;
     return this;
   }
-  
+
   /// Set as personal recipe
   RecipeBuilder asPersonal() {
     type = RecipeType.personal;
     return this;
   }
-  
+
   /// Set image URLs
   RecipeBuilder withImageUrls(List<String> imageUrls) {
     this.imageUrls = imageUrls;
     return this;
   }
-  
+
   /// Set source URL
   RecipeBuilder withSourceUrl(String sourceUrl) {
     this.sourceUrl = sourceUrl;
     return this;
   }
-  
+
   /// Set custom created date
   RecipeBuilder withCreatedAt(DateTime createdAt) {
     this.createdAt = createdAt;
     return this;
   }
-  
+
   /// Set custom updated date
   RecipeBuilder withUpdatedAt(DateTime updatedAt) {
     this.updatedAt = updatedAt;
     return this;
   }
-  
+
   /// Set custom last cooked date
   RecipeBuilder withLastCookedAt(DateTime lastCookedAt) {
     this.lastCookedAt = lastCookedAt;
     return this;
   }
-  
+
   /// Set offline data for sync testing
   RecipeBuilder withOfflineData(RecipeOfflineData data) {
     offlineData = data;
     return this;
   }
-  
+
   /// Mark recipe as needing sync
   RecipeBuilder needsSync() {
     offlineData = const RecipeOfflineData(
@@ -280,13 +282,13 @@ class RecipeBuilder {
     );
     return this;
   }
-  
+
   /// Set social data for collaborative features
   RecipeBuilder withSocialData(RecipeSocialData data) {
     socialData = data;
     return this;
   }
-  
+
   /// Build the Recipe instance
   Recipe build() {
     return Recipe(

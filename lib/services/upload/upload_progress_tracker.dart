@@ -50,7 +50,8 @@ class UploadProgressTracker {
     double? uploadSpeed;
     Duration? timeRemaining;
 
-    final timeDiff = now.difference(metrics.lastUpdateTime).inMilliseconds / 1000.0;
+    final timeDiff =
+        now.difference(metrics.lastUpdateTime).inMilliseconds / 1000.0;
     final bytesDiff = bytesTransferred - metrics.lastBytesTransferred;
 
     if (timeDiff > 0 && bytesDiff > 0) {
@@ -58,7 +59,8 @@ class UploadProgressTracker {
 
       if (uploadSpeed > 0) {
         final remainingBytes = fileSize - bytesTransferred;
-        timeRemaining = Duration(seconds: (remainingBytes / uploadSpeed).round());
+        timeRemaining =
+            Duration(seconds: (remainingBytes / uploadSpeed).round());
       }
     }
 
@@ -113,7 +115,8 @@ class UploadProgressTracker {
 
   /// Check if a progress milestone was crossed
   /// Returns the milestone value (0.25, 0.50, 0.75) if crossed, null otherwise
-  double? _checkMilestoneCrossed(double previousProgress, double currentProgress) {
+  double? _checkMilestoneCrossed(
+      double previousProgress, double currentProgress) {
     for (final milestone in progressMilestones) {
       if (previousProgress < milestone && currentProgress >= milestone) {
         return milestone;

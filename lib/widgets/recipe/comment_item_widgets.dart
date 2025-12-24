@@ -81,8 +81,9 @@ class CommentItemWidgets {
                   onPressed: onToggleLike,
                   icon: Icon(
                     comment.isLiked ? Icons.favorite : Icons.favorite_border,
-                    color:
-                        comment.isLiked ? AppColors.error : AppColors.textMedium,
+                    color: comment.isLiked
+                        ? AppColors.error
+                        : AppColors.textMedium,
                     size: AppDimensions.iconSizeM,
                   ),
                 ),

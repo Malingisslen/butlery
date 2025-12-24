@@ -132,13 +132,11 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
           config: widget.config,
           onTap: widget.onTap,
         ),
-
         if (widget.config.showMultipleIndicator && widget.imageUrls.length > 1)
           ImageComponents.buildMultipleIndicator(
             imageCount: widget.imageUrls.length,
             config: widget.config,
           ),
-
         Positioned.fill(
           child: Container(
             decoration: BoxDecoration(
@@ -245,7 +243,8 @@ class _RecipeImageWidgetState extends State<RecipeImageWidget> {
           return RepaintBoundary(
             key: ValueKey('recipe_image_$imageUrl'),
             child: Semantics(
-              label: 'Visa fullstorlek av bild ${index + 1} av ${widget.imageUrls.length}',
+              label:
+                  'Visa fullstorlek av bild ${index + 1} av ${widget.imageUrls.length}',
               button: true,
               child: GestureDetector(
                 onTap: () {
@@ -349,7 +348,7 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
       height: dimensions.height == double.infinity ? null : dimensions.height,
       child: Stack(
         children: [
-            ClipRRect(
+          ClipRRect(
             borderRadius: widget.config.effectiveBorderRadius,
             child: PageView.builder(
               controller: _pageController,
@@ -364,7 +363,8 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
               itemCount: widget.imageUrls.length,
               itemBuilder: (context, index) {
                 return Semantics(
-                  label: 'Byt till bild ${index + 1} av ${widget.imageUrls.length}',
+                  label:
+                      'Byt till bild ${index + 1} av ${widget.imageUrls.length}',
                   button: true,
                   child: GestureDetector(
                     onTap: () {
@@ -389,16 +389,14 @@ class _ImageCarouselWidgetState extends State<ImageCarouselWidget> {
               },
             ),
           ),
-
-            if (widget.config.showNavigationDots && widget.imageUrls.length > 1)
+          if (widget.config.showNavigationDots && widget.imageUrls.length > 1)
             ImageComponents.buildNavigationDots(
               currentIndex: _currentIndex,
               totalImages: widget.imageUrls.length,
               config: widget.config,
               onDotTap: _onDotTap,
             ),
-
-            if (widget.config.showImageCounter && widget.imageUrls.length > 1)
+          if (widget.config.showImageCounter && widget.imageUrls.length > 1)
             ImageComponents.buildImageCounter(
               currentIndex: _currentIndex,
               totalImages: widget.imageUrls.length,

@@ -75,13 +75,13 @@ import 'package:flutter/foundation.dart';
 /// This class ensures consistent ViewModel behavior and eliminates code duplication across the presentation layer.
 abstract class BaseViewModel extends ChangeNotifier {
   // ===== REACTIVE STATE MANAGEMENT =====
-  
+
   /// Internal loading state for async operations and UI coordination.
   bool _isLoading = false;
-  
+
   /// Internal error state for comprehensive error handling and user feedback.
   String? _error;
-  
+
   /// Internal disposal state for memory management and lifecycle coordination.
   bool _isDisposed = false;
 
@@ -116,7 +116,7 @@ abstract class BaseViewModel extends ChangeNotifier {
   @protected
   void setLoading(bool loading) {
     if (_isDisposed) return;
-    
+
     _isLoading = loading;
     notifyListeners();
   }
@@ -128,7 +128,7 @@ abstract class BaseViewModel extends ChangeNotifier {
   @protected
   void setError(String? error) {
     if (_isDisposed) return;
-    
+
     _error = error;
     _isLoading = false; // Stop loading when error occurs
     notifyListeners();
@@ -139,7 +139,7 @@ abstract class BaseViewModel extends ChangeNotifier {
   /// ensuring clean state transitions and proper error state management.
   void clearError() {
     if (_isDisposed) return;
-    
+
     _error = null;
     notifyListeners();
   }
@@ -150,7 +150,7 @@ abstract class BaseViewModel extends ChangeNotifier {
   @protected
   void clearState() {
     if (_isDisposed) return;
-    
+
     _isLoading = false;
     _error = null;
     notifyListeners();
@@ -188,9 +188,8 @@ abstract class BaseViewModel extends ChangeNotifier {
       setLoading(false);
       return result;
     } catch (e) {
-      final errorMessage = errorPrefix != null 
-          ? '$errorPrefix: ${e.toString()}'
-          : e.toString();
+      final errorMessage =
+          errorPrefix != null ? '$errorPrefix: ${e.toString()}' : e.toString();
       setError(errorMessage);
       rethrow;
     }
@@ -227,9 +226,8 @@ abstract class BaseViewModel extends ChangeNotifier {
       setLoading(false);
       return true;
     } catch (e) {
-      final errorMessage = errorPrefix != null 
-          ? '$errorPrefix: ${e.toString()}'
-          : e.toString();
+      final errorMessage =
+          errorPrefix != null ? '$errorPrefix: ${e.toString()}' : e.toString();
       setError(errorMessage);
       return false;
     }
@@ -266,11 +264,11 @@ abstract class BaseViewModel extends ChangeNotifier {
   /// Essential for development debugging and production issue investigation.
   @protected
   Map<String, dynamic> get debugState => {
-    'isLoading': _isLoading,
-    'hasError': hasError,
-    'error': _error,
-    'isDisposed': _isDisposed,
-  };
+        'isLoading': _isLoading,
+        'hasError': hasError,
+        'error': _error,
+        'isDisposed': _isDisposed,
+      };
 
   /// Prints comprehensive debug information with conditional debug mode execution.
   /// [prefix] Optional prefix for debug output identification
@@ -311,7 +309,6 @@ extension BaseViewModelExtensions on BaseViewModel {
 /// exponential backoff, and resilient operation patterns for robust network operations
 /// and service integrations in production applications.
 mixin AsyncOperationMixin on BaseViewModel {
-  
   /// Executes operations with intelligent retry logic and progressive error handling.
   /// [operation] The async operation to execute with retry capability
   /// [maxRetries] Maximum number of retry attempts (default: 3)
@@ -340,20 +337,20 @@ mixin AsyncOperationMixin on BaseViewModel {
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
       final result = await executeAsync<T>(
         operation,
-        errorPrefix: attempt == maxRetries 
-            ? errorPrefix 
+        errorPrefix: attempt == maxRetries
+            ? errorPrefix
             : null, // Only show error on final attempt
         clearErrorOnStart: attempt == 1,
       );
-      
+
       if (result != null || attempt == maxRetries) {
         return result;
       }
-      
+
       // Wait before retry
       await Future.delayed(delay);
     }
-    
+
     return null;
   }
 }
@@ -363,19 +360,20 @@ mixin AsyncOperationMixin on BaseViewModel {
 /// validation state management, and form validation patterns commonly needed in Flutter applications
 /// with complex forms and data validation requirements.
 mixin ValidationMixin on BaseViewModel {
-  
   /// Internal validation error storage with field-specific error tracking.
   final Map<String, String?> _validationErrors = {};
 
   /// Immutable validation errors map for UI binding and error display.
   /// Provides read-only access to all current validation errors organized by field name,
   /// enabling UI components to display field-specific error messages and validation states.
-  Map<String, String?> get validationErrors => Map.unmodifiable(_validationErrors);
+  Map<String, String?> get validationErrors =>
+      Map.unmodifiable(_validationErrors);
 
   /// Whether any validation errors are currently present requiring user attention.
   /// Efficiently checks for validation error presence across all fields,
   /// commonly used for form submission enabling and validation state UI updates.
-  bool get hasValidationErrors => _validationErrors.values.any((error) => error != null);
+  bool get hasValidationErrors =>
+      _validationErrors.values.any((error) => error != null);
 
   /// Sets field-specific validation error with automatic UI notification.
   /// [field] The field identifier for error association
@@ -385,7 +383,7 @@ mixin ValidationMixin on BaseViewModel {
   @protected
   void setValidationError(String field, String? error) {
     if (isDisposed) return;
-    
+
     _validationErrors[field] = error;
     notifyListeners();
   }
@@ -397,7 +395,7 @@ mixin ValidationMixin on BaseViewModel {
   @protected
   void clearValidationError(String field) {
     if (isDisposed) return;
-    
+
     _validationErrors.remove(field);
     notifyListeners();
   }
@@ -408,7 +406,7 @@ mixin ValidationMixin on BaseViewModel {
   @protected
   void clearAllValidationErrors() {
     if (isDisposed) return;
-    
+
     _validationErrors.clear();
     notifyListeners();
   }

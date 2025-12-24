@@ -1,5 +1,5 @@
 /// Test helpers for notification module testing
-/// 
+///
 /// Provides common test utilities, factories, and mock data
 /// for notification module tests to ensure consistency and reduce duplication.
 library;
@@ -123,7 +123,8 @@ class NotificationTestHelpers {
     String? errorMessage,
   }) {
     return NotificationHistoryEntry(
-      notificationId: notificationId ?? 'history-notification-${DateTime.now().millisecondsSinceEpoch}',
+      notificationId: notificationId ??
+          'history-notification-${DateTime.now().millisecondsSinceEpoch}',
       userId: userId ?? 'test-user-123',
       title: title ?? 'Historical Notification',
       sentAt: sentAt ?? DateTime.now(),
@@ -161,7 +162,8 @@ class NotificationTestHelpers {
     DateTime? sentTime,
   }) {
     return RemoteMessage(
-      messageId: messageId ?? 'test-message-${DateTime.now().millisecondsSinceEpoch}',
+      messageId:
+          messageId ?? 'test-message-${DateTime.now().millisecondsSinceEpoch}',
       data: data ?? {'type': 'test', 'action': 'none'},
       from: from ?? 'test-sender',
       collapseKey: collapseKey,
@@ -181,16 +183,16 @@ class NotificationTestHelpers {
   ) {
     final startParts = quietHoursStart.split(':');
     final endParts = quietHoursEnd.split(':');
-    
+
     final startHour = int.parse(startParts[0]);
     final startMinute = int.parse(startParts[1]);
     final endHour = int.parse(endParts[0]);
     final endMinute = int.parse(endParts[1]);
-    
+
     final currentMinutes = time.hour * 60 + time.minute;
     final startMinutes = startHour * 60 + startMinute;
     final endMinutes = endHour * 60 + endMinute;
-    
+
     // Handle overnight quiet hours (e.g., 22:00 to 08:00)
     if (startMinutes > endMinutes) {
       return currentMinutes >= startMinutes || currentMinutes <= endMinutes;
@@ -216,12 +218,12 @@ class NotificationTestHelpers {
     bool includeDigest = false,
   }) {
     final topics = <String>[];
-    
+
     // User-specific topic
     if (userId != null) {
       topics.add('user_$userId');
     }
-    
+
     // Category topics
     if (includeCategories) {
       topics.addAll([
@@ -231,15 +233,15 @@ class NotificationTestHelpers {
         'collaboration_invites',
       ]);
     }
-    
+
     // Digest topic
     if (includeDigest) {
       topics.add('digest_daily');
     }
-    
+
     // Global topics
     topics.add('app_updates');
-    
+
     return topics;
   }
 
@@ -410,7 +412,8 @@ class NotificationPreferences {
     };
   }
 
-  factory NotificationPreferences.fromMap(String userId, Map<String, dynamic> map) {
+  factory NotificationPreferences.fromMap(
+      String userId, Map<String, dynamic> map) {
     return NotificationPreferences(
       userId: userId,
       enableAll: map['enableAll'] ?? true,
@@ -425,7 +428,7 @@ class NotificationPreferences {
       quietHoursEnd: map['quietHoursEnd'] ?? '08:00',
       digestFrequency: map['digestFrequency'] ?? 'daily',
       categorySettings: Map<String, bool>.from(map['categorySettings'] ?? {}),
-      updatedAt: map['updatedAt'] != null 
+      updatedAt: map['updatedAt'] != null
           ? DateTime.parse(map['updatedAt'])
           : DateTime.now(),
     );
@@ -542,7 +545,7 @@ class NotificationBatchQueue {
   });
 
   bool get isFull => notifications.length >= maxSize;
-  
+
   bool get isWindowExpired {
     final windowEnd = windowStart.add(batchWindow);
     return DateTime.now().isAfter(windowEnd);
@@ -565,7 +568,7 @@ class FakeRemoteNotification extends Fake implements RemoteNotification {
   final String? title;
   @override
   final String? body;
-  
+
   FakeRemoteNotification({this.title, this.body});
 }
 
@@ -600,26 +603,26 @@ class MockNotificationRepository extends Mock {
 
   // Mock methods for testing
   Future<NotificationPreferences> getPreferences() async => _preferences;
-  
+
   Future<void> updatePreferences(NotificationPreferences preferences) async {
     _preferences = preferences;
   }
-  
+
   Future<void> addToHistory(NotificationHistoryEntry entry) async {
     _history.add(entry);
   }
-  
+
   Future<List<NotificationHistoryEntry>> getHistory() async => _history;
-  
+
   Future<void> queueNotification(PendingNotification notification) async {
     _queue.add(notification);
   }
-  
+
   Future<List<PendingNotification>> getQueuedNotifications() async => _queue;
-  
+
   Future<void> saveToken(FCMToken token) async {
     _tokens[token.token] = token;
   }
-  
+
   Future<FCMToken?> getToken(String token) async => _tokens[token];
 }

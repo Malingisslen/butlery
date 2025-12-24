@@ -22,7 +22,7 @@
 /// ```dart
 /// group('AuthView Tests', () {
 ///   ViewTestPatterns.useStandardViewTestSetup();
-///   
+///
 ///   testWidgets('should display login form correctly', (tester) async {
 ///     await ViewTestPatterns.runAuthViewTest(
 ///       tester,
@@ -77,7 +77,7 @@ class ViewTestPatterns {
   /// Enhanced setup for collaborative view tests.
   static void useCollaborativeViewTestSetup() {
     useStandardViewTestSetup();
-    
+
     setUp(() async {
       // Additional setup for collaborative features
       TestServiceLocator.configureForScenario(TestScenario.authenticated);
@@ -87,7 +87,7 @@ class ViewTestPatterns {
   /// Setup for offline/network testing scenarios.
   static void useOfflineViewTestSetup() {
     useStandardViewTestSetup();
-    
+
     setUp(() async {
       TestServiceLocator.configureForScenario(TestScenario.offline);
     });
@@ -108,11 +108,12 @@ class ViewTestPatterns {
     Map<String, dynamic>? authConfig,
   }) async {
     // Setup providers
-    final providers = customProviders ?? ProviderTestUtils.setupAuthProviders(
-      isAuthenticated: authConfig?['isAuthenticated'] ?? false,
-      userId: authConfig?['userId'],
-      email: authConfig?['email'],
-    );
+    final providers = customProviders ??
+        ProviderTestUtils.setupAuthProviders(
+          isAuthenticated: authConfig?['isAuthenticated'] ?? false,
+          userId: authConfig?['userId'],
+          email: authConfig?['email'],
+        );
 
     // Create test widget
     final testWidget = ViewTestHelpers.createTestViewWidget(
@@ -229,19 +230,19 @@ class ViewTestPatterns {
   static void expectSwedishAuthForm(WidgetTester tester) {
     // Email field with Swedish label
     expect(find.widgetWithText(TextFormField, 'E-post'), findsOneWidget,
-      reason: 'Email field with Swedish label not found');
+        reason: 'Email field with Swedish label not found');
 
     // Password field
     expect(find.widgetWithText(TextFormField, 'Lösenord'), findsOneWidget,
-      reason: 'Password field with Swedish label not found');
+        reason: 'Password field with Swedish label not found');
 
     // Login button
     expect(find.widgetWithText(ElevatedButton, 'Logga in'), findsOneWidget,
-      reason: 'Login button with Swedish text not found');
+        reason: 'Login button with Swedish text not found');
 
     // Registration link
     expect(find.text('Skapa konto'), findsOneWidget,
-      reason: 'Registration link with Swedish text not found');
+        reason: 'Registration link with Swedish text not found');
   }
 
   /// Expect Swedish recipe form elements.
@@ -256,12 +257,12 @@ class ViewTestPatterns {
 
     for (final fieldLabel in swedishFormFields) {
       expect(find.text(fieldLabel), findsAtLeastNWidgets(1),
-        reason: 'Recipe form field "$fieldLabel" not found');
+          reason: 'Recipe form field "$fieldLabel" not found');
     }
 
     // Save button
     expect(find.text('Spara'), findsOneWidget,
-      reason: 'Save button with Swedish text not found');
+        reason: 'Save button with Swedish text not found');
   }
 
   /// Expect Swedish shopping list elements.
@@ -275,7 +276,7 @@ class ViewTestPatterns {
 
     for (final element in expectedElements) {
       expect(find.text(element), findsAtLeastNWidgets(1),
-        reason: 'Shopping list element "$element" not found');
+          reason: 'Shopping list element "$element" not found');
     }
   }
 
@@ -298,7 +299,7 @@ class ViewTestPatterns {
     }
 
     expect(foundIndicator, isTrue,
-      reason: 'No collaborative editing indicators found');
+        reason: 'No collaborative editing indicators found');
   }
 
   /// Expect error state with Swedish error messages.
@@ -308,7 +309,7 @@ class ViewTestPatterns {
   }) {
     if (specificError != null) {
       expect(find.text(specificError), findsOneWidget,
-        reason: 'Specific Swedish error message not found: $specificError');
+          reason: 'Specific Swedish error message not found: $specificError');
       return;
     }
 
@@ -329,14 +330,13 @@ class ViewTestPatterns {
       }
     }
 
-    expect(foundError, isTrue,
-      reason: 'No Swedish error messages found');
+    expect(foundError, isTrue, reason: 'No Swedish error messages found');
   }
 
   /// Expect loading state indicators.
   static void expectLoadingState(WidgetTester tester) {
     expect(find.byType(CircularProgressIndicator), findsAtLeastNWidgets(1),
-      reason: 'Loading indicator not found');
+        reason: 'Loading indicator not found');
   }
 
   /// Expect accessibility compliance.
@@ -353,12 +353,11 @@ class ViewTestPatterns {
       final elements = tester.widgetList(elementFinder);
       for (final element in elements) {
         final semantics = tester.getSemantics(find.byWidget(element));
-        
+
         // Check that interactive elements have proper semantics
-        expect(semantics.label.isNotEmpty || 
-               semantics.hint.isNotEmpty,
-          isTrue,
-          reason: 'Interactive element missing proper semantics: ${element.runtimeType}');
+        expect(semantics.label.isNotEmpty || semantics.hint.isNotEmpty, isTrue,
+            reason:
+                'Interactive element missing proper semantics: ${element.runtimeType}');
       }
     }
   }
@@ -366,17 +365,17 @@ class ViewTestPatterns {
   /// Expect responsive layout for different screen sizes.
   static void expectResponsiveLayout(WidgetTester tester, Size screenSize) {
     ViewTestHelpers.setScreenSize(tester, size: screenSize);
-    
+
     // Verify layout adapts to screen size
     final scaffold = find.byType(Scaffold);
     if (tester.any(scaffold)) {
       final scaffoldWidget = tester.widget<Scaffold>(scaffold);
-      
+
       // Check for proper layout elements based on screen size
       if (screenSize.width < 600) {
         // Phone layout expectations
         expect(scaffoldWidget.drawer, isNull,
-          reason: 'Phone layout should not have drawer');
+            reason: 'Phone layout should not have drawer');
       } else {
         // Tablet/desktop layout expectations
         // Additional responsive checks can be added here
@@ -394,11 +393,14 @@ class ViewTestPatterns {
     Duration interactionThreshold = const Duration(milliseconds: 200),
   }) async {
     // Measure initial render time
-    final renderTime = await ViewTestHelpers.measureViewRenderTime(tester, testWidget);
-    ViewTestHelpers.expectPerformantRendering(renderTime, threshold: renderThreshold);
+    final renderTime =
+        await ViewTestHelpers.measureViewRenderTime(tester, testWidget);
+    ViewTestHelpers.expectPerformantRendering(renderTime,
+        threshold: renderThreshold);
 
     // Measure interaction responsiveness
-    final interactionMetrics = await InteractionHelpers.measureInteractionPerformance(
+    final interactionMetrics =
+        await InteractionHelpers.measureInteractionPerformance(
       tester,
       () async {
         final button = find.byType(ElevatedButton).first;
@@ -410,8 +412,9 @@ class ViewTestPatterns {
     );
 
     expect(interactionMetrics.totalDuration, lessThan(interactionThreshold),
-      reason: 'Interaction took ${interactionMetrics.totalDuration.inMilliseconds}ms, '
-              'exceeds threshold of ${interactionThreshold.inMilliseconds}ms');
+        reason:
+            'Interaction took ${interactionMetrics.totalDuration.inMilliseconds}ms, '
+            'exceeds threshold of ${interactionThreshold.inMilliseconds}ms');
   }
 
   /// Expect memory-efficient resource usage.
@@ -431,7 +434,7 @@ class ViewTestPatterns {
         // This is a basic check - more sophisticated memory testing
         // would require additional tooling
         expect(controller, isNotNull,
-          reason: 'Controller should be properly initialized');
+            reason: 'Controller should be properly initialized');
       }
     }
   }
@@ -484,14 +487,14 @@ class ViewTestPatterns {
   static void _validateTestCompletion(WidgetTester tester, String testId) {
     // Ensure no exceptions were thrown
     expect(tester.takeException(), isNull,
-      reason: 'Test $testId completed with exceptions');
+        reason: 'Test $testId completed with exceptions');
 
     // Verify Swedish localization is working
-    final hasSwedishText = tester.any(find.textContaining('a')) || 
-                          tester.any(find.textContaining('e')) ||
-                          tester.any(find.textContaining('i'));
+    final hasSwedishText = tester.any(find.textContaining('a')) ||
+        tester.any(find.textContaining('e')) ||
+        tester.any(find.textContaining('i'));
     expect(hasSwedishText, isTrue,
-      reason: 'No Swedish text found in test $testId');
+        reason: 'No Swedish text found in test $testId');
   }
 
   /// Validate collaborative features are working.
@@ -506,19 +509,19 @@ class ViewTestPatterns {
   static void validateUltrathinkCompliance(TestConfiguration config) {
     // Provider setup validation
     expect(config.hasProviderSetup, isTrue,
-      reason: 'Ultrathink tests must configure providers');
+        reason: 'Ultrathink tests must configure providers');
 
     // Swedish localization validation
     expect(config.hasSwedishLocalization, isTrue,
-      reason: 'Ultrathink tests must verify Swedish text');
+        reason: 'Ultrathink tests must verify Swedish text');
 
     // State management validation
     expect(config.hasStateManagement, isTrue,
-      reason: 'Ultrathink tests must verify state transitions');
+        reason: 'Ultrathink tests must verify state transitions');
 
     // Error handling validation
     expect(config.hasErrorHandling, isTrue,
-      reason: 'Ultrathink tests must test error scenarios');
+        reason: 'Ultrathink tests must test error scenarios');
   }
 }
 
@@ -543,10 +546,10 @@ class TestConfiguration {
   });
 
   bool get isUltrathinkCompliant =>
-    hasProviderSetup &&
-    hasSwedishLocalization &&
-    hasStateManagement &&
-    hasErrorHandling;
+      hasProviderSetup &&
+      hasSwedishLocalization &&
+      hasStateManagement &&
+      hasErrorHandling;
 }
 
 /// Pattern-specific test group helper.
@@ -596,7 +599,7 @@ extension TestPatternExtensions on WidgetTester {
       child: view,
       providers: providers,
     ));
-    
+
     await ViewTestHelpers.waitForViewInitialization(this);
     await test(this);
   }

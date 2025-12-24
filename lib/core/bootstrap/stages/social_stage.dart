@@ -26,12 +26,12 @@ class SocialStage implements BootstrapStage {
 
   @override
   List<Type> get requiredModules => [
-    CoreModule,
-    ContentModule,
-    SocialModule,
-    MessagingModule,
-    CollaborationModule,
-  ];
+        CoreModule,
+        ContentModule,
+        SocialModule,
+        MessagingModule,
+        CollaborationModule,
+      ];
 
   @override
   Duration get timeout => const Duration(minutes: 1);
@@ -47,10 +47,10 @@ class SocialStage implements BootstrapStage {
     try {
       // Social module initialization is handled by the DI container
       // This stage can perform any additional social-specific setup
-      
+
       // Allow time for social services to fully initialize
       await Future.delayed(const Duration(milliseconds: 300));
-      
+
       if (kDebugMode) {
         debugPrint('✅ [SocialStage] Social services ready');
       }
@@ -61,7 +61,7 @@ class SocialStage implements BootstrapStage {
         }
         return; // Don't throw for optional stages
       }
-      
+
       throw BootstrapException(
         name,
         'execution',
@@ -76,13 +76,13 @@ class SocialStage implements BootstrapStage {
     try {
       // Validation is primarily handled by the DI container's health checks
       // This stage confirms social services are ready
-      
+
       return true;
     } catch (e) {
       if (kDebugMode) {
         debugPrint('❌ [SocialStage] Validation failed: $e');
       }
-      
+
       // Return true for optional stages to allow app to continue
       return isOptional;
     }

@@ -62,8 +62,9 @@ class ShareDialogHelpers {
     ShareMode shareMode,
   ) {
     final contentName = getContentTypeName(contentType);
-    final modeText = shareMode == ShareMode.realtime ? 'realtidsdelning' : 'kopia';
-    
+    final modeText =
+        shareMode == ShareMode.realtime ? 'realtidsdelning' : 'kopia';
+
     return '$contentName har delats som $modeText med $recipientCount mottagare.';
   }
 

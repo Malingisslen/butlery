@@ -72,7 +72,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
                 title: 'Laddar listor...',
               );
             }
-            
+
             if (_viewModel.hasError) {
               return StateWidget(
                 type: StateType.error,
@@ -82,7 +82,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
                 onAction: () => _viewModel.loadLists(),
               );
             }
-            
+
             return ListView(
               controller: scrollController,
               children: [
@@ -132,7 +132,8 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
   }
 
   /// Build lists section
-  Widget _buildListsSection(BuildContext context, UnifiedShoppingViewModel viewModel) {
+  Widget _buildListsSection(
+      BuildContext context, UnifiedShoppingViewModel viewModel) {
     if (viewModel.lists.isEmpty) {
       return ShoppingListEmptyState(
         onCreateList: () => _createNewList(context),
@@ -146,7 +147,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
       itemBuilder: (context, index) {
         final list = viewModel.lists[index];
         final isSelected = _selectedListId == list.id;
-        
+
         return ShoppingListCard(
           list: list,
           viewModel: viewModel,
@@ -158,7 +159,8 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
   }
 
   /// Build add to list section
-  Widget _buildAddToListSection(BuildContext context, UnifiedShoppingViewModel viewModel) {
+  Widget _buildAddToListSection(
+      BuildContext context, UnifiedShoppingViewModel viewModel) {
     final selectedList = viewModel.lists.firstWhere(
       (list) => list.id == _selectedListId,
       orElse: () => viewModel.lists.first,
@@ -167,7 +169,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     // Initialize filtered items if not already set
     _filteredMenuItems ??= _convertMenuToShoppingItems();
     final menuItems = _filteredMenuItems!;
-    
+
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(
@@ -217,13 +219,18 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               const SizedBox(width: AppDimensions.spacingM),
               Expanded(
                 child: StyledButton.primary(
-                  text: _isAddingToList 
-                      ? 'Lägger till...' 
-                      : menuItems.isEmpty 
+                  text: _isAddingToList
+                      ? 'Lägger till...'
+                      : menuItems.isEmpty
                           ? 'Inga artiklar att lägga till'
                           : 'Lägg till',
-                  icon: _isAddingToList ? null : const Icon(Icons.add_shopping_cart),
-                  onPressed: (_isAddingToList || menuItems.isEmpty) ? null : () => _addMenuToList(context, viewModel, selectedList, menuItems),
+                  icon: _isAddingToList
+                      ? null
+                      : const Icon(Icons.add_shopping_cart),
+                  onPressed: (_isAddingToList || menuItems.isEmpty)
+                      ? null
+                      : () => _addMenuToList(
+                          context, viewModel, selectedList, menuItems),
                   isLoading: _isAddingToList,
                 ),
               ),
@@ -248,10 +255,10 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
   /// Create new list
   Future<void> _createNewList(BuildContext context) async {
     final name = await ShoppingListActions.showCreateListDialog(context);
-    
+
     if (name != null && name.isNotEmpty) {
       final success = await _viewModel.createList(name);
-      
+
       if (mounted && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -266,7 +273,8 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
 
         if (success) {
           // Auto-select the newly created list
-          final newListId = _viewModel.lists.isNotEmpty ? _viewModel.lists.last.id : null;
+          final newListId =
+              _viewModel.lists.isNotEmpty ? _viewModel.lists.last.id : null;
           if (newListId != null) {
             await _viewModel.setActiveList(newListId);
             if (mounted) {
@@ -301,8 +309,9 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
       }
 
       try {
-        final success = await viewModel.addItemsToList(selectedList.id, menuItems);
-        
+        final success =
+            await viewModel.addItemsToList(selectedList.id, menuItems);
+
         if (mounted && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -314,7 +323,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
               backgroundColor: success ? AppColors.success : AppColors.error,
             ),
           );
-          
+
           // Call onListSelected callback on success to let parent handle navigation
           if (success) {
             widget.onListSelected?.call();
@@ -331,12 +340,13 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
   }
 
   /// Preview and edit menu items
-  Future<void> _previewAndEditMenuItems(BuildContext context, List<UnifiedShoppingItem> items) async {
+  Future<void> _previewAndEditMenuItems(
+      BuildContext context, List<UnifiedShoppingItem> items) async {
     final selectedList = _viewModel.lists.firstWhere(
       (list) => list.id == _selectedListId,
       orElse: () => _viewModel.lists.first,
     );
-    
+
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (context) => EditableMenuItemsPreviewDialog(
@@ -344,18 +354,21 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
         selectedListName: selectedList.name,
       ),
     );
-    
+
     if (result != null && mounted) {
       final editedItems = result['items'] as List<UnifiedShoppingItem>?;
       final shouldAddToList = result['addToList'] as bool? ?? false;
-      
+
       if (editedItems != null) {
         setState(() {
           _filteredMenuItems = editedItems;
         });
-        
+
         // If user chose to add to list, do it automatically
-        if (shouldAddToList && editedItems.isNotEmpty && mounted && context.mounted) {
+        if (shouldAddToList &&
+            editedItems.isNotEmpty &&
+            mounted &&
+            context.mounted) {
           await _addMenuToList(context, _viewModel, selectedList, editedItems);
         }
       }
@@ -367,12 +380,12 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
     if (widget.menu == null) return [];
 
     final Map<String, UnifiedShoppingItem> itemMap = {};
-    
+
     for (final dayRecipes in widget.menu!.values) {
       for (final recipe in dayRecipes) {
         for (final ingredient in recipe.ingredients) {
           final key = ingredient.toLowerCase().trim();
-          
+
           if (itemMap.containsKey(key)) {
             // Combine quantities if possible
             final existingItem = itemMap[key]!;
@@ -382,8 +395,10 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
           } else {
             itemMap[key] = UnifiedShoppingItem(
               name: ingredient,
-              amount: 0, // No additional amount since ingredient already contains quantity
-              unit: '', // No additional unit since ingredient already contains unit
+              amount:
+                  0, // No additional amount since ingredient already contains quantity
+              unit:
+                  '', // No additional unit since ingredient already contains unit
               bought: false,
             );
           }

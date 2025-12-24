@@ -14,7 +14,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// ❌ DOES NOT CONTAIN: UI state, menu operations, participant management
 class RealtimeStreamManager {
   final RealtimeMenuService _menuService;
-  
+
   StreamSubscription<RealtimeMenu>? _menuSubscription;
   String? _currentMenuId;
   bool _isStreaming = false;
@@ -56,14 +56,14 @@ class RealtimeStreamManager {
 
       _currentMenuId = menuId;
       _menuSubscription = _menuService.watchRealtimeMenu(menuId).listen(
-        _handleMenuUpdate,
-        onError: _handleMenuError,
-        onDone: _handleStreamDone,
-      );
+            _handleMenuUpdate,
+            onError: _handleMenuError,
+            onDone: _handleStreamDone,
+          );
 
       _isStreaming = true;
       onStreamStarted();
-      
+
       AppLogger.success('✅ Stream started for menu: $menuId');
     } catch (e) {
       AppLogger.error('❌ Failed to start watching menu', e);
@@ -104,9 +104,7 @@ class RealtimeStreamManager {
 
   /// Check if stream is healthy
   bool isStreamHealthy() {
-    return _isStreaming && 
-           _menuSubscription != null && 
-           _currentMenuId != null;
+    return _isStreaming && _menuSubscription != null && _currentMenuId != null;
   }
 
   /// Restart stream with current menu ID
@@ -118,7 +116,7 @@ class RealtimeStreamManager {
 
     final menuId = _currentMenuId!;
     AppLogger.info('🔄 Restarting stream for: $menuId');
-    
+
     await stopWatching();
     await startWatching(menuId);
   }
@@ -126,7 +124,7 @@ class RealtimeStreamManager {
   /// Force reconnection
   Future<void> forceReconnect() async {
     AppLogger.info('🔄 Forcing stream reconnection');
-    
+
     if (_currentMenuId != null) {
       await restartStream();
     } else {
@@ -148,7 +146,7 @@ class RealtimeStreamManager {
 
   void _handleMenuError(dynamic error) {
     AppLogger.error('❌ Stream error for menu: $_currentMenuId', error);
-    
+
     // Don't clean up immediately - let the parent decide
     onMenuError(error);
   }
@@ -166,7 +164,7 @@ class RealtimeStreamManager {
     } catch (e) {
       AppLogger.warning('⚠️ Error cancelling subscription: $e');
     }
-    
+
     _menuSubscription = null;
     _currentMenuId = null;
     _isStreaming = false;
@@ -186,12 +184,12 @@ class RealtimeStreamManager {
   /// Check if we can start streaming
   bool canStartStreaming(String menuId) {
     if (!validateMenuId(menuId)) return false;
-    
+
     // Allow restart of same menu
     if (_isStreaming && _currentMenuId == menuId) {
       return true;
     }
-    
+
     return true;
   }
 

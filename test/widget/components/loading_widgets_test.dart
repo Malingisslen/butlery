@@ -11,16 +11,17 @@ void main() {
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
     });
-    
+
     tearDown(() async {
       BaseUnitTest.resetMocks();
     });
-    
+
     group('loadingOverlay', () {
-      testWidgets('should not show overlay when isLoading is false', (tester) async {
+      testWidgets('should not show overlay when isLoading is false',
+          (tester) async {
         // Arrange
         const testChild = Text('Test Content');
-        
+
         // Act
         await tester.pumpWidget(
           MaterialApp(
@@ -30,16 +31,16 @@ void main() {
             ),
           ),
         );
-        
+
         // Assert
         expect(find.text('Test Content'), findsOneWidget);
         expect(find.byType(CircularProgressIndicator), findsNothing);
       });
-      
+
       testWidgets('should show overlay when isLoading is true', (tester) async {
         // Arrange
         const testChild = Text('Test Content');
-        
+
         // Act
         await tester.pumpWidget(
           MaterialApp(
@@ -49,14 +50,14 @@ void main() {
             ),
           ),
         );
-        
+
         // Assert
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
         expect(find.byType(Stack), findsOneWidget);
         // Child should still be in the widget tree, just covered by overlay
         expect(find.text('Test Content'), findsOneWidget);
       });
-      
+
       testWidgets('should show loading message when provided', (tester) async {
         // Act
         await tester.pumpWidget(
@@ -67,16 +68,17 @@ void main() {
             ),
           ),
         );
-        
+
         // Assert
         expect(find.text('Laddar recept...'), findsOneWidget);
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
-      
-      testWidgets('should use custom overlay color when provided', (tester) async {
+
+      testWidgets('should use custom overlay color when provided',
+          (tester) async {
         // Arrange
         const customColor = Colors.red;
-        
+
         // Act
         await tester.pumpWidget(
           MaterialApp(
@@ -86,15 +88,16 @@ void main() {
             ),
           ),
         );
-        
+
         // Assert
         final coloredBox = tester.widget<ColoredBox>(
           find.byType(ColoredBox).first,
         );
         expect(coloredBox.color, equals(customColor));
       });
-      
-      testWidgets('should render without child when only loading', (tester) async {
+
+      testWidgets('should render without child when only loading',
+          (tester) async {
         // Act
         await tester.pumpWidget(
           MaterialApp(
@@ -103,13 +106,15 @@ void main() {
             ),
           ),
         );
-        
+
         // Assert
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
-        expect(find.byType(Stack), findsNothing); // No stack needed without child
+        expect(
+            find.byType(Stack), findsNothing); // No stack needed without child
       });
-      
-      testWidgets('should show empty widget when not loading and no child', (tester) async {
+
+      testWidgets('should show empty widget when not loading and no child',
+          (tester) async {
         // Act
         await tester.pumpWidget(
           MaterialApp(
@@ -118,13 +123,14 @@ void main() {
             ),
           ),
         );
-        
+
         // Assert
         expect(find.byType(SizedBox), findsOneWidget);
         expect(find.byType(CircularProgressIndicator), findsNothing);
       });
-      
-      testWidgets('should have correct styling for loading container', (tester) async {
+
+      testWidgets('should have correct styling for loading container',
+          (tester) async {
         // Act
         await tester.pumpWidget(
           MaterialApp(
@@ -134,26 +140,29 @@ void main() {
             ),
           ),
         );
-        
+
         // Assert
         final container = tester.widget<Container>(
           find.byType(Container).first,
         );
-        
-        expect(container.padding, equals(const EdgeInsets.all(AppDimensions.paddingL)));
-        
+
+        expect(container.padding,
+            equals(const EdgeInsets.all(AppDimensions.paddingL)));
+
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.color, equals(AppColors.cardWhite));
-        expect(decoration.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadiusL)));
+        expect(decoration.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadiusL)));
       });
-      
-      testWidgets('should properly layer child and overlay in Stack', (tester) async {
+
+      testWidgets('should properly layer child and overlay in Stack',
+          (tester) async {
         // Arrange
         const testChild = ColoredBox(
           color: Colors.blue,
           child: Text('Background Content'),
         );
-        
+
         // Act
         await tester.pumpWidget(
           MaterialApp(
@@ -163,24 +172,24 @@ void main() {
             ),
           ),
         );
-        
+
         // Assert
         final stack = tester.widget<Stack>(find.byType(Stack));
         expect(stack.children.length, equals(2));
-        
+
         // First child should be the content
         expect(find.text('Background Content'), findsOneWidget);
-        
+
         // Second child should be the overlay with loading indicator
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
     });
-    
+
     group('errorBoundary', () {
       testWidgets('should render child when no error occurs', (tester) async {
         // Arrange
         const testChild = Text('Normal Content');
-        
+
         // Act
         await tester.pumpWidget(
           MaterialApp(
@@ -191,17 +200,18 @@ void main() {
             ),
           ),
         );
-        
+
         // Assert
         expect(find.text('Normal Content'), findsOneWidget);
         expect(find.text('Ett oväntat fel uppstod'), findsNothing);
       });
-      
-      testWidgets('should show custom error widget when provided', (tester) async {
+
+      testWidgets('should show custom error widget when provided',
+          (tester) async {
         // Arrange
         const customErrorWidget = Text('Custom Error Message');
         bool hasError = false;
-        
+
         // Act - Use ErrorWidget to properly test error handling in Flutter
         await tester.pumpWidget(
           MaterialApp(
@@ -216,14 +226,15 @@ void main() {
             ),
           ),
         );
-        
+
         // Since the try-catch in Builder won't catch widget build errors,
         // we test that the normal widget renders when no error occurs
         expect(find.text('Normal Widget'), findsOneWidget);
         expect(hasError, isFalse);
       });
-      
-      testWidgets('should call onError callback for runtime errors', (tester) async {
+
+      testWidgets('should call onError callback for runtime errors',
+          (tester) async {
         // Create a widget that handles runtime errors
         final Widget errorWidget = StatefulBuilder(
           builder: (context, setState) {
@@ -239,7 +250,7 @@ void main() {
             return const Text('Widget Built');
           },
         );
-        
+
         // Act
         await tester.pumpWidget(
           MaterialApp(
@@ -253,18 +264,19 @@ void main() {
             ),
           ),
         );
-        
+
         // Let microtasks run
         await tester.pump();
-        
+
         // Assert - Widget builds normally
         expect(find.text('Widget Built'), findsOneWidget);
       });
-      
-      testWidgets('should render error widget structure correctly', (tester) async {
+
+      testWidgets('should render error widget structure correctly',
+          (tester) async {
         // Test the error widget structure by creating it directly
         // since Flutter's error handling prevents testing throw scenarios
-        
+
         // Act - Create the error widget directly
         await tester.pumpWidget(
           MaterialApp(
@@ -276,12 +288,15 @@ void main() {
                     padding: const EdgeInsets.all(AppDimensions.paddingM),
                     decoration: BoxDecoration(
                       color: AppColors.error.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                      border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.borderRadiusM),
+                      border: Border.all(
+                          color: AppColors.error.withValues(alpha: 0.3)),
                     ),
                     child: Text(
                       'Ett oväntat fel uppstod',
-                      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(color: AppColors.error),
                     ),
                   ),
                 ),
@@ -289,23 +304,26 @@ void main() {
             ),
           ),
         );
-        
+
         // Assert
         expect(find.text('Ett oväntat fel uppstod'), findsOneWidget);
-        
+
         final container = tester.widget<Container>(
           find.byType(Container).first,
         );
-        
-        expect(container.padding, equals(const EdgeInsets.all(AppDimensions.paddingM)));
-        
+
+        expect(container.padding,
+            equals(const EdgeInsets.all(AppDimensions.paddingM)));
+
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadiusM)));
+        expect(decoration.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadiusM)));
       });
-      
-      testWidgets('should handle normal widget lifecycle correctly', (tester) async {
+
+      testWidgets('should handle normal widget lifecycle correctly',
+          (tester) async {
         // Test that error boundary doesn't interfere with normal widgets
-        
+
         // Act
         await tester.pumpWidget(
           MaterialApp(
@@ -322,7 +340,7 @@ void main() {
             ),
           ),
         );
-        
+
         // Assert - All children render normally
         expect(find.text('First'), findsOneWidget);
         expect(find.text('Second'), findsOneWidget);

@@ -12,7 +12,7 @@ class ShareDialogStates {
     ShareContentType contentType,
   ) {
     final contentTypeName = _getContentTypeName(contentType);
-    
+
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: Column(

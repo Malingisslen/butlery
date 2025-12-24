@@ -129,7 +129,8 @@ class SharedContentCard extends StatelessWidget {
                   else
                     CircleAvatar(
                       radius: 12,
-                      backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.2),
+                      backgroundColor:
+                          AppColors.primaryBlue.withValues(alpha: 0.2),
                       child: Text(
                         item.sharedByDisplayName.isNotEmpty
                             ? item.sharedByDisplayName[0].toUpperCase()

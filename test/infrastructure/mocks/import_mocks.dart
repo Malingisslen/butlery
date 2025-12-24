@@ -65,7 +65,8 @@ class MockHttpResponseBuilder {
   }
 
   /// Create 503 Service Unavailable response
-  static http.Response serviceUnavailable({String body = 'Service Unavailable'}) {
+  static http.Response serviceUnavailable(
+      {String body = 'Service Unavailable'}) {
     return http.Response(body, 503);
   }
 
@@ -137,7 +138,8 @@ class ImportMockSetup {
   static void registerFallbacks() {
     registerFallbackValue(FakeUri());
     registerFallbackValue(FakeHttpRequest());
-    registerFallbackValue(SourcePlatform.unknown); // Enum fallback for WebScraper mocking
+    registerFallbackValue(
+        SourcePlatform.unknown); // Enum fallback for WebScraper mocking
   }
 
   /// Setup default HTTP client stubs (can be overridden in specific tests)
@@ -146,10 +148,10 @@ class ImportMockSetup {
     when(() => mockClient.get(any(), headers: any(named: 'headers')))
         .thenAnswer((_) async => MockHttpResponseBuilder.notFound());
 
-    when(() => mockClient.post(any(), headers: any(named: 'headers'), body: any(named: 'body')))
+    when(() => mockClient.post(any(),
+            headers: any(named: 'headers'), body: any(named: 'body')))
         .thenAnswer((_) async => MockHttpResponseBuilder.notFound());
   }
-
 }
 
 // ============================================================================
@@ -162,8 +164,10 @@ class ImportTestAssertions {
   static void assertValidSwedishRecipe(Map<String, dynamic> recipe) {
     expect(recipe['title'], isNotNull, reason: 'Recipe must have title');
     expect(recipe['title'], isNotEmpty, reason: 'Recipe title cannot be empty');
-    expect(recipe['ingredients'], isNotNull, reason: 'Recipe must have ingredients');
-    expect(recipe['instructions'], isNotNull, reason: 'Recipe must have instructions');
+    expect(recipe['ingredients'], isNotNull,
+        reason: 'Recipe must have ingredients');
+    expect(recipe['instructions'], isNotNull,
+        reason: 'Recipe must have instructions');
   }
 
   /// Assert that metadata includes expected fields
@@ -179,7 +183,8 @@ class ImportTestAssertions {
   }
 
   /// Assert that warnings contain specific text
-  static void assertWarningsContain(List<String> warnings, String expectedText) {
+  static void assertWarningsContain(
+      List<String> warnings, String expectedText) {
     expect(warnings.any((w) => w.contains(expectedText)), isTrue,
         reason: 'Warnings should contain "$expectedText"');
   }
@@ -188,7 +193,8 @@ class ImportTestAssertions {
   static void assertValidPortions(int? portions) {
     expect(portions, isNotNull, reason: 'Portions should not be null');
     expect(portions! > 0, isTrue, reason: 'Portions must be positive');
-    expect(portions <= 100, isTrue, reason: 'Portions should be reasonable (<= 100)');
+    expect(portions <= 100, isTrue,
+        reason: 'Portions should be reasonable (<= 100)');
   }
 
   /// Assert that recipe time is valid
@@ -247,7 +253,8 @@ class URLMatchers {
 
   /// Match URL with specific domain
   static Matcher urlDomain(String domain) {
-    return predicate<Uri>((uri) => uri.host == domain, 'URL domain is "$domain"');
+    return predicate<Uri>(
+        (uri) => uri.host == domain, 'URL domain is "$domain"');
   }
 
   /// Match URL with specific path

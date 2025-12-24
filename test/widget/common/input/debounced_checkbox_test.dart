@@ -12,7 +12,8 @@ void main() {
     });
 
     group('Basic Rendering', () {
-      testWidgets('should render checkbox with initial value true', (WidgetTester tester) async {
+      testWidgets('should render checkbox with initial value true',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -29,7 +30,8 @@ void main() {
         expect(checkbox.value, true);
       });
 
-      testWidgets('should render checkbox with initial value false', (WidgetTester tester) async {
+      testWidgets('should render checkbox with initial value false',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -45,7 +47,8 @@ void main() {
         expect(checkbox.value, false);
       });
 
-      testWidgets('should apply custom active color', (WidgetTester tester) async {
+      testWidgets('should apply custom active color',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -62,7 +65,8 @@ void main() {
         expect(checkbox.activeColor, Colors.red);
       });
 
-      testWidgets('should use default debounce duration', (WidgetTester tester) async {
+      testWidgets('should use default debounce duration',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -74,11 +78,13 @@ void main() {
           ),
         );
 
-        final widget = tester.widget<DebouncedCheckbox>(find.byType(DebouncedCheckbox));
+        final widget =
+            tester.widget<DebouncedCheckbox>(find.byType(DebouncedCheckbox));
         expect(widget.debounceDuration, const Duration(milliseconds: 300));
       });
 
-      testWidgets('should apply custom debounce duration', (WidgetTester tester) async {
+      testWidgets('should apply custom debounce duration',
+          (WidgetTester tester) async {
         const customDuration = Duration(milliseconds: 500);
 
         await tester.pumpWidget(
@@ -93,13 +99,15 @@ void main() {
           ),
         );
 
-        final widget = tester.widget<DebouncedCheckbox>(find.byType(DebouncedCheckbox));
+        final widget =
+            tester.widget<DebouncedCheckbox>(find.byType(DebouncedCheckbox));
         expect(widget.debounceDuration, customDuration);
       });
     });
 
     group('Debounce Behavior', () {
-      testWidgets('should debounce onChange callback', (WidgetTester tester) async {
+      testWidgets('should debounce onChange callback',
+          (WidgetTester tester) async {
         bool? callbackValue;
         int callCount = 0;
 
@@ -120,23 +128,24 @@ void main() {
 
         // Tap the checkbox
         await tester.tap(find.byType(Checkbox));
-        
+
         // Callback should not be called immediately
         expect(callCount, 0);
-        
+
         // Wait less than debounce duration
         await tester.pump(const Duration(milliseconds: 200));
         expect(callCount, 0);
-        
+
         // Wait for full debounce duration
         await tester.pump(const Duration(milliseconds: 100));
         await tester.pumpAndSettle();
-        
+
         expect(callCount, 1);
         expect(callbackValue, true);
       });
 
-      testWidgets('should update visual state immediately', (WidgetTester tester) async {
+      testWidgets('should update visual state immediately',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -161,7 +170,8 @@ void main() {
         expect(checkbox.value, true);
       });
 
-      testWidgets('should cancel previous timer on rapid clicks', (WidgetTester tester) async {
+      testWidgets('should cancel previous timer on rapid clicks',
+          (WidgetTester tester) async {
         final List<bool?> callbackValues = [];
 
         await tester.pumpWidget(
@@ -184,7 +194,7 @@ void main() {
         await tester.tap(find.byType(Checkbox));
         await tester.pump(const Duration(milliseconds: 100));
         await tester.tap(find.byType(Checkbox));
-        
+
         // Wait for debounce
         await tester.pump(const Duration(milliseconds: 300));
         await tester.pumpAndSettle();
@@ -194,7 +204,8 @@ void main() {
         expect(callbackValues[0], true);
       });
 
-      testWidgets('should handle multiple state changes', (WidgetTester tester) async {
+      testWidgets('should handle multiple state changes',
+          (WidgetTester tester) async {
         final List<bool?> callbackValues = [];
 
         await tester.pumpWidget(
@@ -215,12 +226,12 @@ void main() {
         await tester.tap(find.byType(Checkbox));
         await tester.pump(const Duration(milliseconds: 200));
         await tester.pumpAndSettle();
-        
+
         // Second change
         await tester.tap(find.byType(Checkbox));
         await tester.pump(const Duration(milliseconds: 200));
         await tester.pumpAndSettle();
-        
+
         // Third change
         await tester.tap(find.byType(Checkbox));
         await tester.pump(const Duration(milliseconds: 200));
@@ -235,7 +246,8 @@ void main() {
     });
 
     group('Value Updates', () {
-      testWidgets('should update when value prop changes', (WidgetTester tester) async {
+      testWidgets('should update when value prop changes',
+          (WidgetTester tester) async {
         bool value = false;
 
         await tester.pumpWidget(
@@ -277,7 +289,8 @@ void main() {
         expect(checkbox.value, true);
       });
 
-      testWidgets('should handle null onChanged callback', (WidgetTester tester) async {
+      testWidgets('should handle null onChanged callback',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -296,7 +309,7 @@ void main() {
         // Try to tap - should not cause errors and visual state shouldn't change
         await tester.tap(find.byType(Checkbox));
         await tester.pump();
-        
+
         // Visual state should remain unchanged since onChanged is null
         final checkboxAfter = tester.widget<Checkbox>(find.byType(Checkbox));
         expect(checkboxAfter.value, false);
@@ -304,7 +317,8 @@ void main() {
     });
 
     group('Cleanup', () {
-      testWidgets('should cancel timer on dispose', (WidgetTester tester) async {
+      testWidgets('should cancel timer on dispose',
+          (WidgetTester tester) async {
         bool callbackCalled = false;
 
         await tester.pumpWidget(
@@ -342,7 +356,8 @@ void main() {
         expect(callbackCalled, false);
       });
 
-      testWidgets('should handle widget replacement', (WidgetTester tester) async {
+      testWidgets('should handle widget replacement',
+          (WidgetTester tester) async {
         final callbackValues = <bool?>[];
 
         await tester.pumpWidget(
@@ -392,7 +407,8 @@ void main() {
     });
 
     group('Edge Cases', () {
-      testWidgets('should handle zero duration debounce', (WidgetTester tester) async {
+      testWidgets('should handle zero duration debounce',
+          (WidgetTester tester) async {
         bool? callbackValue;
 
         await tester.pumpWidget(
@@ -418,7 +434,8 @@ void main() {
         expect(callbackValue, true);
       });
 
-      testWidgets('should handle very long debounce duration', (WidgetTester tester) async {
+      testWidgets('should handle very long debounce duration',
+          (WidgetTester tester) async {
         bool callbackCalled = false;
 
         await tester.pumpWidget(
@@ -436,11 +453,11 @@ void main() {
         );
 
         await tester.tap(find.byType(Checkbox));
-        
+
         // Wait a reasonable time but less than debounce
         await tester.pump(const Duration(seconds: 1));
         expect(callbackCalled, false);
-        
+
         // Visual state should still be updated
         final checkbox = tester.widget<Checkbox>(find.byType(Checkbox));
         expect(checkbox.value, true);
@@ -492,7 +509,8 @@ void main() {
     });
 
     group('Use Cases', () {
-      testWidgets('should work for shopping list items', (WidgetTester tester) async {
+      testWidgets('should work for shopping list items',
+          (WidgetTester tester) async {
         final completedItems = <int>[];
 
         await tester.pumpWidget(
@@ -528,7 +546,8 @@ void main() {
         expect(completedItems, contains(1));
       });
 
-      testWidgets('should prevent spam clicking in collaborative environment', (WidgetTester tester) async {
+      testWidgets('should prevent spam clicking in collaborative environment',
+          (WidgetTester tester) async {
         int updateCount = 0;
 
         await tester.pumpWidget(
@@ -593,7 +612,8 @@ void main() {
         expect(find.byType(Checkbox), findsOneWidget);
       });
 
-      testWidgets('should respect theme checkbox colors', (WidgetTester tester) async {
+      testWidgets('should respect theme checkbox colors',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(

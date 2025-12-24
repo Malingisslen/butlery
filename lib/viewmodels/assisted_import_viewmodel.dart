@@ -81,10 +81,7 @@ class AssistedImportViewModel extends ChangeNotifier {
     List<int>? preDetectedIngredientLines,
   }) {
     // Parse lines
-    lines = extractedText
-        .split('\n')
-        .map((line) => line.trim())
-        .toList();
+    lines = extractedText.split('\n').map((line) => line.trim()).toList();
 
     // Use provided pre-detected lines or detect automatically
     if (preDetectedIngredientLines != null) {
@@ -255,31 +252,30 @@ class AssistedImportViewModel extends ChangeNotifier {
         .where((line) => line.isNotEmpty)
         .toList();
 
-    final sortedInstructionIndices = _selectedInstructionIndices.toList()..sort();
+    final sortedInstructionIndices = _selectedInstructionIndices.toList()
+      ..sort();
     _editedInstructions = sortedInstructionIndices
         .map((i) => lines[i].trim())
         .where((line) => line.isNotEmpty)
         .toList();
 
-    _editedInstructions = _editedInstructions
-        .map(_cleanInstructionLine)
-        .toList();
+    _editedInstructions =
+        _editedInstructions.map(_cleanInstructionLine).toList();
   }
 
   String _cleanInstructionLine(String line) {
     return line
-        .replaceFirst(RegExp(r'^(steg|step)?\s*\d+[\.\):\s]+', caseSensitive: false), '')
+        .replaceFirst(
+            RegExp(r'^(steg|step)?\s*\d+[\.\):\s]+', caseSensitive: false), '')
         .trim();
   }
 
   Recipe buildRecipe() {
-    final ingredients = _editedIngredients
-        .where((i) => i.trim().isNotEmpty)
-        .toList();
+    final ingredients =
+        _editedIngredients.where((i) => i.trim().isNotEmpty).toList();
 
-    final instructions = _editedInstructions
-        .where((i) => i.trim().isNotEmpty)
-        .toList();
+    final instructions =
+        _editedInstructions.where((i) => i.trim().isNotEmpty).toList();
 
     return Recipe.personal(
       title: _title,

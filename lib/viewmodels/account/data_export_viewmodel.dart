@@ -32,9 +32,10 @@ class DataExportViewModel extends ChangeNotifier
   DateTime? _exportTimestamp;
 
   // Getters
-  bool get isExporting => isLoading;  // Compatibility alias for UI
+  bool get isExporting => isLoading; // Compatibility alias for UI
   String? get exportedData => _exportedData;
-  String? get errorMessage => error;  // Compatibility alias for UI - StateNotifierMixin provides 'error'
+  String? get errorMessage =>
+      error; // Compatibility alias for UI - StateNotifierMixin provides 'error'
   DateTime? get exportTimestamp => _exportTimestamp;
   bool get hasExportedData => _exportedData != null;
 
@@ -78,7 +79,7 @@ class DataExportViewModel extends ChangeNotifier
   Future<bool> exportData() async {
     try {
       return await executeNamedOperation(
-        'export',  // Prevents duplicate concurrent exports
+        'export', // Prevents duplicate concurrent exports
         () async {
           app_logger.AppLogger.info('[$_logTag] Starting data export');
 
@@ -104,7 +105,7 @@ class DataExportViewModel extends ChangeNotifier
 
   /// Retry export after error
   Future<bool> retryExport() async {
-    clearError();  // AsyncOperationMixin provides clearError()
+    clearError(); // AsyncOperationMixin provides clearError()
     return await exportData();
   }
 
@@ -112,7 +113,7 @@ class DataExportViewModel extends ChangeNotifier
   void clearExportedData() {
     _exportedData = null;
     _exportTimestamp = null;
-    clearError();  // AsyncOperationMixin provides clearError()
+    clearError(); // AsyncOperationMixin provides clearError()
     notifyListeners();
     app_logger.AppLogger.info('[$_logTag] Exported data cleared');
   }
@@ -121,7 +122,7 @@ class DataExportViewModel extends ChangeNotifier
   void reset() {
     _exportedData = null;
     _exportTimestamp = null;
-    clearError();  // AsyncOperationMixin provides clearError()
+    clearError(); // AsyncOperationMixin provides clearError()
     // isLoading automatically managed by AsyncOperationMixin
     notifyListeners();
     app_logger.AppLogger.info('[$_logTag] Export state reset');
@@ -135,7 +136,8 @@ class DataExportViewModel extends ChangeNotifier
     // User-friendly Swedish error messages
     if (errorStr.contains('No authenticated user')) {
       return 'Du måste vara inloggad för att exportera data';
-    } else if (errorStr.contains('network') || errorStr.contains('connection')) {
+    } else if (errorStr.contains('network') ||
+        errorStr.contains('connection')) {
       return 'Ingen internetanslutning. Kontrollera din anslutning och försök igen.';
     } else if (errorStr.contains('permission')) {
       return 'Behörighet nekad. Försök logga in igen.';

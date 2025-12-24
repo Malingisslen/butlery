@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 // Widget under test
 import 'package:butlery/widgets/common/friends/friend_category_manager.dart';
 
-// Dependencies  
+// Dependencies
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
@@ -27,11 +27,11 @@ void main() {
     // Test services
     late MockUnifiedFriendsService mockFriendsService;
     late MockFriendsViewModel mockFriendsViewModel;
-    
+
     // Test data
     late List<FriendCategory> testCategories;
     late List<UserProfile> testFriends;
-    
+
     setUpAll(() async {
       TestWidgetsFlutterBinding.ensureInitialized();
       await BaseUnitTest.setupUnit();
@@ -39,11 +39,11 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
-      
+
       // Initialize mock services
       mockFriendsService = MockUnifiedFriendsService();
       mockFriendsViewModel = MockFriendsViewModel();
-      
+
       // Create test data
       testCategories = [
         SocialFactory.createFriendCategory(
@@ -54,7 +54,7 @@ void main() {
         ),
         SocialFactory.createFriendCategory(
           id: 'work',
-          name: 'Jobbet', 
+          name: 'Jobbet',
           emoji: '💼',
           memberIds: ['user3', 'user4'],
         ),
@@ -65,7 +65,7 @@ void main() {
           memberIds: ['user5'],
         ),
       ];
-      
+
       testFriends = [
         UserProfileFactory.build(uid: 'user1', displayName: 'Anna Svensson'),
         UserProfileFactory.build(uid: 'user2', displayName: 'Erik Johansson'),
@@ -104,7 +104,8 @@ void main() {
               ),
             ],
             child: SizedBox(
-              height: 600, // Adequate height for categories + friends + selection
+              height:
+                  600, // Adequate height for categories + friends + selection
               child: SingleChildScrollView(
                 child: FriendCategoryManager(
                   selectedFriendIds: selectedFriendIds,
@@ -121,7 +122,8 @@ void main() {
     }
 
     group('Basic Rendering', () {
-      testWidgets('should render with default configuration', (WidgetTester tester) async {
+      testWidgets('should render with default configuration',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(
           isLoading: false,
@@ -138,13 +140,17 @@ void main() {
         // Assert
         expect(find.byType(FriendCategoryManager), findsOneWidget);
         expect(find.text('Välj vänner'), findsOneWidget);
-        expect(find.text('Välj kategorier eller individuella vänner'), findsOneWidget);
+        expect(find.text('Välj kategorier eller individuella vänner'),
+            findsOneWidget);
       });
 
-      testWidgets('should render with custom title and subtitle', (WidgetTester tester) async {
+      testWidgets('should render with custom title and subtitle',
+          (WidgetTester tester) async {
         // Arrange - need at least one friend so header is shown
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
-        mockFriendsViewModel.setFriendsState(isLoading: false, friends: testFriends.take(1).toList());
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsViewModel.setFriendsState(
+            isLoading: false, friends: testFriends.take(1).toList());
 
         // Act
         await tester.pumpWidget(createTestWidget(
@@ -157,7 +163,8 @@ void main() {
         expect(find.text('Välj vem som ska delta'), findsOneWidget);
       });
 
-      testWidgets('should render both categories and friends sections', (WidgetTester tester) async {
+      testWidgets('should render both categories and friends sections',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(
           isLoading: false,
@@ -180,7 +187,8 @@ void main() {
     });
 
     group('Loading States', () {
-      testWidgets('should show loading when both services are loading', (WidgetTester tester) async {
+      testWidgets('should show loading when both services are loading',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(isLoading: true);
         mockFriendsViewModel.setFriendsState(isLoading: true);
@@ -193,10 +201,12 @@ void main() {
         expect(find.text('Laddar vänner och kategorier...'), findsOneWidget);
       });
 
-      testWidgets('should show loading when only categories service is loading', (WidgetTester tester) async {
+      testWidgets('should show loading when only categories service is loading',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(isLoading: true);
-        mockFriendsViewModel.setFriendsState(isLoading: false, friends: testFriends);
+        mockFriendsViewModel.setFriendsState(
+            isLoading: false, friends: testFriends);
 
         // Act
         await tester.pumpWidget(createTestWidget());
@@ -206,9 +216,11 @@ void main() {
         expect(find.text('Laddar vänner och kategorier...'), findsOneWidget);
       });
 
-      testWidgets('should show loading when only friends service is loading', (WidgetTester tester) async {
+      testWidgets('should show loading when only friends service is loading',
+          (WidgetTester tester) async {
         // Arrange
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: testCategories);
+        mockFriendsService.setFriendsState(
+            isLoading: false, categoriesList: testCategories);
         mockFriendsViewModel.setFriendsState(isLoading: true);
 
         // Act
@@ -221,13 +233,15 @@ void main() {
     });
 
     group('Error States', () {
-      testWidgets('should handle normal state when services ready', (WidgetTester tester) async {
+      testWidgets('should handle normal state when services ready',
+          (WidgetTester tester) async {
         // Arrange - both services ready with data
         mockFriendsService.setFriendsState(
           isLoading: false,
           categoriesList: testCategories,
         );
-        mockFriendsViewModel.setFriendsState(isLoading: false, friends: testFriends);
+        mockFriendsViewModel.setFriendsState(
+            isLoading: false, friends: testFriends);
 
         // Act
         await tester.pumpWidget(createTestWidget());
@@ -237,9 +251,11 @@ void main() {
         expect(find.text('Individuellt val'), findsOneWidget);
       });
 
-      testWidgets('should handle mixed data states properly', (WidgetTester tester) async {
+      testWidgets('should handle mixed data states properly',
+          (WidgetTester tester) async {
         // Arrange - categories empty, friends available
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -254,7 +270,8 @@ void main() {
         expect(find.text('Kategorier'), findsNothing);
       });
 
-      testWidgets('should handle service coordination when no data', (WidgetTester tester) async {
+      testWidgets('should handle service coordination when no data',
+          (WidgetTester tester) async {
         // Arrange - test coordination when both services have no data
         mockFriendsService.setFriendsState(
           isLoading: false,
@@ -267,14 +284,17 @@ void main() {
 
         // Assert - should show empty state when both are empty
         expect(find.text('Inga vänner eller kategorier'), findsOneWidget);
-        expect(find.text('Lägg till vänner och skapa kategorier först'), findsOneWidget);
+        expect(find.text('Lägg till vänner och skapa kategorier först'),
+            findsOneWidget);
       });
     });
 
     group('Empty States', () {
-      testWidgets('should show empty state when no categories or friends', (WidgetTester tester) async {
+      testWidgets('should show empty state when no categories or friends',
+          (WidgetTester tester) async {
         // Arrange
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(isLoading: false, friends: []);
 
         // Act
@@ -282,12 +302,14 @@ void main() {
 
         // Assert
         expect(find.text('Inga vänner eller kategorier'), findsOneWidget);
-        expect(find.text('Lägg till vänner och skapa kategorier först'), findsOneWidget);
+        expect(find.text('Lägg till vänner och skapa kategorier först'),
+            findsOneWidget);
         expect(find.text('Hantera vänner'), findsOneWidget);
         expect(find.byIcon(Icons.people_outline), findsOneWidget);
       });
 
-      testWidgets('should show content when categories exist but no friends', (WidgetTester tester) async {
+      testWidgets('should show content when categories exist but no friends',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(
           isLoading: false,
@@ -301,12 +323,15 @@ void main() {
         // Assert
         expect(find.text('Kategorier'), findsOneWidget);
         expect(find.text('Familjen'), findsOneWidget);
-        expect(find.text('Individuellt val'), findsNothing); // Friends section hidden when empty
+        expect(find.text('Individuellt val'),
+            findsNothing); // Friends section hidden when empty
       });
 
-      testWidgets('should show content when friends exist but no categories', (WidgetTester tester) async {
+      testWidgets('should show content when friends exist but no categories',
+          (WidgetTester tester) async {
         // Arrange
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -323,7 +348,8 @@ void main() {
     });
 
     group('Category Display', () {
-      testWidgets('should display category chips with correct information', (WidgetTester tester) async {
+      testWidgets('should display category chips with correct information',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(
           isLoading: false,
@@ -337,13 +363,17 @@ void main() {
         // Assert
         expect(find.text('Familjen'), findsOneWidget);
         expect(find.text('👨‍👩‍👧‍👦'), findsOneWidget);
-        expect(find.text('2'), findsNWidgets(2)); // Both 'family' and 'work' categories have 2 members
+        expect(
+            find.text('2'),
+            findsNWidgets(
+                2)); // Both 'family' and 'work' categories have 2 members
         expect(find.text('Jobbet'), findsOneWidget);
         expect(find.text('💼'), findsOneWidget);
         expect(find.byType(FilterChip), findsNWidgets(3));
       });
 
-      testWidgets('should show category section header', (WidgetTester tester) async {
+      testWidgets('should show category section header',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(
           isLoading: false,
@@ -356,15 +386,18 @@ void main() {
 
         // Assert
         expect(find.text('Kategorier'), findsOneWidget);
-        expect(find.text('Välj hela kategorier för snabb delning'), findsOneWidget);
+        expect(find.text('Välj hela kategorier för snabb delning'),
+            findsOneWidget);
         expect(find.byIcon(Icons.category_outlined), findsOneWidget);
       });
     });
 
     group('Individual Friends Display', () {
-      testWidgets('should display friends list with checkboxes', (WidgetTester tester) async {
+      testWidgets('should display friends list with checkboxes',
+          (WidgetTester tester) async {
         // Arrange
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -372,7 +405,8 @@ void main() {
 
         // Act
         await tester.pumpWidget(createTestWidget());
-        await tester.pumpAndSettle(); // Allow Consumer2 to process notifications
+        await tester
+            .pumpAndSettle(); // Allow Consumer2 to process notifications
 
         // Assert
         expect(find.text('Anna Svensson'), findsOneWidget);
@@ -380,9 +414,11 @@ void main() {
         expect(find.byType(CheckboxListTile), findsNWidgets(5));
       });
 
-      testWidgets('should show friends section header', (WidgetTester tester) async {
+      testWidgets('should show friends section header',
+          (WidgetTester tester) async {
         // Arrange
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -393,13 +429,15 @@ void main() {
 
         // Assert
         expect(find.text('Individuellt val'), findsOneWidget);
-        expect(find.text('Välj specifika vänner från din vänlista'), findsOneWidget);
+        expect(find.text('Välj specifika vänner från din vänlista'),
+            findsOneWidget);
         expect(find.byIcon(Icons.people_outline), findsOneWidget);
       });
     });
 
     group('Category Selection', () {
-      testWidgets('should select category when tapped', (WidgetTester tester) async {
+      testWidgets('should select category when tapped',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(
           isLoading: false,
@@ -421,7 +459,8 @@ void main() {
         expect(capturedSelection, containsAll(['user1', 'user2']));
       });
 
-      testWidgets('should deselect category when tapped again', (WidgetTester tester) async {
+      testWidgets('should deselect category when tapped again',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(
           isLoading: false,
@@ -439,7 +478,7 @@ void main() {
         // Tap to select
         await tester.tap(find.widgetWithText(FilterChip, 'Familjen'));
         await tester.pumpAndSettle();
-        
+
         // Tap again to deselect
         await tester.tap(find.widgetWithText(FilterChip, 'Familjen'));
         await tester.pumpAndSettle();
@@ -448,7 +487,8 @@ void main() {
         expect(capturedSelection, isEmpty);
       });
 
-      testWidgets('should allow multiple category selection when enabled', (WidgetTester tester) async {
+      testWidgets('should allow multiple category selection when enabled',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(
           isLoading: false,
@@ -470,10 +510,13 @@ void main() {
         await tester.pump();
 
         // Assert
-        expect(capturedSelection, containsAll(['user1', 'user2', 'user3', 'user4']));
+        expect(capturedSelection,
+            containsAll(['user1', 'user2', 'user3', 'user4']));
       });
 
-      testWidgets('should replace previous selection when multiple categories disabled', (WidgetTester tester) async {
+      testWidgets(
+          'should replace previous selection when multiple categories disabled',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(
           isLoading: false,
@@ -501,9 +544,11 @@ void main() {
     });
 
     group('Individual Friend Selection', () {
-      testWidgets('should select individual friend when checkbox tapped', (WidgetTester tester) async {
+      testWidgets('should select individual friend when checkbox tapped',
+          (WidgetTester tester) async {
         // Arrange
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -524,9 +569,12 @@ void main() {
         expect(capturedSelection.length, equals(1));
       });
 
-      testWidgets('should deselect individual friend when checkbox tapped again', (WidgetTester tester) async {
+      testWidgets(
+          'should deselect individual friend when checkbox tapped again',
+          (WidgetTester tester) async {
         // Arrange
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -547,9 +595,11 @@ void main() {
         expect(capturedSelection, isEmpty);
       });
 
-      testWidgets('should allow multiple individual friend selection', (WidgetTester tester) async {
+      testWidgets('should allow multiple individual friend selection',
+          (WidgetTester tester) async {
         // Arrange
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -574,9 +624,11 @@ void main() {
     });
 
     group('Selection Summary', () {
-      testWidgets('should show selection summary when friends are selected', (WidgetTester tester) async {
+      testWidgets('should show selection summary when friends are selected',
+          (WidgetTester tester) async {
         // Arrange
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -594,9 +646,11 @@ void main() {
         expect(find.byIcon(Icons.group), findsOneWidget);
       });
 
-      testWidgets('should show singular form for one selected friend', (WidgetTester tester) async {
+      testWidgets('should show singular form for one selected friend',
+          (WidgetTester tester) async {
         // Arrange
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -611,9 +665,11 @@ void main() {
         expect(find.text('1 vän vald'), findsOneWidget);
       });
 
-      testWidgets('should not show selection summary when no friends selected', (WidgetTester tester) async {
+      testWidgets('should not show selection summary when no friends selected',
+          (WidgetTester tester) async {
         // Arrange
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -627,9 +683,11 @@ void main() {
         expect(find.text('Rensa'), findsNothing);
       });
 
-      testWidgets('should clear all selections when clear button tapped', (WidgetTester tester) async {
+      testWidgets('should clear all selections when clear button tapped',
+          (WidgetTester tester) async {
         // Arrange
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -652,7 +710,8 @@ void main() {
     });
 
     group('Mixed Category and Individual Selection', () {
-      testWidgets('should combine category and individual selections', (WidgetTester tester) async {
+      testWidgets('should combine category and individual selections',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(
           isLoading: false,
@@ -675,14 +734,17 @@ void main() {
         await tester.pumpAndSettle();
 
         // Select individual friend not in category
-        await tester.tap(find.widgetWithText(CheckboxListTile, 'Sofia Lindberg'));
+        await tester
+            .tap(find.widgetWithText(CheckboxListTile, 'Sofia Lindberg'));
         await tester.pump();
 
         // Assert
         expect(capturedSelection, containsAll(['user1', 'user2', 'user5']));
       });
 
-      testWidgets('should handle deselecting category while individual friends selected', (WidgetTester tester) async {
+      testWidgets(
+          'should handle deselecting category while individual friends selected',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(
           isLoading: false,
@@ -703,7 +765,8 @@ void main() {
         // Select category and individual
         await tester.tap(find.widgetWithText(FilterChip, 'Familjen'));
         await tester.pumpAndSettle();
-        await tester.tap(find.widgetWithText(CheckboxListTile, 'Sofia Lindberg'));
+        await tester
+            .tap(find.widgetWithText(CheckboxListTile, 'Sofia Lindberg'));
         await tester.pump();
 
         // Deselect category
@@ -716,7 +779,8 @@ void main() {
     });
 
     group('Visual State Indicators', () {
-      testWidgets('should highlight selected categories', (WidgetTester tester) async {
+      testWidgets('should highlight selected categories',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(
           isLoading: false,
@@ -737,9 +801,11 @@ void main() {
         expect(filterChip.selected, isTrue);
       });
 
-      testWidgets('should highlight selected individual friends', (WidgetTester tester) async {
+      testWidgets('should highlight selected individual friends',
+          (WidgetTester tester) async {
         // Arrange
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -755,7 +821,7 @@ void main() {
           find.widgetWithText(CheckboxListTile, 'Anna Svensson'),
         );
         expect(checkboxListTile.value, isTrue);
-        
+
         // Verify visual styling for selected friend
         final card = tester.widget<Card>(
           find.ancestor(
@@ -768,7 +834,8 @@ void main() {
     });
 
     group('Swedish Localization', () {
-      testWidgets('should display all Swedish interface text correctly', (WidgetTester tester) async {
+      testWidgets('should display all Swedish interface text correctly',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(
           isLoading: false,
@@ -784,14 +851,18 @@ void main() {
 
         // Assert Swedish UI text
         expect(find.text('Välj vänner'), findsOneWidget);
-        expect(find.text('Välj kategorier eller individuella vänner'), findsOneWidget);
+        expect(find.text('Välj kategorier eller individuella vänner'),
+            findsOneWidget);
         expect(find.text('Kategorier'), findsOneWidget);
-        expect(find.text('Välj hela kategorier för snabb delning'), findsOneWidget);
+        expect(find.text('Välj hela kategorier för snabb delning'),
+            findsOneWidget);
         expect(find.text('Individuellt val'), findsOneWidget);
-        expect(find.text('Välj specifika vänner från din vänlista'), findsOneWidget);
+        expect(find.text('Välj specifika vänner från din vänlista'),
+            findsOneWidget);
       });
 
-      testWidgets('should display Swedish loading message', (WidgetTester tester) async {
+      testWidgets('should display Swedish loading message',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(isLoading: true);
         mockFriendsViewModel.setFriendsState(isLoading: true);
@@ -803,11 +874,12 @@ void main() {
         expect(find.text('Laddar vänner och kategorier...'), findsOneWidget);
       });
 
-      testWidgets('should display Swedish error messages', (WidgetTester tester) async {
+      testWidgets('should display Swedish error messages',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(
           isLoading: false,
-                    error: 'Nätverksfel uppstod',
+          error: 'Nätverksfel uppstod',
         );
         mockFriendsViewModel.setFriendsState(isLoading: false, friends: []);
 
@@ -818,9 +890,11 @@ void main() {
         expect(find.text('Nätverksfel uppstod'), findsOneWidget);
       });
 
-      testWidgets('should display Swedish selection summary text', (WidgetTester tester) async {
+      testWidgets('should display Swedish selection summary text',
+          (WidgetTester tester) async {
         // Arrange
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -839,14 +913,15 @@ void main() {
     });
 
     group('Edge Cases', () {
-      testWidgets('should handle empty category name', (WidgetTester tester) async {
+      testWidgets('should handle empty category name',
+          (WidgetTester tester) async {
         // Arrange
         final categoryWithEmptyName = SocialFactory.createFriendCategory(
           id: 'empty',
           name: '',
           memberIds: ['user1'],
         );
-        
+
         mockFriendsService.setFriendsState(
           isLoading: false,
           categoriesList: [categoryWithEmptyName],
@@ -860,14 +935,15 @@ void main() {
         expect(find.byType(FilterChip), findsOneWidget);
       });
 
-      testWidgets('should handle category with no friends', (WidgetTester tester) async {
+      testWidgets('should handle category with no friends',
+          (WidgetTester tester) async {
         // Arrange
         final categoryWithNoFriends = SocialFactory.createFriendCategory(
           id: 'empty_category',
           name: 'Tom kategori',
           memberIds: [],
         );
-        
+
         mockFriendsService.setFriendsState(
           isLoading: false,
           categoriesList: [categoryWithNoFriends],
@@ -888,14 +964,16 @@ void main() {
         expect(capturedSelection, isEmpty);
       });
 
-      testWidgets('should handle friend with empty display name', (WidgetTester tester) async {
+      testWidgets('should handle friend with empty display name',
+          (WidgetTester tester) async {
         // Arrange
         final friendWithEmptyName = UserProfileFactory.build(
           uid: 'user_no_name',
           displayName: '',
         );
-        
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: [friendWithEmptyName],
@@ -908,14 +986,16 @@ void main() {
         expect(find.byType(CheckboxListTile), findsOneWidget);
       });
 
-      testWidgets('should handle very long category names', (WidgetTester tester) async {
+      testWidgets('should handle very long category names',
+          (WidgetTester tester) async {
         // Arrange
         final categoryWithLongName = SocialFactory.createFriendCategory(
           id: 'long',
-          name: 'En mycket lång kategorinnamn som kanske inte får plats på en rad',
+          name:
+              'En mycket lång kategorinnamn som kanske inte får plats på en rad',
           memberIds: ['user1'],
         );
-        
+
         mockFriendsService.setFriendsState(
           isLoading: false,
           categoriesList: [categoryWithLongName],
@@ -926,13 +1006,18 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Assert
-        expect(find.text('En mycket lång kategorinnamn som kanske inte får plats på en rad'), findsOneWidget);
+        expect(
+            find.text(
+                'En mycket lång kategorinnamn som kanske inte får plats på en rad'),
+            findsOneWidget);
         expect(find.byType(FilterChip), findsOneWidget);
       });
 
-      testWidgets('should handle complex widget initialization properly', (WidgetTester tester) async {
+      testWidgets('should handle complex widget initialization properly',
+          (WidgetTester tester) async {
         // Arrange
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -949,9 +1034,11 @@ void main() {
     });
 
     group('Constructor Validation', () {
-      testWidgets('should accept empty selectedFriendIds', (WidgetTester tester) async {
+      testWidgets('should accept empty selectedFriendIds',
+          (WidgetTester tester) async {
         // Arrange
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(
           isLoading: false,
           friends: testFriends,
@@ -967,18 +1054,22 @@ void main() {
         expect(find.text('Valda vänner'), findsNothing);
       });
 
-      testWidgets('should handle null callback parameter', (WidgetTester tester) async {
+      testWidgets('should handle null callback parameter',
+          (WidgetTester tester) async {
         // Arrange
-        mockFriendsService.setFriendsState(isLoading: false, categoriesList: []);
+        mockFriendsService
+            .setFriendsState(isLoading: false, categoriesList: []);
         mockFriendsViewModel.setFriendsState(isLoading: false, friends: []);
 
         // Act & Assert - should not throw
-        expect(() => createTestWidget(onSelectionChanged: null), returnsNormally);
+        expect(
+            () => createTestWidget(onSelectionChanged: null), returnsNormally);
       });
     });
 
     group('Accessibility', () {
-      testWidgets('should provide proper semantics for interactive elements', (WidgetTester tester) async {
+      testWidgets('should provide proper semantics for interactive elements',
+          (WidgetTester tester) async {
         // Arrange
         mockFriendsService.setFriendsState(
           isLoading: false,
@@ -993,11 +1084,13 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Assert - FilterChips should be accessible
-        final filterChips = tester.widgetList<FilterChip>(find.byType(FilterChip));
+        final filterChips =
+            tester.widgetList<FilterChip>(find.byType(FilterChip));
         expect(filterChips, isNotEmpty);
-        
+
         // CheckboxListTiles should be accessible
-        final checkboxes = tester.widgetList<CheckboxListTile>(find.byType(CheckboxListTile));
+        final checkboxes =
+            tester.widgetList<CheckboxListTile>(find.byType(CheckboxListTile));
         expect(checkboxes, isNotEmpty);
       });
     });

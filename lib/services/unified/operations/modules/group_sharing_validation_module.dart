@@ -32,7 +32,8 @@ class GroupSharingValidationModule {
     try {
       return groupIds.every((groupId) => canShareToGroup(groupId, userId));
     } catch (e) {
-      AppLogger.error('Failed to validate multiple group sharing permissions', e);
+      AppLogger.error(
+          'Failed to validate multiple group sharing permissions', e);
       return false;
     }
   }
@@ -74,8 +75,10 @@ class GroupSharingValidationModule {
         'estimatedTimeSeconds': estimatedTime,
         'groupDetails': groupDetails,
         'contentTypes': _getContentTypeSummary(contentList),
-        'accessibleGroups': groupDetails.where((g) => g['accessible'] == true).length,
-        'inaccessibleGroups': groupDetails.where((g) => g['accessible'] == false).length,
+        'accessibleGroups':
+            groupDetails.where((g) => g['accessible'] == true).length,
+        'inaccessibleGroups':
+            groupDetails.where((g) => g['accessible'] == false).length,
       };
     } catch (e) {
       AppLogger.error('Failed to get bulk sharing summary', e);
@@ -151,20 +154,24 @@ class GroupSharingValidationModule {
   }
 
   /// Generate validation warnings for bulk operations
-  List<String> _generateValidationWarnings(List<String> groupIds, List<SharedContent> contentList) {
+  List<String> _generateValidationWarnings(
+      List<String> groupIds, List<SharedContent> contentList) {
     final warnings = <String>[];
 
     if (groupIds.length > 10) {
-      warnings.add('Delning till många grupper (${groupIds.length}) kan ta lång tid');
+      warnings.add(
+          'Delning till många grupper (${groupIds.length}) kan ta lång tid');
     }
 
     if (contentList.length > 20) {
-      warnings.add('Delning av mycket innehåll (${contentList.length} objekt) kan ta lång tid');
+      warnings.add(
+          'Delning av mycket innehåll (${contentList.length} objekt) kan ta lång tid');
     }
 
     final totalOperations = groupIds.length * contentList.length;
     if (totalOperations > 100) {
-      warnings.add('Stor operation ($totalOperations delningar) - överväg att dela upp den');
+      warnings.add(
+          'Stor operation ($totalOperations delningar) - överväg att dela upp den');
     }
 
     return warnings;

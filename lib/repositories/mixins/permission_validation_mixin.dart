@@ -71,7 +71,6 @@ import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 /// robust access controls, and transparent audit logging that protects user privacy while enabling
 /// secure collaborative cooking experiences for Swedish users and their families.
 mixin PermissionValidationMixin {
-
   /// Validates that the current user owns the specified resource with comprehensive security checks.
   /// Performs thorough ownership verification ensuring that users can only access and modify
   /// resources they own. This is fundamental for protecting personal cooking data including
@@ -181,7 +180,8 @@ mixin PermissionValidationMixin {
     }
 
     // Check if user is in shared list
-    if (sharedWithUserIds != null && sharedWithUserIds.contains(currentUserId)) {
+    if (sharedWithUserIds != null &&
+        sharedWithUserIds.contains(currentUserId)) {
       return true;
     }
 
@@ -285,8 +285,9 @@ mixin PermissionValidationMixin {
     required List<String> requiredFields,
     required String resourceType,
   }) {
-    final missingFields = requiredFields.where((field) => !data.containsKey(field)).toList();
-    
+    final missingFields =
+        requiredFields.where((field) => !data.containsKey(field)).toList();
+
     if (missingFields.isNotEmpty) {
       throw SecurityViolationException(
         'Missing required fields for $resourceType',
@@ -304,7 +305,7 @@ mixin PermissionValidationMixin {
     constraints.forEach((field, constraint) {
       if (data.containsKey(field)) {
         final value = data[field];
-        
+
         // String length constraints
         if (constraint.maxLength != null && value is String) {
           if (value.length > constraint.maxLength!) {
@@ -314,7 +315,7 @@ mixin PermissionValidationMixin {
             );
           }
         }
-        
+
         if (constraint.minLength != null && value is String) {
           if (value.length < constraint.minLength!) {
             throw SecurityViolationException(
@@ -323,7 +324,7 @@ mixin PermissionValidationMixin {
             );
           }
         }
-        
+
         // List size constraints
         if (constraint.maxItems != null && value is List) {
           if (value.length > constraint.maxItems!) {
@@ -333,12 +334,14 @@ mixin PermissionValidationMixin {
             );
           }
         }
-        
+
         // Allowed values constraint
-        if (constraint.allowedValues != null && !constraint.allowedValues!.contains(value)) {
+        if (constraint.allowedValues != null &&
+            !constraint.allowedValues!.contains(value)) {
           throw SecurityViolationException(
             'Field $field contains invalid value',
-            details: 'Allowed: ${constraint.allowedValues!.join(', ')}, Actual: $value',
+            details:
+                'Allowed: ${constraint.allowedValues!.join(', ')}, Actual: $value',
           );
         }
       }
@@ -360,7 +363,7 @@ mixin PermissionValidationMixin {
     }
 
     final doc = await docRef.get();
-    
+
     if (!doc.exists) {
       throw ResourceNotFoundException(
         '$resourceType not found',
@@ -401,7 +404,8 @@ mixin PermissionValidationMixin {
     if (granted) {
       AppLogger.info(message + (details != null ? ', Details=$details' : ''));
     } else {
-      AppLogger.warning(message + (details != null ? ', Details=$details' : ''));
+      AppLogger.warning(
+          message + (details != null ? ', Details=$details' : ''));
     }
 
     // OPTIONALLY persist to Firestore for GDPR compliance (Article 30)
@@ -420,16 +424,19 @@ mixin PermissionValidationMixin {
 
         // Fire-and-forget persistent logging (GDPR Article 30 compliance)
         // Note: We don't await this to avoid blocking application operations
-        auditRepository.logPermissionCheck(
+        auditRepository
+            .logPermissionCheck(
           userId: userId,
           operation: operation,
           resourceType: resourceType,
           resourceId: resourceId,
           granted: granted,
           metadata: auditMetadata.isNotEmpty ? auditMetadata : null,
-        ).catchError((error) {
+        )
+            .catchError((error) {
           // Audit logging failures are logged but never block operations
-          AppLogger.error('⚠️ Failed to persist audit log (non-blocking): $error');
+          AppLogger.error(
+              '⚠️ Failed to persist audit log (non-blocking): $error');
         });
       } catch (e) {
         // Catch parsing errors - audit logging must never break operations

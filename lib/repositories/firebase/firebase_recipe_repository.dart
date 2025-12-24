@@ -300,12 +300,14 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
         // ULTRATHINK FIX: Enhanced ownership validation with legacy recipe support
         final isLegacy = _legacyValidator.isLegacyRecipe(existing);
-        final canDelete = await _legacyValidator.validateDeletionWithLegacySupport(
+        final canDelete =
+            await _legacyValidator.validateDeletionWithLegacySupport(
           existing,
           currentUser,
           id,
           isLegacy,
-          (recipe) => (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty(),
+          (recipe) =>
+              (recipe.socialData?.ownerId ?? recipe.createdBy).orEmpty(),
         );
 
         if (!canDelete) {

@@ -1,7 +1,7 @@
 // test/widget/image/image_components_ultrathink_test.dart
 // ULTRATHINK TEST SUITE: ImageComponents - 383 lines of production code
 // Testing static utility class with 11 methods for adaptive images, placeholders, and indicators
-// 
+//
 // ULTRATHINK FOCUS: Static methods, file vs URL detection, CachedNetworkImage integration, graceful error handling
 
 import 'package:flutter/material.dart';
@@ -25,7 +25,7 @@ void main() {
     setUp(() async {
       await TestServiceLocator.initialize();
     });
-    
+
     tearDown(() async {
       await BaseWidgetTest.teardownWidget();
     });
@@ -50,8 +50,9 @@ void main() {
       testWidgets('detects file paths and delegates to file image handler',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code file path detection from lines 23-32, 47-52
-        final config = ImageConfig.cached(size: ImageSize.medium, borderRadius: BorderRadius.circular(8));
-        
+        final config = ImageConfig.cached(
+            size: ImageSize.medium, borderRadius: BorderRadius.circular(8));
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageComponents.buildAdaptiveImage(
@@ -63,12 +64,12 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: File paths create ClipRRect wrapper (line 102-107) around FutureBuilder
         // _isFilePath('/storage/emulated/0/image.jpg') should return true (startsWith('/'))
         // _buildFileImage creates FutureBuilder, then gets wrapped in ClipRRect due to borderRadius
         expect(find.byType(ClipRRect), findsOneWidget);
-        
+
         // ULTRATHINK: Should NOT create CachedNetworkImage (that's for URLs)
         expect(find.byType(CachedNetworkImage), findsNothing);
       });
@@ -77,7 +78,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code URL detection from lines 34-42
         final config = ImageConfig.cached(size: ImageSize.medium);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageComponents.buildAdaptiveImage(
@@ -99,7 +100,7 @@ void main() {
         final config = ImageConfig.cached(size: ImageSize.medium);
         final customPlaceholder = Container(color: Colors.blue);
         final customError = Container(color: Colors.red);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageComponents.buildAdaptiveImage(
@@ -121,7 +122,7 @@ void main() {
         // ULTRATHINK: Test production code tap wrapping from line 110, 377-382
         final config = ImageConfig.cached(size: ImageSize.medium);
         bool tapped = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageComponents.buildAdaptiveImage(
@@ -134,11 +135,12 @@ void main() {
 
         // ULTRATHINK: buildOptimizedCachedImage calls _wrapWithTapHandler when onTap != null (line 146-148)
         expect(find.byType(GestureDetector), findsOneWidget);
-        
+
         // ULTRATHINK: Verify GestureDetector has the correct callback assigned
-        final gestureDetector = tester.widget<GestureDetector>(find.byType(GestureDetector));
+        final gestureDetector =
+            tester.widget<GestureDetector>(find.byType(GestureDetector));
         expect(gestureDetector.onTap, isNotNull);
-        
+
         // ULTRATHINK: Manually trigger the callback to verify it works
         gestureDetector.onTap!();
         expect(tapped, isTrue);
@@ -150,11 +152,11 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code CachedNetworkImage creation from lines 117-151
         final config = ImageConfig.cached(
-          size: ImageSize.custom,  // Custom size to use customWidth/Height
+          size: ImageSize.custom, // Custom size to use customWidth/Height
           customWidth: 200,
           customHeight: 150,
         );
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageComponents.buildOptimizedCachedImage(
@@ -166,9 +168,10 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Verify CachedNetworkImage receives correct parameters
-        final cachedImage = tester.widget<CachedNetworkImage>(find.byType(CachedNetworkImage));
+        final cachedImage =
+            tester.widget<CachedNetworkImage>(find.byType(CachedNetworkImage));
         expect(cachedImage.imageUrl, equals('https://example.com/test.jpg'));
         expect(cachedImage.fit, equals(BoxFit.scaleDown));
         expect(cachedImage.width, equals(200));
@@ -182,7 +185,7 @@ void main() {
           size: ImageSize.medium,
           borderRadius: BorderRadius.circular(12),
         );
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageComponents.buildOptimizedCachedImage(
@@ -201,8 +204,9 @@ void main() {
       testWidgets('handles infinite dimensions gracefully',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code infinite dimensions handling from lines 132-134
-        final config = ImageConfig.cached(size: ImageSize.large); // Can cause infinite dimensions
-        
+        final config = ImageConfig.cached(
+            size: ImageSize.large); // Can cause infinite dimensions
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageComponents.buildOptimizedCachedImage(
@@ -213,9 +217,10 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Infinite width should become null, memCacheWidth should be 800
-        final cachedImage = tester.widget<CachedNetworkImage>(find.byType(CachedNetworkImage));
+        final cachedImage =
+            tester.widget<CachedNetworkImage>(find.byType(CachedNetworkImage));
         expect(cachedImage.width, isNull); // Infinite width becomes null
         expect(cachedImage.memCacheWidth, equals(800)); // Fallback cache width
       });
@@ -226,7 +231,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code placeholder from lines 154-182
         final config = ImageConfig.cached(size: ImageSize.medium);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageComponents.buildPlaceholder(config: config),
@@ -244,7 +249,7 @@ void main() {
         // ULTRATHINK: Test production code custom child and background
         final config = ImageConfig.cached(size: ImageSize.medium);
         final customChild = Icon(Icons.star, color: Colors.yellow);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageComponents.buildPlaceholder(
@@ -265,7 +270,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code loading placeholder from lines 185-205
         final config = ImageConfig.cached(size: ImageSize.medium);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageComponents.buildLoadingPlaceholder(config: config),
@@ -283,7 +288,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code error placeholder from lines 208-225
         final config = ImageConfig.cached(size: ImageSize.medium);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageComponents.buildErrorPlaceholder(config: config),
@@ -303,7 +308,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code multiple indicator from lines 228-269
         final config = ImageConfig.cached(size: ImageSize.medium);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: Stack(
@@ -329,7 +334,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code single image hiding from line 232
         final config = ImageConfig.cached(size: ImageSize.medium);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageComponents.buildMultipleIndicator(
@@ -341,10 +346,12 @@ void main() {
 
         expect(tester.takeException(), isNull);
         // ULTRATHINK: Check for SizedBox.shrink specifically, avoiding test wrapper SizedBox
-        expect(find.byWidgetPredicate((widget) => 
-          widget is SizedBox && 
-          widget.width == 0.0 && 
-          widget.height == 0.0), findsOneWidget);
+        expect(
+            find.byWidgetPredicate((widget) =>
+                widget is SizedBox &&
+                widget.width == 0.0 &&
+                widget.height == 0.0),
+            findsOneWidget);
         expect(find.text('1'), findsNothing);
       });
 
@@ -352,7 +359,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code image counter from lines 272-303
         final config = ImageConfig.cached(size: ImageSize.medium);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: Stack(
@@ -379,7 +386,7 @@ void main() {
         // ULTRATHINK: Test production code navigation dots from lines 306-343
         final config = ImageConfig.cached(size: ImageSize.medium);
         int? tappedIndex;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: Stack(
@@ -399,7 +406,7 @@ void main() {
         expect(tester.takeException(), isNull);
         // Should create 3 GestureDetectors for 3 images
         expect(find.byType(GestureDetector), findsNWidgets(3));
-        
+
         // Test tapping second dot (index 1)
         await tester.tap(find.byType(GestureDetector).at(1));
         expect(tappedIndex, equals(1));
@@ -408,8 +415,9 @@ void main() {
       testWidgets('buildStatusIndicator shows online/offline status',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code status indicator from lines 346-374
-        final config = ImageConfig.avatar(showStatus: true, size: ImageSize.medium);
-        
+        final config =
+            ImageConfig.avatar(showStatus: true, size: ImageSize.medium);
+
         await tester.pumpWidget(
           createTestWidget(
             child: Stack(
@@ -434,8 +442,10 @@ void main() {
       testWidgets('buildStatusIndicator handles infinite dimensions gracefully',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code infinite dimensions fix from lines 354-356
-        final config = ImageConfig.avatar(showStatus: true, size: ImageSize.large); // May cause infinite dimensions
-        
+        final config = ImageConfig.avatar(
+            showStatus: true,
+            size: ImageSize.large); // May cause infinite dimensions
+
         await tester.pumpWidget(
           createTestWidget(
             child: Stack(
@@ -455,11 +465,13 @@ void main() {
         expect(find.byType(Container), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('buildStatusIndicator hides when showStatusIndicator is false',
+      testWidgets(
+          'buildStatusIndicator hides when showStatusIndicator is false',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code status hiding from line 350
-        final config = ImageConfig.avatar(showStatus: false, size: ImageSize.medium);
-        
+        final config =
+            ImageConfig.avatar(showStatus: false, size: ImageSize.medium);
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageComponents.buildStatusIndicator(
@@ -471,10 +483,12 @@ void main() {
 
         expect(tester.takeException(), isNull);
         // ULTRATHINK: Check for SizedBox.shrink specifically, avoiding test wrapper SizedBox
-        expect(find.byWidgetPredicate((widget) => 
-          widget is SizedBox && 
-          widget.width == 0.0 && 
-          widget.height == 0.0), findsOneWidget);
+        expect(
+            find.byWidgetPredicate((widget) =>
+                widget is SizedBox &&
+                widget.width == 0.0 &&
+                widget.height == 0.0),
+            findsOneWidget);
         expect(find.byType(Positioned), findsNothing);
       });
     });
@@ -484,7 +498,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code null callback handling
         final config = ImageConfig.cached(size: ImageSize.medium);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageComponents.buildOptimizedCachedImage(
@@ -505,7 +519,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code edge cases
         final config = ImageConfig.cached(size: ImageSize.medium);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: Column(
@@ -542,7 +556,7 @@ void main() {
           customWidth: 150,
           customHeight: 100,
         );
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ImageComponents.buildPlaceholder(config: config),
@@ -550,12 +564,13 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Container uses width/height from buildPlaceholder (lines 162-163)
         // Production code: width: dimensions.width == double.infinity ? null : dimensions.width
         // Since custom size with 150x100, dimensions should be Size(150, 100)
         final container = tester.widget<Container>(find.byType(Container).last);
-        expect(container.constraints, equals(BoxConstraints.tightFor(width: 150.0, height: 100.0)));
+        expect(container.constraints,
+            equals(BoxConstraints.tightFor(width: 150.0, height: 100.0)));
       });
 
       testWidgets('complex integration with all features',
@@ -566,7 +581,7 @@ void main() {
           showNavigationDots: true,
           showImageCounter: true,
         );
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: Stack(
@@ -595,7 +610,8 @@ void main() {
         // All components should render together
         expect(find.byType(CachedNetworkImage), findsOneWidget);
         expect(find.byType(ClipRRect), findsOneWidget); // Border radius
-        expect(find.byType(GestureDetector), findsAtLeastNWidgets(1)); // Tap + dots
+        expect(find.byType(GestureDetector),
+            findsAtLeastNWidgets(1)); // Tap + dots
         expect(find.text('3/5'), findsOneWidget); // Counter
       });
     });

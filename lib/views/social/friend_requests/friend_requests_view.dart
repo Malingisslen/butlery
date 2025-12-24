@@ -133,7 +133,8 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
               ),
               child: Column(
                 children: [
-                  FriendRequestsHeaderBuilder.buildErrorDisplay(context, viewModel),
+                  FriendRequestsHeaderBuilder.buildErrorDisplay(
+                      context, viewModel),
                   Expanded(
                     child: TabBarView(
                       controller: _tabController,
