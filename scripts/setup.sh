@@ -60,7 +60,7 @@ if command -v lefthook &> /dev/null; then
     echo "Pre-commit hooks installed"
 else
     echo "NOTE: Lefthook not found. Install it for pre-commit hooks:"
-    echo "  dart pub global activate lefthook"
+    echo "  npm install -g lefthook"
     echo "  Then run: lefthook install"
 fi
 
