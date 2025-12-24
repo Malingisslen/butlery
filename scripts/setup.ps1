@@ -64,7 +64,7 @@ if ($lefthookPath) {
     Write-Host "Pre-commit hooks installed" -ForegroundColor Green
 } else {
     Write-Host "NOTE: Lefthook not found. Install it for pre-commit hooks:" -ForegroundColor Yellow
-    Write-Host "  dart pub global activate lefthook"
+    Write-Host "  npm install -g lefthook"
     Write-Host "  Then run: lefthook install"
 }
 
