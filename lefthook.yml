@@ -1,9 +1,9 @@
 # Lefthook configuration for Butlery
 # https://github.com/evilmartians/lefthook
 #
-# Install: dart pub global activate lefthook
-# Setup: lefthook install
-# Manual run: lefthook run pre-commit
+# Install: npm install lefthook --save-dev
+# Setup: npx lefthook install
+# Manual run: npx lefthook run pre-commit
 
 pre-commit:
   parallel: true
@@ -25,32 +25,4 @@ commit-msg:
     # Format: type(scope): description
     # Types: feat, fix, docs, style, refactor, perf, test, chore, ci
     validate:
-      run: |
-        MESSAGE=$(cat {1})
-        if ! echo "$MESSAGE" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|chore|ci)(\(.+\))?: .+"; then
-          echo ""
-          echo "ERROR: Commit message does not follow conventional commits format"
-          echo ""
-          echo "Expected format: type(scope): description"
-          echo ""
-          echo "Types:"
-          echo "  feat     - New feature"
-          echo "  fix      - Bug fix"
-          echo "  docs     - Documentation changes"
-          echo "  style    - Code style changes (formatting, etc)"
-          echo "  refactor - Code refactoring"
-          echo "  perf     - Performance improvements"
-          echo "  test     - Test additions or changes"
-          echo "  chore    - Maintenance tasks"
-          echo "  ci       - CI/CD changes"
-          echo ""
-          echo "Examples:"
-          echo "  feat: add user authentication"
-          echo "  fix(auth): resolve login timeout issue"
-          echo "  docs: update README with setup instructions"
-          echo ""
-          echo "Your message was:"
-          echo "  $MESSAGE"
-          echo ""
-          exit 1
-        fi
+      run: node scripts/validate-commit-msg.js {1}
