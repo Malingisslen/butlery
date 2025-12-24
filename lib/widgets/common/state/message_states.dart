@@ -40,8 +40,8 @@ class MessageStates {
               Text(
                 title ?? 'Ett fel uppstod',
                 style: AppTextStyles.headlineSmall.copyWith(
-                      color: AppColors.error,
-                    ),
+                  color: AppColors.error,
+                ),
                 textAlign: TextAlign.center,
               ),
 
@@ -50,15 +50,18 @@ class MessageStates {
                 const SizedBox(height: AppDimensions.spacingM),
                 Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
-                  margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+                  margin: const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.spacingL),
                   decoration: BoxDecoration(
                     color: AppColors.error.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusM),
                     border: Border.all(color: AppColors.error),
                   ),
                   child: Text(
                     message,
-                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+                    style: AppTextStyles.bodyMedium
+                        .copyWith(color: AppColors.error),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -112,8 +115,8 @@ class MessageStates {
               Text(
                 title ?? 'Klart!',
                 style: AppTextStyles.headlineSmall.copyWith(
-                      color: AppColors.success,
-                    ),
+                  color: AppColors.success,
+                ),
                 textAlign: TextAlign.center,
               ),
 
@@ -122,7 +125,8 @@ class MessageStates {
                 const SizedBox(height: AppDimensions.spacingM),
                 Text(
                   message,
-                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.success),
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(color: AppColors.success),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -227,8 +231,8 @@ class MessageStates {
                 Text(
                   title,
                   style: AppTextStyles.titleLarge.copyWith(
-                        color: AppColors.warning,
-                      ),
+                    color: AppColors.warning,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppDimensions.spacingM),
@@ -236,7 +240,8 @@ class MessageStates {
               if (message != null) ...[
                 Text(
                   message,
-                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.warning),
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(color: AppColors.warning),
                   textAlign: TextAlign.center,
                 ),
               ],

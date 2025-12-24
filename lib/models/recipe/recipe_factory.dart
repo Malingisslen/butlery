@@ -155,7 +155,7 @@ class RecipeFactory {
   static Recipe createRealtime({
     required String title,
     required String description,
-    required List<String> ingredients,  
+    required List<String> ingredients,
     required List<String> instructions,
     required String mealType,
     required String ownerId,
@@ -242,7 +242,8 @@ class RecipeFactory {
     String? descriptionCollaborative,
   }) {
     if (personalRecipe.type != RecipeType.personal) {
-      throw ArgumentError('Only personal recipes can be converted to collaborative');
+      throw ArgumentError(
+          'Only personal recipes can be converted to collaborative');
     }
 
     return Recipe(
@@ -269,7 +270,8 @@ class RecipeFactory {
     List<String>? activeEditorIds,
   }) {
     if (collaborativeRecipe.type != RecipeType.collaborative) {
-      throw ArgumentError('Only collaborative recipes can be converted to realtime');
+      throw ArgumentError(
+          'Only collaborative recipes can be converted to realtime');
     }
 
     return Recipe(
@@ -279,7 +281,8 @@ class RecipeFactory {
       realtimeData: RecipeRealtimeData(
         activeEditorIds: activeEditorIds,
         lastEditedByUserId: collaborativeRecipe.socialData?.ownerId,
-        lastEditedByDisplayName: collaborativeRecipe.socialData?.ownerDisplayName,
+        lastEditedByDisplayName:
+            collaborativeRecipe.socialData?.ownerDisplayName,
         lastEditedAt: DateTime.now(),
         editCount: 0,
         isActive: true,
@@ -294,10 +297,10 @@ class RecipeFactory {
     required String newOwnerId,
     String? customTitle,
   }) {
-    final titleSuffix = sourceRecipe.socialData?.ownerDisplayName != null 
+    final titleSuffix = sourceRecipe.socialData?.ownerDisplayName != null
         ? ' (från ${sourceRecipe.socialData!.ownerDisplayName})'
         : ' (kopia)';
-    
+
     return Recipe(
       core: RecipeCore(
         title: customTitle ?? '${sourceRecipe.core.title}$titleSuffix',
@@ -309,7 +312,9 @@ class RecipeFactory {
         portions: sourceRecipe.core.portions,
         timeMinutes: sourceRecipe.core.timeMinutes,
         rating: sourceRecipe.core.rating,
-        tags: sourceRecipe.core.tags != null ? [...sourceRecipe.core.tags!] : null,
+        tags: sourceRecipe.core.tags != null
+            ? [...sourceRecipe.core.tags!]
+            : null,
         sourceUrl: 'Kopierat från: ${sourceRecipe.core.title}',
         imageUrls: [...sourceRecipe.core.imageUrls],
         isPublic: false, // Personal copies are private by default
@@ -378,11 +383,15 @@ class RecipeFactory {
     if (ingredients.isEmpty) return false;
     if (instructions.isEmpty) return false;
     if (mealType.trim().isEmpty) return false;
-    
+
     // Check that ingredients and instructions are not empty
-    if (ingredients.every((ingredient) => ingredient.trim().isEmpty)) return false;
-    if (instructions.every((instruction) => instruction.trim().isEmpty)) return false;
-    
+    if (ingredients.every((ingredient) => ingredient.trim().isEmpty)) {
+      return false;
+    }
+    if (instructions.every((instruction) => instruction.trim().isEmpty)) {
+      return false;
+    }
+
     return true;
   }
 
@@ -390,7 +399,7 @@ class RecipeFactory {
   static List<String> getDefaultMealTypes() {
     return [
       'Frukost',
-      'Lunch', 
+      'Lunch',
       'Middag',
       'Mellanmål',
       'Efterrätt',

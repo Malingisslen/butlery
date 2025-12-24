@@ -16,7 +16,8 @@ class RecipeManagementHandler {
   static Future<void> deleteRecipe(
     BuildContext context, {
     required VoidCallback onSuccess,
-    required void Function(String message, {Color? backgroundColor}) showSnackBar,
+    required void Function(String message, {Color? backgroundColor})
+        showSnackBar,
     required VoidCallback popNavigation,
   }) async {
     if (!context.mounted) return;
@@ -36,7 +37,8 @@ class RecipeManagementHandler {
         showSnackBar('Recept borttaget', backgroundColor: AppColors.success);
         onSuccess();
       } else {
-        showSnackBar('Kunde inte ta bort recept', backgroundColor: AppColors.error);
+        showSnackBar('Kunde inte ta bort recept',
+            backgroundColor: AppColors.error);
       }
     }
   }
@@ -44,7 +46,8 @@ class RecipeManagementHandler {
   /// Navigate to edit recipe view
   static Future<void> editRecipe(
     BuildContext context, {
-    required void Function(String message, {Color? backgroundColor}) showSnackBar,
+    required void Function(String message, {Color? backgroundColor})
+        showSnackBar,
   }) async {
     if (!context.mounted) return;
 
@@ -58,14 +61,16 @@ class RecipeManagementHandler {
       );
     } catch (e) {
       if (!context.mounted) return;
-      showSnackBar('Kunde inte öppna redigeringsvy', backgroundColor: AppColors.error);
+      showSnackBar('Kunde inte öppna redigeringsvy',
+          backgroundColor: AppColors.error);
     }
   }
 
   /// Mark recipe as cooked
   static Future<void> markAsCooked(
     BuildContext context, {
-    required void Function(String message, {Color? backgroundColor}) showSnackBar,
+    required void Function(String message, {Color? backgroundColor})
+        showSnackBar,
   }) async {
     if (!context.mounted) return;
 
@@ -74,17 +79,20 @@ class RecipeManagementHandler {
     try {
       await viewModel.markAsCooked();
       if (!context.mounted) return;
-      showSnackBar('Recept markerat som lagat idag!', backgroundColor: AppColors.success);
+      showSnackBar('Recept markerat som lagat idag!',
+          backgroundColor: AppColors.success);
     } catch (e) {
       if (!context.mounted) return;
-      showSnackBar('Kunde inte markera som lagat', backgroundColor: AppColors.error);
+      showSnackBar('Kunde inte markera som lagat',
+          backgroundColor: AppColors.error);
     }
   }
 
   /// Share recipe via share service
   static Future<void> shareRecipe(
     BuildContext context, {
-    required void Function(String message, {Color? backgroundColor}) showSnackBar,
+    required void Function(String message, {Color? backgroundColor})
+        showSnackBar,
   }) async {
     if (!context.mounted) return;
 

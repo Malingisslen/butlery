@@ -47,24 +47,24 @@ enum ActivityType {
 
   /// Get content creation activity types
   static List<ActivityType> get contentTypes => [
-    ActivityType.recipeCreated,
-    ActivityType.menuCreated,
-    ActivityType.shoppingListCreated,
-  ];
+        ActivityType.recipeCreated,
+        ActivityType.menuCreated,
+        ActivityType.shoppingListCreated,
+      ];
 
   /// Get social interaction activity types
   static List<ActivityType> get socialTypes => [
-    ActivityType.commentAdded,
-    ActivityType.reactionAdded,
-    ActivityType.recipeRated,
-  ];
+        ActivityType.commentAdded,
+        ActivityType.reactionAdded,
+        ActivityType.recipeRated,
+      ];
 
   /// Get sharing activity types
   static List<ActivityType> get sharingTypes => [
-    ActivityType.recipeShared,
-    ActivityType.menuShared,
-    ActivityType.shoppingListShared,
-  ];
+        ActivityType.recipeShared,
+        ActivityType.menuShared,
+        ActivityType.shoppingListShared,
+      ];
 
   @override
   String toString() => key;

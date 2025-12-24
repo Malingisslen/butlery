@@ -27,14 +27,15 @@ class RealtimeEditingModule {
   Future<bool> startRealtimeEditing(String recipeId) async {
     try {
       final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
-      final validationError = RealtimeRecipeUtils.validateRecipeForRealtime(recipe);
+      final validationError =
+          RealtimeRecipeUtils.validateRecipeForRealtime(recipe);
       if (validationError != null) {
         AppLogger.error('Cannot start realtime editing: $validationError');
         return false;
       }
 
       final permissionError = RealtimeRecipeUtils.validateUserPermissions(
-        _parent.currentUserId, 
+        _parent.currentUserId,
         recipeId,
         requireEdit: true,
         requireOwner: false,
@@ -51,7 +52,7 @@ class RealtimeEditingModule {
 
       // Convert to realtime recipe if needed
       await _convertToRealtimeRecipe(recipe!);
-      
+
       AppLogger.info('Started realtime editing for recipe: ${recipe.title}');
       return true;
     } catch (e) {
@@ -89,7 +90,8 @@ class RealtimeEditingModule {
     String? editDescription,
   }) async {
     if (_realtimeSyncService == null) {
-      AppLogger.warning('RealtimeSyncService not available, falling back to regular edit');
+      AppLogger.warning(
+          'RealtimeSyncService not available, falling back to regular edit');
       return _makeRegularEdit(recipeId, changes);
     }
 
@@ -101,7 +103,7 @@ class RealtimeEditingModule {
       }
 
       final permissionError = RealtimeRecipeUtils.validateUserPermissions(
-        _parent.currentUserId, 
+        _parent.currentUserId,
         recipeId,
         requireEdit: true,
         requireOwner: false,
@@ -113,10 +115,10 @@ class RealtimeEditingModule {
 
       // Convert to realtime recipe for editing
       final realtimeRecipe = await _convertToRealtimeRecipe(recipe);
-      
+
       // Apply changes to realtime recipe
       RealtimeRecipeUtils.applyChangesToRealtimeRecipe(
-        realtimeRecipe, 
+        realtimeRecipe,
         changes,
         editDescription,
         _parent.currentUserId,
@@ -153,7 +155,8 @@ class RealtimeEditingModule {
       return await makeRealtimeEdit(
         recipeId: recipeId,
         changes: combinedChanges,
-        editDescription: batchDescription ?? 'Batch edit with ${changeList.length} changes',
+        editDescription:
+            batchDescription ?? 'Batch edit with ${changeList.length} changes',
       );
     } catch (e) {
       AppLogger.error('Failed to make batch realtime edits', e);
@@ -185,12 +188,13 @@ class RealtimeEditingModule {
   }) async {
     try {
       if (_realtimeSyncService == null) {
-        AppLogger.warning('RealtimeSyncService not available for conflict resolution');
+        AppLogger.warning(
+            'RealtimeSyncService not available for conflict resolution');
         return false;
       }
 
       Recipe resolvedRecipe;
-      
+
       switch (resolution) {
         case 'local':
           resolvedRecipe = localVersion;
@@ -202,7 +206,7 @@ class RealtimeEditingModule {
           break;
         case 'merge':
           resolvedRecipe = RealtimeRecipeUtils.mergeRecipeVersions(
-            localVersion, 
+            localVersion,
             remoteVersion,
             _parent.currentUserId,
             _parent.currentUserDisplayName,
@@ -217,7 +221,8 @@ class RealtimeEditingModule {
       await _convertToRealtimeRecipe(resolvedRecipe);
       // await _realtimeSyncService!.updateResource(realtimeRecipe);
 
-      AppLogger.info('Resolved conflict for recipe: $recipeId using $resolution strategy');
+      AppLogger.info(
+          'Resolved conflict for recipe: $recipeId using $resolution strategy');
       return true;
     } catch (e) {
       AppLogger.error('Failed to resolve conflict', e);
@@ -341,7 +346,8 @@ class RealtimeEditingModule {
   }
 
   /// Make regular edit when realtime not available
-  Future<bool> _makeRegularEdit(String recipeId, Map<String, dynamic> changes) async {
+  Future<bool> _makeRegularEdit(
+      String recipeId, Map<String, dynamic> changes) async {
     try {
       return await _parent.updateRecipeContent(
         recipeId: recipeId,
@@ -378,11 +384,12 @@ class RealtimeEditingModule {
   /// Check if user can edit recipe
   bool _canEditRecipe(String recipeId) {
     return RealtimeRecipeUtils.validateUserPermissions(
-      _parent.currentUserId,
-      recipeId,
-      requireEdit: true,
-      requireOwner: false,
-    ) == null;
+          _parent.currentUserId,
+          recipeId,
+          requireEdit: true,
+          requireOwner: false,
+        ) ==
+        null;
   }
 }
 

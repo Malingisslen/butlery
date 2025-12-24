@@ -56,7 +56,8 @@ class SnackbarRouteObserver extends NavigatorObserver {
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
     super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
-    _clearSnackbars('didReplace: ${oldRoute?.settings.name} -> ${newRoute?.settings.name}');
+    _clearSnackbars(
+        'didReplace: ${oldRoute?.settings.name} -> ${newRoute?.settings.name}');
   }
 
   /// Internal method to clear snackbars safely.
@@ -69,11 +70,13 @@ class SnackbarRouteObserver extends NavigatorObserver {
         // Clear all active snackbars
         ScaffoldMessenger.of(context).clearSnackBars();
 
-        AppLogger.debug('SnackbarRouteObserver: Cleared snackbars on $navigationEvent');
+        AppLogger.debug(
+            'SnackbarRouteObserver: Cleared snackbars on $navigationEvent');
       }
     } catch (e) {
       // Fail silently - snackbar clearing is not critical
-      AppLogger.warning('SnackbarRouteObserver: Failed to clear snackbars on $navigationEvent: $e');
+      AppLogger.warning(
+          'SnackbarRouteObserver: Failed to clear snackbars on $navigationEvent: $e');
     }
   }
 }

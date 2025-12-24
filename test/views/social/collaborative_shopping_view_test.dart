@@ -27,7 +27,7 @@ Widget _createTestWidget({
   List<ChangeNotifierProvider>? providers,
 }) {
   Widget wrappedChild = child;
-  
+
   // Wrap with providers if provided
   if (providers != null && providers.isNotEmpty) {
     wrappedChild = MultiProvider(
@@ -110,7 +110,8 @@ void main() {
     });
 
     group('Provider Architecture Tests', () {
-      testWidgets('should initialize with ChangeNotifierProvider architecture', (tester) async {
+      testWidgets('should initialize with ChangeNotifierProvider architecture',
+          (tester) async {
         // Arrange: Configure mock service for loaded state
         _configureMockForLoadedState(testListId);
 
@@ -125,13 +126,19 @@ void main() {
 
         // Assert: Verify provider architecture matches production code
         expect(find.byType(CollaborativeShoppingView), findsOneWidget);
-        expect(find.byType(ChangeNotifierProvider<CollaborativeShoppingViewModel>), findsOneWidget);
-        expect(find.byType(Consumer<CollaborativeShoppingViewModel>), findsOneWidget);
+        expect(
+            find.byType(ChangeNotifierProvider<CollaborativeShoppingViewModel>),
+            findsOneWidget);
+        expect(find.byType(Consumer<CollaborativeShoppingViewModel>),
+            findsOneWidget);
       });
 
-      testWidgets('should initialize CollaborativeShoppingViewModel with correct listId', (tester) async {
+      testWidgets(
+          'should initialize CollaborativeShoppingViewModel with correct listId',
+          (tester) async {
         // Arrange: Create controlled testable ViewModel with specific listId
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel(
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel(
           listId: testListId,
           hasData: true,
         );
@@ -154,9 +161,11 @@ void main() {
         expect(testableViewModel.listId, equals(testListId));
       });
 
-      testWidgets('should provide Scaffold with proper structure', (tester) async {
+      testWidgets('should provide Scaffold with proper structure',
+          (tester) async {
         // Arrange: Create controlled state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel(
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel(
           hasData: true,
           isLoading: false,
         );
@@ -182,9 +191,12 @@ void main() {
     });
 
     group('Focused Component Architecture Tests', () {
-      testWidgets('should initialize with LoadingStateBuilder for state management', (tester) async {
+      testWidgets(
+          'should initialize with LoadingStateBuilder for state management',
+          (tester) async {
         // Arrange: Create controlled loading state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel(
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel(
           isLoading: false,
           hasData: true,
         );
@@ -207,7 +219,8 @@ void main() {
         expect(find.byType(LoadingStateBuilder), findsOneWidget);
       });
 
-      testWidgets('should display Swedish loading message during loading state', (tester) async {
+      testWidgets('should display Swedish loading message during loading state',
+          (tester) async {
         // Arrange: Configure mock service for loading state
         _configureMockForLoadingState(testListId);
 
@@ -221,14 +234,17 @@ void main() {
         // Allow ViewModel initialization to start but not complete
         await tester.pump(Duration.zero);
 
-        // Assert: Verify LoadingStateBuilder infrastructure is present 
+        // Assert: Verify LoadingStateBuilder infrastructure is present
         // Note: Loading message may not appear if ViewModel initializes too quickly
         expect(find.byType(LoadingStateBuilder), findsOneWidget);
       });
 
-      testWidgets('should initialize with proper Scaffold structure when loaded', (tester) async {
+      testWidgets(
+          'should initialize with proper Scaffold structure when loaded',
+          (tester) async {
         // Arrange: Create controlled loaded state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel(
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel(
           isLoading: false,
           hasData: true,
         );
@@ -253,9 +269,11 @@ void main() {
         expect(find.byType(LoadingStateBuilder), findsOneWidget);
       });
 
-      testWidgets('should coordinate component architecture properly with data', (tester) async {
+      testWidgets('should coordinate component architecture properly with data',
+          (tester) async {
         // Arrange: Create controlled data state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel(
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel(
           hasData: true,
           isLoading: false,
         );
@@ -275,15 +293,19 @@ void main() {
         await tester.pump();
 
         // Assert: Verify architectural coordination matches production
-        expect(find.byType(ChangeNotifierProvider<CollaborativeShoppingViewModel>), findsOneWidget);
-        expect(find.byType(Consumer<CollaborativeShoppingViewModel>), findsOneWidget);
+        expect(
+            find.byType(ChangeNotifierProvider<CollaborativeShoppingViewModel>),
+            findsOneWidget);
+        expect(find.byType(Consumer<CollaborativeShoppingViewModel>),
+            findsOneWidget);
         expect(find.byType(Scaffold), findsOneWidget);
         expect(find.byType(LoadingStateBuilder), findsOneWidget);
       });
     });
 
     group('State Management Tests', () {
-      testWidgets('should handle loading state with Swedish localization', (tester) async {
+      testWidgets('should handle loading state with Swedish localization',
+          (tester) async {
         // Arrange: Configure mock service for loading state
         _configureMockForLoadingState(testListId);
 
@@ -303,7 +325,8 @@ void main() {
 
       testWidgets('should handle error state infrastructure', (tester) async {
         // Arrange: Create controlled error state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel(
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel(
           hasData: false,
           isLoading: false,
         );
@@ -327,9 +350,11 @@ void main() {
         expect(find.byType(LoadingStateBuilder), findsOneWidget);
       });
 
-      testWidgets('should provide proper ViewModel initialization', (tester) async {
+      testWidgets('should provide proper ViewModel initialization',
+          (tester) async {
         // Arrange: Create controlled initialization state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel(
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel(
           listId: testListId,
           hasData: true,
         );
@@ -353,9 +378,11 @@ void main() {
         expect(testableViewModel.hasData, isTrue);
       });
 
-      testWidgets('should handle TextEditingController lifecycle', (tester) async {
+      testWidgets('should handle TextEditingController lifecycle',
+          (tester) async {
         // Arrange: Create controlled state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel();
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel();
 
         final providers = [
           ChangeNotifierProvider.value(value: testableViewModel),
@@ -403,14 +430,17 @@ void main() {
         // Note: Actual loading message display depends on ViewModel timing
       });
 
-      testWidgets('should support Swedish character input in collaborative workflows', (tester) async {
+      testWidgets(
+          'should support Swedish character input in collaborative workflows',
+          (tester) async {
         // Arrange: Create controlled collaborative state with Swedish list
         final swedishList = ShoppingListFactory.build(
           name: 'Kött och fågel lista',
           description: 'Handla kött, kyckling och färsk fisk',
         );
-        
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel(
+
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel(
           currentList: swedishList,
           hasData: true,
         );
@@ -432,12 +462,14 @@ void main() {
         // Assert: Verify Swedish text infrastructure supports collaborative workflows
         expect(find.byType(LoadingStateBuilder), findsOneWidget);
         expect(testableViewModel.listTitle, equals('Kött och fågel lista'));
-        expect(testableViewModel.listDescription, equals('Handla kött, kyckling och färsk fisk'));
+        expect(testableViewModel.listDescription,
+            equals('Handla kött, kyckling och färsk fisk'));
       });
 
       testWidgets('should handle Swedish not found state', (tester) async {
         // Arrange: Create controlled not found state (no data)
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel(
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel(
           hasData: false,
           isLoading: false,
         );
@@ -463,7 +495,8 @@ void main() {
     });
 
     group('Real-time Collaboration Features Tests', () {
-      testWidgets('should initialize collaborative infrastructure', (tester) async {
+      testWidgets('should initialize collaborative infrastructure',
+          (tester) async {
         // Arrange: Configure mock service with collaborative data
         final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
         if (shoppingService is MockUnifiedShoppingService) {
@@ -485,13 +518,18 @@ void main() {
         await tester.pump();
 
         // Assert: Verify collaborative infrastructure is in place
-        expect(find.byType(ChangeNotifierProvider<CollaborativeShoppingViewModel>), findsOneWidget);
+        expect(
+            find.byType(ChangeNotifierProvider<CollaborativeShoppingViewModel>),
+            findsOneWidget);
         expect(find.byType(CollaborativeShoppingView), findsOneWidget);
       });
 
-      testWidgets('should support real-time participant coordination architecture', (tester) async {
+      testWidgets(
+          'should support real-time participant coordination architecture',
+          (tester) async {
         // Arrange: Create controlled multi-participant state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel(
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel(
           participants: {
             'user1': 'Anna',
             'user2': 'Erik',
@@ -516,13 +554,16 @@ void main() {
 
         // Assert: Verify real-time collaboration architecture
         expect(find.byType(LoadingStateBuilder), findsOneWidget);
-        expect(find.byType(Consumer<CollaborativeShoppingViewModel>), findsOneWidget);
+        expect(find.byType(Consumer<CollaborativeShoppingViewModel>),
+            findsOneWidget);
         expect(testableViewModel.participants.length, equals(3));
       });
 
-      testWidgets('should handle collaborative conflict scenarios', (tester) async {
+      testWidgets('should handle collaborative conflict scenarios',
+          (tester) async {
         // Arrange: Create controlled conflict state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel(
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel(
           participants: {
             'user1': 'Anna Andersson',
           },
@@ -550,9 +591,11 @@ void main() {
     });
 
     group('Action Handler Architecture Tests', () {
-      testWidgets('should provide action handler infrastructure', (tester) async {
+      testWidgets('should provide action handler infrastructure',
+          (tester) async {
         // Arrange: Create controlled interactive state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel(
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel(
           hasData: true,
           canEdit: true,
         );
@@ -572,14 +615,17 @@ void main() {
         await tester.pump();
 
         // Assert: Verify action handler infrastructure
-        expect(find.byType(Scaffold), findsOneWidget); // SnackBar host for error feedback
+        expect(find.byType(Scaffold),
+            findsOneWidget); // SnackBar host for error feedback
         expect(find.byType(AppBar), findsOneWidget); // Actions component AppBar
         expect(testableViewModel.canEdit, isTrue);
       });
 
-      testWidgets('should handle permission-based action availability', (tester) async {
+      testWidgets('should handle permission-based action availability',
+          (tester) async {
         // Arrange: Create controlled permission state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel(
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel(
           canEdit: false,
           canView: true,
         );
@@ -603,9 +649,11 @@ void main() {
         expect(testableViewModel.canView, isTrue);
       });
 
-      testWidgets('should support error feedback infrastructure', (tester) async {
+      testWidgets('should support error feedback infrastructure',
+          (tester) async {
         // Arrange: Create controlled error state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel();
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel();
 
         final providers = [
           ChangeNotifierProvider.value(value: testableViewModel),
@@ -623,14 +671,17 @@ void main() {
 
         // Assert: Verify error handling infrastructure is in place
         expect(find.byType(Scaffold), findsOneWidget); // SnackBar host
-        expect(find.byType(LoadingStateBuilder), findsOneWidget); // State management
+        expect(find.byType(LoadingStateBuilder),
+            findsOneWidget); // State management
       });
     });
 
     group('Lifecycle Management Tests', () {
-      testWidgets('should properly initialize and dispose resources', (tester) async {
+      testWidgets('should properly initialize and dispose resources',
+          (tester) async {
         // Arrange: Create controlled state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel();
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel();
 
         final providers = [
           ChangeNotifierProvider.value(value: testableViewModel),
@@ -658,9 +709,11 @@ void main() {
         expect(find.byType(CollaborativeShoppingView), findsNothing);
       });
 
-      testWidgets('should handle view recreation without state corruption', (tester) async {
+      testWidgets('should handle view recreation without state corruption',
+          (tester) async {
         // Arrange: Create controlled state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel();
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel();
 
         final providers = [
           ChangeNotifierProvider.value(value: testableViewModel),
@@ -692,9 +745,11 @@ void main() {
         expect(find.byType(LoadingStateBuilder), findsOneWidget);
       });
 
-      testWidgets('should maintain provider context consistency', (tester) async {
+      testWidgets('should maintain provider context consistency',
+          (tester) async {
         // Arrange: Create controlled state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel();
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel();
 
         final providers = [
           ChangeNotifierProvider.value(value: testableViewModel),
@@ -711,16 +766,20 @@ void main() {
         await tester.pump();
 
         // Verify provider context consistency
-        final context = tester.element(find.byType(Consumer<CollaborativeShoppingViewModel>));
-        final viewModel1 = Provider.of<CollaborativeShoppingViewModel>(context, listen: false);
-        
+        final context = tester
+            .element(find.byType(Consumer<CollaborativeShoppingViewModel>));
+        final viewModel1 =
+            Provider.of<CollaborativeShoppingViewModel>(context, listen: false);
+
         // Trigger rebuild
         await tester.pump();
-        
+
         // Verify context consistency after rebuild
-        final context2 = tester.element(find.byType(Consumer<CollaborativeShoppingViewModel>));
-        final viewModel2 = Provider.of<CollaborativeShoppingViewModel>(context2, listen: false);
-        
+        final context2 = tester
+            .element(find.byType(Consumer<CollaborativeShoppingViewModel>));
+        final viewModel2 = Provider.of<CollaborativeShoppingViewModel>(context2,
+            listen: false);
+
         // Assert: Verify same instance maintained (production creates same ViewModel instance)
         expect(viewModel1, equals(viewModel2));
         expect(viewModel1.runtimeType, equals(CollaborativeShoppingViewModel));
@@ -728,9 +787,11 @@ void main() {
     });
 
     group('Performance and Integration Tests', () {
-      testWidgets('should load view efficiently without performance issues', (tester) async {
+      testWidgets('should load view efficiently without performance issues',
+          (tester) async {
         // Arrange: Create controlled performance test state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel(
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel(
           totalItems: 50,
           completedItems: 20,
         );
@@ -740,7 +801,7 @@ void main() {
         ];
 
         final stopwatch = Stopwatch()..start();
-        
+
         // Act: Pump the view
         await tester.pumpWidget(
           _createTestWidget(
@@ -750,7 +811,7 @@ void main() {
         );
 
         await tester.pump();
-        
+
         stopwatch.stop();
 
         // Assert: Verify reasonable loading time (under 1 second for controlled state)
@@ -758,9 +819,11 @@ void main() {
         expect(find.byType(CollaborativeShoppingView), findsOneWidget);
       });
 
-      testWidgets('should integrate properly with Phase 1 test infrastructure', (tester) async {
+      testWidgets('should integrate properly with Phase 1 test infrastructure',
+          (tester) async {
         // Arrange: Create controlled integration test state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel();
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel();
 
         final providers = [
           ChangeNotifierProvider.value(value: testableViewModel),
@@ -778,13 +841,18 @@ void main() {
 
         // Assert: Verify Phase 1 integration
         expect(find.byType(CollaborativeShoppingView), findsOneWidget);
-        expect(find.byType(ChangeNotifierProvider<CollaborativeShoppingViewModel>), findsOneWidget);
+        expect(
+            find.byType(ChangeNotifierProvider<CollaborativeShoppingViewModel>),
+            findsOneWidget);
         expect(find.byType(LoadingStateBuilder), findsOneWidget);
       });
 
-      testWidgets('should handle complex collaborative architecture efficiently', (tester) async {
+      testWidgets(
+          'should handle complex collaborative architecture efficiently',
+          (tester) async {
         // Arrange: Create controlled complex state
-        final testableViewModel = TestableViewModelFactory.createCollaborativeShoppingViewModel(
+        final testableViewModel =
+            TestableViewModelFactory.createCollaborativeShoppingViewModel(
           totalItems: 100,
           participants: {
             'user1': 'Anna Andersson',
@@ -799,7 +867,7 @@ void main() {
         ];
 
         final stopwatch = Stopwatch()..start();
-        
+
         // Act: Pump the view
         await tester.pumpWidget(
           _createTestWidget(
@@ -809,7 +877,7 @@ void main() {
         );
 
         await tester.pump();
-        
+
         stopwatch.stop();
 
         // Assert: Verify performance with complex collaborative architecture (under 800ms)

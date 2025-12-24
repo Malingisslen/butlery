@@ -44,13 +44,14 @@ RealtimeMenuData _createTestMenuData({
   return RealtimeMenuData(
     menuTitle: menuTitle ?? 'Veckans meny',
     createdForDate: createdForDate ?? DateTime.now(),
-    menuSnapshot: menuSnapshot ?? {
-      'Måndag': [_createTestRecipe(title: 'Köttbullar')],
-      'Tisdag': [_createTestRecipe(title: 'Fisk')],
-      'Onsdag': [_createTestRecipe(title: 'Pasta')],
-      'Torsdag': [],
-      'Fredag': [_createTestRecipe(title: 'Pizza')],
-    },
+    menuSnapshot: menuSnapshot ??
+        {
+          'Måndag': [_createTestRecipe(title: 'Köttbullar')],
+          'Tisdag': [_createTestRecipe(title: 'Fisk')],
+          'Onsdag': [_createTestRecipe(title: 'Pasta')],
+          'Torsdag': [],
+          'Fredag': [_createTestRecipe(title: 'Pizza')],
+        },
     menuNotes: 'Test notes',
     favoriteRecipeIds: ['recipe_1', 'recipe_2'],
     originalPrompt: 'Generate a healthy menu',
@@ -65,7 +66,7 @@ void main() {
         final participants = {
           'user_456': ResourcePermission.editor,
         };
-        
+
         final realtimeMenu = RealtimeMenu(
           id: 'menu_123',
           ownerId: 'user_123',
@@ -97,7 +98,7 @@ void main() {
         final createdAt = DateTime.now().subtract(const Duration(days: 5));
         final lastEditedAt = DateTime.now();
         final metadata = {'extra': 'data'};
-        
+
         final realtimeMenu = RealtimeMenu(
           id: 'menu_123',
           ownerId: 'user_123',
@@ -127,7 +128,7 @@ void main() {
           'Måndag': [_createTestRecipe(title: 'Köttbullar')],
           'Tisdag': [_createTestRecipe(title: 'Fisk')],
         };
-        
+
         final realtimeMenu = RealtimeMenu.fromMenuCategories(
           menuTitle: 'Test Menu',
           menuSnapshot: menuSnapshot,
@@ -145,9 +146,12 @@ void main() {
         expect(realtimeMenu.menuNotes, equals('Test notes'));
         // Owner IS in participants map for RealtimeMenu (different from RealtimeRecipe)
         expect(realtimeMenu.participants.containsKey('user_123'), isTrue);
-        expect(realtimeMenu.participants['user_123'], equals(ResourcePermission.owner));
-        expect(realtimeMenu.participants['user_456'], equals(ResourcePermission.editor));
-        expect(realtimeMenu.participants['user_789'], equals(ResourcePermission.viewer));
+        expect(realtimeMenu.participants['user_123'],
+            equals(ResourcePermission.owner));
+        expect(realtimeMenu.participants['user_456'],
+            equals(ResourcePermission.editor));
+        expect(realtimeMenu.participants['user_789'],
+            equals(ResourcePermission.viewer));
       });
 
       test('should create from data', () {
@@ -157,7 +161,7 @@ void main() {
         };
         final createdAt = DateTime.now().subtract(const Duration(days: 5));
         final lastEditedAt = DateTime.now();
-        
+
         final realtimeMenu = RealtimeMenu.fromData(
           id: 'menu_123',
           ownerId: 'user_123',
@@ -243,7 +247,8 @@ void main() {
       });
 
       test('should return favorite recipe IDs', () {
-        expect(realtimeMenu.favoriteRecipeIds, equals(['recipe_1', 'recipe_2']));
+        expect(
+            realtimeMenu.favoriteRecipeIds, equals(['recipe_1', 'recipe_2']));
       });
 
       test('should return original prompt', () {
@@ -296,7 +301,7 @@ void main() {
 
       test('should add recipe to category', () {
         final newRecipe = _createTestRecipe(title: 'Tacos');
-        
+
         final updated = baseMenu.addRecipeToCategory(
           categoryName: 'Torsdag',
           recipe: newRecipe,
@@ -312,7 +317,7 @@ void main() {
       test('should remove recipe from category', () {
         // Måndag starts with 1 recipe
         expect(baseMenu.menuSnapshot['Måndag']!.length, equals(1));
-        
+
         final updated = baseMenu.removeRecipeFromCategory(
           categoryName: 'Måndag',
           recipeIndex: 0,
@@ -330,7 +335,7 @@ void main() {
         expect(baseMenu.menuSnapshot['Måndag']!.length, equals(1));
         expect(baseMenu.menuSnapshot['Torsdag']!.length, equals(0));
         final recipeTitle = baseMenu.menuSnapshot['Måndag']!.first.title;
-        
+
         final updated = baseMenu.moveRecipeBetweenCategories(
           fromCategory: 'Måndag',
           fromIndex: 0,
@@ -342,7 +347,8 @@ void main() {
         // After move: Måndag should be empty, Torsdag should have 1
         expect(updated.menuSnapshot['Måndag']!.length, equals(0));
         expect(updated.menuSnapshot['Torsdag']!.length, equals(1));
-        expect(updated.menuSnapshot['Torsdag']!.first.title, equals(recipeTitle));
+        expect(
+            updated.menuSnapshot['Torsdag']!.first.title, equals(recipeTitle));
       });
 
       test('should clear category', () {
@@ -361,7 +367,7 @@ void main() {
           _createTestRecipe(title: 'Soppa'),
           _createTestRecipe(title: 'Sallad'),
         ];
-        
+
         final updated = baseMenu.updateWholeCategory(
           categoryName: 'Måndag',
           recipes: newRecipes,
@@ -402,19 +408,23 @@ void main() {
       });
 
       test('should return empty categories count', () {
-        expect(realtimeMenu.emptyCategoriesCount, equals(1)); // Torsdag is empty
+        expect(
+            realtimeMenu.emptyCategoriesCount, equals(1)); // Torsdag is empty
       });
 
       test('should check if menu is complete', () {
-        expect(realtimeMenu.isComplete, isTrue); // Has recipes in at least 2 categories
+        expect(realtimeMenu.isComplete,
+            isTrue); // Has recipes in at least 2 categories
       });
 
       test('should check if menu is well balanced', () {
-        expect(realtimeMenu.isWellBalanced, isTrue); // Has recipes in at least 3 categories
+        expect(realtimeMenu.isWellBalanced,
+            isTrue); // Has recipes in at least 3 categories
       });
 
       test('should return average recipes per category', () {
-        expect(realtimeMenu.averageRecipesPerCategory, closeTo(0.8, 0.01)); // 4 recipes / 5 categories
+        expect(realtimeMenu.averageRecipesPerCategory,
+            closeTo(0.8, 0.01)); // 4 recipes / 5 categories
       });
 
       test('should check if menu has favorites', () {
@@ -448,7 +458,8 @@ void main() {
           ResourcePermission.editor,
         );
 
-        expect(updated.participants['user_456'], equals(ResourcePermission.editor));
+        expect(updated.participants['user_456'],
+            equals(ResourcePermission.editor));
       });
 
       test('should remove participant', () {
@@ -483,16 +494,20 @@ void main() {
           ResourcePermission.viewer,
         );
 
-        expect(updated.participants['user_456'], equals(ResourcePermission.viewer));
+        expect(updated.participants['user_456'],
+            equals(ResourcePermission.viewer));
       });
 
-      test('should add participant when updating permission for non-existent user', () {
+      test(
+          'should add participant when updating permission for non-existent user',
+          () {
         // Should add the participant if they don't exist
         final updated = baseMenu.updateParticipantPermission(
           'user_999',
           ResourcePermission.viewer,
         );
-        expect(updated.participants['user_999'], equals(ResourcePermission.viewer));
+        expect(updated.participants['user_999'],
+            equals(ResourcePermission.viewer));
         expect(updated.editCount, equals(baseMenu.editCount + 1));
       });
 
@@ -561,7 +576,7 @@ void main() {
           createdForDate: DateTime.now(),
           menuSnapshot: {},
         );
-        
+
         final realtimeMenu = RealtimeMenu.fromData(
           id: 'menu_123',
           ownerId: 'user_123',
@@ -590,7 +605,7 @@ void main() {
           },
           menuNotes: 'Åsa önskar räkor',
         );
-        
+
         final realtimeMenu = RealtimeMenu.fromData(
           id: 'menu_123',
           ownerId: 'user_123',
@@ -619,7 +634,7 @@ void main() {
           favoriteRecipeIds: null,
           originalPrompt: null,
         );
-        
+
         final realtimeMenu = RealtimeMenu.fromData(
           id: 'menu_123',
           ownerId: 'user_123',

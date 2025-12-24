@@ -14,7 +14,8 @@ import 'package:butlery/services/upload/upload_models.dart';
 /// **Used by:** RecipeImageManager for user feedback during uploads
 class ImageUploadNotificationManager {
   /// Stream controller for upload notification events
-  static final StreamController<UploadNotificationEvent> _notificationController =
+  static final StreamController<UploadNotificationEvent>
+      _notificationController =
       StreamController<UploadNotificationEvent>.broadcast();
 
   /// Stream of upload notification events for UI subscription
@@ -55,7 +56,8 @@ class ImageUploadNotificationManager {
 
   /// Trigger completion notification when all uploads are done
   void triggerCompletionNotification(int totalImages) {
-    if (_notificationTriggers.contains(UploadNotificationTrigger.allCompleted)) {
+    if (_notificationTriggers
+        .contains(UploadNotificationTrigger.allCompleted)) {
       return; // Already sent
     }
 
@@ -72,7 +74,8 @@ class ImageUploadNotificationManager {
 
   /// Trigger major failure notification when significant uploads fail
   void triggerMajorFailureNotification(int failedCount, int totalCount) {
-    if (_notificationTriggers.contains(UploadNotificationTrigger.majorFailure)) {
+    if (_notificationTriggers
+        .contains(UploadNotificationTrigger.majorFailure)) {
       return; // Already sent
     }
 
@@ -117,7 +120,8 @@ class ImageUploadNotificationManager {
   }
 
   /// Trigger progress milestone notification (e.g., 25%, 50%, 75% complete)
-  void triggerSignificantProgressNotification(int completed, int total, double percentage) {
+  void triggerSignificantProgressNotification(
+      int completed, int total, double percentage) {
     // Only notify at significant milestones (25%, 50%, 75%)
     final milestones = [25, 50, 75];
     final currentPercentage = (percentage * 100).round();

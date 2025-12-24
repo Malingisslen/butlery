@@ -1,5 +1,5 @@
 /// Base class for all model tests providing common utilities and patterns
-/// 
+///
 /// This class provides centralized testing infrastructure for model tests
 /// following the gold standard patterns established in the codebase.
 library;
@@ -16,13 +16,13 @@ abstract class ModelTestBase {
     await BaseUnitTest.setupUnit();
     await TestServiceLocator.initialize();
   }
-  
+
   /// Standard teardown for model tests
   static Future<void> teardownModelTest() async {
     BaseUnitTest.resetMocks();
     await TestServiceLocator.reset();
   }
-  
+
   /// Run a model test group with automatic setup/teardown
   static void testModelGroup(
     String modelName,
@@ -32,15 +32,15 @@ abstract class ModelTestBase {
       setUp(() async {
         await setupModelTest();
       });
-      
+
       tearDown(() async {
         await teardownModelTest();
       });
-      
+
       body();
     });
   }
-  
+
   /// Test JSON serialization round-trip
   static void testJsonRoundTrip<T>({
     required String description,
@@ -53,17 +53,17 @@ abstract class ModelTestBase {
       // Act
       final json = toJson(model);
       final deserialized = fromJson(json);
-      
+
       // Assert
       expect(json, isA<Map<String, dynamic>>());
       expect(deserialized, isA<T>());
-      
+
       if (customAssertions != null) {
         customAssertions(model, deserialized);
       }
     });
   }
-  
+
   /// Test Firestore serialization round-trip
   static void testFirestoreRoundTrip<T>({
     required String description,
@@ -75,32 +75,33 @@ abstract class ModelTestBase {
   }) {
     BaseUnitTest.testUnit(description, () async {
       // Arrange
-      final id = documentId ?? 'test_doc_${DateTime.now().millisecondsSinceEpoch}';
-      
+      final id =
+          documentId ?? 'test_doc_${DateTime.now().millisecondsSinceEpoch}';
+
       // Act
       final firestoreData = toFirestore(model);
       final deserialized = fromFirestore(id, firestoreData);
-      
+
       // Assert
       expect(firestoreData, isA<Map<String, dynamic>>());
       expect(deserialized, isA<T>());
-      
+
       // Verify Firestore-specific types
       if (firestoreData.containsKey('createdAt')) {
-        expect(firestoreData['createdAt'], 
-          anyOf(isA<Timestamp>(), isA<FieldValue>(), isA<DateTime>()));
+        expect(firestoreData['createdAt'],
+            anyOf(isA<Timestamp>(), isA<FieldValue>(), isA<DateTime>()));
       }
       if (firestoreData.containsKey('updatedAt')) {
-        expect(firestoreData['updatedAt'], 
-          anyOf(isA<Timestamp>(), isA<FieldValue>(), isA<DateTime>()));
+        expect(firestoreData['updatedAt'],
+            anyOf(isA<Timestamp>(), isA<FieldValue>(), isA<DateTime>()));
       }
-      
+
       if (customAssertions != null) {
         customAssertions(model, deserialized);
       }
     });
   }
-  
+
   /// Test copyWith method comprehensively
   static void testCopyWith<T>({
     required String description,
@@ -112,14 +113,14 @@ abstract class ModelTestBase {
     BaseUnitTest.testUnit(description, () async {
       // Act
       final copied = copyWithCall();
-      
+
       // Assert
       expect(copied, isA<T>());
       expect(copied, isNot(same(original)));
       assertions(original, copied);
     });
   }
-  
+
   /// Test model validation
   static void testValidation({
     required String description,
@@ -131,16 +132,16 @@ abstract class ModelTestBase {
     BaseUnitTest.testUnit(description, () async {
       // Act
       final isValid = isValidCheck();
-      
+
       // Assert
       expect(isValid, equals(expectedValid));
-      
+
       if (!expectedValid && validationError != null) {
         // Could test specific validation error messages if model provides them
       }
     });
   }
-  
+
   /// Test equality and hashCode
   static void testEquality<T>({
     required String description,
@@ -159,7 +160,7 @@ abstract class ModelTestBase {
       }
     });
   }
-  
+
   /// Test computed properties
   static void testComputedProperty<T>({
     required String description,
@@ -170,12 +171,12 @@ abstract class ModelTestBase {
     BaseUnitTest.testUnit(description, () async {
       // Act
       final value = getter();
-      
+
       // Assert
       expect(value, equals(expectedValue));
     });
   }
-  
+
   /// Test Swedish text formatting
   static void testSwedishFormatting({
     required String description,
@@ -186,7 +187,7 @@ abstract class ModelTestBase {
     BaseUnitTest.testUnit(description, () async {
       // Act
       final formatted = formatter();
-      
+
       // Assert
       expect(formatted, equals(expectedText));
       // Verify Swedish characters are preserved
@@ -195,7 +196,7 @@ abstract class ModelTestBase {
       }
     });
   }
-  
+
   /// Test collection operations (add, remove, update)
   static void testCollectionOperation<T>({
     required String description,
@@ -207,16 +208,16 @@ abstract class ModelTestBase {
     BaseUnitTest.testUnit(description, () async {
       // Arrange
       final before = List<T>.from(initialCollection);
-      
+
       // Act
       operation();
       final after = getCollection();
-      
+
       // Assert
       assertions(before, after);
     });
   }
-  
+
   /// Test error handling in deserialization
   static void testDeserializationError<T>({
     required String description,

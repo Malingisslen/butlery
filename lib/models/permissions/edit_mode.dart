@@ -60,23 +60,23 @@ enum EditMode {
   /// Full ownership mode with complete editing rights for original content modification.
   /// Content owners can always edit the original content with all privileges and administrative control.
   owner, // Äger receptet - kan alltid redigera original
-  
+
   /// Collaborative editing mode with synchronized multi-user editing capabilities.
   /// Multiple users can edit simultaneously with changes synchronized across all collaborative editors.
   collaborative, // Kollaborativ redigering - ändringar synkas
-  
+
   /// Read-only mode with fork/copy capabilities for independent content creation.
   /// Users can view content and create their own independent copies but cannot modify the original.
   readOnlyWithFork, // Bara läsning + "Spara min kopia"
-  
+
   /// No access mode with complete content access restriction.
   /// Users have no access to view or interact with the content in any way.
   noAccess, // Ingen åtkomst
-  
+
   /// Standard edit mode with basic editing permissions for general content modification.
   /// Provides standard editing capabilities without collaborative features or ownership privileges.
   edit, // Standard edit mode
-  
+
   /// Standard view mode with read-only access without fork capabilities.
   /// Users can view content but cannot edit or create copies, suitable for public content display.
   view, // Standard view mode
@@ -89,13 +89,16 @@ extension EditModeExtension on EditMode {
   /// Checks if the current edit mode allows content editing operations.
   /// Returns true for ownership, collaborative, and standard edit modes that permit content modification.
   /// Used for enabling/disabling editing UI elements and validating editing permissions.
-  bool get canEdit => this == EditMode.owner || this == EditMode.collaborative || this == EditMode.edit;
-  
+  bool get canEdit =>
+      this == EditMode.owner ||
+      this == EditMode.collaborative ||
+      this == EditMode.edit;
+
   /// Checks if the current edit mode allows content forking/copying operations.
   /// Returns true for all modes except noAccess, allowing users to create independent copies
   /// of content even when they cannot edit the original. Used for fork/copy functionality.
   bool get canFork => this != EditMode.noAccess;
-  
+
   /// Determines if the fork button should be displayed in the UI for content duplication.
   /// Returns true for read-only modes with fork capabilities and collaborative modes where
   /// users might want to create independent copies. Used for UI element visibility control.

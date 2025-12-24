@@ -66,11 +66,11 @@ void main() {
       when(() => mockLegacyRepo.wasNotificationSent(any()))
           .thenAnswer((_) async => false);
       when(() => mockLegacyRepo.recordNotification(
-        notificationId: any(named: 'notificationId'),
-        category: any(named: 'category'),
-        type: any(named: 'type'),
-        data: any(named: 'data'),
-      )).thenAnswer((_) async {});
+            notificationId: any(named: 'notificationId'),
+            category: any(named: 'category'),
+            type: any(named: 'type'),
+            data: any(named: 'data'),
+          )).thenAnswer((_) async {});
       when(() => mockLegacyRepo.getPreferences())
           .thenAnswer((_) async => NotificationPreferences.defaults());
       when(() => mockLegacyRepo.markNotificationDelivered(any()))
@@ -785,8 +785,8 @@ void main() {
       group('Quiet Hours & User Preference Errors', () {
         test('should handle invalid quiet hour settings', () async {
           // Arrange - End time before start time
-          when(() => mockLegacyRepo.getPreferences()).thenAnswer((_) async => 
-            NotificationPreferences.defaults());
+          when(() => mockLegacyRepo.getPreferences())
+              .thenAnswer((_) async => NotificationPreferences.defaults());
 
           // Act & Assert - Should handle invalid settings
           final isQuiet = await notificationService.isInQuietHours('user-123');

@@ -14,13 +14,17 @@ class RecommendationService extends BaseService {
 
   // Cache for recommendations
   final Map<String, Recommendation> _recommendationCache = {};
-  final Map<String, List<String>> _userRecommendations = {}; // userId -> recommendation IDs
-  final Map<String, Map<FeedbackType, int>> _feedbackHistory = {}; // recommendationId -> feedback counts
-  
+  final Map<String, List<String>> _userRecommendations =
+      {}; // userId -> recommendation IDs
+  final Map<String, Map<FeedbackType, int>> _feedbackHistory =
+      {}; // recommendationId -> feedback counts
+
   // Dismissed recommendations tracking
-  final Map<String, Set<String>> _dismissedRecommendations = {}; // userId -> set of dismissed recommendation IDs
-  final Map<String, DateTime> _dismissalTimestamps = {}; // recommendationId -> timestamp
-  
+  final Map<String, Set<String>> _dismissedRecommendations =
+      {}; // userId -> set of dismissed recommendation IDs
+  final Map<String, DateTime> _dismissalTimestamps =
+      {}; // recommendationId -> timestamp
+
   static const Duration _undoDismissalWindow = Duration(minutes: 5);
 
   RecommendationService();
@@ -36,92 +40,107 @@ class RecommendationService extends BaseService {
     final result = await safeExecute(
       () async {
         AppLogger.info('🤖 Generating recommendations for user: $userId');
-        
+
         // Get user's existing recommendations
         final existingIds = _userRecommendations[userId] ?? [];
         final recommendations = <Recommendation>[];
-        
+
         // In a real implementation, this would use ML/AI to generate recommendations
         // For now, we'll create intelligent mock recommendations based on patterns
-        
+
         // Get user preferences and history (mock)
         final userPreferences = await _getUserPreferences(userId);
         final recentActivity = await _getUserRecentActivity(userId);
-        
+
         // Use recent activity to personalize recommendations
         final recentCategories = _extractCategoriesFromActivity(recentActivity);
-        final personalizedPreferences = Map<String, dynamic>.from(userPreferences);
-        
+        final personalizedPreferences =
+            Map<String, dynamic>.from(userPreferences);
+
         // Enhance preferences based on recent activity
         if (recentCategories.isNotEmpty) {
           personalizedPreferences['recentCategories'] = recentCategories;
-          personalizedPreferences['activityWeight'] = 1.2; // Boost recent activity influence
+          personalizedPreferences['activityWeight'] =
+              1.2; // Boost recent activity influence
         }
-        
-        AppLogger.debug('User has ${existingIds.length} existing recommendations');
+
+        AppLogger.debug(
+            'User has ${existingIds.length} existing recommendations');
         AppLogger.debug('User has ${recentActivity.length} recent activities');
         AppLogger.debug('Personalized with categories: $recentCategories');
-        
+
         // Generate different types of recommendations
-        if (types == null || types.contains(RecommendationType.similarToShared)) {
-          recommendations.addAll(await _generateSimilarToSharedRecommendations(userId, userPreferences));
+        if (types == null ||
+            types.contains(RecommendationType.similarToShared)) {
+          recommendations.addAll(await _generateSimilarToSharedRecommendations(
+              userId, userPreferences));
         }
-        
-        if (types == null || types.contains(RecommendationType.trendingForYou)) {
-          recommendations.addAll(await _generateTrendingRecommendations(userId, userPreferences));
+
+        if (types == null ||
+            types.contains(RecommendationType.trendingForYou)) {
+          recommendations.addAll(
+              await _generateTrendingRecommendations(userId, userPreferences));
         }
-        
-        if (types == null || types.contains(RecommendationType.basedOnFriends)) {
-          recommendations.addAll(await _generateFriendBasedRecommendations(userId));
+
+        if (types == null ||
+            types.contains(RecommendationType.basedOnFriends)) {
+          recommendations
+              .addAll(await _generateFriendBasedRecommendations(userId));
         }
-        
+
         if (types == null || types.contains(RecommendationType.seasonal)) {
-          recommendations.addAll(await _generateSeasonalRecommendations(userPreferences));
+          recommendations
+              .addAll(await _generateSeasonalRecommendations(userPreferences));
         }
-        
+
         // Filter out dismissed recommendations
         final dismissedIds = _dismissedRecommendations[userId] ?? {};
         final filteredRecommendations = recommendations
             .where((rec) => !dismissedIds.contains(rec.id))
             .toList();
-        
+
         // Sort by relevance score
         filteredRecommendations.sort((a, b) => b.score.compareTo(a.score));
-        
+
         // Limit results
-        final limitedRecommendations = filteredRecommendations.take(limit).toList();
-        
+        final limitedRecommendations =
+            filteredRecommendations.take(limit).toList();
+
         // Cache recommendations
         for (final rec in limitedRecommendations) {
           _recommendationCache[rec.id] = rec;
         }
-        
+
         // Track user recommendations
-        _userRecommendations[userId] = limitedRecommendations.map((r) => r.id).toList();
-        
-        AppLogger.success('✅ Generated ${limitedRecommendations.length} recommendations');
+        _userRecommendations[userId] =
+            limitedRecommendations.map((r) => r.id).toList();
+
+        AppLogger.success(
+            '✅ Generated ${limitedRecommendations.length} recommendations');
         return limitedRecommendations;
       },
       operationName: 'Generate Recommendations',
       customErrorMessage: 'Failed to generate recommendations',
     );
-    
+
     return result ?? [];
   }
 
   // ===== FEEDBACK HANDLING =====
 
   /// Provide feedback on a recommendation
-  Future<void> provideFeedback(String recommendationId, FeedbackType feedbackType) async {
+  Future<void> provideFeedback(
+      String recommendationId, FeedbackType feedbackType) async {
     await safeExecute(
       () async {
-        AppLogger.info('👍 Recording feedback: $feedbackType for recommendation: $recommendationId');
-        
+        AppLogger.info(
+            '👍 Recording feedback: $feedbackType for recommendation: $recommendationId');
+
         final recommendation = _recommendationCache[recommendationId];
         if (recommendation == null) {
           throw Exception('Recommendation not found');
         }
-        
+
         // Update recommendation state
         switch (feedbackType) {
           case FeedbackType.like:
@@ -137,18 +156,18 @@ class RecommendationService extends BaseService {
             recommendation.isLiked = true;
             break;
         }
-        
+
         // Track feedback history
         _feedbackHistory.putIfAbsent(recommendationId, () => {});
-        _feedbackHistory[recommendationId]![feedbackType] = 
+        _feedbackHistory[recommendationId]![feedbackType] =
             (_feedbackHistory[recommendationId]![feedbackType] ?? 0) + 1;
-        
+
         // Update recommendation score based on feedback
         await _updateRecommendationScore(recommendation, feedbackType);
-        
+
         // Learn from feedback for future recommendations
         await _learnFromFeedback(recommendation, feedbackType);
-        
+
         AppLogger.success('✅ Feedback recorded successfully');
       },
       operationName: 'Provide Recommendation Feedback',
@@ -161,24 +180,26 @@ class RecommendationService extends BaseService {
     await safeExecute(
       () async {
         AppLogger.info('🚫 Dismissing recommendation: $recommendationId');
-        
+
         final recommendation = _recommendationCache[recommendationId];
         if (recommendation == null) {
           throw Exception('Recommendation not found');
         }
-        
+
         // Get current user ID from permission service
         final permissionService = ServiceLocator.get<perm.PermissionService>();
         final userId = permissionService.currentUserId ?? 'anonymous';
-        
+
         // Mark as dismissed
         recommendation.isDismissed = true;
-        _dismissedRecommendations.putIfAbsent(userId, () => {}).add(recommendationId);
+        _dismissedRecommendations
+            .putIfAbsent(userId, () => {})
+            .add(recommendationId);
         _dismissalTimestamps[recommendationId] = DateTime.now();
-        
+
         // Record dismissal feedback
         await provideFeedback(recommendationId, FeedbackType.dismiss);
-        
+
         AppLogger.success('✅ Recommendation dismissed');
       },
       operationName: 'Dismiss Recommendation',
@@ -190,32 +211,33 @@ class RecommendationService extends BaseService {
   Future<void> undoDismissal(String recommendationId) async {
     await safeExecute(
       () async {
-        AppLogger.info('↩️ Undoing dismissal for recommendation: $recommendationId');
-        
+        AppLogger.info(
+            '↩️ Undoing dismissal for recommendation: $recommendationId');
+
         final dismissalTime = _dismissalTimestamps[recommendationId];
         if (dismissalTime == null) {
           throw Exception('Recommendation was not dismissed');
         }
-        
+
         // Check if within undo window
         if (DateTime.now().difference(dismissalTime) > _undoDismissalWindow) {
           throw Exception('Undo window has expired');
         }
-        
+
         final recommendation = _recommendationCache[recommendationId];
         if (recommendation == null) {
           throw Exception('Recommendation not found');
         }
-        
+
         // Get current user ID from permission service
         final permissionService = ServiceLocator.get<perm.PermissionService>();
         final userId = permissionService.currentUserId ?? 'anonymous';
-        
+
         // Remove from dismissed set
         recommendation.isDismissed = false;
         _dismissedRecommendations[userId]?.remove(recommendationId);
         _dismissalTimestamps.remove(recommendationId);
-        
+
         AppLogger.success('✅ Dismissal undone');
       },
       operationName: 'Undo Recommendation Dismissal',
@@ -242,7 +264,7 @@ class RecommendationService extends BaseService {
   }
 
   Future<List<Recommendation>> _generateSimilarToSharedRecommendations(
-    String userId, 
+    String userId,
     Map<String, dynamic> preferences,
   ) async {
     // Generate recommendations similar to what user has shared
@@ -279,7 +301,8 @@ class RecommendationService extends BaseService {
     ];
   }
 
-  Future<List<Recommendation>> _generateFriendBasedRecommendations(String userId) async {
+  Future<List<Recommendation>> _generateFriendBasedRecommendations(
+      String userId) async {
     // Generate recommendations based on friends' activity
     return [
       Recommendation(
@@ -302,7 +325,7 @@ class RecommendationService extends BaseService {
     final month = DateTime.now().month;
     String seasonalTitle;
     String seasonalDescription;
-    
+
     if (month >= 6 && month <= 8) {
       // Summer
       seasonalTitle = 'Fräsch sommarsallad';
@@ -320,7 +343,7 @@ class RecommendationService extends BaseService {
       seasonalTitle = 'Höstgryta med rotfrukter';
       seasonalDescription = 'Mustigt och gott';
     }
-    
+
     return [
       Recommendation(
         id: 'rec_seasonal_${DateTime.now().millisecondsSinceEpoch}',
@@ -335,7 +358,8 @@ class RecommendationService extends BaseService {
     ];
   }
 
-  Future<void> _updateRecommendationScore(Recommendation recommendation, FeedbackType feedback) async {
+  Future<void> _updateRecommendationScore(
+      Recommendation recommendation, FeedbackType feedback) async {
     // Adjust score based on feedback
     switch (feedback) {
       case FeedbackType.like:
@@ -349,10 +373,12 @@ class RecommendationService extends BaseService {
     }
   }
 
-  Future<void> _learnFromFeedback(Recommendation recommendation, FeedbackType feedback) async {
+  Future<void> _learnFromFeedback(
+      Recommendation recommendation, FeedbackType feedback) async {
     // In real implementation, this would update ML model or preference weights
-    AppLogger.debug('Learning from feedback: ${recommendation.type} -> $feedback');
-    
+    AppLogger.debug(
+        'Learning from feedback: ${recommendation.type} -> $feedback');
+
     // Track patterns for future recommendations
     // This would typically involve:
     // 1. Updating user preference weights
@@ -378,23 +404,24 @@ class RecommendationService extends BaseService {
   }
 
   /// Clear dismissed recommendations older than specified duration
-  Future<void> clearOldDismissals({Duration age = const Duration(days: 30)}) async {
+  Future<void> clearOldDismissals(
+      {Duration age = const Duration(days: 30)}) async {
     final cutoffTime = DateTime.now().subtract(age);
     final toRemove = <String>[];
-    
+
     for (final entry in _dismissalTimestamps.entries) {
       if (entry.value.isBefore(cutoffTime)) {
         toRemove.add(entry.key);
       }
     }
-    
+
     for (final recId in toRemove) {
       _dismissalTimestamps.remove(recId);
       for (final set in _dismissedRecommendations.values) {
         set.remove(recId);
       }
     }
-    
+
     AppLogger.info('Cleared ${toRemove.length} old dismissals');
   }
 
@@ -403,20 +430,22 @@ class RecommendationService extends BaseService {
     // In a real implementation, this would analyze the activity to extract categories
     // For now, return some common categories based on activity patterns
     final categories = <String>[];
-    
+
     if (recentActivity.isNotEmpty) {
       // Mock category extraction based on activity patterns
       if (recentActivity.length >= 3) {
         categories.addAll(['popular', 'quick']);
       }
-      if (recentActivity.any((id) => id.contains('vegetarian') || id.contains('veg'))) {
+      if (recentActivity
+          .any((id) => id.contains('vegetarian') || id.contains('veg'))) {
         categories.add('vegetarian');
       }
-      if (recentActivity.any((id) => id.contains('pasta') || id.contains('italian'))) {
+      if (recentActivity
+          .any((id) => id.contains('pasta') || id.contains('italian'))) {
         categories.add('italian');
       }
     }
-    
+
     return categories;
   }
 
@@ -424,18 +453,18 @@ class RecommendationService extends BaseService {
   Map<String, dynamic> getRecommendationStats() {
     int totalLikes = 0;
     int totalDismissals = 0;
-    
+
     for (final feedback in _feedbackHistory.values) {
       totalLikes += feedback[FeedbackType.like] ?? 0;
       totalDismissals += feedback[FeedbackType.dismiss] ?? 0;
     }
-    
+
     return {
       'totalRecommendations': _recommendationCache.length,
       'totalLikes': totalLikes,
       'totalDismissals': totalDismissals,
-      'likeRate': _recommendationCache.isNotEmpty 
-          ? (totalLikes / _recommendationCache.length * 100).round() 
+      'likeRate': _recommendationCache.isNotEmpty
+          ? (totalLikes / _recommendationCache.length * 100).round()
           : 0,
     };
   }

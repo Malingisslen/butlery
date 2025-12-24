@@ -282,34 +282,49 @@ void main() {
       test('should create default permissions map', () {
         final userId = 'user_123';
         final permissions = ResourcePermissionHelper.createDefault(userId);
-        
+
         expect(permissions, isA<Map<String, ResourcePermission>>());
         expect(permissions.length, equals(1));
         expect(permissions[userId], equals(ResourcePermission.admin));
       });
 
       test('should convert permission to name', () {
-        expect(ResourcePermissionHelper.permissionToName(ResourcePermission.viewer),
+        expect(
+            ResourcePermissionHelper.permissionToName(
+                ResourcePermission.viewer),
             equals('viewer'));
-        expect(ResourcePermissionHelper.permissionToName(ResourcePermission.admin),
+        expect(
+            ResourcePermissionHelper.permissionToName(ResourcePermission.admin),
             equals('admin'));
       });
 
       test('should convert permission to string (legacy method)', () {
-        expect(ResourcePermissionHelper.permissionToString(ResourcePermission.editor),
+        expect(
+            ResourcePermissionHelper.permissionToString(
+                ResourcePermission.editor),
             equals('editor'));
-        expect(ResourcePermissionHelper.permissionToString(ResourcePermission.owner),
+        expect(
+            ResourcePermissionHelper.permissionToString(
+                ResourcePermission.owner),
             equals('owner'));
       });
 
       test('should check if permission can manage permissions', () {
-        expect(ResourcePermissionHelper.canManagePermissions(ResourcePermission.admin),
+        expect(
+            ResourcePermissionHelper.canManagePermissions(
+                ResourcePermission.admin),
             isTrue);
-        expect(ResourcePermissionHelper.canManagePermissions(ResourcePermission.owner),
+        expect(
+            ResourcePermissionHelper.canManagePermissions(
+                ResourcePermission.owner),
             isTrue);
-        expect(ResourcePermissionHelper.canManagePermissions(ResourcePermission.editor),
+        expect(
+            ResourcePermissionHelper.canManagePermissions(
+                ResourcePermission.editor),
             isFalse);
-        expect(ResourcePermissionHelper.canManagePermissions(ResourcePermission.viewer),
+        expect(
+            ResourcePermissionHelper.canManagePermissions(
+                ResourcePermission.viewer),
             isFalse);
       });
 
@@ -319,19 +334,19 @@ void main() {
             ResourcePermissionHelper.canEditContent(
                 ResourcePermission.owner, ResourcePermission.editor),
             isTrue);
-        
+
         // User has equal permission to required
         expect(
             ResourcePermissionHelper.canEditContent(
                 ResourcePermission.editor, ResourcePermission.editor),
             isTrue);
-        
+
         // User has lower permission than required
         expect(
             ResourcePermissionHelper.canEditContent(
                 ResourcePermission.viewer, ResourcePermission.editor),
             isFalse);
-            
+
         // Admin can edit everything
         expect(
             ResourcePermissionHelper.canEditContent(
@@ -357,8 +372,9 @@ void main() {
           final name = permission.name;
           final parsed = ResourcePermissionHelper.fromString(name);
           expect(parsed, equals(permission));
-          
-          final stringified = ResourcePermissionHelper.permissionToName(permission);
+
+          final stringified =
+              ResourcePermissionHelper.permissionToName(permission);
           expect(stringified, equals(name));
         }
       });
@@ -369,7 +385,7 @@ void main() {
             ResourcePermissionHelper.isHigherThan(
                 ResourcePermission.viewer, ResourcePermission.read),
             isFalse); // Both are level 1
-            
+
         expect(
             ResourcePermissionHelper.isHigherThan(
                 ResourcePermission.editor, ResourcePermission.write),

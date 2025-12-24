@@ -35,7 +35,8 @@ class LlmService extends BaseService {
     required ImportRateLimiter rateLimiter,
     FirebaseFunctions? functions,
   })  : _rateLimiter = rateLimiter,
-        _functions = functions ?? FirebaseFunctions.instanceFor(region: _region);
+        _functions =
+            functions ?? FirebaseFunctions.instanceFor(region: _region);
 
   /// Extract structured recipe from text.
   ///
@@ -82,12 +83,14 @@ class LlmService extends BaseService {
         sourceUrl: sourceUrl,
       );
 
-      final result = await callable.call<Map<String, dynamic>>(request.toJson());
+      final result =
+          await callable.call<Map<String, dynamic>>(request.toJson());
       final response = StructureRecipeResponse.fromJson(result.data);
 
       // Record usage with cost
       if (response.success) {
-        await _rateLimiter.recordUsage(operation, llmCost: response.estimatedCost);
+        await _rateLimiter.recordUsage(operation,
+            llmCost: response.estimatedCost);
         AppLogger.info(
           'LlmService: Successfully extracted "${response.recipe?.title}" '
           '(cost: \$${response.estimatedCost.toStringAsFixed(4)})',
@@ -120,7 +123,8 @@ class LlmService extends BaseService {
     String? context,
   }) async {
     if (imageBytes == null && imageUrl == null) {
-      throw const LlmException('Either imageBytes or imageUrl must be provided');
+      throw const LlmException(
+          'Either imageBytes or imageUrl must be provided');
     }
 
     AppLogger.debug(
@@ -159,11 +163,13 @@ class LlmService extends BaseService {
         );
       }
 
-      final result = await callable.call<Map<String, dynamic>>(request.toJson());
+      final result =
+          await callable.call<Map<String, dynamic>>(request.toJson());
       final response = OcrRecipeImageResponse.fromJson(result.data);
 
       // Record usage with cost
-      await _rateLimiter.recordUsage(operation, llmCost: response.estimatedCost);
+      await _rateLimiter.recordUsage(operation,
+          llmCost: response.estimatedCost);
 
       if (response.success) {
         AppLogger.info(

@@ -97,7 +97,9 @@ class RecipeSectionDetector {
   /// Check if following text looks like instructions (for section header detection)
   static bool followingTextIsInstruction(List<String> lines, int currentIndex) {
     // Look at next 1-3 non-empty, non-header lines
-    for (int j = currentIndex + 1; j < lines.length && j < currentIndex + 4; j++) {
+    for (int j = currentIndex + 1;
+        j < lines.length && j < currentIndex + 4;
+        j++) {
       final nextLine = lines[j].trim();
       if (nextLine.isEmpty) continue;
       if (isSectionHeader(nextLine)) continue;
@@ -270,10 +272,32 @@ class RecipeSectionDetector {
 
     // Common ingredient words (with word boundaries to avoid false matches)
     final ingredientWords = [
-      'mjöl', 'socker', 'smör', 'ägg', 'mjölk', 'grädde', 'olja',
-      'salt', 'peppar', 'lök', 'vitlök', 'tomat', 'potatis',
-      'kött', 'kyckling', 'fisk', 'ris', 'pasta',
-      'flour', 'sugar', 'butter', 'eggs', 'milk', 'cream', 'oil', 'pepper'
+      'mjöl',
+      'socker',
+      'smör',
+      'ägg',
+      'mjölk',
+      'grädde',
+      'olja',
+      'salt',
+      'peppar',
+      'lök',
+      'vitlök',
+      'tomat',
+      'potatis',
+      'kött',
+      'kyckling',
+      'fisk',
+      'ris',
+      'pasta',
+      'flour',
+      'sugar',
+      'butter',
+      'eggs',
+      'milk',
+      'cream',
+      'oil',
+      'pepper'
     ];
     final lineLower = line.toLowerCase();
     if (ingredientWords

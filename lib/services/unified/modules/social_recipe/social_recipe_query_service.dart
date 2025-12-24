@@ -26,9 +26,10 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
     required String? Function() getCurrentUserId,
     required void Function(String) setError,
     RecipeServiceAdapter? serviceAdapter,
-  }) : _getCacheHelper = getCacheHelper,
-       _getCurrentUserId = getCurrentUserId,
-       _serviceAdapter = serviceAdapter ?? SocialRecipeQueryService._createDefaultServiceAdapter() {
+  })  : _getCacheHelper = getCacheHelper,
+        _getCurrentUserId = getCurrentUserId,
+        _serviceAdapter = serviceAdapter ??
+            SocialRecipeQueryService._createDefaultServiceAdapter() {
     // Set the user ID provider for the mixin
     setUserIdProvider(getCurrentUserId);
   }
@@ -42,10 +43,13 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
 
     try {
       final allRecipes = await _serviceAdapter.getRecipesForUser(currentUserId);
-      return allRecipes.where((recipe) => 
-        recipe.isCollaborative && 
-        recipe.socialData?.memberPermissions?.containsKey(currentUserId) == true
-      ).toList();
+      return allRecipes
+          .where((recipe) =>
+              recipe.isCollaborative &&
+              recipe.socialData?.memberPermissions
+                      ?.containsKey(currentUserId) ==
+                  true)
+          .toList();
     } catch (e) {
       AppLogger.error('❌ Failed to get collaborative recipes', e);
       return [];
@@ -56,10 +60,10 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
   Future<List<Recipe>> getRecipesSharedByUser(String userId) async {
     try {
       final allRecipes = await _serviceAdapter.getRecipesForUser(userId);
-      return allRecipes.where((recipe) => 
-        recipe.isCollaborative && 
-        recipe.socialData?.ownerId == userId
-      ).toList();
+      return allRecipes
+          .where((recipe) =>
+              recipe.isCollaborative && recipe.socialData?.ownerId == userId)
+          .toList();
     } catch (e) {
       AppLogger.error('❌ Failed to get recipes shared by user', e);
       return [];
@@ -67,16 +71,19 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
   }
 
   /// Get recipes with specific permission level using repository pattern
-  Future<List<Recipe>> getRecipesWithPermission(ResourcePermission permission) async {
+  Future<List<Recipe>> getRecipesWithPermission(
+      ResourcePermission permission) async {
     final currentUserId = _getCurrentUserId();
     if (currentUserId == null) return [];
 
     try {
       final allRecipes = await _serviceAdapter.getRecipesForUser(currentUserId);
-      return allRecipes.where((recipe) => 
-        recipe.isCollaborative && 
-        recipe.socialData?.memberPermissions?[currentUserId] == permission
-      ).toList();
+      return allRecipes
+          .where((recipe) =>
+              recipe.isCollaborative &&
+              recipe.socialData?.memberPermissions?[currentUserId] ==
+                  permission)
+          .toList();
     } catch (e) {
       AppLogger.error('❌ Failed to get recipes with permission', e);
       return [];
@@ -90,10 +97,11 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
 
     try {
       final allRecipes = await _serviceAdapter.getRecipesForUser(currentUserId);
-      return allRecipes.where((recipe) => 
-        recipe.isCollaborative && 
-        recipe.socialData?.ownerId == currentUserId
-      ).toList();
+      return allRecipes
+          .where((recipe) =>
+              recipe.isCollaborative &&
+              recipe.socialData?.ownerId == currentUserId)
+          .toList();
     } catch (e) {
       AppLogger.error('❌ Failed to get owned collaborative recipes', e);
       return [];
@@ -108,10 +116,10 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
     try {
       final collaborativeRecipes = await getCollaborativeRecipesForUser();
       final lowerQuery = query.toLowerCase();
-      
-      return collaborativeRecipes.where((recipe) =>
-        recipe.title.toLowerCase().contains(lowerQuery)
-      ).toList();
+
+      return collaborativeRecipes
+          .where((recipe) => recipe.title.toLowerCase().contains(lowerQuery))
+          .toList();
     } catch (e) {
       AppLogger.error('❌ Failed to search collaborative recipes', e);
       return [];
@@ -129,16 +137,24 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
 
     try {
       final collaborativeRecipes = await getCollaborativeRecipesForUser();
-      final ownedRecipes = collaborativeRecipes.where((r) => r.socialData?.ownerId == currentUserId).length;
-      final memberRecipes = collaborativeRecipes.where((r) => r.socialData?.ownerId != currentUserId).length;
-      
-      final editorAccess = collaborativeRecipes.where((r) => 
-        r.socialData?.memberPermissions?[currentUserId] == ResourcePermission.editor
-      ).length;
-      
-      final viewerAccess = collaborativeRecipes.where((r) => 
-        r.socialData?.memberPermissions?[currentUserId] == ResourcePermission.viewer
-      ).length;
+      final ownedRecipes = collaborativeRecipes
+          .where((r) => r.socialData?.ownerId == currentUserId)
+          .length;
+      final memberRecipes = collaborativeRecipes
+          .where((r) => r.socialData?.ownerId != currentUserId)
+          .length;
+
+      final editorAccess = collaborativeRecipes
+          .where((r) =>
+              r.socialData?.memberPermissions?[currentUserId] ==
+              ResourcePermission.editor)
+          .length;
+
+      final viewerAccess = collaborativeRecipes
+          .where((r) =>
+              r.socialData?.memberPermissions?[currentUserId] ==
+              ResourcePermission.viewer)
+          .length;
 
       return {
         'owned_collaborative': ownedRecipes,
@@ -161,7 +177,7 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
     try {
       final collaborativeRecipes = await getCollaborativeRecipesForUser();
       final collaboratorCounts = <String, int>{};
-      
+
       // Count appearances of each collaborator
       for (final recipe in collaborativeRecipes) {
         recipe.socialData?.memberPermissions?.keys.forEach((userId) {
@@ -170,15 +186,12 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
           }
         });
       }
-      
+
       // Sort by count and return top collaborators
       final sortedCollaborators = collaboratorCounts.entries.toList()
         ..sort((a, b) => b.value.compareTo(a.value));
-      
-      return sortedCollaborators
-          .take(limit)
-          .map((entry) => entry.key)
-          .toList();
+
+      return sortedCollaborators.take(limit).map((entry) => entry.key).toList();
     } catch (e) {
       AppLogger.error('❌ Could not get active collaborators: $e');
       return [];
@@ -193,7 +206,7 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
     try {
       final stats = await getCollaborationStats();
       final activeCollaborators = await getMostActiveCollaborators();
-      
+
       return {
         'stats': stats,
         'active_collaborators': activeCollaborators,
@@ -222,10 +235,10 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
   Future<List<Recipe>> loadCachedCollaborativeRecipes() async {
     try {
       AppLogger.info('Loading cached collaborative recipes');
-      
+
       final cachedRecipes = <Recipe>[];
       final cachedKeys = await _cacheHelper.getAllKeys();
-      
+
       for (final key in cachedKeys) {
         try {
           final recipeData = await _cacheHelper.loadJson(key);
@@ -239,8 +252,9 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
           AppLogger.warning('Failed to load cached recipe $key: $e');
         }
       }
-      
-      AppLogger.success('Loaded ${cachedRecipes.length} cached collaborative recipes');
+
+      AppLogger.success(
+          'Loaded ${cachedRecipes.length} cached collaborative recipes');
       return cachedRecipes;
     } catch (e) {
       AppLogger.error('Failed to load cached collaborative recipes: $e');
@@ -262,8 +276,9 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
   Future<Map<String, int>> getCacheStats() async {
     try {
       final cachedKeys = await _cacheHelper.getAllKeys();
-      final collaborativeCount = (await loadCachedCollaborativeRecipes()).length;
-      
+      final collaborativeCount =
+          (await loadCachedCollaborativeRecipes()).length;
+
       return {
         'total_cached': cachedKeys.length,
         'collaborative_cached': collaborativeCount,
@@ -273,7 +288,7 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
       return {'total_cached': 0, 'collaborative_cached': 0};
     }
   }
-  
+
   /// Create default service adapter using ServiceLocator
   static RecipeServiceAdapter _createDefaultServiceAdapter() {
     return RecipeServiceAdapter(

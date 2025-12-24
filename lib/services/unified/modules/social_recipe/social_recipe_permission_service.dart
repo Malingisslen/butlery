@@ -24,15 +24,16 @@ class SocialRecipePermissionService extends BaseService {
     try {
       final recipe = await _getRecipe(recipeId);
       if (recipe == null) return false;
-      
+
       // Personal recipes - only owner can edit
       if (!recipe.isCollaborative) {
         return recipe.createdBy == userId;
       }
-      
+
       // Collaborative recipes - check permissions
       final permission = recipe.socialData?.memberPermissions?[userId];
-      return permission == ResourcePermission.admin || permission == ResourcePermission.editor;
+      return permission == ResourcePermission.admin ||
+          permission == ResourcePermission.editor;
     } catch (e) {
       AppLogger.error('Error checking edit permission: $e');
       return false;
@@ -44,13 +45,13 @@ class SocialRecipePermissionService extends BaseService {
     try {
       final recipe = await _getRecipe(recipeId);
       if (recipe == null) return false;
-      
+
       // Only collaborative recipes have member management
       if (!recipe.isCollaborative) return false;
-      
+
       // Owner can always manage members
       if (recipe.socialData?.ownerId == userId) return true;
-      
+
       // Admin permission can manage members
       final permission = recipe.socialData?.memberPermissions?[userId];
       return permission == ResourcePermission.admin;
@@ -65,20 +66,20 @@ class SocialRecipePermissionService extends BaseService {
     try {
       final recipe = await _getRecipe(recipeId);
       if (recipe == null) return false;
-      
+
       // Personal recipes - only owner can view
       if (!recipe.isCollaborative) {
         return recipe.createdBy == userId;
       }
-      
+
       // Owner can always view
       if (recipe.socialData?.ownerId == userId) return true;
-      
+
       // Check if user is a member
       if (recipe.socialData?.memberPermissions?.containsKey(userId) == true) {
         return true;
       }
-      
+
       // Check guest viewing settings
       return recipe.socialData?.allowGuestViewing ?? false;
     } catch (e) {
@@ -88,21 +89,22 @@ class SocialRecipePermissionService extends BaseService {
   }
 
   /// Get user's permission level for a recipe
-  Future<ResourcePermission?> getUserPermissionForRecipe(String recipeId, String userId) async {
+  Future<ResourcePermission?> getUserPermissionForRecipe(
+      String recipeId, String userId) async {
     try {
       final recipe = await _getRecipe(recipeId);
       if (recipe == null) return null;
-      
+
       // Personal recipes - owner has admin-like access
       if (!recipe.isCollaborative) {
         return recipe.createdBy == userId ? ResourcePermission.admin : null;
       }
-      
+
       // Owner has admin access
       if (recipe.socialData?.ownerId == userId) {
         return ResourcePermission.admin;
       }
-      
+
       // Return the user's explicit permission
       return recipe.socialData?.memberPermissions?[userId];
     } catch (e) {
@@ -116,14 +118,15 @@ class SocialRecipePermissionService extends BaseService {
     try {
       final recipe = await _getRecipe(recipeId);
       if (recipe == null) return false;
-      
+
       // Owner always has admin permission
       if (recipe.createdBy == userId || recipe.socialData?.ownerId == userId) {
         return true;
       }
-      
+
       // Check explicit admin permission
-      return recipe.socialData?.memberPermissions?[userId] == ResourcePermission.admin;
+      return recipe.socialData?.memberPermissions?[userId] ==
+          ResourcePermission.admin;
     } catch (e) {
       AppLogger.error('Error checking admin permission: $e');
       return false;
@@ -135,18 +138,19 @@ class SocialRecipePermissionService extends BaseService {
     try {
       final recipe = await _getRecipe(recipeId);
       if (recipe == null) return false;
-      
+
       // Owner can always share
       if (recipe.createdBy == userId || recipe.socialData?.ownerId == userId) {
         return true;
       }
-      
+
       // Check if recipe allows member invites and user has permission
       if (recipe.socialData?.allowMemberInvites == true) {
         final permission = recipe.socialData?.memberPermissions?[userId];
-        return permission == ResourcePermission.admin || permission == ResourcePermission.editor;
+        return permission == ResourcePermission.admin ||
+            permission == ResourcePermission.editor;
       }
-      
+
       return false;
     } catch (e) {
       AppLogger.error('Error checking share permission: $e');
@@ -155,25 +159,28 @@ class SocialRecipePermissionService extends BaseService {
   }
 
   /// Get all users with specific permission level for a recipe
-  Future<List<String>> getUsersWithPermission(String recipeId, ResourcePermission permission) async {
+  Future<List<String>> getUsersWithPermission(
+      String recipeId, ResourcePermission permission) async {
     try {
       final recipe = await _getRecipe(recipeId);
       if (recipe == null || !recipe.isCollaborative) return [];
-      
+
       final usersWithPermission = <String>[];
-      
+
       // Check owner first
-      if (permission == ResourcePermission.admin && recipe.socialData?.ownerId != null) {
+      if (permission == ResourcePermission.admin &&
+          recipe.socialData?.ownerId != null) {
         usersWithPermission.add(recipe.socialData!.ownerId!);
       }
-      
+
       // Check member permissions
       recipe.socialData?.memberPermissions?.forEach((userId, userPermission) {
-        if (userPermission == permission && !usersWithPermission.contains(userId)) {
+        if (userPermission == permission &&
+            !usersWithPermission.contains(userId)) {
           usersWithPermission.add(userId);
         }
       });
-      
+
       return usersWithPermission;
     } catch (e) {
       AppLogger.error('Error getting users with permission: $e');

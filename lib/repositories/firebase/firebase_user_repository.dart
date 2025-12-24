@@ -83,14 +83,16 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
   // ===== PERMISSION VALIDATION IMPLEMENTATION =====
 
   @override
-  Future<bool> validateCreatePermission(String userId, UserProfile entity) async {
+  Future<bool> validateCreatePermission(
+      String userId, UserProfile entity) async {
     // Users can only create their own profile
     // This prevents users from creating fake profiles for other users
     return userId == entity.uid;
   }
 
   @override
-  Future<bool> validateReadPermission(String userId, String resourceId, UserProfile? entity) async {
+  Future<bool> validateReadPermission(
+      String userId, String resourceId, UserProfile? entity) async {
     // Anyone authenticated can read public profiles (for social features)
     // This enables friend search, recipe sharing, and social discovery
     // Privacy is controlled via the isSearchable flag within the profile
@@ -98,14 +100,16 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
   }
 
   @override
-  Future<bool> validateUpdatePermission(String userId, String resourceId, UserProfile entity) async {
+  Future<bool> validateUpdatePermission(
+      String userId, String resourceId, UserProfile entity) async {
     // Users can only update their own profile
     // This prevents unauthorized profile modifications
     return userId == entity.uid && userId == resourceId;
   }
 
   @override
-  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+  Future<bool> validateDeletePermission(
+      String userId, String resourceId) async {
     // Users can only delete their own profile
     // This supports GDPR Article 17 (Right to Erasure)
     return userId == resourceId;
@@ -123,18 +127,18 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       targetUserId: profile.uid,
       operation: 'update profile',
     );
-    
+
     // Validate required fields (uid is not in toFirestore, it's the document ID)
     validateRequiredFields(
       data: profile.toFirestore(),
       requiredFields: ['displayName', 'email'],
       resourceType: 'user_profile',
     );
-    
+
     final data = profile.toFirestore();
     data['displayNameLower'] = profile.displayName.toLowerCase();
     await collection.doc(profile.uid).set(data);
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'user_profile',
@@ -184,7 +188,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       targetUserId: userId,
       operation: 'update profile stats',
     );
-    
+
     final updates = <String, dynamic>{};
     if (friendsCount != null) updates['friendsCount'] = friendsCount;
     if (publicRecipeCount != null) {
@@ -193,7 +197,7 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
 
     if (updates.isNotEmpty) {
       await collection.doc(userId).update(updates);
-      
+
       logPermissionCheck(
         userId: currentUser,
         resource: 'user_profile',
@@ -214,12 +218,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       targetUserId: userId,
       operation: 'update online status',
     );
-    
+
     await collection.doc(userId).update({
       'isOnline': isOnline,
       'lastActiveAt': FieldValue.serverTimestamp(),
     });
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'user_profile',
@@ -241,8 +245,9 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     // Try optimized indexed search first
     bool usedFallback = false;
     try {
-      AppLogger.debug('searchProfiles: Attempting indexed search for query: $normalizedQuery');
-      
+      AppLogger.debug(
+          'searchProfiles: Attempting indexed search for query: $normalizedQuery');
+
       final nameQuery = await collection
           .where('isSearchable', isEqualTo: true)
           .where('displayNameLower', isGreaterThanOrEqualTo: normalizedQuery)
@@ -258,19 +263,21 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
           seen.add(profile.uid);
         }
       }
-      
-      AppLogger.info('searchProfiles: Indexed search successful: found ${results.length} results');
+
+      AppLogger.info(
+          'searchProfiles: Indexed search successful: found ${results.length} results');
     } catch (e) {
       // If indexed search fails (likely missing composite index), use fallback
       usedFallback = true;
-      AppLogger.warning('searchProfiles: Indexed search failed, using fallback: $e');
-      
+      AppLogger.warning(
+          'searchProfiles: Indexed search failed, using fallback: $e');
+
       try {
         final slowQuery = await collection
             .where('isSearchable', isEqualTo: true)
             .limit(100)
             .get();
-            
+
         for (final doc in slowQuery.docs) {
           if (doc.id == uid) continue;
           final profile = fromFirestore(doc);
@@ -281,17 +288,17 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
             if (results.length >= limit) break;
           }
         }
-        
-        AppLogger.info('searchProfiles: Fallback search successful: found ${results.length} results');
+
+        AppLogger.info(
+            'searchProfiles: Fallback search successful: found ${results.length} results');
       } catch (fallbackError) {
-        AppLogger.error('searchProfiles: Fallback search also failed: $fallbackError');
-        
+        AppLogger.error(
+            'searchProfiles: Fallback search also failed: $fallbackError');
+
         // If both indexed and fallback fail, try most basic query
         try {
-          final basicQuery = await collection
-              .limit(50)
-              .get();
-              
+          final basicQuery = await collection.limit(50).get();
+
           for (final doc in basicQuery.docs) {
             if (doc.id == uid) continue;
             try {
@@ -306,13 +313,16 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
               }
             } catch (docError) {
               // Skip malformed documents
-              AppLogger.warning('searchProfiles: Skipping malformed document ${doc.id}: $docError');
+              AppLogger.warning(
+                  'searchProfiles: Skipping malformed document ${doc.id}: $docError');
             }
           }
-          
-          AppLogger.info('searchProfiles: Basic search completed: found ${results.length} results');
+
+          AppLogger.info(
+              'searchProfiles: Basic search completed: found ${results.length} results');
         } catch (basicError) {
-          AppLogger.error('searchProfiles: All search methods failed: $basicError');
+          AppLogger.error(
+              'searchProfiles: All search methods failed: $basicError');
         }
       }
     }
@@ -334,7 +344,8 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
               seen.add(profile.uid);
             }
           } catch (docError) {
-            AppLogger.warning('searchProfiles: Skipping malformed email search document ${doc.id}: $docError');
+            AppLogger.warning(
+                'searchProfiles: Skipping malformed email search document ${doc.id}: $docError');
           }
         }
       } catch (emailError) {
@@ -350,9 +361,10 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       if (!aExact && bExact) return 1;
       return a.displayName.compareTo(b.displayName);
     });
-    
-    AppLogger.info('searchProfiles: Search completed: ${results.length} total results, used fallback: $usedFallback');
-    
+
+    AppLogger.info(
+        'searchProfiles: Search completed: ${results.length} total results, used fallback: $usedFallback');
+
     return results;
   }
 
@@ -378,12 +390,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       targetUserId: userId,
       operation: 'update FCM token',
     );
-    
+
     await collection.doc(userId).update({
       'fcmToken': token,
       'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
     });
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'user_profile',
@@ -402,11 +414,11 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       targetUserId: userId,
       operation: 'update notification settings',
     );
-    
+
     await collection.doc(userId).update({
       'notificationsEnabled': enabled,
     });
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'user_profile',
@@ -425,12 +437,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       targetUserId: userId,
       operation: 'clear FCM token',
     );
-    
+
     await collection.doc(userId).update({
       'fcmToken': null,
       'fcmTokenUpdatedAt': null,
     });
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'user_profile',
@@ -461,11 +473,11 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       targetUserId: userId,
       operation: 'increment public recipe count',
     );
-    
+
     await collection.doc(userId).update({
       'publicRecipeCount': FieldValue.increment(1),
     });
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'user_profile',
@@ -484,11 +496,11 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       targetUserId: userId,
       operation: 'decrement public recipe count',
     );
-    
+
     await collection.doc(userId).update({
       'publicRecipeCount': FieldValue.increment(-1),
     });
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'user_profile',

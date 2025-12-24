@@ -21,7 +21,7 @@ void main() {
       );
     }
 
-    // Helper widget to test static methods with BuildContext  
+    // Helper widget to test static methods with BuildContext
     Widget createActionButtonsTest({
       required ShareContentType contentType,
       required ShareMode shareMode,
@@ -63,7 +63,8 @@ void main() {
     }
 
     group('buildActionButtons Method Tests', () {
-      testWidgets('creates buttons with basic required parameters', (tester) async {
+      testWidgets('creates buttons with basic required parameters',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             createActionButtonsTest(
@@ -104,10 +105,12 @@ void main() {
         final decoration = container.decoration as BoxDecoration;
 
         expect(container.padding, const EdgeInsets.all(AppDimensions.paddingL));
-        expect(decoration.borderRadius, const BorderRadius.only(
-          bottomLeft: Radius.circular(AppDimensions.borderRadiusM),
-          bottomRight: Radius.circular(AppDimensions.borderRadiusM),
-        ));
+        expect(
+            decoration.borderRadius,
+            const BorderRadius.only(
+              bottomLeft: Radius.circular(AppDimensions.borderRadiusM),
+              bottomRight: Radius.circular(AppDimensions.borderRadiusM),
+            ));
       });
 
       testWidgets('handles loading state correctly', (tester) async {
@@ -126,7 +129,8 @@ void main() {
         );
 
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
-        expect(find.byType(SizedBox), findsAtLeastNWidgets(1)); // For progress indicator sizing
+        expect(find.byType(SizedBox),
+            findsAtLeastNWidgets(1)); // For progress indicator sizing
 
         // Verify progress indicator properties
         final progressIndicator = tester.widget<CircularProgressIndicator>(
@@ -135,7 +139,8 @@ void main() {
         expect(progressIndicator.strokeWidth, equals(2));
       });
 
-      testWidgets('handles disabled state when no friends selected', (tester) async {
+      testWidgets('handles disabled state when no friends selected',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             createActionButtonsTest(
@@ -156,7 +161,8 @@ void main() {
         expect(shareButton.onPressed, isNull); // Button should be disabled
       });
 
-      testWidgets('enables share button when friends selected and not loading', (tester) async {
+      testWidgets('enables share button when friends selected and not loading',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             createActionButtonsTest(
@@ -195,7 +201,8 @@ void main() {
         final cancelButton = tester.widget<OutlinedButton>(
           find.byType(OutlinedButton),
         );
-        expect(cancelButton.onPressed, isNull); // Cancel button should be disabled during loading
+        expect(cancelButton.onPressed,
+            isNull); // Cancel button should be disabled during loading
       });
 
       testWidgets('handles button callbacks correctly', (tester) async {
@@ -230,7 +237,8 @@ void main() {
     });
 
     group('_getShareButtonText Method Tests', () {
-      testWidgets('returns correct text for recipe static sharing', (tester) async {
+      testWidgets('returns correct text for recipe static sharing',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             createActionButtonsTest(
@@ -248,7 +256,8 @@ void main() {
         expect(find.text('Dela recept'), findsOneWidget);
       });
 
-      testWidgets('returns correct text for menu static sharing', (tester) async {
+      testWidgets('returns correct text for menu static sharing',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             createActionButtonsTest(
@@ -266,7 +275,8 @@ void main() {
         expect(find.text('Dela meny'), findsOneWidget);
       });
 
-      testWidgets('returns correct text for shopping list static sharing', (tester) async {
+      testWidgets('returns correct text for shopping list static sharing',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             createActionButtonsTest(
@@ -284,7 +294,8 @@ void main() {
         expect(find.text('Dela inköpslista'), findsOneWidget);
       });
 
-      testWidgets('returns correct text for realtime sharing when supported', (tester) async {
+      testWidgets('returns correct text for realtime sharing when supported',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             createActionButtonsTest(
@@ -302,7 +313,8 @@ void main() {
         expect(find.text('Skapa & Dela'), findsOneWidget);
       });
 
-      testWidgets('falls back to static text when realtime not supported', (tester) async {
+      testWidgets('falls back to static text when realtime not supported',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             createActionButtonsTest(
@@ -362,15 +374,17 @@ void main() {
         );
 
         expect(find.byIcon(Icons.info_outline), findsOneWidget);
-        expect(find.text('Välj minst en vän för att dela recept'), findsOneWidget);
-        
+        expect(
+            find.text('Välj minst en vän för att dela recept'), findsOneWidget);
+
         // Verify warning styling
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.color, AppColors.warning.withValues(alpha: 0.1));
       });
 
-      testWidgets('displays success state with singular friend', (tester) async {
+      testWidgets('displays success state with singular friend',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             createSelectionSummaryTest(
@@ -382,7 +396,7 @@ void main() {
 
         expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
         expect(find.text('1 vän valda'), findsOneWidget); // Singular form
-        
+
         // Verify success styling
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
@@ -400,13 +414,14 @@ void main() {
         );
 
         expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
-        expect(find.text('3 vänner valda'), findsOneWidget); // Plural form with 'ner'
+        expect(find.text('3 vänner valda'),
+            findsOneWidget); // Plural form with 'ner'
       });
 
       testWidgets('tests Swedish pluralization logic', (tester) async {
         final pluralizationTests = [
           (1, '1 vän valda'), // Singular - no 'ner' suffix
-          (2, '2 vänner valda'), // Plural - with 'ner' suffix  
+          (2, '2 vänner valda'), // Plural - with 'ner' suffix
           (5, '5 vänner valda'), // Plural - with 'ner' suffix
         ];
 
@@ -425,7 +440,8 @@ void main() {
         }
       });
 
-      testWidgets('handles different content type names correctly', (tester) async {
+      testWidgets('handles different content type names correctly',
+          (tester) async {
         final contentTypeTests = [
           ('recept', 'Välj minst en vän för att dela recept'),
           ('meny', 'Välj minst en vän för att dela meny'),
@@ -443,11 +459,13 @@ void main() {
           );
 
           expect(find.text(expectedText), findsOneWidget,
-              reason: 'Expected "$expectedText" for content type "$contentTypeName"');
+              reason:
+                  'Expected "$expectedText" for content type "$contentTypeName"');
         }
       });
 
-      testWidgets('applies correct border radius for different states', (tester) async {
+      testWidgets('applies correct border radius for different states',
+          (tester) async {
         // Test warning state border radius
         await tester.pumpWidget(
           createTestWidget(
@@ -460,9 +478,10 @@ void main() {
 
         var container = tester.widget<Container>(find.byType(Container));
         var decoration = container.decoration as BoxDecoration;
-        expect(decoration.borderRadius, BorderRadius.circular(AppDimensions.borderRadiusM));
+        expect(decoration.borderRadius,
+            BorderRadius.circular(AppDimensions.borderRadiusM));
 
-        // Test success state border radius  
+        // Test success state border radius
         await tester.pumpWidget(
           createTestWidget(
             createSelectionSummaryTest(
@@ -474,12 +493,14 @@ void main() {
 
         container = tester.widget<Container>(find.byType(Container));
         decoration = container.decoration as BoxDecoration;
-        expect(decoration.borderRadius, BorderRadius.circular(AppDimensions.borderRadiusS));
+        expect(decoration.borderRadius,
+            BorderRadius.circular(AppDimensions.borderRadiusS));
       });
     });
 
     group('Theme Integration Tests', () {
-      testWidgets('uses modern withValues alpha syntax throughout', (tester) async {
+      testWidgets('uses modern withValues alpha syntax throughout',
+          (tester) async {
         // Test buildActionButtons uses withValues for border color
         await tester.pumpWidget(
           createTestWidget(
@@ -498,10 +519,11 @@ void main() {
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
         final border = decoration.border as Border;
-        
+
         // Verify border uses theme context and alpha
         expect(border.top.color, isA<Color>());
-        expect(border.top.color.a, lessThan(1.0)); // Should have alpha transparency
+        expect(border.top.color.a,
+            lessThan(1.0)); // Should have alpha transparency
       });
 
       testWidgets('uses AppDimensions constants correctly', (tester) async {
@@ -526,7 +548,8 @@ void main() {
         expect(spacingM.width, AppDimensions.spacingM);
       });
 
-      testWidgets('applies AppColors correctly in selection summary', (tester) async {
+      testWidgets('applies AppColors correctly in selection summary',
+          (tester) async {
         // Test warning colors
         await tester.pumpWidget(
           createTestWidget(
@@ -537,10 +560,11 @@ void main() {
           ),
         );
 
-        final warningIcon = tester.widget<Icon>(find.byIcon(Icons.info_outline));
+        final warningIcon =
+            tester.widget<Icon>(find.byIcon(Icons.info_outline));
         expect(warningIcon.color, AppColors.warning);
 
-        // Test success colors  
+        // Test success colors
         await tester.pumpWidget(
           createTestWidget(
             createSelectionSummaryTest(
@@ -550,13 +574,15 @@ void main() {
           ),
         );
 
-        final successIcon = tester.widget<Icon>(find.byIcon(Icons.check_circle_outline));
+        final successIcon =
+            tester.widget<Icon>(find.byIcon(Icons.check_circle_outline));
         expect(successIcon.color, AppColors.success);
       });
     });
 
     group('Widget Structure and Layout Tests', () {
-      testWidgets('maintains consistent button layout structure', (tester) async {
+      testWidgets('maintains consistent button layout structure',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             createActionButtonsTest(
@@ -575,10 +601,12 @@ void main() {
         expect(find.byType(Container), findsOneWidget);
         expect(find.byType(Row), findsOneWidget);
         expect(find.byType(Expanded), findsNWidgets(2)); // Two expanded buttons
-        expect(find.byType(SizedBox), findsAtLeastNWidgets(1)); // Spacing between buttons
+        expect(find.byType(SizedBox),
+            findsAtLeastNWidgets(1)); // Spacing between buttons
       });
 
-      testWidgets('maintains consistent summary layout structure', (tester) async {
+      testWidgets('maintains consistent summary layout structure',
+          (tester) async {
         await tester.pumpWidget(
           createTestWidget(
             createSelectionSummaryTest(
@@ -592,7 +620,8 @@ void main() {
         expect(find.byType(Container), findsOneWidget);
         expect(find.byType(Row), findsOneWidget);
         expect(find.byType(Icon), findsOneWidget);
-        expect(find.byType(SizedBox), findsAtLeastNWidgets(1)); // May have multiple for spacing
+        expect(find.byType(SizedBox),
+            findsAtLeastNWidgets(1)); // May have multiple for spacing
         expect(find.byType(Text), findsOneWidget);
       });
     });
@@ -602,14 +631,32 @@ void main() {
         final parameterCombinations = [
           // (contentType, shareMode, supportsRealtime, hasSelected, isLoading)
           (ShareContentType.recipe, ShareMode.staticCopy, false, false, false),
-          (ShareContentType.recipe, ShareMode.staticCopy, false, true, false),  
+          (ShareContentType.recipe, ShareMode.staticCopy, false, true, false),
           (ShareContentType.recipe, ShareMode.staticCopy, false, false, true),
           (ShareContentType.recipe, ShareMode.realtime, true, true, false),
-          (ShareContentType.menu, ShareMode.realtime, false, true, false), // Realtime not supported
-          (ShareContentType.shoppingList, ShareMode.staticCopy, false, true, true), // Loading state
+          (
+            ShareContentType.menu,
+            ShareMode.realtime,
+            false,
+            true,
+            false
+          ), // Realtime not supported
+          (
+            ShareContentType.shoppingList,
+            ShareMode.staticCopy,
+            false,
+            true,
+            true
+          ), // Loading state
         ];
 
-        for (final (contentType, shareMode, supportsRealtime, hasSelected, isLoading) in parameterCombinations) {
+        for (final (
+              contentType,
+              shareMode,
+              supportsRealtime,
+              hasSelected,
+              isLoading
+            ) in parameterCombinations) {
           await tester.pumpWidget(
             createTestWidget(
               createActionButtonsTest(
@@ -626,12 +673,14 @@ void main() {
 
           // Each combination should render without crashing
           expect(find.byType(Container), findsOneWidget,
-              reason: 'Failed for combination: $contentType, $shareMode, $supportsRealtime, $hasSelected, $isLoading');
+              reason:
+                  'Failed for combination: $contentType, $shareMode, $supportsRealtime, $hasSelected, $isLoading');
           expect(find.text('Avbryt'), findsOneWidget);
         }
       });
 
-      testWidgets('handles extreme selection counts for pluralization', (tester) async {
+      testWidgets('handles extreme selection counts for pluralization',
+          (tester) async {
         final extremeCounts = [0, 1, 2, 10, 100, 999];
 
         for (final count in extremeCounts) {

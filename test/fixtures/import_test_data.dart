@@ -278,7 +278,8 @@ Skala och hacka morötter och lök. Fräs i oljan. Häll på buljong och koka mj
 /// Sample CSV data for file import testing
 class ImportCSVFixtures {
   /// CSV with Swedish headers and multiple recipes
-  static const String multipleRecipesCSV = '''Titel,Ingredienser,Instruktioner,Portioner,Tid,Typ
+  static const String multipleRecipesCSV =
+      '''Titel,Ingredienser,Instruktioner,Portioner,Tid,Typ
 "Köttbullar","500g köttfärs;1 ägg;2dl ströbröd;1dl mjölk","Blanda allt. Forma bullar. Stek i smör.",4,40,Huvudrätt
 "Pannkakor","3dl mjöl;6dl mjölk;3 ägg;1 nypa salt","Vispa ihop. Stek tunna pannkakor.",4,20,Frukost
 "Laxsoppa","400g lax;1l fiskbuljong;2dl grädde;dill","Koka lax i buljong. Tillsätt grädde. Garnera med dill.",4,30,Soppa
@@ -292,7 +293,8 @@ class ImportCSVFixtures {
 ''';
 
   /// CSV with English headers
-  static const String englishHeadersCSV = '''Title,Ingredients,Instructions,Servings,Time,Type
+  static const String englishHeadersCSV =
+      '''Title,Ingredients,Instructions,Servings,Time,Type
 "Meatballs","500g ground beef;1 egg;2dl breadcrumbs","Mix all. Form balls. Fry in butter.",4,40,Main
 "Pancakes","3dl flour;6dl milk;3 eggs","Whisk together. Fry thin pancakes.",4,20,Breakfast
 ''';
@@ -417,14 +419,17 @@ class ImportTestHelpers {
 
   /// Parse CSV content for testing
   static List<Map<String, String>> parseCSV(String csvContent) {
-    final lines = csvContent.split('\n').where((line) => line.trim().isNotEmpty).toList();
+    final lines =
+        csvContent.split('\n').where((line) => line.trim().isNotEmpty).toList();
     if (lines.isEmpty) return [];
 
-    final headers = lines[0].split(',').map((h) => h.trim().replaceAll('"', '')).toList();
+    final headers =
+        lines[0].split(',').map((h) => h.trim().replaceAll('"', '')).toList();
     final rows = <Map<String, String>>[];
 
     for (var i = 1; i < lines.length; i++) {
-      final values = lines[i].split(',').map((v) => v.trim().replaceAll('"', '')).toList();
+      final values =
+          lines[i].split(',').map((v) => v.trim().replaceAll('"', '')).toList();
       if (values.length == headers.length) {
         final row = <String, String>{};
         for (var j = 0; j < headers.length; j++) {

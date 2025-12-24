@@ -26,10 +26,10 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
     required void Function() notifyListeners,
     required Future<Recipe?> Function(String) getRecipe,
     required Future<bool> Function(Recipe) saveRecipe,
-  }) : _setError = setError,
-       _notifyListeners = notifyListeners,
-       _getRecipe = getRecipe,
-       _saveRecipe = saveRecipe {
+  })  : _setError = setError,
+        _notifyListeners = notifyListeners,
+        _getRecipe = getRecipe,
+        _saveRecipe = saveRecipe {
     // Set the user ID provider for the mixin
     setUserIdProvider(getCurrentUserId);
   }
@@ -57,7 +57,8 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
       }
 
       // 3. Add the member
-      final updatedMemberPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
+      final updatedMemberPermissions = Map<String, ResourcePermission>.from(
+          recipe.socialData?.memberPermissions ?? {});
       updatedMemberPermissions[userId] = permission;
 
       final updatedRecipe = recipe.copyWith(
@@ -93,7 +94,8 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
       }
 
       // 3. Remove the member
-      final updatedMemberPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
+      final updatedMemberPermissions = Map<String, ResourcePermission>.from(
+          recipe.socialData?.memberPermissions ?? {});
       updatedMemberPermissions.remove(userId);
 
       final updatedRecipe = recipe.copyWith(
@@ -130,7 +132,8 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
       }
 
       // 3. Update the permission
-      final updatedMemberPermissions = Map<String, ResourcePermission>.from(recipe.socialData?.memberPermissions ?? {});
+      final updatedMemberPermissions = Map<String, ResourcePermission>.from(
+          recipe.socialData?.memberPermissions ?? {});
       updatedMemberPermissions[userId] = permission;
 
       final updatedRecipe = recipe.copyWith(
@@ -143,7 +146,8 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
       final success = await _saveRecipe(updatedRecipe);
       if (success) {
         _notifyListeners(); // Notify UI of changes
-        AppLogger.success('✅ Updated member permission: $userId -> $permission');
+        AppLogger.success(
+            '✅ Updated member permission: $userId -> $permission');
       }
 
       return success;
@@ -152,7 +156,8 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
   }
 
   /// Get all members of a collaborative recipe with their permissions
-  Future<Map<String, ResourcePermission>> getRecipeMembers(String recipeId) async {
+  Future<Map<String, ResourcePermission>> getRecipeMembers(
+      String recipeId) async {
     try {
       final recipe = await _getRecipe(recipeId);
       if (recipe == null) {
@@ -170,7 +175,8 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
 
   /// Check if user has admin permission for recipe
   bool _hasAdminPermission(Recipe recipe, String userId) {
-    return recipe.socialData?.memberPermissions?[userId] == ResourcePermission.admin;
+    return recipe.socialData?.memberPermissions?[userId] ==
+        ResourcePermission.admin;
   }
 
   /// Helper method for error handling
@@ -181,7 +187,8 @@ class SocialRecipeMembershipService extends BaseService with UserContextMixin {
 
   /// Create success result for operations
   RecipeOperationResult createSuccessResult([String? message]) {
-    return RecipeOperationResult.success(message ?? 'Operation completed successfully');
+    return RecipeOperationResult.success(
+        message ?? 'Operation completed successfully');
   }
 
   /// Create failure result for operations

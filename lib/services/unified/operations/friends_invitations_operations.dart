@@ -32,7 +32,8 @@ class FriendsInvitationsOperations {
       // Validate inputs
       if (!_validation.validateGroupInvitationInputs(
           userId: userId, groupId: groupId)) {
-        AppLogger.error('Cannot send invitation: userId and groupId are required');
+        AppLogger.error(
+            'Cannot send invitation: userId and groupId are required');
         return false;
       }
 
@@ -51,7 +52,8 @@ class FriendsInvitationsOperations {
       );
 
       if (existingInvitation != null) {
-        AppLogger.warning('Invitation already exists for user $userId to group $groupId');
+        AppLogger.warning(
+            'Invitation already exists for user $userId to group $groupId');
         return false;
       }
 
@@ -63,7 +65,8 @@ class FriendsInvitationsOperations {
       }
 
       // Get sender name
-      final currentUserDisplayName = _parent.currentUserDisplayName ?? 'Unknown';
+      final currentUserDisplayName =
+          _parent.currentUserDisplayName ?? 'Unknown';
 
       // Create proper invitation
       final invitation = GroupInvitation(
@@ -82,7 +85,8 @@ class FriendsInvitationsOperations {
       _parent.addSentInvitationInternal(invitation);
       _parent.notifyListenersInternal();
 
-      AppLogger.success('Group invitation sent to user $userId for group "${group.name}"');
+      AppLogger.success(
+          'Group invitation sent to user $userId for group "${group.name}"');
       return true;
     } catch (e) {
       AppLogger.error('Failed to send group invitation', e);
@@ -102,7 +106,8 @@ class FriendsInvitationsOperations {
         return false;
       }
 
-      if (_validation.hasDuplicateInvitationByEmail(getSentInvitations(), email)) {
+      if (_validation.hasDuplicateInvitationByEmail(
+          getSentInvitations(), email)) {
         AppLogger.warning('Invitation already sent to this email');
         return false;
       }
@@ -113,7 +118,8 @@ class FriendsInvitationsOperations {
       if (!_validation.hasUserInformation(
           currentUserId: currentUserId,
           currentUserDisplayName: currentUserDisplayName)) {
-        AppLogger.error('Cannot send invitation: User information not available');
+        AppLogger.error(
+            'Cannot send invitation: User information not available');
         return false;
       }
 
@@ -141,7 +147,8 @@ class FriendsInvitationsOperations {
         AppLogger.success('Email invitation sent to $email');
         return true;
       } else {
-        AppLogger.error('Email invitation failed: Email service not implemented');
+        AppLogger.error(
+            'Email invitation failed: Email service not implemented');
         return false;
       }
     } catch (e) {
@@ -162,7 +169,8 @@ class FriendsInvitationsOperations {
         return false;
       }
 
-      if (_validation.hasDuplicateInvitationByPhone(getSentInvitations(), phoneNumber)) {
+      if (_validation.hasDuplicateInvitationByPhone(
+          getSentInvitations(), phoneNumber)) {
         AppLogger.warning('Invitation already sent to this phone number');
         return false;
       }
@@ -173,7 +181,8 @@ class FriendsInvitationsOperations {
       if (!_validation.hasUserInformation(
           currentUserId: currentUserId,
           currentUserDisplayName: currentUserDisplayName)) {
-        AppLogger.error('Cannot send invitation: User information not available');
+        AppLogger.error(
+            'Cannot send invitation: User information not available');
         return false;
       }
 
@@ -222,10 +231,11 @@ class FriendsInvitationsOperations {
       if (!_validation.hasUserInformation(
           currentUserId: currentUserId,
           currentUserDisplayName: currentUserDisplayName)) {
-        AppLogger.error('Cannot create invitation link: User information not available');
+        AppLogger.error(
+            'Cannot create invitation link: User information not available');
         return null;
       }
-      
+
       final invitation = GroupInvitation(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         groupId: '',
@@ -267,11 +277,15 @@ class FriendsInvitationsOperations {
           final phoneNumber = contact['phoneNumber'] as String?;
           if (email != null) {
             success = await sendEmailInvitation(
-              email: email, customMessage: customMessage, senderName: senderName);
+                email: email,
+                customMessage: customMessage,
+                senderName: senderName);
             results[email] = success;
           } else if (phoneNumber != null) {
             success = await sendSMSInvitation(
-              phoneNumber: phoneNumber, customMessage: customMessage, senderName: senderName);
+                phoneNumber: phoneNumber,
+                customMessage: customMessage,
+                senderName: senderName);
             results[phoneNumber] = success;
           }
         }
@@ -296,7 +310,8 @@ class FriendsInvitationsOperations {
       }
 
       if (invitation.status != GroupInvitationStatus.pending) {
-        AppLogger.error('Cannot cancel invitation with status: ${invitation.status}');
+        AppLogger.error(
+            'Cannot cancel invitation with status: ${invitation.status}');
         return false;
       }
 
@@ -307,7 +322,8 @@ class FriendsInvitationsOperations {
 
       _parent.updateSentInvitationInternal(invitationId, cancelledInvitation);
       _parent.notifyListenersInternal();
-      await _parent.updateInvitationStatusInternal(cancelledInvitation.id, cancelledInvitation.status);
+      await _parent.updateInvitationStatusInternal(
+          cancelledInvitation.id, cancelledInvitation.status);
 
       AppLogger.success('Invitation cancelled');
       return true;
@@ -346,7 +362,8 @@ class FriendsInvitationsOperations {
       );
 
       if (emailSent) {
-        await _parent.updateInvitationStatusInternal(resentInvitation.id, resentInvitation.status);
+        await _parent.updateInvitationStatusInternal(
+            resentInvitation.id, resentInvitation.status);
         AppLogger.success('Invitation resent');
         return true;
       } else {
@@ -377,7 +394,8 @@ class FriendsInvitationsOperations {
 
       _parent.updateSentInvitationInternal(invitationId, viewedInvitation);
       _parent.notifyListenersInternal();
-      await _parent.updateInvitationStatusInternal(viewedInvitation.id, viewedInvitation.status);
+      await _parent.updateInvitationStatusInternal(
+          viewedInvitation.id, viewedInvitation.status);
 
       AppLogger.success('Invitation marked as viewed');
       return true;
@@ -402,14 +420,14 @@ class FriendsInvitationsOperations {
 
   /// Get pending invitations
   List<GroupInvitation> getPendingInvitations() {
-    return _statistics.getPendingInvitations(
-        _parent.getAllSentInvitationsInternal());
+    return _statistics
+        .getPendingInvitations(_parent.getAllSentInvitationsInternal());
   }
 
   /// Get expired invitations
   List<GroupInvitation> getExpiredInvitations() {
-    return _statistics.getExpiredInvitations(
-        _parent.getAllSentInvitationsInternal());
+    return _statistics
+        .getExpiredInvitations(_parent.getAllSentInvitationsInternal());
   }
 
   /// Check if invitation exists
@@ -419,7 +437,8 @@ class FriendsInvitationsOperations {
       return _validation.hasDuplicateInvitationByEmail(invitations, email);
     }
     if (phoneNumber != null) {
-      return _validation.hasDuplicateInvitationByPhone(invitations, phoneNumber);
+      return _validation.hasDuplicateInvitationByPhone(
+          invitations, phoneNumber);
     }
     return false;
   }
@@ -427,7 +446,8 @@ class FriendsInvitationsOperations {
   /// Get invitation by ID
   GroupInvitation? getInvitationById(String invitationId) {
     // Search sent invitations
-    final sentInvitation = _parent.getAllSentInvitationsInternal()
+    final sentInvitation = _parent
+        .getAllSentInvitationsInternal()
         .firstWhereOrNull((i) => i.id == invitationId);
 
     if (sentInvitation != null) return sentInvitation;
@@ -435,7 +455,8 @@ class FriendsInvitationsOperations {
     // Search received invitations
     final currentUserId = _parent.currentUserId;
     if (currentUserId != null) {
-      final receivedInvitation = _parent.getReceivedGroupInvitationsInternal(currentUserId)
+      final receivedInvitation = _parent
+          .getReceivedGroupInvitationsInternal(currentUserId)
           .firstWhereOrNull((i) => i.id == invitationId);
 
       if (receivedInvitation != null) return receivedInvitation;
@@ -454,12 +475,14 @@ class FriendsInvitationsOperations {
 
   /// Get invitation statistics
   Map<String, dynamic> getInvitationStats() {
-    return _statistics.getInvitationStats(_parent.getAllSentInvitationsInternal());
+    return _statistics
+        .getInvitationStats(_parent.getAllSentInvitationsInternal());
   }
 
   /// Get invitation performance metrics
   Map<String, dynamic> getInvitationMetrics() {
-    return _statistics.getInvitationMetrics(_parent.getAllSentInvitationsInternal());
+    return _statistics
+        .getInvitationMetrics(_parent.getAllSentInvitationsInternal());
   }
 
   // ===== CONTACT INTEGRATION =====
@@ -502,6 +525,7 @@ class FriendsInvitationsOperations {
       return [];
     }
   }
+
   bool get isLoading => _parent.isLoading;
   bool get hasError => _parent.hasError;
   String? get error => _parent.error;
@@ -515,11 +539,13 @@ class FriendsInvitationsOperations {
         return false;
       }
 
-      var existingGroup = _parent.categories.getCategoryById(invitation.groupId);
+      var existingGroup =
+          _parent.categories.getCategoryById(invitation.groupId);
 
       if (existingGroup == null) {
         try {
-          final fetchedGroup = await _parent.friendsCategoryRepositoryInternal.getCategory(
+          final fetchedGroup =
+              await _parent.friendsCategoryRepositoryInternal.getCategory(
             invitation.fromUserId,
             invitation.groupId,
           );
@@ -545,7 +571,8 @@ class FriendsInvitationsOperations {
       );
 
       if (!addedToGroup) {
-        AppLogger.error('Failed to add user to group after accepting invitation');
+        AppLogger.error(
+            'Failed to add user to group after accepting invitation');
         return false;
       }
 
@@ -553,7 +580,8 @@ class FriendsInvitationsOperations {
 
       _parent.updateSentInvitationInternal(invitationId, acceptedInvitation);
       _parent.notifyListenersInternal();
-      await _parent.updateInvitationStatusInternal(acceptedInvitation.id, acceptedInvitation.status);
+      await _parent.updateInvitationStatusInternal(
+          acceptedInvitation.id, acceptedInvitation.status);
 
       GroupEventBus.memberAdded();
       AppLogger.success('Group invitation accepted successfully');
@@ -574,7 +602,8 @@ class FriendsInvitationsOperations {
 
       _parent.updateSentInvitationInternal(invitationId, rejectedInvitation);
       _parent.notifyListenersInternal();
-      await _parent.updateInvitationStatusInternal(rejectedInvitation.id, rejectedInvitation.status);
+      await _parent.updateInvitationStatusInternal(
+          rejectedInvitation.id, rejectedInvitation.status);
 
       return true;
     } catch (e) {

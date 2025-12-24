@@ -5,8 +5,10 @@ class HtmlUtilities {
   /// Strips HTML tags and normalizes whitespace.
   static String stripHtmlTags(String html) {
     return html
-        .replaceAll(RegExp(r'<script[^>]*>[\s\S]*?</script>', multiLine: true), ' ')
-        .replaceAll(RegExp(r'<style[^>]*>[\s\S]*?</style>', multiLine: true), ' ')
+        .replaceAll(
+            RegExp(r'<script[^>]*>[\s\S]*?</script>', multiLine: true), ' ')
+        .replaceAll(
+            RegExp(r'<style[^>]*>[\s\S]*?</style>', multiLine: true), ' ')
         .replaceAll(RegExp(r'<[^>]+>'), ' ')
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();

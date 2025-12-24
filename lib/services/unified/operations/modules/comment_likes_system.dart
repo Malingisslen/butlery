@@ -13,7 +13,8 @@ import 'package:get_it/get_it.dart';
 /// - Like state queries
 /// ❌ DOES NOT CONTAIN: Comment content, notifications, statistics, replies
 class CommentLikesSystem {
-  static final CommentsRepository _commentsRepository = GetIt.instance<CommentsRepository>();
+  static final CommentsRepository _commentsRepository =
+      GetIt.instance<CommentsRepository>();
 
   // ===== LIKE OPERATIONS =====
 
@@ -23,14 +24,16 @@ class CommentLikesSystem {
     required String currentUserId,
   }) async {
     try {
-      AppLogger.info('👍 Toggling like on comment $commentId for user $currentUserId');
+      AppLogger.info(
+          '👍 Toggling like on comment $commentId for user $currentUserId');
 
       // Check current like status
-      final wasLiked = await _commentsRepository.hasUserLikedComment(commentId, currentUserId);
-      
+      final wasLiked = await _commentsRepository.hasUserLikedComment(
+          commentId, currentUserId);
+
       // Toggle the like
       await _commentsRepository.toggleCommentLike(commentId, currentUserId);
-      
+
       final result = wasLiked ? 'unliked' : 'liked';
       AppLogger.success('✅ Comment $result');
       return result;
@@ -49,14 +52,15 @@ class CommentLikesSystem {
       AppLogger.info('👍 Adding like to comment $commentId');
 
       // Check if already liked
-      final alreadyLiked = await _commentsRepository.hasUserLikedComment(commentId, userId);
-      
+      final alreadyLiked =
+          await _commentsRepository.hasUserLikedComment(commentId, userId);
+
       if (!alreadyLiked) {
         await _commentsRepository.toggleCommentLike(commentId, userId);
         AppLogger.success('✅ Like added to comment');
         return true;
       }
-      
+
       AppLogger.info('📋 Comment already liked by user');
       return false; // Already liked
     } catch (e) {
@@ -74,14 +78,15 @@ class CommentLikesSystem {
       AppLogger.info('👎 Removing like from comment $commentId');
 
       // Check if currently liked
-      final currentlyLiked = await _commentsRepository.hasUserLikedComment(commentId, userId);
-      
+      final currentlyLiked =
+          await _commentsRepository.hasUserLikedComment(commentId, userId);
+
       if (currentlyLiked) {
         await _commentsRepository.toggleCommentLike(commentId, userId);
         AppLogger.success('✅ Like removed from comment');
         return true;
       }
-      
+
       AppLogger.info('📋 Comment was not liked by user');
       return false; // Not liked
     } catch (e) {
@@ -147,7 +152,7 @@ class CommentLikesSystem {
       const batchSize = 10;
       for (int i = 0; i < commentIds.length; i += batchSize) {
         final batch = commentIds.skip(i).take(batchSize).toList();
-        
+
         final futures = batch.map((commentId) async {
           final liked = await hasUserLikedComment(
             commentId: commentId,
@@ -180,7 +185,7 @@ class CommentLikesSystem {
       const batchSize = 10;
       for (int i = 0; i < commentIds.length; i += batchSize) {
         final batch = commentIds.skip(i).take(batchSize).toList();
-        
+
         final futures = batch.map((commentId) async {
           final count = await getCommentLikeCount(
             commentId: commentId,
@@ -211,20 +216,25 @@ class CommentLikesSystem {
       final comments = await _commentsRepository.getCommentsForRecipe(recipeId);
 
       final totalLikes = comments.fold<int>(
-        0, 
+        0,
         (total, comment) => total + comment.likedByUserIds.length,
       );
 
-      final commentsWithLikes = comments.where((c) => c.likedByUserIds.isNotEmpty).length;
-      final mostLikedComment = comments.isEmpty ? null : 
-          comments.reduce((a, b) => a.likedByUserIds.length > b.likedByUserIds.length ? a : b);
+      final commentsWithLikes =
+          comments.where((c) => c.likedByUserIds.isNotEmpty).length;
+      final mostLikedComment = comments.isEmpty
+          ? null
+          : comments.reduce((a, b) =>
+              a.likedByUserIds.length > b.likedByUserIds.length ? a : b);
 
       return {
         'totalLikes': totalLikes,
         'totalComments': comments.length,
         'commentsWithLikes': commentsWithLikes,
-        'averageLikesPerComment': comments.isEmpty ? 0.0 : totalLikes / comments.length,
-        'likeEngagementRate': comments.isEmpty ? 0.0 : commentsWithLikes / comments.length,
+        'averageLikesPerComment':
+            comments.isEmpty ? 0.0 : totalLikes / comments.length,
+        'likeEngagementRate':
+            comments.isEmpty ? 0.0 : commentsWithLikes / comments.length,
         'mostLikedCommentId': mostLikedComment?.id,
         'mostLikedCommentLikes': mostLikedComment?.likedByUserIds.length ?? 0,
       };
@@ -243,7 +253,8 @@ class CommentLikesSystem {
       final comments = await _commentsRepository.getCommentsForRecipe(recipeId);
 
       // Sort by like count descending
-      comments.sort((a, b) => b.likedByUserIds.length.compareTo(a.likedByUserIds.length));
+      comments.sort(
+          (a, b) => b.likedByUserIds.length.compareTo(a.likedByUserIds.length));
 
       return comments.take(limit).toList();
     } catch (e) {

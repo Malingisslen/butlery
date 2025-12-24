@@ -31,7 +31,8 @@ class ConversationAutoHealerModule {
       return;
     }
 
-    AppLogger.debug('🔄 [AutoHealer] Starting for conversation: $conversationId');
+    AppLogger.debug(
+        '🔄 [AutoHealer] Starting for conversation: $conversationId');
 
     // ignore: cancel_subscriptions
     final subscription = messagesRef
@@ -47,7 +48,8 @@ class ConversationAutoHealerModule {
         final conversation = await readConversation(conversationId);
 
         if (conversation == null) {
-          AppLogger.warning('⚠️ [AutoHealer] Conversation not found: $conversationId');
+          AppLogger.warning(
+              '⚠️ [AutoHealer] Conversation not found: $conversationId');
           return;
         }
 
@@ -56,7 +58,8 @@ class ConversationAutoHealerModule {
             latestMessage.sentAt.isAfter(conversation.lastMessage!.sentAt);
 
         if (needsUpdate) {
-          AppLogger.info('🔧 [AutoHealer] Healing conversation lastMessage: $conversationId');
+          AppLogger.info(
+              '🔧 [AutoHealer] Healing conversation lastMessage: $conversationId');
 
           final updated = conversation.copyWith(
             lastMessage: latestMessage,
@@ -64,7 +67,8 @@ class ConversationAutoHealerModule {
           );
 
           await updateConversation(updated);
-          AppLogger.success('✅ [AutoHealer] Healed conversation: $conversationId');
+          AppLogger.success(
+              '✅ [AutoHealer] Healed conversation: $conversationId');
         }
       } catch (e) {
         AppLogger.error('❌ [AutoHealer] Failed for $conversationId', e);

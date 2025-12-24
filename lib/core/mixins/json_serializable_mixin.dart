@@ -116,8 +116,8 @@
 ///     age: extractInt(json, 'age', defaultValue: 0),
 ///     isVerified: extractBool(json, 'isVerified'),
 ///     preferences: extractList(
-///       json, 
-///       'preferences', 
+///       json,
+///       'preferences',
 ///       (item) => Preference.fromJson(item),
 ///       defaultValue: [],
 ///     ),
@@ -179,14 +179,14 @@ import 'package:butlery/core/utils/logger.dart';
 mixin JsonSerializableMixin {
   /// Convert model to JSON map
   Map<String, dynamic> toJson();
-  
+
   // ===== COMMON SERIALIZATION HELPERS =====
-  
+
   /// Serialize DateTime to ISO string or null
   String? serializeDateTime(DateTime? dateTime) {
     return dateTime?.toIso8601String();
   }
-  
+
   /// Deserialize ISO string to DateTime or null
   DateTime? deserializeDateTime(dynamic value) {
     if (value == null) return null;
@@ -203,7 +203,7 @@ mixin JsonSerializableMixin {
     }
     return null;
   }
-  
+
   /// Serialize list of objects with toJson() method
   List<Map<String, dynamic>>? serializeList<T>(List<T>? list) {
     if (list == null) return null;
@@ -215,7 +215,7 @@ mixin JsonSerializableMixin {
       }
     }).toList();
   }
-  
+
   /// Deserialize list of JSON objects
   List<T> deserializeList<T>(
     dynamic value,
@@ -223,32 +223,35 @@ mixin JsonSerializableMixin {
   ) {
     if (value == null) return [];
     if (value is! List) return [];
-    
-    return value.map((item) {
-      if (item is Map<String, dynamic>) {
-        try {
-          return fromJson(item);
-        } catch (e) {
-          AppLogger.warning('Failed to deserialize list item: $e');
+
+    return value
+        .map((item) {
+          if (item is Map<String, dynamic>) {
+            try {
+              return fromJson(item);
+            } catch (e) {
+              AppLogger.warning('Failed to deserialize list item: $e');
+              return null;
+            }
+          }
           return null;
-        }
-      }
-      return null;
-    }).whereType<T>().toList();
+        })
+        .whereType<T>()
+        .toList();
   }
-  
+
   /// Serialize enum to string or null
   String? serializeEnum<T extends Enum>(T? enumValue) {
     return enumValue?.name;
   }
-  
+
   /// Deserialize string to enum or null
   T? deserializeEnum<T extends Enum>(
     dynamic value,
     List<T> enumValues,
   ) {
     if (value == null || value is! String) return null;
-    
+
     try {
       return enumValues.firstWhere((e) => e.name == value);
     } catch (e) {
@@ -256,22 +259,24 @@ mixin JsonSerializableMixin {
       return null;
     }
   }
-  
+
   /// Safe string extraction from JSON
-  String extractString(Map<String, dynamic> json, String key, {String defaultValue = ''}) {
+  String extractString(Map<String, dynamic> json, String key,
+      {String defaultValue = ''}) {
     final value = json[key];
     if (value is String) return value;
     return defaultValue;
   }
-  
+
   /// Safe optional string extraction from JSON
   String? extractOptionalString(Map<String, dynamic> json, String key) {
     final value = json[key];
     return value is String ? value : null;
   }
-  
+
   /// Safe int extraction from JSON
-  int extractInt(Map<String, dynamic> json, String key, {int defaultValue = 0}) {
+  int extractInt(Map<String, dynamic> json, String key,
+      {int defaultValue = 0}) {
     final value = json[key];
     if (value is int) return value;
     if (value is double) return value.toInt();
@@ -284,9 +289,10 @@ mixin JsonSerializableMixin {
     }
     return defaultValue;
   }
-  
+
   /// Safe double extraction from JSON
-  double extractDouble(Map<String, dynamic> json, String key, {double defaultValue = 0.0}) {
+  double extractDouble(Map<String, dynamic> json, String key,
+      {double defaultValue = 0.0}) {
     final value = json[key];
     if (value is double) return value;
     if (value is int) return value.toDouble();
@@ -299,9 +305,10 @@ mixin JsonSerializableMixin {
     }
     return defaultValue;
   }
-  
+
   /// Safe bool extraction from JSON
-  bool extractBool(Map<String, dynamic> json, String key, {bool defaultValue = false}) {
+  bool extractBool(Map<String, dynamic> json, String key,
+      {bool defaultValue = false}) {
     final value = json[key];
     if (value is bool) return value;
     if (value is String) {
@@ -309,7 +316,7 @@ mixin JsonSerializableMixin {
     }
     return defaultValue;
   }
-  
+
   /// Safe list extraction from JSON
   List<T> extractList<T>(
     Map<String, dynamic> json,
@@ -319,17 +326,20 @@ mixin JsonSerializableMixin {
   }) {
     final value = json[key];
     if (value is! List) return defaultValue ?? [];
-    
-    return value.map((item) {
-      try {
-        return converter(item);
-      } catch (e) {
-        AppLogger.warning('Failed to convert list item: $e');
-        return null;
-      }
-    }).whereType<T>().toList();
+
+    return value
+        .map((item) {
+          try {
+            return converter(item);
+          } catch (e) {
+            AppLogger.warning('Failed to convert list item: $e');
+            return null;
+          }
+        })
+        .whereType<T>()
+        .toList();
   }
-  
+
   /// Safe map extraction from JSON
   Map<String, T> extractMap<T>(
     Map<String, dynamic> json,
@@ -339,7 +349,7 @@ mixin JsonSerializableMixin {
   }) {
     final value = json[key];
     if (value is! Map) return defaultValue ?? {};
-    
+
     final result = <String, T>{};
     value.forEach((key, val) {
       if (key is String) {
@@ -350,7 +360,7 @@ mixin JsonSerializableMixin {
         }
       }
     });
-    
+
     return result;
   }
 }
@@ -360,7 +370,7 @@ mixin FirestoreSerializableMixin on JsonSerializableMixin {
   /// Convert model to Firestore document format
   Map<String, dynamic> toFirestore({bool isNested = false}) {
     final json = toJson();
-    
+
     // Convert DateTime strings to Timestamp for Firestore
     final result = <String, dynamic>{};
     json.forEach((key, value) {
@@ -374,21 +384,21 @@ mixin FirestoreSerializableMixin on JsonSerializableMixin {
         result[key] = value;
       }
     });
-    
+
     return result;
   }
-  
+
   /// Create model from Firestore document
   static Map<String, dynamic> fromFirestore(DocumentSnapshot doc) {
     if (!doc.exists) {
       throw StateError('Document does not exist');
     }
-    
+
     final data = doc.data() as Map<String, dynamic>? ?? {};
-    
+
     // Add document ID
     data['id'] = doc.id;
-    
+
     // Convert Timestamps to ISO strings
     final result = <String, dynamic>{};
     data.forEach((key, value) {
@@ -402,17 +412,17 @@ mixin FirestoreSerializableMixin on JsonSerializableMixin {
         result[key] = value;
       }
     });
-    
+
     return result;
   }
-  
+
   /// Create model from Firestore query snapshot
   static List<Map<String, dynamic>> fromFirestoreList(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) => fromFirestore(doc)).toList();
   }
-  
+
   // ===== PRIVATE HELPERS =====
-  
+
   /// Check if string is ISO date format
   bool _isIsoDateString(String value) {
     try {
@@ -422,7 +432,7 @@ mixin FirestoreSerializableMixin on JsonSerializableMixin {
       return false;
     }
   }
-  
+
   /// Convert list to Firestore format
   List<dynamic> _convertListToFirestore(List<dynamic> list) {
     return list.map((item) {
@@ -436,7 +446,7 @@ mixin FirestoreSerializableMixin on JsonSerializableMixin {
       return item;
     }).toList();
   }
-  
+
   /// Convert map to Firestore format
   Map<String, dynamic> _convertMapToFirestore(Map<String, dynamic> map) {
     final result = <String, dynamic>{};
@@ -453,7 +463,7 @@ mixin FirestoreSerializableMixin on JsonSerializableMixin {
     });
     return result;
   }
-  
+
   /// Convert list from Firestore format
   static List<dynamic> _convertListFromFirestore(List<dynamic> list) {
     return list.map((item) {
@@ -467,9 +477,10 @@ mixin FirestoreSerializableMixin on JsonSerializableMixin {
       return item;
     }).toList();
   }
-  
+
   /// Convert map from Firestore format
-  static Map<String, dynamic> _convertMapFromFirestore(Map<String, dynamic> map) {
+  static Map<String, dynamic> _convertMapFromFirestore(
+      Map<String, dynamic> map) {
     final result = <String, dynamic>{};
     map.forEach((key, value) {
       if (value is Timestamp) {
@@ -490,7 +501,7 @@ mixin FirestoreSerializableMixin on JsonSerializableMixin {
 mixin TimestampedMixin on JsonSerializableMixin {
   DateTime? get createdAt;
   DateTime? get updatedAt;
-  
+
   /// Serialize timestamp fields
   Map<String, dynamic> serializeTimestamps() {
     return {
@@ -498,7 +509,7 @@ mixin TimestampedMixin on JsonSerializableMixin {
       'updatedAt': serializeDateTime(updatedAt),
     };
   }
-  
+
   /// Deserialize timestamp fields
   Map<String, DateTime?> deserializeTimestamps(Map<String, dynamic> json) {
     return {
@@ -511,12 +522,12 @@ mixin TimestampedMixin on JsonSerializableMixin {
 /// Mixin for models with ID fields
 mixin IdentifiableMixin on JsonSerializableMixin {
   String get id;
-  
+
   /// Serialize ID field
   Map<String, dynamic> serializeId() {
     return {'id': id};
   }
-  
+
   /// Extract ID from JSON
   String extractId(Map<String, dynamic> json) {
     return extractString(json, 'id');
@@ -527,7 +538,7 @@ mixin IdentifiableMixin on JsonSerializableMixin {
 mixin OwnedMixin on JsonSerializableMixin {
   String? get ownerId;
   String? get createdBy;
-  
+
   /// Serialize ownership fields
   Map<String, dynamic> serializeOwnership() {
     return {
@@ -535,7 +546,7 @@ mixin OwnedMixin on JsonSerializableMixin {
       'createdBy': createdBy,
     };
   }
-  
+
   /// Deserialize ownership fields
   Map<String, String?> deserializeOwnership(Map<String, dynamic> json) {
     return {
@@ -549,11 +560,11 @@ mixin OwnedMixin on JsonSerializableMixin {
 class SerializationUtils {
   // Prevent instantiation
   SerializationUtils._();
-  
+
   /// Safely parse JSON string
   static Map<String, dynamic>? parseJson(String? jsonString) {
     if (jsonString == null || jsonString.isEmpty) return null;
-    
+
     try {
       final dynamic parsed = jsonDecode(jsonString);
       return parsed is Map<String, dynamic> ? parsed : null;
@@ -562,11 +573,11 @@ class SerializationUtils {
       return null;
     }
   }
-  
+
   /// Safely encode object to JSON string
   static String? encodeJson(Map<String, dynamic>? data) {
     if (data == null) return null;
-    
+
     try {
       return jsonEncode(data);
     } catch (e) {
@@ -574,11 +585,11 @@ class SerializationUtils {
       return null;
     }
   }
-  
+
   /// Deep copy JSON object
   static Map<String, dynamic>? deepCopyJson(Map<String, dynamic>? original) {
     if (original == null) return null;
-    
+
     try {
       final jsonString = jsonEncode(original);
       return jsonDecode(jsonString) as Map<String, dynamic>;
@@ -587,7 +598,7 @@ class SerializationUtils {
       return null;
     }
   }
-  
+
   /// Validate required fields in JSON
   static bool validateRequiredFields(
     Map<String, dynamic> json,
@@ -601,11 +612,11 @@ class SerializationUtils {
     }
     return true;
   }
-  
+
   /// Clean JSON by removing null values
   static Map<String, dynamic> cleanJson(Map<String, dynamic> json) {
     final cleaned = <String, dynamic>{};
-    
+
     json.forEach((key, value) {
       if (value != null) {
         if (value is Map<String, dynamic>) {
@@ -623,7 +634,7 @@ class SerializationUtils {
         }
       }
     });
-    
+
     return cleaned;
   }
 }

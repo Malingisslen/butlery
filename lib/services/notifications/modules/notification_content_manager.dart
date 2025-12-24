@@ -61,12 +61,14 @@ class NotificationContentManager {
   /// Generate unique notification ID
   /// Creates unique identifiers using strategy category, user ID, timestamp, and random number
   /// to ensure no duplicate notifications and enable proper deduplication
-  String generateNotificationId(String targetUserId, NotificationStrategy strategy) {
+  String generateNotificationId(
+      String targetUserId, NotificationStrategy strategy) {
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final random = Random().nextInt(1000);
-      final id = '${strategy.category.name}_${targetUserId}_${timestamp}_$random';
-      
+      final id =
+          '${strategy.category.name}_${targetUserId}_${timestamp}_$random';
+
       AppLogger.debug('🔔 Generated notification ID: $id');
       return id;
     } catch (e) {
@@ -106,11 +108,13 @@ class NotificationContentManager {
     List<NotificationAction>? actions,
   }) {
     try {
-      AppLogger.debug('🔔 Creating notification template for strategy: ${strategy.category.name}');
+      AppLogger.debug(
+          '🔔 Creating notification template for strategy: ${strategy.category.name}');
 
       // Use Swedish by default (app is primarily Swedish)
       final titleTemplate = strategy.localization['title_sv'] ?? 'Ny aktivitet';
-      final bodyTemplate = strategy.localization['body_sv'] ?? 'Du har ny aktivitet i Butlery';
+      final bodyTemplate =
+          strategy.localization['body_sv'] ?? 'Du har ny aktivitet i Butlery';
 
       // Substitute variables in templates
       final title = _substituteVariables(titleTemplate, variables);
@@ -154,7 +158,8 @@ class NotificationContentManager {
     try {
       // Use English templates
       final titleTemplate = strategy.localization['title_en'] ?? 'New activity';
-      final bodyTemplate = strategy.localization['body_en'] ?? 'You have new activity in Butlery';
+      final bodyTemplate = strategy.localization['body_en'] ??
+          'You have new activity in Butlery';
 
       final title = _substituteVariables(titleTemplate, variables);
       final body = _substituteVariables(bodyTemplate, variables);
@@ -187,7 +192,8 @@ class NotificationContentManager {
   /// Build combined notification from multiple templates
   /// Combines multiple notifications into a single summary notification
   /// to prevent notification spam while preserving important information
-  NotificationTemplate buildBatchedNotification(List<NotificationTemplate> notifications) {
+  NotificationTemplate buildBatchedNotification(
+      List<NotificationTemplate> notifications) {
     if (notifications.isEmpty) {
       throw ArgumentError('Cannot batch empty notification list');
     }
@@ -198,13 +204,15 @@ class NotificationContentManager {
     }
 
     try {
-      AppLogger.info('🔔 Building batched notification from ${notifications.length} templates');
+      AppLogger.info(
+          '🔔 Building batched notification from ${notifications.length} templates');
 
       final firstNotification = notifications.first;
       final category = firstNotification.data['category'] as String;
-      
-      final batchContent = _generateBatchContent(category, notifications.length);
-      
+
+      final batchContent =
+          _generateBatchContent(category, notifications.length);
+
       final batchedTemplate = NotificationTemplate(
         title: batchContent['title']!,
         body: batchContent['body']!,
@@ -218,7 +226,8 @@ class NotificationContentManager {
         actions: _generateBatchActions(category),
       );
 
-      AppLogger.success('✅ Created batched notification: "${batchContent['title']}"');
+      AppLogger.success(
+          '✅ Created batched notification: "${batchContent['title']}"');
       return batchedTemplate;
     } catch (e) {
       AppLogger.error('❌ Failed to build batched notification', e);
@@ -237,7 +246,8 @@ class NotificationContentManager {
     NotificationStrategy strategy,
   ) {
     try {
-      AppLogger.info('🔔 Building digest content for ${activityList.length} activities');
+      AppLogger.info(
+          '🔔 Building digest content for ${activityList.length} activities');
 
       if (activityList.isEmpty) {
         return {
@@ -254,9 +264,11 @@ class NotificationContentManager {
         categoryCount[category] = (categoryCount[category] ?? 0) + 1;
       }
 
-      final digestContent = _generateDigestSummary(categoryCount, activityList.length);
-      
-      AppLogger.success('✅ Created digest content with ${activityList.length} activities');
+      final digestContent =
+          _generateDigestSummary(categoryCount, activityList.length);
+
+      AppLogger.success(
+          '✅ Created digest content with ${activityList.length} activities');
       return digestContent;
     } catch (e) {
       AppLogger.error('❌ Failed to build digest content', e);
@@ -334,34 +346,32 @@ class NotificationContentManager {
       case 'recipes':
         return [
           const NotificationAction(
-            id: 'view_recipes',
-            title: 'Visa recept',
-            data: {'action': 'navigate', 'destination': '/recipes'}
-          ),
+              id: 'view_recipes',
+              title: 'Visa recept',
+              data: {'action': 'navigate', 'destination': '/recipes'}),
         ];
       case 'friends':
         return [
           const NotificationAction(
-            id: 'view_friends',
-            title: 'Visa vänner',
-            data: {'action': 'navigate', 'destination': '/friends'}
-          ),
+              id: 'view_friends',
+              title: 'Visa vänner',
+              data: {'action': 'navigate', 'destination': '/friends'}),
         ];
       default:
         return [
           const NotificationAction(
-            id: 'open_app',
-            title: 'Öppna app',
-            data: {'action': 'navigate', 'destination': '/home'}
-          ),
+              id: 'open_app',
+              title: 'Öppna app',
+              data: {'action': 'navigate', 'destination': '/home'}),
         ];
     }
   }
 
   /// Generate digest summary from category counts
-  Map<String, String> _generateDigestSummary(Map<String, int> categoryCount, int totalCount) {
+  Map<String, String> _generateDigestSummary(
+      Map<String, int> categoryCount, int totalCount) {
     final summaryParts = <String>[];
-    
+
     categoryCount.forEach((category, itemCount) {
       switch (category) {
         case 'recipes':
@@ -382,7 +392,7 @@ class NotificationContentManager {
     });
 
     final summaryText = summaryParts.join(', ');
-    
+
     return {
       'title': 'Daglig sammanfattning',
       'body': 'Du har $totalCount nya aktiviteter: $summaryText',

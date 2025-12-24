@@ -59,8 +59,11 @@ class FriendCard extends StatelessWidget {
               padding: padding ?? _getDefaultPadding(),
               decoration: BoxDecoration(
                 color: AppColors.backgroundLight,
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-                border: Border.all(color: AppColors.textLight, width: AppDimensions.borderWidthThin),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusM),
+                border: Border.all(
+                    color: AppColors.textLight,
+                    width: AppDimensions.borderWidthThin),
               ),
               child: _buildContent(context),
             ),
@@ -106,8 +109,7 @@ class FriendCard extends StatelessWidget {
                 ],
               ),
             ),
-            if (trailing != null) 
-              trailing!,
+            if (trailing != null) trailing!,
           ],
         ),
       ],
@@ -134,8 +136,9 @@ class FriendCard extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       leading: showAvatar ? _buildUserAvatar(context, size: 40) : null,
       title: _buildUserName(context),
-      subtitle: subtitle != null ? _buildSubtitle(context) : 
-                (showMetadata ? _buildUserMetadata(context) : null),
+      subtitle: subtitle != null
+          ? _buildSubtitle(context)
+          : (showMetadata ? _buildUserMetadata(context) : null),
       trailing: trailing,
       onTap: onTap,
       onLongPress: onLongPress,
@@ -144,8 +147,10 @@ class FriendCard extends StatelessWidget {
 
   Widget _buildUserAvatar(BuildContext context, {required double size}) {
     // Map size to ImageSize enum - 50+ is large, 40+ is medium, default small
-    final imageSize = size >= 50 ? ImageSize.large : (size >= 40 ? ImageSize.medium : ImageSize.small);
-    
+    final imageSize = size >= 50
+        ? ImageSize.large
+        : (size >= 40 ? ImageSize.medium : ImageSize.small);
+
     return SocialAvatarComponents.avatar(
       user: user,
       size: imageSize,
@@ -157,7 +162,7 @@ class FriendCard extends StatelessWidget {
   Widget _buildUserName(BuildContext context) {
     return Text(
       user.displayName,
-      style: style == FriendCardStyle.compact 
+      style: style == FriendCardStyle.compact
           ? AppTextStyles.bodyLarge
           : AppTextStyles.titleMedium,
       maxLines: 1,
@@ -177,15 +182,15 @@ class FriendCard extends StatelessWidget {
   Widget _buildUserMetadata(BuildContext context) {
     // Build metadata based on available user information
     final metadata = <String>[];
-    
+
     if (user.email.isNotEmpty) {
       metadata.add(user.email);
     }
-    
+
     if (metadata.isEmpty) {
       return const SizedBox.shrink();
     }
-    
+
     return Text(
       metadata.join(' • '),
       style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
@@ -253,7 +258,9 @@ class FriendRequestCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.backgroundLight,
               borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
-              border: Border.all(color: AppColors.textLight, width: AppDimensions.borderWidthThin),
+              border: Border.all(
+                  color: AppColors.textLight,
+                  width: AppDimensions.borderWidthThin),
             ),
             child: _buildContent(context),
           ),
@@ -282,7 +289,8 @@ class FriendRequestCard extends StatelessWidget {
                   const SizedBox(height: AppDimensions.spacingXs),
                   Text(
                     'Vill bli din vän',
-                    style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMedium),
+                    style: AppTextStyles.bodySmall
+                        .copyWith(color: AppColors.textMedium),
                   ),
                   if (friendRequest.message?.isNotEmpty == true) ...[
                     const SizedBox(height: AppDimensions.spacingXs),
@@ -326,7 +334,8 @@ class FriendRequestCard extends StatelessWidget {
               ),
               child: Text(
                 'Avvisa',
-                style: AppTextStyles.labelMedium.copyWith(color: AppColors.textMedium),
+                style: AppTextStyles.labelMedium
+                    .copyWith(color: AppColors.textMedium),
               ),
             ),
           ),
@@ -354,7 +363,7 @@ class FriendRequestCard extends StatelessWidget {
 
 /// Friend card display styles
 enum FriendCardStyle {
-  detailed,  // Full visning med avatar och metadata
-  compact,   // Kompakt visning för listor
-  list,      // ListTile-baserad visning
+  detailed, // Full visning med avatar och metadata
+  compact, // Kompakt visning för listor
+  list, // ListTile-baserad visning
 }

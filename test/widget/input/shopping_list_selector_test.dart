@@ -29,7 +29,8 @@ void main() {
     });
 
     group('Basic Widget Tests', () {
-      testWidgets('should create ShoppingListSelector without crashing', (WidgetTester tester) async {
+      testWidgets('should create ShoppingListSelector without crashing',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -42,7 +43,8 @@ void main() {
         expect(find.byType(ShoppingListSelector), findsOneWidget);
       });
 
-      testWidgets('should handle optional callback parameter', (WidgetTester tester) async {
+      testWidgets('should handle optional callback parameter',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -57,7 +59,8 @@ void main() {
         expect(find.byType(ShoppingListSelector), findsOneWidget);
       });
 
-      testWidgets('should handle optional menu parameter', (WidgetTester tester) async {
+      testWidgets('should handle optional menu parameter',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -72,7 +75,8 @@ void main() {
         expect(find.byType(ShoppingListSelector), findsOneWidget);
       });
 
-      testWidgets('should handle null menu gracefully', (WidgetTester tester) async {
+      testWidgets('should handle null menu gracefully',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -87,9 +91,10 @@ void main() {
         expect(find.byType(ShoppingListSelector), findsOneWidget);
       });
 
-      testWidgets('should handle all parameters together', (WidgetTester tester) async {
+      testWidgets('should handle all parameters together',
+          (WidgetTester tester) async {
         bool callbackCalled = false;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -105,7 +110,7 @@ void main() {
 
         // Should render properly with all parameters
         expect(find.byType(ShoppingListSelector), findsOneWidget);
-        
+
         // Callback should not be called automatically
         expect(callbackCalled, isFalse);
       });

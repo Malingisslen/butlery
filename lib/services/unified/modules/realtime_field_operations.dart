@@ -9,7 +9,6 @@ import 'package:butlery/services/unified/modules/realtime_edit_context.dart';
 /// Handles recipe field updates (title, description, portions, time) and batch operations.
 /// Provides core makeRealtimeEdit method used by ingredient/instruction operations.
 class RealtimeFieldOperations {
-
   /// Make a real-time edit to recipe content (CORE METHOD)
   static Future<bool> makeRealtimeEdit({
     required RealtimeEditContext context,
@@ -141,27 +140,29 @@ class RealtimeFieldOperations {
   static bool isValidIngredient(String ingredient) {
     final trimmed = ingredient.trim();
     return trimmed.isNotEmpty &&
-           trimmed.length <= 200 && // Reasonable length limit
-           !trimmed.contains(RegExp(r'[<>]')); // No HTML tags
+        trimmed.length <= 200 && // Reasonable length limit
+        !trimmed.contains(RegExp(r'[<>]')); // No HTML tags
   }
 
   /// Validate instruction content
   static bool isValidInstruction(String instruction) {
     final trimmed = instruction.trim();
     return trimmed.isNotEmpty &&
-           trimmed.length <= 1000 && // Reasonable length limit
-           !trimmed.contains(RegExp(r'[<>]')); // No HTML tags
+        trimmed.length <= 1000 && // Reasonable length limit
+        !trimmed.contains(RegExp(r'[<>]')); // No HTML tags
   }
 
   /// Sanitize text content
   static String sanitizeTextContent(String content) {
-    return content.trim()
+    return content
+        .trim()
         .replaceAll(RegExp(r'<[^>]*>'), '') // Remove HTML tags
         .replaceAll(RegExp(r'\s+'), ' '); // Normalize whitespace
   }
 
   /// Validate index for list operations
-  static bool isValidIndex(int index, int listLength, {bool allowAppend = false}) {
+  static bool isValidIndex(int index, int listLength,
+      {bool allowAppend = false}) {
     if (index < 0) return false;
     if (allowAppend) {
       return index <= listLength; // Allow inserting at end

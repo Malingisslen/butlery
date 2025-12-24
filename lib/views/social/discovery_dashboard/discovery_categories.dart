@@ -1,6 +1,6 @@
 // lib/views/social/discovery_dashboard/discovery_categories.dart
 
-import 'package:flutter/material.dart'; 
+import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -27,7 +27,8 @@ class DiscoveryCategories {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: viewModel.discoveryCategories.length,
-            separatorBuilder: (context, index) => const SizedBox(width: AppDimensions.spacingS),
+            separatorBuilder: (context, index) =>
+                const SizedBox(width: AppDimensions.spacingS),
             itemBuilder: (context, index) {
               final category = viewModel.discoveryCategories[index];
               return _buildCategoryCard(context, viewModel, category);
@@ -45,7 +46,7 @@ class DiscoveryCategories {
   ) {
     final isSelected = viewModel.selectedCategory == category['id'];
     final count = category['count'] as int;
-    
+
     return GestureDetector(
       onTap: () => viewModel.setSelectedCategory(category['id']),
       child: Container(
@@ -55,15 +56,19 @@ class DiscoveryCategories {
           color: isSelected ? AppColors.primary : AppColors.surface,
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.outline.withValues(alpha: 0.2),
+            color: isSelected
+                ? AppColors.primary
+                : AppColors.outline.withValues(alpha: 0.2),
           ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ] : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -88,7 +93,9 @@ class DiscoveryCategories {
               Text(
                 count.toString(),
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: isSelected ? AppColors.onPrimary.withValues(alpha: 0.8) : AppColors.onSurface.withValues(alpha: 0.6),
+                  color: isSelected
+                      ? AppColors.onPrimary.withValues(alpha: 0.8)
+                      : AppColors.onSurface.withValues(alpha: 0.6),
                   fontSize: 10,
                 ),
               ),

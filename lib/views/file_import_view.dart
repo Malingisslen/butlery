@@ -112,7 +112,8 @@ class _FileImportViewState extends State<FileImportView> {
       setState(() {
         _state = _state.copyWith(
           isLoading: false,
-          statusMessage: 'Import klar: ${_state.importedCount} lyckades, ${_state.failedCount} misslyckades',
+          statusMessage:
+              'Import klar: ${_state.importedCount} lyckades, ${_state.failedCount} misslyckades',
         );
       });
 
@@ -158,112 +159,118 @@ class _FileImportViewState extends State<FileImportView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-              // Instructions
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppDimensions.spacingL),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Importera recept från CSV eller Excel',
-                        style: AppTextStyles.headlineSmall,
-                      ),
-                      const SizedBox(height: AppDimensions.spacingM),
-                      const Text(
-                        'Din fil bör innehålla kolumner för:',
-                        style: AppTextStyles.bodyMedium,
-                      ),
-                      const SizedBox(height: AppDimensions.spacingS),
-                      _buildRequirement('Titel (title/namn)'),
-                      _buildRequirement('Ingredienser (ingredients/ingredienser)'),
-                      _buildRequirement('Instruktioner (instructions/instruktioner)'),
-                      const SizedBox(height: AppDimensions.spacingS),
-                      const Text(
-                        'Valfria kolumner:',
-                        style: AppTextStyles.bodyMedium,
-                      ),
-                      const SizedBox(height: AppDimensions.spacingS),
-                      _buildOptional('Tillagningstid (cookingtime/tid)'),
-                      _buildOptional('Portioner (servings/portioner)'),
-                      _buildOptional('Kategori (category/kategori)'),
-                      _buildOptional('Taggar (tags/taggar)'),
-                    ],
-                  ),
-                ),
-              ),
-              
-              const SizedBox(height: AppDimensions.spacingXl),
-
-              // Import button
-              if (!_state.isLoading)
-                UtilityComponents.primaryButton(
-                  context,
-                  label: 'Välj fil och importera',
-                  icon: Icons.file_upload,
-                  onPressed: _importFile,
-                ),
-
-              // Loading indicator
-              if (_state.isLoading)
-                Column(
-                  children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: AppDimensions.spacingL),
-                    if (_state.statusMessage != null)
-                      Text(
-                        _state.statusMessage!,
-                        style: AppTextStyles.bodyLarge,
-                        textAlign: TextAlign.center,
-                      ),
-                    if (_state.importedCount > 0 || _state.failedCount > 0)
-                      Padding(
-                        padding: const EdgeInsets.only(top: AppDimensions.spacingM),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (_state.importedCount > 0) ...[
-                              Icon(
-                                Icons.check_circle,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                              const SizedBox(width: AppDimensions.spacingS),
-                              Text('${_state.importedCount} lyckades'),
-                            ],
-                            if (_state.importedCount > 0 && _state.failedCount > 0)
-                              const SizedBox(width: AppDimensions.spacingL),
-                            if (_state.failedCount > 0) ...[
-                              Icon(
-                                Icons.error,
-                                color: Theme.of(context).colorScheme.error,
-                              ),
-                              const SizedBox(width: AppDimensions.spacingS),
-                              Text('${_state.failedCount} misslyckades'),
-                            ],
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-
-              // Status message
-              if (!_state.isLoading && _state.statusMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: AppDimensions.spacingL),
-                  child: Card(
-                    color: _state.failedCount > 0
-                        ? Theme.of(context).colorScheme.errorContainer
-                        : Theme.of(context).colorScheme.primaryContainer,
+                  // Instructions
+                  Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(AppDimensions.spacingM),
-                      child: Text(
-                        _state.statusMessage!,
-                        style: AppTextStyles.bodyMedium,
-                        textAlign: TextAlign.center,
+                      padding: const EdgeInsets.all(AppDimensions.spacingL),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Importera recept från CSV eller Excel',
+                            style: AppTextStyles.headlineSmall,
+                          ),
+                          const SizedBox(height: AppDimensions.spacingM),
+                          const Text(
+                            'Din fil bör innehålla kolumner för:',
+                            style: AppTextStyles.bodyMedium,
+                          ),
+                          const SizedBox(height: AppDimensions.spacingS),
+                          _buildRequirement('Titel (title/namn)'),
+                          _buildRequirement(
+                              'Ingredienser (ingredients/ingredienser)'),
+                          _buildRequirement(
+                              'Instruktioner (instructions/instruktioner)'),
+                          const SizedBox(height: AppDimensions.spacingS),
+                          const Text(
+                            'Valfria kolumner:',
+                            style: AppTextStyles.bodyMedium,
+                          ),
+                          const SizedBox(height: AppDimensions.spacingS),
+                          _buildOptional('Tillagningstid (cookingtime/tid)'),
+                          _buildOptional('Portioner (servings/portioner)'),
+                          _buildOptional('Kategori (category/kategori)'),
+                          _buildOptional('Taggar (tags/taggar)'),
+                        ],
                       ),
                     ),
                   ),
-                ),
+
+                  const SizedBox(height: AppDimensions.spacingXl),
+
+                  // Import button
+                  if (!_state.isLoading)
+                    UtilityComponents.primaryButton(
+                      context,
+                      label: 'Välj fil och importera',
+                      icon: Icons.file_upload,
+                      onPressed: _importFile,
+                    ),
+
+                  // Loading indicator
+                  if (_state.isLoading)
+                    Column(
+                      children: [
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: AppDimensions.spacingL),
+                        if (_state.statusMessage != null)
+                          Text(
+                            _state.statusMessage!,
+                            style: AppTextStyles.bodyLarge,
+                            textAlign: TextAlign.center,
+                          ),
+                        if (_state.importedCount > 0 || _state.failedCount > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                top: AppDimensions.spacingM),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (_state.importedCount > 0) ...[
+                                  Icon(
+                                    Icons.check_circle,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                  const SizedBox(width: AppDimensions.spacingS),
+                                  Text('${_state.importedCount} lyckades'),
+                                ],
+                                if (_state.importedCount > 0 &&
+                                    _state.failedCount > 0)
+                                  const SizedBox(width: AppDimensions.spacingL),
+                                if (_state.failedCount > 0) ...[
+                                  Icon(
+                                    Icons.error,
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
+                                  const SizedBox(width: AppDimensions.spacingS),
+                                  Text('${_state.failedCount} misslyckades'),
+                                ],
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+
+                  // Status message
+                  if (!_state.isLoading && _state.statusMessage != null)
+                    Padding(
+                      padding:
+                          const EdgeInsets.only(top: AppDimensions.spacingL),
+                      child: Card(
+                        color: _state.failedCount > 0
+                            ? Theme.of(context).colorScheme.errorContainer
+                            : Theme.of(context).colorScheme.primaryContainer,
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppDimensions.spacingM),
+                          child: Text(
+                            _state.statusMessage!,
+                            style: AppTextStyles.bodyMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -275,7 +282,8 @@ class _FileImportViewState extends State<FileImportView> {
 
   Widget _buildRequirement(String text) {
     return Padding(
-      padding: const EdgeInsets.only(left: AppDimensions.spacingM, bottom: AppDimensions.spacingXs),
+      padding: const EdgeInsets.only(
+          left: AppDimensions.spacingM, bottom: AppDimensions.spacingXs),
       child: Row(
         children: [
           const Icon(Icons.check, size: 16, color: Colors.green),
@@ -288,10 +296,12 @@ class _FileImportViewState extends State<FileImportView> {
 
   Widget _buildOptional(String text) {
     return Padding(
-      padding: const EdgeInsets.only(left: AppDimensions.spacingM, bottom: AppDimensions.spacingXs),
+      padding: const EdgeInsets.only(
+          left: AppDimensions.spacingM, bottom: AppDimensions.spacingXs),
       child: Row(
         children: [
-          Icon(Icons.add, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          Icon(Icons.add,
+              size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(width: AppDimensions.spacingS),
           Text(text, style: AppTextStyles.bodySmall),
         ],

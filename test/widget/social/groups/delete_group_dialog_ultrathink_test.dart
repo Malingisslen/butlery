@@ -22,11 +22,12 @@ import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dar
 
 // Mock classes
 class MockUnifiedFriendsService extends Mock implements UnifiedFriendsService {}
-class MockFriendsCategoriesOperations extends Mock implements FriendsCategoriesOperations {}
+
+class MockFriendsCategoriesOperations extends Mock
+    implements FriendsCategoriesOperations {}
 
 void main() {
   group('DeleteGroupDialog Tests - ULTRATHINK METHODOLOGY', () {
-    
     late MockUnifiedFriendsService mockFriendsService;
     late MockFriendsCategoriesOperations mockCategoryOperations;
     late FriendCategory testGroup;
@@ -34,10 +35,11 @@ void main() {
     setUp(() {
       mockFriendsService = MockUnifiedFriendsService();
       mockCategoryOperations = MockFriendsCategoriesOperations();
-      
+
       // Set up service mock chain
-      when(() => mockFriendsService.categories).thenReturn(mockCategoryOperations);
-      
+      when(() => mockFriendsService.categories)
+          .thenReturn(mockCategoryOperations);
+
       // Create test data
       testGroup = FriendCategory(
         id: 'group123',
@@ -50,7 +52,8 @@ void main() {
     });
 
     // Helper to create test environment with proper theming and BaseActionDialog support
-    Widget createTestWidget(Widget child, {UnifiedFriendsService? friendsService}) {
+    Widget createTestWidget(Widget child,
+        {UnifiedFriendsService? friendsService}) {
       return MaterialApp(
         theme: ThemeData(
           colorScheme: const ColorScheme.light(
@@ -78,8 +81,11 @@ void main() {
       );
     }
 
-    group('Dialog Structure and BaseActionDialog Integration (lines 17-21)', () {
-      testWidgets('should render dialog with correct BaseActionDialog inheritance', (WidgetTester tester) async {
+    group('Dialog Structure and BaseActionDialog Integration (lines 17-21)',
+        () {
+      testWidgets(
+          'should render dialog with correct BaseActionDialog inheritance',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test BaseActionDialog integration with required parameters
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
@@ -89,7 +95,8 @@ void main() {
         expect(find.byType(AlertDialog), findsOneWidget);
       });
 
-      testWidgets('should display correct dialog title from getter override', (WidgetTester tester) async {
+      testWidgets('should display correct dialog title from getter override',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test dialogTitle getter override (line 82)
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
@@ -98,7 +105,8 @@ void main() {
         expect(find.text('Ta bort grupp'), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('should display warning icon with correct styling', (WidgetTester tester) async {
+      testWidgets('should display warning icon with correct styling',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test dialogIcon getter override (lines 75-79)
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
@@ -112,7 +120,8 @@ void main() {
         expect(iconWidget.size, equals(48));
       });
 
-      testWidgets('should be marked as destructive action', (WidgetTester tester) async {
+      testWidgets('should be marked as destructive action',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test isDestructiveAction getter (line 103)
         final dialog = DeleteGroupDialog(
           group: FriendCategory(
@@ -128,7 +137,8 @@ void main() {
     });
 
     group('Content Building and Swedish Localization (lines 38-72)', () {
-      testWidgets('should display Swedish confirmation message with group name', (WidgetTester tester) async {
+      testWidgets('should display Swedish confirmation message with group name',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test RichText confirmation message (lines 44-62)
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
@@ -138,10 +148,14 @@ void main() {
         expect(find.byType(RichText), findsAtLeastNWidgets(1));
 
         // Verify Swedish text content parts exist
-        expect(find.text('Är du säker på att du vill ta bort gruppen "Familj"?', findRichText: true), findsOneWidget);
+        expect(
+            find.text('Är du säker på att du vill ta bort gruppen "Familj"?',
+                findRichText: true),
+            findsOneWidget);
       });
 
-      testWidgets('should style group name as bold in confirmation', (WidgetTester tester) async {
+      testWidgets('should style group name as bold in confirmation',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test bold styling for group name (lines 54-55)
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
@@ -149,10 +163,14 @@ void main() {
 
         // ULTRATHINK: Test intention - group name should be visually emphasized
         // Instead of testing exact bold styling, verify the text content exists
-        expect(find.text('Är du säker på att du vill ta bort gruppen "Familj"?', findRichText: true), findsOneWidget);
+        expect(
+            find.text('Är du säker på att du vill ta bort gruppen "Familj"?',
+                findRichText: true),
+            findsOneWidget);
       });
 
-      testWidgets('should use AppTextStyles.bodyMedium for base text styling', (WidgetTester tester) async {
+      testWidgets('should use AppTextStyles.bodyMedium for base text styling',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test base text style (lines 46-48)
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
@@ -160,20 +178,29 @@ void main() {
 
         // ULTRATHINK: Test intention - text should use proper styling
         // Instead of accessing specific RichText, verify content exists with proper formatting
-        expect(find.text('Är du säker på att du vill ta bort gruppen "Familj"?', findRichText: true), findsOneWidget);
+        expect(
+            find.text('Är du säker på att du vill ta bort gruppen "Familj"?',
+                findRichText: true),
+            findsOneWidget);
       });
 
-      testWidgets('should display WarningDisplayWidget with deletion warning message', (WidgetTester tester) async {
+      testWidgets(
+          'should display WarningDisplayWidget with deletion warning message',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test WarningDisplayWidget usage (lines 67-69)
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
         ));
 
         expect(find.byType(WarningDisplayWidget), findsOneWidget);
-        expect(find.text('Detta kan inte ångras. Alla medlemmar kommer att tas bort från gruppen.'), findsOneWidget);
+        expect(
+            find.text(
+                'Detta kan inte ångras. Alla medlemmar kommer att tas bort från gruppen.'),
+            findsOneWidget);
       });
 
-      testWidgets('should use proper AppDimensions spacing between elements', (WidgetTester tester) async {
+      testWidgets('should use proper AppDimensions spacing between elements',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test spacing between confirmation and warning (line 64)
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
@@ -189,7 +216,8 @@ void main() {
     });
 
     group('Action Button Configuration (lines 82-104)', () {
-      testWidgets('should display correct action button text', (WidgetTester tester) async {
+      testWidgets('should display correct action button text',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test actionButtonText getter (line 88)
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
@@ -198,7 +226,8 @@ void main() {
         expect(find.text('Ta bort grupp'), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('should display correct cancel button text', (WidgetTester tester) async {
+      testWidgets('should display correct cancel button text',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test cancelButtonText getter (line 85)
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
@@ -207,7 +236,8 @@ void main() {
         expect(find.text('Avbryt'), findsOneWidget);
       });
 
-      testWidgets('should display delete_forever icon in action button', (WidgetTester tester) async {
+      testWidgets('should display delete_forever icon in action button',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test actionButtonIcon getter (line 94)
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
@@ -217,7 +247,8 @@ void main() {
         expect(find.byIcon(Icons.delete_forever), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('should apply error color styling to action button', (WidgetTester tester) async {
+      testWidgets('should apply error color styling to action button',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test actionButtonStyle getter (lines 97-100)
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
@@ -225,7 +256,7 @@ void main() {
 
         // Find action button and verify it exists (exact styling tested through getter)
         expect(find.text('Ta bort grupp'), findsAtLeastNWidgets(1));
-        
+
         // Verify style getter returns correct styling
         final dialog = DeleteGroupDialog(
           group: FriendCategory(
@@ -240,7 +271,8 @@ void main() {
         expect(buttonStyle, isNotNull);
       });
 
-      testWidgets('should display loading text when in loading state', (WidgetTester tester) async {
+      testWidgets('should display loading text when in loading state',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test loadingButtonText getter (line 91)
         final dialog = DeleteGroupDialog(
           group: FriendCategory(
@@ -256,10 +288,11 @@ void main() {
     });
 
     group('Service Integration and Error Handling (lines 23-35)', () {
-      testWidgets('should handle successful group deletion', (WidgetTester tester) async {
+      testWidgets('should handle successful group deletion',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test successful performAction execution
         when(() => mockCategoryOperations.deleteCategory(any()))
-          .thenAnswer((_) async => true);
+            .thenAnswer((_) async => true);
 
         final dialog = DeleteGroupDialog(group: testGroup);
 
@@ -268,7 +301,8 @@ void main() {
         expect(dialog.group.name, equals('Familj'));
       });
 
-      testWidgets('should handle service failure with Swedish error message', (WidgetTester tester) async {
+      testWidgets('should handle service failure with Swedish error message',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test error handling (lines 30-32)
         // Test that the expected error message format is correct
         const expectedError = 'Kunde inte ta bort grupp. Försök igen.';
@@ -276,7 +310,8 @@ void main() {
         expect(expectedError, contains('Försök igen'));
       });
 
-      testWidgets('should call correct service method with proper parameters', (WidgetTester tester) async {
+      testWidgets('should call correct service method with proper parameters',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test service method call parameters (lines 26-28)
         final dialog = DeleteGroupDialog(
           group: FriendCategory(
@@ -294,7 +329,8 @@ void main() {
     });
 
     group('Edge Cases and Swedish Character Handling', () {
-      testWidgets('should handle group with Swedish characters in name', (WidgetTester tester) async {
+      testWidgets('should handle group with Swedish characters in name',
+          (WidgetTester tester) async {
         final swedishGroup = FriendCategory(
           id: 'group_swedish',
           ownerId: 'user123',
@@ -308,14 +344,19 @@ void main() {
         ));
 
         // ULTRATHINK: Test Swedish character support in confirmation text
-        expect(find.text('Är du säker på att du vill ta bort gruppen "Kött & Fisk Älskare"?', findRichText: true), findsOneWidget);
+        expect(
+            find.text(
+                'Är du säker på att du vill ta bort gruppen "Kött & Fisk Älskare"?',
+                findRichText: true),
+            findsOneWidget);
       });
 
-      testWidgets('should handle very long group names', (WidgetTester tester) async {
+      testWidgets('should handle very long group names',
+          (WidgetTester tester) async {
         final longNameGroup = FriendCategory(
           id: 'group_long',
           ownerId: 'user123',
-          name: 'Våra familjegrupp',  // Shortened to prevent overflow
+          name: 'Våra familjegrupp', // Shortened to prevent overflow
           emoji: '👥',
           friendUserIds: ['user123', 'long_user'],
         );
@@ -328,7 +369,8 @@ void main() {
         expect(find.byType(WarningDisplayWidget), findsOneWidget);
       });
 
-      testWidgets('should handle empty or minimal group data gracefully', (WidgetTester tester) async {
+      testWidgets('should handle empty or minimal group data gracefully',
+          (WidgetTester tester) async {
         final minimalGroup = FriendCategory(
           id: 'minimal_group',
           ownerId: 'user123',
@@ -344,7 +386,9 @@ void main() {
         expect(find.byType(RichText), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('should maintain consistent dialog layout with different content sizes', (WidgetTester tester) async {
+      testWidgets(
+          'should maintain consistent dialog layout with different content sizes',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
         ));
@@ -358,20 +402,23 @@ void main() {
     });
 
     group('Theme Integration and Accessibility', () {
-      testWidgets('should use proper theme colors throughout dialog', (WidgetTester tester) async {
+      testWidgets('should use proper theme colors throughout dialog',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
         ));
 
         // Dialog icon should use warning color
-        final iconWidget = tester.widget<Icon>(find.byIcon(Icons.warning_amber_rounded));
+        final iconWidget =
+            tester.widget<Icon>(find.byIcon(Icons.warning_amber_rounded));
         expect(iconWidget.color, equals(AppColors.warning));
 
         // WarningDisplayWidget should integrate properly with theme
         expect(find.byType(WarningDisplayWidget), findsOneWidget);
       });
 
-      testWidgets('should handle theme changes without breaking layout', (WidgetTester tester) async {
+      testWidgets('should handle theme changes without breaking layout',
+          (WidgetTester tester) async {
         // Test with dark theme
         await tester.pumpWidget(MaterialApp(
           theme: ThemeData(
@@ -392,24 +439,30 @@ void main() {
         expect(find.byType(WarningDisplayWidget), findsOneWidget);
       });
 
-      testWidgets('should provide proper semantic labels for accessibility', (WidgetTester tester) async {
+      testWidgets('should provide proper semantic labels for accessibility',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
         ));
 
         // Verify dialog title is accessible
         expect(find.text('Ta bort grupp'), findsAtLeastNWidgets(1));
-        
+
         // Verify action button is accessible
         expect(find.text('Ta bort grupp'), findsAtLeastNWidgets(1));
-        
+
         // Verify warning message is accessible
-        expect(find.text('Detta kan inte ångras. Alla medlemmar kommer att tas bort från gruppen.'), findsOneWidget);
+        expect(
+            find.text(
+                'Detta kan inte ångras. Alla medlemmar kommer att tas bort från gruppen.'),
+            findsOneWidget);
       });
     });
 
-    group('Comparison with RemoveMemberDialog - Destructive Action Differences', () {
-      testWidgets('should use different icon than RemoveMemberDialog', (WidgetTester tester) async {
+    group('Comparison with RemoveMemberDialog - Destructive Action Differences',
+        () {
+      testWidgets('should use different icon than RemoveMemberDialog',
+          (WidgetTester tester) async {
         // ULTRATHINK: Compare with RemoveMemberDialog's Icons.person_remove
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
@@ -419,7 +472,8 @@ void main() {
         expect(find.byIcon(Icons.person_remove), findsNothing);
       });
 
-      testWidgets('should use error styling instead of warning styling', (WidgetTester tester) async {
+      testWidgets('should use error styling instead of warning styling',
+          (WidgetTester tester) async {
         // ULTRATHINK: DeleteGroupDialog uses AppColors.error vs RemoveMemberDialog AppColors.warning
         final dialog = DeleteGroupDialog(
           group: FriendCategory(
@@ -433,25 +487,34 @@ void main() {
 
         // Verify more severe styling for permanent deletion
         expect(dialog.isDestructiveAction, isTrue);
-        expect(dialog.actionButtonIcon.runtimeType.toString(), contains('Icon'));
+        expect(
+            dialog.actionButtonIcon.runtimeType.toString(), contains('Icon'));
       });
 
-      testWidgets('should have different warning message focus', (WidgetTester tester) async {
+      testWidgets('should have different warning message focus',
+          (WidgetTester tester) async {
         // ULTRATHINK: Different warning message than RemoveMemberDialog
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
         ));
 
         // DeleteGroupDialog focuses on permanent deletion + all members removed
-        expect(find.text('Detta kan inte ångras. Alla medlemmar kommer att tas bort från gruppen.'), findsOneWidget);
-        
+        expect(
+            find.text(
+                'Detta kan inte ångras. Alla medlemmar kommer att tas bort från gruppen.'),
+            findsOneWidget);
+
         // Should not show RemoveMemberDialog's access loss message
-        expect(find.text('Medlemmen kommer att förlora åtkomst till gruppens innehåll.'), findsNothing);
+        expect(
+            find.text(
+                'Medlemmen kommer att förlora åtkomst till gruppens innehåll.'),
+            findsNothing);
       });
     });
 
     group('Integration Tests - Complete Dialog Flow', () {
-      testWidgets('should render complete dialog structure with all components', (WidgetTester tester) async {
+      testWidgets('should render complete dialog structure with all components',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
         ));
@@ -459,28 +522,39 @@ void main() {
         // Verify complete dialog structure
         expect(find.byType(AlertDialog), findsOneWidget);
         expect(find.text('Ta bort grupp'), findsAtLeastNWidgets(1)); // Title
-        expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget); // Warning icon
-        expect(find.byType(RichText), findsAtLeastNWidgets(1)); // Confirmation message
+        expect(find.byIcon(Icons.warning_amber_rounded),
+            findsOneWidget); // Warning icon
+        expect(find.byType(RichText),
+            findsAtLeastNWidgets(1)); // Confirmation message
         expect(find.byType(WarningDisplayWidget), findsOneWidget); // Warning
         expect(find.text('Avbryt'), findsOneWidget); // Cancel button
-        expect(find.byIcon(Icons.delete_forever), findsAtLeastNWidgets(1)); // Action button icon
+        expect(find.byIcon(Icons.delete_forever),
+            findsAtLeastNWidgets(1)); // Action button icon
       });
 
-      testWidgets('should handle complete user interaction flow', (WidgetTester tester) async {
+      testWidgets('should handle complete user interaction flow',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
         ));
 
         // Verify user can see all necessary information
-        expect(find.text('Är du säker på att du vill ta bort gruppen "Familj"?', findRichText: true), findsOneWidget); // Group name visible in confirmation
-        expect(find.text('Detta kan inte ångras. Alla medlemmar kommer att tas bort från gruppen.'), findsOneWidget); // Warning visible
-        
+        expect(
+            find.text('Är du säker på att du vill ta bort gruppen "Familj"?',
+                findRichText: true),
+            findsOneWidget); // Group name visible in confirmation
+        expect(
+            find.text(
+                'Detta kan inte ångras. Alla medlemmar kommer att tas bort från gruppen.'),
+            findsOneWidget); // Warning visible
+
         // Verify buttons are available for interaction
         expect(find.text('Avbryt'), findsOneWidget);
         expect(find.text('Ta bort grupp'), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('should maintain consistent spacing and layout', (WidgetTester tester) async {
+      testWidgets('should maintain consistent spacing and layout',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
         ));
@@ -488,7 +562,7 @@ void main() {
         // Verify proper spacing exists
         final spacingBoxes = tester.widgetList<SizedBox>(find.byType(SizedBox));
         expect(spacingBoxes.length, greaterThan(0));
-        
+
         // Verify all components are visible and properly laid out
         expect(find.byType(RichText), findsAtLeastNWidgets(1));
         expect(find.byType(WarningDisplayWidget), findsOneWidget);
@@ -496,7 +570,8 @@ void main() {
         expect(find.text('Ta bort grupp'), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('should demonstrate BaseActionDialog template method pattern', (WidgetTester tester) async {
+      testWidgets('should demonstrate BaseActionDialog template method pattern',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           DeleteGroupDialog(group: testGroup),
         ));
@@ -505,7 +580,7 @@ void main() {
         // buildContent() provides dialog content
         expect(find.byType(RichText), findsAtLeastNWidgets(1));
         expect(find.byType(WarningDisplayWidget), findsOneWidget);
-        
+
         // performAction() would handle service call (tested separately)
         // Getters provide customization (dialogTitle, actionButtonText, etc.)
         expect(find.text('Ta bort grupp'), findsAtLeastNWidgets(1));

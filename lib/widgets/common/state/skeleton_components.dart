@@ -63,11 +63,16 @@ class _SkeletonBoxState extends State<_SkeletonBox>
       height: widget.height,
       margin: widget.margin,
       decoration: BoxDecoration(
-        borderRadius: widget.borderRadius ?? BorderRadius.circular(AppDimensions.borderRadiusS),
+        borderRadius: widget.borderRadius ??
+            BorderRadius.circular(AppDimensions.borderRadiusS),
         gradient: LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
-          colors: const [AppColors.neutralMedium, AppColors.neutralLight, AppColors.neutralMedium],
+          colors: const [
+            AppColors.neutralMedium,
+            AppColors.neutralLight,
+            AppColors.neutralMedium
+          ],
           stops: const [0.0, 0.5, 1.0],
           transform: _GradientRotation(_shimmerController),
         ),

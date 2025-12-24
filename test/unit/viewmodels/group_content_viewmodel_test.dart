@@ -20,7 +20,7 @@ void main() {
   setUpAll(() async {
     // Initialize test locator once
     await TestServiceLocator.initialize();
-    
+
     // Centralized fallback values already registered via registerAllFallbackValues()
     registerFallbackValue(''); // For String parameters used with any()
   });

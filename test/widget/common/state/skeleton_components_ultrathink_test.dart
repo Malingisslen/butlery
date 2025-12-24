@@ -28,22 +28,25 @@ void main() {
     }
 
     group('Factory Method Tests', () {
-      testWidgets('should create skeleton box with default parameters', (WidgetTester tester) async {
+      testWidgets('should create skeleton box with default parameters',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           SkeletonComponents.skeletonBox(),
         ));
 
         expect(find.byType(Container), findsOneWidget);
-        
+
         final container = tester.widget<Container>(find.byType(Container));
         expect(container.decoration, isA<BoxDecoration>());
-        
+
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.gradient, isA<LinearGradient>());
-        expect(decoration.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadiusS)));
+        expect(decoration.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadiusS)));
       });
 
-      testWidgets('should apply custom width and height', (WidgetTester tester) async {
+      testWidgets('should apply custom width and height',
+          (WidgetTester tester) async {
         const customWidth = 200.0;
         const customHeight = 100.0;
 
@@ -56,12 +59,13 @@ void main() {
 
         // Production code stores width/height in Container constructor but parent constraints apply
         expect(find.byType(Container), findsOneWidget);
-        
+
         // Container size may be constrained by parent, so we verify widget was created
         expect(find.byType(Container), findsOneWidget);
       });
 
-      testWidgets('should apply custom border radius', (WidgetTester tester) async {
+      testWidgets('should apply custom border radius',
+          (WidgetTester tester) async {
         const customBorderRadius = BorderRadius.all(Radius.circular(20.0));
 
         await tester.pumpWidget(createTestWidget(
@@ -88,11 +92,13 @@ void main() {
         expect(container.margin, equals(customMargin));
       });
 
-      testWidgets('should apply all custom parameters together', (WidgetTester tester) async {
+      testWidgets('should apply all custom parameters together',
+          (WidgetTester tester) async {
         const customWidth = 300.0;
         const customHeight = 150.0;
         const customBorderRadius = BorderRadius.all(Radius.circular(25.0));
-        const customMargin = EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0);
+        const customMargin =
+            EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0);
 
         await tester.pumpWidget(createTestWidget(
           SkeletonComponents.skeletonBox(
@@ -105,17 +111,18 @@ void main() {
 
         // Container size constrained by parent test environment
         expect(find.byType(Container), findsOneWidget);
-        
+
         final container = tester.widget<Container>(find.byType(Container));
         expect(container.margin, equals(customMargin));
-        
+
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.borderRadius, equals(customBorderRadius));
       });
     });
 
     group('Animation Tests', () {
-      testWidgets('should create AnimationController with 1500ms duration', (WidgetTester tester) async {
+      testWidgets('should create AnimationController with 1500ms duration',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           SkeletonComponents.skeletonBox(),
         ));
@@ -137,7 +144,8 @@ void main() {
         expect(gradient2.transform, isNotNull);
       });
 
-      testWidgets('should use repeating animation', (WidgetTester tester) async {
+      testWidgets('should use repeating animation',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           SkeletonComponents.skeletonBox(),
         ));
@@ -145,12 +153,13 @@ void main() {
         // Let animation complete one full cycle
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 1500));
-        
+
         // Animation should still be running (repeating)
         expect(tester.binding.hasScheduledFrame, isTrue);
       });
 
-      testWidgets('should dispose AnimationController properly', (WidgetTester tester) async {
+      testWidgets('should dispose AnimationController properly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           SkeletonComponents.skeletonBox(),
         ));
@@ -164,20 +173,21 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should have continuous shimmer animation', (WidgetTester tester) async {
+      testWidgets('should have continuous shimmer animation',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           SkeletonComponents.skeletonBox(width: 200, height: 100),
         ));
 
         // Test animation at different time points
         final animationValues = <double>[];
-        
+
         for (int i = 0; i < 5; i++) {
           await tester.pump(Duration(milliseconds: 300 * i));
           final container = tester.widget<Container>(find.byType(Container));
           final decoration = container.decoration as BoxDecoration;
           final gradient = decoration.gradient as LinearGradient;
-          
+
           // Extract animation value from transform
           if (gradient.transform != null) {
             animationValues.add(i.toDouble()); // Track time progression
@@ -190,7 +200,8 @@ void main() {
     });
 
     group('Gradient and Styling Tests', () {
-      testWidgets('should use correct gradient colors', (WidgetTester tester) async {
+      testWidgets('should use correct gradient colors',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           SkeletonComponents.skeletonBox(),
         ));
@@ -199,14 +210,17 @@ void main() {
         final decoration = container.decoration as BoxDecoration;
         final gradient = decoration.gradient as LinearGradient;
 
-        expect(gradient.colors, equals([
-          AppColors.neutralMedium,
-          AppColors.neutralLight,
-          AppColors.neutralMedium,
-        ]));
+        expect(
+            gradient.colors,
+            equals([
+              AppColors.neutralMedium,
+              AppColors.neutralLight,
+              AppColors.neutralMedium,
+            ]));
       });
 
-      testWidgets('should use correct gradient stops', (WidgetTester tester) async {
+      testWidgets('should use correct gradient stops',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           SkeletonComponents.skeletonBox(),
         ));
@@ -218,7 +232,8 @@ void main() {
         expect(gradient.stops, equals([0.0, 0.5, 1.0]));
       });
 
-      testWidgets('should use horizontal gradient direction', (WidgetTester tester) async {
+      testWidgets('should use horizontal gradient direction',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           SkeletonComponents.skeletonBox(),
         ));
@@ -231,7 +246,8 @@ void main() {
         expect(gradient.end, equals(Alignment.centerRight));
       });
 
-      testWidgets('should have gradient transform for shimmer effect', (WidgetTester tester) async {
+      testWidgets('should have gradient transform for shimmer effect',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           SkeletonComponents.skeletonBox(),
         ));
@@ -246,7 +262,8 @@ void main() {
     });
 
     group('Layout and Sizing Tests', () {
-      testWidgets('should handle null dimensions gracefully', (WidgetTester tester) async {
+      testWidgets('should handle null dimensions gracefully',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           SkeletonComponents.skeletonBox(
             width: null,
@@ -257,7 +274,7 @@ void main() {
         // Should render without specific size constraints
         expect(find.byType(Container), findsOneWidget);
         expect(tester.takeException(), isNull);
-        
+
         // Should still render without errors
         expect(find.byType(Container), findsOneWidget);
       });
@@ -274,7 +291,8 @@ void main() {
         expect(find.byType(Container), findsOneWidget);
       });
 
-      testWidgets('should handle very large dimensions', (WidgetTester tester) async {
+      testWidgets('should handle very large dimensions',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           SingleChildScrollView(
             child: SkeletonComponents.skeletonBox(
@@ -288,7 +306,8 @@ void main() {
         expect(find.byType(Container), findsOneWidget);
       });
 
-      testWidgets('should handle very small non-zero dimensions', (WidgetTester tester) async {
+      testWidgets('should handle very small non-zero dimensions',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           SkeletonComponents.skeletonBox(
             width: 1,
@@ -302,7 +321,8 @@ void main() {
     });
 
     group('Border Radius Tests', () {
-      testWidgets('should use default border radius when null', (WidgetTester tester) async {
+      testWidgets('should use default border radius when null',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           SkeletonComponents.skeletonBox(
             borderRadius: null,
@@ -311,10 +331,12 @@ void main() {
 
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadiusS)));
+        expect(decoration.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadiusS)));
       });
 
-      testWidgets('should handle zero border radius', (WidgetTester tester) async {
+      testWidgets('should handle zero border radius',
+          (WidgetTester tester) async {
         const zeroBorderRadius = BorderRadius.zero;
 
         await tester.pumpWidget(createTestWidget(
@@ -328,7 +350,8 @@ void main() {
         expect(decoration.borderRadius, equals(zeroBorderRadius));
       });
 
-      testWidgets('should handle asymmetric border radius', (WidgetTester tester) async {
+      testWidgets('should handle asymmetric border radius',
+          (WidgetTester tester) async {
         const asymmetricBorderRadius = BorderRadius.only(
           topLeft: Radius.circular(10),
           topRight: Radius.circular(20),
@@ -347,7 +370,8 @@ void main() {
         expect(decoration.borderRadius, equals(asymmetricBorderRadius));
       });
 
-      testWidgets('should handle very large border radius', (WidgetTester tester) async {
+      testWidgets('should handle very large border radius',
+          (WidgetTester tester) async {
         const largeBorderRadius = BorderRadius.all(Radius.circular(100));
 
         await tester.pumpWidget(createTestWidget(
@@ -365,7 +389,8 @@ void main() {
     });
 
     group('Margin Tests', () {
-      testWidgets('should handle null margin (no margin)', (WidgetTester tester) async {
+      testWidgets('should handle null margin (no margin)',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           SkeletonComponents.skeletonBox(
             margin: null,
@@ -389,7 +414,8 @@ void main() {
         expect(container.margin, equals(zeroMargin));
       });
 
-      testWidgets('should handle asymmetric margin', (WidgetTester tester) async {
+      testWidgets('should handle asymmetric margin',
+          (WidgetTester tester) async {
         const asymmetricMargin = EdgeInsets.fromLTRB(10, 20, 30, 40);
 
         await tester.pumpWidget(createTestWidget(
@@ -402,7 +428,8 @@ void main() {
         expect(container.margin, equals(asymmetricMargin));
       });
 
-      testWidgets('should handle very large margin', (WidgetTester tester) async {
+      testWidgets('should handle very large margin',
+          (WidgetTester tester) async {
         const largeMargin = EdgeInsets.all(100);
 
         await tester.pumpWidget(createTestWidget(
@@ -421,7 +448,8 @@ void main() {
     });
 
     group('Widget Lifecycle Tests', () {
-      testWidgets('should initialize without errors', (WidgetTester tester) async {
+      testWidgets('should initialize without errors',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           SkeletonComponents.skeletonBox(),
         ));
@@ -430,7 +458,8 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should update parameters without errors', (WidgetTester tester) async {
+      testWidgets('should update parameters without errors',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           SkeletonComponents.skeletonBox(width: 100, height: 100),
         ));
@@ -445,7 +474,8 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should handle rapid parameter changes', (WidgetTester tester) async {
+      testWidgets('should handle rapid parameter changes',
+          (WidgetTester tester) async {
         for (int i = 0; i < 10; i++) {
           await tester.pumpWidget(createTestWidget(
             SkeletonComponents.skeletonBox(
@@ -461,7 +491,8 @@ void main() {
     });
 
     group('Multiple Skeleton Components Tests', () {
-      testWidgets('should handle multiple skeleton boxes simultaneously', (WidgetTester tester) async {
+      testWidgets('should handle multiple skeleton boxes simultaneously',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Column(
             children: [
@@ -475,12 +506,13 @@ void main() {
         ));
 
         expect(find.byType(Container), findsNWidgets(3));
-        
-        final containers = tester.widgetList<Container>(find.byType(Container)).toList();
-        
+
+        final containers =
+            tester.widgetList<Container>(find.byType(Container)).toList();
+
         // Verify multiple containers exist with proper widget structure
         expect(containers.length, equals(3));
-        
+
         // Each container should have proper decoration
         for (final container in containers) {
           final decoration = container.decoration as BoxDecoration;
@@ -488,7 +520,8 @@ void main() {
         }
       });
 
-      testWidgets('should animate multiple skeleton boxes independently', (WidgetTester tester) async {
+      testWidgets('should animate multiple skeleton boxes independently',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Row(
             children: [
@@ -501,7 +534,7 @@ void main() {
         // All animations should be running
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
-        
+
         expect(find.byType(Container), findsNWidgets(2));
         expect(tester.takeException(), isNull);
       });

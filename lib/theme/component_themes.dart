@@ -23,23 +23,32 @@ class ComponentThemes {
   /// Private constructor
   ComponentThemes._();
 
-  static ElevatedButtonThemeData get elevatedButtonTheme => ButtonThemes.elevatedButtonTheme;
-  static FilledButtonThemeData get filledButtonTheme => ButtonThemes.filledButtonTheme;
-  static OutlinedButtonThemeData get outlinedButtonTheme => ButtonThemes.outlinedButtonTheme;
-  static TextButtonThemeData get textButtonTheme => ButtonThemes.textButtonTheme;
-  static IconButtonThemeData get iconButtonTheme => ButtonThemes.iconButtonTheme;
-  static FloatingActionButtonThemeData get floatingActionButtonTheme => ButtonThemes.floatingActionButtonTheme;
+  static ElevatedButtonThemeData get elevatedButtonTheme =>
+      ButtonThemes.elevatedButtonTheme;
+  static FilledButtonThemeData get filledButtonTheme =>
+      ButtonThemes.filledButtonTheme;
+  static OutlinedButtonThemeData get outlinedButtonTheme =>
+      ButtonThemes.outlinedButtonTheme;
+  static TextButtonThemeData get textButtonTheme =>
+      ButtonThemes.textButtonTheme;
+  static IconButtonThemeData get iconButtonTheme =>
+      ButtonThemes.iconButtonTheme;
+  static FloatingActionButtonThemeData get floatingActionButtonTheme =>
+      ButtonThemes.floatingActionButtonTheme;
 
-  static InputDecorationTheme get inputDecorationTheme => InputThemes.inputDecorationTheme;
+  static InputDecorationTheme get inputDecorationTheme =>
+      InputThemes.inputDecorationTheme;
   static CardThemeData get cardTheme => InputThemes.cardTheme;
   static ListTileThemeData get listTileTheme => InputThemes.listTileTheme;
   static ChipThemeData get chipTheme => InputThemes.chipTheme;
 
   static AppBarTheme get appBarTheme => NavigationThemes.appBarTheme;
-  static BottomNavigationBarThemeData get bottomNavigationBarTheme => NavigationThemes.bottomNavigationBarTheme;
+  static BottomNavigationBarThemeData get bottomNavigationBarTheme =>
+      NavigationThemes.bottomNavigationBarTheme;
   static TabBarThemeData get tabBarTheme => NavigationThemes.tabBarTheme;
   static DialogThemeData get dialogTheme => NavigationThemes.dialogTheme;
-  static BottomSheetThemeData get bottomSheetTheme => NavigationThemes.bottomSheetTheme;
+  static BottomSheetThemeData get bottomSheetTheme =>
+      NavigationThemes.bottomSheetTheme;
 
   static SnackBarThemeData get snackBarTheme => FeedbackThemes.snackBarTheme;
   static DividerThemeData get dividerTheme => FeedbackThemes.dividerTheme;
@@ -47,17 +56,23 @@ class ComponentThemes {
   static CheckboxThemeData get checkboxTheme => FeedbackThemes.checkboxTheme;
   static RadioThemeData get radioTheme => FeedbackThemes.radioTheme;
   static SliderThemeData get sliderTheme => FeedbackThemes.sliderTheme;
-  static ProgressIndicatorThemeData get progressIndicatorTheme => FeedbackThemes.progressIndicatorTheme;
+  static ProgressIndicatorThemeData get progressIndicatorTheme =>
+      FeedbackThemes.progressIndicatorTheme;
 
   static ButtonStyle get primaryButtonStyle => ButtonThemes.primaryButtonStyle;
   static ButtonStyle get textButtonStyle => ButtonThemes.textButtonStyle;
-  static ButtonStyle get secondaryButtonStyle => ButtonThemes.secondaryButtonStyle;
+  static ButtonStyle get secondaryButtonStyle =>
+      ButtonThemes.secondaryButtonStyle;
   static ButtonStyle get dangerButtonStyle => ButtonThemes.dangerButtonStyle;
-  static ButtonStyle get outlinedButtonStyle => ButtonThemes.outlinedButtonStyle;
+  static ButtonStyle get outlinedButtonStyle =>
+      ButtonThemes.outlinedButtonStyle;
   static ButtonStyle get deleteButtonStyle => ButtonThemes.deleteButtonStyle;
   static ButtonStyle get extendedFabStyle => ButtonThemes.extendedFabStyle;
 
-  static BoxDecoration get trendingRecipeCardDecoration => InputThemes.trendingRecipeCardDecoration;
-  static BoxDecoration get activityTimelineItemDecoration => InputThemes.activityTimelineItemDecoration;
-  static BoxDecoration get emptyStateContainerDecoration => InputThemes.emptyStateContainerDecoration;
+  static BoxDecoration get trendingRecipeCardDecoration =>
+      InputThemes.trendingRecipeCardDecoration;
+  static BoxDecoration get activityTimelineItemDecoration =>
+      InputThemes.activityTimelineItemDecoration;
+  static BoxDecoration get emptyStateContainerDecoration =>
+      InputThemes.emptyStateContainerDecoration;
 }

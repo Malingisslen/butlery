@@ -1,7 +1,7 @@
 // test/widget/common/content_card_ultrathink_test.dart
 // ULTRATHINK TEST SUITE: ContentCard - 537 lines of production code
 // Testing facade pattern with 5 content types, delegation logic, parameter mapping, style conversion
-// 
+//
 // ULTRATHINK FOCUS: Facade pattern delegation, type validation with assertions, parameter mapping,
 // backward compatibility static methods, style conversion logic, edge case handling
 
@@ -36,10 +36,11 @@ void main() {
     }
 
     group('Production Code Analysis', () {
-      testWidgets('facade renders without crashes with basic configuration', (WidgetTester tester) async {
+      testWidgets('facade renders without crashes with basic configuration',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test basic facade pattern from production code lines 255-268
         final recipe = RecipeFactory.build();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -53,34 +54,41 @@ void main() {
         expect(find.byType(ContentCard), findsOneWidget);
       });
 
-      testWidgets('supports all 5 ContentCardType enum values', (WidgetTester tester) async {
+      testWidgets('supports all 5 ContentCardType enum values',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test enum completeness from lines 76-91
         expect(ContentCardType.values, hasLength(5));
-        expect(ContentCardType.values, containsAll([
-          ContentCardType.recipe,
-          ContentCardType.menu,
-          ContentCardType.shoppingList,
-          ContentCardType.friend,
-          ContentCardType.friendRequest,
-        ]));
+        expect(
+            ContentCardType.values,
+            containsAll([
+              ContentCardType.recipe,
+              ContentCardType.menu,
+              ContentCardType.shoppingList,
+              ContentCardType.friend,
+              ContentCardType.friendRequest,
+            ]));
       });
 
-      testWidgets('supports all 3 ContentCardStyle enum values', (WidgetTester tester) async {
+      testWidgets('supports all 3 ContentCardStyle enum values',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test style enum from lines 97-106
         expect(ContentCardStyle.values, hasLength(3));
-        expect(ContentCardStyle.values, containsAll([
-          ContentCardStyle.detailed,
-          ContentCardStyle.compact,
-          ContentCardStyle.grid,
-        ]));
+        expect(
+            ContentCardStyle.values,
+            containsAll([
+              ContentCardStyle.detailed,
+              ContentCardStyle.compact,
+              ContentCardStyle.grid,
+            ]));
       });
     });
 
     group('Content Type Delegation Tests', () {
-      testWidgets('delegates to RecipeCard for recipe type', (WidgetTester tester) async {
+      testWidgets('delegates to RecipeCard for recipe type',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test recipe delegation from lines 258-259, 279-294
         final recipe = RecipeFactory.build();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -96,10 +104,11 @@ void main() {
         expect(find.byType(ContentCard), findsOneWidget);
       });
 
-      testWidgets('delegates to FriendCard for friend type', (WidgetTester tester) async {
+      testWidgets('delegates to FriendCard for friend type',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test friend delegation from lines 260-261, 304-321
         final user = UserProfileFactory.build();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -116,10 +125,11 @@ void main() {
         expect(find.byType(ContentCard), findsOneWidget);
       });
 
-      testWidgets('delegates to FriendRequestCard for friendRequest type', (WidgetTester tester) async {
+      testWidgets('delegates to FriendRequestCard for friendRequest type',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test friend request delegation from lines 262-263, 331-343
         final friendRequest = SocialFactory.createFriendRequest();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -136,10 +146,11 @@ void main() {
         expect(find.byType(ContentCard), findsOneWidget);
       });
 
-      testWidgets('delegates to MenuCard for menu type', (WidgetTester tester) async {
+      testWidgets('delegates to MenuCard for menu type',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test menu delegation from lines 264-265, 352-365
         final menuData = {'title': 'Test Menu', 'recipes': []};
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -155,10 +166,12 @@ void main() {
         expect(find.byType(ContentCard), findsOneWidget);
       });
 
-      testWidgets('delegates to ShoppingListCard for shoppingList type', (WidgetTester tester) async {
+      testWidgets('delegates to ShoppingListCard for shoppingList type',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test shopping list delegation from lines 266-267, 374-387
-        final shoppingList = ShoppingListFactory.build(name: 'Test Shopping List');
-        
+        final shoppingList =
+            ShoppingListFactory.build(name: 'Test Shopping List');
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -176,10 +189,11 @@ void main() {
     });
 
     group('Type Validation Tests', () {
-      testWidgets('validates Recipe type for recipe cards', (WidgetTester tester) async {
+      testWidgets('validates Recipe type for recipe cards',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test assertion from line 280
         final wrongItem = UserProfileFactory.build();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -193,10 +207,11 @@ void main() {
         expect(tester.takeException(), isA<AssertionError>());
       });
 
-      testWidgets('validates UserProfile type for friend cards', (WidgetTester tester) async {
+      testWidgets('validates UserProfile type for friend cards',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test assertion from line 305
         final wrongItem = RecipeFactory.build();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -210,10 +225,11 @@ void main() {
         expect(tester.takeException(), isA<AssertionError>());
       });
 
-      testWidgets('validates FriendRequest type for friendRequest cards', (WidgetTester tester) async {
+      testWidgets('validates FriendRequest type for friendRequest cards',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test assertion from line 332
         final wrongItem = RecipeFactory.build();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -227,10 +243,11 @@ void main() {
         expect(tester.takeException(), isA<AssertionError>());
       });
 
-      testWidgets('accepts dynamic types for menu cards', (WidgetTester tester) async {
+      testWidgets('accepts dynamic types for menu cards',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test dynamic acceptance from line 353-354
         final menuData = {'title': 'Dynamic Menu'};
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -244,10 +261,11 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('accepts dynamic types for shopping list cards', (WidgetTester tester) async {
+      testWidgets('accepts dynamic types for shopping list cards',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test dynamic acceptance from line 375
         final shoppingList = ShoppingListFactory.build(name: 'Dynamic List');
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -263,10 +281,11 @@ void main() {
     });
 
     group('Parameter Mapping Tests', () {
-      testWidgets('maps generic parameters to RecipeCard parameters', (WidgetTester tester) async {
+      testWidgets('maps generic parameters to RecipeCard parameters',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test parameter mapping from lines 283-293
         final recipe = RecipeFactory.build();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -285,16 +304,17 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('maps generic parameters to FriendCard parameters', (WidgetTester tester) async {
+      testWidgets('maps generic parameters to FriendCard parameters',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test friend parameter mapping from lines 308-320
         final user = UserProfileFactory.build();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
               item: user,
               type: ContentCardType.friend,
-              showImage: true,  // Maps to showAvatar
+              showImage: true, // Maps to showAvatar
               showOnlineStatus: true,
               showMetadata: false,
               subtitle: 'Test Subtitle',
@@ -307,16 +327,17 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('maps showTags to showPreview for menu cards', (WidgetTester tester) async {
+      testWidgets('maps showTags to showPreview for menu cards',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test parameter mapping from line 358
         final menuData = {'title': 'Test Menu'};
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
               item: menuData,
               type: ContentCardType.menu,
-              showTags: true,  // Should map to showPreview
+              showTags: true, // Should map to showPreview
             ),
           ),
         );
@@ -325,16 +346,17 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('maps showTags to showPreview for shopping list cards', (WidgetTester tester) async {
+      testWidgets('maps showTags to showPreview for shopping list cards',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test parameter mapping from line 380
         final shoppingList = ShoppingListFactory.build(name: 'Test List');
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
               item: shoppingList,
               type: ContentCardType.shoppingList,
-              showTags: true,  // Should map to showPreview
+              showTags: true, // Should map to showPreview
             ),
           ),
         );
@@ -345,10 +367,11 @@ void main() {
     });
 
     group('Style Mapping Tests', () {
-      testWidgets('maps ContentCardStyle to RecipeCardStyle correctly', (WidgetTester tester) async {
+      testWidgets('maps ContentCardStyle to RecipeCardStyle correctly',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test style mapping from lines 390-399
         final recipe = RecipeFactory.build();
-        
+
         // Test all three style mappings
         for (final style in ContentCardStyle.values) {
           await tester.pumpWidget(
@@ -362,22 +385,25 @@ void main() {
           );
 
           expect(tester.takeException(), isNull);
-          
+
           // Pump between style changes
           await tester.pump();
         }
       });
 
-      testWidgets('maps ContentCardStyle to FriendCardStyle with grid→list mapping', (WidgetTester tester) async {
+      testWidgets(
+          'maps ContentCardStyle to FriendCardStyle with grid→list mapping',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test friend style mapping from lines 401-410, note grid→list mapping
         final user = UserProfileFactory.build();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
               item: user,
               type: ContentCardType.friend,
-              style: ContentCardStyle.grid,  // Should map to FriendCardStyle.list
+              style:
+                  ContentCardStyle.grid, // Should map to FriendCardStyle.list
             ),
           ),
         );
@@ -386,10 +412,11 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('maps ContentCardStyle to MenuCardStyle correctly', (WidgetTester tester) async {
+      testWidgets('maps ContentCardStyle to MenuCardStyle correctly',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test menu style mapping from lines 412-421
         final menuData = {'title': 'Test Menu'};
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -404,10 +431,11 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('maps ContentCardStyle to ShoppingListCardStyle correctly', (WidgetTester tester) async {
+      testWidgets('maps ContentCardStyle to ShoppingListCardStyle correctly',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test shopping list style mapping from lines 423-432
         final shoppingList = ShoppingListFactory.build(name: 'Test List');
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -424,10 +452,11 @@ void main() {
     });
 
     group('Backward Compatibility Static Methods Tests', () {
-      testWidgets('recipe static method creates recipe card', (WidgetTester tester) async {
+      testWidgets('recipe static method creates recipe card',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test backward compatibility from lines 437-459
         final recipe = RecipeFactory.build();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard.recipe(
@@ -444,10 +473,11 @@ void main() {
         expect(find.byType(ContentCard), findsOneWidget);
       });
 
-      testWidgets('compactRecipe static method creates compact recipe card', (WidgetTester tester) async {
+      testWidgets('compactRecipe static method creates compact recipe card',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test compact recipe from lines 462-483
         final recipe = RecipeFactory.build();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard.compactRecipe(
@@ -463,10 +493,11 @@ void main() {
         expect(find.byType(ContentCard), findsOneWidget);
       });
 
-      testWidgets('friend static method creates friend card', (WidgetTester tester) async {
+      testWidgets('friend static method creates friend card',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test friend static method from lines 486-510
         final user = UserProfileFactory.build();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard.friend(
@@ -484,12 +515,13 @@ void main() {
         expect(find.byType(ContentCard), findsOneWidget);
       });
 
-      testWidgets('friendRequest static method creates friend request card', (WidgetTester tester) async {
+      testWidgets('friendRequest static method creates friend request card',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test friend request static method from lines 513-537
         final friendRequest = SocialFactory.createFriendRequest();
         bool acceptCalled = false;
         bool declineCalled = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard.friendRequest(
@@ -511,11 +543,12 @@ void main() {
     });
 
     group('Interaction Handler Tests', () {
-      testWidgets('handles onTap callback for recipe cards', (WidgetTester tester) async {
+      testWidgets('handles onTap callback for recipe cards',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test onTap mapping from line 285
         final recipe = RecipeFactory.build();
         bool tapCalled = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -531,11 +564,12 @@ void main() {
         expect(tapCalled, isFalse); // Not triggered yet
       });
 
-      testWidgets('handles onLongPress callback for all card types', (WidgetTester tester) async {
+      testWidgets('handles onLongPress callback for all card types',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test onLongPress mapping from line 286
         final recipe = RecipeFactory.build();
         bool longPressCalled = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -551,12 +585,13 @@ void main() {
         expect(longPressCalled, isFalse); // Not triggered yet
       });
 
-      testWidgets('handles friend request action callbacks', (WidgetTester tester) async {
+      testWidgets('handles friend request action callbacks',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test friend request actions from lines 337-338
         final friendRequest = SocialFactory.createFriendRequest();
         bool acceptCalled = false;
         bool declineCalled = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -576,10 +611,11 @@ void main() {
     });
 
     group('Edge Cases and Error Handling', () {
-      testWidgets('handles null optional parameters gracefully', (WidgetTester tester) async {
+      testWidgets('handles null optional parameters gracefully',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test null parameter handling
         final recipe = RecipeFactory.build();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -599,10 +635,11 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('uses default ContentCardStyle when not specified', (WidgetTester tester) async {
+      testWidgets('uses default ContentCardStyle when not specified',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test default style from line 225
         final recipe = RecipeFactory.build();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -617,10 +654,11 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('handles complex nested parameter combinations', (WidgetTester tester) async {
+      testWidgets('handles complex nested parameter combinations',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test complex parameter combinations
         final user = UserProfileFactory.build();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -644,11 +682,12 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('handles rapid content type switching', (WidgetTester tester) async {
+      testWidgets('handles rapid content type switching',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test widget rebuilding with different types
         final recipe = RecipeFactory.build();
         final user = UserProfileFactory.build();
-        
+
         // Start with recipe
         await tester.pumpWidget(
           createTestWidget(
@@ -658,9 +697,9 @@ void main() {
             ),
           ),
         );
-        
+
         expect(tester.takeException(), isNull);
-        
+
         // Switch to friend
         await tester.pumpWidget(
           createTestWidget(
@@ -675,11 +714,13 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('handles menu and shopping list with complex dynamic data', (WidgetTester tester) async {
+      testWidgets('handles menu and shopping list with complex dynamic data',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test dynamic data handling for menu/shopping list types
         final complexMenuData = {
           'title': 'Complex Menu with Special Characters: åäö',
-          'description': 'Very long description with lots of text that might cause layout issues',
+          'description':
+              'Very long description with lots of text that might cause layout issues',
           'recipes': [
             {'name': 'Recipe 1', 'id': '123'},
             {'name': 'Recipe 2', 'id': '456'},
@@ -689,7 +730,7 @@ void main() {
             'shared': true,
           },
         };
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -709,10 +750,11 @@ void main() {
     });
 
     group('Widget Structure and Architecture Tests', () {
-      testWidgets('ContentCard is a StatelessWidget', (WidgetTester tester) async {
+      testWidgets('ContentCard is a StatelessWidget',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test widget type from line 150
         final recipe = RecipeFactory.build();
-        
+
         final widget = ContentCard(
           item: recipe,
           type: ContentCardType.recipe,
@@ -721,10 +763,12 @@ void main() {
         expect(widget, isA<StatelessWidget>());
       });
 
-      testWidgets('build method delegates immediately without intermediate widgets', (WidgetTester tester) async {
+      testWidgets(
+          'build method delegates immediately without intermediate widgets',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test delegation architecture from lines 255-268
         final recipe = RecipeFactory.build();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ContentCard(
@@ -739,7 +783,8 @@ void main() {
         expect(find.byType(ContentCard), findsOneWidget);
       });
 
-      testWidgets('re-exports are available for backward compatibility', (WidgetTester tester) async {
+      testWidgets('re-exports are available for backward compatibility',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test re-exports from lines 66-69
         // These should be available due to re-export statements in ContentCard
         expect(RecipeCardStyle.detailed, isA<RecipeCardStyle>());

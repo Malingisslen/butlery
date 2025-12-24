@@ -58,78 +58,157 @@ class RealtimeRecipe extends RealtimeResource {
     );
   }
 
-
-  RealtimeRecipe updateBasicInfo({String? title, String? description, String? mealType, int? portions,
-    int? timeMinutes, double? rating, List<String>? tags, required String editedBy, required String editedByDisplayName}) {
-    final updatedRecipe = RecipeOperations.updateBasicInfo(recipe, title: title, description: description,
-      mealType: mealType, portions: portions, timeMinutes: timeMinutes, rating: rating, tags: tags,
-      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
-    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
+  RealtimeRecipe updateBasicInfo(
+      {String? title,
+      String? description,
+      String? mealType,
+      int? portions,
+      int? timeMinutes,
+      double? rating,
+      List<String>? tags,
+      required String editedBy,
+      required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.updateBasicInfo(recipe,
+        title: title,
+        description: description,
+        mealType: mealType,
+        portions: portions,
+        timeMinutes: timeMinutes,
+        rating: rating,
+        tags: tags,
+        editedBy: editedBy,
+        editedByDisplayName: editedByDisplayName);
+    return copyWith(
+        recipe: updatedRecipe,
+        lastEditedBy: editedBy,
+        lastEditedByDisplayName: editedByDisplayName);
   }
 
-  RealtimeRecipe updateIngredients({required List<String> ingredients, required String editedBy,
-    required String editedByDisplayName}) {
-    final updatedRecipe = RecipeOperations.updateIngredients(recipe, ingredients: ingredients,
-      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
-    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
+  RealtimeRecipe updateIngredients(
+      {required List<String> ingredients,
+      required String editedBy,
+      required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.updateIngredients(recipe,
+        ingredients: ingredients,
+        editedBy: editedBy,
+        editedByDisplayName: editedByDisplayName);
+    return copyWith(
+        recipe: updatedRecipe,
+        lastEditedBy: editedBy,
+        lastEditedByDisplayName: editedByDisplayName);
   }
 
-  RealtimeRecipe addIngredient({required String ingredient, required String editedBy,
-    required String editedByDisplayName}) {
-    final updatedRecipe = RecipeOperations.addIngredient(recipe, ingredient: ingredient,
-      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
-    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
+  RealtimeRecipe addIngredient(
+      {required String ingredient,
+      required String editedBy,
+      required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.addIngredient(recipe,
+        ingredient: ingredient,
+        editedBy: editedBy,
+        editedByDisplayName: editedByDisplayName);
+    return copyWith(
+        recipe: updatedRecipe,
+        lastEditedBy: editedBy,
+        lastEditedByDisplayName: editedByDisplayName);
   }
 
-  RealtimeRecipe removeIngredient({required int index, required String editedBy,
-    required String editedByDisplayName}) {
-    final updatedRecipe = RecipeOperations.removeIngredient(recipe, index: index,
-      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
-    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
+  RealtimeRecipe removeIngredient(
+      {required int index,
+      required String editedBy,
+      required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.removeIngredient(recipe,
+        index: index,
+        editedBy: editedBy,
+        editedByDisplayName: editedByDisplayName);
+    return copyWith(
+        recipe: updatedRecipe,
+        lastEditedBy: editedBy,
+        lastEditedByDisplayName: editedByDisplayName);
   }
 
-  RealtimeRecipe updateInstructions({required List<String> instructions, required String editedBy,
-    required String editedByDisplayName}) {
-    final updatedRecipe = RecipeOperations.updateInstructions(recipe, instructions: instructions,
-      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
-    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
+  RealtimeRecipe updateInstructions(
+      {required List<String> instructions,
+      required String editedBy,
+      required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.updateInstructions(recipe,
+        instructions: instructions,
+        editedBy: editedBy,
+        editedByDisplayName: editedByDisplayName);
+    return copyWith(
+        recipe: updatedRecipe,
+        lastEditedBy: editedBy,
+        lastEditedByDisplayName: editedByDisplayName);
   }
 
-  RealtimeRecipe addInstruction({required String instruction, required String editedBy,
-    required String editedByDisplayName}) {
-    final updatedRecipe = RecipeOperations.addInstruction(recipe, instruction: instruction,
-      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
-    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
+  RealtimeRecipe addInstruction(
+      {required String instruction,
+      required String editedBy,
+      required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.addInstruction(recipe,
+        instruction: instruction,
+        editedBy: editedBy,
+        editedByDisplayName: editedByDisplayName);
+    return copyWith(
+        recipe: updatedRecipe,
+        lastEditedBy: editedBy,
+        lastEditedByDisplayName: editedByDisplayName);
   }
 
-  RealtimeRecipe removeInstruction({required int index, required String editedBy,
-    required String editedByDisplayName}) {
-    final updatedRecipe = RecipeOperations.removeInstruction(recipe, index: index,
-      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
-    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
+  RealtimeRecipe removeInstruction(
+      {required int index,
+      required String editedBy,
+      required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.removeInstruction(recipe,
+        index: index,
+        editedBy: editedBy,
+        editedByDisplayName: editedByDisplayName);
+    return copyWith(
+        recipe: updatedRecipe,
+        lastEditedBy: editedBy,
+        lastEditedByDisplayName: editedByDisplayName);
   }
 
-  RealtimeRecipe updateImageUrls({required List<String> imageUrls, required String editedBy,
-    required String editedByDisplayName}) {
-    final updatedRecipe = RecipeOperations.updateImageUrls(recipe, imageUrls: imageUrls,
-      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
-    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
+  RealtimeRecipe updateImageUrls(
+      {required List<String> imageUrls,
+      required String editedBy,
+      required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.updateImageUrls(recipe,
+        imageUrls: imageUrls,
+        editedBy: editedBy,
+        editedByDisplayName: editedByDisplayName);
+    return copyWith(
+        recipe: updatedRecipe,
+        lastEditedBy: editedBy,
+        lastEditedByDisplayName: editedByDisplayName);
   }
 
-  RealtimeRecipe addImageUrl({required String imageUrl, required String editedBy,
-    required String editedByDisplayName}) {
-    final updatedRecipe = RecipeOperations.addImageUrl(recipe, imageUrl: imageUrl,
-      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
-    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
+  RealtimeRecipe addImageUrl(
+      {required String imageUrl,
+      required String editedBy,
+      required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.addImageUrl(recipe,
+        imageUrl: imageUrl,
+        editedBy: editedBy,
+        editedByDisplayName: editedByDisplayName);
+    return copyWith(
+        recipe: updatedRecipe,
+        lastEditedBy: editedBy,
+        lastEditedByDisplayName: editedByDisplayName);
   }
 
-  RealtimeRecipe removeImageUrl({required int index, required String editedBy,
-    required String editedByDisplayName}) {
-    final updatedRecipe = RecipeOperations.removeImageUrl(recipe, index: index,
-      editedBy: editedBy, editedByDisplayName: editedByDisplayName);
-    return copyWith(recipe: updatedRecipe, lastEditedBy: editedBy, lastEditedByDisplayName: editedByDisplayName);
+  RealtimeRecipe removeImageUrl(
+      {required int index,
+      required String editedBy,
+      required String editedByDisplayName}) {
+    final updatedRecipe = RecipeOperations.removeImageUrl(recipe,
+        index: index,
+        editedBy: editedBy,
+        editedByDisplayName: editedByDisplayName);
+    return copyWith(
+        recipe: updatedRecipe,
+        lastEditedBy: editedBy,
+        lastEditedByDisplayName: editedByDisplayName);
   }
-
 
   int get ingredientsCount => recipe.ingredients.length;
   int get instructionsCount => recipe.instructions.length;
@@ -143,14 +222,15 @@ class RealtimeRecipe extends RealtimeResource {
   String get mealType => recipe.mealType;
   bool get hasRating => recipe.rating != null;
   bool get isValidRecipe => RecipeOperations.isValidRecipe(recipe);
-  List<String> get validationErrors => RecipeOperations.getValidationErrors(recipe);
+  List<String> get validationErrors =>
+      RecipeOperations.getValidationErrors(recipe);
   bool get isPublishable => RecipeOperations.isPublishable(recipe);
   Map<String, int> get recipeStats => RecipeOperations.getRecipeStats(recipe);
   int get complexityScore => RecipeOperations.getComplexityScore(recipe);
 
-
   @override
-  RealtimeRecipe addParticipant(String userId, String userDisplayName, ResourcePermission permission) {
+  RealtimeRecipe addParticipant(
+      String userId, String userDisplayName, ResourcePermission permission) {
     final updatedParticipants = RealtimeParticipants.addParticipant(
       participants,
       userId,
@@ -187,8 +267,10 @@ class RealtimeRecipe extends RealtimeResource {
   }
 
   @override
-  RealtimeRecipe updateParticipantPermission(String userId, ResourcePermission newPermission) {
-    final updatedParticipants = RealtimeParticipants.updateParticipantPermission(
+  RealtimeRecipe updateParticipantPermission(
+      String userId, ResourcePermission newPermission) {
+    final updatedParticipants =
+        RealtimeParticipants.updateParticipantPermission(
       participants,
       userId,
       newPermission,
@@ -208,11 +290,11 @@ class RealtimeRecipe extends RealtimeResource {
   // isOwner is correctly implemented in the base class RealtimeResource
   // It checks the ownerId field, not the participants map
 
-
   @override
   Map<String, dynamic> serializeContent() {
     return RecipeSerialization.serializeRealtimeContent(recipe);
   }
+
   /// eliminating Firebase-specific types from the model layer.
   factory RealtimeRecipe.fromData({
     required String id,
@@ -243,10 +325,12 @@ class RealtimeRecipe extends RealtimeResource {
       recipe: recipe,
     );
   }
+
   /// @deprecated Use fromData() constructor instead. This maintains backward compatibility.
   factory RealtimeRecipe.fromMap(String id, Map<String, dynamic> data) {
     // Parse recipe data from the nested structure
-    final recipeData = SerializationUtils.safeNullableMap(data, 'recipe') ?? data;
+    final recipeData =
+        SerializationUtils.safeNullableMap(data, 'recipe') ?? data;
     final recipe = RecipeSerialization.deserializeRecipe(recipeData, id);
 
     // Parse participants
@@ -254,7 +338,8 @@ class RealtimeRecipe extends RealtimeResource {
     final participants = participantsData.map(
       (userId, permissionString) => MapEntry(
         userId,
-        ResourcePermissionHelper.fromString(permissionString as String? ?? 'viewer'),
+        ResourcePermissionHelper.fromString(
+            permissionString as String? ?? 'viewer'),
       ),
     );
 
@@ -276,9 +361,11 @@ class RealtimeRecipe extends RealtimeResource {
           ? data['lastEditedAt'] as DateTime
           : SerializationUtils.safeRequiredDateTime(data, 'lastEditedAt'),
       lastEditedBy: SerializationUtils.safeString(data, 'lastEditedBy'),
-      lastEditedByDisplayName: SerializationUtils.safeString(data, 'lastEditedByDisplayName'),
+      lastEditedByDisplayName:
+          SerializationUtils.safeString(data, 'lastEditedByDisplayName'),
       editCount: SerializationUtils.safeInt(data, 'editCount'),
-      isActive: SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
+      isActive:
+          SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
       metadata: SerializationUtils.safeNullableMap(data, 'metadata'),
       recipe: recipe,
     );
@@ -289,7 +376,6 @@ class RealtimeRecipe extends RealtimeResource {
     final data = doc.data() as Map<String, dynamic>;
     return RealtimeRecipe.fromMap(id, data);
   }
-
 
   @override
   RealtimeRecipe copyWithMetadata({
@@ -349,11 +435,10 @@ class RealtimeRecipe extends RealtimeResource {
     );
   }
 
-
   Recipe createPersonalCopy({required String newOwnerId}) {
     return Recipe(
       core: RecipeCore(
-        id: '', // Nytt ID genereras automatiskt  
+        id: '', // Nytt ID genereras automatiskt
         title: 'Kopia av ${recipe.title}',
         description: recipe.description,
         ingredients: recipe.ingredients,
@@ -398,25 +483,25 @@ class RealtimeRecipe extends RealtimeResource {
 
   bool matchesSearchQuery(String query) {
     final lowerQuery = query.toLowerCase();
-    
+
     if (title.toLowerCase().contains(lowerQuery)) return true;
     if (description.toLowerCase().contains(lowerQuery)) return true;
     if (mealType.toLowerCase().contains(lowerQuery)) return true;
-    
+
     for (final ingredient in recipe.ingredients) {
       if (ingredient.toLowerCase().contains(lowerQuery)) return true;
     }
-    
+
     for (final instruction in recipe.instructions) {
       if (instruction.toLowerCase().contains(lowerQuery)) return true;
     }
-    
+
     if (tags != null) {
       for (final tag in tags!) {
         if (tag.toLowerCase().contains(lowerQuery)) return true;
       }
     }
-    
+
     return false;
   }
 }

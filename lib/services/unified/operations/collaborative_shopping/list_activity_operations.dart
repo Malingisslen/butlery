@@ -98,7 +98,8 @@ class ListActivityOperations {
   int getNotificationCount() {
     final recentThreshold = DateTime.now().subtract(const Duration(hours: 24));
 
-    return _lifecycleOps.getAllLists()
+    return _lifecycleOps
+        .getAllLists()
         .where((list) => list.updatedAt.isAfter(recentThreshold))
         .length;
   }

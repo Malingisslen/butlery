@@ -19,7 +19,8 @@ class SocialGroupSharingOperations {
 
   SocialGroupSharingOperations(this._parent) {
     _bulkOperations = GroupSharingBulkOperationsModule(
-      shareToGroup: (groupId, content) => shareContentToGroup(groupId: groupId, content: content),
+      shareToGroup: (groupId, content) =>
+          shareContentToGroup(groupId: groupId, content: content),
       getAllCategories: () => _parent.getAllCategoriesInternal(),
       getCurrentUserId: () => _parent.currentUserId,
     );
@@ -74,7 +75,7 @@ class SocialGroupSharingOperations {
   }) async {
     try {
       bool allSuccessful = true;
-      
+
       for (final groupId in groupIds) {
         final success = await shareContentToGroup(
           groupId: groupId,
@@ -86,7 +87,8 @@ class SocialGroupSharingOperations {
       }
 
       if (allSuccessful) {
-        AppLogger.success('Content shared to ${groupIds.length} groups successfully');
+        AppLogger.success(
+            'Content shared to ${groupIds.length} groups successfully');
       } else {
         AppLogger.warning('Some group sharing operations failed');
       }
@@ -134,7 +136,7 @@ class SocialGroupSharingOperations {
     try {
       final memberIds = resolveGroupMembers(groupId);
       final friends = _parent.friendsInternal;
-      
+
       return friends.where((friend) => memberIds.contains(friend.uid)).toList();
     } catch (e) {
       AppLogger.error('Failed to resolve group member profiles', e);
@@ -146,7 +148,7 @@ class SocialGroupSharingOperations {
   List<String> resolveMultipleGroupMembers(List<String> groupIds) {
     try {
       final Set<String> allMemberIds = {};
-      
+
       for (final groupId in groupIds) {
         final memberIds = resolveGroupMembers(groupId);
         allMemberIds.addAll(memberIds);
@@ -161,9 +163,12 @@ class SocialGroupSharingOperations {
 
   // ===== GROUP SHARING VALIDATION =====
 
-  bool canShareToGroup(String groupId, String userId) => _validation.canShareToGroup(groupId, userId);
-  bool canShareToGroups(List<String> groupIds, String userId) => _validation.canShareToGroups(groupIds, userId);
-  bool isGroupAccessible(String groupId) => _validation.isGroupAccessible(groupId);
+  bool canShareToGroup(String groupId, String userId) =>
+      _validation.canShareToGroup(groupId, userId);
+  bool canShareToGroups(List<String> groupIds, String userId) =>
+      _validation.canShareToGroups(groupIds, userId);
+  bool isGroupAccessible(String groupId) =>
+      _validation.isGroupAccessible(groupId);
 
   // ===== GROUP SHARING STATISTICS =====
 
@@ -202,10 +207,11 @@ class SocialGroupSharingOperations {
   }
 
   /// Get sharing statistics for multiple groups
-  Map<String, Map<String, dynamic>> getMultipleGroupSharingStats(List<String> groupIds) {
+  Map<String, Map<String, dynamic>> getMultipleGroupSharingStats(
+      List<String> groupIds) {
     try {
       final Map<String, Map<String, dynamic>> stats = {};
-      
+
       for (final groupId in groupIds) {
         stats[groupId] = getGroupSharingStats(groupId);
       }
@@ -272,7 +278,8 @@ class SocialGroupSharingOperations {
 
       // Return groups that user owns or is a member of
       return _parent.getAllCategoriesInternal().where((group) {
-        return group.ownerId == currentUserId || group.friendUserIds.contains(currentUserId);
+        return group.ownerId == currentUserId ||
+            group.friendUserIds.contains(currentUserId);
       }).toList();
     } catch (e) {
       AppLogger.error('Failed to get available groups for sharing', e);
@@ -325,7 +332,9 @@ class SocialGroupSharingOperations {
     Function(String groupId, bool success)? onGroupComplete,
   }) =>
       _bulkOperations.shareContentToMultipleGroups(
-          groupIds: groupIds, content: content, onGroupComplete: onGroupComplete);
+          groupIds: groupIds,
+          content: content,
+          onGroupComplete: onGroupComplete);
 
   Future<Map<String, Map<String, bool>>> bulkShareContentToGroups({
     required List<String> groupIds,
@@ -351,11 +360,13 @@ class SocialGroupSharingOperations {
     required List<String> groupIds,
     required List<SharedContent> contentList,
   }) =>
-      _validation.getBulkSharingSummary(groupIds: groupIds, contentList: contentList);
+      _validation.getBulkSharingSummary(
+          groupIds: groupIds, contentList: contentList);
 
   Future<Map<String, dynamic>> validateBulkSharing({
     required List<String> groupIds,
     required List<SharedContent> contentList,
   }) =>
-      _validation.validateBulkSharing(groupIds: groupIds, contentList: contentList);
+      _validation.validateBulkSharing(
+          groupIds: groupIds, contentList: contentList);
 }

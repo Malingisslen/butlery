@@ -70,8 +70,7 @@ class NavigationThemes {
       elevation: 8,
       shadowColor: Colors.black26,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(
-            AppDimensions.borderRadius8),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
       ),
       titleTextStyle: AppTextStyles.dialogTitle,
       contentTextStyle: AppTextStyles.dialogContent,
@@ -86,8 +85,7 @@ class NavigationThemes {
       shadowColor: Colors.black26,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(
-              AppDimensions.borderRadius16),
+          top: Radius.circular(AppDimensions.borderRadius16),
         ),
       ),
       modalBackgroundColor: AppColors.cardWhite,

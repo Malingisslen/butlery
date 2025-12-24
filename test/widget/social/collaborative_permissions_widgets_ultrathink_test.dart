@@ -1,7 +1,7 @@
 // test/widget/social/collaborative_permissions_widgets_ultrathink_test.dart
 // ULTRATHINK TEST SUITE: CollaborativePermissionsWidgets - 69 lines of production code
 // Testing 2 static methods for collaborative permissions UI components
-// 
+//
 // ULTRATHINK FOCUS: EditMode integration, ViewModel pattern, banner styling, responsiveness
 
 import 'package:flutter/material.dart';
@@ -28,7 +28,7 @@ void main() {
     setUp(() async {
       await TestServiceLocator.initialize();
     });
-    
+
     tearDown(() async {
       await BaseWidgetTest.teardownWidget();
     });
@@ -64,7 +64,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code banner structure from lines 13-56
         bool tapped = false;
-        
+
         await pumpPermissionsWidget(
           tester,
           (context) => CollaborativePermissionsWidgets.permissionsBanner(
@@ -75,20 +75,21 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Verify container structure (lines 20-55)
         expect(find.byType(Container), findsOneWidget);
         expect(find.byType(InkWell), findsOneWidget);
         expect(find.byType(Row), findsOneWidget);
         expect(find.byType(Icon), findsOneWidget);
         expect(find.byType(Text), findsOneWidget);
-        
+
         // ULTRATHINK: Test tap functionality (line 32-34)
         await tester.tap(find.byType(InkWell));
         expect(tapped, isTrue);
       });
 
-      testWidgets('applies correct styling and colors for different EditMode values',
+      testWidgets(
+          'applies correct styling and colors for different EditMode values',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code color integration from lines 18, 25, 28, 39
         for (final editMode in EditMode.values) {
@@ -100,12 +101,11 @@ void main() {
             ),
           );
 
-            
           // ULTRATHINK: Each EditMode should have proper UI representation
           expect(find.byType(Container), findsOneWidget);
           expect(find.byType(Icon), findsOneWidget);
           expect(find.text(editMode.description), findsOneWidget);
-          
+
           // ULTRATHINK: Verify EditModeUIHelper integration
           final icon = tester.widget<Icon>(find.byType(Icon));
           expect(icon.icon, equals(EditModeUIHelper.getIcon(editMode)));
@@ -124,10 +124,9 @@ void main() {
           ),
         );
 
-        
         // ULTRATHINK: Should still render correctly without crash
         expect(find.byType(InkWell), findsOneWidget);
-        
+
         // Should be able to tap without issues (no callback to trigger)
         await tester.tap(find.byType(InkWell));
       });
@@ -143,20 +142,20 @@ void main() {
           ),
         );
 
-        
         // ULTRATHINK: Verify container uses correct dimensions
         final container = tester.widget<Container>(find.byType(Container));
         // Container width is set to double.infinity in production code (line 21)
-        
+
         // Verify padding uses AppDimensions.spacingL (line 22)
-        expect(container.padding, equals(const EdgeInsets.all(AppDimensions.spacingL)));
-        
+        expect(container.padding,
+            equals(const EdgeInsets.all(AppDimensions.spacingL)));
+
         // Verify margin uses AppDimensions.spacingS (line 23)
-        expect(container.margin, equals(const EdgeInsets.all(AppDimensions.spacingS)));
+        expect(container.margin,
+            equals(const EdgeInsets.all(AppDimensions.spacingS)));
       });
 
-      testWidgets('applies correct text styling',
-          (WidgetTester tester) async {
+      testWidgets('applies correct text styling', (WidgetTester tester) async {
         // ULTRATHINK: Test production code text styling from lines 44-50
         await pumpPermissionsWidget(
           tester,
@@ -166,11 +165,10 @@ void main() {
           ),
         );
 
-        
         // ULTRATHINK: Verify text uses AppTextStyles.bodyLarge as base (line 46)
         final text = tester.widget<Text>(find.byType(Text));
         expect(text.data, equals(EditMode.collaborative.description));
-        
+
         // Style should be based on AppTextStyles.bodyLarge with modifications
         expect(text.style?.fontWeight, equals(FontWeight.w500)); // Line 48
       });
@@ -186,17 +184,16 @@ void main() {
           ),
         );
 
-        
         // ULTRATHINK: Container decoration should use AppDimensions.cardBorderRadius
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.borderRadius, 
-          equals(BorderRadius.circular(AppDimensions.cardBorderRadius)));
-        
+        expect(decoration.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.cardBorderRadius)));
+
         // InkWell should use same border radius
         final inkWell = tester.widget<InkWell>(find.byType(InkWell));
-        expect(inkWell.borderRadius, 
-          equals(BorderRadius.circular(AppDimensions.cardBorderRadius)));
+        expect(inkWell.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.cardBorderRadius)));
       });
 
       testWidgets('handles all EditMode enum values correctly',
@@ -218,11 +215,10 @@ void main() {
             ),
           );
 
-            
           // ULTRATHINK: Each mode should render without issues
           expect(find.text(mode.description), findsOneWidget);
           expect(find.byType(Icon), findsOneWidget);
-          
+
           // ULTRATHINK: Icon should match EditModeUIHelper.getIcon() result
           final icon = tester.widget<Icon>(find.byType(Icon));
           expect(icon.icon, equals(EditModeUIHelper.getIcon(mode)));
@@ -235,7 +231,7 @@ void main() {
 
       setUp(() {
         mockViewModel = MockRecipeFormViewModel();
-        
+
         // Register fallback values for mocktail
         registerFallbackValue(EditMode.noAccess);
       });
@@ -247,7 +243,7 @@ void main() {
           editMode: null,
           editModeEnum: null,
         );
-        
+
         await pumpPermissionsWidget(
           tester,
           (context) => CollaborativePermissionsWidgets.smartPermissionsBanner(
@@ -256,10 +252,9 @@ void main() {
           ),
         );
 
-        
         // ULTRATHINK: Should return SizedBox.shrink for null editMode (line 63)
         expect(find.byType(SizedBox), findsOneWidget);
-        
+
         // Should not find any banner components
         expect(find.byType(Container), findsNothing);
         expect(find.byType(InkWell), findsNothing);
@@ -272,7 +267,7 @@ void main() {
           editMode: 'owner',
           editModeEnum: EditMode.owner,
         );
-        
+
         await pumpPermissionsWidget(
           tester,
           (context) => CollaborativePermissionsWidgets.smartPermissionsBanner(
@@ -281,12 +276,11 @@ void main() {
           ),
         );
 
-        
         // ULTRATHINK: Should delegate to permissionsBanner (lines 65-68)
         expect(find.byType(Container), findsOneWidget);
         expect(find.byType(InkWell), findsOneWidget);
         expect(find.text(EditMode.owner.description), findsOneWidget);
-        
+
         // ULTRATHINK: Verify ViewModel state is correct (centralized mock pattern)
         expect(mockViewModel.editMode, equals('owner'));
         expect(mockViewModel.editModeEnum, equals(EditMode.owner));
@@ -299,7 +293,7 @@ void main() {
           editMode: 'some_mode',
           editModeEnum: null, // Null enum
         );
-        
+
         await pumpPermissionsWidget(
           tester,
           (context) => CollaborativePermissionsWidgets.smartPermissionsBanner(
@@ -308,7 +302,6 @@ void main() {
           ),
         );
 
-        
         // ULTRATHINK: Should use fallback EditMode.noAccess (line 67)
         expect(find.byType(Container), findsOneWidget);
         expect(find.text(EditMode.noAccess.description), findsOneWidget);
@@ -328,7 +321,7 @@ void main() {
             editMode: mode.name,
             editModeEnum: mode,
           );
-          
+
           await pumpPermissionsWidget(
             tester,
             (context) => CollaborativePermissionsWidgets.smartPermissionsBanner(
@@ -337,7 +330,6 @@ void main() {
             ),
           );
 
-            
           // ULTRATHINK: Each mode should render correctly via delegation
           expect(find.text(mode.description), findsOneWidget);
           expect(find.byType(Icon), findsOneWidget);
@@ -352,19 +344,18 @@ void main() {
         await pumpPermissionsWidget(
           tester,
           (context) => Column(
-            children: EditMode.values.map((mode) => 
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: CollaborativePermissionsWidgets.permissionsBanner(
-                  context: context,
-                  editMode: mode,
-                ),
-              )
-            ).toList(),
+            children: EditMode.values
+                .map((mode) => Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: CollaborativePermissionsWidgets.permissionsBanner(
+                        context: context,
+                        editMode: mode,
+                      ),
+                    ))
+                .toList(),
           ),
         );
 
-        
         // ULTRATHINK: All modes should render without theme conflicts
         expect(find.byType(Container), findsNWidgets(EditMode.values.length));
         expect(find.byType(Icon), findsNWidgets(EditMode.values.length));
@@ -384,9 +375,9 @@ void main() {
           ),
         );
 
-        
         // ULTRATHINK: Container should respect width constraint (double.infinity becomes parent width)
-        final container = tester.renderObject<RenderBox>(find.byType(Container));
+        final container =
+            tester.renderObject<RenderBox>(find.byType(Container));
         expect(container.size.width, lessThanOrEqualTo(200));
       });
     });

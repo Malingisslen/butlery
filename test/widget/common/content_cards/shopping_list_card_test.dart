@@ -60,7 +60,8 @@ void main() {
     );
 
     group('Basic Rendering', () {
-      testWidgets('renders with required shopping list', (WidgetTester tester) async {
+      testWidgets('renders with required shopping list',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -76,7 +77,8 @@ void main() {
         expect(find.byIcon(Icons.shopping_cart), findsOneWidget);
       });
 
-      testWidgets('displays item count in metadata', (WidgetTester tester) async {
+      testWidgets('displays item count in metadata',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -92,7 +94,8 @@ void main() {
         expect(find.textContaining('1 slutförda'), findsOneWidget);
       });
 
-      testWidgets('shows empty state when no items', (WidgetTester tester) async {
+      testWidgets('shows empty state when no items',
+          (WidgetTester tester) async {
         final emptyList = UnifiedShoppingList(
           id: 'empty123',
           name: 'Tom lista',
@@ -122,7 +125,8 @@ void main() {
     });
 
     group('Card Styles', () {
-      testWidgets('renders detailed style correctly', (WidgetTester tester) async {
+      testWidgets('renders detailed style correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -142,7 +146,8 @@ void main() {
         expect(find.textContaining('Bröd'), findsOneWidget);
       });
 
-      testWidgets('renders compact style correctly', (WidgetTester tester) async {
+      testWidgets('renders compact style correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -176,15 +181,18 @@ void main() {
     });
 
     group('Item Preview', () {
-      testWidgets('shows first 4 items in preview', (WidgetTester tester) async {
-        final manyItems = List.generate(10, (i) => UnifiedShoppingItem(
-          id: 'item$i',
-          name: 'Föremål $i',
-          amount: 1.0,
-          unit: 'st',
-          category: 'Test',
-          bought: false,
-        ));
+      testWidgets('shows first 4 items in preview',
+          (WidgetTester tester) async {
+        final manyItems = List.generate(
+            10,
+            (i) => UnifiedShoppingItem(
+                  id: 'item$i',
+                  name: 'Föremål $i',
+                  amount: 1.0,
+                  unit: 'st',
+                  category: 'Test',
+                  bought: false,
+                ));
 
         final longList = testShoppingList.copyWith(items: manyItems);
 
@@ -208,7 +216,8 @@ void main() {
         expect(find.textContaining('+ 6 fler föremål'), findsOneWidget);
       });
 
-      testWidgets('shows completed items with strikethrough', (WidgetTester tester) async {
+      testWidgets('shows completed items with strikethrough',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -224,11 +233,13 @@ void main() {
         final breadTexts = find.textContaining('Bröd').evaluate();
         if (breadTexts.isNotEmpty) {
           final breadText = breadTexts.first.widget as Text;
-          expect(breadText.style?.decoration, equals(TextDecoration.lineThrough));
+          expect(
+              breadText.style?.decoration, equals(TextDecoration.lineThrough));
         }
       });
 
-      testWidgets('shows check icons for completed items', (WidgetTester tester) async {
+      testWidgets('shows check icons for completed items',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -240,11 +251,14 @@ void main() {
           ),
         );
 
-        expect(find.byIcon(Icons.check_circle), findsOneWidget); // One completed item
-        expect(find.byIcon(Icons.radio_button_unchecked), findsNWidgets(2)); // Two uncompleted
+        expect(find.byIcon(Icons.check_circle),
+            findsOneWidget); // One completed item
+        expect(find.byIcon(Icons.radio_button_unchecked),
+            findsNWidgets(2)); // Two uncompleted
       });
 
-      testWidgets('hides preview when showPreview is false', (WidgetTester tester) async {
+      testWidgets('hides preview when showPreview is false',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -262,7 +276,8 @@ void main() {
     });
 
     group('Completion Indicator', () {
-      testWidgets('shows correct completion percentage', (WidgetTester tester) async {
+      testWidgets('shows correct completion percentage',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -278,15 +293,18 @@ void main() {
         expect(find.textContaining('33%'), findsOneWidget);
       });
 
-      testWidgets('shows "Klar" when all items completed', (WidgetTester tester) async {
-        final completedItems = testItems.map((item) => UnifiedShoppingItem(
-          id: item.id,
-          name: item.name,
-          amount: item.amount,
-          unit: item.unit,
-          category: item.category,
-          bought: true,
-        )).toList();
+      testWidgets('shows "Klar" when all items completed',
+          (WidgetTester tester) async {
+        final completedItems = testItems
+            .map((item) => UnifiedShoppingItem(
+                  id: item.id,
+                  name: item.name,
+                  amount: item.amount,
+                  unit: item.unit,
+                  category: item.category,
+                  bought: true,
+                ))
+            .toList();
         final completedList = testShoppingList.copyWith(items: completedItems);
 
         await tester.pumpWidget(
@@ -304,7 +322,8 @@ void main() {
         expect(find.byIcon(Icons.check_circle), findsAtLeastNWidgets(1));
       });
 
-      testWidgets('shows hourglass icon for incomplete list', (WidgetTester tester) async {
+      testWidgets('shows hourglass icon for incomplete list',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -321,7 +340,8 @@ void main() {
     });
 
     group('Sharing Status', () {
-      testWidgets('shows sharing indicator for collaborative list', (WidgetTester tester) async {
+      testWidgets('shows sharing indicator for collaborative list',
+          (WidgetTester tester) async {
         final sharedList = UnifiedShoppingList(
           id: testShoppingList.id,
           name: testShoppingList.name,
@@ -350,7 +370,8 @@ void main() {
         expect(find.textContaining('Delad med 2 personer'), findsOneWidget);
       });
 
-      testWidgets('hides sharing indicator for personal list', (WidgetTester tester) async {
+      testWidgets('hides sharing indicator for personal list',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -366,7 +387,8 @@ void main() {
         expect(find.textContaining('Delad'), findsNothing);
       });
 
-      testWidgets('shows compact sharing indicator in grid style', (WidgetTester tester) async {
+      testWidgets('shows compact sharing indicator in grid style',
+          (WidgetTester tester) async {
         final sharedList = UnifiedShoppingList(
           id: testShoppingList.id,
           name: testShoppingList.name,
@@ -435,7 +457,8 @@ void main() {
     });
 
     group('Date Formatting', () {
-      testWidgets('displays "Idag" for today\'s list', (WidgetTester tester) async {
+      testWidgets('displays "Idag" for today\'s list',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -451,7 +474,8 @@ void main() {
         expect(find.textContaining('Idag'), findsOneWidget);
       });
 
-      testWidgets('displays "Igår" for yesterday\'s list', (WidgetTester tester) async {
+      testWidgets('displays "Igår" for yesterday\'s list',
+          (WidgetTester tester) async {
         final yesterdayList = UnifiedShoppingList(
           id: testShoppingList.id,
           name: testShoppingList.name,
@@ -472,11 +496,12 @@ void main() {
           ),
         );
 
-        // Date is shown as part of metadata string  
+        // Date is shown as part of metadata string
         expect(find.textContaining('Igår'), findsOneWidget);
       });
 
-      testWidgets('displays days ago for recent lists', (WidgetTester tester) async {
+      testWidgets('displays days ago for recent lists',
+          (WidgetTester tester) async {
         final oldList = UnifiedShoppingList(
           id: testShoppingList.id,
           name: testShoppingList.name,
@@ -502,7 +527,8 @@ void main() {
     });
 
     group('Layout and Styling', () {
-      testWidgets('applies correct container decoration', (WidgetTester tester) async {
+      testWidgets('applies correct container decoration',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -514,17 +540,21 @@ void main() {
         );
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(InkWell),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(InkWell),
+                matching: find.byType(Container),
+              )
+              .first,
         );
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.color, equals(AppColors.backgroundLight));
-        expect(decoration.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadiusM)));
+        expect(decoration.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadiusM)));
       });
 
-      testWidgets('applies custom margin when provided', (WidgetTester tester) async {
+      testWidgets('applies custom margin when provided',
+          (WidgetTester tester) async {
         const customMargin = EdgeInsets.all(20.0);
 
         await tester.pumpWidget(
@@ -544,7 +574,8 @@ void main() {
         expect(container.margin, equals(customMargin));
       });
 
-      testWidgets('applies custom padding when provided', (WidgetTester tester) async {
+      testWidgets('applies custom padding when provided',
+          (WidgetTester tester) async {
         const customPadding = EdgeInsets.all(25.0);
 
         await tester.pumpWidget(
@@ -559,15 +590,18 @@ void main() {
         );
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(InkWell),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(InkWell),
+                matching: find.byType(Container),
+              )
+              .first,
         );
         expect(container.padding, equals(customPadding));
       });
 
-      testWidgets('uses default padding based on style', (WidgetTester tester) async {
+      testWidgets('uses default padding based on style',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -580,20 +614,25 @@ void main() {
         );
 
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(InkWell),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(InkWell),
+                matching: find.byType(Container),
+              )
+              .first,
         );
-        expect(container.padding, equals(const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingS,
-          vertical: AppDimensions.spacingS,
-        )));
+        expect(
+            container.padding,
+            equals(const EdgeInsets.symmetric(
+              horizontal: AppDimensions.spacingS,
+              vertical: AppDimensions.spacingS,
+            )));
       });
     });
 
     group('Swedish Localization', () {
-      testWidgets('displays Swedish text for items', (WidgetTester tester) async {
+      testWidgets('displays Swedish text for items',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -611,7 +650,8 @@ void main() {
         expect(find.text('Föremål på listan:'), findsOneWidget);
       });
 
-      testWidgets('displays Swedish text for empty state', (WidgetTester tester) async {
+      testWidgets('displays Swedish text for empty state',
+          (WidgetTester tester) async {
         final emptyList = testShoppingList.copyWith(items: []);
 
         await tester.pumpWidget(
@@ -628,15 +668,18 @@ void main() {
         expect(find.text('Inga föremål i listan'), findsOneWidget);
       });
 
-      testWidgets('displays Swedish text for completion', (WidgetTester tester) async {
-        final completedItems = testItems.map((item) => UnifiedShoppingItem(
-          id: item.id,
-          name: item.name,
-          amount: item.amount,
-          unit: item.unit,
-          category: item.category,
-          bought: true,
-        )).toList();
+      testWidgets('displays Swedish text for completion',
+          (WidgetTester tester) async {
+        final completedItems = testItems
+            .map((item) => UnifiedShoppingItem(
+                  id: item.id,
+                  name: item.name,
+                  amount: item.amount,
+                  unit: item.unit,
+                  category: item.category,
+                  bought: true,
+                ))
+            .toList();
         final completedList = testShoppingList.copyWith(items: completedItems);
 
         await tester.pumpWidget(
@@ -657,7 +700,8 @@ void main() {
     group('Edge Cases', () {
       testWidgets('handles very long list name', (WidgetTester tester) async {
         final longNameList = testShoppingList.copyWith(
-          name: 'Detta är en väldigt lång lista namn som borde trunkeras om den är för lång för att visas på en rad',
+          name:
+              'Detta är en väldigt lång lista namn som borde trunkeras om den är för lång för att visas på en rad',
         );
 
         await tester.pumpWidget(
@@ -674,7 +718,11 @@ void main() {
           ),
         );
 
-        final titleText = find.textContaining('Detta är en väldigt lång').evaluate().first.widget as Text;
+        final titleText = find
+            .textContaining('Detta är en väldigt lång')
+            .evaluate()
+            .first
+            .widget as Text;
         expect(titleText.overflow, equals(TextOverflow.ellipsis));
         expect(titleText.maxLines, equals(1));
       });

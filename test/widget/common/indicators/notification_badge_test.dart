@@ -105,7 +105,8 @@ void main() {
         expect(decoration.color, equals(AppColors.error));
       });
 
-      testWidgets('should use default neutral light text color', (tester) async {
+      testWidgets('should use default neutral light text color',
+          (tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -118,7 +119,8 @@ void main() {
         expect(text.style?.color, equals(AppColors.neutralLight));
       });
 
-      testWidgets('should use surface color for default border', (tester) async {
+      testWidgets('should use surface color for default border',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -318,7 +320,8 @@ void main() {
     });
 
     group('Visual Consistency', () {
-      testWidgets('should maintain circular shape with single digit', (tester) async {
+      testWidgets('should maintain circular shape with single digit',
+          (tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -334,7 +337,8 @@ void main() {
         expect(renderBox.size.height, greaterThanOrEqualTo(20));
       });
 
-      testWidgets('should maintain circular shape with double digits', (tester) async {
+      testWidgets('should maintain circular shape with double digits',
+          (tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -379,7 +383,8 @@ void main() {
         expect(find.text('-5'), findsOneWidget);
       });
 
-      testWidgets('should render correctly in different themes', (tester) async {
+      testWidgets('should render correctly in different themes',
+          (tester) async {
         // Light theme test
         await tester.pumpWidget(
           MaterialApp(
@@ -407,7 +412,8 @@ void main() {
         expect(find.text('5'), findsOneWidget);
       });
 
-      testWidgets('should handle very small parent constraints', (tester) async {
+      testWidgets('should handle very small parent constraints',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -428,7 +434,7 @@ void main() {
         // The widget respects parent constraints, so it will be 15x15
         expect(renderBox.size.width, equals(15));
         expect(renderBox.size.height, equals(15));
-        
+
         // But the container still has minWidth/minHeight constraints set
         final container = tester.widget<Container>(
           find.byType(Container),
@@ -477,7 +483,7 @@ void main() {
         );
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.color, equals(AppColors.error));
-        
+
         // Text is neutral light (white) on error background
         final text = tester.widget<Text>(find.text('5'));
         expect(text.style?.color, equals(AppColors.neutralLight));

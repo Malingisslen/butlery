@@ -96,7 +96,9 @@ class PermissionWidgets {
             children: [
               const Icon(Icons.block, color: AppColors.error),
               const SizedBox(width: AppDimensions.spacingM),
-              Text('Ingen åtkomst', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error)),
+              Text('Ingen åtkomst',
+                  style: AppTextStyles.bodyMedium
+                      .copyWith(color: AppColors.error)),
             ],
           ),
         );

@@ -24,6 +24,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/messaging/message.dart';
+
 // MessageStatus is already available through message.dart import
 /// Firebase DTO for message data serialization with comprehensive status tracking and metadata support.
 /// This static utility class provides sophisticated bidirectional conversion between Message domain
@@ -88,17 +89,17 @@ class MessageDto {
         orElse: () => MessageStatus.sent,
       ),
       sentAt: (data['sentAt'] as Timestamp).toDate(),
-      deliveredAt: data['deliveredAt'] != null 
-          ? (data['deliveredAt'] as Timestamp).toDate() 
+      deliveredAt: data['deliveredAt'] != null
+          ? (data['deliveredAt'] as Timestamp).toDate()
           : null,
-      readAt: data['readAt'] != null 
-          ? (data['readAt'] as Timestamp).toDate() 
+      readAt: data['readAt'] != null
+          ? (data['readAt'] as Timestamp).toDate()
           : null,
       metadata: data['metadata'] as Map<String, dynamic>?,
       replyToMessageId: data['replyToMessageId'] as String?,
       isEdited: data['isEdited'] as bool? ?? false,
-      editedAt: data['editedAt'] != null 
-          ? (data['editedAt'] as Timestamp).toDate() 
+      editedAt: data['editedAt'] != null
+          ? (data['editedAt'] as Timestamp).toDate()
           : null,
     );
   }
@@ -114,12 +115,17 @@ class MessageDto {
       'type': message.type.name,
       'status': message.status.name,
       'sentAt': Timestamp.fromDate(message.sentAt),
-      'deliveredAt': message.deliveredAt != null ? Timestamp.fromDate(message.deliveredAt!) : null,
-      'readAt': message.readAt != null ? Timestamp.fromDate(message.readAt!) : null,
+      'deliveredAt': message.deliveredAt != null
+          ? Timestamp.fromDate(message.deliveredAt!)
+          : null,
+      'readAt':
+          message.readAt != null ? Timestamp.fromDate(message.readAt!) : null,
       'metadata': message.metadata,
       'replyToMessageId': message.replyToMessageId,
       'isEdited': message.isEdited,
-      'editedAt': message.editedAt != null ? Timestamp.fromDate(message.editedAt!) : null,
+      'editedAt': message.editedAt != null
+          ? Timestamp.fromDate(message.editedAt!)
+          : null,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     };
@@ -137,12 +143,17 @@ class MessageDto {
       'type': message.type.name,
       'status': message.status.name,
       'sentAt': Timestamp.fromDate(message.sentAt),
-      'deliveredAt': message.deliveredAt != null ? Timestamp.fromDate(message.deliveredAt!) : null,
-      'readAt': message.readAt != null ? Timestamp.fromDate(message.readAt!) : null,
+      'deliveredAt': message.deliveredAt != null
+          ? Timestamp.fromDate(message.deliveredAt!)
+          : null,
+      'readAt':
+          message.readAt != null ? Timestamp.fromDate(message.readAt!) : null,
       'metadata': message.metadata,
       'replyToMessageId': message.replyToMessageId,
       'isEdited': message.isEdited,
-      'editedAt': message.editedAt != null ? Timestamp.fromDate(message.editedAt!) : null,
+      'editedAt': message.editedAt != null
+          ? Timestamp.fromDate(message.editedAt!)
+          : null,
     };
   }
 }

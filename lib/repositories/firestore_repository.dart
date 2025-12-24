@@ -24,6 +24,7 @@
 /// - **Batch Operations**: Support for efficient batch operations and transactions
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 /// Centralized Firestore repository providing comprehensive database access and testing abstraction.
 /// This repository class serves as the primary interface for all Firebase Firestore operations
 /// throughout the application, providing a consistent abstraction layer that enhances testability,

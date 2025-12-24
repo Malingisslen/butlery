@@ -28,6 +28,7 @@ import '../../../infrastructure/di/test_service_locator.dart';
 
 // Mock classes
 class MockOCRExtractionService extends Mock implements OCRExtractionService {}
+
 class MockTextImportStrategy extends Mock implements TextImportStrategy {}
 
 void main() {
@@ -157,7 +158,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
+        when(() =>
+                mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(
                   _createTestRecipe(),
                 ));
@@ -174,7 +176,8 @@ void main() {
 
       test('should handle base64 encoded image (fallback)', () async {
         // Arrange
-        final base64Image = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+        final base64Image =
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 
         when(() => mockOcrService.extractText(any())).thenAnswer(
           (_) async => _createOCRResult(
@@ -185,7 +188,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
+        when(() =>
+                mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
@@ -213,7 +217,8 @@ void main() {
     group('OCR Processing', () {
       test('should successfully extract text from image', () async {
         // Arrange
-        final expectedText = 'Köttbullar\n500g köttfärs\nBlanda och forma bullar';
+        final expectedText =
+            'Köttbullar\n500g köttfärs\nBlanda och forma bullar';
 
         when(() => mockOcrService.extractText(testImageBytes)).thenAnswer(
           (_) async => _createOCRResult(
@@ -225,7 +230,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(expectedText, options: any(named: 'options')))
+        when(() => mockTextStrategy.import(expectedText,
+                options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
@@ -239,7 +245,8 @@ void main() {
         expect(result.metadata?['ocr_confidence'], equals(0.92));
         verify(() => mockOcrService.initialize()).called(1);
         verify(() => mockOcrService.extractText(testImageBytes)).called(1);
-        verify(() => mockTextStrategy.import(expectedText, options: any(named: 'options'))).called(1);
+        verify(() => mockTextStrategy.import(expectedText,
+            options: any(named: 'options'))).called(1);
       });
 
       test('should handle OCR failure', () async {
@@ -296,7 +303,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
+        when(() =>
+                mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
@@ -321,7 +329,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
+        when(() =>
+                mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
@@ -348,7 +357,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
+        when(() =>
+                mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
@@ -360,8 +370,9 @@ void main() {
         expect(result.isSuccess, isTrue);
         expect(result.metadata?['ocr_confidence_level'], equals('high'));
         final hasConfidenceWarning = result.warnings?.any(
-          (w) => w.toLowerCase().contains('confidence'),
-        ) ?? false;
+              (w) => w.toLowerCase().contains('confidence'),
+            ) ??
+            false;
         expect(hasConfidenceWarning, isFalse);
       });
 
@@ -376,7 +387,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
+        when(() =>
+                mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
@@ -402,7 +414,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
+        when(() =>
+                mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
@@ -429,7 +442,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
+        when(() =>
+                mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
@@ -465,7 +479,8 @@ void main() {
           instructions: ['Vispa', 'Stek'],
         );
 
-        when(() => mockTextStrategy.import(ocrText, options: any(named: 'options')))
+        when(() => mockTextStrategy.import(ocrText,
+                options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(testRecipe));
 
         // Act
@@ -492,7 +507,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
+        when(() =>
+                mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.failure(
                   'No recipe structure detected',
                 ));
@@ -518,10 +534,14 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
+        when(() =>
+                mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(
                   _createTestRecipe(),
-                  warnings: ['Missing portion information', 'Incomplete instructions'],
+                  warnings: [
+                    'Missing portion information',
+                    'Incomplete instructions'
+                  ],
                 ));
 
         // Act
@@ -548,7 +568,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
+        when(() =>
+                mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
@@ -557,7 +578,8 @@ void main() {
         });
 
         // Assert
-        expect(result.metadata?['image_size_bytes'], equals(testImageBytes.length));
+        expect(result.metadata?['image_size_bytes'],
+            equals(testImageBytes.length));
         expect(result.metadata?['image_size_kb'], isNotNull);
       });
 
@@ -572,7 +594,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
+        when(() =>
+                mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
@@ -598,7 +621,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
+        when(() =>
+                mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
@@ -607,7 +631,8 @@ void main() {
         });
 
         // Assert
-        expect(result.metadata?['extracted_text_length'], equals(longText.length));
+        expect(
+            result.metadata?['extracted_text_length'], equals(longText.length));
       });
 
       test('should mark as Swedish optimized', () async {
@@ -621,7 +646,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
+        when(() =>
+                mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
@@ -649,7 +675,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
+        when(() =>
+                mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
@@ -691,7 +718,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
+        when(() =>
+                mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenThrow(Exception('Parsing error'));
 
         // Act
@@ -729,7 +757,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(any(), options: any(named: 'options')))
+        when(() =>
+                mockTextStrategy.import(any(), options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
@@ -755,7 +784,8 @@ void main() {
           ),
         );
 
-        when(() => mockTextStrategy.import(longText, options: any(named: 'options')))
+        when(() => mockTextStrategy.import(longText,
+                options: any(named: 'options')))
             .thenAnswer((_) async => ImportResult.success(_createTestRecipe()));
 
         // Act
@@ -765,7 +795,8 @@ void main() {
 
         // Assert
         expect(result.isSuccess, isTrue);
-        expect(result.metadata?['extracted_text_length'], equals(longText.length));
+        expect(
+            result.metadata?['extracted_text_length'], equals(longText.length));
       });
 
       test('should handle whitespace-only OCR result', () async {
@@ -803,7 +834,8 @@ Recipe _createTestRecipe({
       title: title ?? 'Test Recipe',
       description: 'Test description',
       ingredients: ingredients ?? ['Test ingredient 1', 'Test ingredient 2'],
-      instructions: instructions ?? ['Test instruction 1', 'Test instruction 2'],
+      instructions:
+          instructions ?? ['Test instruction 1', 'Test instruction 2'],
       mealType: 'Lunch',
     ),
     type: RecipeType.personal,

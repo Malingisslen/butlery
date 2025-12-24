@@ -2,7 +2,8 @@
 
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
+import 'package:butlery/repositories/interfaces/auth_repository.dart'
+    as auth_repo;
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
@@ -65,7 +66,8 @@ class DataExportService extends BaseService {
     }
 
     final userId = user.uid;
-    app_logger.AppLogger.info('[$_logTag] Starting data export for user: $userId');
+    app_logger.AppLogger.info(
+        '[$_logTag] Starting data export for user: $userId');
 
     // Create comprehensive export data structure
     final exportData = {
@@ -93,7 +95,8 @@ class DataExportService extends BaseService {
       'messages': await _socialManager.exportMessages(userId),
       'shared_content': await _socialManager.exportSharedContent(userId),
       // Activity exports
-      'comments_and_ratings': await _activityManager.exportCommentsAndRatings(userId),
+      'comments_and_ratings':
+          await _activityManager.exportCommentsAndRatings(userId),
       'activity_history': await _activityManager.exportActivityHistory(userId),
       // Compliance exports (GDPR-critical)
       'audit_logs': await _complianceManager.exportAuditLogs(userId),
@@ -101,44 +104,50 @@ class DataExportService extends BaseService {
       // Preferences exports
       'preferences': await _preferencesManager.exportPreferences(userId),
       'notifications': await _preferencesManager.exportNotifications(userId),
-      'notification_preferences': await _preferencesManager.exportNotificationPreferences(userId),
+      'notification_preferences':
+          await _preferencesManager.exportNotificationPreferences(userId),
     };
 
     // Convert to pretty-printed JSON
     final jsonString = const JsonEncoder.withIndent('  ').convert(exportData);
 
-    app_logger.AppLogger.success('[$_logTag] Data export completed successfully');
+    app_logger.AppLogger.success(
+        '[$_logTag] Data export completed successfully');
     return jsonString;
   }
 
   /// Export user profile (kept in main service as it requires auth repository)
   Future<Map<String, dynamic>> _exportUserProfile(String userId) async {
     return await safeExecute(
-      () async {
-        // Get private profile
-        final userDoc = await _firestore.collection('users').doc(userId).get();
+          () async {
+            // Get private profile
+            final userDoc =
+                await _firestore.collection('users').doc(userId).get();
 
-        // Get public profile
-        final publicProfileDoc = await _firestore
-            .collection('public_profiles')
-            .doc(userId)
-            .get();
+            // Get public profile
+            final publicProfileDoc = await _firestore
+                .collection('public_profiles')
+                .doc(userId)
+                .get();
 
-        final currentUser = _authRepository.currentUser;
-        return {
-          'private_profile': userDoc.data() ?? {},
-          'public_profile': publicProfileDoc.data() ?? {},
-          'firebase_auth': {
-            'uid': userId,
-            'email': currentUser?.email,
-            'email_verified': currentUser?.emailVerified,
-            'creation_time': currentUser?.metadata.creationTime?.toIso8601String(),
-            'last_sign_in': currentUser?.metadata.lastSignInTime?.toIso8601String(),
+            final currentUser = _authRepository.currentUser;
+            return {
+              'private_profile': userDoc.data() ?? {},
+              'public_profile': publicProfileDoc.data() ?? {},
+              'firebase_auth': {
+                'uid': userId,
+                'email': currentUser?.email,
+                'email_verified': currentUser?.emailVerified,
+                'creation_time':
+                    currentUser?.metadata.creationTime?.toIso8601String(),
+                'last_sign_in':
+                    currentUser?.metadata.lastSignInTime?.toIso8601String(),
+              },
+            };
           },
-        };
-      },
-      operationName: 'Export user profile',
-      defaultValue: {'error': 'Failed to export user profile'},
-    ) ?? {'error': 'Failed to export user profile'};
+          operationName: 'Export user profile',
+          defaultValue: {'error': 'Failed to export user profile'},
+        ) ??
+        {'error': 'Failed to export user profile'};
   }
 }

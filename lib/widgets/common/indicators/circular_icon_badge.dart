@@ -25,14 +25,14 @@ class CircularIconBadge extends StatelessWidget {
   const CircularIconBadge.add({
     super.key,
     this.size,
-  }) : icon = Icons.add,
-       backgroundColor = AppColors.primaryBlue,
-       iconColor = AppColors.cardWhite;
+  })  : icon = Icons.add,
+        backgroundColor = AppColors.primaryBlue,
+        iconColor = AppColors.cardWhite;
 
   @override
   Widget build(BuildContext context) {
     final badgeSize = size ?? AppDimensions.iconSizeS;
-    
+
     return Container(
       width: badgeSize,
       height: badgeSize,

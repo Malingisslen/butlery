@@ -127,7 +127,8 @@ class ShoppingDialogs {
             context: context,
             builder: (context) => AlertDialog(
               title: const Text('Inga vänner'),
-              content: const Text('Du har inga vänner att dela med än. Lägg till vänner först.'),
+              content: const Text(
+                  'Du har inga vänner att dela med än. Lägg till vänner först.'),
               actions: [
                 ActionButtons.primaryButton(
                   context,
@@ -141,9 +142,11 @@ class ShoppingDialogs {
         return;
       }
 
-      final shareViewModel = ServiceLocator.get<UniversalShareDialogViewModel>();
+      final shareViewModel =
+          ServiceLocator.get<UniversalShareDialogViewModel>();
       if (context.mounted) {
-        AppLogger.info('Showing share dialog for list: ${viewModel.activeList!.name}');
+        AppLogger.info(
+            'Showing share dialog for list: ${viewModel.activeList!.name}');
         await showDialog(
           context: context,
           builder: (context) => UniversalShareDialog.shoppingList(
@@ -189,11 +192,13 @@ class ShoppingDialogs {
           userDisplayNames[profile.uid] = profile.displayName;
         }
 
-        if (!userDisplayNames.containsKey(activeList.ownerId) && activeList.ownerDisplayName.isNotEmpty) {
+        if (!userDisplayNames.containsKey(activeList.ownerId) &&
+            activeList.ownerDisplayName.isNotEmpty) {
           userDisplayNames[activeList.ownerId] = activeList.ownerDisplayName;
         }
       } catch (e) {
-        AppLogger.warning('Could not load user profiles for sharing dialog: $e');
+        AppLogger.warning(
+            'Could not load user profiles for sharing dialog: $e');
         if (activeList.ownerDisplayName.isNotEmpty) {
           userDisplayNames[activeList.ownerId] = activeList.ownerDisplayName;
         }

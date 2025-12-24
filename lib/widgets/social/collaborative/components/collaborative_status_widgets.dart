@@ -169,17 +169,13 @@ class CollaborativeStatusWidgets {
       builder: (context, viewModel, child) {
         // Get status object and use .isCollaborative
         final status = contentType == 'recipe'
-            ? viewModel.getRecipeCollaborativeStatus(
-                contentId, 
-                recipe
-              )
+            ? viewModel.getRecipeCollaborativeStatus(contentId, recipe)
             : viewModel.getMenuCollaborativeStatus(
-                contentId, 
+                contentId,
                 menuData?.map((key, recipes) => MapEntry(
-                  key,
-                  recipes,
-                ))
-              );
+                      key,
+                      recipes,
+                    )));
 
         final isCollaborative = status.isCollaborative;
 
@@ -217,7 +213,8 @@ class CollaborativeStatusWidgets {
 }
 
 /// Private AppBar widget that properly implements PreferredSizeWidget
-class _CollaborativeAppBar extends StatelessWidget implements PreferredSizeWidget {
+class _CollaborativeAppBar extends StatelessWidget
+    implements PreferredSizeWidget {
   final String contentId;
   final String contentType;
   final Recipe? recipe;
@@ -266,7 +263,7 @@ class _CollaborativeAppBar extends StatelessWidget implements PreferredSizeWidge
                         ? 'Delat med ${participants.length} ${participants.length == 1 ? 'person' : 'personer'}'
                         : 'Delat innehåll',
                     child: CollaborativeStatusWidgets.statusBadge(
-                      text: participants.isNotEmpty 
+                      text: participants.isNotEmpty
                           ? '${participants.length}'
                           : 'Delat',
                       icon: Icons.people,
@@ -276,7 +273,7 @@ class _CollaborativeAppBar extends StatelessWidget implements PreferredSizeWidge
                 ),
               ),
             ],
-            
+
             // Include other actions
             if (actions != null) ...actions!,
           ],

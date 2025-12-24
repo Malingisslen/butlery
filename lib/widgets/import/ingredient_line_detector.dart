@@ -8,24 +8,49 @@ library;
 class IngredientLineDetector {
   // Swedish measurements (case-insensitive)
   static const _swedishMeasurements = [
-    'dl', 'cl', 'ml', 'l', 'liter',
-    'msk', 'tsk', 'krm',
-    'g', 'gram', 'kg', 'kilo',
-    'st', 'stycken', 'styck',
-    'port', 'portioner',
-    'nypa', 'nypor',
-    'knippe', 'klyfta', 'klyftor',
-    'skiva', 'skivor',
-    'burk', 'burkar',
-    'paket', 'pkt',
-    'ask', 'askar',
-    'tärning', 'tärningar',
+    'dl',
+    'cl',
+    'ml',
+    'l',
+    'liter',
+    'msk',
+    'tsk',
+    'krm',
+    'g',
+    'gram',
+    'kg',
+    'kilo',
+    'st',
+    'stycken',
+    'styck',
+    'port',
+    'portioner',
+    'nypa',
+    'nypor',
+    'knippe',
+    'klyfta',
+    'klyftor',
+    'skiva',
+    'skivor',
+    'burk',
+    'burkar',
+    'paket',
+    'pkt',
+    'ask',
+    'askar',
+    'tärning',
+    'tärningar',
   ];
 
   // Common ingredient starters
   static const _ingredientStarters = [
-    'ca ', 'ca. ', 'cirka ',
-    'ungefär ', 'ev ', 'ev. ', 'eventuellt ',
+    'ca ',
+    'ca. ',
+    'cirka ',
+    'ungefär ',
+    'ev ',
+    'ev. ',
+    'eventuellt ',
   ];
 
   // Fraction patterns (½, ¼, ¾, 1/2, 1/4)
@@ -202,8 +227,8 @@ class IngredientLineDetector {
       if (_isLikelyIngredient(line)) continue;
 
       // Instruction indicators
-      final isInstruction =
-          line.length > 20 || // Longer lines are likely instructions
+      final isInstruction = line.length >
+              20 || // Longer lines are likely instructions
           RegExp(r'^\d+[\.\)]\s').hasMatch(line) || // Numbered step
           RegExp(r'^(steg|step)\s*\d', caseSensitive: false).hasMatch(line) ||
           _containsVerb(line);
@@ -219,12 +244,36 @@ class IngredientLineDetector {
   /// Check if line contains cooking verbs (heuristic for instructions).
   static bool _containsVerb(String line) {
     final cookingVerbs = [
-      'vispa', 'rör', 'blanda', 'häll', 'tillsätt', 'lägg',
-      'stek', 'koka', 'grädda', 'baka', 'fräs', 'sjud',
-      'hacka', 'skär', 'skala', 'dela', 'ansa',
-      'servera', 'garnera', 'strö', 'toppa',
-      'låt', 'ställ', 'sätt', 'ta', 'använd',
-      'värm', 'kyl', 'frys', 'tina',
+      'vispa',
+      'rör',
+      'blanda',
+      'häll',
+      'tillsätt',
+      'lägg',
+      'stek',
+      'koka',
+      'grädda',
+      'baka',
+      'fräs',
+      'sjud',
+      'hacka',
+      'skär',
+      'skala',
+      'dela',
+      'ansa',
+      'servera',
+      'garnera',
+      'strö',
+      'toppa',
+      'låt',
+      'ställ',
+      'sätt',
+      'ta',
+      'använd',
+      'värm',
+      'kyl',
+      'frys',
+      'tina',
     ];
 
     final lowerLine = line.toLowerCase();

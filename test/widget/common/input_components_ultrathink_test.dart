@@ -19,13 +19,18 @@ void main() {
     }
 
     group('Widget Input Interface Methods', () {
-      testWidgets('instructionEditor method exists and returns widget interface', (WidgetTester tester) async {
+      testWidgets(
+          'instructionEditor method exists and returns widget interface',
+          (WidgetTester tester) async {
         // Test method exists and returns Widget
         expect(InputComponents.instructionEditor, isA<Function>());
 
         // Test method can be called without error - interface validation
         final basicEditor = InputComponents.instructionEditor(
-          initialInstructions: ['Förvärm ugnen till 200°C', 'Blanda ingredienserna'],
+          initialInstructions: [
+            'Förvärm ugnen till 200°C',
+            'Blanda ingredienserna'
+          ],
         );
         expect(basicEditor, isA<Widget>());
 
@@ -37,7 +42,8 @@ void main() {
         expect(editorWithCallback, isA<Widget>());
       });
 
-      testWidgets('portionScaler method exists and returns widget interface', (WidgetTester tester) async {
+      testWidgets('portionScaler method exists and returns widget interface',
+          (WidgetTester tester) async {
         expect(InputComponents.portionScaler, isA<Function>());
 
         // Test with required parameters - interface validation
@@ -59,7 +65,9 @@ void main() {
         expect(fullScaler, isA<Widget>());
       });
 
-      testWidgets('debouncedCheckbox method exists and returns widget interface', (WidgetTester tester) async {
+      testWidgets(
+          'debouncedCheckbox method exists and returns widget interface',
+          (WidgetTester tester) async {
         expect(InputComponents.debouncedCheckbox, isA<Function>());
 
         // Test with required parameters - interface validation
@@ -88,7 +96,8 @@ void main() {
     });
 
     group('Dialog Input Interface Methods', () {
-      testWidgets('showShoppingItemDialog method exists with correct signature', (WidgetTester tester) async {
+      testWidgets('showShoppingItemDialog method exists with correct signature',
+          (WidgetTester tester) async {
         expect(InputComponents.showShoppingItemDialog, isA<Function>());
 
         await tester.pumpWidget(
@@ -129,7 +138,8 @@ void main() {
         expect(find.text('Test Shopping Dialog'), findsOneWidget);
       });
 
-      testWidgets('showListSelector method exists with correct parameters', (WidgetTester tester) async {
+      testWidgets('showListSelector method exists with correct parameters',
+          (WidgetTester tester) async {
         expect(InputComponents.showListSelector, isA<Function>());
 
         await tester.pumpWidget(
@@ -198,80 +208,81 @@ void main() {
     });
 
     group('Swedish Localization Support', () {
-      testWidgets('all input methods support Swedish parameters', (WidgetTester tester) async {
+      testWidgets('all input methods support Swedish parameters',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             child: SingleChildScrollView(
               child: Column(
                 children: [
                   // Test instruction editor with Swedish text
-                InputComponents.instructionEditor(
-                  initialInstructions: [
-                    'Förvärm ugnen till 200°C och smörj en form',
-                    'Blanda mjöl, socker och ägg i en skål',
-                    'Rör om tills smeten är slät och klumpfri',
-                    'Häll smeten i formen och grädda i 45 minuter',
-                  ],
-                  onChanged: (instructions) {
-                    // Verify Swedish characters are preserved
-                    for (String instruction in instructions) {
-                      expect(instruction.contains(RegExp(r'[åäö]')), isTrue);
-                    }
-                  },
-                ),
-                
-                // Test portion scaler with Swedish ingredients
-                InputComponents.portionScaler(
-                  originalPortions: 4,
-                  originalIngredients: [
-                    '3 dl vetemjöl',
-                    '2 ägg från frigående höns',
-                    '4 dl färsk mjölk',
-                    '1 msk smör för stekning',
-                    '1 tsk salt och peppar efter smak',
-                  ],
-                  onPortionChanged: (newPortions, scaledIngredients) {
-                    // Verify Swedish ingredient names are preserved
-                    for (String ingredient in scaledIngredients) {
-                      expect(ingredient.length, greaterThan(0));
-                    }
-                  },
-                  minPortions: 1,
-                  maxPortions: 12,
-                ),
-
-                // Test debounced checkbox with Swedish context
-                InputComponents.debouncedCheckbox(
-                  value: true,
-                  onChanged: (checked) {
-                    // Swedish context validation
-                  },
-                  activeColor: Colors.green,
-                ),
-
-                Builder(
-                  builder: (context) => ElevatedButton(
-                    onPressed: () {
-                      // Test shopping item dialog with Swedish items
-                      final svenskItem = ShoppingListFactory.buildItem(
-                        id: 'svensk-item-id',
-                        name: 'Färsk mjölk från Skåne',
-                        amount: 1.5,
-                        unit: 'liter',
-                        category: 'Mejeri & ägg',
-                        bought: false,
-                      );
-
-                      InputComponents.showShoppingItemDialog(
-                        context,
-                        initialItem: svenskItem,
-                      );
+                  InputComponents.instructionEditor(
+                    initialInstructions: [
+                      'Förvärm ugnen till 200°C och smörj en form',
+                      'Blanda mjöl, socker och ägg i en skål',
+                      'Rör om tills smeten är slät och klumpfri',
+                      'Häll smeten i formen och grädda i 45 minuter',
+                    ],
+                    onChanged: (instructions) {
+                      // Verify Swedish characters are preserved
+                      for (String instruction in instructions) {
+                        expect(instruction.contains(RegExp(r'[åäö]')), isTrue);
+                      }
                     },
-                    child: const Text('Swedish Shopping Dialog Test'),
                   ),
-                ),
-              ],
-            ),
+
+                  // Test portion scaler with Swedish ingredients
+                  InputComponents.portionScaler(
+                    originalPortions: 4,
+                    originalIngredients: [
+                      '3 dl vetemjöl',
+                      '2 ägg från frigående höns',
+                      '4 dl färsk mjölk',
+                      '1 msk smör för stekning',
+                      '1 tsk salt och peppar efter smak',
+                    ],
+                    onPortionChanged: (newPortions, scaledIngredients) {
+                      // Verify Swedish ingredient names are preserved
+                      for (String ingredient in scaledIngredients) {
+                        expect(ingredient.length, greaterThan(0));
+                      }
+                    },
+                    minPortions: 1,
+                    maxPortions: 12,
+                  ),
+
+                  // Test debounced checkbox with Swedish context
+                  InputComponents.debouncedCheckbox(
+                    value: true,
+                    onChanged: (checked) {
+                      // Swedish context validation
+                    },
+                    activeColor: Colors.green,
+                  ),
+
+                  Builder(
+                    builder: (context) => ElevatedButton(
+                      onPressed: () {
+                        // Test shopping item dialog with Swedish items
+                        final svenskItem = ShoppingListFactory.buildItem(
+                          id: 'svensk-item-id',
+                          name: 'Färsk mjölk från Skåne',
+                          amount: 1.5,
+                          unit: 'liter',
+                          category: 'Mejeri & ägg',
+                          bought: false,
+                        );
+
+                        InputComponents.showShoppingItemDialog(
+                          context,
+                          initialItem: svenskItem,
+                        );
+                      },
+                      child: const Text('Swedish Shopping Dialog Test'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -282,7 +293,8 @@ void main() {
     });
 
     group('Parameter Delegation Validation', () {
-      testWidgets('instructionEditor delegates all parameters correctly', (WidgetTester tester) async {
+      testWidgets('instructionEditor delegates all parameters correctly',
+          (WidgetTester tester) async {
         // Test that all parameters are accepted without errors
         final testWidget = InputComponents.instructionEditor(
           initialInstructions: ['Test instruction 1', 'Test instruction 2'],
@@ -296,7 +308,8 @@ void main() {
         expect(find.byWidget(testWidget), findsOneWidget);
       });
 
-      testWidgets('portionScaler delegates all parameters correctly', (WidgetTester tester) async {
+      testWidgets('portionScaler delegates all parameters correctly',
+          (WidgetTester tester) async {
         final testWidget = InputComponents.portionScaler(
           originalPortions: 4,
           originalIngredients: ['2 cups flour', '1 cup milk', '2 eggs'],
@@ -312,7 +325,8 @@ void main() {
         expect(find.byWidget(testWidget), findsOneWidget);
       });
 
-      testWidgets('debouncedCheckbox delegates all parameters correctly', (WidgetTester tester) async {
+      testWidgets('debouncedCheckbox delegates all parameters correctly',
+          (WidgetTester tester) async {
         final testWidget = InputComponents.debouncedCheckbox(
           value: false,
           onChanged: (checked) {
@@ -328,7 +342,8 @@ void main() {
     });
 
     group('Return Type Interface Validation', () {
-      testWidgets('all static methods exist and have correct return types', (WidgetTester tester) async {
+      testWidgets('all static methods exist and have correct return types',
+          (WidgetTester tester) async {
         // Widget return type methods
         expect(InputComponents.instructionEditor, isA<Function>());
         expect(InputComponents.portionScaler, isA<Function>());
@@ -339,15 +354,18 @@ void main() {
         expect(InputComponents.showListSelector, isA<Function>());
       });
 
-      testWidgets('dialog methods return correct Future types', (WidgetTester tester) async {
+      testWidgets('dialog methods return correct Future types',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             child: Builder(
               builder: (context) => ElevatedButton(
                 onPressed: () async {
                   // Verify return types are correct (compilation check)
-                  final Future<UnifiedShoppingItem?> shoppingDialog = InputComponents.showShoppingItemDialog(context);
-                  final Future<void> listSelector = InputComponents.showListSelector(context);
+                  final Future<UnifiedShoppingItem?> shoppingDialog =
+                      InputComponents.showShoppingItemDialog(context);
+                  final Future<void> listSelector =
+                      InputComponents.showListSelector(context);
 
                   expect(shoppingDialog, isA<Future<UnifiedShoppingItem?>>());
                   expect(listSelector, isA<Future<void>>());
@@ -363,7 +381,8 @@ void main() {
     });
 
     group('Responsive Design Behavior', () {
-      testWidgets('input components adapt to small screen sizes', (WidgetTester tester) async {
+      testWidgets('input components adapt to small screen sizes',
+          (WidgetTester tester) async {
         tester.view.physicalSize = const Size(320, 568);
         tester.view.devicePixelRatio = 1.0;
 
@@ -396,7 +415,8 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      testWidgets('input components adapt to tablet screen sizes', (WidgetTester tester) async {
+      testWidgets('input components adapt to tablet screen sizes',
+          (WidgetTester tester) async {
         tester.view.physicalSize = const Size(768, 1024);
         tester.view.devicePixelRatio = 1.0;
 
@@ -432,7 +452,8 @@ void main() {
     });
 
     group('Facade Pattern Interface Validation', () {
-      testWidgets('all input component methods exist and are callable', (WidgetTester tester) async {
+      testWidgets('all input component methods exist and are callable',
+          (WidgetTester tester) async {
         // Widget Interface Methods
         expect(InputComponents.instructionEditor, isA<Function>());
         expect(InputComponents.portionScaler, isA<Function>());
@@ -443,7 +464,8 @@ void main() {
         expect(InputComponents.showListSelector, isA<Function>());
       });
 
-      testWidgets('facade maintains correct delegation patterns', (WidgetTester tester) async {
+      testWidgets('facade maintains correct delegation patterns',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             child: Column(
@@ -465,10 +487,13 @@ void main() {
                   builder: (context) => ElevatedButton(
                     onPressed: () async {
                       // Dialog methods return Future objects
-                      final shoppingFuture = InputComponents.showShoppingItemDialog(context);
-                      final listSelectorFuture = InputComponents.showListSelector(context);
+                      final shoppingFuture =
+                          InputComponents.showShoppingItemDialog(context);
+                      final listSelectorFuture =
+                          InputComponents.showListSelector(context);
 
-                      expect(shoppingFuture, isA<Future<UnifiedShoppingItem?>>());
+                      expect(
+                          shoppingFuture, isA<Future<UnifiedShoppingItem?>>());
                       expect(listSelectorFuture, isA<Future<void>>());
                     },
                     child: const Text('Delegation Test'),

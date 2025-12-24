@@ -7,7 +7,8 @@ import 'package:butlery/theme/component_themes.dart';
 
 /// Recently shared section showing latest shared content in user's network.
 class RecentlySharedSection {
-  static Widget build(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+  static Widget build(
+      BuildContext context, DiscoveryDashboardViewModel viewModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -39,7 +40,8 @@ class RecentlySharedSection {
         const SizedBox(width: AppDimensions.spacingS),
         Text(
           'Nyligen delat',
-          style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w600),
+          style:
+              AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w600),
         ),
       ],
     );

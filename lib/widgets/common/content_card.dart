@@ -28,16 +28,16 @@ export 'content_cards/shopping_list_card.dart' show ShoppingListCardStyle;
 enum ContentCardType {
   /// Recipe content cards displaying cooking recipes with ingredients, instructions, and metadata
   recipe,
-  
+
   /// Menu content cards displaying weekly meal plans with recipe collections and sharing features
   menu,
-  
+
   /// Shopping list content cards displaying collaborative shopping lists with item management
   shoppingList,
-  
+
   /// Friend content cards displaying user profiles with social relationship information
   friend,
-  
+
   /// Friend request content cards displaying pending social connections with accept/decline actions
   friendRequest,
 }
@@ -48,10 +48,10 @@ enum ContentCardType {
 enum ContentCardStyle {
   /// Detailed display mode showing complete content information with images, descriptions, and full metadata
   detailed,
-  
+
   /// Compact display mode optimized for space efficiency in list views and mobile interfaces
   compact,
-  
+
   /// Grid display mode optimized for grid-based layouts and responsive multi-column displays
   grid,
 }
@@ -96,49 +96,49 @@ enum ContentCardStyle {
 class ContentCard extends StatelessWidget {
   /// Content item to display - type depends on ContentCardType specified
   final dynamic item;
-  
+
   /// Content type determining which specialized card module to delegate to
   final ContentCardType type;
-  
+
   /// Display style controlling card appearance and information density
   final ContentCardStyle style;
-  
+
   /// Primary tap handler for content interaction and navigation
   final VoidCallback? onTap;
-  
+
   /// Long press handler for context menus and advanced interactions
   final VoidCallback? onLongPress;
-  
+
   /// External margin spacing around the card widget
   final EdgeInsets? margin;
-  
+
   /// Internal padding within the card content area
   final EdgeInsets? padding;
-  
+
   /// Controls visibility of primary content images and visual elements
   final bool showImage;
-  
+
   /// Controls visibility of content tags, categories, and classification labels
   final bool showTags;
-  
+
   /// Controls visibility of metadata information such as creation date, author, and statistics
   final bool showMetadata;
-  
+
   /// Controls visibility of online/offline status indicators for user-related content
   final bool showOnlineStatus;
-  
+
   /// Controls visibility of sharing status and collaboration indicators
   final bool showSharingStatus;
-  
+
   /// Optional trailing widget for custom actions and controls
   final Widget? trailing;
-  
+
   /// Optional subtitle text for additional context information
   final String? subtitle;
 
   /// Accept action handler specifically for friend request cards
   final VoidCallback? onAccept;
-  
+
   /// Decline action handler specifically for friend request cards
   final VoidCallback? onDecline;
 
@@ -218,7 +218,7 @@ class ContentCard extends StatelessWidget {
   Widget _buildRecipeCard() {
     assert(item is Recipe, 'Recipe card requires Recipe item');
     final recipe = item as Recipe;
-    
+
     return RecipeCard(
       recipe: recipe,
       onTap: onTap != null ? (_) => onTap!() : null,
@@ -241,7 +241,7 @@ class ContentCard extends StatelessWidget {
   Widget _buildFriendCard() {
     assert(item is UserProfile, 'Friend card requires UserProfile item');
     final user = item as UserProfile;
-    
+
     return FriendCard(
       user: user,
       onTap: onTap,
@@ -264,9 +264,10 @@ class ContentCard extends StatelessWidget {
   /// Returns configured FriendRequestCard widget with action handlers
   /// Throws AssertionError if item is not a FriendRequest instance
   Widget _buildFriendRequestCard() {
-    assert(item is FriendRequest, 'Friend request card requires FriendRequest item');
+    assert(item is FriendRequest,
+        'Friend request card requires FriendRequest item');
     final friendRequest = item as FriendRequest;
-    
+
     return FriendRequestCard(
       friendRequest: friendRequest,
       onAccept: onAccept,
@@ -363,7 +364,7 @@ class ContentCard extends StatelessWidget {
   }
 
   // Static factory methods for backward compatibility (legacy API support)
-  
+
   /// Legacy method: Create recipe card (backward compatibility)
   static Widget recipe({
     required Recipe recipe,

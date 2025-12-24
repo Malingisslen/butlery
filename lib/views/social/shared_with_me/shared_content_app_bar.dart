@@ -9,7 +9,8 @@ import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_vie
 /// SharedContentAppBar - App bar for shared content view
 /// Handles the app bar with notification badges and refresh functionality.
 class SharedContentAppBar {
-  static Widget build(BuildContext context, SharedContentCoordinatorViewModel viewModel) {
+  static Widget build(
+      BuildContext context, SharedContentCoordinatorViewModel viewModel) {
     return SliverAppBar(
       title: const Text('Delat innehåll'),
       floating: true,

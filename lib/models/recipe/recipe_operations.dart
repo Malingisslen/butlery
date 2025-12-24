@@ -10,7 +10,7 @@ class RecipeOperations {
     String? userDisplayName,
   }) {
     if (ingredient.trim().isEmpty) return recipe;
-    
+
     final updatedIngredients = [...recipe.core.ingredients, ingredient.trim()];
     return recipe.copyWith(
       ingredients: updatedIngredients,
@@ -29,10 +29,10 @@ class RecipeOperations {
   }) {
     if (index < 0 || index >= recipe.core.ingredients.length) return recipe;
     if (newIngredient.trim().isEmpty) return recipe;
-    
+
     final updatedIngredients = [...recipe.core.ingredients];
     updatedIngredients[index] = newIngredient.trim();
-    
+
     return recipe.copyWith(
       ingredients: updatedIngredients,
       lastEditedByUserId: userId,
@@ -48,10 +48,10 @@ class RecipeOperations {
     String? userDisplayName,
   }) {
     if (index < 0 || index >= recipe.core.ingredients.length) return recipe;
-    
+
     final updatedIngredients = [...recipe.core.ingredients];
     updatedIngredients.removeAt(index);
-    
+
     return recipe.copyWith(
       ingredients: updatedIngredients,
       lastEditedByUserId: userId,
@@ -70,7 +70,7 @@ class RecipeOperations {
         .map((ingredient) => ingredient.trim())
         .where((ingredient) => ingredient.isNotEmpty)
         .toList();
-    
+
     return recipe.copyWith(
       ingredients: cleanedIngredients,
       lastEditedByUserId: userId,
@@ -86,16 +86,18 @@ class RecipeOperations {
     String? userId,
     String? userDisplayName,
   }) {
-    if (fromIndex < 0 || fromIndex >= recipe.core.ingredients.length ||
-        toIndex < 0 || toIndex >= recipe.core.ingredients.length ||
+    if (fromIndex < 0 ||
+        fromIndex >= recipe.core.ingredients.length ||
+        toIndex < 0 ||
+        toIndex >= recipe.core.ingredients.length ||
         fromIndex == toIndex) {
       return recipe;
     }
-    
+
     final updatedIngredients = [...recipe.core.ingredients];
     final ingredient = updatedIngredients.removeAt(fromIndex);
     updatedIngredients.insert(toIndex, ingredient);
-    
+
     return recipe.copyWith(
       ingredients: updatedIngredients,
       lastEditedByUserId: userId,
@@ -111,8 +113,11 @@ class RecipeOperations {
     String? userDisplayName,
   }) {
     if (instruction.trim().isEmpty) return recipe;
-    
-    final updatedInstructions = [...recipe.core.instructions, instruction.trim()];
+
+    final updatedInstructions = [
+      ...recipe.core.instructions,
+      instruction.trim()
+    ];
     return recipe.copyWith(
       instructions: updatedInstructions,
       lastEditedByUserId: userId,
@@ -130,10 +135,10 @@ class RecipeOperations {
   }) {
     if (index < 0 || index >= recipe.core.instructions.length) return recipe;
     if (newInstruction.trim().isEmpty) return recipe;
-    
+
     final updatedInstructions = [...recipe.core.instructions];
     updatedInstructions[index] = newInstruction.trim();
-    
+
     return recipe.copyWith(
       instructions: updatedInstructions,
       lastEditedByUserId: userId,
@@ -149,10 +154,10 @@ class RecipeOperations {
     String? userDisplayName,
   }) {
     if (index < 0 || index >= recipe.core.instructions.length) return recipe;
-    
+
     final updatedInstructions = [...recipe.core.instructions];
     updatedInstructions.removeAt(index);
-    
+
     return recipe.copyWith(
       instructions: updatedInstructions,
       lastEditedByUserId: userId,
@@ -171,7 +176,7 @@ class RecipeOperations {
         .map((instruction) => instruction.trim())
         .where((instruction) => instruction.isNotEmpty)
         .toList();
-    
+
     return recipe.copyWith(
       instructions: cleanedInstructions,
       lastEditedByUserId: userId,
@@ -187,16 +192,18 @@ class RecipeOperations {
     String? userId,
     String? userDisplayName,
   }) {
-    if (fromIndex < 0 || fromIndex >= recipe.core.instructions.length ||
-        toIndex < 0 || toIndex >= recipe.core.instructions.length ||
+    if (fromIndex < 0 ||
+        fromIndex >= recipe.core.instructions.length ||
+        toIndex < 0 ||
+        toIndex >= recipe.core.instructions.length ||
         fromIndex == toIndex) {
       return recipe;
     }
-    
+
     final updatedInstructions = [...recipe.core.instructions];
     final instruction = updatedInstructions.removeAt(fromIndex);
     updatedInstructions.insert(toIndex, instruction);
-    
+
     return recipe.copyWith(
       instructions: updatedInstructions,
       lastEditedByUserId: userId,
@@ -212,7 +219,7 @@ class RecipeOperations {
     String? userDisplayName,
   }) {
     if (imageUrl.trim().isEmpty) return recipe;
-    
+
     final updatedImageUrls = [...recipe.core.imageUrls, imageUrl.trim()];
     return recipe.copyWith(
       imageUrls: updatedImageUrls,
@@ -229,10 +236,10 @@ class RecipeOperations {
     String? userDisplayName,
   }) {
     if (index < 0 || index >= recipe.core.imageUrls.length) return recipe;
-    
+
     final updatedImageUrls = [...recipe.core.imageUrls];
     updatedImageUrls.removeAt(index);
-    
+
     return recipe.copyWith(
       imageUrls: updatedImageUrls,
       lastEditedByUserId: userId,
@@ -251,7 +258,7 @@ class RecipeOperations {
         .map((url) => url.trim())
         .where((url) => url.isNotEmpty)
         .toList();
-    
+
     return recipe.copyWith(
       imageUrls: cleanedImageUrls,
       lastEditedByUserId: userId,
@@ -314,7 +321,7 @@ class RecipeOperations {
   /// Get validation errors
   static List<String> getValidationErrors(Recipe recipe) {
     final errors = <String>[];
-    
+
     if (recipe.core.title.trim().isEmpty) {
       errors.add('Titel saknas');
     }
@@ -327,7 +334,7 @@ class RecipeOperations {
     if (recipe.core.mealType.trim().isEmpty) {
       errors.add('Måltidstyp saknas');
     }
-    
+
     return errors;
   }
 
@@ -335,7 +342,9 @@ class RecipeOperations {
   static bool isPublishable(Recipe recipe) {
     if (!isValidRecipe(recipe)) return false;
     if (recipe.core.description.trim().isEmpty) return false;
-    if (recipe.core.portions == null || recipe.core.portions! <= 0) return false;
+    if (recipe.core.portions == null || recipe.core.portions! <= 0) {
+      return false;
+    }
     return true;
   }
 
@@ -354,33 +363,33 @@ class RecipeOperations {
   /// Get complexity score (1-5)
   static int getComplexityScore(Recipe recipe) {
     int score = 1;
-    
+
     // More ingredients increase complexity
     if (recipe.core.ingredients.length > 5) score++;
     if (recipe.core.ingredients.length > 10) score++;
-    
+
     // More instructions increase complexity
     if (recipe.core.instructions.length > 3) score++;
     if (recipe.core.instructions.length > 6) score++;
-    
+
     // Long cooking time increases complexity
     final timeMinutes = recipe.core.timeMinutes ?? 0;
     if (timeMinutes > 30) score++;
     if (timeMinutes > 60) score++;
-    
+
     return score.clamp(1, 5);
   }
 
   /// Estimate preparation time based on content
   static int estimatePreparationTime(Recipe recipe) {
     int baseTime = 15; // Base preparation time
-    
+
     // Add time based on ingredient count
     baseTime += recipe.core.ingredients.length * 2;
-    
+
     // Add time based on instruction complexity
     for (final instruction in recipe.core.instructions) {
-      if (instruction.toLowerCase().contains('chop') || 
+      if (instruction.toLowerCase().contains('chop') ||
           instruction.toLowerCase().contains('dice') ||
           instruction.toLowerCase().contains('mince')) {
         baseTime += 5;
@@ -390,7 +399,7 @@ class RecipeOperations {
         baseTime += 10;
       }
     }
-    
+
     return baseTime;
   }
 }

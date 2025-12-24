@@ -59,18 +59,21 @@ void main() {
         final comment = _createComment('recipe-1', 'user-123');
 
         // Act
-        final canCreate = await repository.validateCreatePermission('user-123', comment);
+        final canCreate =
+            await repository.validateCreatePermission('user-123', comment);
 
         // Assert
         expect(canCreate, isTrue);
       });
 
-      test('should reject user from creating comment as another user', () async {
+      test('should reject user from creating comment as another user',
+          () async {
         // Arrange
         final comment = _createComment('recipe-1', 'other-user');
 
         // Act
-        final canCreate = await repository.validateCreatePermission('user-123', comment);
+        final canCreate =
+            await repository.validateCreatePermission('user-123', comment);
 
         // Assert
         expect(canCreate, isFalse);
@@ -81,7 +84,8 @@ void main() {
         final comment = _createComment('recipe-1', 'other-user');
 
         // Act
-        final canRead = await repository.validateReadPermission('user-123', 'comment-1', comment);
+        final canRead = await repository.validateReadPermission(
+            'user-123', 'comment-1', comment);
 
         // Assert
         expect(canRead, isTrue); // Comments are public
@@ -92,18 +96,21 @@ void main() {
         final comment = _createComment('recipe-1', 'user-123');
 
         // Act
-        final canUpdate = await repository.validateUpdatePermission('user-123', 'comment-1', comment);
+        final canUpdate = await repository.validateUpdatePermission(
+            'user-123', 'comment-1', comment);
 
         // Assert
         expect(canUpdate, isTrue);
       });
 
-      test('should reject user from updating another user\'s comment', () async {
+      test('should reject user from updating another user\'s comment',
+          () async {
         // Arrange
         final comment = _createComment('recipe-1', 'other-user');
 
         // Act
-        final canUpdate = await repository.validateUpdatePermission('user-123', 'comment-1', comment);
+        final canUpdate = await repository.validateUpdatePermission(
+            'user-123', 'comment-1', comment);
 
         // Assert
         expect(canUpdate, isFalse);
@@ -116,20 +123,23 @@ void main() {
         await _seedComment(fakeFirestore, commentId, comment);
 
         // Act
-        final canDelete = await repository.validateDeletePermission('user-123', commentId);
+        final canDelete =
+            await repository.validateDeletePermission('user-123', commentId);
 
         // Assert
         expect(canDelete, isTrue);
       });
 
-      test('should reject user from deleting another user\'s comment', () async {
+      test('should reject user from deleting another user\'s comment',
+          () async {
         // Arrange
         const commentId = 'comment-1';
         final comment = _createComment('recipe-1', 'other-user', id: commentId);
         await _seedComment(fakeFirestore, commentId, comment);
 
         // Act
-        final canDelete = await repository.validateDeletePermission('user-123', commentId);
+        final canDelete =
+            await repository.validateDeletePermission('user-123', commentId);
 
         // Assert
         expect(canDelete, isFalse);
@@ -137,7 +147,8 @@ void main() {
 
       test('should reject delete when comment does not exist', () async {
         // Act
-        final canDelete = await repository.validateDeletePermission('user-123', 'nonexistent');
+        final canDelete = await repository.validateDeletePermission(
+            'user-123', 'nonexistent');
 
         // Assert
         expect(canDelete, isFalse);
@@ -164,7 +175,9 @@ void main() {
         expect(result.text, equals(content));
         expect(result.parentCommentId, isNull); // Top-level comment
         expect(result.likedByUserIds, isEmpty);
-      }, skip: 'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+      },
+          skip:
+              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
 
       test('should add reply comment successfully', () async {
         // Arrange
@@ -184,7 +197,9 @@ void main() {
         // Assert
         expect(result.recipeId, equals(recipeId));
         expect(result.parentCommentId, equals(parentCommentId)); // Reply
-      }, skip: 'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+      },
+          skip:
+              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
 
       test('should reject empty comment content', () async {
         // Act & Assert
@@ -210,7 +225,8 @@ void main() {
         );
       });
 
-      test('should reject user from creating comment as another user', () async {
+      test('should reject user from creating comment as another user',
+          () async {
         // Act & Assert
         expect(
           () => repository.addComment(
@@ -236,9 +252,14 @@ void main() {
         await repository.updateComment(commentId, newContent);
 
         // Assert
-        final doc = await fakeFirestore.collection('recipe_comments').doc(commentId).get();
+        final doc = await fakeFirestore
+            .collection('recipe_comments')
+            .doc(commentId)
+            .get();
         expect(doc.data()!['text'], equals(newContent));
-      }, skip: 'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+      },
+          skip:
+              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
 
       test('should reject empty update content', () async {
         // Arrange
@@ -253,7 +274,8 @@ void main() {
         );
       });
 
-      test('should reject user from updating another user\'s comment', () async {
+      test('should reject user from updating another user\'s comment',
+          () async {
         // Arrange
         const commentId = 'comment-1';
         final comment = _createComment('recipe-1', 'other-user', id: commentId);
@@ -283,18 +305,25 @@ void main() {
         await _seedComment(fakeFirestore, commentId, comment);
 
         // Verify comment exists before deletion
-        var doc = await fakeFirestore.collection('recipe_comments').doc(commentId).get();
+        var doc = await fakeFirestore
+            .collection('recipe_comments')
+            .doc(commentId)
+            .get();
         expect(doc.exists, isTrue);
 
         // Act
         await repository.deleteComment(commentId);
 
         // Assert
-        doc = await fakeFirestore.collection('recipe_comments').doc(commentId).get();
+        doc = await fakeFirestore
+            .collection('recipe_comments')
+            .doc(commentId)
+            .get();
         expect(doc.exists, isFalse);
       });
 
-      test('should reject user from deleting another user\'s comment', () async {
+      test('should reject user from deleting another user\'s comment',
+          () async {
         // Arrange
         const commentId = 'comment-1';
         final comment = _createComment('recipe-1', 'other-user', id: commentId);
@@ -320,9 +349,12 @@ void main() {
       test('should retrieve all comments for a recipe', () async {
         // Arrange
         const recipeId = 'recipe-1';
-        await _seedComment(fakeFirestore, 'comment-1', _createComment(recipeId, 'user-1', id: 'comment-1'));
-        await _seedComment(fakeFirestore, 'comment-2', _createComment(recipeId, 'user-2', id: 'comment-2'));
-        await _seedComment(fakeFirestore, 'comment-3', _createComment(recipeId, 'user-3', id: 'comment-3'));
+        await _seedComment(fakeFirestore, 'comment-1',
+            _createComment(recipeId, 'user-1', id: 'comment-1'));
+        await _seedComment(fakeFirestore, 'comment-2',
+            _createComment(recipeId, 'user-2', id: 'comment-2'));
+        await _seedComment(fakeFirestore, 'comment-3',
+            _createComment(recipeId, 'user-3', id: 'comment-3'));
 
         // Act
         final comments = await repository.getCommentsForRecipe(recipeId);
@@ -334,7 +366,8 @@ void main() {
 
       test('should return empty list when no comments exist', () async {
         // Act
-        final comments = await repository.getCommentsForRecipe('recipe-with-no-comments');
+        final comments =
+            await repository.getCommentsForRecipe('recipe-with-no-comments');
 
         // Assert
         expect(comments, isEmpty);
@@ -361,8 +394,13 @@ void main() {
       test('should include both top-level and reply comments', () async {
         // Arrange
         const recipeId = 'recipe-1';
-        await _seedComment(fakeFirestore, 'comment-1', _createComment(recipeId, 'user-1', id: 'comment-1'));
-        await _seedComment(fakeFirestore, 'reply-1', _createComment(recipeId, 'user-2', id: 'reply-1', parentId: 'comment-1'));
+        await _seedComment(fakeFirestore, 'comment-1',
+            _createComment(recipeId, 'user-1', id: 'comment-1'));
+        await _seedComment(
+            fakeFirestore,
+            'reply-1',
+            _createComment(recipeId, 'user-2',
+                id: 'reply-1', parentId: 'comment-1'));
 
         // Act
         final comments = await repository.getCommentsForRecipe(recipeId);
@@ -381,16 +419,26 @@ void main() {
         // Arrange
         const recipeId = 'recipe-1';
         const parentCommentId = 'comment-1';
-        await _seedComment(fakeFirestore, parentCommentId, _createComment(recipeId, 'user-1', id: parentCommentId));
-        await _seedComment(fakeFirestore, 'reply-1', _createComment(recipeId, 'user-2', id: 'reply-1', parentId: parentCommentId));
-        await _seedComment(fakeFirestore, 'reply-2', _createComment(recipeId, 'user-3', id: 'reply-2', parentId: parentCommentId));
+        await _seedComment(fakeFirestore, parentCommentId,
+            _createComment(recipeId, 'user-1', id: parentCommentId));
+        await _seedComment(
+            fakeFirestore,
+            'reply-1',
+            _createComment(recipeId, 'user-2',
+                id: 'reply-1', parentId: parentCommentId));
+        await _seedComment(
+            fakeFirestore,
+            'reply-2',
+            _createComment(recipeId, 'user-3',
+                id: 'reply-2', parentId: parentCommentId));
 
         // Act
         final replies = await repository.getReplies(parentCommentId);
 
         // Assert
         expect(replies.length, equals(2));
-        expect(replies.every((r) => r.parentCommentId == parentCommentId), isTrue);
+        expect(
+            replies.every((r) => r.parentCommentId == parentCommentId), isTrue);
       });
 
       test('should return empty list when comment has no replies', () async {
@@ -423,7 +471,9 @@ void main() {
             .get();
         expect(likeDoc.exists, isTrue);
         expect(likeDoc.data()!['userId'], equals(userId));
-      }, skip: 'FakeFirebaseFirestore FieldValue.increment limitation - tested in integration tests');
+      },
+          skip:
+              'FakeFirebaseFirestore FieldValue.increment limitation - tested in integration tests');
 
       test('should unlike a comment successfully', () async {
         // Arrange
@@ -451,7 +501,9 @@ void main() {
             .doc(userId)
             .get();
         expect(likeDoc.exists, isFalse);
-      }, skip: 'FakeFirebaseFirestore FieldValue.increment limitation - tested in integration tests');
+      },
+          skip:
+              'FakeFirebaseFirestore FieldValue.increment limitation - tested in integration tests');
 
       test('should reject user from toggling like as another user', () async {
         // Arrange
@@ -461,7 +513,8 @@ void main() {
 
         // Act & Assert
         expect(
-          () => repository.toggleCommentLike(commentId, 'other-user'), // Trying to like as someone else
+          () => repository.toggleCommentLike(
+              commentId, 'other-user'), // Trying to like as someone else
           throwsA(isA<PermissionDeniedException>()),
         );
       });
@@ -481,7 +534,10 @@ void main() {
         const commentId = 'comment-1';
         final comment = _createComment('recipe-1', 'user-1', id: commentId);
         await _seedComment(fakeFirestore, commentId, comment);
-        await fakeFirestore.collection('recipe_comments').doc(commentId).update({'likesCount': 5});
+        await fakeFirestore
+            .collection('recipe_comments')
+            .doc(commentId)
+            .update({'likesCount': 5});
 
         // Act
         final count = await repository.getCommentLikeCount(commentId);
@@ -519,7 +575,8 @@ void main() {
             .set({'userId': userId, 'likedAt': Timestamp.now()});
 
         // Act
-        final hasLiked = await repository.hasUserLikedComment(commentId, userId);
+        final hasLiked =
+            await repository.hasUserLikedComment(commentId, userId);
 
         // Assert
         expect(hasLiked, isTrue);
@@ -532,7 +589,8 @@ void main() {
         await _seedComment(fakeFirestore, commentId, comment);
 
         // Act
-        final hasLiked = await repository.hasUserLikedComment(commentId, 'user-123');
+        final hasLiked =
+            await repository.hasUserLikedComment(commentId, 'user-123');
 
         // Assert
         expect(hasLiked, isFalse);
@@ -543,8 +601,10 @@ void main() {
       test('should stream comments for a recipe', () async {
         // Arrange
         const recipeId = 'recipe-1';
-        await _seedComment(fakeFirestore, 'comment-1', _createComment(recipeId, 'user-1', id: 'comment-1'));
-        await _seedComment(fakeFirestore, 'comment-2', _createComment(recipeId, 'user-2', id: 'comment-2'));
+        await _seedComment(fakeFirestore, 'comment-1',
+            _createComment(recipeId, 'user-1', id: 'comment-1'));
+        await _seedComment(fakeFirestore, 'comment-2',
+            _createComment(recipeId, 'user-2', id: 'comment-2'));
 
         // Act
         final stream = repository.getCommentsStream(recipeId);
@@ -553,7 +613,8 @@ void main() {
         await expectLater(
           stream.first,
           completion(predicate<List<RecipeComment>>((comments) {
-            return comments.length == 2 && comments.every((c) => c.recipeId == recipeId);
+            return comments.length == 2 &&
+                comments.every((c) => c.recipeId == recipeId);
           })),
         );
       });
@@ -589,17 +650,46 @@ void main() {
         final now = DateTime.now();
 
         // Top-level comments
-        await _seedComment(fakeFirestore, 'comment-1', _createComment(recipeId, 'user-1', id: 'comment-1', createdAt: now.subtract(const Duration(hours: 3))));
-        await _seedComment(fakeFirestore, 'comment-2', _createComment(recipeId, 'user-2', id: 'comment-2', createdAt: now.subtract(const Duration(hours: 2))));
+        await _seedComment(
+            fakeFirestore,
+            'comment-1',
+            _createComment(recipeId, 'user-1',
+                id: 'comment-1',
+                createdAt: now.subtract(const Duration(hours: 3))));
+        await _seedComment(
+            fakeFirestore,
+            'comment-2',
+            _createComment(recipeId, 'user-2',
+                id: 'comment-2',
+                createdAt: now.subtract(const Duration(hours: 2))));
 
         // Replies
-        await _seedComment(fakeFirestore, 'reply-1', _createComment(recipeId, 'user-3', id: 'reply-1', parentId: 'comment-1', createdAt: now.subtract(const Duration(hours: 1))));
-        await _seedComment(fakeFirestore, 'reply-2', _createComment(recipeId, 'user-4', id: 'reply-2', parentId: 'comment-1', createdAt: now));
+        await _seedComment(
+            fakeFirestore,
+            'reply-1',
+            _createComment(recipeId, 'user-3',
+                id: 'reply-1',
+                parentId: 'comment-1',
+                createdAt: now.subtract(const Duration(hours: 1))));
+        await _seedComment(
+            fakeFirestore,
+            'reply-2',
+            _createComment(recipeId, 'user-4',
+                id: 'reply-2', parentId: 'comment-1', createdAt: now));
 
         // Add likes
-        await fakeFirestore.collection('recipe_comments').doc('comment-1').update({'likesCount': 3});
-        await fakeFirestore.collection('recipe_comments').doc('comment-2').update({'likesCount': 2});
-        await fakeFirestore.collection('recipe_comments').doc('reply-1').update({'likesCount': 1});
+        await fakeFirestore
+            .collection('recipe_comments')
+            .doc('comment-1')
+            .update({'likesCount': 3});
+        await fakeFirestore
+            .collection('recipe_comments')
+            .doc('comment-2')
+            .update({'likesCount': 2});
+        await fakeFirestore
+            .collection('recipe_comments')
+            .doc('reply-1')
+            .update({'likesCount': 1});
 
         // Act
         final stats = await repository.getCommentStatistics(recipeId);
@@ -609,12 +699,16 @@ void main() {
         expect(stats.totalReplies, equals(2));
         expect(stats.totalLikes, equals(6)); // 3+2+1
         expect(stats.lastCommentAt, isNotNull);
-        expect(stats.lastCommentAt!.isAfter(now.subtract(const Duration(seconds: 5))), isTrue); // Most recent
+        expect(
+            stats.lastCommentAt!
+                .isAfter(now.subtract(const Duration(seconds: 5))),
+            isTrue); // Most recent
       });
 
       test('should handle empty recipe with no comments', () async {
         // Act
-        final stats = await repository.getCommentStatistics('recipe-with-no-comments');
+        final stats =
+            await repository.getCommentStatistics('recipe-with-no-comments');
 
         // Assert
         expect(stats.totalComments, equals(0));
@@ -647,11 +741,15 @@ void main() {
       test('should correctly serialize and deserialize comments', () async {
         // Arrange
         const commentId = 'comment-1';
-        final originalComment = _createComment('recipe-1', 'user-123', id: commentId);
+        final originalComment =
+            _createComment('recipe-1', 'user-123', id: commentId);
         await _seedComment(fakeFirestore, commentId, originalComment);
 
         // Act
-        final doc = await fakeFirestore.collection('recipe_comments').doc(commentId).get();
+        final doc = await fakeFirestore
+            .collection('recipe_comments')
+            .doc(commentId)
+            .get();
         final retrievedComment = RecipeComment.fromMap(doc.id, doc.data()!);
 
         // Assert
@@ -698,7 +796,8 @@ Future<void> _seedComment(
     'authorAvatarUrl': comment.authorAvatarUrl,
     'text': comment.text,
     'createdAt': Timestamp.fromDate(comment.createdAt),
-    'editedAt': comment.editedAt != null ? Timestamp.fromDate(comment.editedAt!) : null,
+    'editedAt':
+        comment.editedAt != null ? Timestamp.fromDate(comment.editedAt!) : null,
     'likedByUserIds': comment.likedByUserIds,
     'parentCommentId': comment.parentCommentId,
     'replyCount': comment.replyCount,

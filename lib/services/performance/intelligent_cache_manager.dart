@@ -28,8 +28,9 @@ class UserBehaviorPattern {
   final Map<String, int> mealTypePreferences; // mealType -> count
   final Map<int, int> viewTimePreferences; // hour of day -> count
   final Set<String> favoriteRecipeIds;
-  final Set<String> activeFriendIds; // Friends whose content is frequently viewed
-  
+  final Set<String>
+      activeFriendIds; // Friends whose content is frequently viewed
+
   UserBehaviorPattern({
     required this.userId,
     Map<String, int>? recipeViews,
@@ -44,7 +45,7 @@ class UserBehaviorPattern {
         viewTimePreferences = viewTimePreferences.orEmpty(),
         favoriteRecipeIds = favoriteRecipeIds ?? {},
         activeFriendIds = activeFriendIds ?? {};
-  
+
   /// Get likely recipes based on current time and preferences
   List<String> getLikelyRecipeIds({int limit = 10}) {
     final sortedRecipes = recipeViews.entries.toList()
@@ -54,40 +55,43 @@ class UserBehaviorPattern {
         final bScore = b.value * _getRecencyScore(lastViewedTimes[b.key]);
         return bScore.compareTo(aScore);
       });
-    
-    return sortedRecipes
-        .take(limit)
-        .map((e) => e.key)
-        .toList();
+
+    return sortedRecipes.take(limit).map((e) => e.key).toList();
   }
-  
+
   double _getRecencyScore(DateTime? lastViewed) {
     if (lastViewed == null) return 0.5;
     final daysSince = DateTime.now().difference(lastViewed).inDays;
     // Exponential decay: recent views score higher
     return 1.0 / (1.0 + daysSince * 0.1);
   }
-  
+
   Map<String, dynamic> toJson() => {
-    'userId': userId,
-    'recipeViews': recipeViews,
-    'lastViewedTimes': lastViewedTimes.map((k, v) => MapEntry(k, v.toIso8601String())),
-    'mealTypePreferences': mealTypePreferences,
-    'viewTimePreferences': viewTimePreferences,
-    'favoriteRecipeIds': favoriteRecipeIds.toList(),
-    'activeFriendIds': activeFriendIds.toList(),
-  };
-  
+        'userId': userId,
+        'recipeViews': recipeViews,
+        'lastViewedTimes':
+            lastViewedTimes.map((k, v) => MapEntry(k, v.toIso8601String())),
+        'mealTypePreferences': mealTypePreferences,
+        'viewTimePreferences': viewTimePreferences,
+        'favoriteRecipeIds': favoriteRecipeIds.toList(),
+        'activeFriendIds': activeFriendIds.toList(),
+      };
+
   factory UserBehaviorPattern.fromJson(Map<String, dynamic> json) {
     return UserBehaviorPattern(
       userId: json['userId'],
-      recipeViews: Map<String, int>.from((json['recipeViews'] as Map?).orEmpty()),
+      recipeViews:
+          Map<String, int>.from((json['recipeViews'] as Map?).orEmpty()),
       lastViewedTimes: ((json['lastViewedTimes'] as Map<String, dynamic>?)
           ?.map((k, v) => MapEntry(k, DateTime.parse(v)))).orEmpty(),
-      mealTypePreferences: Map<String, int>.from((json['mealTypePreferences'] as Map?).orEmpty()),
-      viewTimePreferences: Map<int, int>.from((json['viewTimePreferences'] as Map?).orEmpty()),
-      favoriteRecipeIds: Set<String>.from((json['favoriteRecipeIds'] as List?).orEmpty()),
-      activeFriendIds: Set<String>.from((json['activeFriendIds'] as List?).orEmpty()),
+      mealTypePreferences: Map<String, int>.from(
+          (json['mealTypePreferences'] as Map?).orEmpty()),
+      viewTimePreferences:
+          Map<int, int>.from((json['viewTimePreferences'] as Map?).orEmpty()),
+      favoriteRecipeIds:
+          Set<String>.from((json['favoriteRecipeIds'] as List?).orEmpty()),
+      activeFriendIds:
+          Set<String>.from((json['activeFriendIds'] as List?).orEmpty()),
     );
   }
 }
@@ -100,7 +104,7 @@ class CacheEntry<T> {
   final int size; // Approximate size in bytes
   int accessCount;
   DateTime lastAccessed;
-  
+
   CacheEntry({
     required this.key,
     required this.data,
@@ -109,18 +113,18 @@ class CacheEntry<T> {
   })  : cachedAt = cachedAt.orNow(),
         lastAccessed = DateTime.now(),
         accessCount = 0;
-  
+
   /// Update access statistics
   void recordAccess() {
     accessCount++;
     lastAccessed = DateTime.now();
   }
-  
+
   /// Calculate priority score for eviction (lower = more likely to evict)
   double get evictionScore {
     final age = DateTime.now().difference(cachedAt).inMinutes;
     final recency = DateTime.now().difference(lastAccessed).inMinutes;
-    
+
     // Favor frequently accessed and recently accessed items
     return (accessCount * 10.0) / (1.0 + recency * 0.1) / (1.0 + age * 0.01);
   }
@@ -132,19 +136,19 @@ class IntelligentCacheManager {
   final Map<String, CacheEntry<Recipe>> _recipeCache = {};
   final Map<String, CacheEntry<UserProfile>> _userCache = {};
   final Map<String, CacheEntry<dynamic>> _genericCache = {};
-  
+
   // Configuration
   static const int _maxMemoryMB = 50; // Maximum cache size in MB
   static const int _prefetchLimit = 20; // Max items to prefetch
   static const Duration _prefetchInterval = Duration(minutes: 5);
   static const Duration _behaviorSaveInterval = Duration(minutes: 10);
-  
+
   // State
   UserBehaviorPattern? _currentPattern;
   Timer? _prefetchTimer;
   Timer? _behaviorSaveTimer;
   int _currentMemoryUsage = 0; // in bytes
-  
+
   // Services (lazy loaded)
   UnifiedRecipeService? _recipeService;
   UnifiedFriendsService? _friendsService;
@@ -163,28 +167,29 @@ class IntelligentCacheManager {
     }
     return _behaviorCacheField!;
   }
+
   JsonCacheHelper? _behaviorCacheField;
-  
+
   /// Initialize the cache manager
   Future<void> initialize() async {
     try {
       AppLogger.info('🧠 Initializing IntelligentCacheManager...');
-      
+
       // Load user behavior patterns
       await _loadBehaviorPattern();
-      
+
       // Start periodic prefetching
       _startPrefetchTimer();
-      
+
       // Start periodic behavior saving
       _startBehaviorSaveTimer();
-      
+
       AppLogger.success('✅ IntelligentCacheManager initialized');
     } catch (e) {
       AppLogger.error('❌ Failed to initialize IntelligentCacheManager: $e');
     }
   }
-  
+
   /// Get cached recipe with intelligent loading
   Future<Recipe?> getCachedRecipe(String recipeId) async {
     // Check memory cache first
@@ -194,83 +199,85 @@ class IntelligentCacheManager {
       _recordRecipeView(recipeId);
       return cached.data;
     }
-    
+
     // Try to load from service
     try {
       _recipeService ??= ServiceLocator.get<UnifiedRecipeService>();
       // ignore: await_only_futures
       final recipe = await _recipeService!.getRecipeById(recipeId);
-      
+
       if (recipe != null) {
         _cacheRecipe(recipe);
         _recordRecipeView(recipeId);
       }
-      
+
       return recipe;
     } catch (e) {
       AppLogger.error('Failed to load recipe $recipeId: $e');
       return null;
     }
   }
-  
+
   /// Preload likely content based on user patterns
   Future<void> preloadLikelyContent(String userId) async {
     try {
       if (_currentPattern == null || _currentPattern!.userId != userId) {
         await _loadBehaviorPattern();
       }
-      
+
       final patterns = _currentPattern;
       if (patterns == null) return;
-      
+
       AppLogger.info('🔮 Preloading content for user based on patterns...');
-      
+
       // Preload likely recipes
-      final likelyRecipeIds = patterns.getLikelyRecipeIds(limit: _prefetchLimit);
+      final likelyRecipeIds =
+          patterns.getLikelyRecipeIds(limit: _prefetchLimit);
       await _preloadRecipes(likelyRecipeIds);
-      
+
       // Preload active friends' recent recipes
       await _preloadFriendsActivity(patterns.activeFriendIds);
-      
+
       // Preload based on current time preferences
       await _preloadTimeBasedContent(patterns);
-      
+
       AppLogger.success('✅ Preloaded ${likelyRecipeIds.length} likely recipes');
     } catch (e) {
       AppLogger.error('Failed to preload content: $e');
     }
   }
-  
+
   /// Cache a recipe with memory management
   void _cacheRecipe(Recipe recipe) {
     final size = _estimateRecipeSize(recipe);
-    
+
     // Check memory pressure
     _ensureMemoryAvailable(size);
-    
+
     _recipeCache[recipe.id] = CacheEntry(
       key: recipe.id,
       data: recipe,
       size: size,
     );
-    
+
     _currentMemoryUsage += size;
   }
-  
+
   /// Preload multiple recipes
   Future<void> _preloadRecipes(List<String> recipeIds) async {
     _recipeService ??= ServiceLocator.get<UnifiedRecipeService>();
-    
+
     // Filter out already cached recipes
-    final toLoad = recipeIds.where((id) => !_recipeCache.containsKey(id)).toList();
-    
+    final toLoad =
+        recipeIds.where((id) => !_recipeCache.containsKey(id)).toList();
+
     if (toLoad.isEmpty) return;
-    
+
     // Load in parallel with limited concurrency
     const batchSize = 5;
     for (var i = 0; i < toLoad.length; i += batchSize) {
       final batch = toLoad.skip(i).take(batchSize).toList();
-      
+
       await Future.wait(
         batch.map((id) async {
           try {
@@ -286,28 +293,29 @@ class IntelligentCacheManager {
       );
     }
   }
-  
+
   /// Preload friends' recent activity
   Future<void> _preloadFriendsActivity(Set<String> friendIds) async {
     if (friendIds.isEmpty) return;
-    
+
     try {
       _friendsService ??= ServiceLocator.get<UnifiedFriendsService>();
       _recipeService ??= ServiceLocator.get<UnifiedRecipeService>();
-      
+
       // Get friends' recent recipes (would need to implement this method)
       // For now, we'll simulate by preloading some recipes
-      
-      AppLogger.debug('Preloading activity for ${friendIds.length} active friends');
+
+      AppLogger.debug(
+          'Preloading activity for ${friendIds.length} active friends');
     } catch (e) {
       AppLogger.error('Failed to preload friends activity: $e');
     }
   }
-  
+
   /// Preload content based on time of day preferences
   Future<void> _preloadTimeBasedContent(UserBehaviorPattern patterns) async {
     final currentHour = DateTime.now().hour;
-    
+
     // Determine meal type based on time
     String mealType;
     if (currentHour >= 5 && currentHour < 11) {
@@ -319,19 +327,19 @@ class IntelligentCacheManager {
     } else {
       mealType = 'Middag';
     }
-    
+
     // Find user's preferred recipes for this meal type
     final preferredForMealType = patterns.recipeViews.entries
         .where((e) => _recipeCache[e.key]?.data.mealType == mealType)
         .map((e) => e.key)
         .take(5)
         .toList();
-    
+
     if (preferredForMealType.isNotEmpty) {
       await _preloadRecipes(preferredForMealType);
     }
   }
-  
+
   /// Record a recipe view for pattern analysis
   void _recordRecipeView(String recipeId) {
     _currentPattern ??= UserBehaviorPattern(
@@ -357,31 +365,31 @@ class IntelligentCacheManager {
           (_currentPattern!.mealTypePreferences[recipe.mealType]).orZero() + 1;
     }
   }
-  
+
   /// Ensure enough memory is available
   void _ensureMemoryAvailable(int requiredBytes) {
     const maxBytes = _maxMemoryMB * 1024 * 1024;
-    
+
     if (_currentMemoryUsage + requiredBytes <= maxBytes) {
       return; // Enough space available
     }
-    
+
     AppLogger.debug('Cache memory pressure: need to free $requiredBytes bytes');
-    
+
     // Collect all cache entries for eviction scoring
     final List<CacheEntry> allEntries = [];
     allEntries.addAll(_recipeCache.values);
     allEntries.addAll(_userCache.values);
     allEntries.addAll(_genericCache.values);
-    
+
     // Sort by eviction score (ascending - lower scores evicted first)
     allEntries.sort((a, b) => a.evictionScore.compareTo(b.evictionScore));
-    
+
     // Evict entries until we have enough space
     var freedBytes = 0;
     for (final entry in allEntries) {
       if (freedBytes >= requiredBytes) break;
-      
+
       // Remove from appropriate cache
       if (entry.data is Recipe) {
         _recipeCache.remove(entry.key);
@@ -390,14 +398,15 @@ class IntelligentCacheManager {
       } else {
         _genericCache.remove(entry.key);
       }
-      
+
       freedBytes += entry.size;
       _currentMemoryUsage -= entry.size;
-      
-      AppLogger.debug('Evicted cache entry: ${entry.key} (score: ${entry.evictionScore.toStringAsFixed(2)})');
+
+      AppLogger.debug(
+          'Evicted cache entry: ${entry.key} (score: ${entry.evictionScore.toStringAsFixed(2)})');
     }
   }
-  
+
   /// Estimate recipe size in bytes
   int _estimateRecipeSize(Recipe recipe) {
     // Rough estimation based on content
@@ -409,18 +418,18 @@ class IntelligentCacheManager {
     size += recipe.imageUrls.length * 100; // URL references
     return size;
   }
-  
+
   /// Load behavior pattern from cache
   Future<void> _loadBehaviorPattern() async {
     try {
       _permissionService ??= ServiceLocator.get<PermissionService>();
       final userId = _permissionService!.currentUserId;
-      
+
       if (userId == null) return;
-      
+
       _behaviorCache.setCurrentUser(userId);
       final data = await _behaviorCache.loadJson('behavior_pattern');
-      
+
       if (data != null) {
         _currentPattern = UserBehaviorPattern.fromJson(data);
         AppLogger.debug('Loaded behavior pattern for user $userId');
@@ -431,19 +440,20 @@ class IntelligentCacheManager {
       AppLogger.error('Failed to load behavior pattern: $e');
     }
   }
-  
+
   /// Save behavior pattern to cache
   Future<void> _saveBehaviorPattern() async {
     try {
       if (_currentPattern == null) return;
-      
-      await _behaviorCache.saveJson('behavior_pattern', _currentPattern!.toJson());
+
+      await _behaviorCache.saveJson(
+          'behavior_pattern', _currentPattern!.toJson());
       AppLogger.debug('Saved behavior pattern');
     } catch (e) {
       AppLogger.error('Failed to save behavior pattern: $e');
     }
   }
-  
+
   /// Start periodic prefetching
   void _startPrefetchTimer() {
     _prefetchTimer?.cancel();
@@ -454,7 +464,7 @@ class IntelligentCacheManager {
       }
     });
   }
-  
+
   /// Start periodic behavior saving
   void _startBehaviorSaveTimer() {
     _behaviorSaveTimer?.cancel();
@@ -462,7 +472,7 @@ class IntelligentCacheManager {
       await _saveBehaviorPattern();
     });
   }
-  
+
   /// Get cache statistics
   Map<String, dynamic> getCacheStats() {
     return {
@@ -474,19 +484,19 @@ class IntelligentCacheManager {
       'behaviorPatternLoaded': _currentPattern != null,
     };
   }
-  
+
   /// Clear all caches
   Future<void> clearCache() async {
     _recipeCache.clear();
     _userCache.clear();
     _genericCache.clear();
     _currentMemoryUsage = 0;
-    
+
     await _behaviorCache.clear();
-    
+
     AppLogger.info('Cleared all intelligent caches');
   }
-  
+
   /// Dispose of resources
   void dispose() {
     _prefetchTimer?.cancel();

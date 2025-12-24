@@ -6,7 +6,8 @@ import 'package:butlery/models/parsing/tier_result.dart';
 import 'package:butlery/services/parsing/tiers/parsing_context.dart';
 import 'package:butlery/services/parsing/tiers/parsing_tier.dart';
 import 'package:butlery/utils/recipe_scraper.dart';
-import 'package:butlery/utils/text/ingredient_parser.dart' hide ParsedIngredient;
+import 'package:butlery/utils/text/ingredient_parser.dart'
+    hide ParsedIngredient;
 
 /// Tier 1: Schema.org JSON-LD and Microdata extraction.
 ///
@@ -216,7 +217,8 @@ class SchemaOrgTier extends ParsingTier with QualityScoring {
     if (ratio >= 0.7) {
       return FieldResult.success(parsed);
     } else if (ratio >= 0.3) {
-      return FieldResult.mediumConfidence(parsed, 'Some ingredients unstructured');
+      return FieldResult.mediumConfidence(
+          parsed, 'Some ingredients unstructured');
     } else {
       return FieldResult.lowConfidence(parsed, 'Most ingredients unstructured');
     }

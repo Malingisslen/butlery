@@ -13,7 +13,7 @@ import '../../infrastructure/di/test_service_locator.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  
+
   late MockSocialRecipeService mockSocialRecipeService;
   late MockUnifiedShoppingService mockShoppingService;
   late MockShoppingShareOperations mockSharingOperations;
@@ -21,17 +21,17 @@ void main() {
 
   setUp(() async {
     await TestServiceLocator.initialize();
-    
+
     mockSocialRecipeService = MockSocialRecipeService();
     mockShoppingService = MockUnifiedShoppingService();
     mockSharingOperations = MockShoppingShareOperations();
-    
+
     // Setup mock service structure using state configuration
     mockShoppingService.setShoppingState(
       shareOps: mockSharingOperations,
       isInitialized: true,
     );
-    
+
     viewModel = UniversalShareDialogViewModel(
       socialRecipeService: mockSocialRecipeService,
       shoppingService: mockShoppingService,
@@ -93,84 +93,84 @@ void main() {
         id: 'recipe_123',
         title: 'Test Recipe',
       );
-      
+
       when(() => mockSocialRecipeService.shareRecipeToFriends(any(), any()))
           .thenAnswer((_) async => {});
-      
+
       final success = await viewModel.shareRecipe(
         recipe: recipe,
         friendUserIds: ['friend_1', 'friend_2'],
         message: 'Try this recipe!',
         allowCollaboration: true,
       );
-      
+
       expect(success, isTrue);
       expect(viewModel.isSharing, isFalse);
       expect(viewModel.hasError, isFalse);
-      
+
       verify(() => mockSocialRecipeService.shareRecipeToFriends(
-        'recipe_123',
-        ['friend_1', 'friend_2'],
-      )).called(1);
+            'recipe_123',
+            ['friend_1', 'friend_2'],
+          )).called(1);
     });
 
     test('should share recipe with groups successfully', () async {
       final recipe = RecipeFactory.build(id: 'recipe_123');
-      
+
       when(() => mockSocialRecipeService.shareRecipeToGroups(any(), any()))
           .thenAnswer((_) async => {});
-      
+
       final success = await viewModel.shareRecipe(
         recipe: recipe,
         friendUserIds: [],
         groupIds: ['group_1', 'group_2'],
       );
-      
+
       expect(success, isTrue);
-      
+
       verify(() => mockSocialRecipeService.shareRecipeToGroups(
-        'recipe_123',
-        ['group_1', 'group_2'],
-      )).called(1);
+            'recipe_123',
+            ['group_1', 'group_2'],
+          )).called(1);
     });
 
     test('should share recipe with both friends and groups', () async {
       final recipe = RecipeFactory.build(id: 'recipe_123');
-      
+
       when(() => mockSocialRecipeService.shareRecipeToFriends(any(), any()))
           .thenAnswer((_) async => {});
       when(() => mockSocialRecipeService.shareRecipeToGroups(any(), any()))
           .thenAnswer((_) async => {});
-      
+
       final success = await viewModel.shareRecipe(
         recipe: recipe,
         friendUserIds: ['friend_1'],
         groupIds: ['group_1'],
       );
-      
+
       expect(success, isTrue);
-      
+
       verify(() => mockSocialRecipeService.shareRecipeToFriends(
-        'recipe_123',
-        ['friend_1'],
-      )).called(1);
+            'recipe_123',
+            ['friend_1'],
+          )).called(1);
       verify(() => mockSocialRecipeService.shareRecipeToGroups(
-        'recipe_123',
-        ['group_1'],
-      )).called(1);
+            'recipe_123',
+            ['group_1'],
+          )).called(1);
     });
 
     test('should handle recipe sharing error', () async {
       final recipe = RecipeFactory.build(id: 'recipe_123');
-      
+
       when(() => mockSocialRecipeService.shareRecipeToFriends(any(), any()))
           .thenThrow(Exception('Share failed'));
-      
+
       final success = await viewModel.shareRecipe(
         recipe: recipe,
         friendUserIds: ['friend_1'],
       );
-      
+
       expect(success, isFalse);
       expect(viewModel.hasError, isTrue);
       expect(viewModel.errorMessage, contains('Kunde inte dela recept'));
@@ -179,60 +179,63 @@ void main() {
 
     test('should reject recipe sharing with no recipients', () async {
       final recipe = RecipeFactory.build();
-      
+
       final success = await viewModel.shareRecipe(
         recipe: recipe,
         friendUserIds: [],
         groupIds: [],
       );
-      
+
       expect(success, isFalse);
       expect(viewModel.hasError, isTrue);
-      expect(viewModel.errorMessage, contains('Inga vänner eller grupper valda'));
-      
-      verifyNever(() => mockSocialRecipeService.shareRecipeToFriends(any(), any()));
-      verifyNever(() => mockSocialRecipeService.shareRecipeToGroups(any(), any()));
+      expect(
+          viewModel.errorMessage, contains('Inga vänner eller grupper valda'));
+
+      verifyNever(
+          () => mockSocialRecipeService.shareRecipeToFriends(any(), any()));
+      verifyNever(
+          () => mockSocialRecipeService.shareRecipeToGroups(any(), any()));
     });
   });
 
   group('UniversalShareDialogViewModel - Menu Sharing', () {
     test('should share menu with friends successfully', () async {
       final menu = createTestMenu();
-      
+
       when(() => mockSocialRecipeService.shareMenuToFriends(any(), any()))
           .thenAnswer((_) async => {});
-      
+
       final success = await viewModel.shareMenu(
         menu: menu,
         friendUserIds: ['friend_1', 'friend_2'],
         menuId: 'menu_123',
         message: 'Weekly menu plan',
       );
-      
+
       expect(success, isTrue);
       expect(viewModel.isSharing, isFalse);
       expect(viewModel.hasError, isFalse);
-      
+
       verify(() => mockSocialRecipeService.shareMenuToFriends(
-        'menu_123',
-        ['friend_1', 'friend_2'],
-      )).called(1);
+            'menu_123',
+            ['friend_1', 'friend_2'],
+          )).called(1);
     });
 
     test('should generate menu ID if not provided', () async {
       final menu = createTestMenu();
-      
+
       when(() => mockSocialRecipeService.shareMenuToFriends(any(), any()))
           .thenAnswer((_) async => {});
-      
+
       final success = await viewModel.shareMenu(
         menu: menu,
         friendUserIds: ['friend_1'],
         menuId: null, // No ID provided
       );
-      
+
       expect(success, isTrue);
-      
+
       // Verify a menu ID was generated (starts with 'menu_')
       final capturedArgs = verify(
         () => mockSocialRecipeService.shareMenuToFriends(
@@ -240,44 +243,44 @@ void main() {
           any(),
         ),
       ).captured;
-      
+
       expect(capturedArgs.first, startsWith('menu_'));
       expect(capturedArgs.first, contains('3d_2r')); // 3 days, 2 recipes
     });
 
     test('should share menu with groups successfully', () async {
       final menu = createTestMenu();
-      
+
       when(() => mockSocialRecipeService.shareMenuToGroups(any(), any()))
           .thenAnswer((_) async => {});
-      
+
       final success = await viewModel.shareMenu(
         menu: menu,
         friendUserIds: [],
         groupIds: ['group_1'],
         menuId: 'menu_123',
       );
-      
+
       expect(success, isTrue);
-      
+
       verify(() => mockSocialRecipeService.shareMenuToGroups(
-        'menu_123',
-        ['group_1'],
-      )).called(1);
+            'menu_123',
+            ['group_1'],
+          )).called(1);
     });
 
     test('should handle menu sharing error', () async {
       final menu = createTestMenu();
-      
+
       when(() => mockSocialRecipeService.shareMenuToFriends(any(), any()))
           .thenThrow(Exception('Network error'));
-      
+
       final success = await viewModel.shareMenu(
         menu: menu,
         friendUserIds: ['friend_1'],
         menuId: 'menu_123',
       );
-      
+
       expect(success, isFalse);
       expect(viewModel.hasError, isTrue);
       expect(viewModel.errorMessage, contains('Kunde inte dela meny'));
@@ -285,35 +288,36 @@ void main() {
 
     test('should reject menu sharing with no recipients', () async {
       final menu = createTestMenu();
-      
+
       final success = await viewModel.shareMenu(
         menu: menu,
         friendUserIds: [],
         groupIds: null,
       );
-      
+
       expect(success, isFalse);
-      expect(viewModel.errorMessage, contains('Inga vänner eller grupper valda'));
+      expect(
+          viewModel.errorMessage, contains('Inga vänner eller grupper valda'));
     });
   });
 
   group('UniversalShareDialogViewModel - Shopping List Sharing', () {
     test('should share shopping list with friends successfully', () async {
       final shoppingList = createTestShoppingList();
-      
+
       when(() => mockSharingOperations.shareListWithFriend(any(), any()))
           .thenAnswer((_) async => true);
-      
+
       final success = await viewModel.shareShoppingList(
         shoppingList: shoppingList,
         friendUserIds: ['friend_1', 'friend_2'],
         message: 'Grocery shopping for weekend',
       );
-      
+
       expect(success, isTrue);
       expect(viewModel.isSharing, isFalse);
       expect(viewModel.hasError, isFalse);
-      
+
       verify(() => mockSharingOperations.shareListWithFriend(any(), 'friend_1'))
           .called(1);
       verify(() => mockSharingOperations.shareListWithFriend(any(), 'friend_2'))
@@ -322,18 +326,18 @@ void main() {
 
     test('should share shopping list with groups successfully', () async {
       final shoppingList = createTestShoppingList();
-      
+
       when(() => mockSharingOperations.shareListWithGroup(any(), any()))
           .thenAnswer((_) async => true);
-      
+
       final success = await viewModel.shareShoppingList(
         shoppingList: shoppingList,
         friendUserIds: [],
         groupIds: ['group_1', 'group_2'],
       );
-      
+
       expect(success, isTrue);
-      
+
       verify(() => mockSharingOperations.shareListWithGroup(any(), 'group_1'))
           .called(1);
       verify(() => mockSharingOperations.shareListWithGroup(any(), 'group_2'))
@@ -342,17 +346,19 @@ void main() {
 
     test('should handle partial shopping list sharing failure', () async {
       final shoppingList = createTestShoppingList();
-      
-      when(() => mockSharingOperations.shareListWithFriend('list_123', 'friend_1'))
+
+      when(() =>
+              mockSharingOperations.shareListWithFriend('list_123', 'friend_1'))
           .thenAnswer((_) async => true);
-      when(() => mockSharingOperations.shareListWithFriend('list_123', 'friend_2'))
+      when(() =>
+              mockSharingOperations.shareListWithFriend('list_123', 'friend_2'))
           .thenAnswer((_) async => false);
-      
+
       final success = await viewModel.shareShoppingList(
         shoppingList: shoppingList,
         friendUserIds: ['friend_1', 'friend_2'],
       );
-      
+
       expect(success, isFalse);
       expect(viewModel.hasError, isTrue);
       expect(viewModel.errorMessage, contains('Kunde inte dela inköpslista'));
@@ -360,15 +366,15 @@ void main() {
 
     test('should handle shopping list sharing exception', () async {
       final shoppingList = createTestShoppingList();
-      
+
       when(() => mockSharingOperations.shareListWithFriend(any(), any()))
           .thenThrow(Exception('Service unavailable'));
-      
+
       final success = await viewModel.shareShoppingList(
         shoppingList: shoppingList,
         friendUserIds: ['friend_1'],
       );
-      
+
       expect(success, isFalse);
       expect(viewModel.hasError, isTrue);
       expect(viewModel.errorMessage, contains('Kunde inte dela inköpslista'));
@@ -376,16 +382,18 @@ void main() {
 
     test('should reject shopping list sharing with no recipients', () async {
       final shoppingList = createTestShoppingList();
-      
+
       final success = await viewModel.shareShoppingList(
         shoppingList: shoppingList,
         friendUserIds: [],
       );
-      
+
       expect(success, isFalse);
-      expect(viewModel.errorMessage, contains('Inga vänner eller grupper valda'));
-      
-      verifyNever(() => mockSharingOperations.shareListWithFriend(any(), any()));
+      expect(
+          viewModel.errorMessage, contains('Inga vänner eller grupper valda'));
+
+      verifyNever(
+          () => mockSharingOperations.shareListWithFriend(any(), any()));
       verifyNever(() => mockSharingOperations.shareListWithGroup(any(), any()));
     });
   });
@@ -397,11 +405,11 @@ void main() {
         recipe: RecipeFactory.build(),
         friendUserIds: [], // Will cause error
       );
-      
+
       expect(viewModel.hasError, isTrue);
-      
+
       viewModel.clearError();
-      
+
       expect(viewModel.hasError, isFalse);
       expect(viewModel.errorMessage, isNull);
     });
@@ -413,16 +421,16 @@ void main() {
         friendUserIds: [],
       );
       expect(viewModel.hasError, isTrue);
-      
+
       // Successful operation should clear error
       when(() => mockSocialRecipeService.shareRecipeToFriends(any(), any()))
           .thenAnswer((_) async => {});
-      
+
       await viewModel.shareRecipe(
         recipe: RecipeFactory.build(),
         friendUserIds: ['friend_1'],
       );
-      
+
       expect(viewModel.hasError, isFalse);
     });
   });
@@ -430,82 +438,82 @@ void main() {
   group('UniversalShareDialogViewModel - State Management', () {
     test('should track sharing state during recipe share', () async {
       final recipe = RecipeFactory.build();
-      
+
       when(() => mockSocialRecipeService.shareRecipeToFriends(any(), any()))
           .thenAnswer((_) async {
-            await Future.delayed(Duration(milliseconds: 50));
-          });
-      
+        await Future.delayed(Duration(milliseconds: 50));
+      });
+
       expect(viewModel.isSharing, isFalse);
-      
+
       final future = viewModel.shareRecipe(
         recipe: recipe,
         friendUserIds: ['friend_1'],
       );
-      
+
       expect(viewModel.isSharing, isTrue);
-      
+
       await future;
-      
+
       expect(viewModel.isSharing, isFalse);
     });
 
     test('should track sharing state during menu share', () async {
       final menu = createTestMenu();
-      
+
       when(() => mockSocialRecipeService.shareMenuToFriends(any(), any()))
           .thenAnswer((_) async {
-            await Future.delayed(Duration(milliseconds: 50));
-          });
-      
+        await Future.delayed(Duration(milliseconds: 50));
+      });
+
       expect(viewModel.isSharing, isFalse);
-      
+
       final future = viewModel.shareMenu(
         menu: menu,
         friendUserIds: ['friend_1'],
       );
-      
+
       expect(viewModel.isSharing, isTrue);
-      
+
       await future;
-      
+
       expect(viewModel.isSharing, isFalse);
     });
 
     test('should track sharing state during shopping list share', () async {
       final shoppingList = createTestShoppingList();
-      
+
       when(() => mockSharingOperations.shareListWithFriend(any(), any()))
           .thenAnswer((_) async {
-            await Future.delayed(Duration(milliseconds: 50));
-            return true;
-          });
-      
+        await Future.delayed(Duration(milliseconds: 50));
+        return true;
+      });
+
       expect(viewModel.isSharing, isFalse);
-      
+
       final future = viewModel.shareShoppingList(
         shoppingList: shoppingList,
         friendUserIds: ['friend_1'],
       );
-      
+
       expect(viewModel.isSharing, isTrue);
-      
+
       await future;
-      
+
       expect(viewModel.isSharing, isFalse);
     });
 
     test('should reset sharing state on error', () async {
       final recipe = RecipeFactory.build();
-      
+
       when(() => mockSocialRecipeService.shareRecipeToFriends(any(), any()))
           .thenThrow(Exception('Error'));
-      
+
       await viewModel.shareRecipe(
         recipe: recipe,
         friendUserIds: ['friend_1'],
       );
-      
+
       expect(viewModel.isSharing, isFalse);
       expect(viewModel.hasError, isTrue);
     });
@@ -518,23 +526,24 @@ void main() {
         'Monday': [RecipeFactory.build()],
         'Tuesday': <Recipe>[],
       };
-      
+
       when(() => mockSocialRecipeService.shareMenuToFriends(any(), any()))
           .thenAnswer((_) async => {});
-      
+
       // Share two menus without IDs
       await viewModel.shareMenu(
         menu: menu1,
         friendUserIds: ['friend_1'],
       );
-      
-      await Future.delayed(Duration(milliseconds: 10)); // Ensure different timestamp
-      
+
+      await Future.delayed(
+          Duration(milliseconds: 10)); // Ensure different timestamp
+
       await viewModel.shareMenu(
         menu: menu2,
         friendUserIds: ['friend_1'],
       );
-      
+
       // Capture generated IDs
       final capturedArgs = verify(
         () => mockSocialRecipeService.shareMenuToFriends(
@@ -542,10 +551,10 @@ void main() {
           any(),
         ),
       ).captured;
-      
+
       // IDs should be different
       expect(capturedArgs[0], isNot(equals(capturedArgs[1])));
-      
+
       // Check format
       expect(capturedArgs[0], contains('3d_2r')); // 3 days, 2 recipes
       expect(capturedArgs[1], contains('2d_1r')); // 2 days, 1 recipe

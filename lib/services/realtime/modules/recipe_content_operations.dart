@@ -49,7 +49,6 @@ class RecipeOperationError {
 /// - Content validation and utilities
 /// ❌ DOES NOT CONTAIN: Participant management, state management, synchronization
 class RecipeContentOperations {
-
   // ===== BASIC RECIPE OPERATIONS =====
 
   /// Update basic recipe information
@@ -73,7 +72,7 @@ class RecipeContentOperations {
         resourceId: recipe.id,
       );
     }
-    
+
     // Validate cooking time
     if (timeMinutes != null && timeMinutes < 0) {
       throw RecipeOperationError(
@@ -82,9 +81,9 @@ class RecipeContentOperations {
         resourceId: recipe.id,
       );
     }
-    
+
     AppLogger.info('📝 Updating basic info for recipe: ${recipe.title}');
-    
+
     return recipe.updateBasicInfo(
       title: title,
       description: description,
@@ -156,10 +155,8 @@ class RecipeContentOperations {
     required String editedByDisplayName,
   }) {
     // Validate ingredients
-    final validIngredients = ingredients
-        .map((i) => i.trim())
-        .where((i) => i.isNotEmpty)
-        .toList();
+    final validIngredients =
+        ingredients.map((i) => i.trim()).where((i) => i.isNotEmpty).toList();
 
     if (validIngredients.isEmpty) {
       throw RecipeOperationError(
@@ -236,10 +233,8 @@ class RecipeContentOperations {
     required String editedByDisplayName,
   }) {
     // Validate instructions
-    final validInstructions = instructions
-        .map((i) => i.trim())
-        .where((i) => i.isNotEmpty)
-        .toList();
+    final validInstructions =
+        instructions.map((i) => i.trim()).where((i) => i.isNotEmpty).toList();
 
     if (validInstructions.isEmpty) {
       throw RecipeOperationError(
@@ -274,7 +269,7 @@ class RecipeContentOperations {
         resourceId: recipe.id,
       );
     }
-    
+
     // Validate URL format
     final uri = Uri.tryParse(imageUrl.trim());
     if (uri == null || !uri.hasAbsolutePath) {
@@ -284,7 +279,7 @@ class RecipeContentOperations {
         resourceId: recipe.id,
       );
     }
-    
+
     // Check image limit (max 5 images)
     if (recipe.imagesCount >= 5) {
       throw RecipeOperationError(
@@ -379,14 +374,13 @@ class RecipeContentOperations {
   /// Check if recipe content is complete
   static bool isRecipeComplete(RealtimeRecipe recipe) {
     return recipe.title.trim().isNotEmpty &&
-           recipe.ingredientsCount > 0 &&
-           recipe.instructionsCount > 0;
+        recipe.ingredientsCount > 0 &&
+        recipe.instructionsCount > 0;
   }
 
   /// Check if recipe content is publishable
   static bool isRecipePublishable(RealtimeRecipe recipe) {
-    return isRecipeComplete(recipe) &&
-           recipe.description.trim().isNotEmpty;
+    return isRecipeComplete(recipe) && recipe.description.trim().isNotEmpty;
   }
 
   // ===== CONTENT UTILITIES =====
@@ -450,25 +444,25 @@ class RecipeContentOperations {
   /// Get content summary for display
   static String getContentSummary(RealtimeRecipe recipe) {
     final parts = <String>[];
-    
+
     parts.add('${recipe.ingredientsCount} ingredienser');
     parts.add('${recipe.instructionsCount} steg');
-    
+
     if (recipe.timeMinutes != null) {
       parts.add('${recipe.timeMinutes} minuter');
     }
-    
+
     if (recipe.portions != null) {
       parts.add('${recipe.portions} portioner');
     }
-    
+
     return parts.join(' • ');
   }
 
   /// Get recipe difficulty level
   static String getDifficultyLevel(RealtimeRecipe recipe) {
     final complexity = getComplexityScore(recipe);
-    
+
     switch (complexity) {
       case 1:
         return 'Mycket lätt';

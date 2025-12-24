@@ -155,11 +155,13 @@ class InvitationTargetWidgets {
     bool showTypeIcon = true,
   }) {
     return Column(
-      children: targets.map((target) => targetChip(
-        target: target,
-        showTypeIcon: showTypeIcon,
-        onTap: () => onTargetToggled(target),
-      )).toList(),
+      children: targets
+          .map((target) => targetChip(
+                target: target,
+                showTypeIcon: showTypeIcon,
+                onTap: () => onTargetToggled(target),
+              ))
+          .toList(),
     );
   }
 
@@ -171,11 +173,13 @@ class InvitationTargetWidgets {
     bool showTypeIcon = true,
   }) {
     return Column(
-      children: targets.map((target) => targetChip(
-        target: target,
-        showTypeIcon: showTypeIcon,
-        onTap: () => onTargetSelected(target),
-      )).toList(),
+      children: targets
+          .map((target) => targetChip(
+                target: target,
+                showTypeIcon: showTypeIcon,
+                onTap: () => onTargetSelected(target),
+              ))
+          .toList(),
     );
   }
 
@@ -214,11 +218,13 @@ class InvitationTargetWidgets {
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingL),
       child: Wrap(
         spacing: AppDimensions.spacingS,
-        children: availableTypes.map((type) => FilterChip(
-          label: Text(type),
-          selected: selectedTypes.contains(type),
-          onSelected: (_) => onTypeToggled(type),
-        )).toList(),
+        children: availableTypes
+            .map((type) => FilterChip(
+                  label: Text(type),
+                  selected: selectedTypes.contains(type),
+                  onSelected: (_) => onTypeToggled(type),
+                ))
+            .toList(),
       ),
     );
   }

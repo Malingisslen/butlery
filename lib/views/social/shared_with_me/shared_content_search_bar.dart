@@ -57,7 +57,8 @@ class SharedContentSearchBar {
                   ],
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusM),
                 ),
               ),
               onChanged: viewModel.performUnifiedSearch,
@@ -70,7 +71,8 @@ class SharedContentSearchBar {
                   label: const Text('Visar importerade'),
                   deleteIcon: const Icon(Icons.close, size: 18),
                   onDeleted: () => viewModel.toggleShowImported(),
-                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                  backgroundColor:
+                      Theme.of(context).colorScheme.primaryContainer,
                   labelStyle: TextStyle(
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),

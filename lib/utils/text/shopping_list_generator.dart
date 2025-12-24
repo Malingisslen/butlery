@@ -60,6 +60,7 @@ import 'package:butlery/models/recipe_unified.dart';
 class ShoppingListGenerator {
   /// Private constructor preventing instantiation to enforce static utility usage.
   ShoppingListGenerator._();
+
   /// Comprehensive shopping list generation with intelligent ingredient consolidation and optimization
   /// This method serves as the primary shopping list generation engine, processing complex menu structures
   /// to create optimized, consolidated shopping lists. It handles ingredient parsing, normalization,
@@ -136,10 +137,9 @@ class ShoppingListGenerator {
 
       // Create grouping key based on unit + normalized ingredient name
       // Use normalized name for grouping to consolidate similar ingredients
-      final key =
-          processed.unit.isEmpty
-              ? processed.normalizedName
-              : '${processed.unit} ${processed.normalizedName}';
+      final key = processed.unit.isEmpty
+          ? processed.normalizedName
+          : '${processed.unit} ${processed.normalizedName}';
 
       // Aggregate quantities for identical ingredients
       groupedIngredients[key] =
@@ -199,7 +199,7 @@ class ShoppingListGenerator {
   /// **Processing Features:**
   /// - Swedish ingredient parsing with unit/quantity extraction
   /// - Automatic ingredient categorization (Mejeri, Kött & Fisk, etc.)
-  /// - Smart unit conversion and formatting  
+  /// - Smart unit conversion and formatting
   /// - Fallback categorization for unknown ingredients
   /// - Robust error handling for malformed ingredient strings
   /// [recipe] Recipe object containing ingredients list to convert
@@ -228,7 +228,8 @@ class ShoppingListGenerator {
     final List<UnifiedShoppingItem> shoppingItems = [];
     final targetPortions = portions ?? recipe.portions ?? 1;
     final originalPortions = recipe.portions ?? 1;
-    final scalingFactor = originalPortions > 0 ? targetPortions / originalPortions : 1.0;
+    final scalingFactor =
+        originalPortions > 0 ? targetPortions / originalPortions : 1.0;
 
     for (final rawIngredient in recipe.ingredients) {
       // Skip empty or whitespace-only ingredients
@@ -259,7 +260,6 @@ class ShoppingListGenerator {
         );
 
         shoppingItems.add(shoppingItem);
-
       } catch (e) {
         // Handle parsing errors gracefully - create basic item
         final fallbackItem = UnifiedShoppingItem(
@@ -271,7 +271,7 @@ class ShoppingListGenerator {
           note: 'Kunde inte tolka ingrediens',
           priority: 3,
         );
-        
+
         shoppingItems.add(fallbackItem);
       }
     }
@@ -286,49 +286,80 @@ class ShoppingListGenerator {
   /// Returns Swedish category string suitable for shopping organization
   static String _categorizeIngredient(String ingredientName) {
     final name = ingredientName.toLowerCase().trim();
-    
+
     // Mejeri (Dairy)
-    if (name.contains('mjölk') || name.contains('grädde') || name.contains('fil') ||
-        name.contains('yoghurt') || name.contains('ost') || name.contains('smör') ||
+    if (name.contains('mjölk') ||
+        name.contains('grädde') ||
+        name.contains('fil') ||
+        name.contains('yoghurt') ||
+        name.contains('ost') ||
+        name.contains('smör') ||
         name.contains('ägg')) {
       return 'Mejeri';
     }
-    
+
     // Kött & Fisk (Meat & Fish)
-    if (name.contains('kött') || name.contains('fläsk') || name.contains('nöt') ||
-        name.contains('kyckling') || name.contains('fisk') || name.contains('räk') ||
-        name.contains('korv') || name.contains('bacon') || name.contains('skinka')) {
+    if (name.contains('kött') ||
+        name.contains('fläsk') ||
+        name.contains('nöt') ||
+        name.contains('kyckling') ||
+        name.contains('fisk') ||
+        name.contains('räk') ||
+        name.contains('korv') ||
+        name.contains('bacon') ||
+        name.contains('skinka')) {
       return 'Kött & Fisk';
     }
-    
+
     // Frukt & Grönt (Fruits & Vegetables)
-    if (name.contains('tomat') || name.contains('lök') || name.contains('vitlök') ||
-        name.contains('potatis') || name.contains('morot') || name.contains('gurka') ||
-        name.contains('paprika') || name.contains('sallad') || name.contains('äpple') ||
-        name.contains('banan') || name.contains('citron') || name.contains('lime')) {
+    if (name.contains('tomat') ||
+        name.contains('lök') ||
+        name.contains('vitlök') ||
+        name.contains('potatis') ||
+        name.contains('morot') ||
+        name.contains('gurka') ||
+        name.contains('paprika') ||
+        name.contains('sallad') ||
+        name.contains('äpple') ||
+        name.contains('banan') ||
+        name.contains('citron') ||
+        name.contains('lime')) {
       return 'Frukt & Grönt';
     }
-    
+
     // Torrvaror (Dry Goods)
-    if (name.contains('mjöl') || name.contains('socker') || name.contains('salt') ||
-        name.contains('pasta') || name.contains('ris') || name.contains('bröd') ||
-        name.contains('havr') || name.contains('müsli')) {
+    if (name.contains('mjöl') ||
+        name.contains('socker') ||
+        name.contains('salt') ||
+        name.contains('pasta') ||
+        name.contains('ris') ||
+        name.contains('bröd') ||
+        name.contains('havr') ||
+        name.contains('müsli')) {
       return 'Torrvaror';
     }
-    
+
     // Kryddor (Spices)
-    if (name.contains('peppar') || name.contains('krydda') || name.contains('basilika') ||
-        name.contains('oregano') || name.contains('timjan') || name.contains('rosmarin') ||
-        name.contains('paprika') || name.contains('curry')) {
+    if (name.contains('peppar') ||
+        name.contains('krydda') ||
+        name.contains('basilika') ||
+        name.contains('oregano') ||
+        name.contains('timjan') ||
+        name.contains('rosmarin') ||
+        name.contains('paprika') ||
+        name.contains('curry')) {
       return 'Kryddor';
     }
-    
+
     // Konserver (Canned Goods)
-    if (name.contains('konserv') || name.contains('burk') || name.contains('tomatpuré') ||
-        name.contains('kokosmjölk') || name.contains('bönor')) {
+    if (name.contains('konserv') ||
+        name.contains('burk') ||
+        name.contains('tomatpuré') ||
+        name.contains('kokosmjölk') ||
+        name.contains('bönor')) {
       return 'Konserver';
     }
-    
+
     // Default fallback
     return 'Övrigt';
   }

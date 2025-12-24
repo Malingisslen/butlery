@@ -15,7 +15,8 @@ import 'package:butlery/models/messaging/message_type.dart';
 import 'package:uuid/uuid.dart';
 
 // Re-export enums for convenience
-export 'package:butlery/models/messaging/message_type.dart' show MessageType, MessageStatus;
+export 'package:butlery/models/messaging/message_type.dart'
+    show MessageType, MessageStatus;
 
 /// Comprehensive message model with multi-type content support and delivery status tracking for messaging infrastructure.
 /// Represents a complete messaging unit with support for various content types, delivery tracking,
@@ -80,7 +81,8 @@ class Message {
   /// Flexible metadata container for message-specific information and content references.
   /// Stores additional message data including content IDs (recipe, menu, shopping list),
   /// media information, reply context, and message-specific configurations for rich content support.
-  final Map<String, dynamic>? metadata; // For content-specific data (recipe ID, etc.)
+  final Map<String, dynamic>?
+      metadata; // For content-specific data (recipe ID, etc.)
 
   /// Optional reference to parent message for reply threading functionality.
   /// Contains the ID of the message being replied to, enabling threaded conversation
@@ -289,7 +291,6 @@ class Message {
       sentAt: DateTime.now(),
     );
   }
-
 
   /// Utility methods for message manipulation and immutable updates.
 

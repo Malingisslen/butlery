@@ -62,18 +62,21 @@ void main() {
         final profile = _createUserProfile('user-123');
 
         // Act
-        final canCreate = await repository.validateCreatePermission('user-123', profile);
+        final canCreate =
+            await repository.validateCreatePermission('user-123', profile);
 
         // Assert
         expect(canCreate, isTrue);
       });
 
-      test('should reject user from creating another user\'s profile', () async {
+      test('should reject user from creating another user\'s profile',
+          () async {
         // Arrange
         final profile = _createUserProfile('other-user');
 
         // Act
-        final canCreate = await repository.validateCreatePermission('user-123', profile);
+        final canCreate =
+            await repository.validateCreatePermission('user-123', profile);
 
         // Assert
         expect(canCreate, isFalse);
@@ -84,7 +87,8 @@ void main() {
         final profile = _createUserProfile('other-user');
 
         // Act
-        final canRead = await repository.validateReadPermission('user-123', 'other-user', profile);
+        final canRead = await repository.validateReadPermission(
+            'user-123', 'other-user', profile);
 
         // Assert
         expect(canRead, isTrue); // Public profiles are readable
@@ -95,18 +99,21 @@ void main() {
         final profile = _createUserProfile('user-123');
 
         // Act
-        final canUpdate = await repository.validateUpdatePermission('user-123', 'user-123', profile);
+        final canUpdate = await repository.validateUpdatePermission(
+            'user-123', 'user-123', profile);
 
         // Assert
         expect(canUpdate, isTrue);
       });
 
-      test('should reject user from updating another user\'s profile', () async {
+      test('should reject user from updating another user\'s profile',
+          () async {
         // Arrange
         final profile = _createUserProfile('other-user');
 
         // Act
-        final canUpdate = await repository.validateUpdatePermission('user-123', 'other-user', profile);
+        final canUpdate = await repository.validateUpdatePermission(
+            'user-123', 'other-user', profile);
 
         // Assert
         expect(canUpdate, isFalse);
@@ -114,15 +121,18 @@ void main() {
 
       test('should allow user to delete their own profile', () async {
         // Act
-        final canDelete = await repository.validateDeletePermission('user-123', 'user-123');
+        final canDelete =
+            await repository.validateDeletePermission('user-123', 'user-123');
 
         // Assert
         expect(canDelete, isTrue);
       });
 
-      test('should reject user from deleting another user\'s profile', () async {
+      test('should reject user from deleting another user\'s profile',
+          () async {
         // Act
-        final canDelete = await repository.validateDeletePermission('user-123', 'other-user');
+        final canDelete =
+            await repository.validateDeletePermission('user-123', 'other-user');
 
         // Assert
         expect(canDelete, isFalse);
@@ -324,7 +334,8 @@ void main() {
         });
 
         // Act
-        final profiles = await repository.fetchFriendProfiles(['friend-1', 'friend-2']);
+        final profiles =
+            await repository.fetchFriendProfiles(['friend-1', 'friend-2']);
 
         // Assert
         expect(profiles.length, equals(2));
@@ -447,7 +458,8 @@ void main() {
 
       test('should return null when category does not exist', () async {
         // Act
-        final category = await repository.getCategory('user-123', 'nonexistent');
+        final category =
+            await repository.getCategory('user-123', 'nonexistent');
 
         // Assert
         expect(category, isNull);
@@ -484,7 +496,9 @@ void main() {
     group('Coordinated Operations - Multi-Repository', () {
       // These tests verify operations that coordinate multiple sub-repositories
 
-      test('acceptFriendRequest should accept request and create mutual friendship', () async {
+      test(
+          'acceptFriendRequest should accept request and create mutual friendship',
+          () async {
         // Arrange
         const requestId = 'request-1';
         const fromUserId = 'user-456';
@@ -504,16 +518,23 @@ void main() {
         expect(success, isTrue);
 
         // Verify request was updated to accepted
-        final requestDoc = await fakeFirestore.collection('friend_requests').doc(requestId).get();
+        final requestDoc = await fakeFirestore
+            .collection('friend_requests')
+            .doc(requestId)
+            .get();
         expect(requestDoc.exists, isTrue);
         expect(requestDoc.data()!['status'], equals('accepted'));
 
         // Verify mutual friendship was created
         final areFriends = await repository.areFriends(fromUserId, toUserId);
         expect(areFriends, isTrue);
-      }, skip: 'Requires server timestamp support - tested in integration tests');
+      },
+          skip:
+              'Requires server timestamp support - tested in integration tests');
 
-      test('getComprehensiveFriendStatistics should aggregate stats from all repositories', () async {
+      test(
+          'getComprehensiveFriendStatistics should aggregate stats from all repositories',
+          () async {
         // Arrange
         const userId = 'user-123';
 
@@ -549,7 +570,8 @@ void main() {
         expect(stats.containsKey('invitations'), isTrue);
       });
 
-      test('getFriendsWithProfiles should fetch friends and their profiles', () async {
+      test('getFriendsWithProfiles should fetch friends and their profiles',
+          () async {
         // Arrange
         const userId = 'user-123';
         await _seedFriendship(fakeFirestore, userId, 'friend-1');
@@ -575,7 +597,8 @@ void main() {
         expect(profiles.first.displayName, equals('Friend One'));
       });
 
-      test('getMutualFriends should find common friends between two users', () async {
+      test('getMutualFriends should find common friends between two users',
+          () async {
         // Arrange
         const userId1 = 'user-123';
         const userId2 = 'user-456';
@@ -586,7 +609,8 @@ void main() {
         await _seedFriendship(fakeFirestore, userId2, mutualFriend);
 
         // Act
-        final mutualFriends = await repository.getMutualFriends(userId1, userId2);
+        final mutualFriends =
+            await repository.getMutualFriends(userId1, userId2);
 
         // Assert
         expect(mutualFriends, contains(mutualFriend));
@@ -601,7 +625,10 @@ void main() {
 
         // Act - Seed and fetch
         await _seedUserProfile(fakeFirestore, profileId, profile.toFirestore());
-        final doc = await fakeFirestore.collection('public_profiles').doc(profileId).get();
+        final doc = await fakeFirestore
+            .collection('public_profiles')
+            .doc(profileId)
+            .get();
         final retrieved = UserProfile.fromMap(doc.id, doc.data()!);
 
         // Assert
@@ -611,7 +638,8 @@ void main() {
         expect(retrieved.friendsCount, equals(profile.friendsCount));
       });
 
-      test('should correctly serialize and deserialize FriendRequest', () async {
+      test('should correctly serialize and deserialize FriendRequest',
+          () async {
         // Arrange
         final request = FriendRequest(
           id: 'request-1',
@@ -622,8 +650,12 @@ void main() {
         );
 
         // Act - Seed and fetch
-        await _seedFriendRequest(fakeFirestore, request.id, request.toFirestore());
-        final doc = await fakeFirestore.collection('friend_requests').doc(request.id).get();
+        await _seedFriendRequest(
+            fakeFirestore, request.id, request.toFirestore());
+        final doc = await fakeFirestore
+            .collection('friend_requests')
+            .doc(request.id)
+            .get();
         final retrieved = FriendRequest.fromMap(doc.id, doc.data()!);
 
         // Assert
@@ -633,7 +665,8 @@ void main() {
         expect(retrieved.status, equals(request.status));
       });
 
-      test('should correctly serialize and deserialize FriendCategory', () async {
+      test('should correctly serialize and deserialize FriendCategory',
+          () async {
         // Arrange
         final category = FriendCategory(
           id: 'category-1',
@@ -645,7 +678,8 @@ void main() {
         );
 
         // Act - Seed and fetch
-        await _seedCategory(fakeFirestore, category.ownerId, category.id, category.toFirestore());
+        await _seedCategory(fakeFirestore, category.ownerId, category.id,
+            category.toFirestore());
         final doc = await fakeFirestore
             .collection('users')
             .doc(category.ownerId)

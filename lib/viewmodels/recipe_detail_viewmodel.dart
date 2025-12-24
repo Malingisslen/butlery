@@ -68,7 +68,8 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 /// Serves as the presentation layer coordinator for individual recipe operations, providing detailed display coordination,
 /// recipe interactions, analytics tracking, and real-time state management while maintaining clean MVVM architecture
 /// separation between recipe detail business logic and UI presentation concerns.
-class RecipeDetailViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin {
+class RecipeDetailViewModel extends ChangeNotifier
+    with StateNotifierMixin, AsyncOperationMixin {
   final UnifiedRecipeService _recipeService;
   final AnalyticsService _analyticsService;
 
@@ -91,9 +92,11 @@ class RecipeDetailViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
     required Recipe recipe,
     UnifiedRecipeService? recipeService,
     AnalyticsService? analyticsService,
-  }) : _recipe = recipe,
-       _recipeService = recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
-       _analyticsService = analyticsService ?? ServiceLocator.get<AnalyticsService>() {
+  })  : _recipe = recipe,
+        _recipeService =
+            recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
+        _analyticsService =
+            analyticsService ?? ServiceLocator.get<AnalyticsService>() {
     // Lyssna på UnifiedRecipeService för uppdateringar
     _recipeService.addListener(_onRecipeServiceUpdate);
   }
@@ -204,28 +207,29 @@ class RecipeDetailViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
   /// ```
   Future<bool> deleteRecipe() async {
     _setDeleting(true);
-    
+
     try {
       final result = await executeAsync(() async {
-          final success = await _recipeService.deleteRecipe(_recipe.id);
+        final success = await _recipeService.deleteRecipe(_recipe.id);
 
-          if (success) {
-            // Logga analytics för recipe deletion
-            await _analyticsService.logRecipeDeleted(
-              recipeId: _recipe.id,
-              recipeTitle: _recipe.title,
-              mealType: _recipe.mealType,
-              isPersonal: _recipe.isPersonal,
-              createdAt: _recipe.createdAt,
-            );
+        if (success) {
+          // Logga analytics för recipe deletion
+          await _analyticsService.logRecipeDeleted(
+            recipeId: _recipe.id,
+            recipeTitle: _recipe.title,
+            mealType: _recipe.mealType,
+            isPersonal: _recipe.isPersonal,
+            createdAt: _recipe.createdAt,
+          );
 
-            return true;
-          } else {
-            final errorMessage = _recipeService.error ?? 'Kunde inte ta bort recept';
-            throw Exception(errorMessage);
-          }
+          return true;
+        } else {
+          final errorMessage =
+              _recipeService.error ?? 'Kunde inte ta bort recept';
+          throw Exception(errorMessage);
+        }
       });
-      
+
       return result;
     } finally {
       _setDeleting(false);
@@ -253,30 +257,30 @@ class RecipeDetailViewModel extends ChangeNotifier with StateNotifierMixin, Asyn
   /// ```
   Future<bool> markAsCooked() async {
     return await executeAsync(() async {
-        // Check if this is the first time cooking BEFORE updating
-        final isFirstTime = _recipe.lastCookedAt == null;
-        
-        // Uppdatera receptet med ny lastCookedAt
-        final updatedRecipe = _recipe.copyWith(lastCookedAt: DateTime.now());
+      // Check if this is the first time cooking BEFORE updating
+      final isFirstTime = _recipe.lastCookedAt == null;
 
-        final success = await _recipeService.updateRecipe(updatedRecipe);
+      // Uppdatera receptet med ny lastCookedAt
+      final updatedRecipe = _recipe.copyWith(lastCookedAt: DateTime.now());
 
-        if (success) {
-          _recipe = updatedRecipe;
-          notifyListeners();
+      final success = await _recipeService.updateRecipe(updatedRecipe);
 
-          // Logga analytics med rätt metod
-          await _analyticsService.logRecipeCooked(
-            recipeId: _recipe.id,
-            recipeTitle: _recipe.title,
-            mealType: _recipe.mealType,
-            isFirstTime: isFirstTime,
-          );
+      if (success) {
+        _recipe = updatedRecipe;
+        notifyListeners();
 
-          return true;
-        } else {
-          throw Exception('Kunde inte uppdatera recept');
-        }
+        // Logga analytics med rätt metod
+        await _analyticsService.logRecipeCooked(
+          recipeId: _recipe.id,
+          recipeTitle: _recipe.title,
+          mealType: _recipe.mealType,
+          isFirstTime: isFirstTime,
+        );
+
+        return true;
+      } else {
+        throw Exception('Kunde inte uppdatera recept');
+      }
     });
   }
 

@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/theme_constants.dart';
+
 class StyledCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -46,10 +47,10 @@ class StyledCard extends StatelessWidget {
     this.margin,
     this.onTap,
     this.backgroundColor,
-  }) : elevation = AppDimensions.elevationLow,
-       borderRadius = AppDimensions.borderRadius8,
-       showBorder = false,
-       borderColor = null;
+  })  : elevation = AppDimensions.elevationLow,
+        borderRadius = AppDimensions.borderRadius8,
+        showBorder = false,
+        borderColor = null;
 
   /// Elevated card with higher shadow
   const StyledCard.elevated({
@@ -59,10 +60,10 @@ class StyledCard extends StatelessWidget {
     this.margin,
     this.onTap,
     this.backgroundColor,
-  }) : elevation = AppDimensions.elevationMedium,
-       borderRadius = AppDimensions.borderRadius12,
-       showBorder = false,
-       borderColor = null;
+  })  : elevation = AppDimensions.elevationMedium,
+        borderRadius = AppDimensions.borderRadius12,
+        showBorder = false,
+        borderColor = null;
 
   /// Outlined card with border instead of shadow
   const StyledCard.outlined({
@@ -73,9 +74,9 @@ class StyledCard extends StatelessWidget {
     this.onTap,
     this.backgroundColor,
     this.borderColor,
-  }) : elevation = 0,
-       borderRadius = AppDimensions.borderRadius8,
-       showBorder = true;
+  })  : elevation = 0,
+        borderRadius = AppDimensions.borderRadius8,
+        showBorder = true;
 
   /// Recipe card styling
   const StyledCard.recipe({
@@ -83,12 +84,12 @@ class StyledCard extends StatelessWidget {
     required this.child,
     this.onTap,
     this.backgroundColor,
-  }) : padding = null,
-       margin = null,
-       elevation = AppDimensions.elevationLow,
-       borderRadius = AppDimensions.borderRadius12,
-       showBorder = false,
-       borderColor = null;
+  })  : padding = null,
+        margin = null,
+        elevation = AppDimensions.elevationLow,
+        borderRadius = AppDimensions.borderRadius12,
+        showBorder = false,
+        borderColor = null;
 
   /// List item card (lower elevation)
   const StyledCard.listItem({
@@ -96,25 +97,25 @@ class StyledCard extends StatelessWidget {
     required this.child,
     this.onTap,
     this.backgroundColor,
-  }) : padding = null,
-       margin = null,
-       elevation = AppDimensions.elevationLow,
-       borderRadius = AppDimensions.borderRadius8,
-       showBorder = false,
-       borderColor = null;
+  })  : padding = null,
+        margin = null,
+        elevation = AppDimensions.elevationLow,
+        borderRadius = AppDimensions.borderRadius8,
+        showBorder = false,
+        borderColor = null;
 
   /// Dialog card (high elevation)
   const StyledCard.dialog({
     super.key,
     required this.child,
-  }) : padding = null,
-       margin = null,
-       onTap = null,
-       backgroundColor = null,
-       elevation = AppDimensions.elevationHigh,
-       borderRadius = AppDimensions.borderRadius16,
-       showBorder = false,
-       borderColor = null;
+  })  : padding = null,
+        margin = null,
+        onTap = null,
+        backgroundColor = null,
+        elevation = AppDimensions.elevationHigh,
+        borderRadius = AppDimensions.borderRadius16,
+        showBorder = false,
+        borderColor = null;
 
   /// Selection card (for pickers, selectors)
   const StyledCard.selection({
@@ -123,25 +124,28 @@ class StyledCard extends StatelessWidget {
     this.onTap,
     this.backgroundColor,
     required bool isSelected,
-  }) : padding = null,
-       margin = null,
-       elevation = isSelected ? AppDimensions.elevationMedium : AppDimensions.elevationLow,
-       borderRadius = AppDimensions.borderRadius8,
-       showBorder = isSelected,
-       borderColor = isSelected ? AppColors.primaryBlue : null;
+  })  : padding = null,
+        margin = null,
+        elevation = isSelected
+            ? AppDimensions.elevationMedium
+            : AppDimensions.elevationLow,
+        borderRadius = AppDimensions.borderRadius8,
+        showBorder = isSelected,
+        borderColor = isSelected ? AppColors.primaryBlue : null;
 
   @override
   Widget build(BuildContext context) {
     final cardTheme = Theme.of(context).cardTheme;
-    
+
     // Determine default padding based on card type
     EdgeInsetsGeometry? effectivePadding = padding;
     EdgeInsetsGeometry? effectiveMargin = margin;
-    
+
     // Apply default spacing for specific card types
     if (padding == null) {
       if (runtimeType.toString().contains('recipe')) {
-        effectivePadding = const EdgeInsets.all((AppDimensions.spacingSm + AppDimensions.spacingXs));
+        effectivePadding = const EdgeInsets.all(
+            (AppDimensions.spacingSm + AppDimensions.spacingXs));
         effectiveMargin = const EdgeInsets.all(AppDimensions.spacingSm);
       } else if (runtimeType.toString().contains('listItem')) {
         effectivePadding = AppDimensions.listItemPadding;
@@ -152,11 +156,12 @@ class StyledCard extends StatelessWidget {
       } else if (runtimeType.toString().contains('dialog')) {
         effectivePadding = const EdgeInsets.all(AppDimensions.spacingLg);
       } else if (runtimeType.toString().contains('selection')) {
-        effectivePadding = const EdgeInsets.all((AppDimensions.spacingSm + AppDimensions.spacingXs));
+        effectivePadding = const EdgeInsets.all(
+            (AppDimensions.spacingSm + AppDimensions.spacingXs));
         effectiveMargin = const EdgeInsets.all(AppDimensions.spacingXs);
       }
     }
-    
+
     final Widget card = Card(
       color: backgroundColor ?? cardTheme.color,
       elevation: elevation ?? cardTheme.elevation,
@@ -196,7 +201,6 @@ class StyledCard extends StatelessWidget {
 
 /// Specialized card variants for specific content types
 class StyledCards {
-  
   /// Empty state card
   static Widget emptyState({
     required Widget child,

@@ -119,7 +119,8 @@ class LiveEditor {
         SerializationUtils.safeInt(data, 'lastSeen'),
       ),
       currentField: SerializationUtils.safeNullableString(data, 'currentField'),
-      isActive: SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
+      isActive:
+          SerializationUtils.safeBool(data, 'isActive', defaultValue: true),
     );
   }
 

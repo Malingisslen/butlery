@@ -15,6 +15,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 
 // Create mock for conversation and message
 class MockConversation extends Mock implements Conversation {}
+
 class MockMessage extends Mock implements Message {}
 
 void main() {
@@ -22,7 +23,7 @@ void main() {
     late MockConversation mockConversation;
     late MockMessage mockMessage;
     const currentUserId = 'test-user-id';
-    
+
     // Helper to create properly configured test environment
     Widget createTestWidget({
       required Widget child,
@@ -46,15 +47,16 @@ void main() {
     setUp(() {
       mockConversation = MockConversation();
       mockMessage = MockMessage();
-      
+
       // Setup default mock behavior
-      when(() => mockConversation.getDisplayTitle(any())).thenReturn('Test Conversation');
+      when(() => mockConversation.getDisplayTitle(any()))
+          .thenReturn('Test Conversation');
       when(() => mockConversation.getDisplayAvatarUrl(any())).thenReturn(null);
       when(() => mockConversation.hasUnreadMessages(any())).thenReturn(false);
       when(() => mockConversation.formattedLastActivity).thenReturn('12:34');
       when(() => mockConversation.isGroup).thenReturn(false);
       when(() => mockConversation.lastMessage).thenReturn(mockMessage);
-      
+
       // Setup message mock
       when(() => mockMessage.isSystemMessage).thenReturn(false);
       when(() => mockMessage.isFromCurrentUser(any())).thenReturn(false);
@@ -64,7 +66,7 @@ void main() {
     });
 
     group('Rendering Tests', () {
-      testWidgets('renders all core components for direct conversation', 
+      testWidgets('renders all core components for direct conversation',
           (WidgetTester tester) async {
         // ULTRATHINK: Test basic rendering from lines 39-129
         await tester.pumpWidget(
@@ -79,23 +81,24 @@ void main() {
 
         // Avatar should be rendered
         expect(find.byType(Stack), findsWidgets); // Multiple stacks for avatar
-        
+
         // Title should be displayed
         expect(find.text('Test Conversation'), findsOneWidget);
-        
+
         // Last message preview
         expect(find.text('Hej! Hur mår du?'), findsOneWidget);
-        
+
         // Timestamp
         expect(find.text('12:34'), findsOneWidget);
       });
 
-      testWidgets('renders group conversation with group icon', 
+      testWidgets('renders group conversation with group icon',
           (WidgetTester tester) async {
         // ULTRATHINK: Test group avatar from lines 141-143, 168-179
         when(() => mockConversation.isGroup).thenReturn(true);
-        when(() => mockConversation.getDisplayTitle(any())).thenReturn('Familjegruppen');
-        
+        when(() => mockConversation.getDisplayTitle(any()))
+            .thenReturn('Familjegruppen');
+
         await tester.pumpWidget(
           createTestWidget(
             child: ConversationListItem(
@@ -107,7 +110,7 @@ void main() {
 
         // Group icon should be displayed
         expect(find.byIcon(Icons.group), findsOneWidget);
-        
+
         // Group title
         expect(find.text('Familjegruppen'), findsOneWidget);
       });
@@ -129,13 +132,15 @@ void main() {
         final onlineIndicator = find.descendant(
           of: find.byType(Stack),
           matching: find.byWidgetPredicate(
-            (widget) => widget is Container &&
+            (widget) =>
+                widget is Container &&
                 widget.decoration is BoxDecoration &&
-                (widget.decoration as BoxDecoration).color == AppColors.success &&
+                (widget.decoration as BoxDecoration).color ==
+                    AppColors.success &&
                 (widget.decoration as BoxDecoration).shape == BoxShape.circle,
           ),
         );
-        
+
         expect(onlineIndicator, findsOneWidget);
       });
     });
@@ -145,7 +150,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test unread indicator from lines 36, 116-119, 211-219
         when(() => mockConversation.hasUnreadMessages(any())).thenReturn(true);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ConversationListItem(
@@ -157,13 +162,15 @@ void main() {
 
         // Find the unread indicator (blue dot)
         final unreadIndicator = find.byWidgetPredicate(
-          (widget) => widget is Container &&
+          (widget) =>
+              widget is Container &&
               widget.decoration is BoxDecoration &&
-              (widget.decoration as BoxDecoration).color == AppColors.primaryBlue &&
+              (widget.decoration as BoxDecoration).color ==
+                  AppColors.primaryBlue &&
               (widget.decoration as BoxDecoration).shape == BoxShape.circle &&
               widget.constraints?.maxWidth == AppDimensions.spacingSm,
         );
-        
+
         expect(unreadIndicator, findsOneWidget);
       });
 
@@ -171,7 +178,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test text styling from lines 66-73, 103-110
         when(() => mockConversation.hasUnreadMessages(any())).thenReturn(true);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ConversationListItem(
@@ -184,11 +191,11 @@ void main() {
         // Title should be bold
         final titleText = tester.widget<Text>(find.text('Test Conversation'));
         expect(titleText.style?.fontWeight, equals(FontWeight.bold));
-        
+
         // Last message should be semi-bold
         final messageText = tester.widget<Text>(find.text('Hej! Hur mår du?'));
         expect(messageText.style?.fontWeight, equals(FontWeight.w500));
-        
+
         // Timestamp should be primary color
         final timestampText = tester.widget<Text>(find.text('12:34'));
         expect(timestampText.style?.color, equals(AppColors.primaryBlue));
@@ -198,7 +205,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test normal styling for read messages
         when(() => mockConversation.hasUnreadMessages(any())).thenReturn(false);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ConversationListItem(
@@ -211,7 +218,7 @@ void main() {
         // Title should not be bold
         final titleText = tester.widget<Text>(find.text('Test Conversation'));
         expect(titleText.style?.fontWeight, isNot(equals(FontWeight.bold)));
-        
+
         // Timestamp should be medium color
         final timestampText = tester.widget<Text>(find.text('12:34'));
         expect(timestampText.style?.color, equals(AppColors.textMedium));
@@ -219,13 +226,15 @@ void main() {
     });
 
     group('Message Preview Tests', () {
-      testWidgets('shows correct preview for direct conversation from other user',
+      testWidgets(
+          'shows correct preview for direct conversation from other user',
           (WidgetTester tester) async {
         // ULTRATHINK: Test message preview from lines 236-242
         when(() => mockConversation.isGroup).thenReturn(false);
-        when(() => mockMessage.isFromCurrentUser(currentUserId)).thenReturn(false);
+        when(() => mockMessage.isFromCurrentUser(currentUserId))
+            .thenReturn(false);
         when(() => mockMessage.displayContent).thenReturn('Vad gör du?');
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ConversationListItem(
@@ -243,9 +252,10 @@ void main() {
       testWidgets('shows "Du:" prefix for messages from current user',
           (WidgetTester tester) async {
         // ULTRATHINK: Test current user message from lines 238-239, 246-247
-        when(() => mockMessage.isFromCurrentUser(currentUserId)).thenReturn(true);
+        when(() => mockMessage.isFromCurrentUser(currentUserId))
+            .thenReturn(true);
         when(() => mockMessage.displayContent).thenReturn('Jag mår bra!');
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ConversationListItem(
@@ -263,10 +273,12 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test group message preview from lines 245-249
         when(() => mockConversation.isGroup).thenReturn(true);
-        when(() => mockMessage.isFromCurrentUser(currentUserId)).thenReturn(false);
+        when(() => mockMessage.isFromCurrentUser(currentUserId))
+            .thenReturn(false);
         when(() => mockMessage.senderDisplayName).thenReturn('Erik');
-        when(() => mockMessage.displayContent).thenReturn('Ska vi ses imorgon?');
-        
+        when(() => mockMessage.displayContent)
+            .thenReturn('Ska vi ses imorgon?');
+
         await tester.pumpWidget(
           createTestWidget(
             child: ConversationListItem(
@@ -285,7 +297,7 @@ void main() {
         // ULTRATHINK: Test system message from lines 231-234
         when(() => mockMessage.isSystemMessage).thenReturn(true);
         when(() => mockMessage.content).thenReturn('Anna gick med i gruppen');
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ConversationListItem(
@@ -304,7 +316,7 @@ void main() {
         // ULTRATHINK: Test empty message from lines 223-227
         when(() => mockConversation.lastMessage).thenReturn(null);
         when(() => mockConversation.isGroup).thenReturn(false);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ConversationListItem(
@@ -323,7 +335,7 @@ void main() {
         // ULTRATHINK: Test group created from lines 224-226
         when(() => mockConversation.lastMessage).thenReturn(null);
         when(() => mockConversation.isGroup).thenReturn(true);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ConversationListItem(
@@ -342,9 +354,10 @@ void main() {
       testWidgets('shows initials fallback for users without avatar',
           (WidgetTester tester) async {
         // ULTRATHINK: Test avatar fallback from lines 199-208
-        when(() => mockConversation.getDisplayAvatarUrl(any())).thenReturn(null);
+        when(() => mockConversation.getDisplayAvatarUrl(any()))
+            .thenReturn(null);
         when(() => mockConversation.getDisplayTitle(any())).thenReturn('Johan');
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ConversationListItem(
@@ -361,9 +374,10 @@ void main() {
       testWidgets('shows question mark for empty display names',
           (WidgetTester tester) async {
         // ULTRATHINK: Test empty name fallback from line 202
-        when(() => mockConversation.getDisplayAvatarUrl(any())).thenReturn(null);
+        when(() => mockConversation.getDisplayAvatarUrl(any()))
+            .thenReturn(null);
         when(() => mockConversation.getDisplayTitle(any())).thenReturn('');
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ConversationListItem(
@@ -380,9 +394,10 @@ void main() {
       testWidgets('handles Swedish characters in initials',
           (WidgetTester tester) async {
         // ULTRATHINK: Test Swedish character handling
-        when(() => mockConversation.getDisplayAvatarUrl(any())).thenReturn(null);
+        when(() => mockConversation.getDisplayAvatarUrl(any()))
+            .thenReturn(null);
         when(() => mockConversation.getDisplayTitle(any())).thenReturn('Åsa');
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ConversationListItem(
@@ -398,11 +413,10 @@ void main() {
     });
 
     group('Interaction Tests', () {
-      testWidgets('handles tap callback',
-          (WidgetTester tester) async {
+      testWidgets('handles tap callback', (WidgetTester tester) async {
         // ULTRATHINK: Test onTap from lines 40-41
         bool tapped = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ConversationListItem(
@@ -417,15 +431,14 @@ void main() {
 
         await tester.tap(find.byType(InkWell));
         await tester.pump();
-        
+
         expect(tapped, isTrue);
       });
 
-      testWidgets('handles long press callback',
-          (WidgetTester tester) async {
+      testWidgets('handles long press callback', (WidgetTester tester) async {
         // ULTRATHINK: Test onLongPress from line 42
         bool longPressed = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ConversationListItem(
@@ -440,7 +453,7 @@ void main() {
 
         await tester.longPress(find.byType(InkWell));
         await tester.pump();
-        
+
         expect(longPressed, isTrue);
       });
     });
@@ -451,10 +464,11 @@ void main() {
         // ULTRATHINK: Test text overflow from lines 74-75, 111-112
         final longTitle = 'A' * 100;
         final longMessage = 'B' * 200;
-        
-        when(() => mockConversation.getDisplayTitle(any())).thenReturn(longTitle);
+
+        when(() => mockConversation.getDisplayTitle(any()))
+            .thenReturn(longTitle);
         when(() => mockMessage.displayContent).thenReturn(longMessage);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ConversationListItem(
@@ -470,7 +484,7 @@ void main() {
         );
         expect(titleText.overflow, equals(TextOverflow.ellipsis));
         expect(titleText.maxLines, equals(1));
-        
+
         // Message text should have ellipsis
         final messageText = tester.widget<Text>(
           find.text(longMessage),
@@ -494,8 +508,8 @@ void main() {
         // Check for SizedBox spacers
         expect(
           find.byWidgetPredicate(
-            (widget) => widget is SizedBox &&
-                widget.width == AppDimensions.paddingM,
+            (widget) =>
+                widget is SizedBox && widget.width == AppDimensions.paddingM,
           ),
           findsWidgets,
         );
@@ -518,7 +532,7 @@ void main() {
 
         // Should render without errors
         expect(find.byType(ConversationListItem), findsOneWidget);
-        
+
         // Tapping should not throw
         await tester.tap(find.byType(InkWell));
         await tester.pump();
@@ -529,8 +543,9 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test edge case handling
         when(() => mockConversation.getDisplayTitle(any())).thenReturn('');
-        when(() => mockConversation.getDisplayAvatarUrl(any())).thenReturn(null);
-        
+        when(() => mockConversation.getDisplayAvatarUrl(any()))
+            .thenReturn(null);
+
         await tester.pumpWidget(
           createTestWidget(
             child: ConversationListItem(

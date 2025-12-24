@@ -64,16 +64,16 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 enum SyncStatus {
   /// Successfully synchronized with Firebase backend.
   synced, // Synkad med Firebase
-  
+
   /// Pending synchronization with backend, changes waiting to be uploaded.
   pending, // Väntar på synk
-  
+
   /// Synchronization conflict detected, requires user resolution.
   conflict, // Konflikt som behöver lösas
-  
+
   /// Local-only data, not synchronized with backend (offline mode).
   local, // Endast lokal (offline)
-  
+
   /// Synchronization error occurred, retry or manual intervention needed.
   error, // Synk-fel
 }
@@ -84,10 +84,10 @@ enum SyncStatus {
 enum ListType {
   /// Personal shopping list for individual use without collaboration.
   personal, // Personlig lista
-  
+
   /// Collaborative shopping list shared with other users with real-time sync.
   collaborative, // Delad med andra, real-time sync
-  
+
   /// Template shopping list for reuse and duplication across users.
   template, // Mall-lista för återanvändning
 }
@@ -101,13 +101,14 @@ typedef ShoppingListType = ListType;
 enum SharedListPermission {
   /// View-only permission, can see list and items but cannot modify.
   view, // Kan bara se listan
-  
+
   /// Edit permission, can add, remove, and modify items in the list.
   edit, // Kan lägga till/ta bort items
-  
+
   /// Administrative permission, can manage permissions and delete the list.
   admin, // Kan redigera behörigheter och ta bort lista
 }
+
 /// Comprehensive unified shopping list with triple-mode support and collaborative features.
 /// Represents a complete shopping list with all associated metadata including items, collaboration
 /// settings, synchronization status, and comprehensive member management. Supports personal,
@@ -115,35 +116,35 @@ enum SharedListPermission {
 class UnifiedShoppingList {
   /// Unique identifier for this shopping list instance.
   final String id;
-  
+
   /// Name of the shopping list for identification and display.
   /// The primary identifier that users see and use to recognize the list.
   final String name;
-  
+
   /// User identifier of the shopping list owner.
   /// References the user who created and owns the shopping list with administrative privileges.
   final String ownerId;
-  
+
   /// Cached display name of the list owner for UI performance optimization.
   /// Stored locally to avoid additional user profile lookups during list display and attribution.
   final String ownerDisplayName;
-  
+
   /// List of shopping items contained within this shopping list.
   /// Complete collection of UnifiedShoppingItem instances that make up the shopping list content.
   final List<UnifiedShoppingItem> items;
-  
+
   /// Timestamp when the shopping list was originally created.
   /// Used for chronological tracking and list organization by creation date.
   final DateTime createdAt;
-  
+
   /// Timestamp when the shopping list was last updated.
   /// Tracks the most recent modification for synchronization and freshness determination.
   final DateTime updatedAt;
-  
+
   /// Optional timestamp when the list was last synchronized with the backend.
   /// Used for sync status tracking and determining data freshness for offline-first functionality.
   final DateTime? lastSyncedAt;
-  
+
   /// Current synchronization status of the shopping list.
   /// Tracks sync state for offline-first functionality with conflict resolution and error handling.
   final SyncStatus syncStatus;
@@ -153,45 +154,46 @@ class UnifiedShoppingList {
   /// Type classification of the shopping list determining its behavioral characteristics.
   /// Controls whether the list is personal, collaborative, or a reusable template.
   final ListType type;
-  
+
   /// Member permissions mapping for collaborative access control.
   /// Maps user IDs to their permission levels for granular collaborative list management.
-  final Map<String, SharedListPermission> memberPermissions; // userId -> permission
-  
+  final Map<String, SharedListPermission>
+      memberPermissions; // userId -> permission
+
   /// Optional timestamp of the most recent activity on the shopping list.
   /// Used for activity tracking and determining list engagement for collaborative features.
   final DateTime? lastActivityAt;
-  
+
   /// Optional user identifier who performed the most recent activity.
   /// Tracks the last user to modify the list for collaborative attribution and activity summaries.
   final String? lastActivityByUserId;
-  
+
   /// Optional display name of the user who performed the most recent activity.
   /// Cached display name for performance optimization in activity summaries and collaborative UI.
   final String? lastActivityByDisplayName;
-  
+
   /// Optional description providing additional context for the shopping list.
   /// Allows users to add detailed information about the list's purpose or special instructions.
   final String? description;
-  
+
   /// Flexible settings container for future feature extensions.
   /// Extensible settings system for storing list-specific configuration and preferences.
   final Map<String, dynamic> settings; // Framtida inställningar
-  
+
   /// List of friend category IDs for bulk sharing operations.
   /// References friend categories that can be used for efficient bulk sharing of the shopping list.
   final List<String> categoryIds; // Related friend categories for bulk sharing
-  
+
   /// Flag indicating whether guest users can edit the collaborative list.
   /// Controls editing permissions for users without explicit member permissions in collaborative lists.
   final bool allowGuestEditing;
-  
+
   /// Flag indicating whether completed items should be automatically removed.
   /// Controls automatic cleanup behavior for purchased items to maintain list cleanliness.
   final bool autoRemoveCompleted;
-  
+
   /// Optional field tracking the origin of collaborative lists to prevent duplicates.
-  /// Used to distinguish between collaborative lists created explicitly vs those created 
+  /// Used to distinguish between collaborative lists created explicitly vs those created
   /// from shared list acceptance. Helps prevent showing duplicates in the shopping list dropdown.
   /// - null: Explicitly created collaborative list or personal list (show in dropdown)
   /// - 'shared': Created from accepting a shared list invitation (don't show in dropdown)
@@ -333,11 +335,11 @@ class UnifiedShoppingList {
   bool get isNotEmpty => items.isNotEmpty;
 
   int get totalItems => items.length;
-  int get itemCount => items.length;  // Alias for compatibility
+  int get itemCount => items.length; // Alias for compatibility
   int get boughtItems => items.where((item) => item.bought).length;
   int get unboughtItems => totalItems - boughtItems;
   int get memberCount => memberPermissions.length;
-  
+
   /// Gets list of collaborator user IDs for test compatibility.
   List<String> get collaborators => memberPermissions.keys.toList();
 
@@ -626,8 +628,10 @@ class UnifiedShoppingList {
   /// type conversion and collaborative metadata deserialization for client-side caching support.
   /// Returns a new [UnifiedShoppingList] instance with all data properly parsed from JSON.
   factory UnifiedShoppingList.fromJson(Map<String, dynamic> json) {
-    final lastSyncedAtStr = SerializationUtils.safeNullableString(json, 'lastSyncedAt');
-    final lastActivityAtStr = SerializationUtils.safeNullableString(json, 'lastActivityAt');
+    final lastSyncedAtStr =
+        SerializationUtils.safeNullableString(json, 'lastSyncedAt');
+    final lastActivityAtStr =
+        SerializationUtils.safeNullableString(json, 'lastActivityAt');
 
     return UnifiedShoppingList(
       id: SerializationUtils.safeString(json, 'id'),
@@ -639,9 +643,12 @@ class UnifiedShoppingList {
         'items',
         (item) => UnifiedShoppingItem.fromJson(item),
       ),
-      createdAt: DateTime.parse(SerializationUtils.safeString(json, 'createdAt')),
-      updatedAt: DateTime.parse(SerializationUtils.safeString(json, 'updatedAt')),
-      lastSyncedAt: lastSyncedAtStr != null ? DateTime.tryParse(lastSyncedAtStr) : null,
+      createdAt:
+          DateTime.parse(SerializationUtils.safeString(json, 'createdAt')),
+      updatedAt:
+          DateTime.parse(SerializationUtils.safeString(json, 'updatedAt')),
+      lastSyncedAt:
+          lastSyncedAtStr != null ? DateTime.tryParse(lastSyncedAtStr) : null,
       syncStatus: SyncStatus.values.firstWhere(
         (s) => s.name == SerializationUtils.safeString(json, 'syncStatus'),
         orElse: () => SyncStatus.local,
@@ -657,14 +664,20 @@ class UnifiedShoppingList {
                 (p) => p.name == permissionName,
                 orElse: () => SharedListPermission.view,
               ))),
-      lastActivityAt: lastActivityAtStr != null ? DateTime.tryParse(lastActivityAtStr) : null,
-      lastActivityByUserId: SerializationUtils.safeNullableString(json, 'lastActivityByUserId'),
-      lastActivityByDisplayName: SerializationUtils.safeNullableString(json, 'lastActivityByDisplayName'),
+      lastActivityAt: lastActivityAtStr != null
+          ? DateTime.tryParse(lastActivityAtStr)
+          : null,
+      lastActivityByUserId:
+          SerializationUtils.safeNullableString(json, 'lastActivityByUserId'),
+      lastActivityByDisplayName: SerializationUtils.safeNullableString(
+          json, 'lastActivityByDisplayName'),
       description: SerializationUtils.safeNullableString(json, 'description'),
       settings: SerializationUtils.safeMap(json, 'settings'),
       categoryIds: SerializationUtils.safeStringList(json, 'categoryIds'),
-      allowGuestEditing: SerializationUtils.safeBool(json, 'allowGuestEditing', defaultValue: true),
-      autoRemoveCompleted: SerializationUtils.safeBool(json, 'autoRemoveCompleted'),
+      allowGuestEditing: SerializationUtils.safeBool(json, 'allowGuestEditing',
+          defaultValue: true),
+      autoRemoveCompleted:
+          SerializationUtils.safeBool(json, 'autoRemoveCompleted'),
     );
   }
 
@@ -708,19 +721,25 @@ class UnifiedShoppingList {
       lastActivityAt: data['lastActivityAt'] is DateTime
           ? data['lastActivityAt'] as DateTime
           : SerializationUtils.safeDateTime(data, 'lastActivityAt'),
-      lastActivityByUserId: SerializationUtils.safeNullableString(data, 'lastActivityByUserId'),
-      lastActivityByDisplayName: SerializationUtils.safeNullableString(data, 'lastActivityByDisplayName'),
+      lastActivityByUserId:
+          SerializationUtils.safeNullableString(data, 'lastActivityByUserId'),
+      lastActivityByDisplayName: SerializationUtils.safeNullableString(
+          data, 'lastActivityByDisplayName'),
       description: SerializationUtils.safeNullableString(data, 'description'),
       settings: SerializationUtils.safeMap(data, 'settings'),
       categoryIds: SerializationUtils.safeStringList(data, 'categoryIds'),
-      allowGuestEditing: SerializationUtils.safeBool(data, 'allowGuestEditing', defaultValue: true),
-      autoRemoveCompleted: SerializationUtils.safeBool(data, 'autoRemoveCompleted'),
-      collaborativeOrigin: SerializationUtils.safeNullableString(data, 'collaborativeOrigin'),
+      allowGuestEditing: SerializationUtils.safeBool(data, 'allowGuestEditing',
+          defaultValue: true),
+      autoRemoveCompleted:
+          SerializationUtils.safeBool(data, 'autoRemoveCompleted'),
+      collaborativeOrigin:
+          SerializationUtils.safeNullableString(data, 'collaborativeOrigin'),
     );
   }
 
   factory UnifiedShoppingList.fromFirestore(DocumentSnapshot doc) {
-    return UnifiedShoppingList.fromMap(doc.id, doc.data() as Map<String, dynamic>);
+    return UnifiedShoppingList.fromMap(
+        doc.id, doc.data() as Map<String, dynamic>);
   }
 
   /// Standard object methods for debugging, comparison, and identity management.

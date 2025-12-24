@@ -214,24 +214,24 @@ class SocialAvatarComponents {
     final displayUsers = maxUsers != null && users.length > maxUsers
         ? users.take(maxUsers).toList()
         : users;
-    
+
     final remainingCount = maxUsers != null && users.length > maxUsers
         ? users.length - maxUsers
         : 0;
 
-    return horizontal 
+    return horizontal
         ? _buildHorizontalAvatarList(
-            displayUsers, 
-            avatarSize, 
-            onUserTap, 
+            displayUsers,
+            avatarSize,
+            onUserTap,
             showOnlineStatus,
             remainingCount,
             moreUsersText,
           )
         : _buildVerticalAvatarList(
-            displayUsers, 
-            avatarSize, 
-            onUserTap, 
+            displayUsers,
+            avatarSize,
+            onUserTap,
             showOnlineStatus,
           );
   }
@@ -248,22 +248,22 @@ class SocialAvatarComponents {
     return Row(
       children: [
         ...users.map((user) => Padding(
-          padding: const EdgeInsets.only(right: AppDimensions.spacingSm),
-          child: avatar(
-            user: user,
-            size: avatarSize,
-            onTap: onUserTap != null ? () => onUserTap(user) : null,
-            showOnlineStatus: showOnlineStatus,
-            isOnline: isUserOnline(user),
-          ),
-        )),
+              padding: const EdgeInsets.only(right: AppDimensions.spacingSm),
+              child: avatar(
+                user: user,
+                size: avatarSize,
+                onTap: onUserTap != null ? () => onUserTap(user) : null,
+                showOnlineStatus: showOnlineStatus,
+                isOnline: isUserOnline(user),
+              ),
+            )),
         if (remainingCount > 0 && moreUsersText != null)
           Builder(
             builder: (context) => Text(
               moreUsersText.replaceAll('{count}', remainingCount.toString()),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textMedium,
-              ),
+                    color: AppColors.textMedium,
+                  ),
             ),
           ),
       ],
@@ -278,16 +278,18 @@ class SocialAvatarComponents {
     bool showOnlineStatus,
   ) {
     return Column(
-      children: users.map((user) => Padding(
-        padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
-        child: userListTile(
-          user: user,
-          onTap: onUserTap != null ? () => onUserTap(user) : null,
-          avatarSize: avatarSize,
-          showOnlineStatus: showOnlineStatus,
-          isOnline: isUserOnline(user),
-        ),
-      )).toList(),
+      children: users
+          .map((user) => Padding(
+                padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+                child: userListTile(
+                  user: user,
+                  onTap: onUserTap != null ? () => onUserTap(user) : null,
+                  avatarSize: avatarSize,
+                  showOnlineStatus: showOnlineStatus,
+                  isOnline: isUserOnline(user),
+                ),
+              ))
+          .toList(),
     );
   }
 

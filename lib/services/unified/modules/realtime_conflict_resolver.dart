@@ -12,7 +12,6 @@ import 'package:butlery/core/utils/logger.dart';
 /// - Optimistic update conflict management
 /// ❌ DOES NOT CONTAIN: Session management, content operations, editor tracking, event handling
 class RealtimeConflictResolver {
-
   // ===== CONFLICT RESOLUTION ORCHESTRATION =====
 
   /// Apply real-time edit with conflict resolution
@@ -66,7 +65,8 @@ class RealtimeConflictResolver {
       final pendingEdits = pendingRealtimeEdits[recipeId];
       if (pendingEdits == null || pendingEdits.isEmpty) return;
 
-      AppLogger.debug('🔄 Resolving conflicts for recipe $recipeId (${pendingEdits.length} pending edits)');
+      AppLogger.debug(
+          '🔄 Resolving conflicts for recipe $recipeId (${pendingEdits.length} pending edits)');
 
       // Load current recipe state
       final snapshot = await firestore
@@ -75,7 +75,8 @@ class RealtimeConflictResolver {
           .get();
 
       if (!snapshot.exists) {
-        AppLogger.warning('Recipe $recipeId no longer exists during conflict resolution');
+        AppLogger.warning(
+            'Recipe $recipeId no longer exists during conflict resolution');
         return;
       }
 
@@ -165,7 +166,7 @@ class RealtimeConflictResolver {
       resolvedData[field] = lastEdit[field];
       resolvedData['editedBy'] = lastEdit['editedBy'];
       resolvedData['editedByDisplayName'] = lastEdit['editedByDisplayName'];
-      
+
       AppLogger.debug('Applied simple field edit for $field');
     }
   }
@@ -180,14 +181,14 @@ class RealtimeConflictResolver {
 
     final currentList = resolvedData[field] as List<dynamic>? ?? [];
     final updatedList = applyListOperations(currentList, fieldEdits);
-    
+
     resolvedData[field] = updatedList;
-    
+
     // Use the last editor's info
     final lastEdit = fieldEdits.last;
     resolvedData['editedBy'] = lastEdit['editedBy'];
     resolvedData['editedByDisplayName'] = lastEdit['editedByDisplayName'];
-    
+
     AppLogger.debug('Applied ${fieldEdits.length} list operations for $field');
   }
 
@@ -198,17 +199,17 @@ class RealtimeConflictResolver {
   ) {
     for (final batchEdit in batchEdits) {
       final edits = batchEdit['edits'] as List<dynamic>? ?? [];
-      
+
       for (final edit in edits) {
         final editMap = edit as Map<String, dynamic>;
         final field = editMap['field'] as String?;
-        
+
         if (field != null) {
           _mergeSimpleField(resolvedData, field, [editMap]);
         }
       }
     }
-    
+
     AppLogger.debug('Applied ${batchEdits.length} batch operations');
   }
 
@@ -304,7 +305,10 @@ class RealtimeConflictResolver {
     int? index,
   ) {
     final item = operation['ingredient'] ?? operation['instruction'];
-    if (item != null && index != null && index >= 0 && index < resultList.length) {
+    if (item != null &&
+        index != null &&
+        index >= 0 &&
+        index < resultList.length) {
       resultList[index] = item;
     }
   }
@@ -323,12 +327,12 @@ class RealtimeConflictResolver {
   ) {
     final fromIndex = operation['fromIndex'] as int?;
     final toIndex = operation['toIndex'] as int?;
-    
-    if (fromIndex != null && 
-        toIndex != null && 
-        fromIndex >= 0 && 
+
+    if (fromIndex != null &&
+        toIndex != null &&
+        fromIndex >= 0 &&
         fromIndex < resultList.length &&
-        toIndex >= 0 && 
+        toIndex >= 0 &&
         toIndex < resultList.length) {
       final item = resultList.removeAt(fromIndex);
       resultList.insert(toIndex, item);
@@ -346,14 +350,15 @@ class RealtimeConflictResolver {
     required FirebaseFirestore firestore,
   }) async {
     AppLogger.warning('⚠️ Edit conflict detected for recipe $recipeId');
-    
+
     // Add to pending edits for later resolution
     pendingRealtimeEdits.putIfAbsent(recipeId, () => []);
     pendingRealtimeEdits[recipeId]!.add(editMetadata);
 
     // Trigger conflict resolution with longer delay
     conflictResolutionTimers[recipeId] = Timer(
-      const Duration(milliseconds: 1000), // Longer delay for conflict resolution
+      const Duration(
+          milliseconds: 1000), // Longer delay for conflict resolution
       () => resolveEditConflicts(
         firestore: firestore,
         recipeId: recipeId,
@@ -374,16 +379,17 @@ class RealtimeConflictResolver {
     // Check if the field was modified recently by another user
     final lastEditedBy = currentData['editedBy'] as String?;
     final editedBy = editData['editedBy'] as String?;
-    
+
     if (lastEditedBy != null && editedBy != null && lastEditedBy != editedBy) {
       final lastEditTime = currentData['editedAt'] as Timestamp?;
       if (lastEditTime != null) {
-        final timeSinceLastEdit = DateTime.now().difference(lastEditTime.toDate());
+        final timeSinceLastEdit =
+            DateTime.now().difference(lastEditTime.toDate());
         // Consider edits within 5 seconds as potential conflicts
         return timeSinceLastEdit.inSeconds < 5;
       }
     }
-    
+
     return false;
   }
 
@@ -412,10 +418,9 @@ class RealtimeConflictResolver {
   }) {
     final totalPendingEdits = pendingRealtimeEdits.values
         .fold<int>(0, (total, edits) => total + edits.length);
-    
-    final activeConflictTimers = conflictResolutionTimers.values
-        .where((timer) => timer.isActive)
-        .length;
+
+    final activeConflictTimers =
+        conflictResolutionTimers.values.where((timer) => timer.isActive).length;
 
     final recipesWithConflicts = pendingRealtimeEdits.keys
         .where((recipeId) => (pendingRealtimeEdits[recipeId]?.length ?? 0) > 1)
@@ -448,10 +453,10 @@ class RealtimeConflictResolver {
     required Map<String, Timer> conflictResolutionTimers,
   }) async {
     AppLogger.info('🔧 Force resolving conflicts for recipe $recipeId');
-    
+
     // Cancel any existing timer
     conflictResolutionTimers[recipeId]?.cancel();
-    
+
     // Resolve immediately
     await resolveEditConflicts(
       firestore: firestore,

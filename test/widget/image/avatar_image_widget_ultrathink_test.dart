@@ -1,7 +1,7 @@
 // test/widget/image/avatar_image_widget_ultrathink_test.dart
 // ULTRATHINK TEST SUITE: AvatarImageWidget - 379 lines of production code
 // Testing complex avatar widget with image fallbacks, factory constructors, service integration, and dynamic sizing
-// 
+//
 // ULTRATHINK FOCUS: Fallback logic, factory constructors, service integration, state management, initials extraction
 
 import 'package:flutter/material.dart';
@@ -26,7 +26,7 @@ void main() {
     setUp(() async {
       await TestServiceLocator.initialize();
     });
-    
+
     tearDown(() async {
       await BaseWidgetTest.teardownWidget();
     });
@@ -36,7 +36,8 @@ void main() {
       required Widget child,
     }) {
       return BaseWidgetTest.createTestApp(
-        locale: const Locale('en', 'US'), // Use English to avoid localization warnings
+        locale: const Locale(
+            'en', 'US'), // Use English to avoid localization warnings
         child: Scaffold(
           body: child,
         ),
@@ -48,7 +49,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code basic rendering from lines 100-168
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -67,7 +68,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code EditableAvatarWidget from lines 266-379
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: EditableAvatarWidget(
@@ -80,7 +81,8 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.byType(EditableAvatarWidget), findsOneWidget);
-        expect(find.byType(AvatarImageWidget), findsOneWidget); // Uses AvatarImageWidget internally
+        expect(find.byType(AvatarImageWidget),
+            findsOneWidget); // Uses AvatarImageWidget internally
       });
     });
 
@@ -105,15 +107,16 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.byType(AvatarImageWidget), findsOneWidget);
-        
-        // Should show status indicator when showStatus is true  
-        expect(find.byType(Stack), findsWidgets); // Multiple Stacks may exist (main + status indicator)
+
+        // Should show status indicator when showStatus is true
+        expect(find.byType(Stack),
+            findsWidgets); // Multiple Stacks may exist (main + status indicator)
       });
 
       testWidgets('editable factory creates correct configuration',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code .editable() factory from lines 68-97
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget.editable(
@@ -121,14 +124,15 @@ void main() {
               email: 'erik@example.com',
               size: ImageSize.medium,
               showStatus: false,
-              onImageSelected: (path) {}, // Required callback, no tracking needed
+              onImageSelected:
+                  (path) {}, // Required callback, no tracking needed
             ),
           ),
         );
 
         expect(tester.takeException(), isNull);
         expect(find.byType(AvatarImageWidget), findsOneWidget);
-        
+
         // Should show edit button for editable avatar
         expect(find.byIcon(Icons.edit), findsOneWidget);
       });
@@ -139,7 +143,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code image display from lines 172-184
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -151,7 +155,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should show CachedNetworkImage when imageUrl is provided
         expect(find.byType(CachedNetworkImage), findsOneWidget);
       });
@@ -160,7 +164,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code initials fallback from lines 182-216
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -171,10 +175,10 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should show initials "AS" from "Anna Svensson"
         expect(find.text('AS'), findsOneWidget);
-        
+
         // Should NOT show CachedNetworkImage
         expect(find.byType(CachedNetworkImage), findsNothing);
       });
@@ -183,7 +187,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code single name handling from lines 222-226
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -194,7 +198,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should show single initial "A"
         expect(find.text('A'), findsOneWidget);
       });
@@ -203,7 +207,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code email fallback from lines 227-230
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -214,7 +218,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should show email initial "A" from "anna@example.com"
         expect(find.text('A'), findsOneWidget);
       });
@@ -223,7 +227,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code final fallback from lines 229-231
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -233,7 +237,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should show question mark "?" as final fallback
         expect(find.text('?'), findsOneWidget);
       });
@@ -243,8 +247,9 @@ void main() {
       testWidgets('applies correct font size for small avatar',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code font sizing logic from lines 235-241
-        final config = ImageConfig.avatar(size: ImageSize.small); // 40x40 dimensions
-        
+        final config =
+            ImageConfig.avatar(size: ImageSize.small); // 40x40 dimensions
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -255,7 +260,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // For 40px avatar, should use font size 12 (lines 236)
         final textWidget = tester.widget<Text>(find.text('A'));
         expect(textWidget.style?.fontSize, equals(12));
@@ -264,8 +269,9 @@ void main() {
       testWidgets('applies correct font size for medium avatar',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code medium font sizing from line 237
-        final config = ImageConfig.avatar(size: ImageSize.medium); // 80x80 dimensions
-        
+        final config =
+            ImageConfig.avatar(size: ImageSize.medium); // 80x80 dimensions
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -276,7 +282,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // For 80px avatar, should use font size 20 (line 238)
         final textWidget = tester.widget<Text>(find.text('A'));
         expect(textWidget.style?.fontSize, equals(20));
@@ -287,8 +293,9 @@ void main() {
         // ULTRATHINK PRODUCTION DISCOVERY: ImageSize.large returns Size(double.infinity, double.infinity)
         // This means _getFontSize(double.infinity) returns 28 (default case), not 24 as originally expected
         // Lines 235-241: if avatarSize > 120, return 28; - infinite size correctly triggers this
-        final config = ImageConfig.avatar(size: ImageSize.large); // infinite dimensions
-        
+        final config =
+            ImageConfig.avatar(size: ImageSize.large); // infinite dimensions
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -299,7 +306,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // For infinite avatar size, should use font size 28 (default case in _getFontSize)
         final textWidget = tester.widget<Text>(find.text('A'));
         expect(textWidget.style?.fontSize, equals(28));
@@ -308,8 +315,9 @@ void main() {
       testWidgets('applies correct font size for extra large avatar',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code 120px size from line 239 - should use font size 24
-        final config = ImageConfig.avatar(size: ImageSize.extraLarge); // 160x160 dimensions
-        
+        final config = ImageConfig.avatar(
+            size: ImageSize.extraLarge); // 160x160 dimensions
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -320,7 +328,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // For 160px avatar, should use font size 28 (exceeds 120px threshold)
         final textWidget = tester.widget<Text>(find.text('A'));
         expect(textWidget.style?.fontSize, equals(28));
@@ -332,7 +340,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code gradient styling from lines 194-204
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -343,21 +351,23 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should have gradient decoration for initials avatar
-        final decoratedBoxes = tester.widgetList<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBoxes =
+            tester.widgetList<DecoratedBox>(find.byType(DecoratedBox));
         bool hasGradient = false;
-        
+
         for (final box in decoratedBoxes) {
           if (box.decoration is BoxDecoration) {
             final decoration = box.decoration as BoxDecoration;
-            if (decoration.gradient is LinearGradient && decoration.shape == BoxShape.circle) {
+            if (decoration.gradient is LinearGradient &&
+                decoration.shape == BoxShape.circle) {
               hasGradient = true;
               break;
             }
           }
         }
-        
+
         expect(hasGradient, isTrue);
       });
 
@@ -368,7 +378,7 @@ void main() {
           borderColor: AppColors.primaryBlue,
           borderWidth: 3.0,
         );
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -379,24 +389,25 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should apply custom border
         final containers = tester.widgetList<Container>(find.byType(Container));
         bool hasBorder = false;
-        
+
         for (final container in containers) {
           if (container.decoration is BoxDecoration) {
             final decoration = container.decoration as BoxDecoration;
             if (decoration.border != null) {
               final border = decoration.border as Border;
-              if (border.top.color == AppColors.primaryBlue && border.top.width == 3.0) {
+              if (border.top.color == AppColors.primaryBlue &&
+                  border.top.width == 3.0) {
                 hasBorder = true;
                 break;
               }
             }
           }
         }
-        
+
         expect(hasBorder, isTrue);
       });
 
@@ -404,7 +415,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code status indicator from lines 128-132
         final config = ImageConfig.avatar(showStatus: true);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -416,9 +427,10 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should show status indicator positioned element
-        final positionedWidgets = tester.widgetList<Positioned>(find.byType(Positioned));
+        final positionedWidgets =
+            tester.widgetList<Positioned>(find.byType(Positioned));
         expect(positionedWidgets.length, greaterThanOrEqualTo(1));
       });
     });
@@ -428,7 +440,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code edit button from lines 134-155
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -440,7 +452,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should show edit icon when onImageSelected is provided
         expect(find.byIcon(Icons.edit), findsOneWidget);
       });
@@ -449,7 +461,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code readonly behavior from lines 159-165
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -461,16 +473,15 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should NOT show edit icon for readonly avatar
         expect(find.byIcon(Icons.edit), findsNothing);
       });
 
-      testWidgets('handles edit tap correctly',
-          (WidgetTester tester) async {
+      testWidgets('handles edit tap correctly', (WidgetTester tester) async {
         // ULTRATHINK: Test production code edit tap handling from lines 161-165
         final config = ImageConfig.avatar();
-        
+
         // Mock the edit tap behavior by providing onImageSelected callback
         await tester.pumpWidget(
           createTestWidget(
@@ -483,14 +494,14 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should be wrapped in GestureDetector for editable avatar
         expect(find.byType(GestureDetector), findsOneWidget);
-        
+
         // Tap the avatar - this would normally trigger image picker
         await tester.tap(find.byType(GestureDetector));
         await tester.pump();
-        
+
         // Note: In real app, this would call ImagePickerService, but in tests
         // we just verify the structure is correct
         expect(find.byIcon(Icons.edit), findsOneWidget);
@@ -502,7 +513,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code loading overlay from lines 308-329
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: EditableAvatarWidget(
@@ -514,7 +525,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Initially should not show loading
         expect(find.byType(CircularProgressIndicator), findsNothing);
       });
@@ -523,7 +534,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code remove button from lines 331-357
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: EditableAvatarWidget(
@@ -537,7 +548,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should show remove button (close icon) when image exists
         expect(find.byIcon(Icons.close), findsOneWidget);
       });
@@ -546,7 +557,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code no remove button condition from lines 332-334
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: EditableAvatarWidget(
@@ -559,17 +570,16 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should NOT show remove button when no imageUrl
         expect(find.byIcon(Icons.close), findsNothing);
       });
 
-      testWidgets('handles remove button tap',
-          (WidgetTester tester) async {
+      testWidgets('handles remove button tap', (WidgetTester tester) async {
         // ULTRATHINK: Test production code remove functionality from lines 338-339
         final config = ImageConfig.avatar();
         bool removePressed = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: EditableAvatarWidget(
@@ -583,11 +593,11 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Tap the remove button
         await tester.tap(find.byIcon(Icons.close));
         await tester.pump();
-        
+
         expect(removePressed, isTrue);
       });
     });
@@ -597,7 +607,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code Swedish character handling from lines 220-226
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -608,7 +618,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should show initials "ÅS" with proper Swedish characters
         expect(find.text('ÅS'), findsOneWidget);
       });
@@ -617,7 +627,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code single Swedish name from lines 224-226
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -628,7 +638,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should show single initial "B" (Björn -> B)
         expect(find.text('B'), findsOneWidget);
       });
@@ -637,7 +647,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code email handling from lines 227-230
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -648,7 +658,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should show email initial "Å" with proper Swedish character
         expect(find.text('Å'), findsOneWidget);
       });
@@ -659,7 +669,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code empty string handling
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -671,7 +681,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should fall back to question mark for empty strings
         expect(find.text('?'), findsOneWidget);
       });
@@ -681,7 +691,7 @@ void main() {
         // ULTRATHINK BUG FIX: Now handles gracefully instead of crashing
         // Fixed displayName!.trim().isNotEmpty check and filtered empty words from split
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -700,7 +710,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code with whitespace around valid name
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -718,7 +728,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code multiple spaces bug fix
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -736,7 +746,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code comprehensive whitespace handling
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -754,7 +764,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code with tabs, newlines, etc.
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -772,7 +782,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code with various whitespace types only
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -790,18 +800,19 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code with long names
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
-              displayName: 'Anna-Margaretha Kristina-Elisabeth von Habsburg-Lothringen',
+              displayName:
+                  'Anna-Margaretha Kristina-Elisabeth von Habsburg-Lothringen',
               config: config,
             ),
           ),
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should still extract first two initials correctly
         expect(find.text('AK'), findsOneWidget);
       });
@@ -819,7 +830,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Change configuration
         await tester.pumpWidget(
           createTestWidget(
@@ -837,7 +848,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code null callback handling
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -849,7 +860,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // Should render without GestureDetector when no callbacks
         expect(find.byType(GestureDetector), findsNothing);
       });
@@ -860,7 +871,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code memory cache from lines 178-179
         final config = ImageConfig.avatar(size: ImageSize.medium); // 80x80
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -871,8 +882,9 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
-        final cachedImage = tester.widget<CachedNetworkImage>(find.byType(CachedNetworkImage));
+
+        final cachedImage =
+            tester.widget<CachedNetworkImage>(find.byType(CachedNetworkImage));
         expect(cachedImage.memCacheWidth, equals(80));
         expect(cachedImage.memCacheHeight, equals(80));
       });
@@ -881,7 +893,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code placeholder behavior from line 176
         final config = ImageConfig.avatar();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: AvatarImageWidget(
@@ -893,8 +905,9 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
-        final cachedImage = tester.widget<CachedNetworkImage>(find.byType(CachedNetworkImage));
+
+        final cachedImage =
+            tester.widget<CachedNetworkImage>(find.byType(CachedNetworkImage));
         expect(cachedImage.placeholder, isNotNull);
         expect(cachedImage.errorWidget, isNotNull);
       });

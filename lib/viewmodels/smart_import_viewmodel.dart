@@ -234,7 +234,8 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   }
 
   /// Handle import result from ImportManager.
-  Future<SmartImportResult> _handleImportResult(ImportManagerResult result) async {
+  Future<SmartImportResult> _handleImportResult(
+      ImportManagerResult result) async {
     // Check if user assistance is needed
     if (result.needsAssistance) {
       _setPhase(ImportPhase.needsHelp);
@@ -303,7 +304,8 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
       if (!saveResult.isSuccess) {
         _setPhase(ImportPhase.error);
         setError(saveResult.errorMessage ?? 'Kunde inte spara receptet');
-        final failResult = ImportFailed(saveResult.errorMessage ?? 'Kunde inte spara receptet');
+        final failResult = ImportFailed(
+            saveResult.errorMessage ?? 'Kunde inte spara receptet');
         _lastResult = failResult;
         return failResult;
       }

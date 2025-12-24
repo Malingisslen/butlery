@@ -134,17 +134,17 @@ class RecipeComment {
   /// Provides quick access to social engagement metrics for UI display
   /// and analytics without needing to count the likedByUserIds list.
   int get likeCount => likedByUserIds.length;
-  
+
   /// Checks if this comment has been edited after creation.
   /// Returns true when editedAt is not null, indicating the comment
   /// content has been modified since its original creation.
   bool get isEdited => editedAt != null;
-  
+
   /// Checks if this is a top-level comment (not a reply).
   /// Returns true when parentCommentId is null, indicating this comment
   /// is directly attached to the recipe rather than being a reply.
   bool get isTopLevel => parentCommentId == null;
-  
+
   /// Checks if this comment has direct replies.
   /// Returns true when replyCount is greater than zero, indicating
   /// other comments are threaded as replies to this comment.
@@ -199,7 +199,9 @@ class RecipeComment {
       'authorAvatarUrl': authorAvatarUrl,
       'text': text,
       'createdAt': AppTimestamp.fromDateTime(createdAt).toFirestore(),
-      'editedAt': editedAt != null ? AppTimestamp.fromDateTime(editedAt!).toFirestore() : null,
+      'editedAt': editedAt != null
+          ? AppTimestamp.fromDateTime(editedAt!).toFirestore()
+          : null,
       'likedByUserIds': likedByUserIds,
       'parentCommentId': parentCommentId,
       'replyCount': replyCount,
@@ -218,13 +220,18 @@ class RecipeComment {
       id: id,
       recipeId: SerializationUtils.safeString(data, 'recipeId'),
       authorId: SerializationUtils.safeString(data, 'authorId'),
-      authorDisplayName: SerializationUtils.safeString(data, 'authorDisplayName', defaultValue: 'Användare'),
-      authorAvatarUrl: SerializationUtils.safeNullableString(data, 'authorAvatarUrl'),
+      authorDisplayName: SerializationUtils.safeString(
+          data, 'authorDisplayName',
+          defaultValue: 'Användare'),
+      authorAvatarUrl:
+          SerializationUtils.safeNullableString(data, 'authorAvatarUrl'),
       text: SerializationUtils.safeString(data, 'text'),
-      createdAt: SerializationUtils.safeDateTime(data, 'createdAt') ?? DateTime.now(),
+      createdAt:
+          SerializationUtils.safeDateTime(data, 'createdAt') ?? DateTime.now(),
       editedAt: SerializationUtils.safeDateTime(data, 'editedAt'),
       likedByUserIds: SerializationUtils.safeStringList(data, 'likedByUserIds'),
-      parentCommentId: SerializationUtils.safeNullableString(data, 'parentCommentId'),
+      parentCommentId:
+          SerializationUtils.safeNullableString(data, 'parentCommentId'),
       replyCount: SerializationUtils.safeInt(data, 'replyCount'),
       isDeleted: SerializationUtils.safeBool(data, 'isDeleted'),
     );
@@ -265,10 +272,9 @@ class RecipeComment {
       authorAvatarUrl: json['authorAvatarUrl'] as String?,
       text: json['text'] as String? ?? '',
       createdAt: DateTime.parse(json['createdAt'] as String),
-      editedAt:
-          json['editedAt'] != null
-              ? DateTime.parse(json['editedAt'] as String)
-              : null,
+      editedAt: json['editedAt'] != null
+          ? DateTime.parse(json['editedAt'] as String)
+          : null,
       likedByUserIds: List<String>.from(json['likedByUserIds'] ?? []),
       parentCommentId: json['parentCommentId'] as String?,
       replyCount: json['replyCount'] as int? ?? 0,

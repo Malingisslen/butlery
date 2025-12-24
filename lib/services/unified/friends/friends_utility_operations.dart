@@ -43,15 +43,13 @@ class FriendsUtilityOperations {
       }
 
       // Save blocked users to user document
-      await firestore
-          .collection('users')
-          .doc(userId)
-          .update({
+      await firestore.collection('users').doc(userId).update({
         'blockedUsers': getBlockedUsers().toList(),
         'updatedAt': DateTime.now(),
       });
 
-      AppLogger.success('Successfully synced ${getBlockedUsers().length} blocked users to Firebase');
+      AppLogger.success(
+          'Successfully synced ${getBlockedUsers().length} blocked users to Firebase');
     } catch (e) {
       AppLogger.error('Failed to sync blocked users to Firebase', e);
       rethrow;
@@ -64,10 +62,7 @@ class FriendsUtilityOperations {
       AppLogger.debug('Getting friends of user: $userId');
 
       // Get friend IDs from user document
-      final userDoc = await firestore
-          .collection('users')
-          .doc(userId)
-          .get();
+      final userDoc = await firestore.collection('users').doc(userId).get();
 
       if (!userDoc.exists) {
         AppLogger.warning('User not found: $userId');
@@ -84,10 +79,8 @@ class FriendsUtilityOperations {
       // Fetch friend profiles
       final friendProfiles = <UserProfile>[];
       for (final friendId in friendIds) {
-        final friendDoc = await firestore
-            .collection('users')
-            .doc(friendId)
-            .get();
+        final friendDoc =
+            await firestore.collection('users').doc(friendId).get();
 
         if (friendDoc.exists) {
           final friendData = friendDoc.data()!;
@@ -96,13 +89,18 @@ class FriendsUtilityOperations {
             displayName: friendData['displayName'] ?? 'Unknown User',
             email: friendData['email'] ?? '',
             avatarUrl: friendData['avatarUrl'],
-            joinedAt: friendData['joinedAt'] != null ? (friendData['joinedAt'] as Timestamp).toDate() : DateTime.now(),
-            lastActiveAt: friendData['lastActiveAt'] != null ? (friendData['lastActiveAt'] as Timestamp).toDate() : DateTime.now(),
+            joinedAt: friendData['joinedAt'] != null
+                ? (friendData['joinedAt'] as Timestamp).toDate()
+                : DateTime.now(),
+            lastActiveAt: friendData['lastActiveAt'] != null
+                ? (friendData['lastActiveAt'] as Timestamp).toDate()
+                : DateTime.now(),
           ));
         }
       }
 
-      AppLogger.success('Found ${friendProfiles.length} friends for user $userId');
+      AppLogger.success(
+          'Found ${friendProfiles.length} friends for user $userId');
       return friendProfiles;
     } catch (e) {
       AppLogger.error('Failed to get friends of user $userId', e);
@@ -115,7 +113,8 @@ class FriendsUtilityOperations {
     try {
       final userId = getCurrentUserId();
       if (userId == null) {
-        AppLogger.warning('Cannot get recent collaborators: No authenticated user');
+        AppLogger.warning(
+            'Cannot get recent collaborators: No authenticated user');
         return [];
       }
 
@@ -179,11 +178,10 @@ class FriendsUtilityOperations {
 
       // Fetch user profiles for collaborators
       final collaborators = <UserProfile>[];
-      for (final collaboratorId in collaboratorIds.take(10)) { // Limit to 10 most recent
-        final userDoc = await firestore
-            .collection('users')
-            .doc(collaboratorId)
-            .get();
+      for (final collaboratorId in collaboratorIds.take(10)) {
+        // Limit to 10 most recent
+        final userDoc =
+            await firestore.collection('users').doc(collaboratorId).get();
 
         if (userDoc.exists) {
           final userData = userDoc.data()!;
@@ -192,8 +190,12 @@ class FriendsUtilityOperations {
             displayName: userData['displayName'] ?? 'Unknown User',
             email: userData['email'] ?? '',
             avatarUrl: userData['avatarUrl'],
-            joinedAt: userData['joinedAt'] != null ? (userData['joinedAt'] as Timestamp).toDate() : DateTime.now(),
-            lastActiveAt: userData['lastActiveAt'] != null ? (userData['lastActiveAt'] as Timestamp).toDate() : DateTime.now(),
+            joinedAt: userData['joinedAt'] != null
+                ? (userData['joinedAt'] as Timestamp).toDate()
+                : DateTime.now(),
+            lastActiveAt: userData['lastActiveAt'] != null
+                ? (userData['lastActiveAt'] as Timestamp).toDate()
+                : DateTime.now(),
           ));
         }
       }
@@ -211,11 +213,13 @@ class FriendsUtilityOperations {
     try {
       final userId = getCurrentUserId();
       if (userId == null) {
-        AppLogger.warning('Cannot get recent shopping collaborators: No authenticated user');
+        AppLogger.warning(
+            'Cannot get recent shopping collaborators: No authenticated user');
         return [];
       }
 
-      AppLogger.debug('Fetching recent shopping collaborators for user: $userId');
+      AppLogger.debug(
+          'Fetching recent shopping collaborators for user: $userId');
 
       // Get recent shopping lists where user is a collaborator
       final recentShoppingLists = await firestore
@@ -253,11 +257,10 @@ class FriendsUtilityOperations {
 
       // Fetch user profiles for collaborators
       final collaborators = <UserProfile>[];
-      for (final collaboratorId in collaboratorIds.take(10)) { // Limit to 10 most recent
-        final userDoc = await firestore
-            .collection('users')
-            .doc(collaboratorId)
-            .get();
+      for (final collaboratorId in collaboratorIds.take(10)) {
+        // Limit to 10 most recent
+        final userDoc =
+            await firestore.collection('users').doc(collaboratorId).get();
 
         if (userDoc.exists) {
           final userData = userDoc.data()!;
@@ -266,13 +269,18 @@ class FriendsUtilityOperations {
             displayName: userData['displayName'] ?? 'Unknown User',
             email: userData['email'] ?? '',
             avatarUrl: userData['avatarUrl'],
-            joinedAt: userData['joinedAt'] != null ? (userData['joinedAt'] as Timestamp).toDate() : DateTime.now(),
-            lastActiveAt: userData['lastActiveAt'] != null ? (userData['lastActiveAt'] as Timestamp).toDate() : DateTime.now(),
+            joinedAt: userData['joinedAt'] != null
+                ? (userData['joinedAt'] as Timestamp).toDate()
+                : DateTime.now(),
+            lastActiveAt: userData['lastActiveAt'] != null
+                ? (userData['lastActiveAt'] as Timestamp).toDate()
+                : DateTime.now(),
           ));
         }
       }
 
-      AppLogger.success('Found ${collaborators.length} recent shopping collaborators');
+      AppLogger.success(
+          'Found ${collaborators.length} recent shopping collaborators');
       return collaborators;
     } catch (e) {
       AppLogger.error('Failed to get recent shopping collaborators', e);

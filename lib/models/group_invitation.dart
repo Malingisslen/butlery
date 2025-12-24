@@ -145,24 +145,24 @@ class GroupInvitation with JsonSerializableMixin {
   /// Returns true only when the invitation is in pending status AND has not expired.
   /// Used for determining if the invitation can still be responded to.
   bool get isPending => status == GroupInvitationStatus.pending && !isExpired;
-  
+
   /// Checks if the invitation has been accepted by the recipient.
   /// Returns true when the invitation status is accepted, indicating successful group membership.
   bool get isAccepted => status == GroupInvitationStatus.accepted;
-  
+
   /// Checks if the invitation has been rejected by the recipient.
   /// Returns true when the invitation status is rejected, indicating declined membership.
   bool get isRejected => status == GroupInvitationStatus.rejected;
-  
+
   /// Checks if the invitation has been cancelled by the sender.
   /// Returns true when the invitation status is cancelled, indicating sender withdrawal.
   bool get isCancelled => status == GroupInvitationStatus.cancelled;
-  
+
   /// Checks if the invitation has been responded to with any action.
   /// Returns true when respondedAt is not null, regardless of the response type.
   /// Used for determining if the invitation lifecycle is complete.
   bool get isCompleted => respondedAt != null;
-  
+
   /// Checks if the invitation has expired beyond its validity period.
   /// Returns true if the current time is past the expiration time OR if the status
   /// is explicitly set to expired. Used for automatic cleanup and UI state management.
@@ -287,8 +287,9 @@ class GroupInvitation with JsonSerializableMixin {
       'toUserId': toUserId,
       'status': status.name,
       'sentAt': AppTimestamp.fromDateTime(sentAt).toFirestore(),
-      'respondedAt':
-          respondedAt != null ? AppTimestamp.fromDateTime(respondedAt!).toFirestore() : null,
+      'respondedAt': respondedAt != null
+          ? AppTimestamp.fromDateTime(respondedAt!).toFirestore()
+          : null,
       'personalMessage': personalMessage,
       'expiresAt': AppTimestamp.fromDateTime(expiresAt).toFirestore(),
     };
@@ -305,7 +306,8 @@ class GroupInvitation with JsonSerializableMixin {
       id: id,
       groupId: utils.SerializationUtils.safeString(data, 'groupId'),
       groupName: utils.SerializationUtils.safeString(data, 'groupName'),
-      groupEmoji: utils.SerializationUtils.safeString(data, 'groupEmoji', defaultValue: '👥'),
+      groupEmoji: utils.SerializationUtils.safeString(data, 'groupEmoji',
+          defaultValue: '👥'),
       fromUserId: utils.SerializationUtils.safeString(data, 'fromUserId'),
       fromUserName: utils.SerializationUtils.safeString(data, 'fromUserName'),
       toUserId: utils.SerializationUtils.safeString(data, 'toUserId'),
@@ -316,10 +318,13 @@ class GroupInvitation with JsonSerializableMixin {
         GroupInvitationStatus.pending,
         (e) => e.name,
       ),
-      sentAt: utils.SerializationUtils.safeDateTime(data, 'sentAt') ?? DateTime.now(),
+      sentAt: utils.SerializationUtils.safeDateTime(data, 'sentAt') ??
+          DateTime.now(),
       respondedAt: utils.SerializationUtils.safeDateTime(data, 'respondedAt'),
-      personalMessage: utils.SerializationUtils.safeNullableString(data, 'personalMessage'),
-      expiresAt: utils.SerializationUtils.safeDateTime(data, 'expiresAt') ?? DateTime.now().add(const Duration(days: 7)),
+      personalMessage:
+          utils.SerializationUtils.safeNullableString(data, 'personalMessage'),
+      expiresAt: utils.SerializationUtils.safeDateTime(data, 'expiresAt') ??
+          DateTime.now().add(const Duration(days: 7)),
     );
   }
 
@@ -366,10 +371,13 @@ class GroupInvitation with JsonSerializableMixin {
         GroupInvitationStatus.pending,
         (e) => e.name,
       ),
-      sentAt: utils.SerializationUtils.safeDateTime(json, 'sentAt') ?? DateTime.now(),
+      sentAt: utils.SerializationUtils.safeDateTime(json, 'sentAt') ??
+          DateTime.now(),
       respondedAt: utils.SerializationUtils.safeDateTime(json, 'respondedAt'),
-      personalMessage: utils.SerializationUtils.safeNullableString(json, 'personalMessage'),
-      expiresAt: utils.SerializationUtils.safeDateTime(json, 'expiresAt') ?? DateTime.now(),
+      personalMessage:
+          utils.SerializationUtils.safeNullableString(json, 'personalMessage'),
+      expiresAt: utils.SerializationUtils.safeDateTime(json, 'expiresAt') ??
+          DateTime.now(),
     );
   }
 

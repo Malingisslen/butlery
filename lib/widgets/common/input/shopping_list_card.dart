@@ -170,7 +170,7 @@ class ShoppingListCard extends StatelessWidget {
   /// Build list preview showing first few items
   Widget _buildListPreview(BuildContext context) {
     final previewItems = list.items.take(3).toList();
-    
+
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingS),
       decoration: BoxDecoration(
@@ -186,28 +186,35 @@ class ShoppingListCard extends StatelessWidget {
           ),
           const SizedBox(height: AppDimensions.spacingXs),
           ...previewItems.map((item) => Padding(
-            padding: const EdgeInsets.only(bottom: AppDimensions.spacingXxs),
-            child: Row(
-              children: [
-                Icon(
-                  item.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                  size: AppDimensions.iconSizeM,
-                  color: item.isCompleted ? AppColors.success : AppColors.textMedium,
-                ),
-                const SizedBox(height: AppDimensions.spacingXs),
-                Expanded(
-                  child: Text(
-                    item.name,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      decoration: item.isCompleted ? TextDecoration.lineThrough : null,
+                padding:
+                    const EdgeInsets.only(bottom: AppDimensions.spacingXxs),
+                child: Row(
+                  children: [
+                    Icon(
+                      item.isCompleted
+                          ? Icons.check_circle
+                          : Icons.radio_button_unchecked,
+                      size: AppDimensions.iconSizeM,
+                      color: item.isCompleted
+                          ? AppColors.success
+                          : AppColors.textMedium,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                    const SizedBox(height: AppDimensions.spacingXs),
+                    Expanded(
+                      child: Text(
+                        item.name,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          decoration: item.isCompleted
+                              ? TextDecoration.lineThrough
+                              : null,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          )),
+              )),
           if (list.itemCount > 3) ...[
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
@@ -297,18 +304,18 @@ class ShoppingListCard extends StatelessWidget {
   /// Build user permission badge for collaborative lists
   List<Widget> _buildUserPermissionBadge(BuildContext context) {
     if (!list.isCollaborative) return [];
-    
+
     final permissionService = ServiceLocator.get<PermissionService>();
     final currentUserId = permissionService.currentUser?.uid;
     if (currentUserId == null) return [];
-    
+
     final isOwner = list.ownerId == currentUserId;
     final userPermission = list.memberPermissions[currentUserId];
-    
+
     String permissionLabel;
     IconData permissionIcon;
     Color permissionColor;
-    
+
     if (isOwner) {
       permissionLabel = 'Ägare';
       permissionIcon = Icons.admin_panel_settings;
@@ -337,7 +344,7 @@ class ShoppingListCard extends StatelessWidget {
           permissionColor = AppColors.success;
       }
     }
-    
+
     return [
       _buildMetadataBadge(
         context,

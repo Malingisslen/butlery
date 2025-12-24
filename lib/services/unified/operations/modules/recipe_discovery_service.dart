@@ -91,6 +91,7 @@ class RecipeDiscoveryService extends BaseService {
       return [];
     }
   }
+
   Future<List<Recipe>> getSharedWithMe({
     int limit = 50,
     List<String>? categoryFilter,
@@ -163,6 +164,7 @@ class RecipeDiscoveryService extends BaseService {
       return [];
     }
   }
+
   Future<List<Recipe>> getSharedByMe({
     int limit = 50,
     bool includeEmpty = false,
@@ -233,6 +235,7 @@ class RecipeDiscoveryService extends BaseService {
       return [];
     }
   }
+
   Future<List<Recipe>> getRecipesByUser({
     required String userId,
     int limit = 50,
@@ -310,6 +313,7 @@ class RecipeDiscoveryService extends BaseService {
       return [];
     }
   }
+
   Future<List<Recipe>> getTrendingRecipes({
     int limit = 20,
     Duration? timeWindow,
@@ -378,6 +382,7 @@ class RecipeDiscoveryService extends BaseService {
       return [];
     }
   }
+
   Future<List<Recipe>> getRecentlySharedRecipes({
     int limit = 20,
     Duration? timeWindow,
@@ -426,7 +431,6 @@ class RecipeDiscoveryService extends BaseService {
       return [];
     }
   }
-
 
   Map<String, dynamic> getDiscoveryStatistics() {
     try {

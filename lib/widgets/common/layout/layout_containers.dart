@@ -153,7 +153,8 @@ class CategoryHeader extends StatelessWidget {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: backgroundColor ?? Theme.of(context).colorScheme.secondaryContainer,
+        color:
+            backgroundColor ?? Theme.of(context).colorScheme.secondaryContainer,
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Row(
@@ -161,14 +162,16 @@ class CategoryHeader extends StatelessWidget {
           Icon(
             icon,
             size: AppDimensions.iconSizeM,
-            color: textColor ?? Theme.of(context).colorScheme.onSecondaryContainer,
+            color:
+                textColor ?? Theme.of(context).colorScheme.onSecondaryContainer,
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Expanded(
             child: Text(
               title,
               style: AppTextStyles.titleMedium.copyWith(
-                color: textColor ?? Theme.of(context).colorScheme.onSecondaryContainer,
+                color: textColor ??
+                    Theme.of(context).colorScheme.onSecondaryContainer,
                 fontWeight: FontWeight.w600,
               ),
             ),

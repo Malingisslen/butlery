@@ -85,21 +85,29 @@ void main() {
     group('Initialization and Default State', () {
       test('should initialize with correct default state', () {
         // Assert - All default values
-        expect(viewModel.isSaving, false, reason: 'Should not be saving initially');
+        expect(viewModel.isSaving, false,
+            reason: 'Should not be saving initially');
         expect(viewModel.currentConsent, null, reason: 'No consent loaded yet');
         expect(viewModel.errorMessage, null, reason: 'No error initially');
-        expect(viewModel.needsRenewal, false, reason: 'No renewal needed initially');
+        expect(viewModel.needsRenewal, false,
+            reason: 'No renewal needed initially');
         expect(viewModel.hasConsent, false, reason: 'No consent loaded yet');
 
         // Required consents always true
-        expect(viewModel.essentialServices, true, reason: 'Essential services always required');
-        expect(viewModel.dataProcessing, true, reason: 'Data processing always required');
+        expect(viewModel.essentialServices, true,
+            reason: 'Essential services always required');
+        expect(viewModel.dataProcessing, true,
+            reason: 'Data processing always required');
 
         // Optional consents default to false
-        expect(viewModel.analytics, false, reason: 'Analytics consent defaults to false');
-        expect(viewModel.marketing, false, reason: 'Marketing consent defaults to false');
-        expect(viewModel.socialFeatures, false, reason: 'Social features consent defaults to false');
-        expect(viewModel.pushNotifications, false, reason: 'Push notifications consent defaults to false');
+        expect(viewModel.analytics, false,
+            reason: 'Analytics consent defaults to false');
+        expect(viewModel.marketing, false,
+            reason: 'Marketing consent defaults to false');
+        expect(viewModel.socialFeatures, false,
+            reason: 'Social features consent defaults to false');
+        expect(viewModel.pushNotifications, false,
+            reason: 'Push notifications consent defaults to false');
       });
 
       test('should have required consent purposes that cannot be disabled', () {
@@ -111,8 +119,10 @@ void main() {
         viewModel.setAnalytics(false);
         viewModel.setMarketing(false);
 
-        expect(viewModel.essentialServices, true, reason: 'Essential services cannot be disabled');
-        expect(viewModel.dataProcessing, true, reason: 'Data processing cannot be disabled');
+        expect(viewModel.essentialServices, true,
+            reason: 'Essential services cannot be disabled');
+        expect(viewModel.dataProcessing, true,
+            reason: 'Data processing cannot be disabled');
       });
     });
 
@@ -130,16 +140,22 @@ void main() {
         await viewModel.loadConsent();
 
         // Assert
-        expect(viewModel.currentConsent, testUserConsent, reason: 'Consent should be loaded');
+        expect(viewModel.currentConsent, testUserConsent,
+            reason: 'Consent should be loaded');
         expect(viewModel.hasConsent, true, reason: 'Should have consent');
-        expect(viewModel.needsRenewal, false, reason: 'Should not need renewal');
+        expect(viewModel.needsRenewal, false,
+            reason: 'Should not need renewal');
         expect(viewModel.errorMessage, null, reason: 'No error should occur');
 
         // Check consent values are loaded correctly
-        expect(viewModel.analytics, true, reason: 'Analytics consent from loaded data');
-        expect(viewModel.marketing, false, reason: 'Marketing consent from loaded data');
-        expect(viewModel.socialFeatures, true, reason: 'Social features consent from loaded data');
-        expect(viewModel.pushNotifications, false, reason: 'Push notifications consent from loaded data');
+        expect(viewModel.analytics, true,
+            reason: 'Analytics consent from loaded data');
+        expect(viewModel.marketing, false,
+            reason: 'Marketing consent from loaded data');
+        expect(viewModel.socialFeatures, true,
+            reason: 'Social features consent from loaded data');
+        expect(viewModel.pushNotifications, false,
+            reason: 'Push notifications consent from loaded data');
 
         verify(() => mockConsentService.getUserConsent()).called(1);
         verify(() => mockConsentService.needsConsentRenewal()).called(1);
@@ -158,7 +174,8 @@ void main() {
         // Assert
         expect(viewModel.currentConsent, null, reason: 'No consent exists');
         expect(viewModel.hasConsent, false, reason: 'Should not have consent');
-        expect(viewModel.needsRenewal, true, reason: 'Should need renewal (first time)');
+        expect(viewModel.needsRenewal, true,
+            reason: 'Should need renewal (first time)');
 
         // All optional consents should default to false
         expect(viewModel.analytics, false);
@@ -180,7 +197,8 @@ void main() {
         await viewModel.loadConsent();
 
         // Assert
-        expect(viewModel.needsRenewal, true, reason: 'Should need renewal (outdated consent)');
+        expect(viewModel.needsRenewal, true,
+            reason: 'Should need renewal (outdated consent)');
         expect(viewModel.hasConsent, true, reason: 'Should still have consent');
 
         verify(() => mockConsentService.needsConsentRenewal()).called(1);
@@ -195,14 +213,18 @@ void main() {
         await viewModel.loadConsent();
 
         // Assert
-        expect(viewModel.errorMessage, isNotNull, reason: 'Error message should be set');
-        expect(viewModel.errorMessage, contains('Ett fel uppstod'), reason: 'User-friendly Swedish error');
-        expect(viewModel.currentConsent, null, reason: 'Consent should not be loaded');
+        expect(viewModel.errorMessage, isNotNull,
+            reason: 'Error message should be set');
+        expect(viewModel.errorMessage, contains('Ett fel uppstod'),
+            reason: 'User-friendly Swedish error');
+        expect(viewModel.currentConsent, null,
+            reason: 'Consent should not be loaded');
 
         verify(() => mockConsentService.getUserConsent()).called(1);
       });
 
-      test('should handle authentication errors with specific message', () async {
+      test('should handle authentication errors with specific message',
+          () async {
         // Arrange
         when(() => mockConsentService.getUserConsent())
             .thenThrow(Exception('No authenticated user'));
@@ -255,7 +277,8 @@ void main() {
         expect(viewModel.errorMessage, null, reason: 'No error should occur');
 
         // Verify saved purposes match ViewModel state
-        final captured = verify(() => mockConsentService.saveConsent(captureAny())).captured;
+        final captured =
+            verify(() => mockConsentService.saveConsent(captureAny())).captured;
         expect(captured.length, 1);
 
         final savedPurposes = captured[0] as ConsentPurposes;
@@ -263,7 +286,8 @@ void main() {
         expect(savedPurposes.marketing, false);
         expect(savedPurposes.socialFeatures, true);
         expect(savedPurposes.pushNotifications, false);
-        expect(savedPurposes.essentialServices, true, reason: 'Always required');
+        expect(savedPurposes.essentialServices, true,
+            reason: 'Always required');
         expect(savedPurposes.dataProcessing, true, reason: 'Always required');
 
         // Should reload after save
@@ -298,12 +322,14 @@ void main() {
 
         // Assert
         expect(result, false, reason: 'Save should fail on exception');
-        expect(viewModel.errorMessage, isNotNull, reason: 'Error message should be set');
+        expect(viewModel.errorMessage, isNotNull,
+            reason: 'Error message should be set');
         expect(viewModel.errorMessage, contains('Ett fel uppstod'),
             reason: 'User-friendly error message');
       });
 
-      test('should prevent duplicate concurrent saves (AsyncOperationMixin)', () async {
+      test('should prevent duplicate concurrent saves (AsyncOperationMixin)',
+          () async {
         // Arrange
         var saveCallCount = 0;
         when(() => mockConsentService.saveConsent(any())).thenAnswer((_) async {
@@ -325,7 +351,8 @@ void main() {
 
         // Assert - AsyncOperationMixin should prevent duplicate 'save' operations
         // First operation should succeed, second should return previous result or fail
-        expect(saveCallCount, lessThanOrEqualTo(1), reason: 'Named operation should prevent duplicates');
+        expect(saveCallCount, lessThanOrEqualTo(1),
+            reason: 'Named operation should prevent duplicates');
         expect(results.first, true, reason: 'First save should succeed');
       });
     });
@@ -421,10 +448,14 @@ void main() {
         viewModel.acceptAll();
 
         // Assert - All optional consents should be true
-        expect(viewModel.analytics, true, reason: 'Analytics should be accepted');
-        expect(viewModel.marketing, true, reason: 'Marketing should be accepted');
-        expect(viewModel.socialFeatures, true, reason: 'Social features should be accepted');
-        expect(viewModel.pushNotifications, true, reason: 'Push notifications should be accepted');
+        expect(viewModel.analytics, true,
+            reason: 'Analytics should be accepted');
+        expect(viewModel.marketing, true,
+            reason: 'Marketing should be accepted');
+        expect(viewModel.socialFeatures, true,
+            reason: 'Social features should be accepted');
+        expect(viewModel.pushNotifications, true,
+            reason: 'Push notifications should be accepted');
 
         // Required consents remain true
         expect(viewModel.essentialServices, true);
@@ -443,10 +474,14 @@ void main() {
         viewModel.rejectAll();
 
         // Assert - All optional consents should be false
-        expect(viewModel.analytics, false, reason: 'Analytics should be rejected');
-        expect(viewModel.marketing, false, reason: 'Marketing should be rejected');
-        expect(viewModel.socialFeatures, false, reason: 'Social features should be rejected');
-        expect(viewModel.pushNotifications, false, reason: 'Push notifications should be rejected');
+        expect(viewModel.analytics, false,
+            reason: 'Analytics should be rejected');
+        expect(viewModel.marketing, false,
+            reason: 'Marketing should be rejected');
+        expect(viewModel.socialFeatures, false,
+            reason: 'Social features should be rejected');
+        expect(viewModel.pushNotifications, false,
+            reason: 'Push notifications should be rejected');
 
         // Required consents remain true
         expect(viewModel.essentialServices, true);
@@ -471,7 +506,8 @@ void main() {
         // Assert
         expect(result, true);
 
-        final captured = verify(() => mockConsentService.saveConsent(captureAny())).captured;
+        final captured =
+            verify(() => mockConsentService.saveConsent(captureAny())).captured;
         final savedPurposes = captured[0] as ConsentPurposes;
 
         expect(savedPurposes.analytics, true);
@@ -490,21 +526,22 @@ void main() {
             .thenAnswer((_) async => true);
         when(() => mockConsentService.getUserConsent())
             .thenAnswer((_) async => testUserConsent.copyWith(
-              purposes: ConsentPurposes(
-                essentialServices: true,
-                dataProcessing: true,
-                analytics: false,
-                marketing: false,
-                socialFeatures: false,
-                pushNotifications: false,
-              ),
-            ));
+                  purposes: ConsentPurposes(
+                    essentialServices: true,
+                    dataProcessing: true,
+                    analytics: false,
+                    marketing: false,
+                    socialFeatures: false,
+                    pushNotifications: false,
+                  ),
+                ));
         when(() => mockConsentService.needsConsentRenewal())
             .thenAnswer((_) async => false);
 
         // Set some consents first
         viewModel.acceptAll();
-        expect(viewModel.analytics, true, reason: 'Analytics should be accepted initially');
+        expect(viewModel.analytics, true,
+            reason: 'Analytics should be accepted initially');
 
         // Act
         final result = await viewModel.revokeAllOptional();
@@ -512,10 +549,14 @@ void main() {
         // Assert
         expect(result, isNotNull, reason: 'Result should not be null');
         expect(result, isTrue, reason: 'Revoke should succeed');
-        expect(viewModel.analytics, false, reason: 'Analytics should be revoked');
-        expect(viewModel.marketing, false, reason: 'Marketing should be revoked');
-        expect(viewModel.socialFeatures, false, reason: 'Social features should be revoked');
-        expect(viewModel.pushNotifications, false, reason: 'Push notifications should be revoked');
+        expect(viewModel.analytics, false,
+            reason: 'Analytics should be revoked');
+        expect(viewModel.marketing, false,
+            reason: 'Marketing should be revoked');
+        expect(viewModel.socialFeatures, false,
+            reason: 'Social features should be revoked');
+        expect(viewModel.pushNotifications, false,
+            reason: 'Push notifications should be revoked');
 
         verify(() => mockConsentService.revokeOptionalConsents()).called(1);
         verify(() => mockConsentService.getUserConsent()).called(1);
@@ -531,7 +572,8 @@ void main() {
 
         // Assert
         expect(result, false, reason: 'Revoke should fail');
-        expect(viewModel.errorMessage, contains('Kunde inte återkalla samtycken'));
+        expect(
+            viewModel.errorMessage, contains('Kunde inte återkalla samtycken'));
       });
     });
 
@@ -619,7 +661,8 @@ void main() {
         expect(text, 'Inget samtycke');
       });
 
-      test('should format timestamp as "Just nu" for very recent consent', () async {
+      test('should format timestamp as "Just nu" for very recent consent',
+          () async {
         // Arrange
         final recentConsent = testUserConsent.copyWith(
           grantedAt: DateTime.now().subtract(const Duration(seconds: 30)),
@@ -764,13 +807,16 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 10));
 
         // Should be loading at this point
-        expect(viewModel.isLoading, true, reason: 'Should be loading during operation');
+        expect(viewModel.isLoading, true,
+            reason: 'Should be loading during operation');
 
         await loadFuture;
 
         // Assert
-        expect(viewModel.isLoading, false, reason: 'Should not be loading after completion');
-        expect(loadingStateChanges, contains(true), reason: 'Loading state should have been true');
+        expect(viewModel.isLoading, false,
+            reason: 'Should not be loading after completion');
+        expect(loadingStateChanges, contains(true),
+            reason: 'Loading state should have been true');
       });
 
       test('should set error state on operation failure', () async {
@@ -803,7 +849,8 @@ void main() {
         await viewModel.loadConsent();
 
         // Assert
-        expect(viewModel.hasError, false, reason: 'Error should be cleared on success');
+        expect(viewModel.hasError, false,
+            reason: 'Error should be cleared on success');
         expect(viewModel.error, null);
       });
     });

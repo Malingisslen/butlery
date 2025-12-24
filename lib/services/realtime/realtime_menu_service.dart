@@ -22,7 +22,8 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 /// - MenuOperations: Menu content management (categories, recipes, basic info)
 /// - MenuParticipants: Participant management (adding, removing, permissions)
 /// ❌ DOES NOT CONTAIN: Complex business logic, direct implementation details
-class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
+class RealtimeMenuService extends ChangeNotifier
+    with StreamManagementMixin, ErrorHandlingMixin {
   final RealtimeSyncService _syncService;
   final AuthService _authService;
 
@@ -39,13 +40,18 @@ class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin, Err
 
   /// Is menu operation in progress?
   bool get isProcessing => _isProcessing;
+
   /// Latest menu operation error
   MenuOperationError? get lastError => _lastError;
+
   /// Current user ID
   String? get _currentUserId => _authService.currentUserId;
+
   /// Current user display name
   String get _currentUserDisplayName =>
-      ServiceLocator.get<PermissionService>().currentUser?.displayName ?? 'Okänd användare';
+      ServiceLocator.get<PermissionService>().currentUser?.displayName ??
+      'Okänd användare';
+
   /// Get category names from current menu
   List<String> get categoryNames => _currentMenu?.categories ?? [];
 
@@ -490,6 +496,7 @@ class RealtimeMenuService extends ChangeNotifier with StreamManagementMixin, Err
     _clearError();
     notifyListeners();
   }
+
   @override
   void dispose() {
     disposeStreamResources(); // From StreamManagementMixin

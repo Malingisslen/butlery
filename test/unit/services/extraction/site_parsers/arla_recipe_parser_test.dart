@@ -22,7 +22,8 @@ void main() {
 
     group('Standard JSON-LD Extraction', () {
       test('should extract complete recipe from Arla JSON-LD', () {
-        final recipe = parser.parseRecipe(ArlaTestFixtures.chokladbollarComplete);
+        final recipe =
+            parser.parseRecipe(ArlaTestFixtures.chokladbollarComplete);
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], equals('Chokladbollar'));
@@ -40,11 +41,13 @@ void main() {
         final recipe = parser.parseRecipe(ArlaTestFixtures.recipeMinimalData);
 
         // Recipe should be rejected due to insufficient ingredients (<3) and no instructions
-        expect(recipe, isNull, reason: 'Recipe with only 2 ingredients should fail quality check');
+        expect(recipe, isNull,
+            reason: 'Recipe with only 2 ingredients should fail quality check');
       });
 
       test('should handle recipe with Swedish characters', () {
-        final recipe = parser.parseRecipe(ArlaTestFixtures.recipeWithSwedishChars);
+        final recipe =
+            parser.parseRecipe(ArlaTestFixtures.recipeWithSwedishChars);
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], equals('Äppelpaj med vaniljsås'));
@@ -56,14 +59,16 @@ void main() {
 
     group('Arla-Specific Enhancements', () {
       test('should extract difficulty level', () {
-        final recipe = parser.parseRecipe(ArlaTestFixtures.chokladbollarComplete);
+        final recipe =
+            parser.parseRecipe(ArlaTestFixtures.chokladbollarComplete);
 
         expect(recipe, isNotNull);
         expect(recipe!['difficulty'], equals('Enkel'));
       });
 
       test('should extract cooking tips', () {
-        final recipe = parser.parseRecipe(ArlaTestFixtures.chokladbollarComplete);
+        final recipe =
+            parser.parseRecipe(ArlaTestFixtures.chokladbollarComplete);
 
         expect(recipe, isNotNull);
         expect(recipe!['cookingTips'], isA<List>());
@@ -85,7 +90,8 @@ void main() {
       });
 
       test('should extract nutritional info from chokladbollar', () {
-        final recipe = parser.parseRecipe(ArlaTestFixtures.chokladbollarComplete);
+        final recipe =
+            parser.parseRecipe(ArlaTestFixtures.chokladbollarComplete);
 
         expect(recipe, isNotNull);
         expect(recipe!['nutrition'], isA<Map>());
@@ -98,7 +104,8 @@ void main() {
       });
 
       test('should handle recipe without nutritional info', () {
-        final recipe = parser.parseRecipe(ArlaTestFixtures.recipeWithSwedishChars);
+        final recipe =
+            parser.parseRecipe(ArlaTestFixtures.recipeWithSwedishChars);
 
         expect(recipe, isNotNull);
         // Should not fail if nutrition info is missing
@@ -108,7 +115,8 @@ void main() {
 
     group('Arla Formatting Cleanup', () {
       test('should clean "ca" and "cirka" from portions', () {
-        final recipe = parser.parseRecipe(ArlaTestFixtures.recipeWithArlaQuirks);
+        final recipe =
+            parser.parseRecipe(ArlaTestFixtures.recipeWithArlaQuirks);
 
         expect(recipe, isNotNull);
         expect(recipe!['recipeYield'], equals('6 portioner'));
@@ -116,7 +124,8 @@ void main() {
       });
 
       test('should trim whitespace from ingredients', () {
-        final recipe = parser.parseRecipe(ArlaTestFixtures.recipeWithArlaQuirks);
+        final recipe =
+            parser.parseRecipe(ArlaTestFixtures.recipeWithArlaQuirks);
 
         expect(recipe, isNotNull);
         final ingredients = recipe!['recipeIngredient'] as List;
@@ -127,12 +136,18 @@ void main() {
         }
 
         // Check specific ingredients were cleaned
-        expect(ingredients.any((ing) => ing.toString().contains('500 g nötfärs')), isTrue);
-        expect(ingredients.any((ing) => ing.toString().contains('1 gul lök, hackad')), isTrue);
+        expect(
+            ingredients.any((ing) => ing.toString().contains('500 g nötfärs')),
+            isTrue);
+        expect(
+            ingredients
+                .any((ing) => ing.toString().contains('1 gul lök, hackad')),
+            isTrue);
       });
 
       test('should trim whitespace from instructions', () {
-        final recipe = parser.parseRecipe(ArlaTestFixtures.recipeWithArlaQuirks);
+        final recipe =
+            parser.parseRecipe(ArlaTestFixtures.recipeWithArlaQuirks);
 
         expect(recipe, isNotNull);
         final instructions = recipe!['recipeInstructions'] as List;
@@ -187,7 +202,8 @@ void main() {
 
     group('Error Recovery', () {
       test('should fall back to CSS when JSON-LD is malformed', () {
-        final recipe = parser.parseRecipe(ArlaTestFixtures.recipeWithMalformedJson);
+        final recipe =
+            parser.parseRecipe(ArlaTestFixtures.recipeWithMalformedJson);
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], equals('Kladdkaka med grädde'));
@@ -212,7 +228,8 @@ void main() {
 
     group('Quality Scoring', () {
       test('should give high quality score to complete recipe', () {
-        final recipe = parser.parseRecipe(ArlaTestFixtures.recipeCompleteMetadata);
+        final recipe =
+            parser.parseRecipe(ArlaTestFixtures.recipeCompleteMetadata);
 
         expect(recipe, isNotNull);
 
@@ -231,7 +248,10 @@ void main() {
         // Test quality scoring directly with incomplete data
         final incompleteRecipe = {
           'name': 'Simple Recipe',
-          'recipeIngredient': ['Ingredient 1', 'Ingredient 2'], // Only 2 ingredients
+          'recipeIngredient': [
+            'Ingredient 1',
+            'Ingredient 2'
+          ], // Only 2 ingredients
           // No instructions
         };
 
@@ -244,7 +264,8 @@ void main() {
       });
 
       test('should score standard Arla recipe as acceptable', () {
-        final recipe = parser.parseRecipe(ArlaTestFixtures.chokladbollarComplete);
+        final recipe =
+            parser.parseRecipe(ArlaTestFixtures.chokladbollarComplete);
 
         expect(recipe, isNotNull);
 
@@ -259,14 +280,16 @@ void main() {
 
     group('Swedish Text Handling', () {
       test('should preserve Swedish characters in title', () {
-        final recipe = parser.parseRecipe(ArlaTestFixtures.recipeWithSwedishChars);
+        final recipe =
+            parser.parseRecipe(ArlaTestFixtures.recipeWithSwedishChars);
 
         expect(recipe, isNotNull);
         expect(recipe!['name'], equals('Äppelpaj med vaniljsås'));
       });
 
       test('should preserve Swedish characters in ingredients', () {
-        final recipe = parser.parseRecipe(ArlaTestFixtures.recipeWithSwedishChars);
+        final recipe =
+            parser.parseRecipe(ArlaTestFixtures.recipeWithSwedishChars);
 
         expect(recipe, isNotNull);
         final ingredients = recipe!['recipeIngredient'] as List;

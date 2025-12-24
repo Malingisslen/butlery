@@ -3,19 +3,21 @@ class SerializationUtils {
   SerializationUtils._(); // Private constructor - utility class
 
   // Safe field extraction
-  static String safeString(Map<String, dynamic> map, String key, {String defaultValue = ''}) {
+  static String safeString(Map<String, dynamic> map, String key,
+      {String defaultValue = ''}) {
     final value = map[key];
     if (value == null) return defaultValue;
     return value.toString();
   }
-  
+
   static String? safeNullableString(Map<String, dynamic> map, String key) {
     final value = map[key];
     if (value == null) return null;
     return value.toString();
   }
-  
-  static int safeInt(Map<String, dynamic> map, String key, {int defaultValue = 0}) {
+
+  static int safeInt(Map<String, dynamic> map, String key,
+      {int defaultValue = 0}) {
     final value = map[key];
     if (value == null) return defaultValue;
     if (value is int) return value;
@@ -23,7 +25,7 @@ class SerializationUtils {
     final parsed = int.tryParse(value.toString());
     return parsed ?? defaultValue;
   }
-  
+
   static int? safeNullableInt(Map<String, dynamic> map, String key) {
     final value = map[key];
     if (value == null) return null;
@@ -31,8 +33,9 @@ class SerializationUtils {
     if (value is num) return value.toInt();
     return int.tryParse(value.toString());
   }
-  
-  static double safeDouble(Map<String, dynamic> map, String key, {double defaultValue = 0.0}) {
+
+  static double safeDouble(Map<String, dynamic> map, String key,
+      {double defaultValue = 0.0}) {
     final value = map[key];
     if (value == null) return defaultValue;
     if (value is double) return value;
@@ -40,7 +43,7 @@ class SerializationUtils {
     final parsed = double.tryParse(value.toString());
     return parsed ?? defaultValue;
   }
-  
+
   static double? safeNullableDouble(Map<String, dynamic> map, String key) {
     final value = map[key];
     if (value == null) return null;
@@ -48,8 +51,9 @@ class SerializationUtils {
     if (value is num) return value.toDouble();
     return double.tryParse(value.toString());
   }
-  
-  static bool safeBool(Map<String, dynamic> map, String key, {bool defaultValue = false}) {
+
+  static bool safeBool(Map<String, dynamic> map, String key,
+      {bool defaultValue = false}) {
     final value = map[key];
     if (value == null) return defaultValue;
     if (value is bool) return value;
@@ -59,7 +63,7 @@ class SerializationUtils {
     if (value is num) return value != 0;
     return defaultValue;
   }
-  
+
   static bool? safeNullableBool(Map<String, dynamic> map, String key) {
     final value = map[key];
     if (value == null) return null;
@@ -75,11 +79,11 @@ class SerializationUtils {
   static DateTime? safeDateTime(Map<String, dynamic> map, String key) {
     final value = map[key];
     if (value == null) return null;
-    
+
     if (value is DateTime) return value;
     if (value is String) return DateTime.tryParse(value);
     if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
-    
+
     // Firebase Timestamp handling
     if (value.runtimeType.toString() == 'Timestamp') {
       try {
@@ -88,24 +92,27 @@ class SerializationUtils {
         return null;
       }
     }
-    
+
     return null;
   }
-  
-  static DateTime safeRequiredDateTime(Map<String, dynamic> map, String key, {DateTime? defaultValue}) {
+
+  static DateTime safeRequiredDateTime(Map<String, dynamic> map, String key,
+      {DateTime? defaultValue}) {
     return safeDateTime(map, key) ?? defaultValue ?? DateTime.now();
   }
-  
+
   static dynamic serializeDateTime(DateTime? dateTime) {
     return dateTime?.toIso8601String();
   }
 
   // List serialization
-  static List<T> safeList<T>(Map<String, dynamic> map, String key, T Function(dynamic) converter, {List<T>? defaultValue}) {
+  static List<T> safeList<T>(
+      Map<String, dynamic> map, String key, T Function(dynamic) converter,
+      {List<T>? defaultValue}) {
     final value = map[key];
     if (value == null) return defaultValue ?? <T>[];
     if (value is! List) return defaultValue ?? <T>[];
-    
+
     final result = <T>[];
     for (final item in value) {
       try {
@@ -117,15 +124,19 @@ class SerializationUtils {
     }
     return result;
   }
-  
-  static List<String> safeStringList(Map<String, dynamic> map, String key, {List<String>? defaultValue}) {
-    return safeList<String>(map, key, (item) => item.toString(), defaultValue: defaultValue);
+
+  static List<String> safeStringList(Map<String, dynamic> map, String key,
+      {List<String>? defaultValue}) {
+    return safeList<String>(map, key, (item) => item.toString(),
+        defaultValue: defaultValue);
   }
-  
-  static List<T> safeObjectList<T>(Map<String, dynamic> map, String key, T Function(Map<String, dynamic>) fromJson, {List<T>? defaultValue}) {
+
+  static List<T> safeObjectList<T>(Map<String, dynamic> map, String key,
+      T Function(Map<String, dynamic>) fromJson,
+      {List<T>? defaultValue}) {
     return safeList<T>(
-      map, 
-      key, 
+      map,
+      key,
       (item) {
         if (item is Map<String, dynamic>) {
           return fromJson(item);
@@ -137,26 +148,29 @@ class SerializationUtils {
       defaultValue: defaultValue,
     );
   }
-  
-  static List<dynamic>? serializeList<T>(List<T>? list, dynamic Function(T) toJson) {
+
+  static List<dynamic>? serializeList<T>(
+      List<T>? list, dynamic Function(T) toJson) {
     if (list == null) return null;
     return list.map(toJson).toList();
   }
-  
+
   static List<String>? serializeStringList(List<String>? list) {
     return list;
   }
 
   // Map serialization
-  static Map<String, dynamic> safeMap(Map<String, dynamic> map, String key, {Map<String, dynamic>? defaultValue}) {
+  static Map<String, dynamic> safeMap(Map<String, dynamic> map, String key,
+      {Map<String, dynamic>? defaultValue}) {
     final value = map[key];
     if (value == null) return defaultValue ?? <String, dynamic>{};
     if (value is Map<String, dynamic>) return value;
     if (value is Map) return Map<String, dynamic>.from(value);
     return defaultValue ?? <String, dynamic>{};
   }
-  
-  static Map<String, dynamic>? safeNullableMap(Map<String, dynamic> map, String key) {
+
+  static Map<String, dynamic>? safeNullableMap(
+      Map<String, dynamic> map, String key) {
     final value = map[key];
     if (value == null) return null;
     if (value is Map<String, dynamic>) return value;
@@ -165,10 +179,11 @@ class SerializationUtils {
   }
 
   // Nested object serialization
-  static T? safeNestedObject<T>(Map<String, dynamic> map, String key, T Function(Map<String, dynamic>) fromJson) {
+  static T? safeNestedObject<T>(Map<String, dynamic> map, String key,
+      T Function(Map<String, dynamic>) fromJson) {
     final value = map[key];
     if (value == null) return null;
-    
+
     Map<String, dynamic> objectMap;
     if (value is Map<String, dynamic>) {
       objectMap = value;
@@ -177,27 +192,30 @@ class SerializationUtils {
     } else {
       return null;
     }
-    
+
     try {
       return fromJson(objectMap);
     } catch (e) {
       return null;
     }
   }
-  
-  static T safeRequiredNestedObject<T>(Map<String, dynamic> map, String key, T Function(Map<String, dynamic>) fromJson, T defaultValue) {
+
+  static T safeRequiredNestedObject<T>(Map<String, dynamic> map, String key,
+      T Function(Map<String, dynamic>) fromJson, T defaultValue) {
     return safeNestedObject(map, key, fromJson) ?? defaultValue;
   }
-  
-  static Map<String, dynamic>? serializeNestedObject<T>(T? object, Map<String, dynamic> Function(T) toJson) {
+
+  static Map<String, dynamic>? serializeNestedObject<T>(
+      T? object, Map<String, dynamic> Function(T) toJson) {
     return object != null ? toJson(object) : null;
   }
 
   // Enum serialization
-  static T safeEnum<T>(Map<String, dynamic> map, String key, List<T> values, T defaultValue, String Function(T) enumToString) {
+  static T safeEnum<T>(Map<String, dynamic> map, String key, List<T> values,
+      T defaultValue, String Function(T) enumToString) {
     final value = map[key];
     if (value == null) return defaultValue;
-    
+
     final stringValue = value.toString();
     try {
       return values.firstWhere((e) => enumToString(e) == stringValue);
@@ -205,11 +223,12 @@ class SerializationUtils {
       return defaultValue;
     }
   }
-  
-  static T? safeNullableEnum<T>(Map<String, dynamic> map, String key, List<T> values, String Function(T) enumToString) {
+
+  static T? safeNullableEnum<T>(Map<String, dynamic> map, String key,
+      List<T> values, String Function(T) enumToString) {
     final value = map[key];
     if (value == null) return null;
-    
+
     final stringValue = value.toString();
     try {
       return values.firstWhere((e) => enumToString(e) == stringValue);
@@ -217,8 +236,9 @@ class SerializationUtils {
       return null;
     }
   }
-  
-  static String? serializeEnum<T>(T? enumValue, String Function(T) enumToString) {
+
+  static String? serializeEnum<T>(
+      T? enumValue, String Function(T) enumToString) {
     return enumValue != null ? enumToString(enumValue) : null;
   }
 
@@ -232,8 +252,9 @@ class SerializationUtils {
     }
     return cleaned;
   }
-  
-  static bool hasRequiredFields(Map<String, dynamic> map, List<String> requiredFields) {
+
+  static bool hasRequiredFields(
+      Map<String, dynamic> map, List<String> requiredFields) {
     for (final field in requiredFields) {
       if (!map.containsKey(field) || map[field] == null) {
         return false;
@@ -241,8 +262,9 @@ class SerializationUtils {
     }
     return true;
   }
-  
-  static List<String> getMissingFields(Map<String, dynamic> map, List<String> requiredFields) {
+
+  static List<String> getMissingFields(
+      Map<String, dynamic> map, List<String> requiredFields) {
     final missing = <String>[];
     for (final field in requiredFields) {
       if (!map.containsKey(field) || map[field] == null) {
@@ -256,32 +278,35 @@ class SerializationUtils {
   static T? convertTo<T>(dynamic value) {
     if (value == null) return null;
     if (value is T) return value;
-    
+
     // String conversions
     if (T == String) return value.toString() as T;
-    
+
     // Numeric conversions
     if (T == int) {
       if (value is num) return value.toInt() as T;
       if (value is String) return int.tryParse(value) as T?;
     }
-    
+
     if (T == double) {
       if (value is num) return value.toDouble() as T;
       if (value is String) return double.tryParse(value) as T?;
     }
-    
+
     // Boolean conversions
     if (T == bool) {
       if (value is bool) return value as T;
-      if (value is String) return (value.toLowerCase() == 'true' || value == '1') as T;
+      if (value is String) {
+        return (value.toLowerCase() == 'true' || value == '1') as T;
+      }
       if (value is num) return (value != 0) as T;
     }
-    
+
     return null;
   }
-  
-  static Map<String, T> convertMapValues<T>(Map<String, dynamic> map, T Function(dynamic) converter) {
+
+  static Map<String, T> convertMapValues<T>(
+      Map<String, dynamic> map, T Function(dynamic) converter) {
     final result = <String, T>{};
     for (final entry in map.entries) {
       try {
@@ -299,48 +324,49 @@ class SerializationUtils {
 extension MapSerializationExtensions on Map<String, dynamic> {
   String safeString(String key, {String defaultValue = ''}) =>
       SerializationUtils.safeString(this, key, defaultValue: defaultValue);
-      
+
   String? safeNullableString(String key) =>
       SerializationUtils.safeNullableString(this, key);
-      
+
   int safeInt(String key, {int defaultValue = 0}) =>
       SerializationUtils.safeInt(this, key, defaultValue: defaultValue);
-      
+
   int? safeNullableInt(String key) =>
       SerializationUtils.safeNullableInt(this, key);
-      
+
   double safeDouble(String key, {double defaultValue = 0.0}) =>
       SerializationUtils.safeDouble(this, key, defaultValue: defaultValue);
-      
+
   double? safeNullableDouble(String key) =>
       SerializationUtils.safeNullableDouble(this, key);
-      
+
   bool safeBool(String key, {bool defaultValue = false}) =>
       SerializationUtils.safeBool(this, key, defaultValue: defaultValue);
-      
+
   bool? safeNullableBool(String key) =>
       SerializationUtils.safeNullableBool(this, key);
-      
+
   DateTime? safeDateTime(String key) =>
       SerializationUtils.safeDateTime(this, key);
-      
+
   List<String> safeStringList(String key, {List<String>? defaultValue}) =>
       SerializationUtils.safeStringList(this, key, defaultValue: defaultValue);
-      
-  Map<String, dynamic> safeMap(String key, {Map<String, dynamic>? defaultValue}) =>
+
+  Map<String, dynamic> safeMap(String key,
+          {Map<String, dynamic>? defaultValue}) =>
       SerializationUtils.safeMap(this, key, defaultValue: defaultValue);
-      
-  T? safeNestedObject<T>(String key, T Function(Map<String, dynamic>) fromJson) =>
+
+  T? safeNestedObject<T>(
+          String key, T Function(Map<String, dynamic>) fromJson) =>
       SerializationUtils.safeNestedObject(this, key, fromJson);
-      
+
   bool hasRequiredFields(List<String> requiredFields) =>
       SerializationUtils.hasRequiredFields(this, requiredFields);
-      
+
   List<String> getMissingFields(List<String> requiredFields) =>
       SerializationUtils.getMissingFields(this, requiredFields);
-      
-  Map<String, dynamic> cleaned() =>
-      SerializationUtils.cleanMap(this);
+
+  Map<String, dynamic> cleaned() => SerializationUtils.cleanMap(this);
 }
 
 /// Base serializable interface
@@ -355,14 +381,14 @@ mixin SerializationMixin implements Serializable {
   Map<String, dynamic> toCleanJson() {
     return SerializationUtils.cleanMap(toJson());
   }
-  
+
   Map<String, dynamic> toValidatedJson() {
     if (!isValid) {
       throw StateError('Cannot serialize invalid object');
     }
     return toJson();
   }
-  
+
   String toJsonString() {
     // Note: Would typically use dart:convert's jsonEncode here
     // This is a placeholder for the pattern

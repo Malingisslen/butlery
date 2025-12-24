@@ -10,7 +10,7 @@ abstract class SocialRecipeRepository {
   CollectionReference<Map<String, dynamic>> get recipeCommentsRef;
   Stream<User?> authStateChanges();
   User? get currentUser;
-  
+
   // Shared content methods
   Future<List<SharedRecipe>> getSharedRecipes(String userId);
   Future<List<SharedMenu>> getSharedMenus(String userId);

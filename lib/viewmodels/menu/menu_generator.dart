@@ -19,8 +19,8 @@ class MenuGenerator {
   MenuGenerator({
     required MenuService menuService,
     required UnifiedRecipeService recipeService,
-  }) : _menuService = menuService,
-       _recipeService = recipeService;
+  })  : _menuService = menuService,
+        _recipeService = recipeService;
 
   // ===== RECIPE AVAILABILITY =====
 
@@ -43,9 +43,10 @@ class MenuGenerator {
   // ===== MENU GENERATION =====
 
   /// Generate complete menu from prompt
-  Future<Map<String, List<Recipe>>> generateMenuFromPrompt(String prompt) async {
+  Future<Map<String, List<Recipe>>> generateMenuFromPrompt(
+      String prompt) async {
     await ensureRecipeServiceInitialized();
-    
+
     await Future.delayed(const Duration(milliseconds: 300));
 
     if (availableRecipes.isEmpty) {
@@ -103,7 +104,8 @@ class MenuGenerator {
   /// Analyze generated menu quality
   Map<String, dynamic> analyzeMenuQuality(Map<String, List<Recipe>> menu) {
     final analysis = <String, dynamic>{
-      'totalRecipes': menu.values.fold(0, (sum, recipes) => sum + recipes.length),
+      'totalRecipes':
+          menu.values.fold(0, (sum, recipes) => sum + recipes.length),
       'sections': menu.keys.length,
       'averageRecipesPerSection': 0.0,
       'hasVariety': false,
@@ -111,9 +113,9 @@ class MenuGenerator {
     };
 
     if (menu.isNotEmpty) {
-      analysis['averageRecipesPerSection'] = 
+      analysis['averageRecipesPerSection'] =
           analysis['totalRecipes'] / analysis['sections'];
-      
+
       // Analyze meal type variety
       final mealTypes = <String>{};
       for (final recipes in menu.values) {
@@ -121,7 +123,7 @@ class MenuGenerator {
           mealTypes.add(recipe.mealType);
         }
       }
-      
+
       analysis['mealTypes'] = mealTypes;
       analysis['hasVariety'] = mealTypes.length > 1;
     }
@@ -146,20 +148,31 @@ class MenuGenerator {
   /// Check if prompt is likely to generate good results
   bool isPromptOptimal(String prompt) {
     final lowerPrompt = prompt.toLowerCase();
-    
+
     // Good indicators
     final goodKeywords = [
-      'veckomeny', 'meny', 'middag', 'lunch', 'frukost',
-      'vegetarisk', 'kött', 'fisk', 'familj', 'person',
-      'snabb', 'hälsosam', 'budget', 'tema'
+      'veckomeny',
+      'meny',
+      'middag',
+      'lunch',
+      'frukost',
+      'vegetarisk',
+      'kött',
+      'fisk',
+      'familj',
+      'person',
+      'snabb',
+      'hälsosam',
+      'budget',
+      'tema'
     ];
-    
-    final hasGoodKeywords = goodKeywords.any((keyword) => 
-        lowerPrompt.contains(keyword));
-    
+
+    final hasGoodKeywords =
+        goodKeywords.any((keyword) => lowerPrompt.contains(keyword));
+
     // Length check
     final hasGoodLength = prompt.length >= 10 && prompt.length <= 200;
-    
+
     return hasGoodKeywords && hasGoodLength;
   }
 }

@@ -75,10 +75,8 @@ class KoketRecipeParser extends RecipeSiteParser {
     // Köket sometimes includes "ca" (cirka/approximately) in portions
     final yield_ = recipe['recipeYield'];
     if (yield_ is String) {
-      recipe['recipeYield'] = yield_
-          .replaceAll('ca ', '')
-          .replaceAll('cirka ', '')
-          .trim();
+      recipe['recipeYield'] =
+          yield_.replaceAll('ca ', '').replaceAll('cirka ', '').trim();
     }
 
     // Clean ingredient formatting
@@ -88,8 +86,10 @@ class KoketRecipeParser extends RecipeSiteParser {
           .map((ing) {
             String cleaned = cleanSwedishText(ing.toString());
             // Remove "ca " and "cirka " prefixes from ingredients
-            cleaned = cleaned.replaceAll(RegExp(r'^ca\s+', caseSensitive: false), '');
-            cleaned = cleaned.replaceAll(RegExp(r'^cirka\s+', caseSensitive: false), '');
+            cleaned =
+                cleaned.replaceAll(RegExp(r'^ca\s+', caseSensitive: false), '');
+            cleaned = cleaned.replaceAll(
+                RegExp(r'^cirka\s+', caseSensitive: false), '');
             return cleaned.trim();
           })
           .where((ing) => ing.isNotEmpty)
@@ -111,10 +111,9 @@ class KoketRecipeParser extends RecipeSiteParser {
             }
             return inst;
           })
-          .where((inst) =>
-              inst is String
-                  ? inst.isNotEmpty
-                  : inst is Map && inst['text'] != null)
+          .where((inst) => inst is String
+              ? inst.isNotEmpty
+              : inst is Map && inst['text'] != null)
           .toList();
     }
 
@@ -254,8 +253,8 @@ class KoketRecipeParser extends RecipeSiteParser {
 
     // Try finding "Portioner: X" in text
     final bodyText = doc.body?.text ?? '';
-    final portionMatch =
-        RegExp(r'Portioner?:\s*(\d+)', caseSensitive: false).firstMatch(bodyText);
+    final portionMatch = RegExp(r'Portioner?:\s*(\d+)', caseSensitive: false)
+        .firstMatch(bodyText);
     if (portionMatch != null) {
       return portionMatch.group(1);
     }
@@ -275,7 +274,8 @@ class KoketRecipeParser extends RecipeSiteParser {
     for (final selector in selectors) {
       final element = doc.querySelector(selector);
       if (element != null) {
-        final timeAttr = element.attributes['content'] ?? element.attributes['datetime'];
+        final timeAttr =
+            element.attributes['content'] ?? element.attributes['datetime'];
         if (timeAttr != null && timeAttr.startsWith('PT')) {
           return timeAttr; // ISO 8601 format
         }
@@ -323,11 +323,13 @@ class KoketRecipeParser extends RecipeSiteParser {
 
     // Extract hours
     final hoursMatch = RegExp(r'(\d+)\s*timm').firstMatch(lowerText);
-    final hours = hoursMatch != null ? int.tryParse(hoursMatch.group(1)!) : null;
+    final hours =
+        hoursMatch != null ? int.tryParse(hoursMatch.group(1)!) : null;
 
     // Extract minutes
     final minutesMatch = RegExp(r'(\d+)\s*min').firstMatch(lowerText);
-    final minutes = minutesMatch != null ? int.tryParse(minutesMatch.group(1)!) : null;
+    final minutes =
+        minutesMatch != null ? int.tryParse(minutesMatch.group(1)!) : null;
 
     if (hours == null && minutes == null) {
       return null;

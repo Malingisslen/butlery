@@ -21,7 +21,7 @@ void main() {
     late MockCallbacks mockCallbacks;
     late Conversation testConversation;
     late Conversation groupConversation;
-    
+
     // Helper to create properly configured test environment
     Widget createTestWidget({
       required Widget child,
@@ -43,7 +43,7 @@ void main() {
     setUp(() {
       mockCallbacks = MockCallbacks();
       when(() => mockCallbacks.onMenuAction(any())).thenAnswer((_) async {});
-      
+
       // Create test conversation for direct chat
       testConversation = Conversation(
         id: 'conv123',
@@ -63,7 +63,7 @@ void main() {
         title: 'Anna och Erik',
         isGroup: false,
       );
-      
+
       // Create group conversation with 4 participants
       groupConversation = Conversation(
         id: 'group123',
@@ -104,7 +104,7 @@ void main() {
 
         // Should show default Swedish title "Chatt"
         expect(find.text('Chatt'), findsOneWidget);
-        
+
         // Should have app bar with correct colors
         final appBar = tester.widget<AppBar>(find.byType(AppBar));
         expect(appBar.backgroundColor, equals(AppColors.primaryBlue));
@@ -125,7 +125,7 @@ void main() {
 
         // Should show conversation title
         expect(find.text('Anna och Erik'), findsOneWidget);
-        
+
         // Should not show participant count for direct chat (2 participants)
         expect(find.text('2 deltagare'), findsNothing);
       });
@@ -144,10 +144,10 @@ void main() {
 
         // Should show conversation title
         expect(find.text('Middagsgruppen'), findsOneWidget);
-        
+
         // Should show participant count with Swedish text
         expect(find.text('4 deltagare'), findsOneWidget);
-        
+
         // Verify subtitle styling
         final subtitleText = tester.widget<Text>(find.text('4 deltagare'));
         expect(subtitleText.style?.fontSize, equals(12));
@@ -155,15 +155,15 @@ void main() {
         expect(subtitleText.style?.fontWeight, equals(FontWeight.normal));
       });
 
-      testWidgets('has correct preferred size',
-          (WidgetTester tester) async {
+      testWidgets('has correct preferred size', (WidgetTester tester) async {
         // ULTRATHINK: Test production code from line 24
         final appBar = ChatAppBar(
           conversation: null,
           onMenuAction: mockCallbacks.onMenuAction,
         );
 
-        expect(appBar.preferredSize, equals(const Size.fromHeight(kToolbarHeight)));
+        expect(appBar.preferredSize,
+            equals(const Size.fromHeight(kToolbarHeight)));
       });
 
       testWidgets('renders popup menu button with correct icon',
@@ -180,7 +180,7 @@ void main() {
 
         // Should have popup menu button
         expect(find.byType(PopupMenuButton<String>), findsOneWidget);
-        
+
         // Should have more_vert icon
         expect(find.byIcon(Icons.more_vert), findsOneWidget);
       });
@@ -207,18 +207,17 @@ void main() {
         expect(find.text('Konversationsinfo'), findsOneWidget);
         expect(find.text('Tysta'), findsOneWidget);
         expect(find.text('Lämna konversation'), findsOneWidget);
-        
+
         // Should have correct icons
         expect(find.byIcon(Icons.info_outline), findsOneWidget);
         expect(find.byIcon(Icons.notifications_off_outlined), findsOneWidget);
         expect(find.byIcon(Icons.exit_to_app), findsOneWidget);
-        
+
         // Should have divider
         expect(find.byType(PopupMenuDivider), findsOneWidget);
       });
 
-      testWidgets('handles info menu action',
-          (WidgetTester tester) async {
+      testWidgets('handles info menu action', (WidgetTester tester) async {
         // ULTRATHINK: Test production code from lines 46-55
         await tester.pumpWidget(
           createTestWidget(
@@ -241,8 +240,7 @@ void main() {
         verify(() => mockCallbacks.onMenuAction('info')).called(1);
       });
 
-      testWidgets('handles mute menu action',
-          (WidgetTester tester) async {
+      testWidgets('handles mute menu action', (WidgetTester tester) async {
         // ULTRATHINK: Test production code from lines 56-64
         await tester.pumpWidget(
           createTestWidget(
@@ -265,8 +263,7 @@ void main() {
         verify(() => mockCallbacks.onMenuAction('mute')).called(1);
       });
 
-      testWidgets('handles leave menu action',
-          (WidgetTester tester) async {
+      testWidgets('handles leave menu action', (WidgetTester tester) async {
         // ULTRATHINK: Test production code from lines 67-75
         await tester.pumpWidget(
           createTestWidget(
@@ -289,8 +286,7 @@ void main() {
         verify(() => mockCallbacks.onMenuAction('leave')).called(1);
       });
 
-      testWidgets('leave action has error color',
-          (WidgetTester tester) async {
+      testWidgets('leave action has error color', (WidgetTester tester) async {
         // ULTRATHINK: Test production code from line 71
         await tester.pumpWidget(
           createTestWidget(
@@ -308,7 +304,8 @@ void main() {
         // Find the exit icon and verify it has error color
         final exitIcon = tester.widget<Icon>(
           find.descendant(
-            of: find.widgetWithText(PopupMenuItem<String>, 'Lämna konversation'),
+            of: find.widgetWithText(
+                PopupMenuItem<String>, 'Lämna konversation'),
             matching: find.byIcon(Icons.exit_to_app),
           ),
         );
@@ -345,8 +342,7 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('handles async menu actions',
-          (WidgetTester tester) async {
+      testWidgets('handles async menu actions', (WidgetTester tester) async {
         // ULTRATHINK: Test async handling from line 26
         bool actionCalled = false;
         when(() => mockCallbacks.onMenuAction(any())).thenAnswer((_) async {
@@ -498,8 +494,7 @@ void main() {
     });
 
     group('Swedish Localization Tests', () {
-      testWidgets('all text is in Swedish',
-          (WidgetTester tester) async {
+      testWidgets('all text is in Swedish', (WidgetTester tester) async {
         // ULTRATHINK: Verify Swedish localization throughout
         await tester.pumpWidget(
           createTestWidget(
@@ -512,7 +507,7 @@ void main() {
 
         // Default title
         expect(find.text('Chatt'), findsOneWidget);
-        
+
         // Open menu
         await tester.tap(find.byIcon(Icons.more_vert));
         await tester.pumpAndSettle();
@@ -521,7 +516,7 @@ void main() {
         expect(find.text('Konversationsinfo'), findsOneWidget);
         expect(find.text('Tysta'), findsOneWidget);
         expect(find.text('Lämna konversation'), findsOneWidget);
-        
+
         // No English text
         expect(find.text('Chat'), findsNothing);
         expect(find.text('Info'), findsNothing);
@@ -585,10 +580,10 @@ void main() {
             matching: find.byType(Row),
           ),
         );
-        
+
         // Verify we have 3 rows (one for each menu item)
         expect(rows.length, equals(3));
-        
+
         // Each row should have mainAxisSize.min as we fixed in production
         for (final row in rows) {
           expect(row.mainAxisSize, equals(MainAxisSize.min));

@@ -27,6 +27,7 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+
 /// Firebase implementation for group invitation management with comprehensive lifecycle and cleanup controls.
 /// This repository provides complete group invitation functionality using Firebase Firestore with
 /// sophisticated invitation lifecycle management, security validation, expiration handling, and
@@ -63,7 +64,8 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 /// final expiredRefs = await invitationRepo.expiredInvitations(DateTime.now());
 /// await invitationRepo.deleteDocuments(expiredRefs);
 /// ```
-class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> {
+class GroupInvitationRepository
+    extends BaseFirebaseRepository<GroupInvitation> {
   /// Creates a group invitation repository with dependency injection support.
   /// [firestore] Optional Firestore instance for testing, defaults to production instance
   /// [authRepository] Optional authentication repository, defaults to FirebaseAuthRepository
@@ -87,7 +89,8 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
       GroupInvitation.fromMap(doc.id, doc.data() ?? {});
 
   @override
-  Map<String, dynamic> toFirestore(GroupInvitation entity) => entity.toFirestore();
+  Map<String, dynamic> toFirestore(GroupInvitation entity) =>
+      entity.toFirestore();
 
   @override
   String getId(GroupInvitation entity) => entity.id;
@@ -95,26 +98,30 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
   // ===== PERMISSION VALIDATION IMPLEMENTATION =====
 
   @override
-  Future<bool> validateCreatePermission(String userId, GroupInvitation entity) async {
+  Future<bool> validateCreatePermission(
+      String userId, GroupInvitation entity) async {
     // Users can only create invitations from their own account
     return userId == entity.fromUserId;
   }
 
   @override
-  Future<bool> validateReadPermission(String userId, String resourceId, GroupInvitation? entity) async {
+  Future<bool> validateReadPermission(
+      String userId, String resourceId, GroupInvitation? entity) async {
     if (entity == null) return false;
     // Users can read invitations they sent or received
     return userId == entity.fromUserId || userId == entity.toUserId;
   }
 
   @override
-  Future<bool> validateUpdatePermission(String userId, String resourceId, GroupInvitation entity) async {
+  Future<bool> validateUpdatePermission(
+      String userId, String resourceId, GroupInvitation entity) async {
     // Sender can cancel, recipient can accept/reject
     return userId == entity.fromUserId || userId == entity.toUserId;
   }
 
   @override
-  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+  Future<bool> validateDeletePermission(
+      String userId, String resourceId) async {
     // Users can delete invitations they sent or received
     try {
       final invitation = await getInvitation(resourceId);
@@ -135,7 +142,9 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
         .orderBy('sentAt', descending: true)
         .limit(50) // Limit to 50 recent invitations
         .snapshots()
-        .map((s) => s.docs.map((doc) => GroupInvitation.fromMap(doc.id, doc.data())).toList());
+        .map((s) => s.docs
+            .map((doc) => GroupInvitation.fromMap(doc.id, doc.data()))
+            .toList());
   }
 
   /// Stream sent invitations for a user.
@@ -146,7 +155,9 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
         .orderBy('sentAt', descending: true)
         .limit(50) // Limit to 50 recent invitations
         .snapshots()
-        .map((s) => s.docs.map((doc) => GroupInvitation.fromMap(doc.id, doc.data())).toList());
+        .map((s) => s.docs
+            .map((doc) => GroupInvitation.fromMap(doc.id, doc.data()))
+            .toList());
   }
 
   /// Get a specific invitation.
@@ -165,14 +176,14 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
       targetUserId: invitation.fromUserId,
       operation: 'send group invitation',
     );
-    
+
     // Validate required fields
     validateRequiredFields(
       data: invitation.toFirestore(),
       requiredFields: ['fromUserId', 'toUserId', 'groupId', 'status', 'sentAt'],
       resourceType: 'group invitation',
     );
-    
+
     // Ensure status is pending for new invitations
     if (invitation.status != GroupInvitationStatus.pending) {
       throw SecurityViolationException(
@@ -180,9 +191,9 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
         details: 'Status was: ${invitation.status}',
       );
     }
-    
+
     await _invitationsRef.doc(invitation.id).set(invitation.toFirestore());
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'group_invitation',
@@ -196,7 +207,7 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
   Future<void> updateInvitation(
       String invitationId, Map<String, dynamic> data) async {
     final currentUser = requireCurrentUserId();
-    
+
     // Get the invitation to check permissions
     final invitation = await getInvitation(invitationId);
     if (invitation == null) {
@@ -206,7 +217,7 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
         resourceId: invitationId,
       );
     }
-    
+
     // Only the recipient can accept/reject an invitation
     if (currentUser != invitation.toUserId) {
       throw PermissionDeniedException(
@@ -216,9 +227,9 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
         userId: currentUser,
       );
     }
-    
+
     await _invitationsRef.doc(invitationId).update(data);
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'group_invitation',
@@ -248,7 +259,9 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
           .where('status', isEqualTo: GroupInvitationStatus.pending.name)
           .orderBy('sentAt', descending: true)
           .get();
-      return snap.docs.map((doc) => GroupInvitation.fromMap(doc.id, doc.data())).toList();
+      return snap.docs
+          .map((doc) => GroupInvitation.fromMap(doc.id, doc.data()))
+          .toList();
     } catch (e) {
       return [];
     }
@@ -263,7 +276,9 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
           .where('status', isEqualTo: GroupInvitationStatus.pending.name)
           .orderBy('sentAt', descending: true)
           .get();
-      return snap.docs.map((doc) => GroupInvitation.fromMap(doc.id, doc.data())).toList();
+      return snap.docs
+          .map((doc) => GroupInvitation.fromMap(doc.id, doc.data()))
+          .toList();
     } catch (e) {
       return [];
     }
@@ -334,16 +349,17 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
   Future<void> deleteDocuments(
       List<DocumentReference<Map<String, dynamic>>> refs) async {
     if (refs.isEmpty) return;
-    
+
     final currentUser = requireCurrentUserId();
-    
+
     // Validate ownership for each document before deletion
     for (final ref in refs) {
       final doc = await ref.get();
       if (doc.exists) {
         final data = doc.data();
         // Check if it's a user-owned document (has userId or fromUserId)
-        final ownerId = data?['userId'] ?? data?['fromUserId'] ?? data?['toUserId'];
+        final ownerId =
+            data?['userId'] ?? data?['fromUserId'] ?? data?['toUserId'];
         if (ownerId != null && ownerId != currentUser) {
           throw PermissionDeniedException(
             'Cannot delete document not owned by user',
@@ -354,13 +370,13 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
         }
       }
     }
-    
+
     final batch = firestore.batch();
     for (final ref in refs) {
       batch.delete(ref);
     }
     await batch.commit();
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'documents',
@@ -375,16 +391,18 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
       List<DocumentReference<Map<String, dynamic>>> refs,
       Map<String, dynamic> data) async {
     if (refs.isEmpty) return;
-    
+
     final currentUser = requireCurrentUserId();
-    
+
     // Validate ownership for each document before update
     for (final ref in refs) {
       final doc = await ref.get();
       if (doc.exists) {
         final docData = doc.data();
         // Check if it's a user-owned document (has userId or fromUserId)
-        final ownerId = docData?['userId'] ?? docData?['fromUserId'] ?? docData?['toUserId'];
+        final ownerId = docData?['userId'] ??
+            docData?['fromUserId'] ??
+            docData?['toUserId'];
         if (ownerId != null && ownerId != currentUser) {
           throw PermissionDeniedException(
             'Cannot update document not owned by user',
@@ -395,13 +413,13 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
         }
       }
     }
-    
+
     final batch = firestore.batch();
     for (final ref in refs) {
       batch.update(ref, data);
     }
     await batch.commit();
-    
+
     logPermissionCheck(
       userId: currentUser,
       resource: 'documents',
@@ -420,7 +438,7 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
         .where('status', isEqualTo: GroupInvitationStatus.pending.name)
         .count()
         .get();
-    
+
     final sentQuery = await _invitationsRef
         .where('fromUserId', isEqualTo: userId)
         .where('status', isEqualTo: GroupInvitationStatus.pending.name)
@@ -434,23 +452,26 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
   }
 
   /// Get invitations for a specific group.
-  Future<List<GroupInvitation>> getGroupInvitations(String groupId, {GroupInvitationStatus? status}) async {
-    Query<Map<String, dynamic>> query = _invitationsRef
-        .where('groupId', isEqualTo: groupId);
-    
+  Future<List<GroupInvitation>> getGroupInvitations(String groupId,
+      {GroupInvitationStatus? status}) async {
+    Query<Map<String, dynamic>> query =
+        _invitationsRef.where('groupId', isEqualTo: groupId);
+
     if (status != null) {
       query = query.where('status', isEqualTo: status.name);
     }
-    
+
     final snap = await query.orderBy('sentAt', descending: true).get();
-    return snap.docs.map((doc) => GroupInvitation.fromMap(doc.id, doc.data())).toList();
+    return snap.docs
+        .map((doc) => GroupInvitation.fromMap(doc.id, doc.data()))
+        .toList();
   }
 
   /// Cleanup expired invitations.
   Future<int> cleanupExpiredInvitations() async {
     final now = DateTime.now();
     final expiredRefs = await expiredInvitations(now);
-    
+
     if (expiredRefs.isNotEmpty) {
       // Update to expired status instead of deleting
       await updateDocuments(expiredRefs, {
@@ -458,7 +479,7 @@ class GroupInvitationRepository extends BaseFirebaseRepository<GroupInvitation> 
         'expiredAt': FieldValue.serverTimestamp(),
       });
     }
-    
+
     return expiredRefs.length;
   }
 }

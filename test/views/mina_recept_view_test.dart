@@ -66,13 +66,13 @@ void main() {
     setUpAll(() async {
       // Register fallback values for mocktail
       registerFallbackValue(SortCriteria.title);
-      
+
       // Initialize comprehensive test environment
       await ViewTestHelpers.setupViewTestEnvironment();
-      
+
       // Configure for view testing scenario
       TestServiceLocator.configureForScenario(TestScenario.viewTesting);
-      
+
       // Initialize production ServiceLocator with our test container
       // Both DIContainer and TestServiceLocator use the same GetIt.instance,
       // so DIContainer will access our registered test mocks
@@ -95,28 +95,29 @@ void main() {
     late UserProfile testUser;
 
     // ==================== HELPER METHODS ====================
-    
+
     /// Configure method stubs for all mocks (called once)
     void configureMockStubs() {
-      // Configure mock methods - only if the mock supports when() 
+      // Configure mock methods - only if the mock supports when()
       // Some of our custom implementations may be state-based instead of mock-based
       try {
         if (mockRecipeListViewModel is Mock) {
-          when(() => mockRecipeListViewModel.refresh()).thenAnswer((_) async {});
+          when(() => mockRecipeListViewModel.refresh())
+              .thenAnswer((_) async {});
         }
         if (mockFriendsViewModel is Mock) {
           when(() => mockFriendsViewModel.refresh()).thenAnswer((_) async {});
         }
         if (mockOfflineService is Mock) {
-          when(() => mockOfflineService.syncNow()).thenAnswer((_) async => 
-            SyncResult.success('Test sync completed'));
+          when(() => mockOfflineService.syncNow()).thenAnswer(
+              (_) async => SyncResult.success('Test sync completed'));
         }
       } catch (e) {
         // If mocks don't support when(), they might be state-based implementations
         // This is fine for our test
       }
     }
-    
+
     /// Set default state values for all mocks (called in each setUp)
     void setDefaultMockStates() {
       // Configure state through the mock instances if they support it
@@ -132,31 +133,33 @@ void main() {
           sortAscending: true,
         );
       }
-      
+
       // Configure UserService with test user
       (mockUserService as dynamic).setUserState(currentUser: testUser);
-      
+
       // Configure other mocks with default states
       if (mockFriendsViewModel is TestFriendsViewModel) {
         (mockFriendsViewModel as TestFriendsViewModel).configureFriendsState(
           pendingRequestsCount: 0,
         );
       }
-      
-      if (mockSharedContentCoordinator is TestSharedContentCoordinatorViewModel) {
-        (mockSharedContentCoordinator as TestSharedContentCoordinatorViewModel).configureContentState(
+
+      if (mockSharedContentCoordinator
+          is TestSharedContentCoordinatorViewModel) {
+        (mockSharedContentCoordinator as TestSharedContentCoordinatorViewModel)
+            .configureContentState(
           unreadRecipesCount: 0,
           unreadMenusCount: 0,
         );
       }
-      
+
       if (mockOfflineService is TestOfflineService) {
         (mockOfflineService as TestOfflineService).configureOfflineState(
           isOnline: true,
         );
       }
     }
-    
+
     /// Pump MinaReceptView with ServiceLocator-based setup
     /// MinaReceptView will get providers from ServiceLocator.get<>() internally
     Future<void> pumpMinaReceptView(WidgetTester tester) async {
@@ -165,11 +168,12 @@ void main() {
           child: const MinaReceptView(),
         ),
       );
-      
+
       // ✅ TIMER FIX: Handle the 1.5-second timer in MinaReceptView._safeLoadSocialData()
       // The timer is created in production code during initState
       await tester.pump(const Duration(milliseconds: 100)); // Initial frame
-      await tester.pump(const Duration(milliseconds: 1600)); // Complete the 1.5s timer + buffer
+      await tester.pump(const Duration(
+          milliseconds: 1600)); // Complete the 1.5s timer + buffer
       await tester.pump(); // Additional pump for widget tree completion
     }
 
@@ -190,16 +194,20 @@ void main() {
       mockFriendsViewModel = TestFriendsViewModel();
       mockSharedContentCoordinator = TestSharedContentCoordinatorViewModel();
       mockOfflineService = TestOfflineService();
-      
+
       // Get UserService from TestServiceLocator (already registered)
       mockUserService = TestServiceLocator.get<UserService>();
-      
+
       // Replace TestServiceLocator registrations with our specific instances
       // This ensures ServiceLocator.get<>() returns our configured test mocks
-      TestServiceLocator.registerFactory<RecipeListViewModel>(() => mockRecipeListViewModel);
-      TestServiceLocator.registerFactory<FriendsViewModel>(() => mockFriendsViewModel);
-      TestServiceLocator.registerSingleton<SharedContentCoordinatorViewModel>(mockSharedContentCoordinator);
-      TestServiceLocator.registerSingleton<offline_service.OfflineService>(mockOfflineService);
+      TestServiceLocator.registerFactory<RecipeListViewModel>(
+          () => mockRecipeListViewModel);
+      TestServiceLocator.registerFactory<FriendsViewModel>(
+          () => mockFriendsViewModel);
+      TestServiceLocator.registerSingleton<SharedContentCoordinatorViewModel>(
+          mockSharedContentCoordinator);
+      TestServiceLocator.registerSingleton<offline_service.OfflineService>(
+          mockOfflineService);
 
       // Configure method stubs and set default states
       configureMockStubs();
@@ -223,13 +231,18 @@ void main() {
 
         // Assert: Verify MinaReceptView renders without provider errors
         expect(find.byType(MinaReceptView), findsOneWidget);
-        
+
         // Verify that our test mocks are accessible through ServiceLocator
-        expect(production.ServiceLocator.get<RecipeListViewModel>(), isA<TestRecipeListViewModel>());
+        expect(production.ServiceLocator.get<RecipeListViewModel>(),
+            isA<TestRecipeListViewModel>());
         expect(production.ServiceLocator.get<UserService>(), isNotNull);
-        expect(production.ServiceLocator.get<FriendsViewModel>(), isA<TestFriendsViewModel>());
-        expect(production.ServiceLocator.get<SharedContentCoordinatorViewModel>(), isA<TestSharedContentCoordinatorViewModel>());
-        expect(production.ServiceLocator.get<offline_service.OfflineService>(), isA<TestOfflineService>());
+        expect(production.ServiceLocator.get<FriendsViewModel>(),
+            isA<TestFriendsViewModel>());
+        expect(
+            production.ServiceLocator.get<SharedContentCoordinatorViewModel>(),
+            isA<TestSharedContentCoordinatorViewModel>());
+        expect(production.ServiceLocator.get<offline_service.OfflineService>(),
+            isA<TestOfflineService>());
       });
 
       testWidgets('should handle provider initialization lifecycle correctly',
@@ -274,7 +287,8 @@ void main() {
         (mockFriendsViewModel as TestFriendsViewModel).configureFriendsState(
           pendingRequestsCount: 2,
         );
-        (mockSharedContentCoordinator as TestSharedContentCoordinatorViewModel).configureContentState(
+        (mockSharedContentCoordinator as TestSharedContentCoordinatorViewModel)
+            .configureContentState(
           unreadRecipesCount: 3,
           unreadMenusCount: 1,
         );
@@ -743,7 +757,8 @@ void main() {
 // ==================== TEST IMPLEMENTATIONS ====================
 
 /// Test implementation of RecipeListViewModel for view testing
-class TestRecipeListViewModel extends ChangeNotifier implements RecipeListViewModel {
+class TestRecipeListViewModel extends ChangeNotifier
+    implements RecipeListViewModel {
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
   bool _isLoading = false;
@@ -856,8 +871,8 @@ class TestRecipeListViewModel extends ChangeNotifier implements RecipeListViewMo
       _activeTimeFilters.add(filter);
     }
     _hasActiveFilters = _activeTimeFilters.isNotEmpty ||
-                       _activeMealTypeFilters.isNotEmpty ||
-                       _activeRatingFilters.isNotEmpty;
+        _activeMealTypeFilters.isNotEmpty ||
+        _activeRatingFilters.isNotEmpty;
     notifyListeners();
   }
 
@@ -869,8 +884,8 @@ class TestRecipeListViewModel extends ChangeNotifier implements RecipeListViewMo
       _activeMealTypeFilters.add(filter);
     }
     _hasActiveFilters = _activeTimeFilters.isNotEmpty ||
-                       _activeMealTypeFilters.isNotEmpty ||
-                       _activeRatingFilters.isNotEmpty;
+        _activeMealTypeFilters.isNotEmpty ||
+        _activeRatingFilters.isNotEmpty;
     notifyListeners();
   }
 
@@ -882,8 +897,8 @@ class TestRecipeListViewModel extends ChangeNotifier implements RecipeListViewMo
       _activeRatingFilters.add(filter);
     }
     _hasActiveFilters = _activeTimeFilters.isNotEmpty ||
-                       _activeMealTypeFilters.isNotEmpty ||
-                       _activeRatingFilters.isNotEmpty;
+        _activeMealTypeFilters.isNotEmpty ||
+        _activeRatingFilters.isNotEmpty;
     notifyListeners();
   }
 
@@ -921,7 +936,9 @@ class TestFriendsViewModel extends ChangeNotifier implements FriendsViewModel {
   void configureFriendsState({
     int? pendingRequestsCount,
   }) {
-    if (pendingRequestsCount != null) _pendingRequestsCount = pendingRequestsCount;
+    if (pendingRequestsCount != null) {
+      _pendingRequestsCount = pendingRequestsCount;
+    }
     notifyListeners();
   }
 
@@ -940,7 +957,8 @@ class TestFriendsViewModel extends ChangeNotifier implements FriendsViewModel {
 }
 
 /// Test implementation of SharedContentCoordinatorViewModel for view testing
-class TestSharedContentCoordinatorViewModel extends ChangeNotifier implements SharedContentCoordinatorViewModel {
+class TestSharedContentCoordinatorViewModel extends ChangeNotifier
+    implements SharedContentCoordinatorViewModel {
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
 
@@ -951,10 +969,10 @@ class TestSharedContentCoordinatorViewModel extends ChangeNotifier implements Sh
   // Match the coordinator's unreadCounts map interface
   @override
   Map<ContentTab, int> get unreadCounts => {
-    ContentTab.recipes: _unreadRecipesCount,
-    ContentTab.menus: _unreadMenusCount,
-    ContentTab.shoppingLists: 0,
-  };
+        ContentTab.recipes: _unreadRecipesCount,
+        ContentTab.menus: _unreadMenusCount,
+        ContentTab.shoppingLists: 0,
+      };
 
   // Convenience getters for test compatibility
   int get unreadRecipesCount => _unreadRecipesCount;

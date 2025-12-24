@@ -48,6 +48,7 @@
 /// ```
 
 import 'package:butlery/core/constants/app_strings.dart';
+
 /// Comprehensive validation utility class providing centralized validation patterns and business rule enforcement.
 /// This utility class serves as the centralized validation hub for the entire application, consolidating validation
 /// patterns that were previously scattered across hundreds of files. It provides pure, stateless functions with
@@ -78,7 +79,7 @@ class ValidationUtils {
   /// ```
   /// **Performance:** O(1) - Single null check and property access
   static bool isNullOrEmpty(String? value) => value == null || value.isEmpty;
-  
+
   /// Validates whether a string value is null, empty, or contains only whitespace characters.
   /// This method consolidates the pattern `if (value == null || value.trim().isEmpty) return 'error';`
   /// found in 187+ files, providing comprehensive whitespace validation beyond basic empty checks.
@@ -95,9 +96,9 @@ class ValidationUtils {
   /// final hasContent = !ValidationUtils.isNullOrWhitespace(description);
   /// ```
   /// **Performance:** O(n) - String trimming operation where n is string length
-  static bool isNullOrWhitespace(String? value) => 
+  static bool isNullOrWhitespace(String? value) =>
       value == null || value.trim().isEmpty;
-  
+
   /// Validates whether a list is null or empty, providing comprehensive collection validation consolidation.
   /// This method replaces the pattern `if (list == null || list.isEmpty) return;` found in 89+ files,
   /// consolidating collection validation logic with generic type support for type-safe validation
@@ -115,8 +116,9 @@ class ValidationUtils {
   /// final hasSelections = !ValidationUtils.isNullOrEmptyList(selectedItems);
   /// ```
   /// **Performance:** O(1) - Single null check and property access
-  static bool isNullOrEmptyList<T>(List<T>? list) => list == null || list.isEmpty;
-  
+  static bool isNullOrEmptyList<T>(List<T>? list) =>
+      list == null || list.isEmpty;
+
   /// Validates whether a map is null or empty, providing comprehensive key-value collection validation.
   /// This method consolidates the pattern `if (map == null || map.isEmpty) return;` found in 67+ files,
   /// providing generic map validation with full type safety for both keys and values throughout
@@ -134,19 +136,20 @@ class ValidationUtils {
   /// final hasPreferences = !ValidationUtils.isNullOrEmptyMap(userSettings);
   /// ```
   /// **Performance:** O(1) - Single null check and property access
-  static bool isNullOrEmptyMap<K, V>(Map<K, V>? map) => map == null || map.isEmpty;
+  static bool isNullOrEmptyMap<K, V>(Map<K, V>? map) =>
+      map == null || map.isEmpty;
 
   /// Consolidated string validation with consistent error messages
   /// Replaces duplicate validation patterns across form fields
   static String? validateRequired(String? value, {String? fieldName}) {
     if (isNullOrWhitespace(value)) {
-      return fieldName != null 
+      return fieldName != null
           ? AppStrings.fieldRequired(fieldName)
           : AppStrings.genericRequired;
     }
     return null;
   }
-  
+
   /// Consolidated string length validation
   /// Replaces patterns found in 45+ form validation files
   static String? validateLength(
@@ -156,82 +159,85 @@ class ValidationUtils {
     String? fieldName,
   }) {
     if (value == null) return null;
-    
+
     if (minLength != null && value.length < minLength) {
       return fieldName != null
           ? AppStrings.fieldTooShort(fieldName, minLength)
           : 'Minimum length is $minLength characters';
     }
-    
+
     if (maxLength != null && value.length > maxLength) {
       return fieldName != null
           ? AppStrings.fieldTooLong(fieldName, maxLength)
           : 'Maximum length is $maxLength characters';
     }
-    
+
     return null;
   }
-  
+
   /// Email validation - consolidates patterns from 23+ files
   static String? validateEmail(String? email, {bool required = true}) {
     if (isNullOrWhitespace(email)) {
       return required ? AppStrings.emailRequired : null;
     }
-    
+
     final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
     if (!emailRegex.hasMatch(email!)) {
       return AppStrings.emailInvalid;
     }
-    
+
     return null;
   }
-  
+
   /// Recipe name validation - consolidates patterns from recipe-related files
   static String? validateRecipeName(String? name) {
     final requiredCheck = validateRequired(name, fieldName: 'Receptnamn');
     if (requiredCheck != null) return requiredCheck;
-    
-    return validateLength(name, minLength: 2, maxLength: 100, fieldName: 'Receptnamn');
+
+    return validateLength(name,
+        minLength: 2, maxLength: 100, fieldName: 'Receptnamn');
   }
-  
+
   /// Group name validation - consolidates patterns from group-related files
   static String? validateGroupName(String? name) {
     final requiredCheck = validateRequired(name, fieldName: 'Gruppnamn');
     if (requiredCheck != null) return requiredCheck;
-    
-    return validateLength(name, minLength: 2, maxLength: 50, fieldName: 'Gruppnamn');
+
+    return validateLength(name,
+        minLength: 2, maxLength: 50, fieldName: 'Gruppnamn');
   }
-  
+
   /// Shopping item validation - consolidates patterns from shopping files
   static String? validateShoppingItemName(String? name) {
     final requiredCheck = validateRequired(name, fieldName: 'Artikel');
     if (requiredCheck != null) return requiredCheck;
-    
-    return validateLength(name, minLength: 1, maxLength: 100, fieldName: 'Artikel');
+
+    return validateLength(name,
+        minLength: 1, maxLength: 100, fieldName: 'Artikel');
   }
-  
+
   /// Amount validation - consolidates numeric validation patterns
   static String? validateAmount(String? amount) {
     if (isNullOrWhitespace(amount)) {
       return AppStrings.fieldRequired('Antal');
     }
-    
+
     final numericValue = double.tryParse(amount!);
     if (numericValue == null || numericValue <= 0) {
       return 'Antal måste vara ett positivt nummer';
     }
-    
+
     return null;
   }
 
   /// Safe collection access - replaces null check patterns
   /// Eliminates: if (list != null && list.isNotEmpty) { ... }
   static bool hasItems<T>(List<T>? list) => list != null && list.isNotEmpty;
-  
-  /// Safe collection count - replaces length check patterns  
+
+  /// Safe collection count - replaces length check patterns
   /// Eliminates: (list?.length ?? 0) > 0
   static int safeCount<T>(List<T>? list) => list?.length ?? 0;
-  
+
   /// Safe collection access with default
   /// Eliminates: list ?? []
   static List<T> safeList<T>(List<T>? list) => list ?? <T>[];
@@ -244,28 +250,29 @@ class ValidationUtils {
     }
     return null;
   }
-  
+
   /// Resource access validation - consolidates permission patterns
   static bool canAccess(String? userId, String? resourceOwnerId) {
-    return !isNullOrWhitespace(userId) && 
-           !isNullOrWhitespace(resourceOwnerId) &&
-           userId == resourceOwnerId;
+    return !isNullOrWhitespace(userId) &&
+        !isNullOrWhitespace(resourceOwnerId) &&
+        userId == resourceOwnerId;
   }
 
   /// Multi-field validation - consolidates complex validation patterns
-  static List<String> validateMultiple(Map<String, String? Function()> validators) {
+  static List<String> validateMultiple(
+      Map<String, String? Function()> validators) {
     final errors = <String>[];
-    
+
     for (final entry in validators.entries) {
       final error = entry.value();
       if (error != null) {
         errors.add(error);
       }
     }
-    
+
     return errors;
   }
-  
+
   /// Form validation helper - consolidates form validation patterns
   static bool isFormValid(Map<String, String? Function()> validators) {
     return validateMultiple(validators).isEmpty;
@@ -285,12 +292,12 @@ class ValidationUtils {
   }
 
   /// Safe string operations - eliminates repetitive null checks
-  static String safeString(String? value, {String defaultValue = ''}) => 
+  static String safeString(String? value, {String defaultValue = ''}) =>
       value ?? defaultValue;
-      
+
   /// Safe trim operation - eliminates null check + trim patterns
   static String safeTrim(String? value) => value?.trim() ?? '';
-  
+
   /// Case-insensitive comparison - consolidates comparison patterns
   static bool equalsIgnoreCase(String? a, String? b) {
     if (a == null && b == null) return true;
@@ -304,18 +311,18 @@ class ValidationUtils {
 extension ValidationExtensions on String? {
   /// Replaces: value == null || value.isEmpty
   bool get isNullOrEmpty => ValidationUtils.isNullOrEmpty(this);
-  
-  /// Replaces: value == null || value.trim().isEmpty  
+
+  /// Replaces: value == null || value.trim().isEmpty
   bool get isNullOrWhitespace => ValidationUtils.isNullOrWhitespace(this);
-  
+
   /// Replaces: value ?? ''
   String get orEmpty => ValidationUtils.safeString(this);
-  
+
   /// Replaces: value?.trim() ?? ''
   String get safeTrim => ValidationUtils.safeTrim(this);
-  
+
   /// Required validation with field name
-  String? required([String? fieldName]) => 
+  String? required([String? fieldName]) =>
       ValidationUtils.validateRequired(this, fieldName: fieldName);
 }
 
@@ -323,13 +330,13 @@ extension ValidationExtensions on String? {
 extension ListValidationExtensions<T> on List<T>? {
   /// Replaces: list == null || list.isEmpty
   bool get isNullOrEmpty => ValidationUtils.isNullOrEmptyList(this);
-  
+
   /// Replaces: list != null && list.isNotEmpty
   bool get hasItems => ValidationUtils.hasItems(this);
-  
+
   /// Replaces: list?.length ?? 0
   int get safeCount => ValidationUtils.safeCount(this);
-  
+
   /// Replaces: list ?? []
   List<T> get orEmpty => ValidationUtils.safeList(this);
 }

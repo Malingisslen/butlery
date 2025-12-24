@@ -19,9 +19,9 @@ class LoadingIndicator extends StatelessWidget {
   /// Small loading indicator for app bars and buttons
   const LoadingIndicator.small({
     super.key,
-  }) : size = AppDimensions.iconSizeS,
-       strokeWidth = 2,
-       padding = const EdgeInsets.all(AppDimensions.spacingL);
+  })  : size = AppDimensions.iconSizeS,
+        strokeWidth = 2,
+        padding = const EdgeInsets.all(AppDimensions.spacingL);
 
   @override
   Widget build(BuildContext context) {

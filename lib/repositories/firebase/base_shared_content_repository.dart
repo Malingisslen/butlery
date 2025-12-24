@@ -501,7 +501,8 @@ abstract class BaseSharedContentRepository<T>
         final parentPath = memberDoc.reference.parent.parent?.path ?? 'unknown';
         final contentId = memberDoc.reference.parent.parent?.id;
         final pathSegments = parentPath.split('/');
-        final isMatchingCollection = pathSegments.isNotEmpty && pathSegments.first == collectionName;
+        final isMatchingCollection =
+            pathSegments.isNotEmpty && pathSegments.first == collectionName;
 
         if (contentId != null && isMatchingCollection) {
           contentIds.add(contentId);

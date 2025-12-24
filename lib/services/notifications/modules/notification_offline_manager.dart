@@ -53,16 +53,16 @@ class NotificationOfflineManager {
   final String _userId;
   final Clock _clock;
   final Duration _retryDelay;
-  
+
   // In-memory queue for offline notifications
   final List<PendingNotification> _offlineQueue = [];
-  
+
   // Online status tracking
   bool _isOnline = true;
-  
+
   // Optional callback for when notifications need to be actually sent
   Future<void> Function(PendingNotification)? _sendNotificationCallback;
-  
+
   // Queue processing state
   bool _isProcessingQueue = false;
   Timer? _retryTimer;
@@ -72,10 +72,10 @@ class NotificationOfflineManager {
     Future<void> Function(PendingNotification)? sendNotificationCallback,
     Clock? clock,
     Duration? retryDelay,
-  }) : _userId = userId, 
-       _sendNotificationCallback = sendNotificationCallback,
-       _clock = clock ?? const Clock(),
-       _retryDelay = retryDelay ?? const Duration(minutes: 5);
+  })  : _userId = userId,
+        _sendNotificationCallback = sendNotificationCallback,
+        _clock = clock ?? const Clock(),
+        _retryDelay = retryDelay ?? const Duration(minutes: 5);
 
   // ===== QUEUE MANAGEMENT =====
 
@@ -102,14 +102,17 @@ class NotificationOfflineManager {
       );
 
       _offlineQueue.add(pendingNotification);
-      
-      AppLogger.info('📋 Queued notification for offline processing (queue size: ${_offlineQueue.length})');
-      AppLogger.debug('🔔 Queued notification: ${strategy.category.name} for ${targetUserIds.length} users');
-      
+
+      AppLogger.info(
+          '📋 Queued notification for offline processing (queue size: ${_offlineQueue.length})');
+      AppLogger.debug(
+          '🔔 Queued notification: ${strategy.category.name} for ${targetUserIds.length} users');
+
       // Limit queue size to prevent memory issues
       _limitQueueSize();
     } catch (e) {
-      AppLogger.error('❌ Failed to queue notification for offline processing', e);
+      AppLogger.error(
+          '❌ Failed to queue notification for offline processing', e);
     }
   }
 
@@ -127,7 +130,7 @@ class NotificationOfflineManager {
   bool get isQueueEmpty => _offlineQueue.isEmpty;
 
   /// Get list of queued notifications (copy for safety)
-  List<PendingNotification> get queuedNotifications => 
+  List<PendingNotification> get queuedNotifications =>
       List<PendingNotification>.from(_offlineQueue);
 
   // ===== STATUS MANAGEMENT =====
@@ -137,11 +140,13 @@ class NotificationOfflineManager {
     if (_isOnline != isOnline) {
       final wasOffline = !_isOnline;
       _isOnline = isOnline;
-      
-      AppLogger.info('🔔 Notification service online status changed: $_isOnline');
-      
+
+      AppLogger.info(
+          '🔔 Notification service online status changed: $_isOnline');
+
       if (isOnline && wasOffline && _offlineQueue.isNotEmpty) {
-        AppLogger.info('🌐 Coming back online with ${_offlineQueue.length} queued notifications');
+        AppLogger.info(
+            '🌐 Coming back online with ${_offlineQueue.length} queued notifications');
         // Use a small delay to ensure network is stable
         Timer(const Duration(seconds: 2), () {
           processOfflineQueue();
@@ -177,9 +182,10 @@ class NotificationOfflineManager {
     }
 
     _isProcessingQueue = true;
-    
+
     try {
-      AppLogger.info('🔔 Processing ${_offlineQueue.length} offline notifications');
+      AppLogger.info(
+          '🔔 Processing ${_offlineQueue.length} offline notifications');
 
       final queueCopy = List<PendingNotification>.from(_offlineQueue);
       _offlineQueue.clear();
@@ -191,7 +197,8 @@ class NotificationOfflineManager {
         try {
           // Check if notification is too old (older than 24 hours)
           if (_isNotificationExpired(notification)) {
-            AppLogger.warning('⏰ Discarding expired notification from ${notification.queuedAt}');
+            AppLogger.warning(
+                '⏰ Discarding expired notification from ${notification.queuedAt}');
             continue;
           }
 
@@ -199,34 +206,36 @@ class NotificationOfflineManager {
           if (_sendNotificationCallback != null) {
             await _sendNotificationCallback!(notification);
           } else {
-            AppLogger.info('📋 Would send queued ${notification.strategy.category.name} notification');
+            AppLogger.info(
+                '📋 Would send queued ${notification.strategy.category.name} notification');
           }
-          
+
           successCount++;
           AppLogger.debug('✅ Successfully sent queued notification');
-          
         } catch (e) {
           AppLogger.error('❌ Failed to send queued notification', e);
           failureCount++;
-          
+
           // Re-queue with increased retry count if not exceeded
           final updatedNotification = notification.withIncrementedRetry();
           if (updatedNotification.retryCount <= 3) {
             _offlineQueue.add(updatedNotification);
-            AppLogger.info('🔄 Re-queued notification (retry ${updatedNotification.retryCount}/3)');
+            AppLogger.info(
+                '🔄 Re-queued notification (retry ${updatedNotification.retryCount}/3)');
           } else {
-            AppLogger.warning('⚠️ Discarding notification after 3 failed retries');
+            AppLogger.warning(
+                '⚠️ Discarding notification after 3 failed retries');
           }
         }
       }
 
-      AppLogger.success('✅ Processed offline queue: $successCount successful, $failureCount failed');
-      
+      AppLogger.success(
+          '✅ Processed offline queue: $successCount successful, $failureCount failed');
+
       // Schedule retry for failed notifications
       if (_offlineQueue.isNotEmpty) {
         _scheduleRetry();
       }
-      
     } catch (e) {
       AppLogger.error('❌ Failed to process offline queue', e);
     } finally {
@@ -247,8 +256,9 @@ class NotificationOfflineManager {
     final queueSize = _offlineQueue.length;
     _offlineQueue.clear();
     _cancelRetryTimer();
-    
-    AppLogger.info('🗑️ Cleared offline notification queue ($queueSize notifications removed)');
+
+    AppLogger.info(
+        '🗑️ Cleared offline notification queue ($queueSize notifications removed)');
   }
 
   /// Remove expired notifications from queue
@@ -257,11 +267,12 @@ class NotificationOfflineManager {
       final initialSize = _offlineQueue.length;
       _offlineQueue.removeWhere(_isNotificationExpired);
       final removedCount = initialSize - _offlineQueue.length;
-      
+
       if (removedCount > 0) {
-        AppLogger.info('🧹 Cleaned up $removedCount expired notifications from queue');
+        AppLogger.info(
+            '🧹 Cleaned up $removedCount expired notifications from queue');
       }
-      
+
       return removedCount;
     } catch (e) {
       AppLogger.error('❌ Failed to cleanup expired notifications', e);
@@ -273,17 +284,17 @@ class NotificationOfflineManager {
   Map<String, dynamic> getQueueStatistics() {
     final stats = <String, int>{};
     final now = _clock.now();
-    
+
     for (final notification in _offlineQueue) {
       final category = notification.strategy.category.name;
       stats[category] = (stats[category] ?? 0) + 1;
     }
-    
-    final oldestNotification = _offlineQueue.isEmpty 
-        ? null 
-        : _offlineQueue.reduce((a, b) => 
-            a.queuedAt.isBefore(b.queuedAt) ? a : b);
-    
+
+    final oldestNotification = _offlineQueue.isEmpty
+        ? null
+        : _offlineQueue
+            .reduce((a, b) => a.queuedAt.isBefore(b.queuedAt) ? a : b);
+
     return {
       'total_count': _offlineQueue.length,
       'categories': stats,
@@ -300,14 +311,15 @@ class NotificationOfflineManager {
   /// Limit queue size to prevent memory issues
   void _limitQueueSize() {
     const maxQueueSize = 100;
-    
+
     if (_offlineQueue.length > maxQueueSize) {
       // Remove oldest notifications first
       _offlineQueue.sort((a, b) => a.queuedAt.compareTo(b.queuedAt));
       final removedCount = _offlineQueue.length - maxQueueSize;
       _offlineQueue.removeRange(0, removedCount);
-      
-      AppLogger.warning('⚠️ Offline queue exceeded max size, removed $removedCount oldest notifications');
+
+      AppLogger.warning(
+          '⚠️ Offline queue exceeded max size, removed $removedCount oldest notifications');
     }
   }
 
@@ -320,7 +332,7 @@ class NotificationOfflineManager {
   /// Schedule retry for failed notifications
   void _scheduleRetry() {
     _cancelRetryTimer();
-    
+
     // Retry in 5 minutes
     _retryTimer = Timer(_retryDelay, () {
       if (_isOnline && _offlineQueue.isNotEmpty) {
@@ -339,18 +351,19 @@ class NotificationOfflineManager {
   // ===== LIFECYCLE METHODS =====
 
   /// Set callback for actually sending notifications
-  void setSendNotificationCallback(Future<void> Function(PendingNotification) callback) {
+  void setSendNotificationCallback(
+      Future<void> Function(PendingNotification) callback) {
     _sendNotificationCallback = callback;
   }
 
   /// Dispose resources and cleanup
   void dispose() {
     AppLogger.info('🔔 Disposing NotificationOfflineManager for user $_userId');
-    
+
     _cancelRetryTimer();
     clearQueue();
     _sendNotificationCallback = null;
-    
+
     AppLogger.debug('✅ NotificationOfflineManager disposed');
   }
 }
@@ -406,6 +419,6 @@ class PendingNotification {
   @override
   String toString() {
     return 'PendingNotification(${strategy.category.name}/${strategy.type.name}, '
-           '${targetUserIds.length} users, retry: $retryCount)';
+        '${targetUserIds.length} users, retry: $retryCount)';
   }
 }

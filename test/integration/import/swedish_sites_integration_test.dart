@@ -72,7 +72,8 @@ void main() {
     // ========================================================================
 
     group('ICA.se - Complete Recipe with Enhancements', () {
-      test('should extract complete ICA recipe with all site-specific fields', () async {
+      test('should extract complete ICA recipe with all site-specific fields',
+          () async {
         // Arrange
         final testUrl = 'https://www.ica.se/recept/kottbullar-724853/';
         final icaHtml = IcaTestFixtures.kottbullarComplete;
@@ -87,7 +88,8 @@ void main() {
         expect(result.recipe, isNotNull, reason: 'Recipe should be extracted');
 
         // Assert - Standard recipe fields
-        expect(result.recipe!.title, equals('Klassiska köttbullar med gräddsås'),
+        expect(
+            result.recipe!.title, equals('Klassiska köttbullar med gräddsås'),
             reason: 'Title should match JSON-LD data');
         expect(result.recipe!.description, contains('Saftig köttbullar'),
             reason: 'Description should be extracted');
@@ -191,7 +193,8 @@ void main() {
     // ========================================================================
 
     group('ICA.se - Swedish Text Handling', () {
-      test('should preserve Swedish characters (Å, Ä, Ö) in recipe data', () async {
+      test('should preserve Swedish characters (Å, Ä, Ö) in recipe data',
+          () async {
         // Arrange
         final testUrl = 'https://www.ica.se/recept/artsoppa/';
         final icaHtml = IcaTestFixtures.recipeWithSwedishChars;
@@ -224,7 +227,8 @@ void main() {
     // ========================================================================
 
     group('ICA.se - Quality Validation', () {
-      test('should reject recipe with insufficient data (quality check)', () async {
+      test('should reject recipe with insufficient data (quality check)',
+          () async {
         // Arrange
         final testUrl = 'https://www.ica.se/recept/minimal/';
         final icaHtml = IcaTestFixtures.recipeMinimalData;
@@ -276,7 +280,8 @@ void main() {
     // ========================================================================
 
     group('ICA.se - CSS Fallback When JSON-LD Missing', () {
-      test('should extract recipe using CSS selectors when JSON-LD is missing', () async {
+      test('should extract recipe using CSS selectors when JSON-LD is missing',
+          () async {
         // Arrange
         final testUrl = 'https://www.ica.se/recept/kladdkaka/';
         final icaHtml = IcaTestFixtures.recipeWithoutJsonLd;
@@ -379,7 +384,8 @@ void main() {
 
         for (final instruction in instructions) {
           expect(instruction, equals(instruction.trim()),
-              reason: 'Instruction should not have leading/trailing whitespace');
+              reason:
+                  'Instruction should not have leading/trailing whitespace');
           expect(instruction, isNot(startsWith(' ')),
               reason: 'Instruction should not start with space');
           expect(instruction, isNot(endsWith(' ')),
@@ -419,10 +425,10 @@ void main() {
 
         when(() => mockWebScraper.performExtraction(any(), any()))
             .thenAnswer((_) async => ExtractionResult(
-              success: false,
-              error: 'WebScraper also failed',
-              metadata: {},
-            ));
+                  success: false,
+                  error: 'WebScraper also failed',
+                  metadata: {},
+                ));
 
         // Act
         final result = await urlStrategy.import(testUrl);
@@ -439,7 +445,8 @@ void main() {
     // ========================================================================
 
     group('Arla.se - Complete Recipe with Enhancements', () {
-      test('should extract complete Arla recipe with all site-specific fields', () async {
+      test('should extract complete Arla recipe with all site-specific fields',
+          () async {
         // Arrange
         final testUrl = 'https://www.arla.se/recept/chokladbollar/';
         final arlaHtml = ArlaTestFixtures.chokladbollarComplete;
@@ -462,7 +469,8 @@ void main() {
         // Assert - Ingredients parsed (7 ingredients in fixture)
         expect(result.recipe!.ingredients, hasLength(7),
             reason: 'Should extract all 7 ingredients');
-        expect(result.recipe!.ingredients, contains('100 g smör, rumstempererat'),
+        expect(
+            result.recipe!.ingredients, contains('100 g smör, rumstempererat'),
             reason: 'Should contain butter ingredient');
 
         // Assert - Instructions parsed (4 steps in fixture)
@@ -544,8 +552,7 @@ void main() {
             reason: 'Should extract calories');
         expect(nutrition['protein'], equals(2),
             reason: 'Should extract protein');
-        expect(nutrition['fat'], equals(6),
-            reason: 'Should extract fat');
+        expect(nutrition['fat'], equals(6), reason: 'Should extract fat');
         expect(nutrition['carbohydrates'], equals(15),
             reason: 'Should extract carbohydrates');
       });
@@ -556,7 +563,8 @@ void main() {
     // ========================================================================
 
     group('Arla.se - Swedish Text Handling', () {
-      test('should preserve Swedish characters (Å, Ä, Ö) in recipe data', () async {
+      test('should preserve Swedish characters (Å, Ä, Ö) in recipe data',
+          () async {
         // Arrange
         final testUrl = 'https://www.arla.se/recept/appelpaj/';
         final arlaHtml = ArlaTestFixtures.recipeWithSwedishChars;
@@ -583,7 +591,8 @@ void main() {
     // ========================================================================
 
     group('Arla.se - Quality Validation', () {
-      test('should reject recipe with insufficient data (quality check)', () async {
+      test('should reject recipe with insufficient data (quality check)',
+          () async {
         // Arrange
         final testUrl = 'https://www.arla.se/recept/minimal/';
         final arlaHtml = ArlaTestFixtures.recipeMinimalData;
@@ -635,7 +644,8 @@ void main() {
     // ========================================================================
 
     group('Arla.se - CSS Fallback', () {
-      test('should extract recipe using CSS selectors when JSON-LD is missing', () async {
+      test('should extract recipe using CSS selectors when JSON-LD is missing',
+          () async {
         // Arrange
         final testUrl = 'https://www.arla.se/recept/pannkakor/';
         final arlaHtml = ArlaTestFixtures.recipeWithoutJsonLd;
@@ -713,7 +723,8 @@ void main() {
     // ========================================================================
 
     group('Köket.se - Complete Recipe with Enhancements', () {
-      test('should extract complete Köket recipe with all site-specific fields', () async {
+      test('should extract complete Köket recipe with all site-specific fields',
+          () async {
         // Arrange
         final testUrl = 'https://www.koket.se/recept/klassiska-kottbullar/';
         final koketHtml = KoketTestFixtures.kottbullarProfessional;
@@ -736,11 +747,14 @@ void main() {
         expect(result.recipe!.timeMinutes, equals(45));
 
         // Assert - Metadata indicates site-specific parser used
-        expect(result.metadata, containsPair('extraction_method', 'site_specific'));
+        expect(result.metadata,
+            containsPair('extraction_method', 'site_specific'));
         expect(result.metadata, containsPair('site_parser', 'koket.se'));
       });
 
-      test('should extract Köket-specific enhancements (difficulty, rating, author, tips)', () async {
+      test(
+          'should extract Köket-specific enhancements (difficulty, rating, author, tips)',
+          () async {
         // Arrange
         final testUrl = 'https://www.koket.se/recept/klassiska-kottbullar/';
         final koketHtml = KoketTestFixtures.kottbullarProfessional;
@@ -803,7 +817,8 @@ void main() {
     });
 
     group('Köket.se - User-Generated Content', () {
-      test('should handle user-generated recipe with variable quality', () async {
+      test('should handle user-generated recipe with variable quality',
+          () async {
         // Arrange
         final testUrl = 'https://www.koket.se/recept/mormors-pannkakor/';
         final koketHtml = KoketTestFixtures.userGeneratedRecipe;
@@ -825,7 +840,8 @@ void main() {
         // Assert - User tips extracted
         expect(result.metadata!['cookingTips'], isA<List>());
         final tips = result.metadata!['cookingTips'] as List;
-        expect(tips.any((tip) => tip.toString().contains('socker i smeten')), isTrue);
+        expect(tips.any((tip) => tip.toString().contains('socker i smeten')),
+            isTrue);
       });
     });
 
@@ -851,7 +867,8 @@ void main() {
     });
 
     group('Köket.se - Quality Validation', () {
-      test('should accept recipe with complete metadata (high quality)', () async {
+      test('should accept recipe with complete metadata (high quality)',
+          () async {
         // Arrange
         final testUrl = 'https://www.koket.se/recept/laxpasta/';
         final koketHtml = KoketTestFixtures.recipeCompleteMetadata;
@@ -874,7 +891,8 @@ void main() {
         expect(result.metadata!['cookingTips'], isNotNull);
       });
 
-      test('should reject recipe with minimal data (below threshold)', () async {
+      test('should reject recipe with minimal data (below threshold)',
+          () async {
         // Arrange
         final testUrl = 'https://www.koket.se/recept/smorgAs/';
         final koketHtml = KoketTestFixtures.recipeMinimalData;
@@ -892,7 +910,8 @@ void main() {
     });
 
     group('Köket.se - CSS Fallback', () {
-      test('should extract recipe without JSON-LD using CSS selectors', () async {
+      test('should extract recipe without JSON-LD using CSS selectors',
+          () async {
         // Arrange
         final testUrl = 'https://www.koket.se/recept/kladdkaka/';
         final koketHtml = KoketTestFixtures.recipeWithoutJsonLd;
@@ -913,7 +932,8 @@ void main() {
         expect(result.metadata!['difficulty'], equals('Enkel'));
       });
 
-      test('should fallback to CSS selectors when JSON-LD is malformed', () async {
+      test('should fallback to CSS selectors when JSON-LD is malformed',
+          () async {
         // Arrange
         final testUrl = 'https://www.koket.se/recept/lasagne/';
         final koketHtml = KoketTestFixtures.recipeWithMalformedJson;
@@ -931,7 +951,8 @@ void main() {
     });
 
     group('Köket.se - Formatting Cleanup', () {
-      test('should clean "ca" and "cirka" from portions and ingredients', () async {
+      test('should clean "ca" and "cirka" from portions and ingredients',
+          () async {
         // Arrange
         final testUrl = 'https://www.koket.se/recept/tacos/';
         final koketHtml = KoketTestFixtures.recipeWithKoketQuirks;
@@ -946,7 +967,8 @@ void main() {
 
         // Assert - "ca" and "cirka" removed from portions
         expect(result.recipe!.portions, equals(4),
-            reason: 'Should clean "cirka" from portions ("cirka 4 portioner" → 4)');
+            reason:
+                'Should clean "cirka" from portions ("cirka 4 portioner" → 4)');
 
         // Assert - "ca" and "cirka" removed from ingredients
         expect(result.recipe!.ingredients, contains('500 g köttfärs'),
@@ -968,7 +990,9 @@ void main() {
     // ========================================================================
 
     group('Recept.se - Complete Recipe with Enhancements', () {
-      test('should extract complete Recept recipe with all site-specific fields', () async {
+      test(
+          'should extract complete Recept recipe with all site-specific fields',
+          () async {
         // Arrange
         final testUrl = 'https://www.recept.se/recept/kanelbullar/';
         final receptHtml = ReceptTestFixtures.kanelbullarComplete;
@@ -984,18 +1008,22 @@ void main() {
 
         // Assert - Basic recipe data
         expect(result.recipe!.title, equals('Klassiska kanelbullar'));
-        expect(result.recipe!.description, contains('Traditionella svenska kanelbullar'));
+        expect(result.recipe!.description,
+            contains('Traditionella svenska kanelbullar'));
         expect(result.recipe!.ingredients.length, equals(9));
         expect(result.recipe!.instructions.length, equals(4));
         expect(result.recipe!.portions, equals(25));
         expect(result.recipe!.timeMinutes, equals(45));
 
         // Assert - Metadata indicates site-specific parser used
-        expect(result.metadata, containsPair('extraction_method', 'site_specific'));
+        expect(result.metadata,
+            containsPair('extraction_method', 'site_specific'));
         expect(result.metadata, containsPair('site_parser', 'recept.se'));
       });
 
-      test('should extract Recept-specific enhancements (difficulty, category, cuisine, tips, serving suggestions)', () async {
+      test(
+          'should extract Recept-specific enhancements (difficulty, category, cuisine, tips, serving suggestions)',
+          () async {
         // Arrange
         final testUrl = 'https://www.recept.se/recept/kanelbullar/';
         final receptHtml = ReceptTestFixtures.kanelbullarComplete;
@@ -1060,12 +1088,14 @@ void main() {
         expect(result.recipe!.title, equals('Älggryta med svamp och lingon'));
 
         // Assert - Ingredients with Swedish characters
-        expect(result.recipe!.ingredients, contains('800 g älgkött i tärningar'));
+        expect(
+            result.recipe!.ingredients, contains('800 g älgkött i tärningar'));
       });
     });
 
     group('Recept.se - Quality Validation', () {
-      test('should accept recipe with complete metadata (high quality)', () async {
+      test('should accept recipe with complete metadata (high quality)',
+          () async {
         // Arrange
         final testUrl = 'https://www.recept.se/recept/grillad-lax/';
         final receptHtml = ReceptTestFixtures.recipeCompleteMetadata;
@@ -1090,7 +1120,8 @@ void main() {
         expect(result.metadata!['servingSuggestions'], isNotNull);
       });
 
-      test('should reject recipe with minimal data (below threshold)', () async {
+      test('should reject recipe with minimal data (below threshold)',
+          () async {
         // Arrange
         final testUrl = 'https://www.recept.se/recept/toast/';
         final receptHtml = ReceptTestFixtures.recipeMinimalData;
@@ -1107,7 +1138,8 @@ void main() {
     });
 
     group('Recept.se - CSS Fallback', () {
-      test('should extract recipe without JSON-LD using CSS selectors', () async {
+      test('should extract recipe without JSON-LD using CSS selectors',
+          () async {
         // Arrange
         final testUrl = 'https://www.recept.se/recept/pannkakor/';
         final receptHtml = ReceptTestFixtures.recipeWithoutJsonLd;
@@ -1129,7 +1161,8 @@ void main() {
         expect(result.metadata!['category'], equals('Frukost'));
       });
 
-      test('should fallback to CSS selectors when JSON-LD is malformed', () async {
+      test('should fallback to CSS selectors when JSON-LD is malformed',
+          () async {
         // Arrange
         final testUrl = 'https://www.recept.se/recept/kottfarssas/';
         final receptHtml = ReceptTestFixtures.recipeWithMalformedJson;
@@ -1147,7 +1180,8 @@ void main() {
     });
 
     group('Recept.se - Formatting Cleanup', () {
-      test('should clean "ca" and "cirka" from portions and ingredients', () async {
+      test('should clean "ca" and "cirka" from portions and ingredients',
+          () async {
         // Arrange
         final testUrl = 'https://www.recept.se/recept/potatismos/';
         final receptHtml = ReceptTestFixtures.recipeWithReceptQuirks;
@@ -1162,7 +1196,8 @@ void main() {
 
         // Assert - "ca" and "cirka" removed from portions
         expect(result.recipe!.portions, equals(4),
-            reason: 'Should clean "cirka" from portions ("cirka 4 portioner" → 4)');
+            reason:
+                'Should clean "cirka" from portions ("cirka 4 portioner" → 4)');
 
         // Assert - "ca" and "cirka" removed from ingredients
         expect(result.recipe!.ingredients, contains('800 g potatis'),

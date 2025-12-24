@@ -33,7 +33,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// final friendsRepo = ServiceLocator.get<FriendsRepository>();
 /// // Send friend request
 /// final success = await friendsRepo.sendFriendRequest(
-///   targetUserId, 
+///   targetUserId,
 ///   message: 'Hi! Let\\'s connect on Butlery!'
 /// );
 /// // Accept incoming request
@@ -128,8 +128,7 @@ abstract class FriendsRepository extends Repository<UserProfile> {
   Future<void> saveInvitation(GroupInvitation invitation);
 
   /// Update an invitation document
-  Future<void> updateInvitation(
-      String invitationId, Map<String, dynamic> data);
+  Future<void> updateInvitation(String invitationId, Map<String, dynamic> data);
 
   /// Get document references for invitations that have expired
   Future<List<DocumentReference<Map<String, dynamic>>>> expiredInvitations(
@@ -140,7 +139,8 @@ abstract class FriendsRepository extends Repository<UserProfile> {
       String userId, DateTime cutoffDate);
 
   /// Delete a list of documents
-  Future<void> deleteDocuments(List<DocumentReference<Map<String, dynamic>>> refs);
+  Future<void> deleteDocuments(
+      List<DocumentReference<Map<String, dynamic>>> refs);
 
   /// Update a list of documents with the provided data
   Future<void> updateDocuments(

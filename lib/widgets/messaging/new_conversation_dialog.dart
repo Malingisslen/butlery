@@ -25,10 +25,10 @@ class NewConversationDialog extends StatefulWidget {
 
 class _NewConversationDialogState extends State<NewConversationDialog> {
   final TextEditingController _searchController = TextEditingController();
-  
+
   late final UnifiedFriendsService _friendsService;
   late final MessagingService _messagingService;
-  
+
   List<UserProfile> _friends = [];
   List<UserProfile> _filteredFriends = [];
   final List<String> _selectedFriendIds = [];
@@ -55,7 +55,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
     try {
       // Get friends from the unified friends service
       final friends = _friendsService.friends;
-      
+
       if (mounted) {
         setState(() {
           _friends = friends;
@@ -81,7 +81,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         } else {
           _filteredFriends = _friends.where((friend) {
             return friend.displayName.toLowerCase().contains(query) ||
-                   friend.email.toLowerCase().contains(query);
+                friend.email.toLowerCase().contains(query);
           }).toList();
         }
       });
@@ -134,8 +134,8 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
               child: Text(
                 'Eller välj en vän för direktmeddelande:',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textMedium,
-                ),
+                      color: AppColors.textMedium,
+                    ),
               ),
             ),
             const SizedBox(height: AppDimensions.paddingM),
@@ -200,16 +200,16 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
             Text(
               'Inga vänner ännu',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.textMedium,
-              ),
+                    color: AppColors.textMedium,
+                  ),
             ),
             const SizedBox(height: AppDimensions.paddingS),
             Text(
               'Lägg till vänner först för att starta konversationer.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textLight,
-              ),
+                    color: AppColors.textLight,
+                  ),
             ),
           ],
         ),
@@ -221,8 +221,8 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
         child: Text(
           'Inga vänner matchar din sökning',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppColors.textMedium,
-          ),
+                color: AppColors.textMedium,
+              ),
         ),
       );
     }
@@ -251,7 +251,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
           },
           secondary: CircleAvatar(
             child: Text(
-              friend.displayName.isNotEmpty 
+              friend.displayName.isNotEmpty
                   ? friend.displayName[0].toUpperCase()
                   : '?',
             ),
@@ -274,36 +274,39 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
 
     try {
       String? conversationId;
-      
+
       if (_selectedFriendIds.length == 1) {
         // Create direct conversation with single friend
-        final friend = _friends.firstWhere((f) => f.uid == _selectedFriendIds.first);
+        final friend =
+            _friends.firstWhere((f) => f.uid == _selectedFriendIds.first);
         conversationId = await _messagingService.startDirectConversation(
           otherUserId: friend.uid,
           otherUserDisplayName: friend.displayName,
         );
       } else {
         // Create group conversation with multiple friends
-        final selectedFriends = _friends.where((f) => _selectedFriendIds.contains(f.uid)).toList();
+        final selectedFriends =
+            _friends.where((f) => _selectedFriendIds.contains(f.uid)).toList();
         final participantIds = _selectedFriendIds.toList();
-        
+
         // Build participant maps for group conversation
         final participantDisplayNames = <String, String>{};
         final participantAvatarUrls = <String, String?>{};
-        
+
         for (final friend in selectedFriends) {
           participantDisplayNames[friend.uid] = friend.displayName;
           participantAvatarUrls[friend.uid] = friend.avatarUrl;
         }
-        
+
         conversationId = await _messagingService.createGroupConversation(
           participantIds: participantIds,
           participantDisplayNames: participantDisplayNames,
           participantAvatarUrls: participantAvatarUrls,
-          title: 'Gruppchatt med ${selectedFriends.map((f) => f.displayName).join(', ')}',
+          title:
+              'Gruppchatt med ${selectedFriends.map((f) => f.displayName).join(', ')}',
         );
       }
-      
+
       if (conversationId.isNotEmpty) {
         widget.onConversationCreated(conversationId);
         if (mounted) {

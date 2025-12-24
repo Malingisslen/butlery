@@ -61,7 +61,7 @@
 ///     final data = doc.data() as Map<String, dynamic>;
 ///     return Recipe(
 ///       createdAt: AppTimestamp.fromFirestore(data['created_at']),
-///       lastModified: data['last_modified'] != null 
+///       lastModified: data['last_modified'] != null
 ///         ? AppTimestamp.fromFirestore(data['last_modified'])
 ///         : null,
 ///     );
@@ -138,23 +138,22 @@ class AppTimestamp {
   const AppTimestamp._(this._dateTime);
 
   /// Create AppTimestamp from DateTime
-  factory AppTimestamp.fromDateTime(DateTime dateTime) => 
+  factory AppTimestamp.fromDateTime(DateTime dateTime) =>
       AppTimestamp._(dateTime);
 
   /// Create AppTimestamp from current time
-  factory AppTimestamp.now() => 
-      AppTimestamp._(DateTime.now());
+  factory AppTimestamp.now() => AppTimestamp._(DateTime.now());
 
   /// Create AppTimestamp from Firestore Timestamp (repository layer only)
-  factory AppTimestamp.fromFirestore(Timestamp timestamp) => 
+  factory AppTimestamp.fromFirestore(Timestamp timestamp) =>
       AppTimestamp._(timestamp.toDate());
 
   /// Create AppTimestamp from milliseconds since epoch
-  factory AppTimestamp.fromMilliseconds(int milliseconds) => 
+  factory AppTimestamp.fromMilliseconds(int milliseconds) =>
       AppTimestamp._(DateTime.fromMillisecondsSinceEpoch(milliseconds));
 
   /// Create AppTimestamp from ISO string
-  factory AppTimestamp.fromIsoString(String isoString) => 
+  factory AppTimestamp.fromIsoString(String isoString) =>
       AppTimestamp._(DateTime.parse(isoString));
 
   /// Get underlying DateTime
@@ -180,16 +179,17 @@ class AppTimestamp {
   /// Comparison operators
   bool isBefore(AppTimestamp other) => _dateTime.isBefore(other._dateTime);
   bool isAfter(AppTimestamp other) => _dateTime.isAfter(other._dateTime);
-  bool isAtSameMomentAs(AppTimestamp other) => _dateTime.isAtSameMomentAs(other._dateTime);
+  bool isAtSameMomentAs(AppTimestamp other) =>
+      _dateTime.isAtSameMomentAs(other._dateTime);
 
   /// Duration operations
-  AppTimestamp add(Duration duration) => 
+  AppTimestamp add(Duration duration) =>
       AppTimestamp._(_dateTime.add(duration));
-  
-  AppTimestamp subtract(Duration duration) => 
+
+  AppTimestamp subtract(Duration duration) =>
       AppTimestamp._(_dateTime.subtract(duration));
 
-  Duration difference(AppTimestamp other) => 
+  Duration difference(AppTimestamp other) =>
       _dateTime.difference(other._dateTime);
 
   /// Equality and hash
@@ -207,10 +207,10 @@ class AppTimestamp {
 
   /// JSON serialization support
   Map<String, dynamic> toJson() => {
-    'timestamp': _dateTime.millisecondsSinceEpoch,
-  };
+        'timestamp': _dateTime.millisecondsSinceEpoch,
+      };
 
   /// JSON deserialization support
-  factory AppTimestamp.fromJson(Map<String, dynamic> json) => 
+  factory AppTimestamp.fromJson(Map<String, dynamic> json) =>
       AppTimestamp.fromMilliseconds(json['timestamp'] as int);
 }

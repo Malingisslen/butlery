@@ -28,7 +28,8 @@ void main() {
         expect(find.text('Test Child'), findsOneWidget);
       });
 
-      testWidgets('should render InkWell for tap handling', (WidgetTester tester) async {
+      testWidgets('should render InkWell for tap handling',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -57,7 +58,8 @@ void main() {
         expect(card.elevation, equals(AppDimensions.elevationLow));
       });
 
-      testWidgets('should have default border radius', (WidgetTester tester) async {
+      testWidgets('should have default border radius',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -96,7 +98,8 @@ void main() {
         expect(card.elevation, equals(customElevation));
       });
 
-      testWidgets('should apply custom border radius', (WidgetTester tester) async {
+      testWidgets('should apply custom border radius',
+          (WidgetTester tester) async {
         final customRadius = BorderRadius.circular(16.0);
 
         await tester.pumpWidget(
@@ -115,7 +118,8 @@ void main() {
         expect(shape.borderRadius, equals(customRadius));
       });
 
-      testWidgets('should apply custom border radius to InkWell', (WidgetTester tester) async {
+      testWidgets('should apply custom border radius to InkWell',
+          (WidgetTester tester) async {
         final customRadius = BorderRadius.circular(20.0);
 
         await tester.pumpWidget(
@@ -133,7 +137,8 @@ void main() {
         expect(inkWell.borderRadius, equals(customRadius));
       });
 
-      testWidgets('should handle asymmetric border radius', (WidgetTester tester) async {
+      testWidgets('should handle asymmetric border radius',
+          (WidgetTester tester) async {
         const customRadius = BorderRadius.only(
           topLeft: Radius.circular(8),
           topRight: Radius.circular(8),
@@ -159,7 +164,8 @@ void main() {
     });
 
     group('Interaction', () {
-      testWidgets('should call onTap callback when tapped', (WidgetTester tester) async {
+      testWidgets('should call onTap callback when tapped',
+          (WidgetTester tester) async {
         bool tapped = false;
 
         await tester.pumpWidget(
@@ -203,7 +209,8 @@ void main() {
         await gesture.up();
       });
 
-      testWidgets('should handle null onTap gracefully', (WidgetTester tester) async {
+      testWidgets('should handle null onTap gracefully',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -223,7 +230,8 @@ void main() {
         await tester.pump();
       });
 
-      testWidgets('should respond to multiple taps', (WidgetTester tester) async {
+      testWidgets('should respond to multiple taps',
+          (WidgetTester tester) async {
         int tapCount = 0;
 
         await tester.pumpWidget(
@@ -268,7 +276,8 @@ void main() {
         expect(find.text('Text content'), findsOneWidget);
       });
 
-      testWidgets('should work with complex child widget', (WidgetTester tester) async {
+      testWidgets('should work with complex child widget',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -336,7 +345,8 @@ void main() {
         expect(find.text('Document'), findsOneWidget);
       });
 
-      testWidgets('should work with Container child', (WidgetTester tester) async {
+      testWidgets('should work with Container child',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -419,7 +429,8 @@ void main() {
         expect(find.byType(SelectionCard), findsNWidgets(3));
       });
 
-      testWidgets('should work with Expanded in Row', (WidgetTester tester) async {
+      testWidgets('should work with Expanded in Row',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -448,7 +459,8 @@ void main() {
     });
 
     group('Use Cases', () {
-      testWidgets('should work for friend selection', (WidgetTester tester) async {
+      testWidgets('should work for friend selection',
+          (WidgetTester tester) async {
         bool selected = false;
 
         await tester.pumpWidget(
@@ -486,7 +498,8 @@ void main() {
         expect(find.byIcon(Icons.check_circle), findsOneWidget);
       });
 
-      testWidgets('should work for item selection', (WidgetTester tester) async {
+      testWidgets('should work for item selection',
+          (WidgetTester tester) async {
         String? selectedItem;
 
         await tester.pumpWidget(
@@ -548,7 +561,8 @@ void main() {
         expect(find.text('Dark theme'), findsOneWidget);
       });
 
-      testWidgets('should respect theme elevation', (WidgetTester tester) async {
+      testWidgets('should respect theme elevation',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -585,7 +599,8 @@ void main() {
         expect(find.byType(SelectionCard), findsOneWidget);
       });
 
-      testWidgets('should handle very large child', (WidgetTester tester) async {
+      testWidgets('should handle very large child',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -620,7 +635,8 @@ void main() {
         expect(card.elevation, equals(0));
       });
 
-      testWidgets('should handle very high elevation', (WidgetTester tester) async {
+      testWidgets('should handle very high elevation',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -638,7 +654,8 @@ void main() {
     });
 
     group('Accessibility', () {
-      testWidgets('should be accessible with semantics', (WidgetTester tester) async {
+      testWidgets('should be accessible with semantics',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -653,16 +670,19 @@ void main() {
           ),
         );
 
-        // Verify the text is present and accessible  
+        // Verify the text is present and accessible
         expect(find.text('Item'), findsOneWidget);
         // Verify SelectionCard can contain semantic widgets
-        expect(find.descendant(
-          of: find.byType(SelectionCard),
-          matching: find.byType(Semantics),
-        ), findsWidgets);
+        expect(
+            find.descendant(
+              of: find.byType(SelectionCard),
+              matching: find.byType(Semantics),
+            ),
+            findsWidgets);
       });
 
-      testWidgets('should work with ExcludeSemantics', (WidgetTester tester) async {
+      testWidgets('should work with ExcludeSemantics',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(

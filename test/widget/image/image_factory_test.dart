@@ -22,7 +22,8 @@ void main() {
         expect(find.byType(CircleAvatar), findsOneWidget);
       });
 
-      testWidgets('renders avatar with initials when no image', (WidgetTester tester) async {
+      testWidgets('renders avatar with initials when no image',
+          (WidgetTester tester) async {
         final widget = ImageFactory.avatar(
           displayName: 'Anna Andersson',
         );
@@ -39,7 +40,8 @@ void main() {
         expect(find.byType(CircleAvatar), findsOneWidget);
       });
 
-      testWidgets('shows online indicator when user is online', (WidgetTester tester) async {
+      testWidgets('shows online indicator when user is online',
+          (WidgetTester tester) async {
         final widget = ImageFactory.avatar(
           displayName: 'Test User',
           showStatus: true,
@@ -101,7 +103,8 @@ void main() {
         expect(find.byType(Container), findsWidgets);
       });
 
-      testWidgets('shows placeholder when no image', (WidgetTester tester) async {
+      testWidgets('shows placeholder when no image',
+          (WidgetTester tester) async {
         final widget = ImageFactory.recipeCard(
           imageUrls: [],
         );
@@ -143,7 +146,7 @@ void main() {
 
         await tester.tap(find.byType(InkWell).first);
         await tester.pump();
-        
+
         expect(tapped, isTrue);
       });
     });
@@ -182,7 +185,8 @@ void main() {
         expect(find.byType(Hero), findsOneWidget);
       });
 
-      testWidgets('handles tap to view fullscreen', (WidgetTester tester) async {
+      testWidgets('handles tap to view fullscreen',
+          (WidgetTester tester) async {
         bool tapped = false;
         int tappedIndex = -1;
         final widget = ImageFactory.recipeDetail(
@@ -230,7 +234,8 @@ void main() {
         expect(find.byType(Container), findsWidgets);
       });
 
-      testWidgets('shows add image button when under max', (WidgetTester tester) async {
+      testWidgets('shows add image button when under max',
+          (WidgetTester tester) async {
         final widget = ImageFactory.recipeEdit(
           imageUrls: ['https://example.com/image1.jpg'],
           maxImages: 5,
@@ -248,7 +253,8 @@ void main() {
         expect(find.byIcon(Icons.add_photo_alternate), findsOneWidget);
       });
 
-      testWidgets('hides add button when at max images', (WidgetTester tester) async {
+      testWidgets('hides add button when at max images',
+          (WidgetTester tester) async {
         final widget = ImageFactory.recipeEdit(
           imageUrls: [
             'https://example.com/image1.jpg',
@@ -317,7 +323,8 @@ void main() {
     });
 
     group('Error Handling', () {
-      testWidgets('shows placeholder for empty recipe card', (WidgetTester tester) async {
+      testWidgets('shows placeholder for empty recipe card',
+          (WidgetTester tester) async {
         final widget = ImageFactory.recipeCard(
           imageUrls: [],
         );
@@ -338,7 +345,8 @@ void main() {
         expect(find.byIcon(Icons.restaurant), findsOneWidget);
       });
 
-      testWidgets('handles empty gallery gracefully', (WidgetTester tester) async {
+      testWidgets('handles empty gallery gracefully',
+          (WidgetTester tester) async {
         final widget = ImageFactory.gallery(
           imageUrls: [],
         );
@@ -357,7 +365,8 @@ void main() {
     });
 
     group('Accessibility', () {
-      testWidgets('provides semantic labels for recipe images', (WidgetTester tester) async {
+      testWidgets('provides semantic labels for recipe images',
+          (WidgetTester tester) async {
         final widget = ImageFactory.recipeCard(
           imageUrls: ['https://example.com/recipe.jpg'],
         );
@@ -373,11 +382,13 @@ void main() {
           ),
         );
 
-        final semantics = tester.getSemantics(find.bySemanticsLabel('Receptbild'));
+        final semantics =
+            tester.getSemantics(find.bySemanticsLabel('Receptbild'));
         expect(semantics.label, contains('Receptbild'));
       });
 
-      testWidgets('supports keyboard navigation in edit mode', (WidgetTester tester) async {
+      testWidgets('supports keyboard navigation in edit mode',
+          (WidgetTester tester) async {
         final widget = ImageFactory.recipeEdit(
           imageUrls: ['https://example.com/image.jpg'],
           maxImages: 5,

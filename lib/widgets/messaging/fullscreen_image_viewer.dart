@@ -79,9 +79,10 @@ class FullscreenImageViewer extends StatelessWidget {
                         const SizedBox(height: AppDimensions.spacingM),
                         Text(
                           'Kunde inte ladda bild',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textLight,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: AppColors.textLight,
+                                  ),
                         ),
                       ],
                     ),

@@ -11,12 +11,12 @@ class SortMenuBuilder {
     required bool sortAscending,
   }) {
     return [
-      _buildItem(context, SortCriteria.title, 'Titel', Icons.title,
-          currentSort, sortAscending),
+      _buildItem(context, SortCriteria.title, 'Titel', Icons.title, currentSort,
+          sortAscending),
       _buildItem(context, SortCriteria.time, 'Tid', Icons.access_time,
           currentSort, sortAscending),
-      _buildItem(context, SortCriteria.rating, 'Betyg', Icons.star,
-          currentSort, sortAscending),
+      _buildItem(context, SortCriteria.rating, 'Betyg', Icons.star, currentSort,
+          sortAscending),
       _buildItem(context, SortCriteria.mealType, 'Måltidstyp', Icons.restaurant,
           currentSort, sortAscending),
     ];

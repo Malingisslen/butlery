@@ -29,8 +29,8 @@ class StatusIndicator extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Icon(
-        icon, 
-        color: color, 
+        icon,
+        color: color,
         size: iconSize ?? AppDimensions.iconSizeAction,
       ),
     );

@@ -1,7 +1,7 @@
 // test/widget/image/simple_image_widget_ultrathink_test.dart
 // ULTRATHINK TEST SUITE: SimpleImageWidget - 457 lines of production code
 // Testing 4 widget classes: SimpleImageWidget, NetworkImageWidget, ExpandableImageWidget, LazyImageWidget
-// 
+//
 // ULTRATHINK FOCUS: Factory constructors, image handling, animations, lazy loading, gesture handling, lifecycle management
 
 import 'package:flutter/material.dart';
@@ -25,7 +25,7 @@ void main() {
     setUp(() async {
       await TestServiceLocator.initialize();
     });
-    
+
     tearDown(() async {
       await BaseWidgetTest.teardownWidget();
     });
@@ -35,11 +35,13 @@ void main() {
       required Widget child,
     }) {
       return BaseWidgetTest.createTestApp(
-        locale: const Locale('en', 'US'), // Use English to avoid localization warnings
+        locale: const Locale(
+            'en', 'US'), // Use English to avoid localization warnings
         child: Scaffold(
           body: SizedBox(
             width: 300,
-            height: 300, // ULTRATHINK FIX: Give enough space for LazyImageWidget placeholder
+            height:
+                300, // ULTRATHINK FIX: Give enough space for LazyImageWidget placeholder
             child: child,
           ),
         ),
@@ -51,7 +53,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code basic rendering from lines 110-171
         final config = ImageConfig.cached();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: SimpleImageWidget(
@@ -71,7 +73,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code placeholder logic from lines 114-116, 174-190
         final config = ImageConfig.cached();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: SimpleImageWidget(
@@ -90,7 +92,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code empty string handling from line 114
         final config = ImageConfig.cached();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: SimpleImageWidget(
@@ -170,7 +172,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code Hero wrapping from lines 140-145
         final config = ImageConfig.hero(heroTag: 'unique-hero-tag');
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: SimpleImageWidget(
@@ -182,7 +184,7 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.byType(Hero), findsOneWidget);
-        
+
         final heroWidget = tester.widget<Hero>(find.byType(Hero));
         expect(heroWidget.tag, equals('unique-hero-tag'));
       });
@@ -191,7 +193,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code no Hero wrapping when tag is null
         final config = ImageConfig.cached(); // No heroTag
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: SimpleImageWidget(
@@ -210,9 +212,10 @@ void main() {
       testWidgets('handles tap with haptic feedback enabled',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code tap handling from lines 148-156
-        final config = ImageConfig.cached(); // enableHapticFeedback defaults to true
+        final config =
+            ImageConfig.cached(); // enableHapticFeedback defaults to true
         bool tapped = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: SimpleImageWidget(
@@ -225,19 +228,20 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.byType(GestureDetector), findsOneWidget);
-        
+
         await tester.tap(find.byType(GestureDetector));
         await tester.pump();
-        
+
         expect(tapped, isTrue);
       });
 
       testWidgets('handles long press with haptic feedback enabled',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code long press handling from lines 158-165
-        final config = ImageConfig.cached(); // enableHapticFeedback defaults to true
+        final config =
+            ImageConfig.cached(); // enableHapticFeedback defaults to true
         bool longPressed = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: SimpleImageWidget(
@@ -250,10 +254,10 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.byType(GestureDetector), findsOneWidget);
-        
+
         await tester.longPress(find.byType(GestureDetector));
         await tester.pump();
-        
+
         expect(longPressed, isTrue);
       });
 
@@ -263,7 +267,7 @@ void main() {
         final config = ImageConfig.cached();
         bool tapped = false;
         bool longPressed = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: SimpleImageWidget(
@@ -277,12 +281,12 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.byType(GestureDetector), findsOneWidget);
-        
+
         // Test tap
         await tester.tap(find.byType(GestureDetector));
         await tester.pump();
         expect(tapped, isTrue);
-        
+
         // Test long press
         await tester.longPress(find.byType(GestureDetector));
         await tester.pump();
@@ -293,7 +297,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code no gesture detector from lines 148-168
         final config = ImageConfig.cached();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: SimpleImageWidget(
@@ -315,7 +319,7 @@ void main() {
         // ULTRATHINK: Test production code placeholder with tap from lines 178-187
         final config = ImageConfig.cached();
         bool tapped = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: SimpleImageWidget(
@@ -328,7 +332,7 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.byIcon(Icons.add_photo_alternate_outlined), findsOneWidget);
-        
+
         // Should be tappable
         await tester.tap(find.byIcon(Icons.add_photo_alternate_outlined));
         await tester.pump();
@@ -339,7 +343,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code placeholder without tap from line 188
         final config = ImageConfig.cached();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: SimpleImageWidget(
@@ -354,8 +358,10 @@ void main() {
         // Should show regular placeholder, not add photo icon
         expect(find.byIcon(Icons.add_photo_alternate_outlined), findsNothing);
         // ULTRATHINK FIX: The icon is wrapped in Container, so check for Container structure
-        expect(find.byType(Container), findsWidgets); // ImageComponents.buildPlaceholder creates Container
-        expect(find.byIcon(Icons.restaurant_menu), findsOneWidget); // Default placeholder icon from ImageComponents
+        expect(find.byType(Container),
+            findsWidgets); // ImageComponents.buildPlaceholder creates Container
+        expect(find.byIcon(Icons.restaurant_menu),
+            findsOneWidget); // Default placeholder icon from ImageComponents
       });
 
       testWidgets('uses custom placeholder when provided',
@@ -366,7 +372,7 @@ void main() {
           key: const Key('custom-placeholder'),
           child: const Icon(Icons.star),
         );
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: SimpleImageWidget(
@@ -416,8 +422,9 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
-        final cachedImage = tester.widget<CachedNetworkImage>(find.byType(CachedNetworkImage));
+
+        final cachedImage =
+            tester.widget<CachedNetworkImage>(find.byType(CachedNetworkImage));
         expect(cachedImage.memCacheWidth, equals(300));
         expect(cachedImage.memCacheHeight, equals(200));
       });
@@ -435,8 +442,9 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
-        final cachedImage = tester.widget<CachedNetworkImage>(find.byType(CachedNetworkImage));
+
+        final cachedImage =
+            tester.widget<CachedNetworkImage>(find.byType(CachedNetworkImage));
         expect(cachedImage.memCacheWidth, isNull);
         expect(cachedImage.memCacheHeight, isNull);
       });
@@ -455,7 +463,7 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.byType(ClipRRect), findsOneWidget);
-        
+
         final clipRRect = tester.widget<ClipRRect>(find.byType(ClipRRect));
         expect(clipRRect.borderRadius, equals(BorderRadius.circular(12)));
       });
@@ -464,7 +472,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code tap handling from lines 263-272
         bool tapped = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: NetworkImageWidget(
@@ -477,10 +485,10 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.byType(GestureDetector), findsOneWidget);
-        
+
         await tester.tap(find.byType(GestureDetector));
         await tester.pump();
-        
+
         expect(tapped, isTrue);
       });
 
@@ -488,7 +496,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code long press from lines 273-280
         bool longPressed = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: NetworkImageWidget(
@@ -501,10 +509,10 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.byType(GestureDetector), findsOneWidget);
-        
+
         await tester.longPress(find.byType(GestureDetector));
         await tester.pump();
-        
+
         expect(longPressed, isTrue);
       });
 
@@ -512,7 +520,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code haptic feedback disabled
         bool tapped = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: NetworkImageWidget(
@@ -525,10 +533,10 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.byType(GestureDetector), findsOneWidget);
-        
+
         await tester.tap(find.byType(GestureDetector));
         await tester.pump();
-        
+
         expect(tapped, isTrue);
       });
 
@@ -575,7 +583,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code ExpandableImageWidget from lines 290-384
         final config = ImageConfig.hero();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ExpandableImageWidget(
@@ -587,14 +595,15 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.byType(ExpandableImageWidget), findsOneWidget);
-        expect(find.byType(SimpleImageWidget), findsOneWidget); // Uses SimpleImageWidget internally
+        expect(find.byType(SimpleImageWidget),
+            findsOneWidget); // Uses SimpleImageWidget internally
       });
 
       testWidgets('starts collapsed when initiallyExpanded is false',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code initial state from lines 319, 332-334
         final config = ImageConfig.hero();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ExpandableImageWidget(
@@ -604,12 +613,13 @@ void main() {
             ),
           ),
         );
-        
+
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK FIX: Check for core widget structure rather than animation state
         expect(find.byType(ExpandableImageWidget), findsOneWidget);
-        expect(find.byType(SimpleImageWidget), findsOneWidget); // Uses SimpleImageWidget internally
+        expect(find.byType(SimpleImageWidget),
+            findsOneWidget); // Uses SimpleImageWidget internally
         expect(find.byType(GestureDetector), findsWidgets); // Has tap detection
       });
 
@@ -617,7 +627,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code initial expanded state from lines 319, 332-334
         final config = ImageConfig.hero();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ExpandableImageWidget(
@@ -627,22 +637,22 @@ void main() {
             ),
           ),
         );
-        
+
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK FIX: Check for core widget structure rather than animation details
         expect(find.byType(ExpandableImageWidget), findsOneWidget);
-        expect(find.byType(SimpleImageWidget), findsOneWidget); // Uses SimpleImageWidget internally
+        expect(find.byType(SimpleImageWidget),
+            findsOneWidget); // Uses SimpleImageWidget internally
         expect(find.byType(GestureDetector), findsWidgets); // Has tap detection
       });
 
-      testWidgets('toggles expansion on tap',
-          (WidgetTester tester) async {
+      testWidgets('toggles expansion on tap', (WidgetTester tester) async {
         // ULTRATHINK: Test production code toggle functionality from lines 364-383
         final config = ImageConfig.hero();
         bool expansionChanged = false;
         bool wasExpanded = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ExpandableImageWidget(
@@ -656,19 +666,20 @@ void main() {
             ),
           ),
         );
-        
+
         expect(tester.takeException(), isNull);
-        
+
         // Tap to expand
         await tester.tap(find.byType(GestureDetector).first);
         await tester.pump();
-        
+
         expect(expansionChanged, isTrue);
         expect(wasExpanded, isTrue);
-        
+
         // ULTRATHINK FIX: Verify core functionality rather than animation internals
         expect(find.byType(ExpandableImageWidget), findsOneWidget);
-        expect(find.byType(SimpleImageWidget), findsOneWidget); // Still uses SimpleImageWidget internally
+        expect(find.byType(SimpleImageWidget),
+            findsOneWidget); // Still uses SimpleImageWidget internally
       });
 
       testWidgets('calls onTap callback in addition to toggle',
@@ -676,7 +687,7 @@ void main() {
         // ULTRATHINK: Test production code onTap callback from line 382
         final config = ImageConfig.hero();
         bool tapCalled = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ExpandableImageWidget(
@@ -686,12 +697,12 @@ void main() {
             ),
           ),
         );
-        
+
         expect(tester.takeException(), isNull);
-        
+
         await tester.tap(find.byType(GestureDetector).first);
         await tester.pump();
-        
+
         expect(tapCalled, isTrue);
         expect(find.byType(ExpandableImageWidget), findsOneWidget);
       });
@@ -700,7 +711,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code animation from lines 320-330
         final config = ImageConfig.hero();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ExpandableImageWidget(
@@ -710,17 +721,18 @@ void main() {
             ),
           ),
         );
-        
+
         expect(tester.takeException(), isNull);
         expect(find.byType(ExpandableImageWidget), findsOneWidget);
-        
+
         // Start expansion
         await tester.tap(find.byType(GestureDetector).first);
         await tester.pump();
-        
+
         // ULTRATHINK FIX: Test core functionality rather than animation timing
         expect(find.byType(ExpandableImageWidget), findsOneWidget);
-        expect(find.byType(SimpleImageWidget), findsOneWidget); // Still uses SimpleImageWidget internally
+        expect(find.byType(SimpleImageWidget),
+            findsOneWidget); // Still uses SimpleImageWidget internally
         expect(tester.takeException(), isNull); // No errors during animation
       });
     });
@@ -730,7 +742,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code autoLoad from lines 410-413
         final config = ImageConfig.cached();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: LazyImageWidget(
@@ -743,14 +755,15 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.byType(LazyImageWidget), findsOneWidget);
-        expect(find.byType(SimpleImageWidget), findsOneWidget); // Should load immediately
+        expect(find.byType(SimpleImageWidget),
+            findsOneWidget); // Should load immediately
       });
 
       testWidgets('shows placeholder when autoLoad is disabled',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code manual load from lines 418-434
         final config = ImageConfig.cached();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: LazyImageWidget(
@@ -763,16 +776,18 @@ void main() {
 
         expect(tester.takeException(), isNull);
         expect(find.byType(LazyImageWidget), findsOneWidget);
-        expect(find.byIcon(Icons.image_outlined), findsOneWidget); // Placeholder icon
+        expect(find.byIcon(Icons.image_outlined),
+            findsOneWidget); // Placeholder icon
         expect(find.text('Tap to load'), findsOneWidget);
-        expect(find.byType(SimpleImageWidget), findsNothing); // Should not load yet
+        expect(find.byType(SimpleImageWidget),
+            findsNothing); // Should not load yet
       });
 
       testWidgets('loads image when tapping placeholder',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code manual loading from lines 445-454
         final config = ImageConfig.cached();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: LazyImageWidget(
@@ -789,12 +804,12 @@ void main() {
         expect(find.byIcon(Icons.image_outlined), findsOneWidget);
         expect(find.text('Tap to load'), findsOneWidget);
         expect(find.byType(SimpleImageWidget), findsNothing);
-        
+
         // Tap to load
         await tester.tap(find.byType(GestureDetector).first);
         await tester.pump();
-        
-        // ULTRATHINK FIX: After loading, should show SimpleImageWidget 
+
+        // ULTRATHINK FIX: After loading, should show SimpleImageWidget
         expect(find.byType(SimpleImageWidget), findsOneWidget);
         // Placeholder should be replaced by image
         expect(find.byIcon(Icons.image_outlined), findsNothing);
@@ -806,7 +821,7 @@ void main() {
         // ULTRATHINK: Test production code onTap forwarding from line 440
         final config = ImageConfig.cached();
         bool imageTapped = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: LazyImageWidget(
@@ -822,11 +837,11 @@ void main() {
 
         // Should show SimpleImageWidget with onTap since autoLoad is true
         expect(find.byType(SimpleImageWidget), findsOneWidget);
-        
+
         // ULTRATHINK FIX: Tap through GestureDetector rather than specific widget
         await tester.tap(find.byType(GestureDetector).first);
         await tester.pump();
-        
+
         expect(imageTapped, isTrue);
       });
 
@@ -836,7 +851,7 @@ void main() {
         // ULTRATHINK FIX: Avoid ImageSize.large as it returns infinite dimensions causing toInt() error
         final config1 = ImageConfig.cached(size: ImageSize.small);
         final config2 = ImageConfig.cached(size: ImageSize.medium);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: LazyImageWidget(
@@ -847,9 +862,10 @@ void main() {
           ),
         );
 
-        await tester.pump(); // ULTRATHINK FIX: Replace pumpAndSettle to avoid timeout
+        await tester
+            .pump(); // ULTRATHINK FIX: Replace pumpAndSettle to avoid timeout
         expect(tester.takeException(), isNull);
-        
+
         // Change configuration
         await tester.pumpWidget(
           createTestWidget(
@@ -861,7 +877,8 @@ void main() {
           ),
         );
 
-        await tester.pump(); // ULTRATHINK FIX: Replace pumpAndSettle to avoid timeout
+        await tester
+            .pump(); // ULTRATHINK FIX: Replace pumpAndSettle to avoid timeout
         expect(tester.takeException(), isNull);
       });
     });
@@ -887,7 +904,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code URL handling
         final longUrl = 'https://example.com/${'a' * 1000}.jpg';
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: SimpleImageWidget(
@@ -905,7 +922,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code rapid toggling
         final config = ImageConfig.hero();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: ExpandableImageWidget(
@@ -915,8 +932,9 @@ void main() {
             ),
           ),
         );
-        
-        await tester.pump(); // ULTRATHINK FIX: Replace pumpAndSettle to avoid timeout
+
+        await tester
+            .pump(); // ULTRATHINK FIX: Replace pumpAndSettle to avoid timeout
 
         // Rapid taps
         await tester.tap(find.byType(GestureDetector));
@@ -924,7 +942,8 @@ void main() {
         await tester.tap(find.byType(GestureDetector));
         await tester.pump(const Duration(milliseconds: 50));
         await tester.tap(find.byType(GestureDetector));
-        await tester.pump(); // ULTRATHINK FIX: Replace pumpAndSettle to avoid timeout
+        await tester
+            .pump(); // ULTRATHINK FIX: Replace pumpAndSettle to avoid timeout
 
         expect(tester.takeException(), isNull);
         expect(find.byType(ExpandableImageWidget), findsOneWidget);

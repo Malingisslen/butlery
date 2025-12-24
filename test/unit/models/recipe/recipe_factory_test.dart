@@ -118,7 +118,8 @@ void main() {
         expect(recipe.socialData!.ownerId, equals('owner_123'));
         expect(recipe.socialData!.ownerDisplayName, equals('Anna Andersson'));
         expect(recipe.socialData!.allowGuestViewing, isFalse);
-        expect(recipe.socialData!.allowMemberInvites, isFalse); // Shared don't allow invites
+        expect(recipe.socialData!.allowMemberInvites,
+            isFalse); // Shared don't allow invites
       });
 
       test('should create shared recipe with default guest viewing', () {
@@ -164,7 +165,8 @@ void main() {
         expect(recipe.socialData!.memberPermissions, equals(memberPermissions));
         expect(recipe.socialData!.allowGuestViewing, isTrue);
         expect(recipe.socialData!.allowMemberInvites, isFalse);
-        expect(recipe.socialData!.descriptionCollaborative, equals('Let\'s cook together!'));
+        expect(recipe.socialData!.descriptionCollaborative,
+            equals('Let\'s cook together!'));
       });
 
       test('should create collaborative recipe with default settings', () {
@@ -209,12 +211,16 @@ void main() {
 
         expect(recipe.type, equals(RecipeType.realtime));
         expect(recipe.core.isPublic, isTrue);
-        expect(recipe.socialData!.allowGuestViewing, isTrue); // Default for realtime
-        expect(recipe.socialData!.allowMemberInvites, isTrue); // Default for realtime
+        expect(recipe.socialData!.allowGuestViewing,
+            isTrue); // Default for realtime
+        expect(recipe.socialData!.allowMemberInvites,
+            isTrue); // Default for realtime
         expect(recipe.realtimeData, isNotNull);
         expect(recipe.realtimeData!.activeEditorIds, equals(activeEditors));
-        expect(recipe.realtimeData!.lastEditedByUserId, equals('realtime_owner'));
-        expect(recipe.realtimeData!.lastEditedByDisplayName, equals('Realtime Owner'));
+        expect(
+            recipe.realtimeData!.lastEditedByUserId, equals('realtime_owner'));
+        expect(recipe.realtimeData!.lastEditedByDisplayName,
+            equals('Realtime Owner'));
         expect(recipe.realtimeData!.editCount, equals(0));
         expect(recipe.realtimeData!.isActive, isTrue);
       });
@@ -311,7 +317,8 @@ void main() {
         expect(collabRecipe.socialData!.memberPermissions, equals(members));
         expect(collabRecipe.socialData!.allowGuestViewing, isTrue);
         expect(collabRecipe.socialData!.allowMemberInvites, isFalse);
-        expect(collabRecipe.socialData!.descriptionCollaborative, equals('Let\'s collaborate!'));
+        expect(collabRecipe.socialData!.descriptionCollaborative,
+            equals('Let\'s collaborate!'));
       });
 
       test('should throw when converting non-personal to collaborative', () {
@@ -355,8 +362,10 @@ void main() {
         expect(realtimeRecipe.core, equals(collabRecipe.core));
         expect(realtimeRecipe.socialData, equals(collabRecipe.socialData));
         expect(realtimeRecipe.realtimeData, isNotNull);
-        expect(realtimeRecipe.realtimeData!.activeEditorIds, equals(['editor_1', 'editor_2']));
-        expect(realtimeRecipe.realtimeData!.lastEditedByUserId, equals('collab_owner'));
+        expect(realtimeRecipe.realtimeData!.activeEditorIds,
+            equals(['editor_1', 'editor_2']));
+        expect(realtimeRecipe.realtimeData!.lastEditedByUserId,
+            equals('collab_owner'));
         expect(realtimeRecipe.realtimeData!.editCount, equals(0));
         expect(realtimeRecipe.realtimeData!.isActive, isTrue);
       });
@@ -389,11 +398,13 @@ void main() {
         );
 
         expect(personalCopy.type, equals(RecipeType.personal));
-        expect(personalCopy.core.title, equals('Shared Recipe (från Anna Andersson)'));
+        expect(personalCopy.core.title,
+            equals('Shared Recipe (från Anna Andersson)'));
         expect(personalCopy.core.createdBy, equals('user_456'));
         expect(personalCopy.core.isPublic, isFalse);
         expect(personalCopy.core.ingredients, equals(['Pasta', 'Tomater']));
-        expect(personalCopy.core.sourceUrl, equals('Kopierat från: Shared Recipe'));
+        expect(personalCopy.core.sourceUrl,
+            equals('Kopierat från: Shared Recipe'));
         expect(personalCopy.socialData, isNull);
       });
 
@@ -408,7 +419,8 @@ void main() {
         expect(personalCopy.core.sourceUrl, equals('Kopierat från: My Recipe'));
       });
 
-      test('should create personal copy from recipe without owner display name', () {
+      test('should create personal copy from recipe without owner display name',
+          () {
         final simpleRecipe = RecipeFactory.createPersonal(
           title: 'Simple',
           description: 'Desc',
@@ -665,11 +677,13 @@ void main() {
         );
 
         expect(sharedRecipe.offlineData, isNotNull);
-        expect(sharedRecipe.offlineData!.lastSyncedAt, equals(DateTime(2025, 1, 1)));
+        expect(sharedRecipe.offlineData!.lastSyncedAt,
+            equals(DateTime(2025, 1, 1)));
         expect(sharedRecipe.offlineData!.isModifiedOffline, isFalse);
       });
 
-      test('should handle recipes with null tags when creating personal copy', () {
+      test('should handle recipes with null tags when creating personal copy',
+          () {
         final recipe = RecipeFactory.createPersonal(
           title: 'No Tags',
           description: 'Recipe without tags',
@@ -689,7 +703,7 @@ void main() {
 
       test('should create valid timestamps for realtime recipes', () {
         final before = DateTime.now();
-        
+
         final recipe = RecipeFactory.createRealtime(
           title: 'Realtime',
           description: 'Test',
@@ -701,12 +715,16 @@ void main() {
         );
 
         final after = DateTime.now();
-        
+
         expect(recipe.realtimeData!.lastEditedAt, isNotNull);
-        expect(recipe.realtimeData!.lastEditedAt!.isAfter(before) || 
-               recipe.realtimeData!.lastEditedAt!.isAtSameMomentAs(before), isTrue);
-        expect(recipe.realtimeData!.lastEditedAt!.isBefore(after) || 
-               recipe.realtimeData!.lastEditedAt!.isAtSameMomentAs(after), isTrue);
+        expect(
+            recipe.realtimeData!.lastEditedAt!.isAfter(before) ||
+                recipe.realtimeData!.lastEditedAt!.isAtSameMomentAs(before),
+            isTrue);
+        expect(
+            recipe.realtimeData!.lastEditedAt!.isBefore(after) ||
+                recipe.realtimeData!.lastEditedAt!.isAtSameMomentAs(after),
+            isTrue);
       });
     });
   });

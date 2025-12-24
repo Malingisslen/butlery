@@ -31,22 +31,22 @@ void main() {
     late MockCommentsRepository mockCommentsRepository;
     late MockRatingsRepository mockRatingsRepository;
     late MockNotificationsRepository mockNotificationsRepository;
-    
+
     setUpAll(() async {
       // Initialize test infrastructure once for all tests
       await BaseUnitTest.setupUnit();
     });
-    
+
     setUp(() async {
       // Initialize service locator and mocks for each test
       await TestServiceLocator.initialize();
-      
+
       // Create mocks directly (TestServiceLocator doesn't expose these as static properties)
       mockRecipeRepository = MockRecipeRepository();
       mockCommentsRepository = MockCommentsRepository();
       mockRatingsRepository = MockRatingsRepository();
       mockNotificationsRepository = MockNotificationsRepository();
-      
+
       // Create adapter with mocked dependencies
       adapter = RecipeServiceAdapter(
         recipeRepository: mockRecipeRepository,
@@ -55,18 +55,18 @@ void main() {
         notificationsRepository: mockNotificationsRepository,
       );
     });
-    
+
     tearDown(() async {
       // Reset mocks and service locator after each test
       BaseUnitTest.resetMocks();
       await TestServiceLocator.reset();
     });
-    
+
     tearDownAll(() async {
       // Final cleanup after all tests
       await BaseUnitTest.teardownUnit();
     });
-    
+
     group('Recipe Operations', () {
       test('should create recipe successfully', () async {
         // Arrange
@@ -75,105 +75,103 @@ void main() {
           title: 'Test Recipe',
           createdBy: 'user-123',
         );
-        
+
         when(() => mockRecipeRepository.create(any()))
             .thenAnswer((_) async => recipe);
-        
+
         // Act
         final result = await adapter.createRecipe(recipe);
-        
+
         // Assert
         expect(result, equals('recipe-1'));
         verify(() => mockRecipeRepository.create(recipe)).called(1);
       });
-      
+
       test('should return null when recipe creation fails', () async {
         // Arrange
         final recipe = RecipeFactory.buildPersonal();
-        
+
         when(() => mockRecipeRepository.create(any()))
             .thenThrow(Exception('Create failed'));
-        
+
         // Act
         final result = await adapter.createRecipe(recipe);
-        
+
         // Assert
         expect(result, isNull);
       });
-      
+
       test('should update recipe successfully', () async {
         // Arrange
         final recipe = RecipeFactory.buildPersonal(
           id: 'recipe-1',
           title: 'Updated Recipe',
         );
-        
-        when(() => mockRecipeRepository.update(any()))
-            .thenAnswer((_) async {});
-        
+
+        when(() => mockRecipeRepository.update(any())).thenAnswer((_) async {});
+
         // Act
         final result = await adapter.updateRecipe(recipe);
-        
+
         // Assert
         expect(result, isTrue);
         verify(() => mockRecipeRepository.update(recipe)).called(1);
       });
-      
+
       test('should return false when recipe update fails', () async {
         // Arrange
         final recipe = RecipeFactory.buildPersonal();
-        
+
         when(() => mockRecipeRepository.update(any()))
             .thenThrow(Exception('Update failed'));
-        
+
         // Act
         final result = await adapter.updateRecipe(recipe);
-        
+
         // Assert
         expect(result, isFalse);
       });
-      
+
       test('should delete recipe successfully', () async {
         // Arrange
         const recipeId = 'recipe-1';
-        
-        when(() => mockRecipeRepository.delete(any()))
-            .thenAnswer((_) async {});
-        
+
+        when(() => mockRecipeRepository.delete(any())).thenAnswer((_) async {});
+
         // Act
         final result = await adapter.deleteRecipe(recipeId);
-        
+
         // Assert
         expect(result, isTrue);
         verify(() => mockRecipeRepository.delete(recipeId)).called(1);
       });
-      
+
       test('should return false when recipe deletion fails', () async {
         // Arrange
         const recipeId = 'recipe-1';
-        
+
         when(() => mockRecipeRepository.delete(any()))
             .thenThrow(Exception('Delete failed'));
-        
+
         // Act
         final result = await adapter.deleteRecipe(recipeId);
-        
+
         // Assert
         expect(result, isFalse);
       });
-      
+
       test('should get recipe by ID', () async {
         // Arrange
         const recipeId = 'recipe-1';
-        
+
         // Act
         final result = await adapter.getRecipeById(recipeId);
-        
+
         // Assert
         // Currently returns null as getById is not implemented
         expect(result, isNull);
       });
-      
+
       test('should get recipes for user', () async {
         // Arrange
         const userId = 'user-123';
@@ -181,32 +179,33 @@ void main() {
           RecipeFactory.buildPersonal(id: 'recipe-1'),
           RecipeFactory.buildPersonal(id: 'recipe-2'),
         ];
-        
+
         when(() => mockRecipeRepository.fetchUserRecipes(any()))
             .thenAnswer((_) async => recipes);
-        
+
         // Act
         final result = await adapter.getRecipesForUser(userId);
-        
+
         // Assert
         expect(result, equals(recipes));
         verify(() => mockRecipeRepository.fetchUserRecipes(userId)).called(1);
       });
-      
-      test('should return empty list when fetching user recipes fails', () async {
+
+      test('should return empty list when fetching user recipes fails',
+          () async {
         // Arrange
         const userId = 'user-123';
-        
+
         when(() => mockRecipeRepository.fetchUserRecipes(any()))
             .thenThrow(Exception('Fetch failed'));
-        
+
         // Act
         final result = await adapter.getRecipesForUser(userId);
-        
+
         // Assert
         expect(result, isEmpty);
       });
-      
+
       test('should search recipes', () async {
         // Arrange
         const query = 'pasta';
@@ -214,33 +213,33 @@ void main() {
           RecipeFactory.buildPersonal(id: 'recipe-1', title: 'Pasta Carbonara'),
           RecipeFactory.buildPersonal(id: 'recipe-2', title: 'Pasta Bolognese'),
         ];
-        
+
         when(() => mockRecipeRepository.searchRecipes(any()))
             .thenAnswer((_) async => recipes);
-        
+
         // Act
         final result = await adapter.searchRecipes(query);
-        
+
         // Assert
         expect(result, equals(recipes));
         verify(() => mockRecipeRepository.searchRecipes(query)).called(1);
       });
-      
+
       test('should return empty list when search fails', () async {
         // Arrange
         const query = 'pasta';
-        
+
         when(() => mockRecipeRepository.searchRecipes(any()))
             .thenThrow(Exception('Search failed'));
-        
+
         // Act
         final result = await adapter.searchRecipes(query);
-        
+
         // Assert
         expect(result, isEmpty);
       });
     });
-    
+
     group('Comment Operations', () {
       test('should add comment successfully', () async {
         // Arrange
@@ -248,7 +247,7 @@ void main() {
         const userId = 'user-123';
         const content = 'Great recipe!';
         const parentCommentId = 'parent-1';
-        
+
         final comment = RecipeComment(
           id: 'comment-1',
           recipeId: recipeId,
@@ -257,14 +256,14 @@ void main() {
           text: content,
           createdAt: DateTime.now(),
         );
-        
+
         when(() => mockCommentsRepository.addComment(
-          recipeId: any(named: 'recipeId'),
-          userId: any(named: 'userId'),
-          content: any(named: 'content'),
-          parentCommentId: any(named: 'parentCommentId'),
-        )).thenAnswer((_) async => comment);
-        
+              recipeId: any(named: 'recipeId'),
+              userId: any(named: 'userId'),
+              content: any(named: 'content'),
+              parentCommentId: any(named: 'parentCommentId'),
+            )).thenAnswer((_) async => comment);
+
         // Act
         final result = await adapter.addComment(
           recipeId: recipeId,
@@ -272,41 +271,41 @@ void main() {
           content: content,
           parentCommentId: parentCommentId,
         );
-        
+
         // Assert
         expect(result, equals(comment));
         verify(() => mockCommentsRepository.addComment(
-          recipeId: recipeId,
-          userId: userId,
-          content: content,
-          parentCommentId: parentCommentId,
-        )).called(1);
+              recipeId: recipeId,
+              userId: userId,
+              content: content,
+              parentCommentId: parentCommentId,
+            )).called(1);
       });
-      
+
       test('should return null when adding comment fails', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const userId = 'user-123';
         const content = 'Great recipe!';
-        
+
         when(() => mockCommentsRepository.addComment(
-          recipeId: any(named: 'recipeId'),
-          userId: any(named: 'userId'),
-          content: any(named: 'content'),
-          parentCommentId: any(named: 'parentCommentId'),
-        )).thenThrow(Exception('Add comment failed'));
-        
+              recipeId: any(named: 'recipeId'),
+              userId: any(named: 'userId'),
+              content: any(named: 'content'),
+              parentCommentId: any(named: 'parentCommentId'),
+            )).thenThrow(Exception('Add comment failed'));
+
         // Act
         final result = await adapter.addComment(
           recipeId: recipeId,
           userId: userId,
           content: content,
         );
-        
+
         // Assert
         expect(result, isNull);
       });
-      
+
       test('should get comments for recipe', () async {
         // Arrange
         const recipeId = 'recipe-1';
@@ -328,33 +327,34 @@ void main() {
             createdAt: DateTime.now(),
           ),
         ];
-        
+
         when(() => mockCommentsRepository.getCommentsForRecipe(any()))
             .thenAnswer((_) async => comments);
-        
+
         // Act
         final result = await adapter.getCommentsForRecipe(recipeId);
-        
+
         // Assert
         expect(result, equals(comments));
-        verify(() => mockCommentsRepository.getCommentsForRecipe(recipeId)).called(1);
+        verify(() => mockCommentsRepository.getCommentsForRecipe(recipeId))
+            .called(1);
       });
-      
+
       test('should return empty list when getting comments fails', () async {
         // Arrange
         const recipeId = 'recipe-1';
-        
+
         when(() => mockCommentsRepository.getCommentsForRecipe(any()))
             .thenThrow(Exception('Get comments failed'));
-        
+
         // Act
         final result = await adapter.getCommentsForRecipe(recipeId);
-        
+
         // Assert
         expect(result, isEmpty);
       });
     });
-    
+
     group('Rating Operations', () {
       test('should rate recipe successfully', () async {
         // Arrange
@@ -362,14 +362,14 @@ void main() {
         const userId = 'user-123';
         const rating = 4.5;
         const review = 'Excellent recipe!';
-        
+
         when(() => mockRatingsRepository.rateRecipe(
-          recipeId: any(named: 'recipeId'),
-          userId: any(named: 'userId'),
-          rating: any(named: 'rating'),
-          review: any(named: 'review'),
-        )).thenAnswer((_) async {});
-        
+              recipeId: any(named: 'recipeId'),
+              userId: any(named: 'userId'),
+              rating: any(named: 'rating'),
+              review: any(named: 'review'),
+            )).thenAnswer((_) async {});
+
         // Act
         final result = await adapter.rateRecipe(
           recipeId: recipeId,
@@ -377,41 +377,41 @@ void main() {
           rating: rating,
           review: review,
         );
-        
+
         // Assert
         expect(result, isTrue);
         verify(() => mockRatingsRepository.rateRecipe(
-          recipeId: recipeId,
-          userId: userId,
-          rating: rating,
-          review: review,
-        )).called(1);
+              recipeId: recipeId,
+              userId: userId,
+              rating: rating,
+              review: review,
+            )).called(1);
       });
-      
+
       test('should return false when rating fails', () async {
         // Arrange
         const recipeId = 'recipe-1';
         const userId = 'user-123';
         const rating = 4.5;
-        
+
         when(() => mockRatingsRepository.rateRecipe(
-          recipeId: any(named: 'recipeId'),
-          userId: any(named: 'userId'),
-          rating: any(named: 'rating'),
-          review: any(named: 'review'),
-        )).thenThrow(Exception('Rate failed'));
-        
+              recipeId: any(named: 'recipeId'),
+              userId: any(named: 'userId'),
+              rating: any(named: 'rating'),
+              review: any(named: 'review'),
+            )).thenThrow(Exception('Rate failed'));
+
         // Act
         final result = await adapter.rateRecipe(
           recipeId: recipeId,
           userId: userId,
           rating: rating,
         );
-        
+
         // Assert
         expect(result, isFalse);
       });
-      
+
       test('should get rating statistics', () async {
         // Arrange
         const recipeId = 'recipe-1';
@@ -422,36 +422,39 @@ void main() {
           ratingDistribution: {1: 2, 2: 3, 3: 10, 4: 35, 5: 50},
           lastRatedAt: DateTime.now(),
         );
-        
+
         when(() => mockRatingsRepository.getRatingStatistics(any()))
             .thenAnswer((_) async => statistics);
-        
+
         // Act
         final result = await adapter.getRatingStatistics(recipeId);
-        
+
         // Assert
         expect(result, equals(statistics));
-        verify(() => mockRatingsRepository.getRatingStatistics(recipeId)).called(1);
+        verify(() => mockRatingsRepository.getRatingStatistics(recipeId))
+            .called(1);
       });
-      
-      test('should return default statistics when getting statistics fails', () async {
+
+      test('should return default statistics when getting statistics fails',
+          () async {
         // Arrange
         const recipeId = 'recipe-1';
-        
+
         when(() => mockRatingsRepository.getRatingStatistics(any()))
             .thenThrow(Exception('Get statistics failed'));
-        
+
         // Act
         final result = await adapter.getRatingStatistics(recipeId);
-        
+
         // Assert
         expect(result.recipeId, equals(recipeId));
         expect(result.averageRating, equals(0.0));
         expect(result.totalRatings, equals(0));
-        expect(result.ratingDistribution, equals({1: 0, 2: 0, 3: 0, 4: 0, 5: 0}));
+        expect(
+            result.ratingDistribution, equals({1: 0, 2: 0, 3: 0, 4: 0, 5: 0}));
       });
     });
-    
+
     group('Notification Operations', () {
       test('should send notification successfully', () async {
         // Arrange
@@ -460,15 +463,15 @@ void main() {
         const title = 'New Recipe';
         const body = 'Check out this new recipe!';
         final data = {'recipeId': 'recipe-1'};
-        
+
         when(() => mockNotificationsRepository.sendNotification(
-          userId: any(named: 'userId'),
-          type: any(named: 'type'),
-          title: any(named: 'title'),
-          body: any(named: 'body'),
-          data: any(named: 'data'),
-        )).thenAnswer((_) async {});
-        
+              userId: any(named: 'userId'),
+              type: any(named: 'type'),
+              title: any(named: 'title'),
+              body: any(named: 'body'),
+              data: any(named: 'data'),
+            )).thenAnswer((_) async {});
+
         // Act
         await adapter.sendNotification(
           userId: userId,
@@ -477,32 +480,32 @@ void main() {
           body: body,
           data: data,
         );
-        
+
         // Assert
         verify(() => mockNotificationsRepository.sendNotification(
-          userId: userId,
-          type: type,
-          title: title,
-          body: body,
-          data: data,
-        )).called(1);
+              userId: userId,
+              type: type,
+              title: title,
+              body: body,
+              data: data,
+            )).called(1);
       });
-      
+
       test('should handle notification sending errors', () async {
         // Arrange
         const userId = 'user-123';
         const type = NotificationType.immediate;
         const title = 'New Recipe';
         const body = 'Check out this new recipe!';
-        
+
         when(() => mockNotificationsRepository.sendNotification(
-          userId: any(named: 'userId'),
-          type: any(named: 'type'),
-          title: any(named: 'title'),
-          body: any(named: 'body'),
-          data: any(named: 'data'),
-        )).thenThrow(Exception('Send failed'));
-        
+              userId: any(named: 'userId'),
+              type: any(named: 'type'),
+              title: any(named: 'title'),
+              body: any(named: 'body'),
+              data: any(named: 'data'),
+            )).thenThrow(Exception('Send failed'));
+
         // Act & Assert - Should not throw
         await expectLater(
           adapter.sendNotification(
@@ -515,7 +518,7 @@ void main() {
         );
       });
     });
-    
+
     group('Batch Operations', () {
       test('should get bulk rating statistics', () async {
         // Arrange
@@ -534,33 +537,34 @@ void main() {
             ratingDistribution: {1: 2, 2: 3, 3: 5, 4: 10, 5: 10},
           ),
         };
-        
+
         when(() => mockRatingsRepository.getBulkRatingStatistics(any()))
             .thenAnswer((_) async => statistics);
-        
+
         // Act
         final result = await adapter.getBulkRatingStatistics(recipeIds);
-        
+
         // Assert
         expect(result, equals(statistics));
-        verify(() => mockRatingsRepository.getBulkRatingStatistics(recipeIds)).called(1);
+        verify(() => mockRatingsRepository.getBulkRatingStatistics(recipeIds))
+            .called(1);
       });
-      
+
       test('should return empty map when bulk statistics fails', () async {
         // Arrange
         final recipeIds = ['recipe-1', 'recipe-2'];
-        
+
         when(() => mockRatingsRepository.getBulkRatingStatistics(any()))
             .thenThrow(Exception('Bulk fetch failed'));
-        
+
         // Act
         final result = await adapter.getBulkRatingStatistics(recipeIds);
-        
+
         // Assert
         expect(result, isEmpty);
       });
     });
-    
+
     group('Stream Operations', () {
       test('should get comments stream', () async {
         // Arrange
@@ -575,19 +579,20 @@ void main() {
             createdAt: DateTime.now(),
           ),
         ];
-        
+
         when(() => mockCommentsRepository.getCommentsStream(any()))
             .thenAnswer((_) => Stream.value(comments));
-        
+
         // Act
         final stream = adapter.getCommentsStream(recipeId);
-        
+
         // Assert
         final result = await stream.first;
         expect(result, equals(comments));
-        verify(() => mockCommentsRepository.getCommentsStream(recipeId)).called(1);
+        verify(() => mockCommentsRepository.getCommentsStream(recipeId))
+            .called(1);
       });
-      
+
       test('should get rating statistics stream', () async {
         // Arrange
         const recipeId = 'recipe-1';
@@ -597,17 +602,18 @@ void main() {
           totalRatings: 42,
           ratingDistribution: {1: 2, 2: 3, 3: 7, 4: 15, 5: 15},
         );
-        
+
         when(() => mockRatingsRepository.getRatingStatisticsStream(any()))
             .thenAnswer((_) => Stream.value(statistics));
-        
+
         // Act
         final stream = adapter.getRatingStatisticsStream(recipeId);
-        
+
         // Assert
         final result = await stream.first;
         expect(result, equals(statistics));
-        verify(() => mockRatingsRepository.getRatingStatisticsStream(recipeId)).called(1);
+        verify(() => mockRatingsRepository.getRatingStatisticsStream(recipeId))
+            .called(1);
       });
     });
   });

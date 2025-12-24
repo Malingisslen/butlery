@@ -45,8 +45,8 @@ class EmptyStates {
               Text(
                 title ?? emptyConfig.title,
                 style: AppTextStyles.headlineSmall.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
                 textAlign: TextAlign.center,
               ),
 
@@ -56,8 +56,8 @@ class EmptyStates {
                 Text(
                   subtitle ?? emptyConfig.subtitle!,
                   style: AppTextStyles.bodyMedium.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],

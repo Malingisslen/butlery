@@ -32,16 +32,16 @@ import 'package:butlery/models/social/reaction_type.dart';
 class ReactionStatistics {
   /// Map of reaction types to their counts
   final Map<ReactionType, int> reactionCounts;
-  
+
   /// List of user IDs who have reacted (for ownership checking)
   final Set<String> reactedUserIds;
-  
+
   /// When these statistics were last updated
   final DateTime lastUpdated;
-  
+
   /// Content ID these statistics belong to
   final String contentId;
-  
+
   /// Content type these statistics belong to
   final String contentType;
 
@@ -84,7 +84,8 @@ class ReactionStatistics {
   }
 
   /// Create from Firestore document
-  factory ReactionStatistics.fromFirestore(String contentId, String contentType, Map<String, dynamic> data) {
+  factory ReactionStatistics.fromFirestore(
+      String contentId, String contentType, Map<String, dynamic> data) {
     final Map<ReactionType, int> counts = {};
 
     // Parse reaction counts from Firestore data
@@ -92,7 +93,8 @@ class ReactionStatistics {
     for (final entry in countsData.entries) {
       try {
         // Check if this is a valid reaction type key
-        final validKey = ReactionType.values.any((type) => type.key == entry.key);
+        final validKey =
+            ReactionType.values.any((type) => type.key == entry.key);
         if (!validKey) {
           // Skip invalid reaction types for forward compatibility
           continue;
@@ -109,13 +111,15 @@ class ReactionStatistics {
       }
     }
 
-    final reactedUsers = SerializationUtils.safeStringList(data, 'reactedUserIds').toSet();
+    final reactedUsers =
+        SerializationUtils.safeStringList(data, 'reactedUserIds').toSet();
 
     return ReactionStatistics(
       reactionCounts: counts,
       reactedUserIds: reactedUsers,
       lastUpdated: DateTime.fromMillisecondsSinceEpoch(
-        SerializationUtils.safeInt(data, 'lastUpdated', defaultValue: DateTime.now().millisecondsSinceEpoch),
+        SerializationUtils.safeInt(data, 'lastUpdated',
+            defaultValue: DateTime.now().millisecondsSinceEpoch),
       ),
       contentId: contentId,
       contentType: contentType,
@@ -139,7 +143,8 @@ class ReactionStatistics {
   }
 
   /// Get total reaction count across all types
-  int get totalCount => reactionCounts.values.fold(0, (sum, count) => sum + count);
+  int get totalCount =>
+      reactionCounts.values.fold(0, (sum, count) => sum + count);
 
   /// Get count for specific reaction type
   int getCount(ReactionType type) => reactionCounts[type] ?? 0;
@@ -147,17 +152,17 @@ class ReactionStatistics {
   /// Get most popular reaction type
   ReactionType? get topReaction {
     if (reactionCounts.isEmpty) return null;
-    
+
     var maxCount = 0;
     ReactionType? topType;
-    
+
     for (final entry in reactionCounts.entries) {
       if (entry.value > maxCount) {
         maxCount = entry.value;
         topType = entry.key;
       }
     }
-    
+
     return topType;
   }
 
@@ -165,7 +170,7 @@ class ReactionStatistics {
   List<MapEntry<ReactionType, int>> getTopReactions(int limit) {
     final entries = reactionCounts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    
+
     return entries.take(limit).toList();
   }
 
@@ -181,7 +186,7 @@ class ReactionStatistics {
   /// Get percentage breakdown of reactions
   Map<ReactionType, double> get reactionPercentages {
     if (totalCount == 0) return {};
-    
+
     final Map<ReactionType, double> percentages = {};
     for (final entry in reactionCounts.entries) {
       percentages[entry.key] = (entry.value / totalCount) * 100;
@@ -210,9 +215,9 @@ class ReactionStatistics {
   ReactionStatistics addReaction(ReactionType type, String userId) {
     final newCounts = Map<ReactionType, int>.from(reactionCounts);
     newCounts[type] = (newCounts[type] ?? 0) + 1;
-    
+
     final newUsers = Set<String>.from(reactedUserIds)..add(userId);
-    
+
     return copyWith(
       reactionCounts: newCounts,
       reactedUserIds: newUsers,
@@ -224,18 +229,18 @@ class ReactionStatistics {
   ReactionStatistics removeReaction(ReactionType type, String userId) {
     final newCounts = Map<ReactionType, int>.from(reactionCounts);
     final currentCount = newCounts[type] ?? 0;
-    
+
     if (currentCount > 1) {
       newCounts[type] = currentCount - 1;
     } else {
       newCounts.remove(type);
     }
-    
+
     // Only remove user if they have no other reactions
     final newUsers = Set<String>.from(reactedUserIds);
     // Note: In a real implementation, we'd need to check if user has other reaction types
     // For now, we'll keep the user in the set for simplicity
-    
+
     return copyWith(
       reactionCounts: newCounts,
       reactedUserIds: newUsers,
@@ -251,9 +256,9 @@ class ReactionStatistics {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is ReactionStatistics && 
-           other.contentId == contentId && 
-           other.contentType == contentType;
+    return other is ReactionStatistics &&
+        other.contentId == contentId &&
+        other.contentType == contentType;
   }
 
   @override

@@ -115,8 +115,9 @@ class IngredientCorrection {
     required bool unitChanged,
     required bool nameChanged,
   }) {
-    final changeCount =
-        (quantityChanged ? 1 : 0) + (unitChanged ? 1 : 0) + (nameChanged ? 1 : 0);
+    final changeCount = (quantityChanged ? 1 : 0) +
+        (unitChanged ? 1 : 0) +
+        (nameChanged ? 1 : 0);
 
     IngredientCorrectionType type;
     if (changeCount > 1) {

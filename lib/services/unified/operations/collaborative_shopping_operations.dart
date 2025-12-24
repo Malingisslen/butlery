@@ -31,7 +31,8 @@ class CollaborativeShoppingOperations {
     List<String>? categoryIds,
     bool allowGuestEditing = true,
     bool autoRemoveCompleted = false,
-  }) => lifecycle.createList(
+  }) =>
+      lifecycle.createList(
         name: name,
         description: description,
         memberIds: memberIds,
@@ -51,7 +52,8 @@ class CollaborativeShoppingOperations {
     required List<String> memberIds,
     required Map<String, String> memberDisplayNames,
     String? description,
-  }) => lifecycle.convertPersonalToCollaborative(
+  }) =>
+      lifecycle.convertPersonalToCollaborative(
         personalListId: personalListId,
         memberIds: memberIds,
         memberDisplayNames: memberDisplayNames,
@@ -66,7 +68,8 @@ class CollaborativeShoppingOperations {
     required String userId,
     required String userDisplayName,
     SharedListPermission permission = SharedListPermission.edit,
-  }) => members.addMember(
+  }) =>
+      members.addMember(
         listId: listId,
         userId: userId,
         userDisplayName: userDisplayName,
@@ -75,13 +78,15 @@ class CollaborativeShoppingOperations {
   Future<bool> removeMember({
     required String listId,
     required String userId,
-  }) => members.removeMember(listId: listId, userId: userId);
+  }) =>
+      members.removeMember(listId: listId, userId: userId);
   Future<bool> updateMemberPermission({
     required String listId,
     required String userId,
     required SharedListPermission permission,
-  }) => members.updateMemberPermission(
-      listId: listId, userId: userId, permission: permission);
+  }) =>
+      members.updateMemberPermission(
+          listId: listId, userId: userId, permission: permission);
   Map<String, SharedListPermission> getListMembers(String listId) =>
       members.getListMembers(listId);
   Future<bool> leaveList(String listId) => members.leaveList(listId);
@@ -97,7 +102,8 @@ class CollaborativeShoppingOperations {
     String? note,
     double? estimatedPrice,
     int priority = 3,
-  }) => items.addItem(
+  }) =>
+      items.addItem(
         listId: listId,
         name: name,
         amount: amount,
@@ -110,11 +116,13 @@ class CollaborativeShoppingOperations {
   Future<bool> toggleItemBought({
     required String listId,
     required String itemId,
-  }) => items.toggleItemBought(listId: listId, itemId: itemId);
+  }) =>
+      items.toggleItemBought(listId: listId, itemId: itemId);
   Future<bool> removeItem({
     required String listId,
     required String itemId,
-  }) => items.removeItem(listId: listId, itemId: itemId);
+  }) =>
+      items.removeItem(listId: listId, itemId: itemId);
 
   // Activity delegation
   List<Map<String, dynamic>> getRecentActivity(String listId) =>
@@ -127,6 +135,5 @@ class CollaborativeShoppingOperations {
   SharedListPermission? getUserPermission(String listId) =>
       activity.getUserPermission(listId);
   int getNotificationCount() => activity.getNotificationCount();
-  Future<bool> markListAsSeen(String listId) =>
-      activity.markListAsSeen(listId);
+  Future<bool> markListAsSeen(String listId) => activity.markListAsSeen(listId);
 }

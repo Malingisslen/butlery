@@ -13,7 +13,8 @@ void main() {
     });
 
     group('Basic Rendering', () {
-      testWidgets('should render with required properties', (WidgetTester tester) async {
+      testWidgets('should render with required properties',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -32,7 +33,8 @@ void main() {
         expect(find.byIcon(Icons.filter_list), findsOneWidget);
       });
 
-      testWidgets('should have correct border radius', (WidgetTester tester) async {
+      testWidgets('should have correct border radius',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -45,7 +47,8 @@ void main() {
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(
           decoration.borderRadius,
@@ -55,7 +58,8 @@ void main() {
     });
 
     group('Filter State - Hidden', () {
-      testWidgets('should display inactive state when filters hidden', (WidgetTester tester) async {
+      testWidgets('should display inactive state when filters hidden',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -68,18 +72,20 @@ void main() {
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
-        
+
         // Should use surface color when inactive
         expect(decoration.color, isNotNull);
-        
+
         // Should have outline border when inactive
         final border = decoration.border as Border;
         expect(border.top.width, 1);
       });
 
-      testWidgets('should show Swedish tooltip for hidden state', (WidgetTester tester) async {
+      testWidgets('should show Swedish tooltip for hidden state',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -96,7 +102,8 @@ void main() {
         expect(iconButton.tooltip, 'Visa filter');
       });
 
-      testWidgets('should use onSurfaceVariant color for icon when hidden', (WidgetTester tester) async {
+      testWidgets('should use onSurfaceVariant color for icon when hidden',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -120,7 +127,8 @@ void main() {
     });
 
     group('Filter State - Shown', () {
-      testWidgets('should display active state when filters shown', (WidgetTester tester) async {
+      testWidgets('should display active state when filters shown',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -133,18 +141,20 @@ void main() {
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
-        
+
         // Should use primary container color when active
         expect(decoration.color, isNotNull);
-        
+
         // Should have primary border when active
         final border = decoration.border as Border;
         expect(border.top.width, 2);
       });
 
-      testWidgets('should show Swedish tooltip for shown state', (WidgetTester tester) async {
+      testWidgets('should show Swedish tooltip for shown state',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -161,7 +171,8 @@ void main() {
         expect(iconButton.tooltip, 'Dölj filter');
       });
 
-      testWidgets('should use primary color for icon when shown', (WidgetTester tester) async {
+      testWidgets('should use primary color for icon when shown',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -185,7 +196,8 @@ void main() {
     });
 
     group('Active Filters Indicator', () {
-      testWidgets('should not show indicator when no active filters', (WidgetTester tester) async {
+      testWidgets('should not show indicator when no active filters',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -202,7 +214,9 @@ void main() {
         expect(find.byType(Positioned), findsNothing);
       });
 
-      testWidgets('should show indicator when has active filters and filters hidden', (WidgetTester tester) async {
+      testWidgets(
+          'should show indicator when has active filters and filters hidden',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -217,11 +231,11 @@ void main() {
 
         // Should find the positioned indicator
         expect(find.byType(Positioned), findsOneWidget);
-        
+
         // Should find the indicator container
         final containers = tester.widgetList<Container>(find.byType(Container));
         expect(containers.length, greaterThan(0));
-        
+
         // Find a container with circular decoration (the indicator)
         final hasCircularContainer = containers.any((container) {
           if (container.decoration is BoxDecoration) {
@@ -233,7 +247,9 @@ void main() {
         expect(hasCircularContainer, true);
       });
 
-      testWidgets('should not show indicator when has active filters but filters shown', (WidgetTester tester) async {
+      testWidgets(
+          'should not show indicator when has active filters but filters shown',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -250,7 +266,8 @@ void main() {
         expect(find.byType(Positioned), findsNothing);
       });
 
-      testWidgets('should position indicator correctly', (WidgetTester tester) async {
+      testWidgets('should position indicator correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -268,7 +285,8 @@ void main() {
         expect(positioned.top, 8);
       });
 
-      testWidgets('should use error color for indicator', (WidgetTester tester) async {
+      testWidgets('should use error color for indicator',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -287,13 +305,13 @@ void main() {
         );
 
         final containers = tester.widgetList<Container>(find.byType(Container));
-        
+
         // Find a container with red circular decoration (the indicator)
         final hasRedCircularContainer = containers.any((container) {
           if (container.decoration is BoxDecoration) {
             final decoration = container.decoration as BoxDecoration;
-            return decoration.shape == BoxShape.circle && 
-                   decoration.color == Colors.red;
+            return decoration.shape == BoxShape.circle &&
+                decoration.color == Colors.red;
           }
           return false;
         });
@@ -302,7 +320,8 @@ void main() {
     });
 
     group('Interaction', () {
-      testWidgets('should call onToggle when tapped', (WidgetTester tester) async {
+      testWidgets('should call onToggle when tapped',
+          (WidgetTester tester) async {
         bool toggled = false;
 
         await tester.pumpWidget(
@@ -323,7 +342,8 @@ void main() {
         expect(toggled, true);
       });
 
-      testWidgets('should respond to multiple taps', (WidgetTester tester) async {
+      testWidgets('should respond to multiple taps',
+          (WidgetTester tester) async {
         int tapCount = 0;
 
         await tester.pumpWidget(
@@ -376,7 +396,8 @@ void main() {
         expect(tapCount, 3);
       });
 
-      testWidgets('should show ripple effect on tap', (WidgetTester tester) async {
+      testWidgets('should show ripple effect on tap',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -437,7 +458,8 @@ void main() {
         expect(find.byType(FilterToggleButton), findsOneWidget);
       });
 
-      testWidgets('should use theme primary color', (WidgetTester tester) async {
+      testWidgets('should use theme primary color',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -460,7 +482,8 @@ void main() {
         expect(icon.color, Colors.purple);
       });
 
-      testWidgets('should use theme surface color', (WidgetTester tester) async {
+      testWidgets('should use theme surface color',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -478,12 +501,14 @@ void main() {
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
         expect(decoration.color, Colors.white);
       });
 
-      testWidgets('should use theme outline color', (WidgetTester tester) async {
+      testWidgets('should use theme outline color',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             theme: ThemeData(
@@ -501,7 +526,8 @@ void main() {
           ),
         );
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
         final border = decoration.border as Border;
         expect(border.top.color, Colors.grey);
@@ -554,7 +580,8 @@ void main() {
         );
 
         expect(find.byType(FilterToggleButton), findsOneWidget);
-        expect(find.byType(Positioned), findsOneWidget); // Active filters indicator
+        expect(find.byType(Positioned),
+            findsOneWidget); // Active filters indicator
       });
 
       testWidgets('should work with padding', (WidgetTester tester) async {
@@ -611,10 +638,12 @@ void main() {
 
         expect(find.byType(TextField), findsOneWidget);
         expect(find.byType(FilterToggleButton), findsOneWidget);
-        expect(find.byType(Positioned), findsOneWidget); // Active filter indicator
+        expect(
+            find.byType(Positioned), findsOneWidget); // Active filter indicator
       });
 
-      testWidgets('should toggle state in typical usage', (WidgetTester tester) async {
+      testWidgets('should toggle state in typical usage',
+          (WidgetTester tester) async {
         bool showFilters = false;
 
         await tester.pumpWidget(
@@ -638,7 +667,8 @@ void main() {
         );
 
         // Initially hidden
-        IconButton iconButton = tester.widget<IconButton>(find.byType(IconButton));
+        IconButton iconButton =
+            tester.widget<IconButton>(find.byType(IconButton));
         expect(iconButton.tooltip, 'Visa filter');
 
         // Tap to show
@@ -652,7 +682,8 @@ void main() {
     });
 
     group('Swedish Localization', () {
-      testWidgets('should display Swedish tooltips', (WidgetTester tester) async {
+      testWidgets('should display Swedish tooltips',
+          (WidgetTester tester) async {
         // Test hidden state
         await tester.pumpWidget(
           MaterialApp(
@@ -666,7 +697,8 @@ void main() {
           ),
         );
 
-        IconButton iconButton = tester.widget<IconButton>(find.byType(IconButton));
+        IconButton iconButton =
+            tester.widget<IconButton>(find.byType(IconButton));
         expect(iconButton.tooltip, 'Visa filter');
 
         // Test shown state
@@ -688,7 +720,8 @@ void main() {
     });
 
     group('Accessibility', () {
-      testWidgets('should be accessible with tooltips', (WidgetTester tester) async {
+      testWidgets('should be accessible with tooltips',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -706,7 +739,8 @@ void main() {
         expect(iconButton.tooltip, 'Visa filter');
       });
 
-      testWidgets('should support semantic labels', (WidgetTester tester) async {
+      testWidgets('should support semantic labels',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -728,7 +762,8 @@ void main() {
     });
 
     group('Edge Cases', () {
-      testWidgets('should handle rapid state changes', (WidgetTester tester) async {
+      testWidgets('should handle rapid state changes',
+          (WidgetTester tester) async {
         bool showFilters = false;
         bool hasActiveFilters = false;
 
@@ -762,7 +797,8 @@ void main() {
         expect(find.byType(FilterToggleButton), findsOneWidget);
       });
 
-      testWidgets('should work with null-safe operations', (WidgetTester tester) async {
+      testWidgets('should work with null-safe operations',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -777,7 +813,7 @@ void main() {
 
         await tester.tap(find.byType(IconButton));
         await tester.pump();
-        
+
         // Should not throw any errors
         expect(find.byType(FilterToggleButton), findsOneWidget);
       });

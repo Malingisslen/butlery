@@ -82,9 +82,7 @@ class ParsedRecipe {
 
   /// Whether this recipe needs user review.
   bool get needsReview =>
-      title.needsReview ||
-      ingredients.needsReview ||
-      instructions.needsReview;
+      title.needsReview || ingredients.needsReview || instructions.needsReview;
 
   /// List of fields that have low confidence and may need LLM patching.
   List<String> get fieldsNeedingImprovement {
@@ -138,8 +136,7 @@ class ParsedRecipe {
         if (title.hasValue) 'title': title.value,
         if (portions.hasValue) 'portions': portions.value,
         if (ingredients.hasValue)
-          'ingredients':
-              ingredients.value!.map((i) => i.originalLine).toList(),
+          'ingredients': ingredients.value!.map((i) => i.originalLine).toList(),
         if (instructions.hasValue) 'instructions': instructions.value,
         if (totalTime.hasValue) 'timeMinutes': totalTime.value!.inMinutes,
         if (imageUrl != null) 'imageUrl': imageUrl,
@@ -206,8 +203,7 @@ class ParsedRecipe {
   int get hashCode => Object.hash(title, ingredients);
 
   @override
-  String toString() =>
-      'ParsedRecipe(title: ${title.value ?? "none"}, '
+  String toString() => 'ParsedRecipe(title: ${title.value ?? "none"}, '
       'quality: ${(overallQuality * 100).toStringAsFixed(0)}%, '
       'complete: $isComplete)';
 }

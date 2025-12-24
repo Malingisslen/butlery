@@ -238,48 +238,48 @@ class RecipeOperations {
 
   /// Validate recipe content.
   static bool isValidRecipe(Recipe recipe) {
-    return recipe.title.isNotEmpty && 
-           recipe.ingredients.isNotEmpty && 
-           recipe.instructions.isNotEmpty;
+    return recipe.title.isNotEmpty &&
+        recipe.ingredients.isNotEmpty &&
+        recipe.instructions.isNotEmpty;
   }
 
   /// Get recipe validation errors
   static List<String> getValidationErrors(Recipe recipe) {
     final errors = <String>[];
-    
+
     if (recipe.title.isEmpty) {
       errors.add('Titel får inte vara tom');
     }
-    
+
     if (recipe.ingredients.isEmpty) {
       errors.add('Minst en ingrediens krävs');
     }
-    
+
     if (recipe.instructions.isEmpty) {
       errors.add('Minst en instruktion krävs');
     }
-    
+
     if (recipe.portions != null && recipe.portions! <= 0) {
       errors.add('Portioner måste vara positiva');
     }
-    
+
     if (recipe.timeMinutes != null && recipe.timeMinutes! <= 0) {
       errors.add('Tid måste vara positiv');
     }
-    
+
     if (recipe.rating != null && (recipe.rating! < 0 || recipe.rating! > 5)) {
       errors.add('Betyg måste vara mellan 0 och 5');
     }
-    
+
     return errors;
   }
 
   /// Check if recipe has required fields for publication
   static bool isPublishable(Recipe recipe) {
-    return isValidRecipe(recipe) && 
-           recipe.description.isNotEmpty &&
-           recipe.portions != null &&
-           recipe.timeMinutes != null;
+    return isValidRecipe(recipe) &&
+        recipe.description.isNotEmpty &&
+        recipe.portions != null &&
+        recipe.timeMinutes != null;
   }
 
   /// Get recipe statistics.
@@ -298,19 +298,19 @@ class RecipeOperations {
   static int getComplexityScore(Recipe recipe) {
     final stats = getRecipeStats(recipe);
     int score = 1;
-    
+
     // More ingredients = more complex
     if (stats['ingredientCount']! > 10) score++;
     if (stats['ingredientCount']! > 15) score++;
-    
+
     // More instructions = more complex
     if (stats['instructionCount']! > 8) score++;
     if (stats['instructionCount']! > 12) score++;
-    
+
     // Longer time = more complex
     if (stats['estimatedMinutes']! > 60) score++;
     if (stats['estimatedMinutes']! > 120) score++;
-    
+
     return score.clamp(1, 5);
   }
 }

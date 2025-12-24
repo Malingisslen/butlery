@@ -36,7 +36,8 @@ class AppStrings {
   static const String forgotPassword = 'Glömt lösenord?';
   static const String enterPassword = 'Ange ditt lösenord';
   static const String passwordMinLength = 'Minst 6 tecken';
-  static const String resetPasswordInstructions = 'Ange din email-adress så skickar vi instruktioner för att återställa ditt lösenord.';
+  static const String resetPasswordInstructions =
+      'Ange din email-adress så skickar vi instruktioner för att återställa ditt lösenord.';
   static const String send = 'Skicka';
 
   // App navigation
@@ -54,10 +55,13 @@ class AppStrings {
 
   // Form validation messages
   static String fieldRequired(String fieldName) => '$fieldName krävs';
-  static String fieldTooShort(String fieldName, int minLength) => '$fieldName måste vara minst $minLength tecken';
-  static String fieldTooLong(String fieldName, int maxLength) => '$fieldName får vara max $maxLength tecken';
-  static String invalidFormat(String fieldName) => 'Ogiltigt format för $fieldName';
-  
+  static String fieldTooShort(String fieldName, int minLength) =>
+      '$fieldName måste vara minst $minLength tecken';
+  static String fieldTooLong(String fieldName, int maxLength) =>
+      '$fieldName får vara max $maxLength tecken';
+  static String invalidFormat(String fieldName) =>
+      'Ogiltigt format för $fieldName';
+
   // Specific validation messages
   static const String nameRequired = 'Namn krävs';
   static const String emailRequired = 'E-post krävs';
@@ -67,25 +71,31 @@ class AppStrings {
   static const String invalidPhoneNumber = 'Ogiltigt telefonnummer';
   static const String invalidAmount = 'Ogiltigt antal';
   static const String passwordTooShort = 'Lösenordet måste vara minst 6 tecken';
-  
+
   // Generic validation messages for ValidationUtils
   static const String genericRequired = 'Detta fält krävs';
   static const String emailInvalid = 'Ogiltig e-postadress';
 
   // Error messages
   static const String genericError = 'Ett fel uppstod. Försök igen.';
-  static const String networkError = 'Nätverksfel. Kontrollera din internetanslutning.';
+  static const String networkError =
+      'Nätverksfel. Kontrollera din internetanslutning.';
   static const String serverError = 'Serverfel. Försök igen senare.';
   static const String authenticationError = 'Autentiseringsfel. Logga in igen.';
-  static const String permissionDenied = 'Du har inte behörighet för denna åtgärd.';
+  static const String permissionDenied =
+      'Du har inte behörighet för denna åtgärd.';
   static const String notFound = 'Kunde inte hittas.';
   static const String alreadyExists = 'Finns redan.';
-  
+
   // Specific error contexts
-  static String couldNotCreate(String itemType) => 'Kunde inte skapa $itemType. Försök igen.';
-  static String couldNotUpdate(String itemType) => 'Kunde inte uppdatera $itemType. Försök igen.';
-  static String couldNotDelete(String itemType) => 'Kunde inte ta bort $itemType. Försök igen.';
-  static String couldNotLoad(String itemType) => 'Kunde inte ladda $itemType. Försök igen.';
+  static String couldNotCreate(String itemType) =>
+      'Kunde inte skapa $itemType. Försök igen.';
+  static String couldNotUpdate(String itemType) =>
+      'Kunde inte uppdatera $itemType. Försök igen.';
+  static String couldNotDelete(String itemType) =>
+      'Kunde inte ta bort $itemType. Försök igen.';
+  static String couldNotLoad(String itemType) =>
+      'Kunde inte ladda $itemType. Försök igen.';
 
   // Success messages
   static String itemCreated(String itemType) => '$itemType skapades!';
@@ -94,23 +104,28 @@ class AppStrings {
   static String itemAdded(String itemName) => '$itemName tillagd!';
 
   // Confirmation messages
-  static String confirmDelete(String itemName) => 'Är du säker på att du vill ta bort "$itemName"?';
-  static const String unsavedChanges = 'Du har osparade ändringar. Vill du lämna utan att spara?';
+  static String confirmDelete(String itemName) =>
+      'Är du säker på att du vill ta bort "$itemName"?';
+  static const String unsavedChanges =
+      'Du har osparade ändringar. Vill du lämna utan att spara?';
   static const String irreversibleAction = 'Denna åtgärd kan inte ångras.';
-  
+
   // Draft recovery messages
   static const String draftRecovery = 'Återställ utkast';
-  static const String draftRecoverySubtitle = 'Du har osparade receptutkast. Vill du fortsätta där du slutade?';
+  static const String draftRecoverySubtitle =
+      'Du har osparade receptutkast. Vill du fortsätta där du slutade?';
   static const String restoreDraft = 'Återställ';
   static const String startFresh = 'Börja om';
   static const String draftRestored = 'Utkast återställt!';
   static const String draftRestoredDetails = 'fält laddades';
-  static const String couldNotRestoreDraft = 'Kunde inte återställa utkast. Börjar med tomt formulär.';
+  static const String couldNotRestoreDraft =
+      'Kunde inte återställa utkast. Börjar med tomt formulär.';
   static const String restoringDraft = 'Återställer utkast...';
   static const String unnamedRecipe = 'Namnlöst recept';
   static String fieldsFilledCount(int count) => '$count fält ifyllda';
-  static String draftRestoredWithCount(int count) => 'Utkast återställt! $count $draftRestoredDetails';
-  
+  static String draftRestoredWithCount(int count) =>
+      'Utkast återställt! $count $draftRestoredDetails';
+
   // Enhanced contextual error messages
   static String networkAwareError({
     required String baseOperation,
@@ -119,25 +134,25 @@ class AppStrings {
   }) {
     switch (connectivityType.toLowerCase()) {
       case 'none':
-        return includeRecoveryAction 
-          ? 'Ingen internetanslutning. $baseOperation kommer att sparas lokalt och synkroniseras när du är online igen.'
-          : 'Ingen internetanslutning för $baseOperation.';
-          
+        return includeRecoveryAction
+            ? 'Ingen internetanslutning. $baseOperation kommer att sparas lokalt och synkroniseras när du är online igen.'
+            : 'Ingen internetanslutning för $baseOperation.';
+
       case 'mobile':
         return includeRecoveryAction
-          ? 'Använder mobildata för $baseOperation. Detta kan ta längre tid eller påverka din dataförbrukning.'
-          : 'Mobilanslutning för $baseOperation.';
-          
+            ? 'Använder mobildata för $baseOperation. Detta kan ta längre tid eller påverka din dataförbrukning.'
+            : 'Mobilanslutning för $baseOperation.';
+
       case 'limited':
         return includeRecoveryAction
-          ? 'Begränsad anslutning upptäckt. $baseOperation kan ta längre tid eller sparas lokalt.'
-          : 'Begränsad anslutning för $baseOperation.';
-          
+            ? 'Begränsad anslutning upptäckt. $baseOperation kan ta längre tid eller sparas lokalt.'
+            : 'Begränsad anslutning för $baseOperation.';
+
       default:
         return 'Nätverksfel under $baseOperation. Kontrollera din anslutning och försök igen.';
     }
   }
-  
+
   // Permission-aware error messages
   static String permissionContextualError({
     required String resource,
@@ -147,36 +162,41 @@ class AppStrings {
   }) {
     final baseMessage = 'Du kan inte $action detta $resource';
     final reasonText = reason != null ? ' eftersom $reason' : '';
-    final actionText = suggestedAction != null ? '\n\nFörslag: $suggestedAction' : '';
+    final actionText =
+        suggestedAction != null ? '\n\nFörslag: $suggestedAction' : '';
     return '$baseMessage$reasonText.$actionText';
   }
-  
+
   // Action-specific error contexts
-  static String actionSpecificError(String action, String issue) => 'Problem medan $action: $issue';
-  static String actionWithRecovery(String action, String issue, String recovery) => 
-    'Problem medan $action: $issue\n\nFörslag: $recovery';
-  
+  static String actionSpecificError(String action, String issue) =>
+      'Problem medan $action: $issue';
+  static String actionWithRecovery(
+          String action, String issue, String recovery) =>
+      'Problem medan $action: $issue\n\nFörslag: $recovery';
+
   // Progressive error disclosure
   static const String showTechnicalDetails = 'Visa tekniska detaljer';
   static const String hideTechnicalDetails = 'Dölj tekniska detaljer';
   static const String technicalInformation = 'Teknisk information';
   static const String contactSupport = 'Kontakta support';
   static const String tryAgainLater = 'Försök igen senare';
-  
+
   // Connectivity-specific messages
   static const String offlineMode = 'Offline-läge aktiverat';
   static const String connectivityRestored = 'Anslutning återställd';
-  static const String syncingPendingChanges = 'Synkroniserar väntande ändringar...';
+  static const String syncingPendingChanges =
+      'Synkroniserar väntande ändringar...';
   static const String localChangesSaved = 'Ändringar sparade lokalt';
-  static const String willSyncWhenOnline = 'Synkroniseras när du är online igen';
-  
+  static const String willSyncWhenOnline =
+      'Synkroniseras när du är online igen';
+
   // Permission-specific messages
   static const String insufficientPermissions = 'Otillräckliga behörigheter';
   static const String readOnlyAccess = 'Endast läsrättigheter';
   static const String ownerOnlyAction = 'Endast ägaren kan utföra denna åtgärd';
   static const String requestEditAccess = 'Be om redigeringsrättigheter';
   static const String makePersonalCopy = 'Skapa personlig kopia';
-  
+
   // Recovery action suggestions
   static const String checkConnection = 'Kontrollera internetanslutningen';
   static const String tryAgain = 'Försök igen';
@@ -194,7 +214,7 @@ class AppStrings {
   static const String noShoppingLists = 'Du har inga inköpslistor än.';
 
   // Feature-specific strings
-  
+
   // Recipe related
   static const String recipeName = 'Receptnamn';
   static const String recipeDescription = 'Beskrivning';
@@ -260,7 +280,7 @@ class AppStrings {
   static const String closeButton = 'Stäng';
   static const String moreOptions = 'Fler alternativ';
   static const String expandButton = 'Expandera';
-  static const String collapseButton = 'Kollapsa'; 
+  static const String collapseButton = 'Kollapsa';
 
   // Time & date
   static const String today = 'Idag';
@@ -279,7 +299,7 @@ class AppStrings {
   static const String grams = 'g';
 
   // Helper methods
-  
+
   /// Format a duration in minutes to a human-readable string
   static String formatDuration(int minutes) {
     if (minutes < 60) {

@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+
 /// ✨ UPPDATERAD ARKIV IMPORT VY - MIGRERAD TILL UtilityComponents
 class ImporteraFranArkivView extends StatelessWidget {
   const ImporteraFranArkivView({super.key});
@@ -97,79 +98,83 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
                       ),
                       child: SingleChildScrollView(
                         child: Padding(
-                          padding: AppDimensions.responsiveContentPadding(context),
+                          padding:
+                              AppDimensions.responsiveContentPadding(context),
                           child: Column(
-                    children: [
-                      SearchFilterWidget.searchOnly(
-                        searchQuery: viewModel.searchQuery,
-                        onSearchChanged: viewModel.updateSearch,
-                        searchHint: 'Sök i arkiv...',
-                        showStats: true,
-                        resultCount: viewModel.searchQuery.isNotEmpty
-                            ? viewModel.filteredRecipes.length
-                            : null,
+                            children: [
+                              SearchFilterWidget.searchOnly(
+                                searchQuery: viewModel.searchQuery,
+                                onSearchChanged: viewModel.updateSearch,
+                                searchHint: 'Sök i arkiv...',
+                                showStats: true,
+                                resultCount: viewModel.searchQuery.isNotEmpty
+                                    ? viewModel.filteredRecipes.length
+                                    : null,
+                              ),
+
+                              const SizedBox(height: AppDimensions.paddingL),
+
+                              // Tagg-filter
+                              if (allTags.isNotEmpty) ...[
+                                Wrap(
+                                  spacing: AppDimensions.spacingS,
+                                  children: allTags.map((tag) {
+                                    return FilterChip(
+                                      label: Text(tag),
+                                      selected:
+                                          viewModel.selectedTags.contains(tag),
+                                      onSelected: (_) =>
+                                          viewModel.toggleTag(tag),
+                                      backgroundColor: AppColors.cardWhite,
+                                      selectedColor: AppColors.primaryBlue
+                                          .withValues(alpha: 0.2),
+                                      checkmarkColor: AppColors.primaryBlue,
+                                    );
+                                  }).toList(),
+                                ),
+                                const SizedBox(height: AppDimensions.paddingL),
+                              ],
+
+                              // Tids-filter
+                              _buildTimeFilters(context, viewModel),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Divider mellan filter och innehåll
+                    const Divider(height: 1),
+
+                    // Avancerad filter-statistik
+                    if (viewModel.selectedTags.isNotEmpty ||
+                        viewModel.timeFilter != TimeFilter.all)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppDimensions.spacingL,
+                          vertical: AppDimensions.spacingS,
+                        ),
+                        child: _buildAdvancedStats(context, viewModel),
                       ),
 
-                      const SizedBox(height: AppDimensions.paddingL),
-
-                      // Tagg-filter
-                      if (allTags.isNotEmpty) ...[
-                        Wrap(
-                          spacing: AppDimensions.spacingS,
-                          children: allTags.map((tag) {
-                            return FilterChip(
-                              label: Text(tag),
-                              selected: viewModel.selectedTags.contains(tag),
-                              onSelected: (_) => viewModel.toggleTag(tag),
-                              backgroundColor: AppColors.cardWhite,
-                              selectedColor: AppColors.primaryBlue.withValues(alpha: 0.2),
-                              checkmarkColor: AppColors.primaryBlue,
-                            );
-                          }).toList(),
-                        ),
-                        const SizedBox(height: AppDimensions.paddingL),
-                      ],
-
-                      // Tids-filter
-                      _buildTimeFilters(context, viewModel),
-                    ],
+                    // Recept-lista
+                    Expanded(
+                      child: _buildRecipeList(context, viewModel),
                     ),
-                  ),
-                ),
-              ),
 
-              // Divider mellan filter och innehåll
-              const Divider(height: 1),
-
-              // Avancerad filter-statistik
-              if (viewModel.selectedTags.isNotEmpty ||
-                  viewModel.timeFilter != TimeFilter.all)
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingL,
-                    vertical: AppDimensions.spacingS,
-                  ),
-                  child: _buildAdvancedStats(context, viewModel),
+                    // Import-knappar
+                    BottomActionBar(
+                      child: _buildImportButtons(context, viewModel),
+                    ),
+                  ],
                 ),
 
-              // Recept-lista
-              Expanded(
-                child: _buildRecipeList(context, viewModel),
-              ),
-
-              // Import-knappar
-              BottomActionBar(
-                child: _buildImportButtons(context, viewModel),
-              ),
-            ],
-          ),
-
-          // Loading overlay - ✅ MIGRERAD: Custom overlay → UtilityComponents.loadingOverlay
-          if (viewModel.isImporting)
-            UtilityComponents.loadingOverlay(
-              isLoading: true,
-              loadingMessage: 'Importerar recept...',
-            ),
+                // Loading overlay - ✅ MIGRERAD: Custom overlay → UtilityComponents.loadingOverlay
+                if (viewModel.isImporting)
+                  UtilityComponents.loadingOverlay(
+                    isLoading: true,
+                    loadingMessage: 'Importerar recept...',
+                  ),
               ],
             ),
           ),
@@ -189,40 +194,56 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
           label: const Text('Alla'),
           selected: viewModel.timeFilter == TimeFilter.all,
           onSelected: (_) => viewModel.setTimeFilter(TimeFilter.all),
-          backgroundColor: viewModel.timeFilter == TimeFilter.all ? AppColors.primaryBlue : AppColors.cardWhite,
+          backgroundColor: viewModel.timeFilter == TimeFilter.all
+              ? AppColors.primaryBlue
+              : AppColors.cardWhite,
           selectedColor: AppColors.primaryBlue,
           labelStyle: AppTextStyles.labelSmall.copyWith(
-            color: viewModel.timeFilter == TimeFilter.all ? AppColors.neutralLight : AppColors.textDark,
+            color: viewModel.timeFilter == TimeFilter.all
+                ? AppColors.neutralLight
+                : AppColors.textDark,
           ),
         ),
         ChoiceChip(
           label: const Text('≤ 15 min'),
           selected: viewModel.timeFilter == TimeFilter.under15,
           onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under15),
-          backgroundColor: viewModel.timeFilter == TimeFilter.under15 ? AppColors.primaryBlue : AppColors.cardWhite,
+          backgroundColor: viewModel.timeFilter == TimeFilter.under15
+              ? AppColors.primaryBlue
+              : AppColors.cardWhite,
           selectedColor: AppColors.primaryBlue,
           labelStyle: AppTextStyles.labelSmall.copyWith(
-            color: viewModel.timeFilter == TimeFilter.under15 ? AppColors.neutralLight : AppColors.textDark,
+            color: viewModel.timeFilter == TimeFilter.under15
+                ? AppColors.neutralLight
+                : AppColors.textDark,
           ),
         ),
         ChoiceChip(
           label: const Text('≤ 30 min'),
           selected: viewModel.timeFilter == TimeFilter.under30,
           onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under30),
-          backgroundColor: viewModel.timeFilter == TimeFilter.under30 ? AppColors.primaryBlue : AppColors.cardWhite,
+          backgroundColor: viewModel.timeFilter == TimeFilter.under30
+              ? AppColors.primaryBlue
+              : AppColors.cardWhite,
           selectedColor: AppColors.primaryBlue,
           labelStyle: AppTextStyles.labelSmall.copyWith(
-            color: viewModel.timeFilter == TimeFilter.under30 ? AppColors.neutralLight : AppColors.textDark,
+            color: viewModel.timeFilter == TimeFilter.under30
+                ? AppColors.neutralLight
+                : AppColors.textDark,
           ),
         ),
         ChoiceChip(
           label: const Text('≤ 60 min'),
           selected: viewModel.timeFilter == TimeFilter.under60,
           onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under60),
-          backgroundColor: viewModel.timeFilter == TimeFilter.under60 ? AppColors.primaryBlue : AppColors.cardWhite,
+          backgroundColor: viewModel.timeFilter == TimeFilter.under60
+              ? AppColors.primaryBlue
+              : AppColors.cardWhite,
           selectedColor: AppColors.primaryBlue,
           labelStyle: AppTextStyles.labelSmall.copyWith(
-            color: viewModel.timeFilter == TimeFilter.under60 ? AppColors.neutralLight : AppColors.textDark,
+            color: viewModel.timeFilter == TimeFilter.under60
+                ? AppColors.neutralLight
+                : AppColors.textDark,
           ),
         ),
       ],
@@ -285,7 +306,8 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
         final recipe = recipes[index];
 
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
+          padding:
+              const EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
           child: ContentCard(
             key: ValueKey(recipe.id),
             item: recipe,
@@ -340,9 +362,10 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
       ),
     );
   }
+
   void dispose() {
     // Cancel all timers
-    // Cancel all stream subscriptions  
+    // Cancel all stream subscriptions
     // Dispose of resources    super.dispose();
   }
 }

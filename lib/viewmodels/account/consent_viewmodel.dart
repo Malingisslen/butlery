@@ -40,9 +40,11 @@ class ConsentViewModel extends ChangeNotifier
   bool _pushNotifications = false;
 
   // Getters - State
-  bool get isSaving => isLoading;  // Compatibility alias - StateNotifierMixin provides isLoading
+  bool get isSaving =>
+      isLoading; // Compatibility alias - StateNotifierMixin provides isLoading
   UserConsent? get currentConsent => _currentConsent;
-  String? get errorMessage => error;  // Compatibility alias - StateNotifierMixin provides error
+  String? get errorMessage =>
+      error; // Compatibility alias - StateNotifierMixin provides error
   bool get needsRenewal => _needsRenewal;
   bool get hasConsent => _currentConsent != null;
 
@@ -169,7 +171,8 @@ class ConsentViewModel extends ChangeNotifier
           _pushNotifications = false;
 
           await loadConsent();
-          app_logger.AppLogger.success('[$_logTag] All optional consents revoked');
+          app_logger.AppLogger.success(
+              '[$_logTag] All optional consents revoked');
         } else {
           setError('Kunde inte återkalla samtycken. Försök igen.');
         }
@@ -248,7 +251,8 @@ class ConsentViewModel extends ChangeNotifier
     // User-friendly Swedish error messages
     if (errorStr.contains('No authenticated user')) {
       return 'Du måste vara inloggad för att hantera samtycken';
-    } else if (errorStr.contains('network') || errorStr.contains('connection')) {
+    } else if (errorStr.contains('network') ||
+        errorStr.contains('connection')) {
       return 'Ingen internetanslutning. Kontrollera din anslutning och försök igen.';
     } else if (errorStr.contains('permission')) {
       return 'Behörighet nekad. Försök logga in igen.';

@@ -87,7 +87,8 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
 
     // ULTRATHINK FIX: Only sync valid URLs for persistence, not file paths
     // This prevents recipes from being saved with invalid local file paths
-    _state.setImageUrls(_imageManager.validImageUrls, skipAutoSave: _state.isAutoSaving);
+    _state.setImageUrls(_imageManager.validImageUrls,
+        skipAutoSave: _state.isAutoSaving);
     syncToCollaborative(isCollaborative: isCollaborative);
   }
 

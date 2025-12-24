@@ -4,40 +4,40 @@
 class Routes {
   /// Home route
   static const String home = '/';
-  
+
   /// Authentication route
   static const String auth = '/auth';
 
   /// Add recipe route
   static const String laggTill = '/laggTill';
-  
+
   /// URL import route
   static const String importViaUrl = '/importViaUrl';
-  
+
   /// Photo import route
   static const String photoImport = '/photoImport';
-  
+
   /// Manual recipe creation route
   static const String skrivSjalv = '/skrivSjalv';
-  
+
   /// Social media import route
   static const String franSocialaMedier = '/franSocialaMedier';
-  
+
   /// Archive import route
   static const String importFranArkiv = '/importFranArkiv';
-  
+
   /// File import route (CSV/Excel)
   static const String fileImport = '/fileImport';
 
   /// Smart import route (unified URL/text import)
   static const String smartImport = '/smartImport';
-  
+
   /// Recipe detail route
   static const String receptDetalj = '/receptDetalj';
-  
+
   /// Recipe editing route
   static const String redigeraRecept = '/redigeraRecept';
-  
+
   /// Shared recipe reception route
   static const String receiveShare = '/receiveShare';
 

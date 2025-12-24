@@ -62,8 +62,7 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
   /// Remove all operations for a specific recipe
   Future<void> removeForRecipe(String userId, String recipeId) {
     return (delete(syncQueueEntries)
-          ..where(
-              (e) => e.userId.equals(userId) & e.recipeId.equals(recipeId)))
+          ..where((e) => e.userId.equals(userId) & e.recipeId.equals(recipeId)))
         .go();
   }
 
@@ -89,7 +88,8 @@ class SyncQueueDao extends DatabaseAccessor<AppDatabase>
       String userId, int maxRetries) {
     return (select(syncQueueEntries)
           ..where((e) =>
-              e.userId.equals(userId) & e.retryCount.isBiggerThanValue(maxRetries)))
+              e.userId.equals(userId) &
+              e.retryCount.isBiggerThanValue(maxRetries)))
         .get();
   }
 

@@ -23,7 +23,8 @@ class ProfileDeletionOperations {
       await _firestore.collection('public_profiles').doc(userId).delete();
       return true;
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete public profile', e);
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete public profile', e);
       return false;
     }
   }
@@ -58,7 +59,8 @@ class ProfileDeletionOperations {
       await batch.commit();
       return true;
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete activity feed', e);
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete activity feed', e);
       return false;
     }
   }

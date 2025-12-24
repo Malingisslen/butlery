@@ -71,7 +71,7 @@ class SocialCommentBuilder {
       likeCount: likeCount,
     );
   }
-  
+
   static SocialComment buildReply({
     String? id,
     String? parentId,
@@ -94,7 +94,7 @@ void main() {
     late MockUnifiedRecipeService mockRecipeService;
     late MockUserService mockUserService;
     const testRecipeId = 'test_recipe_123';
-    
+
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(UserProfileBuilder.build());
@@ -140,7 +140,8 @@ void main() {
       );
 
       // Register mocks in test service locator
-      TestServiceLocator.registerMock<UnifiedFriendsService>(mockFriendsService);
+      TestServiceLocator.registerMock<UnifiedFriendsService>(
+          mockFriendsService);
       TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
       TestServiceLocator.registerMock<UserService>(mockUserService);
 
@@ -165,9 +166,9 @@ void main() {
     group('Initialization', () {
       test('should initialize with default state', () {
         // Arrange - viewModel created in setUp
-        
+
         // Act - no action needed, checking initial state
-        
+
         // Assert
         expect(viewModel.hasComments, isFalse);
         expect(viewModel.isLoadingComments, isFalse);
@@ -183,10 +184,10 @@ void main() {
 
       test('should initialize friends and user on initialize', () async {
         // Arrange - service configured in setUp
-        
+
         // Act
         await viewModel.initialize();
-        
+
         // Assert
         expect(viewModel.friends.length, equals(2));
         expect(viewModel.friends[0].displayName, equals('Anna Andersson'));
@@ -199,10 +200,10 @@ void main() {
           friends: [],
           error: 'Connection failed',
         );
-        
+
         // Act
         await viewModel.initialize();
-        
+
         // Assert - should not throw, but log error
         expect(viewModel.friends, isEmpty);
       });
@@ -213,24 +214,25 @@ void main() {
         // Arrange
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act
         await viewModel.refreshComments(testRecipeId);
-        
+
         // Assert
         expect(viewModel.comments, isEmpty); // Mock returns empty
         expect(viewModel.commentsError, isNull);
         expect(viewModel.isLoadingComments, isFalse);
-        expect(notificationCount, greaterThanOrEqualTo(2)); // Loading and loaded states
+        expect(notificationCount,
+            greaterThanOrEqualTo(2)); // Loading and loaded states
       });
 
       test('should handle comment refresh error', () async {
         // Note: In production, this would connect to a service
         // For now, we simulate an error scenario
-        
+
         // Act
         await viewModel.refreshComments('invalid_recipe');
-        
+
         // Assert - should handle gracefully
         expect(viewModel.isLoadingComments, isFalse);
       });
@@ -239,10 +241,10 @@ void main() {
         // Arrange
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act
         viewModel.updateNewCommentText('Detta är en kommentar');
-        
+
         // Assert
         expect(viewModel.newCommentText, equals('Detta är en kommentar'));
         expect(notificationCount, equals(1));
@@ -251,7 +253,7 @@ void main() {
       test('should trim comment text on update', () {
         // Arrange & Act
         viewModel.updateNewCommentText('  Trimmed text  ');
-        
+
         // Assert - Note: trimming happens on post, not update
         expect(viewModel.newCommentText, equals('  Trimmed text  '));
       });
@@ -264,10 +266,10 @@ void main() {
         viewModel.updateNewCommentText('Fantastiskt recept!');
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act
         await viewModel.postComment(testRecipeId);
-        
+
         // Assert
         expect(viewModel.comments.length, equals(1));
         expect(viewModel.comments[0].text, equals('Fantastiskt recept!'));
@@ -275,16 +277,17 @@ void main() {
         expect(viewModel.newCommentText, isEmpty); // Should clear
         expect(viewModel.isReplying, isFalse); // Should reset
         expect(viewModel.isPostingComment, isFalse);
-        expect(notificationCount, greaterThanOrEqualTo(2)); // Posting and posted states
+        expect(notificationCount,
+            greaterThanOrEqualTo(2)); // Posting and posted states
       });
 
       test('should not post empty comment', () async {
         // Arrange
         viewModel.updateNewCommentText('   '); // Only whitespace
-        
+
         // Act
         await viewModel.postComment(testRecipeId);
-        
+
         // Assert
         expect(viewModel.comments, isEmpty);
       });
@@ -292,13 +295,13 @@ void main() {
       test('should handle comment posting error', () async {
         // Note: Error handling is in try-catch
         // For now, test that error is set on exception
-        
+
         // Arrange
         viewModel.updateNewCommentText('Test comment');
-        
+
         // Act - simulate error (would need service mock for real error)
         await viewModel.postComment(testRecipeId);
-        
+
         // Assert - comment still added locally
         expect(viewModel.comments.length, equals(1));
       });
@@ -307,13 +310,14 @@ void main() {
         // Arrange
         viewModel.setReplyTo('parent_comment_123');
         viewModel.updateNewCommentText('Detta är ett svar');
-        
+
         // Act
         await viewModel.postComment(testRecipeId);
-        
+
         // Assert
         expect(viewModel.comments.length, equals(1));
-        expect(viewModel.comments[0].parentCommentId, equals('parent_comment_123'));
+        expect(viewModel.comments[0].parentCommentId,
+            equals('parent_comment_123'));
         expect(viewModel.comments[0].text, equals('Detta är ett svar'));
         expect(viewModel.isReplying, isFalse); // Should reset
       });
@@ -324,10 +328,10 @@ void main() {
         // Arrange
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act
         viewModel.setReplyTo('comment_456');
-        
+
         // Assert
         expect(viewModel.isReplying, isTrue);
         expect(notificationCount, equals(1));
@@ -338,10 +342,10 @@ void main() {
         viewModel.setReplyTo('comment_456');
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act
         viewModel.cancelReply();
-        
+
         // Assert
         expect(viewModel.isReplying, isFalse);
         expect(notificationCount, equals(1));
@@ -364,13 +368,14 @@ void main() {
         final otherComment = SocialCommentBuilder.build(
           id: 'other_1',
         );
-        
+
         // Simulate having comments
-        viewModel.comments.addAll([parentComment, reply1, reply2, otherComment]);
-        
+        viewModel.comments
+            .addAll([parentComment, reply1, reply2, otherComment]);
+
         // Act
         final replies = viewModel.getReplies('parent_1');
-        
+
         // Assert
         expect(replies.length, equals(2));
         expect(replies[0].id, equals('reply_1'));
@@ -381,10 +386,10 @@ void main() {
         // Arrange
         final comment = SocialCommentBuilder.build(id: 'lonely_comment');
         viewModel.comments.add(comment);
-        
+
         // Act
         final replies = viewModel.getReplies('lonely_comment');
-        
+
         // Assert
         expect(replies, isEmpty);
       });
@@ -401,10 +406,10 @@ void main() {
         viewModel.comments.add(comment);
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act
         await viewModel.toggleCommentLike('comment_789');
-        
+
         // Assert
         expect(comment.isLiked, isTrue);
         expect(comment.likeCount, equals(6));
@@ -419,10 +424,10 @@ void main() {
           likeCount: 6,
         );
         viewModel.comments.add(comment);
-        
+
         // Act
         await viewModel.toggleCommentLike('comment_789');
-        
+
         // Assert
         expect(comment.isLiked, isFalse);
         expect(comment.likeCount, equals(5));
@@ -431,7 +436,7 @@ void main() {
       test('should handle toggle like for non-existent comment', () async {
         // Arrange & Act
         await viewModel.toggleCommentLike('non_existent');
-        
+
         // Assert - should not throw, handled by try-catch
         expect(viewModel.comments, isEmpty);
       });
@@ -447,7 +452,7 @@ void main() {
           isLiked: false,
         );
         viewModel.comments.addAll([likedComment, unlikedComment]);
-        
+
         // Act & Assert
         expect(viewModel.hasLikedComment('liked_comment'), isTrue);
         expect(viewModel.hasLikedComment('unliked_comment'), isFalse);
@@ -459,10 +464,10 @@ void main() {
       test('should get author display name for friend', () async {
         // Arrange
         await viewModel.initialize();
-        
+
         // Act
         final name = viewModel.getAuthorDisplayName('friend_1');
-        
+
         // Assert
         expect(name, equals('Anna Andersson'));
       });
@@ -472,10 +477,10 @@ void main() {
         await viewModel.initialize();
         // In production, current user would come from auth service
         // For test, simulate having a current user
-        
+
         // Act
         final name = viewModel.getAuthorDisplayName('unknown_user');
-        
+
         // Assert
         expect(name, equals('Okänd användare')); // Unknown user
       });
@@ -487,7 +492,7 @@ void main() {
           displayName: 'Friend With Avatar',
           avatarUrl: 'https://example.com/avatar.jpg',
         );
-        
+
         // Update friends list in mock service
         mockFriendsService.setFriendsState(
           friends: [
@@ -496,18 +501,18 @@ void main() {
               displayName: 'Anna Andersson',
             ),
             UserProfileBuilder.build(
-              uid: 'friend_2', 
+              uid: 'friend_2',
               displayName: 'Erik Svensson',
             ),
             friendWithAvatar,
           ],
         );
-        
+
         await viewModel.initialize();
-        
+
         // Act
         final avatarUrl = viewModel.getAuthorAvatarUrl('friend_avatar');
-        
+
         // Assert
         expect(avatarUrl, equals('https://example.com/avatar.jpg'));
       });
@@ -515,10 +520,10 @@ void main() {
       test('should return null for unknown user avatar', () async {
         // Arrange
         await viewModel.initialize();
-        
+
         // Act
         final avatarUrl = viewModel.getAuthorAvatarUrl('unknown_user');
-        
+
         // Assert
         expect(avatarUrl, isNull);
       });
@@ -543,12 +548,12 @@ void main() {
           id: 'reply_2',
           parentId: 'top_2',
         );
-        
+
         viewModel.comments.addAll([topLevel1, reply1, topLevel2, reply2]);
-        
+
         // Act
         final topLevelComments = viewModel.topLevelComments;
-        
+
         // Assert
         expect(topLevelComments.length, equals(2));
         expect(topLevelComments[0].id, equals('top_1'));
@@ -557,10 +562,10 @@ void main() {
 
       test('should handle empty comments list', () {
         // Arrange - no comments
-        
+
         // Act
         final topLevelComments = viewModel.topLevelComments;
-        
+
         // Assert
         expect(topLevelComments, isEmpty);
       });
@@ -570,10 +575,10 @@ void main() {
         final reply1 = SocialCommentBuilder.buildReply(id: 'r1');
         final reply2 = SocialCommentBuilder.buildReply(id: 'r2');
         viewModel.comments.addAll([reply1, reply2]);
-        
+
         // Act
         final topLevelComments = viewModel.topLevelComments;
-        
+
         // Assert
         expect(topLevelComments, isEmpty);
       });
@@ -588,14 +593,14 @@ void main() {
           'user_1': 'Anna',
           'user_2': 'Erik',
         };
-        
+
         // Act
         final result = await viewModel.createCollaborativeRecipe(
           name: recipeName,
           memberIds: memberIds,
           memberDisplayNames: memberDisplayNames,
         );
-        
+
         // Assert - placeholder implementation returns false
         expect(result, isFalse);
       });
@@ -605,14 +610,14 @@ void main() {
         const recipeId = 'recipe_to_share';
         final memberIds = ['friend_1'];
         final memberDisplayNames = {'friend_1': 'Anna'};
-        
+
         // Act
         final sharedId = await viewModel.shareRecipe(
           recipeId: recipeId,
           memberIds: memberIds,
           memberDisplayNames: memberDisplayNames,
         );
-        
+
         // Assert - placeholder implementation returns null
         expect(sharedId, isNull);
       });
@@ -620,10 +625,11 @@ void main() {
       test('should make recipe personal', () async {
         // Arrange
         const collaborativeRecipeId = 'collab_recipe_123';
-        
+
         // Act
-        final personalId = await viewModel.makeRecipePersonal(collaborativeRecipeId);
-        
+        final personalId =
+            await viewModel.makeRecipePersonal(collaborativeRecipeId);
+
         // Assert - placeholder implementation returns null
         expect(personalId, isNull);
       });
@@ -635,7 +641,7 @@ void main() {
         const recipeId = 'recipe_123';
         const userId = 'new_member';
         const displayName = 'New Member';
-        
+
         // Act
         final result = await viewModel.addMemberToRecipe(
           recipeId,
@@ -643,7 +649,7 @@ void main() {
           displayName,
           permission: 'editor',
         );
-        
+
         // Assert - placeholder implementation returns false
         expect(result, isFalse);
       });
@@ -652,10 +658,10 @@ void main() {
         // Arrange
         const recipeId = 'recipe_123';
         const userId = 'member_to_remove';
-        
+
         // Act
         final result = await viewModel.removeMemberFromRecipe(recipeId, userId);
-        
+
         // Assert - placeholder implementation returns false
         expect(result, isFalse);
       });
@@ -664,14 +670,14 @@ void main() {
         // Arrange
         const recipeId = 'recipe_123';
         const userId = 'member_123';
-        
+
         // Act
         final result = await viewModel.updateMemberPermission(
           recipeId,
           userId,
           'admin',
         );
-        
+
         // Assert - placeholder implementation returns false
         expect(result, isFalse);
       });
@@ -679,10 +685,10 @@ void main() {
       test('should get recipe members', () {
         // Arrange
         const recipeId = 'recipe_123';
-        
+
         // Act
         final members = viewModel.getRecipeMembers(recipeId);
-        
+
         // Assert - placeholder implementation returns empty map
         expect(members, isEmpty);
       });
@@ -690,30 +696,30 @@ void main() {
       test('should check if can invite members', () {
         // Arrange
         const recipeId = 'recipe_123';
-        
+
         // Act
         final canInvite = viewModel.canInviteMembers(recipeId);
-        
+
         // Assert - placeholder implementation returns false
         expect(canInvite, isFalse);
       });
 
       test('should get recipes shared with me', () {
         // Arrange - no setup needed
-        
+
         // Act
         final sharedWithMe = viewModel.getSharedWithMe();
-        
+
         // Assert - placeholder implementation returns empty list
         expect(sharedWithMe, isEmpty);
       });
 
       test('should get recipes shared by me', () {
         // Arrange - no setup needed
-        
+
         // Act
         final sharedByMe = viewModel.getSharedByMe();
-        
+
         // Assert - placeholder implementation returns empty list
         expect(sharedByMe, isEmpty);
       });
@@ -722,7 +728,7 @@ void main() {
     group('Service Information', () {
       test('should provide service name', () {
         // Arrange - viewModel created in setUp
-        
+
         // Act & Assert
         expect(viewModel.serviceName, equals('SocialRecipeViewModel'));
       });
@@ -733,12 +739,12 @@ void main() {
         // Arrange
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act
         viewModel.updateNewCommentText('Test 1');
         viewModel.updateNewCommentText('Test 2');
         viewModel.updateNewCommentText('Test 3');
-        
+
         // Assert
         expect(notificationCount, equals(3));
       });
@@ -747,12 +753,12 @@ void main() {
         // Arrange
         final comment1 = SocialCommentBuilder.build(id: 'c1', text: 'First');
         final comment2 = SocialCommentBuilder.build(id: 'c2', text: 'Second');
-        
+
         // Act
         viewModel.comments.add(comment1);
         await viewModel.toggleCommentLike('c1');
         viewModel.comments.add(comment2);
-        
+
         // Assert
         expect(viewModel.comments.length, equals(2));
         expect(viewModel.comments[0].isLiked, isTrue);
@@ -764,17 +770,17 @@ void main() {
       test('should set error on comment refresh failure', () async {
         // Note: In production, this would connect to service
         // Error handling is in place but needs service integration
-        
+
         // Act
         await viewModel.refreshComments('test_recipe');
-        
+
         // Assert - no error in mock scenario
         expect(viewModel.commentsError, isNull);
       });
 
       test('should handle missing comment gracefully in operations', () {
         // Arrange - no comments
-        
+
         // Act & Assert - should not throw
         expect(() => viewModel.toggleCommentLike('missing'), returnsNormally);
         expect(viewModel.hasLikedComment('missing'), isFalse);
@@ -804,13 +810,13 @@ void main() {
         );
         var notificationCount = 0;
         testViewModel.addListener(() => notificationCount++);
-        
+
         // Act
         testViewModel.updateNewCommentText('Test');
         expect(notificationCount, equals(1));
-        
+
         testViewModel.dispose();
-        
+
         // Note: After dispose, notifications should not work
         // Framework ensures listeners are cleaned up
       });

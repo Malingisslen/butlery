@@ -13,26 +13,26 @@ import '../../infrastructure/di/test_service_locator.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  
+
   late MockSocialRecipeService mockSocialRecipeService;
   late MockPermissionService mockPermissionService;
   late CollaborativeStatusViewModel viewModel;
 
   setUp(() async {
     await TestServiceLocator.initialize();
-    
+
     mockSocialRecipeService = MockSocialRecipeService();
     mockPermissionService = MockPermissionService();
-    
+
     // Setup default permission service behavior using state configuration
     mockPermissionService.setPermissionState(
       currentUserId: 'test_user_id',
       isAuthenticated: true,
     );
-    
+
     // Register mocks
     TestServiceLocator.registerMock<PermissionService>(mockPermissionService);
-    
+
     viewModel = CollaborativeStatusViewModel(
       socialRecipeService: mockSocialRecipeService,
     );
@@ -55,13 +55,13 @@ void main() {
         currentUserId: null,
         isAuthenticated: false,
       );
-      
+
       final viewModelWithoutUser = CollaborativeStatusViewModel(
         socialRecipeService: mockSocialRecipeService,
       );
-      
+
       expect(viewModelWithoutUser.currentUserId, isNull);
-      
+
       viewModelWithoutUser.dispose();
     });
   });
@@ -69,7 +69,7 @@ void main() {
   group('CollaborativeStatusViewModel - Recipe Status', () {
     test('should return loading status for uncached recipe', () {
       final status = viewModel.getRecipeCollaborativeStatus('recipe_1', null);
-      
+
       expect(status.isLoading, isTrue);
       expect(status.isCollaborative, isFalse);
       expect(status.hasError, isFalse);
@@ -91,13 +91,14 @@ void main() {
               ]);
 
       viewModel.getRecipeCollaborativeStatus('recipe_1', null);
-      
+
       // Wait for async operation
       await Future.delayed(Duration(milliseconds: 100));
-      
+
       // Second call should return cached
-      final cachedStatus = viewModel.getRecipeCollaborativeStatus('recipe_1', null);
-      
+      final cachedStatus =
+          viewModel.getRecipeCollaborativeStatus('recipe_1', null);
+
       expect(cachedStatus.isCollaborative, isTrue);
       expect(cachedStatus.participants.length, equals(1));
       expect(cachedStatus.isValid, isTrue);
@@ -109,12 +110,12 @@ void main() {
         description: 'Delat med familjen',
         sourceUrl: 'https://example.com?shared_recipe_id=123',
       );
-      
+
       final status = viewModel.getRecipeCollaborativeStatus(
         'recipe_1',
         collaborativeRecipe,
       );
-      
+
       // Should return true based on metadata analysis
       expect(status.isCollaborative, isTrue);
     });
@@ -123,7 +124,7 @@ void main() {
       final recipe1 = RecipeFactory.build(title: '(Delad) Recipe');
       final recipe2 = RecipeFactory.build(title: '(Shared) Recipe');
       final recipe3 = RecipeFactory.build(title: 'Normal Recipe');
-      
+
       expect(
         viewModel.getRecipeCollaborativeStatus('r1', recipe1).isCollaborative,
         isTrue,
@@ -148,7 +149,7 @@ void main() {
       final recipe3 = RecipeFactory.build(
         description: 'Från "Annas kokbok"',
       );
-      
+
       expect(
         viewModel.getRecipeCollaborativeStatus('r1', recipe1).isCollaborative,
         isTrue,
@@ -167,7 +168,7 @@ void main() {
       final recipe = RecipeFactory.build(
         tags: ['vegetarisk', 'delad', 'middag'],
       );
-      
+
       expect(
         viewModel.getRecipeCollaborativeStatus('r1', recipe).isCollaborative,
         isTrue,
@@ -184,7 +185,7 @@ void main() {
       final recipe3 = RecipeFactory.build(
         sourceUrl: 'https://example.com/normal-recipe',
       );
-      
+
       expect(
         viewModel.getRecipeCollaborativeStatus('r1', recipe1).isCollaborative,
         isTrue,
@@ -204,15 +205,15 @@ void main() {
           .thenThrow(Exception('Network error'));
 
       viewModel.getRecipeCollaborativeStatus('recipe_1', null);
-      
+
       // Wait for async operation
       await Future.delayed(Duration(milliseconds: 100));
-      
+
       final status = viewModel.getCachedStatus(
         'recipe_1',
         CollaborativeContentType.recipe,
       );
-      
+
       expect(status?.hasError, isTrue);
       expect(status?.error, contains('Network error'));
     });
@@ -221,12 +222,12 @@ void main() {
       final recipe = RecipeFactory.build(
         title: '(Delad) Recipe',
       );
-      
+
       final isCollaborative = viewModel.getRecipeCollaborativeStatusLegacy(
         'recipe_1',
         recipe,
       );
-      
+
       expect(isCollaborative, isTrue);
     });
   });
@@ -241,9 +242,9 @@ void main() {
           RecipeFactory.build(title: 'Normal Recipe'),
         ],
       };
-      
+
       final status = viewModel.getMenuCollaborativeStatus('menu_1', menuData);
-      
+
       expect(status.isCollaborative, isTrue);
     });
 
@@ -255,23 +256,23 @@ void main() {
           ),
         ],
       };
-      
+
       final status = viewModel.getMenuCollaborativeStatus('menu_1', menuData);
-      
+
       expect(status.isCollaborative, isTrue);
     });
 
     test('should handle empty menu', () {
       final menuData = <String, List<Recipe>>{};
-      
+
       final status = viewModel.getMenuCollaborativeStatus('menu_1', menuData);
-      
+
       expect(status.isCollaborative, isFalse);
     });
 
     test('should handle null menu', () {
       final status = viewModel.getMenuCollaborativeStatus('menu_1', null);
-      
+
       expect(status.isCollaborative, isFalse);
     });
 
@@ -282,12 +283,12 @@ void main() {
           .thenAnswer((_) async => []);
 
       viewModel.getMenuCollaborativeStatus('menu_1', null);
-      
+
       // Wait for async operation
       await Future.delayed(Duration(milliseconds: 100));
-      
-      verify(() => mockSocialRecipeService.isMenuSharedByUser('menu_1', 'test_user_id'))
-          .called(1);
+
+      verify(() => mockSocialRecipeService.isMenuSharedByUser(
+          'menu_1', 'test_user_id')).called(1);
     });
 
     test('should support legacy menu boolean API', () {
@@ -296,12 +297,12 @@ void main() {
           RecipeFactory.build(title: '(Shared) Recipe'),
         ],
       };
-      
+
       final isCollaborative = viewModel.getMenuCollaborativeStatusLegacy(
         'menu_1',
         menuData,
       );
-      
+
       expect(isCollaborative, isTrue);
     });
   });
@@ -309,13 +310,14 @@ void main() {
   group('CollaborativeStatusViewModel - Shopping List Status', () {
     test('should check shopping list collaborative status', () {
       final status = viewModel.getShoppingListCollaborativeStatus('list_1');
-      
+
       expect(status.isLoading, isTrue);
       expect(status.isCollaborative, isFalse);
     });
 
     test('should perform async shopping list check', () async {
-      when(() => mockSocialRecipeService.isShoppingListSharedByUser(any(), any()))
+      when(() =>
+              mockSocialRecipeService.isShoppingListSharedByUser(any(), any()))
           .thenAnswer((_) async => true);
       when(() => mockSocialRecipeService.getShoppingListParticipants(any()))
           .thenAnswer((_) async => [
@@ -329,20 +331,20 @@ void main() {
               ]);
 
       viewModel.getShoppingListCollaborativeStatus('list_1');
-      
+
       // Wait for async operation
       await Future.delayed(Duration(milliseconds: 100));
-      
+
       verify(() => mockSocialRecipeService.isShoppingListSharedByUser(
-        'list_1',
-        'test_user_id',
-      )).called(1);
-      
+            'list_1',
+            'test_user_id',
+          )).called(1);
+
       final cachedStatus = viewModel.getCachedStatus(
         'list_1',
         CollaborativeContentType.shoppingList,
       );
-      
+
       expect(cachedStatus?.isCollaborative, isTrue);
       expect(cachedStatus?.participants.length, equals(1));
     });
@@ -356,14 +358,14 @@ void main() {
           .thenAnswer((_) async => []);
 
       viewModel.getRecipeCollaborativeStatus('recipe_1', null);
-      
+
       await Future.delayed(Duration(milliseconds: 100));
-      
+
       final cached = viewModel.getCachedStatus(
         'recipe_1',
         CollaborativeContentType.recipe,
       );
-      
+
       expect(cached, isNotNull);
       expect(cached?.isValid, isTrue);
       expect(cached?.lastChecked, isNotNull);
@@ -377,18 +379,18 @@ void main() {
           .thenAnswer((_) async => []);
 
       viewModel.getRecipeCollaborativeStatus('recipe_1', null);
-      
+
       await Future.delayed(Duration(milliseconds: 100));
-      
+
       // Verify cached
       expect(
         viewModel.getCachedStatus('recipe_1', CollaborativeContentType.recipe),
         isNotNull,
       );
-      
+
       // Invalidate
       viewModel.invalidateContent('recipe_1', CollaborativeContentType.recipe);
-      
+
       // Verify removed
       expect(
         viewModel.getCachedStatus('recipe_1', CollaborativeContentType.recipe),
@@ -409,13 +411,13 @@ void main() {
 
       viewModel.getRecipeCollaborativeStatus('recipe_1', null);
       viewModel.getMenuCollaborativeStatus('menu_1', null);
-      
+
       await Future.delayed(Duration(milliseconds: 200));
-      
+
       // Invalidate using legacy methods
       viewModel.invalidateRecipeStatus('recipe_1');
       viewModel.invalidateMenuStatus('menu_1');
-      
+
       // Verify removed
       expect(
         viewModel.getCachedStatus('recipe_1', CollaborativeContentType.recipe),
@@ -436,22 +438,22 @@ void main() {
 
       viewModel.getRecipeCollaborativeStatus('recipe_1', null);
       viewModel.getRecipeCollaborativeStatus('recipe_2', null);
-      
+
       await Future.delayed(Duration(milliseconds: 100));
-      
+
       expect(viewModel.debugInfo['totalCacheSize'], greaterThan(0));
-      
+
       viewModel.clearAllCache();
-      
+
       expect(viewModel.debugInfo['totalCacheSize'], equals(0));
     });
 
     test('should not check same content multiple times concurrently', () async {
       when(() => mockSocialRecipeService.isRecipeSharedByUser(any(), any()))
           .thenAnswer((_) async {
-            await Future.delayed(Duration(milliseconds: 50));
-            return true;
-          });
+        await Future.delayed(Duration(milliseconds: 50));
+        return true;
+      });
       when(() => mockSocialRecipeService.getRecipeParticipants(any()))
           .thenAnswer((_) async => []);
 
@@ -459,11 +461,12 @@ void main() {
       viewModel.getRecipeCollaborativeStatus('recipe_1', null);
       viewModel.getRecipeCollaborativeStatus('recipe_1', null);
       viewModel.getRecipeCollaborativeStatus('recipe_1', null);
-      
+
       await Future.delayed(Duration(milliseconds: 100));
-      
+
       // Should only call service once
-      verify(() => mockSocialRecipeService.isRecipeSharedByUser('recipe_1', any()))
+      verify(() =>
+              mockSocialRecipeService.isRecipeSharedByUser('recipe_1', any()))
           .called(1);
     });
   });
@@ -478,7 +481,8 @@ void main() {
           .thenAnswer((_) async => false);
       when(() => mockSocialRecipeService.getMenuParticipants(any()))
           .thenAnswer((_) async => []);
-      when(() => mockSocialRecipeService.isShoppingListSharedByUser(any(), any()))
+      when(() =>
+              mockSocialRecipeService.isShoppingListSharedByUser(any(), any()))
           .thenAnswer((_) async => true);
       when(() => mockSocialRecipeService.getShoppingListParticipants(any()))
           .thenAnswer((_) async => []);
@@ -488,45 +492,50 @@ void main() {
         menuIds: ['menu_1'],
         shoppingListIds: ['list_1', 'list_2'],
       );
-      
+
       // Verify all checks were made
-      verify(() => mockSocialRecipeService.isRecipeSharedByUser('recipe_1', any()))
+      verify(() =>
+              mockSocialRecipeService.isRecipeSharedByUser('recipe_1', any()))
           .called(1);
-      verify(() => mockSocialRecipeService.isRecipeSharedByUser('recipe_2', any()))
+      verify(() =>
+              mockSocialRecipeService.isRecipeSharedByUser('recipe_2', any()))
           .called(1);
       verify(() => mockSocialRecipeService.isMenuSharedByUser('menu_1', any()))
           .called(1);
-      verify(() => mockSocialRecipeService.isShoppingListSharedByUser('list_1', any()))
-          .called(1);
-      verify(() => mockSocialRecipeService.isShoppingListSharedByUser('list_2', any()))
-          .called(1);
+      verify(() => mockSocialRecipeService.isShoppingListSharedByUser(
+          'list_1', any())).called(1);
+      verify(() => mockSocialRecipeService.isShoppingListSharedByUser(
+          'list_2', any())).called(1);
     });
 
     test('should skip already cached items in batch check', () async {
       // Pre-cache some items
-      when(() => mockSocialRecipeService.isRecipeSharedByUser('recipe_1', any()))
+      when(() =>
+              mockSocialRecipeService.isRecipeSharedByUser('recipe_1', any()))
           .thenAnswer((_) async => true);
       when(() => mockSocialRecipeService.getRecipeParticipants('recipe_1'))
           .thenAnswer((_) async => []);
 
       viewModel.getRecipeCollaborativeStatus('recipe_1', null);
       await Future.delayed(Duration(milliseconds: 100));
-      
+
       // Reset mock to track new calls
       reset(mockSocialRecipeService);
       when(() => mockSocialRecipeService.isRecipeSharedByUser(any(), any()))
           .thenAnswer((_) async => false);
       when(() => mockSocialRecipeService.getRecipeParticipants(any()))
           .thenAnswer((_) async => []);
-      
+
       // Batch check including cached item
       await viewModel.batchCheckContent(
         recipeIds: ['recipe_1', 'recipe_2'], // recipe_1 is cached
       );
-      
+
       // Should only check uncached item
-      verifyNever(() => mockSocialRecipeService.isRecipeSharedByUser('recipe_1', any()));
-      verify(() => mockSocialRecipeService.isRecipeSharedByUser('recipe_2', any()))
+      verifyNever(() =>
+          mockSocialRecipeService.isRecipeSharedByUser('recipe_1', any()));
+      verify(() =>
+              mockSocialRecipeService.isRecipeSharedByUser('recipe_2', any()))
           .called(1);
     });
 
@@ -535,18 +544,19 @@ void main() {
         currentUserId: null,
         isAuthenticated: false,
       );
-      
+
       final viewModelNoUser = CollaborativeStatusViewModel(
         socialRecipeService: mockSocialRecipeService,
       );
-      
+
       await viewModelNoUser.batchCheckContent(
         recipeIds: ['recipe_1'],
       );
-      
+
       // Should not make any service calls
-      verifyNever(() => mockSocialRecipeService.isRecipeSharedByUser(any(), any()));
-      
+      verifyNever(
+          () => mockSocialRecipeService.isRecipeSharedByUser(any(), any()));
+
       viewModelNoUser.dispose();
     });
   });
@@ -566,11 +576,11 @@ void main() {
       viewModel.getRecipeCollaborativeStatus('recipe_1', null);
       viewModel.getRecipeCollaborativeStatus('recipe_2', null);
       viewModel.getMenuCollaborativeStatus('menu_1', null);
-      
+
       await Future.delayed(Duration(milliseconds: 100));
-      
+
       final debugInfo = viewModel.debugInfo;
-      
+
       expect(debugInfo['totalCacheSize'], equals(3));
       expect(debugInfo['activeChecks'], equals(0));
       expect(debugInfo['currentUserId'], equals('test_user_id'));
@@ -588,19 +598,19 @@ void main() {
         currentUserId: null,
         isAuthenticated: false,
       );
-      
+
       final viewModelNoUser = CollaborativeStatusViewModel(
         socialRecipeService: mockSocialRecipeService,
       );
-      
+
       // Should not crash and return fallback status
       final status = viewModelNoUser.getRecipeCollaborativeStatus(
         'recipe_1',
         null,
       );
-      
+
       expect(status.isCollaborative, isFalse);
-      
+
       viewModelNoUser.dispose();
     });
 
@@ -609,14 +619,14 @@ void main() {
           .thenThrow(Exception('Service error'));
 
       viewModel.getRecipeCollaborativeStatus('recipe_1', null);
-      
+
       await Future.delayed(Duration(milliseconds: 100));
-      
+
       final status = viewModel.getCachedStatus(
         'recipe_1',
         CollaborativeContentType.recipe,
       );
-      
+
       expect(status?.hasError, isTrue);
       expect(status?.error, contains('Service error'));
       expect(status?.isCollaborative, isFalse);
@@ -628,12 +638,12 @@ void main() {
       final disposableViewModel = CollaborativeStatusViewModel(
         socialRecipeService: mockSocialRecipeService,
       );
-      
+
       // Add to cache
       disposableViewModel.getRecipeCollaborativeStatus('recipe_1', null);
-      
+
       disposableViewModel.dispose();
-      
+
       // Cache should be cleared
       expect(disposableViewModel.debugInfo['totalCacheSize'], equals(0));
     });

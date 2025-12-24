@@ -15,7 +15,8 @@ import 'package:butlery/utils/shopping_list_formatter.dart';
 /// Action handlers for group shared shopping list cards.
 class GroupShoppingListActions {
   /// Navigate to view the shopping list details.
-  static void viewShoppingList(BuildContext context, UnifiedShoppingList shoppingList) {
+  static void viewShoppingList(
+      BuildContext context, UnifiedShoppingList shoppingList) {
     Navigator.pushNamed(
       context,
       '/shopping-list-detail',
@@ -32,7 +33,8 @@ class GroupShoppingListActions {
     final confirmed = await DialogFactory.showConfirmation(
       context,
       title: 'Importera inkopslista',
-      message: 'Vill du importera "${shoppingList.name}" till dina egna listor?',
+      message:
+          'Vill du importera "${shoppingList.name}" till dina egna listor?',
       confirmText: 'Importera',
     );
 
@@ -48,7 +50,8 @@ class GroupShoppingListActions {
         if (personalListId != null && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('"${shoppingList.name}" importerad till dina listor!'),
+              content:
+                  Text('"${shoppingList.name}" importerad till dina listor!'),
               backgroundColor: AppColors.success,
               action: SnackBarAction(
                 label: 'Visa',
@@ -125,8 +128,8 @@ class GroupShoppingListActions {
                 Text(
                   'Dela inkopslista',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 const SizedBox(height: AppDimensions.spacingM),
                 ListTile(
@@ -234,7 +237,8 @@ class GroupShoppingListActions {
       try {
         AppLogger.warning('Content Report - Shopping List: ${shoppingList.id}');
         AppLogger.info('Report reason: $reason');
-        AppLogger.info('Reported by user, list owner: ${shoppingList.ownerDisplayName}');
+        AppLogger.info(
+            'Reported by user, list owner: ${shoppingList.ownerDisplayName}');
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -279,10 +283,12 @@ class GroupShoppingListActions {
                     'Felaktig information',
                     'Upphovsrattsintrång',
                     'Annat'
-                  ].map((reason) => RadioListTile<String>(
-                    title: Text(reason),
-                    value: reason,
-                  )).toList(),
+                  ]
+                      .map((reason) => RadioListTile<String>(
+                            title: Text(reason),
+                            value: reason,
+                          ))
+                      .toList(),
                 ),
               ),
             ],

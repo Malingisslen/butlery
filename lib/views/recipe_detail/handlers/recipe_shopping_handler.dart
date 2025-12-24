@@ -35,7 +35,8 @@ class RecipeShoppingHandler {
   static Future<void> generateShoppingListFromRecipe(
     BuildContext context, {
     required int currentPortions,
-    required void Function(String message, {Color? backgroundColor}) showSnackBar,
+    required void Function(String message, {Color? backgroundColor})
+        showSnackBar,
   }) async {
     if (!context.mounted) return;
 
@@ -45,7 +46,8 @@ class RecipeShoppingHandler {
       final recipe = viewModel.recipe;
 
       // Generate shopping items from recipe using current portions
-      final shoppingItems = ShoppingListGenerator.generateShoppingItemsFromRecipe(
+      final shoppingItems =
+          ShoppingListGenerator.generateShoppingItemsFromRecipe(
         recipe,
         portions: currentPortions,
       );
@@ -78,7 +80,8 @@ class RecipeShoppingHandler {
 
       if (selectedListResult['action'] == 'create_new') {
         // Create new shopping list with recipe name
-        final newListName = selectedListResult['name'] as String? ?? '${recipe.title} - Ingredienser';
+        final newListName = selectedListResult['name'] as String? ??
+            '${recipe.title} - Ingredienser';
         targetListId = await shoppingService.createPersonalList(newListName);
         targetListName = newListName;
       } else if (selectedListResult['action'] == 'select_existing') {

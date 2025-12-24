@@ -71,7 +71,8 @@ class SocialDeletionOperations {
       await batch.commit();
       return true;
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to remove friend connections', e);
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to remove friend connections', e);
       return false;
     }
   }
@@ -86,15 +87,15 @@ class SocialDeletionOperations {
       final batch = _firestore.batch();
 
       for (final doc in conversationsSnapshot.docs) {
-        final messagesSnapshot = await doc.reference
-            .collection('messages')
-            .get();
+        final messagesSnapshot =
+            await doc.reference.collection('messages').get();
 
         for (final msgDoc in messagesSnapshot.docs) {
           batch.delete(msgDoc.reference);
         }
 
-        final participants = List<String>.from(doc.data()['participants'] ?? []);
+        final participants =
+            List<String>.from(doc.data()['participants'] ?? []);
         if (participants.length <= 2) {
           batch.delete(doc.reference);
         } else {
@@ -143,7 +144,8 @@ class SocialDeletionOperations {
       await batch.commit();
       return true;
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to remove from shared content', e);
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to remove from shared content', e);
       return false;
     }
   }
@@ -191,7 +193,8 @@ class SocialDeletionOperations {
       await batch.commit();
       return true;
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete comments and ratings', e);
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete comments and ratings', e);
       return false;
     }
   }

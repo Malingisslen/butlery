@@ -59,7 +59,8 @@ void main() {
         final content = _createSharedContent('owner-123', 'content-1');
 
         // Act
-        final canCreate = await repository.validateCreatePermission('owner-123', content);
+        final canCreate =
+            await repository.validateCreatePermission('owner-123', content);
 
         // Assert
         expect(canCreate, isTrue);
@@ -70,7 +71,8 @@ void main() {
         final content = _createSharedContent('owner-123', 'content-1');
 
         // Act
-        final canCreate = await repository.validateCreatePermission('other-user', content);
+        final canCreate =
+            await repository.validateCreatePermission('other-user', content);
 
         // Assert
         expect(canCreate, isFalse);
@@ -81,7 +83,8 @@ void main() {
         final content = _createSharedContent('owner-123', 'content-1');
 
         // Act
-        final canRead = await repository.validateReadPermission('owner-123', 'share-1', content);
+        final canRead = await repository.validateReadPermission(
+            'owner-123', 'share-1', content);
 
         // Assert
         expect(canRead, isTrue);
@@ -96,7 +99,8 @@ void main() {
         );
 
         // Act
-        final canRead = await repository.validateReadPermission('recipient-456', 'share-1', content);
+        final canRead = await repository.validateReadPermission(
+            'recipient-456', 'share-1', content);
 
         // Assert
         expect(canRead, isTrue);
@@ -111,7 +115,8 @@ void main() {
         );
 
         // Act
-        final canRead = await repository.validateReadPermission('other-user', 'share-1', content);
+        final canRead = await repository.validateReadPermission(
+            'other-user', 'share-1', content);
 
         // Assert
         expect(canRead, isFalse);
@@ -122,18 +127,21 @@ void main() {
         final content = _createSharedContent('owner-123', 'content-1');
 
         // Act
-        final canUpdate = await repository.validateUpdatePermission('owner-123', 'share-1', content);
+        final canUpdate = await repository.validateUpdatePermission(
+            'owner-123', 'share-1', content);
 
         // Assert
         expect(canUpdate, isTrue);
       });
 
-      test('should reject non-owner from updating sharing permissions', () async {
+      test('should reject non-owner from updating sharing permissions',
+          () async {
         // Arrange
         final content = _createSharedContent('owner-123', 'content-1');
 
         // Act
-        final canUpdate = await repository.validateUpdatePermission('other-user', 'share-1', content);
+        final canUpdate = await repository.validateUpdatePermission(
+            'other-user', 'share-1', content);
 
         // Assert
         expect(canUpdate, isFalse);
@@ -142,11 +150,13 @@ void main() {
       test('should allow owner to delete shared content', () async {
         // Arrange
         const shareId = 'share-1';
-        final content = _createSharedContent('owner-123', 'content-1', id: shareId);
+        final content =
+            _createSharedContent('owner-123', 'content-1', id: shareId);
         await _seedSharedContent(fakeFirestore, shareId, content);
 
         // Act
-        final canDelete = await repository.validateDeletePermission('owner-123', shareId);
+        final canDelete =
+            await repository.validateDeletePermission('owner-123', shareId);
 
         // Assert
         expect(canDelete, isTrue);
@@ -155,11 +165,13 @@ void main() {
       test('should reject non-owner from deleting shared content', () async {
         // Arrange
         const shareId = 'share-1';
-        final content = _createSharedContent('owner-123', 'content-1', id: shareId);
+        final content =
+            _createSharedContent('owner-123', 'content-1', id: shareId);
         await _seedSharedContent(fakeFirestore, shareId, content);
 
         // Act
-        final canDelete = await repository.validateDeletePermission('other-user', shareId);
+        final canDelete =
+            await repository.validateDeletePermission('other-user', shareId);
 
         // Assert
         expect(canDelete, isFalse);
@@ -170,14 +182,18 @@ void main() {
       test('should share content to a group successfully', () async {
         // Arrange
         const groupId = 'group-789';
-        final content = _createSharedContent('owner-123', 'recipe-1', id: 'share-1');
+        final content =
+            _createSharedContent('owner-123', 'recipe-1', id: 'share-1');
         await _seedSharedContent(fakeFirestore, 'share-1', content);
 
         // Act
         await repository.shareToGroup(groupId, content);
 
         // Assert
-        final doc = await fakeFirestore.collection('shared_content').doc('share-1').get();
+        final doc = await fakeFirestore
+            .collection('shared_content')
+            .doc('share-1')
+            .get();
         expect(doc.exists, isTrue);
         final data = doc.data()!;
         expect(data['sharedWithGroupIds'], contains(groupId));
@@ -192,7 +208,8 @@ void main() {
         );
 
         const groupId = 'group-789';
-        final content = _createSharedContent('owner-123', 'recipe-1', id: 'share-1');
+        final content =
+            _createSharedContent('owner-123', 'recipe-1', id: 'share-1');
 
         // Act & Assert
         expect(
@@ -215,7 +232,10 @@ void main() {
         await repository.shareToGroup('group-2', content);
 
         // Assert
-        final doc = await fakeFirestore.collection('shared_content').doc('share-1').get();
+        final doc = await fakeFirestore
+            .collection('shared_content')
+            .doc('share-1')
+            .get();
         final data = doc.data()!;
         expect(data['sharedWithGroupIds'], containsAll(['group-1', 'group-2']));
       });
@@ -225,14 +245,18 @@ void main() {
       test('should share content to multiple users successfully', () async {
         // Arrange
         final userIds = ['user-1', 'user-2', 'user-3'];
-        final content = _createSharedContent('owner-123', 'recipe-1', id: 'share-1');
+        final content =
+            _createSharedContent('owner-123', 'recipe-1', id: 'share-1');
         await _seedSharedContent(fakeFirestore, 'share-1', content);
 
         // Act
         await repository.shareToUsers(userIds, content);
 
         // Assert
-        final doc = await fakeFirestore.collection('shared_content').doc('share-1').get();
+        final doc = await fakeFirestore
+            .collection('shared_content')
+            .doc('share-1')
+            .get();
         expect(doc.exists, isTrue);
         final data = doc.data()!;
         expect(data['sharedWithUserIds'], containsAll(userIds));
@@ -247,7 +271,8 @@ void main() {
         );
 
         final userIds = ['user-1', 'user-2'];
-        final content = _createSharedContent('owner-123', 'recipe-1', id: 'share-1');
+        final content =
+            _createSharedContent('owner-123', 'recipe-1', id: 'share-1');
 
         // Act & Assert
         expect(
@@ -256,7 +281,8 @@ void main() {
         );
       });
 
-      test('should not duplicate users when sharing to already shared users', () async {
+      test('should not duplicate users when sharing to already shared users',
+          () async {
         // Arrange
         final content = _createSharedContent(
           'owner-123',
@@ -270,10 +296,14 @@ void main() {
         await repository.shareToUsers(['user-1', 'user-2'], content);
 
         // Assert
-        final doc = await fakeFirestore.collection('shared_content').doc('share-1').get();
+        final doc = await fakeFirestore
+            .collection('shared_content')
+            .doc('share-1')
+            .get();
         final data = doc.data()!;
         final sharedWithUserIds = List<String>.from(data['sharedWithUserIds']);
-        expect(sharedWithUserIds.where((id) => id == 'user-1').length, equals(1));
+        expect(
+            sharedWithUserIds.where((id) => id == 'user-1').length, equals(1));
         expect(sharedWithUserIds, contains('user-2'));
       });
     });
@@ -301,10 +331,16 @@ void main() {
         );
 
         // Assert
-        final doc = await fakeFirestore.collection('shared_content').doc('share-1').get();
+        final doc = await fakeFirestore
+            .collection('shared_content')
+            .doc('share-1')
+            .get();
         final data = doc.data()!;
-        expect(data['sharedWithUserIds'], containsAll(['user-1', 'user-2', 'user-3']));
-      }, skip: 'FakeFirebaseFirestore FieldValue.arrayUnion limitation - tested in integration tests');
+        expect(data['sharedWithUserIds'],
+            containsAll(['user-1', 'user-2', 'user-3']));
+      },
+          skip:
+              'FakeFirebaseFirestore FieldValue.arrayUnion limitation - tested in integration tests');
 
       test('should remove users from sharing permissions', () async {
         // Arrange
@@ -324,11 +360,16 @@ void main() {
         );
 
         // Assert
-        final doc = await fakeFirestore.collection('shared_content').doc('share-1').get();
+        final doc = await fakeFirestore
+            .collection('shared_content')
+            .doc('share-1')
+            .get();
         final data = doc.data()!;
         expect(data['sharedWithUserIds'], isNot(contains('user-2')));
         expect(data['sharedWithUserIds'], containsAll(['user-1', 'user-3']));
-      }, skip: 'FakeFirebaseFirestore FieldValue.arrayRemove limitation - tested in integration tests');
+      },
+          skip:
+              'FakeFirebaseFirestore FieldValue.arrayRemove limitation - tested in integration tests');
 
       test('should reject permission update when not owner', () async {
         // Arrange
@@ -338,7 +379,8 @@ void main() {
           isAuthenticated: true,
         );
 
-        final content = _createSharedContent('owner-123', 'recipe-1', id: 'share-1');
+        final content =
+            _createSharedContent('owner-123', 'recipe-1', id: 'share-1');
         await _seedSharedContent(fakeFirestore, 'share-1', content);
 
         // Act & Assert
@@ -351,7 +393,8 @@ void main() {
       test('should throw when content not found', () async {
         // Act & Assert
         expect(
-          () => repository.updateSharingPermissions('nonexistent', ['user-1'], []),
+          () => repository
+              .updateSharingPermissions('nonexistent', ['user-1'], []),
           throwsA(isA<ResourceNotFoundException>()),
         );
       });
@@ -372,7 +415,10 @@ void main() {
         await repository.revokeSharing('share-1');
 
         // Assert
-        final doc = await fakeFirestore.collection('shared_content').doc('share-1').get();
+        final doc = await fakeFirestore
+            .collection('shared_content')
+            .doc('share-1')
+            .get();
         expect(doc.exists, isFalse);
       });
 
@@ -384,7 +430,8 @@ void main() {
           isAuthenticated: true,
         );
 
-        final content = _createSharedContent('owner-123', 'recipe-1', id: 'share-1');
+        final content =
+            _createSharedContent('owner-123', 'recipe-1', id: 'share-1');
         await _seedSharedContent(fakeFirestore, 'share-1', content);
 
         // Act & Assert
@@ -428,11 +475,16 @@ void main() {
         await repository.acceptSharedContent('share-1', 'user-1');
 
         // Assert
-        final doc = await fakeFirestore.collection('shared_content').doc('share-1').get();
+        final doc = await fakeFirestore
+            .collection('shared_content')
+            .doc('share-1')
+            .get();
         final data = doc.data()!;
         expect(data['acceptedBy'], isNotNull);
         expect(data['acceptedBy']['user-1'], isNotNull);
-      }, skip: 'FakeFirebaseFirestore nested map update limitation - tested in integration tests');
+      },
+          skip:
+              'FakeFirebaseFirestore nested map update limitation - tested in integration tests');
 
       test('should decline shared content successfully', () async {
         // Arrange
@@ -454,11 +506,16 @@ void main() {
         await repository.declineSharedContent('share-1', 'user-1');
 
         // Assert
-        final doc = await fakeFirestore.collection('shared_content').doc('share-1').get();
+        final doc = await fakeFirestore
+            .collection('shared_content')
+            .doc('share-1')
+            .get();
         final data = doc.data()!;
         expect(data['declinedBy'], isNotNull);
         expect(data['declinedBy']['user-1'], isNotNull);
-      }, skip: 'FakeFirebaseFirestore nested map update limitation - tested in integration tests');
+      },
+          skip:
+              'FakeFirebaseFirestore nested map update limitation - tested in integration tests');
 
       test('should reject accept when not the target user', () async {
         // Arrange - Current user is owner-123 trying to accept for user-1
@@ -533,9 +590,12 @@ void main() {
 
       test('should get user\'s own shared content', () async {
         // Arrange
-        final content1 = _createSharedContent('owner-123', 'recipe-1', id: 'share-1');
-        final content2 = _createSharedContent('owner-123', 'recipe-2', id: 'share-2');
-        final content3 = _createSharedContent('owner-456', 'recipe-3', id: 'share-3');
+        final content1 =
+            _createSharedContent('owner-123', 'recipe-1', id: 'share-1');
+        final content2 =
+            _createSharedContent('owner-123', 'recipe-2', id: 'share-2');
+        final content3 =
+            _createSharedContent('owner-456', 'recipe-3', id: 'share-3');
 
         await _seedSharedContent(fakeFirestore, 'share-1', content1);
         await _seedSharedContent(fakeFirestore, 'share-2', content2);
@@ -562,8 +622,10 @@ void main() {
         final now = DateTime.now();
 
         // Content shared BY user
-        final sharedByMe1 = _createSharedContent('user-123', 'recipe-1', id: 'share-1');
-        final sharedByMe2 = _createSharedContent('user-123', 'recipe-2', id: 'share-2');
+        final sharedByMe1 =
+            _createSharedContent('user-123', 'recipe-1', id: 'share-1');
+        final sharedByMe2 =
+            _createSharedContent('user-123', 'recipe-2', id: 'share-2');
 
         // Content shared WITH user
         final sharedWithMe1 = _createSharedContent(
@@ -601,10 +663,14 @@ void main() {
         expect(stats['totalReceived'], equals(2));
         expect(stats['acceptedCount'], equals(1));
         expect(stats['viewedCount'], equals(2));
-        expect(stats['acceptanceRate'], equals(0.5)); // 1 accepted out of 2 viewed
-      }, skip: 'FakeFirebaseFirestore nested map update limitation - tested in integration tests');
+        expect(
+            stats['acceptanceRate'], equals(0.5)); // 1 accepted out of 2 viewed
+      },
+          skip:
+              'FakeFirebaseFirestore nested map update limitation - tested in integration tests');
 
-      test('should return zero stats for user with no sharing activity', () async {
+      test('should return zero stats for user with no sharing activity',
+          () async {
         // Act
         final stats = await repository.getSharingStats('new-user');
 

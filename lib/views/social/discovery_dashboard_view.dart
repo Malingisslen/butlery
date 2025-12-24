@@ -58,7 +58,8 @@ class _DiscoveryDashboardViewContentState
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this); // Discovery, Activity, Recommendations
+    _tabController = TabController(
+        length: 3, vsync: this); // Discovery, Activity, Recommendations
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = context.read<DiscoveryDashboardViewModel>();
@@ -72,7 +73,7 @@ class _DiscoveryDashboardViewContentState
       });
 
       _scrollController.addListener(() {
-        if (_scrollController.position.pixels >= 
+        if (_scrollController.position.pixels >=
             _scrollController.position.maxScrollExtent - 200) {
           viewModel.loadMoreContent();
         }
@@ -94,7 +95,7 @@ class _DiscoveryDashboardViewContentState
   @override
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
-    
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Consumer<DiscoveryDashboardViewModel>(
@@ -103,7 +104,8 @@ class _DiscoveryDashboardViewContentState
             controller: _scrollController,
             slivers: [
               DiscoveryAppBar.build(context, viewModel),
-              DiscoverySearchSection.build(context, viewModel, _searchController),
+              DiscoverySearchSection.build(
+                  context, viewModel, _searchController),
               _buildTabBar(context, viewModel),
               _buildContent(context, viewModel),
             ],
@@ -113,7 +115,8 @@ class _DiscoveryDashboardViewContentState
     );
   }
 
-  Widget _buildTabBar(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+  Widget _buildTabBar(
+      BuildContext context, DiscoveryDashboardViewModel viewModel) {
     return SliverToBoxAdapter(
       child: ColoredBox(
         color: AppColors.surface,
@@ -132,22 +135,29 @@ class _DiscoveryDashboardViewContentState
               margin: AppDimensions.responsiveHorizontalPadding(context),
               decoration: BoxDecoration(
                 color: AppColors.surfaceVariant.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusM),
               ),
               child: TabBar(
                 controller: _tabController,
                 tabs: [
-                  _buildTab('Upptäck', Icons.explore, viewModel.trendingContentCount),
-                  _buildTab('Aktivitet', Icons.timeline, viewModel.friendActivityCount),
-                  _buildTab('För dig', Icons.recommend, viewModel.recommendationsCount),
+                  _buildTab(
+                      'Upptäck', Icons.explore, viewModel.trendingContentCount),
+                  _buildTab('Aktivitet', Icons.timeline,
+                      viewModel.friendActivityCount),
+                  _buildTab('För dig', Icons.recommend,
+                      viewModel.recommendationsCount),
                 ],
                 labelColor: Theme.of(context).colorScheme.primary,
-                unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
-                labelStyle: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                unselectedLabelColor:
+                    Theme.of(context).colorScheme.onSurfaceVariant,
+                labelStyle: AppTextStyles.bodyMedium
+                    .copyWith(fontWeight: FontWeight.w600),
                 unselectedLabelStyle: AppTextStyles.bodyMedium,
                 indicator: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
                 dividerColor: Colors.transparent,
@@ -187,8 +197,10 @@ class _DiscoveryDashboardViewContentState
                       minHeight: 16,
                     ),
                     child: Text(count > 99 ? '99+' : count.toString(),
-                      style: AppTextStyles.labelSmall.copyWith(color: AppColors.onPrimary, fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center),
+                        style: AppTextStyles.labelSmall.copyWith(
+                            color: AppColors.onPrimary,
+                            fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center),
                   ),
                 ),
             ],
@@ -200,7 +212,8 @@ class _DiscoveryDashboardViewContentState
     );
   }
 
-  Widget _buildContent(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+  Widget _buildContent(
+      BuildContext context, DiscoveryDashboardViewModel viewModel) {
     if (viewModel.isInitialLoading) {
       return SliverFillRemaining(
         child: LoadingStates.buildLoadingState(
@@ -244,7 +257,8 @@ class _DiscoveryDashboardViewContentState
     );
   }
 
-  Widget _buildDiscoveryTab(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+  Widget _buildDiscoveryTab(
+      BuildContext context, DiscoveryDashboardViewModel viewModel) {
     if (viewModel.searchQuery.isNotEmpty) {
       return _buildSearchResults(context, viewModel);
     }
@@ -265,7 +279,8 @@ class _DiscoveryDashboardViewContentState
     );
   }
 
-  Widget _buildActivityTab(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+  Widget _buildActivityTab(
+      BuildContext context, DiscoveryDashboardViewModel viewModel) {
     return ResponsiveDashboardWrapper(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,7 +291,8 @@ class _DiscoveryDashboardViewContentState
     );
   }
 
-  Widget _buildRecommendationsTab(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+  Widget _buildRecommendationsTab(
+      BuildContext context, DiscoveryDashboardViewModel viewModel) {
     return ResponsiveDashboardWrapper(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,7 +303,8 @@ class _DiscoveryDashboardViewContentState
     );
   }
 
-  Widget _buildSearchResults(BuildContext context, DiscoveryDashboardViewModel viewModel) {
+  Widget _buildSearchResults(
+      BuildContext context, DiscoveryDashboardViewModel viewModel) {
     final searchResults = viewModel.searchResults;
 
     if (searchResults.isEmpty) {
@@ -305,7 +322,8 @@ class _DiscoveryDashboardViewContentState
       child: ListView.separated(
         padding: EdgeInsets.zero,
         itemCount: searchResults.length,
-        separatorBuilder: (context, index) => const SizedBox(height: AppDimensions.spacingS),
+        separatorBuilder: (context, index) =>
+            const SizedBox(height: AppDimensions.spacingS),
         itemBuilder: (context, index) {
           final item = searchResults[index];
           return _buildSearchResultCard(context, item);
@@ -314,9 +332,11 @@ class _DiscoveryDashboardViewContentState
     );
   }
 
-  Widget _buildSearchResultCard(BuildContext context, Map<String, dynamic> item) {
+  Widget _buildSearchResultCard(
+      BuildContext context, Map<String, dynamic> item) {
     final type = item['type'] as String, title = item['title'] as String;
-    final description = item['description'] as String?, ownerName = item['ownerName'] as String?;
+    final description = item['description'] as String?,
+        ownerName = item['ownerName'] as String?;
 
     return Card(
       child: ListTile(
@@ -326,10 +346,14 @@ class _DiscoveryDashboardViewContentState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (description != null)
-              Text(description, style: AppTextStyles.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
+              Text(description,
+                  style: AppTextStyles.bodySmall,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis),
             if (ownerName != null)
               Text('Av $ownerName',
-                style: AppTextStyles.bodySmall.copyWith(color: AppColors.onSurface.withValues(alpha: 0.6))),
+                  style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.onSurface.withValues(alpha: 0.6))),
           ],
         ),
         trailing: Icon(
@@ -351,7 +375,8 @@ class _DiscoveryDashboardViewContentState
     };
     return CircleAvatar(
       backgroundColor: iconData.$2.withValues(alpha: 0.1),
-      child: Icon(iconData.$1, color: iconData.$2, size: AppDimensions.iconSizeM),
+      child:
+          Icon(iconData.$1, color: iconData.$2, size: AppDimensions.iconSizeM),
     );
   }
 
@@ -360,13 +385,15 @@ class _DiscoveryDashboardViewContentState
 
     switch (type) {
       case 'recipe':
-        Navigator.pushNamed(context, '/recipe-detail', arguments: {'recipeId': id});
+        Navigator.pushNamed(context, '/recipe-detail',
+            arguments: {'recipeId': id});
         break;
       case 'menu':
         Navigator.pushNamed(context, '/menu-detail', arguments: {'menuId': id});
         break;
       case 'shopping_list':
-        Navigator.pushNamed(context, '/shopping-list-detail', arguments: {'listId': id});
+        Navigator.pushNamed(context, '/shopping-list-detail',
+            arguments: {'listId': id});
         break;
     }
   }

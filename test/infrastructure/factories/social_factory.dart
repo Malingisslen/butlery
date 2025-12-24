@@ -19,37 +19,39 @@ class SocialFactory {
   static RecipeComment createComment({
     String? id,
     String? recipeId,
-    String? userId,  // Keep for backward compatibility
+    String? userId, // Keep for backward compatibility
     String? authorId,
-    String? userDisplayName,  // Keep for backward compatibility
+    String? userDisplayName, // Keep for backward compatibility
     String? authorDisplayName,
-    String? userPhotoUrl,  // Keep for backward compatibility
+    String? userPhotoUrl, // Keep for backward compatibility
     String? authorAvatarUrl,
-    String? comment,  // Keep for backward compatibility
+    String? comment, // Keep for backward compatibility
     String? text,
-    DateTime? timestamp,  // Keep for backward compatibility
+    DateTime? timestamp, // Keep for backward compatibility
     DateTime? createdAt,
     DateTime? editedAt,
-    int likes = 0,  // Keep for backward compatibility but convert to list
-    bool isEdited = false,  // Keep for backward compatibility
-    String? replyToCommentId,  // Keep for backward compatibility
+    int likes = 0, // Keep for backward compatibility but convert to list
+    bool isEdited = false, // Keep for backward compatibility
+    String? replyToCommentId, // Keep for backward compatibility
     String? parentCommentId,
-    List<String>? likedBy,  // Keep for backward compatibility
+    List<String>? likedBy, // Keep for backward compatibility
     List<String>? likedByUserIds,
     int replyCount = 0,
     bool isDeleted = false,
   }) {
     // Map old parameters to new ones for backward compatibility
     final actualAuthorId = authorId ?? userId ?? 'user_test';
-    final actualAuthorDisplayName = authorDisplayName ?? userDisplayName ?? 'Test User';
+    final actualAuthorDisplayName =
+        authorDisplayName ?? userDisplayName ?? 'Test User';
     final actualAuthorAvatarUrl = authorAvatarUrl ?? userPhotoUrl;
     final actualText = text ?? comment ?? 'This is a test comment';
     final actualCreatedAt = createdAt ?? timestamp ?? DateTime.now();
     final actualEditedAt = editedAt ?? (isEdited ? DateTime.now() : null);
     final actualParentCommentId = parentCommentId ?? replyToCommentId;
-    final actualLikedByUserIds = likedByUserIds ?? likedBy ?? 
+    final actualLikedByUserIds = likedByUserIds ??
+        likedBy ??
         (likes > 0 ? List.generate(likes, (i) => 'user_like_$i') : []);
-    
+
     return RecipeComment(
       id: id ?? 'comment_${_commentIdCounter++}',
       recipeId: recipeId ?? 'recipe_test',
@@ -97,7 +99,8 @@ class SocialFactory {
       timestamp: timestamp ?? DateTime.now(),
       visibility: visibility ?? ['public'],
       metadata: metadata ?? {},
-      engagement: engagement ?? const ActivityEngagement(likes: 0, comments: 0, shares: 0, views: 0),
+      engagement: engagement ??
+          const ActivityEngagement(likes: 0, comments: 0, shares: 0, views: 0),
     );
   }
 
@@ -120,8 +123,9 @@ class SocialFactory {
       id: id ?? 'request_${_requestIdCounter++}',
       fromUserId: fromUserId ?? 'from_user_test',
       toUserId: toUserId ?? 'to_user_test',
-      status: status != null 
-          ? FriendRequestStatus.values.firstWhere((s) => s.name == status, orElse: () => FriendRequestStatus.pending)
+      status: status != null
+          ? FriendRequestStatus.values.firstWhere((s) => s.name == status,
+              orElse: () => FriendRequestStatus.pending)
           : FriendRequestStatus.pending,
       sentAt: sentAt ?? DateTime.now(),
       respondedAt: respondedAt,
@@ -186,12 +190,13 @@ class SocialFactory {
     int? totalCount,
     DateTime? lastUpdated,
   }) {
-    final counts = reactionCounts ?? {
-      ReactionType.like: 5,
-      ReactionType.love: 3,
-      ReactionType.delicious: 2,
-    };
-    
+    final counts = reactionCounts ??
+        {
+          ReactionType.like: 5,
+          ReactionType.love: 3,
+          ReactionType.delicious: 2,
+        };
+
     return ReactionStatistics.fromCounts(
       counts,
       contentId: contentId ?? 'content_test',
@@ -259,7 +264,7 @@ class SocialFactory {
     String? userId,
   }) {
     final targetTypes = ['recipe', 'menu', 'user', 'comment', 'list'];
-    
+
     return List.generate(
       count,
       (index) => createActivityFeedItem(
@@ -322,23 +327,31 @@ class SocialFactory {
     bool includeVariety = true,
   }) {
     if (!includeVariety) {
-      return List.generate(count, (index) => createGroupActivityData(
-        title: 'Activity ${index + 1}',
-        ownerName: 'User ${index + 1}',
-        sharedAt: DateTime.now().subtract(Duration(hours: index)),
-      ));
+      return List.generate(
+          count,
+          (index) => createGroupActivityData(
+                title: 'Activity ${index + 1}',
+                ownerName: 'User ${index + 1}',
+                sharedAt: DateTime.now().subtract(Duration(hours: index)),
+              ));
     }
 
     final activities = <Map<String, dynamic>>[];
     final activityTypes = ['recipe', 'menu', 'shopping_list'];
     final actions = ['shared_to_group', 'commented', 'liked'];
-    final swedishTitles = ['Köttbullar med gräddsås', 'Veckans meny', 'Inköpslista för helgen'];
+    final swedishTitles = [
+      'Köttbullar med gräddsås',
+      'Veckans meny',
+      'Inköpslista för helgen'
+    ];
 
     for (int i = 0; i < count; i++) {
       final type = activityTypes[i % activityTypes.length];
       final action = actions[i % actions.length];
-      final title = i < swedishTitles.length ? swedishTitles[i] : 'Test ${type.replaceAll('_', ' ')} ${i + 1}';
-      
+      final title = i < swedishTitles.length
+          ? swedishTitles[i]
+          : 'Test ${type.replaceAll('_', ' ')} ${i + 1}';
+
       final activity = createGroupActivityData(
         type: type,
         action: action,
@@ -348,10 +361,10 @@ class SocialFactory {
         sharedAt: DateTime.now().subtract(Duration(hours: i, minutes: i * 15)),
         metadata: _createTestMetadata(type, i),
       );
-      
+
       activities.add(activity);
     }
-    
+
     return activities;
   }
 
@@ -359,15 +372,19 @@ class SocialFactory {
   static Map<String, dynamic>? _createTestMetadata(String type, int index) {
     switch (type) {
       case 'recipe':
-        return index % 3 == 0 ? {
-          'description': 'En klassisk svensk rätt med hemlagad smak',
-          'totalRecipes': 1,
-        } : null;
+        return index % 3 == 0
+            ? {
+                'description': 'En klassisk svensk rätt med hemlagad smak',
+                'totalRecipes': 1,
+              }
+            : null;
       case 'menu':
-        return index % 2 == 0 ? {
-          'description': 'Planerad meny för hela veckan',
-          'totalRecipes': 5 + index,
-        } : null;
+        return index % 2 == 0
+            ? {
+                'description': 'Planerad meny för hela veckan',
+                'totalRecipes': 5 + index,
+              }
+            : null;
       case 'shopping_list':
         return {
           'description': 'Inköpslista för helgens middag',

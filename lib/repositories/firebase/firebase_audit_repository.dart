@@ -126,9 +126,8 @@ class FirebaseAuditRepository {
 
       final snapshot = await query.get();
 
-      final logs = snapshot.docs
-          .map((doc) => AuditLog.fromFirestore(doc))
-          .toList();
+      final logs =
+          snapshot.docs.map((doc) => AuditLog.fromFirestore(doc)).toList();
 
       AppLogger.info(
         '📊 Retrieved ${logs.length} audit logs for user $userId',
@@ -169,9 +168,8 @@ class FirebaseAuditRepository {
 
       final snapshot = await query.get();
 
-      final logs = snapshot.docs
-          .map((doc) => AuditLog.fromFirestore(doc))
-          .toList();
+      final logs =
+          snapshot.docs.map((doc) => AuditLog.fromFirestore(doc)).toList();
 
       AppLogger.info(
         '📊 Retrieved ${logs.length} audit logs for $resourceType${resourceId != null ? "/$resourceId" : ""}',
@@ -207,14 +205,14 @@ class FirebaseAuditRepository {
           .limit(limit);
 
       if (since != null) {
-        query = query.where('timestamp', isGreaterThan: Timestamp.fromDate(since));
+        query =
+            query.where('timestamp', isGreaterThan: Timestamp.fromDate(since));
       }
 
       final snapshot = await query.get();
 
-      final logs = snapshot.docs
-          .map((doc) => AuditLog.fromFirestore(doc))
-          .toList();
+      final logs =
+          snapshot.docs.map((doc) => AuditLog.fromFirestore(doc)).toList();
 
       AppLogger.info(
         '🚨 Retrieved ${logs.length} denied access attempts${since != null ? " since $since" : ""}',
@@ -245,7 +243,10 @@ class FirebaseAuditRepository {
         'granted': logs.where((log) => log.granted).length,
         'denied': logs.where((log) => !log.granted).length,
         'reads': logs.where((log) => log.operation == 'read').length,
-        'writes': logs.where((log) => log.operation == 'write' || log.operation == 'update').length,
+        'writes': logs
+            .where(
+                (log) => log.operation == 'write' || log.operation == 'update')
+            .length,
         'deletes': logs.where((log) => log.operation == 'delete').length,
         'creates': logs.where((log) => log.operation == 'create').length,
       };

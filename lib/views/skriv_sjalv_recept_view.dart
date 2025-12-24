@@ -93,14 +93,14 @@ class _SkrivSjalvReceptViewContentState
 
     _titleController = TextEditingController(text: viewModel.title);
     _descriptionController = TextEditingController(text: viewModel.description);
-    _portionsController = TextEditingController(
-        text: viewModel.portions?.toString() ?? '');
-    _timeMinutesController = TextEditingController(
-        text: viewModel.timeMinutes?.toString() ?? '');
-    _ratingController = TextEditingController(
-        text: viewModel.rating?.toString() ?? '');
-    _sourceUrlController = TextEditingController(
-        text: viewModel.sourceUrl ?? '');
+    _portionsController =
+        TextEditingController(text: viewModel.portions?.toString() ?? '');
+    _timeMinutesController =
+        TextEditingController(text: viewModel.timeMinutes?.toString() ?? '');
+    _ratingController =
+        TextEditingController(text: viewModel.rating?.toString() ?? '');
+    _sourceUrlController =
+        TextEditingController(text: viewModel.sourceUrl ?? '');
     _controllersInitialized = true;
   }
 
@@ -313,195 +313,198 @@ class _SkrivSjalvReceptViewContentState
                     key: _formKey,
                     child: ListView(
                       children: [
-                    // Måltidstyp - Custom layout to fix text cutoff
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Måltidstyp',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(
-                            height:
-                                4.0), // Minimal gap between label and dropdown
-                        DropdownButtonFormField<String>(
-                          initialValue: viewModel.mealType,
-                          isExpanded: true,
-                          decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: AppDimensions.paddingL,
-                              vertical: AppDimensions.paddingM,
+                        // Måltidstyp - Custom layout to fix text cutoff
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Måltidstyp',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
                             ),
-                            border: OutlineInputBorder(),
-                          ),
-                          style: AppTextStyles.bodyMedium,
-                          items: RecipeFormViewModel.mealTypes
-                              .map(
-                                (mt) => DropdownMenuItem(
-                                    value: mt, child: Text(mt)),
-                              )
-                              .toList(),
-                          onChanged: (value) {
-                            if (value != null) viewModel.setMealType(value);
-                          },
+                            const SizedBox(
+                                height:
+                                    4.0), // Minimal gap between label and dropdown
+                            DropdownButtonFormField<String>(
+                              initialValue: viewModel.mealType,
+                              isExpanded: true,
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: AppDimensions.paddingL,
+                                  vertical: AppDimensions.paddingM,
+                                ),
+                                border: OutlineInputBorder(),
+                              ),
+                              style: AppTextStyles.bodyMedium,
+                              items: RecipeFormViewModel.mealTypes
+                                  .map(
+                                    (mt) => DropdownMenuItem(
+                                        value: mt, child: Text(mt)),
+                                  )
+                                  .toList(),
+                              onChanged: (value) {
+                                if (value != null) viewModel.setMealType(value);
+                              },
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.spacingXl),
 
-                    // Bildhantering med UniversalImageManager
-                    UniversalImageManager.recipeEdit(
-                      imageUrls: viewModel.imageUrls,
-                      onRemoveImage: viewModel.removeImageAt,
-                      onSetPrimary: (index) {
-                        AppLogger.debug(
-                            '🌟 RECIPE_VIEW: onSetPrimary called with index $index, imageUrls length: ${viewModel.imageUrls.length}');
-                        if (index < viewModel.imageUrls.length) {
-                          final imageUrl = viewModel.imageUrls[index];
-                          AppLogger.debug(
-                              '🌟 RECIPE_VIEW: Setting primary image to: $imageUrl');
-                          viewModel.setPrimaryImage(imageUrl);
-                        } else {
-                          AppLogger.warning(
-                              '⚠️ RECIPE_VIEW: Index $index out of bounds for imageUrls (length: ${viewModel.imageUrls.length})');
-                        }
-                      },
-                      userId: ServiceLocator.get<PermissionService>()
-                              .currentUserId ??
-                          '',
-                      onPickImage: () => _pickImage(viewModel),
-                      maxImages: 5,
-                      isLoading:
-                          viewModel.isUploadingImage, // Add loading indicator
-                      // Enhanced Upload Progress Parameters
-                      uploadStatuses: viewModel.imageUploadStatuses,
-                      onRetryUpload: viewModel.retryImageUpload,
-                      onCancelUpload: viewModel.cancelImageUpload,
-                      uploadQueueStatus: viewModel.uploadQueueStatusText,
-                      // Bulk Upload Management Parameters
-                      uploadManagementSummary:
-                          viewModel.uploadManagementSummary,
-                      onRetryAllFailed: viewModel.retryAllFailedUploads,
-                      onCancelAllActive: viewModel.cancelAllActiveUploads,
-                      onClearAllFailed: viewModel.clearAllFailedUploads,
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXl),
+                        // Bildhantering med UniversalImageManager
+                        UniversalImageManager.recipeEdit(
+                          imageUrls: viewModel.imageUrls,
+                          onRemoveImage: viewModel.removeImageAt,
+                          onSetPrimary: (index) {
+                            AppLogger.debug(
+                                '🌟 RECIPE_VIEW: onSetPrimary called with index $index, imageUrls length: ${viewModel.imageUrls.length}');
+                            if (index < viewModel.imageUrls.length) {
+                              final imageUrl = viewModel.imageUrls[index];
+                              AppLogger.debug(
+                                  '🌟 RECIPE_VIEW: Setting primary image to: $imageUrl');
+                              viewModel.setPrimaryImage(imageUrl);
+                            } else {
+                              AppLogger.warning(
+                                  '⚠️ RECIPE_VIEW: Index $index out of bounds for imageUrls (length: ${viewModel.imageUrls.length})');
+                            }
+                          },
+                          userId: ServiceLocator.get<PermissionService>()
+                                  .currentUserId ??
+                              '',
+                          onPickImage: () => _pickImage(viewModel),
+                          maxImages: 5,
+                          isLoading: viewModel
+                              .isUploadingImage, // Add loading indicator
+                          // Enhanced Upload Progress Parameters
+                          uploadStatuses: viewModel.imageUploadStatuses,
+                          onRetryUpload: viewModel.retryImageUpload,
+                          onCancelUpload: viewModel.cancelImageUpload,
+                          uploadQueueStatus: viewModel.uploadQueueStatusText,
+                          // Bulk Upload Management Parameters
+                          uploadManagementSummary:
+                              viewModel.uploadManagementSummary,
+                          onRetryAllFailed: viewModel.retryAllFailedUploads,
+                          onCancelAllActive: viewModel.cancelAllActiveUploads,
+                          onClearAllFailed: viewModel.clearAllFailedUploads,
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXl),
 
-                    // Titel
-                    StyledInput(
-                      controller: _titleController,
-                      label: 'Titel',
-                      textInputAction: TextInputAction.next,
-                      onChanged: viewModel.setTitle,
-                      validator: FormValidators.combine([
-                        FormValidators.required('Titel'),
-                        FormValidators.maxLength(100, 'Titel'),
-                      ]),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXl),
+                        // Titel
+                        StyledInput(
+                          controller: _titleController,
+                          label: 'Titel',
+                          textInputAction: TextInputAction.next,
+                          onChanged: viewModel.setTitle,
+                          validator: FormValidators.combine([
+                            FormValidators.required('Titel'),
+                            FormValidators.maxLength(100, 'Titel'),
+                          ]),
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXl),
 
-                    // Beskrivning
-                    StyledInput(
-                      controller: _descriptionController,
-                      label: 'Beskrivning',
-                      maxLines: 2,
-                      minLines: 2,
-                      textInputAction: TextInputAction.next,
-                      onChanged: viewModel.setDescription,
-                      validator: FormValidators.maxLength(500, 'Beskrivning'),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXl),
+                        // Beskrivning
+                        StyledInput(
+                          controller: _descriptionController,
+                          label: 'Beskrivning',
+                          maxLines: 2,
+                          minLines: 2,
+                          textInputAction: TextInputAction.next,
+                          onChanged: viewModel.setDescription,
+                          validator:
+                              FormValidators.maxLength(500, 'Beskrivning'),
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXl),
 
-                    // Portioner
-                    StyledInput(
-                      controller: _portionsController,
-                      label: 'Portioner',
-                      keyboardType: TextInputType.number,
-                      textInputAction: TextInputAction.next,
-                      onChanged: (value) =>
-                          viewModel.setPortions(int.tryParse(value)),
-                      validator: FormValidators.portions(),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXl),
+                        // Portioner
+                        StyledInput(
+                          controller: _portionsController,
+                          label: 'Portioner',
+                          keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.next,
+                          onChanged: (value) =>
+                              viewModel.setPortions(int.tryParse(value)),
+                          validator: FormValidators.portions(),
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXl),
 
-                    // Tid
-                    StyledInput(
-                      controller: _timeMinutesController,
-                      label: 'Tid (min)',
-                      keyboardType: TextInputType.number,
-                      textInputAction: TextInputAction.next,
-                      onChanged: (value) =>
-                          viewModel.setTimeMinutes(int.tryParse(value)),
-                      validator: FormValidators.cookingTime(),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXl),
+                        // Tid
+                        StyledInput(
+                          controller: _timeMinutesController,
+                          label: 'Tid (min)',
+                          keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.next,
+                          onChanged: (value) =>
+                              viewModel.setTimeMinutes(int.tryParse(value)),
+                          validator: FormValidators.cookingTime(),
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXl),
 
-                    // Ingredienser
-                    _buildDynamicList(
-                      label: 'Ingrediens',
-                      controllers: viewModel.ingredientControllers,
-                      onUpdate: viewModel.updateIngredient,
-                      onAdd: viewModel.addIngredient,
-                      onRemove: viewModel.removeIngredient,
-                      viewModel: viewModel,
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXl),
+                        // Ingredienser
+                        _buildDynamicList(
+                          label: 'Ingrediens',
+                          controllers: viewModel.ingredientControllers,
+                          onUpdate: viewModel.updateIngredient,
+                          onAdd: viewModel.addIngredient,
+                          onRemove: viewModel.removeIngredient,
+                          viewModel: viewModel,
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXl),
 
-                    // Instruktioner
-                    _buildDynamicList(
-                      label: 'Instruktion',
-                      controllers: viewModel.instructionControllers,
-                      onUpdate: viewModel.updateInstruction,
-                      onAdd: viewModel.addInstruction,
-                      onRemove: viewModel.removeInstruction,
-                      viewModel: viewModel,
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXl),
+                        // Instruktioner
+                        _buildDynamicList(
+                          label: 'Instruktion',
+                          controllers: viewModel.instructionControllers,
+                          onUpdate: viewModel.updateInstruction,
+                          onAdd: viewModel.addInstruction,
+                          onRemove: viewModel.removeInstruction,
+                          viewModel: viewModel,
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXl),
 
-                    // Taggar
-                    _buildDynamicList(
-                      label: 'Tagg',
-                      controllers: viewModel.tagControllers,
-                      onUpdate: viewModel.updateTag,
-                      onAdd: viewModel.addTag,
-                      onRemove: viewModel.removeTag,
-                      viewModel: viewModel,
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXl),
+                        // Taggar
+                        _buildDynamicList(
+                          label: 'Tagg',
+                          controllers: viewModel.tagControllers,
+                          onUpdate: viewModel.updateTag,
+                          onAdd: viewModel.addTag,
+                          onRemove: viewModel.removeTag,
+                          viewModel: viewModel,
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXl),
 
-                    // Betyg
-                    StyledInput(
-                      controller: _ratingController,
-                      label: 'Betyg (0–5)',
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      textInputAction: TextInputAction.next,
-                      onChanged: (value) =>
-                          viewModel.setRating(double.tryParse(value)),
-                      validator: FormValidators.rating(),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXl),
+                        // Betyg
+                        StyledInput(
+                          controller: _ratingController,
+                          label: 'Betyg (0–5)',
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
+                          textInputAction: TextInputAction.next,
+                          onChanged: (value) =>
+                              viewModel.setRating(double.tryParse(value)),
+                          validator: FormValidators.rating(),
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXl),
 
-                    // Source URL-fält
-                    StyledInput(
-                      controller: _sourceUrlController,
-                      label: 'Källa (URL)',
-                      hint: 'Valfritt: länk till originalreceptet',
-                      helperText: viewModel.sourceUrl == 'Delad från annan app'
-                          ? 'Importerat från delning'
-                          : 'Länk till originalreceptet',
-                      prefixIcon: const Icon(
-                        Icons.link,
-                        size: AppDimensions.iconSizeAction,
-                      ),
-                      keyboardType: TextInputType.url,
-                      onChanged: viewModel.setSourceUrl,
-                      validator: FormValidators.recipeSourceUrl(),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXl),
+                        // Source URL-fält
+                        StyledInput(
+                          controller: _sourceUrlController,
+                          label: 'Källa (URL)',
+                          hint: 'Valfritt: länk till originalreceptet',
+                          helperText:
+                              viewModel.sourceUrl == 'Delad från annan app'
+                                  ? 'Importerat från delning'
+                                  : 'Länk till originalreceptet',
+                          prefixIcon: const Icon(
+                            Icons.link,
+                            size: AppDimensions.iconSizeAction,
+                          ),
+                          keyboardType: TextInputType.url,
+                          onChanged: viewModel.setSourceUrl,
+                          validator: FormValidators.recipeSourceUrl(),
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXl),
                       ],
                     ),
                   ),

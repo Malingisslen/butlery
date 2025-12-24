@@ -125,7 +125,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                     _buildSmartBanners(context, widget.recipe),
                     Expanded(
                       child: Padding(
-                        padding: AppDimensions.responsiveContentPadding(context),
+                        padding:
+                            AppDimensions.responsiveContentPadding(context),
                         child: Form(
                           key: _formKey,
                           child: ListView(
@@ -185,7 +186,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                 Padding(
                   padding: const EdgeInsets.only(right: AppDimensions.spacingL),
                   child: Center(
-                    child: SocialCollaborativeComponents.collaborativeStatusBadge(
+                    child:
+                        SocialCollaborativeComponents.collaborativeStatusBadge(
                       text: 'Delat',
                       icon: Icons.people,
                     ),
@@ -438,7 +440,6 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
       ),
     ];
   }
-
 
   Future<void> _saveRecipe(BuildContext context) async {
     final currentState = _formKey.currentState;

@@ -37,7 +37,8 @@ class ProfileSectionBuilders {
             icon: Icons.download,
             title: 'Ladda ner backup',
             subtitle: 'Spara alla recept som JSON',
-            onTap: () => BackupRestoreHandler.handleBackup(rootContext ?? context),
+            onTap: () =>
+                BackupRestoreHandler.handleBackup(rootContext ?? context),
             color: AppColors.primaryBlue,
           ),
           const SizedBox(height: AppDimensions.spacingM),
@@ -46,7 +47,8 @@ class ProfileSectionBuilders {
             icon: Icons.upload,
             title: 'Återställ från backup',
             subtitle: 'Importera recept från JSON',
-            onTap: () => BackupRestoreHandler.handleRestore(rootContext ?? context),
+            onTap: () =>
+                BackupRestoreHandler.handleRestore(rootContext ?? context),
             color: AppColors.primaryBlue,
           ),
         ],

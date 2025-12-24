@@ -11,7 +11,7 @@ import 'package:butlery/models/recipe_unified.dart';
 /// - Loading state management
 /// - State notifications and updates
 /// ❌ DOES NOT CONTAIN: Business logic, external service calls, persistence
-class MenuStateManager extends ChangeNotifier  with StreamManagementMixin{
+class MenuStateManager extends ChangeNotifier with StreamManagementMixin {
   // Core state variables
   Map<String, List<Recipe>> _menu = {};
   bool _isGenerating = false;
@@ -20,7 +20,7 @@ class MenuStateManager extends ChangeNotifier  with StreamManagementMixin{
   List<SavedMenuInfo> _savedMenus = [];
 
   // ===== STATE GETTERS =====
-  
+
   Map<String, List<Recipe>> get menu => Map.unmodifiable(_menu);
   bool get isGenerating => _isGenerating;
   String? get error => _error;
@@ -111,7 +111,7 @@ class MenuStateManager extends ChangeNotifier  with StreamManagementMixin{
 }
 
 /// Data class for saved menu information
-class SavedMenuInfo  {
+class SavedMenuInfo {
   final String key;
   final String name;
   final DateTime savedDate;

@@ -29,19 +29,19 @@ void main() {
     late Recipe? lastSavedRecipe;
     late String? lastStoppedRecipeId;
     late Map<String, dynamic>? lastNotificationData;
-    
+
     setUpAll(() async {
       // Initialize test infrastructure once for all tests
       await BaseUnitTest.setupUnit();
-      
+
       // Register fallback values for mocktail
       registerFallbackValue(<String, dynamic>{});
     });
-    
+
     setUp(() async {
       // Initialize service locator for each test
       await TestServiceLocator.initialize();
-      
+
       // Reset test state
       lastError = null;
       notifyListenerCount = 0;
@@ -49,44 +49,45 @@ void main() {
       lastStoppedRecipeId = null;
       lastNotificationData = null;
     });
-    
+
     tearDown(() async {
       // Reset mocks and service locator after each test
       BaseUnitTest.resetMocks();
       await TestServiceLocator.reset();
     });
-    
+
     tearDownAll(() async {
       // Final cleanup after all tests
       await BaseUnitTest.teardownUnit();
     });
-    
+
     // Helper functions
     Future<void> saveToCache(Recipe recipe) async {
       lastSavedRecipe = recipe;
     }
-    
+
     void notifyListeners() {
       notifyListenerCount++;
     }
-    
-    Future<void> sendRealtimeEditNotification(String recipeId, String? editedBy, Map<String, dynamic> data) async {
+
+    Future<void> sendRealtimeEditNotification(
+        String recipeId, String? editedBy, Map<String, dynamic> data) async {
       lastNotificationData = {
         'recipeId': recipeId,
         'editedBy': editedBy,
         ...data,
       };
     }
-    
+
     Future<bool> stopRealtimeEditing(String recipeId) async {
       lastStoppedRecipeId = recipeId;
       return true;
     }
-    
+
     void setError(String error) {
       lastError = error;
     }
-    
+
     group('External Edit Processing', () {
       test('should process valid external edit', () {
         // Arrange
@@ -107,7 +108,7 @@ void main() {
           },
           'type': 'personal',
         };
-        
+
         // Act
         RealtimeEventHandler.processExternalEdit(
           recipeId: recipeId,
@@ -118,18 +119,18 @@ void main() {
           notifyListeners: notifyListeners,
           sendRealtimeEditNotification: sendRealtimeEditNotification,
         );
-        
+
         // Assert
         expect(lastSavedRecipe, isNotNull);
         expect(notifyListenerCount, equals(1));
         expect(lastNotificationData, isNotNull);
       });
-      
+
       test('should reject invalid edit data', () {
         // Arrange
         const recipeId = 'recipe-1';
         final data = <String, dynamic>{}; // Empty data
-        
+
         // Act
         RealtimeEventHandler.processExternalEdit(
           recipeId: recipeId,
@@ -140,12 +141,12 @@ void main() {
           notifyListeners: notifyListeners,
           sendRealtimeEditNotification: sendRealtimeEditNotification,
         );
-        
+
         // Assert
         expect(lastSavedRecipe, isNull);
         expect(notifyListenerCount, equals(0));
       });
-      
+
       test('should validate edit data correctly', () {
         // Valid edit data
         expect(
@@ -155,10 +156,10 @@ void main() {
           }),
           isTrue,
         );
-        
+
         // Invalid - empty data
         expect(RealtimeEventHandler.isValidEditData({}), isFalse);
-        
+
         // Invalid - missing editedBy
         expect(
           RealtimeEventHandler.isValidEditData({
@@ -166,7 +167,7 @@ void main() {
           }),
           isFalse,
         );
-        
+
         // Invalid - missing editedAt
         expect(
           RealtimeEventHandler.isValidEditData({
@@ -176,13 +177,13 @@ void main() {
         );
       });
     });
-    
+
     group('Error Handling', () {
       test('should handle real-time sync error', () {
         // Arrange
         const recipeId = 'recipe-1';
         final error = Exception('Sync failed');
-        
+
         // Act
         RealtimeEventHandler.handleRealtimeError(
           recipeId: recipeId,
@@ -190,18 +191,18 @@ void main() {
           stopRealtimeEditing: stopRealtimeEditing,
           setError: setError,
         );
-        
+
         // Assert
         expect(lastStoppedRecipeId, equals(recipeId));
         expect(lastError, contains('Realtidssynkronisering misslyckades'));
         expect(lastError, contains('Tekniskt fel'));
       });
-      
+
       test('should handle permission error', () {
         // Arrange
         const recipeId = 'recipe-1';
         final error = Exception('Permission denied');
-        
+
         // Act
         RealtimeEventHandler.handlePermissionError(
           recipeId: recipeId,
@@ -209,32 +210,32 @@ void main() {
           stopRealtimeEditing: stopRealtimeEditing,
           setError: setError,
         );
-        
+
         // Assert
         expect(lastStoppedRecipeId, equals(recipeId));
         expect(lastError, contains('Du har inte behörighet'));
       });
-      
+
       test('should handle network error', () {
         // Arrange
         const recipeId = 'recipe-1';
         final error = Exception('Network error');
-        
+
         // Act
         RealtimeEventHandler.handleNetworkError(
           recipeId: recipeId,
           error: error,
           setError: setError,
         );
-        
+
         // Assert
         expect(lastError, contains('Nätverksfel'));
         expect(lastError, contains('kontrollera din internetanslutning'));
       });
-      
+
       test('should convert errors to user-friendly messages', () {
         // Test through handleRealtimeError which uses _getUserFriendlyErrorMessage internally
-        
+
         // Permission error
         RealtimeEventHandler.handleRealtimeError(
           recipeId: 'test-1',
@@ -243,7 +244,7 @@ void main() {
           setError: setError,
         );
         expect(lastError, contains('Behörighet saknas'));
-        
+
         // Network error
         lastError = null;
         RealtimeEventHandler.handleRealtimeError(
@@ -253,7 +254,7 @@ void main() {
           setError: setError,
         );
         expect(lastError, contains('Nätverksfel'));
-        
+
         // Timeout error
         lastError = null;
         RealtimeEventHandler.handleRealtimeError(
@@ -263,7 +264,7 @@ void main() {
           setError: setError,
         );
         expect(lastError, contains('Tidsgräns överskriden'));
-        
+
         // Generic error
         lastError = null;
         RealtimeEventHandler.handleRealtimeError(
@@ -275,7 +276,7 @@ void main() {
         expect(lastError, contains('Tekniskt fel'));
       });
     });
-    
+
     group('Notification Handling', () {
       test('should send notification for external edit', () async {
         // Arrange
@@ -288,34 +289,34 @@ void main() {
           'editedAt': Timestamp.now(),
           'editedByDisplayName': 'Other User',
         };
-        
+
         // Act
         await RealtimeEventHandler.sendRealtimeEditNotification(
           recipeId: recipeId,
           editedBy: editedBy,
           data: data,
         );
-        
+
         // Assert - method logs but doesn't throw
         expect(true, isTrue); // Notification logged successfully
       });
-      
+
       test('should skip notification for null editor', () async {
         // Arrange
         const recipeId = 'recipe-1';
         final data = {'editType': 'realtime_edit'};
-        
+
         // Act
         await RealtimeEventHandler.sendRealtimeEditNotification(
           recipeId: recipeId,
           editedBy: null,
           data: data,
         );
-        
+
         // Assert - method returns early for null editor
         expect(true, isTrue);
       });
-      
+
       test('should extract edit details correctly', () {
         // Arrange
         final data = {
@@ -325,17 +326,17 @@ void main() {
           'editedAt': Timestamp.now(),
           'editedByDisplayName': 'Test User',
         };
-        
+
         // Act
         final details = RealtimeEventHandler.extractEditDetails(data);
-        
+
         // Assert
         expect(details['editType'], equals('realtime_edit'));
         expect(details['field'], equals('ingredients'));
         expect(details['operation'], equals('add_ingredient'));
         expect(details['editedByDisplayName'], equals('Test User'));
       });
-      
+
       test('should determine when to send notifications', () {
         // Should send for external edit
         expect(
@@ -345,7 +346,7 @@ void main() {
           ),
           isTrue,
         );
-        
+
         // Should not send for own edit
         expect(
           RealtimeEventHandler.shouldSendNotification(
@@ -354,7 +355,7 @@ void main() {
           ),
           isFalse,
         );
-        
+
         // Should not send for presence updates
         expect(
           RealtimeEventHandler.shouldSendNotification(
@@ -365,7 +366,7 @@ void main() {
         );
       });
     });
-    
+
     group('Event Processing Logic', () {
       test('should determine if edit should be processed', () {
         // Should process external edit
@@ -376,7 +377,7 @@ void main() {
           ),
           isTrue,
         );
-        
+
         // Should not process own edit
         expect(
           RealtimeEventHandler.shouldProcessEdit(
@@ -385,7 +386,7 @@ void main() {
           ),
           isFalse,
         );
-        
+
         // Should not process without editor
         expect(
           RealtimeEventHandler.shouldProcessEdit(
@@ -395,7 +396,7 @@ void main() {
           isFalse,
         );
       });
-      
+
       test('should identify own edits', () {
         // Own edit
         expect(
@@ -405,7 +406,7 @@ void main() {
           ),
           isTrue,
         );
-        
+
         // Not own edit
         expect(
           RealtimeEventHandler.isOwnEdit(
@@ -415,7 +416,7 @@ void main() {
           isFalse,
         );
       });
-      
+
       test('should check if edit is recent', () {
         // Recent edit (within 5 minutes)
         final recentTimestamp = Timestamp.fromDate(
@@ -425,7 +426,7 @@ void main() {
           RealtimeEventHandler.isRecentEdit({'editedAt': recentTimestamp}),
           isTrue,
         );
-        
+
         // Old edit (more than 5 minutes)
         final oldTimestamp = Timestamp.fromDate(
           DateTime.now().subtract(const Duration(minutes: 10)),
@@ -434,39 +435,41 @@ void main() {
           RealtimeEventHandler.isRecentEdit({'editedAt': oldTimestamp}),
           isFalse,
         );
-        
+
         // No timestamp - process anyway
         expect(
           RealtimeEventHandler.isRecentEdit({}),
           isTrue,
         );
       });
-      
+
       test('should get event priority', () {
         // High priority - realtime edit
         expect(
           RealtimeEventHandler.getEventPriority({'editType': 'realtime_edit'}),
           equals(1),
         );
-        
+
         // Medium priority - metadata update
         expect(
-          RealtimeEventHandler.getEventPriority({'editType': 'metadata_update'}),
+          RealtimeEventHandler.getEventPriority(
+              {'editType': 'metadata_update'}),
           equals(2),
         );
-        
+
         // Low priority - presence update
         expect(
-          RealtimeEventHandler.getEventPriority({'editType': 'presence_update'}),
+          RealtimeEventHandler.getEventPriority(
+              {'editType': 'presence_update'}),
           equals(3),
         );
-        
+
         // Default priority - unknown type
         expect(
           RealtimeEventHandler.getEventPriority({'editType': 'unknown'}),
           equals(2),
         );
-        
+
         // Default priority - no type
         expect(
           RealtimeEventHandler.getEventPriority({}),

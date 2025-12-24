@@ -203,7 +203,8 @@ class SocialModule implements DIModule {
                 final firestoreRepo = container<FirestoreRepository>();
                 final userId = authRepo.currentUserId;
                 final displayName =
-                    userService.currentUserProfile?.displayName ?? 'Unknown User';
+                    userService.currentUserProfile?.displayName ??
+                        'Unknown User';
 
                 if (userId == null) {
                   AppLogger.error('Cannot save menu: No authenticated user');
@@ -222,8 +223,9 @@ class SocialModule implements DIModule {
 
                 // Save to menus collection
                 final menuData = sharedMenu.toFirestore();
-                final docRef =
-                    await firestoreRepo.firestore.collection('menus').add(menuData);
+                final docRef = await firestoreRepo.firestore
+                    .collection('menus')
+                    .add(menuData);
 
                 AppLogger.success('✅ Saved imported menu: ${docRef.id}');
                 return docRef.id;

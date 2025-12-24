@@ -50,7 +50,8 @@ class FriendsProfileCacheManager extends ChangeNotifier {
           .toList();
 
       if (uncachedUserIds.isNotEmpty) {
-        AppLogger.info('👥 Loading ${uncachedUserIds.length} user profiles for requests');
+        AppLogger.info(
+            '👥 Loading ${uncachedUserIds.length} user profiles for requests');
 
         final profiles = await _userService.getUserProfiles(uncachedUserIds);
 
@@ -61,13 +62,16 @@ class FriendsProfileCacheManager extends ChangeNotifier {
           _requestUserProfiles[profile.uid] = profile;
         }
 
-        AppLogger.success('✅ ${profiles.length}/${uncachedUserIds.length} user profiles loaded');
+        AppLogger.success(
+            '✅ ${profiles.length}/${uncachedUserIds.length} user profiles loaded');
 
         // Log missing profiles
         final loadedIds = profiles.map((p) => p.uid).toSet();
-        final missingIds = uncachedUserIds.where((id) => !loadedIds.contains(id));
+        final missingIds =
+            uncachedUserIds.where((id) => !loadedIds.contains(id));
         if (missingIds.isNotEmpty) {
-          AppLogger.warning('⚠️ Could not load profiles for: ${missingIds.join(', ')}');
+          AppLogger.warning(
+              '⚠️ Could not load profiles for: ${missingIds.join(', ')}');
         }
       }
     } catch (e) {

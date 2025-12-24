@@ -144,7 +144,8 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
 
       // Add invitees as members to the subcollection (Issue #014 migration fix)
       // This enables collectionGroup('members') queries to find content for recipients
-      AppLogger.info('🔍 DEBUG: Adding ${inviteeUserIds.length} members to subcollection for $invitationId');
+      AppLogger.info(
+          '🔍 DEBUG: Adding ${inviteeUserIds.length} members to subcollection for $invitationId');
       for (final inviteeId in inviteeUserIds) {
         AppLogger.info('🔍 DEBUG: Adding member $inviteeId to $invitationId');
         await sharedRepository.addMember(

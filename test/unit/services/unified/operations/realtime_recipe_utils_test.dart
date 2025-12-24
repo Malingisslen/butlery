@@ -28,23 +28,23 @@ void main() {
       // Initialize test infrastructure once for all tests
       await BaseUnitTest.setupUnit();
     });
-    
+
     setUp(() async {
       // Initialize service locator for each test
       await TestServiceLocator.initialize();
     });
-    
+
     tearDown(() async {
       // Reset mocks and service locator after each test
       BaseUnitTest.resetMocks();
       await TestServiceLocator.reset();
     });
-    
+
     tearDownAll(() async {
       // Final cleanup after all tests
       await BaseUnitTest.teardownUnit();
     });
-    
+
     group('Recipe Conversion', () {
       test('should convert Recipe to RealtimeRecipe data structure', () {
         // Arrange
@@ -68,16 +68,18 @@ void main() {
             lastEditedByDisplayName: 'Test Editor',
           ),
         );
-        
+
         // Act
         final result = RealtimeRecipeUtils.convertToRealtimeRecipe(recipe);
-        
+
         // Assert
         expect(result['id'], equals('recipe-123'));
         expect(result['name'], equals('Swedish Meatballs'));
         expect(result['description'], equals('Traditional Swedish recipe'));
-        expect(result['ingredients'], equals(['500g ground beef', '1 onion', '2 dl cream']));
-        expect(result['instructions'], equals(['Mix ingredients', 'Form balls', 'Fry until golden']));
+        expect(result['ingredients'],
+            equals(['500g ground beef', '1 onion', '2 dl cream']));
+        expect(result['instructions'],
+            equals(['Mix ingredients', 'Form balls', 'Fry until golden']));
         expect(result['ownerId'], equals('owner-789'));
         expect(result['ownerDisplayName'], equals('Test Owner'));
         expect(result['lastEditedByUserId'], equals('editor-111'));
@@ -85,7 +87,7 @@ void main() {
         expect(result['editCount'], equals(1));
         expect(result['lastEditedAt'], isNotNull);
       });
-      
+
       test('should handle Recipe without social and realtime data', () {
         // Arrange
         final recipe = Recipe(
@@ -100,17 +102,17 @@ void main() {
           ),
           type: RecipeType.personal,
         );
-        
+
         // Act
         final result = RealtimeRecipeUtils.convertToRealtimeRecipe(recipe);
-        
+
         // Assert
         expect(result['ownerId'], equals('user-123'));
         expect(result['ownerDisplayName'], equals('Unknown'));
         expect(result['lastEditedByUserId'], equals('user-123'));
         expect(result['lastEditedByDisplayName'], equals('Unknown'));
       });
-      
+
       test('should convert RealtimeRecipe object to Recipe', () {
         // Arrange
         final baseRecipe = Recipe(
@@ -124,22 +126,22 @@ void main() {
           ),
           type: RecipeType.realtime,
         );
-        
+
         final realtimeRecipe = RealtimeRecipe.fromRecipe(
           recipe: baseRecipe,
           ownerId: 'owner-123',
           ownerDisplayName: 'Test Owner',
         );
-        
+
         // Act
         final result = RealtimeRecipeUtils.convertToRecipe(realtimeRecipe);
-        
+
         // Assert
         expect(result.id, equals('recipe-123'));
         expect(result.title, equals('Test Recipe'));
         expect(result.type, equals(RecipeType.realtime));
       });
-      
+
       test('should convert Map data to Recipe', () {
         // Arrange
         final realtimeData = {
@@ -151,10 +153,10 @@ void main() {
           'imageUrls': ['image1.jpg', 'image2.jpg'],
           'mealType': 'efterrätt',
         };
-        
+
         // Act
         final result = RealtimeRecipeUtils.convertToRecipe(realtimeData);
-        
+
         // Assert
         expect(result.id, equals('recipe-456'));
         expect(result.title, equals('Kladdkaka'));
@@ -164,16 +166,16 @@ void main() {
         expect(result.imageUrls.length, equals(2));
         expect(result.type, equals(RecipeType.realtime));
       });
-      
+
       test('should handle Map with missing fields', () {
         // Arrange
         final minimalData = {
           'id': 'recipe-789',
         };
-        
+
         // Act
         final result = RealtimeRecipeUtils.convertToRecipe(minimalData);
-        
+
         // Assert
         expect(result.id, equals('recipe-789'));
         expect(result.title, isEmpty);
@@ -182,21 +184,21 @@ void main() {
         expect(result.instructions, isEmpty);
         expect(result.core.mealType, equals('Lunch')); // Default value
       });
-      
+
       test('should throw error for invalid realtimeRecipe type', () {
         // Act & Assert
         expect(
           () => RealtimeRecipeUtils.convertToRecipe('invalid'),
           throwsA(isA<ArgumentError>()),
         );
-        
+
         expect(
           () => RealtimeRecipeUtils.convertToRecipe(123),
           throwsA(isA<ArgumentError>()),
         );
       });
     });
-    
+
     group('Change Application', () {
       test('should apply changes to realtime recipe data', () {
         // Arrange
@@ -209,13 +211,13 @@ void main() {
           'imageUrls': ['old.jpg'],
           'editCount': 5,
         };
-        
+
         final changes = {
           'title': 'New Name',
           'description': 'New description',
           'ingredients': ['new ingredient 1', 'new ingredient 2'],
         };
-        
+
         // Act
         final result = RealtimeRecipeUtils.applyChangesToRealtimeRecipe(
           recipe,
@@ -224,12 +226,14 @@ void main() {
           'user-123',
           'Test User',
         );
-        
+
         // Assert
         expect(result['name'], equals('New Name'));
         expect(result['description'], equals('New description'));
-        expect(result['ingredients'], equals(['new ingredient 1', 'new ingredient 2']));
-        expect(result['instructions'], equals(['old instruction'])); // Unchanged
+        expect(result['ingredients'],
+            equals(['new ingredient 1', 'new ingredient 2']));
+        expect(
+            result['instructions'], equals(['old instruction'])); // Unchanged
         expect(result['imageUrls'], equals(['old.jpg'])); // Unchanged
         expect(result['editCount'], equals(6));
         expect(result['lastEditedByUserId'], equals('user-123'));
@@ -237,7 +241,7 @@ void main() {
         expect(result['editDescription'], equals('Updated recipe content'));
         expect(result['lastEditedAt'], isNotNull);
       });
-      
+
       test('should handle partial changes', () {
         // Arrange
         final recipe = {
@@ -248,11 +252,11 @@ void main() {
           'instructions': ['instruction 1'],
           'editCount': 2,
         };
-        
+
         final changes = {
           'instructions': ['new instruction 1', 'new instruction 2'],
         };
-        
+
         // Act
         final result = RealtimeRecipeUtils.applyChangesToRealtimeRecipe(
           recipe,
@@ -261,16 +265,18 @@ void main() {
           null,
           null,
         );
-        
+
         // Assert
         expect(result['name'], equals('Recipe Name')); // Unchanged
-        expect(result['description'], equals('Recipe description')); // Unchanged
+        expect(
+            result['description'], equals('Recipe description')); // Unchanged
         expect(result['ingredients'], equals(['ingredient 1'])); // Unchanged
-        expect(result['instructions'], equals(['new instruction 1', 'new instruction 2']));
+        expect(result['instructions'],
+            equals(['new instruction 1', 'new instruction 2']));
         expect(result['editCount'], equals(3));
       });
     });
-    
+
     group('Recipe Merging', () {
       test('should merge two recipe versions', () {
         // Arrange
@@ -288,7 +294,7 @@ void main() {
           ),
           type: RecipeType.realtime,
         );
-        
+
         final remote = Recipe(
           core: RecipeCore(
             id: 'recipe-123',
@@ -303,7 +309,7 @@ void main() {
           ),
           type: RecipeType.realtime,
         );
-        
+
         // Act
         final result = RealtimeRecipeUtils.mergeRecipeVersions(
           local,
@@ -311,23 +317,29 @@ void main() {
           'user-123',
           'Test User',
         );
-        
+
         // Assert
         expect(result.title, equals('Remote Title')); // Remote wins
         expect(result.description, equals('Remote description')); // Remote wins
-        expect(result.ingredients, equals(['remote ingredient 1', 'remote ingredient 2'])); // Remote wins
-        expect(result.instructions, equals(['remote instruction'])); // Remote wins
-        
+        expect(
+            result.ingredients,
+            equals(
+                ['remote ingredient 1', 'remote ingredient 2'])); // Remote wins
+        expect(
+            result.instructions, equals(['remote instruction'])); // Remote wins
+
         // Images are merged
-        expect(result.imageUrls.toSet(), equals({'local1.jpg', 'local2.jpg', 'remote1.jpg', 'remote2.jpg'}));
-        
+        expect(result.imageUrls.toSet(),
+            equals({'local1.jpg', 'local2.jpg', 'remote1.jpg', 'remote2.jpg'}));
+
         // Local rating preferred when available
         expect(result.rating, equals(4.5));
-        
+
         // Tags are merged
-        expect(result.tags!.toSet(), equals({'local', 'test', 'remote', 'production'}));
+        expect(result.tags!.toSet(),
+            equals({'local', 'test', 'remote', 'production'}));
       });
-      
+
       test('should handle null values in merge', () {
         // Arrange
         final local = Recipe(
@@ -343,7 +355,7 @@ void main() {
           ),
           type: RecipeType.realtime,
         );
-        
+
         final remote = Recipe(
           core: RecipeCore(
             id: 'recipe-123',
@@ -357,7 +369,7 @@ void main() {
           ),
           type: RecipeType.realtime,
         );
-        
+
         // Act
         final result = RealtimeRecipeUtils.mergeRecipeVersions(
           local,
@@ -365,13 +377,15 @@ void main() {
           null,
           null,
         );
-        
+
         // Assert
-        expect(result.rating, equals(4.8)); // Remote rating used when local is null
-        expect(result.tags, equals(['remote'])); // Remote tags used when local is null
+        expect(result.rating,
+            equals(4.8)); // Remote rating used when local is null
+        expect(result.tags,
+            equals(['remote'])); // Remote tags used when local is null
       });
     });
-    
+
     group('Collaboration Statistics', () {
       test('should get collaboration stats for collaborative recipe', () {
         // Arrange
@@ -399,10 +413,10 @@ void main() {
             editCount: 15,
           ),
         );
-        
+
         // Act
         final stats = RealtimeRecipeUtils.getCollaborationStats(recipe);
-        
+
         // Assert
         expect(stats['memberCount'], equals(3));
         expect(stats['daysSinceLastEdit'], equals(2));
@@ -411,7 +425,7 @@ void main() {
         expect(stats.containsKey('activeEditorsCount'), isTrue);
         expect(stats.containsKey('isActivelyCollaborated'), isTrue);
       });
-      
+
       test('should return empty stats for non-collaborative recipe', () {
         // Arrange
         final recipe = Recipe(
@@ -425,14 +439,14 @@ void main() {
           ),
           type: RecipeType.personal,
         );
-        
+
         // Act
         final stats = RealtimeRecipeUtils.getCollaborationStats(recipe);
-        
+
         // Assert
         expect(stats, isEmpty);
       });
-      
+
       test('should calculate collaboration level correctly', () {
         // Arrange
         final recipeLow = Recipe(
@@ -452,7 +466,7 @@ void main() {
             },
           ),
         );
-        
+
         final recipeMedium = Recipe(
           core: RecipeCore(
             id: 'recipe-2',
@@ -472,7 +486,7 @@ void main() {
             },
           ),
         );
-        
+
         final recipeHigh = Recipe(
           core: RecipeCore(
             id: 'recipe-3',
@@ -494,24 +508,28 @@ void main() {
             },
           ),
         );
-        
+
         // Act
         final statsLow = RealtimeRecipeUtils.getCollaborationStats(recipeLow);
-        final statsMedium = RealtimeRecipeUtils.getCollaborationStats(recipeMedium);
+        final statsMedium =
+            RealtimeRecipeUtils.getCollaborationStats(recipeMedium);
         final statsHigh = RealtimeRecipeUtils.getCollaborationStats(recipeHigh);
-        
+
         // Assert
         expect(statsLow['collaborationLevel'], equals('low'));
         expect(statsMedium['collaborationLevel'], equals('medium'));
         expect(statsHigh['collaborationLevel'], equals('high'));
       });
     });
-    
+
     group('Change Description', () {
       test('should get change description in Swedish', () {
         // Arrange
         final changes1 = {'title': 'New Title'};
-        final changes2 = {'description': 'New desc', 'ingredients': ['new']};
+        final changes2 = {
+          'description': 'New desc',
+          'ingredients': ['new']
+        };
         final changes3 = {
           'title': 'Title',
           'description': 'Desc',
@@ -520,21 +538,22 @@ void main() {
           'imageUrls': ['img'],
         };
         final changes4 = <String, dynamic>{};
-        
+
         // Act
         final desc1 = RealtimeRecipeUtils.getChangeDescription(changes1);
         final desc2 = RealtimeRecipeUtils.getChangeDescription(changes2);
         final desc3 = RealtimeRecipeUtils.getChangeDescription(changes3);
         final desc4 = RealtimeRecipeUtils.getChangeDescription(changes4);
-        
+
         // Assert
         expect(desc1, equals('titel'));
         expect(desc2, equals('beskrivning, ingredienser'));
-        expect(desc3, equals('titel, beskrivning, ingredienser, instruktioner, bilder'));
+        expect(desc3,
+            equals('titel, beskrivning, ingredienser, instruktioner, bilder'));
         expect(desc4, equals('receptet')); // Default when no fields changed
       });
     });
-    
+
     group('Validation', () {
       test('should validate recipe for realtime operations', () {
         // Arrange
@@ -549,7 +568,7 @@ void main() {
           ),
           type: RecipeType.collaborative,
         );
-        
+
         final invalidRecipe = Recipe(
           core: RecipeCore(
             id: 'recipe-456',
@@ -561,18 +580,20 @@ void main() {
           ),
           type: RecipeType.personal,
         );
-        
+
         // Act
-        final validResult = RealtimeRecipeUtils.validateRecipeForRealtime(validRecipe);
-        final invalidResult = RealtimeRecipeUtils.validateRecipeForRealtime(invalidRecipe);
+        final validResult =
+            RealtimeRecipeUtils.validateRecipeForRealtime(validRecipe);
+        final invalidResult =
+            RealtimeRecipeUtils.validateRecipeForRealtime(invalidRecipe);
         final nullResult = RealtimeRecipeUtils.validateRecipeForRealtime(null);
-        
+
         // Assert
         expect(validResult, isNull); // null means valid
         expect(invalidResult, equals('Recipe is not collaborative'));
         expect(nullResult, equals('Recipe not found'));
       });
-      
+
       test('should validate user permissions', () {
         // Arrange & Act
         final result1 = RealtimeRecipeUtils.validateUserPermissions(
@@ -581,25 +602,25 @@ void main() {
           requireEdit: true,
           requireOwner: false,
         );
-        
+
         final result2 = RealtimeRecipeUtils.validateUserPermissions(
           null,
           'recipe-456',
           requireEdit: false,
           requireOwner: false,
         );
-        
+
         // Assert
         expect(result1, isNull); // Stub implementation returns null (valid)
         expect(result2, equals('User must be logged in'));
       });
     });
-    
+
     group('Edit History', () {
       test('should create edit history entry', () {
         // Arrange
         final timestamp = DateTime(2024, 1, 15, 10, 30);
-        
+
         // Act
         final entry = RealtimeRecipeUtils.createEditHistoryEntry(
           timestamp: timestamp,
@@ -609,7 +630,7 @@ void main() {
           details: 'Changed ingredients',
           targetUserId: 'target-456',
         );
-        
+
         // Assert
         expect(entry['timestamp'], equals(timestamp));
         expect(entry['userId'], equals('user-123'));
@@ -618,12 +639,12 @@ void main() {
         expect(entry['details'], equals('Changed ingredients'));
         expect(entry['targetUserId'], equals('target-456'));
       });
-      
+
       test('should generate edit history for recipe', () {
         // Arrange
         final createdAt = DateTime(2024, 1, 10);
         final updatedAt = DateTime(2024, 1, 12);
-        
+
         final recipe = Recipe(
           core: RecipeCore(
             id: 'recipe-123',
@@ -650,33 +671,37 @@ void main() {
             lastEditedByDisplayName: 'Last Editor',
           ),
         );
-        
+
         // Act
         final history = RealtimeRecipeUtils.generateEditHistory(recipe);
-        
+
         // Assert
-        expect(history.length, greaterThanOrEqualTo(3)); // Creation + update + collaborators
-        
+        expect(history.length,
+            greaterThanOrEqualTo(3)); // Creation + update + collaborators
+
         // Check creation event
-        final creationEvent = history.firstWhere((e) => e['action'] == 'Created recipe');
+        final creationEvent =
+            history.firstWhere((e) => e['action'] == 'Created recipe');
         expect(creationEvent['timestamp'], equals(createdAt));
         expect(creationEvent['userId'], equals('creator-123'));
-        
+
         // Check update event
-        final updateEvent = history.firstWhere((e) => e['action'] == 'Updated recipe');
+        final updateEvent =
+            history.firstWhere((e) => e['action'] == 'Updated recipe');
         expect(updateEvent['timestamp'], equals(updatedAt));
         expect(updateEvent['userId'], equals('editor-456'));
         expect(updateEvent['userName'], equals('Last Editor'));
-        
+
         // Check collaborator events
-        final collabEvents = history.where((e) => e['action'] == 'Added collaborator');
+        final collabEvents =
+            history.where((e) => e['action'] == 'Added collaborator');
         expect(collabEvents.length, equals(2)); // Two members added
       });
-      
+
       test('should handle recipe without updates', () {
         // Arrange
         final createdAt = DateTime(2024, 1, 10);
-        
+
         final recipe = Recipe(
           core: RecipeCore(
             id: 'recipe-123',
@@ -691,16 +716,16 @@ void main() {
           ),
           type: RecipeType.personal,
         );
-        
+
         // Act
         final history = RealtimeRecipeUtils.generateEditHistory(recipe);
-        
+
         // Assert
         expect(history.length, equals(1)); // Only creation event
         expect(history.first['action'], equals('Created recipe'));
       });
     });
-    
+
     group('Active Editors', () {
       test('should get active editors from recipe', () {
         // Arrange
@@ -726,15 +751,16 @@ void main() {
             lastEditedByUserId: 'user1',
           ),
         );
-        
+
         // Act
-        final activeEditors = RealtimeRecipeUtils.getActiveEditorsFromRecipe(recipe);
-        
+        final activeEditors =
+            RealtimeRecipeUtils.getActiveEditorsFromRecipe(recipe);
+
         // Assert
         expect(activeEditors, contains('user1')); // Recently edited
         // May contain others based on random simulation
       });
-      
+
       test('should return empty list for non-collaborative recipe', () {
         // Arrange
         final recipe = Recipe(
@@ -748,14 +774,15 @@ void main() {
           ),
           type: RecipeType.personal,
         );
-        
+
         // Act
-        final activeEditors = RealtimeRecipeUtils.getActiveEditorsFromRecipe(recipe);
-        
+        final activeEditors =
+            RealtimeRecipeUtils.getActiveEditorsFromRecipe(recipe);
+
         // Assert
         expect(activeEditors, isEmpty);
       });
-      
+
       test('should exclude editors inactive for more than 5 minutes', () {
         // Arrange
         final recipe = Recipe(
@@ -769,35 +796,38 @@ void main() {
           ),
           type: RecipeType.collaborative,
           socialData: RecipeSocialData(
-            memberPermissions: <String, ResourcePermission>{}, // Empty to avoid random simulation
+            memberPermissions: <String,
+                ResourcePermission>{}, // Empty to avoid random simulation
           ),
           realtimeData: RecipeRealtimeData(
             lastEditedAt: DateTime.now().subtract(const Duration(minutes: 10)),
             lastEditedByUserId: 'user1',
           ),
         );
-        
+
         // Act
-        final activeEditors = RealtimeRecipeUtils.getActiveEditorsFromRecipe(recipe);
-        
+        final activeEditors =
+            RealtimeRecipeUtils.getActiveEditorsFromRecipe(recipe);
+
         // Assert
         // user1 should not be included as they edited 10 minutes ago and no members to randomly simulate
         expect(activeEditors, isEmpty);
       });
     });
-    
+
     group('User Activity', () {
       test('should simulate user activity viewing', () async {
         // Act - Run multiple times with small delays to test randomness
         int activeCount = 0;
         for (int i = 0; i < 30; i++) {
-          if (RealtimeRecipeUtils.isUserActivelyViewing('user-123', 'recipe-456')) {
+          if (RealtimeRecipeUtils.isUserActivelyViewing(
+              'user-123', 'recipe-456')) {
             activeCount++;
           }
           // Small delay to ensure different millisecond values
           await Future.delayed(const Duration(milliseconds: 1));
         }
-        
+
         // Assert - Should get some active and some inactive
         expect(activeCount, greaterThan(0)); // At least some activity
         expect(activeCount, lessThan(30)); // But not always active

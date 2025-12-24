@@ -21,7 +21,7 @@ class DeleteGroupDialog extends BaseActionDialog<bool> {
   @override
   Future<bool> performAction(BuildContext context) async {
     final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-    
+
     final success = await friendsService.categories.deleteCategory(
       group.id,
     );
@@ -29,7 +29,7 @@ class DeleteGroupDialog extends BaseActionDialog<bool> {
     if (!success) {
       throw Exception('Kunde inte ta bort grupp. Försök igen.');
     }
-    
+
     return true;
   }
 
@@ -62,12 +62,13 @@ class DeleteGroupDialog extends BaseActionDialog<bool> {
             ],
           ),
         ),
-        
+
         const SizedBox(height: AppDimensions.spacingM),
-        
+
         // Warning message
         const WarningDisplayWidget(
-          warningMessage: 'Detta kan inte ångras. Alla medlemmar kommer att tas bort från gruppen.',
+          warningMessage:
+              'Detta kan inte ångras. Alla medlemmar kommer att tas bort från gruppen.',
         ),
       ],
     );
@@ -75,10 +76,10 @@ class DeleteGroupDialog extends BaseActionDialog<bool> {
 
   @override
   Widget? get dialogIcon => const Icon(
-    Icons.warning_amber_rounded,
-    color: AppColors.warning,
-    size: AppDimensions.iconSizeXxl,
-  );
+        Icons.warning_amber_rounded,
+        color: AppColors.warning,
+        size: AppDimensions.iconSizeXxl,
+      );
 
   @override
   String get dialogTitle => 'Ta bort grupp';
@@ -97,9 +98,9 @@ class DeleteGroupDialog extends BaseActionDialog<bool> {
 
   @override
   ButtonStyle get actionButtonStyle => FilledButton.styleFrom(
-    backgroundColor: AppColors.error,
-    foregroundColor: Colors.white,
-  );
+        backgroundColor: AppColors.error,
+        foregroundColor: Colors.white,
+      );
 
   @override
   bool get isDestructiveAction => true;

@@ -16,8 +16,10 @@ class ShoppingItemOperationsModule {
   final AuthRepository authRepository;
   final String Function() requireCurrentUserId;
   final Future<UnifiedShoppingList?> Function(String id) readList;
-  final Future<UnifiedShoppingList> Function(UnifiedShoppingList entity) updateCollaborativeList;
-  final CollectionReference<Map<String, dynamic>> Function(String userId) getUserCollection;
+  final Future<UnifiedShoppingList> Function(UnifiedShoppingList entity)
+      updateCollaborativeList;
+  final CollectionReference<Map<String, dynamic>> Function(String userId)
+      getUserCollection;
   final Future<void> Function({
     required String currentUserId,
     required String resourceOwnerId,
@@ -72,7 +74,9 @@ class ShoppingItemOperationsModule {
 
     if (list.type == ListType.collaborative) {
       // ULTRATHINK FIX: Handle collaborative lists - items stored inline in document
-      AppLogger.info('ULTRATHINK: Adding item to collaborative list (inline storage)', 'ShoppingRepository');
+      AppLogger.info(
+          'ULTRATHINK: Adding item to collaborative list (inline storage)',
+          'ShoppingRepository');
 
       final updatedItems = [...list.items, item];
       final updatedList = list.copyWith(
@@ -86,7 +90,9 @@ class ShoppingItemOperationsModule {
       await updateCollaborativeList(updatedList);
     } else {
       // Handle personal lists - items stored in subcollection
-      AppLogger.info('ULTRATHINK: Adding item to personal list (subcollection storage)', 'ShoppingRepository');
+      AppLogger.info(
+          'ULTRATHINK: Adding item to personal list (subcollection storage)',
+          'ShoppingRepository');
 
       // For personal lists, verify ownership
       await validateOwnership(
@@ -113,7 +119,8 @@ class ShoppingItemOperationsModule {
   }
 
   /// Add multiple items to a list using Firebase batch operations
-  Future<void> addItemsBatch(String listId, List<UnifiedShoppingItem> items) async {
+  Future<void> addItemsBatch(
+      String listId, List<UnifiedShoppingItem> items) async {
     final uid = requireCurrentUserId();
 
     // Verify list exists and user has access
@@ -141,10 +148,12 @@ class ShoppingItemOperationsModule {
       // ULTRATHINK FIX: Validate collaborative list edit permissions before adding items
       final userPermission = list.memberPermissions[uid];
       final canEdit = userPermission == SharedListPermission.admin ||
-                     userPermission == SharedListPermission.edit;
+          userPermission == SharedListPermission.edit;
 
       if (!canEdit) {
-        AppLogger.warning('PERMISSION DENIED: User $uid cannot edit collaborative list ${list.id} (permission: $userPermission)', 'ShoppingRepository');
+        AppLogger.warning(
+            'PERMISSION DENIED: User $uid cannot edit collaborative list ${list.id} (permission: $userPermission)',
+            'ShoppingRepository');
         throw PermissionDeniedException(
           'Du har inte behörighet att redigera denna delade inköpslista',
           resource: 'collaborative_list:${list.id}',
@@ -152,7 +161,9 @@ class ShoppingItemOperationsModule {
         );
       }
 
-      AppLogger.info('ULTRATHINK: Adding ${items.length} items to collaborative list (inline storage) - permission validated', 'ShoppingRepository');
+      AppLogger.info(
+          'ULTRATHINK: Adding ${items.length} items to collaborative list (inline storage) - permission validated',
+          'ShoppingRepository');
 
       final updatedItems = [...list.items, ...items];
       final updatedList = list.copyWith(
@@ -166,7 +177,9 @@ class ShoppingItemOperationsModule {
       await updateCollaborativeList(updatedList);
     } else {
       // Handle personal lists - items stored in subcollection
-      AppLogger.info('ULTRATHINK: Adding ${items.length} items to personal list (subcollection storage)', 'ShoppingRepository');
+      AppLogger.info(
+          'ULTRATHINK: Adding ${items.length} items to personal list (subcollection storage)',
+          'ShoppingRepository');
 
       // For personal lists, verify ownership
       await validateOwnership(
@@ -178,7 +191,8 @@ class ShoppingItemOperationsModule {
 
       // Use Firebase batch for atomic operation
       final batch = firestore.batch();
-      final itemsCollection = getUserCollection(uid).doc(listId).collection('items');
+      final itemsCollection =
+          getUserCollection(uid).doc(listId).collection('items');
 
       for (final item in items) {
         batch.set(itemsCollection.doc(item.id), item.toFirestore());
@@ -213,9 +227,12 @@ class ShoppingItemOperationsModule {
 
     if (list.type == ListType.collaborative) {
       // ULTRATHINK FIX: Handle collaborative lists - items stored inline in document
-      AppLogger.info('ULTRATHINK: Removing item from collaborative list (inline storage)', 'ShoppingRepository');
+      AppLogger.info(
+          'ULTRATHINK: Removing item from collaborative list (inline storage)',
+          'ShoppingRepository');
 
-      final updatedItems = list.items.where((item) => item.id != itemId).toList();
+      final updatedItems =
+          list.items.where((item) => item.id != itemId).toList();
       final updatedList = list.copyWith(
         items: updatedItems,
         updatedAt: DateTime.now(),
@@ -227,7 +244,9 @@ class ShoppingItemOperationsModule {
       await updateCollaborativeList(updatedList);
     } else {
       // Handle personal lists - items stored in subcollection
-      AppLogger.info('ULTRATHINK: Removing item from personal list (subcollection storage)', 'ShoppingRepository');
+      AppLogger.info(
+          'ULTRATHINK: Removing item from personal list (subcollection storage)',
+          'ShoppingRepository');
 
       // For personal lists, verify ownership
       await validateOwnership(

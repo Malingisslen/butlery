@@ -11,6 +11,7 @@ import 'package:butlery/views/social/shared_with_me/shared_content_actions.dart'
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+
 /// SharedMenuCard - Card for displaying shared menus
 /// Displays shared menu information with action buttons.
 class SharedMenuCard {
@@ -23,7 +24,8 @@ class SharedMenuCard {
     final isImported = viewModel.menuViewModel.isMenuImported(sharedMenu);
 
     return Material(
-      elevation: isRead ? AppDimensions.elevationLow : AppDimensions.elevationMedium,
+      elevation:
+          isRead ? AppDimensions.elevationLow : AppDimensions.elevationMedium,
       borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
@@ -104,23 +106,16 @@ class SharedMenuCard {
             children: [
               Text(
                 'Delat av ${sharedMenu.sharedByDisplayName}',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(
-                      fontWeight: isRead
-                          ? FontWeight.normal
-                          : FontWeight.w600,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: isRead ? FontWeight.normal : FontWeight.w600,
                       color: Theme.of(context).colorScheme.primary,
                     ),
               ),
               Text(
                 timeago.format(sharedMenu.sharedAt, locale: 'sv'),
                 style: AppTextStyles.bodySmall.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -143,7 +138,8 @@ class SharedMenuCard {
               padding: const EdgeInsets.all(AppDimensions.spacingXs),
               constraints: const BoxConstraints(
                 minWidth: AppDimensions.iconSizeAction + AppDimensions.spacingS,
-                minHeight: AppDimensions.iconSizeAction + AppDimensions.spacingS,
+                minHeight:
+                    AppDimensions.iconSizeAction + AppDimensions.spacingS,
               ),
               child: Icon(
                 Icons.close,
@@ -168,7 +164,8 @@ class SharedMenuCard {
   }
 
   static Widget _buildMenuContent(BuildContext context, SharedMenu sharedMenu) {
-    final isCollaborative = sharedMenu.realtimeMenuId != null && sharedMenu.allowCollaboration;
+    final isCollaborative =
+        sharedMenu.realtimeMenuId != null && sharedMenu.allowCollaboration;
 
     return Row(
       children: [
@@ -210,8 +207,11 @@ class SharedMenuCard {
                     decoration: BoxDecoration(
                       color: isCollaborative
                           ? Theme.of(context).colorScheme.tertiaryContainer
-                          : Theme.of(context).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXs),
+                          : Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.borderRadiusXs),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -220,7 +220,9 @@ class SharedMenuCard {
                           isCollaborative ? Icons.sync : Icons.content_copy,
                           size: AppDimensions.iconSizeXs,
                           color: isCollaborative
-                              ? Theme.of(context).colorScheme.onTertiaryContainer
+                              ? Theme.of(context)
+                                  .colorScheme
+                                  .onTertiaryContainer
                               : Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: AppDimensions.spacingXxs),
@@ -228,8 +230,12 @@ class SharedMenuCard {
                           isCollaborative ? 'Live' : 'Kopia',
                           style: AppTextStyles.labelSmall.copyWith(
                             color: isCollaborative
-                                ? Theme.of(context).colorScheme.onTertiaryContainer
-                                : Theme.of(context).colorScheme.onSurfaceVariant,
+                                ? Theme.of(context)
+                                    .colorScheme
+                                    .onTertiaryContainer
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -288,8 +294,8 @@ class SharedMenuCard {
       child: Text(
         '"$message"',
         style: AppTextStyles.bodySmall.copyWith(
-              fontStyle: FontStyle.italic,
-            ),
+          fontStyle: FontStyle.italic,
+        ),
       ),
     );
   }

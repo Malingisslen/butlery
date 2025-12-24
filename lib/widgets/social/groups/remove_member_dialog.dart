@@ -19,15 +19,15 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
   final UserProfile member;
 
   const RemoveMemberDialog({
-    super.key, 
-    required this.group, 
+    super.key,
+    required this.group,
     required this.member,
   });
 
   @override
   Future<bool> performAction(BuildContext context) async {
     final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-    
+
     final success = await friendsService.categories.removeFriendFromCategory(
       member.uid,
       group.id,
@@ -36,7 +36,7 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
     if (!success) {
       throw Exception('Kunde inte ta bort medlem. Försök igen.');
     }
-    
+
     return true;
   }
 
@@ -79,12 +79,13 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
             ],
           ),
         ),
-        
+
         const SizedBox(height: AppDimensions.spacingM),
-        
+
         // Warning message
         const WarningDisplayWidget(
-          warningMessage: 'Medlemmen kommer att förlora åtkomst till gruppens innehåll.',
+          warningMessage:
+              'Medlemmen kommer att förlora åtkomst till gruppens innehåll.',
         ),
       ],
     );
@@ -92,10 +93,10 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
 
   @override
   Widget? get dialogIcon => const Icon(
-    Icons.person_remove,
-    color: AppColors.warning,
-    size: AppDimensions.iconSizeXxl,
-  );
+        Icons.person_remove,
+        color: AppColors.warning,
+        size: AppDimensions.iconSizeXxl,
+      );
 
   @override
   String get dialogTitle => 'Ta bort medlem';
@@ -111,7 +112,7 @@ class RemoveMemberDialog extends BaseActionDialog<bool> {
 
   @override
   ButtonStyle get actionButtonStyle => FilledButton.styleFrom(
-    backgroundColor: AppColors.warning,
-    foregroundColor: Colors.white,
-  );
+        backgroundColor: AppColors.warning,
+        foregroundColor: Colors.white,
+      );
 }

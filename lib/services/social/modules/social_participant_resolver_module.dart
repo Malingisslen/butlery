@@ -35,7 +35,8 @@ class SocialParticipantResolverModule {
   /// Firestore subcollection instead of model's sharedToUserIds array.
   Future<List<UserProfile>> getRecipeParticipants(String recipeId) async {
     try {
-      final recipe = getSharedRecipes().where((r) => r.id == recipeId).firstOrNull;
+      final recipe =
+          getSharedRecipes().where((r) => r.id == recipeId).firstOrNull;
       if (recipe == null) return [];
 
       // Fetch members from Firestore subcollection
@@ -71,7 +72,8 @@ class SocialParticipantResolverModule {
     try {
       // If shopping service not available, return empty list
       if (shoppingService == null) {
-        AppLogger.warning('Shopping service not available for participant resolution');
+        AppLogger.warning(
+            'Shopping service not available for participant resolution');
         return [];
       }
 

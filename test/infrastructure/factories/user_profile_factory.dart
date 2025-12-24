@@ -1,5 +1,5 @@
 /// User Profile Factory for generating test user profiles
-/// 
+///
 /// Provides factory methods for creating UserProfile instances
 /// with configurable properties for testing.
 library;
@@ -10,7 +10,7 @@ import 'package:butlery/models/user_profile.dart';
 class UserProfileFactory {
   /// Private constructor to prevent instantiation
   UserProfileFactory._();
-  
+
   /// Build a UserProfile with configurable properties
   static UserProfile build({
     String? uid,
@@ -45,7 +45,7 @@ class UserProfileFactory {
       notificationsEnabled: notificationsEnabled,
     );
   }
-  
+
   /// Build a list of user profiles
   static List<UserProfile> buildList({
     int count = 3,
@@ -60,7 +60,7 @@ class UserProfileFactory {
       ),
     );
   }
-  
+
   /// Build a searchable user profile
   static UserProfile buildSearchable({
     String? uid,
@@ -74,7 +74,7 @@ class UserProfileFactory {
       email: 'searchable@example.com',
     );
   }
-  
+
   /// Build an online user profile
   static UserProfile buildOnline({
     String? uid,
@@ -87,7 +87,7 @@ class UserProfileFactory {
       lastActiveAt: DateTime.now(),
     );
   }
-  
+
   /// Build a user with notification settings
   static UserProfile buildWithNotifications({
     String? uid,
@@ -103,7 +103,7 @@ class UserProfileFactory {
       notificationsEnabled: notificationsEnabled,
     );
   }
-  
+
   /// Build a social user with friends and recipes
   static UserProfile buildSocial({
     String? uid,

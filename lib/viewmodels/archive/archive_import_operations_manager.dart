@@ -38,7 +38,8 @@ class ArchiveImportOperationsManager extends ChangeNotifier {
           .map((r) => r.copyWith(sourceUrl: 'Från Butlerys arkiv'))
           .toList();
 
-      final result = await _recipeService.personal.addMultipleUnifiedRecipes(toImport);
+      final result =
+          await _recipeService.personal.addMultipleUnifiedRecipes(toImport);
 
       if (result.isSuccess) {
         _error = null;
@@ -63,11 +64,13 @@ class ArchiveImportOperationsManager extends ChangeNotifier {
     _setImporting(true);
 
     try {
-      final toImport = (filteredRecipes.isEmpty ? archivedRecipes : filteredRecipes)
-          .map((r) => r.copyWith(sourceUrl: 'Från Butlerys arkiv'))
-          .toList();
+      final toImport =
+          (filteredRecipes.isEmpty ? archivedRecipes : filteredRecipes)
+              .map((r) => r.copyWith(sourceUrl: 'Från Butlerys arkiv'))
+              .toList();
 
-      final result = await _recipeService.personal.addMultipleUnifiedRecipes(toImport);
+      final result =
+          await _recipeService.personal.addMultipleUnifiedRecipes(toImport);
 
       if (result.isSuccess) {
         _error = null;

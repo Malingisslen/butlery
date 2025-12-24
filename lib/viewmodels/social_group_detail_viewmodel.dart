@@ -290,8 +290,7 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     }
 
     try {
-      final success =
-          await _friendsService.categories.removeFriendFromCategory(
+      final success = await _friendsService.categories.removeFriendFromCategory(
         currentUserId,
         groupId,
       );

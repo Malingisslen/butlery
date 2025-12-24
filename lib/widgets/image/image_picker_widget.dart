@@ -136,7 +136,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+                  const SizedBox(
+                      height:
+                          (AppDimensions.spacingSm + AppDimensions.spacingXs)),
                   Text(
                     'Selecting images...',
                     style: AppTextStyles.bodyMedium.copyWith(
@@ -156,7 +158,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       color: AppColors.primaryBlue,
                     ),
                   ),
-                  const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+                  const SizedBox(
+                      height:
+                          (AppDimensions.spacingSm + AppDimensions.spacingXs)),
                   Text(
                     widget.allowMultiple ? 'Select images' : 'Select image',
                     style: AppTextStyles.bodyLarge.copyWith(
@@ -256,7 +260,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
-                    errorBuilder: (context, error, stackTrace) => const ColoredBox(
+                    errorBuilder: (context, error, stackTrace) =>
+                        const ColoredBox(
                       color: AppColors.cardWhite,
                       child: Icon(
                         Icons.error_outline,
@@ -297,7 +302,9 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           bottom: AppDimensions.spacingXs,
           left: AppDimensions.spacingXs,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingTight, vertical: AppDimensions.spacingXxs),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.spacingTight,
+                vertical: AppDimensions.spacingXxs),
             decoration: BoxDecoration(
               color: AppColors.cardWhite.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),

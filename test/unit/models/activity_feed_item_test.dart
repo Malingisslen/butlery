@@ -117,7 +117,8 @@ void main() {
           },
         };
 
-        final item = ActivityFeedItem.fromFirestore('activity_123', firestoreData);
+        final item =
+            ActivityFeedItem.fromFirestore('activity_123', firestoreData);
 
         expect(item.id, equals('activity_123'));
         expect(item.userId, equals('user_456'));
@@ -167,7 +168,8 @@ void main() {
           'timestamp': Timestamp.fromDate(DateTime.now()),
         };
 
-        final item = ActivityFeedItem.fromFirestore('activity_123', firestoreData);
+        final item =
+            ActivityFeedItem.fromFirestore('activity_123', firestoreData);
 
         expect(item.userDisplayName, equals('Okänd användare'));
         expect(item.userAvatarUrl, isNull);
@@ -181,7 +183,7 @@ void main() {
     group('ID Generation', () {
       test('should generate unique IDs', () {
         final ids = <String>{};
-        
+
         for (int i = 0; i < 100; i++) {
           final item = ActivityFeedItem.create(
             userId: 'user_$i',
@@ -199,7 +201,7 @@ void main() {
 
       test('should include timestamp in ID', () {
         final beforeTime = DateTime.now().millisecondsSinceEpoch;
-        
+
         final item = ActivityFeedItem.create(
           userId: 'user_456',
           userDisplayName: 'Anna',
@@ -208,13 +210,14 @@ void main() {
           targetType: 'recipe',
           targetTitle: 'Test',
         );
-        
+
         final afterTime = DateTime.now().millisecondsSinceEpoch;
 
         final idParts = item.id.split('_');
         expect(idParts[0], equals('activity'));
-        expect(idParts.length, greaterThanOrEqualTo(3)); // activity_timestamp_microsecond_counter
-        
+        expect(idParts.length,
+            greaterThanOrEqualTo(3)); // activity_timestamp_microsecond_counter
+
         final timestamp = int.parse(idParts[1]);
         expect(timestamp, greaterThanOrEqualTo(beforeTime));
         expect(timestamp, lessThanOrEqualTo(afterTime));
@@ -228,15 +231,18 @@ void main() {
         expect(item.timeAgo, equals('Nyss'));
 
         // 30 minutes ago
-        item = _createTestItem(timestamp: DateTime.now().subtract(Duration(minutes: 30)));
+        item = _createTestItem(
+            timestamp: DateTime.now().subtract(Duration(minutes: 30)));
         expect(item.timeAgo, equals('30 minuter sedan'));
 
         // 2 hours ago
-        item = _createTestItem(timestamp: DateTime.now().subtract(Duration(hours: 2)));
+        item = _createTestItem(
+            timestamp: DateTime.now().subtract(Duration(hours: 2)));
         expect(item.timeAgo, equals('2 timmar sedan'));
 
         // 3 days ago
-        item = _createTestItem(timestamp: DateTime.now().subtract(Duration(days: 3)));
+        item = _createTestItem(
+            timestamp: DateTime.now().subtract(Duration(days: 3)));
         expect(item.timeAgo, equals('3 dagar sedan'));
 
         // More than 7 days ago
@@ -254,21 +260,25 @@ void main() {
 
       test('should identify recent activities', () {
         // Within 24 hours
-        var item = _createTestItem(timestamp: DateTime.now().subtract(Duration(hours: 12)));
+        var item = _createTestItem(
+            timestamp: DateTime.now().subtract(Duration(hours: 12)));
         expect(item.isRecent, isTrue);
 
         // More than 24 hours
-        item = _createTestItem(timestamp: DateTime.now().subtract(Duration(hours: 25)));
+        item = _createTestItem(
+            timestamp: DateTime.now().subtract(Duration(hours: 25)));
         expect(item.isRecent, isFalse);
       });
 
       test('should identify new activities', () {
         // Within 1 hour
-        var item = _createTestItem(timestamp: DateTime.now().subtract(Duration(minutes: 30)));
+        var item = _createTestItem(
+            timestamp: DateTime.now().subtract(Duration(minutes: 30)));
         expect(item.isNew, isTrue);
 
         // More than 1 hour
-        item = _createTestItem(timestamp: DateTime.now().subtract(Duration(minutes: 61)));
+        item = _createTestItem(
+            timestamp: DateTime.now().subtract(Duration(minutes: 61)));
         expect(item.isNew, isFalse);
       });
     });
@@ -324,7 +334,7 @@ void main() {
     group('Visibility Checking', () {
       test('should be visible to all friends', () {
         final item = _createTestItem(visibility: ['all_friends']);
-        
+
         expect(item.isVisibleTo([]), isTrue);
         expect(item.isVisibleTo(['family']), isTrue);
         expect(item.isVisibleTo(['close_friends', 'colleagues']), isTrue);
@@ -332,14 +342,14 @@ void main() {
 
       test('should be visible to public', () {
         final item = _createTestItem(visibility: ['public']);
-        
+
         expect(item.isVisibleTo([]), isTrue);
         expect(item.isVisibleTo(['any_category']), isTrue);
       });
 
       test('should be visible to specific friend categories', () {
         final item = _createTestItem(visibility: ['family', 'close_friends']);
-        
+
         expect(item.isVisibleTo(['family']), isTrue);
         expect(item.isVisibleTo(['close_friends']), isTrue);
         expect(item.isVisibleTo(['family', 'colleagues']), isTrue);
@@ -381,7 +391,8 @@ void main() {
         expect(firestore['type'], equals('recipe_created'));
         expect(firestore['targetId'], equals('recipe_789'));
         expect(firestore['timestamp'], isA<Timestamp>());
-        expect((firestore['timestamp'] as Timestamp).toDate(), equals(timestamp));
+        expect(
+            (firestore['timestamp'] as Timestamp).toDate(), equals(timestamp));
         expect(firestore['engagement']['likes'], equals(10));
       });
 
@@ -563,16 +574,21 @@ void main() {
 
     group('ActivityType', () {
       test('should get ActivityType from key', () {
-        expect(ActivityType.fromKey('recipe_created'), equals(ActivityType.recipeCreated));
-        expect(ActivityType.fromKey('menu_shared'), equals(ActivityType.menuShared));
-        expect(ActivityType.fromKey('comment_added'), equals(ActivityType.commentAdded));
-        expect(ActivityType.fromKey('invalid_key'), equals(ActivityType.unknown));
+        expect(ActivityType.fromKey('recipe_created'),
+            equals(ActivityType.recipeCreated));
+        expect(ActivityType.fromKey('menu_shared'),
+            equals(ActivityType.menuShared));
+        expect(ActivityType.fromKey('comment_added'),
+            equals(ActivityType.commentAdded));
+        expect(
+            ActivityType.fromKey('invalid_key'), equals(ActivityType.unknown));
       });
 
       test('should categorize activity types', () {
         expect(ActivityType.contentTypes, contains(ActivityType.recipeCreated));
         expect(ActivityType.contentTypes, contains(ActivityType.menuCreated));
-        expect(ActivityType.contentTypes, contains(ActivityType.shoppingListCreated));
+        expect(ActivityType.contentTypes,
+            contains(ActivityType.shoppingListCreated));
 
         expect(ActivityType.socialTypes, contains(ActivityType.commentAdded));
         expect(ActivityType.socialTypes, contains(ActivityType.reactionAdded));
@@ -580,15 +596,19 @@ void main() {
 
         expect(ActivityType.sharingTypes, contains(ActivityType.recipeShared));
         expect(ActivityType.sharingTypes, contains(ActivityType.menuShared));
-        expect(ActivityType.sharingTypes, contains(ActivityType.shoppingListShared));
+        expect(ActivityType.sharingTypes,
+            contains(ActivityType.shoppingListShared));
       });
 
       test('should have correct Swedish display names', () {
-        expect(ActivityType.recipeCreated.displayName, equals('👨‍🍳 Recept skapat'));
+        expect(ActivityType.recipeCreated.displayName,
+            equals('👨‍🍳 Recept skapat'));
         expect(ActivityType.menuCreated.displayName, equals('📋 Meny skapad'));
         expect(ActivityType.commentAdded.displayName, equals('💬 Kommentar'));
-        expect(ActivityType.groupJoined.displayName, equals('👥 Gick med i grupp'));
-        expect(ActivityType.achievementUnlocked.displayName, equals('🏆 Bedrift'));
+        expect(ActivityType.groupJoined.displayName,
+            equals('👥 Gick med i grupp'));
+        expect(
+            ActivityType.achievementUnlocked.displayName, equals('🏆 Bedrift'));
       });
     });
 

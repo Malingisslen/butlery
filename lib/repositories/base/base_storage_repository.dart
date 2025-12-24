@@ -167,7 +167,8 @@ abstract class BaseStorageRepository with PermissionValidationMixin {
   }
 
   /// Helper method for recursive directory deletion
-  Future<void> _deleteDirectoryRecursive(Reference dirRef, {bool logAudit = true}) async {
+  Future<void> _deleteDirectoryRecursive(Reference dirRef,
+      {bool logAudit = true}) async {
     try {
       final result = await dirRef.listAll();
 

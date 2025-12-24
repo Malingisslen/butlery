@@ -80,24 +80,28 @@ class RealtimeMenuViewModel extends ChangeNotifier {
 
   // Connection status
   bool get isOnline => _connectionMonitor.isOnline;
-  String get connectionStatusDescription => _connectionMonitor.statusDescription;
+  String get connectionStatusDescription =>
+      _connectionMonitor.statusDescription;
   String get connectionStatusEmoji => _connectionMonitor.statusEmoji;
 
   // Permission system
   String? get currentUserId => _participantManager.currentUserId;
-  bool get canEdit => currentMenu != null && _participantManager.canEdit(currentMenu!.id);
-  bool get canManageParticipants => currentMenu != null &&
+  bool get canEdit =>
+      currentMenu != null && _participantManager.canEdit(currentMenu!.id);
+  bool get canManageParticipants =>
+      currentMenu != null &&
       _participantManager.canManageParticipants(currentMenu!.id);
 
   // Participant tracking
   int get activeParticipantCount => _participantManager.activeParticipantCount;
-  List<ParticipantActivity> get participantActivities => _participantManager.participantActivities;
+  List<ParticipantActivity> get participantActivities =>
+      _participantManager.participantActivities;
   List<String> get onlineParticipants => _participantManager.onlineParticipants;
 
   // Recipe getters with optimistic updates
   List<Recipe> get selectedCategoryRecipes {
     if (selectedCategory == null) return [];
-    
+
     final baseRecipes = _state.selectedCategoryRecipes;
     return _operations.getRecipesForCategory(selectedCategory!, baseRecipes);
   }
@@ -152,8 +156,9 @@ class RealtimeMenuViewModel extends ChangeNotifier {
   }) async {
     if (!_canPerformUpdate()) return;
 
-    final currentRecipes = currentMenu?.getRecipesForCategory(categoryName) ?? [];
-    
+    final currentRecipes =
+        currentMenu?.getRecipesForCategory(categoryName) ?? [];
+
     try {
       await _operations.removeRecipeFromCategory(
         menuId: currentMenu!.id,
@@ -199,7 +204,8 @@ class RealtimeMenuViewModel extends ChangeNotifier {
   }) async {
     if (!_canPerformUpdate()) return;
 
-    final currentRecipes = currentMenu?.getRecipesForCategory(categoryName) ?? [];
+    final currentRecipes =
+        currentMenu?.getRecipesForCategory(categoryName) ?? [];
 
     try {
       await _operations.reorderRecipesInCategory(
@@ -217,7 +223,8 @@ class RealtimeMenuViewModel extends ChangeNotifier {
   Future<void> clearCategory(String categoryName) async {
     if (!_canPerformUpdate()) return;
 
-    final currentRecipes = currentMenu?.getRecipesForCategory(categoryName) ?? [];
+    final currentRecipes =
+        currentMenu?.getRecipesForCategory(categoryName) ?? [];
 
     try {
       await _operations.clearCategory(
@@ -291,7 +298,8 @@ class RealtimeMenuViewModel extends ChangeNotifier {
 
   // ===== UI STATE MANAGEMENT (DELEGATE TO STATE) =====
 
-  void selectCategory(String? categoryName) => _state.selectCategory(categoryName);
+  void selectCategory(String? categoryName) =>
+      _state.selectCategory(categoryName);
   void toggleParticipants() => _state.toggleParticipants();
   void clearError() => _state.clearError();
   void refreshConnection() => _connectionMonitor.forceConnectionCheck();
@@ -367,7 +375,7 @@ class RealtimeMenuViewModel extends ChangeNotifier {
 
   void _onMenuUpdated(RealtimeMenu menu) {
     _state.setCurrentMenu(menu);
-    
+
     // Clear optimistic changes when real update arrives
     _operations.clearOptimisticChanges();
     _participantManager.updateFromMenu(menu);

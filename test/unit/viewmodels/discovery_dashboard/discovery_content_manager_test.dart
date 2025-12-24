@@ -49,7 +49,6 @@ void main() {
             ));
   }
 
-
   group('DiscoveryContentManager - Content Loading', () {
     test('should load all trending content successfully', () async {
       final testRecipes = createTestRecipes(count: 5);
@@ -64,8 +63,10 @@ void main() {
       expect(contentManager.hasError, isFalse);
       expect(contentManager.trendingRecipes, equals(testRecipes));
       expect(contentManager.trendingRecipes.length, equals(5));
-      expect(contentManager.trendingMenus, isEmpty); // Placeholder implementation
-      expect(contentManager.trendingShoppingLists, isEmpty); // Placeholder implementation
+      expect(
+          contentManager.trendingMenus, isEmpty); // Placeholder implementation
+      expect(contentManager.trendingShoppingLists,
+          isEmpty); // Placeholder implementation
     });
 
     test('should set loading state during content loading', () async {
@@ -103,14 +104,14 @@ void main() {
     test('should refresh content successfully', () async {
       final initialRecipes = createTestRecipes(count: 2);
       final refreshedRecipes = createTestRecipes(count: 4);
-      
+
       mockDiscoveryService.setTrendingRecipes(initialRecipes);
       await contentManager.loadAllTrendingContent();
       expect(contentManager.trendingRecipes.length, equals(2));
 
       mockDiscoveryService.setTrendingRecipes(refreshedRecipes);
       await contentManager.refreshContent();
-      
+
       expect(contentManager.trendingRecipes.length, equals(4));
       expect(contentManager.hasError, isFalse);
     });
@@ -118,7 +119,7 @@ void main() {
     test('should clear all content', () async {
       final testRecipes = createTestRecipes(count: 3);
       mockDiscoveryService.setTrendingRecipes(testRecipes);
-      
+
       await contentManager.loadAllTrendingContent();
       expect(contentManager.trendingContentCount, equals(3));
 
@@ -137,19 +138,21 @@ void main() {
 
       await contentManager.loadAllTrendingContent();
 
-      expect(contentManager.trendingContentCount, equals(5)); // Only recipes in current implementation
+      expect(contentManager.trendingContentCount,
+          equals(5)); // Only recipes in current implementation
     });
 
     test('should load more trending content for pagination', () async {
       final initialRecipes = createTestRecipes(count: 3);
       final moreRecipes = createTestRecipes(count: 2);
-      
+
       mockDiscoveryService.setTrendingRecipes(initialRecipes);
       await contentManager.loadAllTrendingContent();
       expect(contentManager.trendingRecipes.length, equals(3));
 
       // Simulate loading more content
-      mockDiscoveryService.setTrendingRecipes([...initialRecipes, ...moreRecipes]);
+      mockDiscoveryService
+          .setTrendingRecipes([...initialRecipes, ...moreRecipes]);
       await contentManager.loadMoreTrendingContent();
 
       expect(contentManager.trendingRecipes.length, greaterThanOrEqualTo(3));
@@ -168,11 +171,14 @@ void main() {
   group('DiscoveryContentManager - Search Operations', () {
     test('should search recipes successfully', () async {
       final testRecipes = [
-        RecipeFactory.build(title: 'Pasta Carbonara', description: 'Creamy pasta dish'),
-        RecipeFactory.build(title: 'Chicken Curry', description: 'Spicy chicken curry'),
-        RecipeFactory.build(title: 'Pasta Bolognese', description: 'Meat sauce pasta'),
+        RecipeFactory.build(
+            title: 'Pasta Carbonara', description: 'Creamy pasta dish'),
+        RecipeFactory.build(
+            title: 'Chicken Curry', description: 'Spicy chicken curry'),
+        RecipeFactory.build(
+            title: 'Pasta Bolognese', description: 'Meat sauce pasta'),
       ];
-      
+
       mockDiscoveryService.setSearchResults(testRecipes);
 
       final results = await contentManager.searchRecipes('pasta');
@@ -214,8 +220,11 @@ void main() {
 
     test('should calculate relevance scores correctly', () async {
       final testRecipes = [
-        RecipeFactory.build(title: 'Perfect Pasta', description: 'Great pasta recipe'),
-        RecipeFactory.build(title: 'Chicken Recipe', description: 'Contains pasta as ingredient'),
+        RecipeFactory.build(
+            title: 'Perfect Pasta', description: 'Great pasta recipe'),
+        RecipeFactory.build(
+            title: 'Chicken Recipe',
+            description: 'Contains pasta as ingredient'),
         RecipeFactory.build(title: 'Random Recipe', description: 'No match'),
       ];
 
@@ -224,7 +233,7 @@ void main() {
       final results = await contentManager.searchRecipes('pasta');
 
       expect(results.length, greaterThanOrEqualTo(2));
-      
+
       // Check that results have relevance scores
       for (final result in results) {
         expect(result['relevanceScore'], isA<double>());
@@ -232,7 +241,8 @@ void main() {
       }
 
       // Title match should have higher score than description match
-      final titleMatch = results.firstWhere((r) => r['title'].toString().toLowerCase().contains('pasta'));
+      final titleMatch = results.firstWhere(
+          (r) => r['title'].toString().toLowerCase().contains('pasta'));
       expect(titleMatch['relevanceScore'], greaterThan(0.0));
     });
 
@@ -301,9 +311,9 @@ void main() {
       // Second operation succeeds
       mockDiscoveryService.setShouldThrowError(false);
       mockDiscoveryService.setTrendingRecipes(createTestRecipes(count: 1));
-      
+
       await contentManager.loadAllTrendingContent();
-      
+
       expect(contentManager.hasError, isFalse);
       expect(contentManager.error, isNull);
     });
@@ -326,23 +336,24 @@ void main() {
     test('should return immutable lists from getters', () async {
       final testRecipes = createTestRecipes(count: 2);
       mockDiscoveryService.setTrendingRecipes(testRecipes);
-      
+
       await contentManager.loadAllTrendingContent();
 
       final trendingRecipes = contentManager.trendingRecipes;
-      expect(() => trendingRecipes.add(RecipeFactory.build()), throwsUnsupportedError);
+      expect(() => trendingRecipes.add(RecipeFactory.build()),
+          throwsUnsupportedError);
     });
 
     test('should handle dispose correctly', () async {
       final testRecipes = createTestRecipes(count: 2);
       mockDiscoveryService.setTrendingRecipes(testRecipes);
-      
+
       await contentManager.loadAllTrendingContent();
       expect(contentManager.trendingRecipes.length, equals(2));
-      
+
       // Should not throw when disposing
       contentManager.dispose();
-      
+
       // Don't access ViewModel after dispose - just verify dispose completed
       expect(true, isTrue); // Test passes if dispose didn't throw
     });
@@ -384,7 +395,7 @@ void main() {
   group('DiscoveryContentManager - Edge Cases', () {
     test('should handle concurrent load operations', () async {
       final testRecipes1 = createTestRecipes(count: 2);
-      
+
       mockDiscoveryService.setTrendingRecipes(testRecipes1);
 
       final futures = [
@@ -481,7 +492,7 @@ void main() {
       } catch (e) {
         // Expected
       }
-      
+
       // Data should remain consistent
       expect(contentManager.trendingRecipes.length, equals(2));
       expect(contentManager.hasError, isTrue);
@@ -541,7 +552,7 @@ void main() {
       await contentManager.refreshContent();
 
       contentManager.applyCategoryFilter('healthy');
-      
+
       await contentManager.loadMoreTrendingContent();
 
       expect(totalNotifications, greaterThan(3)); // At least 4 operations
@@ -570,7 +581,7 @@ void main() {
       final recoveryRecipes = createTestRecipes(count: 4);
       mockDiscoveryService.setTrendingRecipes(recoveryRecipes);
       await contentManager.loadAllTrendingContent();
-      
+
       expect(contentManager.hasError, isFalse);
       expect(contentManager.trendingRecipes.length, equals(4));
     });

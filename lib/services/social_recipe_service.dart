@@ -17,7 +17,8 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/services/social/modules/social_participant_resolver_module.dart';
 
-class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
+class SocialRecipeService extends ChangeNotifier
+    with StreamManagementMixin, ErrorHandlingMixin {
   final SocialRecipeRepository _repository;
   final UserService _userService;
   final UnifiedRecipeService _recipeService;
@@ -154,7 +155,8 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
   /// Import shared recipe into user's personal collection
   Future<bool> importSharedRecipe(String recipeId) async {
     try {
-      final sharedRecipe = _sharedRecipes.where((r) => r.id == recipeId).firstOrNull;
+      final sharedRecipe =
+          _sharedRecipes.where((r) => r.id == recipeId).firstOrNull;
       if (sharedRecipe == null) return false;
 
       // Create a personal recipe from the shared one
@@ -174,7 +176,8 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
       if (success != null) {
         // Mark as imported
         if (_permissionService.isAuthenticated) {
-          await _repository.markSharedRecipeAsImported(recipeId, _permissionService.currentUserId!);
+          await _repository.markSharedRecipeAsImported(
+              recipeId, _permissionService.currentUserId!);
         }
         AppLogger.success('Recipe imported successfully');
         return true;
@@ -215,7 +218,8 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
       if (allImported) {
         // Mark as imported
         if (_permissionService.isAuthenticated) {
-          await _repository.markSharedMenuAsImported(menuId, _permissionService.currentUserId!);
+          await _repository.markSharedMenuAsImported(
+              menuId, _permissionService.currentUserId!);
         }
         AppLogger.success('Menu imported successfully');
         return true;
@@ -234,7 +238,8 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
         _error = 'User not authenticated';
         return false;
       }
-      await _repository.dismissSharedRecipe(recipeId, _permissionService.currentUserId!);
+      await _repository.dismissSharedRecipe(
+          recipeId, _permissionService.currentUserId!);
       AppLogger.info('Recipe dismissed');
       return true;
     } catch (e) {
@@ -251,7 +256,8 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
         _error = 'User not authenticated';
         return false;
       }
-      await _repository.dismissSharedMenu(menuId, _permissionService.currentUserId!);
+      await _repository.dismissSharedMenu(
+          menuId, _permissionService.currentUserId!);
       AppLogger.info('Menu dismissed');
       return true;
     } catch (e) {
@@ -268,7 +274,8 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
         AppLogger.error('User not authenticated');
         return false;
       }
-      await _repository.undismissSharedRecipe(recipeId, _permissionService.currentUserId!);
+      await _repository.undismissSharedRecipe(
+          recipeId, _permissionService.currentUserId!);
       AppLogger.info('Recipe restored');
       return true;
     } catch (e) {
@@ -284,7 +291,8 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
         AppLogger.error('User not authenticated');
         return false;
       }
-      await _repository.undismissSharedMenu(menuId, _permissionService.currentUserId!);
+      await _repository.undismissSharedMenu(
+          menuId, _permissionService.currentUserId!);
       AppLogger.info('Menu restored');
       return true;
     } catch (e) {
@@ -320,7 +328,8 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
   // For compatibility with old test code
   void createTestSharedRecipe(String recipeId) {
     // This is a no-op for the real implementation
-    AppLogger.info('createTestSharedRecipe called - ignoring in real implementation');
+    AppLogger.info(
+        'createTestSharedRecipe called - ignoring in real implementation');
   }
 
   /// Compatibility getters for legacy code
@@ -354,7 +363,8 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
     try {
       // If shopping service not available, return false
       if (_shoppingService == null) {
-        AppLogger.warning('Shopping service not available - cannot check sharing status');
+        AppLogger.warning(
+            'Shopping service not available - cannot check sharing status');
         return false;
       }
 
@@ -390,7 +400,8 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
       _participantResolver.getShoppingListParticipants(listId);
 
   /// Share recipe with multiple friends
-  Future<void> shareRecipeToFriends(String recipeId, List<String> friendIds) async {
+  Future<void> shareRecipeToFriends(
+      String recipeId, List<String> friendIds) async {
     try {
       if (!_permissionService.isAuthenticated) {
         throw Exception('User not authenticated');
@@ -435,7 +446,8 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
   }
 
   /// Share recipe to groups
-  Future<void> shareRecipeToGroups(String recipeId, List<String> groupIds) async {
+  Future<void> shareRecipeToGroups(
+      String recipeId, List<String> groupIds) async {
     try {
       if (!_permissionService.isAuthenticated) {
         throw Exception('User not authenticated');
@@ -444,14 +456,19 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
       // For each group, resolve members and share to them
       for (final groupId in groupIds) {
         // This would use the UnifiedFriendsService to resolve group members
-        // For now, we'll log the action as the group member resolution 
+        // For now, we'll log the action as the group member resolution
         // would be handled by the calling service
         AppLogger.info('Sharing recipe $recipeId to group $groupId');
-        
+
         await shareContent(
-          friendId: groupId, // Using groupId as friendId for now - this would be resolved differently
+          friendId:
+              groupId, // Using groupId as friendId for now - this would be resolved differently
           contentType: 'recipe',
-          contentData: {'recipeId': recipeId, 'sharedToGroup': true, 'groupId': groupId},
+          contentData: {
+            'recipeId': recipeId,
+            'sharedToGroup': true,
+            'groupId': groupId
+          },
         );
       }
 
@@ -478,9 +495,14 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
         AppLogger.info('Sharing menu $menuId to group $groupId');
 
         await shareContent(
-          friendId: groupId, // Using groupId as friendId for now - this would be resolved differently
+          friendId:
+              groupId, // Using groupId as friendId for now - this would be resolved differently
           contentType: 'menu',
-          contentData: {'menuId': menuId, 'sharedToGroup': true, 'groupId': groupId},
+          contentData: {
+            'menuId': menuId,
+            'sharedToGroup': true,
+            'groupId': groupId
+          },
         );
       }
 
@@ -490,6 +512,7 @@ class SocialRecipeService extends ChangeNotifier with StreamManagementMixin, Err
       rethrow;
     }
   }
+
   @override
   void dispose() {
     disposeStreamResources();

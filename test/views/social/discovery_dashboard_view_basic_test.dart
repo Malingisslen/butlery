@@ -6,7 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('DiscoveryDashboardView Basic Structure Validation', () {
-    testWidgets('should validate test setup structure', (WidgetTester tester) async {
+    testWidgets('should validate test setup structure',
+        (WidgetTester tester) async {
       // Basic widget creation test
       await tester.pumpWidget(
         MaterialApp(
@@ -18,7 +19,7 @@ void main() {
           ),
         ),
       );
-      
+
       expect(find.text('Basic test validation'), findsOneWidget);
     });
   });

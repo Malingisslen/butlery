@@ -226,8 +226,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
         formattedTime: CommentItemWidgets.formatCommentTime(c.createdAt),
         onReply: () => vm.setReplyTo(c.id),
         onToggleLike: () => _toggleLike(c, vm),
-        onShowLikes:
-            c.likeCount > 0 ? () => _showLikesDialog(c, vm) : null,
+        onShowLikes: c.likeCount > 0 ? () => _showLikesDialog(c, vm) : null,
         depth: depth,
       ),
     );

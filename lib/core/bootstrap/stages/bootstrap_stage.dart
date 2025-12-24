@@ -103,7 +103,8 @@ mixin BootstrapStageHelpers {
   }
 
   /// Log stage operation with consistent formatting.
-  void logStageOperation(String stageName, String operation, {String? details}) {
+  void logStageOperation(String stageName, String operation,
+      {String? details}) {
     final detailStr = details != null ? ' - $details' : '';
     debugPrint('🚀 [$stageName] $operation$detailStr');
   }
@@ -113,7 +114,7 @@ mixin BootstrapStageHelpers {
     // Note: This is a simplified implementation for compilation
     // In production, you'd use dart.io.Platform.environment
     const value = '';
-    
+
     if (required && (value.isEmpty)) {
       throw BootstrapException(
         'Environment',
@@ -121,7 +122,7 @@ mixin BootstrapStageHelpers {
         'Required environment variable $name is not set',
       );
     }
-    
+
     return value.isEmpty ? null : value;
   }
 
@@ -132,14 +133,14 @@ mixin BootstrapStageHelpers {
     Duration checkInterval = const Duration(milliseconds: 100),
   }) async {
     final stopwatch = Stopwatch()..start();
-    
+
     while (stopwatch.elapsed < timeout) {
       if (condition()) {
         return true;
       }
       await Future.delayed(checkInterval);
     }
-    
+
     return false;
   }
 }

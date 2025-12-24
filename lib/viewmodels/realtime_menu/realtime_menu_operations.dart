@@ -19,8 +19,8 @@ class RealtimeMenuOperations {
   RealtimeMenuOperations({
     required RealtimeMenuService menuService,
     required OptimisticUpdateManager optimisticManager,
-  }) : _menuService = menuService,
-       _optimisticManager = optimisticManager;
+  })  : _menuService = menuService,
+        _optimisticManager = optimisticManager;
 
   // ===== RECIPE OPERATIONS =====
 
@@ -43,7 +43,7 @@ class RealtimeMenuOperations {
         categoryName: categoryName,
         recipe: recipe,
       );
-      
+
       AppLogger.success('✅ Recipe added to $categoryName: ${recipe.title}');
     } catch (e) {
       AppLogger.error('❌ Failed to add recipe to $categoryName', e);
@@ -79,7 +79,7 @@ class RealtimeMenuOperations {
         categoryName: categoryName,
         recipeIndex: recipeIndex,
       );
-      
+
       AppLogger.success('✅ Recipe removed from $categoryName');
     } catch (e) {
       AppLogger.error('❌ Failed to remove recipe from $categoryName', e);
@@ -103,7 +103,8 @@ class RealtimeMenuOperations {
     }
 
     final recipe = fromRecipes[fromIndex];
-    AppLogger.info('🔄 Moving recipe from $fromCategory to $toCategory: ${recipe.title}');
+    AppLogger.info(
+        '🔄 Moving recipe from $fromCategory to $toCategory: ${recipe.title}');
 
     // Apply optimistic updates for both categories
     _optimisticManager.applyChange(fromCategory, (recipes) {
@@ -127,7 +128,7 @@ class RealtimeMenuOperations {
         toCategory: toCategory,
         toIndex: toIndex,
       );
-      
+
       AppLogger.success('✅ Recipe moved from $fromCategory to $toCategory');
     } catch (e) {
       AppLogger.error('❌ Failed to move recipe between categories', e);
@@ -145,9 +146,11 @@ class RealtimeMenuOperations {
     required List<Recipe> currentRecipes,
   }) async {
     if (fromIndex == toIndex) return;
-    
-    if (fromIndex < 0 || fromIndex >= currentRecipes.length ||
-        toIndex < 0 || toIndex >= currentRecipes.length) {
+
+    if (fromIndex < 0 ||
+        fromIndex >= currentRecipes.length ||
+        toIndex < 0 ||
+        toIndex >= currentRecipes.length) {
       throw ArgumentError('Invalid indices for reordering');
     }
 
@@ -171,7 +174,7 @@ class RealtimeMenuOperations {
         toCategory: categoryName,
         toIndex: toIndex,
       );
-      
+
       AppLogger.success('✅ Recipe reordered in $categoryName');
     } catch (e) {
       AppLogger.error('❌ Failed to reorder recipe in $categoryName', e);
@@ -191,14 +194,15 @@ class RealtimeMenuOperations {
     AppLogger.info('🗑️ Clearing category: $categoryName');
 
     // Apply optimistic update
-    _optimisticManager.applyChange(categoryName, (recipes) => [], currentRecipes);
+    _optimisticManager.applyChange(
+        categoryName, (recipes) => [], currentRecipes);
 
     try {
       await _menuService.clearCategory(
         resourceId: menuId,
         categoryName: categoryName,
       );
-      
+
       AppLogger.success('✅ Category cleared: $categoryName');
     } catch (e) {
       AppLogger.error('❌ Failed to clear category: $categoryName', e);
@@ -215,17 +219,16 @@ class RealtimeMenuOperations {
     required String menuId,
     required String categoryName,
   }) async {
-    AppLogger.info('🤖 AI Menu Regeneration requested for category: $categoryName');
-    
+    AppLogger.info(
+        '🤖 AI Menu Regeneration requested for category: $categoryName');
+
     // FEATURE STUB: AI menu regeneration not yet implemented
     AppLogger.warning('⚠️ AI menu regeneration is not yet available');
-    
-    throw UnimplementedError(
-      'AI menu regeneration feature is planned for future release. '
-      'This will integrate with MenuService to provide AI-powered '
-      'category regeneration based on user preferences and dietary needs.'
-    );
 
+    throw UnimplementedError(
+        'AI menu regeneration feature is planned for future release. '
+        'This will integrate with MenuService to provide AI-powered '
+        'category regeneration based on user preferences and dietary needs.');
   }
 
   // ===== BATCH OPERATIONS =====
@@ -254,7 +257,7 @@ class RealtimeMenuOperations {
           recipe: recipe,
         );
       }
-      
+
       AppLogger.success('✅ ${recipes.length} recipes added to $categoryName');
     } catch (e) {
       AppLogger.error('❌ Failed to add multiple recipes to $categoryName', e);
@@ -302,10 +305,12 @@ class RealtimeMenuOperations {
           recipeIndex: index,
         );
       }
-      
-      AppLogger.success('✅ ${indices.length} recipes removed from $categoryName');
+
+      AppLogger.success(
+          '✅ ${indices.length} recipes removed from $categoryName');
     } catch (e) {
-      AppLogger.error('❌ Failed to remove multiple recipes from $categoryName', e);
+      AppLogger.error(
+          '❌ Failed to remove multiple recipes from $categoryName', e);
       _optimisticManager.rollback();
       rethrow;
     }
@@ -314,7 +319,8 @@ class RealtimeMenuOperations {
   // ===== OPTIMISTIC UPDATES =====
 
   /// Apply optimistic changes to menu snapshot
-  Map<String, List<Recipe>> applyOptimisticChanges(Map<String, List<Recipe>> baseMenu) {
+  Map<String, List<Recipe>> applyOptimisticChanges(
+      Map<String, List<Recipe>> baseMenu) {
     return _optimisticManager.applyToMenu(baseMenu);
   }
 
@@ -322,7 +328,8 @@ class RealtimeMenuOperations {
   bool get hasOptimisticChanges => _optimisticManager.hasChanges;
 
   /// Get all optimistic changes
-  Map<String, List<Recipe>> get optimisticChanges => _optimisticManager.allChanges;
+  Map<String, List<Recipe>> get optimisticChanges =>
+      _optimisticManager.allChanges;
 
   /// Clear all optimistic changes (called when real update arrives)
   void clearOptimisticChanges() {
@@ -339,10 +346,11 @@ class RealtimeMenuOperations {
   /// Validate recipe for addition to category
   bool validateRecipeForCategory(Recipe recipe, String categoryName) {
     if (recipe.title.isEmpty) {
-      AppLogger.warning('⚠️ Cannot add recipe with empty title to $categoryName');
+      AppLogger.warning(
+          '⚠️ Cannot add recipe with empty title to $categoryName');
       return false;
     }
-    
+
     return true;
   }
 
@@ -352,7 +360,7 @@ class RealtimeMenuOperations {
       AppLogger.warning('⚠️ Invalid category name');
       return false;
     }
-    
+
     return true;
   }
 
@@ -360,7 +368,7 @@ class RealtimeMenuOperations {
 
   /// Get recipe count for category (including optimistic changes)
   int getRecipeCountForCategory(String categoryName, List<Recipe> baseRecipes) {
-    if (_optimisticManager.hasChanges && 
+    if (_optimisticManager.hasChanges &&
         _optimisticManager.allChanges.containsKey(categoryName)) {
       return _optimisticManager.allChanges[categoryName]!.length;
     }
@@ -368,8 +376,9 @@ class RealtimeMenuOperations {
   }
 
   /// Get recipes for category (including optimistic changes)
-  List<Recipe> getRecipesForCategory(String categoryName, List<Recipe> baseRecipes) {
-    if (_optimisticManager.hasChanges && 
+  List<Recipe> getRecipesForCategory(
+      String categoryName, List<Recipe> baseRecipes) {
+    if (_optimisticManager.hasChanges &&
         _optimisticManager.allChanges.containsKey(categoryName)) {
       return _optimisticManager.allChanges[categoryName]!;
     }

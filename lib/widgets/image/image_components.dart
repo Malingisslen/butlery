@@ -43,18 +43,18 @@ class ImageComponents {
       );
     }
   }
-  
+
   /// Check if string is a file path (vs URL)
   static bool _isFilePath(String pathOrUrl) {
     // File paths start with '/' or contain file system patterns
     // CRITICAL: Blob URLs (blob:http://...) should be treated as URLs, not file paths
-    return pathOrUrl.startsWith('/') || 
-           pathOrUrl.contains('\\') || 
-           (!pathOrUrl.startsWith('http') && 
-            !pathOrUrl.startsWith('gs://') && 
+    return pathOrUrl.startsWith('/') ||
+        pathOrUrl.contains('\\') ||
+        (!pathOrUrl.startsWith('http') &&
+            !pathOrUrl.startsWith('gs://') &&
             !pathOrUrl.startsWith('blob:'));
   }
-  
+
   /// Build image from local file
   static Widget _buildFileImage({
     required String filePath,
@@ -73,32 +73,37 @@ class ImageComponents {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return placeholder ?? buildLoadingPlaceholder(config: config);
         }
-        
+
         if (snapshot.data == true) {
           return Image.file(
             file,
             fit: fit,
-            width: dimensions.width == double.infinity ? null : dimensions.width,
+            width:
+                dimensions.width == double.infinity ? null : dimensions.width,
             height: dimensions.height,
             // Add memory cache for performance
-            cacheWidth: dimensions.width.isInfinite ? 800 : dimensions.width.toInt(),
-            cacheHeight: dimensions.height.isInfinite ? 600 : dimensions.height.toInt(),
+            cacheWidth:
+                dimensions.width.isInfinite ? 800 : dimensions.width.toInt(),
+            cacheHeight:
+                dimensions.height.isInfinite ? 600 : dimensions.height.toInt(),
             errorBuilder: (context, error, stackTrace) {
               AppLogger.error('File image load error: $error');
               return errorWidget ?? buildErrorPlaceholder(config: config);
             },
           );
         } else {
-          AppLogger.info('File no longer exists, showing placeholder: $filePath');
+          AppLogger.info(
+              'File no longer exists, showing placeholder: $filePath');
           // Show placeholder instead of error for missing files (graceful degradation)
-          return placeholder ?? buildPlaceholder(
-            config: config,
-            child: const Icon(
-              Icons.image_outlined,
-              size: AppDimensions.iconSizeXl,
-              color: AppColors.textTertiary,
-            ),
-          );
+          return placeholder ??
+              buildPlaceholder(
+                config: config,
+                child: const Icon(
+                  Icons.image_outlined,
+                  size: AppDimensions.iconSizeXl,
+                  color: AppColors.textTertiary,
+                ),
+              );
         }
       },
     );
@@ -135,7 +140,8 @@ class ImageComponents {
       height: dimensions.height,
       memCacheWidth:
           dimensions.width.isInfinite ? 800 : dimensions.width.toInt(),
-      memCacheHeight: dimensions.height.isInfinite ? 600 : dimensions.height.toInt(),
+      memCacheHeight:
+          dimensions.height.isInfinite ? 600 : dimensions.height.toInt(),
       placeholder: placeholder != null ? (_, __) => placeholder : null,
       errorWidget: errorWidget != null ? (_, __, ___) => errorWidget : null,
     );
@@ -327,7 +333,8 @@ class ImageComponents {
             child: Container(
               width: AppDimensions.dotSize,
               height: AppDimensions.dotSize,
-              margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXs),
+              margin: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.spacingXs),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: index == currentIndex
@@ -354,8 +361,10 @@ class ImageComponents {
 
     final dimensions = config.getDimensions();
     // Handle infinite dimensions gracefully - use reasonable default size
-    final indicatorSize = dimensions.width == double.infinity 
-        ? AppDimensions.spacingMd + AppDimensions.spacingXs  // Default indicator size for infinite/large avatars (20px)
+    final indicatorSize = dimensions.width == double.infinity
+        ? AppDimensions.spacingMd +
+            AppDimensions
+                .spacingXs // Default indicator size for infinite/large avatars (20px)
         : dimensions.width * 0.25;
 
     return Positioned(

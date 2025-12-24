@@ -47,6 +47,7 @@ import 'package:butlery/utils/text/text_formatting.dart';
 class SmartUnitConverter {
   /// Private constructor preventing instantiation to enforce static utility usage.
   SmartUnitConverter._();
+
   /// Konverterar enheter till mer läsbara format när det är vettigt
   /// Exempel: 15 dl → 1,5 liter, 1200 g → 1,2 kg
   static ConvertedMeasurement convertToReadableUnit(
@@ -271,5 +272,6 @@ class ConvertedMeasurement {
   ConvertedMeasurement(this.quantity, this.unit);
 
   @override
-  String toString() => '${TextFormatting.toSwedishHalfFraction(quantity)} $unit';
+  String toString() =>
+      '${TextFormatting.toSwedishHalfFraction(quantity)} $unit';
 }

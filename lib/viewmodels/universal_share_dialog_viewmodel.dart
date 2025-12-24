@@ -46,13 +46,14 @@ class ShareValidationResult {
   }
 
   /// Factory for partial success (some existing collaborators, but new friends to invite)
-  factory ShareValidationResult.partialSuccess(List<String> newIds, List<String> existingIds) {
+  factory ShareValidationResult.partialSuccess(
+      List<String> newIds, List<String> existingIds) {
     final existingCount = existingIds.length;
     final newCount = newIds.length;
-    final warningMessage = existingCount == 1 
+    final warningMessage = existingCount == 1
         ? 'En vän har redan tillgång. $newCount nya inbjudningar kommer skickas.'
         : '$existingCount vänner har redan tillgång. $newCount nya inbjudningar kommer skickas.';
-        
+
     return ShareValidationResult(
       hasExistingCollaborators: true,
       errorMessage: warningMessage,
@@ -63,12 +64,13 @@ class ShareValidationResult {
   }
 
   /// Factory for validation failure with existing collaborators
-  factory ShareValidationResult.existingCollaborators(List<String> existingIds) {
+  factory ShareValidationResult.existingCollaborators(
+      List<String> existingIds) {
     final count = existingIds.length;
-    final errorMessage = count == 1 
+    final errorMessage = count == 1
         ? 'Den valda vännen har redan tillgång till listan'
         : 'Alla valda vänner har redan tillgång till listan';
-        
+
     return ShareValidationResult(
       hasExistingCollaborators: true,
       errorMessage: errorMessage,
@@ -89,7 +91,8 @@ class ShareValidationResult {
 /// - Cross-service integration with social recipe and shopping services for content distribution
 /// - Complete sharing state management with progress tracking and comprehensive error handling
 /// - Swedish localized error messages and user feedback coordination throughout sharing operations
-class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagementMixin {
+class UniversalShareDialogViewModel extends ChangeNotifier
+    with StreamManagementMixin {
   final SocialRecipeService _socialRecipeService;
   final UnifiedShoppingService _shoppingService;
 
@@ -99,7 +102,7 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
   /// Indicates active sharing operation for loading indicators and interaction
   /// control during content distribution and delivery processes.
   bool _isSharing = false;
-  
+
   /// Error message for user feedback and comprehensive error state management.
   /// Provides localized error messages for user display and error recovery
   /// throughout universal sharing operations and content distribution.
@@ -119,8 +122,8 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
   UniversalShareDialogViewModel({
     required SocialRecipeService socialRecipeService,
     required UnifiedShoppingService shoppingService,
-  }) : _socialRecipeService = socialRecipeService,
-       _shoppingService = shoppingService;
+  })  : _socialRecipeService = socialRecipeService,
+        _shoppingService = shoppingService;
 
   // ===== SHARING STATE ACCESSORS =====
 
@@ -128,12 +131,12 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
   /// Indicates whether sharing operation is in progress for loading indicators
   /// and user interaction management during sharing operations.
   bool get isSharing => _isSharing;
-  
+
   /// Error message for user feedback and comprehensive error state management.
   /// Provides access to current error state enabling error display
   /// and recovery coordination throughout universal sharing operations.
   String? get errorMessage => _errorMessage;
-  
+
   /// Error state indicator for UI conditional rendering and error handling.
   /// Indicates presence of errors for UI error display decisions
   /// and error state management throughout sharing operations.
@@ -192,12 +195,14 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
     bool allowCollaboration = false,
   }) async {
     AppLogger.info('🔍🔍🔍 DEBUG VIEWMODEL: shareMenu() CALLED');
-    AppLogger.info('🔍 DEBUG: friendUserIds = $friendUserIds (${friendUserIds.length} items)');
+    AppLogger.info(
+        '🔍 DEBUG: friendUserIds = $friendUserIds (${friendUserIds.length} items)');
     AppLogger.info('🔍 DEBUG: groupIds = $groupIds');
     AppLogger.info('🔍 DEBUG: menuName = $menuName');
 
     if (friendUserIds.isEmpty && (groupIds?.isEmpty ?? true)) {
-      AppLogger.warning('🔍 DEBUG: Early return - no friends or groups selected!');
+      AppLogger.warning(
+          '🔍 DEBUG: Early return - no friends or groups selected!');
       _setError('Inga vänner eller grupper valda');
       return false;
     }
@@ -222,7 +227,8 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
           final group = friendsService.getCategoryByIdInternal(groupId);
           if (group != null) {
             allRecipientIds.addAll(group.friendUserIds);
-            AppLogger.info('📋 Resolved group "${group.name}" to ${group.friendUserIds.length} members');
+            AppLogger.info(
+                '📋 Resolved group "${group.name}" to ${group.friendUserIds.length} members');
           } else {
             AppLogger.warning('⚠️ Group $groupId not found');
           }
@@ -234,8 +240,10 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
         return false;
       }
 
-      AppLogger.info('📨 Creating menu invitation for ${allRecipientIds.length} recipients');
-      AppLogger.info('   Friends: ${friendUserIds.length}, Groups: ${groupIds?.length ?? 0}');
+      AppLogger.info(
+          '📨 Creating menu invitation for ${allRecipientIds.length} recipients');
+      AppLogger.info(
+          '   Friends: ${friendUserIds.length}, Groups: ${groupIds?.length ?? 0}');
       AppLogger.info('   Total unique recipients: ${allRecipientIds.length}');
 
       // Use UnifiedMenuService to create invitation (writes to shared_menus collection)
@@ -251,7 +259,8 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
         final totalTargets = friendUserIds.length + (groupIds?.length ?? 0);
         AppLogger.success('✅ Menu invitation created successfully');
         AppLogger.info('📥 Recipients will see menu in group shared content');
-        AppLogger.success('Menu shared with $totalTargets targets (${friendUserIds.length} friends, ${groupIds?.length ?? 0} groups)');
+        AppLogger.success(
+            'Menu shared with $totalTargets targets (${friendUserIds.length} friends, ${groupIds?.length ?? 0} groups)');
         return true;
       } else {
         throw Exception('Failed to create menu invitation');
@@ -279,31 +288,35 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
     }
 
     // PHASE 2: Validate sharing targets and filter existing collaborators
-    final validationResult = _validateSharingTargets(shoppingList, friendUserIds);
+    final validationResult =
+        _validateSharingTargets(shoppingList, friendUserIds);
     if (!validationResult.canProceed) {
       _setError(validationResult.errorMessage);
       return false;
     }
-    
+
     // Use filtered friends list (exclude existing collaborators)
-    final filteredFriendUserIds = validationResult.newFriendIds.isNotEmpty 
-        ? validationResult.newFriendIds 
+    final filteredFriendUserIds = validationResult.newFriendIds.isNotEmpty
+        ? validationResult.newFriendIds
         : friendUserIds;
 
     _setSharing(true);
     _clearError();
 
     try {
-      final totalTargets = filteredFriendUserIds.length + (groupIds?.length ?? 0);
-      final modeText = shareMode == ShareMode.realtime ? 'kollaborativ lista' : 'kopia';
-      
+      final totalTargets =
+          filteredFriendUserIds.length + (groupIds?.length ?? 0);
+      final modeText =
+          shareMode == ShareMode.realtime ? 'kollaborativ lista' : 'kopia';
+
       AppLogger.info(
         '📋 Delar inköpslista: ${shoppingList.name} som $modeText med $totalTargets mottagare (${filteredFriendUserIds.length} vänner, ${groupIds?.length ?? 0} grupper)',
       );
 
       // Show info about validation results
       if (validationResult.hasExistingCollaborators) {
-        AppLogger.info('⚠️ ${validationResult.existingCollaboratorIds.length} friends skipped (already have access)');
+        AppLogger.info(
+            '⚠️ ${validationResult.existingCollaboratorIds.length} friends skipped (already have access)');
       }
 
       if (message != null) {
@@ -322,14 +335,15 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
         );
 
         if (success) {
-          
           // Set success message that includes info about skipped friends
           if (validationResult.hasExistingCollaborators) {
             final invitedCount = filteredFriendUserIds.length;
-            final skippedCount = validationResult.existingCollaboratorIds.length;
-            _setError('$invitedCount inbjudningar skickade. $skippedCount vänner hoppades över (har redan tillgång).');
+            final skippedCount =
+                validationResult.existingCollaboratorIds.length;
+            _setError(
+                '$invitedCount inbjudningar skickade. $skippedCount vänner hoppades över (har redan tillgång).');
           }
-          
+
           return true;
         } else {
           throw Exception('Kunde inte skicka inbjudningar');
@@ -352,12 +366,14 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
         //   - Update UI to show group share status
         //   - Priority: Medium (friend sharing works, groups are less common use case)
         if (groupIds != null && groupIds.isNotEmpty) {
-          AppLogger.warning('⚠️ COPY MODE: Group sharing not yet implemented for copy mode');
+          AppLogger.warning(
+              '⚠️ COPY MODE: Group sharing not yet implemented for copy mode');
           // For now, just log this - group sharing would need similar invitation system
         }
 
         if (success) {
-          AppLogger.success('✅ COPY MODE FIX: Inköpslista invitations sent successfully via invitation system');
+          AppLogger.success(
+              '✅ COPY MODE FIX: Inköpslista invitations sent successfully via invitation system');
           return true;
         } else {
           throw Exception('Kunde inte skicka inbjudningar');
@@ -394,7 +410,8 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
 
   /// Generate a descriptive menu title based on menu content
   String _generateMenuTitle(Map<String, List<Recipe>> menu) {
-    final recipeCount = menu.values.fold<int>(0, (sum, recipes) => sum + recipes.length);
+    final recipeCount =
+        menu.values.fold<int>(0, (sum, recipes) => sum + recipes.length);
     final dayCount = menu.keys.length;
 
     // Create a descriptive title like "Veckans meny (5 dagar, 12 recept)"
@@ -409,51 +426,56 @@ class UniversalShareDialogViewModel extends ChangeNotifier with StreamManagement
 
   /// PHASE 2: Validate sharing targets to filter existing collaborators but allow new friends
   ShareValidationResult _validateSharingTargets(
-    UnifiedShoppingList shoppingList, 
-    List<String> friendUserIds
-  ) {
+      UnifiedShoppingList shoppingList, List<String> friendUserIds) {
     // Get existing collaborators from the shopping list
     final existingCollaborators = shoppingList.collaborators.toSet();
-    
+
     // Find friends who are already collaborators
-    final existingCollaboratorIds = friendUserIds.where((friendId) => 
-      existingCollaborators.contains(friendId)
-    ).toList();
-    
+    final existingCollaboratorIds = friendUserIds
+        .where((friendId) => existingCollaborators.contains(friendId))
+        .toList();
+
     // Find friends who are NOT already collaborators (new friends to invite)
-    final newFriendIds = friendUserIds.where((friendId) => 
-      !existingCollaborators.contains(friendId)
-    ).toList();
-    
-    AppLogger.info('🔍 VALIDATION: Analyzing ${friendUserIds.length} selected friends for list "${shoppingList.name}"');
-    AppLogger.info('📊 VALIDATION: Existing collaborators: ${existingCollaboratorIds.length}, New friends: ${newFriendIds.length}');
-    
+    final newFriendIds = friendUserIds
+        .where((friendId) => !existingCollaborators.contains(friendId))
+        .toList();
+
+    AppLogger.info(
+        '🔍 VALIDATION: Analyzing ${friendUserIds.length} selected friends for list "${shoppingList.name}"');
+    AppLogger.info(
+        '📊 VALIDATION: Existing collaborators: ${existingCollaboratorIds.length}, New friends: ${newFriendIds.length}');
+
     if (existingCollaboratorIds.isNotEmpty) {
       AppLogger.info(
-        '⚠️ VALIDATION: ${existingCollaboratorIds.length} friends already have access: $existingCollaboratorIds'
-      );
+          '⚠️ VALIDATION: ${existingCollaboratorIds.length} friends already have access: $existingCollaboratorIds');
     }
-    
+
     if (newFriendIds.isEmpty) {
       // All selected friends are already collaborators
-      AppLogger.warning('🚫 VALIDATION: All selected friends already have access to this list');
-      return ShareValidationResult.existingCollaborators(existingCollaboratorIds);
+      AppLogger.warning(
+          '🚫 VALIDATION: All selected friends already have access to this list');
+      return ShareValidationResult.existingCollaborators(
+          existingCollaboratorIds);
     }
-    
+
     if (existingCollaboratorIds.isNotEmpty) {
       // Some friends already have access, but we have new friends to invite
-      AppLogger.info('✅ VALIDATION: Will invite ${newFriendIds.length} new friends and skip ${existingCollaboratorIds.length} existing collaborators');
-      return ShareValidationResult.partialSuccess(newFriendIds, existingCollaboratorIds);
+      AppLogger.info(
+          '✅ VALIDATION: Will invite ${newFriendIds.length} new friends and skip ${existingCollaboratorIds.length} existing collaborators');
+      return ShareValidationResult.partialSuccess(
+          newFriendIds, existingCollaboratorIds);
     }
-    
+
     // All friends are new
-    AppLogger.info('✅ VALIDATION: All selected friends are new - sharing can proceed with all ${newFriendIds.length} friends');
+    AppLogger.info(
+        '✅ VALIDATION: All selected friends are new - sharing can proceed with all ${newFriendIds.length} friends');
     return ShareValidationResult.success();
   }
+
   @override
   void dispose() {
     // Cancel all timers
-    // Cancel all stream subscriptions  
+    // Cancel all stream subscriptions
     // Dispose of resources
     disposeStreamResources(); // From StreamManagementMixin
     super.dispose();

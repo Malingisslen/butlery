@@ -38,7 +38,8 @@ class SiteConfigRepository {
       final snapshot = await _collection.limit(1).get();
 
       if (snapshot.docs.isEmpty) {
-        AppLogger.info('SiteConfigRepository: Collection empty, seeding configs...');
+        AppLogger.info(
+            'SiteConfigRepository: Collection empty, seeding configs...');
 
         final result = await FirebaseFunctions.instance
             .httpsCallable('seedSiteConfigs')

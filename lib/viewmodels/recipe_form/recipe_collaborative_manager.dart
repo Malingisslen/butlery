@@ -17,7 +17,8 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Manages real-time collaborative editing for recipe forms.
-class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMixin {
+class RecipeCollaborativeManager extends ChangeNotifier
+    with StreamManagementMixin {
   final PermissionService _permissionService;
   final CollaborativeRecipeRepository _collaborativeRepository;
   final ConnectivityMonitoringService _connectivityService;
@@ -26,7 +27,7 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
   StreamSubscription? _realtimeSubscription;
   StreamSubscription? _participantsSubscription;
   bool _isCollaborative = false;
-  
+
   EditMode? _editMode;
   SharedRecipe? _sharedRecipe;
   final List<UserProfile> _collaborativeParticipants = [];
@@ -40,14 +41,18 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
     PermissionService? permissionService,
     CollaborativeRecipeRepository? collaborativeRepository,
     ConnectivityMonitoringService? connectivityService,
-  }) : _permissionService = permissionService ?? ServiceLocator.get<PermissionService>(),
-       _collaborativeRepository = collaborativeRepository ?? ServiceLocator.get<CollaborativeRecipeRepository>(),
-       _connectivityService = connectivityService ?? ServiceLocator.get<ConnectivityMonitoringService>();
+  })  : _permissionService =
+            permissionService ?? ServiceLocator.get<PermissionService>(),
+        _collaborativeRepository = collaborativeRepository ??
+            ServiceLocator.get<CollaborativeRecipeRepository>(),
+        _connectivityService = connectivityService ??
+            ServiceLocator.get<ConnectivityMonitoringService>();
 
   bool get isCollaborative => _isCollaborative;
   bool get isConnectedToFirebase => _isConnectedToFirebase;
   String get connectionStatusText => _connectionStatusText;
-  List<UserProfile> get collaborativeParticipants => List<UserProfile>.from(_collaborativeParticipants);
+  List<UserProfile> get collaborativeParticipants =>
+      List<UserProfile>.from(_collaborativeParticipants);
   List<LiveEditor> get liveEditors => List<LiveEditor>.from(_liveEditors);
   RealtimeRecipe? get realtimeRecipe => _realtimeRecipe;
   EditMode? get editMode => _editMode;
@@ -61,10 +66,12 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
     if (_isCollaborative) return;
 
     try {
-      AppLogger.info('Aktiverar Firebase collaborative mode för recept: ${recipe.id}');
+      AppLogger.info(
+          'Aktiverar Firebase collaborative mode för recept: ${recipe.id}');
 
       final userId = _permissionService.currentUserId;
-      final userDisplayName = _permissionService.currentUser?.displayName ?? 'Okänd';
+      final userDisplayName =
+          _permissionService.currentUser?.displayName ?? 'Okänd';
       if (userId == null) throw Exception('Ingen inloggad användare');
 
       _realtimeRecipe = RealtimeRecipe.fromRecipe(
@@ -92,7 +99,8 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
     if (_realtimeRecipe == null) return;
 
     try {
-      _realtimeRecipe = _realtimeRecipe!.addParticipant(userId, userDisplayName, permission);
+      _realtimeRecipe =
+          _realtimeRecipe!.addParticipant(userId, userDisplayName, permission);
       await _collaborativeRepository.updateRealtimeRecipe(_realtimeRecipe!);
 
       AppLogger.info('Användare inbjuden till collaboration: $userDisplayName');
@@ -124,7 +132,7 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
     try {
       await _cleanupRealtimeListeners();
       await _clearPresence();
-      
+
       _isCollaborative = false;
       _realtimeRecipe = null;
       _editMode = null;
@@ -146,7 +154,7 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
       await _cleanupRealtimeListeners();
       await _setupRealtimeListeners();
       _startPresenceTracking();
-      
+
       AppLogger.info('Återansluten till Firebase');
     } catch (e) {
       AppLogger.error('Fel vid återanslutning till Firebase: $e');
@@ -229,14 +237,14 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
 
     try {
       _collaborativeParticipants.clear();
-      
+
       for (final entry in _realtimeRecipe!.participants.entries) {
         final profile = await _permissionService.getUserProfile(entry.key);
         if (profile != null) {
           _collaborativeParticipants.add(profile);
         }
       }
-      
+
       notifyListeners();
     } catch (e) {
       AppLogger.error('Fel vid laddning av deltagarprofiler: $e');
@@ -254,8 +262,9 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
     if (!_isCollaborative || _realtimeRecipe == null) return;
 
     final userId = _permissionService.currentUserId;
-    final userDisplayName = _permissionService.currentUser?.displayName ?? 'Okänd';
-    
+    final userDisplayName =
+        _permissionService.currentUser?.displayName ?? 'Okänd';
+
     if (userId == null) return;
 
     try {
@@ -276,7 +285,8 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
     if (userId == null) return;
 
     try {
-      await _collaborativeRepository.clearUserPresence(_realtimeRecipe!.id, userId);
+      await _collaborativeRepository.clearUserPresence(
+          _realtimeRecipe!.id, userId);
     } catch (e) {
       AppLogger.error('Fel vid rensning av presence: $e');
     }
@@ -299,7 +309,7 @@ class RecipeCollaborativeManager extends ChangeNotifier with StreamManagementMix
     await _participantsSubscription?.cancel();
     _presenceTimer?.cancel();
     _saveDebounceTimer?.cancel();
-    
+
     _realtimeSubscription = null;
     _participantsSubscription = null;
     _presenceTimer = null;

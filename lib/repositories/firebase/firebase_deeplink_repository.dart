@@ -27,6 +27,7 @@ import 'package:butlery/repositories/interfaces/deeplink_repository.dart';
 // import '../interfaces/auth_repository.dart'; // Imported from base class
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
+
 /// Firebase implementation for deep link management with comprehensive URL shortening and analytics.
 /// This repository provides complete deep link functionality using Firebase Firestore collections
 /// for link storage, metadata management, and click analytics. It enables seamless recipe and content
@@ -53,16 +54,16 @@ import 'package:butlery/core/utils/logger.dart';
 /// );
 /// // Resolve short URL
 /// final longUrl = await deepLinkRepo.getLongUrl(shortCode);
-/// // Track click engagement  
+/// // Track click engagement
 /// await deepLinkRepo.trackUrlClick(shortCode);
 /// // Cleanup expired links
 /// await deepLinkRepo.deleteExpiredLinks(
 ///   DateTime.now().subtract(Duration(days: 30))
 /// );
 /// ```
-class FirebaseDeepLinkRepository extends BaseFirebaseRepository<Map<String, dynamic>>
+class FirebaseDeepLinkRepository
+    extends BaseFirebaseRepository<Map<String, dynamic>>
     implements DeepLinkRepository {
-  
   /// Creates a Firebase deep link repository with dependency injection support.
   /// [firestore] Optional Firestore instance for testing, defaults to production instance
   /// [authRepository] Required authentication repository for user validation and link attribution
@@ -75,7 +76,8 @@ class FirebaseDeepLinkRepository extends BaseFirebaseRepository<Map<String, dyna
   String get collectionName => 'deep_links';
 
   @override
-  Map<String, dynamic> fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
+  Map<String, dynamic> fromFirestore(
+      DocumentSnapshot<Map<String, dynamic>> doc) {
     return doc.data() ?? {};
   }
 
@@ -88,7 +90,8 @@ class FirebaseDeepLinkRepository extends BaseFirebaseRepository<Map<String, dyna
   // ===== PERMISSION VALIDATION IMPLEMENTATION =====
 
   @override
-  Future<bool> validateCreatePermission(String userId, Map<String, dynamic> entity) async {
+  Future<bool> validateCreatePermission(
+      String userId, Map<String, dynamic> entity) async {
     // Users can create their own deeplinks
     // Check if createdBy field matches current user (if present)
     final createdBy = entity['createdBy'];
@@ -99,21 +102,24 @@ class FirebaseDeepLinkRepository extends BaseFirebaseRepository<Map<String, dyna
   }
 
   @override
-  Future<bool> validateReadPermission(String userId, String resourceId, Map<String, dynamic>? entity) async {
+  Future<bool> validateReadPermission(
+      String userId, String resourceId, Map<String, dynamic>? entity) async {
     // Deeplinks are publicly readable (for sharing functionality)
     // Anyone with the short code can resolve it
     return true;
   }
 
   @override
-  Future<bool> validateUpdatePermission(String userId, String resourceId, Map<String, dynamic> entity) async {
+  Future<bool> validateUpdatePermission(
+      String userId, String resourceId, Map<String, dynamic> entity) async {
     // Only the creator can update their deeplink
     final createdBy = entity['createdBy'];
     return createdBy == userId;
   }
 
   @override
-  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+  Future<bool> validateDeletePermission(
+      String userId, String resourceId) async {
     // Only the creator can delete their deeplink
     try {
       final doc = await collection.doc(resourceId).get();
@@ -128,7 +134,8 @@ class FirebaseDeepLinkRepository extends BaseFirebaseRepository<Map<String, dyna
   }
 
   @override
-  Future<String> createShortUrl(String longUrl, Map<String, dynamic> metadata) async {
+  Future<String> createShortUrl(
+      String longUrl, Map<String, dynamic> metadata) async {
     try {
       // Generate a unique short code
       final shortCode = _generateShortCode();
@@ -140,9 +147,9 @@ class FirebaseDeepLinkRepository extends BaseFirebaseRepository<Map<String, dyna
         'createdBy': currentUserId,
         'clickCount': 0,
       };
-      
+
       await collection.doc(shortCode).set(linkData);
-      
+
       AppLogger.info('Created short URL: $shortCode');
       return shortCode;
     } catch (e) {
@@ -158,7 +165,7 @@ class FirebaseDeepLinkRepository extends BaseFirebaseRepository<Map<String, dyna
       if (!doc.exists) {
         return null;
       }
-      
+
       final data = doc.data();
       return data?['longUrl'] as String?;
     } catch (e) {
@@ -174,22 +181,20 @@ class FirebaseDeepLinkRepository extends BaseFirebaseRepository<Map<String, dyna
         'clickCount': FieldValue.increment(1),
         'lastClickedAt': FieldValue.serverTimestamp(),
       });
-      
+
       // Also track click history
-      await collection
-          .doc(shortUrl)
-          .collection('clicks')
-          .add({
-            'timestamp': FieldValue.serverTimestamp(),
-            'userId': currentUserId,
-          });
+      await collection.doc(shortUrl).collection('clicks').add({
+        'timestamp': FieldValue.serverTimestamp(),
+        'userId': currentUserId,
+      });
     } catch (e) {
       AppLogger.error('Failed to track URL click', e);
     }
   }
 
   @override
-  Future<void> storeDeepLinkMetadata(String linkId, Map<String, dynamic> metadata) async {
+  Future<void> storeDeepLinkMetadata(
+      String linkId, Map<String, dynamic> metadata) async {
     try {
       await collection.doc(linkId).set({
         'id': linkId,
@@ -197,7 +202,7 @@ class FirebaseDeepLinkRepository extends BaseFirebaseRepository<Map<String, dyna
         'updatedAt': FieldValue.serverTimestamp(),
         'updatedBy': currentUserId,
       }, SetOptions(merge: true));
-      
+
       AppLogger.info('Stored deep link metadata for: $linkId');
     } catch (e) {
       AppLogger.error('Failed to store deep link metadata', e);
@@ -212,7 +217,7 @@ class FirebaseDeepLinkRepository extends BaseFirebaseRepository<Map<String, dyna
       if (!doc.exists) {
         return null;
       }
-      
+
       final data = doc.data();
       return data?['metadata'] as Map<String, dynamic>?;
     } catch (e) {
@@ -227,14 +232,14 @@ class FirebaseDeepLinkRepository extends BaseFirebaseRepository<Map<String, dyna
       final query = await collection
           .where('createdAt', isLessThan: Timestamp.fromDate(before))
           .get();
-      
+
       if (query.docs.isEmpty) return;
-      
+
       final batch = firestore.batch();
       for (final doc in query.docs) {
         batch.delete(doc.reference);
       }
-      
+
       await batch.commit();
       AppLogger.info('Deleted ${query.docs.length} expired deep links');
     } catch (e) {
@@ -245,15 +250,16 @@ class FirebaseDeepLinkRepository extends BaseFirebaseRepository<Map<String, dyna
 
   /// Generate a unique short code for URLs
   String _generateShortCode() {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const chars =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final random = DateTime.now().millisecondsSinceEpoch;
     final buffer = StringBuffer();
-    
+
     for (int i = 0; i < 8; i++) {
       final index = (random + i) % chars.length;
       buffer.write(chars[index]);
     }
-    
+
     return buffer.toString();
   }
 }

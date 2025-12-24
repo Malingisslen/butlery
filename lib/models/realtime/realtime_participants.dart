@@ -32,7 +32,7 @@ class RealtimeParticipants {
     if (!participants.containsKey(userId)) {
       throw ArgumentError('User $userId is not a participant');
     }
-    
+
     final updated = Map<String, ResourcePermission>.from(participants);
     updated[userId] = newPermission;
     return updated;
@@ -67,8 +67,9 @@ class RealtimeParticipants {
   ) {
     final userPermission = participants[userId];
     if (userPermission == null) return false;
-    
-    return _getPermissionLevel(userPermission) >= _getPermissionLevel(requiredPermission);
+
+    return _getPermissionLevel(userPermission) >=
+        _getPermissionLevel(requiredPermission);
   }
 
   /// Get numeric level for permission comparison
@@ -77,9 +78,11 @@ class RealtimeParticipants {
       return 4;
     } else if (permission == ResourcePermission.admin) {
       return 3;
-    } else if (permission == ResourcePermission.editor || permission == ResourcePermission.write) {
+    } else if (permission == ResourcePermission.editor ||
+        permission == ResourcePermission.write) {
       return 2;
-    } else if (permission == ResourcePermission.viewer || permission == ResourcePermission.read) {
+    } else if (permission == ResourcePermission.viewer ||
+        permission == ResourcePermission.read) {
       return 1;
     } else {
       return 0;
@@ -127,24 +130,26 @@ class RealtimeParticipants {
   ) {
     final actorPermission = participants[actorUserId];
     final targetPermission = participants[targetUserId];
-    
+
     if (actorPermission == null || targetPermission == null) return false;
-    
+
     // Only owners can change owner permissions
     if (targetPermission == ResourcePermission.owner) {
       return actorPermission == ResourcePermission.owner;
     }
-    
+
     // Admins can change permissions below admin level
     if (actorPermission == ResourcePermission.admin) {
-      return _getPermissionLevel(newPermission) < _getPermissionLevel(ResourcePermission.admin);
+      return _getPermissionLevel(newPermission) <
+          _getPermissionLevel(ResourcePermission.admin);
     }
-    
+
     // Owners can change any permission
     return actorPermission == ResourcePermission.owner;
   }
 
-  static Map<String, int> getParticipantStats(Map<String, ResourcePermission> participants) {
+  static Map<String, int> getParticipantStats(
+      Map<String, ResourcePermission> participants) {
     final stats = <String, int>{
       'total': participants.length,
       'owners': 0,
@@ -152,20 +157,22 @@ class RealtimeParticipants {
       'editors': 0,
       'viewers': 0,
     };
-    
+
     for (final permission in participants.values) {
       if (permission == ResourcePermission.owner) {
         stats['owners'] = stats['owners']! + 1;
       } else if (permission == ResourcePermission.admin) {
         stats['admins'] = stats['admins']! + 1;
-      } else if (permission == ResourcePermission.editor || permission == ResourcePermission.write) {
+      } else if (permission == ResourcePermission.editor ||
+          permission == ResourcePermission.write) {
         stats['editors'] = stats['editors']! + 1;
-      } else if (permission == ResourcePermission.viewer || permission == ResourcePermission.read) {
+      } else if (permission == ResourcePermission.viewer ||
+          permission == ResourcePermission.read) {
         stats['viewers'] = stats['viewers']! + 1;
       }
       // Unknown permissions are skipped
     }
-    
+
     return stats;
   }
 
@@ -181,40 +188,45 @@ class RealtimeParticipants {
   }
 
   /// Get all editors (including admins and owners)
-  static List<String> getAllEditors(Map<String, ResourcePermission> participants) {
+  static List<String> getAllEditors(
+      Map<String, ResourcePermission> participants) {
     return participants.entries
-        .where((entry) => _getPermissionLevel(entry.value) >= _getPermissionLevel(ResourcePermission.editor))
+        .where((entry) =>
+            _getPermissionLevel(entry.value) >=
+            _getPermissionLevel(ResourcePermission.editor))
         .map((entry) => entry.key)
         .toList();
   }
 
   /// Get collaboration level (0-100)
-  static int getCollaborationLevel(Map<String, ResourcePermission> participants) {
+  static int getCollaborationLevel(
+      Map<String, ResourcePermission> participants) {
     final total = participants.length;
     if (total <= 1) return 0;
-    
+
     final editors = getAllEditors(participants).length;
     final collaborationRatio = editors / total;
-    
+
     // Score based on number of participants and their editing ability
     final sizeScore = (total.clamp(2, 10) - 1) * 10; // 10-90 points
     final editRatio = (collaborationRatio * 50).round(); // 0-50 points
-    
+
     return (sizeScore + editRatio).clamp(0, 100);
   }
 
-  static bool isValidParticipants(Map<String, ResourcePermission> participants) {
+  static bool isValidParticipants(
+      Map<String, ResourcePermission> participants) {
     if (participants.isEmpty) return false;
-    
+
     // Must have at least one owner
     final hasOwner = participants.values.contains(ResourcePermission.owner);
     if (!hasOwner) return false;
-    
+
     // All user IDs must be valid (non-empty strings)
     for (final userId in participants.keys) {
       if (userId.isEmpty) return false;
     }
-    
+
     return true;
   }
 
@@ -223,14 +235,14 @@ class RealtimeParticipants {
     Map<String, ResourcePermission> participants,
   ) {
     final sanitized = <String, ResourcePermission>{};
-    
+
     for (final entry in participants.entries) {
       final userId = entry.key.trim();
       if (userId.isNotEmpty) {
         sanitized[userId] = entry.value;
       }
     }
-    
+
     return sanitized;
   }
 
@@ -249,16 +261,17 @@ class RealtimeParticipants {
     String userId,
   ) {
     ResourcePermission? highest;
-    
+
     for (final participants in participantsList) {
       final permission = participants[userId];
       if (permission != null) {
-        if (highest == null || _getPermissionLevel(permission) > _getPermissionLevel(highest)) {
+        if (highest == null ||
+            _getPermissionLevel(permission) > _getPermissionLevel(highest)) {
           highest = permission;
         }
       }
     }
-    
+
     return highest;
   }
 
@@ -267,19 +280,21 @@ class RealtimeParticipants {
     List<Map<String, ResourcePermission>> participantsList,
   ) {
     final merged = <String, ResourcePermission>{};
-    
+
     for (final participants in participantsList) {
       for (final entry in participants.entries) {
         final userId = entry.key;
         final permission = entry.value;
-        
+
         final existingPermission = merged[userId];
-        if (existingPermission == null || _getPermissionLevel(permission) > _getPermissionLevel(existingPermission)) {
+        if (existingPermission == null ||
+            _getPermissionLevel(permission) >
+                _getPermissionLevel(existingPermission)) {
           merged[userId] = permission;
         }
       }
     }
-    
+
     return merged;
   }
 
@@ -290,9 +305,9 @@ class RealtimeParticipants {
     List<String>? viewerIds,
   }) {
     final participants = <String, ResourcePermission>{};
-    
+
     // Owner is NOT added to participants map - tracked separately via ownerId field
-    
+
     // Add editors
     if (editorIds != null) {
       for (final editorId in editorIds) {
@@ -301,7 +316,7 @@ class RealtimeParticipants {
         }
       }
     }
-    
+
     // Add viewers
     if (viewerIds != null) {
       for (final viewerId in viewerIds) {
@@ -310,7 +325,7 @@ class RealtimeParticipants {
         }
       }
     }
-    
+
     return participants;
   }
 
@@ -320,23 +335,30 @@ class RealtimeParticipants {
     ResourcePermission? minPermission,
     ResourcePermission? maxPermission,
   }) {
-    return participants.entries.where((entry) {
-      final permission = entry.value;
-      
-      if (exactPermission != null && permission != exactPermission) {
-        return false;
-      }
-      
-      if (minPermission != null && _getPermissionLevel(permission) < _getPermissionLevel(minPermission)) {
-        return false;
-      }
-      
-      if (maxPermission != null && _getPermissionLevel(permission) > _getPermissionLevel(maxPermission)) {
-        return false;
-      }
-      
-      return true;
-    }).map((entry) => entry.key).toList();
+    return participants.entries
+        .where((entry) {
+          final permission = entry.value;
+
+          if (exactPermission != null && permission != exactPermission) {
+            return false;
+          }
+
+          if (minPermission != null &&
+              _getPermissionLevel(permission) <
+                  _getPermissionLevel(minPermission)) {
+            return false;
+          }
+
+          if (maxPermission != null &&
+              _getPermissionLevel(permission) >
+                  _getPermissionLevel(maxPermission)) {
+            return false;
+          }
+
+          return true;
+        })
+        .map((entry) => entry.key)
+        .toList();
   }
 
   /// Count participants by criteria

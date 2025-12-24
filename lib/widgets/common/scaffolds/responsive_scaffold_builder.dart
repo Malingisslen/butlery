@@ -12,7 +12,8 @@ class ResponsiveScaffoldBuilder extends StatelessWidget {
   final ResponsiveWidgetBuilder? mobile;
   final ResponsiveWidgetBuilder? tablet;
   final ResponsiveWidgetBuilder? desktop;
-  final Widget Function(BuildContext context, DeviceCategory category)? categoryBuilder;
+  final Widget Function(BuildContext context, DeviceCategory category)?
+      categoryBuilder;
 
   /// Simple mobile/desktop boolean check (backward compatible).
   /// Uses 600px breakpoint: < 600px = mobile, >= 600px = desktop
@@ -76,6 +77,7 @@ class ResponsiveScaffoldBuilder extends StatelessWidget {
       );
     }
 
-    throw StateError('ResponsiveScaffoldBuilder requires one of: builder, mobile, or categoryBuilder');
+    throw StateError(
+        'ResponsiveScaffoldBuilder requires one of: builder, mobile, or categoryBuilder');
   }
 }

@@ -19,11 +19,14 @@ class SocialOperationsInitializer {
     FirestoreRepository? providedFirestoreRepo,
   ) {
     try {
-      final ratingsRepo = providedRatingsRepo ?? ServiceLocator.tryGet<RatingsRepository>();
-      final firestoreRepo = providedFirestoreRepo ?? ServiceLocator.tryGet<FirestoreRepository>();
+      final ratingsRepo =
+          providedRatingsRepo ?? ServiceLocator.tryGet<RatingsRepository>();
+      final firestoreRepo =
+          providedFirestoreRepo ?? ServiceLocator.tryGet<FirestoreRepository>();
 
       if (ratingsRepo != null && firestoreRepo != null) {
-        AppLogger.info('✅ SocialRecipeOperations initialized with repositories');
+        AppLogger.info(
+            '✅ SocialRecipeOperations initialized with repositories');
         return SocialRecipeOperations(
           parentService,
           ratingsRepository: ratingsRepo,
@@ -31,7 +34,8 @@ class SocialOperationsInitializer {
         );
       }
 
-      AppLogger.warning('⚠️ Repositories not yet available for SocialRecipeOperations');
+      AppLogger.warning(
+          '⚠️ Repositories not yet available for SocialRecipeOperations');
       return null;
     } catch (e) {
       AppLogger.error('❌ Failed to initialize SocialRecipeOperations: $e');
@@ -74,7 +78,8 @@ class SocialOperationsInitializer {
       final firestoreRepo = ServiceLocator.tryGet<FirestoreRepository>();
 
       if (ratingsRepo != null && firestoreRepo != null) {
-        AppLogger.info('✅ SocialRecipeOperations re-initialized with real repositories');
+        AppLogger.info(
+            '✅ SocialRecipeOperations re-initialized with real repositories');
         return SocialRecipeOperations(
           parentService,
           ratingsRepository: ratingsRepo,
@@ -101,7 +106,8 @@ class SocialOperationsInitializer {
         onSuccess(operations);
       } else {
         // Retry again with exponential backoff
-        scheduleRetry(parentService, onSuccess, Duration(seconds: delay.inSeconds * 2));
+        scheduleRetry(
+            parentService, onSuccess, Duration(seconds: delay.inSeconds * 2));
       }
     });
   }

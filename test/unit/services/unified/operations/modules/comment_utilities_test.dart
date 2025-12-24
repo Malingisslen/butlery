@@ -15,7 +15,7 @@ import '../../../../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
   late MockCommentsRepository mockCommentsRepository;
-  
+
   // Register the mock BEFORE any test groups to ensure it's available when CommentUtilities loads
   setUpAll(() async {
     // Register fallback values for mocktail
@@ -27,17 +27,17 @@ void main() {
       text: 'Test',
       createdAt: DateTime.now(),
     ));
-    
+
     // Initialize base test infrastructure
     await BaseUnitTest.setupUnit();
-    
+
     // Create and register mock repository before CommentUtilities class loads
     mockCommentsRepository = MockCommentsRepository();
     final getIt = GetIt.instance;
     await getIt.reset();
     getIt.registerSingleton<CommentsRepository>(mockCommentsRepository);
   });
-  
+
   tearDownAll(() async {
     // Clean up after all tests
     await GetIt.instance.reset();
@@ -50,7 +50,6 @@ void main() {
     late RecipeComment testReply;
 
     setUp(() async {
-
       // Create test data
       testPersonalRecipe = Recipe(
         core: RecipeCore(
@@ -557,4 +556,3 @@ void main() {
     });
   });
 }
-

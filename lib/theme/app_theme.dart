@@ -19,10 +19,10 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       textTheme: AppTextStyles.createTextTheme(),
-      
+
       // Visual density for different platforms
       visualDensity: VisualDensity.adaptivePlatformDensity,
-      
+
       // Component themes - these automatically adapt to the color scheme
       elevatedButtonTheme: ComponentThemes.elevatedButtonTheme,
       filledButtonTheme: ComponentThemes.filledButtonTheme,
@@ -30,7 +30,7 @@ class AppTheme {
       textButtonTheme: ComponentThemes.textButtonTheme,
       iconButtonTheme: ComponentThemes.iconButtonTheme,
       floatingActionButtonTheme: ComponentThemes.floatingActionButtonTheme,
-      
+
       cardTheme: ComponentThemes.cardTheme,
       inputDecorationTheme: ComponentThemes.inputDecorationTheme,
       appBarTheme: ComponentThemes.appBarTheme,
@@ -47,10 +47,10 @@ class AppTheme {
       chipTheme: ComponentThemes.chipTheme,
       sliderTheme: ComponentThemes.sliderTheme,
       progressIndicatorTheme: ComponentThemes.progressIndicatorTheme,
-      
+
       // Background colors - explicit for consistency
       scaffoldBackgroundColor: AppColors.backgroundBeige,
-      
+
       // Page transitions
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
@@ -58,14 +58,13 @@ class AppTheme {
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
         },
       ),
-      
+
       // Extensions
       extensions: const [
         AppThemeExtension(),
       ],
     );
   }
-
 }
 
 /// Extension for additional theme properties

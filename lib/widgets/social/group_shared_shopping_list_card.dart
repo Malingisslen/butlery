@@ -46,7 +46,8 @@ class GroupSharedShoppingListCard {
     );
   }
 
-  static Widget _buildHeader(BuildContext context, UnifiedShoppingList shoppingList) {
+  static Widget _buildHeader(
+      BuildContext context, UnifiedShoppingList shoppingList) {
     return Row(
       children: [
         Container(
@@ -74,7 +75,8 @@ class GroupSharedShoppingListCard {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (shoppingList.description != null && shoppingList.description!.isNotEmpty)
+              if (shoppingList.description != null &&
+                  shoppingList.description!.isNotEmpty)
                 Text(
                   shoppingList.description!,
                   style: AppTextStyles.bodySmall.copyWith(
@@ -116,7 +118,8 @@ class GroupSharedShoppingListCard {
     );
   }
 
-  static Widget _buildContent(BuildContext context, UnifiedShoppingList shoppingList) {
+  static Widget _buildContent(
+      BuildContext context, UnifiedShoppingList shoppingList) {
     final totalItems = shoppingList.items.length;
     final boughtItems = shoppingList.items.where((item) => item.bought).length;
 
@@ -153,7 +156,8 @@ class GroupSharedShoppingListCard {
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.info.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusS),
                   ),
                   child: Text(
                     'Kollaborativ',
@@ -179,18 +183,22 @@ class GroupSharedShoppingListCard {
     );
   }
 
-  static Widget _buildStats(BuildContext context, UnifiedShoppingList shoppingList) {
+  static Widget _buildStats(
+      BuildContext context, UnifiedShoppingList shoppingList) {
     final totalItems = shoppingList.items.length;
     final boughtItems = shoppingList.items.where((item) => item.bought).length;
     final remainingItems = totalItems - boughtItems;
 
     return Row(
       children: [
-        _buildStatChip('$totalItems', 'totalt', Icons.format_list_numbered, AppColors.primary),
+        _buildStatChip('$totalItems', 'totalt', Icons.format_list_numbered,
+            AppColors.primary),
         const SizedBox(width: AppDimensions.spacingS),
-        _buildStatChip('$boughtItems', 'kopta', Icons.check_circle, AppColors.success),
+        _buildStatChip(
+            '$boughtItems', 'kopta', Icons.check_circle, AppColors.success),
         const SizedBox(width: AppDimensions.spacingS),
-        _buildStatChip('$remainingItems', 'kvar', Icons.shopping_cart_outlined, AppColors.warning),
+        _buildStatChip('$remainingItems', 'kvar', Icons.shopping_cart_outlined,
+            AppColors.warning),
         const Spacer(),
         Text(
           ShoppingListFormatter.getShareTimeText(shoppingList),
@@ -202,9 +210,11 @@ class GroupSharedShoppingListCard {
     );
   }
 
-  static Widget _buildStatChip(String value, String label, IconData icon, Color color) {
+  static Widget _buildStatChip(
+      String value, String label, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingS, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.spacingS, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
@@ -216,7 +226,8 @@ class GroupSharedShoppingListCard {
           const SizedBox(width: 4),
           Text(
             value,
-            style: AppTextStyles.bodySmall.copyWith(color: color, fontWeight: FontWeight.w600),
+            style: AppTextStyles.bodySmall
+                .copyWith(color: color, fontWeight: FontWeight.w600),
           ),
           const SizedBox(width: 2),
           Text(
@@ -240,7 +251,8 @@ class GroupSharedShoppingListCard {
             context,
             label: 'Visa lista',
             icon: Icons.visibility,
-            onPressed: () => GroupShoppingListActions.viewShoppingList(context, shoppingList),
+            onPressed: () => GroupShoppingListActions.viewShoppingList(
+                context, shoppingList),
           ),
         ),
         const SizedBox(width: AppDimensions.spacingS),
@@ -249,12 +261,14 @@ class GroupSharedShoppingListCard {
             context,
             label: 'Importera',
             icon: Icons.download,
-            onPressed: () => GroupShoppingListActions.importShoppingList(context, viewModel, shoppingList),
+            onPressed: () => GroupShoppingListActions.importShoppingList(
+                context, viewModel, shoppingList),
           ),
         ),
         const SizedBox(width: AppDimensions.spacingS),
         IconButton(
-          onPressed: () => GroupShoppingListActions.showMoreActions(context, viewModel, shoppingList),
+          onPressed: () => GroupShoppingListActions.showMoreActions(
+              context, viewModel, shoppingList),
           icon: const Icon(Icons.more_vert),
           style: IconButton.styleFrom(
             backgroundColor: AppColors.surfaceVariant.withValues(alpha: 0.5),

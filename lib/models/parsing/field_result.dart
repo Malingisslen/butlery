@@ -75,7 +75,8 @@ class FieldResult<T> {
       );
 
   /// Creates a medium-confidence result with optional reason.
-  factory FieldResult.mediumConfidence(T value, [String? reason]) => FieldResult(
+  factory FieldResult.mediumConfidence(T value, [String? reason]) =>
+      FieldResult(
         value: value,
         confidence: ParseConfidence.medium,
         failureReason: reason,
@@ -113,8 +114,7 @@ class FieldResult<T> {
   ) =>
       FieldResult(
         value: json['value'] != null ? valueConverter(json['value']) : null,
-        confidence:
-            ParseConfidence.values.byName(json['confidence'] as String),
+        confidence: ParseConfidence.values.byName(json['confidence'] as String),
         failureReason: json['failureReason'] as String?,
       );
 

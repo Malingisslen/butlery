@@ -79,7 +79,8 @@ void main() {
 
       test('should handle unreachable endpoint', () async {
         // Act - FakeFirestore returns response even for non-existent docs
-        final canConnect = await repository.testEndpoint('nonexistent/endpoint');
+        final canConnect =
+            await repository.testEndpoint('nonexistent/endpoint');
 
         // Assert - Should return a boolean
         expect(canConnect, isA<bool>());
@@ -157,7 +158,8 @@ void main() {
         expect(stream, isA<Stream<bool>>());
       });
 
-      test('should handle Firebase connection monitoring errors gracefully', () async {
+      test('should handle Firebase connection monitoring errors gracefully',
+          () async {
         // Act
         final stream = repository.monitorFirebaseConnection();
 
@@ -187,7 +189,8 @@ void main() {
         subscription.cancel();
       }, skip: 'Requires Flutter bindings for Connectivity plugin');
 
-      test('should stop monitoring when connection stream is cancelled', () async {
+      test('should stop monitoring when connection stream is cancelled',
+          () async {
         // Arrange
         final stream = repository.connectionStream;
         final subscription = stream.listen((_) {});
@@ -218,7 +221,8 @@ void main() {
     // ===== INTEGRATION =====
 
     group('Integration', () {
-      test('should coordinate network and Firebase connectivity checks', () async {
+      test('should coordinate network and Firebase connectivity checks',
+          () async {
         // Arrange - Seed Firebase connectivity
         await fakeFirestore
             .collection('.info')
@@ -234,7 +238,8 @@ void main() {
         expect(quality, isA<ConnectionQuality>());
       });
 
-      test('should provide consistent connectivity status across methods', () async {
+      test('should provide consistent connectivity status across methods',
+          () async {
         // Arrange
         await fakeFirestore
             .collection('.info')

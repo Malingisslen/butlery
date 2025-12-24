@@ -48,7 +48,6 @@ class MenuOperationError {
 /// - Recipe movement between categories
 /// ❌ DOES NOT CONTAIN: Participant management, state management, synchronization
 class MenuOperations {
-
   // ===== BASIC MENU OPERATIONS =====
 
   /// Update basic menu information
@@ -63,7 +62,7 @@ class MenuOperations {
     required String editedByDisplayName,
   }) {
     AppLogger.info('📝 Updating basic info for menu: ${menu.menuTitle}');
-    
+
     return menu.updateBasicInfo(
       menuTitle: menuTitle,
       createdForDate: createdForDate,
@@ -94,7 +93,8 @@ class MenuOperations {
       );
     }
 
-    AppLogger.info('➕ Adding recipe "${recipe.title}" to category: $categoryName');
+    AppLogger.info(
+        '➕ Adding recipe "${recipe.title}" to category: $categoryName');
 
     return menu.addRecipeToCategory(
       categoryName: categoryName,
@@ -121,7 +121,8 @@ class MenuOperations {
       );
     }
 
-    AppLogger.info('➖ Removing recipe at index $recipeIndex from category: $categoryName');
+    AppLogger.info(
+        '➖ Removing recipe at index $recipeIndex from category: $categoryName');
 
     return menu.removeRecipeFromCategory(
       categoryName: categoryName,
@@ -141,7 +142,8 @@ class MenuOperations {
     required String editedBy,
     required String editedByDisplayName,
   }) {
-    if (!isValidCategoryName(fromCategory) || !isValidCategoryName(toCategory)) {
+    if (!isValidCategoryName(fromCategory) ||
+        !isValidCategoryName(toCategory)) {
       throw MenuOperationError(
         operation: MenuOperationType.moveRecipeBetweenCategories,
         message: 'Ogiltiga kategorinamn: $fromCategory -> $toCategory',
@@ -149,7 +151,8 @@ class MenuOperations {
       );
     }
 
-    AppLogger.info('🔄 Moving recipe from $fromCategory[$fromIndex] to $toCategory${toIndex != null ? '[$toIndex]' : ''}');
+    AppLogger.info(
+        '🔄 Moving recipe from $fromCategory[$fromIndex] to $toCategory${toIndex != null ? '[$toIndex]' : ''}');
 
     return menu.moveRecipeBetweenCategories(
       fromCategory: fromCategory,
@@ -179,7 +182,8 @@ class MenuOperations {
       );
     }
 
-    AppLogger.info('🔄 Replacing recipe at index $recipeIndex in category: $categoryName');
+    AppLogger.info(
+        '🔄 Replacing recipe at index $recipeIndex in category: $categoryName');
 
     return menu.replaceRecipeInCategory(
       categoryName: categoryName,
@@ -234,7 +238,8 @@ class MenuOperations {
       );
     }
 
-    AppLogger.info('📋 Updating entire category $categoryName with ${recipes.length} recipes');
+    AppLogger.info(
+        '📋 Updating entire category $categoryName with ${recipes.length} recipes');
 
     return menu.updateWholeCategory(
       categoryName: categoryName,
@@ -261,7 +266,8 @@ class MenuOperations {
       );
     }
 
-    AppLogger.info('🔄 Regenerating category $categoryName with ${newRecipes.length} new recipes');
+    AppLogger.info(
+        '🔄 Regenerating category $categoryName with ${newRecipes.length} new recipes');
 
     return menu.regenerateCategory(
       categoryName: categoryName,
@@ -325,9 +331,10 @@ class MenuOperations {
     final stats = <String, dynamic>{
       'totalCategories': menu.categories.length,
       'totalRecipes': getTotalRecipeCount(menu),
-      'categoriesWithRecipes': menu.categories.where((cat) => 
-          getRecipeCountInCategory(menu, cat) > 0).length,
-      'averageRecipesPerCategory': menu.categories.isNotEmpty 
+      'categoriesWithRecipes': menu.categories
+          .where((cat) => getRecipeCountInCategory(menu, cat) > 0)
+          .length,
+      'averageRecipesPerCategory': menu.categories.isNotEmpty
           ? (getTotalRecipeCount(menu) / menu.categories.length).round()
           : 0,
     };

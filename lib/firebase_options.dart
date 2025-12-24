@@ -41,49 +41,48 @@ class DefaultFirebaseOptions {
   }
 
   static FirebaseOptions get web => FirebaseOptions(
-    apiKey: FirebaseConfig.apiKeyWeb,
-    appId: FirebaseConfig.appIdWeb,
-    messagingSenderId: FirebaseConfig.messagingSenderId,
-    projectId: FirebaseConfig.projectId,
-    authDomain: FirebaseConfig.authDomain,
-    storageBucket: FirebaseConfig.storageBucket,
-    measurementId: FirebaseConfig.measurementIdWeb,
-  );
+        apiKey: FirebaseConfig.apiKeyWeb,
+        appId: FirebaseConfig.appIdWeb,
+        messagingSenderId: FirebaseConfig.messagingSenderId,
+        projectId: FirebaseConfig.projectId,
+        authDomain: FirebaseConfig.authDomain,
+        storageBucket: FirebaseConfig.storageBucket,
+        measurementId: FirebaseConfig.measurementIdWeb,
+      );
 
   static FirebaseOptions get android => FirebaseOptions(
-    apiKey: FirebaseConfig.apiKeyAndroid,
-    appId: FirebaseConfig.appIdAndroid,
-    messagingSenderId: FirebaseConfig.messagingSenderId,
-    projectId: FirebaseConfig.projectId,
-    storageBucket: FirebaseConfig.storageBucket,
-  );
+        apiKey: FirebaseConfig.apiKeyAndroid,
+        appId: FirebaseConfig.appIdAndroid,
+        messagingSenderId: FirebaseConfig.messagingSenderId,
+        projectId: FirebaseConfig.projectId,
+        storageBucket: FirebaseConfig.storageBucket,
+      );
 
   static FirebaseOptions get ios => FirebaseOptions(
-    apiKey: FirebaseConfig.apiKeyIOS,
-    appId: FirebaseConfig.appIdIOS,
-    messagingSenderId: FirebaseConfig.messagingSenderId,
-    projectId: FirebaseConfig.projectId,
-    storageBucket: FirebaseConfig.storageBucket,
-    iosBundleId: FirebaseConfig.iosBundleId,
-  );
+        apiKey: FirebaseConfig.apiKeyIOS,
+        appId: FirebaseConfig.appIdIOS,
+        messagingSenderId: FirebaseConfig.messagingSenderId,
+        projectId: FirebaseConfig.projectId,
+        storageBucket: FirebaseConfig.storageBucket,
+        iosBundleId: FirebaseConfig.iosBundleId,
+      );
 
   static FirebaseOptions get macos => FirebaseOptions(
-    apiKey: FirebaseConfig.apiKeyMacOS,
-    appId: FirebaseConfig.appIdMacOS,
-    messagingSenderId: FirebaseConfig.messagingSenderId,
-    projectId: FirebaseConfig.projectId,
-    storageBucket: FirebaseConfig.storageBucket,
-    iosBundleId: FirebaseConfig.iosBundleId,
-  );
+        apiKey: FirebaseConfig.apiKeyMacOS,
+        appId: FirebaseConfig.appIdMacOS,
+        messagingSenderId: FirebaseConfig.messagingSenderId,
+        projectId: FirebaseConfig.projectId,
+        storageBucket: FirebaseConfig.storageBucket,
+        iosBundleId: FirebaseConfig.iosBundleId,
+      );
 
   static FirebaseOptions get windows => FirebaseOptions(
-    apiKey: FirebaseConfig.apiKeyWindows,
-    appId: FirebaseConfig.appIdWindows,
-    messagingSenderId: FirebaseConfig.messagingSenderId,
-    projectId: FirebaseConfig.projectId,
-    authDomain: FirebaseConfig.authDomain,
-    storageBucket: FirebaseConfig.storageBucket,
-    measurementId: FirebaseConfig.measurementIdWindows,
-  );
-
+        apiKey: FirebaseConfig.apiKeyWindows,
+        appId: FirebaseConfig.appIdWindows,
+        messagingSenderId: FirebaseConfig.messagingSenderId,
+        projectId: FirebaseConfig.projectId,
+        authDomain: FirebaseConfig.authDomain,
+        storageBucket: FirebaseConfig.storageBucket,
+        measurementId: FirebaseConfig.measurementIdWindows,
+      );
 }

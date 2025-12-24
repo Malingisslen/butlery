@@ -1,5 +1,5 @@
 /// Comprehensive test suite for Recipe unified model
-/// 
+///
 /// Tests all aspects of the Recipe model including:
 /// - RecipeCore construction and properties
 /// - Recipe facade with different types
@@ -24,7 +24,7 @@ void main() {
   ModelTestBase.testModelGroup('Recipe Unified Model', () {
     late Recipe testRecipe;
     late Map<String, dynamic> validJson;
-    
+
     setUp(() {
       // Create test recipe using factory
       testRecipe = RecipeFactory.build(
@@ -51,10 +51,10 @@ void main() {
         rating: 4.5,
         tags: ['svensk', 'köttbullar', 'middag'],
       );
-      
+
       validJson = SerializationHelper.createValidRecipeJson();
     });
-    
+
     group('RecipeCore Construction', () {
       test('should create RecipeCore with all required fields', () {
         // Arrange
@@ -65,7 +65,7 @@ void main() {
           instructions: ['Step 1'],
           mealType: 'Lunch',
         );
-        
+
         // Assert
         expect(core.id, isNotEmpty);
         expect(core.title, equals('Test Recipe'));
@@ -76,7 +76,7 @@ void main() {
         expect(core.createdAt, isA<DateTime>());
         expect(core.updatedAt, isA<DateTime>());
       });
-      
+
       test('should generate unique ID if not provided', () {
         // Arrange
         final core1 = RecipeCore(
@@ -86,7 +86,7 @@ void main() {
           instructions: [],
           mealType: 'Lunch',
         );
-        
+
         final core2 = RecipeCore(
           title: 'Recipe 2',
           description: 'Description 2',
@@ -94,13 +94,13 @@ void main() {
           instructions: [],
           mealType: 'Dinner',
         );
-        
+
         // Assert
         expect(core1.id, isNotEmpty);
         expect(core2.id, isNotEmpty);
         expect(core1.id, isNot(equals(core2.id)));
       });
-      
+
       test('should use provided optional fields', () {
         // Arrange
         final lastCooked = DateTime(2024, 1, 1);
@@ -121,7 +121,7 @@ void main() {
           isPublic: true,
           lastCookedAt: lastCooked,
         );
-        
+
         // Assert
         expect(core.id, equals('custom_id'));
         expect(core.portions, equals(6));
@@ -135,22 +135,22 @@ void main() {
         expect(core.lastCookedAt, equals(lastCooked));
       });
     });
-    
+
     group('RecipeCore copyWith', () {
       test('should create copy with updated fields', () async {
         // Arrange
         final original = testRecipe.core;
-        
+
         // Add small delay to ensure timestamp difference
         await Future.delayed(const Duration(milliseconds: 10));
-        
+
         // Act
         final updated = original.copyWith(
           title: 'Updated Title',
           portions: 8,
           rating: 5.0,
         );
-        
+
         // Assert
         expect(updated.id, equals(original.id)); // ID unchanged
         expect(updated.title, equals('Updated Title'));
@@ -160,14 +160,14 @@ void main() {
         expect(updated.createdAt, equals(original.createdAt)); // Unchanged
         expect(updated.updatedAt.isAfter(original.updatedAt), isTrue);
       });
-      
+
       test('should preserve all fields when not specified', () {
         // Arrange
         final original = testRecipe.core;
-        
+
         // Act
         final copy = original.copyWith();
-        
+
         // Assert
         expect(copy.id, equals(original.id));
         expect(copy.title, equals(original.title));
@@ -177,7 +177,7 @@ void main() {
         expect(copy.mealType, equals(original.mealType));
       });
     });
-    
+
     group('RecipeCore Helper Methods', () {
       test('should correctly determine hasImages', () {
         // Arrange
@@ -189,7 +189,7 @@ void main() {
           mealType: 'Lunch',
           imageUrls: ['image1.jpg'],
         );
-        
+
         final withoutImages = RecipeCore(
           title: 'Test',
           description: 'Test',
@@ -197,12 +197,12 @@ void main() {
           instructions: [],
           mealType: 'Lunch',
         );
-        
+
         // Assert
         expect(withImages.hasImages, isTrue);
         expect(withoutImages.hasImages, isFalse);
       });
-      
+
       test('should get primaryImageUrl correctly', () {
         // Arrange
         final withImages = RecipeCore(
@@ -213,7 +213,7 @@ void main() {
           mealType: 'Lunch',
           imageUrls: ['first.jpg', 'second.jpg'],
         );
-        
+
         final withoutImages = RecipeCore(
           title: 'Test',
           description: 'Test',
@@ -221,12 +221,12 @@ void main() {
           instructions: [],
           mealType: 'Lunch',
         );
-        
+
         // Assert
         expect(withImages.primaryImageUrl, equals('first.jpg'));
         expect(withoutImages.primaryImageUrl, isNull);
       });
-      
+
       test('should format cookTimeText in Swedish', () {
         // Arrange
         final withTime = RecipeCore(
@@ -237,7 +237,7 @@ void main() {
           mealType: 'Lunch',
           timeMinutes: 45,
         );
-        
+
         final withoutTime = RecipeCore(
           title: 'Test',
           description: 'Test',
@@ -245,16 +245,16 @@ void main() {
           instructions: [],
           mealType: 'Lunch',
         );
-        
+
         // Assert
         expect(withTime.cookTimeText, equals('45 minuter'));
         expect(withoutTime.cookTimeText, equals('–'));
       });
-      
+
       test('should format lastCookedText in Swedish', () {
         // Arrange
         final now = DateTime.now();
-        
+
         final cookedToday = RecipeCore(
           title: 'Test',
           description: 'Test',
@@ -263,7 +263,7 @@ void main() {
           mealType: 'Lunch',
           lastCookedAt: now,
         );
-        
+
         final cookedYesterday = RecipeCore(
           title: 'Test',
           description: 'Test',
@@ -272,7 +272,7 @@ void main() {
           mealType: 'Lunch',
           lastCookedAt: now.subtract(const Duration(days: 1)),
         );
-        
+
         final cookedLastWeek = RecipeCore(
           title: 'Test',
           description: 'Test',
@@ -281,7 +281,7 @@ void main() {
           mealType: 'Lunch',
           lastCookedAt: now.subtract(const Duration(days: 7)),
         );
-        
+
         final neverCooked = RecipeCore(
           title: 'Test',
           description: 'Test',
@@ -289,23 +289,24 @@ void main() {
           instructions: [],
           mealType: 'Lunch',
         );
-        
+
         // Assert
         expect(cookedToday.lastCookedText, equals('Tillagad idag'));
         expect(cookedYesterday.lastCookedText, equals('Tillagad igår'));
-        expect(cookedLastWeek.lastCookedText, equals('Tillagad för 7 dagar sedan'));
+        expect(cookedLastWeek.lastCookedText,
+            equals('Tillagad för 7 dagar sedan'));
         expect(neverCooked.lastCookedText, isNull);
       });
     });
-    
+
     group('RecipeCore JSON Serialization', () {
       test('should serialize to JSON correctly', () {
         // Arrange
         final core = testRecipe.core;
-        
+
         // Act
         final json = core.toJson();
-        
+
         // Assert
         expect(json, isA<Map<String, dynamic>>());
         expect(json['id'], equals(core.id));
@@ -321,11 +322,11 @@ void main() {
         expect(json['createdAt'], isA<String>());
         expect(json['updatedAt'], isA<String>());
       });
-      
+
       test('should deserialize from JSON correctly', () {
         // Act
         final core = RecipeCore.fromJson(validJson);
-        
+
         // Assert
         expect(core.id, equals(validJson['id']));
         expect(core.title, equals(validJson['title']));
@@ -338,16 +339,16 @@ void main() {
         expect(core.rating, equals(validJson['rating']));
         expect(core.tags, equals(validJson['tags']));
       });
-      
+
       test('should round-trip JSON serialization', () {
         // Arrange
         final original = testRecipe.core;
-        
+
         // Act
         final json = original.toJson();
         final deserialized = RecipeCore.fromJson(json);
         final json2 = deserialized.toJson();
-        
+
         // Assert
         expect(deserialized.id, equals(original.id));
         expect(deserialized.title, equals(original.title));
@@ -355,15 +356,15 @@ void main() {
         expect(json2, equals(json));
       });
     });
-    
+
     group('RecipeCore Firestore Serialization', () {
       test('should serialize to Firestore format', () {
         // Arrange
         final core = testRecipe.core;
-        
+
         // Act
         final firestore = core.toFirestore();
-        
+
         // Assert
         expect(firestore['id'], equals(core.id));
         expect(firestore['title'], equals(core.title));
@@ -373,7 +374,7 @@ void main() {
           expect(firestore['lastCookedAt'], isA<Timestamp>());
         }
       });
-      
+
       test('should deserialize from Firestore map', () {
         // Arrange
         final firestoreData = {
@@ -385,10 +386,10 @@ void main() {
           'createdAt': Timestamp.fromDate(DateTime(2024, 1, 1)),
           'updatedAt': Timestamp.fromDate(DateTime(2024, 1, 2)),
         };
-        
+
         // Act
         final core = RecipeCore.fromMap('firestore_123', firestoreData);
-        
+
         // Assert
         expect(core.id, equals('firestore_123'));
         expect(core.title, equals('Firestore Recipe'));
@@ -397,7 +398,7 @@ void main() {
         expect(core.updatedAt, equals(DateTime(2024, 1, 2)));
       });
     });
-    
+
     group('Recipe Facade Construction', () {
       test('should create personal recipe', () {
         // Arrange & Act
@@ -405,7 +406,7 @@ void main() {
           id: 'personal_123',
           title: 'My Personal Recipe',
         );
-        
+
         // Assert
         expect(recipe.type, equals(RecipeType.personal));
         expect(recipe.core.title, equals('My Personal Recipe'));
@@ -413,7 +414,7 @@ void main() {
         expect(recipe.realtimeData, isNull);
         expect(recipe.offlineData, isNull);
       });
-      
+
       test('should create shared recipe', () {
         // Arrange & Act
         final recipe = RecipeFactory.buildShared(
@@ -421,14 +422,14 @@ void main() {
           title: 'Shared Recipe',
           isPublic: true,
         );
-        
+
         // Assert
         expect(recipe.type, equals(RecipeType.shared));
         expect(recipe.core.isPublic, isTrue);
         expect(recipe.socialData, isNotNull);
         expect(recipe.socialData!.allowGuestViewing, isTrue);
       });
-      
+
       test('should create collaborative recipe', () {
         // Arrange & Act
         final recipe = RecipeFactory.buildCollaborative(
@@ -439,15 +440,15 @@ void main() {
             'user2': ResourcePermission.viewer,
           },
         );
-        
+
         // Assert
         expect(recipe.type, equals(RecipeType.collaborative));
         expect(recipe.socialData, isNotNull);
         expect(recipe.socialData!.memberPermissions, isNotNull);
-        expect(recipe.socialData!.memberPermissions!['user1'], 
-               equals(ResourcePermission.editor));
+        expect(recipe.socialData!.memberPermissions!['user1'],
+            equals(ResourcePermission.editor));
       });
-      
+
       test('should create realtime recipe', () {
         // Arrange & Act
         final recipe = RecipeFactory.buildRealtime(
@@ -455,7 +456,7 @@ void main() {
           title: 'Live Recipe',
           activeUsers: ['user1', 'user2'],
         );
-        
+
         // Assert
         expect(recipe.type, equals(RecipeType.realtime));
         expect(recipe.realtimeData, isNotNull);
@@ -463,7 +464,7 @@ void main() {
         expect(recipe.realtimeData!.isActive, isTrue);
       });
     });
-    
+
     group('Recipe Type-Specific Behavior', () {
       test('should identify recipe type correctly', () {
         // Arrange
@@ -471,37 +472,37 @@ void main() {
         final shared = RecipeFactory.buildShared();
         final collaborative = RecipeFactory.buildCollaborative();
         final realtime = RecipeFactory.buildRealtime();
-        
+
         // Assert
         expect(personal.type, equals(RecipeType.personal));
         expect(shared.type, equals(RecipeType.shared));
         expect(collaborative.type, equals(RecipeType.collaborative));
         expect(realtime.type, equals(RecipeType.realtime));
       });
-      
+
       test('should have appropriate metadata for each type', () {
         // Personal - no social data
         final personal = RecipeFactory.buildPersonal();
         expect(personal.socialData, isNull);
         expect(personal.realtimeData, isNull);
-        
+
         // Shared - has social data
         final shared = RecipeFactory.buildShared();
         expect(shared.socialData, isNotNull);
         expect(shared.realtimeData, isNull);
-        
+
         // Collaborative - has social data with permissions
         final collaborative = RecipeFactory.buildCollaborative();
         expect(collaborative.socialData, isNotNull);
         expect(collaborative.socialData!.memberPermissions, isNotNull);
-        
+
         // Realtime - has realtime data
         final realtime = RecipeFactory.buildRealtime();
         expect(realtime.realtimeData, isNotNull);
         expect(realtime.realtimeData!.isActive, isTrue);
       });
     });
-    
+
     group('RecipeSocialData', () {
       test('should serialize social data to JSON', () {
         // Arrange
@@ -517,10 +518,10 @@ void main() {
           categoryIds: ['cat1', 'cat2'],
           descriptionCollaborative: 'Team recipe',
         );
-        
+
         // Act
         final json = socialData.toJson();
-        
+
         // Assert
         expect(json['ownerId'], equals('owner_123'));
         expect(json['ownerDisplayName'], equals('Test Owner'));
@@ -530,7 +531,7 @@ void main() {
         expect(json['categoryIds'], equals(['cat1', 'cat2']));
         expect(json['descriptionCollaborative'], equals('Team recipe'));
       });
-      
+
       test('should deserialize social data from JSON', () {
         // Arrange
         final json = {
@@ -545,21 +546,21 @@ void main() {
           'categoryIds': ['cat1', 'cat2'],
           'descriptionCollaborative': 'Team recipe',
         };
-        
+
         // Act
         final socialData = RecipeSocialData.fromJson(json);
-        
+
         // Assert
         expect(socialData.ownerId, equals('owner_123'));
         expect(socialData.ownerDisplayName, equals('Test Owner'));
-        expect(socialData.memberPermissions!['user1'], 
-               equals(ResourcePermission.editor));
-        expect(socialData.memberPermissions!['user2'], 
-               equals(ResourcePermission.viewer));
+        expect(socialData.memberPermissions!['user1'],
+            equals(ResourcePermission.editor));
+        expect(socialData.memberPermissions!['user2'],
+            equals(ResourcePermission.viewer));
         expect(socialData.allowGuestViewing, isTrue);
         expect(socialData.allowMemberInvites, isFalse);
       });
-      
+
       test('should copyWith social data correctly', () {
         // Arrange
         final original = RecipeSocialData(
@@ -567,20 +568,20 @@ void main() {
           ownerDisplayName: 'Original Owner',
           allowGuestViewing: false,
         );
-        
+
         // Act
         final updated = original.copyWith(
           ownerDisplayName: 'Updated Owner',
           allowGuestViewing: true,
         );
-        
+
         // Assert
         expect(updated.ownerId, equals(original.ownerId));
         expect(updated.ownerDisplayName, equals('Updated Owner'));
         expect(updated.allowGuestViewing, isTrue);
       });
     });
-    
+
     group('RecipeRealtimeData', () {
       test('should serialize realtime data to JSON', () {
         // Arrange
@@ -597,10 +598,10 @@ void main() {
           editCount: 42,
           isActive: true,
         );
-        
+
         // Act
         final json = realtimeData.toJson();
-        
+
         // Assert
         expect(json['activeEditorIds'], equals(['user1', 'user2']));
         expect(json['lastSeenAt'], isA<Map>());
@@ -609,7 +610,7 @@ void main() {
         expect(json['editCount'], equals(42));
         expect(json['isActive'], isTrue);
       });
-      
+
       test('should deserialize realtime data from JSON', () {
         // Arrange
         final now = DateTime.now();
@@ -625,10 +626,10 @@ void main() {
           'editCount': 42,
           'isActive': true,
         };
-        
+
         // Act
         final realtimeData = RecipeRealtimeData.fromJson(json);
-        
+
         // Assert
         expect(realtimeData.activeEditorIds, equals(['user1', 'user2']));
         expect(realtimeData.lastSeenAt, isA<Map>());
@@ -637,7 +638,7 @@ void main() {
         expect(realtimeData.isActive, isTrue);
       });
     });
-    
+
     group('RecipeOfflineData', () {
       test('should serialize offline data to JSON', () {
         // Arrange
@@ -646,16 +647,16 @@ void main() {
           isModifiedOffline: true,
           pendingChanges: ['change1', 'change2'],
         );
-        
+
         // Act
         final json = offlineData.toJson();
-        
+
         // Assert
         expect(json['lastSyncedAt'], isA<String>());
         expect(json['isModifiedOffline'], isTrue);
         expect(json['pendingChanges'], equals(['change1', 'change2']));
       });
-      
+
       test('should deserialize offline data from JSON', () {
         // Arrange
         final json = {
@@ -663,28 +664,28 @@ void main() {
           'isModifiedOffline': true,
           'pendingChanges': ['change1', 'change2'],
         };
-        
+
         // Act
         final offlineData = RecipeOfflineData.fromJson(json);
-        
+
         // Assert
         expect(offlineData.lastSyncedAt, equals(DateTime(2024, 1, 1)));
         expect(offlineData.isModifiedOffline, isTrue);
         expect(offlineData.pendingChanges, equals(['change1', 'change2']));
       });
-      
+
       test('should calculate needsSync correctly', () {
         // Never synced
         final neverSynced = RecipeOfflineData();
         expect(neverSynced.needsSync, isTrue);
-        
+
         // Modified offline
         final modified = RecipeOfflineData(
           lastSyncedAt: DateTime.now(),
           isModifiedOffline: true,
         );
         expect(modified.needsSync, isTrue);
-        
+
         // Synced and not modified
         final synced = RecipeOfflineData(
           lastSyncedAt: DateTime.now(),
@@ -693,7 +694,7 @@ void main() {
         expect(synced.needsSync, isFalse);
       });
     });
-    
+
     group('Edge Cases and Validation', () {
       test('should handle empty collections', () {
         // Arrange
@@ -704,18 +705,18 @@ void main() {
           instructions: [],
           mealType: 'Lunch',
         );
-        
+
         // Assert
         expect(recipe.ingredients, isEmpty);
         expect(recipe.instructions, isEmpty);
-        
+
         // Should still serialize/deserialize
         final json = recipe.toJson();
         final deserialized = RecipeCore.fromJson(json);
         expect(deserialized.ingredients, isEmpty);
         expect(deserialized.instructions, isEmpty);
       });
-      
+
       test('should handle Swedish characters', () {
         // Arrange
         final recipe = RecipeCore(
@@ -725,23 +726,23 @@ void main() {
           instructions: ['Lägg räkor på bröd', 'Garnera med dill'],
           mealType: 'Lunch',
         );
-        
+
         // Act
         final json = recipe.toJson();
         final deserialized = RecipeCore.fromJson(json);
-        
+
         // Assert
         expect(deserialized.title, equals('Räksmörgås'));
         expect(deserialized.description, contains('Öppna'));
         expect(deserialized.ingredients[0], contains('räkor'));
         expect(deserialized.instructions[0], contains('Lägg'));
       });
-      
+
       test('should handle very long strings', () {
         // Arrange
         final longTitle = 'A' * 500;
         final longDescription = 'B' * 2000;
-        
+
         final recipe = RecipeCore(
           title: longTitle,
           description: longDescription,
@@ -749,18 +750,18 @@ void main() {
           instructions: List.generate(50, (i) => 'Step $i' * 100),
           mealType: 'Lunch',
         );
-        
+
         // Act
         final json = recipe.toJson();
         final deserialized = RecipeCore.fromJson(json);
-        
+
         // Assert
         expect(deserialized.title, equals(longTitle));
         expect(deserialized.description, equals(longDescription));
         expect(deserialized.ingredients, hasLength(100));
         expect(deserialized.instructions, hasLength(50));
       });
-      
+
       test('should handle null optional fields', () {
         // Arrange
         final recipe = RecipeCore(
@@ -777,11 +778,11 @@ void main() {
           createdBy: null,
           lastCookedAt: null,
         );
-        
+
         // Act
         final json = recipe.toJson();
         final deserialized = RecipeCore.fromJson(json);
-        
+
         // Assert
         expect(deserialized.portions, isNull);
         expect(deserialized.timeMinutes, isNull);
@@ -791,7 +792,7 @@ void main() {
         expect(deserialized.createdBy, isNull);
         expect(deserialized.lastCookedAt, isNull);
       });
-      
+
       test('should validate meal types', () {
         // Arrange
         final validMealTypes = [
@@ -802,7 +803,7 @@ void main() {
           'Fika',
           'Dessert',
         ];
-        
+
         // Assert each valid meal type
         for (final mealType in validMealTypes) {
           final recipe = RecipeCore(
@@ -812,12 +813,12 @@ void main() {
             instructions: [],
             mealType: mealType,
           );
-          
+
           expect(recipe.mealType, equals(mealType));
           expect(ValidationHelper.isValidMealType(mealType), isTrue);
         }
       });
-      
+
       test('should handle invalid JSON gracefully', () {
         // Missing required field
         final invalidJson = {
@@ -828,7 +829,7 @@ void main() {
           'instructions': [],
           'mealType': 'Lunch',
         };
-        
+
         // Should throw when trying to deserialize
         expect(
           () => RecipeCore.fromJson(invalidJson),

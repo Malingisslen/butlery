@@ -447,7 +447,8 @@ void main() {
           joinedAt: DateTime.now(),
           lastActiveAt: DateTime.now(),
         );
-        mockParentService.updateFriendsList([testFriend1, testFriend2, friend3]);
+        mockParentService
+            .updateFriendsList([testFriend1, testFriend2, friend3]);
 
         // Act
         final uncategorized = operations.getUncategorizedFriends();
@@ -544,8 +545,9 @@ void main() {
 
       test('should not add friend to non-existent category', () async {
         // Act
-        final result = await operations.assignFriendToCategory('friend_1', 'invalid_category');
-        
+        final result = await operations.assignFriendToCategory(
+            'friend_1', 'invalid_category');
+
         // Assert
         expect(result, isFalse);
       });

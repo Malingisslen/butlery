@@ -32,51 +32,53 @@ class CommentItemWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SocialAvatarComponents.avatar(
-                displayName:
-                    socialViewModel.getAuthorDisplayName(comment.authorId),
-                imageUrl: socialViewModel.getAuthorAvatarUrl(comment.authorId),
-                size: ImageSize.small,
-              ),
-              const SizedBox(width: AppDimensions.spacingS),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          socialViewModel.getAuthorDisplayName(comment.authorId),
-                          style: AppTextStyles.labelMedium
-                              .copyWith(fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(width: AppDimensions.spacingS),
-                        Text(
-                          CommentTimeFormatter.format(comment.createdAt),
-                          style: AppTextStyles.bodySmall,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Text(
-                      comment.text,
-                      style: AppTextStyles.bodyMedium,
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Row(
-                      children: [
-                        _buildLikeButton(context),
-                        _buildReplyButton(context),
-                      ],
-                    ),
-                  ],
+                  displayName:
+                      socialViewModel.getAuthorDisplayName(comment.authorId),
+                  imageUrl:
+                      socialViewModel.getAuthorAvatarUrl(comment.authorId),
+                  size: ImageSize.small,
                 ),
-              ),
-            ],
-          ),
-          ..._buildReplies(context),
-        ],
+                const SizedBox(width: AppDimensions.spacingS),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            socialViewModel
+                                .getAuthorDisplayName(comment.authorId),
+                            style: AppTextStyles.labelMedium
+                                .copyWith(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(width: AppDimensions.spacingS),
+                          Text(
+                            CommentTimeFormatter.format(comment.createdAt),
+                            style: AppTextStyles.bodySmall,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppDimensions.spacingXs),
+                      Text(
+                        comment.text,
+                        style: AppTextStyles.bodyMedium,
+                      ),
+                      const SizedBox(height: AppDimensions.spacingXs),
+                      Row(
+                        children: [
+                          _buildLikeButton(context),
+                          _buildReplyButton(context),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            ..._buildReplies(context),
+          ],
+        ),
       ),
-    ),
     );
   }
 

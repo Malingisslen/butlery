@@ -22,9 +22,9 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 /// Friendship status between current user and another user
 enum FriendshipStatus { none, friends, requestSent, requestReceived, blocked }
 
-
 /// Coordinates social relationship operations through service and manager delegation.
-class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin {
+class FriendsViewModel extends ChangeNotifier
+    with StateNotifierMixin, AsyncOperationMixin {
   final UnifiedFriendsService _friendsService;
   final UserService _userService;
   final AnalyticsService _analyticsService;
@@ -44,7 +44,8 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
     AnalyticsService? analyticsService,
   })  : _friendsService = friendsService,
         _userService = userService,
-        _analyticsService = analyticsService ?? ServiceLocator.get<AnalyticsService>() {
+        _analyticsService =
+            analyticsService ?? ServiceLocator.get<AnalyticsService>() {
     _searchManager = FriendsSearchManager(friendsService: friendsService);
     _profileCacheManager = FriendsProfileCacheManager(userService: userService);
     _selectionManager = FriendsSelectionManager();
@@ -55,7 +56,8 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
     _searchManager.addListener(_onSearchChanged);
     _profileCacheManager.addListener(_onProfileCacheChanged);
     _selectionManager.addListener(_onSelectionChanged);
-    AppLogger.success('All Friends ViewModel listeners registered successfully');
+    AppLogger.success(
+        'All Friends ViewModel listeners registered successfully');
 
     Future.delayed(Duration.zero, () {
       if (!_isDisposed) {
@@ -72,7 +74,8 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
 
   List<FriendCategory> get groups => _friendsService.categoriesList;
   List<FriendCategory> get groupsWithFriends => _friendsService.categoriesList
-      .where((category) => category.friendCount > 0).toList();
+      .where((category) => category.friendCount > 0)
+      .toList();
   bool get isLoadingGroups => _friendsService.isLoading;
   String? get groupsError => _friendsService.error;
   int get groupsCount => groups.length;
@@ -102,15 +105,23 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
   /// Comprehensive loading state combining all operations
   @override
   bool get isLoading =>
-      _friendsService.isLoading || _profileCacheManager.isLoadingUserProfiles || _isCreatingGroup;
+      _friendsService.isLoading ||
+      _profileCacheManager.isLoadingUserProfiles ||
+      _isCreatingGroup;
 
   /// Comprehensive error state
   @override
-  String? get error => _friendsService.error ?? _groupCreationError ?? _searchManager.searchError;
+  String? get error =>
+      _friendsService.error ??
+      _groupCreationError ??
+      _searchManager.searchError;
 
   /// Error presence indicator
   @override
-  bool get hasError => _friendsService.hasError || _groupCreationError != null || _searchManager.searchError != null;
+  bool get hasError =>
+      _friendsService.hasError ||
+      _groupCreationError != null ||
+      _searchManager.searchError != null;
 
   // ===== FRIEND SELECTION STATE ACCESSORS (DELEGATES) =====
 
@@ -129,7 +140,7 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
   /// Indicates active group creation for loading indicators and interaction
   /// control during group creation operations.
   bool get isCreatingGroup => _isCreatingGroup;
-  
+
   /// Group creation error message for user feedback and creation error recovery.
   /// Provides group creation specific error messages for comprehensive error
   /// handling and user guidance during group formation.
@@ -158,7 +169,8 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
   Future<bool> sendFriendRequest(String userId, {String? message}) async {
     AppLogger.info('🔄 Sending friend request to $userId...');
 
-    final success = await _friendsService.management.sendFriendRequest(userId, message: message);
+    final success = await _friendsService.management
+        .sendFriendRequest(userId, message: message);
 
     if (success) {
       AppLogger.success('✅ Friend request sent successfully to $userId');
@@ -175,7 +187,8 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
       // Notify UI of friend request state change
       notifyListeners();
 
-      AppLogger.debug('🔄 UI notified of friend request state change with search cleared');
+      AppLogger.debug(
+          '🔄 UI notified of friend request state change with search cleared');
     } else {
       AppLogger.error('❌ Failed to send friend request to $userId');
     }
@@ -191,7 +204,8 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
       orElse: () => throw Exception('Request not found'),
     );
 
-    final success = await _friendsService.management.acceptFriendRequest(requestId);
+    final success =
+        await _friendsService.management.acceptFriendRequest(requestId);
 
     if (success) {
       // Track friend request accepted
@@ -236,7 +250,7 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
     _isCreatingGroup = true;
     _groupCreationError = null;
     notifyListeners();
-    
+
     try {
       final result = await executeAsync(() async {
         AppLogger.info('🔄 Skapar grupp: $name');
@@ -252,11 +266,12 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
           AppLogger.success('✅ Grupp "$name" skapad!');
           return true;
         } else {
-          _groupCreationError = _friendsService.error ?? 'Kunde inte skapa grupp';
+          _groupCreationError =
+              _friendsService.error ?? 'Kunde inte skapa grupp';
           throw Exception(_groupCreationError!);
         }
       });
-      
+
       return result;
     } finally {
       _isCreatingGroup = false;
@@ -296,17 +311,19 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
     if (_friendsService.friends.any((friend) => friend.uid == userId)) {
       return FriendshipStatus.friends;
     }
-    
+
     // Check if there's an outgoing request
-    if (_friendsService.outgoingRequests.any((request) => request.toUserId == userId)) {
+    if (_friendsService.outgoingRequests
+        .any((request) => request.toUserId == userId)) {
       return FriendshipStatus.requestSent;
     }
-    
+
     // Check if there's an incoming request
-    if (_friendsService.incomingRequests.any((request) => request.fromUserId == userId)) {
+    if (_friendsService.incomingRequests
+        .any((request) => request.fromUserId == userId)) {
       return FriendshipStatus.requestReceived;
     }
-    
+
     return FriendshipStatus.none;
   }
 
@@ -323,7 +340,7 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
   // Consolidated permission properties (from mixins)
   bool get isAuthenticated => true; // Simplified auth check
   String? get currentUserId => 'mock-user-id'; // Simplified user ID
-  
+
   bool canSendFriendRequest(String userId) {
     if (!isAuthenticated || currentUserId == userId) return false;
 
@@ -338,12 +355,10 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
       _selectionManager.toggleFriendSelection(friendId);
 
   /// Select all friends
-  void selectAllFriends() =>
-      _selectionManager.selectAllFriends(friends);
+  void selectAllFriends() => _selectionManager.selectAllFriends(friends);
 
   /// Clear all selections
-  void clearSelection() =>
-      _selectionManager.clearSelection();
+  void clearSelection() => _selectionManager.clearSelection();
 
   /// Get selected friends as UserProfile objects
   List<UserProfile> getSelectedFriends() =>
@@ -370,8 +385,7 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
       _profileCacheManager.getProfilePictureUrlForUser(userId);
 
   /// Checks if a user is online
-  bool isUserOnline(String userId) =>
-      _profileCacheManager.isUserOnline(userId);
+  bool isUserOnline(String userId) => _profileCacheManager.isUserOnline(userId);
 
   // Private helper to load profiles
   Future<void> _loadUserProfilesForRequests() async {
@@ -382,7 +396,6 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
       sentRequests: sentRequests,
     );
   }
-
 
   // ===== LISTENER CALLBACKS =====
 
@@ -467,4 +480,3 @@ class FriendsViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOper
     super.dispose();
   }
 }
-

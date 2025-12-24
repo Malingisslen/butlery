@@ -23,7 +23,8 @@ class DiscoveryRecommendationsManager extends ChangeNotifier {
 
   // ===== GETTERS =====
 
-  List<Map<String, dynamic>> get personalizedRecommendations => List.unmodifiable(_personalizedRecommendations);
+  List<Map<String, dynamic>> get personalizedRecommendations =>
+      List.unmodifiable(_personalizedRecommendations);
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
@@ -57,7 +58,7 @@ class DiscoveryRecommendationsManager extends ChangeNotifier {
       // Get current user ID from permission service
       final permissionService = ServiceLocator.get<PermissionService>();
       final userId = permissionService.currentUserId;
-      
+
       if (userId == null) {
         AppLogger.warning('⚠️ No user ID available for recommendations');
         _personalizedRecommendations = [];
@@ -66,7 +67,8 @@ class DiscoveryRecommendationsManager extends ChangeNotifier {
       }
 
       // Generate recommendations using the AI-powered recommendation service
-      final recommendations = await _recommendationService.generateRecommendations(
+      final recommendations =
+          await _recommendationService.generateRecommendations(
         userId: userId,
         limit: 15,
       );
@@ -89,7 +91,8 @@ class DiscoveryRecommendationsManager extends ChangeNotifier {
         };
       }).toList();
 
-      AppLogger.success('✅ Loaded ${_personalizedRecommendations.length} personalized recommendations');
+      AppLogger.success(
+          '✅ Loaded ${_personalizedRecommendations.length} personalized recommendations');
       notifyListeners();
     } catch (e) {
       _setError('Failed to load recommendations: $e');
@@ -103,14 +106,17 @@ class DiscoveryRecommendationsManager extends ChangeNotifier {
   }
 
   /// Provide feedback on a recommendation
-  Future<void> provideRecommendationFeedback(String recommendationId, FeedbackType feedbackType) async {
+  Future<void> provideRecommendationFeedback(
+      String recommendationId, FeedbackType feedbackType) async {
     try {
       AppLogger.info('👍 Providing recommendation feedback: $feedbackType');
-      
-      await _recommendationService.provideFeedback(recommendationId, feedbackType);
-      
+
+      await _recommendationService.provideFeedback(
+          recommendationId, feedbackType);
+
       // Update local state
-      final index = _personalizedRecommendations.indexWhere((rec) => rec['id'] == recommendationId);
+      final index = _personalizedRecommendations
+          .indexWhere((rec) => rec['id'] == recommendationId);
       if (index != -1) {
         switch (feedbackType) {
           case FeedbackType.like:
@@ -129,7 +135,7 @@ class DiscoveryRecommendationsManager extends ChangeNotifier {
         }
         notifyListeners();
       }
-      
+
       AppLogger.success('✅ Recommendation feedback provided successfully');
     } catch (e) {
       AppLogger.error('❌ Failed to provide recommendation feedback', e);
@@ -151,16 +157,17 @@ class DiscoveryRecommendationsManager extends ChangeNotifier {
   Future<void> undoRecommendationDismissal(String recommendationId) async {
     try {
       AppLogger.info('↩️ Undoing recommendation dismissal');
-      
+
       await _recommendationService.undoDismissal(recommendationId);
-      
+
       // Update local state
-      final index = _personalizedRecommendations.indexWhere((rec) => rec['id'] == recommendationId);
+      final index = _personalizedRecommendations
+          .indexWhere((rec) => rec['id'] == recommendationId);
       if (index != -1) {
         _personalizedRecommendations[index]['isDismissed'] = false;
         notifyListeners();
       }
-      
+
       AppLogger.success('✅ Recommendation dismissal undone successfully');
     } catch (e) {
       AppLogger.error('❌ Failed to undo recommendation dismissal', e);
@@ -172,18 +179,19 @@ class DiscoveryRecommendationsManager extends ChangeNotifier {
   Future<void> loadMoreRecommendations() async {
     try {
       AppLogger.info('📄 Loading more recommendations');
-      
+
       // Get current user ID from permission service
       final permissionService = ServiceLocator.get<PermissionService>();
       final userId = permissionService.currentUserId;
-      
+
       if (userId == null) {
         AppLogger.warning('⚠️ No user ID available for more recommendations');
         return;
       }
 
       // Generate more recommendations using the AI-powered recommendation service
-      final moreRecommendations = await _recommendationService.generateRecommendations(
+      final moreRecommendations =
+          await _recommendationService.generateRecommendations(
         userId: userId,
         limit: 8,
       );
@@ -207,7 +215,8 @@ class DiscoveryRecommendationsManager extends ChangeNotifier {
       }).toList();
 
       _personalizedRecommendations.addAll(newRecommendationMaps);
-      AppLogger.success('✅ Loaded ${newRecommendationMaps.length} more recommendations');
+      AppLogger.success(
+          '✅ Loaded ${newRecommendationMaps.length} more recommendations');
       notifyListeners();
     } catch (e) {
       AppLogger.error('❌ Failed to load more recommendations', e);
@@ -230,7 +239,8 @@ class DiscoveryRecommendationsManager extends ChangeNotifier {
   /// Get recommendation by ID
   Map<String, dynamic>? getRecommendation(String recommendationId) {
     try {
-      return _personalizedRecommendations.firstWhere((rec) => rec['id'] == recommendationId);
+      return _personalizedRecommendations
+          .firstWhere((rec) => rec['id'] == recommendationId);
     } catch (e) {
       return null;
     }
@@ -244,7 +254,8 @@ class DiscoveryRecommendationsManager extends ChangeNotifier {
   }
 
   /// Get recommendations by content type
-  List<Map<String, dynamic>> getRecommendationsByContentType(String contentType) {
+  List<Map<String, dynamic>> getRecommendationsByContentType(
+      String contentType) {
     return _personalizedRecommendations
         .where((rec) => rec['contentType'] == contentType)
         .toList();

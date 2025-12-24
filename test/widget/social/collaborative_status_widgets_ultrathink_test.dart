@@ -1,7 +1,7 @@
 // test/widget/social/collaborative_status_widgets_ultrathink_test.dart
 // ULTRATHINK TEST SUITE: CollaborativeStatusWidgets - 290 lines of production code
 // Testing 5 static methods + 1 private class in collaborative status widget system
-// 
+//
 // ULTRATHINK FOCUS: Static widget creation, ViewModel integration, Swedish localization, PreferredSizeWidget
 
 import 'package:flutter/material.dart';
@@ -21,7 +21,8 @@ import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
 
 // Mock classes for dependencies
-class MockCollaborativeStatusViewModel extends Mock implements CollaborativeStatusViewModel {}
+class MockCollaborativeStatusViewModel extends Mock
+    implements CollaborativeStatusViewModel {}
 
 void main() {
   group('CollaborativeStatusWidgets Ultrathink Tests', () {
@@ -29,7 +30,7 @@ void main() {
 
     setUpAll(() async {
       await BaseWidgetTest.setupWidget();
-      
+
       // Register fallback values for mocktail
       registerFallbackValue(const CollaborativeStatus(isCollaborative: false));
       registerFallbackValue(<String, List<Recipe>>{});
@@ -37,11 +38,11 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
-      
+
       // Create fresh mocks for each test
       mockCollaborativeStatusViewModel = MockCollaborativeStatusViewModel();
     });
-    
+
     tearDown(() async {
       await BaseWidgetTest.teardownWidget();
     });
@@ -59,7 +60,6 @@ void main() {
       );
     }
 
-
     group('statusBadge Method Tests', () {
       testWidgets('creates statusBadge with default parameters',
           (WidgetTester tester) async {
@@ -71,13 +71,14 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should create Container + Row + Icon + Text structure
         expect(find.byType(Container), findsOneWidget);
         expect(find.byType(Row), findsOneWidget);
         expect(find.byType(Icon), findsOneWidget);
         expect(find.text('Delat'), findsOneWidget); // Default text parameter
-        expect(find.byIcon(Icons.people), findsOneWidget); // Default icon parameter
+        expect(find.byIcon(Icons.people),
+            findsOneWidget); // Default icon parameter
       });
 
       testWidgets('passes custom parameters correctly to statusBadge',
@@ -100,11 +101,11 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Verify custom parameters are applied correctly
         expect(find.text(customText), findsOneWidget);
         expect(find.byIcon(customIcon), findsOneWidget);
-        
+
         // Verify custom icon color (line 42: color: effectiveColor)
         final icon = tester.widget<Icon>(find.byIcon(customIcon));
         expect(icon.color, equals(customColor));
@@ -120,7 +121,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should use AppColors.primaryBlue when no color provided
         final icon = tester.widget<Icon>(find.byIcon(Icons.people));
         expect(icon.color, equals(AppColors.primaryBlue));
@@ -136,7 +137,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should use AppDimensions constants for spacing
         final container = tester.widget<Container>(find.byType(Container));
         final expectedPadding = const EdgeInsets.symmetric(
@@ -164,7 +165,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should create Container + InkWell + Row structure
         expect(find.byType(Container), findsOneWidget);
         expect(find.byType(InkWell), findsOneWidget);
@@ -191,7 +192,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Test tap functionality through InkWell
         await tester.tap(find.byType(InkWell));
         expect(tapCalled, isTrue);
@@ -215,10 +216,11 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should show trailing widget instead of default icon
         expect(find.byIcon(Icons.arrow_forward), findsOneWidget);
-        expect(find.byIcon(Icons.people_outline), findsNothing); // Default fallback should not appear
+        expect(find.byIcon(Icons.people_outline),
+            findsNothing); // Default fallback should not appear
       });
 
       testWidgets('shows default icon when no context or trailing provided',
@@ -237,7 +239,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should show default people_outline icon as last fallback
         expect(find.byIcon(Icons.people_outline), findsOneWidget);
       });
@@ -260,7 +262,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Container should use custom background color
         expect(find.byType(Container), findsOneWidget);
       });
@@ -281,7 +283,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should use AppColors.primaryBlue.withValues(alpha: 0.1)
         expect(find.byType(Container), findsOneWidget);
       });
@@ -295,7 +297,8 @@ void main() {
         const title = 'Test AppBar';
 
         // Setup mock for AppBar rendering
-        when(() => mockCollaborativeStatusViewModel.getRecipeCollaborativeStatus(any(), any()))
+        when(() => mockCollaborativeStatusViewModel
+                .getRecipeCollaborativeStatus(any(), any()))
             .thenReturn(const CollaborativeStatus(isCollaborative: false));
 
         final appBar = CollaborativeStatusWidgets.appBar(
@@ -306,18 +309,22 @@ void main() {
 
         // ULTRATHINK: Should return PreferredSizeWidget (_CollaborativeAppBar)
         expect(appBar, isA<PreferredSizeWidget>());
-        expect(appBar.preferredSize, equals(const Size.fromHeight(kToolbarHeight)));
+        expect(appBar.preferredSize,
+            equals(const Size.fromHeight(kToolbarHeight)));
       });
 
-      testWidgets('appBar integrates with Consumer<CollaborativeStatusViewModel>',
+      testWidgets(
+          'appBar integrates with Consumer<CollaborativeStatusViewModel>',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code ViewModel integration from _CollaborativeAppBar
         const contentId = 'recipe_456';
         const title = 'ViewModel Integration Test';
-        
+
         // Setup mock ViewModel response
-        when(() => mockCollaborativeStatusViewModel.getRecipeCollaborativeStatus(any(), any()))
-            .thenReturn(const CollaborativeStatus(isCollaborative: true, participants: []));
+        when(() =>
+            mockCollaborativeStatusViewModel.getRecipeCollaborativeStatus(
+                any(), any())).thenReturn(
+            const CollaborativeStatus(isCollaborative: true, participants: []));
 
         await tester.pumpWidget(
           createTestWidget(
@@ -335,14 +342,14 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should create AppBar through Consumer pattern
         expect(find.byType(AppBar), findsOneWidget);
         expect(find.text(title), findsOneWidget);
-        
+
         // Verify ViewModel method was called
-        verify(() => mockCollaborativeStatusViewModel.getRecipeCollaborativeStatus(contentId, null))
-            .called(1);
+        verify(() => mockCollaborativeStatusViewModel
+            .getRecipeCollaborativeStatus(contentId, null)).called(1);
       });
     });
 
@@ -354,7 +361,8 @@ void main() {
         const title = 'Non-Collaborative Content';
 
         // Setup mock to return non-collaborative status
-        when(() => mockCollaborativeStatusViewModel.getRecipeCollaborativeStatus(any(), any()))
+        when(() => mockCollaborativeStatusViewModel
+                .getRecipeCollaborativeStatus(any(), any()))
             .thenReturn(const CollaborativeStatus(isCollaborative: false));
 
         await tester.pumpWidget(
@@ -370,10 +378,11 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should return SizedBox.shrink (lines 186)
         expect(find.byType(SizedBox), findsOneWidget);
-        expect(find.text(title), findsNothing); // Banner content should not appear
+        expect(
+            find.text(title), findsNothing); // Banner content should not appear
       });
 
       testWidgets('smartBanner creates banner when collaborative',
@@ -383,8 +392,10 @@ void main() {
         const customTitle = 'Custom Collaboration Title';
 
         // Setup mock to return collaborative status
-        when(() => mockCollaborativeStatusViewModel.getRecipeCollaborativeStatus(any(), any()))
-            .thenReturn(const CollaborativeStatus(isCollaborative: true, participants: []));
+        when(() =>
+            mockCollaborativeStatusViewModel.getRecipeCollaborativeStatus(
+                any(), any())).thenReturn(
+            const CollaborativeStatus(isCollaborative: true, participants: []));
 
         await tester.pumpWidget(
           createTestWidget(
@@ -399,24 +410,28 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should create banner with custom title
         expect(find.text(customTitle), findsOneWidget);
-        expect(find.byType(Container), findsAtLeastNWidgets(1)); // Banner structure
-        
+        expect(find.byType(Container),
+            findsAtLeastNWidgets(1)); // Banner structure
+
         // Verify ViewModel was called
-        verify(() => mockCollaborativeStatusViewModel.getRecipeCollaborativeStatus(contentId, null))
-            .called(1);
+        verify(() => mockCollaborativeStatusViewModel
+            .getRecipeCollaborativeStatus(contentId, null)).called(1);
       });
 
-      testWidgets('smartBanner uses default Swedish text when no title provided',
+      testWidgets(
+          'smartBanner uses default Swedish text when no title provided',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code default Swedish text from lines 189-191
         const contentId = 'recipe_swedish_default';
 
         // Setup mock to return collaborative status
-        when(() => mockCollaborativeStatusViewModel.getRecipeCollaborativeStatus(any(), any()))
-            .thenReturn(const CollaborativeStatus(isCollaborative: true, participants: []));
+        when(() =>
+            mockCollaborativeStatusViewModel.getRecipeCollaborativeStatus(
+                any(), any())).thenReturn(
+            const CollaborativeStatus(isCollaborative: true, participants: []));
 
         await tester.pumpWidget(
           createTestWidget(
@@ -430,10 +445,11 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should use default Swedish text
         expect(find.text('Du redigerar tillsammans med andra'), findsOneWidget);
-        expect(find.text('Ändringar synkas automatiskt med andra deltagare'), findsOneWidget);
+        expect(find.text('Ändringar synkas automatiskt med andra deltagare'),
+            findsOneWidget);
       });
 
       testWidgets('smartBanner handles menu contentType correctly',
@@ -444,8 +460,10 @@ void main() {
         final menuData = <String, List<Recipe>>{'breakfast': []};
 
         // Setup mock for menu status
-        when(() => mockCollaborativeStatusViewModel.getMenuCollaborativeStatus(any(), any()))
-            .thenReturn(const CollaborativeStatus(isCollaborative: true, participants: []));
+        when(() =>
+            mockCollaborativeStatusViewModel.getMenuCollaborativeStatus(
+                any(), any())).thenReturn(
+            const CollaborativeStatus(isCollaborative: true, participants: []));
 
         await tester.pumpWidget(
           createTestWidget(
@@ -461,16 +479,18 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should call getMenuCollaborativeStatus instead of getRecipeCollaborativeStatus
-        verify(() => mockCollaborativeStatusViewModel.getMenuCollaborativeStatus(contentId, menuData))
-            .called(1);
-        verifyNever(() => mockCollaborativeStatusViewModel.getRecipeCollaborativeStatus(any(), any()));
+        verify(() => mockCollaborativeStatusViewModel
+            .getMenuCollaborativeStatus(contentId, menuData)).called(1);
+        verifyNever(() => mockCollaborativeStatusViewModel
+            .getRecipeCollaborativeStatus(any(), any()));
       });
     });
 
     group('refreshStatus Method Tests', () {
-      testWidgets('refreshStatus calls ViewModel invalidateRecipeStatus for recipe content',
+      testWidgets(
+          'refreshStatus calls ViewModel invalidateRecipeStatus for recipe content',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code recipe invalidation from lines 207-210
         const contentId = 'recipe_refresh_test';
@@ -493,13 +513,14 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should call ViewModel invalidateRecipeStatus method
         // Note: This is void method, so we verify it doesn't crash
         expect(find.byType(SizedBox), findsOneWidget);
       });
 
-      testWidgets('refreshStatus calls ViewModel invalidateMenuStatus for menu content',
+      testWidgets(
+          'refreshStatus calls ViewModel invalidateMenuStatus for menu content',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code menu invalidation from lines 211-212
         const contentId = 'menu_refresh_test';
@@ -522,7 +543,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should call ViewModel invalidateMenuStatus method
         // Note: This is void method, so we verify it doesn't crash
         expect(find.byType(SizedBox), findsOneWidget);
@@ -549,7 +570,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should handle errors gracefully with try/catch
         expect(find.byType(SizedBox), findsOneWidget);
       });
@@ -577,7 +598,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should handle empty strings without crashing
         expect(find.byType(Container), findsAtLeastNWidgets(2));
         expect(find.byType(Row), findsAtLeastNWidgets(2));
@@ -586,8 +607,10 @@ void main() {
       testWidgets('handles very long text content',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code with long content
-        const longTitle = 'Very long collaboration title that might overflow if not handled properly by the widget layout system';
-        const longSubtitle = 'Very long collaboration subtitle with detailed explanation about what is happening in this collaborative session and how users should interact with it';
+        const longTitle =
+            'Very long collaboration title that might overflow if not handled properly by the widget layout system';
+        const longSubtitle =
+            'Very long collaboration subtitle with detailed explanation about what is happening in this collaborative session and how users should interact with it';
 
         await tester.pumpWidget(
           createTestWidget(
@@ -599,10 +622,12 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should handle long text without overflow errors
-        expect(find.textContaining('Very long collaboration title'), findsOneWidget);
-        expect(find.textContaining('Very long collaboration subtitle'), findsOneWidget);
+        expect(find.textContaining('Very long collaboration title'),
+            findsOneWidget);
+        expect(find.textContaining('Very long collaboration subtitle'),
+            findsOneWidget);
       });
 
       testWidgets('handles complex menuData correctly',
@@ -610,31 +635,36 @@ void main() {
         // ULTRATHINK: Test production code with complex menu structure
         const contentId = 'complex_menu';
         final complexMenuData = <String, List<Recipe>>{
-          'breakfast': [Recipe(
-            core: RecipeCore(
-              title: 'Pancakes',
-              description: 'Fluffy breakfast pancakes',
-              ingredients: ['flour', 'eggs', 'milk'],
-              instructions: ['Mix ingredients', 'Cook on griddle'],
-              mealType: 'breakfast',
-            ),
-            type: RecipeType.personal,
-          )],
-          'lunch': [Recipe(
-            core: RecipeCore(
-              title: 'Sandwich',
-              description: 'Simple lunch sandwich',
-              ingredients: ['bread', 'cheese'],
-              instructions: ['Make sandwich'],
-              mealType: 'lunch',
-            ),
-            type: RecipeType.personal,
-          )],
+          'breakfast': [
+            Recipe(
+              core: RecipeCore(
+                title: 'Pancakes',
+                description: 'Fluffy breakfast pancakes',
+                ingredients: ['flour', 'eggs', 'milk'],
+                instructions: ['Mix ingredients', 'Cook on griddle'],
+                mealType: 'breakfast',
+              ),
+              type: RecipeType.personal,
+            )
+          ],
+          'lunch': [
+            Recipe(
+              core: RecipeCore(
+                title: 'Sandwich',
+                description: 'Simple lunch sandwich',
+                ingredients: ['bread', 'cheese'],
+                instructions: ['Make sandwich'],
+                mealType: 'lunch',
+              ),
+              type: RecipeType.personal,
+            )
+          ],
           'dinner': [],
         };
 
         // Setup mock for complex menu
-        when(() => mockCollaborativeStatusViewModel.getMenuCollaborativeStatus(any(), any()))
+        when(() => mockCollaborativeStatusViewModel.getMenuCollaborativeStatus(
+                any(), any()))
             .thenReturn(const CollaborativeStatus(isCollaborative: false));
 
         await tester.pumpWidget(
@@ -651,13 +681,14 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Should handle complex menu data structure
-        expect(find.byType(SizedBox), findsOneWidget); // Non-collaborative should return shrink
-        
+        expect(find.byType(SizedBox),
+            findsOneWidget); // Non-collaborative should return shrink
+
         // Verify complex menu data was passed correctly
-        verify(() => mockCollaborativeStatusViewModel.getMenuCollaborativeStatus(contentId, complexMenuData))
-            .called(1);
+        verify(() => mockCollaborativeStatusViewModel
+            .getMenuCollaborativeStatus(contentId, complexMenuData)).called(1);
       });
     });
   });

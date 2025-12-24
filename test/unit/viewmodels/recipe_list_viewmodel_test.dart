@@ -28,11 +28,11 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
-      
+
       // Create mocks using centralized factory
       mockRecipeService = MockUnifiedRecipeService();
       mockSearchService = MockFactory.createSearchService();
-      
+
       // Configure mock state using configuration method
       mockRecipeService.setRecipeState(
         recipes: [],
@@ -42,29 +42,31 @@ void main() {
         isLoading: false,
         error: null,
       );
-      
+
       // Setup default mock behaviors for SearchService
       when(() => mockSearchService.searchRecipes(any(), any())).thenAnswer(
         (invocation) {
           final recipes = invocation.positionalArguments[0] as List<Recipe>;
           final query = invocation.positionalArguments[1] as String;
           if (query.isEmpty) return recipes;
-          return recipes.where((r) => 
-            r.title.toLowerCase().contains(query.toLowerCase()) ||
-            r.description.toLowerCase().contains(query.toLowerCase())
-          ).toList();
+          return recipes
+              .where((r) =>
+                  r.title.toLowerCase().contains(query.toLowerCase()) ||
+                  r.description.toLowerCase().contains(query.toLowerCase()))
+              .toList();
         },
       );
-      
+
       when(() => mockSearchService.sortRecipes(
-        any(), 
-        any(), 
-        ascending: any(named: 'ascending'),
-      )).thenAnswer((invocation) {
+            any(),
+            any(),
+            ascending: any(named: 'ascending'),
+          )).thenAnswer((invocation) {
         final recipes = invocation.positionalArguments[0] as List<Recipe>;
         final criteria = invocation.positionalArguments[1] as SortCriteria;
-        final ascending = invocation.namedArguments[#ascending] as bool? ?? true;
-        
+        final ascending =
+            invocation.namedArguments[#ascending] as bool? ?? true;
+
         final sorted = List<Recipe>.from(recipes);
         sorted.sort((a, b) {
           int comparison;
@@ -73,7 +75,8 @@ void main() {
               comparison = a.title.compareTo(b.title);
               break;
             case SortCriteria.time:
-              comparison = (a.timeMinutes ?? 999).compareTo(b.timeMinutes ?? 999);
+              comparison =
+                  (a.timeMinutes ?? 999).compareTo(b.timeMinutes ?? 999);
               break;
             case SortCriteria.rating:
               comparison = (a.rating ?? 0).compareTo(b.rating ?? 0);
@@ -89,11 +92,11 @@ void main() {
         });
         return sorted;
       });
-      
+
       // Register mocks in test service locator
       TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
       TestServiceLocator.registerMock<SearchService>(mockSearchService);
-      
+
       // Create viewModel
       viewModel = RecipeListViewModel(
         recipeService: mockRecipeService,
@@ -114,9 +117,9 @@ void main() {
     group('Initialization', () {
       test('should initialize with default state', () {
         // Arrange - viewModel already initialized in setUp
-        
+
         // Act - no action needed, checking initial state
-        
+
         // Assert
         expect(viewModel.searchQuery, isEmpty);
         expect(viewModel.sortCriteria, equals(SortCriteria.title));
@@ -133,11 +136,11 @@ void main() {
           RecipeFactory.build(id: 'r1', title: 'Recipe 1'),
           RecipeFactory.build(id: 'r2', title: 'Recipe 2'),
         ];
-        
+
         // Act - update service state
         mockRecipeService.setRecipeState(recipes: recipes);
         mockRecipeService.notifyListeners();
-        
+
         // Assert - viewModel should reflect changes
         expect(viewModel.recipes, hasLength(2));
       });
@@ -152,28 +155,32 @@ void main() {
           RecipeFactory.build(id: 'r3', title: 'Pasta Bolognese'),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.updateSearch('pasta');
-        
+
         // Assert
         expect(viewModel.searchQuery, equals('pasta'));
         expect(viewModel.recipes, hasLength(2));
-        expect(viewModel.recipes.every((r) => r.title.toLowerCase().contains('pasta')), isTrue);
+        expect(
+            viewModel.recipes
+                .every((r) => r.title.toLowerCase().contains('pasta')),
+            isTrue);
       });
 
       test('should not notify if search query unchanged', () {
         // Arrange
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act
         viewModel.updateSearch('test');
         final firstCount = notificationCount;
         viewModel.updateSearch('test'); // Same query
-        
+
         // Assert
-        expect(notificationCount, equals(firstCount)); // No additional notification
+        expect(notificationCount,
+            equals(firstCount)); // No additional notification
       });
 
       test('should clear search when query is empty', () {
@@ -184,10 +191,10 @@ void main() {
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
         viewModel.updateSearch('test');
-        
+
         // Act
         viewModel.updateSearch('');
-        
+
         // Assert
         expect(viewModel.searchQuery, isEmpty);
         expect(viewModel.recipes, hasLength(2)); // All recipes shown
@@ -203,10 +210,10 @@ void main() {
           RecipeFactory.build(id: 'r3', title: 'Banana Bread'),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act - default sorting
         final sorted = viewModel.recipes;
-        
+
         // Assert
         expect(sorted[0].title, equals('Apple Pie'));
         expect(sorted[1].title, equals('Banana Bread'));
@@ -220,10 +227,11 @@ void main() {
           RecipeFactory.build(id: 'r2', title: 'B Recipe'),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act - toggle to descending
-        viewModel.updateSort(SortCriteria.title); // Already title, should toggle
-        
+        viewModel
+            .updateSort(SortCriteria.title); // Already title, should toggle
+
         // Assert
         expect(viewModel.sortAscending, isFalse);
         expect(viewModel.recipes[0].title, equals('B Recipe'));
@@ -234,10 +242,10 @@ void main() {
         // Arrange
         viewModel.updateSort(SortCriteria.title);
         viewModel.updateSort(SortCriteria.title); // Toggle to descending
-        
+
         // Act - change criteria
         viewModel.updateSort(SortCriteria.time);
-        
+
         // Assert
         expect(viewModel.sortCriteria, equals(SortCriteria.time));
         expect(viewModel.sortAscending, isTrue);
@@ -251,10 +259,10 @@ void main() {
           RecipeFactory.build(id: 'r3', title: 'Medium', timeMinutes: 45),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.updateSort(SortCriteria.time);
-        
+
         // Assert
         expect(viewModel.recipes[0].timeMinutes, equals(15));
         expect(viewModel.recipes[1].timeMinutes, equals(45));
@@ -269,10 +277,10 @@ void main() {
           RecipeFactory.build(id: 'r3', title: 'Better', rating: 4.5),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.updateSort(SortCriteria.rating);
-        
+
         // Assert
         expect(viewModel.recipes[0].rating, equals(3.5));
         expect(viewModel.recipes[1].rating, equals(4.5));
@@ -289,10 +297,10 @@ void main() {
           RecipeFactory.build(id: 'r3', title: 'Long', timeMinutes: 90),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.toggleTimeFilter('quick');
-        
+
         // Assert
         expect(viewModel.activeTimeFilters, contains('quick'));
         expect(viewModel.recipes, hasLength(1));
@@ -307,10 +315,10 @@ void main() {
           RecipeFactory.build(id: 'r3', title: 'Long', timeMinutes: 90),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.toggleTimeFilter('medium');
-        
+
         // Assert
         expect(viewModel.recipes, hasLength(1));
         expect(viewModel.recipes[0].timeMinutes, equals(45));
@@ -324,10 +332,10 @@ void main() {
           RecipeFactory.build(id: 'r3', title: 'Long', timeMinutes: 90),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.toggleTimeFilter('long');
-        
+
         // Assert
         expect(viewModel.recipes, hasLength(1));
         expect(viewModel.recipes[0].timeMinutes, greaterThan(60));
@@ -341,16 +349,19 @@ void main() {
           RecipeFactory.build(id: 'r3', title: 'Long', timeMinutes: 90),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act - select both quick and long
         viewModel.toggleTimeFilter('quick');
         viewModel.toggleTimeFilter('long');
-        
+
         // Assert - should show quick AND long, but not medium
         expect(viewModel.recipes, hasLength(2));
         expect(viewModel.recipes.any((r) => r.timeMinutes! < 30), isTrue);
         expect(viewModel.recipes.any((r) => r.timeMinutes! > 60), isTrue);
-        expect(viewModel.recipes.any((r) => r.timeMinutes! >= 30 && r.timeMinutes! <= 60), isFalse);
+        expect(
+            viewModel.recipes
+                .any((r) => r.timeMinutes! >= 30 && r.timeMinutes! <= 60),
+            isFalse);
       });
 
       test('should toggle time filter on and off', () {
@@ -359,11 +370,11 @@ void main() {
           RecipeFactory.build(id: 'r1', timeMinutes: 15),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act & Assert - turn on
         viewModel.toggleTimeFilter('quick');
         expect(viewModel.activeTimeFilters, contains('quick'));
-        
+
         // Act & Assert - turn off
         viewModel.toggleTimeFilter('quick');
         expect(viewModel.activeTimeFilters, isEmpty);
@@ -379,10 +390,10 @@ void main() {
           RecipeFactory.build(id: 'r3', title: 'Sallad', mealType: 'Lunch'),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.toggleMealTypeFilter('breakfast');
-        
+
         // Assert
         expect(viewModel.recipes, hasLength(1));
         expect(viewModel.recipes[0].mealType, equals('Frukost'));
@@ -396,10 +407,10 @@ void main() {
           RecipeFactory.build(id: 'r3', mealType: 'Middag'),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.toggleMealTypeFilter('lunch');
-        
+
         // Assert
         expect(viewModel.recipes, hasLength(1));
         expect(viewModel.recipes[0].mealType, equals('Lunch'));
@@ -413,10 +424,10 @@ void main() {
           RecipeFactory.build(id: 'r3', mealType: 'Middag'),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.toggleMealTypeFilter('dinner');
-        
+
         // Assert
         expect(viewModel.recipes, hasLength(1));
         expect(viewModel.recipes[0].mealType, equals('Middag'));
@@ -431,11 +442,11 @@ void main() {
           RecipeFactory.build(id: 'r4', mealType: 'Mellanmål'),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.toggleMealTypeFilter('breakfast');
         viewModel.toggleMealTypeFilter('dinner');
-        
+
         // Assert
         expect(viewModel.recipes, hasLength(2));
         expect(viewModel.recipes.any((r) => r.mealType == 'Frukost'), isTrue);
@@ -450,11 +461,11 @@ void main() {
           RecipeFactory.build(id: 'r3', mealType: 'Middag'),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.toggleMealTypeFilter('snack');
         viewModel.toggleMealTypeFilter('dessert');
-        
+
         // Assert
         expect(viewModel.recipes, hasLength(2));
         expect(viewModel.recipes.any((r) => r.mealType == 'Mellanmål'), isTrue);
@@ -472,10 +483,10 @@ void main() {
           RecipeFactory.build(id: 'r4', rating: 5.0),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.toggleRatingFilter('high_rated');
-        
+
         // Assert
         expect(viewModel.recipes, hasLength(3));
         expect(viewModel.recipes.every((r) => r.rating! >= 4.0), isTrue);
@@ -490,16 +501,17 @@ void main() {
           RecipeFactory.build(id: 'r4', rating: 5.0),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.toggleRatingFilter('top_rated');
-        
+
         // Assert
         expect(viewModel.recipes, hasLength(2));
         expect(viewModel.recipes.every((r) => r.rating == 5.0), isTrue);
       });
 
-      test('should use highest threshold when multiple rating filters active', () {
+      test('should use highest threshold when multiple rating filters active',
+          () {
         // Arrange
         final recipes = [
           RecipeFactory.build(id: 'r1', rating: 3.5),
@@ -507,11 +519,11 @@ void main() {
           RecipeFactory.build(id: 'r3', rating: 5.0),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act - both high_rated and top_rated
         viewModel.toggleRatingFilter('high_rated');
         viewModel.toggleRatingFilter('top_rated');
-        
+
         // Assert - should use top_rated threshold (5.0)
         expect(viewModel.recipes, hasLength(1));
         expect(viewModel.recipes[0].rating, equals(5.0));
@@ -525,10 +537,10 @@ void main() {
           RecipeFactory.build(id: 'r3', rating: 4.0),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.toggleRatingFilter('high_rated');
-        
+
         // Assert - recipe without rating excluded
         expect(viewModel.recipes, hasLength(2));
         expect(viewModel.recipes.every((r) => r.rating != null), isTrue);
@@ -544,11 +556,11 @@ void main() {
           RecipeFactory.build(id: 'r3', title: 'Quick Salad', timeMinutes: 15),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.updateSearch('pasta');
         viewModel.toggleTimeFilter('quick');
-        
+
         // Assert - only quick pasta
         expect(viewModel.recipes, hasLength(1));
         expect(viewModel.recipes[0].title, equals('Quick Pasta'));
@@ -580,12 +592,12 @@ void main() {
           ),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.toggleTimeFilter('quick');
         viewModel.toggleMealTypeFilter('breakfast');
         viewModel.toggleRatingFilter('high_rated');
-        
+
         // Assert - only quick, high-rated breakfast
         expect(viewModel.recipes, hasLength(1));
         expect(viewModel.recipes[0].id, equals('r1'));
@@ -596,19 +608,19 @@ void main() {
       test('should detect active filters', () {
         // Arrange & Assert - no filters
         expect(viewModel.hasActiveFilters, isFalse);
-        
+
         // Act & Assert - time filter
         viewModel.toggleTimeFilter('quick');
         expect(viewModel.hasActiveFilters, isTrue);
-        
+
         // Act & Assert - remove filter
         viewModel.toggleTimeFilter('quick');
         expect(viewModel.hasActiveFilters, isFalse);
-        
+
         // Act & Assert - meal type filter
         viewModel.toggleMealTypeFilter('lunch');
         expect(viewModel.hasActiveFilters, isTrue);
-        
+
         // Act & Assert - rating filter
         viewModel.toggleRatingFilter('high_rated');
         expect(viewModel.hasActiveFilters, isTrue);
@@ -619,10 +631,10 @@ void main() {
         viewModel.toggleTimeFilter('quick');
         viewModel.toggleMealTypeFilter('lunch');
         viewModel.toggleRatingFilter('high_rated');
-        
+
         // Act
         viewModel.clearAllFilters();
-        
+
         // Assert
         expect(viewModel.activeTimeFilters, isEmpty);
         expect(viewModel.activeMealTypeFilters, isEmpty);
@@ -635,10 +647,10 @@ void main() {
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
         viewModel.toggleTimeFilter('quick');
-        
+
         // Act
         viewModel.clearAllFilters();
-        
+
         // Assert
         expect(notificationCount, greaterThan(0));
       });
@@ -647,11 +659,12 @@ void main() {
     group('Recipe Operations', () {
       test('should delete recipe through service', () async {
         // Arrange
-        when(() => mockRecipeService.deleteRecipe(any())).thenAnswer((_) async => true);
-        
+        when(() => mockRecipeService.deleteRecipe(any()))
+            .thenAnswer((_) async => true);
+
         // Act
         await viewModel.deleteRecipe('recipe-123');
-        
+
         // Assert
         verify(() => mockRecipeService.deleteRecipe('recipe-123')).called(1);
       });
@@ -659,10 +672,10 @@ void main() {
       test('should refresh recipes through service', () async {
         // Arrange
         when(() => mockRecipeService.refresh()).thenAnswer((_) async {});
-        
+
         // Act
         await viewModel.refresh();
-        
+
         // Assert
         verify(() => mockRecipeService.refresh()).called(1);
       });
@@ -671,10 +684,10 @@ void main() {
         // Arrange
         mockRecipeService.setRecipeState(error: 'Test error');
         expect(mockRecipeService.error, equals('Test error'));
-        
+
         // Act
         viewModel.clearError();
-        
+
         // Assert - clearError is a concrete method that sets error to null
         expect(mockRecipeService.error, isNull);
       });
@@ -684,13 +697,13 @@ void main() {
       test('should expose loading state from service', () {
         // Arrange
         mockRecipeService.setRecipeState(isLoading: true);
-        
+
         // Act & Assert
         expect(viewModel.isLoading, isTrue);
-        
+
         // Arrange
         mockRecipeService.setRecipeState(isLoading: false);
-        
+
         // Act & Assert
         expect(viewModel.isLoading, isFalse);
       });
@@ -698,14 +711,14 @@ void main() {
       test('should expose error state from service', () {
         // Arrange
         mockRecipeService.setRecipeState(error: 'Test error');
-        
+
         // Act & Assert
         expect(viewModel.error, equals('Test error'));
         expect(viewModel.hasError, isTrue);
-        
+
         // Arrange
         mockRecipeService.setRecipeState(error: null);
-        
+
         // Act & Assert
         expect(viewModel.error, isNull);
         expect(viewModel.hasError, isFalse);
@@ -720,11 +733,11 @@ void main() {
           (i) => RecipeFactory.build(id: 'r$i', title: 'Recipe $i'),
         );
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act - access recipes twice
         final first = viewModel.recipes;
         final second = viewModel.recipes;
-        
+
         // Assert - should return same cached instance
         expect(identical(first, second), isTrue);
       });
@@ -736,11 +749,11 @@ void main() {
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
         final first = viewModel.recipes;
-        
+
         // Act
         viewModel.updateSearch('test');
         final second = viewModel.recipes;
-        
+
         // Assert - should be different instances
         expect(identical(first, second), isFalse);
       });
@@ -752,11 +765,11 @@ void main() {
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
         final first = viewModel.recipes;
-        
+
         // Act
         viewModel.updateSort(SortCriteria.time);
         final second = viewModel.recipes;
-        
+
         // Assert
         expect(identical(first, second), isFalse);
       });
@@ -768,11 +781,11 @@ void main() {
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
         final first = viewModel.recipes;
-        
+
         // Act
         viewModel.toggleTimeFilter('quick');
         final second = viewModel.recipes;
-        
+
         // Assert
         expect(identical(first, second), isFalse);
       });
@@ -782,13 +795,13 @@ void main() {
         final recipes1 = [RecipeFactory.build(id: 'r1')];
         mockRecipeService.setRecipeState(recipes: recipes1);
         final first = viewModel.recipes;
-        
+
         // Act - simulate recipe service update
         final recipes2 = [RecipeFactory.build(id: 'r2')];
         mockRecipeService.setRecipeState(recipes: recipes2);
         mockRecipeService.notifyListeners();
         final second = viewModel.recipes;
-        
+
         // Assert
         expect(identical(first, second), isFalse);
       });
@@ -798,14 +811,14 @@ void main() {
       test('should handle empty recipe list', () {
         // Arrange
         mockRecipeService.setRecipeState(recipes: []);
-        
+
         // Act & Assert
         expect(viewModel.recipes, isEmpty);
-        
+
         // Act - apply filters on empty list
         viewModel.toggleTimeFilter('quick');
         viewModel.updateSearch('test');
-        
+
         // Assert - still empty
         expect(viewModel.recipes, isEmpty);
       });
@@ -817,10 +830,10 @@ void main() {
           RecipeFactory.build(id: 'r2', timeMinutes: 15),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.toggleTimeFilter('quick');
-        
+
         // Assert - recipe without time excluded
         expect(viewModel.recipes, hasLength(1));
         expect(viewModel.recipes[0].id, equals('r2'));
@@ -833,10 +846,10 @@ void main() {
           RecipeFactory.build(id: 'r2', mealType: 'Lunch'),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
-        
+
         // Act
         viewModel.toggleMealTypeFilter('lunch');
-        
+
         // Assert
         expect(viewModel.recipes, hasLength(1));
         expect(viewModel.recipes[0].id, equals('r2'));
@@ -850,7 +863,7 @@ void main() {
           recipeService: mockRecipeService,
           searchService: mockSearchService,
         );
-        
+
         // Act & Assert - verify dispose doesn't throw
         expect(() => testViewModel.dispose(), returnsNormally);
       });
@@ -859,7 +872,7 @@ void main() {
         // Arrange
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act - various state changes
         viewModel.updateSearch('test');
         viewModel.updateSort(SortCriteria.time);
@@ -867,7 +880,7 @@ void main() {
         viewModel.toggleMealTypeFilter('lunch');
         viewModel.toggleRatingFilter('high_rated');
         viewModel.clearAllFilters();
-        
+
         // Assert - should notify for each change
         expect(notificationCount, equals(6));
       });

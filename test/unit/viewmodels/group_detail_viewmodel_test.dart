@@ -13,7 +13,9 @@ import '../../infrastructure/di/test_service_locator.dart';
 
 // Mock services
 class MockMessagingService extends Mock implements MessagingService {}
+
 class MockUnifiedFriendsService extends Mock implements UnifiedFriendsService {}
+
 class MockAuthRepository extends Mock implements AuthRepository {}
 
 void main() {
@@ -81,11 +83,13 @@ void main() {
       mockAuthRepository = MockAuthRepository();
 
       // Setup stream controller for conversations
-      conversationsStreamController = StreamController<List<Conversation>>.broadcast();
+      conversationsStreamController =
+          StreamController<List<Conversation>>.broadcast();
 
       // Register mocks
       TestServiceLocator.registerMock<MessagingService>(mockMessagingService);
-      TestServiceLocator.registerMock<UnifiedFriendsService>(mockFriendsService);
+      TestServiceLocator.registerMock<UnifiedFriendsService>(
+          mockFriendsService);
       TestServiceLocator.registerMock<AuthRepository>(mockAuthRepository);
 
       // Default mock behaviors
@@ -130,7 +134,8 @@ void main() {
 
         // Assert
         expect(viewModel.isLoading, true, reason: 'Should start loading');
-        expect(viewModel.conversation, null, reason: 'No conversation loaded yet');
+        expect(viewModel.conversation, null,
+            reason: 'No conversation loaded yet');
         expect(viewModel.hasConversation, false, reason: 'No conversation yet');
         expect(viewModel.error, null, reason: 'No error initially');
       });
@@ -141,12 +146,15 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         // Assert
-        expect(viewModel.conversation, isNotNull, reason: 'Conversation should be loaded');
+        expect(viewModel.conversation, isNotNull,
+            reason: 'Conversation should be loaded');
         expect(viewModel.isLoading, false, reason: 'Should finish loading');
-        verify(() => mockMessagingService.getConversation(testConversationId)).called(1);
+        verify(() => mockMessagingService.getConversation(testConversationId))
+            .called(1);
       });
 
-      test('should subscribe to conversation stream on initialization', () async {
+      test('should subscribe to conversation stream on initialization',
+          () async {
         // Act
         viewModel = createViewModel();
         await Future.delayed(const Duration(milliseconds: 100));
@@ -184,7 +192,8 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 50));
 
         // Assert - Should keep cached conversation
-        expect(viewModel.conversation, isNotNull, reason: 'Should keep cached conversation');
+        expect(viewModel.conversation, isNotNull,
+            reason: 'Should keep cached conversation');
       });
     });
 
@@ -267,7 +276,8 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         // Act & Assert
-        expect(viewModel.getMemberAvatarUrl(testMember1Id), 'https://example.com/anna.jpg');
+        expect(viewModel.getMemberAvatarUrl(testMember1Id),
+            'https://example.com/anna.jpg');
         expect(viewModel.getMemberAvatarUrl(testMember2Id), null);
       });
     });
@@ -275,7 +285,8 @@ void main() {
     // ===== ADMIN PERMISSIONS =====
 
     group('Admin Permissions', () {
-      test('should identify current user as admin when they are creator', () async {
+      test('should identify current user as admin when they are creator',
+          () async {
         // Arrange
         viewModel = createViewModel();
         await Future.delayed(const Duration(milliseconds: 100));
@@ -284,7 +295,9 @@ void main() {
         expect(viewModel.isAdmin, true, reason: 'Current user is creator');
       });
 
-      test('should identify current user as not admin when they are not creator', () async {
+      test(
+          'should identify current user as not admin when they are not creator',
+          () async {
         // Arrange
         final nonAdminConversation = testGroupConversation.copyWith(
           metadata: {'creatorId': testMember1Id},
@@ -328,11 +341,11 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         when(() => mockMessagingService.addParticipantsToGroup(
-          conversationId: any(named: 'conversationId'),
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-        )).thenAnswer((_) async => {});
+              conversationId: any(named: 'conversationId'),
+              participantIds: any(named: 'participantIds'),
+              participantDisplayNames: any(named: 'participantDisplayNames'),
+              participantAvatarUrls: any(named: 'participantAvatarUrls'),
+            )).thenAnswer((_) async => {});
 
         // Act
         final result = await viewModel.addMembers(
@@ -343,15 +356,16 @@ void main() {
 
         // Assert
         expect(result, true, reason: 'Add members should succeed');
-        expect(viewModel.isAddingMembers, false, reason: 'Should finish adding');
+        expect(viewModel.isAddingMembers, false,
+            reason: 'Should finish adding');
         expect(viewModel.error, null, reason: 'No error should occur');
 
         verify(() => mockMessagingService.addParticipantsToGroup(
-          conversationId: testConversationId,
-          participantIds: [testMember3Id],
-          participantDisplayNames: {testMember3Id: 'Maria'},
-          participantAvatarUrls: {testMember3Id: null},
-        )).called(1);
+              conversationId: testConversationId,
+              participantIds: [testMember3Id],
+              participantDisplayNames: {testMember3Id: 'Maria'},
+              participantAvatarUrls: {testMember3Id: null},
+            )).called(1);
       });
 
       test('should set loading state during add members', () async {
@@ -361,11 +375,11 @@ void main() {
 
         final completer = Completer<void>();
         when(() => mockMessagingService.addParticipantsToGroup(
-          conversationId: any(named: 'conversationId'),
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-        )).thenAnswer((_) => completer.future);
+              conversationId: any(named: 'conversationId'),
+              participantIds: any(named: 'participantIds'),
+              participantDisplayNames: any(named: 'participantDisplayNames'),
+              participantAvatarUrls: any(named: 'participantAvatarUrls'),
+            )).thenAnswer((_) => completer.future);
 
         // Act
         final addFuture = viewModel.addMembers(
@@ -392,11 +406,11 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         when(() => mockMessagingService.addParticipantsToGroup(
-          conversationId: any(named: 'conversationId'),
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-        )).thenThrow(Exception('Failed to add members'));
+              conversationId: any(named: 'conversationId'),
+              participantIds: any(named: 'participantIds'),
+              participantDisplayNames: any(named: 'participantDisplayNames'),
+              participantAvatarUrls: any(named: 'participantAvatarUrls'),
+            )).thenThrow(Exception('Failed to add members'));
 
         // Act
         final result = await viewModel.addMembers(
@@ -427,11 +441,11 @@ void main() {
         // Assert
         expect(result, false);
         verifyNever(() => mockMessagingService.addParticipantsToGroup(
-          conversationId: any(named: 'conversationId'),
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-        ));
+              conversationId: any(named: 'conversationId'),
+              participantIds: any(named: 'participantIds'),
+              participantDisplayNames: any(named: 'participantDisplayNames'),
+              participantAvatarUrls: any(named: 'participantAvatarUrls'),
+            ));
       });
     });
 
@@ -444,9 +458,9 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         when(() => mockMessagingService.removeParticipantFromGroup(
-          conversationId: any(named: 'conversationId'),
-          participantId: any(named: 'participantId'),
-        )).thenAnswer((_) async => {});
+              conversationId: any(named: 'conversationId'),
+              participantId: any(named: 'participantId'),
+            )).thenAnswer((_) async => {});
 
         // Act
         final result = await viewModel.removeMember(testMember1Id);
@@ -457,9 +471,9 @@ void main() {
         expect(viewModel.error, null);
 
         verify(() => mockMessagingService.removeParticipantFromGroup(
-          conversationId: testConversationId,
-          participantId: testMember1Id,
-        )).called(1);
+              conversationId: testConversationId,
+              participantId: testMember1Id,
+            )).called(1);
       });
 
       test('should not remove member when user is not admin', () async {
@@ -482,9 +496,9 @@ void main() {
         expect(viewModel.error, contains('Endast administratör'));
 
         verifyNever(() => mockMessagingService.removeParticipantFromGroup(
-          conversationId: any(named: 'conversationId'),
-          participantId: any(named: 'participantId'),
-        ));
+              conversationId: any(named: 'conversationId'),
+              participantId: any(named: 'participantId'),
+            ));
       });
 
       test('should not allow removing self via removeMember', () async {
@@ -500,9 +514,9 @@ void main() {
         expect(viewModel.error, contains('Lämna grupp'));
 
         verifyNever(() => mockMessagingService.removeParticipantFromGroup(
-          conversationId: any(named: 'conversationId'),
-          participantId: any(named: 'participantId'),
-        ));
+              conversationId: any(named: 'conversationId'),
+              participantId: any(named: 'participantId'),
+            ));
       });
 
       test('should handle remove member failure', () async {
@@ -511,9 +525,9 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         when(() => mockMessagingService.removeParticipantFromGroup(
-          conversationId: any(named: 'conversationId'),
-          participantId: any(named: 'participantId'),
-        )).thenThrow(Exception('Failed to remove'));
+              conversationId: any(named: 'conversationId'),
+              participantId: any(named: 'participantId'),
+            )).thenThrow(Exception('Failed to remove'));
 
         // Act
         final result = await viewModel.removeMember(testMember1Id);
@@ -531,9 +545,9 @@ void main() {
 
         final completer = Completer<void>();
         when(() => mockMessagingService.removeParticipantFromGroup(
-          conversationId: any(named: 'conversationId'),
-          participantId: any(named: 'participantId'),
-        )).thenAnswer((_) => completer.future);
+              conversationId: any(named: 'conversationId'),
+              participantId: any(named: 'participantId'),
+            )).thenAnswer((_) => completer.future);
 
         // Act
         final removeFuture = viewModel.removeMember(testMember1Id);
@@ -558,9 +572,9 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         when(() => mockMessagingService.removeParticipantFromGroup(
-          conversationId: any(named: 'conversationId'),
-          participantId: any(named: 'participantId'),
-        )).thenAnswer((_) async => {});
+              conversationId: any(named: 'conversationId'),
+              participantId: any(named: 'participantId'),
+            )).thenAnswer((_) async => {});
 
         // Act
         final result = await viewModel.leaveGroup();
@@ -570,9 +584,9 @@ void main() {
         expect(viewModel.isLeavingGroup, false);
 
         verify(() => mockMessagingService.removeParticipantFromGroup(
-          conversationId: testConversationId,
-          participantId: testUserId,
-        )).called(1);
+              conversationId: testConversationId,
+              participantId: testUserId,
+            )).called(1);
       });
 
       test('should set loading state during leave group', () async {
@@ -582,9 +596,9 @@ void main() {
 
         final completer = Completer<void>();
         when(() => mockMessagingService.removeParticipantFromGroup(
-          conversationId: any(named: 'conversationId'),
-          participantId: any(named: 'participantId'),
-        )).thenAnswer((_) => completer.future);
+              conversationId: any(named: 'conversationId'),
+              participantId: any(named: 'participantId'),
+            )).thenAnswer((_) => completer.future);
 
         // Act
         final leaveFuture = viewModel.leaveGroup();
@@ -605,9 +619,9 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         when(() => mockMessagingService.removeParticipantFromGroup(
-          conversationId: any(named: 'conversationId'),
-          participantId: any(named: 'participantId'),
-        )).thenThrow(Exception('Failed to leave'));
+              conversationId: any(named: 'conversationId'),
+              participantId: any(named: 'participantId'),
+            )).thenThrow(Exception('Failed to leave'));
 
         // Act
         final result = await viewModel.leaveGroup();
@@ -631,9 +645,9 @@ void main() {
         expect(result, false);
 
         verifyNever(() => mockMessagingService.removeParticipantFromGroup(
-          conversationId: any(named: 'conversationId'),
-          participantId: any(named: 'participantId'),
-        ));
+              conversationId: any(named: 'conversationId'),
+              participantId: any(named: 'participantId'),
+            ));
       });
     });
 
@@ -646,9 +660,9 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         when(() => mockMessagingService.updateGroupTitle(
-          conversationId: any(named: 'conversationId'),
-          newTitle: any(named: 'newTitle'),
-        )).thenAnswer((_) async => {});
+              conversationId: any(named: 'conversationId'),
+              newTitle: any(named: 'newTitle'),
+            )).thenAnswer((_) async => {});
 
         // Act
         final result = await viewModel.updateGroupTitle('New Title');
@@ -659,9 +673,9 @@ void main() {
         expect(viewModel.error, null);
 
         verify(() => mockMessagingService.updateGroupTitle(
-          conversationId: testConversationId,
-          newTitle: 'New Title',
-        )).called(1);
+              conversationId: testConversationId,
+              newTitle: 'New Title',
+            )).called(1);
       });
 
       test('should trim whitespace from title', () async {
@@ -670,18 +684,18 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         when(() => mockMessagingService.updateGroupTitle(
-          conversationId: any(named: 'conversationId'),
-          newTitle: any(named: 'newTitle'),
-        )).thenAnswer((_) async => {});
+              conversationId: any(named: 'conversationId'),
+              newTitle: any(named: 'newTitle'),
+            )).thenAnswer((_) async => {});
 
         // Act
         await viewModel.updateGroupTitle('  Title with spaces  ');
 
         // Assert
         verify(() => mockMessagingService.updateGroupTitle(
-          conversationId: testConversationId,
-          newTitle: 'Title with spaces',
-        )).called(1);
+              conversationId: testConversationId,
+              newTitle: 'Title with spaces',
+            )).called(1);
       });
 
       test('should not update title when user is not admin', () async {
@@ -704,9 +718,9 @@ void main() {
         expect(viewModel.error, contains('Endast administratör'));
 
         verifyNever(() => mockMessagingService.updateGroupTitle(
-          conversationId: any(named: 'conversationId'),
-          newTitle: any(named: 'newTitle'),
-        ));
+              conversationId: any(named: 'conversationId'),
+              newTitle: any(named: 'newTitle'),
+            ));
       });
 
       test('should not update empty title', () async {
@@ -722,9 +736,9 @@ void main() {
         expect(viewModel.error, contains('Gruppnamn kan inte vara tomt'));
 
         verifyNever(() => mockMessagingService.updateGroupTitle(
-          conversationId: any(named: 'conversationId'),
-          newTitle: any(named: 'newTitle'),
-        ));
+              conversationId: any(named: 'conversationId'),
+              newTitle: any(named: 'newTitle'),
+            ));
       });
 
       test('should handle update title failure', () async {
@@ -733,9 +747,9 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         when(() => mockMessagingService.updateGroupTitle(
-          conversationId: any(named: 'conversationId'),
-          newTitle: any(named: 'newTitle'),
-        )).thenThrow(Exception('Failed to update'));
+              conversationId: any(named: 'conversationId'),
+              newTitle: any(named: 'newTitle'),
+            )).thenThrow(Exception('Failed to update'));
 
         // Act
         final result = await viewModel.updateGroupTitle('New Title');
@@ -753,9 +767,9 @@ void main() {
 
         final completer = Completer<void>();
         when(() => mockMessagingService.updateGroupTitle(
-          conversationId: any(named: 'conversationId'),
-          newTitle: any(named: 'newTitle'),
-        )).thenAnswer((_) => completer.future);
+              conversationId: any(named: 'conversationId'),
+              newTitle: any(named: 'newTitle'),
+            )).thenAnswer((_) => completer.future);
 
         // Act
         final updateFuture = viewModel.updateGroupTitle('New Title');
@@ -791,7 +805,12 @@ void main() {
       test('should return empty list when all friends are members', () async {
         // Arrange
         final allFriendsInGroup = testGroupConversation.copyWith(
-          participantIds: [testUserId, testMember1Id, testMember2Id, testMember3Id],
+          participantIds: [
+            testUserId,
+            testMember1Id,
+            testMember2Id,
+            testMember3Id
+          ],
         );
 
         when(() => mockMessagingService.getConversation(testConversationId))
@@ -889,17 +908,19 @@ void main() {
         viewModel.dispose();
 
         when(() => mockMessagingService.addParticipantsToGroup(
-          conversationId: any(named: 'conversationId'),
-          participantIds: any(named: 'participantIds'),
-          participantDisplayNames: any(named: 'participantDisplayNames'),
-          participantAvatarUrls: any(named: 'participantAvatarUrls'),
-        )).thenAnswer((_) async => {});
+              conversationId: any(named: 'conversationId'),
+              participantIds: any(named: 'participantIds'),
+              participantDisplayNames: any(named: 'participantDisplayNames'),
+              participantAvatarUrls: any(named: 'participantAvatarUrls'),
+            )).thenAnswer((_) async => {});
 
         // Act
-        final result = await viewModel.addMembers([testMember3Id], {testMember3Id: 'Maria'}, null);
+        final result = await viewModel
+            .addMembers([testMember3Id], {testMember3Id: 'Maria'}, null);
 
         // Assert
-        expect(result, false, reason: 'Should not perform operation after dispose');
+        expect(result, false,
+            reason: 'Should not perform operation after dispose');
       });
     });
   });

@@ -100,7 +100,8 @@ Future<List<InvitationTarget>?> _showTargetSelectionDialog(
     context: context,
     builder: (context) => AlertDialog(
       title: Text(title),
-      content: const Text('Target selection dialog - simplified implementation'),
+      content:
+          const Text('Target selection dialog - simplified implementation'),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, null),

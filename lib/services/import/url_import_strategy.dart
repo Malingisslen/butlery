@@ -62,9 +62,9 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     try {
       final uri = Uri.parse(trimmed);
       return uri.hasScheme &&
-             (uri.scheme == 'http' || uri.scheme == 'https') &&
-             uri.hasAuthority &&
-             uri.host.isNotEmpty;
+          (uri.scheme == 'http' || uri.scheme == 'https') &&
+          uri.hasAuthority &&
+          uri.host.isNotEmpty;
     } catch (e) {
       return false;
     }
@@ -74,7 +74,8 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
   bool validateInput(String input) => canHandle(input);
 
   @override
-  Future<ImportResult> import(String input, {Map<String, dynamic>? options}) async {
+  Future<ImportResult> import(String input,
+      {Map<String, dynamic>? options}) async {
     try {
       final url = input.trim();
 
@@ -102,7 +103,8 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
 
       // Tier 4: LLM extraction
       if (htmlResult != null && htmlResult.length > 100) {
-        final llmResult = await _llmFallback.tryExtraction(htmlResult, url, strategyName);
+        final llmResult =
+            await _llmFallback.tryExtraction(htmlResult, url, strategyName);
         if (llmResult != null) return llmResult;
       }
 
@@ -113,7 +115,6 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       }
 
       return _createFailureResult(url, htmlResult);
-
     } catch (e) {
       return ImportResult.failure(
         'Error importing from URL: ${e.toString()}',
@@ -125,17 +126,20 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     }
   }
 
-  Future<ImportResult?> _tryEnhancedParser(String url, Map<String, dynamic>? options) async {
+  Future<ImportResult?> _tryEnhancedParser(
+      String url, Map<String, dynamic>? options) async {
     final parser = _recipeParser;
     if (parser == null || options?['useEnhancedParser'] != true) return null;
 
     final htmlContent = await _fetcher.fetchHtmlWithTimeout(url);
     if (htmlContent == null) return null;
 
-    final parseResult = await parser.parseFromUrl(url: url, htmlContent: htmlContent);
+    final parseResult =
+        await parser.parseFromUrl(url: url, htmlContent: htmlContent);
     if (!parseResult.success || parseResult.recipe == null) return null;
 
-    AppLogger.info('UrlImportStrategy: Enhanced parser extracted "${parseResult.recipe!.title.value}"');
+    AppLogger.info(
+        'UrlImportStrategy: Enhanced parser extracted "${parseResult.recipe!.title.value}"');
     return _convertParsedRecipeToImportResult(parseResult, url);
   }
 
@@ -179,8 +183,15 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     final recipe = textResult.recipe!.copyWith(sourceUrl: url);
     return ImportResult.success(
       recipe,
-      warnings: [...?(textResult.warnings), 'No structured data found - parsed as plain text'],
-      metadata: {'strategy': strategyName, 'extraction_method': 'text_fallback', 'url': url},
+      warnings: [
+        ...?(textResult.warnings),
+        'No structured data found - parsed as plain text'
+      ],
+      metadata: {
+        'strategy': strategyName,
+        'extraction_method': 'text_fallback',
+        'url': url
+      },
     );
   }
 
@@ -196,8 +207,16 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     final recipe = textResult.recipe!.copyWith(sourceUrl: url);
     return ImportResult.success(
       recipe,
-      warnings: [...?(textResult.warnings), 'Extracted from HTML text - quality may vary'],
-      metadata: {'strategy': strategyName, 'extraction_method': 'html_text_parse', 'url': url, 'tier': 3},
+      warnings: [
+        ...?(textResult.warnings),
+        'Extracted from HTML text - quality may vary'
+      ],
+      metadata: {
+        'strategy': strategyName,
+        'extraction_method': 'html_text_parse',
+        'url': url,
+        'tier': 3
+      },
     );
   }
 
@@ -230,7 +249,8 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
     );
   }
 
-  ImportResult _convertParsedRecipeToImportResult(ParseResult parseResult, String url) {
+  ImportResult _convertParsedRecipeToImportResult(
+      ParseResult parseResult, String url) {
     final parsed = parseResult.recipe!;
 
     final cache = ServiceLocator.tryGet<ParsedRecipeCache>();
@@ -239,7 +259,8 @@ class UrlImportStrategy extends ImportStrategy with ImportValidationMixin {
       AppLogger.debug('📊 Stored ParsedRecipe in cache for: $url');
     }
 
-    final ingredients = parsed.ingredients.value?.map((i) => i.originalLine).toList() ?? [];
+    final ingredients =
+        parsed.ingredients.value?.map((i) => i.originalLine).toList() ?? [];
     final instructions = parsed.instructions.value ?? [];
 
     final recipe = Recipe(

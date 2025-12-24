@@ -26,7 +26,7 @@ class SocialRecipeOperations {
   final RatingsRepository _ratingsRepository;
   final FirestoreRepository _firestoreRepository;
   late final NotificationService? _notificationService;
-  
+
   // Focused modules for each responsibility area
   late final RecipeSharingManager _sharingManager;
   late final RecipeMemberManager _memberManager;
@@ -38,8 +38,8 @@ class SocialRecipeOperations {
     this._parent, {
     required RatingsRepository ratingsRepository,
     required FirestoreRepository firestoreRepository,
-  }) : _ratingsRepository = ratingsRepository,
-       _firestoreRepository = firestoreRepository {
+  })  : _ratingsRepository = ratingsRepository,
+        _firestoreRepository = firestoreRepository {
     try {
       final currentUserId = _parent.currentUserId;
       if (currentUserId != null) {
@@ -58,9 +58,10 @@ class SocialRecipeOperations {
     _memberManager = RecipeMemberManager(_parent, _notificationService);
     _commentsManager = RecipeCommentsManager(_parent, _notificationService);
     _discoveryService = RecipeDiscoveryService(_parent);
-    _socialStats = RecipeSocialStats(_parent, _ratingsRepository, _firestoreRepository, _notificationService);
+    _socialStats = RecipeSocialStats(_parent, _ratingsRepository,
+        _firestoreRepository, _notificationService);
     _permissionHelper = RecipePermissionHelper(_parent);
-    
+
     AppLogger.info('✅ SocialRecipeOperations initialized with focused modules');
   }
 
@@ -89,6 +90,7 @@ class SocialRecipeOperations {
       categoryIds: categoryIds,
     );
   }
+
   Future<String?> makeRecipePersonal({
     required String collaborativeRecipeId,
     String? newTitle,
@@ -98,6 +100,7 @@ class SocialRecipeOperations {
       newTitle: newTitle,
     );
   }
+
   Future<String?> duplicateAndShareRecipe({
     required String recipeId,
     required List<String> memberIds,
@@ -119,6 +122,7 @@ class SocialRecipeOperations {
       categoryIds: categoryIds,
     );
   }
+
   Future<bool> addMember({
     required String recipeId,
     required String userId,
@@ -133,6 +137,7 @@ class SocialRecipeOperations {
       permission: permission,
     );
   }
+
   Future<bool> removeMember({
     required String recipeId,
     required String userId,
@@ -142,6 +147,7 @@ class SocialRecipeOperations {
       memberId: userId,
     );
   }
+
   Future<bool> updateMemberPermission({
     required String recipeId,
     required String userId,
@@ -153,6 +159,7 @@ class SocialRecipeOperations {
       newPermission: permission,
     );
   }
+
   Future<List<Map<String, dynamic>>> getRecipeMembers(String recipeId) async {
     return await _memberManager.getRecipeMembers(recipeId);
   }
@@ -160,7 +167,7 @@ class SocialRecipeOperations {
   bool canInviteMembers(String recipeId) {
     return _memberManager.canInviteMembers(recipeId);
   }
-  
+
   Map<String, dynamic> getMemberStatistics(String recipeId) {
     return _memberManager.getMemberStatistics(recipeId);
   }
@@ -222,7 +229,7 @@ class SocialRecipeOperations {
       searchQuery: searchQuery,
     );
   }
-  
+
   Future<List<Recipe>> getTrendingRecipes({
     int limit = 20,
     Duration? timeWindow,
@@ -234,7 +241,7 @@ class SocialRecipeOperations {
       categoryFilter: categoryFilter,
     );
   }
-  
+
   Future<List<Recipe>> searchRecipes({
     required String query,
     int limit = 20,
@@ -300,7 +307,7 @@ class SocialRecipeOperations {
   Stream<List<RecipeComment>> getCommentsStream(String recipeId) {
     return _commentsManager.getCommentsStream(recipeId);
   }
-  
+
   Future<Map<String, dynamic>> getCommentStatistics(String recipeId) async {
     return await _commentsManager.getCommentStatistics(recipeId);
   }
@@ -322,11 +329,11 @@ class SocialRecipeOperations {
   Future<Map<String, dynamic>> getRecipeStats(String recipeId) async {
     return await _socialStats.getRecipeStats(recipeId);
   }
-  
+
   Future<Map<String, dynamic>?> getUserRating(String recipeId) async {
     return await _socialStats.getUserRating(recipeId);
   }
-  
+
   Future<List<Map<String, dynamic>>> getTopRatedRecipes({
     int limit = 10,
     double minRating = 4.0,
@@ -338,7 +345,7 @@ class SocialRecipeOperations {
       minRatingCount: minRatingCount,
     );
   }
-  
+
   Future<Map<String, dynamic>> getUserSocialStats() async {
     return await _socialStats.getUserSocialStats();
   }
@@ -374,7 +381,7 @@ class SocialRecipeOperations {
       AppLogger.error('Failed to mark recipe as viewed', e);
     }
   }
-  
+
   bool checkLegacyPermission(String recipeId, String userId, String action) {
     try {
       final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
@@ -421,7 +428,7 @@ class SocialRecipeOperations {
       return false;
     }
   }
-  
+
   bool canComment(String recipeId) {
     try {
       final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
@@ -430,7 +437,7 @@ class SocialRecipeOperations {
       return false;
     }
   }
-  
+
   bool canRate(String recipeId) {
     try {
       final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
@@ -439,7 +446,7 @@ class SocialRecipeOperations {
       return false;
     }
   }
-  
+
   ResourcePermission getUserPermission(String recipeId, String userId) {
     try {
       final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
@@ -448,7 +455,7 @@ class SocialRecipeOperations {
       return ResourcePermission.read;
     }
   }
-  
+
   Map<String, dynamic> getPermissionSummary(String recipeId, String userId) {
     try {
       final recipe = _parent.recipes.firstWhere((r) => r.id == recipeId);
@@ -459,19 +466,21 @@ class SocialRecipeOperations {
   }
 
   // ===== ADDITIONAL FEATURES =====
-  
+
   Map<String, dynamic> getDiscoveryStatistics() {
     return _discoveryService.getDiscoveryStatistics();
   }
-  
-  Future<Map<String, int>> getPopularCollaborativeCategories({int limit = 10}) async {
-    return await _discoveryService.getPopularCollaborativeCategories(limit: limit);
+
+  Future<Map<String, int>> getPopularCollaborativeCategories(
+      {int limit = 10}) async {
+    return await _discoveryService.getPopularCollaborativeCategories(
+        limit: limit);
   }
-  
+
   Map<String, dynamic> getSharingStats() {
     return _sharingManager.getSharingStats();
   }
-  
+
   void dispose() {
     try {
       _commentsManager.dispose();

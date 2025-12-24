@@ -31,7 +31,8 @@ class ComplianceExportManager {
         final data = doc.data();
         auditLogs.add({
           'audit_log_id': doc.id,
-          'timestamp': ((data['timestamp']?.toDate()?.toIso8601String()) ?? 'unknown'),
+          'timestamp':
+              ((data['timestamp']?.toDate()?.toIso8601String()) ?? 'unknown'),
           'operation': ((data['operation']) ?? 'unknown'),
           'resource_type': ((data['resourceType']) ?? 'unknown'),
           'resource_id': data['resourceId'],
@@ -46,8 +47,10 @@ class ComplianceExportManager {
         'note': 'Limited to last 1000 audit entries for export size',
         'gdpr_article': 'Article 30 - Records of Processing Activities',
         'summary': {
-          'total_granted': auditLogs.where((log) => log['granted'] == true).length,
-          'total_denied': auditLogs.where((log) => log['granted'] == false).length,
+          'total_granted':
+              auditLogs.where((log) => log['granted'] == true).length,
+          'total_denied':
+              auditLogs.where((log) => log['granted'] == false).length,
           'operations': _summarizeOperations(auditLogs),
           'resource_types': _summarizeResourceTypes(auditLogs),
         },
@@ -72,7 +75,8 @@ class ComplianceExportManager {
   }
 
   /// Summarize resource types from audit logs
-  Map<String, int> _summarizeResourceTypes(List<Map<String, dynamic>> auditLogs) {
+  Map<String, int> _summarizeResourceTypes(
+      List<Map<String, dynamic>> auditLogs) {
     final resourceCounts = <String, int>{};
     for (final log in auditLogs) {
       final resourceType = log['resource_type'] as String;
@@ -100,7 +104,8 @@ class ComplianceExportManager {
         consentRecords.add({
           'consent_id': doc.id,
           'consent_version': data['consentVersion'] ?? 'unknown',
-          'timestamp': data['timestamp']?.toDate()?.toIso8601String() ?? 'unknown',
+          'timestamp':
+              data['timestamp']?.toDate()?.toIso8601String() ?? 'unknown',
           'purposes': data['purposes'] ?? {},
           'ip_address': data['ipAddress'],
           'user_agent': data['userAgent'],
@@ -118,12 +123,14 @@ class ComplianceExportManager {
       return {
         'total_consent_records': consentRecords.length,
         'consent_history': consentRecords,
-        'current_consent': currentConsentDoc.exists ? currentConsentDoc.data() : null,
+        'current_consent':
+            currentConsentDoc.exists ? currentConsentDoc.data() : null,
         'gdpr_article': 'Article 7 - Conditions for Consent',
         'note': 'Complete history of consent decisions and purposes',
       };
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export consent records', e);
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to export consent records', e);
       return {
         'error': e.toString(),
         'note': 'Consent records may not be available',

@@ -13,9 +13,13 @@ import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 
 // Local mock coordinators (not in production_mocks yet)
-class MockSocialRecipeCoordinator extends Mock implements SocialRecipeCoordinator {}
+class MockSocialRecipeCoordinator extends Mock
+    implements SocialRecipeCoordinator {}
+
 class MockSocialMenuCoordinator extends Mock implements SocialMenuCoordinator {}
-class MockSocialShoppingCoordinator extends Mock implements SocialShoppingCoordinator {}
+
+class MockSocialShoppingCoordinator extends Mock
+    implements SocialShoppingCoordinator {}
 
 void main() {
   group('SocialSharingViewModel', () {
@@ -137,7 +141,9 @@ void main() {
 
         expect(viewModel.isLoading, isFalse);
         expect(viewModel.availableFriends, isNotEmpty);
-      }, skip: 'Timing-dependent test - loading state changes too quickly to reliably capture');
+      },
+          skip:
+              'Timing-dependent test - loading state changes too quickly to reliably capture');
 
       test('should load friends successfully', () async {
         await viewModel.loadFriends();
@@ -202,13 +208,15 @@ void main() {
         viewModel.toggleFriendSelection('friend-3');
 
         expect(viewModel.selectedFriendsCount, equals(3));
-        expect(viewModel.selectedFriendIds, containsAll(['friend-1', 'friend-2', 'friend-3']));
+        expect(viewModel.selectedFriendIds,
+            containsAll(['friend-1', 'friend-2', 'friend-3']));
       });
 
       test('should select all friends', () {
         viewModel.selectAllFriends();
 
-        expect(viewModel.selectedFriendsCount, equals(viewModel.availableFriends.length));
+        expect(viewModel.selectedFriendsCount,
+            equals(viewModel.availableFriends.length));
       });
 
       test('should clear friend selection', () {
@@ -316,24 +324,24 @@ void main() {
 
         // Configure mock coordinators
         when(() => mockRecipeCoordinator.createRecipeInvitation(
-          recipeId: any(named: 'recipeId'),
-          inviteeUserIds: any(named: 'inviteeUserIds'),
-          message: any(named: 'message'),
-          allowCollaboration: any(named: 'allowCollaboration'),
-        )).thenAnswer((_) async => 'invitation-123');
+              recipeId: any(named: 'recipeId'),
+              inviteeUserIds: any(named: 'inviteeUserIds'),
+              message: any(named: 'message'),
+              allowCollaboration: any(named: 'allowCollaboration'),
+            )).thenAnswer((_) async => 'invitation-123');
 
         when(() => mockMenuCoordinator.createMenuInvitation(
-          menuId: any(named: 'menuId'),
-          inviteeUserIds: any(named: 'inviteeUserIds'),
-          message: any(named: 'message'),
-          allowCollaboration: any(named: 'allowCollaboration'),
-        )).thenAnswer((_) async => 'invitation-456');
+              menuId: any(named: 'menuId'),
+              inviteeUserIds: any(named: 'inviteeUserIds'),
+              message: any(named: 'message'),
+              allowCollaboration: any(named: 'allowCollaboration'),
+            )).thenAnswer((_) async => 'invitation-456');
 
         when(() => mockShoppingCoordinator.createShoppingListInvitation(
-          shoppingListId: any(named: 'shoppingListId'),
-          inviteeUserIds: any(named: 'inviteeUserIds'),
-          message: any(named: 'message'),
-        )).thenAnswer((_) async => 'invitation-789');
+              shoppingListId: any(named: 'shoppingListId'),
+              inviteeUserIds: any(named: 'inviteeUserIds'),
+              message: any(named: 'message'),
+            )).thenAnswer((_) async => 'invitation-789');
 
         // Configure menu service to return a basic menu
         final testMenu = SharedMenu(
@@ -361,11 +369,13 @@ void main() {
 
         // Start a sharing operation (mock doesn't complete)
         when(() => mockRecipeCoordinator.createRecipeInvitation(
-          recipeId: any(named: 'recipeId'),
-          inviteeUserIds: any(named: 'inviteeUserIds'),
-          message: any(named: 'message'),
-          allowCollaboration: any(named: 'allowCollaboration'),
-        )).thenAnswer((_) => Future.delayed(const Duration(seconds: 1), () => 'inv-123'));
+                  recipeId: any(named: 'recipeId'),
+                  inviteeUserIds: any(named: 'inviteeUserIds'),
+                  message: any(named: 'message'),
+                  allowCollaboration: any(named: 'allowCollaboration'),
+                ))
+            .thenAnswer((_) =>
+                Future.delayed(const Duration(seconds: 1), () => 'inv-123'));
 
         // ignore: unawaited_futures
         viewModel.shareContent(
@@ -448,11 +458,11 @@ void main() {
         );
 
         verify(() => mockRecipeCoordinator.createRecipeInvitation(
-          recipeId: 'recipe-123',
-          inviteeUserIds: any(named: 'inviteeUserIds'),
-          message: 'Custom message',
-          allowCollaboration: true,
-        )).called(1);
+              recipeId: 'recipe-123',
+              inviteeUserIds: any(named: 'inviteeUserIds'),
+              message: 'Custom message',
+              allowCollaboration: true,
+            )).called(1);
       });
 
       test('should use default message when no custom message', () async {
@@ -465,11 +475,11 @@ void main() {
         );
 
         verify(() => mockRecipeCoordinator.createRecipeInvitation(
-          recipeId: 'recipe-123',
-          inviteeUserIds: any(named: 'inviteeUserIds'),
-          message: 'Default message',
-          allowCollaboration: true,
-        )).called(1);
+              recipeId: 'recipe-123',
+              inviteeUserIds: any(named: 'inviteeUserIds'),
+              message: 'Default message',
+              allowCollaboration: true,
+            )).called(1);
       });
 
       test('should handle menu not found', () async {
@@ -490,11 +500,11 @@ void main() {
         viewModel.toggleFriendSelection('friend-1');
 
         when(() => mockRecipeCoordinator.createRecipeInvitation(
-          recipeId: any(named: 'recipeId'),
-          inviteeUserIds: any(named: 'inviteeUserIds'),
-          message: any(named: 'message'),
-          allowCollaboration: any(named: 'allowCollaboration'),
-        )).thenAnswer((_) async => null);
+              recipeId: any(named: 'recipeId'),
+              inviteeUserIds: any(named: 'inviteeUserIds'),
+              message: any(named: 'message'),
+              allowCollaboration: any(named: 'allowCollaboration'),
+            )).thenAnswer((_) async => null);
 
         final result = await viewModel.shareContent(
           contentId: 'recipe-123',
@@ -509,11 +519,11 @@ void main() {
         viewModel.toggleFriendSelection('friend-1');
 
         when(() => mockRecipeCoordinator.createRecipeInvitation(
-          recipeId: any(named: 'recipeId'),
-          inviteeUserIds: any(named: 'inviteeUserIds'),
-          message: any(named: 'message'),
-          allowCollaboration: any(named: 'allowCollaboration'),
-        )).thenThrow(Exception('Network error'));
+              recipeId: any(named: 'recipeId'),
+              inviteeUserIds: any(named: 'inviteeUserIds'),
+              message: any(named: 'message'),
+              allowCollaboration: any(named: 'allowCollaboration'),
+            )).thenThrow(Exception('Network error'));
 
         final result = await viewModel.shareContent(
           contentId: 'recipe-123',
@@ -551,14 +561,14 @@ void main() {
 
         // Configure coordinator with delay to catch isBusy state
         when(() => mockRecipeCoordinator.createRecipeInvitation(
-          recipeId: any(named: 'recipeId'),
-          inviteeUserIds: any(named: 'inviteeUserIds'),
-          message: any(named: 'message'),
-          allowCollaboration: any(named: 'allowCollaboration'),
-        )).thenAnswer((_) => Future.delayed(
-          const Duration(milliseconds: 20),
-          () => 'invitation-123',
-        ));
+              recipeId: any(named: 'recipeId'),
+              inviteeUserIds: any(named: 'inviteeUserIds'),
+              message: any(named: 'message'),
+              allowCollaboration: any(named: 'allowCollaboration'),
+            )).thenAnswer((_) => Future.delayed(
+              const Duration(milliseconds: 20),
+              () => 'invitation-123',
+            ));
 
         bool wasBusy = false;
         viewModel.addListener(() {
@@ -618,7 +628,8 @@ void main() {
           suggestedFriends: ['friend-1', 'friend-2'],
         );
 
-        expect(viewModel.selectedFriendIds, containsAll(['friend-1', 'friend-2']));
+        expect(
+            viewModel.selectedFriendIds, containsAll(['friend-1', 'friend-2']));
         expect(viewModel.shareMessage, isNotEmpty);
       });
 

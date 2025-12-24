@@ -71,7 +71,8 @@ class _MessageBubbleState extends State<MessageBubble>
     super.dispose();
   }
 
-  bool get _isFromCurrentUser => widget.message.isFromCurrentUser(widget.currentUserId);
+  bool get _isFromCurrentUser =>
+      widget.message.isFromCurrentUser(widget.currentUserId);
   bool get _isSystemMessage => widget.message.isSystemMessage;
 
   @override
@@ -84,74 +85,77 @@ class _MessageBubbleState extends State<MessageBubble>
       label: 'Meddelande, svep för att svara',
       container: true,
       child: GestureDetector(
-        onHorizontalDragUpdate: widget.onReply != null ? _handleDragUpdate : null,
+        onHorizontalDragUpdate:
+            widget.onReply != null ? _handleDragUpdate : null,
         onHorizontalDragEnd: widget.onReply != null ? _handleDragEnd : null,
         child: AnimatedBuilder(
-        animation: _swipeAnimation,
-        builder: (context, child) {
-          return Transform.translate(
-            offset: _swipeAnimation.value,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingM,
-                vertical: AppDimensions.spacingXs,
-              ),
-              child: Stack(
-                alignment: _isFromCurrentUser
-                    ? Alignment.centerLeft
-                    : Alignment.centerRight,
-                children: [
-                  // Reply icon that appears during swipe
-                  if (_dragExtent.abs() > 10)
-                    Positioned(
-                      left: _isFromCurrentUser ? 20 : null,
-                      right: !_isFromCurrentUser ? 20 : null,
-                      child: Opacity(
-                        opacity: (_dragExtent.abs() / _swipeThreshold).clamp(0.0, 1.0),
-                        child: const Icon(
-                          Icons.reply,
-                          color: AppColors.success,
-                          size: 24,
+          animation: _swipeAnimation,
+          builder: (context, child) {
+            return Transform.translate(
+              offset: _swipeAnimation.value,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingM,
+                  vertical: AppDimensions.spacingXs,
+                ),
+                child: Stack(
+                  alignment: _isFromCurrentUser
+                      ? Alignment.centerLeft
+                      : Alignment.centerRight,
+                  children: [
+                    // Reply icon that appears during swipe
+                    if (_dragExtent.abs() > 10)
+                      Positioned(
+                        left: _isFromCurrentUser ? 20 : null,
+                        right: !_isFromCurrentUser ? 20 : null,
+                        child: Opacity(
+                          opacity: (_dragExtent.abs() / _swipeThreshold)
+                              .clamp(0.0, 1.0),
+                          child: const Icon(
+                            Icons.reply,
+                            color: AppColors.success,
+                            size: 24,
+                          ),
                         ),
                       ),
+                    // Message content
+                    Row(
+                      mainAxisAlignment: _isFromCurrentUser
+                          ? MainAxisAlignment.end
+                          : MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (!_isFromCurrentUser && widget.showAvatar) ...[
+                          _buildAvatar(context),
+                          const SizedBox(width: AppDimensions.paddingS),
+                        ],
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: _isFromCurrentUser
+                                ? CrossAxisAlignment.end
+                                : CrossAxisAlignment.start,
+                            children: [
+                              if (!_isFromCurrentUser && !widget.showAvatar)
+                                _buildSenderName(context),
+                              _buildMessageCard(context),
+                              if (widget.showTimestamp)
+                                _buildTimestamp(context),
+                            ],
+                          ),
+                        ),
+                        if (_isFromCurrentUser && widget.showAvatar) ...[
+                          const SizedBox(width: AppDimensions.paddingS),
+                          _buildAvatar(context),
+                        ],
+                      ],
                     ),
-                  // Message content
-                  Row(
-                    mainAxisAlignment: _isFromCurrentUser
-                        ? MainAxisAlignment.end
-                        : MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      if (!_isFromCurrentUser && widget.showAvatar) ...[
-                        _buildAvatar(context),
-                        const SizedBox(width: AppDimensions.paddingS),
-                      ],
-                      Flexible(
-                        child: Column(
-                          crossAxisAlignment: _isFromCurrentUser
-                              ? CrossAxisAlignment.end
-                              : CrossAxisAlignment.start,
-                          children: [
-                            if (!_isFromCurrentUser && !widget.showAvatar)
-                              _buildSenderName(context),
-                            _buildMessageCard(context),
-                            if (widget.showTimestamp) _buildTimestamp(context),
-                          ],
-                        ),
-                      ),
-                      if (_isFromCurrentUser && widget.showAvatar) ...[
-                        const SizedBox(width: AppDimensions.paddingS),
-                        _buildAvatar(context),
-                      ],
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
-    ),
     );
   }
 
@@ -259,9 +263,8 @@ class _MessageBubbleState extends State<MessageBubble>
         onTap: widget.onTap,
         onLongPress: widget.onLongPress,
         child: StyledCard(
-          backgroundColor: _isFromCurrentUser
-              ? AppColors.primaryBlue
-              : AppColors.cardWhite,
+          backgroundColor:
+              _isFromCurrentUser ? AppColors.primaryBlue : AppColors.cardWhite,
           borderRadius: AppDimensions.borderRadiusM,
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.paddingM,
@@ -273,8 +276,7 @@ class _MessageBubbleState extends State<MessageBubble>
               if (widget.message.isReply && widget.replyToMessage != null)
                 _buildReplyPreview(context),
               _buildMessageContent(context),
-              if (_isFromCurrentUser)
-                _buildMessageStatus(context),
+              if (_isFromCurrentUser) _buildMessageStatus(context),
             ],
           ),
         ),

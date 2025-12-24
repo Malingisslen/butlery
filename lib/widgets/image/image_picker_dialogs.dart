@@ -25,13 +25,15 @@ class UploadProgress {
 /// Separates UI logic from the image picker service layer
 class ImagePickerDialogs {
   /// Show dialog for selecting image source (camera or gallery)
-  static Future<ImageSource?> showImageSourceDialog(BuildContext context) async {
+  static Future<ImageSource?> showImageSourceDialog(
+      BuildContext context) async {
     AppLogger.info('🔍 Visar bildkälla-dialog');
 
     return showModalBottomSheet<ImageSource>(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimensions.borderRadiusM)),
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppDimensions.borderRadiusM)),
       ),
       builder: (context) => Container(
         padding: const EdgeInsets.all(AppDimensions.paddingXl),
@@ -44,16 +46,19 @@ class ImagePickerDialogs {
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
                 color: AppColors.neutralMedium,
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadius10),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadius10),
               ),
             ),
             Text(
               'Välj bildkälla',
-              style: AppTextStyles.displaySmall.copyWith(fontWeight: FontWeight.bold),
+              style: AppTextStyles.displaySmall
+                  .copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: AppDimensions.spacingLg),
             ListTile(
-              leading: const Icon(Icons.camera_alt, size: AppDimensions.iconSizeL),
+              leading:
+                  const Icon(Icons.camera_alt, size: AppDimensions.iconSizeL),
               title: const Text('Ta foto'),
               subtitle: const Text('Använd kameran för att ta en ny bild'),
               onTap: () {
@@ -63,7 +68,8 @@ class ImagePickerDialogs {
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.photo_library, size: AppDimensions.iconSizeL),
+              leading: const Icon(Icons.photo_library,
+                  size: AppDimensions.iconSizeL),
               title: const Text('Välj från galleri'),
               subtitle: const Text(
                 'Välj en befintlig bild från ditt galleri',
@@ -166,9 +172,8 @@ class ImagePickerDialogs {
                     value: progress.total > 0
                         ? progress.completed / progress.total
                         : null,
-                    backgroundColor: Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerHighest,
+                    backgroundColor:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
                     valueColor: AlwaysStoppedAnimation<Color>(
                       Theme.of(context).colorScheme.primary,
                     ),

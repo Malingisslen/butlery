@@ -53,28 +53,27 @@ class FCMTokenManager {
   final NotificationRepository _repository;
   final String _userId;
   final FirebaseMessaging _messaging;
-  
+
   // Token state tracking
   String? _currentToken;
   DateTime? _lastTokenRefresh;
   StreamSubscription<String>? _tokenRefreshSubscription;
-  
+
   // Collections
   static const String _tokensCollection = 'user_fcm_tokens';
   static const String _deviceInfoCollection = 'user_devices';
-  
+
   // Local storage keys
   static const String _tokenStorageKey = 'fcm_token';
   static const String _tokenTimestampKey = 'fcm_token_timestamp';
-  
 
   FCMTokenManager({
     required String userId,
     NotificationRepository? repository,
     FirebaseMessaging? messaging,
-  }) : _repository = repository ?? GetIt.instance<NotificationRepository>(),
-       _userId = userId,
-       _messaging = messaging ?? FirebaseMessaging.instance;
+  })  : _repository = repository ?? GetIt.instance<NotificationRepository>(),
+        _userId = userId,
+        _messaging = messaging ?? FirebaseMessaging.instance;
 
   // ===== INITIALIZATION AND TOKEN REGISTRATION =====
 
@@ -151,7 +150,8 @@ class FCMTokenManager {
       final newToken = await _messaging.getToken();
 
       if (newToken == null) {
-        AppLogger.warning('⚠️ Failed to get FCM token - may not be supported on this platform');
+        AppLogger.warning(
+            '⚠️ Failed to get FCM token - may not be supported on this platform');
         return;
       }
 
@@ -161,22 +161,23 @@ class FCMTokenManager {
 
       // Only update if token actually changed
       if (oldToken != newToken) {
-        AppLogger.info('🔑 FCM token updated: ${newToken.substring(0, newToken.length.clamp(0, 20))}...');
-        
+        AppLogger.info(
+            '🔑 FCM token updated: ${newToken.substring(0, newToken.length.clamp(0, 20))}...');
+
         // Save to Firestore
         await _saveTokenToFirestore(newToken);
-        
+
         // Save locally for offline access
         await _saveTokenLocally(newToken);
-        
+
         // Update device info
         await _updateDeviceInfo(newToken);
-        
+
         // Clean up old token if it existed
         if (oldToken != null) {
           await _removeOldToken(oldToken);
         }
-        
+
         AppLogger.debug('✅ Token refresh complete');
       } else {
         AppLogger.debug('📋 Token unchanged, updating timestamp only');
@@ -196,7 +197,7 @@ class FCMTokenManager {
           AppLogger.info('🔄 FCM token refreshed automatically');
           _currentToken = newToken;
           _lastTokenRefresh = DateTime.now();
-          
+
           try {
             await _saveTokenToFirestore(newToken);
             await _saveTokenLocally(newToken);
@@ -221,16 +222,19 @@ class FCMTokenManager {
 
   /// Subscribe to notification topics based on user preferences
   /// This should be called after preferences are updated
-  Future<void> updateTopicSubscriptions(NotificationPreferences preferences) async {
+  Future<void> updateTopicSubscriptions(
+      NotificationPreferences preferences) async {
     try {
-      AppLogger.info('🔔 Updating FCM topic subscriptions based on preferences');
+      AppLogger.info(
+          '🔔 Updating FCM topic subscriptions based on preferences');
 
       // User-specific topic (always subscribed when logged in)
       await _messaging.subscribeToTopic('user_$_userId');
       AppLogger.debug('✅ Subscribed to user-specific topic');
 
       // System updates - based on system notification preferences
-      if (preferences.isEnabled(NotificationCategory.system, NotificationType.digest)) {
+      if (preferences.isEnabled(
+          NotificationCategory.system, NotificationType.digest)) {
         await _messaging.subscribeToTopic('system_updates');
         AppLogger.debug('✅ Subscribed to system_updates topic');
       } else {
@@ -239,7 +243,8 @@ class FCMTokenManager {
       }
 
       // Social digest - based on social notification preferences
-      if (preferences.isEnabled(NotificationCategory.social, NotificationType.digest)) {
+      if (preferences.isEnabled(
+          NotificationCategory.social, NotificationType.digest)) {
         await _messaging.subscribeToTopic('social_digest');
         AppLogger.debug('✅ Subscribed to social_digest topic');
       } else {
@@ -248,7 +253,8 @@ class FCMTokenManager {
       }
 
       // Recipe recommendations - based on recipe preferences
-      if (preferences.isEnabled(NotificationCategory.recipes, NotificationType.digest)) {
+      if (preferences.isEnabled(
+          NotificationCategory.recipes, NotificationType.digest)) {
         await _messaging.subscribeToTopic('recipe_recommendations');
         AppLogger.debug('✅ Subscribed to recipe_recommendations topic');
       } else {
@@ -257,7 +263,8 @@ class FCMTokenManager {
       }
 
       // Friend activity digest - based on friend preferences
-      if (preferences.isEnabled(NotificationCategory.friends, NotificationType.digest)) {
+      if (preferences.isEnabled(
+          NotificationCategory.friends, NotificationType.digest)) {
         await _messaging.subscribeToTopic('friend_activity');
         AppLogger.debug('✅ Subscribed to friend_activity topic');
       } else {
@@ -330,7 +337,8 @@ class FCMTokenManager {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_tokenStorageKey, token);
-      await prefs.setString(_tokenTimestampKey, DateTime.now().toIso8601String());
+      await prefs.setString(
+          _tokenTimestampKey, DateTime.now().toIso8601String());
       AppLogger.debug('✅ Saved FCM token locally');
     } catch (e) {
       AppLogger.warning('⚠️ Failed to save token locally: $e');
@@ -399,7 +407,7 @@ class FCMTokenManager {
   /// Check if current token is fresh (less than 1 hour old)
   bool _isTokenFresh() {
     if (_lastTokenRefresh == null) return false;
-    
+
     final age = DateTime.now().difference(_lastTokenRefresh!);
     return age.inHours < 1;
   }
@@ -417,7 +425,6 @@ class FCMTokenManager {
     // For now, assume it's available from somewhere
     return 'android'; // or 'ios', 'web', etc.
   }
-
 
   // ===== PUBLIC UTILITY METHODS =====
 

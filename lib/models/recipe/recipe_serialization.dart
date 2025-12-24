@@ -15,19 +15,22 @@ class RecipeSerialization {
     };
   }
 
-  /// Deserialize recipe from JSON format  
+  /// Deserialize recipe from JSON format
   static Recipe fromJson(Map<String, dynamic> json) {
     return Recipe(
       core: RecipeCore.fromJson(json['core'] as Map<String, dynamic>),
       type: RecipeType.values[json['type'] as int],
-      socialData: json['socialData'] != null 
-          ? RecipeSocialData.fromJson(json['socialData'] as Map<String, dynamic>)
+      socialData: json['socialData'] != null
+          ? RecipeSocialData.fromJson(
+              json['socialData'] as Map<String, dynamic>)
           : null,
       realtimeData: json['realtimeData'] != null
-          ? RecipeRealtimeData.fromJson(json['realtimeData'] as Map<String, dynamic>)
+          ? RecipeRealtimeData.fromJson(
+              json['realtimeData'] as Map<String, dynamic>)
           : null,
       offlineData: json['offlineData'] != null
-          ? RecipeOfflineData.fromJson(json['offlineData'] as Map<String, dynamic>)
+          ? RecipeOfflineData.fromJson(
+              json['offlineData'] as Map<String, dynamic>)
           : null,
     );
   }
@@ -47,15 +50,17 @@ class RecipeSerialization {
   static Recipe fromMap(String id, Map<String, dynamic> data) {
     // Handle both nested and flat structures for backward compatibility
     final coreData = data['core'] as Map<String, dynamic>? ?? data;
-    
+
     return Recipe(
       core: RecipeCore.fromMap(id, coreData),
       type: RecipeType.values[(data['type'] as int?).orZero()],
-      socialData: data['socialData'] != null 
-          ? RecipeSocialData.fromJson(data['socialData'] as Map<String, dynamic>)
+      socialData: data['socialData'] != null
+          ? RecipeSocialData.fromJson(
+              data['socialData'] as Map<String, dynamic>)
           : null,
       realtimeData: data['realtimeData'] != null
-          ? RecipeRealtimeData.fromJson(data['realtimeData'] as Map<String, dynamic>)
+          ? RecipeRealtimeData.fromJson(
+              data['realtimeData'] as Map<String, dynamic>)
           : null,
     );
   }
@@ -114,15 +119,24 @@ class RecipeSerialization {
     // Validate core structure
     final core = json['core'];
     if (core is! Map<String, dynamic>) return false;
-    
-    final coreRequiredFields = ['id', 'title', 'description', 'ingredients', 'instructions', 'mealType'];
+
+    final coreRequiredFields = [
+      'id',
+      'title',
+      'description',
+      'ingredients',
+      'instructions',
+      'mealType'
+    ];
     for (final field in coreRequiredFields) {
       if (!core.containsKey(field)) return false;
     }
 
     // Validate type
     final type = json['type'];
-    if (type is! int || type < 0 || type >= RecipeType.values.length) return false;
+    if (type is! int || type < 0 || type >= RecipeType.values.length) {
+      return false;
+    }
 
     return true;
   }
@@ -140,12 +154,13 @@ class RecipeSerialization {
     // Ensure type is valid
     final type = (sanitized['type'] as int?).orZero();
     sanitized['type'] = type.clamp(0, RecipeType.values.length - 1);
-    
+
     // Sanitize core data if needed
     if (sanitized['core'] is Map<String, dynamic>) {
-      sanitized['core'] = _sanitizeCoreData(sanitized['core'] as Map<String, dynamic>);
+      sanitized['core'] =
+          _sanitizeCoreData(sanitized['core'] as Map<String, dynamic>);
     }
-    
+
     return sanitized;
   }
 
@@ -156,8 +171,9 @@ class RecipeSerialization {
     // Ensure required string fields are strings
     sanitized['title'] = (sanitized['title']?.toString()).orEmpty();
     sanitized['description'] = (sanitized['description']?.toString()).orEmpty();
-    sanitized['mealType'] = (sanitized['mealType']?.toString()).orDefault('Middag');
-    
+    sanitized['mealType'] =
+        (sanitized['mealType']?.toString()).orDefault('Middag');
+
     // Ensure list fields are lists
     if (sanitized['ingredients'] is! List) {
       sanitized['ingredients'] = <String>[];
@@ -195,7 +211,7 @@ class RecipeSerialization {
           .where((item) => item.isNotEmpty)
           .toList();
     }
-    
+
     return sanitized;
   }
 
@@ -239,7 +255,7 @@ class RecipeSerialization {
         timeMinutes: data['timeMinutes'] as int?,
         rating: (data['rating'] as num?)?.toDouble(),
         tags: data['tags'] is List ? List<String>.from(data['tags']) : null,
-        imageUrls: data['imageUrls'] is List 
+        imageUrls: data['imageUrls'] is List
             ? List<String>.from(data['imageUrls'])
             : [],
         sourceUrl: data['sourceUrl']?.toString(),
@@ -252,7 +268,7 @@ class RecipeSerialization {
   /// Get compressed representation for storage optimization
   static Map<String, dynamic> toCompressed(Recipe recipe) {
     final compressed = <String, dynamic>{};
-    
+
     // Use shorter field names
     compressed['t'] = recipe.core.title;
     compressed['d'] = recipe.core.description;
@@ -260,17 +276,23 @@ class RecipeSerialization {
     compressed['s'] = recipe.core.instructions;
     compressed['m'] = recipe.core.mealType;
     compressed['ty'] = recipe.type.index;
-    
+
     // Optional fields only if not null/empty
     if (recipe.core.portions != null) compressed['p'] = recipe.core.portions;
-    if (recipe.core.timeMinutes != null) compressed['tm'] = recipe.core.timeMinutes;
+    if (recipe.core.timeMinutes != null) {
+      compressed['tm'] = recipe.core.timeMinutes;
+    }
     if (recipe.core.rating != null) compressed['r'] = recipe.core.rating;
     if (recipe.core.tags != null && recipe.core.tags!.isNotEmpty) {
       compressed['tg'] = recipe.core.tags;
     }
-    if (recipe.core.imageUrls.isNotEmpty) compressed['img'] = recipe.core.imageUrls;
-    if (recipe.core.sourceUrl != null) compressed['src'] = recipe.core.sourceUrl;
-    
+    if (recipe.core.imageUrls.isNotEmpty) {
+      compressed['img'] = recipe.core.imageUrls;
+    }
+    if (recipe.core.sourceUrl != null) {
+      compressed['src'] = recipe.core.sourceUrl;
+    }
+
     return compressed;
   }
 
@@ -280,17 +302,17 @@ class RecipeSerialization {
       core: RecipeCore(
         title: (compressed['t']?.toString()).orEmpty(),
         description: (compressed['d']?.toString()).orEmpty(),
-        ingredients: compressed['i'] is List
-            ? List<String>.from(compressed['i'])
-            : [],
-        instructions: compressed['s'] is List
-            ? List<String>.from(compressed['s'])
-            : [],
+        ingredients:
+            compressed['i'] is List ? List<String>.from(compressed['i']) : [],
+        instructions:
+            compressed['s'] is List ? List<String>.from(compressed['s']) : [],
         mealType: (compressed['m']?.toString()).orDefault('Middag'),
         portions: compressed['p'] as int?,
         timeMinutes: compressed['tm'] as int?,
         rating: (compressed['r'] as num?)?.toDouble(),
-        tags: compressed['tg'] is List ? List<String>.from(compressed['tg']) : null,
+        tags: compressed['tg'] is List
+            ? List<String>.from(compressed['tg'])
+            : null,
         imageUrls: compressed['img'] is List
             ? List<String>.from(compressed['img'])
             : [],

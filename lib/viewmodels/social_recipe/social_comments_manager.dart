@@ -40,8 +40,11 @@ class SocialCommentsManager extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final recipeComments = await _recipeService.social.getComments(recipeId: recipeId);
-      _comments = recipeComments.map((comment) => _convertRecipeCommentToSocialComment(comment)).toList();
+      final recipeComments =
+          await _recipeService.social.getComments(recipeId: recipeId);
+      _comments = recipeComments
+          .map((comment) => _convertRecipeCommentToSocialComment(comment))
+          .toList();
       AppLogger.info('Comments refreshed successfully for recipe: $recipeId');
     } catch (e) {
       _commentsError = 'Kunde inte ladda kommentarer: $e';
@@ -68,9 +71,8 @@ class SocialCommentsManager extends ChangeNotifier {
     try {
       AppLogger.info('Starting real-time comment stream for recipe: $recipeId');
 
-      _commentStreamSubscription = _recipeService.social
-          .getCommentsStream(recipeId)
-          .listen(
+      _commentStreamSubscription =
+          _recipeService.social.getCommentsStream(recipeId).listen(
         (recipeComments) {
           _comments = recipeComments
               .map((comment) => _convertRecipeCommentToSocialComment(comment))
@@ -92,7 +94,8 @@ class SocialCommentsManager extends ChangeNotifier {
       _commentsError = 'Kunde inte starta kommentarströmning: $e';
       _isLoadingComments = false;
       notifyListeners();
-      AppLogger.error('Failed to start comment stream for recipe $recipeId: $e');
+      AppLogger.error(
+          'Failed to start comment stream for recipe $recipeId: $e');
     }
   }
 
@@ -156,11 +159,13 @@ class SocialCommentsManager extends ChangeNotifier {
   }
 
   List<SocialComment> getReplies(String parentCommentId) {
-    return _comments.where((comment) =>
-        comment.parentCommentId == parentCommentId).toList();
+    return _comments
+        .where((comment) => comment.parentCommentId == parentCommentId)
+        .toList();
   }
 
-  SocialComment _convertRecipeCommentToSocialComment(RecipeComment recipeComment) {
+  SocialComment _convertRecipeCommentToSocialComment(
+      RecipeComment recipeComment) {
     return SocialComment(
       id: recipeComment.id,
       recipeId: recipeComment.recipeId,

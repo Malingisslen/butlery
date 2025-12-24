@@ -6,7 +6,6 @@ import 'package:butlery/services/unified/modules/realtime_field_operations.dart'
 /// Real-time instruction operations module
 /// Handles all instruction CRUD operations for real-time recipe editing.
 class RealtimeInstructionOperations {
-
   /// Add instruction in real-time
   static Future<bool> addInstructionRealtime({
     required RealtimeEditContext context,

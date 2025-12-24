@@ -163,7 +163,8 @@ class ContentModule implements DIModule {
     try {
       // Recipe repository - depends on Auth from Core Module
       container.registerSingleton<RecipeRepository>(
-        FirebaseRecipeRepository(authRepository: container<auth.AuthRepository>()),
+        FirebaseRecipeRepository(
+            authRepository: container<auth.AuthRepository>()),
       );
 
       // Collaborative recipe repository with permission validation and audit logging
@@ -196,7 +197,8 @@ class ContentModule implements DIModule {
       // Note: We use lazy singleton to ensure social dependencies are available
       container.registerLazySingleton<UnifiedRecipeService>(
         () => UnifiedRecipeService(
-          authRepository: container<auth.AuthRepository>() as FirebaseAuthRepository,
+          authRepository:
+              container<auth.AuthRepository>() as FirebaseAuthRepository,
           // Include social dependencies if available (from SocialModule)
           ratingsRepository: container.isRegistered<RatingsRepository>()
               ? container<RatingsRepository>()
@@ -280,7 +282,9 @@ class ContentModule implements DIModule {
       container.registerLazySingleton<RecipeParserService>(
         () {
           final authRepo = container<auth.AuthRepository>();
-          final userId = (authRepo as FirebaseAuthRepository).currentUser?.uid ?? 'anonymous';
+          final userId =
+              (authRepo as FirebaseAuthRepository).currentUser?.uid ??
+                  'anonymous';
           return RecipeParserService(
             userId: userId,
             siteConfigRepository: container<SiteConfigRepository>(),

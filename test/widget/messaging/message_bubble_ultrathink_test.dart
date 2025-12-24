@@ -118,10 +118,12 @@ void main() {
           ),
         );
 
-        expect(container.padding, equals(const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingS,
-        )));
+        expect(
+            container.padding,
+            equals(const EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingM,
+              vertical: AppDimensions.paddingS,
+            )));
       });
 
       testWidgets('system message has correct text styling',
@@ -169,8 +171,8 @@ void main() {
         );
 
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.borderRadius, 
-               equals(BorderRadius.circular(AppDimensions.borderRadiusM)));
+        expect(decoration.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadiusM)));
 
         // Test alpha color - production line 104
         final alphaValue = (decoration.color!.a * 255.0).round() & 0xff;
@@ -195,10 +197,12 @@ void main() {
 
         // Should have Row with end alignment for sent messages
         final row = tester.widget<Row>(
-          find.descendant(
-            of: find.byType(MessageBubble),
-            matching: find.byType(Row),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(MessageBubble),
+                matching: find.byType(Row),
+              )
+              .first,
         );
         expect(row.mainAxisAlignment, equals(MainAxisAlignment.end));
         expect(row.crossAxisAlignment, equals(CrossAxisAlignment.end));
@@ -220,17 +224,18 @@ void main() {
 
         // Should have Row with start alignment for received messages
         final row = tester.widget<Row>(
-          find.descendant(
-            of: find.byType(MessageBubble),
-            matching: find.byType(Row),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(MessageBubble),
+                matching: find.byType(Row),
+              )
+              .first,
         );
         expect(row.mainAxisAlignment, equals(MainAxisAlignment.start));
         expect(row.crossAxisAlignment, equals(CrossAxisAlignment.end));
       });
 
-      testWidgets('message has correct padding',
-          (WidgetTester tester) async {
+      testWidgets('message has correct padding', (WidgetTester tester) async {
         // ULTRATHINK: Test production code from lines 53-57
         final message = createTextMessage();
 
@@ -245,16 +250,20 @@ void main() {
 
         // Find the main Padding widget
         final padding = tester.widget<Padding>(
-          find.descendant(
-            of: find.byType(MessageBubble),
-            matching: find.byType(Padding),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(MessageBubble),
+                matching: find.byType(Padding),
+              )
+              .first,
         );
 
-        expect(padding.padding, equals(const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.spacingXs,
-        )));
+        expect(
+            padding.padding,
+            equals(const EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingM,
+              vertical: AppDimensions.spacingXs,
+            )));
       });
     });
 
@@ -282,10 +291,12 @@ void main() {
 
         // Avatar container should have correct dimensions
         final avatarContainer = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(MessageBubble),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(MessageBubble),
+                matching: find.byType(Container),
+              )
+              .first,
         );
         expect(avatarContainer.constraints?.maxWidth, equals(32));
         expect(avatarContainer.constraints?.maxHeight, equals(32));
@@ -386,10 +397,12 @@ void main() {
         );
 
         final avatarContainer = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(MessageBubble),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(MessageBubble),
+                matching: find.byType(Container),
+              )
+              .first,
         );
 
         final decoration = avatarContainer.decoration as BoxDecoration;
@@ -402,7 +415,8 @@ void main() {
     });
 
     group('Sender Name Tests', () {
-      testWidgets('shows sender name when showAvatar=false for received messages',
+      testWidgets(
+          'shows sender name when showAvatar=false for received messages',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code from lines 74-75
         final receivedMessage = createTextMessage(
@@ -449,15 +463,19 @@ void main() {
 
         // Check padding - find the specific padding for sender name
         final namePadding = tester.widget<Padding>(
-          find.ancestor(
-            of: find.text('Maria Nilsson'),
-            matching: find.byType(Padding),
-          ).first,
+          find
+              .ancestor(
+                of: find.text('Maria Nilsson'),
+                matching: find.byType(Padding),
+              )
+              .first,
         );
-        expect(namePadding.padding, equals(const EdgeInsets.only(
-          left: AppDimensions.paddingS,
-          bottom: AppDimensions.spacingXs,
-        )));
+        expect(
+            namePadding.padding,
+            equals(const EdgeInsets.only(
+              left: AppDimensions.paddingS,
+              bottom: AppDimensions.spacingXs,
+            )));
       });
 
       testWidgets('does not show sender name when showAvatar=true',
@@ -534,7 +552,7 @@ void main() {
         // Edited text should be italic and have correct color
         final editedText = tester.widget<Text>(find.text('redigerad'));
         expect(editedText.style?.fontStyle, equals(FontStyle.italic));
-        
+
         // Should have alpha color
         final alphaValue = (editedText.style!.color!.a * 255.0).round() & 0xff;
         expect(alphaValue, lessThan(180)); // 0.7 alpha ≈ 178.5
@@ -574,7 +592,8 @@ void main() {
         expect(sentText.style?.color, equals(AppColors.cardWhite));
 
         // Received message should be dark
-        final receivedText = tester.widget<Text>(find.text('Mottaget meddelande'));
+        final receivedText =
+            tester.widget<Text>(find.text('Mottaget meddelande'));
         expect(receivedText.style?.color, equals(AppColors.textDark));
       });
     });
@@ -597,10 +616,12 @@ void main() {
         final styledCard = tester.widget<StyledCard>(find.byType(StyledCard));
         expect(styledCard.backgroundColor, equals(AppColors.primaryBlue));
         expect(styledCard.borderRadius, equals(AppDimensions.borderRadiusM));
-        expect(styledCard.padding, equals(const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingS,
-        )));
+        expect(
+            styledCard.padding,
+            equals(const EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingM,
+              vertical: AppDimensions.paddingS,
+            )));
       });
 
       testWidgets('message card has correct styling for received messages',
@@ -708,8 +729,10 @@ void main() {
       testWidgets('recipe share content styling varies by sender',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code from lines 306-308, 320-323
-        final sentRecipeMessage = createRecipeShareMessage(senderId: 'currentUser');
-        final receivedRecipeMessage = createRecipeShareMessage(senderId: 'otherUser');
+        final sentRecipeMessage =
+            createRecipeShareMessage(senderId: 'currentUser');
+        final receivedRecipeMessage =
+            createRecipeShareMessage(senderId: 'otherUser');
 
         await tester.pumpWidget(
           createTestWidget(
@@ -908,10 +931,12 @@ void main() {
         );
 
         final imageContainer = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(MessageBubble),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(MessageBubble),
+                matching: find.byType(Container),
+              )
+              .first,
         );
 
         expect(imageContainer.constraints?.maxWidth, equals(200));
@@ -1247,16 +1272,20 @@ void main() {
 
         // Check timestamp padding - find the specific padding for timestamp
         final timestampPadding = tester.widget<Padding>(
-          find.ancestor(
-            of: find.text('nu'),
-            matching: find.byType(Padding),
-          ).first,
+          find
+              .ancestor(
+                of: find.text('nu'),
+                matching: find.byType(Padding),
+              )
+              .first,
         );
-        expect(timestampPadding.padding, equals(const EdgeInsets.only(
-          top: AppDimensions.spacingXs,
-          left: AppDimensions.paddingS,
-          right: 0,
-        )));
+        expect(
+            timestampPadding.padding,
+            equals(const EdgeInsets.only(
+              top: AppDimensions.spacingXs,
+              left: AppDimensions.paddingS,
+              right: 0,
+            )));
       });
 
       testWidgets('timestamp padding differs for sent vs received',
@@ -1275,18 +1304,22 @@ void main() {
         );
 
         final timestampPadding = tester.widget<Padding>(
-          find.ancestor(
-            of: find.text('nu'),
-            matching: find.byType(Padding),
-          ).first,
+          find
+              .ancestor(
+                of: find.text('nu'),
+                matching: find.byType(Padding),
+              )
+              .first,
         );
 
         // For received messages, left padding should be paddingS, right should be 0
-        expect(timestampPadding.padding, equals(const EdgeInsets.only(
-          top: AppDimensions.spacingXs,
-          left: AppDimensions.paddingS,
-          right: 0,
-        )));
+        expect(
+            timestampPadding.padding,
+            equals(const EdgeInsets.only(
+              top: AppDimensions.spacingXs,
+              left: AppDimensions.paddingS,
+              right: 0,
+            )));
       });
 
       testWidgets('does not show timestamp when showTimestamp=false',
@@ -1312,7 +1345,8 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code from lines 597-613
         // Create message from 5 minutes ago
-        final fiveMinutesAgo = DateTime.now().subtract(const Duration(minutes: 5));
+        final fiveMinutesAgo =
+            DateTime.now().subtract(const Duration(minutes: 5));
         final message = Message(
           id: 'msg1',
           conversationId: 'conv1',
@@ -1369,7 +1403,8 @@ void main() {
 
         // Should show reply preview with original sender and content
         expect(find.text('Erik Eriksson'), findsOneWidget);
-        expect(find.text('Detta är det ursprungliga meddelandet'), findsOneWidget);
+        expect(
+            find.text('Detta är det ursprungliga meddelandet'), findsOneWidget);
         expect(find.text('Detta är mitt svar'), findsOneWidget);
       });
 
@@ -1410,17 +1445,21 @@ void main() {
         final replyContainer = containers.firstWhere((c) => c.margin != null);
 
         // Check margin and padding
-        expect(replyContainer.margin, equals(const EdgeInsets.only(
-          bottom: AppDimensions.paddingS,
-        )));
-        expect(replyContainer.padding, equals(const EdgeInsets.all(
-          AppDimensions.paddingS,
-        )));
+        expect(
+            replyContainer.margin,
+            equals(const EdgeInsets.only(
+              bottom: AppDimensions.paddingS,
+            )));
+        expect(
+            replyContainer.padding,
+            equals(const EdgeInsets.all(
+              AppDimensions.paddingS,
+            )));
 
         // Check decoration
         final decoration = replyContainer.decoration as BoxDecoration;
-        expect(decoration.borderRadius, 
-               equals(BorderRadius.circular(AppDimensions.borderRadiusS)));
+        expect(decoration.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadiusS)));
 
         // Should have left border - cast to Border to access left property
         if (decoration.border is Border) {
@@ -1531,7 +1570,7 @@ void main() {
 
         // Should only show the regular message content
         expect(find.text('Regular message'), findsOneWidget);
-        
+
         // Should not have any reply preview containers
         final containers = tester.widgetList<Container>(find.byType(Container));
         expect(containers.where((c) => c.margin != null).isEmpty, isTrue);
@@ -1553,7 +1592,8 @@ void main() {
           id: 'complex',
           senderId: 'currentUser',
           displayName: 'Anna Andersson',
-          content: 'Jag brukar använda blandfärs - både nöt och fläsk. Det ger bästa smaken!',
+          content:
+              'Jag brukar använda blandfärs - både nöt och fläsk. Det ger bästa smaken!',
           status: MessageStatus.read,
           isEdited: true,
           replyToMessageId: 'original',
@@ -1576,7 +1616,10 @@ void main() {
         // Should show all features
         expect(find.text('Erik Svensson'), findsOneWidget); // Reply preview
         expect(find.text('Vilken typ av kött använder du?'), findsOneWidget);
-        expect(find.text('Jag brukar använda blandfärs - både nöt och fläsk. Det ger bästa smaken!'), findsOneWidget);
+        expect(
+            find.text(
+                'Jag brukar använda blandfärs - både nöt och fläsk. Det ger bästa smaken!'),
+            findsOneWidget);
         expect(find.text('redigerad'), findsOneWidget);
         expect(find.text('Läst'), findsOneWidget);
         expect(find.text('nu'), findsOneWidget);
@@ -1587,7 +1630,8 @@ void main() {
         // ULTRATHINK: Test Swedish localization edge cases
         final swedishMessage = createTextMessage(
           displayName: 'Åsa Östman',
-          content: 'Hej! Jag älskar köttbullar och lingonsylt. Återkommer med fler recept från Skåne.',
+          content:
+              'Hej! Jag älskar köttbullar och lingonsylt. Återkommer med fler recept från Skåne.',
         );
 
         await tester.pumpWidget(
@@ -1601,8 +1645,10 @@ void main() {
         );
 
         expect(find.text('Åsa Östman'), findsOneWidget);
-        expect(find.text('Hej! Jag älskar köttbullar och lingonsylt. Återkommer med fler recept från Skåne.'), 
-               findsOneWidget);
+        expect(
+            find.text(
+                'Hej! Jag älskar köttbullar och lingonsylt. Återkommer med fler recept från Skåne.'),
+            findsOneWidget);
       });
 
       testWidgets('message bubble with all callback handlers',

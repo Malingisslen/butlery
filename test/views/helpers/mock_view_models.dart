@@ -21,15 +21,15 @@
 /// ```dart
 /// testWidgets('should handle collaborative conflict resolution', (tester) async {
 ///   final viewModel = TestableRecipeFormViewModel();
-///   
+///
 ///   // Configure collaborative conflict scenario
 ///   viewModel.simulateCollaborativeConflict(
 ///     conflictingUser: 'Anna Andersson',
 ///     conflictType: ConflictType.simultaneousEdit,
 ///   );
-///   
+///
 ///   await tester.pumpWidget(createTestView(viewModel));
-///   
+///
 ///   // Verify conflict UI is displayed
 ///   expect(find.text('Anna Andersson redigerar detta recept'), findsOneWidget);
 ///   expect(find.text('Skapa kopia'), findsOneWidget);
@@ -62,11 +62,11 @@ class TestableViewModelBase extends MockBaseViewModel {
   final List<String> _stateTransitions = [];
   final Map<String, DateTime> _stateTimestamps = {};
   bool _disposed = false;
-  
+
   // Performance tracking
   final Stopwatch _stateTransitionStopwatch = Stopwatch();
   Duration? _lastTransitionDuration;
-  
+
   // Error injection capabilities
   String? _injectedError;
   bool _shouldFailNextOperation = false;
@@ -76,11 +76,11 @@ class TestableViewModelBase extends MockBaseViewModel {
   /// Record state transition for testing verification.
   void _recordStateTransition(String newState) {
     if (_disposed) return;
-    
+
     _stateTransitionStopwatch.stop();
     _lastTransitionDuration = _stateTransitionStopwatch.elapsed;
     _stateTransitionStopwatch.reset();
-    
+
     _stateTransitions.add(newState);
     _stateTimestamps[newState] = DateTime.now();
     _stateTransitionStopwatch.start();
@@ -127,7 +127,8 @@ class TestableViewModelBase extends MockBaseViewModel {
   // ==================== PERFORMANCE UTILITIES ====================
 
   /// Measure time for state change operations.
-  Future<T> _measureStateChange<T>(String operation, Future<T> Function() fn) async {
+  Future<T> _measureStateChange<T>(
+      String operation, Future<T> Function() fn) async {
     final stopwatch = Stopwatch()..start();
     try {
       final result = await fn();
@@ -136,7 +137,8 @@ class TestableViewModelBase extends MockBaseViewModel {
       return result;
     } catch (e) {
       stopwatch.stop();
-      _recordStateTransition('$operation failed (${stopwatch.elapsedMilliseconds}ms)');
+      _recordStateTransition(
+          '$operation failed (${stopwatch.elapsedMilliseconds}ms)');
       rethrow;
     }
   }
@@ -159,14 +161,15 @@ class TestableViewModelBase extends MockBaseViewModel {
 // ==================== AUTHENTICATION VIEWMODEL ====================
 
 /// Testable AuthViewModel with enhanced authentication state control.
-class TestableAuthViewModel extends TestableViewModelBase implements AuthViewModel {
+class TestableAuthViewModel extends TestableViewModelBase
+    implements AuthViewModel {
   bool _isAuthenticated = false;
   bool _isLoading = false;
   String? _currentUserId;
   String? _userEmail;
   String? _userDisplayName;
   String? _lastError;
-  
+
   // Authentication flow states
   bool _isRegistrationMode = false;
   bool _isPasswordResetMode = false;
@@ -176,10 +179,10 @@ class TestableAuthViewModel extends TestableViewModelBase implements AuthViewMod
 
   @override
   bool get isAuthenticated => _isAuthenticated;
-  
+
   @override
   bool get isLoading => _isLoading;
-  
+
   String? get currentUserId => _currentUserId;
   String? get userEmail => _userEmail;
   String? get userDisplayName => _userDisplayName;
@@ -199,7 +202,8 @@ class TestableAuthViewModel extends TestableViewModelBase implements AuthViewMod
   }) {
     if (isAuthenticated != null) {
       _isAuthenticated = isAuthenticated;
-      _recordStateTransition('auth_state_${isAuthenticated ? 'authenticated' : 'unauthenticated'}');
+      _recordStateTransition(
+          'auth_state_${isAuthenticated ? 'authenticated' : 'unauthenticated'}');
     }
     if (isLoading != null) {
       _isLoading = isLoading;
@@ -236,18 +240,20 @@ class TestableAuthViewModel extends TestableViewModelBase implements AuthViewMod
   }
 
   /// Simulate login process with controlled timing.
-  Future<void> simulateLogin(String email, String password, {
+  Future<void> simulateLogin(
+    String email,
+    String password, {
     Duration delay = const Duration(milliseconds: 500),
     bool shouldSucceed = true,
   }) async {
     return _measureStateChange('login', () async {
       setAuthenticationState(isLoading: true);
-      
+
       await Future.delayed(delay);
-      
+
       final injectedError = _consumeInjectedError();
       final shouldFail = _consumeFailureFlag() || !shouldSucceed;
-      
+
       if (injectedError != null) {
         setAuthenticationState(
           isLoading: false,
@@ -284,9 +290,9 @@ class TestableAuthViewModel extends TestableViewModelBase implements AuthViewMod
   }) async {
     return _measureStateChange('registration', () async {
       setAuthenticationState(isLoading: true);
-      
+
       await Future.delayed(delay);
-      
+
       if (!shouldSucceed) {
         setAuthenticationState(
           isLoading: false,
@@ -307,15 +313,16 @@ class TestableAuthViewModel extends TestableViewModelBase implements AuthViewMod
   }
 
   /// Simulate password reset flow.
-  Future<void> simulatePasswordReset(String email, {
+  Future<void> simulatePasswordReset(
+    String email, {
     Duration delay = const Duration(milliseconds: 600),
     bool shouldSucceed = true,
   }) async {
     return _measureStateChange('password_reset', () async {
       setAuthenticationState(isLoading: true);
-      
+
       await Future.delayed(delay);
-      
+
       if (!shouldSucceed) {
         setAuthenticationState(
           isLoading: false,
@@ -338,9 +345,9 @@ class TestableAuthViewModel extends TestableViewModelBase implements AuthViewMod
   }) async {
     return _measureStateChange('logout', () async {
       setAuthenticationState(isLoading: true);
-      
+
       await Future.delayed(delay);
-      
+
       setAuthenticationState(
         isAuthenticated: false,
         isLoading: false,
@@ -356,18 +363,19 @@ class TestableAuthViewModel extends TestableViewModelBase implements AuthViewMod
 // ==================== RECIPE FORM VIEWMODEL ====================
 
 /// Testable RecipeFormViewModel with collaborative editing simulation.
-class TestableRecipeFormViewModel extends TestableViewModelBase implements RecipeFormViewModel {
+class TestableRecipeFormViewModel extends TestableViewModelBase
+    implements RecipeFormViewModel {
   Recipe? _recipe;
   bool _isLoading = false;
   bool _hasUnsavedChanges = false;
   bool _isCollaborativeMode = false;
-  
+
   // Collaborative editing state
   bool _hasEditConflict = false;
   String? _conflictingUserName;
   ConflictType? _conflictType;
   bool _canForceEdit = false;
-  
+
   // Form validation state
   Map<String, String?> _validationErrors = {};
   bool _isFormValid = true;
@@ -375,10 +383,10 @@ class TestableRecipeFormViewModel extends TestableViewModelBase implements Recip
   // ==================== RECIPE STATE ====================
 
   Recipe? get recipe => _recipe;
-  
+
   @override
   bool get isLoading => _isLoading;
-  
+
   @override
   bool get hasUnsavedChanges => _hasUnsavedChanges;
   bool get isCollaborativeMode => _isCollaborativeMode;
@@ -450,7 +458,8 @@ class TestableRecipeFormViewModel extends TestableViewModelBase implements Recip
     if (isValid != null) {
       _isFormValid = isValid;
     }
-    _recordStateTransition('form_validation_${_isFormValid ? 'passed' : 'failed'}');
+    _recordStateTransition(
+        'form_validation_${_isFormValid ? 'passed' : 'failed'}');
     notifyListeners();
   }
 
@@ -461,18 +470,19 @@ class TestableRecipeFormViewModel extends TestableViewModelBase implements Recip
   }) async {
     return _measureStateChange('save_recipe', () async {
       setRecipeFormState(isLoading: true);
-      
+
       await Future.delayed(delay);
-      
+
       final injectedError = _consumeInjectedError();
       final shouldFail = _consumeFailureFlag() || !shouldSucceed;
-      
+
       if (injectedError != null) {
         setError(injectedError);
         setRecipeFormState(isLoading: false);
         throw Exception(injectedError);
       } else if (shouldFail) {
-        setError('Kunde inte spara recept. Kontrollera din internetanslutning.');
+        setError(
+            'Kunde inte spara recept. Kontrollera din internetanslutning.');
         setRecipeFormState(isLoading: false);
         throw Exception('Save failed');
       } else {
@@ -491,9 +501,9 @@ class TestableRecipeFormViewModel extends TestableViewModelBase implements Recip
   }) async {
     return _measureStateChange('fork_recipe', () async {
       setRecipeFormState(isLoading: true);
-      
+
       await Future.delayed(delay);
-      
+
       // Create new recipe copy
       final forkedRecipe = Recipe(
         core: RecipeCore(
@@ -505,13 +515,13 @@ class TestableRecipeFormViewModel extends TestableViewModelBase implements Recip
         ),
         type: RecipeType.personal,
       );
-      
+
       setRecipeFormState(
         recipe: forkedRecipe,
         isLoading: false,
         hasUnsavedChanges: false,
       );
-      
+
       // Clear conflict state
       resolveCollaborativeConflict();
     });
@@ -521,13 +531,13 @@ class TestableRecipeFormViewModel extends TestableViewModelBase implements Recip
 // ==================== SHOPPING VIEWMODEL ====================
 
 /// Testable UnifiedShoppingViewModel with collaborative shopping simulation.
-class TestableUnifiedShoppingViewModel extends TestableViewModelBase 
+class TestableUnifiedShoppingViewModel extends TestableViewModelBase
     implements UnifiedShoppingViewModel {
   List<UnifiedShoppingList> _shoppingLists = [];
   UnifiedShoppingList? _activeList;
   bool _isLoading = false;
   bool _isSyncing = false;
-  
+
   // Collaborative state
   final Map<String, List<String>> _activeCollaborators = {};
   bool _hasConflicts = false;
@@ -537,13 +547,13 @@ class TestableUnifiedShoppingViewModel extends TestableViewModelBase
 
   @override
   List<UnifiedShoppingList> get lists => List.from(_shoppingLists);
-  
+
   @override
   UnifiedShoppingList? get activeList => _activeList;
-  
+
   @override
   bool get isLoading => _isLoading;
-  
+
   @override
   bool get isSyncing => _isSyncing;
   bool get hasConflicts => _hasConflicts;
@@ -585,7 +595,8 @@ class TestableUnifiedShoppingViewModel extends TestableViewModelBase
     _activeCollaborators[listId] = collaborators;
     _hasConflicts = hasConflicts;
     _pendingChanges = pendingChanges;
-    _recordStateTransition('collaborative_editing_${collaborators.length}_users');
+    _recordStateTransition(
+        'collaborative_editing_${collaborators.length}_users');
     notifyListeners();
   }
 
@@ -596,9 +607,9 @@ class TestableUnifiedShoppingViewModel extends TestableViewModelBase
   }) async {
     return _measureStateChange('sync_shopping_lists', () async {
       setShoppingState(isSyncing: true);
-      
+
       await Future.delayed(delay);
-      
+
       if (!shouldSucceed) {
         setError('Synkronisering misslyckades');
         setShoppingState(isSyncing: false);
@@ -619,60 +630,61 @@ class TestableUnifiedShoppingViewModel extends TestableViewModelBase
 /// Note: Does not formally implement CollaborativeShoppingViewModel due to inheritance conflicts
 /// but provides all required methods for testing.
 class TestableCollaborativeShoppingViewModel extends MockBaseViewModel {
-  
   // State tracking for testing (simplified version from TestableViewModelBase)
   final List<String> _stateTransitions = [];
-  
+
   void _recordStateTransition(String newState) {
     _stateTransitions.add(newState);
   }
-  
+
   List<String> getStateTransitions() => List.from(_stateTransitions);
-  
+
   // Measure state changes for testing
-  Future<T> _measureStateChange<T>(String operation, Future<T> Function() fn) async {
+  Future<T> _measureStateChange<T>(
+      String operation, Future<T> Function() fn) async {
     final result = await fn();
     _recordStateTransition('$operation completed');
     return result;
   }
-  
+
   /// Verify ViewModel has been properly disposed (for test compatibility).
   bool get isProperlyDisposed => isDisposed;
-  
+
   // Error injection capabilities (from TestableViewModelBase)
   String? _injectedError;
   bool _shouldFailNextOperation = false;
-  
+
   /// Inject error for next operation to test error handling.
   void injectError(String errorMessage) {
     _injectedError = errorMessage;
   }
-  
+
   /// Configure next operation to fail for testing.
   void failNextOperation() {
     _shouldFailNextOperation = true;
   }
-  
+
   /// Check if error should be injected and consume it.
   String? _consumeInjectedError() {
     final error = _injectedError;
     _injectedError = null;
     return error;
   }
-  
+
   /// Check if operation should fail and consume flag.
   bool _consumeFailureFlag() {
     final shouldFail = _shouldFailNextOperation;
     _shouldFailNextOperation = false;
     return shouldFail;
   }
+
   String _listId = '';
   UnifiedShoppingList? _currentList;
   bool _isLoading = false;
   bool _isAddingItem = false;
   String _lastActivity = '';
   DateTime _lastActivityTime = DateTime.now();
-  
+
   // Collaborative state
   final Map<String, String> _participants = {};
   bool _hasConflicts = false;
@@ -684,30 +696,30 @@ class TestableCollaborativeShoppingViewModel extends MockBaseViewModel {
   // ==================== COLLABORATIVE SHOPPING STATE ====================
 
   String get listId => _listId;
-  
+
   UnifiedShoppingList? get currentList => _currentList;
-  
+
   @override
   bool get isLoading => _isLoading;
-  
+
   bool get isAddingItem => _isAddingItem;
-  
+
   bool get hasData => _currentList != null;
-  
+
   String get listTitle => _currentList?.name ?? 'Laddar...';
-  
+
   String get listDescription => _currentList?.description ?? '';
-  
+
   bool get hasDescription => listDescription.isNotEmpty;
-  
+
   bool get canEdit => _canEdit;
-  
+
   bool get canView => _canView;
-  
+
   int get totalItems => _totalItems;
-  
+
   int get completedItems => _completedItems;
-  
+
   String get lastActivity => _lastActivity;
   DateTime get lastActivityTime => _lastActivityTime;
   bool get hasConflicts => _hasConflicts;
@@ -781,12 +793,12 @@ class TestableCollaborativeShoppingViewModel extends MockBaseViewModel {
   Future<bool> addItem(String itemName) async {
     return _measureStateChange('add_item', () async {
       setCollaborativeShoppingState(isAddingItem: true);
-      
+
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       final injectedError = _consumeInjectedError();
       final shouldFail = _consumeFailureFlag();
-      
+
       if (injectedError != null) {
         setError(injectedError);
         setCollaborativeShoppingState(isAddingItem: false);
@@ -811,9 +823,9 @@ class TestableCollaborativeShoppingViewModel extends MockBaseViewModel {
   Future<bool> toggleItemCompletion(String itemId) async {
     return _measureStateChange('toggle_item', () async {
       await Future.delayed(const Duration(milliseconds: 300));
-      
+
       final shouldFail = _consumeFailureFlag();
-      
+
       if (shouldFail) {
         setError('Kunde inte uppdatera vara');
         return false;
@@ -821,8 +833,10 @@ class TestableCollaborativeShoppingViewModel extends MockBaseViewModel {
         // Toggle completion count
         final isCompleting = _completedItems < _totalItems;
         setCollaborativeShoppingState(
-          completedItems: isCompleting ? _completedItems + 1 : _completedItems - 1,
-          lastActivity: isCompleting ? 'Markerade vara som köpt' : 'Avmarkerade vara',
+          completedItems:
+              isCompleting ? _completedItems + 1 : _completedItems - 1,
+          lastActivity:
+              isCompleting ? 'Markerade vara som köpt' : 'Avmarkerade vara',
         );
         _recordStateTransition('item_toggled');
         return true;
@@ -834,11 +848,11 @@ class TestableCollaborativeShoppingViewModel extends MockBaseViewModel {
   Future<void> refresh() async {
     return _measureStateChange('refresh', () async {
       setCollaborativeShoppingState(isLoading: true);
-      
+
       await Future.delayed(const Duration(milliseconds: 800));
-      
+
       final shouldFail = _consumeFailureFlag();
-      
+
       if (shouldFail) {
         setError('Kunde inte uppdatera lista');
         setCollaborativeShoppingState(isLoading: false);
@@ -853,11 +867,11 @@ class TestableCollaborativeShoppingViewModel extends MockBaseViewModel {
   }
 
   // ==================== REQUIRED INTERFACE METHODS ====================
-  
+
   bool canEditShoppingList(String listId) => _canEdit;
-  
+
   bool canViewShoppingList(String listId) => _canView;
-  
+
   // Additional methods that may be required by the interface
   // These would be implemented based on the actual CollaborativeShoppingViewModel interface
 }
@@ -865,20 +879,20 @@ class TestableCollaborativeShoppingViewModel extends MockBaseViewModel {
 // ==================== DISCOVERY DASHBOARD VIEWMODEL ====================
 
 /// Testable DiscoveryDashboardViewModel with tab and scroll controller simulation.
-class TestableDiscoveryDashboardViewModel extends TestableViewModelBase 
+class TestableDiscoveryDashboardViewModel extends TestableViewModelBase
     implements DiscoveryDashboardViewModel {
   int _activeTabIndex = 0;
   bool _isLoading = false;
   bool _isLoadingMore = false;
   bool _hasMoreContent = true;
-  
+
   // Tab-specific content
   final Map<int, List<dynamic>> _tabContent = {
     0: [], // Recommendations
     1: [], // Friends Activity
     2: [], // Trending
   };
-  
+
   // Scroll state
   bool _isScrolledToTop = true;
   double _scrollOffset = 0.0;
@@ -886,13 +900,13 @@ class TestableDiscoveryDashboardViewModel extends TestableViewModelBase
   // ==================== DASHBOARD STATE ====================
 
   int get activeTabIndex => _activeTabIndex;
-  
+
   @override
   bool get isLoading => _isLoading;
-  
+
   @override
   bool get isLoadingMore => _isLoadingMore;
-  
+
   @override
   bool get hasMoreContent => _hasMoreContent;
   bool get isScrolledToTop => _isScrolledToTop;
@@ -929,12 +943,12 @@ class TestableDiscoveryDashboardViewModel extends TestableViewModelBase
     int initialTab = 0,
   }) {
     _activeTabIndex = initialTab;
-    
+
     // Initialize tab content
     for (int i = 0; i < tabCount; i++) {
       _tabContent[i] = [];
     }
-    
+
     _recordStateTransition('tab_controller_initialized_${tabCount}_tabs');
     notifyListeners();
   }
@@ -954,13 +968,16 @@ class TestableDiscoveryDashboardViewModel extends TestableViewModelBase
   }) async {
     return _measureStateChange('load_more_content', () async {
       setDashboardState(isLoadingMore: true);
-      
+
       await Future.delayed(delay);
-      
+
       // Add mock content to active tab
       final currentContent = _tabContent[_activeTabIndex] ?? [];
-      _tabContent[_activeTabIndex] = [...currentContent, ...List.generate(10, (i) => 'Content ${currentContent.length + i}')];
-      
+      _tabContent[_activeTabIndex] = [
+        ...currentContent,
+        ...List.generate(10, (i) => 'Content ${currentContent.length + i}')
+      ];
+
       setDashboardState(
         isLoadingMore: false,
         hasMoreContent: hasMoreAfterLoad,
@@ -1034,14 +1051,14 @@ class TestableViewModelFactory {
       recipe: recipe,
       isCollaborativeMode: isCollaborative,
     );
-    
+
     if (hasConflicts) {
       viewModel.simulateCollaborativeConflict(
         conflictingUser: 'Anna Andersson',
         conflictType: ConflictType.simultaneousEdit,
       );
     }
-    
+
     return viewModel;
   }
 
@@ -1055,19 +1072,20 @@ class TestableViewModelFactory {
       lists: lists ?? [],
       isLoading: false,
     );
-    
+
     if (isCollaborative) {
       viewModel.simulateCollaborativeEditing(
         listId: 'test-list',
         collaborators: ['Anna', 'Erik'],
       );
     }
-    
+
     return viewModel;
   }
 
   /// Create testable CollaborativeShoppingViewModel for collaborative shopping tests.
-  static TestableCollaborativeShoppingViewModel createCollaborativeShoppingViewModel({
+  static TestableCollaborativeShoppingViewModel
+      createCollaborativeShoppingViewModel({
     String? listId,
     UnifiedShoppingList? currentList,
     bool hasData = true,
@@ -1080,7 +1098,7 @@ class TestableViewModelFactory {
     bool hasConflicts = false,
   }) {
     final viewModel = TestableCollaborativeShoppingViewModel();
-    
+
     // Set up basic state
     viewModel.setCollaborativeShoppingState(
       listId: listId ?? 'test-collaborative-list-123',
@@ -1092,7 +1110,7 @@ class TestableViewModelFactory {
       completedItems: completedItems,
       lastActivity: 'Lista skapad',
     );
-    
+
     // Set up collaborative features
     if (participants != null) {
       viewModel.simulateParticipants(
@@ -1100,7 +1118,7 @@ class TestableViewModelFactory {
         hasConflicts: hasConflicts,
       );
     }
-    
+
     return viewModel;
   }
 

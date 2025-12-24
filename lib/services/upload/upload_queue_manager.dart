@@ -52,7 +52,8 @@ class UploadQueueManager {
       maxRetryAttempts: maxRetryAttempts,
     );
 
-    AppLogger.info('🗂️ QUEUE: Added upload for $filePath (queue size: ${_queue.length})');
+    AppLogger.info(
+        '🗂️ QUEUE: Added upload for $filePath (queue size: ${_queue.length})');
   }
 
   /// Add completed upload (with URL) to queue
@@ -74,12 +75,14 @@ class UploadQueueManager {
   /// Update upload status in queue
   void updateStatus(String filePath, ImageUploadStatus newStatus) {
     if (!_queue.containsKey(filePath)) {
-      AppLogger.warning('🗂️ QUEUE: Cannot update non-existent upload $filePath');
+      AppLogger.warning(
+          '🗂️ QUEUE: Cannot update non-existent upload $filePath');
       return;
     }
 
     _queue[filePath] = newStatus;
-    AppLogger.debug('🗂️ QUEUE: Updated status for $filePath to ${newStatus.state}');
+    AppLogger.debug(
+        '🗂️ QUEUE: Updated status for $filePath to ${newStatus.state}');
   }
 
   /// Update upload progress
@@ -109,7 +112,8 @@ class UploadQueueManager {
   ImageUploadStatus? removeUpload(String filePath) {
     final removed = _queue.remove(filePath);
     if (removed != null) {
-      AppLogger.info('🗂️ QUEUE: Removed upload for $filePath (queue size: ${_queue.length})');
+      AppLogger.info(
+          '🗂️ QUEUE: Removed upload for $filePath (queue size: ${_queue.length})');
     }
     return removed;
   }
@@ -132,7 +136,8 @@ class UploadQueueManager {
       _queue.remove(key);
     }
 
-    AppLogger.info('🗂️ QUEUE: Removed ${toRemove.length} uploads in state ${state.name}');
+    AppLogger.info(
+        '🗂️ QUEUE: Removed ${toRemove.length} uploads in state ${state.name}');
   }
 
   // ===== QUERY OPERATIONS =====
@@ -171,8 +176,7 @@ class UploadQueueManager {
   Map<String, ImageUploadStatus> get retriableFailedUploads {
     return Map.fromEntries(
       _queue.entries.where((entry) =>
-          entry.value.state == ImageUploadState.failed &&
-          entry.value.canRetry),
+          entry.value.state == ImageUploadState.failed && entry.value.canRetry),
     );
   }
 
@@ -231,7 +235,8 @@ class UploadQueueManager {
     for (final status in _queue.values) {
       totalProgress += status.progress;
     }
-    final overallProgress = _queue.isNotEmpty ? totalProgress / _queue.length : 0.0;
+    final overallProgress =
+        _queue.isNotEmpty ? totalProgress / _queue.length : 0.0;
 
     // Calculate average upload speed
     double totalSpeed = 0.0;

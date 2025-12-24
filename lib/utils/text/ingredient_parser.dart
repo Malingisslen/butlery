@@ -28,7 +28,8 @@ class IngredientParser {
   }
 
   /// Parses Swedish quantity strings (delegates to QuantityParser).
-  static double parseQuantity(String qtyString) => QuantityParser.parse(qtyString);
+  static double parseQuantity(String qtyString) =>
+      QuantityParser.parse(qtyString);
 
   /// Parses an ingredient string into structured components.
   static ParsedIngredient parseIngredient(String rawIngredient) {
@@ -50,7 +51,8 @@ class IngredientParser {
 
       if (asciiQty != null) {
         final remainingWords = words.skip(2).toList();
-        if (remainingWords.isNotEmpty && UnitDefinitions.isKnownUnit(remainingWords[0])) {
+        if (remainingWords.isNotEmpty &&
+            UnitDefinitions.isKnownUnit(remainingWords[0])) {
           return ParsedIngredient(
             quantity: asciiQty,
             unit: remainingWords[0].toLowerCase(),
@@ -70,7 +72,8 @@ class IngredientParser {
       final asciiQty = QuantityParser.parseAsciiFraction(words[0]);
       if (asciiQty != null) {
         final remainingWords = words.skip(1).toList();
-        if (remainingWords.isNotEmpty && UnitDefinitions.isKnownUnit(remainingWords[0])) {
+        if (remainingWords.isNotEmpty &&
+            UnitDefinitions.isKnownUnit(remainingWords[0])) {
           return ParsedIngredient(
             quantity: asciiQty,
             unit: remainingWords[0].toLowerCase(),
@@ -130,7 +133,8 @@ class IngredientParser {
             name: unitName.toLowerCase(),
           );
         } else {
-          return ParsedIngredient(quantity: quantity, unit: '', name: rest.toLowerCase());
+          return ParsedIngredient(
+              quantity: quantity, unit: '', name: rest.toLowerCase());
         }
       }
     }
@@ -145,7 +149,8 @@ class IngredientParser {
       );
     }
 
-    return ParsedIngredient(quantity: 1.0, unit: '', name: ingredient.toLowerCase());
+    return ParsedIngredient(
+        quantity: 1.0, unit: '', name: ingredient.toLowerCase());
   }
 
   /// Parses compound ingredients containing "och" (and) into separate items.
@@ -188,14 +193,17 @@ class IngredientParser {
   }
 
   /// Scales and formats an ingredient with smart unit conversion.
-  static String scaleAndFormatIngredient(String rawIngredient, double scaleFactor) {
+  static String scaleAndFormatIngredient(
+      String rawIngredient, double scaleFactor) {
     if (rawIngredient.trim().isEmpty || scaleFactor <= 0) {
       return rawIngredient;
     }
 
     final parsed = parseIngredient(rawIngredient);
 
-    if (parsed.quantity == 1.0 && parsed.unit.isEmpty && parsed.name == rawIngredient) {
+    if (parsed.quantity == 1.0 &&
+        parsed.unit.isEmpty &&
+        parsed.name == rawIngredient) {
       return rawIngredient;
     }
 
@@ -203,13 +211,16 @@ class IngredientParser {
     String finalUnit = parsed.unit;
     double finalQuantity = scaledQuantity;
 
-    if (parsed.unit.isNotEmpty && SmartUnitConverter.shouldConvert(scaledQuantity, parsed.unit)) {
-      final converted = SmartUnitConverter.convertToReadableUnit(scaledQuantity, parsed.unit);
+    if (parsed.unit.isNotEmpty &&
+        SmartUnitConverter.shouldConvert(scaledQuantity, parsed.unit)) {
+      final converted =
+          SmartUnitConverter.convertToReadableUnit(scaledQuantity, parsed.unit);
       finalQuantity = converted.quantity;
       finalUnit = converted.unit;
     }
 
-    final formattedQuantity = TextFormatting.toSwedishHalfFraction(finalQuantity);
+    final formattedQuantity =
+        TextFormatting.toSwedishHalfFraction(finalQuantity);
 
     if (finalUnit.isNotEmpty) {
       return '$formattedQuantity $finalUnit ${parsed.name}';

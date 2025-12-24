@@ -104,42 +104,43 @@ class RealtimeMenuOperations {
     required String categoryName,
     required List<Recipe> newRecipes,
   }) {
-    return updateWholeCategory(data, categoryName: categoryName, recipes: newRecipes);
+    return updateWholeCategory(data,
+        categoryName: categoryName, recipes: newRecipes);
   }
 
   /// Common Swedish menu categories.
   static List<String> get commonCategories => [
-    'Frukost',
-    'Lunch', 
-    'Middag',
-    'Huvudrätter',
-    'Förrätter',
-    'Efterrätter',
-    'Mellanmål',
-    'Drycker',
-    'Bakverk',
-    'Sallader'
-  ];
+        'Frukost',
+        'Lunch',
+        'Middag',
+        'Huvudrätter',
+        'Förrätter',
+        'Efterrätter',
+        'Mellanmål',
+        'Drycker',
+        'Bakverk',
+        'Sallader'
+      ];
 
   /// Get categories sorted in logical order
   static List<String> getCategoriesSorted(RealtimeMenuData data) {
     final categories = data.categories;
     final sorted = <String>[];
-    
+
     // Add common categories first in order
     for (final common in commonCategories) {
       if (categories.contains(common)) {
         sorted.add(common);
       }
     }
-    
+
     // Add any remaining categories
     for (final category in categories) {
       if (!sorted.contains(category)) {
         sorted.add(category);
       }
     }
-    
+
     return sorted;
   }
 
@@ -150,7 +151,9 @@ class RealtimeMenuOperations {
 
   /// Get number of categories that have recipes
   static int getCategoriesWithRecipes(RealtimeMenuData data) {
-    return data.menuSnapshot.values.where((recipes) => recipes.isNotEmpty).length;
+    return data.menuSnapshot.values
+        .where((recipes) => recipes.isNotEmpty)
+        .length;
   }
 
   /// Get number of empty categories
@@ -230,7 +233,8 @@ class RealtimeMenuOperations {
   }
 
   /// Create personal copy of menu
-  static Map<String, List<Recipe>> createPersonalMenuCopy(RealtimeMenuData data, String sourceDisplayName) {
+  static Map<String, List<Recipe>> createPersonalMenuCopy(
+      RealtimeMenuData data, String sourceDisplayName) {
     return Map.from(data.menuSnapshot);
   }
 }

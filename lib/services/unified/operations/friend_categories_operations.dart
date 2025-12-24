@@ -22,12 +22,11 @@ class FriendsCategoriesOperations {
     String? icon,
     List<String>? initialMemberIds,
   }) async {
-    
     if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
       AppLogger.warning('Cannot create category: User not logged in');
       return null;
     }
-    
+
     final currentUserId = _parent.currentUserId;
     if (currentUserId == null) {
       AppLogger.warning('Cannot create category: User ID not available');
@@ -74,9 +73,11 @@ class FriendsCategoriesOperations {
             );
             if (sent) sentCount++;
           }
-          AppLogger.success('✅ Category created with $sentCount invitations sent: $name');
+          AppLogger.success(
+              '✅ Category created with $sentCount invitations sent: $name');
         } catch (memberError) {
-          AppLogger.warning('⚠️ Category created but failed to send some invitations: $memberError');
+          AppLogger.warning(
+              '⚠️ Category created but failed to send some invitations: $memberError');
           // Continue anyway - category was created successfully
         }
       } else {
@@ -125,10 +126,10 @@ class FriendsCategoriesOperations {
       // Use the internal update method that handles caching and notifications
       _parent.updateCategoryInternal(categoryId, updatedCategory);
       await _parent.syncCategoryToFirebaseInternal(updatedCategory);
-      
+
       // Sync to Firebase
       await _parent.syncCategoryToFirebaseInternal(updatedCategory);
-      
+
       AppLogger.success('✅ Category updated: ${updatedCategory.name}');
       return true;
     } catch (e) {
@@ -151,20 +152,21 @@ class FriendsCategoriesOperations {
 
     try {
       // Remove all friend-category relationships for this category
-      final friendCategoryRelationships = _parent.friendCategoryRelationshipsInternal;
+      final friendCategoryRelationships =
+          _parent.friendCategoryRelationshipsInternal;
       for (final friendId in friendCategoryRelationships.keys.toList()) {
         friendCategoryRelationships[friendId]?.remove(categoryId);
         if (friendCategoryRelationships[friendId]?.isEmpty == true) {
           friendCategoryRelationships.remove(friendId);
         }
       }
-      
+
       // Delete from Firebase
       await _parent.deleteCategoryFromFirebaseInternal(categoryId);
-      
+
       // Use the internal remove method that handles caching and notifications
       _parent.removeCategoryInternal(categoryId);
-      
+
       AppLogger.success('✅ Category deleted: ${category.name}');
       return true;
     } catch (e) {
@@ -173,9 +175,11 @@ class FriendsCategoriesOperations {
     }
   }
 
-
-  Future<bool> addFriendToCategory(String friendId, String categoryId, {bool skipFriendshipCheck = false, bool skipPermissionCheck = false}) async {
-    AppLogger.info('🔄 [ADD_TO_CATEGORY] Starting - friendId: $friendId, categoryId: $categoryId, skipFriendshipCheck: $skipFriendshipCheck, skipPermissionCheck: $skipPermissionCheck');
+  Future<bool> addFriendToCategory(String friendId, String categoryId,
+      {bool skipFriendshipCheck = false,
+      bool skipPermissionCheck = false}) async {
+    AppLogger.info(
+        '🔄 [ADD_TO_CATEGORY] Starting - friendId: $friendId, categoryId: $categoryId, skipFriendshipCheck: $skipFriendshipCheck, skipPermissionCheck: $skipPermissionCheck');
 
     final category = getCategoryById(categoryId);
     if (category == null) {
@@ -198,13 +202,15 @@ class FriendsCategoriesOperations {
     }
 
     if (isFriendInCategory(friendId, categoryId)) {
-      AppLogger.warning('⚠️ [ADD_TO_CATEGORY] Friend already in category: $friendId -> $categoryId');
+      AppLogger.warning(
+          '⚠️ [ADD_TO_CATEGORY] Friend already in category: $friendId -> $categoryId');
       return true; // Not an error, just already done
     }
 
     // ✅ FIXED: Skip permission check when accepting invitations (user is joining, not editing)
     if (!skipPermissionCheck && !_canEditCategory(category)) {
-      AppLogger.warning('❌ [ADD_TO_CATEGORY] No permission to edit category: $categoryId');
+      AppLogger.warning(
+          '❌ [ADD_TO_CATEGORY] No permission to edit category: $categoryId');
       return false;
     }
 
@@ -221,7 +227,8 @@ class FriendsCategoriesOperations {
     final categoryToSync = getCategoryById(categoryId);
     if (categoryToSync != null) {
       await _parent.syncCategoryToFirebaseInternal(categoryToSync);
-      AppLogger.success('✅ [ADD_TO_CATEGORY] Successfully added friend to category and synced');
+      AppLogger.success(
+          '✅ [ADD_TO_CATEGORY] Successfully added friend to category and synced');
     } else {
       AppLogger.warning('⚠️ [ADD_TO_CATEGORY] Category not found for sync');
     }
@@ -229,8 +236,8 @@ class FriendsCategoriesOperations {
     return true;
   }
 
-  Future<bool> removeFriendFromCategory(String friendId, String categoryId) async {
-    
+  Future<bool> removeFriendFromCategory(
+      String friendId, String categoryId) async {
     final category = getCategoryById(categoryId);
     if (category == null) {
       AppLogger.warning('Category not found: $categoryId');
@@ -238,7 +245,7 @@ class FriendsCategoriesOperations {
     }
 
     final isInCategory = isFriendInCategory(friendId, categoryId);
-    
+
     if (!isInCategory) {
       AppLogger.warning('Friend not in category: $friendId -> $categoryId');
       return true; // Not an error, just already removed
@@ -250,33 +257,35 @@ class FriendsCategoriesOperations {
     }
 
     try {
-      
       // Remove from friend-category relationships
-      final friendCategoryRelationships = _parent.friendCategoryRelationshipsInternal;
-      
+      final friendCategoryRelationships =
+          _parent.friendCategoryRelationshipsInternal;
+
       friendCategoryRelationships[friendId]?.remove(categoryId);
       if (friendCategoryRelationships[friendId]?.isEmpty == true) {
         friendCategoryRelationships.remove(friendId);
       }
-      
+
       // Update the category's member list
-      final updatedMemberIds = category.friendUserIds.where((id) => id != friendId).toList();
-      
+      final updatedMemberIds =
+          category.friendUserIds.where((id) => id != friendId).toList();
+
       final updatedCategory = category.copyWith(
         friendUserIds: updatedMemberIds,
         updatedAt: DateTime.now(),
       );
-      
+
       // Use the internal update method that handles caching and notifications
       _parent.updateCategoryInternal(categoryId, updatedCategory);
-      
+
       await _parent.syncCategoryToFirebaseInternal(updatedCategory);
-      
-      AppLogger.success('✅ Friend removed from category: $friendId -> $categoryId');
-      
+
+      AppLogger.success(
+          '✅ Friend removed from category: $friendId -> $categoryId');
+
       // Emit event bus notification for UI updates
       GroupEventBus.memberRemoved();
-      
+
       return true;
     } catch (e) {
       AppLogger.error('Error removing friend from category', e);
@@ -294,16 +303,16 @@ class FriendsCategoriesOperations {
     }
 
     // Remove from source category
-    final removeSuccess = await removeFriendFromCategory(friendId, fromCategoryId);
+    final removeSuccess =
+        await removeFriendFromCategory(friendId, fromCategoryId);
     if (!removeSuccess) return false;
 
     // Add to target category
     return await addFriendToCategory(friendId, toCategoryId);
   }
 
-
   Future<Map<String, bool>> addMultipleFriendsToCategory(
-    List<String> friendIds, 
+    List<String> friendIds,
     String categoryId,
   ) async {
     final results = <String, bool>{};
@@ -316,7 +325,7 @@ class FriendsCategoriesOperations {
   }
 
   Future<Map<String, bool>> removeMultipleFriendsFromCategory(
-    List<String> friendIds, 
+    List<String> friendIds,
     String categoryId,
   ) async {
     final results = <String, bool>{};
@@ -342,7 +351,6 @@ class FriendsCategoriesOperations {
     return categoryId;
   }
 
-
   FriendCategory? getCategoryById(String categoryId) {
     return _parent.categoriesList
         .where((category) => category.id == categoryId)
@@ -367,7 +375,7 @@ class FriendsCategoriesOperations {
 
   List<FriendCategory> getMemberCategories() {
     if (!ServiceLocator.get<PermissionService>().isAuthenticated) return [];
-    
+
     return _parent.categoriesList
         .where((category) => category.memberIds.contains(_parent.currentUserId))
         .toList();
@@ -390,7 +398,7 @@ class FriendsCategoriesOperations {
 
   List<UserProfile> getUncategorizedFriends() {
     final categorizedFriendIds = <String>{};
-    
+
     for (final category in _parent.categoriesList) {
       categorizedFriendIds.addAll(category.memberIds);
     }
@@ -399,7 +407,6 @@ class FriendsCategoriesOperations {
         .where((friend) => !categorizedFriendIds.contains(friend.uid))
         .toList();
   }
-
 
   bool isFriendInCategory(String friendId, String categoryId) {
     final category = getCategoryById(categoryId);
@@ -420,7 +427,6 @@ class FriendsCategoriesOperations {
     return getCategoryMemberCount(categoryId) == 0;
   }
 
-
   Map<String, dynamic> getCategoryStats() {
     final categories = getAllCategories();
     final totalCategories = categories.length;
@@ -434,32 +440,32 @@ class FriendsCategoriesOperations {
       'memberCategories': memberCategories,
       'uncategorizedFriends': uncategorizedCount,
       'averageMembersPerCategory': totalCategories > 0
-          ? categories.map((c) => c.memberIds.length).reduce((a, b) => a + b) / totalCategories
+          ? categories.map((c) => c.memberIds.length).reduce((a, b) => a + b) /
+              totalCategories
           : 0.0,
     };
   }
 
-
   bool _canEditCategory(FriendCategory category) {
     final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
-    
+
     // Can edit if owner
     if (currentUserId == category.ownerId) {
       return true;
     }
-    
+
     // Or if has admin permissions
     return ServiceLocator.get<PermissionService>().isGroupAdmin(category.id);
   }
 
   bool _canDeleteCategory(FriendCategory category) {
     final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
-    
+
     // Can delete if owner
     if (currentUserId == category.ownerId) {
       return true;
     }
-    
+
     // Or if has delete permissions
     return ServiceLocator.get<PermissionService>().canDeleteGroup(category.id);
   }
@@ -470,17 +476,19 @@ class FriendsCategoriesOperations {
   // - Private categories: viewable by owner and members only
   // Implementation will be added when privacy feature is developed
 
-  Future<void> setCategoryPrivacy(String categoryId, {required bool isPublic}) async {
-    AppLogger.info('🔒 Privacy setting requested for category: $categoryId (public: $isPublic)');
-    
+  Future<void> setCategoryPrivacy(String categoryId,
+      {required bool isPublic}) async {
+    AppLogger.info(
+        '🔒 Privacy setting requested for category: $categoryId (public: $isPublic)');
+
     // FEATURE STUB: Privacy controls not yet implemented
-    AppLogger.warning('⚠️ Friend category privacy controls are not yet available');
-    
+    AppLogger.warning(
+        '⚠️ Friend category privacy controls are not yet available');
+
     throw UnimplementedError(
-      'Friend category privacy controls are planned for future release. '
-      'This will allow categories to be set as public (discoverable) or '
-      'private (invitation-only) with appropriate permission management.'
-    );
+        'Friend category privacy controls are planned for future release. '
+        'This will allow categories to be set as public (discoverable) or '
+        'private (invitation-only) with appropriate permission management.');
 
     // FUTURE IMPLEMENTATION:
     // try {
@@ -497,31 +505,30 @@ class FriendsCategoriesOperations {
     //   rethrow;
     // }
   }
-  
-  
+
   List<FriendCategory> get categoriesList => _parent.categoriesList;
-  
+
   Future<void> migrateOwnersAsMembers() async {
     final categories = getAllCategories();
-    
+
     for (final category in categories) {
       if (!category.friendUserIds.contains(category.ownerId)) {
-        
         final updatedCategory = category.copyWith(
           friendUserIds: [...category.friendUserIds, category.ownerId],
           updatedAt: DateTime.now(),
         );
-        
+
         _parent.updateCategoryInternal(category.id, updatedCategory);
         await _parent.syncCategoryToFirebaseInternal(updatedCategory);
       }
     }
   }
-  
-  Future<bool> assignFriendToCategory(String friendId, String categoryId) async {
+
+  Future<bool> assignFriendToCategory(
+      String friendId, String categoryId) async {
     return await addFriendToCategory(friendId, categoryId);
   }
-  
+
   Future<void> refresh() async {
     await _parent.refresh();
   }

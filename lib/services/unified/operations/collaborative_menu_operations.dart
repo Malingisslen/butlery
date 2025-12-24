@@ -61,8 +61,10 @@ class CollaborativeMenuOperations {
 
   // Local caches for UI performance
   final Map<String, List<Map<String, dynamic>>> _menuComments = {};
-  final Map<String, Map<String, double>> _menuRatings = {}; // menuId -> userId -> rating
-  final Map<String, Set<String>> _menuTemplates = {}; // userId -> template menu IDs
+  final Map<String, Map<String, double>> _menuRatings =
+      {}; // menuId -> userId -> rating
+  final Map<String, Set<String>> _menuTemplates =
+      {}; // userId -> template menu IDs
 
   CollaborativeMenuOperations(this._parent, this._repository);
 
@@ -250,14 +252,13 @@ class CollaborativeMenuOperations {
     });
   }
 
-
   // ===== CLEANUP =====
 
   /// Dispose of resources
   void dispose() {
     // Dispose repository listeners
     _repository.disposeAllListeners();
-    
+
     // Clear local caches
     _menuComments.clear();
     _menuRatings.clear();

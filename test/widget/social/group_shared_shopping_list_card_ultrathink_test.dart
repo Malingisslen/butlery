@@ -15,13 +15,13 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/widgets/common/user_avatar.dart';
 
-// Test infrastructure 
+// Test infrastructure
 import '../../infrastructure/helpers/base_widget_test.dart';
 import '../../infrastructure/factories/shopping_list_factory.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 
 void main() {
-  // Initialize test environment  
+  // Initialize test environment
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
   });
@@ -29,7 +29,7 @@ void main() {
   group('GroupSharedShoppingListCard Ultrathink Widget Tests', () {
     late MockGroupContentViewModel mockGroupViewModel;
     late MockUnifiedShoppingService mockShoppingService;
-    
+
     // Swedish test data - ultrathink realistic patterns
     final testShoppingList = ShoppingListFactory.build(
       id: 'list_kottbullar_123',
@@ -66,23 +66,24 @@ void main() {
       // Mock GroupContentViewModel
       when(() => mockGroupViewModel.isLoading).thenReturn(false);
       when(() => mockGroupViewModel.error).thenReturn(null);
-      
+
       // Mock UnifiedShoppingService
       when(() => mockShoppingService.createPersonalList(
-        any(),
-        items: any(named: 'items'),
-      )).thenAnswer((_) async => 'new_personal_list_123');
+            any(),
+            items: any(named: 'items'),
+          )).thenAnswer((_) async => 'new_personal_list_123');
     }
 
     setUp(() async {
       await BaseWidgetTest.setupWidget();
       await TestServiceLocator.initialize();
-      
+
       mockGroupViewModel = MockGroupContentViewModel();
       mockShoppingService = MockUnifiedShoppingService();
 
       // Register service mock
-      TestServiceLocator.registerMock<UnifiedShoppingService>(mockShoppingService);
+      TestServiceLocator.registerMock<UnifiedShoppingService>(
+          mockShoppingService);
 
       // Default mock setup - comprehensive state coverage
       setupDefaultMocks();
@@ -113,24 +114,28 @@ void main() {
     }
 
     group('Basic Widget Rendering - Facade Pattern', () {
-      testWidgets('renders complete shopping list card with Swedish text', (WidgetTester tester) async {
+      testWidgets('renders complete shopping list card with Swedish text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget());
 
         // Core UI elements - Swedish localization
         expect(find.text('Veckans inköpslista'), findsOneWidget);
-        expect(find.text('Ingredienser för svenska klassiker hela veckan'), findsOneWidget);
+        expect(find.text('Ingredienser för svenska klassiker hela veckan'),
+            findsOneWidget);
         expect(find.text('Delad av Anna Andersson'), findsOneWidget);
         expect(find.byIcon(Icons.shopping_cart), findsOneWidget);
       });
 
-      testWidgets('shows collaborative badge when list is collaborative', (WidgetTester tester) async {
+      testWidgets('shows collaborative badge when list is collaborative',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget());
 
         expect(find.text('Kollaborativ'), findsOneWidget);
         expect(find.text('Inköpslista'), findsOneWidget);
       });
 
-      testWidgets('hides collaborative badge for non-collaborative lists', (WidgetTester tester) async {
+      testWidgets('hides collaborative badge for non-collaborative lists',
+          (WidgetTester tester) async {
         final personalList = ShoppingListFactory.build(
           id: 'personal_list_123',
           name: 'Personlig lista',
@@ -138,14 +143,15 @@ void main() {
           ownerDisplayName: 'Anna Andersson',
           items: testShoppingList.items,
         );
-        
+
         await tester.pumpWidget(createTestWidget(shoppingList: personalList));
 
         expect(find.text('Kollaborativ'), findsNothing);
         expect(find.text('Inköpslista'), findsOneWidget);
       });
 
-      testWidgets('displays owner avatar and info correctly', (WidgetTester tester) async {
+      testWidgets('displays owner avatar and info correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget());
 
         expect(find.text('Delad av Anna Andersson'), findsOneWidget);
@@ -155,34 +161,38 @@ void main() {
     });
 
     group('Shopping List Statistics - Swedish UX', () {
-      testWidgets('shows correct Swedish statistics chips', (WidgetTester tester) async {
+      testWidgets('shows correct Swedish statistics chips',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget());
 
         // Statistics with Swedish labels
         expect(find.text('3'), findsOneWidget); // Total items
         expect(find.text('totalt'), findsOneWidget);
-        expect(find.text('1'), findsOneWidget); // Bought items (potato is bought)
+        expect(
+            find.text('1'), findsOneWidget); // Bought items (potato is bought)
         expect(find.text('köpta'), findsOneWidget);
         expect(find.text('2'), findsOneWidget); // Remaining items
         expect(find.text('kvar'), findsOneWidget);
       });
 
-      testWidgets('displays correct progress bar value', (WidgetTester tester) async {
+      testWidgets('displays correct progress bar value',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget());
 
         final progressIndicator = tester.widget<LinearProgressIndicator>(
           find.byType(LinearProgressIndicator),
         );
-        
+
         // 1 out of 3 items bought = 1/3 ≈ 0.33
         expect(progressIndicator.value, closeTo(1.0 / 3.0, 0.01));
       });
 
-      testWidgets('shows success color when all items completed', (WidgetTester tester) async {
+      testWidgets('shows success color when all items completed',
+          (WidgetTester tester) async {
         final completedList = testShoppingList.copyWith(
-          items: testShoppingList.items.map((item) => 
-            item.copyWith(bought: true)
-          ).toList(),
+          items: testShoppingList.items
+              .map((item) => item.copyWith(bought: true))
+              .toList(),
         );
 
         await tester.pumpWidget(createTestWidget(shoppingList: completedList));
@@ -190,7 +200,7 @@ void main() {
         final progressIndicator = tester.widget<LinearProgressIndicator>(
           find.byType(LinearProgressIndicator),
         );
-        
+
         expect(progressIndicator.value, equals(1.0));
         expect(
           (progressIndicator.valueColor as AlwaysStoppedAnimation).value,
@@ -200,7 +210,8 @@ void main() {
     });
 
     group('Swedish Time Formatting', () {
-      testWidgets('shows "Delad just nu" for very recent lists', (WidgetTester tester) async {
+      testWidgets('shows "Delad just nu" for very recent lists',
+          (WidgetTester tester) async {
         final recentList = ShoppingListFactory.build(
           name: testShoppingList.name,
           type: testShoppingList.type,
@@ -214,7 +225,8 @@ void main() {
         expect(find.text('Delad just nu'), findsOneWidget);
       });
 
-      testWidgets('shows minutes for recent sharing', (WidgetTester tester) async {
+      testWidgets('shows minutes for recent sharing',
+          (WidgetTester tester) async {
         final minutesAgoList = ShoppingListFactory.build(
           name: testShoppingList.name,
           type: testShoppingList.type,
@@ -228,7 +240,8 @@ void main() {
         expect(find.text('Delad 15 min sedan'), findsOneWidget);
       });
 
-      testWidgets('shows hours for same day sharing', (WidgetTester tester) async {
+      testWidgets('shows hours for same day sharing',
+          (WidgetTester tester) async {
         final hoursAgoList = ShoppingListFactory.build(
           name: testShoppingList.name,
           type: testShoppingList.type,
@@ -242,7 +255,8 @@ void main() {
         expect(find.text('Delad 3 tim sedan'), findsOneWidget);
       });
 
-      testWidgets('shows days for recent sharing within week', (WidgetTester tester) async {
+      testWidgets('shows days for recent sharing within week',
+          (WidgetTester tester) async {
         final daysAgoList = ShoppingListFactory.build(
           name: testShoppingList.name,
           type: testShoppingList.type,
@@ -258,7 +272,8 @@ void main() {
     });
 
     group('Action Buttons - Swedish UX', () {
-      testWidgets('shows all action buttons with Swedish text', (WidgetTester tester) async {
+      testWidgets('shows all action buttons with Swedish text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget());
 
         expect(find.text('Visa lista'), findsOneWidget);
@@ -279,14 +294,15 @@ void main() {
         expect(find.text('Visa lista'), findsOneWidget);
       });
 
-      testWidgets('shows import confirmation dialog', (WidgetTester tester) async {
+      testWidgets('shows import confirmation dialog',
+          (WidgetTester tester) async {
         // Mock DialogFactory.showConfirmation to return true
         when(() => DialogFactory.showConfirmation(
-          any(),
-          title: any(named: 'title'),
-          message: any(named: 'message'),
-          confirmText: any(named: 'confirmText'),
-        )).thenAnswer((_) async => true);
+              any(),
+              title: any(named: 'title'),
+              message: any(named: 'message'),
+              confirmText: any(named: 'confirmText'),
+            )).thenAnswer((_) async => true);
 
         await tester.pumpWidget(createTestWidget());
         await tester.tap(find.text('Importera'));
@@ -294,14 +310,15 @@ void main() {
 
         // Verify service was called for import
         verify(() => mockShoppingService.createPersonalList(
-          'Veckans inköpslista (Kopia)',
-          items: any(named: 'items'),
-        )).called(1);
+              'Veckans inköpslista (Kopia)',
+              items: any(named: 'items'),
+            )).called(1);
       });
     });
 
     group('More Actions Menu - Swedish UX', () {
-      testWidgets('shows more actions bottom sheet with Swedish options', (WidgetTester tester) async {
+      testWidgets('shows more actions bottom sheet with Swedish options',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget());
 
         await tester.tap(find.byIcon(Icons.more_vert));
@@ -316,17 +333,17 @@ void main() {
         expect(find.byIcon(Icons.report), findsOneWidget);
       });
 
-      testWidgets('handles copy to clipboard action', (WidgetTester tester) async {
+      testWidgets('handles copy to clipboard action',
+          (WidgetTester tester) async {
         // Mock clipboard
-        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-          const MethodChannel('flutter/platform'), 
-          (MethodCall methodCall) async {
-            if (methodCall.method == 'Clipboard.setData') {
-              return null;
-            }
+        tester.binding.defaultBinaryMessenger
+            .setMockMethodCallHandler(const MethodChannel('flutter/platform'),
+                (MethodCall methodCall) async {
+          if (methodCall.method == 'Clipboard.setData') {
             return null;
           }
-        );
+          return null;
+        });
 
         await tester.pumpWidget(createTestWidget());
 
@@ -343,17 +360,17 @@ void main() {
         expect(find.text('Inköpslista kopierad till urklipp!'), findsOneWidget);
       });
 
-      testWidgets('shows sharing options when share is tapped', (WidgetTester tester) async {
+      testWidgets('shows sharing options when share is tapped',
+          (WidgetTester tester) async {
         // Mock clipboard
-        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-          const MethodChannel('flutter/platform'), 
-          (MethodCall methodCall) async {
-            if (methodCall.method == 'Clipboard.setData') {
-              return null;
-            }
+        tester.binding.defaultBinaryMessenger
+            .setMockMethodCallHandler(const MethodChannel('flutter/platform'),
+                (MethodCall methodCall) async {
+          if (methodCall.method == 'Clipboard.setData') {
             return null;
           }
-        );
+          return null;
+        });
 
         await tester.pumpWidget(createTestWidget());
 
@@ -374,7 +391,8 @@ void main() {
     });
 
     group('Report Functionality - Swedish Moderation', () {
-      testWidgets('shows Swedish report dialog with reason options', (WidgetTester tester) async {
+      testWidgets('shows Swedish report dialog with reason options',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget());
 
         // Open more actions menu
@@ -388,7 +406,8 @@ void main() {
         await tester.pump(const Duration(milliseconds: 300));
 
         expect(find.text('Rapportera innehåll'), findsOneWidget);
-        expect(find.text('Varför vill du rapportera denna inköpslista?'), findsOneWidget);
+        expect(find.text('Varför vill du rapportera denna inköpslista?'),
+            findsOneWidget);
         expect(find.text('Olämpligt innehåll'), findsOneWidget);
         expect(find.text('Spam eller reklam'), findsOneWidget);
         expect(find.text('Felaktig information'), findsOneWidget);
@@ -396,7 +415,8 @@ void main() {
         expect(find.text('Annat'), findsOneWidget);
       });
 
-      testWidgets('enables report button when reason is selected', (WidgetTester tester) async {
+      testWidgets('enables report button when reason is selected',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget());
 
         // Open more actions menu
@@ -428,58 +448,71 @@ void main() {
     });
 
     group('Layout and Styling', () {
-      testWidgets('applies correct container styling', (WidgetTester tester) async {
+      testWidgets('applies correct container styling',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget());
 
         final container = tester.widget<Container>(
           find.byType(Container).first,
         );
         final decoration = container.decoration as BoxDecoration;
-        
+
         expect(decoration.color, equals(AppColors.surface));
-        expect(decoration.borderRadius, 
-          equals(BorderRadius.circular(AppDimensions.borderRadiusM)));
+        expect(decoration.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadiusM)));
       });
 
-      testWidgets('displays stat chips with correct styling', (WidgetTester tester) async {
+      testWidgets('displays stat chips with correct styling',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget());
 
         // Find stat chip containers
-        final statContainers = tester.widgetList<Container>(
-          find.descendant(
-            of: find.byType(Row),
-            matching: find.byType(Container),
-          ),
-        ).where((container) => 
-          container.decoration is BoxDecoration &&
-          (container.decoration as BoxDecoration).color != null &&
-          ((container.decoration as BoxDecoration).color!.a * 255.0).round() < 255
-        );
+        final statContainers = tester
+            .widgetList<Container>(
+              find.descendant(
+                of: find.byType(Row),
+                matching: find.byType(Container),
+              ),
+            )
+            .where((container) =>
+                container.decoration is BoxDecoration &&
+                (container.decoration as BoxDecoration).color != null &&
+                ((container.decoration as BoxDecoration).color!.a * 255.0)
+                        .round() <
+                    255);
 
-        expect(statContainers.length, greaterThanOrEqualTo(3)); // At least 3 stat chips
+        expect(statContainers.length,
+            greaterThanOrEqualTo(3)); // At least 3 stat chips
       });
 
-      testWidgets('handles missing description gracefully', (WidgetTester tester) async {
+      testWidgets('handles missing description gracefully',
+          (WidgetTester tester) async {
         final listNoDescription = testShoppingList.copyWith(description: null);
 
-        await tester.pumpWidget(createTestWidget(shoppingList: listNoDescription));
+        await tester
+            .pumpWidget(createTestWidget(shoppingList: listNoDescription));
 
         expect(find.text('Veckans inköpslista'), findsOneWidget);
-        expect(find.text('Ingredienser för svenska klassiker hela veckan'), findsNothing);
+        expect(find.text('Ingredienser för svenska klassiker hela veckan'),
+            findsNothing);
       });
 
-      testWidgets('handles empty description gracefully', (WidgetTester tester) async {
+      testWidgets('handles empty description gracefully',
+          (WidgetTester tester) async {
         final listEmptyDescription = testShoppingList.copyWith(description: '');
 
-        await tester.pumpWidget(createTestWidget(shoppingList: listEmptyDescription));
+        await tester
+            .pumpWidget(createTestWidget(shoppingList: listEmptyDescription));
 
         expect(find.text('Veckans inköpslista'), findsOneWidget);
-        expect(find.text(''), findsNothing); // Empty description should not be shown
+        expect(find.text(''),
+            findsNothing); // Empty description should not be shown
       });
     });
 
     group('Edge Cases and Error Handling', () {
-      testWidgets('handles empty shopping list gracefully', (WidgetTester tester) async {
+      testWidgets('handles empty shopping list gracefully',
+          (WidgetTester tester) async {
         final emptyList = testShoppingList.copyWith(items: []);
 
         await tester.pumpWidget(createTestWidget(shoppingList: emptyList));
@@ -496,21 +529,25 @@ void main() {
         expect(progressIndicator.value, equals(0.0));
       });
 
-      testWidgets('handles very long list names with ellipsis', (WidgetTester tester) async {
+      testWidgets('handles very long list names with ellipsis',
+          (WidgetTester tester) async {
         final longNameList = testShoppingList.copyWith(
-          name: 'Mycket lång inköpslista för hela veckan med massa detaljer och information',
+          name:
+              'Mycket lång inköpslista för hela veckan med massa detaljer och information',
         );
 
         await tester.pumpWidget(createTestWidget(shoppingList: longNameList));
 
         final titleText = tester.widget<Text>(
-          find.text('Mycket lång inköpslista för hela veckan med massa detaljer och information'),
+          find.text(
+              'Mycket lång inköpslista för hela veckan med massa detaljer och information'),
         );
         expect(titleText.overflow, equals(TextOverflow.ellipsis));
         expect(titleText.maxLines, equals(2));
       });
 
-      testWidgets('handles unknown owner gracefully', (WidgetTester tester) async {
+      testWidgets('handles unknown owner gracefully',
+          (WidgetTester tester) async {
         final unknownOwnerList = ShoppingListFactory.build(
           id: testShoppingList.id,
           name: testShoppingList.name,
@@ -519,45 +556,48 @@ void main() {
           ownerDisplayName: '',
         );
 
-        await tester.pumpWidget(createTestWidget(shoppingList: unknownOwnerList));
+        await tester
+            .pumpWidget(createTestWidget(shoppingList: unknownOwnerList));
 
         expect(find.text('Delad av Okänd användare'), findsOneWidget);
       });
 
-      testWidgets('handles import service error gracefully', (WidgetTester tester) async {
+      testWidgets('handles import service error gracefully',
+          (WidgetTester tester) async {
         // Mock service to throw error
         when(() => mockShoppingService.createPersonalList(
-          any(),
-          items: any(named: 'items'),
-        )).thenThrow(Exception('Network error'));
+              any(),
+              items: any(named: 'items'),
+            )).thenThrow(Exception('Network error'));
 
         // Mock DialogFactory.showConfirmation to return true
         when(() => DialogFactory.showConfirmation(
-          any(),
-          title: any(named: 'title'),
-          message: any(named: 'message'),
-          confirmText: any(named: 'confirmText'),
-        )).thenAnswer((_) async => true);
+              any(),
+              title: any(named: 'title'),
+              message: any(named: 'message'),
+              confirmText: any(named: 'confirmText'),
+            )).thenAnswer((_) async => true);
 
         await tester.pumpWidget(createTestWidget());
         await tester.tap(find.text('Importera'));
         await tester.pump();
 
         // Should show error snackbar
-        expect(find.textContaining('Kunde inte importera listan'), findsOneWidget);
+        expect(
+            find.textContaining('Kunde inte importera listan'), findsOneWidget);
       });
 
-      testWidgets('handles clipboard error gracefully', (WidgetTester tester) async {
+      testWidgets('handles clipboard error gracefully',
+          (WidgetTester tester) async {
         // Mock clipboard to throw error
-        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-          const MethodChannel('flutter/platform'), 
-          (MethodCall methodCall) async {
-            if (methodCall.method == 'Clipboard.setData') {
-              throw PlatformException(code: 'error', message: 'Clipboard error');
-            }
-            return null;
+        tester.binding.defaultBinaryMessenger
+            .setMockMethodCallHandler(const MethodChannel('flutter/platform'),
+                (MethodCall methodCall) async {
+          if (methodCall.method == 'Clipboard.setData') {
+            throw PlatformException(code: 'error', message: 'Clipboard error');
           }
-        );
+          return null;
+        });
 
         await tester.pumpWidget(createTestWidget());
 
@@ -571,22 +611,23 @@ void main() {
         await tester.pump();
 
         // Should show error snackbar
-        expect(find.textContaining('Kunde inte kopiera listan'), findsOneWidget);
+        expect(
+            find.textContaining('Kunde inte kopiera listan'), findsOneWidget);
       });
     });
 
     group('Swedish Friend Sharing Flow', () {
-      testWidgets('shows friend sharing options dialog', (WidgetTester tester) async {
+      testWidgets('shows friend sharing options dialog',
+          (WidgetTester tester) async {
         // Mock clipboard
-        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-          const MethodChannel('flutter/platform'), 
-          (MethodCall methodCall) async {
-            if (methodCall.method == 'Clipboard.setData') {
-              return null;
-            }
+        tester.binding.defaultBinaryMessenger
+            .setMockMethodCallHandler(const MethodChannel('flutter/platform'),
+                (MethodCall methodCall) async {
+          if (methodCall.method == 'Clipboard.setData') {
             return null;
           }
-        );
+          return null;
+        });
 
         await tester.pumpWidget(createTestWidget());
 
@@ -611,17 +652,17 @@ void main() {
         expect(find.text('Kopiera länk'), findsOneWidget);
       });
 
-      testWidgets('handles friend sharing selection', (WidgetTester tester) async {
+      testWidgets('handles friend sharing selection',
+          (WidgetTester tester) async {
         // Mock clipboard
-        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-          const MethodChannel('flutter/platform'), 
-          (MethodCall methodCall) async {
-            if (methodCall.method == 'Clipboard.setData') {
-              return null;
-            }
+        tester.binding.defaultBinaryMessenger
+            .setMockMethodCallHandler(const MethodChannel('flutter/platform'),
+                (MethodCall methodCall) async {
+          if (methodCall.method == 'Clipboard.setData') {
             return null;
           }
-        );
+          return null;
+        });
 
         await tester.pumpWidget(createTestWidget());
 
@@ -643,7 +684,8 @@ void main() {
         await tester.pump();
 
         // Should show coming soon message
-        expect(find.textContaining('Delning via friends kommer snart!'), findsOneWidget);
+        expect(find.textContaining('Delning via friends kommer snart!'),
+            findsOneWidget);
       });
     });
   });
@@ -651,12 +693,15 @@ void main() {
 
 // Mock classes - use existing production mocks
 class MockGroupContentViewModel extends Mock implements GroupContentViewModel {}
-class MockUnifiedShoppingService extends Mock implements UnifiedShoppingService {}
+
+class MockUnifiedShoppingService extends Mock
+    implements UnifiedShoppingService {}
+
 class MockDialogFactory extends Mock {
   static Future<bool?> showConfirmation(
     BuildContext context, {
     required String title,
-    required String message, 
+    required String message,
     required String confirmText,
   }) async {
     return true;

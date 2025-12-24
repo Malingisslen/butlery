@@ -20,7 +20,8 @@ class LlmExtractionFallback {
 
   /// Attempts LLM-based recipe extraction from HTML.
   /// Returns null if LLM is unavailable, rate limited, or extraction fails.
-  Future<ImportResult?> tryExtraction(String html, String url, String strategyName) async {
+  Future<ImportResult?> tryExtraction(
+      String html, String url, String strategyName) async {
     final llm = _llmEnhancement;
     if (llm == null) {
       AppLogger.debug('LlmExtractionFallback: LLM service not available');

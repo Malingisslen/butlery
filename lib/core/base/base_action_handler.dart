@@ -42,7 +42,7 @@ abstract class BaseActionHandler {
 
       // Handle success
       if (!context.mounted) return result;
-      
+
       if (successMessage != null) {
         _showSuccessSnackBar(context, successMessage);
       }
@@ -57,7 +57,6 @@ abstract class BaseActionHandler {
       }
 
       return result;
-
     } catch (e) {
       // Log error
       AppLogger.error('❌ $serviceName: Action failed', e);
@@ -224,7 +223,7 @@ abstract class BaseActionHandler {
 
   void showLoadingDialog(BuildContext context, String message) {
     if (!context.mounted) return;
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -248,7 +247,8 @@ abstract class BaseActionHandler {
 
   bool validateContext(BuildContext context, [String? operation]) {
     if (!context.mounted) {
-      AppLogger.warning('⚠️ Context not mounted for $serviceName${operation != null ? ' $operation' : ''}');
+      AppLogger.warning(
+          '⚠️ Context not mounted for $serviceName${operation != null ? ' $operation' : ''}');
       return false;
     }
     return true;
@@ -257,7 +257,8 @@ abstract class BaseActionHandler {
   bool validateRequired(List<dynamic> parameters, [String? operation]) {
     for (final param in parameters) {
       if (param == null || (param is String && param.trim().isEmpty)) {
-        AppLogger.error('❌ $serviceName: Required parameter missing${operation != null ? ' for $operation' : ''}');
+        AppLogger.error(
+            '❌ $serviceName: Required parameter missing${operation != null ? ' for $operation' : ''}');
         return false;
       }
     }
@@ -319,7 +320,8 @@ abstract class BaseActionHandler {
               height: 16,
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
-            const SizedBox(width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+            const SizedBox(
+                width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
             Text(message),
           ],
         ),

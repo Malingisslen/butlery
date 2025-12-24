@@ -29,8 +29,9 @@ class GroupContentViewModel extends ChangeNotifier
   FriendCategory? _group;
   String _searchQuery = '';
   int _currentTabIndex = 0;
+
   /// isLoading, error, hasError provided by StateNotifierMixin
-  bool _isSharing = false;  // Operation-specific state for sharing
+  bool _isSharing = false; // Operation-specific state for sharing
   List<SharedContent> _groupSharedContent = [];
   List<SharedRecipe> _groupSharedRecipes = [];
   List<SharedMenu> _groupSharedMenus = [];
@@ -39,7 +40,7 @@ class GroupContentViewModel extends ChangeNotifier
 
   GroupContentViewModel({
     required SocialSharingRepository sharingRepository,
-  })  : _sharingRepository = sharingRepository;
+  }) : _sharingRepository = sharingRepository;
 
   // ===== GETTERS =====
 
@@ -47,49 +48,58 @@ class GroupContentViewModel extends ChangeNotifier
   FriendCategory? get group => _group;
   String get searchQuery => _searchQuery;
   int get currentTabIndex => _currentTabIndex;
+
   /// isLoading, error, hasError provided by StateNotifierMixin
-  bool get isSharing => _isSharing;  // Operation-specific state
+  bool get isSharing => _isSharing; // Operation-specific state
 
   // Content getters
-  List<SharedContent> get groupSharedContent => List.unmodifiable(_groupSharedContent);
-  List<SharedRecipe> get groupSharedRecipes => List.unmodifiable(_groupSharedRecipes);
+  List<SharedContent> get groupSharedContent =>
+      List.unmodifiable(_groupSharedContent);
+  List<SharedRecipe> get groupSharedRecipes =>
+      List.unmodifiable(_groupSharedRecipes);
   List<SharedMenu> get groupSharedMenus => List.unmodifiable(_groupSharedMenus);
-  List<UnifiedShoppingList> get groupSharedShoppingLists => List.unmodifiable(_groupSharedShoppingLists);
-  List<Map<String, dynamic>> get groupActivityFeed => List.unmodifiable(_groupActivityFeed);
+  List<UnifiedShoppingList> get groupSharedShoppingLists =>
+      List.unmodifiable(_groupSharedShoppingLists);
+  List<Map<String, dynamic>> get groupActivityFeed =>
+      List.unmodifiable(_groupActivityFeed);
 
   // Content availability checks
-  bool get hasGroupContent => 
-      _groupSharedRecipes.isNotEmpty || 
-      _groupSharedMenus.isNotEmpty || 
+  bool get hasGroupContent =>
+      _groupSharedRecipes.isNotEmpty ||
+      _groupSharedMenus.isNotEmpty ||
       _groupSharedShoppingLists.isNotEmpty;
 
   bool get hasGroupActivity => _groupActivityFeed.isNotEmpty;
 
   // Filtered content
-  List<SharedRecipe> get filteredGroupRecipes => _filterRecipes(_groupSharedRecipes, _searchQuery);
-  List<SharedMenu> get filteredGroupMenus => _filterMenus(_groupSharedMenus, _searchQuery);
-  List<UnifiedShoppingList> get filteredGroupShoppingLists => _filterShoppingLists(_groupSharedShoppingLists, _searchQuery);
+  List<SharedRecipe> get filteredGroupRecipes =>
+      _filterRecipes(_groupSharedRecipes, _searchQuery);
+  List<SharedMenu> get filteredGroupMenus =>
+      _filterMenus(_groupSharedMenus, _searchQuery);
+  List<UnifiedShoppingList> get filteredGroupShoppingLists =>
+      _filterShoppingLists(_groupSharedShoppingLists, _searchQuery);
 
-  bool get hasFilteredContent => 
-      filteredGroupRecipes.isNotEmpty || 
-      filteredGroupMenus.isNotEmpty || 
+  bool get hasFilteredContent =>
+      filteredGroupRecipes.isNotEmpty ||
+      filteredGroupMenus.isNotEmpty ||
       filteredGroupShoppingLists.isNotEmpty;
 
   // Content counts
   int get totalGroupRecipes => _groupSharedRecipes.length;
   int get totalGroupMenus => _groupSharedMenus.length;
   int get totalGroupShoppingLists => _groupSharedShoppingLists.length;
-  int get totalGroupContent => totalGroupRecipes + totalGroupMenus + totalGroupShoppingLists;
+  int get totalGroupContent =>
+      totalGroupRecipes + totalGroupMenus + totalGroupShoppingLists;
 
   // Group statistics
   Map<String, dynamic> get groupContentStats => {
-    'totalRecipes': totalGroupRecipes,
-    'totalMenus': totalGroupMenus,
-    'totalShoppingLists': totalGroupShoppingLists,
-    'totalContent': totalGroupContent,
-    'recentActivity': _groupActivityFeed.take(5).length,
-    'groupMembers': _group?.friendCount ?? 0,
-  };
+        'totalRecipes': totalGroupRecipes,
+        'totalMenus': totalGroupMenus,
+        'totalShoppingLists': totalGroupShoppingLists,
+        'totalContent': totalGroupContent,
+        'recentActivity': _groupActivityFeed.take(5).length,
+        'groupMembers': _group?.friendCount ?? 0,
+      };
 
   // ===== INITIALIZATION =====
 
@@ -102,7 +112,8 @@ class GroupContentViewModel extends ChangeNotifier
   Future<void> initialize(FriendCategory group) async {
     _group = group;
     await loadGroupContent();
-    AppLogger.info('🏷️ GroupContentViewModel initialized for group: ${group.name}');
+    AppLogger.info(
+        '🏷️ GroupContentViewModel initialized for group: ${group.name}');
   }
 
   // ===== CONTENT OPERATIONS =====
@@ -126,7 +137,8 @@ class GroupContentViewModel extends ChangeNotifier
 
         // Get shared content from repository filtered by group
         // Using placeholder user ID - actual user ID is managed by the auth layer
-        final sharedContentStream = _sharingRepository.getSharedWithMe('current_user_id');
+        final sharedContentStream =
+            _sharingRepository.getSharedWithMe('current_user_id');
         final sharedContent = await sharedContentStream.first;
 
         // Filter content shared to this specific group
@@ -159,7 +171,8 @@ class GroupContentViewModel extends ChangeNotifier
         // Load group activity feed
         await _loadGroupActivityFeed();
 
-        AppLogger.success('✅ Loaded ${_groupSharedContent.length} items for group: ${_group!.name}');
+        AppLogger.success(
+            '✅ Loaded ${_groupSharedContent.length} items for group: ${_group!.name}');
       });
     } catch (e) {
       AppLogger.error('❌ Failed to load group content', e);
@@ -178,7 +191,8 @@ class GroupContentViewModel extends ChangeNotifier
           'id': content.id,
           'type': content.contentType,
           'title': _getContentTitle(content),
-          'ownerName': (content.metadata['ownerDisplayName'] as String?).orDefault('Okänd användare'),
+          'ownerName': (content.metadata['ownerDisplayName'] as String?)
+              .orDefault('Okänd användare'),
           'ownerAvatarUrl': content.metadata['ownerAvatarUrl'],
           'sharedAt': content.sharedAt,
           'action': 'shared_to_group',
@@ -244,15 +258,15 @@ class GroupContentViewModel extends ChangeNotifier
     }
 
     _setSharing(true);
-    
+
     try {
       AppLogger.info('📤 Sharing content to group: ${_group!.name}');
-      
+
       await _sharingRepository.shareToGroup(_group!.id, content);
-      
+
       // Reload group content to include the new share
       await loadGroupContent();
-      
+
       AppLogger.success('✅ Content shared to group successfully');
       return true;
     } catch (e) {
@@ -271,7 +285,7 @@ class GroupContentViewModel extends ChangeNotifier
     try {
       final friendsService = ServiceLocator.get<UnifiedFriendsService>();
       final groupOperations = friendsService.groupSharing;
-      
+
       return groupOperations.getGroupSharingStats(_group!.id);
     } catch (e) {
       AppLogger.error('❌ Failed to get group sharing stats', e);
@@ -284,35 +298,38 @@ class GroupContentViewModel extends ChangeNotifier
   /// Filter recipes by search query
   List<SharedRecipe> _filterRecipes(List<SharedRecipe> recipes, String query) {
     if (query.isEmpty) return recipes;
-    
+
     final lowerQuery = query.toLowerCase();
     return recipes.where((recipe) {
       return recipe.recipeSnapshot.title.toLowerCase().contains(lowerQuery) ||
-             (recipe.recipeSnapshot.description.toLowerCase().contains(lowerQuery)) ||
-             (recipe.sharedByDisplayName.toLowerCase().contains(lowerQuery));
+          (recipe.recipeSnapshot.description
+              .toLowerCase()
+              .contains(lowerQuery)) ||
+          (recipe.sharedByDisplayName.toLowerCase().contains(lowerQuery));
     }).toList();
   }
 
   /// Filter menus by search query
   List<SharedMenu> _filterMenus(List<SharedMenu> menus, String query) {
     if (query.isEmpty) return menus;
-    
+
     final lowerQuery = query.toLowerCase();
     return menus.where((menu) {
       return menu.menuTitle.toLowerCase().contains(lowerQuery) ||
-             (menu.shareMessage?.toLowerCase().contains(lowerQuery)).orFalse() ||
-             (menu.sharedByDisplayName.toLowerCase().contains(lowerQuery));
+          (menu.shareMessage?.toLowerCase().contains(lowerQuery)).orFalse() ||
+          (menu.sharedByDisplayName.toLowerCase().contains(lowerQuery));
     }).toList();
   }
 
   /// Filter shopping lists by search query
-  List<UnifiedShoppingList> _filterShoppingLists(List<UnifiedShoppingList> lists, String query) {
+  List<UnifiedShoppingList> _filterShoppingLists(
+      List<UnifiedShoppingList> lists, String query) {
     if (query.isEmpty) return lists;
-    
+
     final lowerQuery = query.toLowerCase();
     return lists.where((list) {
       return list.name.toLowerCase().contains(lowerQuery) ||
-             (list.description?.toLowerCase().contains(lowerQuery)).orFalse();
+          (list.description?.toLowerCase().contains(lowerQuery)).orFalse();
     }).toList();
   }
 
@@ -320,21 +337,28 @@ class GroupContentViewModel extends ChangeNotifier
   SharedRecipe? _convertToSharedRecipe(SharedContent content) {
     try {
       if (content.contentType != 'recipe') return null;
-      
+
       // Create a simplified Recipe snapshot from metadata
       final recipeSnapshot = Recipe(
         core: RecipeCore(
           id: content.contentId,
-          title: (content.metadata['title'] as String?).orDefault('Namnlöst recept'),
+          title: (content.metadata['title'] as String?)
+              .orDefault('Namnlöst recept'),
           description: (content.metadata['description'] as String?).orEmpty(),
-          ingredients: List<String>.from((content.metadata['ingredients'] as List?).orEmpty()),
-          instructions: List<String>.from((content.metadata['instructions'] as List?).orEmpty()),
-          imageUrls: content.metadata['imageUrl'] != null ? [content.metadata['imageUrl'] as String] : [],
-          mealType: (content.metadata['mealType'] as String?).orDefault('Middag'),
+          ingredients: List<String>.from(
+              (content.metadata['ingredients'] as List?).orEmpty()),
+          instructions: List<String>.from(
+              (content.metadata['instructions'] as List?).orEmpty()),
+          imageUrls: content.metadata['imageUrl'] != null
+              ? [content.metadata['imageUrl'] as String]
+              : [],
+          mealType:
+              (content.metadata['mealType'] as String?).orDefault('Middag'),
           portions: content.metadata['portions'] as int?,
           timeMinutes: content.metadata['timeMinutes'] as int?,
           rating: (content.metadata['rating'] as num?)?.toDouble(),
-          tags: List<String>.from((content.metadata['tags'] as List?).orEmpty()),
+          tags:
+              List<String>.from((content.metadata['tags'] as List?).orEmpty()),
           sourceUrl: content.metadata['sourceUrl'] as String?,
           createdAt: content.sharedAt,
           updatedAt: content.sharedAt,
@@ -347,7 +371,8 @@ class GroupContentViewModel extends ChangeNotifier
         id: content.id,
         originalRecipeId: content.contentId,
         sharedByUserId: content.ownerId,
-        sharedByDisplayName: (content.metadata['ownerDisplayName'] as String?).orDefault('Okänd användare'),
+        sharedByDisplayName: (content.metadata['ownerDisplayName'] as String?)
+            .orDefault('Okänd användare'),
         sharedAt: content.sharedAt,
         shareMessage: content.metadata['shareMessage'] as String?,
         allowImport: true,
@@ -363,32 +388,39 @@ class GroupContentViewModel extends ChangeNotifier
   SharedMenu? _convertToSharedMenu(SharedContent content) {
     try {
       if (content.contentType != 'menu') return null;
-      
+
       // Create a simplified menu snapshot from metadata
-      final menuSnapshot = (content.metadata['menuSnapshot'] as Map<String, dynamic>?).orEmpty();
+      final menuSnapshot =
+          (content.metadata['menuSnapshot'] as Map<String, dynamic>?).orEmpty();
       final reconstructedMenu = <String, List<Recipe>>{};
 
       // Reconstruct menu from metadata if available
       for (final entry in menuSnapshot.entries) {
         final recipeList = <Recipe>[];
         final recipes = (entry.value as List?).orEmpty();
-        
+
         for (final recipeData in recipes) {
           try {
             if (recipeData is Map<String, dynamic>) {
               final recipe = Recipe(
                 core: RecipeCore(
                   id: (recipeData['id'] as String?).orEmpty(),
-                  title: (recipeData['title'] as String?).orDefault('Namnlöst recept'),
+                  title: (recipeData['title'] as String?)
+                      .orDefault('Namnlöst recept'),
                   description: (recipeData['description'] as String?).orEmpty(),
-                  ingredients: List<String>.from((recipeData['ingredients'] as List?).orEmpty()),
-                  instructions: List<String>.from((recipeData['instructions'] as List?).orEmpty()),
-                  imageUrls: List<String>.from((recipeData['imageUrls'] as List?).orEmpty()),
-                  mealType: (recipeData['mealType'] as String?).orDefault('Middag'),
+                  ingredients: List<String>.from(
+                      (recipeData['ingredients'] as List?).orEmpty()),
+                  instructions: List<String>.from(
+                      (recipeData['instructions'] as List?).orEmpty()),
+                  imageUrls: List<String>.from(
+                      (recipeData['imageUrls'] as List?).orEmpty()),
+                  mealType:
+                      (recipeData['mealType'] as String?).orDefault('Middag'),
                   portions: recipeData['portions'] as int?,
                   timeMinutes: recipeData['timeMinutes'] as int?,
                   rating: (recipeData['rating'] as num?)?.toDouble(),
-                  tags: List<String>.from((recipeData['tags'] as List?).orEmpty()),
+                  tags: List<String>.from(
+                      (recipeData['tags'] as List?).orEmpty()),
                   sourceUrl: recipeData['sourceUrl'] as String?,
                   createdAt: content.sharedAt,
                   updatedAt: content.sharedAt,
@@ -404,15 +436,17 @@ class GroupContentViewModel extends ChangeNotifier
         }
         reconstructedMenu[entry.key] = recipeList;
       }
-      
+
       // Note (Issue #014): Array parameters removed, now tracked in Firestore subcollections
       return SharedMenu(
         id: content.id,
         sharedByUserId: content.ownerId,
-        sharedByDisplayName: (content.metadata['ownerDisplayName'] as String?).orDefault('Okänd användare'),
+        sharedByDisplayName: (content.metadata['ownerDisplayName'] as String?)
+            .orDefault('Okänd användare'),
         sharedAt: content.sharedAt,
         shareMessage: content.metadata['shareMessage'] as String?,
-        menuTitle: (content.metadata['title'] as String?).orDefault('Namnlös meny'),
+        menuTitle:
+            (content.metadata['title'] as String?).orDefault('Namnlös meny'),
         menuSnapshot: reconstructedMenu,
       );
     } catch (e) {
@@ -425,16 +459,19 @@ class GroupContentViewModel extends ChangeNotifier
   UnifiedShoppingList? _convertToShoppingList(SharedContent content) {
     try {
       if (content.contentType != 'shopping_list') return null;
-      
+
       // This is a simplified conversion - in a real implementation,
       // you'd need to properly reconstruct the shopping list from the metadata
       return UnifiedShoppingList.personal(
-        name: (content.metadata['listName'] as String?).orDefault('Namnlös lista'),
+        name: (content.metadata['listName'] as String?)
+            .orDefault('Namnlös lista'),
         ownerId: content.ownerId,
-        ownerDisplayName: (content.metadata['ownerDisplayName'] as String?).orDefault('Okänd användare'),
+        ownerDisplayName: (content.metadata['ownerDisplayName'] as String?)
+            .orDefault('Okänd användare'),
       );
     } catch (e) {
-      AppLogger.error('Failed to convert SharedContent to UnifiedShoppingList', e);
+      AppLogger.error(
+          'Failed to convert SharedContent to UnifiedShoppingList', e);
       return null;
     }
   }
@@ -443,11 +480,13 @@ class GroupContentViewModel extends ChangeNotifier
   String _getContentTitle(SharedContent content) {
     switch (content.contentType) {
       case 'recipe':
-        return (content.metadata['title'] as String?).orDefault('Namnlöst recept');
+        return (content.metadata['title'] as String?)
+            .orDefault('Namnlöst recept');
       case 'menu':
         return (content.metadata['title'] as String?).orDefault('Namnlös meny');
       case 'shopping_list':
-        return (content.metadata['listName'] as String?).orDefault('Namnlös lista');
+        return (content.metadata['listName'] as String?)
+            .orDefault('Namnlös lista');
       default:
         return 'Okänt innehåll';
     }
@@ -471,7 +510,7 @@ class GroupContentViewModel extends ChangeNotifier
   @override
   void dispose() {
     // Cancel all timers
-    // Cancel all stream subscriptions  
+    // Cancel all stream subscriptions
     // Dispose of resources
     disposeStreamResources(); // From StreamManagementMixin
     super.dispose();

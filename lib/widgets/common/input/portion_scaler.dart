@@ -43,7 +43,8 @@ class _PortionScalerState extends State<PortionScaler>
     super.initState();
     _currentPortions = widget.originalPortions;
     _scaledIngredients = List.from(widget.originalIngredients);
-    _hasAmericanUnits = PortionScalerLogic.detectAmericanUnits(widget.originalIngredients);
+    _hasAmericanUnits =
+        PortionScalerLogic.detectAmericanUnits(widget.originalIngredients);
 
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 150),
@@ -94,7 +95,7 @@ class _PortionScalerState extends State<PortionScaler>
           widget.originalPortions,
           _currentPortions,
           _convertToSwedish,
-      );
+        );
       });
     }
 

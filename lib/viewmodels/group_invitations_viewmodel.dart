@@ -12,7 +12,6 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/mixins/async_operation_mixin.dart';
 import 'package:butlery/core/mixins/state_notifier_mixin.dart';
 
-
 class GroupInvitationsViewModel extends ChangeNotifier
     with ErrorHandlingMixin, StateNotifierMixin, AsyncOperationMixin {
   final UnifiedFriendsService _friendsService;
@@ -20,13 +19,15 @@ class GroupInvitationsViewModel extends ChangeNotifier
   // ===== STATE =====
   List<FriendCategory> _availableGroups = [];
   final Map<String, List<UserProfile>> _groupMembers = {};
-  final Set<String> _joiningGroupIds = {};  // Operation-specific tracking for concurrent joins
+  final Set<String> _joiningGroupIds =
+      {}; // Operation-specific tracking for concurrent joins
   List<GroupInvitation> _receivedInvitations = [];
-  final Set<String> _respondingInvitationIds = {};  // Operation-specific tracking for concurrent responses
+  final Set<String> _respondingInvitationIds =
+      {}; // Operation-specific tracking for concurrent responses
 
   GroupInvitationsViewModel({
     required UnifiedFriendsService friendsService,
-  })  : _friendsService = friendsService {
+  }) : _friendsService = friendsService {
     _initializeData();
   }
 
@@ -49,8 +50,10 @@ class GroupInvitationsViewModel extends ChangeNotifier
   /// ===== NYA GETTERS (för gruppinbjudningar) =====
 
   /// Mottagna gruppinbjudningar (väntande)
-  List<GroupInvitation> get receivedInvitations => List.unmodifiable(
-      _receivedInvitations.where((inv) => inv.status == GroupInvitationStatus.pending).toList());
+  List<GroupInvitation> get receivedInvitations =>
+      List.unmodifiable(_receivedInvitations
+          .where((inv) => inv.status == GroupInvitationStatus.pending)
+          .toList());
 
   /// Alla mottagna inbjudningar (inklusive avslutade)
   List<GroupInvitation> get allReceivedInvitations =>
@@ -67,7 +70,8 @@ class GroupInvitationsViewModel extends ChangeNotifier
   /// isLoading, error, hasError provided by StateNotifierMixin
 
   /// Aktuell användare
-  String? get _currentUserId => ServiceLocator.get<PermissionService>().currentUserId;
+  String? get _currentUserId =>
+      ServiceLocator.get<PermissionService>().currentUserId;
 
   /// Kombinerat "har något att visa" state
   bool get hasContent =>
@@ -153,35 +157,41 @@ class GroupInvitationsViewModel extends ChangeNotifier
   Future<void> _loadReceivedInvitations() async {
     try {
       AppLogger.info('🔄 Laddar mottagna gruppinbjudningar...');
-      
+
       // Friends service invitations is always available
 
       // Get received invitations properly via repository
-      _receivedInvitations = _friendsService.invitations.pendingReceivedInvitations;
-      
+      _receivedInvitations =
+          _friendsService.invitations.pendingReceivedInvitations;
+
       // Add detailed debugging information
       AppLogger.info('📊 Invitation loading details:');
-      AppLogger.info('  - Raw invitations count: ${_receivedInvitations.length}');
-      AppLogger.info('  - Pending invitations count: ${receivedInvitations.length}');
-      
+      AppLogger.info(
+          '  - Raw invitations count: ${_receivedInvitations.length}');
+      AppLogger.info(
+          '  - Pending invitations count: ${receivedInvitations.length}');
+
       // Log individual invitations for debugging
       for (int i = 0; i < _receivedInvitations.length && i < 5; i++) {
         final invitation = _receivedInvitations[i];
-        AppLogger.info('  - Invitation $i: from=${invitation.fromUserName}, group=${invitation.groupName}, status=${invitation.status}');
-      }
-      
-      if (_receivedInvitations.length > 5) {
-        AppLogger.info('  - And ${_receivedInvitations.length - 5} more invitations...');
+        AppLogger.info(
+            '  - Invitation $i: from=${invitation.fromUserName}, group=${invitation.groupName}, status=${invitation.status}');
       }
 
-      AppLogger.success('✅ Successfully loaded ${receivedInvitations.length} pending invitations');
+      if (_receivedInvitations.length > 5) {
+        AppLogger.info(
+            '  - And ${_receivedInvitations.length - 5} more invitations...');
+      }
+
+      AppLogger.success(
+          '✅ Successfully loaded ${receivedInvitations.length} pending invitations');
     } catch (e, stackTrace) {
       AppLogger.error('❌ Failed to load received invitations', e);
       AppLogger.debug('Stack trace: $stackTrace');
-      
+
       // Ensure we always have a valid state
       _receivedInvitations = [];
-      
+
       // Add user-friendly error state
       AppLogger.warning('⚠️ Using empty invitations list as fallback');
     } finally {
@@ -270,8 +280,8 @@ class GroupInvitationsViewModel extends ChangeNotifier
           '🔄 Accepterar inbjudan från "${invitation.fromUserName}"...');
 
       // Använd UnifiedFriendsService för att acceptera
-      final success =
-          await _friendsService.invitations.markInvitationAsViewed(invitationId);
+      final success = await _friendsService.invitations
+          .markInvitationAsViewed(invitationId);
 
       if (success) {
         AppLogger.success(

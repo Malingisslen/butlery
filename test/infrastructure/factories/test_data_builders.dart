@@ -1,5 +1,5 @@
 /// Test Data Builders for creating test objects with the builder pattern
-/// 
+///
 /// Provides flexible test data creation with Swedish defaults for the
 /// Butlery application's recipe management system.
 library;
@@ -10,15 +10,15 @@ import 'dart:math';
 abstract class TestDataBuilder<T> {
   /// Random generator for creating unique values
   static final Random _random = Random();
-  
+
   /// Generate a unique ID
   static String generateId([String prefix = 'test']) {
     return '${prefix}_${DateTime.now().millisecondsSinceEpoch}_${_random.nextInt(9999)}';
   }
-  
+
   /// Build the object
   T build();
-  
+
   /// Build multiple objects with variations
   List<T> buildMany(int count) {
     final List<T> results = [];
@@ -67,86 +67,86 @@ class RecipeBuilder extends TestDataBuilder<TestRecipe> {
   DateTime createdAt = DateTime.now();
   DateTime updatedAt = DateTime.now();
   RecipeType recipeType = RecipeType.personal;
-  
+
   /// Set recipe ID
   RecipeBuilder withId(String newId) {
     id = newId;
     return this;
   }
-  
+
   /// Set recipe title
   RecipeBuilder withTitle(String newTitle) {
     title = newTitle;
     return this;
   }
-  
+
   /// Set recipe description
   RecipeBuilder withDescription(String newDescription) {
     description = newDescription;
     return this;
   }
-  
+
   /// Set recipe author
   RecipeBuilder withAuthor(String newUserId, String newDisplayName) {
     userId = newUserId;
     authorDisplayName = newDisplayName;
     return this;
   }
-  
+
   /// Set recipe ingredients
   RecipeBuilder withIngredients(List<String> newIngredients) {
     ingredients = newIngredients;
     return this;
   }
-  
+
   /// Add a single ingredient
   RecipeBuilder addIngredient(String ingredient) {
     ingredients.add(ingredient);
     return this;
   }
-  
+
   /// Set recipe instructions
   RecipeBuilder withInstructions(List<String> newInstructions) {
     instructions = newInstructions;
     return this;
   }
-  
+
   /// Set cooking time
   RecipeBuilder withTime(int minutes) {
     timeMinutes = minutes;
     return this;
   }
-  
+
   /// Set portions
   RecipeBuilder withPortions(int newPortions) {
     portions = newPortions;
     return this;
   }
-  
+
   /// Set category
   RecipeBuilder withCategory(String newCategory) {
     category = newCategory;
     return this;
   }
-  
+
   /// Set tags
   RecipeBuilder withTags(List<String> newTags) {
     tags = newTags;
     return this;
   }
-  
+
   /// Set as favorite
   RecipeBuilder asFavorite() {
     isFavorite = true;
     return this;
   }
-  
+
   /// Set recipe type
   RecipeBuilder withType(RecipeType type) {
     recipeType = type;
     return this;
   }
-  
+
   /// Use Swedish breakfast defaults
   RecipeBuilder asSwedishBreakfast() {
     title = 'Havregrynsgröt';
@@ -169,7 +169,7 @@ class RecipeBuilder extends TestDataBuilder<TestRecipe> {
     tags = ['frukost', 'svensk', 'gröt'];
     return this;
   }
-  
+
   /// Use Swedish dinner defaults
   RecipeBuilder asSwedishDinner() {
     title = 'Laxpudding';
@@ -194,7 +194,7 @@ class RecipeBuilder extends TestDataBuilder<TestRecipe> {
     tags = ['middag', 'svensk', 'fisk'];
     return this;
   }
-  
+
   /// Use Swedish fika defaults
   RecipeBuilder asSwedishFika() {
     title = 'Kanelbullar';
@@ -225,7 +225,7 @@ class RecipeBuilder extends TestDataBuilder<TestRecipe> {
     tags = ['fika', 'svensk', 'bullar'];
     return this;
   }
-  
+
   @override
   TestRecipe build() {
     return TestRecipe(
@@ -259,48 +259,48 @@ class UserBuilder extends TestDataBuilder<TestUser> {
   bool emailVerified = true;
   String? phoneNumber;
   Map<String, dynamic> customClaims = {};
-  
+
   UserBuilder withId(String newUid) {
     uid = newUid;
     return this;
   }
-  
+
   UserBuilder withEmail(String newEmail) {
     email = newEmail;
     return this;
   }
-  
+
   UserBuilder withDisplayName(String newDisplayName) {
     displayName = newDisplayName;
     return this;
   }
-  
+
   UserBuilder withPhotoURL(String newPhotoURL) {
     photoURL = newPhotoURL;
     return this;
   }
-  
+
   UserBuilder asUnverified() {
     emailVerified = false;
     return this;
   }
-  
+
   UserBuilder withPhoneNumber(String newPhoneNumber) {
     phoneNumber = newPhoneNumber;
     return this;
   }
-  
+
   UserBuilder withCustomClaim(String key, dynamic value) {
     customClaims[key] = value;
     return this;
   }
-  
+
   UserBuilder asSwedishUser() {
     displayName = 'Sven Svensson';
     email = 'sven@exempel.se';
     return this;
   }
-  
+
   @override
   TestUser build() {
     return TestUser(
@@ -325,43 +325,43 @@ class ShoppingItemBuilder extends TestDataBuilder<TestShoppingItem> {
   bool isChecked = false;
   String? recipeId;
   String? notes;
-  
+
   ShoppingItemBuilder withId(String newId) {
     id = newId;
     return this;
   }
-  
+
   ShoppingItemBuilder withName(String newName) {
     name = newName;
     return this;
   }
-  
+
   ShoppingItemBuilder withQuantity(double newQuantity, String newUnit) {
     quantity = newQuantity;
     unit = newUnit;
     return this;
   }
-  
+
   ShoppingItemBuilder inCategory(String newCategory) {
     category = newCategory;
     return this;
   }
-  
+
   ShoppingItemBuilder asChecked() {
     isChecked = true;
     return this;
   }
-  
+
   ShoppingItemBuilder fromRecipe(String newRecipeId) {
     recipeId = newRecipeId;
     return this;
   }
-  
+
   ShoppingItemBuilder withNotes(String newNotes) {
     notes = newNotes;
     return this;
   }
-  
+
   /// Create common Swedish grocery items
   ShoppingItemBuilder asSwedishStaple(SwedishStaple staple) {
     switch (staple) {
@@ -398,7 +398,7 @@ class ShoppingItemBuilder extends TestDataBuilder<TestShoppingItem> {
     }
     return this;
   }
-  
+
   @override
   TestShoppingItem build() {
     return TestShoppingItem(
@@ -423,23 +423,23 @@ class MenuBuilder extends TestDataBuilder<TestMenu> {
   Map<String, List<String>> meals = {};
   String ownerId = 'test_user_123';
   bool isShared = false;
-  
+
   MenuBuilder withId(String newId) {
     id = newId;
     return this;
   }
-  
+
   MenuBuilder withName(String newName) {
     name = newName;
     return this;
   }
-  
+
   MenuBuilder forDateRange(DateTime start, DateTime end) {
     startDate = start;
     endDate = end;
     return this;
   }
-  
+
   MenuBuilder withMeal(String day, String meal, String recipeId) {
     if (!meals.containsKey(day)) {
       meals[day] = [];
@@ -447,12 +447,12 @@ class MenuBuilder extends TestDataBuilder<TestMenu> {
     meals[day]!.add('$meal:$recipeId');
     return this;
   }
-  
+
   MenuBuilder asShared() {
     isShared = true;
     return this;
   }
-  
+
   MenuBuilder withSwedishWeekMenu() {
     meals = {
       'Måndag': ['Frukost:recipe_1', 'Lunch:recipe_2', 'Middag:recipe_3'],
@@ -465,7 +465,7 @@ class MenuBuilder extends TestDataBuilder<TestMenu> {
     };
     return this;
   }
-  
+
   @override
   TestMenu build() {
     return TestMenu(
@@ -501,7 +501,7 @@ class TestRecipe {
   final DateTime createdAt;
   final DateTime updatedAt;
   final RecipeType recipeType;
-  
+
   TestRecipe({
     required this.id,
     required this.title,
@@ -531,7 +531,7 @@ class TestUser {
   final bool emailVerified;
   final String? phoneNumber;
   final Map<String, dynamic> customClaims;
-  
+
   TestUser({
     required this.uid,
     required this.email,
@@ -552,7 +552,7 @@ class TestShoppingItem {
   final bool isChecked;
   final String? recipeId;
   final String? notes;
-  
+
   TestShoppingItem({
     required this.id,
     required this.name,
@@ -573,7 +573,7 @@ class TestMenu {
   final Map<String, List<String>> meals;
   final String ownerId;
   final bool isShared;
-  
+
   TestMenu({
     required this.id,
     required this.name,

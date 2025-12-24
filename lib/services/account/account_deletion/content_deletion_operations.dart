@@ -73,7 +73,8 @@ class ContentDeletionOperations {
       await batch.commit();
       return true;
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to delete shopping lists', e);
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to delete shopping lists', e);
       return false;
     }
   }

@@ -81,8 +81,7 @@ class ConflictResolutionModule {
   }
 
   /// Perform the update to Firebase
-  Future<void> performUpdate(
-      DocumentReference<Map<String, dynamic>> docRef,
+  Future<void> performUpdate(DocumentReference<Map<String, dynamic>> docRef,
       RealtimeResource resource) async {
     await firestoreRepository.setDocument(docRef, resource.toFirestore());
   }

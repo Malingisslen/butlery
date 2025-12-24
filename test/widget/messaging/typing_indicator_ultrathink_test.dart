@@ -64,7 +64,7 @@ void main() {
         // Should show the typing container
         expect(find.byType(FadeTransition), findsOneWidget);
         expect(find.byType(Container), findsWidgets); // Multiple containers
-        
+
         // Should show the avatar placeholder with icon
         expect(find.byIcon(Icons.more_horiz), findsOneWidget);
       });
@@ -82,13 +82,14 @@ void main() {
 
         // Find the avatar container
         final avatarContainer = find.byWidgetPredicate(
-          (widget) => widget is Container &&
+          (widget) =>
+              widget is Container &&
               widget.constraints?.maxWidth == 32 &&
               widget.constraints?.maxHeight == 32,
         );
-        
+
         expect(avatarContainer, findsOneWidget);
-        
+
         // Check the icon inside
         final icon = tester.widget<Icon>(find.byIcon(Icons.more_horiz));
         expect(icon.color, equals(AppColors.primaryBlue));
@@ -112,9 +113,11 @@ void main() {
         // Should have properly styled container
         expect(
           find.byWidgetPredicate(
-            (widget) => widget is Container &&
+            (widget) =>
+                widget is Container &&
                 widget.decoration is BoxDecoration &&
-                (widget.decoration as BoxDecoration).color == AppColors.cardWhite &&
+                (widget.decoration as BoxDecoration).color ==
+                    AppColors.cardWhite &&
                 (widget.decoration as BoxDecoration).borderRadius ==
                     BorderRadius.circular(AppDimensions.borderRadiusM),
           ),
@@ -136,7 +139,7 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        
+
         // Should show "Johan skriver"
         expect(find.text('Johan skriver'), findsOneWidget);
       });
@@ -153,7 +156,7 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        
+
         // Should show "Anna och Erik skriver"
         expect(find.text('Anna och Erik skriver'), findsOneWidget);
       });
@@ -170,7 +173,7 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        
+
         // Should show "Maria, Johan och 2 andra skriver"
         expect(find.text('Maria, Johan och 2 andra skriver'), findsOneWidget);
       });
@@ -187,7 +190,7 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        
+
         // Should handle Swedish characters
         expect(find.text('Åsa och Örjan skriver'), findsOneWidget);
       });
@@ -208,11 +211,11 @@ void main() {
 
         // Verify FadeTransition is present (indicates animation setup)
         expect(find.byType(FadeTransition), findsOneWidget);
-        
+
         // Pump to trigger animation
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 250));
-        
+
         // Widget should still be visible
         expect(find.byType(TypingIndicator), findsOneWidget);
       });
@@ -242,10 +245,10 @@ void main() {
 
         // Should start animating
         expect(find.byType(FadeTransition), findsOneWidget);
-        
+
         // Complete animation
         await tester.pumpAndSettle();
-        
+
         // Should be fully visible
         expect(find.text('Anna skriver'), findsOneWidget);
       });
@@ -275,11 +278,11 @@ void main() {
 
         // Should animate out
         await tester.pump();
-        expect(find.byType(FadeTransition), findsNothing); // Becomes SizedBox.shrink
+        expect(find.byType(FadeTransition),
+            findsNothing); // Becomes SizedBox.shrink
       });
 
-      testWidgets('shows animated dots correctly',
-          (WidgetTester tester) async {
+      testWidgets('shows animated dots correctly', (WidgetTester tester) async {
         // ULTRATHINK: Test animated dots from lines 139-172
         await tester.pumpWidget(
           createTestWidget(
@@ -293,18 +296,18 @@ void main() {
 
         // Should have 3 dots
         final dots = find.byWidgetPredicate(
-          (widget) => widget is Container &&
+          (widget) =>
+              widget is Container &&
               widget.constraints?.maxWidth == 4 &&
               widget.constraints?.maxHeight == 4 &&
               widget.decoration is BoxDecoration &&
               (widget.decoration as BoxDecoration).shape == BoxShape.circle,
         );
-        
+
         expect(dots, findsNWidgets(3));
       });
 
-      testWidgets('dots have staggered animation',
-          (WidgetTester tester) async {
+      testWidgets('dots have staggered animation', (WidgetTester tester) async {
         // ULTRATHINK: Test staggered animation from lines 158-160
         await tester.pumpWidget(
           createTestWidget(
@@ -317,25 +320,24 @@ void main() {
 
         // Start animation
         await tester.pump();
-        
+
         // Check at different points in animation
         await tester.pump(const Duration(milliseconds: 100));
-        
+
         // Find the dot container specifically
         final dotsContainer = find.byWidgetPredicate(
-          (widget) => widget is SizedBox &&
-              widget.width == 24 &&
-              widget.height == 16,
+          (widget) =>
+              widget is SizedBox && widget.width == 24 && widget.height == 16,
         );
-        
+
         expect(dotsContainer, findsOneWidget);
-        
+
         // Within the dots container, should have 3 AnimatedBuilders
         final animatedBuilders = find.descendant(
           of: dotsContainer,
           matching: find.byType(AnimatedBuilder),
         );
-        
+
         expect(animatedBuilders, findsNWidgets(3));
       });
     });
@@ -417,7 +419,7 @@ void main() {
         );
 
         await tester.pumpAndSettle();
-        
+
         // Should show final state correctly
         expect(find.text('A skriver'), findsOneWidget);
       });
@@ -439,10 +441,10 @@ void main() {
 
         // Check for SizedBox spacers
         final spacers = find.byWidgetPredicate(
-          (widget) => widget is SizedBox &&
-              widget.width == AppDimensions.paddingS,
+          (widget) =>
+              widget is SizedBox && widget.width == AppDimensions.paddingS,
         );
-        
+
         expect(spacers, findsWidgets); // Should have spacers
       });
 
@@ -461,12 +463,12 @@ void main() {
 
         // Check main container padding
         final mainContainer = find.byWidgetPredicate(
-          (widget) => widget is Container &&
-              widget.color == AppColors.backgroundBeige,
+          (widget) =>
+              widget is Container && widget.color == AppColors.backgroundBeige,
         );
-        
+
         expect(mainContainer, findsOneWidget);
-        
+
         final container = tester.widget<Container>(mainContainer);
         expect(
           container.padding,
@@ -507,7 +509,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test custom animation duration from line 22
         const customDuration = Duration(milliseconds: 200);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: const TypingIndicator(
@@ -520,10 +522,10 @@ void main() {
         // Animation should respect custom duration
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 100));
-        
+
         // Should be mid-animation
         expect(find.byType(FadeTransition), findsOneWidget);
-        
+
         // Complete custom duration
         await tester.pump(const Duration(milliseconds: 100));
         expect(find.text('Fast skriver'), findsOneWidget);
@@ -543,16 +545,15 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        
+
         // Should still render but with empty name
         expect(find.text(' skriver'), findsOneWidget);
       });
 
-      testWidgets('handles very long user names',
-          (WidgetTester tester) async {
+      testWidgets('handles very long user names', (WidgetTester tester) async {
         // ULTRATHINK: Test text overflow handling
         final longName = 'A' * 50;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: TypingIndicator(
@@ -562,17 +563,16 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        
+
         // Should handle without overflow
         expect(find.text('$longName skriver'), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('handles many users typing',
-          (WidgetTester tester) async {
+      testWidgets('handles many users typing', (WidgetTester tester) async {
         // ULTRATHINK: Test with many users
         final manyUsers = List.generate(10, (i) => 'User$i');
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: TypingIndicator(
@@ -582,7 +582,7 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        
+
         // Should show first 2 and count of others
         expect(find.text('User0, User1 och 8 andra skriver'), findsOneWidget);
       });
@@ -598,18 +598,17 @@ void main() {
               ),
             ),
           );
-          
+
           await tester.pump(const Duration(milliseconds: 50));
         }
-        
+
         // Should not crash
         expect(tester.takeException(), isNull);
       });
     });
 
     group('Visual Style Tests', () {
-      testWidgets('uses correct text styles',
-          (WidgetTester tester) async {
+      testWidgets('uses correct text styles', (WidgetTester tester) async {
         // ULTRATHINK: Test text styling from lines 123-126
         await tester.pumpWidget(
           createTestWidget(
@@ -620,7 +619,7 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        
+
         final text = tester.widget<Text>(find.text('Styled skriver'));
         expect(text.style?.fontStyle, equals(FontStyle.italic));
         expect(text.style?.color, equals(AppColors.textMedium));
@@ -638,12 +637,12 @@ void main() {
         );
 
         await tester.pump(const Duration(milliseconds: 100));
-        
+
         final container = find.byWidgetPredicate(
-          (widget) => widget is Container &&
-              widget.color == AppColors.backgroundBeige,
+          (widget) =>
+              widget is Container && widget.color == AppColors.backgroundBeige,
         );
-        
+
         expect(container, findsOneWidget);
       });
     });

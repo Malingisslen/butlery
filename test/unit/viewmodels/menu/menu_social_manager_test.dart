@@ -446,7 +446,6 @@ void main() {
         },
       ];
 
-
       when(() => mockSocialMenuOps.getSharingStats())
           .thenAnswer((_) async => sharingStats);
       when(() => mockSocialMenuOps.getMenusSharedWithMe())

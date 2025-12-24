@@ -33,8 +33,8 @@ class CommentDebugPanel extends StatelessWidget {
           Text(
             '🔍 DEBUG INFO:',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           Text(
               'SocialViewModel.currentUser: ${socialViewModel.currentUser?.displayName ?? "NULL"}'),

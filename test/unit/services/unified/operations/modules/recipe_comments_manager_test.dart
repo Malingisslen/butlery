@@ -7,7 +7,8 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 
 import '../../../../../test_support/base_unit_test.dart';
-import '../../../../../infrastructure/di/test_service_locator.dart' show TestServiceLocator, ServiceLocator;
+import '../../../../../infrastructure/di/test_service_locator.dart'
+    show TestServiceLocator, ServiceLocator;
 import '../../../../../infrastructure/factories/recipe_factory.dart';
 import '../../../../../infrastructure/mocks/production_mocks.dart';
 
@@ -157,7 +158,7 @@ void main() {
       await TestServiceLocator.initialize();
       mockNotificationService = MockNotificationService();
       mockParent = MockUnifiedRecipeService();
-      
+
       // Create test recipe
       testRecipe = RecipeFactory.build(
         id: 'recipe-1',
@@ -169,34 +170,35 @@ void main() {
         currentUserDisplayName: 'Test User',
         recipes: [testRecipe],
       );
-      
+
       // TestServiceLocator already handles production ServiceLocator initialization
-      
+
       // Get the mock comments repository from test infrastructure
-      final mockCommentsRepo = ServiceLocator.get<CommentsRepository>() as MockCommentsRepository;
-      
+      final mockCommentsRepo =
+          ServiceLocator.get<CommentsRepository>() as MockCommentsRepository;
+
       // Stub the repository methods
       when(() => mockCommentsRepo.getCommentsStream(any()))
           .thenAnswer((_) => Stream.value(<RecipeComment>[]));
       when(() => mockCommentsRepo.addComment(
-        recipeId: any(named: 'recipeId'),
-        userId: any(named: 'userId'),
-        content: any(named: 'content'),
-        parentCommentId: any(named: 'parentCommentId'),
-      )).thenAnswer((_) async => FakeRecipeComment(
-        id: 'comment-id-123',
-        recipeId: testRecipe.id,
-        authorId: 'test-user-id',
-        authorDisplayName: 'Test User',
-        authorAvatarUrl: null,
-        text: 'Test comment',
-        createdAt: DateTime.now(),
-        editedAt: null,
-        likedByUserIds: [],
-        parentCommentId: null,
-        replyCount: 0,
-        isDeleted: false,
-      ));
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            content: any(named: 'content'),
+            parentCommentId: any(named: 'parentCommentId'),
+          )).thenAnswer((_) async => FakeRecipeComment(
+            id: 'comment-id-123',
+            recipeId: testRecipe.id,
+            authorId: 'test-user-id',
+            authorDisplayName: 'Test User',
+            authorAvatarUrl: null,
+            text: 'Test comment',
+            createdAt: DateTime.now(),
+            editedAt: null,
+            likedByUserIds: [],
+            parentCommentId: null,
+            replyCount: 0,
+            isDeleted: false,
+          ));
       when(() => mockCommentsRepo.updateComment(any(), any()))
           .thenAnswer((_) async {});
       when(() => mockCommentsRepo.deleteComment(any()))
@@ -205,7 +207,7 @@ void main() {
           .thenAnswer((_) async {});
       when(() => mockCommentsRepo.getCommentsForRecipe(any()))
           .thenAnswer((_) async => []);
-      
+
       commentsManager = RecipeCommentsManager(
         mockParent,
         mockNotificationService,
@@ -232,16 +234,16 @@ void main() {
       test('should add top-level comment successfully', () async {
         // Arrange
         const content = 'Great recipe!';
-        
+
         // Stub the CommentCrudOperations methods via static methods
         // Note: Since we can't easily mock static methods, we test the manager's logic
-        
+
         // Act
         final result = await commentsManager.addComment(
           recipeId: testRecipe.id,
           content: content,
         );
-        
+
         // Assert
         // The actual result depends on CommentCrudOperations which uses static methods
         // In a real test, we'd need to mock the Firebase operations
@@ -252,14 +254,14 @@ void main() {
         // Arrange
         const parentCommentId = 'parent-comment-1';
         const content = 'I agree!';
-        
+
         // Act
         final result = await commentsManager.addComment(
           recipeId: testRecipe.id,
           content: content,
           parentCommentId: parentCommentId,
         );
-        
+
         // Assert
         expect(result, isA<String?>());
       });
@@ -268,14 +270,14 @@ void main() {
         // Arrange
         const content = '@user1 @user2 Check this out!';
         final mentions = ['user1', 'user2'];
-        
+
         // Act
         final result = await commentsManager.addComment(
           recipeId: testRecipe.id,
           content: content,
           mentions: mentions,
         );
-        
+
         // Assert
         expect(result, isA<String?>());
       });
@@ -287,7 +289,7 @@ void main() {
           currentUserDisplayName: mockParent.currentUserDisplayName,
           recipes: mockParent.recipes,
         );
-        
+
         // Act & Assert
         expect(
           () => commentsManager.addComment(
@@ -301,14 +303,14 @@ void main() {
       test('should get comments with pagination', () async {
         // Arrange
         final before = DateTime.now();
-        
+
         // Act
         final comments = await commentsManager.getComments(
           recipeId: testRecipe.id,
           limit: 10,
           before: before,
         );
-        
+
         // Assert
         expect(comments, isA<List<RecipeComment>>());
       });
@@ -319,7 +321,7 @@ void main() {
           recipeId: testRecipe.id,
           includeReplies: false,
         );
-        
+
         // Assert
         expect(comments, isA<List<RecipeComment>>());
       });
@@ -327,7 +329,7 @@ void main() {
       test('should create comment stream', () {
         // Act
         final stream = commentsManager.getCommentsStream(testRecipe.id);
-        
+
         // Assert
         expect(stream, isA<Stream<List<RecipeComment>>>());
       });
@@ -336,7 +338,7 @@ void main() {
         // Act
         final stream1 = commentsManager.getCommentsStream(testRecipe.id);
         final stream2 = commentsManager.getCommentsStream(testRecipe.id);
-        
+
         // Assert - The implementation returns the same stream for the same recipe ID
         // Note: The actual stream objects might not be identical due to broadcast transformation
         expect(stream1, isA<Stream<List<RecipeComment>>>());
@@ -347,13 +349,13 @@ void main() {
         // Arrange
         const commentId = 'comment-1';
         const newContent = 'Updated comment';
-        
+
         // Act
         final result = await commentsManager.editComment(
           commentId: commentId,
           newContent: newContent,
         );
-        
+
         // Assert
         expect(result, isA<bool>());
       });
@@ -365,7 +367,7 @@ void main() {
           currentUserDisplayName: mockParent.currentUserDisplayName,
           recipes: mockParent.recipes,
         );
-        
+
         // Act & Assert
         expect(
           () => commentsManager.editComment(
@@ -379,10 +381,10 @@ void main() {
       test('should delete comment', () async {
         // Arrange
         const commentId = 'comment-1';
-        
+
         // Act
         final result = await commentsManager.deleteComment(commentId);
-        
+
         // Assert
         expect(result, isA<bool>());
       });
@@ -390,10 +392,10 @@ void main() {
       test('should handle delete non-existent comment', () async {
         // Arrange
         const commentId = 'non-existent';
-        
+
         // Act
         final result = await commentsManager.deleteComment(commentId);
-        
+
         // Assert
         expect(result, isFalse);
       });
@@ -403,10 +405,10 @@ void main() {
       test('should toggle comment like when authenticated', () async {
         // Arrange
         const commentId = 'comment-1';
-        
+
         // Act
         final result = await commentsManager.toggleCommentLike(commentId);
-        
+
         // Assert
         expect(result, isA<bool>());
       });
@@ -418,10 +420,10 @@ void main() {
           currentUserDisplayName: mockParent.currentUserDisplayName,
           recipes: mockParent.recipes,
         );
-        
+
         // Act
         final result = await commentsManager.toggleCommentLike('comment-1');
-        
+
         // Assert
         expect(result, isFalse);
       });
@@ -430,10 +432,10 @@ void main() {
         // Arrange
         const commentId = 'comment-1';
         final stream = commentsManager.getCommentsStream(testRecipe.id);
-        
+
         // Act
         await commentsManager.toggleCommentLike(commentId);
-        
+
         // Assert - Stream should remain active
         expect(stream, isA<Stream<List<RecipeComment>>>());
       });
@@ -443,7 +445,7 @@ void main() {
       test('should get comment statistics for recipe', () async {
         // Act
         final stats = await commentsManager.getCommentStatistics(testRecipe.id);
-        
+
         // Assert
         expect(stats, isA<Map<String, dynamic>>());
       });
@@ -454,7 +456,7 @@ void main() {
           recipeId: testRecipe.id,
           limit: 25,
         );
-        
+
         // Assert
         expect(timeline, isA<List<Map<String, dynamic>>>());
       });
@@ -465,7 +467,7 @@ void main() {
           recipeId: testRecipe.id,
           limit: 5,
         );
-        
+
         // Assert
         expect(commenters, isA<List<Map<String, dynamic>>>());
       });
@@ -476,7 +478,7 @@ void main() {
           recipeId: testRecipe.id,
           limit: 100,
         );
-        
+
         // Assert
         expect(timeline, isA<List<Map<String, dynamic>>>());
       });
@@ -487,7 +489,7 @@ void main() {
           recipeId: testRecipe.id,
           limit: 20,
         );
-        
+
         // Assert
         expect(commenters, isA<List<Map<String, dynamic>>>());
       });
@@ -499,7 +501,7 @@ void main() {
         final stream1 = commentsManager.getCommentsStream('recipe-1');
         final stream2 = commentsManager.getCommentsStream('recipe-2');
         final stream3 = commentsManager.getCommentsStream('recipe-3');
-        
+
         // Assert
         expect(stream1, isA<Stream<List<RecipeComment>>>());
         expect(stream2, isA<Stream<List<RecipeComment>>>());
@@ -511,7 +513,7 @@ void main() {
       test('should handle stream errors gracefully', () async {
         // Act
         final stream = commentsManager.getCommentsStream(testRecipe.id);
-        
+
         // Assert - Stream should handle errors without throwing
         stream.handleError((error) {
           expect(error, isNotNull);
@@ -536,13 +538,13 @@ void main() {
       test('should validate recipe exists when adding comment', () async {
         // Arrange
         const nonExistentRecipeId = 'non-existent';
-        
+
         // Act
         final result = await commentsManager.addComment(
           recipeId: nonExistentRecipeId,
           content: 'Test comment',
         );
-        
+
         // Assert - Should handle gracefully
         expect(result, isA<String?>());
       });
@@ -550,7 +552,7 @@ void main() {
       test('should use current user display name', () {
         // Act
         final displayName = commentsManager.currentUserDisplayName;
-        
+
         // Assert
         expect(displayName, equals('Test User'));
       });
@@ -562,10 +564,10 @@ void main() {
           currentUserDisplayName: null,
           recipes: mockParent.recipes,
         );
-        
+
         // Act
         final displayName = commentsManager.currentUserDisplayName;
-        
+
         // Assert
         expect(displayName, equals('Okänd användare'));
       });
@@ -573,7 +575,7 @@ void main() {
       test('should get current user ID', () {
         // Act
         final userId = commentsManager.currentUserId;
-        
+
         // Assert
         expect(userId, equals('test-user-id'));
       });
@@ -581,7 +583,7 @@ void main() {
       test('should access recipes list', () {
         // Act
         final recipes = commentsManager.recipes;
-        
+
         // Assert
         expect(recipes, equals([testRecipe]));
       });
@@ -592,25 +594,25 @@ void main() {
         // Arrange
         const rootCommentId = 'root-comment';
         const replyLevel1Id = 'reply-1';
-        
+
         // Act - Create nested reply chain
         await commentsManager.addComment(
           recipeId: testRecipe.id,
           content: 'Root comment',
         );
-        
+
         await commentsManager.addComment(
           recipeId: testRecipe.id,
           content: 'First level reply',
           parentCommentId: rootCommentId,
         );
-        
+
         final deepReply = await commentsManager.addComment(
           recipeId: testRecipe.id,
           content: 'Second level reply',
           parentCommentId: replyLevel1Id,
         );
-        
+
         // Assert
         expect(deepReply, isA<String?>());
       });
@@ -618,27 +620,29 @@ void main() {
       test('should increment reply count for parent comment', () async {
         // Arrange
         const parentCommentId = 'parent-comment';
-        
+
         // Act
         await commentsManager.addComment(
           recipeId: testRecipe.id,
           content: 'Reply to parent',
           parentCommentId: parentCommentId,
         );
-        
+
         // Assert - Reply count should be incremented via CommentUtilities
-        expect(true, isTrue); // Placeholder - actual verification would need Firebase mock
+        expect(true,
+            isTrue); // Placeholder - actual verification would need Firebase mock
       });
 
       test('should decrement reply count when deleting reply', () async {
         // Arrange
         const replyId = 'reply-comment';
-        
+
         // Act
         await commentsManager.deleteComment(replyId);
-        
+
         // Assert - Reply count should be decremented via CommentUtilities
-        expect(true, isTrue); // Placeholder - actual verification would need Firebase mock
+        expect(true,
+            isTrue); // Placeholder - actual verification would need Firebase mock
       });
     });
 
@@ -646,30 +650,32 @@ void main() {
       test('should send notifications for new comments', () async {
         // Arrange
         const content = 'Great recipe!';
-        
+
         // Act
         await commentsManager.addComment(
           recipeId: testRecipe.id,
           content: content,
         );
-        
+
         // Assert - Notifications should be sent via CommentNotifications
-        expect(true, isTrue); // Placeholder - actual verification would need static mock
+        expect(true,
+            isTrue); // Placeholder - actual verification would need static mock
       });
 
       test('should send notifications for mentions', () async {
         // Arrange
         final mentions = ['user1', 'user2'];
-        
+
         // Act
         await commentsManager.addComment(
           recipeId: testRecipe.id,
           content: '@user1 @user2 Check this!',
           mentions: mentions,
         );
-        
+
         // Assert - Mention notifications should be sent
-        expect(true, isTrue); // Placeholder - actual verification would need static mock
+        expect(true,
+            isTrue); // Placeholder - actual verification would need static mock
       });
 
       test('should handle null notification service', () async {
@@ -678,7 +684,7 @@ void main() {
           mockParent,
           null, // No notification service
         );
-        
+
         // Act & Assert - Should handle gracefully
         expect(
           () => managerWithoutNotifications.addComment(
@@ -687,7 +693,7 @@ void main() {
           ),
           returnsNormally,
         );
-        
+
         managerWithoutNotifications.dispose();
       });
     });
@@ -700,13 +706,13 @@ void main() {
           currentUserDisplayName: mockParent.currentUserDisplayName,
           recipes: [],
         );
-        
+
         // Act
         final result = await commentsManager.addComment(
           recipeId: 'any-recipe',
           content: 'Test comment',
         );
-        
+
         // Assert
         expect(result, isA<String?>());
       });
@@ -722,7 +728,7 @@ void main() {
           commentsManager.toggleCommentLike('comment-1'),
           commentsManager.getCommentStatistics(testRecipe.id),
         ];
-        
+
         // Assert - All should complete without deadlock
         await expectLater(
           Future.wait(futures),
@@ -737,21 +743,22 @@ void main() {
           final stream = commentsManager.getCommentsStream('rapid-test-$i');
           expect(stream, isA<Stream<List<RecipeComment>>>());
         }
-        
+
         // Assert - All streams created successfully
         expect(true, isTrue);
       });
 
       test('should handle special characters in content', () async {
         // Arrange
-        const specialContent = '🍕 Great recipe! <script>alert("xss")</script> & more';
-        
+        const specialContent =
+            '🍕 Great recipe! <script>alert("xss")</script> & more';
+
         // Act
         final result = await commentsManager.addComment(
           recipeId: testRecipe.id,
           content: specialContent,
         );
-        
+
         // Assert
         expect(result, isA<String?>());
       });
@@ -759,13 +766,13 @@ void main() {
       test('should handle very long comment content', () async {
         // Arrange
         final longContent = 'A' * 5000; // 5000 character comment
-        
+
         // Act
         final result = await commentsManager.addComment(
           recipeId: testRecipe.id,
           content: longContent,
         );
-        
+
         // Assert
         expect(result, isA<String?>());
       });
@@ -778,7 +785,7 @@ void main() {
           recipeId: testRecipe.id,
           limit: 1000,
         );
-        
+
         // Assert
         expect(comments, isA<List<RecipeComment>>());
       });
@@ -789,7 +796,7 @@ void main() {
           20,
           (i) => commentsManager.getCommentsStream('recipe-$i'),
         );
-        
+
         // Assert
         expect(streams.length, equals(20));
         for (final stream in streams) {
@@ -806,7 +813,7 @@ void main() {
             content: 'Comment $i',
           ),
         );
-        
+
         // Assert
         await expectLater(
           Future.wait(futures),

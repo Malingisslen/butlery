@@ -123,7 +123,7 @@ class SocialRecipeSharingService extends BaseService with UserContextMixin {
           sharedToUserIds: userIds,
           recipeSnapshot: updatedRecipe,
           allowCollaboration: permission == ResourcePermission.admin ||
-                              permission == ResourcePermission.editor,
+              permission == ResourcePermission.editor,
         );
 
         // Note (Issue #014): Pass recipientIds separately since arrays removed from model

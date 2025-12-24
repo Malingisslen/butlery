@@ -62,7 +62,8 @@ class QuantityParser {
     if (trimmed.contains('½')) {
       final parts = trimmed.split('½');
       if (parts.length == 2) {
-        final whole = double.tryParse(parts[0].trim().replaceAll(',', '.')) ?? 0;
+        final whole =
+            double.tryParse(parts[0].trim().replaceAll(',', '.')) ?? 0;
         return whole + 0.5;
       }
     }
@@ -71,7 +72,8 @@ class QuantityParser {
     if (trimmed.contains('¼')) {
       final parts = trimmed.split('¼');
       if (parts.length == 2) {
-        final whole = double.tryParse(parts[0].trim().replaceAll(',', '.')) ?? 0;
+        final whole =
+            double.tryParse(parts[0].trim().replaceAll(',', '.')) ?? 0;
         return whole + 0.25;
       }
     }
@@ -80,7 +82,8 @@ class QuantityParser {
     if (trimmed.contains('¾')) {
       final parts = trimmed.split('¾');
       if (parts.length == 2) {
-        final whole = double.tryParse(parts[0].trim().replaceAll(',', '.')) ?? 0;
+        final whole =
+            double.tryParse(parts[0].trim().replaceAll(',', '.')) ?? 0;
         return whole + 0.75;
       }
     }

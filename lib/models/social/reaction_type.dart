@@ -28,10 +28,10 @@ enum ReactionType {
 
   /// Internal identifier for database storage and API communication
   final String key;
-  
+
   /// Emoji representation for UI display
   final String emoji;
-  
+
   /// Swedish localized display name for user interface
   final String displayName;
 
@@ -50,24 +50,24 @@ enum ReactionType {
 
   /// Get food-specific reactions for culinary content
   static List<ReactionType> get foodReactions => [
-    ReactionType.like,
-    ReactionType.love,
-    ReactionType.delicious,
-    ReactionType.easy,
-    ReactionType.creative,
-  ];
+        ReactionType.like,
+        ReactionType.love,
+        ReactionType.delicious,
+        ReactionType.easy,
+        ReactionType.creative,
+      ];
 
   /// Get general reactions for non-food content
   static List<ReactionType> get generalReactions => [
-    ReactionType.like,
-    ReactionType.helpful,
-    ReactionType.creative,
-  ];
+        ReactionType.like,
+        ReactionType.helpful,
+        ReactionType.creative,
+      ];
 
   /// Check if reaction is food-specific
   bool get isFoodSpecific => [
-    ReactionType.delicious,
-  ].contains(this);
+        ReactionType.delicious,
+      ].contains(this);
 
   /// Get display text with emoji
   String get displayText => '$emoji $displayName';

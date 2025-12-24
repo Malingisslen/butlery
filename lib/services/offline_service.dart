@@ -30,7 +30,8 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
-import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth_repo;
+import 'package:butlery/repositories/interfaces/auth_repository.dart'
+    as auth_repo;
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/services/offline/offline_initialization.dart';
 import 'package:butlery/services/offline/offline_user_storage.dart';

@@ -24,23 +24,23 @@ void main() {
       // Initialize test infrastructure once for all tests
       await BaseUnitTest.setupUnit();
     });
-    
+
     setUp(() async {
       // Initialize service locator for each test
       await TestServiceLocator.initialize();
     });
-    
+
     tearDown(() async {
       // Reset mocks and service locator after each test
       BaseUnitTest.resetMocks();
       await TestServiceLocator.reset();
     });
-    
+
     tearDownAll(() async {
       // Final cleanup after all tests
       await BaseUnitTest.teardownUnit();
     });
-    
+
     group('JSON-LD Extraction', () {
       test('should extract recipe from single JSON-LD object', () {
         const html = '''
@@ -60,9 +60,9 @@ void main() {
           </head>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
-        
+
         expect(result, isNotNull);
         expect(result!['@type'], equals('Recipe'));
         expect(result['name'], equals('Swedish Meatballs'));
@@ -74,7 +74,7 @@ void main() {
         expect(result['totalTime'], equals('PT30M'));
         expect(result['image'], equals('https://example.com/meatballs.jpg'));
       });
-      
+
       test('should extract recipe from JSON-LD array', () {
         const html = '''
         <html>
@@ -94,16 +94,16 @@ void main() {
           </script>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
-        
+
         expect(result, isNotNull);
         expect(result!['@type'], equals('Recipe'));
         expect(result['name'], equals('Kladdkaka'));
         expect(result['recipeIngredient'], hasLength(3));
         expect(result['recipeIngredient'][1], equals('2 eggs'));
       });
-      
+
       test('should handle case-insensitive script tag', () {
         const html = '''
         <html>
@@ -115,13 +115,13 @@ void main() {
           </SCRIPT>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
-        
+
         expect(result, isNotNull);
         expect(result!['name'], equals('Test Recipe'));
       });
-      
+
       test('should skip non-Recipe JSON-LD objects', () {
         const html = '''
         <html>
@@ -133,11 +133,11 @@ void main() {
           </script>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
         expect(result, isNull);
       });
-      
+
       test('should handle malformed JSON gracefully', () {
         const html = '''
         <html>
@@ -150,11 +150,11 @@ void main() {
           </script>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
         expect(result, isNull);
       });
-      
+
       test('should find Recipe in multiple JSON-LD scripts', () {
         const html = '''
         <html>
@@ -169,14 +169,14 @@ void main() {
           </script>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
-        
+
         expect(result, isNotNull);
         expect(result!['name'], equals('Found Recipe'));
       });
     });
-    
+
     group('Microdata Extraction', () {
       test('should extract complete recipe from Microdata', () {
         const html = '''
@@ -194,21 +194,22 @@ void main() {
           </div>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
-        
+
         expect(result, isNotNull);
         expect(result!['@type'], equals('Recipe'));
         expect(result['name'], equals('Pannkakor'));
         expect(result['recipeIngredient'], hasLength(3));
         expect(result['recipeIngredient'][0], equals('3 dl mjölk'));
         expect(result['recipeInstructions'], hasLength(2));
-        expect(result['recipeInstructions'][0], equals('Vispa samman mjölk och ägg'));
+        expect(result['recipeInstructions'][0],
+            equals('Vispa samman mjölk och ägg'));
         expect(result['recipeYield'], equals('4 portioner'));
         expect(result['totalTime'], equals('PT20M'));
         expect(result['image'], equals('/pannkakor.jpg'));
       });
-      
+
       test('should handle nested instruction elements', () {
         const html = '''
         <html>
@@ -222,9 +223,9 @@ void main() {
           </div>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
-        
+
         expect(result, isNotNull);
         expect(result!['recipeInstructions'], hasLength(4));
         expect(result['recipeInstructions'][0], equals('Step 1'));
@@ -232,7 +233,7 @@ void main() {
         expect(result['recipeInstructions'][2], equals('Step 3'));
         expect(result['recipeInstructions'][3], equals('Step 4'));
       });
-      
+
       test('should handle instructions without nested elements', () {
         const html = '''
         <html>
@@ -241,14 +242,15 @@ void main() {
           </div>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
-        
+
         expect(result, isNotNull);
         expect(result!['recipeInstructions'], hasLength(1));
-        expect(result['recipeInstructions'][0], equals('Mix everything and bake'));
+        expect(
+            result['recipeInstructions'][0], equals('Mix everything and bake'));
       });
-      
+
       test('should extract image from content attribute', () {
         const html = '''
         <html>
@@ -257,13 +259,13 @@ void main() {
           </div>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
-        
+
         expect(result, isNotNull);
         expect(result!['image'], equals('https://example.com/recipe.jpg'));
       });
-      
+
       test('should extract totalTime from text when no content attribute', () {
         const html = '''
         <html>
@@ -272,13 +274,13 @@ void main() {
           </div>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
-        
+
         expect(result, isNotNull);
         expect(result!['totalTime'], equals('30 minutes'));
       });
-      
+
       test('should handle empty ingredient and instruction elements', () {
         const html = '''
         <html>
@@ -291,9 +293,9 @@ void main() {
           </div>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
-        
+
         expect(result, isNotNull);
         expect(result!['recipeIngredient'], hasLength(1));
         expect(result['recipeIngredient'][0], equals('Valid ingredient'));
@@ -301,7 +303,7 @@ void main() {
         expect(result['recipeInstructions'][0], equals('Valid instruction'));
       });
     });
-    
+
     group('Priority and Fallback', () {
       test('should prioritize JSON-LD over Microdata', () {
         const html = '''
@@ -317,13 +319,13 @@ void main() {
           </div>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
-        
+
         expect(result, isNotNull);
         expect(result!['name'], equals('JSON-LD Recipe'));
       });
-      
+
       test('should fall back to Microdata when JSON-LD not found', () {
         const html = '''
         <html>
@@ -332,13 +334,13 @@ void main() {
           </div>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
-        
+
         expect(result, isNotNull);
         expect(result!['name'], equals('Microdata Only'));
       });
-      
+
       test('should use first Microdata recipe if multiple exist', () {
         const html = '''
         <html>
@@ -350,21 +352,21 @@ void main() {
           </div>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
-        
+
         expect(result, isNotNull);
         expect(result!['name'], equals('First Recipe'));
       });
     });
-    
+
     group('Edge Cases', () {
       test('should handle empty HTML', () {
         const html = '';
         final result = extractRecipeFromHtml(html);
         expect(result, isNull);
       });
-      
+
       test('should handle HTML without recipe data', () {
         const html = '''
         <html>
@@ -374,11 +376,11 @@ void main() {
           </body>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
         expect(result, isNull);
       });
-      
+
       test('should handle minimal valid recipe', () {
         const html = '''
         <html>
@@ -387,13 +389,13 @@ void main() {
           </script>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
-        
+
         expect(result, isNotNull);
         expect(result!['@type'], equals('Recipe'));
       });
-      
+
       test('should handle special characters in content', () {
         const html = r'''
         <html>
@@ -406,14 +408,14 @@ void main() {
           </script>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
-        
+
         expect(result, isNotNull);
         expect(result!['name'], equals('Recipe with "quotes" & <tags>'));
         expect(result['recipeIngredient'][0], equals('1/2 cup & 2 tsp'));
       });
-      
+
       test('should handle whitespace in JSON-LD content', () {
         const html = '''
         <html>
@@ -429,13 +431,13 @@ void main() {
           </script>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
-        
+
         expect(result, isNotNull);
         expect(result!['name'], equals('Spaced Recipe'));
       });
-      
+
       test('should handle missing optional fields', () {
         const html = '''
         <html>
@@ -444,9 +446,9 @@ void main() {
           </div>
         </html>
         ''';
-        
+
         final result = extractRecipeFromHtml(html);
-        
+
         expect(result, isNotNull);
         expect(result!['name'], equals('Minimal Recipe'));
         expect(result['recipeIngredient'], isEmpty);

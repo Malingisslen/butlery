@@ -14,7 +14,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 /// - Action handlers and business logic coordination
 /// - User interaction management
 /// ❌ DOES NOT CONTAIN: Items display, header display, state management
-class CollaborativeShoppingActions extends BaseActionHandler with ActionStateMixin {
+class CollaborativeShoppingActions extends BaseActionHandler
+    with ActionStateMixin {
   final CollaborativeShoppingViewModel viewModel;
   final TextEditingController newItemController;
   final VoidCallback onAddItem;
@@ -218,7 +219,7 @@ class CollaborativeShoppingActions extends BaseActionHandler with ActionStateMix
     if (!validateContext(context)) return;
 
     final completedItems = viewModel.completedItemsList;
-    
+
     if (completedItems.isEmpty) {
       showInfoMessage(context, 'Inga klarmarkerade artiklar att rensa');
       return;
@@ -232,11 +233,13 @@ class CollaborativeShoppingActions extends BaseActionHandler with ActionStateMix
         return true;
       },
       confirmationTitle: 'Rensa klara artiklar?',
-      confirmationMessage: 'Vill du ta bort alla ${completedItems.length} klarmarkerade artiklar?',
+      confirmationMessage:
+          'Vill du ta bort alla ${completedItems.length} klarmarkerade artiklar?',
       confirmActionText: 'Rensa alla',
       confirmationIcon: Icons.clear_all,
       isDangerous: true,
-      successMessage: '${completedItems.length} klarmarkerade artiklar borttagna',
+      successMessage:
+          '${completedItems.length} klarmarkerade artiklar borttagna',
       errorMessage: 'Kunde inte rensa klarmarkerade artiklar',
       metadata: {
         'completed_count': completedItems.length,

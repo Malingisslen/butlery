@@ -6,7 +6,6 @@ import 'package:butlery/services/unified/modules/realtime_field_operations.dart'
 /// Real-time ingredient operations module
 /// Handles all ingredient CRUD operations for real-time recipe editing.
 class RealtimeIngredientOperations {
-
   /// Add ingredient in real-time
   static Future<bool> addIngredientRealtime({
     required RealtimeEditContext context,

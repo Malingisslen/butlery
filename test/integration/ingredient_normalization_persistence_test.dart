@@ -124,13 +124,12 @@ void main() {
 
         expect(normalized, isNotNull);
         expect(normalized!.length, 8);
-        expect(normalized[0], contains('kött'),
-            reason: 'Core meat ingredient');
+        expect(normalized[0], contains('kött'), reason: 'Core meat ingredient');
         expect(normalized[1], 'lök', reason: 'Preparation word removed');
         expect(normalized[2], contains('vitlök'),
             reason: 'Garlic ingredient (may vary)');
-        expect(
-            normalized[3], contains('tomat'), reason: 'Core ingredient found');
+        expect(normalized[3], contains('tomat'),
+            reason: 'Core ingredient found');
         expect(normalized[4], contains('tomat'),
             reason: 'Tomato-based products may vary in normalization');
         expect(normalized[5], contains('oregano'));
@@ -224,8 +223,7 @@ void main() {
           ingredientsNormalized: ['mjölk', 'ägg'], // Missing smör
         );
 
-        expect(
-            IngredientProcessor.needsNormalization(recipeWithMismatch), true,
+        expect(IngredientProcessor.needsNormalization(recipeWithMismatch), true,
             reason: 'Length mismatch should trigger re-normalization');
       });
 
@@ -345,7 +343,8 @@ void main() {
         final recipeJson = Recipe.fromJson(oldRecipeData);
 
         expect(recipeJson.core.ingredientsNormalized, isNull,
-            reason: 'Missing field should deserialize as null (backward compat)');
+            reason:
+                'Missing field should deserialize as null (backward compat)');
         expect(recipeJson.core.ingredients.length, 2);
       });
 
@@ -429,13 +428,13 @@ void main() {
             reason: 'Core meat ingredient');
         expect(recipeToSave.core.ingredientsNormalized![1], 'lök',
             reason: 'hackad should be removed');
-        expect(
-            recipeToSave.core.ingredientsNormalized![2], contains('vitlök'),
+        expect(recipeToSave.core.ingredientsNormalized![2], contains('vitlök'),
             reason: 'Garlic ingredient (may vary)');
         expect(recipeToSave.core.ingredientsNormalized![3], contains('tomat'));
         expect(recipeToSave.core.ingredientsNormalized![4], contains('tomat'),
             reason: 'Tomato-based products may vary in normalization');
-        expect(recipeToSave.core.ingredientsNormalized![5], contains('oregano'));
+        expect(
+            recipeToSave.core.ingredientsNormalized![5], contains('oregano'));
         expect(recipeToSave.core.ingredientsNormalized![6], isNotEmpty);
 
         // Verify original ingredients unchanged
@@ -571,8 +570,7 @@ void main() {
         expect(normalized!.length, 7);
 
         // Even with messy format, should extract core ingredients
-        expect(normalized[0], contains('kött'),
-            reason: 'Core meat ingredient');
+        expect(normalized[0], contains('kött'), reason: 'Core meat ingredient');
         expect(normalized[1], contains('lök'));
         expect(normalized[2], contains('vitlök'),
             reason: 'Garlic ingredient (may vary with commas/punctuation)');

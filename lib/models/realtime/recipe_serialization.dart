@@ -13,7 +13,8 @@ class RecipeSerialization {
   static Map<String, dynamic> serializeRealtimeContent(Recipe recipe) {
     return {
       'recipe': serializeRecipe(recipe),
-      'activeEditors': [], // Initialize as empty array for realtime collaboration tracking
+      'activeEditors':
+          [], // Initialize as empty array for realtime collaboration tracking
     };
   }
 
@@ -36,7 +37,7 @@ class RecipeSerialization {
   }) {
     // Create clean serialization without Firebase dependencies
     final result = <String, dynamic>{};
-    
+
     // Add metadata with DateTime objects (repositories handle conversion)
     result.addAll({
       'type': RealtimeResourceType.recipe.value,
@@ -54,16 +55,17 @@ class RecipeSerialization {
       'isActive': isActive,
       'metadata': metadata ?? {},
     });
-    
+
     // Add recipe content
     result.addAll(serializeRealtimeContent(recipe));
-    
+
     return result;
   }
 
-  static Recipe deserializeRecipe(Map<String, dynamic> recipeData, String fallbackId) {
+  static Recipe deserializeRecipe(
+      Map<String, dynamic> recipeData, String fallbackId) {
     final coreData = recipeData['core'] as Map<String, dynamic>? ?? recipeData;
-    
+
     return Recipe(
       core: RecipeCore(
         id: coreData['id'] as String? ?? fallbackId,
@@ -94,9 +96,8 @@ class RecipeSerialization {
   /// Deserialize complete realtime recipe from repository data
   /// @deprecated Repositories should use fromData() constructors instead.
   /// This maintains backward compatibility during repository updates.
-  static (Recipe recipe, Map<String, dynamic> metadata) deserializeRealtimeRecipe(
-    String id, Map<String, dynamic> data
-  ) {
+  static (Recipe recipe, Map<String, dynamic> metadata)
+      deserializeRealtimeRecipe(String id, Map<String, dynamic> data) {
     // Parse recipe data
     final recipeData = data['recipe'] as Map<String, dynamic>? ?? {};
     final recipe = deserializeRecipe(recipeData, id);
@@ -172,7 +173,8 @@ class RecipeSerialization {
     sanitized['ingredients'] = _sanitizeStringList(data['ingredients']);
     sanitized['instructions'] = _sanitizeStringList(data['instructions']);
     sanitized['imageUrls'] = _sanitizeStringList(data['imageUrls']);
-    sanitized['tags'] = data['tags'] != null ? _sanitizeStringList(data['tags']) : null;
+    sanitized['tags'] =
+        data['tags'] != null ? _sanitizeStringList(data['tags']) : null;
 
     // Numeric fields
     sanitized['portions'] = _sanitizeInt(data['portions']);
@@ -180,15 +182,18 @@ class RecipeSerialization {
     sanitized['rating'] = _sanitizeDouble(data['rating']);
 
     // Timestamp fields
-    sanitized['createdAt'] = _parseTimestamp(data['createdAt']) ?? DateTime.now();
-    sanitized['updatedAt'] = _parseTimestamp(data['updatedAt']) ?? DateTime.now();
+    sanitized['createdAt'] =
+        _parseTimestamp(data['createdAt']) ?? DateTime.now();
+    sanitized['updatedAt'] =
+        _parseTimestamp(data['updatedAt']) ?? DateTime.now();
     sanitized['lastCookedAt'] = _parseTimestamp(data['lastCookedAt']);
 
     // String fields
     sanitized['sourceUrl'] = data['sourceUrl']?.toString();
     sanitized['createdBy'] = data['createdBy']?.toString();
     sanitized['lastEditedByUserId'] = data['lastEditedByUserId']?.toString();
-    sanitized['lastEditedByDisplayName'] = data['lastEditedByDisplayName']?.toString();
+    sanitized['lastEditedByDisplayName'] =
+        data['lastEditedByDisplayName']?.toString();
 
     // Boolean fields
     sanitized['isPublic'] = data['isPublic'] as bool? ?? false;
@@ -205,19 +210,19 @@ class RecipeSerialization {
 
   static DateTime? _parseTimestamp(dynamic timestamp) {
     if (timestamp == null) return null;
-    
+
     if (timestamp is DateTime) {
       return timestamp;
     }
-    
+
     if (timestamp is String) {
       return DateTime.tryParse(timestamp);
     }
-    
+
     if (timestamp is int) {
       return DateTime.fromMillisecondsSinceEpoch(timestamp);
     }
-    
+
     // Note: Firebase Timestamp handling moved to repository layer
     return null;
   }
@@ -226,8 +231,11 @@ class RecipeSerialization {
   static List<String> _sanitizeStringList(dynamic list) {
     if (list == null) return [];
     if (list is! List) return [];
-    
-    return list.map((item) => item?.toString() ?? '').where((s) => s.isNotEmpty).toList();
+
+    return list
+        .map((item) => item?.toString() ?? '')
+        .where((s) => s.isNotEmpty)
+        .toList();
   }
 
   /// Sanitize integer value
@@ -266,7 +274,8 @@ class RecipeSerialization {
   }
 
   /// Parse permissions map
-  static Map<String, ResourcePermission>? _parsePermissions(dynamic permissions) {
+  static Map<String, ResourcePermission>? _parsePermissions(
+      dynamic permissions) {
     if (permissions == null) return null;
     if (permissions is! Map) return null;
 
@@ -278,7 +287,7 @@ class RecipeSerialization {
       );
       result[entry.key.toString()] = permission;
     }
-    
+
     return result;
   }
 
@@ -287,7 +296,8 @@ class RecipeSerialization {
   }
 
   /// Deserialize multiple recipes from batch data
-  static List<Recipe> deserializeRecipeBatch(List<Map<String, dynamic>> recipesData) {
+  static List<Recipe> deserializeRecipeBatch(
+      List<Map<String, dynamic>> recipesData) {
     return recipesData.asMap().entries.map((entry) {
       final index = entry.key;
       final data = entry.value;
@@ -296,15 +306,16 @@ class RecipeSerialization {
   }
 
   /// Validate batch recipe data
-  static List<String> validateRecipeBatch(List<Map<String, dynamic>> recipesData) {
+  static List<String> validateRecipeBatch(
+      List<Map<String, dynamic>> recipesData) {
     final errors = <String>[];
-    
+
     for (int i = 0; i < recipesData.length; i++) {
       if (!isValidRecipeData(recipesData[i])) {
         errors.add('Recipe at index $i has invalid data structure');
       }
     }
-    
+
     return errors;
   }
 }

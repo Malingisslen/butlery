@@ -176,7 +176,8 @@ class LocalRecipeCache {
   Future<void> _cleanupOldEntries() async {
     try {
       // Clean up entries older than maxAgeDays
-      final deletedByAge = await _cacheDao.cleanupParseCacheOlderThan(maxAgeDays);
+      final deletedByAge =
+          await _cacheDao.cleanupParseCacheOlderThan(maxAgeDays);
 
       // Clean up entries with wrong parser version
       final deletedByVersion =

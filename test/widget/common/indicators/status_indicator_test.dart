@@ -16,7 +16,8 @@ void main() {
 
   group('StatusIndicator Tests', () {
     group('Basic Rendering', () {
-      testWidgets('renders with required icon and color', (WidgetTester tester) async {
+      testWidgets('renders with required icon and color',
+          (WidgetTester tester) async {
         const testIcon = Icons.check_circle;
         const testColor = Colors.green;
 
@@ -55,7 +56,8 @@ void main() {
         expect(icon.color, equals(testColor));
       });
 
-      testWidgets('applies correct background color with alpha', (WidgetTester tester) async {
+      testWidgets('applies correct background color with alpha',
+          (WidgetTester tester) async {
         const testColor = Colors.red;
 
         await tester.pumpWidget(
@@ -88,12 +90,14 @@ void main() {
 
         final container = tester.widget<Container>(find.byType(Container));
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadiusS)));
+        expect(decoration.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadiusS)));
       });
     });
 
     group('Custom Properties', () {
-      testWidgets('uses custom icon size when provided', (WidgetTester tester) async {
+      testWidgets('uses custom icon size when provided',
+          (WidgetTester tester) async {
         const customSize = 32.0;
 
         await tester.pumpWidget(
@@ -112,7 +116,8 @@ void main() {
         expect(icon.size, equals(customSize));
       });
 
-      testWidgets('uses default icon size when not provided', (WidgetTester tester) async {
+      testWidgets('uses default icon size when not provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -128,7 +133,8 @@ void main() {
         expect(icon.size, equals(AppDimensions.iconSizeAction));
       });
 
-      testWidgets('uses custom padding when provided', (WidgetTester tester) async {
+      testWidgets('uses custom padding when provided',
+          (WidgetTester tester) async {
         const customPadding = 16.0;
 
         await tester.pumpWidget(
@@ -147,7 +153,8 @@ void main() {
         expect(container.padding, equals(const EdgeInsets.all(customPadding)));
       });
 
-      testWidgets('uses default padding when not provided', (WidgetTester tester) async {
+      testWidgets('uses default padding when not provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -160,12 +167,14 @@ void main() {
         );
 
         final container = tester.widget<Container>(find.byType(Container));
-        expect(container.padding, equals(EdgeInsets.all(AppDimensions.spacingS)));
+        expect(
+            container.padding, equals(EdgeInsets.all(AppDimensions.spacingS)));
       });
     });
 
     group('Different Status Types', () {
-      testWidgets('renders success status correctly', (WidgetTester tester) async {
+      testWidgets('renders success status correctly',
+          (WidgetTester tester) async {
         const successColor = Colors.green;
 
         await tester.pumpWidget(
@@ -187,7 +196,8 @@ void main() {
         expect(decoration.color, equals(successColor.withValues(alpha: 0.1)));
       });
 
-      testWidgets('renders warning status correctly', (WidgetTester tester) async {
+      testWidgets('renders warning status correctly',
+          (WidgetTester tester) async {
         const warningColor = Colors.orange;
 
         await tester.pumpWidget(
@@ -205,7 +215,8 @@ void main() {
         expect(icon.color, equals(warningColor));
       });
 
-      testWidgets('renders error status correctly', (WidgetTester tester) async {
+      testWidgets('renders error status correctly',
+          (WidgetTester tester) async {
         const errorColor = Colors.red;
 
         await tester.pumpWidget(
@@ -243,7 +254,8 @@ void main() {
     });
 
     group('Layout and Styling', () {
-      testWidgets('renders correctly in Row layout', (WidgetTester tester) async {
+      testWidgets('renders correctly in Row layout',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -273,7 +285,8 @@ void main() {
         expect(find.byIcon(Icons.pending), findsOneWidget);
       });
 
-      testWidgets('renders correctly in Column layout', (WidgetTester tester) async {
+      testWidgets('renders correctly in Column layout',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -296,7 +309,8 @@ void main() {
         expect(find.byType(StatusIndicator), findsNWidgets(2));
       });
 
-      testWidgets('maintains consistent size regardless of icon', (WidgetTester tester) async {
+      testWidgets('maintains consistent size regardless of icon',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           const MaterialApp(
             home: Scaffold(
@@ -318,7 +332,7 @@ void main() {
 
         final firstSize = tester.getSize(find.byType(StatusIndicator).first);
         final secondSize = tester.getSize(find.byType(StatusIndicator).last);
-        
+
         // Both indicators should have the same size
         expect(firstSize, equals(secondSize));
       });
@@ -359,7 +373,8 @@ void main() {
     });
 
     group('Accessibility', () {
-      testWidgets('supports semantic labels through icon', (WidgetTester tester) async {
+      testWidgets('supports semantic labels through icon',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -375,7 +390,8 @@ void main() {
         expect(find.byType(Icon), findsOneWidget);
       });
 
-      testWidgets('renders correctly with different theme modes', (WidgetTester tester) async {
+      testWidgets('renders correctly with different theme modes',
+          (WidgetTester tester) async {
         // Test with light theme
         await tester.pumpWidget(
           MaterialApp(

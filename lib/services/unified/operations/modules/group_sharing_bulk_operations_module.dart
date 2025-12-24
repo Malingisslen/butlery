@@ -6,7 +6,8 @@ import 'package:butlery/core/utils/logger.dart';
 /// Module handling bulk group sharing operations.
 /// Provides bulk sharing, removal, and batch operations with progress tracking.
 class GroupSharingBulkOperationsModule {
-  final Future<bool> Function(String groupId, SharedContent content) shareToGroup;
+  final Future<bool> Function(String groupId, SharedContent content)
+      shareToGroup;
   final List<dynamic> Function() getAllCategories;
   final String? Function() getCurrentUserId;
 
@@ -49,7 +50,8 @@ class GroupSharingBulkOperationsModule {
     final results = <String, bool>{};
 
     try {
-      AppLogger.info('Bulk sharing ${contentList.length} items to group $groupId');
+      AppLogger.info(
+          'Bulk sharing ${contentList.length} items to group $groupId');
 
       for (final content in contentList) {
         final success = await shareToGroup(groupId, content);
@@ -61,7 +63,8 @@ class GroupSharingBulkOperationsModule {
       }
 
       final successCount = results.values.where((success) => success).length;
-      AppLogger.success('Bulk shared $successCount/${contentList.length} items to group');
+      AppLogger.success(
+          'Bulk shared $successCount/${contentList.length} items to group');
 
       return results;
     } catch (e) {
@@ -96,7 +99,8 @@ class GroupSharingBulkOperationsModule {
       }
 
       final successCount = results.values.where((success) => success).length;
-      AppLogger.success('Shared content to $successCount/${groupIds.length} groups');
+      AppLogger.success(
+          'Shared content to $successCount/${groupIds.length} groups');
 
       return results;
     } catch (e) {
@@ -119,7 +123,8 @@ class GroupSharingBulkOperationsModule {
     final total = contentList.length * groupIds.length;
 
     try {
-      AppLogger.info('Bulk sharing ${contentList.length} items to ${groupIds.length} groups');
+      AppLogger.info(
+          'Bulk sharing ${contentList.length} items to ${groupIds.length} groups');
 
       for (final content in contentList) {
         results[content.id] = {};
@@ -144,7 +149,8 @@ class GroupSharingBulkOperationsModule {
         });
       });
 
-      AppLogger.success('Bulk operation completed: $successfulShares/$totalShares successful shares');
+      AppLogger.success(
+          'Bulk operation completed: $successfulShares/$totalShares successful shares');
 
       return results;
     } catch (e) {
@@ -161,7 +167,8 @@ class GroupSharingBulkOperationsModule {
     final results = <String, bool>{};
 
     try {
-      AppLogger.info('Removing content $contentId from ${groupIds.length} groups');
+      AppLogger.info(
+          'Removing content $contentId from ${groupIds.length} groups');
 
       for (final groupId in groupIds) {
         try {
@@ -175,7 +182,8 @@ class GroupSharingBulkOperationsModule {
       }
 
       final successCount = results.values.where((success) => success).length;
-      AppLogger.success('Removed content from $successCount/${groupIds.length} groups');
+      AppLogger.success(
+          'Removed content from $successCount/${groupIds.length} groups');
 
       return results;
     } catch (e) {
@@ -204,7 +212,8 @@ class GroupSharingBulkOperationsModule {
         return true;
       }
 
-      final groupIds = accessibleGroups.map((group) => group.id as String).toList();
+      final groupIds =
+          accessibleGroups.map((group) => group.id as String).toList();
       final results = await removeContentFromGroups(
         contentId: contentId,
         groupIds: groupIds,
@@ -216,7 +225,8 @@ class GroupSharingBulkOperationsModule {
       if (success) {
         AppLogger.success('Content removed from all accessible groups');
       } else {
-        AppLogger.warning('Content removal partially successful: $successCount/${groupIds.length}');
+        AppLogger.warning(
+            'Content removal partially successful: $successCount/${groupIds.length}');
       }
 
       return success;

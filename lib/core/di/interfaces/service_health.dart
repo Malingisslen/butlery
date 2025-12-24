@@ -70,7 +70,8 @@ class HealthCheckResult {
   @override
   String toString() {
     final status = isHealthy ? '✅ HEALTHY' : '❌ UNHEALTHY';
-    final time = responseTime != null ? ' (${responseTime!.inMilliseconds}ms)' : '';
+    final time =
+        responseTime != null ? ' (${responseTime!.inMilliseconds}ms)' : '';
     final msg = message != null ? ': $message' : '';
     return '$status $serviceName$time$msg';
   }
@@ -130,18 +131,19 @@ class HealthChecker {
       if (service is HealthCheckable) {
         final isHealthy = await service.healthCheck();
         stopwatch.stop();
-        
+
         return HealthCheckResult(
           isHealthy: isHealthy,
           serviceName: serviceName,
-          message: isHealthy ? service.healthStatus : 'Custom health check failed',
+          message:
+              isHealthy ? service.healthStatus : 'Custom health check failed',
           responseTime: stopwatch.elapsed,
         );
       } else {
         // Basic check - service exists and is not null
         final isHealthy = service != null;
         stopwatch.stop();
-        
+
         return HealthCheckResult(
           isHealthy: isHealthy,
           serviceName: serviceName,
@@ -164,8 +166,9 @@ class HealthChecker {
   static Future<HealthReport> checkServices(
     Map<String, dynamic> services,
   ) async {
-    final futures = services.entries.map((entry) =>
-        checkService(entry.key, entry.value)).toList();
+    final futures = services.entries
+        .map((entry) => checkService(entry.key, entry.value))
+        .toList();
 
     final results = await Future.wait(futures);
     return HealthReport(results);
@@ -179,8 +182,7 @@ class HealthChecker {
     Duration timeout = const Duration(seconds: 5),
   }) async {
     try {
-      return await checkService(serviceName, service)
-          .timeout(timeout);
+      return await checkService(serviceName, service).timeout(timeout);
     } catch (e) {
       return HealthCheckResult.unhealthy(
         serviceName,

@@ -15,10 +15,11 @@ import 'package:butlery/theme/app_colors.dart';
 
 // Mock for ImagePickerService
 class MockImagePickerService extends Mock implements ImagePickerService {}
+
 class MockXFile extends Mock implements XFile {
   final String mockPath;
   MockXFile(this.mockPath);
-  
+
   @override
   String get path => mockPath;
 }
@@ -82,7 +83,7 @@ void main() {
 
     setUp(() {
       mockImagePickerService = MockImagePickerService();
-      
+
       // Setup default mock behavior
       when(() => mockImagePickerService.pickMultipleImages())
           .thenAnswer((_) async => []);
@@ -108,8 +109,10 @@ void main() {
         // Verify empty state UI elements
         expect(find.byIcon(Icons.add_photo_alternate_outlined), findsOneWidget);
         expect(find.text('Lägg till bilder'), findsOneWidget);
-        expect(find.textContaining('Tryck för att lägga till upp till'), findsOneWidget);
-        expect(find.text('Tryck för att lägga till upp till 5 bilder'), findsOneWidget);
+        expect(find.textContaining('Tryck för att lägga till upp till'),
+            findsOneWidget);
+        expect(find.text('Tryck för att lägga till upp till 5 bilder'),
+            findsOneWidget);
       });
 
       testWidgets('shows loading state when isLoading is true',
@@ -127,7 +130,7 @@ void main() {
 
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
         expect(find.text('Adding image...'), findsOneWidget);
-        
+
         // Verify add button is disabled during loading
         expect(find.byIcon(Icons.add_photo_alternate_outlined), findsNothing);
       });
@@ -136,7 +139,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test custom onPickImage callback from production code lines 459-464
         bool callbackTriggered = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: EditableImageWidget(
@@ -168,7 +171,8 @@ void main() {
           ),
         );
 
-        expect(find.text('Tryck för att lägga till upp till 3 bilder'), findsOneWidget);
+        expect(find.text('Tryck för att lägga till upp till 3 bilder'),
+            findsOneWidget);
       });
     });
 
@@ -205,7 +209,7 @@ void main() {
         // Verify edit action buttons are present
         expect(find.byIcon(Icons.add_photo_alternate_outlined), findsOneWidget);
         expect(find.byIcon(Icons.delete_outline), findsOneWidget);
-        
+
         // Should not show "set as primary" for single image
         expect(find.byIcon(Icons.star_outline), findsNothing);
       });
@@ -214,7 +218,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test image tap callback from production code lines 292-297
         int? tappedIndex;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: EditableImageWidget(
@@ -267,7 +271,7 @@ void main() {
 
         // PageView should be present for carousel
         expect(find.byType(PageView), findsOneWidget);
-        
+
         // Navigation dots should be shown (handled by ImageComponents)
         // We can't directly test ImageComponents here, but we verify the call
       });
@@ -324,7 +328,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test primary change callback from production code lines 519-527
         int? newPrimaryIndex;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: EditableImageWidget(
@@ -392,7 +396,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test grid tap to set primary from production code lines 574-581
         int? newPrimaryIndex;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: EditableImageWidget(
@@ -471,7 +475,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test image removal from production code lines 493-517
         List<String>? updatedUrls;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: EditableImageWidget(
@@ -497,7 +501,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test grid image removal from production code lines 779-793
         List<String>? updatedUrls;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: EditableImageWidget(
@@ -576,7 +580,8 @@ void main() {
           createTestWidget(
             child: EditableImageWidget.recipeEdit(
               imageUrls: const [],
-              onImagesChanged: (_) {}, // Callbacks are passed but not tested here
+              onImagesChanged:
+                  (_) {}, // Callbacks are passed but not tested here
               onPrimaryImageChanged: (_) {}, // Focus on pickImage for this test
               onImageTap: (_) {},
               onPickImage: () => pickImageCalled = true,
@@ -614,7 +619,7 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test loading state disables interaction from production code line 156
         bool callbackTriggered = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: EditableImageWidget(
@@ -749,8 +754,7 @@ void main() {
         expect(find.textContaining('Tryck för att lägga till'), findsOneWidget);
       });
 
-      testWidgets('displays Swedish text in grid',
-          (WidgetTester tester) async {
+      testWidgets('displays Swedish text in grid', (WidgetTester tester) async {
         // ULTRATHINK: Test Swedish in grid from production code lines 640, 666, 766
         await tester.pumpWidget(
           createTestWidget(

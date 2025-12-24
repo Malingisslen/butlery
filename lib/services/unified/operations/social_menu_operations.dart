@@ -19,8 +19,8 @@ class SocialMenuOperations {
   SocialMenuOperations({
     required FirebaseFirestore firestore,
     required UnifiedFriendsService friendsService,
-  }) : _firestore = firestore,
-       _friendsService = friendsService;
+  })  : _firestore = firestore,
+        _friendsService = friendsService;
 
   // ===== MENU SHARING WITH FRIENDS =====
 
@@ -52,15 +52,17 @@ class SocialMenuOperations {
 
       // Validate that all friend IDs are actual friends
       final userFriends = _friendsService.friends.map((f) => f.uid).toSet();
-      final invalidFriendIds = friendUserIds.where((id) => !userFriends.contains(id)).toList();
-      
+      final invalidFriendIds =
+          friendUserIds.where((id) => !userFriends.contains(id)).toList();
+
       if (invalidFriendIds.isNotEmpty) {
         AppLogger.error('Invalid friend IDs: ${invalidFriendIds.join(', ')}');
         return false;
       }
 
       // Calculate menu statistics
-      final totalRecipes = menu.values.fold(0, (total, recipes) => total + recipes.length);
+      final totalRecipes =
+          menu.values.fold(0, (total, recipes) => total + recipes.length);
       final menuTitle = customTitle ?? 'Meny från ${currentUser.displayName}';
 
       // Prepare menu data for Firebase
@@ -68,9 +70,9 @@ class SocialMenuOperations {
         'title': menuTitle,
         'description': message?.trim(),
         'menu': menu.map((category, recipes) => MapEntry(
-          category,
-          recipes.map((recipe) => recipe.toJson()).toList(),
-        )),
+              category,
+              recipes.map((recipe) => recipe.toJson()).toList(),
+            )),
         'totalRecipes': totalRecipes,
         'sharedByUserId': currentUser.uid,
         'sharedByDisplayName': currentUser.displayName,
@@ -87,14 +89,14 @@ class SocialMenuOperations {
 
       // Create individual share records for each friend
       final batch = _firestore.batch();
-      
+
       for (final friendId in friendUserIds) {
         final shareRecordRef = _firestore
             .collection('userSharedMenus')
             .doc(friendId)
             .collection('receivedMenus')
             .doc(sharedMenuRef.id);
-        
+
         batch.set(shareRecordRef, {
           'sharedMenuId': sharedMenuRef.id,
           'sharedByUserId': currentUser.uid,
@@ -108,7 +110,8 @@ class SocialMenuOperations {
 
       await batch.commit();
 
-      AppLogger.success('✅ Menu shared successfully with ${friendUserIds.length} friends');
+      AppLogger.success(
+          '✅ Menu shared successfully with ${friendUserIds.length} friends');
       return true;
     } catch (e) {
       AppLogger.error('Failed to share menu with friends', e);
@@ -125,19 +128,22 @@ class SocialMenuOperations {
   }) async {
     try {
       // Get friends in the specified category
-      final friendsInCategory = _friendsService.categories.getFriendsInCategory(categoryId);
-      
+      final friendsInCategory =
+          _friendsService.categories.getFriendsInCategory(categoryId);
+
       if (friendsInCategory.isEmpty) {
         AppLogger.error('No friends found in category');
         return false;
       }
 
       final friendIds = friendsInCategory.map((f) => f.uid).toList();
-      
+
       // Use existing shareMenuWithFriends method
-      final categoryName = _friendsService.categories.getCategoryById(categoryId)?.name ?? 'Grupp';
+      final categoryName =
+          _friendsService.categories.getCategoryById(categoryId)?.name ??
+              'Grupp';
       final enhancedTitle = customTitle ?? 'Meny för $categoryName';
-      
+
       return await shareMenuWithFriends(
         menu: menu,
         friendUserIds: friendIds,
@@ -154,8 +160,9 @@ class SocialMenuOperations {
   Future<List<Map<String, dynamic>>> getMenusSharedByMe() async {
     try {
       if (!ServiceLocator.get<PermissionService>().isAuthenticated) return [];
-      
-      final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+
+      final currentUserId =
+          ServiceLocator.get<PermissionService>().currentUserId;
       if (currentUserId == null) return [];
 
       final querySnapshot = await _firestore
@@ -186,8 +193,9 @@ class SocialMenuOperations {
   Future<List<Map<String, dynamic>>> getMenusSharedWithMe() async {
     try {
       if (!ServiceLocator.get<PermissionService>().isAuthenticated) return [];
-      
-      final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+
+      final currentUserId =
+          ServiceLocator.get<PermissionService>().currentUserId;
       if (currentUserId == null) return [];
 
       final querySnapshot = await _firestore
@@ -198,23 +206,22 @@ class SocialMenuOperations {
           .get();
 
       final sharedMenus = <Map<String, dynamic>>[];
-      
+
       for (final doc in querySnapshot.docs) {
         final data = doc.data();
         final sharedMenuId = data['sharedMenuId'];
-        
+
         // Get full menu data
-        final menuDoc = await _firestore
-            .collection('sharedMenus')
-            .doc(sharedMenuId)
-            .get();
-            
+        final menuDoc =
+            await _firestore.collection('sharedMenus').doc(sharedMenuId).get();
+
         if (menuDoc.exists && menuDoc.data()!['isActive'] == true) {
           final menuData = menuDoc.data()!;
           sharedMenus.add({
             'id': sharedMenuId,
             'title': menuData['title'] ?? 'Namnlös meny',
-            'sharedByDisplayName': menuData['sharedByDisplayName'] ?? 'Okänd användare',
+            'sharedByDisplayName':
+                menuData['sharedByDisplayName'] ?? 'Okänd användare',
             'sharedByAvatarUrl': menuData['sharedByAvatarUrl'],
             'sharedAt': data['sharedAt'],
             'totalRecipes': menuData['totalRecipes'] ?? 0,
@@ -235,16 +242,17 @@ class SocialMenuOperations {
   /// Import shared menu to local saved menus
   Future<bool> importSharedMenu(String sharedMenuId) async {
     try {
-      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return false;
-      
-      final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+      if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
+        return false;
+      }
+
+      final currentUserId =
+          ServiceLocator.get<PermissionService>().currentUserId;
       if (currentUserId == null) return false;
 
       // Get shared menu data
-      final menuDoc = await _firestore
-          .collection('sharedMenus')
-          .doc(sharedMenuId)
-          .get();
+      final menuDoc =
+          await _firestore.collection('sharedMenus').doc(sharedMenuId).get();
 
       if (!menuDoc.exists) {
         AppLogger.error('Shared menu not found');
@@ -252,9 +260,10 @@ class SocialMenuOperations {
       }
 
       final menuData = menuDoc.data()!;
-      
+
       // Verify user has access to this menu
-      final sharedWithUserIds = List<String>.from(menuData['sharedWithUserIds'] ?? []);
+      final sharedWithUserIds =
+          List<String>.from(menuData['sharedWithUserIds'] ?? []);
       if (!sharedWithUserIds.contains(currentUserId)) {
         AppLogger.error('User does not have access to this menu');
         return false;
@@ -283,8 +292,9 @@ class SocialMenuOperations {
   Future<void> markMenuAsViewed(String sharedMenuId) async {
     try {
       if (!ServiceLocator.get<PermissionService>().isAuthenticated) return;
-      
-      final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+
+      final currentUserId =
+          ServiceLocator.get<PermissionService>().currentUserId;
       if (currentUserId == null) return;
 
       await _firestore
@@ -307,15 +317,14 @@ class SocialMenuOperations {
   Future<Map<String, dynamic>?> getSharedMenuData(String sharedMenuId) async {
     try {
       if (!ServiceLocator.get<PermissionService>().isAuthenticated) return null;
-      
-      final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+
+      final currentUserId =
+          ServiceLocator.get<PermissionService>().currentUserId;
       if (currentUserId == null) return null;
 
       // Get shared menu data
-      final menuDoc = await _firestore
-          .collection('sharedMenus')
-          .doc(sharedMenuId)
-          .get();
+      final menuDoc =
+          await _firestore.collection('sharedMenus').doc(sharedMenuId).get();
 
       if (!menuDoc.exists || menuDoc.data()!['isActive'] != true) {
         AppLogger.error('Shared menu not found or inactive');
@@ -323,9 +332,10 @@ class SocialMenuOperations {
       }
 
       final menuData = menuDoc.data()!;
-      
+
       // Verify user has access to this menu
-      final sharedWithUserIds = List<String>.from(menuData['sharedWithUserIds'] ?? []);
+      final sharedWithUserIds =
+          List<String>.from(menuData['sharedWithUserIds'] ?? []);
       if (!sharedWithUserIds.contains(currentUserId)) {
         AppLogger.error('User does not have access to this menu');
         return null;
@@ -338,7 +348,8 @@ class SocialMenuOperations {
         menuJson.forEach((category, recipeList) {
           if (recipeList is List) {
             menu[category] = recipeList
-                .map((recipeData) => Recipe.fromJson(recipeData as Map<String, dynamic>))
+                .map((recipeData) =>
+                    Recipe.fromJson(recipeData as Map<String, dynamic>))
                 .toList();
           }
         });
@@ -351,7 +362,8 @@ class SocialMenuOperations {
         'menu': menu,
         'totalRecipes': menuData['totalRecipes'] ?? 0,
         'sharedByUserId': menuData['sharedByUserId'],
-        'sharedByDisplayName': menuData['sharedByDisplayName'] ?? 'Okänd användare',
+        'sharedByDisplayName':
+            menuData['sharedByDisplayName'] ?? 'Okänd användare',
         'sharedByAvatarUrl': menuData['sharedByAvatarUrl'],
         'sharedAt': menuData['sharedAt'],
       };
@@ -364,16 +376,17 @@ class SocialMenuOperations {
   /// Delete shared menu (only by owner)
   Future<bool> deleteSharedMenu(String sharedMenuId) async {
     try {
-      if (!ServiceLocator.get<PermissionService>().isAuthenticated) return false;
-      
-      final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+      if (!ServiceLocator.get<PermissionService>().isAuthenticated) {
+        return false;
+      }
+
+      final currentUserId =
+          ServiceLocator.get<PermissionService>().currentUserId;
       if (currentUserId == null) return false;
 
       // Get shared menu to verify ownership
-      final menuDoc = await _firestore
-          .collection('sharedMenus')
-          .doc(sharedMenuId)
-          .get();
+      final menuDoc =
+          await _firestore.collection('sharedMenus').doc(sharedMenuId).get();
 
       if (!menuDoc.exists) {
         AppLogger.error('Shared menu not found');
@@ -387,10 +400,7 @@ class SocialMenuOperations {
       }
 
       // Soft delete (mark as inactive)
-      await _firestore
-          .collection('sharedMenus')
-          .doc(sharedMenuId)
-          .update({
+      await _firestore.collection('sharedMenus').doc(sharedMenuId).update({
         'isActive': false,
         'deletedAt': FieldValue.serverTimestamp(),
       });
@@ -407,8 +417,9 @@ class SocialMenuOperations {
   Future<Map<String, dynamic>> getSharingStats() async {
     try {
       if (!ServiceLocator.get<PermissionService>().isAuthenticated) return {};
-      
-      final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+
+      final currentUserId =
+          ServiceLocator.get<PermissionService>().currentUserId;
       if (currentUserId == null) return {};
 
       // Get menus shared by user
@@ -427,10 +438,11 @@ class SocialMenuOperations {
 
       final totalSharedByMe = sharedByMeQuery.docs.length;
       final totalSharedWithMe = sharedWithMeQuery.docs.length;
-      
+
       // Calculate total friends shared with
       final totalFriendsSharedWith = sharedByMeQuery.docs
-          .expand((doc) => List<String>.from(doc.data()['sharedWithUserIds'] ?? []))
+          .expand(
+              (doc) => List<String>.from(doc.data()['sharedWithUserIds'] ?? []))
           .toSet()
           .length;
 

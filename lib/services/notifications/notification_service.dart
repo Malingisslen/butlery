@@ -6,7 +6,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/services/notifications/notification_repository.dart' as legacy;
+import 'package:butlery/services/notifications/notification_repository.dart'
+    as legacy;
 import 'package:butlery/models/notification_preferences.dart';
 import 'package:butlery/models/notification_batch.dart';
 import 'package:butlery/services/notifications/fcm_service.dart';
@@ -16,7 +17,8 @@ import 'package:butlery/services/notifications/modules/notification_offline_mana
 import 'package:butlery/services/notifications/modules/notification_batch_manager.dart';
 import 'package:butlery/services/notifications/modules/fcm_token_manager.dart';
 import 'package:butlery/services/notifications/modules/notification_analytics_manager.dart';
-import 'package:butlery/repositories/interfaces/notifications_repository.dart' as interface_repo;
+import 'package:butlery/repositories/interfaces/notifications_repository.dart'
+    as interface_repo;
 import 'package:get_it/get_it.dart';
 
 /// Notification coordinator using modular architecture with 6 specialized managers (Content, Preference, Offline, Batch, Token, Analytics).
@@ -26,7 +28,7 @@ class NotificationService extends BaseService {
   String get serviceName => 'NotificationService';
   final String _userId;
   late final legacy.NotificationRepository _repository;
-  
+
   // Focused notification modules (Single Responsibility)
   late final NotificationContentManager _contentManager;
   late final NotificationPreferenceManager _preferenceManager;
@@ -34,43 +36,44 @@ class NotificationService extends BaseService {
   late final NotificationBatchManager _batchManager;
   late final FCMTokenManager _tokenManager;
   late final NotificationAnalyticsManager _analyticsManager;
-  
+
   bool _isInitialized = false;
 
   NotificationService({
     required String userId,
   }) : _userId = userId {
-    final notificationsRepository = GetIt.instance<interface_repo.NotificationsRepository>();
-    
+    final notificationsRepository =
+        GetIt.instance<interface_repo.NotificationsRepository>();
+
     _repository = legacy.NotificationRepository(
       userId: userId,
     );
-    
+
     // Initialize all focused modules
     _contentManager = NotificationContentManager(
       userId: userId,
     );
-    
+
     _preferenceManager = NotificationPreferenceManager(
       notificationsRepository: notificationsRepository,
       userId: userId,
     );
-    
+
     _offlineManager = NotificationOfflineManager(
       userId: userId,
       sendNotificationCallback: _sendQueuedNotification,
     );
-    
+
     _batchManager = NotificationBatchManager(
       userId: userId,
       repository: _repository,
       sendBatchCallback: _sendBatchedNotification,
     );
-    
+
     _tokenManager = FCMTokenManager(
       userId: userId,
     );
-    
+
     _analyticsManager = NotificationAnalyticsManager(
       userId: userId,
     );
@@ -87,7 +90,8 @@ class NotificationService extends BaseService {
 
     await safeExecute(
       () async {
-        AppLogger.info('🔔 Initializing NotificationService coordinator for user: $_userId');
+        AppLogger.info(
+            '🔔 Initializing NotificationService coordinator for user: $_userId');
 
         // Initialize FCM service
         await FCMService.initialize(
@@ -109,10 +113,12 @@ class NotificationService extends BaseService {
         await _offlineManager.processOfflineQueue();
 
         _isInitialized = true;
-        AppLogger.success('✅ NotificationService coordinator initialized successfully');
+        AppLogger.success(
+            '✅ NotificationService coordinator initialized successfully');
       },
       operationName: 'Initialize NotificationService',
-      customErrorMessage: 'Failed to initialize NotificationService coordinator',
+      customErrorMessage:
+          'Failed to initialize NotificationService coordinator',
     );
   }
 
@@ -128,28 +134,34 @@ class NotificationService extends BaseService {
     try {
       await safeExecute(
         () async {
-          AppLogger.info('🔔 Coordinator: Sending immediate notification to ${targetUserIds.length} users');
+          AppLogger.info(
+              '🔔 Coordinator: Sending immediate notification to ${targetUserIds.length} users');
 
           // Filter users based on preferences and quiet hours
-          final filteredUserIds = await _preferenceManager.filterUsersForNotification(
+          final filteredUserIds =
+              await _preferenceManager.filterUsersForNotification(
             targetUserIds,
             strategy.category,
             strategy.type,
           );
 
           if (filteredUserIds.isEmpty) {
-            AppLogger.info('📋 No users eligible for notification after preference filtering');
+            AppLogger.info(
+                '📋 No users eligible for notification after preference filtering');
             return;
           }
 
           for (final targetUserId in filteredUserIds) {
             // Generate unique notification ID
-            final notificationId = _contentManager.generateNotificationId(targetUserId, strategy);
+            final notificationId =
+                _contentManager.generateNotificationId(targetUserId, strategy);
 
             // Check if already sent (prevent duplicates)
-            final alreadySent = await _repository.wasNotificationSent(notificationId);
+            final alreadySent =
+                await _repository.wasNotificationSent(notificationId);
             if (alreadySent) {
-              AppLogger.info('📋 Notification $notificationId already sent, skipping');
+              AppLogger.info(
+                  '📋 Notification $notificationId already sent, skipping');
               continue;
             }
 
@@ -183,7 +195,8 @@ class NotificationService extends BaseService {
             );
           }
 
-          AppLogger.success('✅ Immediate notification sent to ${filteredUserIds.length} users');
+          AppLogger.success(
+              '✅ Immediate notification sent to ${filteredUserIds.length} users');
         },
         operationName: 'Send Immediate Notification',
         customErrorMessage: 'Failed to send immediate notification',
@@ -215,7 +228,8 @@ class NotificationService extends BaseService {
   }) async {
     await safeExecute(
       () async {
-        AppLogger.info('🔔 Coordinator: Processing batchable notification for ${targetUserIds.length} users');
+        AppLogger.info(
+            '🔔 Coordinator: Processing batchable notification for ${targetUserIds.length} users');
 
         // Delegate to batch manager
         final batched = await _batchManager.addToBatch(
@@ -245,7 +259,8 @@ class NotificationService extends BaseService {
     // Silent notifications are less critical, don't rethrow errors
     await safeExecute(
       () async {
-        AppLogger.info('🔔 Coordinator: Sending silent notification to ${targetUserIds.length} users');
+        AppLogger.info(
+            '🔔 Coordinator: Sending silent notification to ${targetUserIds.length} users');
 
         for (final targetUserId in targetUserIds) {
           // Send data-only FCM message
@@ -270,18 +285,21 @@ class NotificationService extends BaseService {
     // Digest notifications are not critical, don't rethrow errors
     await safeExecute(
       () async {
-        AppLogger.info('🔔 Coordinator: Sending digest notification to user: $targetUserId');
+        AppLogger.info(
+            '🔔 Coordinator: Sending digest notification to user: $targetUserId');
 
         // Check if user wants digest notifications
-        final digestEnabled = await _preferenceManager.areDigestNotificationsEnabled();
+        final digestEnabled =
+            await _preferenceManager.areDigestNotificationsEnabled();
         if (!digestEnabled) {
           AppLogger.info('📋 User has disabled digest notifications');
           return;
         }
 
         // Build digest content
-        final digestContent = _contentManager.buildDigestContent(activityList, strategy);
-        
+        final digestContent =
+            _contentManager.buildDigestContent(activityList, strategy);
+
         // Create notification template
         final template = _contentManager.createNotificationContent(
           strategy: strategy,
@@ -290,7 +308,8 @@ class NotificationService extends BaseService {
         );
 
         // Generate notification ID
-        final notificationId = _contentManager.generateNotificationId(targetUserId, strategy);
+        final notificationId =
+            _contentManager.generateNotificationId(targetUserId, strategy);
 
         // Send via FCM
         await _sendFCMNotification(targetUserId, template, notificationId);
@@ -320,11 +339,12 @@ class NotificationService extends BaseService {
   /// Handle foreground message
   void _handleForegroundMessage(RemoteMessage message) {
     try {
-      AppLogger.info('🔔 Coordinator: Handling foreground message: ${message.notification?.title}');
-      
+      AppLogger.info(
+          '🔔 Coordinator: Handling foreground message: ${message.notification?.title}');
+
       // Show in-app notification or update UI
       FCMService.showForegroundNotification(message);
-      
+
       // Record analytics
       final notificationId = message.data['notificationId'] as String?;
       if (notificationId != null) {
@@ -342,11 +362,12 @@ class NotificationService extends BaseService {
   /// Handle message opened app
   void _handleMessageOpened(RemoteMessage message) {
     try {
-      AppLogger.info('🔔 Coordinator: Handling message opened app: ${message.notification?.title}');
-      
+      AppLogger.info(
+          '🔔 Coordinator: Handling message opened app: ${message.notification?.title}');
+
       // Navigate to appropriate screen
       // This would need a BuildContext or navigation service
-      
+
       // Record analytics
       final notificationId = message.data['notificationId'] as String?;
       if (notificationId != null) {
@@ -373,11 +394,13 @@ class NotificationService extends BaseService {
   }
 
   /// Send FCM notification via Cloud Function
-  Future<void> _sendFCMNotification(String targetUserId, NotificationTemplate template, String notificationId) async {
+  Future<void> _sendFCMNotification(String targetUserId,
+      NotificationTemplate template, String notificationId) async {
     try {
       AppLogger.info('🔔 Sending FCM notification to: $targetUserId');
 
-      final callable = FirebaseFunctions.instance.httpsCallable('sendNotification');
+      final callable =
+          FirebaseFunctions.instance.httpsCallable('sendNotification');
 
       final result = await callable.call<Map<String, dynamic>>({
         'targetUserId': targetUserId,
@@ -399,7 +422,8 @@ class NotificationService extends BaseService {
         AppLogger.success('✅ FCM notification sent: $successCount device(s)');
       }
       if (failureCount > 0) {
-        AppLogger.warning('⚠️ FCM notification failed for $failureCount device(s)');
+        AppLogger.warning(
+            '⚠️ FCM notification failed for $failureCount device(s)');
       }
       if (successCount == 0 && failureCount == 0) {
         AppLogger.info('ℹ️ No FCM tokens registered for user $targetUserId');
@@ -411,11 +435,13 @@ class NotificationService extends BaseService {
   }
 
   /// Send silent FCM notification via Cloud Function (for background sync events)
-  Future<void> _sendSilentFCMNotification(String targetUserId, Map<String, dynamic> data) async {
+  Future<void> _sendSilentFCMNotification(
+      String targetUserId, Map<String, dynamic> data) async {
     try {
       AppLogger.info('🔔 Sending silent FCM notification to: $targetUserId');
 
-      final callable = FirebaseFunctions.instance.httpsCallable('sendNotification');
+      final callable =
+          FirebaseFunctions.instance.httpsCallable('sendNotification');
 
       await callable.call<Map<String, dynamic>>({
         'targetUserId': targetUserId,
@@ -440,13 +466,13 @@ class NotificationService extends BaseService {
       actions: notification.actions,
     );
   }
-  
+
   /// Callback for sending batched notifications from batch manager
   Future<void> _sendBatchedNotification(NotificationBatch batch) async {
     if (batch.notifications.isNotEmpty) {
       final template = batch.notifications.first;
       final notificationId = _contentManager.generateNotificationId(
-        batch.userId, 
+        batch.userId,
         NotificationStrategy.recipeComment, // Default strategy for batches
       );
       await _sendFCMNotification(batch.userId, template, notificationId);
@@ -468,24 +494,23 @@ class NotificationService extends BaseService {
     await _preferenceManager.updatePreferences(preferences);
   }
 
-
   // ===== PUBLIC UTILITY METHODS =====
-  
+
   /// Get current FCM token
   Future<String?> getCurrentToken() async {
     return await _tokenManager.getCurrentToken();
   }
-  
+
   /// Get notification analytics summary
   Future<Map<String, dynamic>> getAnalyticsSummary() async {
     return await _analyticsManager.getUserEngagementSummary();
   }
-  
+
   /// Get offline queue statistics
   Map<String, dynamic> getOfflineQueueStats() {
     return _offlineManager.getQueueStatistics();
   }
-  
+
   Map<String, dynamic> getBatchStats() {
     return _batchManager.getBatchStatistics();
   }
@@ -494,17 +519,17 @@ class NotificationService extends BaseService {
   Future<void> onDispose() async {
     try {
       AppLogger.info('🔔 Disposing NotificationService coordinator...');
-      
+
       // Dispose all modules
       _batchManager.dispose();
       _offlineManager.dispose();
       _tokenManager.dispose();
       await _analyticsManager.dispose();
       _preferenceManager.dispose();
-      
+
       // Clear repository cache
       _repository.clearCache();
-      
+
       _isInitialized = false;
       AppLogger.success('✅ NotificationService coordinator disposed');
     } catch (e) {

@@ -1,12 +1,12 @@
 /// Integration tests for Firebase MenuCollaborationRepository
-/// 
+///
 /// Tests FieldValue operations that require Firebase behavior and cannot be unit tested.
 /// Following HYBRID_TESTING_STRATEGY.md: Use integration tests for FieldValue operations.
 ///
 /// **FieldValue Operations Tested:**
 /// - FieldValue.serverTimestamp(): Server-side timestamp generation
 /// - FieldValue.arrayUnion(): Adding recipes to menu categories
-/// - FieldValue.arrayRemove(): Removing recipes from menu categories  
+/// - FieldValue.arrayRemove(): Removing recipes from menu categories
 /// - FieldValue.increment(): Template usage counter updates
 ///
 /// **Testing Strategy:**
@@ -35,7 +35,7 @@ void main() {
     late FirebaseAuthRepository authRepository;
     late auth_mocks.MockFirebaseAuth mockAuth;
     late auth_mocks.MockUser mockUser;
-    
+
     // Test data
     const testUserId = 'test-user-123';
     const testUserEmail = 'test@example.com';
@@ -46,8 +46,9 @@ void main() {
 
     setUp(() async {
       // Initialize test isolation
-      TestDataIsolator.initializeTest('menu_collaboration_repository_integration_test');
-      
+      TestDataIsolator.initializeTest(
+          'menu_collaboration_repository_integration_test');
+
       // Set up fake Firebase instances
       fakeFirestore = FirestoreSingleton.instance;
       mockUser = auth_mocks.MockUser(
@@ -55,11 +56,12 @@ void main() {
         email: testUserEmail,
         displayName: testUserDisplayName,
       );
-      mockAuth = auth_mocks.MockFirebaseAuth(mockUser: mockUser, signedIn: true);
-      
+      mockAuth =
+          auth_mocks.MockFirebaseAuth(mockUser: mockUser, signedIn: true);
+
       // Setup auth repository
       authRepository = FirebaseAuthRepository(firebaseAuth: mockAuth);
-      
+
       // Create repository with fake Firestore
       repository = FirebaseMenuCollaborationRepository(
         firestore: fakeFirestore,
@@ -114,12 +116,13 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        
-        final doc = await fakeFirestore.collection('shared_menus').doc(newMenuId).get();
+
+        final doc =
+            await fakeFirestore.collection('shared_menus').doc(newMenuId).get();
         final data = doc.data()!;
-        
+
         expect(data['collaborationEnabledAt'], isA<Timestamp>());
-        
+
         // Verify timestamp is recent (within last minute)
         final timestamp = data['collaborationEnabledAt'] as Timestamp;
         final now = DateTime.now();
@@ -137,18 +140,18 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        
+
         final ratingsCollection = fakeFirestore
             .collection('menu_ratings')
             .doc(testMenuId)
             .collection('ratings');
-        
+
         final snapshot = await ratingsCollection.get();
         expect(snapshot.docs, hasLength(1));
-        
+
         final ratingData = snapshot.docs.first.data();
         expect(ratingData['ratedAt'], isA<Timestamp>());
-        
+
         // Verify timestamp consistency
         final ratedAt = (ratingData['ratedAt'] as Timestamp).toDate();
         final now = DateTime.now();
@@ -164,21 +167,22 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        
+
         final commentsCollection = fakeFirestore
             .collection('menu_comments')
             .doc(testMenuId)
             .collection('comments');
-        
+
         final snapshot = await commentsCollection.get();
         expect(snapshot.docs, hasLength(1));
-        
+
         final commentData = snapshot.docs.first.data();
         expect(commentData['commentedAt'], isA<Timestamp>());
         expect(commentData['comment'], equals('This looks delicious!'));
       });
 
-      test('should handle multiple server timestamps in single operation', () async {
+      test('should handle multiple server timestamps in single operation',
+          () async {
         // Act - Add recipe which uses both lastUpdatedAt and activity timestamp
         final result = await repository.addRecipeToMenu(
           menuId: testMenuId,
@@ -188,28 +192,33 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        
+
         // Check menu document timestamp
-        final menuDoc = await fakeFirestore.collection('shared_menus').doc(testMenuId).get();
+        final menuDoc = await fakeFirestore
+            .collection('shared_menus')
+            .doc(testMenuId)
+            .get();
         final menuData = menuDoc.data()!;
         expect(menuData['lastUpdatedAt'], isA<Timestamp>());
-        
+
         // Check activity log timestamp
         final activitiesCollection = fakeFirestore
             .collection('menu_activity')
             .doc(testMenuId)
             .collection('activities');
-        
+
         final activitiesSnapshot = await activitiesCollection.get();
         expect(activitiesSnapshot.docs, hasLength(1));
-        
+
         final activityData = activitiesSnapshot.docs.first.data();
         expect(activityData['timestamp'], isA<Timestamp>());
-        
+
         // Timestamps should be very close (within 1 second)
         final menuTimestamp = (menuData['lastUpdatedAt'] as Timestamp).toDate();
-        final activityTimestamp = (activityData['timestamp'] as Timestamp).toDate();
-        expect(menuTimestamp.difference(activityTimestamp).abs().inSeconds, lessThanOrEqualTo(1));
+        final activityTimestamp =
+            (activityData['timestamp'] as Timestamp).toDate();
+        expect(menuTimestamp.difference(activityTimestamp).abs().inSeconds,
+            lessThanOrEqualTo(1));
       });
     });
 
@@ -225,18 +234,23 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        
-        final doc = await fakeFirestore.collection('shared_menus').doc(testMenuId).get();
+
+        final doc = await fakeFirestore
+            .collection('shared_menus')
+            .doc(testMenuId)
+            .get();
         final data = doc.data()!;
         final menuSnapshot = data['menuSnapshot'] as Map<String, dynamic>;
-        final huvudratter = List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
-        
+        final huvudratter =
+            List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
+
         expect(huvudratter, hasLength(1));
         expect(huvudratter[0]['id'], equals(testRecipe.id));
         expect(huvudratter[0]['title'], equals(testRecipe.title));
       });
 
-      test('should prevent duplicate recipes with arrayUnion behavior', () async {
+      test('should prevent duplicate recipes with arrayUnion behavior',
+          () async {
         // Arrange - Add recipe first time
         await repository.addRecipeToMenu(
           menuId: testMenuId,
@@ -253,12 +267,16 @@ void main() {
 
         // Assert
         expect(result2, isTrue);
-        
-        final doc = await fakeFirestore.collection('shared_menus').doc(testMenuId).get();
+
+        final doc = await fakeFirestore
+            .collection('shared_menus')
+            .doc(testMenuId)
+            .get();
         final data = doc.data()!;
         final menuSnapshot = data['menuSnapshot'] as Map<String, dynamic>;
-        final huvudratter = List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
-        
+        final huvudratter =
+            List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
+
         // arrayUnion should prevent duplicates based on exact object matching
         expect(huvudratter.length, greaterThanOrEqualTo(1));
         expect(huvudratter.every((r) => r['id'] == testRecipe.id), isTrue);
@@ -274,20 +292,25 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        
-        final doc = await fakeFirestore.collection('shared_menus').doc(testMenuId).get();
+
+        final doc = await fakeFirestore
+            .collection('shared_menus')
+            .doc(testMenuId)
+            .get();
         final data = doc.data()!;
         final menuSnapshot = data['menuSnapshot'] as Map<String, dynamic>;
-        
+
         expect(menuSnapshot.containsKey('Efterrätter'), isTrue);
-        final efterratter = List<Map<String, dynamic>>.from(menuSnapshot['Efterrätter']);
+        final efterratter =
+            List<Map<String, dynamic>>.from(menuSnapshot['Efterrätter']);
         expect(efterratter, hasLength(1));
         expect(efterratter[0]['id'], equals(testRecipe.id));
       });
     });
 
     group('FieldValue.arrayRemove() Operations', () {
-      test('should remove recipe from menu category using arrayRemove', () async {
+      test('should remove recipe from menu category using arrayRemove',
+          () async {
         // Arrange - Add recipe first
         await repository.addRecipeToMenu(
           menuId: testMenuId,
@@ -296,9 +319,13 @@ void main() {
         );
 
         // Verify recipe was added
-        var doc = await fakeFirestore.collection('shared_menus').doc(testMenuId).get();
+        var doc = await fakeFirestore
+            .collection('shared_menus')
+            .doc(testMenuId)
+            .get();
         var menuSnapshot = doc.data()!['menuSnapshot'] as Map<String, dynamic>;
-        var huvudratter = List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
+        var huvudratter =
+            List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
         expect(huvudratter, hasLength(1));
 
         // Act - Remove the recipe
@@ -311,12 +338,16 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        
-        doc = await fakeFirestore.collection('shared_menus').doc(testMenuId).get();
+
+        doc = await fakeFirestore
+            .collection('shared_menus')
+            .doc(testMenuId)
+            .get();
         final data = doc.data()!;
         menuSnapshot = data['menuSnapshot'] as Map<String, dynamic>;
-        huvudratter = List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
-        
+        huvudratter =
+            List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
+
         expect(huvudratter, isEmpty);
       });
 
@@ -331,12 +362,16 @@ void main() {
 
         // Assert - Should return true (operation succeeded, item just wasn't there)
         expect(result, isTrue);
-        
+
         // Menu should remain unchanged
-        final doc = await fakeFirestore.collection('shared_menus').doc(testMenuId).get();
+        final doc = await fakeFirestore
+            .collection('shared_menus')
+            .doc(testMenuId)
+            .get();
         final data = doc.data()!;
         final menuSnapshot = data['menuSnapshot'] as Map<String, dynamic>;
-        final huvudratter = List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
+        final huvudratter =
+            List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
         expect(huvudratter, isEmpty); // Still empty as it was initially
       });
 
@@ -353,7 +388,7 @@ void main() {
           category: 'Huvudrätter',
           recipe: testRecipe,
         );
-        
+
         await repository.addRecipeToMenu(
           menuId: testMenuId,
           category: 'Huvudrätter',
@@ -369,12 +404,16 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        
-        final doc = await fakeFirestore.collection('shared_menus').doc(testMenuId).get();
+
+        final doc = await fakeFirestore
+            .collection('shared_menus')
+            .doc(testMenuId)
+            .get();
         final data = doc.data()!;
         final menuSnapshot = data['menuSnapshot'] as Map<String, dynamic>;
-        final huvudratter = List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
-        
+        final huvudratter =
+            List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
+
         expect(huvudratter, hasLength(1));
         expect(huvudratter[0]['id'], equals(recipe2.id));
         expect(huvudratter[0]['title'], equals('Another Recipe'));
@@ -384,7 +423,10 @@ void main() {
     group('FieldValue.increment() Operations', () {
       test('should increment template use count', () async {
         // Arrange - Verify initial count
-        var templateDoc = await fakeFirestore.collection('menu_templates').doc(testTemplateId).get();
+        var templateDoc = await fakeFirestore
+            .collection('menu_templates')
+            .doc(testTemplateId)
+            .get();
         expect(templateDoc.data()!['useCount'], equals(0));
 
         // Act - Create menu from template (which should increment useCount)
@@ -395,9 +437,12 @@ void main() {
 
         // Assert
         expect(result, isNotNull);
-        
+
         // Check that use count was incremented
-        templateDoc = await fakeFirestore.collection('menu_templates').doc(testTemplateId).get();
+        templateDoc = await fakeFirestore
+            .collection('menu_templates')
+            .doc(testTemplateId)
+            .get();
         expect(templateDoc.data()!['useCount'], equals(1));
       });
 
@@ -407,26 +452,32 @@ void main() {
           templateId: testTemplateId,
           menuTitle: 'Menu 1',
         );
-        
+
         await repository.createMenuFromTemplate(
           templateId: testTemplateId,
           menuTitle: 'Menu 2',
         );
-        
+
         await repository.createMenuFromTemplate(
           templateId: testTemplateId,
           menuTitle: 'Menu 3',
         );
 
         // Assert
-        final templateDoc = await fakeFirestore.collection('menu_templates').doc(testTemplateId).get();
+        final templateDoc = await fakeFirestore
+            .collection('menu_templates')
+            .doc(testTemplateId)
+            .get();
         expect(templateDoc.data()!['useCount'], equals(3));
       });
 
       test('should create field with increment if it does not exist', () async {
         // Arrange - Create template without useCount field
         const newTemplateId = 'template-without-count';
-        await fakeFirestore.collection('menu_templates').doc(newTemplateId).set({
+        await fakeFirestore
+            .collection('menu_templates')
+            .doc(newTemplateId)
+            .set({
           'templateName': 'Template Without Count',
           'ownerId': testUserId,
           'menuSnapshot': {},
@@ -442,14 +493,19 @@ void main() {
 
         // Assert
         expect(result, isNotNull);
-        
-        final templateDoc = await fakeFirestore.collection('menu_templates').doc(newTemplateId).get();
-        expect(templateDoc.data()!['useCount'], equals(1)); // Should be created with value 1
+
+        final templateDoc = await fakeFirestore
+            .collection('menu_templates')
+            .doc(newTemplateId)
+            .get();
+        expect(templateDoc.data()!['useCount'],
+            equals(1)); // Should be created with value 1
       });
     });
 
     group('Complex FieldValue Combinations', () {
-      test('should handle multiple FieldValue operations in single update', () async {
+      test('should handle multiple FieldValue operations in single update',
+          () async {
         // Act - Add recipe (uses arrayUnion + serverTimestamp + activity logging)
         final result = await repository.addRecipeToMenu(
           menuId: testMenuId,
@@ -460,25 +516,29 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        
+
         // Check menu document (arrayUnion + serverTimestamp)
-        final menuDoc = await fakeFirestore.collection('shared_menus').doc(testMenuId).get();
+        final menuDoc = await fakeFirestore
+            .collection('shared_menus')
+            .doc(testMenuId)
+            .get();
         final menuData = menuDoc.data()!;
-        
+
         expect(menuData['lastUpdatedAt'], isA<Timestamp>());
         expect(menuData['lastUpdatedBy'], equals(testUserId));
-        
+
         final menuSnapshot = menuData['menuSnapshot'] as Map<String, dynamic>;
-        final huvudratter = List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
+        final huvudratter =
+            List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
         expect(huvudratter, hasLength(1));
-        
+
         // Check activity log (separate serverTimestamp)
         final activitiesSnapshot = await fakeFirestore
             .collection('menu_activity')
             .doc(testMenuId)
             .collection('activities')
             .get();
-        
+
         expect(activitiesSnapshot.docs, hasLength(1));
         final activityData = activitiesSnapshot.docs.first.data();
         expect(activityData['timestamp'], isA<Timestamp>());
@@ -489,12 +549,12 @@ void main() {
         // Arrange - Create multiple templates for concurrent increment testing
         const template1 = 'concurrent-template-1';
         const template2 = 'concurrent-template-2';
-        
+
         await fakeFirestore.collection('menu_templates').doc(template1).set({
           'templateName': 'Concurrent Template 1',
           'useCount': 0,
         });
-        
+
         await fakeFirestore.collection('menu_templates').doc(template2).set({
           'templateName': 'Concurrent Template 2',
           'useCount': 0,
@@ -502,28 +562,40 @@ void main() {
 
         // Act - Simulate concurrent operations
         final futures = [
-          repository.createMenuFromTemplate(templateId: template1, menuTitle: 'Menu 1A'),
-          repository.createMenuFromTemplate(templateId: template1, menuTitle: 'Menu 1B'),
-          repository.createMenuFromTemplate(templateId: template2, menuTitle: 'Menu 2A'),
-          repository.createMenuFromTemplate(templateId: template1, menuTitle: 'Menu 1C'),
-          repository.createMenuFromTemplate(templateId: template2, menuTitle: 'Menu 2B'),
+          repository.createMenuFromTemplate(
+              templateId: template1, menuTitle: 'Menu 1A'),
+          repository.createMenuFromTemplate(
+              templateId: template1, menuTitle: 'Menu 1B'),
+          repository.createMenuFromTemplate(
+              templateId: template2, menuTitle: 'Menu 2A'),
+          repository.createMenuFromTemplate(
+              templateId: template1, menuTitle: 'Menu 1C'),
+          repository.createMenuFromTemplate(
+              templateId: template2, menuTitle: 'Menu 2B'),
         ];
-        
+
         final results = await Future.wait(futures);
 
         // Assert
         expect(results.every((r) => r != null), isTrue);
-        
-        final template1Doc = await fakeFirestore.collection('menu_templates').doc(template1).get();
-        final template2Doc = await fakeFirestore.collection('menu_templates').doc(template2).get();
-        
+
+        final template1Doc = await fakeFirestore
+            .collection('menu_templates')
+            .doc(template1)
+            .get();
+        final template2Doc = await fakeFirestore
+            .collection('menu_templates')
+            .doc(template2)
+            .get();
+
         expect(template1Doc.data()!['useCount'], equals(3)); // Used 3 times
         expect(template2Doc.data()!['useCount'], equals(2)); // Used 2 times
       });
     });
 
     group('Error Handling with FieldValue Operations', () {
-      test('should handle FieldValue operations on non-existent documents', () async {
+      test('should handle FieldValue operations on non-existent documents',
+          () async {
         // Act - Try to add recipe to non-existent menu
         final result = await repository.addRecipeToMenu(
           menuId: 'non-existent-menu',
@@ -549,7 +621,7 @@ void main() {
       test('should maintain data consistency on partial failures', () async {
         // This test verifies that if part of a complex FieldValue operation fails,
         // the document remains in a consistent state
-        
+
         // Arrange - Add recipe successfully first
         await repository.addRecipeToMenu(
           menuId: testMenuId,
@@ -558,10 +630,14 @@ void main() {
         );
 
         // Verify initial state
-        var doc = await fakeFirestore.collection('shared_menus').doc(testMenuId).get();
+        var doc = await fakeFirestore
+            .collection('shared_menus')
+            .doc(testMenuId)
+            .get();
         var data = doc.data()!;
         var menuSnapshot = data['menuSnapshot'] as Map<String, dynamic>;
-        var huvudratter = List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
+        var huvudratter =
+            List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
         expect(huvudratter, hasLength(1));
 
         // Act - Try to remove with proper ID (should succeed)
@@ -573,13 +649,17 @@ void main() {
 
         // Assert - Operation should succeed and maintain consistency
         expect(result, isTrue);
-        
-        doc = await fakeFirestore.collection('shared_menus').doc(testMenuId).get();
+
+        doc = await fakeFirestore
+            .collection('shared_menus')
+            .doc(testMenuId)
+            .get();
         data = doc.data()!;
         menuSnapshot = data['menuSnapshot'] as Map<String, dynamic>;
-        huvudratter = List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
+        huvudratter =
+            List<Map<String, dynamic>>.from(menuSnapshot['Huvudrätter']);
         expect(huvudratter, isEmpty);
-        
+
         // Verify timestamps are still valid
         expect(data['lastUpdatedAt'], isA<Timestamp>());
         expect(data['lastUpdatedBy'], equals(testUserId));

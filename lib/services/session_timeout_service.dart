@@ -181,7 +181,8 @@ class SessionTimeoutService extends ChangeNotifier
   /// Checks elapsed time since last activity and restarts timers if still within timeout period.
   /// If timeout period has been exceeded while app was backgrounded, triggers immediate logout.
   void onAppResumed() {
-    AppLogger.debug('SessionTimeoutService: App resumed, checking timeout status');
+    AppLogger.debug(
+        'SessionTimeoutService: App resumed, checking timeout status');
 
     if (_lastActivityTime == null) {
       // First resume after initialization
@@ -296,11 +297,13 @@ class SessionTimeoutService extends ChangeNotifier
   /// [reason] Reason for logout (for analytics and logging)
   Future<void> _performLogout({required String reason}) async {
     if (!_authService.isAuthenticated) {
-      AppLogger.debug('SessionTimeoutService: User already logged out, skipping');
+      AppLogger.debug(
+          'SessionTimeoutService: User already logged out, skipping');
       return;
     }
 
-    AppLogger.info('SessionTimeoutService: Performing logout (reason: $reason)');
+    AppLogger.info(
+        'SessionTimeoutService: Performing logout (reason: $reason)');
 
     _cancelTimers();
     _isActive = false;

@@ -9,37 +9,37 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 class SharedContent {
   /// Unique identifier for this shared content instance.
   final String id;
-  
+
   /// Type of content being shared for categorization and handling.
   final String contentType; // 'recipe', 'menu', 'shopping_list'
-  
+
   /// Identifier of the actual content being shared.
   final String contentId;
-  
+
   /// User identifier of the content owner who initiated sharing.
   final String ownerId;
-  
+
   /// List of individual user IDs that the content is shared with.
   final List<String> sharedWithUserIds;
-  
+
   /// List of group IDs that the content is shared with.
   final List<String> sharedWithGroupIds;
-  
+
   /// Timestamp when the content was originally shared.
   final DateTime sharedAt;
-  
+
   /// Flexible metadata container for content-specific sharing information.
   final Map<String, dynamic> metadata;
-  
+
   /// Granular permissions controlling recipient capabilities.
   final SharingPermissions permissions;
-  
+
   /// Tracking map of users who have viewed the shared content.
   final Map<String, DateTime> viewedBy;
-  
+
   /// Tracking map of users who have accepted the shared content.
   final Map<String, DateTime> acceptedBy;
-  
+
   /// Tracking map of users who have declined the shared content.
   final Map<String, DateTime> declinedBy;
 
@@ -57,10 +57,9 @@ class SharedContent {
     Map<String, DateTime>? viewedBy,
     Map<String, DateTime>? acceptedBy,
     Map<String, DateTime>? declinedBy,
-  }) : viewedBy = viewedBy ?? {},
-       acceptedBy = acceptedBy ?? {},
-       declinedBy = declinedBy ?? {};
-
+  })  : viewedBy = viewedBy ?? {},
+        acceptedBy = acceptedBy ?? {},
+        declinedBy = declinedBy ?? {};
 
   /// Creates a shared content instance from Firestore document data.
   factory SharedContent.fromFirestore(DocumentSnapshot doc) {
@@ -70,11 +69,14 @@ class SharedContent {
       contentType: (data['contentType'] as String?).orEmpty(),
       contentId: (data['contentId'] as String?).orEmpty(),
       ownerId: (data['ownerId'] as String?).orEmpty(),
-      sharedWithUserIds: List<String>.from((data['sharedWithUserIds'] as List?).orEmpty()),
-      sharedWithGroupIds: List<String>.from((data['sharedWithGroupIds'] as List?).orEmpty()),
+      sharedWithUserIds:
+          List<String>.from((data['sharedWithUserIds'] as List?).orEmpty()),
+      sharedWithGroupIds:
+          List<String>.from((data['sharedWithGroupIds'] as List?).orEmpty()),
       sharedAt: (data['sharedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       metadata: Map<String, dynamic>.from((data['metadata'] as Map?).orEmpty()),
-      permissions: SharingPermissions.fromMap((data['permissions'] as Map<String, dynamic>?).orEmpty()),
+      permissions: SharingPermissions.fromMap(
+          (data['permissions'] as Map<String, dynamic>?).orEmpty()),
       viewedBy: _dateMapFromFirestore(data['viewedBy']),
       acceptedBy: _dateMapFromFirestore(data['acceptedBy']),
       declinedBy: _dateMapFromFirestore(data['declinedBy']),
@@ -98,11 +100,10 @@ class SharedContent {
     };
   }
 
-
   /// Converts Firestore timestamp map to DateTime map for engagement tracking.
   static Map<String, DateTime> _dateMapFromFirestore(dynamic data) {
     if (data == null || data is! Map) return {};
-    
+
     final result = <String, DateTime>{};
     data.forEach((key, value) {
       if (value is Timestamp) {
@@ -113,7 +114,8 @@ class SharedContent {
   }
 
   /// Converts DateTime map to Firestore timestamp map for persistence.
-  static Map<String, Timestamp> _dateMapToFirestore(Map<String, DateTime> dates) {
+  static Map<String, Timestamp> _dateMapToFirestore(
+      Map<String, DateTime> dates) {
     return dates.map((key, value) => MapEntry(key, Timestamp.fromDate(value)));
   }
 
@@ -148,31 +150,31 @@ class SharedContent {
     );
   }
 
-
   /// Gets the total number of recipients (users and groups combined).
-  int get totalRecipients => sharedWithUserIds.length + sharedWithGroupIds.length;
-  
+  int get totalRecipients =>
+      sharedWithUserIds.length + sharedWithGroupIds.length;
+
   /// Gets the total number of users who have viewed the shared content.
   int get viewCount => viewedBy.length;
-  
+
   /// Gets the total number of users who have accepted the shared content.
   int get acceptanceCount => acceptedBy.length;
-  
+
   /// Gets the total number of users who have declined the shared content.
   int get declineCount => declinedBy.length;
-  
+
   /// Calculates the acceptance rate as a percentage of total views.
   double get acceptanceRate {
     if (viewCount == 0) return 0.0;
     return (acceptanceCount / viewCount) * 100.0;
   }
-  
+
   /// Checks if the specified user has viewed the shared content.
   bool hasUserViewed(String userId) => viewedBy.containsKey(userId);
-  
+
   /// Checks if the specified user has accepted the shared content.
   bool hasUserAccepted(String userId) => acceptedBy.containsKey(userId);
-  
+
   /// Checks if the specified user has declined the shared content.
   bool hasUserDeclined(String userId) => declinedBy.containsKey(userId);
 }
@@ -181,16 +183,16 @@ class SharedContent {
 class SharingPermissions {
   /// Permission to view the shared content.
   final bool canView;
-  
+
   /// Permission to edit the shared content.
   final bool canEdit;
-  
+
   /// Permission to reshare the content with others.
   final bool canReshare;
-  
+
   /// Permission to comment on the shared content.
   final bool canComment;
-  
+
   /// Optional expiration timestamp for time-limited sharing.
   final DateTime? expiresAt;
 
@@ -227,16 +229,15 @@ class SharingPermissions {
     };
   }
 
-
   /// Checks if the permissions have expired and are no longer valid.
   bool get isExpired {
     if (expiresAt == null) return false;
     return DateTime.now().isAfter(expiresAt!);
   }
-  
+
   /// Checks if the permissions are currently valid and not expired.
   bool get isValid => !isExpired;
-  
+
   /// Creates a copy of permissions with updated capability settings.
   SharingPermissions copyWith({
     bool? canView,
@@ -254,7 +255,6 @@ class SharingPermissions {
     );
   }
 
-
   /// Creates read-only permissions for viewing and commenting only.
   static SharingPermissions readOnly({DateTime? expiresAt}) {
     return SharingPermissions(
@@ -265,7 +265,7 @@ class SharingPermissions {
       expiresAt: expiresAt,
     );
   }
-  
+
   /// Creates collaborative permissions for full content interaction.
   static SharingPermissions collaborative({DateTime? expiresAt}) {
     return SharingPermissions(
@@ -276,7 +276,7 @@ class SharingPermissions {
       expiresAt: expiresAt,
     );
   }
-  
+
   /// Creates view-only permissions with no interaction capabilities.
   static SharingPermissions viewOnly({DateTime? expiresAt}) {
     return SharingPermissions(

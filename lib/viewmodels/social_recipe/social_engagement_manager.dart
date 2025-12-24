@@ -17,7 +17,8 @@ class SocialEngagementManager extends ChangeNotifier {
       comment.likeCount += comment.isLiked ? 1 : -1;
       notifyListeners();
 
-      AppLogger.info('Successfully toggled like for comment: $commentId (liked: ${comment.isLiked})');
+      AppLogger.info(
+          'Successfully toggled like for comment: $commentId (liked: ${comment.isLiked})');
     } catch (e) {
       AppLogger.error('Failed to toggle comment like for $commentId: $e');
     }

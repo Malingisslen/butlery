@@ -1,5 +1,5 @@
 /// Centralized fallback value registration for Mocktail
-/// 
+///
 /// This file contains all registerFallbackValue() calls needed for Mocktail's
 /// any() matcher to work with custom types. All fallback values are registered
 /// in a single place to avoid duplication and ensure consistency.
@@ -49,16 +49,18 @@ import 'production_mocks.dart';
 // ============= FAKE CLASSES FOR FALLBACK VALUES =============
 
 /// Fake DocumentReference for Firestore testing
-class FakeDocumentReference extends Fake implements DocumentReference<Map<String, dynamic>> {
+class FakeDocumentReference extends Fake
+    implements DocumentReference<Map<String, dynamic>> {
   @override
   String get id => 'fake-doc-id';
-  
+
   @override
-  CollectionReference<Map<String, dynamic>> get parent => throw UnimplementedError();
-  
+  CollectionReference<Map<String, dynamic>> get parent =>
+      throw UnimplementedError();
+
   @override
   String get path => 'fake/path';
-  
+
   @override
   FirebaseFirestore get firestore => throw UnimplementedError();
 }
@@ -82,7 +84,7 @@ class FakeGetOptions extends Fake implements GetOptions {
 class FakeSetOptions extends Fake implements SetOptions {
   @override
   bool? get merge => false;
-  
+
   @override
   List<FieldPath>? get mergeFields => null;
 }
@@ -91,10 +93,10 @@ class FakeSetOptions extends Fake implements SetOptions {
 class FakeTimestamp extends Fake implements Timestamp {
   @override
   DateTime toDate() => DateTime.now();
-  
+
   @override
   int get seconds => 0;
-  
+
   @override
   int get nanoseconds => 0;
 }
@@ -109,22 +111,22 @@ class FakeFile extends Fake implements File {
 class FakeFriendRequest extends Fake implements FriendRequest {
   @override
   String get id => 'fake-request';
-  
+
   @override
   String get fromUserId => 'fake-from';
-  
+
   @override
   String get toUserId => 'fake-to';
-  
+
   @override
   DateTime get sentAt => DateTime.now();
-  
+
   @override
   FriendRequestStatus get status => FriendRequestStatus.pending;
-  
+
   @override
   String? get message => null;
-  
+
   @override
   DateTime? get respondedAt => null;
 }
@@ -133,25 +135,25 @@ class FakeFriendRequest extends Fake implements FriendRequest {
 class FakeFriendCategory extends Fake implements FriendCategory {
   @override
   String get id => 'fake-category';
-  
+
   @override
   String get name => 'Fake Category';
-  
+
   @override
   String? get description => null;
-  
+
   @override
   String? get emoji => null;
-  
+
   @override
   List<String> get memberIds => [];
-  
+
   @override
   int get friendCount => 0;
-  
+
   @override
   DateTime get createdAt => DateTime.now();
-  
+
   @override
   DateTime get updatedAt => DateTime.now();
 }
@@ -160,25 +162,25 @@ class FakeFriendCategory extends Fake implements FriendCategory {
 class FakeSharedContent extends Fake implements SharedContent {
   @override
   String get id => 'fake-shared';
-  
+
   @override
   String get recipeId => 'fake-recipe';
-  
+
   @override
   String get sharedById => 'fake-user';
-  
+
   @override
   List<String> get sharedWithIds => [];
-  
+
   @override
   DateTime get sharedAt => DateTime.now();
-  
+
   @override
   String? get message => null;
-  
+
   @override
   bool get isPublic => false;
-  
+
   @override
   Map<String, dynamic> get metadata => {};
 }
@@ -193,34 +195,34 @@ class FakeSharedMenu extends Fake implements SharedMenu {}
 class FakeConversation extends Fake implements Conversation {
   @override
   String get id => 'fake-conversation';
-  
+
   @override
   List<String> get participantIds => [];
-  
+
   @override
   DateTime get createdAt => DateTime.now();
-  
+
   @override
   DateTime get updatedAt => DateTime.now();
-  
+
   @override
   bool get isGroup => false;
-  
+
   @override
   String? get title => null;
-  
+
   @override
   Message? get lastMessage => null;
-  
+
   @override
   Map<String, DateTime> get lastReadTimestamps => {};
-  
+
   @override
   Map<String, String> get participantDisplayNames => {};
-  
+
   @override
   Map<String, String?> get participantAvatarUrls => {};
-  
+
   @override
   Map<String, dynamic>? get metadata => null;
 }
@@ -229,34 +231,34 @@ class FakeConversation extends Fake implements Conversation {
 class FakeMessage extends Fake implements Message {
   @override
   String get id => 'fake-message';
-  
+
   @override
   String get conversationId => 'fake-conversation';
-  
+
   @override
   String get senderId => 'fake-sender';
-  
+
   @override
   MessageType get type => MessageType.text;
-  
+
   @override
   String get content => 'Fake message';
-  
+
   @override
   DateTime get sentAt => DateTime.now();
-  
+
   @override
   MessageStatus get status => MessageStatus.sent;
-  
+
   @override
   Map<String, DateTime>? get readBy => null;
-  
+
   @override
   Map<String, dynamic>? get metadata => null;
-  
+
   @override
   bool get isEdited => false;
-  
+
   @override
   DateTime? get editedAt => null;
 }
@@ -265,25 +267,25 @@ class FakeMessage extends Fake implements Message {
 class FakeRecipe extends Fake implements Recipe {
   @override
   String get id => 'fake-recipe';
-  
+
   @override
   String get title => 'Fake Recipe';
-  
+
   @override
   String get description => 'Fake description';
-  
+
   @override
   String get createdBy => 'fake-user';
-  
+
   @override
   DateTime get createdAt => DateTime.now();
-  
+
   @override
   DateTime get updatedAt => DateTime.now();
 }
 
 /// Register all fallback values for Mocktail
-/// 
+///
 /// This function should be called once in setUpAll() in tests that use Mocktail.
 /// It registers all custom types that might be used with any() matcher.
 void registerAllFallbackValues() {
@@ -302,22 +304,22 @@ void registerAllFallbackValues() {
   registerFallbackValue(FakeTimestamp());
   registerFallbackValue(FakeFieldPath());
   registerFallbackValue(FieldPath.documentId);
-  
+
   // ===== Firebase Auth Types =====
   registerFallbackValue(firebase_mocks.MockUser());
-  
+
   // ===== File System Types =====
   registerFallbackValue(FakeFile());
   registerFallbackValue(File(''));
   registerFallbackValue(FakeXFile(name: 'test.jpg', path: '/test/path'));
   registerFallbackValue(Uint8List(0));
-  
+
   // ===== Model Types - Using Factories =====
   registerFallbackValue(RecipeFactory.build());
   registerFallbackValue(UserProfileFactory.build());
   registerFallbackValue(ShoppingListFactory.build());
   registerFallbackValue(ShoppingListFactory.buildItem());
-  
+
   // ===== Model Types - Using Fakes =====
   registerFallbackValue(FakeFriendRequest());
   registerFallbackValue(FakeFriendCategory());
@@ -327,7 +329,7 @@ void registerAllFallbackValues() {
   registerFallbackValue(FakeConversation());
   registerFallbackValue(FakeMessage());
   registerFallbackValue(FakeRecipe());
-  
+
   // ===== Conversation Types =====
   registerFallbackValue(Conversation.direct(
     user1Id: 'user1',
@@ -335,7 +337,7 @@ void registerAllFallbackValues() {
     user2Id: 'user2',
     user2DisplayName: 'User 2',
   ));
-  
+
   // ===== Message Types =====
   registerFallbackValue(Message.text(
     conversationId: 'fake-conversation',
@@ -343,7 +345,7 @@ void registerAllFallbackValues() {
     senderDisplayName: 'Fake Sender',
     content: 'Fake message',
   ));
-  
+
   // ===== Activity Types =====
   registerFallbackValue(ActivityFeedItem.create(
     userId: 'fake-user',
@@ -353,13 +355,13 @@ void registerAllFallbackValues() {
     targetType: 'recipe',
     targetTitle: 'Fake Recipe',
   ));
-  
+
   // ===== Operation Results =====
   registerFallbackValue(RecipeOperationResult.success('test'));
-  
+
   // ===== Notification Types =====
   registerFallbackValue(NotificationPreferences.defaults());
-  
+
   // ===== Enum Values =====
   registerFallbackValue(FriendRequestStatus.pending);
   registerFallbackValue(GroupInvitationStatus.pending);
@@ -376,12 +378,12 @@ void registerAllFallbackValues() {
   registerFallbackValue(SyncErrorType.unknown);
   registerFallbackValue(ConnectionQuality.good);
   registerFallbackValue(RealtimeResourceType.recipe);
-  
+
   // ===== Collections =====
   registerFallbackValue(<String, dynamic>{});
   registerFallbackValue(<String, Object>{});
   registerFallbackValue(<Recipe>[]);
-  
+
   // ===== Date/Time Types =====
   registerFallbackValue(DateTime.now());
   registerFallbackValue(const Duration(seconds: 1));

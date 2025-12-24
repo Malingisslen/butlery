@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+
 class AppLogo extends StatelessWidget {
   final double? size;
   final Color? backgroundColor;
@@ -36,8 +37,8 @@ class AppLogo extends StatelessWidget {
     this.backgroundColor,
     this.iconColor,
     this.icon,
-  }) : size = AppDimensions.imageSizeLarge,
-       showShadow = true;
+  })  : size = AppDimensions.imageSizeLarge,
+        showShadow = true;
 
   /// Medium logo for app bars and headers
   const AppLogo.medium({
@@ -45,8 +46,8 @@ class AppLogo extends StatelessWidget {
     this.backgroundColor,
     this.iconColor,
     this.icon,
-  }) : size = 120.0,
-       showShadow = false;
+  })  : size = 120.0,
+        showShadow = false;
 
   /// Small logo for compact spaces
   const AppLogo.small({
@@ -54,8 +55,8 @@ class AppLogo extends StatelessWidget {
     this.backgroundColor,
     this.iconColor,
     this.icon,
-  }) : size = AppDimensions.iconSizeXxl,
-       showShadow = false;
+  })  : size = AppDimensions.iconSizeXxl,
+        showShadow = false;
 
   @override
   Widget build(BuildContext context) {
@@ -110,19 +111,19 @@ class AppBranding extends StatelessWidget {
   const AppBranding.auth({
     super.key,
     this.tagline = 'Din personliga recept-assistent',
-  }) : appName = 'Butlery',
-       logoSize = AppDimensions.imageSizeLarge,
-       nameStyle = null,
-       taglineStyle = null;
+  })  : appName = 'Butlery',
+        logoSize = AppDimensions.imageSizeLarge,
+        nameStyle = null,
+        taglineStyle = null;
 
   /// Compact branding for headers
   const AppBranding.header({
     super.key,
-  }) : appName = 'Butlery',
-       tagline = null,
-       logoSize = AppDimensions.iconSizeXxl,
-       nameStyle = null,
-       taglineStyle = null;
+  })  : appName = 'Butlery',
+        tagline = null,
+        logoSize = AppDimensions.iconSizeXxl,
+        nameStyle = null,
+        taglineStyle = null;
 
   @override
   Widget build(BuildContext context) {
@@ -136,18 +137,23 @@ class AppBranding extends StatelessWidget {
         const SizedBox(height: AppDimensions.spacingMd),
         Text(
           appName,
-          style: nameStyle ?? AppTextStyles.headlineMedium.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.primary,
-          ),
+          style: nameStyle ??
+              AppTextStyles.headlineMedium.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
         ),
         if (tagline != null) ...[
           const SizedBox(height: AppDimensions.spacingSm),
           Text(
             tagline!,
-            style: taglineStyle ?? AppTextStyles.bodyMedium.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-            ),
+            style: taglineStyle ??
+                AppTextStyles.bodyMedium.copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.7),
+                ),
             textAlign: TextAlign.center,
           ),
         ],

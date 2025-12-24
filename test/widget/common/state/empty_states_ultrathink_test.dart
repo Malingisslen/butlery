@@ -35,7 +35,8 @@ void main() {
     }
 
     group('Factory Method Tests', () {
-      testWidgets('should create empty state with minimal parameters', (WidgetTester tester) async {
+      testWidgets('should create empty state with minimal parameters',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -51,7 +52,8 @@ void main() {
         expect(find.byType(Column), findsOneWidget);
       });
 
-      testWidgets('should handle null variant gracefully', (WidgetTester tester) async {
+      testWidgets('should handle null variant gracefully',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -66,7 +68,8 @@ void main() {
         expect(find.byIcon(Icons.info_outline), findsOneWidget);
       });
 
-      testWidgets('should override config with custom parameters', (WidgetTester tester) async {
+      testWidgets('should override config with custom parameters',
+          (WidgetTester tester) async {
         const customTitle = 'Custom Title';
         const customSubtitle = 'Custom Subtitle';
         const customIcon = Icons.star;
@@ -87,12 +90,13 @@ void main() {
         expect(find.text(customTitle), findsOneWidget);
         expect(find.text(customSubtitle), findsOneWidget);
         expect(find.byIcon(customIcon), findsOneWidget);
-        
+
         // Should not show config values
         expect(find.text(AppStrings.noResults), findsNothing);
       });
 
-      testWidgets('should hide icon when Icons.clear is provided', (WidgetTester tester) async {
+      testWidgets('should hide icon when Icons.clear is provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -109,7 +113,8 @@ void main() {
     });
 
     group('EmptyStateVariant Tests - All 12 Variants', () {
-      testWidgets('noRecipes variant should display correct content', (WidgetTester tester) async {
+      testWidgets('noRecipes variant should display correct content',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -121,10 +126,12 @@ void main() {
 
         expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
         expect(find.text(AppStrings.noResults), findsOneWidget);
-        expect(find.textContaining('Lägg till ditt första recept'), findsOneWidget);
+        expect(find.textContaining('Lägg till ditt första recept'),
+            findsOneWidget);
       });
 
-      testWidgets('noSearchResults variant should display correct content', (WidgetTester tester) async {
+      testWidgets('noSearchResults variant should display correct content',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -136,10 +143,13 @@ void main() {
 
         expect(find.byIcon(Icons.search_off), findsOneWidget);
         expect(find.text(AppStrings.noResults), findsOneWidget);
-        expect(find.textContaining('Prova att söka på något annat'), findsOneWidget);
+        expect(find.textContaining('Prova att söka på något annat'),
+            findsOneWidget);
       });
 
-      testWidgets('noFriendsSearchResults variant should display correct content', (WidgetTester tester) async {
+      testWidgets(
+          'noFriendsSearchResults variant should display correct content',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -151,10 +161,12 @@ void main() {
 
         expect(find.byIcon(Icons.search_off), findsOneWidget);
         expect(find.text('Inga vänner matchade din sökning'), findsOneWidget);
-        expect(find.textContaining('Prova att söka på något annat'), findsOneWidget);
+        expect(find.textContaining('Prova att söka på något annat'),
+            findsOneWidget);
       });
 
-      testWidgets('noMenu variant should display correct content', (WidgetTester tester) async {
+      testWidgets('noMenu variant should display correct content',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -169,7 +181,8 @@ void main() {
         expect(find.textContaining('Skriv vad du vill ha'), findsOneWidget);
       });
 
-      testWidgets('noFriends variant should display correct content', (WidgetTester tester) async {
+      testWidgets('noFriends variant should display correct content',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -181,10 +194,12 @@ void main() {
 
         expect(find.byIcon(Icons.people_outline), findsOneWidget);
         expect(find.text('Inga vänner ännu'), findsOneWidget);
-        expect(find.textContaining('Lägg till vänner för att dela recept'), findsOneWidget);
+        expect(find.textContaining('Lägg till vänner för att dela recept'),
+            findsOneWidget);
       });
 
-      testWidgets('generic variant should display correct content', (WidgetTester tester) async {
+      testWidgets('generic variant should display correct content',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -200,7 +215,9 @@ void main() {
     });
 
     group('Action Button Integration Tests', () {
-      testWidgets('should display action button when actionLabel and onAction provided', (WidgetTester tester) async {
+      testWidgets(
+          'should display action button when actionLabel and onAction provided',
+          (WidgetTester tester) async {
         bool actionCalled = false;
         const actionLabel = 'Test Action';
 
@@ -217,12 +234,14 @@ void main() {
 
         expect(find.text(actionLabel), findsOneWidget);
         expect(find.byType(ElevatedButton), findsOneWidget);
-        
+
         await tester.tap(find.text(actionLabel));
         expect(actionCalled, isTrue);
       });
 
-      testWidgets('should not display action button when only actionLabel provided', (WidgetTester tester) async {
+      testWidgets(
+          'should not display action button when only actionLabel provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -238,9 +257,10 @@ void main() {
         expect(find.byType(ElevatedButton), findsNothing);
       });
 
-      testWidgets('should prioritize customAction over actionLabel/onAction', (WidgetTester tester) async {
+      testWidgets('should prioritize customAction over actionLabel/onAction',
+          (WidgetTester tester) async {
         const customButtonText = 'Custom Button';
-        
+
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -262,7 +282,8 @@ void main() {
         expect(find.byType(ElevatedButton), findsNothing);
       });
 
-      testWidgets('should include actionIcon in button when available', (WidgetTester tester) async {
+      testWidgets('should include actionIcon in button when available',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -292,12 +313,13 @@ void main() {
         ));
 
         final padding = tester.widget<Padding>(find.byType(Padding).first);
-        expect(padding.padding, equals(const EdgeInsets.all(AppDimensions.spacingXl)));
+        expect(padding.padding,
+            equals(const EdgeInsets.all(AppDimensions.spacingXl)));
       });
 
       testWidgets('should apply custom icon size', (WidgetTester tester) async {
         const customSize = 100.0;
-        
+
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -312,7 +334,8 @@ void main() {
         expect(icon.size, equals(customSize));
       });
 
-      testWidgets('should be scrollable with SingleChildScrollView', (WidgetTester tester) async {
+      testWidgets('should be scrollable with SingleChildScrollView',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -328,7 +351,8 @@ void main() {
         expect(find.byType(Column), findsOneWidget);
       });
 
-      testWidgets('should center content with Center widget', (WidgetTester tester) async {
+      testWidgets('should center content with Center widget',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -344,7 +368,8 @@ void main() {
     });
 
     group('Subtitle Behavior Tests', () {
-      testWidgets('should show subtitle when variant has one', (WidgetTester tester) async {
+      testWidgets('should show subtitle when variant has one',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -354,10 +379,12 @@ void main() {
           ),
         ));
 
-        expect(find.textContaining('Lägg till ditt första recept'), findsOneWidget);
+        expect(find.textContaining('Lägg till ditt första recept'),
+            findsOneWidget);
       });
 
-      testWidgets('should not show subtitle when variant has none', (WidgetTester tester) async {
+      testWidgets('should not show subtitle when variant has none',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -372,9 +399,10 @@ void main() {
         expect(find.text('Inget innehåll att visa'), findsOneWidget);
       });
 
-      testWidgets('should override variant subtitle with custom subtitle', (WidgetTester tester) async {
+      testWidgets('should override variant subtitle with custom subtitle',
+          (WidgetTester tester) async {
         const customSubtitle = 'Custom subtitle text';
-        
+
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -386,12 +414,14 @@ void main() {
         ));
 
         expect(find.text(customSubtitle), findsOneWidget);
-        expect(find.textContaining('Lägg till ditt första recept'), findsNothing);
+        expect(
+            find.textContaining('Lägg till ditt första recept'), findsNothing);
       });
     });
 
     group('Edge Cases and Error Handling', () {
-      testWidgets('should handle empty string parameters gracefully', (WidgetTester tester) async {
+      testWidgets('should handle empty string parameters gracefully',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -406,13 +436,17 @@ void main() {
 
         expect(find.text(''), findsNWidgets(2)); // empty title and subtitle
         expect(find.byType(Icon), findsOneWidget);
-        expect(find.byType(ElevatedButton), findsNothing); // no action button for empty label
+        expect(find.byType(ElevatedButton),
+            findsNothing); // no action button for empty label
       });
 
-      testWidgets('should handle very long text content', (WidgetTester tester) async {
-        const longTitle = 'This is a very long title that might wrap to multiple lines';
-        const longSubtitle = 'This is an extremely long subtitle text that definitely will wrap';
-        
+      testWidgets('should handle very long text content',
+          (WidgetTester tester) async {
+        const longTitle =
+            'This is a very long title that might wrap to multiple lines';
+        const longSubtitle =
+            'This is an extremely long subtitle text that definitely will wrap';
+
         await tester.pumpWidget(createTestWidget(
           Builder(
             builder: (context) => EmptyStates.buildEmptyState(
@@ -426,7 +460,7 @@ void main() {
 
         expect(find.text(longTitle), findsOneWidget);
         expect(find.text(longSubtitle), findsOneWidget);
-        
+
         // Should not cause overflow
         expect(tester.takeException(), isNull);
       });

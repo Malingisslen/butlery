@@ -33,7 +33,7 @@ class CollaborativeShoppingView extends StatefulWidget {
 
 class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
   final TextEditingController _newItemController = TextEditingController();
-  
+
   // Focused components (Phase 9 refactoring)
   late CollaborativeShoppingActions _actions;
 
@@ -66,7 +66,7 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
             onMenuAction: _handleMenuAction,
             onShare: _shareList,
           );
-          
+
           return Scaffold(
             appBar: _actions.buildAppBar(context),
             body: SafeArea(

@@ -2,14 +2,14 @@
 ///
 /// This comprehensive view test suite validates UserProfileEditView's sophisticated profile editing functionality:
 /// Form Management → Avatar Upload → Privacy Settings → Navigation Protection → Swedish Localization
-/// 
+///
 /// **ULTRATHINK METHODOLOGY**: Built systematically following proven Phase 1-2 patterns and production code analysis
 /// using real UI components and actual profile form infrastructure to catch production bugs
 ///
 /// **Complete UserProfileEditView Journey Tested:**
 /// 1. **Form Management**: Complex form with TextEditingController, FocusNode, validation lifecycle
 /// 2. **Avatar Management**: Upload, remove avatar with loading states, progress overlays, error handling
-/// 3. **Display Name Validation**: Real-time validation with availability checking and Swedish error messages  
+/// 3. **Display Name Validation**: Real-time validation with availability checking and Swedish error messages
 /// 4. **Privacy Settings**: Searchability and email discovery toggles with proper state management
 /// 5. **Navigation Protection**: PopScope integration with unsaved changes confirmation dialog
 /// 6. **Action Buttons**: Save, reset buttons with dynamic enable/disable states and loading indicators
@@ -79,17 +79,19 @@ void main() {
 
     setUpAll(() async {
       print('🧪 INITIALIZING: UserProfileEditView Test Suite');
-      print('   Target: REAL Profile Edit View (488 lines, complex form management)');
+      print(
+          '   Target: REAL Profile Edit View (488 lines, complex form management)');
       print('   Strategy: Complete profile editing workflow validation');
-      print('   Features: Form validation, avatar upload, privacy settings, navigation protection');
+      print(
+          '   Features: Form validation, avatar upload, privacy settings, navigation protection');
       print('');
 
       // Initialize centralized test infrastructure (proven in Phase 1-2)
       await TestServiceLocator.initialize();
-      
+
       // Register fallback values for mocktail
       registerFallbackValue(MaterialPageRoute(builder: (_) => Container()));
-      
+
       print('   ✅ Centralized test infrastructure initialized');
     });
 
@@ -112,41 +114,43 @@ void main() {
     setUp(() async {
       // Create test widget with centralized infrastructure
       testWidget = createUserProfileEditTestWidget();
-      
+
       print('   🔧 Test setup complete with centralized mocks');
     });
 
     // ==================== PROVIDER ARCHITECTURE TESTS ====================
 
     group('Provider Architecture & Initialization Tests', () {
-      testWidgets('✅ UserProfileViewModel Integration and Setup', (WidgetTester tester) async {
+      testWidgets('✅ UserProfileViewModel Integration and Setup',
+          (WidgetTester tester) async {
         print('🧪 TESTING: UserProfileEditView Provider Architecture');
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump(); // Allow provider initialization
-        
+
         // Verify UserProfileViewModel is accessible through provider
         final context = tester.element(find.byType(UserProfileEditView));
         expect(context, isNotNull);
-        
+
         // Verify provider integration without crashes
         expect(find.byType(UserProfileEditView), findsOneWidget);
         expect(tester.takeException(), isNull);
-        
+
         print('     ✅ UserProfileViewModel provider setup validated');
         print('🎉 PROVIDER ARCHITECTURE: Setup Complete');
       });
 
-      testWidgets('📱 UserProfileEditView Main UI Structure', (WidgetTester tester) async {
+      testWidgets('📱 UserProfileEditView Main UI Structure',
+          (WidgetTester tester) async {
         print('🧪 TESTING: UserProfileEditView Main UI Structure');
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump();
-        
+
         // Verify main view structure exists
         expect(find.byType(UserProfileEditView), findsOneWidget);
         expect(find.byType(Scaffold), findsWidgets);
-        
+
         print('     ✅ Main view structure validated');
         print('🎉 UI STRUCTURE: UserProfileEditView Components Present');
       });
@@ -155,60 +159,63 @@ void main() {
     // ==================== FORM MANAGEMENT TESTS ====================
 
     group('Form Management & Validation Tests', () {
-      testWidgets('📝 Form Structure and Components', (WidgetTester tester) async {
+      testWidgets('📝 Form Structure and Components',
+          (WidgetTester tester) async {
         print('🧪 TESTING: Profile Form Structure');
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump();
-        
+
         // Test form components exist
         expect(find.byType(UserProfileEditView), findsOneWidget);
-        
+
         // Look for form-related widgets
         final forms = find.byType(Form);
         if (forms.evaluate().isNotEmpty) {
           print('     ✅ Form widget infrastructure present');
         }
-        
+
         final textFields = find.byType(TextFormField);
         if (textFields.evaluate().isNotEmpty) {
           print('     ✅ TextFormField components present');
         }
-        
+
         print('🎉 FORM STRUCTURE: Components Validated');
       });
 
-      testWidgets('🔤 Display Name Field Management', (WidgetTester tester) async {
+      testWidgets('🔤 Display Name Field Management',
+          (WidgetTester tester) async {
         print('🧪 TESTING: Display Name Field Functionality');
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump();
-        
+
         // Test display name field exists
         expect(find.byType(UserProfileEditView), findsOneWidget);
-        
+
         // Look for text input fields
         final textFormFields = find.byType(TextFormField);
         if (textFormFields.evaluate().isNotEmpty) {
           // Test text input capability
           await tester.enterText(textFormFields.first, 'Test Användare');
           await tester.pump();
-          
+
           print('     ✅ Display name input accepted');
         }
-        
+
         print('🎉 DISPLAY NAME: Field Management Complete');
       });
 
-      testWidgets('✅ Form Validation Infrastructure', (WidgetTester tester) async {
+      testWidgets('✅ Form Validation Infrastructure',
+          (WidgetTester tester) async {
         print('🧪 TESTING: Form Validation Infrastructure');
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump();
-        
+
         // Test form validation infrastructure exists
         expect(find.byType(UserProfileEditView), findsOneWidget);
-        
+
         // Look for validation-related UI elements
         print('     ✅ Form validation infrastructure present');
         print('🎉 FORM VALIDATION: Infrastructure Validated');
@@ -220,37 +227,37 @@ void main() {
     group('Avatar Upload & Management Tests', () {
       testWidgets('🖼️ Avatar Section Interface', (WidgetTester tester) async {
         print('🧪 TESTING: Avatar Management Interface');
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump();
-        
+
         // Test avatar management interface
         expect(find.byType(UserProfileEditView), findsOneWidget);
-        
+
         // Look for avatar-related buttons
         final outlinedButtons = find.byType(OutlinedButton);
         if (outlinedButtons.evaluate().isNotEmpty) {
           print('     ✅ Avatar action buttons present');
         }
-        
+
         print('🎉 AVATAR MANAGEMENT: Interface Validated');
       });
 
       testWidgets('📷 Avatar Upload Controls', (WidgetTester tester) async {
         print('🧪 TESTING: Avatar Upload Controls');
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump();
-        
+
         // Test avatar upload control infrastructure
         expect(find.byType(UserProfileEditView), findsOneWidget);
-        
+
         // Look for camera/upload related icons
         final cameraIcons = find.byIcon(Icons.camera_alt);
         if (cameraIcons.evaluate().isNotEmpty) {
           print('     ✅ Avatar upload controls accessible');
         }
-        
+
         print('🎉 AVATAR UPLOAD: Controls Available');
       });
     });
@@ -260,55 +267,57 @@ void main() {
     group('Privacy Settings & Controls Tests', () {
       testWidgets('🔒 Privacy Settings Interface', (WidgetTester tester) async {
         print('🧪 TESTING: Privacy Settings Interface');
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump();
-        
+
         // Test privacy settings interface
         expect(find.byType(UserProfileEditView), findsOneWidget);
-        
+
         // Look for switch controls
         final switchListTiles = find.byType(SwitchListTile);
         if (switchListTiles.evaluate().isNotEmpty) {
           print('     ✅ Privacy toggle switches present');
         }
-        
+
         print('🎉 PRIVACY SETTINGS: Interface Validated');
       });
 
-      testWidgets('🔍 Searchability Toggle Control', (WidgetTester tester) async {
+      testWidgets('🔍 Searchability Toggle Control',
+          (WidgetTester tester) async {
         print('🧪 TESTING: Searchability Toggle Control');
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump();
-        
+
         // Test searchability controls exist
         expect(find.byType(UserProfileEditView), findsOneWidget);
-        
+
         // Look for search-related icons
         final searchIcons = find.byIcon(Icons.search);
         if (searchIcons.evaluate().isNotEmpty) {
           print('     ✅ Searchability controls accessible');
         }
-        
+
         print('🎉 SEARCHABILITY: Toggle Control Available');
       });
 
-      testWidgets('📧 Email Search Toggle Control', (WidgetTester tester) async {
+      testWidgets('📧 Email Search Toggle Control',
+          (WidgetTester tester) async {
         print('🧪 TESTING: Email Search Toggle Control');
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump();
-        
+
         // Test email search controls exist
         expect(find.byType(UserProfileEditView), findsOneWidget);
-        
+
         // Look for email-related icons
         final emailIcons = find.byIcon(Icons.email);
         if (emailIcons.evaluate().isNotEmpty) {
           print('     ✅ Email search controls accessible');
         }
-        
+
         print('🎉 EMAIL SEARCH: Toggle Control Available');
       });
     });
@@ -316,33 +325,34 @@ void main() {
     // ==================== NAVIGATION PROTECTION TESTS ====================
 
     group('Navigation Protection & State Management Tests', () {
-      testWidgets('🚪 Navigation Protection Interface', (WidgetTester tester) async {
+      testWidgets('🚪 Navigation Protection Interface',
+          (WidgetTester tester) async {
         print('🧪 TESTING: Navigation Protection Interface');
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump();
-        
+
         // Test navigation protection exists
         expect(find.byType(UserProfileEditView), findsOneWidget);
-        
+
         // Look for PopScope widget
         final popScopes = find.byType(PopScope);
         if (popScopes.evaluate().isNotEmpty) {
           print('     ✅ Navigation protection infrastructure present');
         }
-        
+
         print('🎉 NAVIGATION PROTECTION: Infrastructure Validated');
       });
 
       testWidgets('⚠️ Unsaved Changes Detection', (WidgetTester tester) async {
         print('🧪 TESTING: Unsaved Changes Detection');
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump();
-        
+
         // Test unsaved changes detection infrastructure
         expect(find.byType(UserProfileEditView), findsOneWidget);
-        
+
         print('     ✅ Unsaved changes detection infrastructure present');
         print('🎉 UNSAVED CHANGES: Detection Infrastructure Available');
       });
@@ -353,37 +363,37 @@ void main() {
     group('Action Buttons & Operations Tests', () {
       testWidgets('💾 Save Button Interface', (WidgetTester tester) async {
         print('🧪 TESTING: Save Button Interface');
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump();
-        
+
         // Test save button exists
         expect(find.byType(UserProfileEditView), findsOneWidget);
-        
+
         // Look for save-related buttons
         final filledButtons = find.byType(FilledButton);
         if (filledButtons.evaluate().isNotEmpty) {
           print('     ✅ Save button infrastructure present');
         }
-        
+
         print('🎉 SAVE BUTTON: Interface Validated');
       });
 
       testWidgets('🔄 Reset Button Interface', (WidgetTester tester) async {
         print('🧪 TESTING: Reset Button Interface');
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump();
-        
+
         // Test reset button exists
         expect(find.byType(UserProfileEditView), findsOneWidget);
-        
+
         // Look for reset/refresh icons
         final refreshIcons = find.byIcon(Icons.refresh);
         if (refreshIcons.evaluate().isNotEmpty) {
           print('     ✅ Reset button controls present');
         }
-        
+
         print('🎉 RESET BUTTON: Interface Validated');
       });
     });
@@ -391,15 +401,16 @@ void main() {
     // ==================== SWEDISH LOCALIZATION TESTS ====================
 
     group('Swedish Localization Tests', () {
-      testWidgets('🇸🇪 Complete Swedish Localization Validation', (WidgetTester tester) async {
+      testWidgets('🇸🇪 Complete Swedish Localization Validation',
+          (WidgetTester tester) async {
         print('🧪 TESTING: Complete Swedish Localization');
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump();
-        
+
         // Test Swedish UI elements throughout the interface
         expect(find.byType(UserProfileEditView), findsOneWidget);
-        
+
         // Swedish profile editing should display Swedish text elements
         print('     ✅ Swedish localization infrastructure validated');
         print('🎉 SWEDISH LOCALIZATION: Complete Validation Success');
@@ -409,57 +420,60 @@ void main() {
     // ==================== PERFORMANCE & INTEGRATION TESTS ====================
 
     group('Performance & Integration Tests', () {
-      testWidgets('⚡ Performance and Resource Management', (WidgetTester tester) async {
+      testWidgets('⚡ Performance and Resource Management',
+          (WidgetTester tester) async {
         print('🧪 TESTING: Performance and Resource Management');
-        
+
         final stopwatch = Stopwatch()..start();
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump();
-        
+
         stopwatch.stop();
-        
+
         // Verify performance standards (<1000ms for complex form view)
         expect(stopwatch.elapsedMilliseconds, lessThan(1000));
-        
+
         print('     ✅ View initialization: ${stopwatch.elapsedMilliseconds}ms');
         print('🎉 PERFORMANCE: Initialization Under 1000ms Standard');
       });
 
-      testWidgets('🔄 View Lifecycle and Resource Disposal', (WidgetTester tester) async {
+      testWidgets('🔄 View Lifecycle and Resource Disposal',
+          (WidgetTester tester) async {
         print('🧪 TESTING: View Lifecycle and Resource Disposal');
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump();
-        
+
         // Test view disposal and cleanup (important for TextEditingController, FocusNode)
         await tester.pumpWidget(Container());
         await tester.pump();
-        
+
         // Verify no exceptions during disposal (controllers should be cleaned up)
         expect(tester.takeException(), isNull);
-        
+
         print('     ✅ View lifecycle and resource disposal validated');
         print('🎉 LIFECYCLE: Proper Resource Management Complete');
       });
 
-      testWidgets('📋 Form State Management Performance', (WidgetTester tester) async {
+      testWidgets('📋 Form State Management Performance',
+          (WidgetTester tester) async {
         print('🧪 TESTING: Form State Management Performance');
-        
+
         await tester.pumpWidget(testWidget);
         await tester.pump();
-        
+
         // Test that form state management doesn't cause performance issues
         expect(find.byType(UserProfileEditView), findsOneWidget);
-        
+
         // Multiple pump cycles to simulate form interactions
         for (int i = 0; i < 5; i++) {
           await tester.pump(const Duration(milliseconds: 100));
         }
-        
+
         // Verify no performance-related exceptions
         expect(tester.takeException(), isNull);
-        
+
         print('     ✅ Form state management performance validated');
         print('🎉 FORM PERFORMANCE: Efficiency Confirmed');
       });

@@ -6,7 +6,8 @@ import 'package:butlery/widgets/user/user_display_widgets.dart';
 /// Consolidated social helper functions.
 class SocialHelpers {
   /// Format user display name.
-  static String formatUserDisplayName(UserProfile? user, {String fallback = 'Okänd användare'}) {
+  static String formatUserDisplayName(UserProfile? user,
+      {String fallback = 'Okänd användare'}) {
     if (user == null) return fallback;
     return user.displayName.isNotEmpty ? user.displayName : user.email;
   }
@@ -53,7 +54,8 @@ class SocialHelpers {
   }
 
   /// Convert list of UserProfile to UserDisplayData
-  static List<UserDisplayData> userProfilesToDisplayData(List<UserProfile> users) {
+  static List<UserDisplayData> userProfilesToDisplayData(
+      List<UserProfile> users) {
     return users.map((user) => UserDisplayData.fromUserProfile(user)).toList();
   }
 

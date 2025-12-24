@@ -70,13 +70,13 @@ void main() {
         message: 'Test message',
         priority: NotificationPriority.low,
       ));
-      
+
       // Initialize comprehensive test environment
       await ViewTestHelpers.setupViewTestEnvironment();
-      
+
       // Configure for view testing scenario
       TestServiceLocator.configureForScenario(TestScenario.viewTesting);
-      
+
       // ✅ SERVICELOCATOR BRIDGE: Initialize production ServiceLocator with test container
       // This proven pattern from MinaReceptView enables SkrivSjalvReceptView to access
       // our test mocks through ServiceLocator.get<>() calls in provider creation
@@ -96,16 +96,16 @@ void main() {
     late StreamController<UploadNotificationEvent> uploadNotificationController;
 
     // ==================== HELPER METHODS ====================
-    
+
     /// Configure method stubs for all mocks (called once)
     void configureMockStubs() {
       // Simple implementations that use noSuchMethod - no complex mocking needed
       // Test implementations handle their own state management
     }
-    
+
     /// Set default state values for all mocks (called in each setUp)
     void setDefaultMockStates() {
-      // Configure test service states 
+      // Configure test service states
       if (mockRecipeService is TestUnifiedRecipeService) {
         (mockRecipeService as TestUnifiedRecipeService).configureState(
           shouldSaveSucceed: true,
@@ -113,7 +113,7 @@ void main() {
         );
       }
     }
-    
+
     /// Pump SkrivSjalvReceptView with ServiceLocator-based setup
     /// SkrivSjalvReceptView creates RecipeFormViewModel with ServiceLocator.get<>() internally
     Future<void> pumpSkrivSjalvReceptView(
@@ -129,10 +129,11 @@ void main() {
           ),
         ),
       );
-      
+
       // Wait for widget initialization and any post-frame callbacks
       await tester.pump(const Duration(milliseconds: 100)); // Initial frame
-      await tester.pump(const Duration(milliseconds: 200)); // PostFrameCallback execution
+      await tester.pump(
+          const Duration(milliseconds: 200)); // PostFrameCallback execution
       await tester.pump(); // Additional pump for widget tree completion
     }
 
@@ -151,16 +152,19 @@ void main() {
       );
 
       // Create upload notification stream controller
-      uploadNotificationController = StreamController<UploadNotificationEvent>.broadcast();
+      uploadNotificationController =
+          StreamController<UploadNotificationEvent>.broadcast();
 
       // Create our test instances
       mockRecipeService = TestUnifiedRecipeService();
       mockAnalyticsService = TestAnalyticsService();
-      
+
       // Replace TestServiceLocator registrations with our specific instances
       // This ensures ServiceLocator.get<>() returns our configured test mocks
-      TestServiceLocator.registerSingleton<UnifiedRecipeService>(mockRecipeService);
-      TestServiceLocator.registerSingleton<AnalyticsService>(mockAnalyticsService);
+      TestServiceLocator.registerSingleton<UnifiedRecipeService>(
+          mockRecipeService);
+      TestServiceLocator.registerSingleton<AnalyticsService>(
+          mockAnalyticsService);
 
       // Configure method stubs and set default states
       configureMockStubs();
@@ -170,7 +174,7 @@ void main() {
     tearDown(() {
       // Clean up stream controller
       uploadNotificationController.close();
-      
+
       // ✅ DISPOSAL FIX: Let Provider system handle ViewModel disposal
       // RecipeFormViewModel is created by Provider system so it should be disposed by Provider system
       // Manual disposal causes double-disposal errors
@@ -179,7 +183,8 @@ void main() {
     // ==================== SERVICELOCATOR ARCHITECTURE TESTS ====================
 
     group('ServiceLocator Provider Architecture Tests', () {
-      testWidgets('should initialize RecipeFormViewModel with ServiceLocator dependencies',
+      testWidgets(
+          'should initialize RecipeFormViewModel with ServiceLocator dependencies',
           (tester) async {
         // Act: Create widget with ServiceLocator-based providers
         await pumpSkrivSjalvReceptView(tester);
@@ -187,10 +192,12 @@ void main() {
 
         // Assert: Verify SkrivSjalvReceptView renders without provider errors
         expect(find.byType(SkrivSjalvReceptView), findsOneWidget);
-        
+
         // Verify that our test mocks are accessible through ServiceLocator
-        expect(production.ServiceLocator.get<UnifiedRecipeService>(), isA<TestUnifiedRecipeService>());
-        expect(production.ServiceLocator.get<AnalyticsService>(), isA<TestAnalyticsService>());
+        expect(production.ServiceLocator.get<UnifiedRecipeService>(),
+            isA<TestUnifiedRecipeService>());
+        expect(production.ServiceLocator.get<AnalyticsService>(),
+            isA<TestAnalyticsService>());
       });
 
       testWidgets('should handle provider initialization lifecycle correctly',
@@ -199,7 +206,8 @@ void main() {
         await pumpSkrivSjalvReceptView(tester);
 
         // Assert: Verify RecipeFormViewModel is created and accessible
-        expect(find.byType(ChangeNotifierProvider<RecipeFormViewModel>), findsOneWidget);
+        expect(find.byType(ChangeNotifierProvider<RecipeFormViewModel>),
+            findsOneWidget);
       });
     });
 
@@ -265,7 +273,8 @@ void main() {
         expect(find.textContaining('Titel'), findsWidgets);
       });
 
-      testWidgets('should validate portions field with valid range', (tester) async {
+      testWidgets('should validate portions field with valid range',
+          (tester) async {
         // Arrange
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -273,7 +282,7 @@ void main() {
         // Act: Enter invalid portions value
         final portionsField = find.widgetWithText(TextFormField, 'Portioner');
         await tester.enterText(portionsField, '0');
-        
+
         final saveButton = find.text('Spara recept');
         await tester.tap(saveButton);
         await tester.pump();
@@ -282,7 +291,8 @@ void main() {
         // The actual validation logic will be tested by FormValidators
       });
 
-      testWidgets('should validate time field with reasonable limits', (tester) async {
+      testWidgets('should validate time field with reasonable limits',
+          (tester) async {
         // Arrange
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -290,7 +300,7 @@ void main() {
         // Act: Enter invalid time value
         final timeField = find.widgetWithText(TextFormField, 'Tid (min)');
         await tester.enterText(timeField, '-5');
-        
+
         final saveButton = find.text('Spara recept');
         await tester.tap(saveButton);
         await tester.pump();
@@ -298,7 +308,8 @@ void main() {
         // Assert: Should show validation error for negative time
       });
 
-      testWidgets('should validate rating field within 0-5 range', (tester) async {
+      testWidgets('should validate rating field within 0-5 range',
+          (tester) async {
         // Arrange
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -306,7 +317,7 @@ void main() {
         // Act: Enter invalid rating value
         final ratingField = find.widgetWithText(TextFormField, 'Betyg (0–5)');
         await tester.enterText(ratingField, '10');
-        
+
         final saveButton = find.text('Spara recept');
         await tester.tap(saveButton);
         await tester.pump();
@@ -318,43 +329,45 @@ void main() {
     // ==================== DYNAMIC LISTS TESTS ====================
 
     group('Dynamic Lists Functionality Tests', () {
-      testWidgets('should add new ingredient field when typing in last field', (tester) async {
+      testWidgets('should add new ingredient field when typing in last field',
+          (tester) async {
         // Arrange
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
 
         // Find initial ingredient fields
-        final initialIngredientFields = tester.widgetList<TextFormField>(
-          find.ancestor(
-            of: find.textContaining('Ingrediens'),
-            matching: find.byType(TextFormField),
-          )
-        ).length;
+        final initialIngredientFields = tester
+            .widgetList<TextFormField>(find.ancestor(
+              of: find.textContaining('Ingrediens'),
+              matching: find.byType(TextFormField),
+            ))
+            .length;
 
         // Act: Enter text in the last ingredient field
         final ingredientFields = find.ancestor(
           of: find.textContaining('Ingrediens'),
           matching: find.byType(TextFormField),
         );
-        
+
         if (ingredientFields.evaluate().isNotEmpty) {
           await tester.enterText(ingredientFields.last, 'N');
           await tester.pump();
           await tester.pump(); // Wait for PostFrameCallback
 
           // Assert: Should have added a new ingredient field
-          final newIngredientFields = tester.widgetList<TextFormField>(
-            find.ancestor(
-              of: find.textContaining('Ingrediens'),
-              matching: find.byType(TextFormField),
-            )
-          ).length;
-          
+          final newIngredientFields = tester
+              .widgetList<TextFormField>(find.ancestor(
+                of: find.textContaining('Ingrediens'),
+                matching: find.byType(TextFormField),
+              ))
+              .length;
+
           expect(newIngredientFields, greaterThan(initialIngredientFields));
         }
       });
 
-      testWidgets('should add new instruction field when typing in last field', (tester) async {
+      testWidgets('should add new instruction field when typing in last field',
+          (tester) async {
         // Arrange
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -364,7 +377,7 @@ void main() {
           of: find.textContaining('Instruktion'),
           matching: find.byType(TextFormField),
         );
-        
+
         if (instructionFields.evaluate().isNotEmpty) {
           await tester.enterText(instructionFields.last, 'Steg 1');
           await tester.pump();
@@ -375,7 +388,9 @@ void main() {
         }
       });
 
-      testWidgets('should remove dynamic list item when delete button is tapped', (tester) async {
+      testWidgets(
+          'should remove dynamic list item when delete button is tapped',
+          (tester) async {
         // Arrange: Create recipe with multiple ingredients
         await pumpSkrivSjalvReceptView(tester, initialRecipe: testRecipe);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -404,7 +419,8 @@ void main() {
     // ==================== DRAFT RECOVERY TESTS ====================
 
     group('Draft Recovery System Tests', () {
-      testWidgets('should not show draft recovery dialog in edit mode', (tester) async {
+      testWidgets('should not show draft recovery dialog in edit mode',
+          (tester) async {
         // Arrange: Start in edit mode
         await pumpSkrivSjalvReceptView(tester, initialRecipe: testRecipe);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -413,7 +429,8 @@ void main() {
         expect(find.textContaining('Återställ utkast'), findsNothing);
       });
 
-      testWidgets('should show draft recovery dialog when drafts are available', (tester) async {
+      testWidgets('should show draft recovery dialog when drafts are available',
+          (tester) async {
         // Act: Start new recipe creation (draft system is handled by RecipeFormViewModel)
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -424,7 +441,8 @@ void main() {
         expect(find.byType(SkrivSjalvReceptView), findsOneWidget);
       });
 
-      testWidgets('should restore draft with field count feedback', (tester) async {
+      testWidgets('should restore draft with field count feedback',
+          (tester) async {
         // Act: Test draft restoration capability (handled by RecipeFormViewModel)
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -438,7 +456,8 @@ void main() {
     // ==================== UPLOAD NOTIFICATION TESTS ====================
 
     group('Upload Notification System Tests', () {
-      testWidgets('should handle critical priority upload notifications', (tester) async {
+      testWidgets('should handle critical priority upload notifications',
+          (tester) async {
         // Arrange
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -457,7 +476,9 @@ void main() {
         // Note: This test may need adjustment based on actual notification handling
       });
 
-      testWidgets('should handle success upload notifications with appropriate feedback', (tester) async {
+      testWidgets(
+          'should handle success upload notifications with appropriate feedback',
+          (tester) async {
         // Arrange
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -476,7 +497,8 @@ void main() {
         // Implementation depends on actual snackbar system
       });
 
-      testWidgets('should filter low priority notifications appropriately', (tester) async {
+      testWidgets('should filter low priority notifications appropriately',
+          (tester) async {
         // Arrange
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -499,20 +521,21 @@ void main() {
     // ==================== POPSCOPE PROTECTION TESTS ====================
 
     group('PopScope Navigation Protection Tests', () {
-      testWidgets('should prevent navigation during save operation', (tester) async {
+      testWidgets('should prevent navigation during save operation',
+          (tester) async {
         // Arrange: Set up form with data
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
 
         // Fill in form data
-        await tester.enterText(find.widgetWithText(TextFormField, 'Titel'), 'Test Recipe');
+        await tester.enterText(
+            find.widgetWithText(TextFormField, 'Titel'), 'Test Recipe');
         await tester.pump();
 
         // Configure slow save operation
         if (mockRecipeService is TestUnifiedRecipeService) {
-          (mockRecipeService as TestUnifiedRecipeService).configureSaveDelay(
-            const Duration(seconds: 2)
-          );
+          (mockRecipeService as TestUnifiedRecipeService)
+              .configureSaveDelay(const Duration(seconds: 2));
         }
 
         // Act: Start save operation
@@ -531,16 +554,19 @@ void main() {
         await tester.pump();
 
         // Assert: Should show warning about save in progress
-        expect(find.textContaining('Vänta medan receptet sparas'), findsOneWidget);
+        expect(
+            find.textContaining('Vänta medan receptet sparas'), findsOneWidget);
       });
 
-      testWidgets('should show unsaved changes dialog when form has content', (tester) async {
+      testWidgets('should show unsaved changes dialog when form has content',
+          (tester) async {
         // Arrange
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
 
         // Add content to form
-        await tester.enterText(find.widgetWithText(TextFormField, 'Titel'), 'Test Recipe');
+        await tester.enterText(
+            find.widgetWithText(TextFormField, 'Titel'), 'Test Recipe');
         await tester.pump();
 
         // Act: Try to navigate back
@@ -582,27 +608,28 @@ void main() {
     // ==================== SAVE OPERATION TESTS ====================
 
     group('Save Operation Tests', () {
-      testWidgets('should prevent multiple simultaneous save operations', (tester) async {
+      testWidgets('should prevent multiple simultaneous save operations',
+          (tester) async {
         // Arrange
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
 
         // Fill required fields
-        await tester.enterText(find.widgetWithText(TextFormField, 'Titel'), 'Test Recipe');
+        await tester.enterText(
+            find.widgetWithText(TextFormField, 'Titel'), 'Test Recipe');
         await tester.pump();
 
         // Configure slow save
         if (mockRecipeService is TestUnifiedRecipeService) {
-          (mockRecipeService as TestUnifiedRecipeService).configureSaveDelay(
-            const Duration(seconds: 1)
-          );
+          (mockRecipeService as TestUnifiedRecipeService)
+              .configureSaveDelay(const Duration(seconds: 1));
         }
 
         // Act: Tap save button multiple times quickly
         final saveButton = find.text('Spara recept');
         await tester.tap(saveButton);
         await tester.pump();
-        
+
         // Try to tap again during save
         await tester.tap(saveButton);
         await tester.pump();
@@ -617,19 +644,20 @@ void main() {
         expect(buttonWidget.onPressed, isNull); // Disabled button
       });
 
-      testWidgets('should show loading state during save operation', (tester) async {
+      testWidgets('should show loading state during save operation',
+          (tester) async {
         // Arrange
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
 
-        await tester.enterText(find.widgetWithText(TextFormField, 'Titel'), 'Test Recipe');
+        await tester.enterText(
+            find.widgetWithText(TextFormField, 'Titel'), 'Test Recipe');
         await tester.pump();
 
         // Configure save delay
         if (mockRecipeService is TestUnifiedRecipeService) {
-          (mockRecipeService as TestUnifiedRecipeService).configureSaveDelay(
-            const Duration(milliseconds: 500)
-          );
+          (mockRecipeService as TestUnifiedRecipeService)
+              .configureSaveDelay(const Duration(milliseconds: 500));
         }
 
         // Act: Start save operation
@@ -642,12 +670,14 @@ void main() {
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });
 
-      testWidgets('should show success message after successful save', (tester) async {
+      testWidgets('should show success message after successful save',
+          (tester) async {
         // Arrange
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
 
-        await tester.enterText(find.widgetWithText(TextFormField, 'Titel'), 'Test Recipe');
+        await tester.enterText(
+            find.widgetWithText(TextFormField, 'Titel'), 'Test Recipe');
         await tester.pump();
 
         // Act: Save recipe
@@ -662,15 +692,15 @@ void main() {
       testWidgets('should handle save errors gracefully', (tester) async {
         // Arrange: Configure save to fail
         if (mockRecipeService is TestUnifiedRecipeService) {
-          (mockRecipeService as TestUnifiedRecipeService).configureSaveFailure(
-            'Nätverksfel - kunde inte spara recept'
-          );
+          (mockRecipeService as TestUnifiedRecipeService)
+              .configureSaveFailure('Nätverksfel - kunde inte spara recept');
         }
 
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
 
-        await tester.enterText(find.widgetWithText(TextFormField, 'Titel'), 'Test Recipe');
+        await tester.enterText(
+            find.widgetWithText(TextFormField, 'Titel'), 'Test Recipe');
         await tester.pump();
 
         // Act: Attempt save
@@ -686,19 +716,22 @@ void main() {
     // ==================== IMAGE MANAGEMENT TESTS ====================
 
     group('Image Management Tests', () {
-      testWidgets('should render UniversalImageManager with correct configuration', (tester) async {
+      testWidgets(
+          'should render UniversalImageManager with correct configuration',
+          (tester) async {
         // Act
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
 
         // Assert: Should show image management widget
         expect(find.byType(UniversalImageManager), findsOneWidget);
-        
+
         // Should show add image option when no images
         expect(find.textContaining('Lägg till bild'), findsWidgets);
       });
 
-      testWidgets('should show image picker options when add image is tapped', (tester) async {
+      testWidgets('should show image picker options when add image is tapped',
+          (tester) async {
         // Arrange
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -730,7 +763,8 @@ void main() {
     // ==================== PERFORMANCE & EDGE CASES ====================
 
     group('Performance and Edge Case Tests', () {
-      testWidgets('should handle rapid form input changes efficiently', (tester) async {
+      testWidgets('should handle rapid form input changes efficiently',
+          (tester) async {
         // Arrange
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -746,7 +780,8 @@ void main() {
         expect(find.text('Title 9'), findsOneWidget);
       });
 
-      testWidgets('should handle form submission with invalid data gracefully', (tester) async {
+      testWidgets('should handle form submission with invalid data gracefully',
+          (tester) async {
         // Arrange
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -760,7 +795,8 @@ void main() {
         expect(find.byType(Form), findsOneWidget);
       });
 
-      testWidgets('should dispose resources properly on widget disposal', (tester) async {
+      testWidgets('should dispose resources properly on widget disposal',
+          (tester) async {
         // Arrange
         await pumpSkrivSjalvReceptView(tester);
         await ViewTestHelpers.waitForViewInitialization(tester);
@@ -781,7 +817,7 @@ void main() {
 class TestUnifiedRecipeService implements UnifiedRecipeService {
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
-  
+
   bool _shouldSaveSucceed = true;
   Recipe? _savedRecipe;
   Duration? _saveDelay;
@@ -803,7 +839,7 @@ class TestUnifiedRecipeService implements UnifiedRecipeService {
     _shouldSaveSucceed = false;
     _saveError = error;
   }
-  
+
   // Use the stored configuration for testing behavior
   bool get shouldSaveSucceed => _shouldSaveSucceed;
   Recipe? get savedRecipe => _savedRecipe;
@@ -815,7 +851,7 @@ class TestUnifiedRecipeService implements UnifiedRecipeService {
 class TestAnalyticsService implements AnalyticsService {
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
-  
+
   final List<Map<String, dynamic>> _trackedEvents = [];
 
   List<Map<String, dynamic>> get trackedEvents => _trackedEvents;

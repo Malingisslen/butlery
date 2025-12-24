@@ -24,7 +24,8 @@ class SelectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveBorderRadius = borderRadius ?? BorderRadius.circular(AppDimensions.borderRadiusM);
+    final effectiveBorderRadius =
+        borderRadius ?? BorderRadius.circular(AppDimensions.borderRadiusM);
 
     return Card(
       elevation: elevation ?? AppDimensions.elevationLow,

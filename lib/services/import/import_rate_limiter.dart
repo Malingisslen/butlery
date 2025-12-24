@@ -357,7 +357,8 @@ class ImportRateLimiter extends BaseService {
 
     // Check minute window
     if (_isInWindow(usage.minuteWindowStart, now, const Duration(minutes: 1))) {
-      minRemaining = ImportRateLimits.importsPerMinute - usage.importsThisMinute;
+      minRemaining =
+          ImportRateLimits.importsPerMinute - usage.importsThisMinute;
     }
 
     // Check hour window
@@ -384,10 +385,10 @@ class ImportRateLimiter extends BaseService {
     double? llmCost,
   ) {
     // Reset windows if expired
-    final minuteWindow = _isInWindow(
-            current.minuteWindowStart, now, const Duration(minutes: 1))
-        ? current.minuteWindowStart
-        : now;
+    final minuteWindow =
+        _isInWindow(current.minuteWindowStart, now, const Duration(minutes: 1))
+            ? current.minuteWindowStart
+            : now;
     final hourWindow =
         _isInWindow(current.hourWindowStart, now, const Duration(hours: 1))
             ? current.hourWindowStart
@@ -405,19 +406,16 @@ class ImportRateLimiter extends BaseService {
     final newMinuteCount = minuteWindow == current.minuteWindowStart
         ? current.importsThisMinute + 1
         : 1;
-    final newHourCount = hourWindow == current.hourWindowStart
-        ? current.importsThisHour + 1
-        : 1;
+    final newHourCount =
+        hourWindow == current.hourWindowStart ? current.importsThisHour + 1 : 1;
     final newDayCount =
         dayWindow == current.dayWindowStart ? current.importsToday + 1 : 1;
 
     // LLM counters
-    int newEnhancements = dayWindow == current.dayWindowStart
-        ? current.llmEnhancementsToday
-        : 0;
-    int newExtractions = dayWindow == current.dayWindowStart
-        ? current.llmExtractionsToday
-        : 0;
+    int newEnhancements =
+        dayWindow == current.dayWindowStart ? current.llmEnhancementsToday : 0;
+    int newExtractions =
+        dayWindow == current.dayWindowStart ? current.llmExtractionsToday : 0;
     int newVision =
         dayWindow == current.dayWindowStart ? current.llmVisionToday : 0;
 

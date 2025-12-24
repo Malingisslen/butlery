@@ -96,7 +96,8 @@ import 'package:butlery/core/mixins/async_operation_mixin.dart';
 /// - Share message customization with personalized content and template management
 /// - Complete sharing state management with progress tracking and comprehensive error handling
 /// - Swedish localized error messages and user feedback coordination throughout sharing operations
-class ShoppingShareViewModel extends ChangeNotifier with StateNotifierMixin, AsyncOperationMixin {
+class ShoppingShareViewModel extends ChangeNotifier
+    with StateNotifierMixin, AsyncOperationMixin {
   final UnifiedShoppingService _shoppingService;
   final UnifiedFriendsService _friendsService;
 
@@ -106,22 +107,22 @@ class ShoppingShareViewModel extends ChangeNotifier with StateNotifierMixin, Asy
   /// Indicates active sharing operation for loading indicators and interaction
   /// control during shopping list distribution and delivery processes.
   bool _isSharing = false;
-  
+
   /// Available friends list for selection and sharing coordination.
   /// Stores all available friends enabling friend selection functionality,
   /// sharing target management, and social distribution coordination.
   List<UserProfile> _friends = [];
-  
+
   /// Selected friend IDs for sharing coordination and delivery management.
   /// Stores selected friends for sharing enabling multi-friend distribution,
   /// sharing coordination, and delivery tracking throughout sharing operations.
   final List<String> _selectedFriendIds = [];
-  
+
   /// Share message content for personalized sharing and message customization.
   /// Stores user-customized sharing message enabling personalized content,
   /// message template management, and enhanced sharing experience.
   String _shareMessage = '';
-  
+
   /// Initialization state for ViewModel lifecycle and functionality availability.
   /// Indicates whether ViewModel has been initialized enabling functionality access,
   /// state validation, and proper initialization coordination.
@@ -152,22 +153,22 @@ class ShoppingShareViewModel extends ChangeNotifier with StateNotifierMixin, Asy
   /// Indicates whether sharing operation is in progress for loading indicators
   /// and user interaction management during sharing operations.
   bool get isSharing => _isSharing;
-  
+
   /// Available friends list for selection and sharing coordination.
   /// Provides immutable access to available friends enabling UI display,
   /// friend selection functionality, and sharing target management.
   List<UserProfile> get friends => List.unmodifiable(_friends);
-  
+
   /// Selected friend IDs for sharing coordination and delivery management.
   /// Provides immutable access to selected friend IDs enabling UI display,
   /// selection tracking, and sharing coordination.
   List<String> get selectedFriendIds => List.unmodifiable(_selectedFriendIds);
-  
+
   /// Share message content for personalized sharing and message display.
   /// Provides access to current share message enabling UI display,
   /// message validation, and personalized sharing coordination.
   String get shareMessage => _shareMessage;
-  
+
   /// Initialization state for functionality availability and lifecycle management.
   /// Indicates whether ViewModel has been initialized enabling functionality access,
   /// UI state management, and proper initialization validation.
@@ -179,12 +180,12 @@ class ShoppingShareViewModel extends ChangeNotifier with StateNotifierMixin, Asy
   /// Indicates whether sharing is available based on friend selection and operation state
   /// enabling share button state management and sharing functionality access.
   bool get canShare => _selectedFriendIds.isNotEmpty && !_isSharing;
-  
+
   /// Friends availability indicator for UI conditional rendering and empty state management.
   /// Indicates whether friends are available for UI conditional display
   /// and empty state management throughout sharing functionality.
   bool get hasFriends => _friends.isNotEmpty;
-  
+
   /// Selected friends count for display and UI coordination.
   /// Provides count of selected friends enabling selection count display,
   /// UI state management, and sharing planning throughout sharing operations.
@@ -306,7 +307,7 @@ class ShoppingShareViewModel extends ChangeNotifier with StateNotifierMixin, Asy
             : 'Kolla in min inköpslista!',
         'sharedAt': DateTime.now().toIso8601String(),
       };
-      
+
       debugPrint('Share data prepared: ${shareData['itemCount']} items');
 
       // Dela med varje vald vän via UnifiedShoppingService

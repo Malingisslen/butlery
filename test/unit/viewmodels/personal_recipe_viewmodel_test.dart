@@ -16,12 +16,12 @@ void main() {
     late PersonalRecipeViewModel viewModel;
     late MockUnifiedRecipeService mockRecipeService;
     late MockPersonalRecipeOperations mockPersonalOps;
-    
+
     // Test data
     const testUserId = 'user123';
     const testUserName = 'Test User';
     const testRecipeId = 'recipe123';
-    
+
     final testPersonalRecipe = RecipeFactory.build(
       id: testRecipeId,
       title: 'Köttbullar',
@@ -36,14 +36,14 @@ void main() {
       portions: 4,
       timeMinutes: 30,
     );
-    
+
     final testSharedRecipe = RecipeFactory.build(
       id: 'shared123',
       title: 'Shared Recipe',
       createdBy: 'other_user',
       type: RecipeType.shared, // Explicitly set as shared recipe
     );
-    
+
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(RecipeFactory.build());
@@ -53,14 +53,14 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
-      
+
       // Create mocks using ultrathink gold standard pattern
       mockRecipeService = MockFactory.createUnifiedRecipeService();
       mockPersonalOps = MockPersonalRecipeOperations();
-      
+
       // Register mock in test service locator
       TestServiceLocator.registerMock<UnifiedRecipeService>(mockRecipeService);
-      
+
       // Configure mock state using ultrathink state-based configuration (NO when() stubs on service)
       mockRecipeService.setRecipeState(
         recipes: [testPersonalRecipe, testSharedRecipe],
@@ -71,67 +71,69 @@ void main() {
         isInitialized: true,
         personalOperations: mockPersonalOps,
       );
-      
+
       // Configure MockPersonalRecipeOperations with ultrathink state-based approach
       // Default successful responses on the operations mock, NOT the service
       when(() => mockPersonalOps.createRecipe(
-        title: any(named: 'title'),
-        description: any(named: 'description'),
-        ingredients: any(named: 'ingredients'),
-        instructions: any(named: 'instructions'),
-        mealType: any(named: 'mealType'),
-        portions: any(named: 'portions'),
-        timeMinutes: any(named: 'timeMinutes'),
-        tags: any(named: 'tags'),
-        imageUrls: any(named: 'imageUrls'),
-      )).thenAnswer((_) async => 'recipe_123'); // createRecipe returns String?
-      
+                title: any(named: 'title'),
+                description: any(named: 'description'),
+                ingredients: any(named: 'ingredients'),
+                instructions: any(named: 'instructions'),
+                mealType: any(named: 'mealType'),
+                portions: any(named: 'portions'),
+                timeMinutes: any(named: 'timeMinutes'),
+                tags: any(named: 'tags'),
+                imageUrls: any(named: 'imageUrls'),
+              ))
+          .thenAnswer(
+              (_) async => 'recipe_123'); // createRecipe returns String?
+
       when(() => mockPersonalOps.updateRecipe(any()))
           .thenAnswer((_) async => true);
-      
+
       when(() => mockPersonalOps.deleteRecipe(any()))
           .thenAnswer((_) async => true);
-      
+
       when(() => mockPersonalOps.updateRecipeContent(
-        recipeId: any(named: 'recipeId'),
-        title: any(named: 'title'),
-        description: any(named: 'description'),
-        mealType: any(named: 'mealType'),
-        portions: any(named: 'portions'),
-        timeMinutes: any(named: 'timeMinutes'),
-      )).thenAnswer((_) async => true);
-      
+            recipeId: any(named: 'recipeId'),
+            title: any(named: 'title'),
+            description: any(named: 'description'),
+            mealType: any(named: 'mealType'),
+            portions: any(named: 'portions'),
+            timeMinutes: any(named: 'timeMinutes'),
+          )).thenAnswer((_) async => true);
+
       when(() => mockPersonalOps.addIngredient(any(), any()))
           .thenAnswer((_) async => true);
       when(() => mockPersonalOps.updateIngredient(any(), any(), any()))
           .thenAnswer((_) async => true);
       when(() => mockPersonalOps.removeIngredient(any(), any()))
           .thenAnswer((_) async => true);
-      
+
       when(() => mockPersonalOps.addInstruction(any(), any()))
           .thenAnswer((_) async => true);
       when(() => mockPersonalOps.updateInstruction(any(), any(), any()))
           .thenAnswer((_) async => true);
       when(() => mockPersonalOps.removeInstruction(any(), any()))
           .thenAnswer((_) async => true);
-      
+
       when(() => mockPersonalOps.markAsCooked(any()))
           .thenAnswer((_) async => true);
-      
+
       when(() => mockPersonalOps.addLegacyRecipe(any()))
           .thenAnswer((_) async => RecipeOperationResult.success(
-            'Recipe added successfully',
-          ));
-      
+                'Recipe added successfully',
+              ));
+
       when(() => mockPersonalOps.updateLegacyRecipe(any()))
           .thenAnswer((_) async => RecipeOperationResult.success(
-            'Recipe updated successfully',
-          ));
-      
+                'Recipe updated successfully',
+              ));
+
       // Create view model
       viewModel = PersonalRecipeViewModel();
     });
-    
+
     tearDown(() async {
       viewModel.dispose();
       await TestServiceLocator.reset();
@@ -141,9 +143,10 @@ void main() {
     tearDownAll(() async {
       await BaseUnitTest.teardownUnit();
     });
-    
+
     group('Initialization and Default State', () {
-      test('should initialize with correct default state for all properties', () {
+      test('should initialize with correct default state for all properties',
+          () {
         // Assert
         expect(viewModel.serviceName, equals('PersonalRecipeViewModel'));
         expect(viewModel.personalRecipes, hasLength(1));
@@ -152,18 +155,18 @@ void main() {
         expect(viewModel.currentUserId, equals(testUserId));
         expect(viewModel.currentUserDisplayName, equals(testUserName));
       });
-      
+
       test('should properly register service listener', () {
         // Assert
         // Note: Can't verify mockRecipeService.addListener as it's not a mock method
         // The service initialization is tested through state verification
       });
-      
+
       test('should react to service state changes', () {
         // Arrange
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act - trigger service change using ultrathink state configuration
         mockRecipeService.setRecipeState(
           recipes: [], // No recipes = no personal recipes
@@ -172,13 +175,13 @@ void main() {
           personalOperations: mockPersonalOps,
         );
         mockRecipeService.notifyListeners();
-        
+
         // Assert
         expect(notificationCount, greaterThan(0));
         expect(viewModel.hasPersonalRecipes, isFalse);
         expect(viewModel.personalRecipeCount, equals(0));
       });
-      
+
       test('should handle empty personal recipes list', () {
         // Arrange - use ultrathink state configuration
         mockRecipeService.setRecipeState(
@@ -188,36 +191,36 @@ void main() {
           personalOperations: mockPersonalOps,
         );
         mockRecipeService.notifyListeners();
-        
+
         // Assert
         expect(viewModel.hasPersonalRecipes, isFalse);
         expect(viewModel.personalRecipeCount, equals(0));
         expect(viewModel.personalRecipes, isEmpty);
       });
     });
-    
+
     group('Recipe Creation', () {
       test('should create recipe with required fields only', () async {
         // Act
         final result = await viewModel.createPersonalRecipe(
           name: 'Pannkakor',
         );
-        
+
         // Assert
         expect(result, isTrue);
         verify(() => mockRecipeService.personal.createRecipe(
-          title: 'Pannkakor',
-          description: '',
-          ingredients: [],
-          instructions: [],
-          mealType: '',
-          portions: 1,
-          timeMinutes: 0,
-          tags: [],
-          imageUrls: [],
-        )).called(1);
+              title: 'Pannkakor',
+              description: '',
+              ingredients: [],
+              instructions: [],
+              mealType: '',
+              portions: 1,
+              timeMinutes: 0,
+              tags: [],
+              imageUrls: [],
+            )).called(1);
       });
-      
+
       test('should create recipe with all fields', () async {
         // Act
         final result = await viewModel.createPersonalRecipe(
@@ -231,113 +234,113 @@ void main() {
           tags: ['fisk', 'soppa', 'svensk'],
           imageUrls: ['laxsoppa.jpg'],
         );
-        
+
         // Assert
         expect(result, isTrue);
         verify(() => mockRecipeService.personal.createRecipe(
-          title: 'Laxsoppa',
-          description: 'Krämig laxsoppa med dill',
-          ingredients: ['400g lax', '2 dl grädde', 'Dill'],
-          instructions: ['Koka lax', 'Tillsätt grädde', 'Servera med dill'],
-          mealType: 'Middag',
-          portions: 4,
-          timeMinutes: 45,
-          tags: ['fisk', 'soppa', 'svensk'],
-          imageUrls: ['laxsoppa.jpg'],
-        )).called(1);
+              title: 'Laxsoppa',
+              description: 'Krämig laxsoppa med dill',
+              ingredients: ['400g lax', '2 dl grädde', 'Dill'],
+              instructions: ['Koka lax', 'Tillsätt grädde', 'Servera med dill'],
+              mealType: 'Middag',
+              portions: 4,
+              timeMinutes: 45,
+              tags: ['fisk', 'soppa', 'svensk'],
+              imageUrls: ['laxsoppa.jpg'],
+            )).called(1);
       });
-      
+
       test('should reject empty recipe title', () async {
         // Act
         final result = await viewModel.createPersonalRecipe(
           name: '',
         );
-        
+
         // Assert
         expect(result, isFalse);
         verifyNever(() => mockRecipeService.personal.createRecipe(
-          title: any(named: 'title'),
-          description: any(named: 'description'),
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          tags: any(named: 'tags'),
-          imageUrls: any(named: 'imageUrls'),
-        ));
+              title: any(named: 'title'),
+              description: any(named: 'description'),
+              ingredients: any(named: 'ingredients'),
+              instructions: any(named: 'instructions'),
+              mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              tags: any(named: 'tags'),
+              imageUrls: any(named: 'imageUrls'),
+            ));
       });
-      
+
       test('should reject whitespace-only recipe title', () async {
         // Act
         final result = await viewModel.createPersonalRecipe(
           name: '   \t\n  ',
         );
-        
+
         // Assert
         expect(result, isFalse);
         verifyNever(() => mockRecipeService.personal.createRecipe(
-          title: any(named: 'title'),
-          description: any(named: 'description'),
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          tags: any(named: 'tags'),
-          imageUrls: any(named: 'imageUrls'),
-        ));
+              title: any(named: 'title'),
+              description: any(named: 'description'),
+              ingredients: any(named: 'ingredients'),
+              instructions: any(named: 'instructions'),
+              mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              tags: any(named: 'tags'),
+              imageUrls: any(named: 'imageUrls'),
+            ));
       });
-      
+
       test('should handle creation failure', () async {
         // Arrange
         when(() => mockPersonalOps.createRecipe(
-          title: any(named: 'title'),
-          description: any(named: 'description'),
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          tags: any(named: 'tags'),
-          imageUrls: any(named: 'imageUrls'),
-          rating: any(named: 'rating'),
-          sourceUrl: any(named: 'sourceUrl'),
-        )).thenAnswer((_) async => null);
-        
+              title: any(named: 'title'),
+              description: any(named: 'description'),
+              ingredients: any(named: 'ingredients'),
+              instructions: any(named: 'instructions'),
+              mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              tags: any(named: 'tags'),
+              imageUrls: any(named: 'imageUrls'),
+              rating: any(named: 'rating'),
+              sourceUrl: any(named: 'sourceUrl'),
+            )).thenAnswer((_) async => null);
+
         // Act
         final result = await viewModel.createPersonalRecipe(
           name: 'Test Recipe',
         );
-        
+
         // Assert
         expect(result, isFalse);
       });
-      
+
       test('should handle service exception during creation', () async {
         // Arrange
         when(() => mockPersonalOps.createRecipe(
-          title: any(named: 'title'),
-          description: any(named: 'description'),
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          tags: any(named: 'tags'),
-          imageUrls: any(named: 'imageUrls'),
-        )).thenThrow(Exception('Network error'));
-        
+              title: any(named: 'title'),
+              description: any(named: 'description'),
+              ingredients: any(named: 'ingredients'),
+              instructions: any(named: 'instructions'),
+              mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              tags: any(named: 'tags'),
+              imageUrls: any(named: 'imageUrls'),
+            )).thenThrow(Exception('Network error'));
+
         // Act
         final result = await viewModel.createPersonalRecipe(
           name: 'Test Recipe',
         );
-        
+
         // Assert
         expect(result, isFalse);
       });
     });
-    
+
     group('Recipe Update', () {
       test('should update recipe with all fields', () async {
         // Arrange
@@ -354,15 +357,16 @@ void main() {
           imageUrls: ['new.jpg'],
           createdBy: testUserId,
         );
-        
+
         // Act
         final result = await viewModel.updatePersonalRecipe(updatedRecipe);
-        
+
         // Assert
         expect(result, isTrue);
-        verify(() => mockRecipeService.personal.updateRecipe(updatedRecipe)).called(1);
+        verify(() => mockRecipeService.personal.updateRecipe(updatedRecipe))
+            .called(1);
       });
-      
+
       test('should reject update with empty recipe ID', () async {
         // Arrange
         final invalidRecipe = RecipeFactory.build(
@@ -370,78 +374,79 @@ void main() {
           title: 'Updated',
           createdBy: testUserId,
         );
-        
+
         // Act
         final result = await viewModel.updatePersonalRecipe(invalidRecipe);
-        
+
         // Assert
         expect(result, isFalse);
         verifyNever(() => mockRecipeService.personal.updateRecipe(any()));
       });
-      
+
       test('should reject update for non-personal recipe', () async {
         // Act - testSharedRecipe is already defined in setUp as non-personal
         final result = await viewModel.updatePersonalRecipe(testSharedRecipe);
-        
+
         // Assert
         expect(result, isFalse);
         verifyNever(() => mockRecipeService.personal.updateRecipe(any()));
       });
-      
+
       test('should handle update failure', () async {
         // Arrange
         when(() => mockRecipeService.personal.updateRecipe(any()))
             .thenAnswer((_) async => false);
-        
+
         // Act
         final result = await viewModel.updatePersonalRecipe(testPersonalRecipe);
-        
+
         // Assert
         expect(result, isFalse);
       });
     });
-    
+
     group('Recipe Deletion', () {
       test('should delete personal recipe successfully', () async {
         // Act
         final result = await viewModel.deletePersonalRecipe(testRecipeId);
-        
+
         // Assert
         expect(result, isTrue);
-        verify(() => mockRecipeService.personal.deleteRecipe(testRecipeId)).called(1);
+        verify(() => mockRecipeService.personal.deleteRecipe(testRecipeId))
+            .called(1);
       });
-      
+
       test('should reject deletion with empty recipe ID', () async {
         // Act
         final result = await viewModel.deletePersonalRecipe('');
-        
+
         // Assert
         expect(result, isFalse);
         verifyNever(() => mockRecipeService.personal.deleteRecipe(any()));
       });
-      
+
       test('should reject deletion of non-personal recipe', () async {
         // Act
         final result = await viewModel.deletePersonalRecipe('shared123');
-        
+
         // Assert
         expect(result, isFalse);
         verifyNever(() => mockRecipeService.personal.deleteRecipe(any()));
       });
-      
+
       test('should handle deletion failure', () async {
         // Arrange
         when(() => mockRecipeService.personal.deleteRecipe(any()))
             .thenAnswer((_) async => false);
-        
+
         // Act
         final result = await viewModel.deletePersonalRecipe(testRecipeId);
-        
+
         // Assert
         expect(result, isFalse);
       });
     });
-    
+
     group('Content Updates', () {
       test('should update recipe content fields', () async {
         // Act
@@ -453,344 +458,365 @@ void main() {
           portions: 2,
           timeMinutes: 15,
         );
-        
+
         // Assert
         expect(result, isTrue);
         verify(() => mockRecipeService.personal.updateRecipeContent(
-          recipeId: testRecipeId,
-          title: 'New Title',
-          description: 'New Description',
-          mealType: 'Frukost',
-          portions: 2,
-          timeMinutes: 15,
-        )).called(1);
+              recipeId: testRecipeId,
+              title: 'New Title',
+              description: 'New Description',
+              mealType: 'Frukost',
+              portions: 2,
+              timeMinutes: 15,
+            )).called(1);
       });
-      
+
       test('should reject content update with empty recipe ID', () async {
         // Act
         final result = await viewModel.updateRecipeContent(
           recipeId: '',
           name: 'New Title',
         );
-        
+
         // Assert
         expect(result, isFalse);
       });
-      
+
       test('should reject content update for non-personal recipe', () async {
         // Act
         final result = await viewModel.updateRecipeContent(
           recipeId: 'shared123',
           name: 'New Title',
         );
-        
+
         // Assert
         expect(result, isFalse);
       });
     });
-    
+
     group('Ingredient Management', () {
       test('should add ingredient to recipe', () async {
         // Act
-        final result = await viewModel.addIngredient(testRecipeId, '200g pasta');
-        
+        final result =
+            await viewModel.addIngredient(testRecipeId, '200g pasta');
+
         // Assert
         expect(result, isTrue);
         verify(() => mockRecipeService.personal.addIngredient(
-          testRecipeId,
-          '200g pasta',
-        )).called(1);
+              testRecipeId,
+              '200g pasta',
+            )).called(1);
       });
-      
+
       test('should update ingredient at index', () async {
         // Act
-        final result = await viewModel.updateIngredient(testRecipeId, 0, '600g köttfärs');
-        
+        final result =
+            await viewModel.updateIngredient(testRecipeId, 0, '600g köttfärs');
+
         // Assert
         expect(result, isTrue);
         verify(() => mockRecipeService.personal.updateIngredient(
-          testRecipeId,
-          0,
-          '600g köttfärs',
-        )).called(1);
+              testRecipeId,
+              0,
+              '600g köttfärs',
+            )).called(1);
       });
-      
+
       test('should remove ingredient at index', () async {
         // Act
         final result = await viewModel.removeIngredient(testRecipeId, 1);
-        
+
         // Assert
         expect(result, isTrue);
         verify(() => mockRecipeService.personal.removeIngredient(
-          testRecipeId,
-          1,
-        )).called(1);
+              testRecipeId,
+              1,
+            )).called(1);
       });
-      
-      test('should reject ingredient operations with empty recipe ID', () async {
+
+      test('should reject ingredient operations with empty recipe ID',
+          () async {
         // Act
         final addResult = await viewModel.addIngredient('', 'test');
         final updateResult = await viewModel.updateIngredient('', 0, 'test');
         final removeResult = await viewModel.removeIngredient('', 0);
-        
+
         // Assert
         expect(addResult, isFalse);
         expect(updateResult, isFalse);
         expect(removeResult, isFalse);
       });
-      
+
       test('should reject adding empty ingredient', () async {
         // Act
         final result = await viewModel.addIngredient(testRecipeId, '');
-        
+
         // Assert
         expect(result, isFalse);
-        verifyNever(() => mockRecipeService.personal.addIngredient(any(), any()));
+        verifyNever(
+            () => mockRecipeService.personal.addIngredient(any(), any()));
       });
-      
+
       test('should reject updating with empty ingredient', () async {
         // Act
         final result = await viewModel.updateIngredient(testRecipeId, 0, '');
-        
+
         // Assert
         expect(result, isFalse);
-        verifyNever(() => mockRecipeService.personal.updateIngredient(any(), any(), any()));
+        verifyNever(() =>
+            mockRecipeService.personal.updateIngredient(any(), any(), any()));
       });
-      
-      test('should reject ingredient operations for non-personal recipe', () async {
+
+      test('should reject ingredient operations for non-personal recipe',
+          () async {
         // Act
         final addResult = await viewModel.addIngredient('shared123', 'test');
-        final updateResult = await viewModel.updateIngredient('shared123', 0, 'test');
+        final updateResult =
+            await viewModel.updateIngredient('shared123', 0, 'test');
         final removeResult = await viewModel.removeIngredient('shared123', 0);
-        
+
         // Assert
         expect(addResult, isFalse);
         expect(updateResult, isFalse);
         expect(removeResult, isFalse);
       });
-      
+
       test('should handle negative index for ingredient operations', () async {
         // Act
-        final updateResult = await viewModel.updateIngredient(testRecipeId, -1, 'test');
+        final updateResult =
+            await viewModel.updateIngredient(testRecipeId, -1, 'test');
         final removeResult = await viewModel.removeIngredient(testRecipeId, -1);
-        
+
         // Assert
         expect(updateResult, isFalse);
         expect(removeResult, isFalse);
       });
     });
-    
+
     group('Instruction Management', () {
       test('should add instruction to recipe', () async {
         // Act
-        final result = await viewModel.addInstruction(testRecipeId, 'Koka pastan al dente');
-        
+        final result = await viewModel.addInstruction(
+            testRecipeId, 'Koka pastan al dente');
+
         // Assert
         expect(result, isTrue);
         verify(() => mockRecipeService.personal.addInstruction(
-          testRecipeId,
-          'Koka pastan al dente',
-        )).called(1);
+              testRecipeId,
+              'Koka pastan al dente',
+            )).called(1);
       });
-      
+
       test('should update instruction at index', () async {
         // Act
-        final result = await viewModel.updateInstruction(testRecipeId, 0, 'Blanda alla ingredienser');
-        
+        final result = await viewModel.updateInstruction(
+            testRecipeId, 0, 'Blanda alla ingredienser');
+
         // Assert
         expect(result, isTrue);
         verify(() => mockRecipeService.personal.updateInstruction(
-          testRecipeId,
-          0,
-          'Blanda alla ingredienser',
-        )).called(1);
+              testRecipeId,
+              0,
+              'Blanda alla ingredienser',
+            )).called(1);
       });
-      
+
       test('should remove instruction at index', () async {
         // Act
         final result = await viewModel.removeInstruction(testRecipeId, 2);
-        
+
         // Assert
         expect(result, isTrue);
         verify(() => mockRecipeService.personal.removeInstruction(
-          testRecipeId,
-          2,
-        )).called(1);
+              testRecipeId,
+              2,
+            )).called(1);
       });
-      
-      test('should reject instruction operations with empty recipe ID', () async {
+
+      test('should reject instruction operations with empty recipe ID',
+          () async {
         // Act
         final addResult = await viewModel.addInstruction('', 'test');
         final updateResult = await viewModel.updateInstruction('', 0, 'test');
         final removeResult = await viewModel.removeInstruction('', 0);
-        
+
         // Assert
         expect(addResult, isFalse);
         expect(updateResult, isFalse);
         expect(removeResult, isFalse);
       });
-      
+
       test('should reject adding empty instruction', () async {
         // Act
         final result = await viewModel.addInstruction(testRecipeId, '');
-        
+
         // Assert
         expect(result, isFalse);
-        verifyNever(() => mockRecipeService.personal.addInstruction(any(), any()));
+        verifyNever(
+            () => mockRecipeService.personal.addInstruction(any(), any()));
       });
-      
+
       test('should reject updating with empty instruction', () async {
         // Act
         final result = await viewModel.updateInstruction(testRecipeId, 0, '');
-        
+
         // Assert
         expect(result, isFalse);
-        verifyNever(() => mockRecipeService.personal.updateInstruction(any(), any(), any()));
+        verifyNever(() =>
+            mockRecipeService.personal.updateInstruction(any(), any(), any()));
       });
-      
-      test('should reject instruction operations for non-personal recipe', () async {
+
+      test('should reject instruction operations for non-personal recipe',
+          () async {
         // Act
         final addResult = await viewModel.addInstruction('shared123', 'test');
-        final updateResult = await viewModel.updateInstruction('shared123', 0, 'test');
+        final updateResult =
+            await viewModel.updateInstruction('shared123', 0, 'test');
         final removeResult = await viewModel.removeInstruction('shared123', 0);
-        
+
         // Assert
         expect(addResult, isFalse);
         expect(updateResult, isFalse);
         expect(removeResult, isFalse);
       });
-      
+
       test('should handle negative index for instruction operations', () async {
         // Act
-        final updateResult = await viewModel.updateInstruction(testRecipeId, -1, 'test');
-        final removeResult = await viewModel.removeInstruction(testRecipeId, -1);
-        
+        final updateResult =
+            await viewModel.updateInstruction(testRecipeId, -1, 'test');
+        final removeResult =
+            await viewModel.removeInstruction(testRecipeId, -1);
+
         // Assert
         expect(updateResult, isFalse);
         expect(removeResult, isFalse);
       });
     });
-    
+
     group('Cooking Tracking', () {
       test('should mark recipe as cooked', () async {
         // Act
         final result = await viewModel.markAsCooked(testRecipeId);
-        
+
         // Assert
         expect(result, isTrue);
-        verify(() => mockRecipeService.personal.markAsCooked(testRecipeId)).called(1);
+        verify(() => mockRecipeService.personal.markAsCooked(testRecipeId))
+            .called(1);
       });
-      
+
       test('should reject marking with empty recipe ID', () async {
         // Act
         final result = await viewModel.markAsCooked('');
-        
+
         // Assert
         expect(result, isFalse);
         verifyNever(() => mockRecipeService.personal.markAsCooked(any()));
       });
-      
+
       test('should reject marking non-personal recipe as cooked', () async {
         // Act
         final result = await viewModel.markAsCooked('shared123');
-        
+
         // Assert
         expect(result, isFalse);
         verifyNever(() => mockRecipeService.personal.markAsCooked(any()));
       });
-      
+
       test('should handle marking failure', () async {
         // Arrange
         when(() => mockRecipeService.personal.markAsCooked(any()))
             .thenAnswer((_) async => false);
-        
+
         // Act
         final result = await viewModel.markAsCooked(testRecipeId);
-        
+
         // Assert
         expect(result, isFalse);
       });
     });
-    
+
     group('Legacy Compatibility', () {
       test('should add recipe using legacy format', () async {
         // Act
         final result = await viewModel.addLegacyRecipe(testPersonalRecipe);
-        
+
         // Assert
         expect(result.isSuccess, isTrue);
         expect(result.message, equals('Recipe added successfully'));
-        verify(() => mockRecipeService.personal.addLegacyRecipe(testPersonalRecipe)).called(1);
+        verify(() =>
+                mockRecipeService.personal.addLegacyRecipe(testPersonalRecipe))
+            .called(1);
       });
-      
+
       test('should update recipe using legacy format', () async {
         // Act
         final result = await viewModel.updateLegacyRecipe(testPersonalRecipe);
-        
+
         // Assert
         expect(result.isSuccess, isTrue);
         expect(result.message, equals('Recipe updated successfully'));
-        verify(() => mockRecipeService.personal.updateLegacyRecipe(testPersonalRecipe)).called(1);
+        verify(() => mockRecipeService.personal
+            .updateLegacyRecipe(testPersonalRecipe)).called(1);
       });
-      
+
       test('should handle legacy add failure', () async {
         // Arrange
         when(() => mockRecipeService.personal.addLegacyRecipe(any()))
             .thenAnswer((_) async => RecipeOperationResult.failure(
-              'Failed to add',
-            ));
-        
+                  'Failed to add',
+                ));
+
         // Act
         final result = await viewModel.addLegacyRecipe(testPersonalRecipe);
-        
+
         // Assert
         expect(result.isSuccess, isFalse);
         expect(result.message, equals('Failed to add'));
       });
-      
+
       test('should handle legacy update failure', () async {
         // Arrange
         when(() => mockRecipeService.personal.updateLegacyRecipe(any()))
             .thenAnswer((_) async => RecipeOperationResult.failure(
-              'Failed to update',
-            ));
-        
+                  'Failed to update',
+                ));
+
         // Act
         final result = await viewModel.updateLegacyRecipe(testPersonalRecipe);
-        
+
         // Assert
         expect(result.isSuccess, isFalse);
         expect(result.message, equals('Failed to update'));
       });
     });
-    
+
     group('Query Utilities', () {
       test('should get recipe by ID', () {
         // Act
         final recipe = viewModel.getPersonalRecipeById(testRecipeId);
-        
+
         // Assert
         expect(recipe, isNotNull);
         expect(recipe?.id, equals(testRecipeId));
         expect(recipe?.title, equals('Köttbullar'));
       });
-      
+
       test('should return null for non-existent recipe ID', () {
         // Act
         final recipe = viewModel.getPersonalRecipeById('nonexistent');
-        
+
         // Assert
         expect(recipe, isNull);
       });
-      
+
       test('should return null for shared recipe ID', () {
         // Act
         final recipe = viewModel.getPersonalRecipeById('shared123');
-        
+
         // Assert
         expect(recipe, isNull);
       });
-      
+
       test('should get recipes by meal type', () {
         // Arrange
         final breakfastRecipe = RecipeFactory.build(
@@ -803,18 +829,19 @@ void main() {
         when(() => mockRecipeService.personalRecipes)
             .thenReturn([testPersonalRecipe, breakfastRecipe]);
         mockRecipeService.notifyListeners();
-        
+
         // Act
         final dinnerRecipes = viewModel.getPersonalRecipesByMealType('Middag');
-        final breakfastRecipes = viewModel.getPersonalRecipesByMealType('Frukost');
-        
+        final breakfastRecipes =
+            viewModel.getPersonalRecipesByMealType('Frukost');
+
         // Assert
         expect(dinnerRecipes, hasLength(1));
         expect(dinnerRecipes.first.title, equals('Köttbullar'));
         expect(breakfastRecipes, hasLength(1));
         expect(breakfastRecipes.first.title, equals('Gröt'));
       });
-      
+
       test('should get recipes by tag', () {
         // Arrange
         final italianRecipe = RecipeFactory.build(
@@ -827,12 +854,12 @@ void main() {
         when(() => mockRecipeService.personalRecipes)
             .thenReturn([testPersonalRecipe, italianRecipe]);
         mockRecipeService.notifyListeners();
-        
+
         // Act
         final swedishRecipes = viewModel.getPersonalRecipesByTag('svensk');
         final pastaRecipes = viewModel.getPersonalRecipesByTag('pasta');
         final dinnerRecipes = viewModel.getPersonalRecipesByTag('middag');
-        
+
         // Assert
         expect(swedishRecipes, hasLength(1));
         expect(swedishRecipes.first.title, equals('Köttbullar'));
@@ -840,15 +867,15 @@ void main() {
         expect(pastaRecipes.first.title, equals('Pasta Carbonara'));
         expect(dinnerRecipes, hasLength(2));
       });
-      
+
       test('should return empty list for non-existent tag', () {
         // Act
         final recipes = viewModel.getPersonalRecipesByTag('nonexistent');
-        
+
         // Assert
         expect(recipes, isEmpty);
       });
-      
+
       test('should search recipes by query', () {
         // Arrange
         final recipes = [
@@ -871,12 +898,12 @@ void main() {
         ];
         when(() => mockRecipeService.personalRecipes).thenReturn(recipes);
         mockRecipeService.notifyListeners();
-        
+
         // Act
         final titleSearch = viewModel.searchPersonalRecipes('köttbullar');
         final descriptionSearch = viewModel.searchPersonalRecipes('italiensk');
         final ingredientSearch = viewModel.searchPersonalRecipes('pasta');
-        
+
         // Assert
         expect(titleSearch, hasLength(1));
         expect(titleSearch.first.title, equals('Köttbullar'));
@@ -885,65 +912,95 @@ void main() {
         expect(ingredientSearch, hasLength(1));
         expect(ingredientSearch.first.title, equals('Pasta'));
       });
-      
+
       test('should return all recipes for empty search query', () {
         // Act
         final recipes = viewModel.searchPersonalRecipes('');
-        
+
         // Assert
         expect(recipes, equals(viewModel.personalRecipes));
       });
-      
+
       test('should handle case-insensitive search', () {
         // Act
         final upperCase = viewModel.searchPersonalRecipes('KÖTTBULLAR');
         final lowerCase = viewModel.searchPersonalRecipes('köttbullar');
         final mixedCase = viewModel.searchPersonalRecipes('KöTtBuLLaR');
-        
+
         // Assert
         expect(upperCase, hasLength(1));
         expect(lowerCase, hasLength(1));
         expect(mixedCase, hasLength(1));
       });
     });
-    
+
     group('Analytics', () {
       test('should get meal type counts', () {
         // Arrange
         final recipes = [
-          RecipeFactory.build(mealType: 'Frukost', type: RecipeType.personal, createdBy: testUserId),
-          RecipeFactory.build(mealType: 'Frukost', type: RecipeType.personal, createdBy: testUserId),
-          RecipeFactory.build(mealType: 'Middag', type: RecipeType.personal, createdBy: testUserId),
-          RecipeFactory.build(mealType: 'Middag', type: RecipeType.personal, createdBy: testUserId),
-          RecipeFactory.build(mealType: 'Middag', type: RecipeType.personal, createdBy: testUserId),
-          RecipeFactory.build(mealType: 'Lunch', type: RecipeType.personal, createdBy: testUserId),
+          RecipeFactory.build(
+              mealType: 'Frukost',
+              type: RecipeType.personal,
+              createdBy: testUserId),
+          RecipeFactory.build(
+              mealType: 'Frukost',
+              type: RecipeType.personal,
+              createdBy: testUserId),
+          RecipeFactory.build(
+              mealType: 'Middag',
+              type: RecipeType.personal,
+              createdBy: testUserId),
+          RecipeFactory.build(
+              mealType: 'Middag',
+              type: RecipeType.personal,
+              createdBy: testUserId),
+          RecipeFactory.build(
+              mealType: 'Middag',
+              type: RecipeType.personal,
+              createdBy: testUserId),
+          RecipeFactory.build(
+              mealType: 'Lunch',
+              type: RecipeType.personal,
+              createdBy: testUserId),
         ];
         when(() => mockRecipeService.personalRecipes).thenReturn(recipes);
         mockRecipeService.notifyListeners();
-        
+
         // Act
         final counts = viewModel.getPersonalMealTypeCounts();
-        
+
         // Assert
         expect(counts['Frukost'], equals(2));
         expect(counts['Middag'], equals(3));
         expect(counts['Lunch'], equals(1));
       });
-      
+
       test('should get tag counts', () {
         // Arrange
         final recipes = [
-          RecipeFactory.build(tags: ['svensk', 'kött'], type: RecipeType.personal, createdBy: testUserId),
-          RecipeFactory.build(tags: ['svensk', 'fisk'], type: RecipeType.personal, createdBy: testUserId),
-          RecipeFactory.build(tags: ['italiensk', 'pasta'], type: RecipeType.personal, createdBy: testUserId),
-          RecipeFactory.build(tags: ['svensk', 'soppa'], type: RecipeType.personal, createdBy: testUserId),
+          RecipeFactory.build(
+              tags: ['svensk', 'kött'],
+              type: RecipeType.personal,
+              createdBy: testUserId),
+          RecipeFactory.build(
+              tags: ['svensk', 'fisk'],
+              type: RecipeType.personal,
+              createdBy: testUserId),
+          RecipeFactory.build(
+              tags: ['italiensk', 'pasta'],
+              type: RecipeType.personal,
+              createdBy: testUserId),
+          RecipeFactory.build(
+              tags: ['svensk', 'soppa'],
+              type: RecipeType.personal,
+              createdBy: testUserId),
         ];
         when(() => mockRecipeService.personalRecipes).thenReturn(recipes);
         mockRecipeService.notifyListeners();
-        
+
         // Act
         final counts = viewModel.getPersonalTagCounts();
-        
+
         // Assert
         expect(counts['svensk'], equals(3));
         expect(counts['kött'], equals(1));
@@ -952,61 +1009,61 @@ void main() {
         expect(counts['pasta'], equals(1));
         expect(counts['soppa'], equals(1));
       });
-      
+
       test('should handle empty recipes for analytics', () {
         // Arrange
         when(() => mockRecipeService.personalRecipes).thenReturn([]);
         mockRecipeService.notifyListeners();
-        
+
         // Act
         final mealTypeCounts = viewModel.getPersonalMealTypeCounts();
         final tagCounts = viewModel.getPersonalTagCounts();
-        
+
         // Assert
         expect(mealTypeCounts, isEmpty);
         expect(tagCounts, isEmpty);
       });
     });
-    
+
     group('Error Handling', () {
       test('should handle service exceptions gracefully', () async {
         // Arrange
         when(() => mockPersonalOps.createRecipe(
-          title: any(named: 'title'),
-          description: any(named: 'description'),
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          tags: any(named: 'tags'),
-          imageUrls: any(named: 'imageUrls'),
-        )).thenThrow(Exception('Network error'));
-        
+              title: any(named: 'title'),
+              description: any(named: 'description'),
+              ingredients: any(named: 'ingredients'),
+              instructions: any(named: 'instructions'),
+              mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              tags: any(named: 'tags'),
+              imageUrls: any(named: 'imageUrls'),
+            )).thenThrow(Exception('Network error'));
+
         // Act
         final result = await viewModel.createPersonalRecipe(name: 'Test');
-        
+
         // Assert
         expect(result, isFalse);
       });
-      
+
       test('should handle concurrent operations', () async {
         // Arrange
         when(() => mockPersonalOps.createRecipe(
-          title: any(named: 'title'),
-          description: any(named: 'description'),
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          tags: any(named: 'tags'),
-          imageUrls: any(named: 'imageUrls'),
-        )).thenAnswer((_) async {
+              title: any(named: 'title'),
+              description: any(named: 'description'),
+              ingredients: any(named: 'ingredients'),
+              instructions: any(named: 'instructions'),
+              mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              tags: any(named: 'tags'),
+              imageUrls: any(named: 'imageUrls'),
+            )).thenAnswer((_) async {
           await Future.delayed(Duration(milliseconds: 10));
           return 'recipe_123';
         });
-        
+
         // Act - start multiple operations
         final futures = [
           viewModel.createPersonalRecipe(name: 'Recipe 1'),
@@ -1014,89 +1071,90 @@ void main() {
           viewModel.createPersonalRecipe(name: 'Recipe 3'),
         ];
         final results = await Future.wait(futures);
-        
+
         // Assert
         expect(results, everyElement(isTrue));
         verify(() => mockPersonalOps.createRecipe(
-          title: any(named: 'title'),
-          description: any(named: 'description'),
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          tags: any(named: 'tags'),
-          imageUrls: any(named: 'imageUrls'),
-        )).called(3);
+              title: any(named: 'title'),
+              description: any(named: 'description'),
+              ingredients: any(named: 'ingredients'),
+              instructions: any(named: 'instructions'),
+              mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              tags: any(named: 'tags'),
+              imageUrls: any(named: 'imageUrls'),
+            )).called(3);
       });
     });
-    
+
     group('State Management', () {
       test('should notify listeners on recipe changes', () {
         // Arrange
         var notificationCount = 0;
         viewModel.addListener(() => notificationCount++);
-        
+
         // Act - trigger multiple state changes
         when(() => mockRecipeService.personalRecipes).thenReturn([]);
         mockRecipeService.notifyListeners();
-        
-        when(() => mockRecipeService.personalRecipes).thenReturn([testPersonalRecipe]);
+
+        when(() => mockRecipeService.personalRecipes)
+            .thenReturn([testPersonalRecipe]);
         mockRecipeService.notifyListeners();
-        
+
         // Assert
         expect(notificationCount, greaterThanOrEqualTo(2));
       });
-      
+
       test('should reflect loading state from service', () {
         // Arrange
         when(() => mockRecipeService.isLoading).thenReturn(true);
         mockRecipeService.notifyListeners();
-        
+
         // Act
         final isLoading = mockRecipeService.isLoading;
-        
+
         // Assert
         expect(isLoading, isTrue);
       });
-      
+
       test('should reflect error state from service', () {
         // Arrange
         when(() => mockRecipeService.error).thenReturn('Service error');
         mockRecipeService.notifyListeners();
-        
+
         // Act
         final error = mockRecipeService.error;
-        
+
         // Assert
         expect(error, equals('Service error'));
       });
     });
-    
+
     group('Lifecycle Management', () {
       test('should dispose without errors', () {
         // Act & Assert
         expect(() => viewModel.dispose(), returnsNormally);
       });
-      
+
       test('should remove service listener on dispose', () {
         // Act
         viewModel.dispose();
-        
+
         // Assert
         verify(() => mockRecipeService.removeListener(any())).called(1);
       });
-      
+
       test('should handle operations after disposal safely', () {
         // Arrange
         viewModel.dispose();
-        
+
         // Act & Assert - should not throw
         expect(() => viewModel.personalRecipes, returnsNormally);
         expect(() => viewModel.hasPersonalRecipes, returnsNormally);
       });
     });
-    
+
     group('Edge Cases', () {
       test('should handle recipes with missing fields', () {
         // Arrange
@@ -1109,45 +1167,46 @@ void main() {
           instructions: [],
           tags: [],
         );
-        when(() => mockRecipeService.personalRecipes).thenReturn([minimalRecipe]);
+        when(() => mockRecipeService.personalRecipes)
+            .thenReturn([minimalRecipe]);
         mockRecipeService.notifyListeners();
-        
+
         // Act
         final recipe = viewModel.getPersonalRecipeById('minimal');
-        
+
         // Assert
         expect(recipe, isNotNull);
         expect(recipe?.ingredients, isEmpty);
         expect(recipe?.instructions, isEmpty);
         expect(recipe?.tags, isEmpty);
       });
-      
+
       test('should handle very long input strings', () async {
         // Arrange
         final longTitle = 'A' * 1000;
         final longDescription = 'B' * 5000;
-        
+
         // Act
         final result = await viewModel.createPersonalRecipe(
           name: longTitle,
           description: longDescription,
         );
-        
+
         // Assert
         expect(result, isTrue);
         verify(() => mockPersonalOps.createRecipe(
-          title: longTitle,
-          description: longDescription,
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          tags: any(named: 'tags'),
-          imageUrls: any(named: 'imageUrls'),
-        )).called(1);
+              title: longTitle,
+              description: longDescription,
+              ingredients: any(named: 'ingredients'),
+              instructions: any(named: 'instructions'),
+              mealType: any(named: 'mealType'),
+              portions: any(named: 'portions'),
+              timeMinutes: any(named: 'timeMinutes'),
+              tags: any(named: 'tags'),
+              imageUrls: any(named: 'imageUrls'),
+            )).called(1);
       });
-      
+
       test('should handle special characters in search', () {
         // Arrange
         final specialRecipe = RecipeFactory.build(
@@ -1156,39 +1215,56 @@ void main() {
           type: RecipeType.personal,
           createdBy: testUserId,
         );
-        when(() => mockRecipeService.personalRecipes).thenReturn([specialRecipe]);
+        when(() => mockRecipeService.personalRecipes)
+            .thenReturn([specialRecipe]);
         mockRecipeService.notifyListeners();
-        
+
         // Act
         final ampersandSearch = viewModel.searchPersonalRecipes('&');
         final swedishSearch = viewModel.searchPersonalRecipes('räksmörgås');
-        
+
         // Assert
         expect(ampersandSearch, hasLength(1));
         expect(swedishSearch, hasLength(1));
       });
     });
-    
+
     group('Swedish Localization', () {
       test('should handle Swedish meal types correctly', () {
         // Arrange
         final swedishRecipes = [
-          RecipeFactory.build(mealType: 'Frukost', type: RecipeType.personal, createdBy: testUserId),
-          RecipeFactory.build(mealType: 'Lunch', type: RecipeType.personal, createdBy: testUserId),
-          RecipeFactory.build(mealType: 'Middag', type: RecipeType.personal, createdBy: testUserId),
-          RecipeFactory.build(mealType: 'Mellanmål', type: RecipeType.personal, createdBy: testUserId),
-          RecipeFactory.build(mealType: 'Kvällsmat', type: RecipeType.personal, createdBy: testUserId),
+          RecipeFactory.build(
+              mealType: 'Frukost',
+              type: RecipeType.personal,
+              createdBy: testUserId),
+          RecipeFactory.build(
+              mealType: 'Lunch',
+              type: RecipeType.personal,
+              createdBy: testUserId),
+          RecipeFactory.build(
+              mealType: 'Middag',
+              type: RecipeType.personal,
+              createdBy: testUserId),
+          RecipeFactory.build(
+              mealType: 'Mellanmål',
+              type: RecipeType.personal,
+              createdBy: testUserId),
+          RecipeFactory.build(
+              mealType: 'Kvällsmat',
+              type: RecipeType.personal,
+              createdBy: testUserId),
         ];
-        when(() => mockRecipeService.personalRecipes).thenReturn(swedishRecipes);
+        when(() => mockRecipeService.personalRecipes)
+            .thenReturn(swedishRecipes);
         mockRecipeService.notifyListeners();
-        
+
         // Act
         final breakfast = viewModel.getPersonalRecipesByMealType('Frukost');
         final lunch = viewModel.getPersonalRecipesByMealType('Lunch');
         final dinner = viewModel.getPersonalRecipesByMealType('Middag');
         final snack = viewModel.getPersonalRecipesByMealType('Mellanmål');
         final supper = viewModel.getPersonalRecipesByMealType('Kvällsmat');
-        
+
         // Assert
         expect(breakfast, hasLength(1));
         expect(lunch, hasLength(1));
@@ -1196,18 +1272,19 @@ void main() {
         expect(snack, hasLength(1));
         expect(supper, hasLength(1));
       });
-      
-      test('should handle Swedish characters in titles and descriptions', () async {
+
+      test('should handle Swedish characters in titles and descriptions',
+          () async {
         // Act
         final result = await viewModel.createPersonalRecipe(
           name: 'Räksmörgås med Ägg och Öl',
           description: 'Årets bästa räksmörgås från Skåne',
         );
-        
+
         // Assert
         expect(result, isTrue);
       });
-      
+
       test('should search with Swedish characters', () {
         // Arrange
         final recipes = [
@@ -1229,12 +1306,12 @@ void main() {
         ];
         when(() => mockRecipeService.personalRecipes).thenReturn(recipes);
         mockRecipeService.notifyListeners();
-        
+
         // Act
         final appleSearch = viewModel.searchPersonalRecipes('äppel');
         final peaSearch = viewModel.searchPersonalRecipes('ärt');
         final beerSearch = viewModel.searchPersonalRecipes('öl');
-        
+
         // Assert
         expect(appleSearch, hasLength(1));
         expect(appleSearch.first.title, equals('Äppelpaj'));

@@ -1,11 +1,11 @@
 // test/widget/user/user_layout_widgets_ultrathink_test.dart
 // Comprehensive tests for UserLayoutWidgets using ultrathink methodology
-// 
+//
 // ULTRATHINK ANALYSIS: UserLayoutWidgets static utility class (173 lines)
 // - 5 static factory methods for user display layouts
-// - Text components: userName, userEmail with AppTextStyles integration  
+// - Text components: userName, userEmail with AppTextStyles integration
 // - Layout components: userInfo (Column), userRow (InkWell>Row), userCard (Card>Column)
-// - Dependency delegation to UserAvatarWidgets.avatar() 
+// - Dependency delegation to UserAvatarWidgets.avatar()
 // - Conditional rendering based on nullable parameters
 // - Consistent spacing/styling via AppDimensions/AppTextStyles constants
 
@@ -45,7 +45,9 @@ void main() {
     }
 
     group('userName() - Text Widget Tests (lines 13-24)', () {
-      testWidgets('should create Text widget with displayName and default styling', (WidgetTester tester) async {
+      testWidgets(
+          'should create Text widget with displayName and default styling',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test core functionality - Text widget with AppTextStyles.titleMedium default
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userName(displayName: 'Anna Lindberg'),
@@ -58,12 +60,13 @@ void main() {
         expect(textWidget.maxLines, isNull);
       });
 
-      testWidgets('should apply custom style when provided', (WidgetTester tester) async {
+      testWidgets('should apply custom style when provided',
+          (WidgetTester tester) async {
         const customStyle = TextStyle(fontSize: 20, color: Colors.red);
-        
+
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userName(
-            displayName: 'Erik Johansson', 
+            displayName: 'Erik Johansson',
             style: customStyle,
           ),
         ));
@@ -72,10 +75,11 @@ void main() {
         expect(textWidget.style, equals(customStyle));
       });
 
-      testWidgets('should apply custom maxLines and overflow when provided', (WidgetTester tester) async {
+      testWidgets('should apply custom maxLines and overflow when provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userName(
-            displayName: 'Sofia Andersson', 
+            displayName: 'Sofia Andersson',
             maxLines: 2,
             overflow: TextOverflow.fade,
           ),
@@ -86,7 +90,8 @@ void main() {
         expect(textWidget.overflow, equals(TextOverflow.fade));
       });
 
-      testWidgets('should handle Swedish characters correctly', (WidgetTester tester) async {
+      testWidgets('should handle Swedish characters correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userName(displayName: 'Åke Öström'),
         ));
@@ -94,7 +99,8 @@ void main() {
         expect(find.text('Åke Öström'), findsOneWidget);
       });
 
-      testWidgets('should handle empty displayName', (WidgetTester tester) async {
+      testWidgets('should handle empty displayName',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userName(displayName: ''),
         ));
@@ -103,9 +109,11 @@ void main() {
         expect(textWidget.data, equals(''));
       });
 
-      testWidgets('should handle very long displayName with ellipsis', (WidgetTester tester) async {
-        const longName = 'Anna Sofia Margareta Elisabeth Kristina Johansson-Andersson';
-        
+      testWidgets('should handle very long displayName with ellipsis',
+          (WidgetTester tester) async {
+        const longName =
+            'Anna Sofia Margareta Elisabeth Kristina Johansson-Andersson';
+
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userName(displayName: longName),
         ));
@@ -117,7 +125,8 @@ void main() {
     });
 
     group('userEmail() - Text Widget Tests (lines 27-38)', () {
-      testWidgets('should create Text widget with email and default styling', (WidgetTester tester) async {
+      testWidgets('should create Text widget with email and default styling',
+          (WidgetTester tester) async {
         // ULTRATHINK: Same structure as userName but for email addresses
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userEmail(email: 'anna@example.se'),
@@ -130,12 +139,13 @@ void main() {
         expect(textWidget.maxLines, isNull);
       });
 
-      testWidgets('should apply custom style when provided', (WidgetTester tester) async {
+      testWidgets('should apply custom style when provided',
+          (WidgetTester tester) async {
         const customStyle = TextStyle(fontSize: 14, color: Colors.blue);
-        
+
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userEmail(
-            email: 'erik@butlery.se', 
+            email: 'erik@butlery.se',
             style: customStyle,
           ),
         ));
@@ -144,7 +154,8 @@ void main() {
         expect(textWidget.style, equals(customStyle));
       });
 
-      testWidgets('should handle Swedish domain names', (WidgetTester tester) async {
+      testWidgets('should handle Swedish domain names',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userEmail(email: 'sofia@företag.se'),
         ));
@@ -152,9 +163,11 @@ void main() {
         expect(find.text('sofia@företag.se'), findsOneWidget);
       });
 
-      testWidgets('should handle very long email with ellipsis', (WidgetTester tester) async {
-        const longEmail = 'anna.sofia.margareta.johansson@very-long-company-name-example.com';
-        
+      testWidgets('should handle very long email with ellipsis',
+          (WidgetTester tester) async {
+        const longEmail =
+            'anna.sofia.margareta.johansson@very-long-company-name-example.com';
+
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userEmail(email: longEmail),
         ));
@@ -166,7 +179,9 @@ void main() {
     });
 
     group('userInfo() - Column Layout Tests (lines 41-58)', () {
-      testWidgets('should create Column with displayName only when email is null', (WidgetTester tester) async {
+      testWidgets(
+          'should create Column with displayName only when email is null',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test conditional rendering - email null case (lines 52-55)
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userInfo(displayName: 'Anna Lindberg'),
@@ -176,10 +191,13 @@ void main() {
         expect(find.text('Anna Lindberg'), findsOneWidget);
         expect(find.byType(Text), findsOneWidget); // Only name, no email
         // Check no spacing SizedBox inside the userInfo widget (only test container exists)
-        expect(find.byType(SizedBox), findsOneWidget); // Only test environment SizedBox
+        expect(find.byType(SizedBox),
+            findsOneWidget); // Only test environment SizedBox
       });
 
-      testWidgets('should create Column with displayName and email when email provided', (WidgetTester tester) async {
+      testWidgets(
+          'should create Column with displayName and email when email provided',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test conditional rendering - email present case (lines 52-55)
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userInfo(
@@ -192,10 +210,12 @@ void main() {
         expect(find.text('Erik Johansson'), findsOneWidget);
         expect(find.text('erik@example.se'), findsOneWidget);
         expect(find.byType(Text), findsNWidgets(2)); // Name and email
-        expect(find.byType(SizedBox), findsNWidgets(2)); // Test environment SizedBox + spacing SizedBox
+        expect(find.byType(SizedBox),
+            findsNWidgets(2)); // Test environment SizedBox + spacing SizedBox
       });
 
-      testWidgets('should apply custom CrossAxisAlignment', (WidgetTester tester) async {
+      testWidgets('should apply custom CrossAxisAlignment',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userInfo(
             displayName: 'Sofia Andersson',
@@ -207,10 +227,11 @@ void main() {
         expect(column.crossAxisAlignment, equals(CrossAxisAlignment.center));
       });
 
-      testWidgets('should apply custom styles to name and email', (WidgetTester tester) async {
+      testWidgets('should apply custom styles to name and email',
+          (WidgetTester tester) async {
         const nameStyle = TextStyle(fontSize: 18, color: Colors.red);
         const emailStyle = TextStyle(fontSize: 14, color: Colors.blue);
-        
+
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userInfo(
             displayName: 'Lars Nilsson',
@@ -225,7 +246,9 @@ void main() {
         expect(textWidgets[1].style, equals(emailStyle)); // Email style
       });
 
-      testWidgets('should use AppDimensions.spacingXs for spacing between name and email', (WidgetTester tester) async {
+      testWidgets(
+          'should use AppDimensions.spacingXs for spacing between name and email',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userInfo(
             displayName: 'Astrid Berg',
@@ -233,7 +256,8 @@ void main() {
           ),
         ));
 
-        final sizedBoxes = tester.widgetList<SizedBox>(find.byType(SizedBox)).toList();
+        final sizedBoxes =
+            tester.widgetList<SizedBox>(find.byType(SizedBox)).toList();
         // Find the spacing SizedBox (not the test container)
         final spacingSizedBox = sizedBoxes.firstWhere(
           (box) => box.height == AppDimensions.spacingXs,
@@ -244,7 +268,9 @@ void main() {
     });
 
     group('userRow() - InkWell Row Layout Tests (lines 61-112)', () {
-      testWidgets('should create InkWell with Row layout containing avatar and user info', (WidgetTester tester) async {
+      testWidgets(
+          'should create InkWell with Row layout containing avatar and user info',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test core structure - InkWell > Padding > Row (lines 73-111)
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userRow(
@@ -256,15 +282,16 @@ void main() {
         expect(find.byType(InkWell), findsOneWidget);
         expect(find.byType(Row), findsOneWidget);
         expect(find.byType(Padding), findsAtLeastNWidgets(1));
-        
+
         // Check avatar delegation to UserAvatarWidgets
         expect(find.text('AS'), findsOneWidget); // Avatar initials
         expect(find.text('Anna Svensson'), findsOneWidget);
       });
 
-      testWidgets('should apply onTap callback to InkWell', (WidgetTester tester) async {
+      testWidgets('should apply onTap callback to InkWell',
+          (WidgetTester tester) async {
         bool tapped = false;
-        
+
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userRow(
             displayName: 'Erik Johansson',
@@ -276,25 +303,31 @@ void main() {
         expect(tapped, isTrue);
       });
 
-      testWidgets('should use AppDimensions constants for spacing and padding', (WidgetTester tester) async {
+      testWidgets('should use AppDimensions constants for spacing and padding',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userRow(displayName: 'Sofia Andersson'),
         ));
 
-        final paddings = tester.widgetList<Padding>(find.byType(Padding)).toList();
+        final paddings =
+            tester.widgetList<Padding>(find.byType(Padding)).toList();
         // Find the main content padding (not other paddings)
         final mainPadding = paddings.firstWhere(
           (p) => p.padding == const EdgeInsets.all(AppDimensions.paddingL),
           orElse: () => throw StateError('Main padding not found'),
         );
-        expect(mainPadding.padding, equals(const EdgeInsets.all(AppDimensions.paddingL)));
+        expect(mainPadding.padding,
+            equals(const EdgeInsets.all(AppDimensions.paddingL)));
 
-        final spacingBoxes = tester.widgetList<SizedBox>(find.byType(SizedBox)).toList();
-        final rowSpacing = spacingBoxes.firstWhere((box) => box.width == AppDimensions.spacingM);
+        final spacingBoxes =
+            tester.widgetList<SizedBox>(find.byType(SizedBox)).toList();
+        final rowSpacing = spacingBoxes
+            .firstWhere((box) => box.width == AppDimensions.spacingM);
         expect(rowSpacing.width, equals(AppDimensions.spacingM));
       });
 
-      testWidgets('should show email when provided', (WidgetTester tester) async {
+      testWidgets('should show email when provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userRow(
             displayName: 'Lars Nilsson',
@@ -306,7 +339,8 @@ void main() {
         expect(find.text('lars@example.se'), findsOneWidget);
       });
 
-      testWidgets('should show subtitle when provided', (WidgetTester tester) async {
+      testWidgets('should show subtitle when provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userRow(
             displayName: 'Astrid Berg',
@@ -318,9 +352,10 @@ void main() {
         expect(find.text('Projektledare'), findsOneWidget);
       });
 
-      testWidgets('should show trailing widget when provided', (WidgetTester tester) async {
+      testWidgets('should show trailing widget when provided',
+          (WidgetTester tester) async {
         const trailingWidget = Icon(Icons.arrow_forward);
-        
+
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userRow(
             displayName: 'Gunnar Holm',
@@ -332,7 +367,8 @@ void main() {
         expect(find.byIcon(Icons.arrow_forward), findsOneWidget);
       });
 
-      testWidgets('should pass avatar parameters to UserAvatarWidgets.avatar', (WidgetTester tester) async {
+      testWidgets('should pass avatar parameters to UserAvatarWidgets.avatar',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userRow(
             imageUrl: 'https://example.com/avatar.jpg',
@@ -347,9 +383,10 @@ void main() {
         expect(find.text('NP'), findsOneWidget); // Initials for Nils Petersson
       });
 
-      testWidgets('should apply custom padding when provided', (WidgetTester tester) async {
+      testWidgets('should apply custom padding when provided',
+          (WidgetTester tester) async {
         const customPadding = EdgeInsets.all(20);
-        
+
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userRow(
             displayName: 'Birgit Svensson',
@@ -357,7 +394,8 @@ void main() {
           ),
         ));
 
-        final paddings = tester.widgetList<Padding>(find.byType(Padding)).toList();
+        final paddings =
+            tester.widgetList<Padding>(find.byType(Padding)).toList();
         // Find the custom padding (should be 20px all around)
         final customPaddingWidget = paddings.firstWhere(
           (p) => p.padding == customPadding,
@@ -366,7 +404,9 @@ void main() {
         expect(customPaddingWidget.padding, equals(customPadding));
       });
 
-      testWidgets('should use borderRadius from AppDimensions.borderRadiusM for InkWell', (WidgetTester tester) async {
+      testWidgets(
+          'should use borderRadius from AppDimensions.borderRadiusM for InkWell',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userRow(displayName: 'Carl Lindqvist'),
         ));
@@ -378,7 +418,8 @@ void main() {
     });
 
     group('userCard() - Card Layout Tests (lines 115-172)', () {
-      testWidgets('should create Card with InkWell and Column layout', (WidgetTester tester) async {
+      testWidgets('should create Card with InkWell and Column layout',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test core structure - Card > InkWell > Padding > Column (lines 129-170)
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userCard(displayName: 'Anna Karlsson'),
@@ -386,24 +427,29 @@ void main() {
 
         expect(find.byType(Card), findsOneWidget);
         expect(find.byType(InkWell), findsOneWidget);
-        expect(find.byType(Column), findsAtLeastNWidgets(1)); // May have nested Columns from userInfo
+        expect(find.byType(Column),
+            findsAtLeastNWidgets(1)); // May have nested Columns from userInfo
         expect(find.text('Anna Karlsson'), findsOneWidget);
       });
 
-      testWidgets('should apply Card styling with AppDimensions constants', (WidgetTester tester) async {
+      testWidgets('should apply Card styling with AppDimensions constants',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userCard(displayName: 'Erik Sundberg'),
         ));
 
         final card = tester.widget<Card>(find.byType(Card));
-        expect(card.margin, equals(const EdgeInsets.all(AppDimensions.paddingL)));
+        expect(
+            card.margin, equals(const EdgeInsets.all(AppDimensions.paddingL)));
         expect(card.elevation, equals(AppDimensions.elevationLow));
-        
+
         final shape = card.shape as RoundedRectangleBorder;
-        expect(shape.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadiusL)));
+        expect(shape.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadiusL)));
       });
 
-      testWidgets('should create Row with avatar and userInfo in first section', (WidgetTester tester) async {
+      testWidgets('should create Row with avatar and userInfo in first section',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userCard(
             displayName: 'Sofia Engström',
@@ -412,12 +458,14 @@ void main() {
         ));
 
         expect(find.byType(Row), findsOneWidget);
-        expect(find.text('SE'), findsOneWidget); // Avatar initials  
+        expect(find.text('SE'), findsOneWidget); // Avatar initials
         expect(find.text('Sofia Engström'), findsOneWidget);
         expect(find.text('sofia@example.se'), findsOneWidget);
       });
 
-      testWidgets('should show subtitle with AppTextStyles.titleMedium when provided', (WidgetTester tester) async {
+      testWidgets(
+          'should show subtitle with AppTextStyles.titleMedium when provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userCard(
             displayName: 'Lars Forsberg',
@@ -426,7 +474,7 @@ void main() {
         ));
 
         expect(find.text('Senior utvecklare'), findsOneWidget);
-        
+
         final subtitleTexts = tester.widgetList<Text>(find.byType(Text));
         final subtitleWidget = subtitleTexts.firstWhere(
           (text) => text.data == 'Senior utvecklare',
@@ -435,25 +483,34 @@ void main() {
         expect(subtitleWidget.style, equals(AppTextStyles.titleMedium));
       });
 
-      testWidgets('should show description with AppTextStyles.bodyLarge when provided', (WidgetTester tester) async {
+      testWidgets(
+          'should show description with AppTextStyles.bodyLarge when provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userCard(
             displayName: 'Astrid Blomberg',
-            description: 'Specialist inom användarupplevelse och gränssnittsdesign.',
+            description:
+                'Specialist inom användarupplevelse och gränssnittsdesign.',
           ),
         ));
 
-        expect(find.text('Specialist inom användarupplevelse och gränssnittsdesign.'), findsOneWidget);
-        
+        expect(
+            find.text(
+                'Specialist inom användarupplevelse och gränssnittsdesign.'),
+            findsOneWidget);
+
         final descriptionTexts = tester.widgetList<Text>(find.byType(Text));
         final descriptionWidget = descriptionTexts.firstWhere(
-          (text) => text.data == 'Specialist inom användarupplevelse och gränssnittsdesign.',
+          (text) =>
+              text.data ==
+              'Specialist inom användarupplevelse och gränssnittsdesign.',
           orElse: () => throw StateError('Description text not found'),
         );
         expect(descriptionWidget.style, equals(AppTextStyles.bodyLarge));
       });
 
-      testWidgets('should show actions widget when provided', (WidgetTester tester) async {
+      testWidgets('should show actions widget when provided',
+          (WidgetTester tester) async {
         const actionsWidget = Row(
           children: [
             Icon(Icons.edit),
@@ -461,7 +518,7 @@ void main() {
             Icon(Icons.delete),
           ],
         );
-        
+
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userCard(
             displayName: 'Gunnar Hedström',
@@ -473,9 +530,10 @@ void main() {
         expect(find.byIcon(Icons.delete), findsOneWidget);
       });
 
-      testWidgets('should apply onTap callback to InkWell', (WidgetTester tester) async {
+      testWidgets('should apply onTap callback to InkWell',
+          (WidgetTester tester) async {
         bool tapped = false;
-        
+
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userCard(
             displayName: 'Nils Andersen',
@@ -487,7 +545,8 @@ void main() {
         expect(tapped, isTrue);
       });
 
-      testWidgets('should pass avatar parameters to UserAvatarWidgets.avatar', (WidgetTester tester) async {
+      testWidgets('should pass avatar parameters to UserAvatarWidgets.avatar',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userCard(
             imageUrl: 'https://example.com/avatar.jpg',
@@ -501,10 +560,11 @@ void main() {
         expect(find.text('BL'), findsOneWidget); // Avatar initials
       });
 
-      testWidgets('should apply custom margin and padding when provided', (WidgetTester tester) async {
+      testWidgets('should apply custom margin and padding when provided',
+          (WidgetTester tester) async {
         const customMargin = EdgeInsets.all(16);
         const customPadding = EdgeInsets.all(24);
-        
+
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userCard(
             displayName: 'Carl Nordström',
@@ -516,7 +576,8 @@ void main() {
         final card = tester.widget<Card>(find.byType(Card));
         expect(card.margin, equals(customMargin));
 
-        final paddings = tester.widgetList<Padding>(find.byType(Padding)).toList();
+        final paddings =
+            tester.widgetList<Padding>(find.byType(Padding)).toList();
         // Find the custom padding (should be 24px all around)
         final customPaddingWidget = paddings.firstWhere(
           (p) => p.padding == customPadding,
@@ -525,7 +586,8 @@ void main() {
         expect(customPaddingWidget.padding, equals(customPadding));
       });
 
-      testWidgets('should use correct spacing between sections', (WidgetTester tester) async {
+      testWidgets('should use correct spacing between sections',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userCard(
             displayName: 'Margareta Ström',
@@ -535,19 +597,24 @@ void main() {
           ),
         ));
 
-        final spacingBoxes = tester.widgetList<SizedBox>(find.byType(SizedBox)).toList();
-        
+        final spacingBoxes =
+            tester.widgetList<SizedBox>(find.byType(SizedBox)).toList();
+
         // Find spacing elements
-        final mediumSpacings = spacingBoxes.where((box) => box.height == AppDimensions.spacingM);
-        final xlSpacings = spacingBoxes.where((box) => box.height == AppDimensions.spacingXl);
-        
-        expect(mediumSpacings.length, greaterThan(0)); // Between subtitle and description
+        final mediumSpacings =
+            spacingBoxes.where((box) => box.height == AppDimensions.spacingM);
+        final xlSpacings =
+            spacingBoxes.where((box) => box.height == AppDimensions.spacingXl);
+
+        expect(mediumSpacings.length,
+            greaterThan(0)); // Between subtitle and description
         expect(xlSpacings.length, greaterThan(0)); // Before actions
       });
     });
 
     group('Edge Cases and Integration Tests', () {
-      testWidgets('should handle null imageUrl in userRow and userCard', (WidgetTester tester) async {
+      testWidgets('should handle null imageUrl in userRow and userCard',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Column(
             children: [
@@ -561,7 +628,8 @@ void main() {
         expect(find.text('ES'), findsOneWidget); // userCard avatar initials
       });
 
-      testWidgets('should handle special characters in all text fields', (WidgetTester tester) async {
+      testWidgets('should handle special characters in all text fields',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           UserLayoutWidgets.userCard(
             displayName: 'Åsa Öhrström',
@@ -577,7 +645,8 @@ void main() {
         expect(find.text('Specialist på åäö-hantering!'), findsOneWidget);
       });
 
-      testWidgets('should render in constrained layouts without overflow', (WidgetTester tester) async {
+      testWidgets('should render in constrained layouts without overflow',
+          (WidgetTester tester) async {
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
             body: SizedBox(
@@ -586,12 +655,15 @@ void main() {
               child: ListView(
                 children: [
                   UserLayoutWidgets.userRow(
-                    displayName: 'Very Long Display Name That Should Be Truncated',
-                    email: 'very.long.email.address@extremely-long-domain-name.se',
+                    displayName:
+                        'Very Long Display Name That Should Be Truncated',
+                    email:
+                        'very.long.email.address@extremely-long-domain-name.se',
                   ),
                   UserLayoutWidgets.userCard(
                     displayName: 'Another Long Name',
-                    description: 'A very long description that should wrap or truncate properly in narrow layouts.',
+                    description:
+                        'A very long description that should wrap or truncate properly in narrow layouts.',
                   ),
                 ],
               ),
@@ -600,12 +672,13 @@ void main() {
         ));
 
         await tester.pumpAndSettle();
-        
+
         // Should not throw overflow errors
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should work with all ImageSize values', (WidgetTester tester) async {
+      testWidgets('should work with all ImageSize values',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           Column(
             children: [
@@ -626,7 +699,7 @@ void main() {
         ));
 
         expect(find.text('SA'), findsOneWidget);
-        expect(find.text('MA'), findsOneWidget);  
+        expect(find.text('MA'), findsOneWidget);
         expect(find.text('LA'), findsOneWidget);
       });
     });

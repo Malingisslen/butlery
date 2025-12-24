@@ -43,6 +43,7 @@
 
 import 'dart:math';
 import 'package:butlery/core/utils/logger.dart';
+
 /// Comprehensive retry logic utility providing intelligent retry strategies with exponential backoff and error-specific handling.
 /// This utility class implements sophisticated retry mechanisms for handling transient failures across different
 /// operation types. It provides configurable retry policies, intelligent error classification, and specialized
@@ -57,13 +58,13 @@ class RetryHelper {
   /// limit is specified. It provides a balance between resilience and performance, allowing
   /// sufficient retry attempts for transient failures without excessive delay.
   static const int defaultMaxRetries = 3;
-  
+
   /// Base delay duration for exponential backoff calculations in milliseconds.
   /// This constant defines the initial delay used in exponential backoff algorithms before
   /// applying exponential multiplication. It provides the foundation for progressive delay
   /// increase with each retry attempt, starting from a reasonable base duration.
   static const int baseDelayMs = 1000;
-  
+
   /// Maximum delay cap for exponential backoff to prevent excessively long delays.
   /// This constant defines the upper limit for retry delays, preventing exponential backoff
   /// from creating impractically long delays. It ensures reasonable maximum wait times
@@ -113,39 +114,40 @@ class RetryHelper {
     bool Function(dynamic error)? shouldRetry,
   }) async {
     int attempt = 0;
-    
+
     while (attempt < maxRetries) {
       try {
         return await operation();
       } catch (e) {
         attempt++;
-        
+
         // Check if we should retry this error
         if (shouldRetry != null && !shouldRetry(e)) {
           AppLogger.warning('Error not retryable: $e');
           rethrow;
         }
-        
+
         // If this was the last attempt, rethrow
         if (attempt >= maxRetries) {
           AppLogger.error('Operation failed after $maxRetries attempts: $e');
           rethrow;
         }
-        
+
         // Calculate delay with exponential backoff
         final delayMs = min(
           baseDelay.inMilliseconds * pow(2, attempt - 1).toInt(),
           maxDelay.inMilliseconds,
         );
-        
+
         final actualDelay = Duration(milliseconds: delayMs);
-        
-        AppLogger.info('Retrying operation (attempt $attempt/$maxRetries) after ${actualDelay.inSeconds}s delay');
-        
+
+        AppLogger.info(
+            'Retrying operation (attempt $attempt/$maxRetries) after ${actualDelay.inSeconds}s delay');
+
         await Future.delayed(actualDelay);
       }
     }
-    
+
     // This should never be reached due to the rethrow above
     throw Exception('Retry logic error');
   }
@@ -196,12 +198,12 @@ class RetryHelper {
         if (error.toString().contains('unavailable')) return true;
         if (error.toString().contains('deadline-exceeded')) return true;
         if (error.toString().contains('connection-failed')) return true;
-        
+
         // Don't retry on authentication or permission errors
         if (error.toString().contains('permission-denied')) return false;
         if (error.toString().contains('unauthenticated')) return false;
         if (error.toString().contains('invalid-argument')) return false;
-        
+
         return true; // Default to retry
       },
     );
@@ -247,14 +249,14 @@ class RetryHelper {
       maxRetries: maxRetries,
       shouldRetry: (error) {
         final errorString = error.toString().toLowerCase();
-        
+
         // Retry on transient Firebase errors
         if (errorString.contains('unavailable')) return true;
         if (errorString.contains('deadline-exceeded')) return true;
         if (errorString.contains('internal')) return true;
         if (errorString.contains('aborted')) return true;
         if (errorString.contains('cancelled')) return true;
-        
+
         // Don't retry on permanent errors
         if (errorString.contains('permission-denied')) return false;
         if (errorString.contains('unauthenticated')) return false;
@@ -263,7 +265,7 @@ class RetryHelper {
         if (errorString.contains('already-exists')) return false;
         if (errorString.contains('failed-precondition')) return false;
         if (errorString.contains('out-of-range')) return false;
-        
+
         return true; // Default to retry for unknown errors
       },
     );
@@ -304,23 +306,24 @@ class RetryHelper {
     Duration delay = const Duration(seconds: 1),
   }) async {
     int attempt = 0;
-    
+
     while (attempt < maxRetries) {
       try {
         return await operation();
       } catch (e) {
         attempt++;
-        
+
         if (attempt >= maxRetries) {
           AppLogger.error('Operation failed after $maxRetries attempts: $e');
           rethrow;
         }
-        
-        AppLogger.info('Retrying operation (attempt $attempt/$maxRetries) after ${delay.inSeconds}s delay');
+
+        AppLogger.info(
+            'Retrying operation (attempt $attempt/$maxRetries) after ${delay.inSeconds}s delay');
         await Future.delayed(delay);
       }
     }
-    
+
     throw Exception('Retry logic error');
   }
 }

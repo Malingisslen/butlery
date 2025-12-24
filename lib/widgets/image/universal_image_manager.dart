@@ -191,19 +191,19 @@ class UniversalImageManager extends StatefulWidget {
     // Handle legacy API by converting to new API
     Function(List<String>)? finalOnImagesChanged = onImagesChanged;
     Function(int)? finalOnPrimaryImageChanged = onPrimaryImageChanged;
-    
+
     // Enhanced legacy API conversion for proper callback handling
     if (onRemoveImage != null) {
       finalOnImagesChanged = (List<String> newImages) {
         // Call the new API callback first
         onImagesChanged?.call(newImages);
-        
+
         // For legacy onRemoveImage, we need to determine which index was removed
         // This is called when an image is removed from the new grid system
         if (newImages.length < imageUrls.length) {
           // Find the index of the removed image
           for (int i = 0; i < imageUrls.length; i++) {
-            if (i >= newImages.length || 
+            if (i >= newImages.length ||
                 (i < newImages.length && imageUrls[i] != newImages[i])) {
               // Call the legacy callback with the removed index
               onRemoveImage(i);
@@ -220,7 +220,7 @@ class UniversalImageManager extends StatefulWidget {
         // This is a limitation of the legacy API conversion
       };
     }
-    
+
     // Enhanced legacy API conversion for primary image selection
     if (onSetPrimary != null) {
       finalOnPrimaryImageChanged = (int index) {

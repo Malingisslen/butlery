@@ -54,7 +54,8 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     }
 
     if (_isSaveInProgress) {
-      AppLogger.warning('⚠️ Save operation already in progress - queuing request');
+      AppLogger.warning(
+          '⚠️ Save operation already in progress - queuing request');
       final operationId = _uuid.v4();
       final completer = Completer<Recipe?>();
       _pendingSaveOperations[operationId] = completer;
@@ -79,7 +80,8 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     }
 
     if (_state.isAutoSaving) {
-      AppLogger.info('⏳ Waiting for auto-save to complete before manual save...');
+      AppLogger.info(
+          '⏳ Waiting for auto-save to complete before manual save...');
       await Future.doWhile(() async {
         if (_disposed) return false;
         if (!_state.isAutoSaving) return false;
@@ -100,7 +102,8 @@ class RecipePersistenceManager with ErrorHandlingMixin {
 
     _isSaveInProgress = true;
     _currentSaveOperationId = _uuid.v4();
-    AppLogger.info('🔒 Starting atomic save operation: $_currentSaveOperationId');
+    AppLogger.info(
+        '🔒 Starting atomic save operation: $_currentSaveOperationId');
 
     _state.setSaving(true);
     _state.clearError();
@@ -112,13 +115,16 @@ class RecipePersistenceManager with ErrorHandlingMixin {
             throw Exception('Save operation cancelled - Manager disposed');
           }
 
-          final recipeId = _state.isEditing ? _state.originalRecipe!.id : _uuid.v4();
+          final recipeId =
+              _state.isEditing ? _state.originalRecipe!.id : _uuid.v4();
           _imageManager.setActualRecipeId(recipeId);
 
-          AppLogger.info('🚀 Starting atomic recipe save process for: $recipeId');
+          AppLogger.info(
+              '🚀 Starting atomic recipe save process for: $recipeId');
 
           if (_imageManager.pendingImages.isNotEmpty) {
-            AppLogger.info('📤 Waiting for ${_imageManager.pendingImages.length} images to upload before save...');
+            AppLogger.info(
+                '📤 Waiting for ${_imageManager.pendingImages.length} images to upload before save...');
 
             try {
               await _imageManager.uploadPendingImagesInBackground(
@@ -133,7 +139,8 @@ class RecipePersistenceManager with ErrorHandlingMixin {
                 throw Exception('Image upload incomplete - cannot save recipe');
               }
 
-              AppLogger.info('✅ All images uploaded successfully, proceeding with recipe save');
+              AppLogger.info(
+                  '✅ All images uploaded successfully, proceeding with recipe save');
             } catch (e) {
               AppLogger.error('❌ Image upload failed during recipe save: $e');
               throw Exception('Failed to upload images: $e');
@@ -141,11 +148,13 @@ class RecipePersistenceManager with ErrorHandlingMixin {
           }
 
           if (_disposed) {
-            throw Exception('Save operation cancelled - Manager disposed during image upload');
+            throw Exception(
+                'Save operation cancelled - Manager disposed during image upload');
           }
 
           final validImageUrls = _imageManager.validImageUrls;
-          AppLogger.info('📝 Creating recipe with ${validImageUrls.length} validated image URLs');
+          AppLogger.info(
+              '📝 Creating recipe with ${validImageUrls.length} validated image URLs');
 
           final recipe = _state.createRecipe(
             recipeId: recipeId,
@@ -155,7 +164,8 @@ class RecipePersistenceManager with ErrorHandlingMixin {
           Recipe savedRecipe;
           if (_state.isEditing) {
             AppLogger.info('📝 Updating existing recipe: $recipeId');
-            final result = await _recipeService.personal.updateUnifiedRecipe(recipe);
+            final result =
+                await _recipeService.personal.updateUnifiedRecipe(recipe);
             if (result.isSuccess) {
               savedRecipe = recipe;
             } else {
@@ -163,7 +173,8 @@ class RecipePersistenceManager with ErrorHandlingMixin {
             }
           } else {
             AppLogger.info('📝 Creating new recipe: $recipeId');
-            final result = await _recipeService.personal.addUnifiedRecipe(recipe);
+            final result =
+                await _recipeService.personal.addUnifiedRecipe(recipe);
             if (result.isSuccess) {
               savedRecipe = recipe;
             } else {
@@ -172,16 +183,19 @@ class RecipePersistenceManager with ErrorHandlingMixin {
           }
 
           if (_disposed) {
-            AppLogger.warning('⚠️ Save completed but Manager disposed - skipping state updates');
+            AppLogger.warning(
+                '⚠️ Save completed but Manager disposed - skipping state updates');
             return savedRecipe;
           }
 
-          AppLogger.info('✅ Recipe saved atomically with ${savedRecipe.imageUrls.length} images: ${savedRecipe.id}');
+          AppLogger.info(
+              '✅ Recipe saved atomically with ${savedRecipe.imageUrls.length} images: ${savedRecipe.id}');
 
           if (isCollaborative && !_disposed) {
             try {
               await _collaborativeManager.updateRecipeInFirebase(savedRecipe);
-              AppLogger.info('🔄 Collaborative state updated for recipe: ${savedRecipe.id}');
+              AppLogger.info(
+                  '🔄 Collaborative state updated for recipe: ${savedRecipe.id}');
             } catch (e) {
               AppLogger.error('❌ Failed to update collaborative state: $e');
             }
@@ -202,7 +216,8 @@ class RecipePersistenceManager with ErrorHandlingMixin {
       } else {
         if (!_disposed) {
           _state.clearCurrentDraft();
-          AppLogger.info('✅ Save operation completed successfully: ${result.id}');
+          AppLogger.info(
+              '✅ Save operation completed successfully: ${result.id}');
           _trackParsingCorrectionsInBackground(result);
         }
       }
@@ -247,7 +262,8 @@ class RecipePersistenceManager with ErrorHandlingMixin {
         () async {
           final newRecipe = _state.createRecipe(recipeId: _uuid.v4());
 
-          final saveResult = await _recipeService.personal.addUnifiedRecipe(newRecipe);
+          final saveResult =
+              await _recipeService.personal.addUnifiedRecipe(newRecipe);
           if (!saveResult.isSuccess) {
             throw Exception(saveResult.message ?? 'Failed to fork recipe');
           }
@@ -340,10 +356,12 @@ class RecipePersistenceManager with ErrorHandlingMixin {
     Future(() async {
       try {
         final diffCalculator = ServiceLocator.tryGet<RecipeDiffCalculator>();
-        final correctionRepo = ServiceLocator.tryGet<ParsingCorrectionRepository>();
+        final correctionRepo =
+            ServiceLocator.tryGet<ParsingCorrectionRepository>();
 
         if (diffCalculator == null || correctionRepo == null) {
-          AppLogger.debug('📊 Parsing correction tracking not available (services not registered)');
+          AppLogger.debug(
+              '📊 Parsing correction tracking not available (services not registered)');
           return;
         }
 

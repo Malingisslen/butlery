@@ -35,7 +35,8 @@ class ChatMessageStream extends StatefulWidget {
 class _ChatMessageStreamState extends State<ChatMessageStream> {
   final ScrollController _scrollController = ScrollController();
   final List<Message> _messages = [];
-  final MessagingService _messagingService = ServiceLocator.get<MessagingService>();
+  final MessagingService _messagingService =
+      ServiceLocator.get<MessagingService>();
   bool _isLoading = true;
   String? _error;
   Stream<List<Message>>? _messageStream;
@@ -54,20 +55,21 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
 
   Future<void> _initializeMessageStream() async {
     try {
-      AppLogger.debug('Initializing message stream for conversation: ${widget.conversationId}');
-      
+      AppLogger.debug(
+          'Initializing message stream for conversation: ${widget.conversationId}');
+
       // Load initial messages from MessagingService
       final messages = await _messagingService.getConversationMessagesPage(
         conversationId: widget.conversationId,
         limit: 50,
       );
-      
+
       // Set up real-time message stream
       _messageStream = _messagingService.getConversationMessages(
         conversationId: widget.conversationId,
         limit: 50,
       );
-      
+
       if (mounted) {
         setState(() {
           _messages.clear();
@@ -75,7 +77,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
           _isLoading = false;
           _error = null;
         });
-        
+
         // Listen to real-time updates
         _messageStream?.listen((newMessages) {
           if (mounted) {
@@ -148,7 +150,7 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
         conversationId: widget.conversationId,
         limit: 50,
       );
-      
+
       if (mounted) {
         setState(() {
           _updateMessagesIncremental(messages);
@@ -208,7 +210,8 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
           onRefresh: _refreshMessages,
           child: ListView.builder(
             controller: _scrollController,
-            padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
+            padding:
+                const EdgeInsets.symmetric(vertical: AppDimensions.spacingS),
             itemCount: _messages.length,
             itemBuilder: (context, index) {
               final message = _messages[index];
@@ -223,7 +226,8 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
                   );
                 } catch (e) {
                   // Reply message not found in current messages
-                  AppLogger.warning('Reply message not found: ${message.replyToMessageId}');
+                  AppLogger.warning(
+                      'Reply message not found: ${message.replyToMessageId}');
                 }
               }
 
@@ -232,7 +236,8 @@ class _ChatMessageStreamState extends State<ChatMessageStream> {
                 message: message,
                 currentUserId: viewModel.currentUserId ?? '',
                 replyToMessage: replyToMessage,
-                showAvatar: viewModel.shouldShowAvatar(message, previousMessage),
+                showAvatar:
+                    viewModel.shouldShowAvatar(message, previousMessage),
                 onTap: () => AppLogger.debug('Message tapped: ${message.id}'),
                 onLongPress: () => widget.onMessageAction(message, 'menu'),
                 onReply: () => viewModel.setReplyToMessage(message),

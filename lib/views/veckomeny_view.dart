@@ -125,7 +125,8 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       IconButton(
         icon: Icon(Icons.folder_open,
             size: AppDimensions.iconSizeAction,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+            color:
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
         onPressed: () => VeckomenyDialogs.showLoadMenuBottomSheet(
           context,
           viewModel: viewModel,
@@ -138,7 +139,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         IconButton(
           icon: Icon(Icons.save,
               size: AppDimensions.iconSizeAction,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.7)),
           onPressed: () => VeckomenyDialogs.showSaveMenuDialog(
             context,
             viewModel: viewModel,
@@ -152,7 +156,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         IconButton(
           icon: Icon(Icons.people_outline,
               size: AppDimensions.iconSizeAction,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.7)),
           onPressed: () => VeckomenyDialogs.showSocialMenuShareDialog(
             context,
             menuViewModel: viewModel,
@@ -168,7 +175,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         IconButton(
           icon: Icon(Icons.share,
               size: AppDimensions.iconSizeAction,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.7)),
           onPressed: _shareMenu,
           tooltip: 'Dela veckomeny',
         ),
@@ -178,7 +188,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
         IconButton(
           icon: Icon(Icons.clear,
               size: AppDimensions.iconSizeAction,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.7)),
           onPressed: _clearMenu,
           tooltip: 'Rensa meny',
         ),

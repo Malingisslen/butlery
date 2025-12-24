@@ -30,6 +30,7 @@ import 'package:butlery/models/shared_content.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
+
 /// Firebase implementation for social content sharing with comprehensive community engagement features.
 /// This repository provides complete social sharing functionality using Firebase Firestore as the
 /// backend, enabling users to share cooking content with friends and groups while maintaining
@@ -55,9 +56,9 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 /// final stats = await sharingRepo.getSharingStats(userId);
 /// print('Acceptance rate: ${stats['acceptanceRate']}');
 /// ```
-class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedContent>
+class FirebaseSocialSharingRepository
+    extends BaseFirebaseRepository<SharedContent>
     implements SocialSharingRepository {
-  
   /// Creates a Firebase social sharing repository with dependency injection support.
   /// [firestore] Optional Firestore instance for testing, defaults to production instance
   /// [authRepository] Required authentication repository for user validation and security
@@ -76,7 +77,8 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
   }
 
   @override
-  Map<String, dynamic> toFirestore(SharedContent entity) => entity.toFirestore();
+  Map<String, dynamic> toFirestore(SharedContent entity) =>
+      entity.toFirestore();
 
   @override
   String getId(SharedContent entity) => entity.id;
@@ -84,13 +86,15 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
   // ===== PERMISSION VALIDATION IMPLEMENTATION =====
 
   @override
-  Future<bool> validateCreatePermission(String userId, SharedContent entity) async {
+  Future<bool> validateCreatePermission(
+      String userId, SharedContent entity) async {
     // Users can only create shared content as themselves (must be the owner)
     return entity.ownerId == userId;
   }
 
   @override
-  Future<bool> validateReadPermission(String userId, String resourceId, SharedContent? entity) async {
+  Future<bool> validateReadPermission(
+      String userId, String resourceId, SharedContent? entity) async {
     if (entity == null) return false;
 
     // Owner can always read their shared content
@@ -111,13 +115,15 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
   }
 
   @override
-  Future<bool> validateUpdatePermission(String userId, String resourceId, SharedContent entity) async {
+  Future<bool> validateUpdatePermission(
+      String userId, String resourceId, SharedContent entity) async {
     // Only the owner can update sharing permissions and metadata
     return entity.ownerId == userId;
   }
 
   @override
-  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+  Future<bool> validateDeletePermission(
+      String userId, String resourceId) async {
     // Only the owner can revoke sharing (delete shared content record)
     try {
       final content = await read(resourceId);
@@ -133,7 +139,7 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
   @override
   Future<void> shareToGroup(String groupId, SharedContent content) async {
     final currentUser = requireCurrentUserId();
-    
+
     // Validate user owns the content
     await validateOwnership(
       currentUserId: currentUser,
@@ -141,27 +147,28 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
       resourceType: 'shared_content',
       resourceId: content.id,
     );
-    
+
     try {
       // Create new share with group
       final updatedContent = content.copyWith(
         sharedWithGroupIds: [...content.sharedWithGroupIds, groupId],
       );
-      
+
       await collection.doc(content.id).set(
-        updatedContent.toFirestore(),
-        SetOptions(merge: true),
-      );
-      
+            updatedContent.toFirestore(),
+            SetOptions(merge: true),
+          );
+
       // Log the sharing action
       logPermissionCheck(
         userId: currentUser,
         resource: 'shared_content',
         operation: 'share_to_group',
         granted: true,
-        details: 'Group: $groupId, Content: ${content.contentType}/${content.contentId}',
+        details:
+            'Group: $groupId, Content: ${content.contentType}/${content.contentId}',
       );
-      
+
       AppLogger.info('Content shared to group: $groupId');
     } catch (e) {
       AppLogger.error('Failed to share to group', e);
@@ -172,7 +179,7 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
   @override
   Future<void> shareToUsers(List<String> userIds, SharedContent content) async {
     final currentUser = requireCurrentUserId();
-    
+
     // Validate user owns the content
     await validateOwnership(
       currentUserId: currentUser,
@@ -180,7 +187,7 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
       resourceType: 'shared_content',
       resourceId: content.id,
     );
-    
+
     try {
       // Create new share with users
       final updatedContent = content.copyWith(
@@ -189,21 +196,22 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
           ...userIds.where((id) => !content.sharedWithUserIds.contains(id)),
         ],
       );
-      
+
       await collection.doc(content.id).set(
-        updatedContent.toFirestore(),
-        SetOptions(merge: true),
-      );
-      
+            updatedContent.toFirestore(),
+            SetOptions(merge: true),
+          );
+
       // Log the sharing action
       logPermissionCheck(
         userId: currentUser,
         resource: 'shared_content',
         operation: 'share_to_users',
         granted: true,
-        details: 'Users: ${userIds.length}, Content: ${content.contentType}/${content.contentId}',
+        details:
+            'Users: ${userIds.length}, Content: ${content.contentType}/${content.contentId}',
       );
-      
+
       AppLogger.info('Content shared to ${userIds.length} users');
     } catch (e) {
       AppLogger.error('Failed to share to users', e);
@@ -250,7 +258,7 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
     List<String> removeUserIds,
   ) async {
     final currentUser = requireCurrentUserId();
-    
+
     try {
       // Get the content to validate ownership
       final doc = await collection.doc(contentId).get();
@@ -261,9 +269,9 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
           resourceId: contentId,
         );
       }
-      
+
       final content = fromFirestore(doc);
-      
+
       // Validate ownership
       await validateOwnership(
         currentUserId: currentUser,
@@ -271,18 +279,18 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
         resourceType: 'shared_content',
         resourceId: contentId,
       );
-      
+
       // Update permissions
       await collection.doc(contentId).update({
         'sharedWithUserIds': FieldValue.arrayUnion(addUserIds),
       });
-      
+
       if (removeUserIds.isNotEmpty) {
         await collection.doc(contentId).update({
           'sharedWithUserIds': FieldValue.arrayRemove(removeUserIds),
         });
       }
-      
+
       AppLogger.info('Updated sharing permissions for content: $contentId');
     } catch (e) {
       AppLogger.error('Failed to update sharing permissions', e);
@@ -293,7 +301,7 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
   @override
   Future<void> revokeSharing(String contentId) async {
     final currentUser = requireCurrentUserId();
-    
+
     try {
       // Get the content to validate ownership
       final doc = await collection.doc(contentId).get();
@@ -304,9 +312,9 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
           resourceId: contentId,
         );
       }
-      
+
       final content = fromFirestore(doc);
-      
+
       // Validate ownership
       await validateOwnership(
         currentUserId: currentUser,
@@ -314,10 +322,10 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
         resourceType: 'shared_content',
         resourceId: contentId,
       );
-      
+
       // Delete the sharing record
       await collection.doc(contentId).delete();
-      
+
       AppLogger.info('Revoked sharing for content: $contentId');
     } catch (e) {
       AppLogger.error('Failed to revoke sharing', e);
@@ -332,12 +340,12 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
       targetUserId: userId,
       operation: 'accept shared content',
     );
-    
+
     try {
       await collection.doc(contentId).update({
         'acceptedBy.$userId': FieldValue.serverTimestamp(),
       });
-      
+
       AppLogger.info('User $userId accepted shared content: $contentId');
     } catch (e) {
       AppLogger.error('Failed to accept shared content', e);
@@ -352,12 +360,12 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
       targetUserId: userId,
       operation: 'decline shared content',
     );
-    
+
     try {
       await collection.doc(contentId).update({
         'declinedBy.$userId': FieldValue.serverTimestamp(),
       });
-      
+
       AppLogger.info('User $userId declined shared content: $contentId');
     } catch (e) {
       AppLogger.error('Failed to decline shared content', e);
@@ -369,21 +377,20 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
   Future<Map<String, dynamic>> getSharingStats(String userId) async {
     try {
       // Get content shared by user
-      final sharedByMe = await collection
-          .where('ownerId', isEqualTo: userId)
-          .get();
-      
+      final sharedByMe =
+          await collection.where('ownerId', isEqualTo: userId).get();
+
       // Get content shared with user
       final sharedWithMe = await collection
           .where('sharedWithUserIds', arrayContains: userId)
           .get();
-      
+
       // Calculate stats
       final int totalShared = sharedByMe.docs.length;
       final int totalReceived = sharedWithMe.docs.length;
       int acceptedCount = 0;
       int viewedCount = 0;
-      
+
       for (final doc in sharedWithMe.docs) {
         final data = doc.data();
         if (data['acceptedBy']?[userId] != null) {
@@ -393,7 +400,7 @@ class FirebaseSocialSharingRepository extends BaseFirebaseRepository<SharedConte
           viewedCount++;
         }
       }
-      
+
       return {
         'totalShared': totalShared,
         'totalReceived': totalReceived,

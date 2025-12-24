@@ -204,7 +204,8 @@ class MenuContentWidgets {
               onPressed: viewModel.isGenerating
                   ? null
                   : () => viewModel.regenerateSection(category),
-              tooltip: 'Uppdatera ${MenuViewHelpers.capitalizeCategory(category)}',
+              tooltip:
+                  'Uppdatera ${MenuViewHelpers.capitalizeCategory(category)}',
             ),
           ],
         ),

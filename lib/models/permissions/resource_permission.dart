@@ -52,25 +52,25 @@ enum ResourcePermission {
   /// View-only permission allowing content consumption without modification capabilities.
   /// Users can view and consume content but cannot make any modifications or administrative changes.
   viewer,
-  
+
   /// Edit permission allowing content modification while preserving ownership restrictions.
   /// Users can modify content and perform editing operations but cannot manage permissions or ownership.
   editor,
-  
+
   /// Full ownership permission with complete control over content and permission management.
   /// Content owners have full privileges including editing, permission management, and administrative control.
   owner,
-  
+
   /// Legacy permission levels maintained for backward compatibility with existing systems.
-  
+
   /// Legacy read permission equivalent to viewer for backward compatibility.
   /// Maintained for migration support from traditional read/write permission systems.
   read,
-  
+
   /// Legacy write permission equivalent to editor for backward compatibility.
   /// Maintained for migration support from traditional read/write permission systems.
   write,
-  
+
   /// Legacy administrative permission with highest privilege level for backward compatibility.
   /// Maintained for migration support from traditional administrative permission systems.
   admin;
@@ -80,7 +80,8 @@ enum ResourcePermission {
   /// Checks if this permission level allows content editing operations.
   /// Returns true for editor, owner, write, and admin permissions that enable content modification.
   /// Used for validating editing capabilities and enabling/disabling editing UI elements.
-  bool get canEdit => this == editor || this == owner || this == write || this == admin;
+  bool get canEdit =>
+      this == editor || this == owner || this == write || this == admin;
 
   /// Checks if this permission level allows ownership and administrative actions.
   /// Returns true for owner and admin permissions that enable permission management,
@@ -176,7 +177,7 @@ class ResourcePermissionHelper {
       ResourcePermission.owner: 3,
       ResourcePermission.admin: 4,
     };
-    
+
     return (hierarchy[a] ?? 0) > (hierarchy[b] ?? 0);
   }
 
@@ -187,7 +188,7 @@ class ResourcePermissionHelper {
   /// Returns the permission with the highest privilege level, or viewer if list is empty.
   static ResourcePermission getHighest(List<ResourcePermission> permissions) {
     if (permissions.isEmpty) return ResourcePermission.viewer;
-    
+
     return permissions.reduce((a, b) => isHigherThan(a, b) ? a : b);
   }
 
@@ -214,7 +215,8 @@ class ResourcePermissionHelper {
   /// add/remove members, and perform administrative operations on the resource.
   /// Returns true if the permission allows administrative and permission management operations.
   static bool canManagePermissions(ResourcePermission permission) {
-    return permission == ResourcePermission.admin || permission == ResourcePermission.owner;
+    return permission == ResourcePermission.admin ||
+        permission == ResourcePermission.owner;
   }
 
   /// Validates if user permission meets or exceeds the required permission level for content editing.
@@ -224,7 +226,9 @@ class ResourcePermissionHelper {
   /// [userPermission] The permission level held by the user attempting the operation
   /// [requiredPermission] The minimum permission level required for the operation
   /// Returns true if the user permission meets or exceeds the required permission level.
-  static bool canEditContent(ResourcePermission userPermission, ResourcePermission requiredPermission) {
-    return isHigherThan(userPermission, requiredPermission) || userPermission == requiredPermission;
+  static bool canEditContent(ResourcePermission userPermission,
+      ResourcePermission requiredPermission) {
+    return isHigherThan(userPermission, requiredPermission) ||
+        userPermission == requiredPermission;
   }
 }

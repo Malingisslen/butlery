@@ -37,7 +37,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
       duration: widget.animationDuration,
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -54,10 +54,12 @@ class _TypingIndicatorState extends State<TypingIndicator>
   @override
   void didUpdateWidget(TypingIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
-    if (widget.typingUserNames.isNotEmpty && oldWidget.typingUserNames.isEmpty) {
+
+    if (widget.typingUserNames.isNotEmpty &&
+        oldWidget.typingUserNames.isEmpty) {
       _animationController.forward();
-    } else if (widget.typingUserNames.isEmpty && oldWidget.typingUserNames.isNotEmpty) {
+    } else if (widget.typingUserNames.isEmpty &&
+        oldWidget.typingUserNames.isNotEmpty) {
       _animationController.reverse();
     }
   }
@@ -94,9 +96,9 @@ class _TypingIndicatorState extends State<TypingIndicator>
                 ),
               ),
             ),
-            
+
             const SizedBox(width: AppDimensions.paddingS),
-            
+
             // Typing indicator bubble
             Container(
               padding: const EdgeInsets.symmetric(
@@ -105,7 +107,8 @@ class _TypingIndicatorState extends State<TypingIndicator>
               ),
               decoration: BoxDecoration(
                 color: AppColors.cardWhite,
-                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusM),
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.textLight.withValues(alpha: 0.1),
@@ -155,9 +158,10 @@ class _TypingIndicatorState extends State<TypingIndicator>
       animation: _animationController,
       builder: (context, child) {
         // Create a staggered animation for each dot
-        final progress = (_animationController.value * 3 - index).clamp(0.0, 1.0);
+        final progress =
+            (_animationController.value * 3 - index).clamp(0.0, 1.0);
         final opacity = (Curves.easeInOut.transform(progress) * 0.8 + 0.2);
-        
+
         return Container(
           width: 4,
           height: 4,

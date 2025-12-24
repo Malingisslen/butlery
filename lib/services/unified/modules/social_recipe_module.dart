@@ -1,9 +1,9 @@
 // lib/services/unified/modules/social_recipe_module.dart
-// 
+//
 // ✅ REFACTORED: Split into focused services for better Single Responsibility Principle
 // This file now acts as a facade that delegates to specialized services:
 // - SocialRecipeCreationService: Recipe creation operations
-// - SocialRecipeMembershipService: Member management operations  
+// - SocialRecipeMembershipService: Member management operations
 // - SocialRecipeSharingService: Sharing and unsharing operations
 // - SocialRecipePermissionService: Permission validation logic
 // - SocialRecipeQueryService: Queries and analytics operations
@@ -121,7 +121,8 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
   }
 
   /// Add member to collaborative recipe with specified permission
-  Future<bool> addMemberToRecipe(String recipeId, String userId, ResourcePermission permission) async {
+  Future<bool> addMemberToRecipe(
+      String recipeId, String userId, ResourcePermission permission) async {
     return await _coordinator.addMemberToRecipe(recipeId, userId, permission);
   }
 
@@ -131,18 +132,24 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
   }
 
   /// Update member permission for collaborative recipe
-  Future<bool> updateMemberPermission(String recipeId, String userId, ResourcePermission permission) async {
-    return await _coordinator.updateMemberPermission(recipeId, userId, permission);
+  Future<bool> updateMemberPermission(
+      String recipeId, String userId, ResourcePermission permission) async {
+    return await _coordinator.updateMemberPermission(
+        recipeId, userId, permission);
   }
 
   /// Share a personal recipe with specific users
-  Future<bool> shareRecipeWithUsers(String recipeId, List<String> userIds, ResourcePermission permission) async {
-    return await _coordinator.shareRecipeWithUsers(recipeId, userIds, permission);
+  Future<bool> shareRecipeWithUsers(String recipeId, List<String> userIds,
+      ResourcePermission permission) async {
+    return await _coordinator.shareRecipeWithUsers(
+        recipeId, userIds, permission);
   }
 
   /// Share recipe with friend categories/groups
-  Future<bool> shareRecipeWithGroups(String recipeId, List<String> groupIds, ResourcePermission permission) async {
-    return await _coordinator.shareRecipeWithGroups(recipeId, groupIds, permission);
+  Future<bool> shareRecipeWithGroups(String recipeId, List<String> groupIds,
+      ResourcePermission permission) async {
+    return await _coordinator.shareRecipeWithGroups(
+        recipeId, groupIds, permission);
   }
 
   /// Unshare recipe (remove all collaborative access)
@@ -166,7 +173,8 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
   }
 
   /// Get user's permission level for a recipe
-  Future<ResourcePermission?> getUserPermissionForRecipe(String recipeId, String userId) async {
+  Future<ResourcePermission?> getUserPermissionForRecipe(
+      String recipeId, String userId) async {
     return await _coordinator.getUserPermissionForRecipe(recipeId, userId);
   }
 
@@ -181,7 +189,8 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
   }
 
   /// Get recipes with specific permission level using repository pattern
-  Future<List<Recipe>> getRecipesWithPermission(ResourcePermission permission) async {
+  Future<List<Recipe>> getRecipesWithPermission(
+      ResourcePermission permission) async {
     return await _coordinator.getRecipesWithPermission(permission);
   }
 
@@ -201,18 +210,23 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
   }
 
   /// Send collaboration invitations
-  Future<void> sendCollaborationInvitations(String recipeId, List<String> userIds) async {
+  Future<void> sendCollaborationInvitations(
+      String recipeId, List<String> userIds) async {
     return await _coordinator.sendCollaborationInvitations(recipeId, userIds);
   }
 
   /// Send member addition notification
-  Future<void> sendMemberAdditionNotification(String recipeId, String addedUserId) async {
-    return await _coordinator.sendMemberAdditionNotification(recipeId, addedUserId);
+  Future<void> sendMemberAdditionNotification(
+      String recipeId, String addedUserId) async {
+    return await _coordinator.sendMemberAdditionNotification(
+        recipeId, addedUserId);
   }
 
   /// Send recipe sharing notifications
-  Future<void> sendRecipeSharingNotifications(String recipeId, List<String> sharedWithUserIds) async {
-    return await _coordinator.sendRecipeSharingNotifications(recipeId, sharedWithUserIds);
+  Future<void> sendRecipeSharingNotifications(
+      String recipeId, List<String> sharedWithUserIds) async {
+    return await _coordinator.sendRecipeSharingNotifications(
+        recipeId, sharedWithUserIds);
   }
 
   /// Validates collaborative recipe data before creation

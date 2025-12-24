@@ -1,8 +1,8 @@
 /// Integration tests for AccountDeletionService with real Firebase operations
-/// 
+///
 /// Tests Firebase batch operations and FieldValue operations that cannot
 /// be properly tested with mocks. Uses FakeFirebaseFirestore for realistic testing.
-/// 
+///
 /// Run with: flutter test --tags=integration
 @Tags(['integration'])
 library;
@@ -41,19 +41,19 @@ void main() {
     late MockOfflineService mockOfflineService;
     late MockAnalyticsService mockAnalyticsService;
     late MockUser mockUser;
-    
+
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
       registerFallbackValue(FakeException());
     });
-    
+
     setUp(() async {
       await TestServiceLocator.initialize();
-      
+
       // Use FakeFirebaseFirestore for integration testing
       // This supports FieldValue operations better than mocks
       firestore = FakeFirebaseFirestore();
-      
+
       // Create mocks for non-Firebase services
       mockAuth = MockFirebaseAuth();
       mockAuthRepository = MockAuthRepository();
@@ -63,27 +63,29 @@ void main() {
       mockRecipeService = MockUnifiedRecipeService();
       mockOfflineService = MockOfflineService();
       mockAnalyticsService = MockAnalyticsService();
-      
+
       // Setup mock user
       mockUser = MockUser();
       when(() => mockUser.uid).thenReturn('test-user-123');
       when(() => mockUser.email).thenReturn('test@example.com');
       when(() => mockUser.displayName).thenReturn('Test User');
-      
+
       // Configure mocks
       mockAuth.setAuthState(currentUser: mockUser);
       mockAuthService.setAuthState(
         currentUser: mockUser,
         isAuthenticated: true,
       );
-      
+
       mockOfflineService.setOfflineState(
         isInitialized: true,
         currentUserId: 'test-user-123',
       );
-      
-      when(() => mockOfflineService.clearUserData(any())).thenAnswer((_) async => true);
-      when(() => mockAnalyticsService.logAccountDeleted(any())).thenAnswer((_) async {});
+
+      when(() => mockOfflineService.clearUserData(any()))
+          .thenAnswer((_) async => true);
+      when(() => mockAnalyticsService.logAccountDeleted(any()))
+          .thenAnswer((_) async {});
       when(() => mockUser.delete()).thenAnswer((_) async {});
 
       // Setup repository mocks
@@ -101,85 +103,94 @@ void main() {
         analyticsService: mockAnalyticsService,
       );
     });
-    
+
     tearDown(() async {
       await TestServiceLocator.reset();
       BaseUnitTest.resetMocks();
     });
-    
+
     tearDownAll(() async {
       await BaseUnitTest.teardownUnit();
     });
-    
+
     group('Firebase Batch Operations', () {
       test('should handle batch operations correctly', () async {
         // Arrange
         final userId = 'test-user-123';
-        
+
         // Add test data
         await firestore.collection('users').doc(userId).set({
           'displayName': 'Test User',
           'email': 'test@example.com',
         });
-        
+
         // Add user's recipes subcollection
-        await firestore.collection('users').doc(userId)
-            .collection('recipes').doc('recipe-1').set({
+        await firestore
+            .collection('users')
+            .doc(userId)
+            .collection('recipes')
+            .doc('recipe-1')
+            .set({
           'title': 'Recipe 1',
           'userId': userId,
         });
-        await firestore.collection('users').doc(userId)
-            .collection('recipes').doc('recipe-2').set({
+        await firestore
+            .collection('users')
+            .doc(userId)
+            .collection('recipes')
+            .doc('recipe-2')
+            .set({
           'title': 'Recipe 2',
           'userId': userId,
         });
-        
+
         // Add unified recipes
         await firestore.collection('recipes').doc('unified-1').set({
           'userId': userId,
           'title': 'Unified Recipe 1',
         });
-        
+
         // Act
         final result = await service.deleteUserAccount(
           reason: 'Integration test',
           createAuditLog: true,
         );
-        
+
         // Assert
         expect(result['success'], isTrue);
         expect(result['deletedCollections'], contains('recipes'));
         expect(result['auditLogId'], isNotNull);
-        
+
         // Verify data was deleted
         final userDoc = await firestore.collection('users').doc(userId).get();
         expect(userDoc.exists, isFalse);
-        
+
         final recipes = await firestore
             .collection('recipes')
             .where('userId', isEqualTo: userId)
             .get();
         expect(recipes.docs, isEmpty);
       });
-      
+
       test('should handle FieldValue.serverTimestamp in audit log', () async {
         // Arrange
         final userId = 'test-user-123';
-        
+
         // Act & Assert - Service may fail due to FieldValue limitations in FakeFirebaseFirestore
         try {
           final result = await service.deleteUserAccount(
             reason: 'Test timestamp',
             createAuditLog: true,
           );
-          
+
           // If service succeeds (production behavior), verify audit log
           expect(result['success'], isTrue);
           expect(result['auditLogId'], isNotNull);
-          
-          final auditLogs = await firestore.collection('deletion_audit_logs').get();
+
+          final auditLogs =
+              await firestore.collection('deletion_audit_logs').get();
           expect(auditLogs.docs, isNotEmpty);
-          
+
           final auditLog = auditLogs.docs.first.data();
           expect(auditLog['userId'], equals(userId));
           expect(auditLog['reason'], equals('Test timestamp'));
@@ -187,90 +198,96 @@ void main() {
         } catch (e) {
           // FakeFirebaseFirestore FieldValue limitation - verify the error is related to FieldValue
           final errorMsg = e.toString().toLowerCase();
-          expect(errorMsg.contains('fieldvalue') || errorMsg.contains('timestamp') || errorMsg.contains('cast'), isTrue, 
-                 reason: 'Expected FieldValue-related error, got: $e');
+          expect(
+              errorMsg.contains('fieldvalue') ||
+                  errorMsg.contains('timestamp') ||
+                  errorMsg.contains('cast'),
+              isTrue,
+              reason: 'Expected FieldValue-related error, got: $e');
         }
-      }, skip: 'FakeFirebaseFirestore FieldValue.serverTimestamp() limitations');
+      },
+          skip:
+              'FakeFirebaseFirestore FieldValue.serverTimestamp() limitations');
     });
-    
+
     group('Array Operations', () {
       test('should handle FieldValue.arrayUnion for shared content', () async {
         // Arrange
         final userId = 'test-user-123';
-        
+
         // Create shared recipe with array field
         await firestore.collection('shared_recipes').doc('shared-1').set({
           'ownerId': 'owner-123',
           'sharedWith': ['user-1', 'user-2', userId],
           'title': 'Shared Recipe',
         });
-        
+
         // Act
         final result = await service.deleteUserAccount(
           reason: 'Test array operations',
         );
-        
+
         // Assert
         expect(result['success'], isTrue);
-        
+
         // Verify user was removed from array
-        final sharedDoc = await firestore
-            .collection('shared_recipes')
-            .doc('shared-1')
-            .get();
+        final sharedDoc =
+            await firestore.collection('shared_recipes').doc('shared-1').get();
         expect(sharedDoc.exists, isTrue);
         expect(sharedDoc.data()?['sharedWith'], isNot(contains(userId)));
         expect(sharedDoc.data()?['sharedWith'], contains('user-1'));
       });
-      
+
       test('should handle FieldValue.increment for statistics', () async {
         // Arrange
         await firestore.collection('statistics').doc('global').set({
           'totalUsers': 100,
           'deletedUsers': 5,
         });
-        
+
         // Act - Use test-friendly approach instead of FieldValue.increment
         // Note: AccountDeletionService doesn't directly use increment,
         // but this tests the capability for future enhancements
-        final doc = await firestore.collection('statistics').doc('global').get();
+        final doc =
+            await firestore.collection('statistics').doc('global').get();
         final currentValue = doc.data()?['deletedUsers'] as int? ?? 0;
-        
+
         await firestore.collection('statistics').doc('global').update({
           'deletedUsers': currentValue + 1, // Test-friendly increment
         });
-        
+
         // Assert
-        final stats = await firestore.collection('statistics').doc('global').get();
+        final stats =
+            await firestore.collection('statistics').doc('global').get();
         expect(stats.data()?['deletedUsers'], equals(6));
       });
     });
-    
+
     group('Transaction Support', () {
       test('should handle batch commit properly', () async {
         // Arrange
         final userId = 'test-user-123';
         final batch = firestore.batch();
-        
+
         // Add multiple operations to batch
         for (int i = 0; i < 5; i++) {
           final docRef = firestore.collection('test_collection').doc('doc-$i');
           await docRef.set({'userId': userId, 'index': i});
           batch.delete(docRef);
         }
-        
+
         // Act
         await batch.commit();
-        
+
         // Assert
         final remaining = await firestore.collection('test_collection').get();
         expect(remaining.docs, isEmpty);
       });
-      
+
       test('should handle large batch operations', () async {
         // Arrange
         final userId = 'test-user-123';
-        
+
         // Create many documents
         for (int i = 0; i < 50; i++) {
           await firestore.collection('recipes').doc('recipe-$i').set({
@@ -278,15 +295,15 @@ void main() {
             'title': 'Recipe $i',
           });
         }
-        
+
         // Act
         final result = await service.deleteUserAccount(
           reason: 'Large batch test',
         );
-        
+
         // Assert
         expect(result['success'], isTrue);
-        
+
         // Verify all were deleted
         final remaining = await firestore
             .collection('recipes')
@@ -295,39 +312,44 @@ void main() {
         expect(remaining.docs, isEmpty);
       });
     });
-    
+
     group('Complex Data Structures', () {
       test('should handle nested collections', () async {
         // Arrange
         final userId = 'test-user-123';
-        
+
         // Create nested structure
         final userDoc = firestore.collection('users').doc(userId);
         await userDoc.set({'name': 'Test User'});
-        
-        await userDoc.collection('recipes').doc('r1').set({'title': 'Recipe 1'});
+
+        await userDoc
+            .collection('recipes')
+            .doc('r1')
+            .set({'title': 'Recipe 1'});
         await userDoc.collection('menus').doc('m1').set({'name': 'Menu 1'});
         await userDoc.collection('shopping_lists').doc('s1').set({'items': []});
-        
+
         // Act
         final result = await service.deleteUserAccount(
           reason: 'Nested collections test',
         );
-        
+
         // Assert
         expect(result['success'], isTrue);
-        expect(result['deletedCollections'], containsAll([
-          'recipes',
-          'menus',
-          'shopping_lists',
-        ]));
+        expect(
+            result['deletedCollections'],
+            containsAll([
+              'recipes',
+              'menus',
+              'shopping_lists',
+            ]));
       });
-      
+
       test('should handle map fields with FieldValue operations', () async {
         // Arrange
         final userId = 'test-user-123';
         final createdAt = TestFieldValues.serverTimestamp();
-        
+
         await firestore.collection('complex_docs').doc('doc-1').set({
           'metadata': {
             'createdBy': userId,
@@ -339,19 +361,21 @@ void main() {
             'likes': 0,
           },
         });
-        
+
         // Update with test-friendly operations
-        final doc = await firestore.collection('complex_docs').doc('doc-1').get();
+        final doc =
+            await firestore.collection('complex_docs').doc('doc-1').get();
         final currentViews = doc.data()?['stats']['views'] as int? ?? 0;
         final lastModified = TestFieldValues.serverTimestamp();
-        
+
         await firestore.collection('complex_docs').doc('doc-1').update({
           'stats.views': currentViews + 1, // Test-friendly increment
           'metadata.lastModified': lastModified, // Test-friendly timestamp
         });
-        
+
         // Assert
-        final updatedDoc = await firestore.collection('complex_docs').doc('doc-1').get();
+        final updatedDoc =
+            await firestore.collection('complex_docs').doc('doc-1').get();
         expect(updatedDoc.data()?['stats']['views'], equals(1));
         expect(updatedDoc.data()?['metadata']['lastModified'], isNotNull);
       });

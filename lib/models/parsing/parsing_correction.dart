@@ -176,7 +176,8 @@ class ParsingCorrection {
         if (domain != null) 'domain': domain,
         if (successfulTier != null) 'successfulTier': successfulTier,
         'originalQuality': originalQuality,
-        if (titleCorrection != null) 'titleCorrection': titleCorrection!.toJson(),
+        if (titleCorrection != null)
+          'titleCorrection': titleCorrection!.toJson(),
         if (portionsCorrection != null)
           'portionsCorrection': portionsCorrection!.toJson(),
         if (timeCorrection != null) 'timeCorrection': timeCorrection!.toJson(),
@@ -193,9 +194,12 @@ class ParsingCorrection {
   }
 
   factory ParsingCorrection.fromJson(Map<String, dynamic> json) {
-    final titleCorrectionData = SerializationUtils.safeNullableMap(json, 'titleCorrection');
-    final portionsCorrectionData = SerializationUtils.safeNullableMap(json, 'portionsCorrection');
-    final timeCorrectionData = SerializationUtils.safeNullableMap(json, 'timeCorrection');
+    final titleCorrectionData =
+        SerializationUtils.safeNullableMap(json, 'titleCorrection');
+    final portionsCorrectionData =
+        SerializationUtils.safeNullableMap(json, 'portionsCorrection');
+    final timeCorrectionData =
+        SerializationUtils.safeNullableMap(json, 'timeCorrection');
 
     return ParsingCorrection(
       id: SerializationUtils.safeString(json, 'id'),
@@ -209,7 +213,8 @@ class ParsingCorrection {
         orElse: () => ImportSource.unknown,
       ),
       domain: SerializationUtils.safeNullableString(json, 'domain'),
-      successfulTier: SerializationUtils.safeNullableString(json, 'successfulTier'),
+      successfulTier:
+          SerializationUtils.safeNullableString(json, 'successfulTier'),
       originalQuality: SerializationUtils.safeDouble(json, 'originalQuality'),
       titleCorrection: titleCorrectionData != null
           ? FieldCorrection.fromJson(titleCorrectionData)

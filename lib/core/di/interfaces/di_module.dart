@@ -85,7 +85,8 @@ class DIModuleException implements Exception {
 /// Mixin for common module functionality.
 mixin DIModuleHelpers {
   /// Validate that all required services are registered.
-  Future<bool> validateServices(GetIt container, List<Type> serviceTypes) async {
+  Future<bool> validateServices(
+      GetIt container, List<Type> serviceTypes) async {
     try {
       for (final serviceType in serviceTypes) {
         // Basic check that service type exists (simplified for now)
@@ -101,7 +102,8 @@ mixin DIModuleHelpers {
   }
 
   /// Log module operation with consistent formatting.
-  void logModuleOperation(String moduleName, String operation, {String? details}) {
+  void logModuleOperation(String moduleName, String operation,
+      {String? details}) {
     final detailStr = details != null ? ' - $details' : '';
     debugPrint('🔧 [$moduleName] $operation$detailStr');
   }

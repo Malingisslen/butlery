@@ -38,7 +38,8 @@ class EmptyImageState extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: isLoading ? _buildLoadingContent() : _buildIdleContent(),
+                children:
+                    isLoading ? _buildLoadingContent() : _buildIdleContent(),
               ),
             ),
           ),

@@ -30,7 +30,7 @@
 ///     },
 ///     shouldSave: true,
 ///   );
-///   
+///
 ///   expect(find.text('Recept sparat'), findsOneWidget);
 /// });
 /// ```
@@ -103,7 +103,7 @@ class InteractionHelpers {
   ) async {
     // Type original text
     await typeSwedishText(tester, finder, originalText);
-    
+
     // Simulate autocorrect replacement
     await tester.pump(const Duration(milliseconds: 200));
     await tester.enterText(finder, correctedText);
@@ -127,14 +127,14 @@ class InteractionHelpers {
     // Focus and fill email field
     final emailField = find.byKey(const Key('email_field'));
     expect(emailField, findsOneWidget, reason: 'Email field not found');
-    
+
     await typeSwedishText(tester, emailField, email);
     await tester.pump(workflowDelay);
 
     // Focus and fill password field
     final passwordField = find.byKey(const Key('password_field'));
     expect(passwordField, findsOneWidget, reason: 'Password field not found');
-    
+
     await typeSwedishText(tester, passwordField, password);
     await tester.pump(workflowDelay);
 
@@ -150,7 +150,7 @@ class InteractionHelpers {
     // Submit login form
     final loginButton = find.byKey(const Key('login_button'));
     expect(loginButton, findsOneWidget, reason: 'Login button not found');
-    
+
     await ViewTestHelpers.tapAndSettle(tester, loginButton);
 
     if (expectSuccess) {
@@ -188,7 +188,8 @@ class InteractionHelpers {
     await typeSwedishText(tester, passwordField, password);
 
     // Fill confirm password field
-    final confirmPasswordField = find.byKey(const Key('confirm_password_field'));
+    final confirmPasswordField =
+        find.byKey(const Key('confirm_password_field'));
     await typeSwedishText(tester, confirmPasswordField, confirmPassword);
 
     // Accept terms and conditions
@@ -226,12 +227,14 @@ class InteractionHelpers {
 
     // Handle ingredients list
     if (recipeData['ingredients'] != null) {
-      await _manageIngredientsList(tester, recipeData['ingredients'] as List<String>);
+      await _manageIngredientsList(
+          tester, recipeData['ingredients'] as List<String>);
     }
 
     // Handle instructions list
     if (recipeData['instructions'] != null) {
-      await _manageInstructionsList(tester, recipeData['instructions'] as List<String>);
+      await _manageInstructionsList(
+          tester, recipeData['instructions'] as List<String>);
     }
 
     // Add image if requested
@@ -263,20 +266,24 @@ class InteractionHelpers {
 
     // Description
     if (recipeData['description'] != null) {
-      final descriptionField = find.byKey(const Key('recipe_description_field'));
-      await typeSwedishText(tester, descriptionField, recipeData['description'] as String);
+      final descriptionField =
+          find.byKey(const Key('recipe_description_field'));
+      await typeSwedishText(
+          tester, descriptionField, recipeData['description'] as String);
     }
 
     // Portions
     if (recipeData['portions'] != null) {
       final portionsField = find.byKey(const Key('recipe_portions_field'));
-      await typeSwedishText(tester, portionsField, recipeData['portions'].toString());
+      await typeSwedishText(
+          tester, portionsField, recipeData['portions'].toString());
     }
 
     // Cooking time
     if (recipeData['cookingTime'] != null) {
       final timeField = find.byKey(const Key('recipe_time_field'));
-      await typeSwedishText(tester, timeField, recipeData['cookingTime'].toString());
+      await typeSwedishText(
+          tester, timeField, recipeData['cookingTime'].toString());
     }
   }
 
@@ -288,7 +295,8 @@ class InteractionHelpers {
     for (int i = 0; i < ingredients.length; i++) {
       // Add new ingredient if needed
       if (i > 0) {
-        final addIngredientButton = find.byKey(const Key('add_ingredient_button'));
+        final addIngredientButton =
+            find.byKey(const Key('add_ingredient_button'));
         await ViewTestHelpers.tapAndSettle(tester, addIngredientButton);
       }
 
@@ -306,7 +314,8 @@ class InteractionHelpers {
     for (int i = 0; i < instructions.length; i++) {
       // Add new instruction if needed
       if (i > 0) {
-        final addInstructionButton = find.byKey(const Key('add_instruction_button'));
+        final addInstructionButton =
+            find.byKey(const Key('add_instruction_button'));
         await ViewTestHelpers.tapAndSettle(tester, addInstructionButton);
       }
 
@@ -334,7 +343,8 @@ class InteractionHelpers {
   /// Handle collaborative editing interactions.
   static Future<void> _handleCollaborativeEditing(WidgetTester tester) async {
     // Check for collaborative conflict banner
-    final conflictBanner = find.byKey(const Key('collaborative_conflict_banner'));
+    final conflictBanner =
+        find.byKey(const Key('collaborative_conflict_banner'));
     if (tester.any(conflictBanner)) {
       // Handle fork option
       final forkButton = find.text('Skapa kopia');
@@ -352,7 +362,9 @@ class InteractionHelpers {
     // Wait for save operation to complete
     await ViewTestHelpers.pumpUntilState(
       tester,
-      () => tester.any(find.text('Recept sparat')) || tester.any(find.byType(SnackBar)),
+      () =>
+          tester.any(find.text('Recept sparat')) ||
+          tester.any(find.byType(SnackBar)),
       timeout: const Duration(seconds: 5),
     );
   }
@@ -382,7 +394,8 @@ class InteractionHelpers {
   }
 
   /// Create new shopping list.
-  static Future<void> _createShoppingList(WidgetTester tester, String listName) async {
+  static Future<void> _createShoppingList(
+      WidgetTester tester, String listName) async {
     final createListButton = find.byKey(const Key('create_list_button'));
     await ViewTestHelpers.tapAndSettle(tester, createListButton);
 
@@ -468,7 +481,8 @@ class InteractionHelpers {
   }
 
   /// Send friend request.
-  static Future<void> _sendFriendRequest(WidgetTester tester, String email) async {
+  static Future<void> _sendFriendRequest(
+      WidgetTester tester, String email) async {
     final addFriendButton = find.byKey(const Key('add_friend_button'));
     await ViewTestHelpers.tapAndSettle(tester, addFriendButton);
 
@@ -609,8 +623,8 @@ class InteractionMetrics {
     required this.frameCount,
   });
 
-  double get averageFrameTime => 
-    frameCount > 0 ? totalDuration.inMicroseconds / frameCount / 1000.0 : 0.0;
+  double get averageFrameTime =>
+      frameCount > 0 ? totalDuration.inMicroseconds / frameCount / 1000.0 : 0.0;
 
   bool get isPerformant => averageFrameTime < 16.67; // 60 FPS threshold
 }

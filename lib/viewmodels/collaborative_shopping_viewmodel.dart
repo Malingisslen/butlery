@@ -32,9 +32,11 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
     required this.listId,
     UnifiedShoppingService? shoppingService,
     UserService? userService,
-  }) : _shoppingService = shoppingService ?? ServiceLocator.get<UnifiedShoppingService>() {
+  }) : _shoppingService =
+            shoppingService ?? ServiceLocator.get<UnifiedShoppingService>() {
     _permissionManager = ShoppingPermissionManager(listId);
-    _itemOperationsManager = ShoppingItemOperationsManager(_shoppingService, listId);
+    _itemOperationsManager =
+        ShoppingItemOperationsManager(_shoppingService, listId);
     _displayManager = ShoppingDisplayManager();
 
     _itemOperationsManager.addListener(_onManagerChanged);
@@ -59,15 +61,18 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
   // Permission system - delegate to permission manager
   bool get canEdit => _permissionManager.canEdit;
   bool get canView => _permissionManager.canView;
-  bool canEditShoppingList(String listId) => _permissionManager.canEditShoppingList(listId);
-  bool canViewShoppingList(String listId) => _permissionManager.canViewShoppingList(listId);
+  bool canEditShoppingList(String listId) =>
+      _permissionManager.canEditShoppingList(listId);
+  bool canViewShoppingList(String listId) =>
+      _permissionManager.canViewShoppingList(listId);
 
   // Progress tracking
   int get totalItems => _currentList?.totalItems ?? 0;
   int get completedItems => _currentList?.boughtItems ?? 0;
   int get completedItemsCount => completedItems;
-  double get completionPercentage =>
-      totalItems > 0 ? (completedItems.toDouble() / totalItems.toDouble()) * 100.0 : 0.0;
+  double get completionPercentage => totalItems > 0
+      ? (completedItems.toDouble() / totalItems.toDouble()) * 100.0
+      : 0.0;
 
   // Item collections
   List<UnifiedShoppingItem> get activeItems =>
@@ -76,9 +81,12 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
       _currentList?.items.where((item) => item.bought).toList() ?? [];
 
   // Status and metadata - delegate to display manager
-  String get statusText => _displayManager.getStatusText(hasData, totalItems, completedItems);
-  String get memberCountText => _displayManager.getMemberCountText(_currentList);
-  String get activitySummary => _displayManager.getActivitySummary(_lastActivity, _lastActivityTime);
+  String get statusText =>
+      _displayManager.getStatusText(hasData, totalItems, completedItems);
+  String get memberCountText =>
+      _displayManager.getMemberCountText(_currentList);
+  String get activitySummary =>
+      _displayManager.getActivitySummary(_lastActivity, _lastActivityTime);
 
   Future<void> _initialize() async {
     await executeAsync(() async {
@@ -135,8 +143,10 @@ class CollaborativeShoppingViewModel extends ChangeNotifier
 
   // UI display helpers - delegate to display manager
   Color getStatusColor() => _displayManager.getStatusColor(hasData, statusText);
-  Color getProgressColor() => _displayManager.getProgressColor(completionPercentage);
-  String? getItemSubtitle(UnifiedShoppingItem item) => _displayManager.getItemSubtitle(item);
+  Color getProgressColor() =>
+      _displayManager.getProgressColor(completionPercentage);
+  String? getItemSubtitle(UnifiedShoppingItem item) =>
+      _displayManager.getItemSubtitle(item);
   List<Widget> getItemTrailingWidgets(UnifiedShoppingItem item) =>
       _displayManager.getItemTrailingWidgets(item);
 

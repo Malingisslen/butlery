@@ -103,18 +103,22 @@ class _ChatInputSectionState extends State<ChatInputSection> {
     }
 
     try {
-      AppLogger.info('📤 [ChatInputSection] Starting send for message: "${text.substring(0, text.length > 20 ? 20 : text.length)}..."');
+      AppLogger.info(
+          '📤 [ChatInputSection] Starting send for message: "${text.substring(0, text.length > 20 ? 20 : text.length)}..."');
       AppLogger.debug('📤 [ChatInputSection] Full message content: "$text"');
-      AppLogger.debug('📤 [ChatInputSection] Conversation ID: ${widget.conversationId}');
+      AppLogger.debug(
+          '📤 [ChatInputSection] Conversation ID: ${widget.conversationId}');
 
       // Send message through action handler FIRST
       AppLogger.debug('📤 [ChatInputSection] Calling action handler...');
       await widget.onSendMessage(text, type: MessageType.text);
 
-      AppLogger.success('✅ [ChatInputSection] Message send completed successfully');
+      AppLogger.success(
+          '✅ [ChatInputSection] Message send completed successfully');
 
       // Only clear input AFTER successful send
-      AppLogger.debug('📤 [ChatInputSection] Clearing input after successful send...');
+      AppLogger.debug(
+          '📤 [ChatInputSection] Clearing input after successful send...');
       _textController.clear();
       if (mounted) {
         setState(() {
@@ -223,7 +227,9 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                     IconButton(
                       onPressed: _toggleAttachments,
                       icon: Icon(
-                        _state.showAttachments ? Icons.close : Icons.attach_file,
+                        _state.showAttachments
+                            ? Icons.close
+                            : Icons.attach_file,
                         color: _state.showAttachments
                             ? AppColors.primary
                             : AppColors.textSecondary,
@@ -245,7 +251,8 @@ class _ChatInputSectionState extends State<ChatInputSection> {
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       child: IconButton(
-                        onPressed: _state.isComposing ? _handleSendMessage : null,
+                        onPressed:
+                            _state.isComposing ? _handleSendMessage : null,
                         icon: Icon(
                           Icons.send,
                           color: _state.isComposing

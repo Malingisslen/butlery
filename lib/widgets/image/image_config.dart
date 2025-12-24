@@ -125,7 +125,8 @@ class ImageConfig {
       size: size,
       customWidth: customWidth,
       customHeight: customHeight,
-      borderRadius: borderRadius ?? BorderRadius.circular(AppDimensions.borderRadius12),
+      borderRadius:
+          borderRadius ?? BorderRadius.circular(AppDimensions.borderRadius12),
       showPlaceholder: true,
       showLoadingIndicator: true,
       showMultipleIndicator: showMultipleIndicator,
@@ -261,7 +262,8 @@ class ImageConfig {
       type: ImageType.thumbnail,
       mode: ImageDisplayMode.readonly,
       size: size,
-      borderRadius: borderRadius ?? BorderRadius.circular(AppDimensions.borderRadius8),
+      borderRadius:
+          borderRadius ?? BorderRadius.circular(AppDimensions.borderRadius8),
       showPlaceholder: true,
       showLoadingIndicator: true,
       showMultipleIndicator: false,
@@ -343,7 +345,7 @@ class ImageConfig {
   /// Get border radius with fallback
   BorderRadius get effectiveBorderRadius {
     if (borderRadius != null) return borderRadius!;
-    
+
     switch (type) {
       case ImageType.avatar:
         return BorderRadius.circular(AppDimensions.borderRadius100);

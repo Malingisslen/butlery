@@ -24,7 +24,7 @@ void main() {
       '3 dl mjöl',
       '1 tsk salt',
     ];
-    
+
     Widget createTestWidget({
       int currentPortions = originalPortions,
       List<String>? scaledIngredients,
@@ -63,7 +63,8 @@ void main() {
     }
 
     group('Basic Rendering', () {
-      testWidgets('renders with all basic components', (WidgetTester tester) async {
+      testWidgets('renders with all basic components',
+          (WidgetTester tester) async {
         // Act
         await tester.pumpWidget(
           createTestWidget(
@@ -80,7 +81,8 @@ void main() {
         expect(find.byIcon(Icons.add), findsOneWidget);
       });
 
-      testWidgets('displays original ingredients when not scaled', (WidgetTester tester) async {
+      testWidgets('displays original ingredients when not scaled',
+          (WidgetTester tester) async {
         // Act
         await tester.pumpWidget(
           createTestWidget(
@@ -96,19 +98,20 @@ void main() {
         }
       });
 
-      testWidgets('shows scaled ingredients when portions changed', (WidgetTester tester) async {
+      testWidgets('shows scaled ingredients when portions changed',
+          (WidgetTester tester) async {
         // Setup
         final scaledIngredients = [
-          '4 dl mjölk',  // Doubled
-          '8 ägg',       // Doubled
-          '6 dl mjöl',   // Doubled
-          '2 tsk salt',  // Doubled
+          '4 dl mjölk', // Doubled
+          '8 ägg', // Doubled
+          '6 dl mjöl', // Doubled
+          '2 tsk salt', // Doubled
         ];
 
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            currentPortions: 8,  // Double the original
+            currentPortions: 8, // Double the original
             scaledIngredients: scaledIngredients,
             onUpdatePortions: (_) {},
             onToggleUnitConversion: () {},
@@ -117,16 +120,18 @@ void main() {
 
         // Assert
         expect(find.text('8'), findsOneWidget); // Current portions number
-        expect(find.text('Skalat från 4 till 8 portioner'), findsOneWidget); // Status text
+        expect(find.text('Skalat från 4 till 8 portioner'),
+            findsOneWidget); // Status text
         for (String ingredient in scaledIngredients) {
           expect(find.text(ingredient), findsOneWidget);
         }
       });
 
-      testWidgets('shows unit conversion toggle when has American units', (WidgetTester tester) async {
+      testWidgets('shows unit conversion toggle when has American units',
+          (WidgetTester tester) async {
         // Debug: Let's systematically check what's being rendered
         bool callbackCalled = false;
-        
+
         // Act
         await tester.pumpWidget(
           createTestWidget(
@@ -136,33 +141,37 @@ void main() {
             onToggleUnitConversion: () => callbackCalled = true,
           ),
         );
-        
+
         // Step 1: Verify text and icon exist (we know these work)
         expect(find.text('Konvertera amerikanska enheter'), findsOneWidget);
         expect(find.byIcon(Icons.language), findsOneWidget);
-        
+
         // Step 2: Check if the condition is working by tapping the text
         await tester.tap(find.text('Konvertera amerikanska enheter'));
-        expect(callbackCalled, isTrue, reason: 'Unit conversion callback should be triggered');
-        
+        expect(callbackCalled, isTrue,
+            reason: 'Unit conversion callback should be triggered');
+
         // Step 3: Debug - let's see what widgets are actually created around the text
-        final textWidget = tester.widget<Text>(find.text('Konvertera amerikanska enheter'));
+        final textWidget =
+            tester.widget<Text>(find.text('Konvertera amerikanska enheter'));
         debugPrint('Text widget found: $textWidget');
-        
+
         // Step 4: Check all widgets that contain our text
         final parentWidgets = <Type>[];
-        final element = tester.element(find.text('Konvertera amerikanska enheter'));
+        final element =
+            tester.element(find.text('Konvertera amerikanska enheter'));
         element.visitAncestorElements((ancestor) {
           parentWidgets.add(ancestor.widget.runtimeType);
           return true;
         });
         debugPrint('Ancestor widgets of text: $parentWidgets');
-        
+
         // Step 5: For now, just check that the functionality works (callback triggered)
         expect(callbackCalled, isTrue);
       });
 
-      testWidgets('hides unit conversion toggle when no American units', (WidgetTester tester) async {
+      testWidgets('hides unit conversion toggle when no American units',
+          (WidgetTester tester) async {
         // Act
         await tester.pumpWidget(
           createTestWidget(
@@ -179,7 +188,8 @@ void main() {
     });
 
     group('Portion Controls', () {
-      testWidgets('increments portions when add button pressed', (WidgetTester tester) async {
+      testWidgets('increments portions when add button pressed',
+          (WidgetTester tester) async {
         // Setup
         int updatedPortions = originalPortions;
 
@@ -200,7 +210,8 @@ void main() {
         expect(updatedPortions, equals(originalPortions + 1));
       });
 
-      testWidgets('decrements portions when remove button pressed', (WidgetTester tester) async {
+      testWidgets('decrements portions when remove button pressed',
+          (WidgetTester tester) async {
         // Setup
         int updatedPortions = originalPortions;
 
@@ -221,7 +232,8 @@ void main() {
         expect(updatedPortions, equals(originalPortions - 1));
       });
 
-      testWidgets('disables decrement at minimum portions', (WidgetTester tester) async {
+      testWidgets('disables decrement at minimum portions',
+          (WidgetTester tester) async {
         // Act
         await tester.pumpWidget(
           createTestWidget(
@@ -234,19 +246,20 @@ void main() {
         // Assert - Production uses InkWell with Icon, not IconButton
         final removeIcon = find.byIcon(Icons.remove);
         expect(removeIcon, findsOneWidget);
-        
+
         // Find the InkWell containing the remove icon
         final inkWellFinder = find.ancestor(
           of: removeIcon,
           matching: find.byType(InkWell),
         );
         expect(inkWellFinder, findsOneWidget);
-        
+
         final inkWell = tester.widget<InkWell>(inkWellFinder);
         expect(inkWell.onTap, isNull); // Should be disabled at minimum
       });
 
-      testWidgets('disables increment at maximum portions', (WidgetTester tester) async {
+      testWidgets('disables increment at maximum portions',
+          (WidgetTester tester) async {
         // Act
         await tester.pumpWidget(
           createTestWidget(
@@ -259,14 +272,14 @@ void main() {
         // Assert - Production uses InkWell with Icon, not IconButton
         final addIcon = find.byIcon(Icons.add);
         expect(addIcon, findsOneWidget);
-        
+
         // Find the InkWell containing the add icon
         final inkWellFinder = find.ancestor(
           of: addIcon,
           matching: find.byType(InkWell),
         );
         expect(inkWellFinder, findsOneWidget);
-        
+
         final inkWell = tester.widget<InkWell>(inkWellFinder);
         expect(inkWell.onTap, isNull); // Should be disabled at maximum
       });
@@ -283,16 +296,20 @@ void main() {
           );
 
           expect(find.text('$portions'), findsOneWidget);
-          
+
           if (portions != originalPortions) {
-            expect(find.text('Skalat från $originalPortions till $portions portioner'), findsOneWidget);
+            expect(
+                find.text(
+                    'Skalat från $originalPortions till $portions portioner'),
+                findsOneWidget);
           }
         }
       });
     });
 
     group('Unit Conversion', () {
-      testWidgets('toggles unit conversion when button tapped', (WidgetTester tester) async {
+      testWidgets('toggles unit conversion when button tapped',
+          (WidgetTester tester) async {
         // Setup
         bool conversionEnabled = false;
 
@@ -302,7 +319,8 @@ void main() {
             hasAmericanUnits: true,
             convertToSwedish: conversionEnabled,
             onUpdatePortions: (_) {},
-            onToggleUnitConversion: () => conversionEnabled = !conversionEnabled,
+            onToggleUnitConversion: () =>
+                conversionEnabled = !conversionEnabled,
           ),
         );
 
@@ -314,7 +332,8 @@ void main() {
         expect(conversionEnabled, isTrue);
       });
 
-      testWidgets('shows conversion status when enabled', (WidgetTester tester) async {
+      testWidgets('shows conversion status when enabled',
+          (WidgetTester tester) async {
         // Act
         await tester.pumpWidget(
           createTestWidget(
@@ -326,15 +345,17 @@ void main() {
         );
 
         // Assert
-        expect(find.text('Amerikanska enheter konverterade till svenska'), findsOneWidget);
+        expect(find.text('Amerikanska enheter konverterade till svenska'),
+            findsOneWidget);
       });
 
-      testWidgets('displays converted ingredients', (WidgetTester tester) async {
+      testWidgets('displays converted ingredients',
+          (WidgetTester tester) async {
         // Setup
         final convertedIngredients = [
           '2 dl mjölk',
           '4 ägg',
-          '3 dl mjöl (från 1 cup)',  // Shows conversion
+          '3 dl mjöl (från 1 cup)', // Shows conversion
           '1 tsk salt',
         ];
 
@@ -355,11 +376,12 @@ void main() {
     });
 
     group('Visual Feedback', () {
-      testWidgets('shows different background for scaled portions', (WidgetTester tester) async {
+      testWidgets('shows different background for scaled portions',
+          (WidgetTester tester) async {
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            currentPortions: 8,  // Different from original
+            currentPortions: 8, // Different from original
             onUpdatePortions: (_) {},
             onToggleUnitConversion: () {},
           ),
@@ -367,22 +389,24 @@ void main() {
 
         // Assert - Check for status info
         expect(find.text('8'), findsOneWidget); // Current portions number
-        expect(find.text('Skalat från $originalPortions till 8 portioner'), findsOneWidget);
+        expect(find.text('Skalat från $originalPortions till 8 portioner'),
+            findsOneWidget);
       });
 
-      testWidgets('highlights changes in ingredients', (WidgetTester tester) async {
+      testWidgets('highlights changes in ingredients',
+          (WidgetTester tester) async {
         // Setup
         final scaledIngredients = [
-          '1 dl mjölk',   // Halved
-          '2 ägg',        // Halved
-          '1.5 dl mjöl',  // Halved
+          '1 dl mjölk', // Halved
+          '2 ägg', // Halved
+          '1.5 dl mjöl', // Halved
           '0.5 tsk salt', // Halved
         ];
 
         // Act
         await tester.pumpWidget(
           createTestWidget(
-            currentPortions: 2,  // Half of original
+            currentPortions: 2, // Half of original
             scaledIngredients: scaledIngredients,
             onUpdatePortions: (_) {},
             onToggleUnitConversion: () {},
@@ -413,7 +437,8 @@ void main() {
     });
 
     group('Layout and Styling', () {
-      testWidgets('applies correct container styling', (WidgetTester tester) async {
+      testWidgets('applies correct container styling',
+          (WidgetTester tester) async {
         // Act
         await tester.pumpWidget(
           createTestWidget(
@@ -426,13 +451,16 @@ void main() {
         final container = tester.widget<Container>(
           find.byType(Container).first,
         );
-        expect(container.padding, equals(const EdgeInsets.all(AppDimensions.paddingL)));
-        
+        expect(container.padding,
+            equals(const EdgeInsets.all(AppDimensions.paddingL)));
+
         final decoration = container.decoration as BoxDecoration;
-        expect(decoration.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadiusL)));
+        expect(decoration.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadiusL)));
       });
 
-      testWidgets('maintains proper spacing between elements', (WidgetTester tester) async {
+      testWidgets('maintains proper spacing between elements',
+          (WidgetTester tester) async {
         // Act
         await tester.pumpWidget(
           createTestWidget(
@@ -463,7 +491,8 @@ void main() {
     });
 
     group('Edge Cases', () {
-      testWidgets('handles empty ingredients list', (WidgetTester tester) async {
+      testWidgets('handles empty ingredients list',
+          (WidgetTester tester) async {
         // Act
         await tester.pumpWidget(
           MaterialApp(
@@ -492,7 +521,8 @@ void main() {
         expect(find.byIcon(Icons.restaurant_menu), findsOneWidget);
       });
 
-      testWidgets('handles very large portion numbers', (WidgetTester tester) async {
+      testWidgets('handles very large portion numbers',
+          (WidgetTester tester) async {
         // Act
         await tester.pumpWidget(
           createTestWidget(
@@ -507,7 +537,8 @@ void main() {
         expect(find.text('Skalat från 4 till 100 portioner'), findsOneWidget);
       });
 
-      testWidgets('handles single portion correctly', (WidgetTester tester) async {
+      testWidgets('handles single portion correctly',
+          (WidgetTester tester) async {
         // Act
         await tester.pumpWidget(
           createTestWidget(
@@ -519,10 +550,12 @@ void main() {
 
         // Assert
         expect(find.text('1'), findsOneWidget);
-        expect(find.text('Skalat från 4 till 1 portioner'), findsOneWidget); // Status text
+        expect(find.text('Skalat från 4 till 1 portioner'),
+            findsOneWidget); // Status text
       });
 
-      testWidgets('handles ingredients with special characters', (WidgetTester tester) async {
+      testWidgets('handles ingredients with special characters',
+          (WidgetTester tester) async {
         // Setup
         final specialIngredients = [
           '½ dl mjölk',
@@ -550,7 +583,7 @@ void main() {
         // Setup
         int currentPortions = 4;
         late StateSetter setState;
-        
+
         // Act - Create stateful widget that can rebuild
         await tester.pumpWidget(
           MaterialApp(
@@ -610,9 +643,9 @@ void main() {
 // Helper widget to provide animation context
 class _TestAnimationWrapper extends StatefulWidget {
   final Widget child;
-  
+
   const _TestAnimationWrapper({required this.child});
-  
+
   @override
   State<_TestAnimationWrapper> createState() => _TestAnimationWrapperState();
 }
@@ -620,7 +653,7 @@ class _TestAnimationWrapper extends StatefulWidget {
 class _TestAnimationWrapperState extends State<_TestAnimationWrapper>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  
+
   @override
   void initState() {
     super.initState();
@@ -629,16 +662,15 @@ class _TestAnimationWrapperState extends State<_TestAnimationWrapper>
       vsync: this,
     );
   }
-  
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return widget.child;
   }
 }
-

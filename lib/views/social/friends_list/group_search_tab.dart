@@ -17,7 +17,8 @@ class GroupSearchTab {
     if (searchQuery.isEmpty) {
       return StateWidget.empty(
         title: 'Sök bland dina grupper',
-        subtitle: 'Skriv ett gruppnamn i sökfältet ovan för att filtrera dina grupper.',
+        subtitle:
+            'Skriv ett gruppnamn i sökfältet ovan för att filtrera dina grupper.',
         icon: Icons.search,
       );
     }
@@ -25,7 +26,8 @@ class GroupSearchTab {
     // Filter current groups by search query
     final allGroups = friendsService.categories.categoriesList;
     final filteredGroups = allGroups
-        .where((group) => group.name.toLowerCase().contains(searchQuery.toLowerCase()))
+        .where((group) =>
+            group.name.toLowerCase().contains(searchQuery.toLowerCase()))
         .toList();
 
     if (filteredGroups.isEmpty) {

@@ -60,7 +60,7 @@ class FCMService {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   static String? _currentToken;
   static bool _isInitialized = false;
-  
+
   // Callbacks for handling different notification scenarios
   static Function(RemoteMessage)? _onMessageReceived;
   static Function(RemoteMessage)? _onMessageOpenedApp;
@@ -97,7 +97,6 @@ class FCMService {
 
       _isInitialized = true;
       AppLogger.success('✅ FCM service initialized successfully');
-
     } catch (e) {
       AppLogger.error('❌ Failed to initialize FCM service', e);
       rethrow;
@@ -110,20 +109,22 @@ class FCMService {
       AppLogger.info('🔔 Requesting notification permissions...');
 
       final settings = await _messaging.requestPermission(
-        alert: true,           // Show notification alerts
-        announcement: false,   // Not needed for Butlery
-        badge: true,           // Update app badge count
-        carPlay: false,        // Not applicable
-        criticalAlert: false,  // Only for emergency apps
-        provisional: false,    // Don't use provisional authorization
-        sound: true,           // Play notification sounds
+        alert: true, // Show notification alerts
+        announcement: false, // Not needed for Butlery
+        badge: true, // Update app badge count
+        carPlay: false, // Not applicable
+        criticalAlert: false, // Only for emergency apps
+        provisional: false, // Don't use provisional authorization
+        sound: true, // Play notification sounds
       );
 
-      AppLogger.info('🔔 Notification permission status: ${settings.authorizationStatus}');
+      AppLogger.info(
+          '🔔 Notification permission status: ${settings.authorizationStatus}');
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         AppLogger.success('✅ Notification permissions granted');
-      } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+      } else if (settings.authorizationStatus ==
+          AuthorizationStatus.provisional) {
         AppLogger.info('📋 Provisional notification permissions granted');
       } else {
         AppLogger.warning('⚠️ Notification permissions denied');
@@ -143,7 +144,7 @@ class FCMService {
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         AppLogger.info('🔔 Received foreground message: ${message.messageId}');
         _logMessageDetails(message);
-        
+
         // Show in-app notification or update UI
         _onMessageReceived?.call(message);
       });
@@ -152,7 +153,7 @@ class FCMService {
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         AppLogger.info('🔔 App opened from notification: ${message.messageId}');
         _logMessageDetails(message);
-        
+
         // Navigate to relevant screen
         _onMessageOpenedApp?.call(message);
       });
@@ -160,15 +161,17 @@ class FCMService {
       // Check for messages that opened the app when it was terminated
       final initialMessage = await _messaging.getInitialMessage();
       if (initialMessage != null) {
-        AppLogger.info('🔔 App launched from notification: ${initialMessage.messageId}');
+        AppLogger.info(
+            '🔔 App launched from notification: ${initialMessage.messageId}');
         _logMessageDetails(initialMessage);
-        
+
         // Handle app launch navigation
         _onMessageOpenedApp?.call(initialMessage);
       }
 
       // Handle background messages (must be top-level function)
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      FirebaseMessaging.onBackgroundMessage(
+          _firebaseMessagingBackgroundHandler);
 
       AppLogger.success('✅ FCM message handlers set up successfully');
     } catch (e) {
@@ -185,9 +188,10 @@ class FCMService {
       }
 
       _currentToken = await _messaging.getToken();
-      
+
       if (_currentToken != null) {
-        AppLogger.info('🔔 FCM token retrieved: ${_currentToken!.substring(0, _currentToken!.length.clamp(0, 20))}...');
+        AppLogger.info(
+            '🔔 FCM token retrieved: ${_currentToken!.substring(0, _currentToken!.length.clamp(0, 20))}...');
       } else {
         AppLogger.warning('⚠️ Failed to retrieve FCM token');
       }
@@ -214,7 +218,8 @@ class FCMService {
   /// Handle FCM token refresh events
   static Future<void> _onTokenRefresh(String token) async {
     try {
-      AppLogger.info('🔔 FCM token refreshed: ${token.substring(0, token.length.clamp(0, 20))}...');
+      AppLogger.info(
+          '🔔 FCM token refreshed: ${token.substring(0, token.length.clamp(0, 20))}...');
       _currentToken = token;
       await _updateUserToken(token);
     } catch (e) {
@@ -227,12 +232,12 @@ class FCMService {
     try {
       // Note: This will need to be implemented when UserService is extended
       // For now, just log the token
-      AppLogger.info('🔔 Updating user profile with FCM token: ${token.substring(0, token.length.clamp(0, 20))}...');
-      
+      AppLogger.info(
+          '🔔 Updating user profile with FCM token: ${token.substring(0, token.length.clamp(0, 20))}...');
+
       // Update user profile with FCM token - implemented in our notification system
       final userService = ServiceLocator.get<UserService>();
       await userService.updateFCMToken(token);
-      
     } catch (e) {
       AppLogger.error('❌ Failed to update user FCM token', e);
     }
@@ -275,7 +280,7 @@ class FCMService {
     try {
       final settings = await getNotificationSettings();
       return settings.authorizationStatus == AuthorizationStatus.authorized ||
-             settings.authorizationStatus == AuthorizationStatus.provisional;
+          settings.authorizationStatus == AuthorizationStatus.provisional;
     } catch (e) {
       AppLogger.error('❌ Failed to check notification status', e);
       return false;
@@ -287,17 +292,20 @@ class FCMService {
   static void showForegroundNotification(RemoteMessage message) {
     // For now, just log the notification
     // In a production app, you'd use flutter_local_notifications or similar
-    AppLogger.info('🔔 Should show foreground notification: ${message.notification?.title}');
+    AppLogger.info(
+        '🔔 Should show foreground notification: ${message.notification?.title}');
   }
 
   /// Navigate to appropriate screen based on notification data
-  static void handleNotificationNavigation(RemoteMessage message, BuildContext? context) {
+  static void handleNotificationNavigation(
+      RemoteMessage message, BuildContext? context) {
     try {
       final data = message.data;
       final notificationType = data['type'];
       final screen = data['screen'];
 
-      AppLogger.info('🔔 Handling notification navigation: type=$notificationType, screen=$screen');
+      AppLogger.info(
+          '🔔 Handling notification navigation: type=$notificationType, screen=$screen');
 
       if (context == null) {
         AppLogger.warning('⚠️ Cannot navigate - no context available');
@@ -319,7 +327,8 @@ class FCMService {
           _navigateToRecipeComments(context, data);
           break;
         default:
-          AppLogger.warning('⚠️ Unknown notification type for navigation: $notificationType');
+          AppLogger.warning(
+              '⚠️ Unknown notification type for navigation: $notificationType');
       }
     } catch (e) {
       AppLogger.error('❌ Failed to handle notification navigation', e);
@@ -327,12 +336,14 @@ class FCMService {
   }
 
   /// Navigate to friend requests screen
-  static void _navigateToFriendRequests(BuildContext context, Map<String, dynamic> data) {
+  static void _navigateToFriendRequests(
+      BuildContext context, Map<String, dynamic> data) {
     Navigator.pushNamed(context, '/friends', arguments: {'tab': 'requests'});
   }
 
   /// Navigate to shared recipe screen
-  static void _navigateToSharedRecipe(BuildContext context, Map<String, dynamic> data) {
+  static void _navigateToSharedRecipe(
+      BuildContext context, Map<String, dynamic> data) {
     final recipeId = data['recipeId'];
     if (recipeId != null) {
       Navigator.pushNamed(context, '/receptDetalj', arguments: recipeId);
@@ -340,15 +351,17 @@ class FCMService {
   }
 
   /// Navigate to collaboration screen
-  static void _navigateToCollaboration(BuildContext context, Map<String, dynamic> data) {
+  static void _navigateToCollaboration(
+      BuildContext context, Map<String, dynamic> data) {
     final resourceId = data['resourceId'];
     final resourceType = data['resourceType'];
-    
+
     if (resourceId != null && resourceType != null) {
       // Navigate to appropriate collaboration screen
       switch (resourceType) {
         case 'recipe':
-          Navigator.pushNamed(context, '/laggTillRecept', arguments: resourceId);
+          Navigator.pushNamed(context, '/laggTillRecept',
+              arguments: resourceId);
           break;
         case 'menu':
           Navigator.pushNamed(context, '/veckomeny', arguments: resourceId);
@@ -361,11 +374,12 @@ class FCMService {
   }
 
   /// Navigate to recipe comments
-  static void _navigateToRecipeComments(BuildContext context, Map<String, dynamic> data) {
+  static void _navigateToRecipeComments(
+      BuildContext context, Map<String, dynamic> data) {
     final recipeId = data['recipeId'];
     if (recipeId != null) {
-      Navigator.pushNamed(context, '/receptDetalj', 
-        arguments: {'recipeId': recipeId, 'scrollToComments': true});
+      Navigator.pushNamed(context, '/receptDetalj',
+          arguments: {'recipeId': recipeId, 'scrollToComments': true});
     }
   }
 
@@ -373,11 +387,11 @@ class FCMService {
   static void _logMessageDetails(RemoteMessage message) {
     if (kDebugMode) {
       AppLogger.debug('🔔 Message details: '
-        'messageId=${message.messageId}, '
-        'title=${message.notification?.title}, '
-        'body=${message.notification?.body}, '
-        'from=${message.from}, '
-        'category=${message.category}');
+          'messageId=${message.messageId}, '
+          'title=${message.notification?.title}, '
+          'body=${message.notification?.body}, '
+          'from=${message.from}, '
+          'category=${message.category}');
     }
   }
 
@@ -402,20 +416,19 @@ class FCMService {
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   try {
     AppLogger.info('🔔 Handling background message: ${message.messageId}');
-    
+
     // Handle background message processing
     // This runs in an isolate, so has limited access to app state
-    
+
     // Log message for debugging
     if (kDebugMode) {
       AppLogger.debug('🔔 Background message: '
-        'title=${message.notification?.title}, '
-        'body=${message.notification?.body}');
+          'title=${message.notification?.title}, '
+          'body=${message.notification?.body}');
     }
 
     // Process background-specific logic here
     // E.g., update local database, sync data, etc.
-
   } catch (e) {
     AppLogger.error('❌ Failed to handle background message', e);
   }

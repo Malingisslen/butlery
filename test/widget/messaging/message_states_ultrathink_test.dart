@@ -125,7 +125,7 @@ void main() {
         );
 
         expect(find.byIcon(Icons.warning), findsOneWidget);
-        
+
         final icon = tester.widget<Icon>(find.byIcon(Icons.warning));
         expect(icon.color, equals(Colors.red));
         expect(icon.size, equals(64.0));
@@ -169,11 +169,11 @@ void main() {
         );
 
         expect(find.text(errorMessage), findsOneWidget);
-        
+
         // Should have Container with error styling
         final containers = tester.widgetList<Container>(find.byType(Container));
         expect(containers.length, greaterThan(0));
-        
+
         // Should have error text with correct style
         final textWidgets = tester.widgetList<Text>(find.text(errorMessage));
         expect(textWidgets.first.style?.color, equals(AppColors.error));
@@ -269,7 +269,7 @@ void main() {
         );
 
         expect(find.byIcon(Icons.done), findsOneWidget);
-        
+
         final icon = tester.widget<Icon>(find.byIcon(Icons.done));
         expect(icon.color, equals(Colors.green));
         expect(icon.size, equals(AppDimensions.iconSizeL));
@@ -295,7 +295,7 @@ void main() {
 
         // Should show info icon with default size
         expect(find.byIcon(Icons.info_outline), findsOneWidget);
-        
+
         final icon = tester.widget<Icon>(find.byIcon(Icons.info_outline));
         expect(icon.size, equals(AppDimensions.iconSizeL));
       });
@@ -339,10 +339,15 @@ void main() {
         );
 
         expect(find.text(infoMessage), findsOneWidget);
-        
+
         // Should not show title section when title is null
-        final titleLarge = tester.widgetList<Text>(find.byType(Text))
-            .where((text) => text.style?.fontSize == Theme.of(tester.element(find.byType(MaterialApp))).textTheme.titleLarge?.fontSize);
+        final titleLarge = tester.widgetList<Text>(find.byType(Text)).where(
+            (text) =>
+                text.style?.fontSize ==
+                Theme.of(tester.element(find.byType(MaterialApp)))
+                    .textTheme
+                    .titleLarge
+                    ?.fontSize);
         expect(titleLarge.isEmpty, isTrue);
       });
 
@@ -392,7 +397,7 @@ void main() {
 
         // Should show warning icon
         expect(find.byIcon(Icons.warning_outlined), findsOneWidget);
-        
+
         final icon = tester.widget<Icon>(find.byIcon(Icons.warning_outlined));
         expect(icon.color, equals(AppColors.warning));
         expect(icon.size, equals(AppDimensions.iconSizeL));
@@ -418,11 +423,11 @@ void main() {
 
         expect(find.text(warningTitle), findsOneWidget);
         expect(find.text(warningMessage), findsOneWidget);
-        
+
         // Warning title should have warning color
         final titleTexts = tester.widgetList<Text>(find.text(warningTitle));
         expect(titleTexts.first.style?.color, equals(AppColors.warning));
-        
+
         // Warning message should have warning color
         final messageTexts = tester.widgetList<Text>(find.text(warningMessage));
         expect(messageTexts.first.style?.color, equals(AppColors.warning));
@@ -471,7 +476,7 @@ void main() {
         );
 
         expect(find.byIcon(Icons.dangerous), findsOneWidget);
-        
+
         final icon = tester.widget<Icon>(find.byIcon(Icons.dangerous));
         expect(icon.color, equals(Colors.orange));
         expect(icon.size, equals(80.0));
@@ -520,7 +525,8 @@ void main() {
 
         final columns = tester.widgetList<Column>(find.byType(Column));
         // Find our MessageStates Column (should have MainAxisSize.min)
-        final messageStateColumn = columns.firstWhere((col) => col.mainAxisSize == MainAxisSize.min);
+        final messageStateColumn =
+            columns.firstWhere((col) => col.mainAxisSize == MainAxisSize.min);
         expect(messageStateColumn.mainAxisSize, equals(MainAxisSize.min));
       });
 
@@ -634,7 +640,8 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('action button only shows when both label and callback provided',
+      testWidgets(
+          'action button only shows when both label and callback provided',
           (WidgetTester tester) async {
         // ULTRATHINK: Test production code conditional button display
         await tester.pumpWidget(
@@ -668,8 +675,7 @@ void main() {
         expect(find.byIcon(Icons.refresh), findsNothing);
       });
 
-      testWidgets('handles empty string messages',
-          (WidgetTester tester) async {
+      testWidgets('handles empty string messages', (WidgetTester tester) async {
         // ULTRATHINK: Test edge case with empty strings
         await tester.pumpWidget(
           createTestWidget(
@@ -692,7 +698,9 @@ void main() {
           (WidgetTester tester) async {
         // ULTRATHINK: Test layout with very long content
         final longTitle = 'Detta är en mycket lång titel ' * 10;
-        final longMessage = 'Detta är ett mycket långt meddelande som testar om layouten kan hantera långa texter utan att få overflow-problem. ' * 5;
+        final longMessage =
+            'Detta är ett mycket långt meddelande som testar om layouten kan hantera långa texter utan att få overflow-problem. ' *
+                5;
 
         await tester.pumpWidget(
           createTestWidget(
@@ -789,7 +797,7 @@ void main() {
 
         final titleText = tester.widget<Text>(find.text('Center Test'));
         final messageText = tester.widget<Text>(find.text('Center Message'));
-        
+
         expect(titleText.textAlign, equals(TextAlign.center));
         expect(messageText.textAlign, equals(TextAlign.center));
       });

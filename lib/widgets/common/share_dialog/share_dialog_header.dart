@@ -14,7 +14,7 @@ class ShareDialogHeader {
     dynamic content,
   ) {
     final (title, subtitle, icon) = _getHeaderInfo(contentType, content);
-    
+
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       decoration: BoxDecoration(

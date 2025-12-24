@@ -42,8 +42,8 @@ class DraftRecoveryDialog extends StatelessWidget {
       title: Text(
         AppStrings.draftRecovery,
         style: AppTextStyles.headlineSmall.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+          fontWeight: FontWeight.w600,
+        ),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -52,8 +52,8 @@ class DraftRecoveryDialog extends StatelessWidget {
           Text(
             AppStrings.draftRecoverySubtitle,
             style: AppTextStyles.bodyMedium.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: AppDimensions.spacingL),
 
@@ -137,8 +137,8 @@ class DraftRecoveryDialog extends StatelessWidget {
                           ? AppStrings.unnamedRecipe
                           : draft.title,
                       style: AppTextStyles.bodyLarge.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
+                        fontWeight: FontWeight.w500,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -149,9 +149,8 @@ class DraftRecoveryDialog extends StatelessWidget {
                     Text(
                       '${draft.timeAgo} • ${AppStrings.fieldsFilledCount(draft.fieldCount)}',
                       style: AppTextStyles.bodySmall.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),

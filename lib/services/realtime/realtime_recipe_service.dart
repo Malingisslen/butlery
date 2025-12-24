@@ -17,7 +17,8 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 
 /// Facade for realtime recipe management delegating to RecipeContentOperations (content) and RecipeParticipants (permissions).
 /// Clean API with no complex business logic or direct implementation details.
-class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
+class RealtimeRecipeService extends ChangeNotifier
+    with StreamManagementMixin, ErrorHandlingMixin {
   final RealtimeSyncService _syncService;
   final PermissionService _permissionService;
 
@@ -33,8 +34,10 @@ class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin, E
 
   /// Is recipe operation in progress?
   bool get isProcessing => _isProcessing;
+
   /// Latest recipe operation error
   RecipeOperationError? get lastError => _lastError;
+
   /// Current user display name
   String get _currentUserDisplayName =>
       _permissionService.currentUser?.displayName ?? 'Okänd användare';
@@ -341,7 +344,8 @@ class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin, E
       resourceId: resourceId,
       operation: RecipeOperationType.updatePermissions,
       operationName: 'uppdatera behörighet',
-      updateFunction: (recipe) => RecipeParticipants.updateParticipantPermission(
+      updateFunction: (recipe) =>
+          RecipeParticipants.updateParticipantPermission(
         recipe,
         userId: userId,
         newPermission: newPermission,
@@ -370,10 +374,12 @@ class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin, E
   bool hasRecipeChangedSince(RealtimeRecipe recipe, DateTime timestamp) {
     return RecipeContentOperations.hasRecipeChangedSince(recipe, timestamp);
   }
+
   /// Get summary of recent changes
   String getRecipeChangesSummary(RealtimeRecipe recipe) {
     return RecipeContentOperations.getRecipeChangesSummary(recipe);
   }
+
   /// Generic method for performing recipe operations with error handling
   Future<void> _performRecipeOperation({
     required String resourceId,
@@ -396,7 +402,8 @@ class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin, E
       AppLogger.info('🔄 $operationName för recept: $resourceId');
 
       // Get current recipe from cache or Firebase
-      final currentRecipe = _syncService.getCachedResource<RealtimeRecipe>(resourceId);
+      final currentRecipe =
+          _syncService.getCachedResource<RealtimeRecipe>(resourceId);
 
       if (currentRecipe == null) {
         throw RecipeOperationError(
@@ -445,7 +452,8 @@ class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin, E
 
     try {
       // Delegate to RealtimeSyncService (SRP)
-      await _syncService.deleteResource(resourceId, RealtimeResourceType.recipe);
+      await _syncService.deleteResource(
+          resourceId, RealtimeResourceType.recipe);
 
       AppLogger.success('✅ Realtidsrecept borttaget: $resourceId');
     } catch (e) {
@@ -487,11 +495,13 @@ class RealtimeRecipeService extends ChangeNotifier with StreamManagementMixin, E
   void _clearError() {
     _lastError = null;
   }
+
   /// Clear error status (public method)
   void clearError() {
     _clearError();
     notifyListeners();
   }
+
   @override
   void dispose() {
     disposeStreamResources();

@@ -203,8 +203,7 @@ void main() {
 
         verify(() => mockFriendsService.refresh()).called(1);
         verify(() => mockFriendsService.getCategoryById(testGroupId)).called(1);
-        verify(() =>
-                mockUserService.getUserProfiles([testUserId, otherUserId]))
+        verify(() => mockUserService.getUserProfiles([testUserId, otherUserId]))
             .called(1);
       });
 
@@ -279,9 +278,8 @@ void main() {
 
         expect(result, isTrue);
         expect(viewModel.group, isNull);
-        verify(() =>
-                mockCategoriesOps.removeFriendFromCategory(testUserId, testGroupId))
-            .called(1);
+        verify(() => mockCategoriesOps.removeFriendFromCategory(
+            testUserId, testGroupId)).called(1);
       });
 
       test('returns false when leave fails', () async {
@@ -320,7 +318,8 @@ void main() {
         final result = await viewModel.transferGroupOwnership(otherMember);
 
         expect(result, isTrue);
-        verify(() => mockFriendsService.updateCategoryInternal(testGroupId, any()))
+        verify(() =>
+                mockFriendsService.updateCategoryInternal(testGroupId, any()))
             .called(1);
         verify(() => mockFriendsService.syncCategoryToFirebaseInternal(any()))
             .called(1);

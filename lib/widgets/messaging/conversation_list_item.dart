@@ -46,86 +46,83 @@ class ConversationListItem extends StatelessWidget {
             vertical: AppDimensions.paddingS,
           ),
           child: Row(
-          children: [
-            // Avatar
-            _buildAvatar(),
-            
-            const SizedBox(width: AppDimensions.paddingM),
-            
-            // Content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title and timestamp row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          conversation.getDisplayTitle(currentUserId),
-                          style: _hasUnreadMessages
-                              ? AppTextStyles.bodyMedium.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textDark,
-                                )
-                              : AppTextStyles.bodyMedium.copyWith(
-                                  color: AppColors.textDark,
-                                ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+            children: [
+              // Avatar
+              _buildAvatar(),
+
+              const SizedBox(width: AppDimensions.paddingM),
+
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title and timestamp row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            conversation.getDisplayTitle(currentUserId),
+                            style: _hasUnreadMessages
+                                ? AppTextStyles.bodyMedium.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textDark,
+                                  )
+                                : AppTextStyles.bodyMedium.copyWith(
+                                    color: AppColors.textDark,
+                                  ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                      
-                      const SizedBox(width: AppDimensions.paddingS),
-                      
-                      Text(
-                        conversation.formattedLastActivity,
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: _hasUnreadMessages
-                              ? AppColors.primaryBlue
-                              : AppColors.textMedium,
-                          fontWeight: _hasUnreadMessages
-                              ? FontWeight.w500
-                              : FontWeight.normal,
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: AppDimensions.spacingXxs),
-                  
-                  // Last message and unread indicator row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _getLastMessagePreview(),
-                          style: _hasUnreadMessages
-                              ? AppTextStyles.labelSmall.copyWith(
-                                  color: AppColors.textDark,
-                                  fontWeight: FontWeight.w500,
-                                )
-                              : AppTextStyles.labelSmall.copyWith(
-                                  color: AppColors.textMedium,
-                                ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      
-                      if (_hasUnreadMessages) ...[
                         const SizedBox(width: AppDimensions.paddingS),
-                        _buildUnreadIndicator(),
+                        Text(
+                          conversation.formattedLastActivity,
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: _hasUnreadMessages
+                                ? AppColors.primaryBlue
+                                : AppColors.textMedium,
+                            fontWeight: _hasUnreadMessages
+                                ? FontWeight.w500
+                                : FontWeight.normal,
+                          ),
+                        ),
                       ],
-                    ],
-                  ),
-                ],
+                    ),
+
+                    const SizedBox(height: AppDimensions.spacingXxs),
+
+                    // Last message and unread indicator row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _getLastMessagePreview(),
+                            style: _hasUnreadMessages
+                                ? AppTextStyles.labelSmall.copyWith(
+                                    color: AppColors.textDark,
+                                    fontWeight: FontWeight.w500,
+                                  )
+                                : AppTextStyles.labelSmall.copyWith(
+                                    color: AppColors.textMedium,
+                                  ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (_hasUnreadMessages) ...[
+                          const SizedBox(width: AppDimensions.paddingS),
+                          _buildUnreadIndicator(),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 
@@ -143,7 +140,7 @@ class ConversationListItem extends StatelessWidget {
               ? _buildGroupAvatar()
               : _buildDirectConversationAvatar(),
         ),
-        
+
         // Online status indicator (only for direct conversations)
         if (!conversation.isGroup && showOnlineStatus)
           Positioned(
@@ -183,7 +180,7 @@ class ConversationListItem extends StatelessWidget {
   Widget _buildDirectConversationAvatar() {
     final avatarUrl = conversation.getDisplayAvatarUrl(currentUserId);
     final displayName = conversation.getDisplayTitle(currentUserId);
-    
+
     if (avatarUrl != null && avatarUrl.isNotEmpty) {
       return SimpleImageWidget(
         imageUrl: avatarUrl,
@@ -193,7 +190,7 @@ class ConversationListItem extends StatelessWidget {
         placeholder: _buildAvatarFallback(displayName),
       );
     }
-    
+
     return _buildAvatarFallback(displayName);
   }
 
@@ -222,13 +219,11 @@ class ConversationListItem extends StatelessWidget {
 
   String _getLastMessagePreview() {
     if (conversation.lastMessage == null) {
-      return conversation.isGroup 
-          ? 'Grupp skapad'
-          : 'Säg hej!';
+      return conversation.isGroup ? 'Grupp skapad' : 'Säg hej!';
     }
 
     final message = conversation.lastMessage!;
-    
+
     // For system messages, just show the content
     if (message.isSystemMessage) {
       return message.content;

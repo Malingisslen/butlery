@@ -56,7 +56,8 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   String? get displayNameError => _displayNameError;
   String? get error => _operationError ?? _displayNameError;
   bool get hasError => _operationError != null || _displayNameError != null;
-  UserProfile? get currentProfile => ServiceLocator.get<UserService>().currentUserProfile;
+  UserProfile? get currentProfile =>
+      ServiceLocator.get<UserService>().currentUserProfile;
   bool get hasProfile => currentProfile != null;
 
   /// Form validation state for submission control
@@ -232,7 +233,8 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
             _isSearchable = updatedProfile.isSearchable;
             _allowEmailSearch = updatedProfile.allowEmailSearch;
             _hasUnsavedChanges = false;
-            AppLogger.success('✅ Profil sparad - Settings: isSearchable=${updatedProfile.isSearchable}, allowEmailSearch=${updatedProfile.allowEmailSearch}');
+            AppLogger.success(
+                '✅ Profil sparad - Settings: isSearchable=${updatedProfile.isSearchable}, allowEmailSearch=${updatedProfile.allowEmailSearch}');
             notifyListeners();
             return true;
           } else {
@@ -315,7 +317,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// and proper change tracking setup for profile management operations.
   void _loadCurrentProfile() {
     final profile = currentProfile;
-    
+
     if (profile != null) {
       _displayName = profile.displayName;
       _avatarUrl = profile.avatarUrl;
@@ -362,7 +364,7 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// Handles both new profile creation and existing profile editing scenarios.
   void _checkForChanges() {
     final profile = currentProfile;
-    
+
     if (profile == null) {
       _hasUnsavedChanges = _displayName.isNotEmpty || _avatarUrl != null;
     } else {

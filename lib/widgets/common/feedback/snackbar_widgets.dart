@@ -14,12 +14,14 @@ class SnackbarWidgets {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle, color: AppColors.neutralLight, size: AppDimensions.iconSizeM),
+            const Icon(Icons.check_circle,
+                color: AppColors.neutralLight, size: AppDimensions.iconSizeM),
             const SizedBox(width: AppDimensions.spacingM),
             Expanded(
               child: Text(
                 message,
-                style: AppTextStyles.bodyLarge.copyWith(color: AppColors.neutralLight),
+                style: AppTextStyles.bodyLarge
+                    .copyWith(color: AppColors.neutralLight),
               ),
             ),
           ],
@@ -37,12 +39,14 @@ class SnackbarWidgets {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.error, color: AppColors.neutralLight, size: AppDimensions.iconSizeM),
+            const Icon(Icons.error,
+                color: AppColors.neutralLight, size: AppDimensions.iconSizeM),
             const SizedBox(width: AppDimensions.spacingM),
             Expanded(
               child: Text(
                 message,
-                style: AppTextStyles.bodyLarge.copyWith(color: AppColors.neutralLight),
+                style: AppTextStyles.bodyLarge
+                    .copyWith(color: AppColors.neutralLight),
               ),
             ),
           ],
@@ -69,7 +73,8 @@ class SnackbarWidgets {
             Expanded(
               child: Text(
                 message,
-                style: AppTextStyles.bodyLarge.copyWith(color: AppColors.neutralLight),
+                style: AppTextStyles.bodyLarge
+                    .copyWith(color: AppColors.neutralLight),
               ),
             ),
           ],

@@ -17,16 +17,16 @@
 /// ```dart
 /// testWidgets('AuthView should render login form', (tester) async {
 ///   await ViewTestHelpers.setupViewTestEnvironment();
-///   
+///
 ///   final authViewModel = ViewTestHelpers.createTestableAuthViewModel();
 ///   final widget = ViewTestHelpers.createTestViewWidget(
 ///     child: const AuthView(),
 ///     providers: [ChangeNotifierProvider.value(value: authViewModel)],
 ///   );
-///   
+///
 ///   await tester.pumpWidget(widget);
 ///   await ViewTestHelpers.waitForViewInitialization(tester);
-///   
+///
 ///   ViewTestHelpers.expectSwedishText(tester, 'Logga in');
 ///   ViewTestHelpers.expectFormField(tester, 'E-post');
 /// });
@@ -73,20 +73,20 @@ class ViewTestHelpers extends BaseWidgetTest {
   static Future<void> setupViewTestEnvironment() async {
     // Ensure Flutter binding is initialized
     TestWidgetsFlutterBinding.ensureInitialized();
-    
+
     // Initialize SharedPreferences mock with Swedish locale
     SharedPreferences.setMockInitialValues({
       'selected_language': 'sv',
       'locale_code': 'sv_SE',
       'user_preferences': '{"language": "sv", "theme": "light"}',
     });
-    
+
     // Initialize base unit test infrastructure
     await BaseUnitTest.setupUnit();
-    
+
     // Initialize test service locator with view-specific configuration
     await TestServiceLocator.initialize();
-    
+
     // Configure for Swedish localization testing
     _configureSwedishLocalization();
   }
@@ -98,10 +98,10 @@ class ViewTestHelpers extends BaseWidgetTest {
   static Future<void> teardownViewTestEnvironment() async {
     // Reset service locator with aggressive cleanup
     await TestServiceLocator.reset();
-    
+
     // Reset base unit test mocks
     BaseUnitTest.resetMocks();
-    
+
     // Clear any remaining state
     await _clearViewTestState();
   }
@@ -155,7 +155,7 @@ class ViewTestHelpers extends BaseWidgetTest {
     GlobalKey<NavigatorState>? navigatorKey,
   }) {
     Widget wrappedChild = child;
-    
+
     // Wrap with providers if provided
     if (providers != null && providers.isNotEmpty) {
       wrappedChild = MultiProvider(
@@ -163,11 +163,11 @@ class ViewTestHelpers extends BaseWidgetTest {
         child: child,
       );
     }
-    
+
     return MaterialApp(
       navigatorKey: navigatorKey,
       theme: theme ?? _createSwedishOptimizedTheme(),
-      
+
       // Swedish localization configuration
       locale: const Locale('sv', 'SE'),
       supportedLocales: const [
@@ -179,16 +179,16 @@ class ViewTestHelpers extends BaseWidgetTest {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      
+
       // Navigation configuration
       home: wrappedChild,
       routes: routes ?? {},
       initialRoute: initialRoute,
       navigatorObservers: navigatorObserver != null ? [navigatorObserver] : [],
-      
+
       // Debug configuration
       debugShowCheckedModeBanner: false,
-      
+
       // Accessibility configuration
       showSemanticsDebugger: false,
     );
@@ -202,7 +202,7 @@ class ViewTestHelpers extends BaseWidgetTest {
         seedColor: const Color(0xFF2196F3), // Butlery blue
         brightness: Brightness.light,
       ),
-      
+
       // Swedish text styling
       textTheme: const TextTheme(
         displayLarge: TextStyle(fontFamily: 'Roboto'),
@@ -210,13 +210,13 @@ class ViewTestHelpers extends BaseWidgetTest {
         bodyLarge: TextStyle(fontFamily: 'Roboto'),
         bodyMedium: TextStyle(fontFamily: 'Roboto'),
       ),
-      
+
       // Form styling for Swedish input
       inputDecorationTheme: const InputDecorationTheme(
         border: OutlineInputBorder(),
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
-      
+
       // Button styling
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -251,10 +251,10 @@ class ViewTestHelpers extends BaseWidgetTest {
     // Clear any existing text first
     await tester.tap(finder);
     await tester.pump();
-    
+
     // Select all existing text and replace
     await tester.enterText(finder, text);
-    
+
     // Wait for text input to settle
     final timeout = settleTimeout ?? const Duration(milliseconds: 300);
     await tester.pump(timeout);
@@ -274,15 +274,15 @@ class ViewTestHelpers extends BaseWidgetTest {
   /// and provides clear error messages for Swedish localization issues.
   static void expectSwedishText(WidgetTester tester, String expectedText) {
     final finder = findBySwedishText(expectedText);
-    expect(finder, findsOneWidget, 
-      reason: 'Swedish text "$expectedText" not found in widget tree');
+    expect(finder, findsOneWidget,
+        reason: 'Swedish text "$expectedText" not found in widget tree');
   }
 
   /// Expect Swedish text to be absent from the widget tree.
   static void expectNoSwedishText(WidgetTester tester, String text) {
     final finder = findBySwedishText(text);
     expect(finder, findsNothing,
-      reason: 'Swedish text "$text" unexpectedly found in widget tree');
+        reason: 'Swedish text "$text" unexpectedly found in widget tree');
   }
 
   /// Expect multiple Swedish text elements.
@@ -331,10 +331,10 @@ class ViewTestHelpers extends BaseWidgetTest {
   }) async {
     // Pump once to trigger initState
     await tester.pump();
-    
+
     // Pump again to trigger post-frame callbacks
     await tester.pump();
-    
+
     // Wait a small amount for async operations
     await tester.pump(const Duration(milliseconds: 100));
   }
@@ -350,11 +350,11 @@ class ViewTestHelpers extends BaseWidgetTest {
     Duration interval = const Duration(milliseconds: 100),
   }) async {
     final stopwatch = Stopwatch()..start();
-    
+
     while (!condition() && stopwatch.elapsed < timeout) {
       await tester.pump(interval);
     }
-    
+
     if (!condition()) {
       throw TimeoutException(
         'pumpUntilState timed out after ${timeout.inSeconds} seconds',
@@ -366,7 +366,7 @@ class ViewTestHelpers extends BaseWidgetTest {
   /// Expect loading state to be displayed.
   static void expectLoadingState(WidgetTester tester) {
     expect(find.byType(CircularProgressIndicator), findsOneWidget,
-      reason: 'Loading state not displayed');
+        reason: 'Loading state not displayed');
   }
 
   /// Expect error state to be displayed.
@@ -374,7 +374,7 @@ class ViewTestHelpers extends BaseWidgetTest {
     if (errorMessage != null) {
       expectSwedishText(tester, errorMessage);
     }
-    
+
     // Look for common error indicators
     final errorIndicators = [
       find.byIcon(Icons.error),
@@ -383,7 +383,7 @@ class ViewTestHelpers extends BaseWidgetTest {
       find.text('Något gick fel'),
       find.text('Fel uppstod'),
     ];
-    
+
     bool foundErrorIndicator = false;
     for (final indicator in errorIndicators) {
       if (tester.any(indicator)) {
@@ -391,16 +391,16 @@ class ViewTestHelpers extends BaseWidgetTest {
         break;
       }
     }
-    
+
     expect(foundErrorIndicator, isTrue,
-      reason: 'Error state indicators not found');
+        reason: 'Error state indicators not found');
   }
 
   /// Expect content state to be displayed (no loading, no error).
   static void expectContentState(WidgetTester tester) {
     expect(find.byType(CircularProgressIndicator), findsNothing,
-      reason: 'Loading indicator still visible in content state');
-    
+        reason: 'Loading indicator still visible in content state');
+
     // Should not find common error indicators
     expect(find.byIcon(Icons.error), findsNothing);
     expect(find.byIcon(Icons.error_outline), findsNothing);
@@ -412,11 +412,12 @@ class ViewTestHelpers extends BaseWidgetTest {
   static void expectFormField(WidgetTester tester, String label) {
     final fieldFinder = find.widgetWithText(TextFormField, label);
     expect(fieldFinder, findsOneWidget,
-      reason: 'Form field with label "$label" not found');
+        reason: 'Form field with label "$label" not found');
   }
 
   /// Expect form validation error with Swedish message.
-  static void expectFormValidationError(WidgetTester tester, String errorMessage) {
+  static void expectFormValidationError(
+      WidgetTester tester, String errorMessage) {
     expectSwedishText(tester, errorMessage);
   }
 
@@ -428,11 +429,11 @@ class ViewTestHelpers extends BaseWidgetTest {
     for (final entry in fieldValues.entries) {
       final fieldKey = entry.key;
       final value = entry.value;
-      
+
       final finder = find.byKey(Key(fieldKey));
       await enterSwedishText(tester, finder, value);
     }
-    
+
     // Wait for all form fields to settle
     await tester.pump(const Duration(milliseconds: 200));
   }
@@ -473,7 +474,7 @@ class ViewTestHelpers extends BaseWidgetTest {
       await tester.pump();
       scrollCount++;
     }
-    
+
     if (!tester.any(itemFinder)) {
       throw Exception('Widget not found after $maxScrolls scroll attempts');
     }
@@ -489,10 +490,10 @@ class ViewTestHelpers extends BaseWidgetTest {
   }) {
     final testSize = size ?? phoneSize;
     final testRatio = devicePixelRatio ?? 3.0;
-    
+
     tester.view.physicalSize = testSize;
     tester.view.devicePixelRatio = testRatio;
-    
+
     addTearDown(() {
       tester.view.resetPhysicalSize();
       tester.view.resetDevicePixelRatio();
@@ -503,7 +504,7 @@ class ViewTestHelpers extends BaseWidgetTest {
   static const Size phoneSize = Size(375, 812); // iPhone X (common in Sweden)
   static const Size tabletSize = Size(768, 1024); // iPad
   static const Size desktopSize = Size(1440, 900); // MacBook Air 13"
-  
+
   // ==================== PERFORMANCE UTILITIES ====================
 
   /// Measure view rendering performance.
@@ -524,8 +525,8 @@ class ViewTestHelpers extends BaseWidgetTest {
     Duration threshold = const Duration(milliseconds: 500),
   }) {
     expect(renderTime.inMilliseconds, lessThan(threshold.inMilliseconds),
-      reason: 'View rendering took ${renderTime.inMilliseconds}ms, '
-              'exceeds threshold of ${threshold.inMilliseconds}ms');
+        reason: 'View rendering took ${renderTime.inMilliseconds}ms, '
+            'exceeds threshold of ${threshold.inMilliseconds}ms');
   }
 }
 
@@ -536,9 +537,9 @@ class MockNavigatorObserver extends Mock implements NavigatorObserver {}
 class TimeoutException implements Exception {
   final String message;
   final Duration timeout;
-  
+
   const TimeoutException(this.message, this.timeout);
-  
+
   @override
   String toString() => 'TimeoutException: $message';
 }
@@ -556,21 +557,21 @@ extension SwedishWidgetTester on WidgetTester {
       providers: providers,
       navigatorObserver: navigatorObserver,
     );
-    
+
     await pumpWidget(testWidget);
     await ViewTestHelpers.waitForViewInitialization(this);
   }
-  
+
   /// Enter Swedish text in form field.
   Future<void> enterSwedishText(Finder finder, String text) async {
     await ViewTestHelpers.enterSwedishText(this, finder, text);
   }
-  
+
   /// Expect Swedish text to be present.
   void expectSwedishText(String text) {
     ViewTestHelpers.expectSwedishText(this, text);
   }
-  
+
   /// Tap and settle with view-optimized timing.
   Future<void> tapViewElement(Finder finder) async {
     await ViewTestHelpers.tapAndSettle(this, finder);

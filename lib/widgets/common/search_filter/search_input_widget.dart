@@ -33,7 +33,8 @@ class SearchInputWidget extends StatelessWidget {
       style: AppTextStyles.bodyLarge,
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
+        hintStyle:
+            AppTextStyles.bodyMedium.copyWith(color: AppColors.textMedium),
         prefixIcon: Icon(
           Icons.search,
           size: AppDimensions.iconSizeAction,

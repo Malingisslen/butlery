@@ -27,9 +27,12 @@ class UserConsent {
   factory UserConsent.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return UserConsent(
-      userId: SerializationUtils.safeString(data, 'userId'), // Read from document data for data integrity
-      purposes: ConsentPurposes.fromMap(SerializationUtils.safeMap(data, 'purposes')),
-      grantedAt: SerializationUtils.safeDateTime(data, 'grantedAt') ?? DateTime.now(),
+      userId: SerializationUtils.safeString(
+          data, 'userId'), // Read from document data for data integrity
+      purposes:
+          ConsentPurposes.fromMap(SerializationUtils.safeMap(data, 'purposes')),
+      grantedAt:
+          SerializationUtils.safeDateTime(data, 'grantedAt') ?? DateTime.now(),
       updatedAt: SerializationUtils.safeDateTime(data, 'updatedAt'),
       consentVersion: SerializationUtils.safeString(data, 'consentVersion'),
       ipAddress: SerializationUtils.safeNullableString(data, 'ipAddress'),
@@ -104,12 +107,18 @@ class ConsentPurposes {
   /// Create from Firestore map
   factory ConsentPurposes.fromMap(Map<String, dynamic> map) {
     return ConsentPurposes(
-      essentialServices: SerializationUtils.safeBool(map, 'essentialServices', defaultValue: true),
-      dataProcessing: SerializationUtils.safeBool(map, 'dataProcessing', defaultValue: true),
-      analytics: SerializationUtils.safeBool(map, 'analytics', defaultValue: false),
-      marketing: SerializationUtils.safeBool(map, 'marketing', defaultValue: false),
-      socialFeatures: SerializationUtils.safeBool(map, 'socialFeatures', defaultValue: false),
-      pushNotifications: SerializationUtils.safeBool(map, 'pushNotifications', defaultValue: false),
+      essentialServices: SerializationUtils.safeBool(map, 'essentialServices',
+          defaultValue: true),
+      dataProcessing: SerializationUtils.safeBool(map, 'dataProcessing',
+          defaultValue: true),
+      analytics:
+          SerializationUtils.safeBool(map, 'analytics', defaultValue: false),
+      marketing:
+          SerializationUtils.safeBool(map, 'marketing', defaultValue: false),
+      socialFeatures: SerializationUtils.safeBool(map, 'socialFeatures',
+          defaultValue: false),
+      pushNotifications: SerializationUtils.safeBool(map, 'pushNotifications',
+          defaultValue: false),
     );
   }
 

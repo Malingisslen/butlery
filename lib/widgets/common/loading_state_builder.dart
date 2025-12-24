@@ -17,6 +17,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+
 /// Builder widget that eliminates duplicated loading/error/empty state patterns
 /// This widget wraps the existing StateWidget with a convenient builder pattern
 /// that automatically detects and handles different states based on common
@@ -51,61 +52,61 @@ import 'package:butlery/widgets/common/state_widget.dart';
 class LoadingStateBuilder<T> extends StatelessWidget {
   /// The data to display when loaded
   final T? data;
-  
+
   /// Whether the data is currently loading
   final bool isLoading;
-  
+
   /// Error message if an error occurred
   final String? error;
-  
+
   /// Builder function called when data is successfully loaded
   final Widget Function(BuildContext context, T data) builder;
-  
+
   /// Custom loading widget builder
   final Widget Function(BuildContext context)? loadingBuilder;
-  
+
   /// Custom error widget builder
   final Widget Function(BuildContext context, String error)? errorBuilder;
-  
+
   /// Custom empty state widget builder
   final Widget Function(BuildContext context)? emptyBuilder;
-  
+
   /// Loading message to display
   final String? loadingMessage;
-  
+
   /// Loading variant to use (spinner, skeleton, etc.)
   final LoadingVariant loadingVariant;
-  
+
   /// Empty state variant to use
   final EmptyStateVariant? emptyState;
-  
+
   /// Title for empty state
   final String? emptyTitle;
-  
+
   /// Subtitle for empty state
   final String? emptySubtitle;
-  
+
   /// Icon for empty state
   final IconData? emptyIcon;
-  
+
   /// Action label for empty state button
   final String? emptyActionLabel;
-  
+
   /// Callback for empty state action
   final VoidCallback? onEmptyAction;
-  
+
   /// Action label for error retry button
   final String? errorActionLabel;
-  
+
   /// Callback for error retry action
   final VoidCallback? onErrorRetry;
-  
+
   /// Whether to show empty state when data is null or empty
   final bool showEmptyWhenNull;
-  
+
   /// Custom empty check function for complex data types
   final bool Function(T data)? isDataEmpty;
-  
+
   /// Number of skeleton items to show for skeleton loading
   final int skeletonItemCount;
 
@@ -161,18 +162,18 @@ class LoadingStateBuilder<T> extends StatelessWidget {
 
     // Check if data is empty
     final bool isEmpty = _isDataEmpty();
-    
+
     // Empty state - third priority
     if (isEmpty && showEmptyWhenNull) {
       if (emptyBuilder != null) {
         return emptyBuilder!(context);
       }
-      
+
       // Use predefined empty state variant if provided
       if (emptyState != null) {
         return _buildPredefinedEmptyState();
       }
-      
+
       // Use generic empty state
       return StateWidget.empty(
         title: emptyTitle ?? 'Inget innehåll',
@@ -192,7 +193,7 @@ class LoadingStateBuilder<T> extends StatelessWidget {
     if (emptyBuilder != null) {
       return emptyBuilder!(context);
     }
-    
+
     return StateWidget.empty(
       title: emptyTitle ?? 'Inget innehåll',
       subtitle: emptySubtitle,
@@ -205,12 +206,12 @@ class LoadingStateBuilder<T> extends StatelessWidget {
   /// Determines if the data should be considered empty
   bool _isDataEmpty() {
     if (data == null) return true;
-    
+
     // Use custom empty check if provided
     if (isDataEmpty != null) {
       return isDataEmpty!(data as T);
     }
-    
+
     // Default empty checks for common types
     if (data is List) {
       return (data as List).isEmpty;
@@ -221,7 +222,7 @@ class LoadingStateBuilder<T> extends StatelessWidget {
     if (data is String) {
       return (data as String).isEmpty;
     }
-    
+
     return false;
   }
 
@@ -440,9 +441,10 @@ class LoadingStateBuilderUtils {
       onErrorRetry: onErrorRetry,
     );
   }
+
   void dispose() {
     // Cancel all timers
-    // Cancel all stream subscriptions  
+    // Cancel all stream subscriptions
     // Dispose of resources    super.dispose();
   }
 }

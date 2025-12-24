@@ -1,5 +1,5 @@
 /// Service and utility mocks that extend production_mocks.dart
-/// 
+///
 /// These mocks implement service interfaces not covered in production_mocks.dart
 /// All mocks follow the pattern: NO concrete implementations, only configuration
 /// state and getters. Methods are handled by Mock for proper stubbing.
@@ -37,13 +37,14 @@ class MockMessagingService extends Mock implements MessagingService {
   // Configuration state
   final Map<String, Conversation> _conversations = {};
   final Map<String, List<Message>> _messages = {};
-  final Map<String, StreamController<List<Message>>> _messageStreamControllers = {};
-  
+  final Map<String, StreamController<List<Message>>> _messageStreamControllers =
+      {};
+
   // Configure conversation for testing
   void setConversation(String conversationId, Conversation conversation) {
     _conversations[conversationId] = conversation;
   }
-  
+
   // Configure messages for testing
   void setMessages(String conversationId, List<Message> messages) {
     _messages[conversationId] = messages;
@@ -52,7 +53,7 @@ class MockMessagingService extends Mock implements MessagingService {
       _messageStreamControllers[conversationId]!.add(messages);
     }
   }
-  
+
   // Create stream controller for conversation messages
   StreamController<List<Message>> createMessageStream(String conversationId) {
     final controller = StreamController<List<Message>>.broadcast();
@@ -63,7 +64,7 @@ class MockMessagingService extends Mock implements MessagingService {
     }
     return controller;
   }
-  
+
   // Clean up stream controllers
   void disposeStreams() {
     for (final controller in _messageStreamControllers.values) {
@@ -71,7 +72,7 @@ class MockMessagingService extends Mock implements MessagingService {
     }
     _messageStreamControllers.clear();
   }
-  
+
   // Reset mock state
   void resetState() {
     _conversations.clear();
@@ -125,7 +126,8 @@ class MockMenuService extends Mock with ChangeNotifier implements MenuService {
 
 class MockSearchService extends Mock implements SearchService {}
 
-class MockRecipeDiscoveryService extends Mock implements RecipeDiscoveryService {
+class MockRecipeDiscoveryService extends Mock
+    implements RecipeDiscoveryService {
   // Configuration state
   List<Recipe> _trendingRecipes = [];
   List<Recipe> _searchResults = [];
@@ -254,7 +256,8 @@ class MockRecommendationService extends Mock implements RecommendationService {
   }
 
   @override
-  Future<void> provideFeedback(String recommendationId, FeedbackType feedbackType) async {
+  Future<void> provideFeedback(
+      String recommendationId, FeedbackType feedbackType) async {
     if (_shouldThrowError) {
       throw Exception('Mock configured to throw error');
     }
@@ -263,13 +266,13 @@ class MockRecommendationService extends Mock implements RecommendationService {
     if (!success) {
       throw Exception('Feedback failed for recommendation: $recommendationId');
     }
-    
+
     // Update the local recommendation state if it exists
     final recommendation = _recommendations.cast<Recommendation?>().firstWhere(
-      (rec) => rec?.id == recommendationId,
-      orElse: () => null,
-    );
-    
+          (rec) => rec?.id == recommendationId,
+          orElse: () => null,
+        );
+
     if (recommendation != null) {
       switch (feedbackType) {
         case FeedbackType.like:
@@ -295,10 +298,10 @@ class MockRecommendationService extends Mock implements RecommendationService {
     }
 
     final recommendation = _recommendations.cast<Recommendation?>().firstWhere(
-      (rec) => rec?.id == recommendationId,
-      orElse: () => null,
-    );
-    
+          (rec) => rec?.id == recommendationId,
+          orElse: () => null,
+        );
+
     if (recommendation != null) {
       recommendation.isDismissed = false;
     }

@@ -55,8 +55,9 @@ class CreateGroupConversationViewModel extends ChangeNotifier
   final Set<String> _selectedMemberIds = {};
   String _groupName = '';
   String? _groupAvatarUrl;
+
   /// isLoading, error, hasError provided by StateNotifierMixin
-  bool _isCreatingGroup = false;  // Operation-specific state for group creation
+  bool _isCreatingGroup = false; // Operation-specific state for group creation
   String? _validationError;
 
   CreateGroupConversationViewModel({
@@ -68,17 +69,21 @@ class CreateGroupConversationViewModel extends ChangeNotifier
   // Getters
   List<UserProfile> get availableFriends => _availableFriends;
   Set<String> get selectedMemberIds => _selectedMemberIds;
-  List<UserProfile> get selectedMembers =>
-      _availableFriends.where((f) => _selectedMemberIds.contains(f.uid)).toList();
+  List<UserProfile> get selectedMembers => _availableFriends
+      .where((f) => _selectedMemberIds.contains(f.uid))
+      .toList();
   String get groupName => _groupName;
   String? get groupAvatarUrl => _groupAvatarUrl;
+
   /// isLoading, error, hasError provided by StateNotifierMixin
-  bool get isCreatingGroup => _isCreatingGroup;  // Operation-specific state
+  bool get isCreatingGroup => _isCreatingGroup; // Operation-specific state
   String? get validationError => _validationError;
   int get selectedMemberCount => _selectedMemberIds.length;
   bool get hasSelectedMembers => _selectedMemberIds.isNotEmpty;
   bool get canCreateGroup =>
-      _groupName.trim().isNotEmpty && _selectedMemberIds.length >= 2 && !_isCreatingGroup;
+      _groupName.trim().isNotEmpty &&
+      _selectedMemberIds.length >= 2 &&
+      !_isCreatingGroup;
 
   /// Load available friends for group member selection.
   /// Fetches complete friend list from UnifiedFriendsService and updates
@@ -188,7 +193,8 @@ class CreateGroupConversationViewModel extends ChangeNotifier
     _safeNotifyListeners();
 
     try {
-      AppLogger.info('🔄 Skapar gruppkonversation: $_groupName med ${_selectedMemberIds.length} medlemmar');
+      AppLogger.info(
+          '🔄 Skapar gruppkonversation: $_groupName med ${_selectedMemberIds.length} medlemmar');
 
       // Build participant maps for group conversation
       final participantIds = _selectedMemberIds.toList();
@@ -244,7 +250,8 @@ class CreateGroupConversationViewModel extends ChangeNotifier
 
     final lowerQuery = query.trim().toLowerCase();
     return _availableFriends
-        .where((friend) => friend.displayName.toLowerCase().contains(lowerQuery))
+        .where(
+            (friend) => friend.displayName.toLowerCase().contains(lowerQuery))
         .toList();
   }
 

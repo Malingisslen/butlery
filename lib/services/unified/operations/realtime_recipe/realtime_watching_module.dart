@@ -60,15 +60,15 @@ class RealtimeWatchingModule {
     StreamSubscription<Recipe>? subscription;
     bool hasEmittedValue = false;
     bool isClosed = false;
-    int attemptCount = 0;  // Track attempts locally
+    int attemptCount = 0; // Track attempts locally
 
     void attemptWatch() {
       subscription?.cancel();
-      
-      if (isClosed) return;  // Don't attempt if controller is closed
-      
-      attemptCount++;  // Increment attempt count before each try
-      
+
+      if (isClosed) return; // Don't attempt if controller is closed
+
+      attemptCount++; // Increment attempt count before each try
+
       subscription = watchRecipe(recipeId).listen(
         (recipe) {
           hasEmittedValue = true;
@@ -82,7 +82,8 @@ class RealtimeWatchingModule {
                 'Watch attempt $attemptCount failed for recipe $recipeId, retrying...');
             Future.delayed(retryDelay, attemptWatch);
           } else if (!isClosed && attemptCount >= maxRetries) {
-            AppLogger.error('Max retries exceeded for watching recipe $recipeId after $attemptCount attempts');
+            AppLogger.error(
+                'Max retries exceeded for watching recipe $recipeId after $attemptCount attempts');
             if (controller != null && !controller.isClosed) {
               controller.addError(error);
             }
@@ -112,7 +113,6 @@ class RealtimeWatchingModule {
 
     return controller.stream;
   }
-
 
   // ===== MULTIPLE RECIPE WATCHING =====
 
@@ -194,7 +194,7 @@ class RealtimeWatchingModule {
         );
         subscriptions.add(subscription);
       }
-      
+
       // Emit initial state with all nulls
       if (!resultController.isClosed) {
         resultController.add(Map.from(currentRecipes));
@@ -250,22 +250,22 @@ class RealtimeWatchingModule {
       timestamp: DateTime.now(),
       hasRealtimeService: _realtimeSyncService != null,
     );
-    
+
     // If no realtime service, just return the initial status
     if (_realtimeSyncService == null) {
       return Stream.value(initialStatus);
     }
-    
+
     // Create a stream that emits initial value then follows connection changes
     // ignore: close_sinks - Controller is closed via onCancel callback
     late final StreamController<ConnectionStatus> controller;
     StreamSubscription<bool>? subscription;
-    
+
     controller = StreamController<ConnectionStatus>.broadcast(
       onListen: () {
         // Emit initial status when someone starts listening
         controller.add(initialStatus);
-        
+
         // Then start listening to connection changes
         subscription = connectionStream.listen(
           (connected) {
@@ -273,7 +273,7 @@ class RealtimeWatchingModule {
               controller.add(ConnectionStatus(
                 isConnected: connected,
                 timestamp: DateTime.now(),
-                hasRealtimeService: true,  // We know it's not null here
+                hasRealtimeService: true, // We know it's not null here
               ));
             }
           },
@@ -289,7 +289,7 @@ class RealtimeWatchingModule {
         await controller.close();
       },
     );
-    
+
     return controller.stream;
   }
 

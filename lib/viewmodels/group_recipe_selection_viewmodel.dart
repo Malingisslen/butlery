@@ -30,16 +30,18 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
   final Set<String> _selectedRecipeIds = {};
   final Set<String> _alreadySharedRecipeIds = {};
   String _searchQuery = '';
+
   /// isLoading, error, hasError provided by StateNotifierMixin
-  bool _isSharing = false;  // Operation-specific state for sharing
+  bool _isSharing = false; // Operation-specific state for sharing
 
   // Getters
   List<Recipe> get filteredRecipes => _filteredRecipes;
   int get filteredCount => _filteredRecipes.length;
   int get totalCount => _allRecipes.length;
   String get searchQuery => _searchQuery;
+
   /// isLoading, error, hasError provided by StateNotifierMixin
-  bool get isSharing => _isSharing;  // Operation-specific state
+  bool get isSharing => _isSharing; // Operation-specific state
   bool get isEmpty => _allRecipes.isEmpty;
   bool get hasSelectedRecipes => _selectedRecipeIds.isNotEmpty;
   int get selectedCount => _selectedRecipeIds.length;
@@ -76,8 +78,10 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
 
       for (final recipe in _allRecipes) {
         // Check if recipe is collaborative and has any group member as member
-        if (recipe.isCollaborative && recipe.socialData?.memberPermissions != null) {
-          final recipeMembers = recipe.socialData!.memberPermissions!.keys.toSet();
+        if (recipe.isCollaborative &&
+            recipe.socialData?.memberPermissions != null) {
+          final recipeMembers =
+              recipe.socialData!.memberPermissions!.keys.toSet();
           final groupMemberIds = targetGroup.friendUserIds.toSet();
 
           // If any group member is already a member of this recipe, mark as shared
@@ -89,7 +93,8 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
 
       _alreadySharedRecipeIds.addAll(sharedRecipeIds);
 
-      AppLogger.debug('Found ${sharedRecipeIds.length} recipes already shared with group members');
+      AppLogger.debug(
+          'Found ${sharedRecipeIds.length} recipes already shared with group members');
     } catch (e) {
       AppLogger.error('Error loading shared recipes', e);
     }
@@ -106,10 +111,12 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
   }
 
   /// Check if recipe is selected
-  bool isRecipeSelected(String recipeId) => _selectedRecipeIds.contains(recipeId);
+  bool isRecipeSelected(String recipeId) =>
+      _selectedRecipeIds.contains(recipeId);
 
   /// Check if recipe is already shared with group
-  bool isRecipeAlreadyShared(String recipeId) => _alreadySharedRecipeIds.contains(recipeId);
+  bool isRecipeAlreadyShared(String recipeId) =>
+      _alreadySharedRecipeIds.contains(recipeId);
 
   /// Clear all selections
   void clearSelections() {
@@ -136,7 +143,8 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
     clearError();
 
     try {
-      AppLogger.info('📤 Delar ${_selectedRecipeIds.length} recept med grupp ${targetGroup.name}');
+      AppLogger.info(
+          '📤 Delar ${_selectedRecipeIds.length} recept med grupp ${targetGroup.name}');
 
       final recipes = selectedRecipes;
       final memberIds = targetGroup.friendUserIds;
@@ -181,8 +189,11 @@ class GroupRecipeSelectionViewModel extends ChangeNotifier
     // Apply text search
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((recipe) {
-        final titleMatch = recipe.title.toLowerCase().contains(_searchQuery.toLowerCase());
-        final descMatch = recipe.description.toLowerCase().contains(_searchQuery.toLowerCase());
+        final titleMatch =
+            recipe.title.toLowerCase().contains(_searchQuery.toLowerCase());
+        final descMatch = recipe.description
+            .toLowerCase()
+            .contains(_searchQuery.toLowerCase());
         return titleMatch || descMatch;
       }).toList();
     }

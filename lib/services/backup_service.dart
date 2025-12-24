@@ -198,7 +198,8 @@ class BackupService extends BaseService {
               timeMinutes: recipe.timeMinutes,
               rating: recipe.rating,
               tags: recipe.tags,
-              sourceUrl: 'Importerat från backup ${_formatDate(DateTime.now())}',
+              sourceUrl:
+                  'Importerat från backup ${_formatDate(DateTime.now())}',
               createdAt: DateTime.now(),
               updatedAt: DateTime.now(),
               createdBy: '',

@@ -13,17 +13,21 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 /// Realtime Recipe ViewModel
 /// Handles ONLY real-time collaborative editing operations.
 /// This includes real-time sessions, live edits, active editor tracking, and connection management.
-class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin, ErrorHandlingMixin {
+class RealtimeRecipeViewModel extends ChangeNotifier
+    with StreamManagementMixin, ErrorHandlingMixin {
   final UnifiedRecipeService _recipeService;
   bool _disposed = false;
 
   /// Create RealtimeRecipeViewModel with dependency injection
-  RealtimeRecipeViewModel([UnifiedRecipeService? recipeService]) 
-      : _recipeService = recipeService ?? ServiceLocator.get<UnifiedRecipeService>();
+  RealtimeRecipeViewModel([UnifiedRecipeService? recipeService])
+      : _recipeService =
+            recipeService ?? ServiceLocator.get<UnifiedRecipeService>();
 
   @override
   void addListener(VoidCallback listener) {
-    if (_disposed) throw FlutterError('RealtimeRecipeViewModel has been disposed');
+    if (_disposed) {
+      throw FlutterError('RealtimeRecipeViewModel has been disposed');
+    }
     super.addListener(listener);
   }
 
@@ -32,29 +36,39 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
   // ===== GETTERS =====
 
   String? get currentUserId {
-    if (_disposed) throw FlutterError('RealtimeRecipeViewModel has been disposed');
+    if (_disposed) {
+      throw FlutterError('RealtimeRecipeViewModel has been disposed');
+    }
     return _recipeService.currentUserId;
   }
-  
+
   String? get currentUserDisplayName {
-    if (_disposed) throw FlutterError('RealtimeRecipeViewModel has been disposed');
+    if (_disposed) {
+      throw FlutterError('RealtimeRecipeViewModel has been disposed');
+    }
     return _recipeService.currentUserDisplayName;
   }
 
   bool get isRealtimeConnected {
-    if (_disposed) throw FlutterError('RealtimeRecipeViewModel has been disposed');
+    if (_disposed) {
+      throw FlutterError('RealtimeRecipeViewModel has been disposed');
+    }
     return _recipeService.realtime.isConnected;
   }
-  
+
   Stream<bool> get realtimeConnectionStream {
-    if (_disposed) throw FlutterError('RealtimeRecipeViewModel has been disposed');
+    if (_disposed) {
+      throw FlutterError('RealtimeRecipeViewModel has been disposed');
+    }
     return _recipeService.realtime.connectionStream;
   }
 
   // ===== REALTIME SESSION MANAGEMENT =====
 
   Future<bool> startRealtimeEditing(String recipeId) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId) || recipeId.trim().isEmpty) return false;
+    if (ValidationUtils.isNullOrEmpty(recipeId) || recipeId.trim().isEmpty) {
+      return false;
+    }
 
     final result = await safeExecute(
       () => _recipeService.realtime.startRealtimeEditing(recipeId),
@@ -95,7 +109,9 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
     required Map<String, dynamic> changes,
     String? editDescription,
   }) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId) || changes.isEmpty) return false;
+    if (ValidationUtils.isNullOrEmpty(recipeId) || changes.isEmpty) {
+      return false;
+    }
 
     return (await safeExecute(
       () => _recipeService.realtime.makeRealtimeEdit(
@@ -105,13 +121,15 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       ),
       operationName: 'Realtime Recipe Edit',
       defaultValue: false,
-    )).orFalse();
+    ))
+        .orFalse();
   }
 
   // ===== REALTIME CONTENT OPERATIONS =====
 
   Future<bool> addIngredientRealtime(String recipeId, String ingredient) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId) || ValidationUtils.isNullOrEmpty(ingredient)) {
+    if (ValidationUtils.isNullOrEmpty(recipeId) ||
+        ValidationUtils.isNullOrEmpty(ingredient)) {
       return false;
     }
 
@@ -123,11 +141,14 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       () => _recipeService.addIngredient(recipeId, ingredient),
       operationName: 'Add Ingredient',
       defaultValue: false,
-    )).orFalse();
+    ))
+        .orFalse();
   }
 
-  Future<bool> updateIngredientRealtime(String recipeId, int index, String newIngredient) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId) || ValidationUtils.isNullOrEmpty(newIngredient)) {
+  Future<bool> updateIngredientRealtime(
+      String recipeId, int index, String newIngredient) async {
+    if (ValidationUtils.isNullOrEmpty(recipeId) ||
+        ValidationUtils.isNullOrEmpty(newIngredient)) {
       return false;
     }
 
@@ -139,7 +160,8 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       () => _recipeService.updateIngredient(recipeId, index, newIngredient),
       operationName: 'Update Ingredient',
       defaultValue: false,
-    )).orFalse();
+    ))
+        .orFalse();
   }
 
   Future<bool> removeIngredientRealtime(String recipeId, int index) async {
@@ -153,11 +175,14 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       () => _recipeService.removeIngredient(recipeId, index),
       operationName: 'Remove Ingredient',
       defaultValue: false,
-    )).orFalse();
+    ))
+        .orFalse();
   }
 
-  Future<bool> addInstructionRealtime(String recipeId, String instruction) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId) || ValidationUtils.isNullOrEmpty(instruction)) {
+  Future<bool> addInstructionRealtime(
+      String recipeId, String instruction) async {
+    if (ValidationUtils.isNullOrEmpty(recipeId) ||
+        ValidationUtils.isNullOrEmpty(instruction)) {
       return false;
     }
 
@@ -169,11 +194,14 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       () => _recipeService.addInstruction(recipeId, instruction),
       operationName: 'Add Instruction',
       defaultValue: false,
-    )).orFalse();
+    ))
+        .orFalse();
   }
 
-  Future<bool> updateInstructionRealtime(String recipeId, int index, String newInstruction) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId) || ValidationUtils.isNullOrEmpty(newInstruction)) {
+  Future<bool> updateInstructionRealtime(
+      String recipeId, int index, String newInstruction) async {
+    if (ValidationUtils.isNullOrEmpty(recipeId) ||
+        ValidationUtils.isNullOrEmpty(newInstruction)) {
       return false;
     }
 
@@ -185,7 +213,8 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       () => _recipeService.updateInstruction(recipeId, index, newInstruction),
       operationName: 'Update Instruction',
       defaultValue: false,
-    )).orFalse();
+    ))
+        .orFalse();
   }
 
   Future<bool> removeInstructionRealtime(String recipeId, int index) async {
@@ -199,7 +228,8 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       () => _recipeService.removeInstruction(recipeId, index),
       operationName: 'Remove Instruction',
       defaultValue: false,
-    )).orFalse();
+    ))
+        .orFalse();
   }
 
   // ===== REALTIME WATCHING =====
@@ -208,7 +238,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
     if (ValidationUtils.isNullOrEmpty(recipeId)) {
       return const Stream.empty();
     }
-    
+
     return _recipeService.realtime.watchRecipe(recipeId);
   }
 
@@ -216,7 +246,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
     if (!ValidationUtils.hasItems(recipeIds)) {
       return Stream.value([]);
     }
-    
+
     return _recipeService.realtime.watchMultipleRecipes(recipeIds);
   }
 
@@ -224,20 +254,22 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
 
   Future<List<String>> getActiveEditorsAsync(String recipeId) async {
     if (ValidationUtils.isNullOrEmpty(recipeId)) return [];
-    
+
     return await safeExecute(
-      () async {
-        final presence = await _recipeService.realtime.getRecipePresence(recipeId);
-        return presence.map((p) => p['userId'] as String? ?? '').toList();
-      },
-      operationName: 'Get Active Editors',
-      defaultValue: <String>[],
-    ) ?? [];
+          () async {
+            final presence =
+                await _recipeService.realtime.getRecipePresence(recipeId);
+            return presence.map((p) => p['userId'] as String? ?? '').toList();
+          },
+          operationName: 'Get Active Editors',
+          defaultValue: <String>[],
+        ) ??
+        [];
   }
 
   List<String> getActiveEditors(String recipeId) {
     if (ValidationUtils.isNullOrEmpty(recipeId)) return [];
-    
+
     // Get active editors synchronously from presence tracking
     return _recipeService.realtime.getActiveEditors(recipeId);
   }
@@ -255,15 +287,16 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
     if (currentUser == null) return false;
     return isUserActivelyEditing(recipeId, currentUser);
   }
-  
+
   Stream<List<String>> watchActiveEditors(String recipeId) {
     if (ValidationUtils.isNullOrEmpty(recipeId)) {
       return Stream.value([]);
     }
-    
+
     // Watch presence updates and extract user IDs
-    return _recipeService.realtime.watchRecipePresence(recipeId)
-        .map((presence) => presence.map((p) => p['userId'] as String? ?? '').toList());
+    return _recipeService.realtime.watchRecipePresence(recipeId).map(
+        (presence) =>
+            presence.map((p) => p['userId'] as String? ?? '').toList());
   }
 
   // ===== CONNECTION MANAGEMENT =====
@@ -282,7 +315,8 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       },
       operationName: 'Reconnect Realtime',
       defaultValue: false,
-    )).orFalse();
+    ))
+        .orFalse();
   }
 
   Future<void> disconnectRealtime() async {
@@ -327,7 +361,8 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
     required Map<String, dynamic> remoteChanges,
     required String resolution, // 'local', 'remote', or 'merge'
   }) async {
-    if (ValidationUtils.isNullOrEmpty(recipeId) || ValidationUtils.isNullOrEmpty(resolution)) {
+    if (ValidationUtils.isNullOrEmpty(recipeId) ||
+        ValidationUtils.isNullOrEmpty(resolution)) {
       return false;
     }
 
@@ -369,7 +404,8 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       },
       operationName: 'Resolve Edit Conflict',
       defaultValue: false,
-    )).orFalse();
+    ))
+        .orFalse();
   }
 
   Recipe _applyChangesToRecipe(Recipe recipe, Map<String, dynamic> changes) {
@@ -379,7 +415,8 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       title: changes['title'] as String? ?? recipe.title,
       description: changes['description'] as String? ?? recipe.description,
       ingredients: changes['ingredients']?.cast<String>() ?? recipe.ingredients,
-      instructions: changes['instructions']?.cast<String>() ?? recipe.instructions,
+      instructions:
+          changes['instructions']?.cast<String>() ?? recipe.instructions,
       portions: changes['portions'] as int? ?? recipe.portions,
       timeMinutes: changes['timeMinutes'] as int? ?? recipe.timeMinutes,
       rating: changes['rating']?.toDouble() ?? recipe.rating,
@@ -393,7 +430,7 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
       isPublic: recipe.isPublic,
       lastCookedAt: recipe.lastCookedAt,
     );
-    
+
     // Create new Recipe with updated core
     return Recipe(
       core: updatedCore,
@@ -427,11 +464,12 @@ class RealtimeRecipeViewModel extends ChangeNotifier with StreamManagementMixin,
     }
     return usage;
   }
+
   @override
   void dispose() {
     _disposed = true;
     // Cancel all timers
-    // Cancel all stream subscriptions  
+    // Cancel all stream subscriptions
     // Dispose of resources
     disposeStreamResources(); // From StreamManagementMixin
     super.dispose();

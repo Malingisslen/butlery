@@ -17,7 +17,10 @@ class GroupInvitationCard {
     UnifiedFriendsService service,
   ) {
     return Card(
-      color: Theme.of(context).colorScheme.tertiaryContainer.withValues(alpha: 0.3),
+      color: Theme.of(context)
+          .colorScheme
+          .tertiaryContainer
+          .withValues(alpha: 0.3),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusL),
         side: BorderSide(
@@ -36,8 +39,12 @@ class GroupInvitationCard {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .tertiary
+                        .withValues(alpha: 0.1),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusM),
                   ),
                   child: Center(
                     child: Text(
@@ -46,7 +53,8 @@ class GroupInvitationCard {
                     ),
                   ),
                 ),
-                const SizedBox(width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+                const SizedBox(
+                    width: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,12 +83,17 @@ class GroupInvitationCard {
               ],
             ),
             if (invitation.personalMessage?.isNotEmpty == true) ...[
-              const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+              const SizedBox(
+                  height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
               Container(
                 padding: const EdgeInsets.all(AppDimensions.spacingS),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.05),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusM),
                 ),
                 child: Text(
                   invitation.personalMessage!,
@@ -90,14 +103,16 @@ class GroupInvitationCard {
                 ),
               ),
             ],
-            const SizedBox(height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
+            const SizedBox(
+                height: (AppDimensions.spacingSm + AppDimensions.spacingXs)),
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
                     onPressed: service.invitations.isLoading
                         ? null
-                        : () => _rejectInvitation(context, invitation.id, service),
+                        : () =>
+                            _rejectInvitation(context, invitation.id, service),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Theme.of(context).colorScheme.error,
                       side: BorderSide(
@@ -112,7 +127,8 @@ class GroupInvitationCard {
                   child: FilledButton(
                     onPressed: service.invitations.isLoading
                         ? null
-                        : () => _acceptInvitation(context, invitation.id, service),
+                        : () =>
+                            _acceptInvitation(context, invitation.id, service),
                     style: FilledButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
                     ),
@@ -132,15 +148,18 @@ class GroupInvitationCard {
     String invitationId,
     UnifiedFriendsService service,
   ) async {
-    AppLogger.info('🔘 [UI] Accept button pressed for invitation: $invitationId');
+    AppLogger.info(
+        '🔘 [UI] Accept button pressed for invitation: $invitationId');
     AppLogger.debug('🔍 [UI] Service type: ${service.runtimeType}');
-    AppLogger.debug('🔍 [UI] Invitations type: ${service.invitations.runtimeType}');
+    AppLogger.debug(
+        '🔍 [UI] Invitations type: ${service.invitations.runtimeType}');
 
     bool success = false;
     // Try calling the method and catch any synchronous exceptions
     try {
       success = await service.invitations.acceptGroupInvitation(invitationId);
-      AppLogger.info('📊 [UI] Accept result: success=$success, hasError=${service.invitations.hasError}, error=${service.invitations.error}');
+      AppLogger.info(
+          '📊 [UI] Accept result: success=$success, hasError=${service.invitations.hasError}, error=${service.invitations.error}');
     } catch (e, stack) {
       AppLogger.error('❌ [UI] Exception during accept: $e');
       AppLogger.error('📍 [UI] Stack trace: $stack');
@@ -171,7 +190,8 @@ class GroupInvitationCard {
     String invitationId,
     UnifiedFriendsService service,
   ) async {
-    final success = await service.invitations.rejectGroupInvitation(invitationId);
+    final success =
+        await service.invitations.rejectGroupInvitation(invitationId);
 
     if (success && context.mounted) {
       SnackBarUtils.showWarning(context, 'Inbjudan avvisad');

@@ -66,9 +66,7 @@ class SearchStatsWidget extends StatelessWidget {
 
   /// Check if stats should be shown
   bool _shouldShowStats() {
-    return searchQuery.isNotEmpty ||
-        hasActiveFilters ||
-        resultCount != null;
+    return searchQuery.isNotEmpty || hasActiveFilters || resultCount != null;
   }
 
   /// Build stats text
@@ -79,7 +77,9 @@ class SearchStatsWidget extends StatelessWidget {
       parts.add('Sökning: "$searchQuery"');
     }
 
-    if (hasActiveFilters && activeFilterCount != null && activeFilterCount! > 0) {
+    if (hasActiveFilters &&
+        activeFilterCount != null &&
+        activeFilterCount! > 0) {
       parts.add('$activeFilterCount filter aktiva');
     }
 

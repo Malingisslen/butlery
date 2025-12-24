@@ -55,13 +55,13 @@ class _ShoppingListSelectionDialogState
   Future<void> _loadShoppingLists() async {
     try {
       await widget.shoppingService.loadLists();
-      
+
       // ULTRATHINK FIX: Filter lists to only show those the user can edit
       final permissionService = ServiceLocator.get<PermissionService>();
       final editableLists = widget.shoppingService.lists.where((list) {
         return permissionService.canEditShoppingList(list.id);
       }).toList();
-      
+
       setState(() {
         _availableLists = editableLists;
         _isLoading = false;
@@ -90,7 +90,7 @@ class _ShoppingListSelectionDialogState
   void _handleConfirm() {
     if (_isCreatingNew) {
       if (_formKey.currentState?.validate() != true) return;
-      
+
       Navigator.pop(context, {
         'action': 'create_new',
         'name': _newListNameController.text.trim(),
@@ -99,7 +99,7 @@ class _ShoppingListSelectionDialogState
       final selectedList = _availableLists.firstWhere(
         (list) => list.id == _selectedListId,
       );
-      
+
       Navigator.pop(context, {
         'action': 'select_existing',
         'listId': _selectedListId,
@@ -128,7 +128,6 @@ class _ShoppingListSelectionDialogState
               ),
             ),
             const SizedBox(height: AppDimensions.spacingL),
-
             if (_isLoading)
               const Center(
                 child: CircularProgressIndicator(),
@@ -139,15 +138,20 @@ class _ShoppingListSelectionDialogState
                 margin: EdgeInsets.zero,
                 child: ListTile(
                   leading: Icon(
-                    _isCreatingNew ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                    color: _isCreatingNew ? Theme.of(context).colorScheme.primary : null,
+                    _isCreatingNew
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_unchecked,
+                    color: _isCreatingNew
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
                   ),
                   title: const Text('Skapa ny inköpslista'),
-                  subtitle: _isCreatingNew 
+                  subtitle: _isCreatingNew
                       ? Form(
                           key: _formKey,
                           child: Padding(
-                            padding: const EdgeInsets.only(top: AppDimensions.spacingS),
+                            padding: const EdgeInsets.only(
+                                top: AppDimensions.spacingS),
                             child: StyledInput(
                               controller: _newListNameController,
                               label: 'Listnamn',
@@ -178,7 +182,6 @@ class _ShoppingListSelectionDialogState
                   style: AppTextStyles.titleMedium,
                 ),
                 const SizedBox(height: AppDimensions.spacingS),
-                
                 Container(
                   constraints: const BoxConstraints(maxHeight: 200),
                   child: ListView.builder(
@@ -187,11 +190,16 @@ class _ShoppingListSelectionDialogState
                     itemBuilder: (context, index) {
                       final list = _availableLists[index];
                       return Card(
-                        margin: const EdgeInsets.only(bottom: AppDimensions.spacingS),
+                        margin: const EdgeInsets.only(
+                            bottom: AppDimensions.spacingS),
                         child: ListTile(
                           leading: Icon(
-                            _selectedListId == list.id ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                            color: _selectedListId == list.id ? Theme.of(context).colorScheme.primary : null,
+                            _selectedListId == list.id
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_unchecked,
+                            color: _selectedListId == list.id
+                                ? Theme.of(context).colorScheme.primary
+                                : null,
                           ),
                           title: Text(list.name),
                           subtitle: Text(
@@ -211,7 +219,8 @@ class _ShoppingListSelectionDialogState
                   padding: const EdgeInsets.all(AppDimensions.paddingL),
                   decoration: BoxDecoration(
                     color: AppColors.cardWhite,
-                    borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusM),
                   ),
                   child: const Row(
                     children: [
@@ -241,9 +250,8 @@ class _ShoppingListSelectionDialogState
         ),
         StyledButton.primary(
           text: _isCreatingNew ? 'Skapa lista' : 'Lägg till',
-          onPressed: _isCreatingNew || _selectedListId != null 
-              ? _handleConfirm 
-              : null,
+          onPressed:
+              _isCreatingNew || _selectedListId != null ? _handleConfirm : null,
         ),
       ],
     );

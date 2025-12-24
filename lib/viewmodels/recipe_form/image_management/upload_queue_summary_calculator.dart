@@ -120,15 +120,17 @@ class UploadQueueSummaryCalculator {
       // Formatted display data
       'statusText': getEnhancedQueueStatusText(
           pending, active, completed, failed, total, overallProgress),
-      'progressText': getProgressDisplayText(overallProgress, estimatedTimeRemaining),
+      'progressText':
+          getProgressDisplayText(overallProgress, estimatedTimeRemaining),
       'speedText': getSpeedDisplayText(averageSpeedBytesPerSecond),
-      'summaryText': getQueueSummaryText(completed, failed, total, totalElapsedTime),
+      'summaryText':
+          getQueueSummaryText(completed, failed, total, totalElapsedTime),
     };
   }
 
   /// Enhanced queue status text with progress information
-  static String getEnhancedQueueStatusText(int pending, int active, int completed,
-      int failed, int total, double overallProgress) {
+  static String getEnhancedQueueStatusText(int pending, int active,
+      int completed, int failed, int total, double overallProgress) {
     if (total == 0) return '';
 
     final progressPercent = (overallProgress * 100).round();
@@ -153,7 +155,8 @@ class UploadQueueSummaryCalculator {
   }
 
   /// Get progress display text with time estimates
-  static String getProgressDisplayText(double progress, Duration? timeRemaining) {
+  static String getProgressDisplayText(
+      double progress, Duration? timeRemaining) {
     final progressPercent = (progress * 100).round();
 
     if (timeRemaining != null) {

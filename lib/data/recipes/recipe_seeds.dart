@@ -41,7 +41,6 @@ class RecipeSeeds {
       ),
       type: RecipeType.personal,
     ),
-
     Recipe(
       core: RecipeCore(
         id: const Uuid().v4(),
@@ -79,7 +78,6 @@ class RecipeSeeds {
       ),
       type: RecipeType.personal,
     ),
-
     Recipe(
       core: RecipeCore(
         id: const Uuid().v4(),
@@ -117,7 +115,6 @@ class RecipeSeeds {
       ),
       type: RecipeType.personal,
     ),
-
     Recipe(
       core: RecipeCore(
         id: const Uuid().v4(),
@@ -151,7 +148,6 @@ class RecipeSeeds {
       ),
       type: RecipeType.personal,
     ),
-
     Recipe(
       core: RecipeCore(
         id: const Uuid().v4(),

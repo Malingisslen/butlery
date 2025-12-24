@@ -26,14 +26,15 @@ class OverlayButton extends StatelessWidget {
     super.key,
     required this.onPressed,
     this.tooltip,
-  }) : child = const Icon(Icons.clear, color: AppColors.neutralLight),
-       backgroundColor = null;
+  })  : child = const Icon(Icons.clear, color: AppColors.neutralLight),
+        backgroundColor = null;
 
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.backgroundBeige.withValues(alpha: 0.8),
+        color:
+            backgroundColor ?? AppColors.backgroundBeige.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM),
       ),
       child: IconButton(

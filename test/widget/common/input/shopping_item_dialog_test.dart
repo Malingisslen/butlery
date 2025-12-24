@@ -26,7 +26,8 @@ void main() {
     );
 
     group('Basic Rendering', () {
-      testWidgets('renders in add mode when no initial item', (WidgetTester tester) async {
+      testWidgets('renders in add mode when no initial item',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: const AddUnifiedShoppingItemDialog(),
@@ -41,7 +42,8 @@ void main() {
         expect(find.byIcon(Icons.add), findsOneWidget);
       });
 
-      testWidgets('renders in edit mode when initial item provided', (WidgetTester tester) async {
+      testWidgets('renders in edit mode when initial item provided',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: AddUnifiedShoppingItemDialog(initialItem: testItem),
@@ -62,8 +64,9 @@ void main() {
         );
 
         expect(find.byType(TextFormField), findsNWidgets(2)); // Name and amount
-        expect(find.byType(DropdownButtonFormField<String>), findsNWidgets(2)); // Unit and category
-        
+        expect(find.byType(DropdownButtonFormField<String>),
+            findsNWidgets(2)); // Unit and category
+
         // Check field labels
         expect(find.text('Artikel'), findsOneWidget);
         expect(find.text('Antal'), findsOneWidget);
@@ -79,12 +82,14 @@ void main() {
         );
 
         expect(find.text('Avbryt'), findsOneWidget);
-        
+
         // FilledButton.icon creates internal structure, check for the submit button text instead
-        expect(find.text('Lägg till'), findsOneWidget); // Submit button for add mode
+        expect(find.text('Lägg till'),
+            findsOneWidget); // Submit button for add mode
       });
 
-      testWidgets('displays Swedish placeholder text', (WidgetTester tester) async {
+      testWidgets('displays Swedish placeholder text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: const AddUnifiedShoppingItemDialog(),
@@ -92,20 +97,21 @@ void main() {
         );
 
         expect(find.text('T.ex. Mjölk'), findsOneWidget);
-        
-        // Find the amount field by its label text 
+
+        // Find the amount field by its label text
         expect(find.text('Antal'), findsOneWidget);
-        
+
         // Verify there's a text field with default value "1" near the "Antal" label
         final textFields = find.byType(TextFormField);
         expect(textFields, findsNWidgets(2)); // Name and amount fields
-        
+
         // The amount field should have initial value "1" (can't easily verify controller text in widget tests)
       });
     });
 
     group('Form Initialization', () {
-      testWidgets('initializes with default values for new item', (WidgetTester tester) async {
+      testWidgets('initializes with default values for new item',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: const AddUnifiedShoppingItemDialog(),
@@ -114,8 +120,9 @@ void main() {
 
         // Find text form fields by their order - name field is first, amount field is second
         final allTextFields = find.byType(TextFormField);
-        expect(allTextFields, findsNWidgets(2)); // Should have exactly 2 text fields
-        
+        expect(allTextFields,
+            findsNWidgets(2)); // Should have exactly 2 text fields
+
         final nameFieldFinder = allTextFields.at(0); // First field is name
         final amountFieldFinder = allTextFields.at(1); // Second field is amount
 
@@ -126,7 +133,8 @@ void main() {
         expect(amountField.controller?.text, equals('1'));
       });
 
-      testWidgets('initializes with item values for editing', (WidgetTester tester) async {
+      testWidgets('initializes with item values for editing',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: AddUnifiedShoppingItemDialog(initialItem: testItem),
@@ -136,10 +144,12 @@ void main() {
         // Verify fields are populated
         expect(find.text('Mjölk'), findsOneWidget);
         // The formattedAmount in production code returns "1.5" (dot), not "1,5" (comma)
-        expect(find.text('1.5'), findsOneWidget); // Actual formatted amount from production
+        expect(find.text('1.5'),
+            findsOneWidget); // Actual formatted amount from production
       });
 
-      testWidgets('focuses on name field initially', (WidgetTester tester) async {
+      testWidgets('focuses on name field initially',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: const AddUnifiedShoppingItemDialog(),
@@ -149,7 +159,7 @@ void main() {
         // Find the name field (first TextFormField)
         final nameField = find.byType(TextFormField).first;
         expect(nameField, findsOneWidget);
-        
+
         // Verify it's the article name field by checking nearby text
         expect(find.text('Artikel'), findsOneWidget);
       });
@@ -165,7 +175,7 @@ void main() {
 
         // Find name field by label
         final nameField = find.widgetWithText(TextFormField, '').first;
-        
+
         await tester.enterText(nameField, 'Ägg');
         await tester.pump();
 
@@ -181,14 +191,15 @@ void main() {
 
         // Find amount field
         final amountField = find.widgetWithText(TextFormField, '1');
-        
+
         await tester.enterText(amountField, '2.5');
         await tester.pump();
 
         expect(find.text('2.5'), findsOneWidget);
       });
 
-      testWidgets('handles unit dropdown selection', (WidgetTester tester) async {
+      testWidgets('handles unit dropdown selection',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: const AddUnifiedShoppingItemDialog(),
@@ -196,7 +207,8 @@ void main() {
         );
 
         // Find and tap unit dropdown
-        final unitDropdown = find.widgetWithText(DropdownButtonFormField<String>, 'st');
+        final unitDropdown =
+            find.widgetWithText(DropdownButtonFormField<String>, 'st');
         await tester.tap(unitDropdown);
         await tester.pumpAndSettle();
 
@@ -207,7 +219,8 @@ void main() {
         expect(find.text('liter'), findsOneWidget);
       });
 
-      testWidgets('handles category dropdown selection', (WidgetTester tester) async {
+      testWidgets('handles category dropdown selection',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: const AddUnifiedShoppingItemDialog(),
@@ -215,7 +228,8 @@ void main() {
         );
 
         // Find and tap category dropdown
-        final categoryDropdown = find.widgetWithText(DropdownButtonFormField<String>, 'Övrigt');
+        final categoryDropdown =
+            find.widgetWithText(DropdownButtonFormField<String>, 'Övrigt');
         await tester.tap(categoryDropdown);
         await tester.pumpAndSettle();
 
@@ -243,7 +257,8 @@ void main() {
         expect(find.byType(AlertDialog), findsOneWidget);
       });
 
-      testWidgets('validates invalid amount field', (WidgetTester tester) async {
+      testWidgets('validates invalid amount field',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: const AddUnifiedShoppingItemDialog(),
@@ -251,8 +266,10 @@ void main() {
         );
 
         // Enter valid name but invalid amount
-        await tester.enterText(find.widgetWithText(TextFormField, '').first, 'Test Item');
-        await tester.enterText(find.widgetWithText(TextFormField, '1'), 'invalid');
+        await tester.enterText(
+            find.widgetWithText(TextFormField, '').first, 'Test Item');
+        await tester.enterText(
+            find.widgetWithText(TextFormField, '1'), 'invalid');
         await tester.pump();
 
         await tester.tap(find.text('Lägg till'));
@@ -271,8 +288,9 @@ void main() {
 
         // Find fields by their order - name field is first, amount field is second
         final allTextFields = find.byType(TextFormField);
-        expect(allTextFields, findsNWidgets(2)); // Should have exactly 2 text fields
-        
+        expect(allTextFields,
+            findsNWidgets(2)); // Should have exactly 2 text fields
+
         final nameFieldFinder = allTextFields.at(0); // First field is name
         final amountFieldFinder = allTextFields.at(1); // Second field is amount
 
@@ -282,7 +300,8 @@ void main() {
         await tester.pump();
 
         await tester.tap(find.text('Lägg till'));
-        await tester.pumpAndSettle(); // Use pumpAndSettle to wait for dialog animation
+        await tester
+            .pumpAndSettle(); // Use pumpAndSettle to wait for dialog animation
 
         // Dialog should close (no more AlertDialog)
         expect(find.byType(AlertDialog), findsNothing);
@@ -290,7 +309,8 @@ void main() {
     });
 
     group('Form Submission', () {
-      testWidgets('creates new item with correct data', (WidgetTester tester) async {
+      testWidgets('creates new item with correct data',
+          (WidgetTester tester) async {
         UnifiedShoppingItem? resultItem;
 
         await tester.pumpWidget(
@@ -315,12 +335,14 @@ void main() {
         await tester.pumpAndSettle();
 
         // Fill out form
-        await tester.enterText(find.widgetWithText(TextFormField, '').first, 'Bröd');
+        await tester.enterText(
+            find.widgetWithText(TextFormField, '').first, 'Bröd');
         await tester.enterText(find.widgetWithText(TextFormField, '1'), '2');
         await tester.pump();
 
         // Change unit to 'st'
-        await tester.tap(find.widgetWithText(DropdownButtonFormField<String>, 'st'));
+        await tester
+            .tap(find.widgetWithText(DropdownButtonFormField<String>, 'st'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('st').last);
         await tester.pumpAndSettle();
@@ -338,7 +360,8 @@ void main() {
         expect(resultItem!.bought, isFalse);
       });
 
-      testWidgets('updates existing item with changes', (WidgetTester tester) async {
+      testWidgets('updates existing item with changes',
+          (WidgetTester tester) async {
         UnifiedShoppingItem? resultItem;
 
         await tester.pumpWidget(
@@ -348,7 +371,8 @@ void main() {
                 onPressed: () async {
                   final result = await showDialog<UnifiedShoppingItem>(
                     context: context,
-                    builder: (_) => AddUnifiedShoppingItemDialog(initialItem: testItem),
+                    builder: (_) =>
+                        AddUnifiedShoppingItemDialog(initialItem: testItem),
                   );
                   resultItem = result;
                 },
@@ -378,7 +402,8 @@ void main() {
         expect(resultItem!.id, equals(testItem.id)); // Same ID for editing
       });
 
-      testWidgets('handles comma decimal separator', (WidgetTester tester) async {
+      testWidgets('handles comma decimal separator',
+          (WidgetTester tester) async {
         UnifiedShoppingItem? resultItem;
 
         await tester.pumpWidget(
@@ -403,7 +428,8 @@ void main() {
         await tester.pumpAndSettle();
 
         // Enter data with comma
-        await tester.enterText(find.widgetWithText(TextFormField, '').first, 'Test');
+        await tester.enterText(
+            find.widgetWithText(TextFormField, '').first, 'Test');
         await tester.enterText(find.widgetWithText(TextFormField, '1'), '1,5');
         await tester.pump();
 
@@ -433,7 +459,8 @@ void main() {
         expect(find.byType(AlertDialog), findsNothing);
       });
 
-      testWidgets('closes dialog on successful submission', (WidgetTester tester) async {
+      testWidgets('closes dialog on successful submission',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: const AddUnifiedShoppingItemDialog(),
@@ -441,7 +468,8 @@ void main() {
         );
 
         // Fill valid data
-        await tester.enterText(find.widgetWithText(TextFormField, '').first, 'Valid Item');
+        await tester.enterText(
+            find.widgetWithText(TextFormField, '').first, 'Valid Item');
         await tester.pump();
 
         // Submit
@@ -462,7 +490,8 @@ void main() {
         );
 
         // Open unit dropdown
-        final unitDropdown = find.widgetWithText(DropdownButtonFormField<String>, 'st');
+        final unitDropdown =
+            find.widgetWithText(DropdownButtonFormField<String>, 'st');
         await tester.tap(unitDropdown);
         await tester.pumpAndSettle();
 
@@ -474,7 +503,8 @@ void main() {
         expect(find.text('förpackning'), findsOneWidget);
       });
 
-      testWidgets('maintains selected unit across dialog', (WidgetTester tester) async {
+      testWidgets('maintains selected unit across dialog',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: AddUnifiedShoppingItemDialog(initialItem: testItem),
@@ -495,7 +525,8 @@ void main() {
         );
 
         // Open category dropdown
-        final categoryDropdown = find.widgetWithText(DropdownButtonFormField<String>, 'Övrigt');
+        final categoryDropdown =
+            find.widgetWithText(DropdownButtonFormField<String>, 'Övrigt');
         await tester.tap(categoryDropdown);
         await tester.pumpAndSettle();
 
@@ -507,7 +538,8 @@ void main() {
         expect(find.text('Skafferi'), findsOneWidget);
       });
 
-      testWidgets('maintains selected category across dialog', (WidgetTester tester) async {
+      testWidgets('maintains selected category across dialog',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: AddUnifiedShoppingItemDialog(initialItem: testItem),
@@ -520,7 +552,8 @@ void main() {
     });
 
     group('Swedish Localization', () {
-      testWidgets('displays Swedish labels and text', (WidgetTester tester) async {
+      testWidgets('displays Swedish labels and text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: const AddUnifiedShoppingItemDialog(),
@@ -538,7 +571,8 @@ void main() {
         expect(find.text('T.ex. Mjölk'), findsOneWidget);
       });
 
-      testWidgets('displays Swedish edit mode text', (WidgetTester tester) async {
+      testWidgets('displays Swedish edit mode text',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: AddUnifiedShoppingItemDialog(initialItem: testItem),
@@ -551,7 +585,8 @@ void main() {
     });
 
     group('Icon Display', () {
-      testWidgets('shows correct icons for add mode', (WidgetTester tester) async {
+      testWidgets('shows correct icons for add mode',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: const AddUnifiedShoppingItemDialog(),
@@ -566,7 +601,8 @@ void main() {
         expect(find.byIcon(Icons.add), findsOneWidget);
       });
 
-      testWidgets('shows correct icons for edit mode', (WidgetTester tester) async {
+      testWidgets('shows correct icons for edit mode',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: AddUnifiedShoppingItemDialog(initialItem: testItem),
@@ -579,7 +615,8 @@ void main() {
     });
 
     group('Layout and Styling', () {
-      testWidgets('applies correct styling to dialog', (WidgetTester tester) async {
+      testWidgets('applies correct styling to dialog',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: const AddUnifiedShoppingItemDialog(),
@@ -594,7 +631,8 @@ void main() {
         expect(dialog.actions?.length, equals(2));
       });
 
-      testWidgets('uses proper flex ratios for amount and unit', (WidgetTester tester) async {
+      testWidgets('uses proper flex ratios for amount and unit',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: const AddUnifiedShoppingItemDialog(),
@@ -611,12 +649,12 @@ void main() {
               // Check that this row has exactly 3 children: Expanded, SizedBox, Expanded
               if (row.children.length != 3) return false;
               return row.children[0] is Expanded &&
-                     row.children[1] is SizedBox &&
-                     row.children[2] is Expanded;
+                  row.children[1] is SizedBox &&
+                  row.children[2] is Expanded;
             },
           ),
         );
-        
+
         final row = tester.widget<Row>(amountUnitRowFinder);
         final expandedWidgets = row.children.whereType<Expanded>().toList();
 
@@ -627,7 +665,8 @@ void main() {
     });
 
     group('Edge Cases', () {
-      testWidgets('handles mount safety in callbacks', (WidgetTester tester) async {
+      testWidgets('handles mount safety in callbacks',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: const AddUnifiedShoppingItemDialog(),
@@ -635,10 +674,11 @@ void main() {
         );
 
         // Change unit selection
-        final unitDropdown = find.widgetWithText(DropdownButtonFormField<String>, 'st');
+        final unitDropdown =
+            find.widgetWithText(DropdownButtonFormField<String>, 'st');
         await tester.tap(unitDropdown);
         await tester.pumpAndSettle();
-        
+
         await tester.tap(find.text('liter').last);
         await tester.pumpAndSettle();
 

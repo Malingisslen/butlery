@@ -29,16 +29,18 @@ class AddMembersToGroupViewModel extends ChangeNotifier
   List<UserProfile> _availableFriends = [];
 
   /// isLoading, error, hasError provided by StateNotifierMixin
-  bool _isSendingInvitations = false;  // Operation-specific invitation sending state
-  String? _invitationError;  // Operation-specific invitation error
+  bool _isSendingInvitations =
+      false; // Operation-specific invitation sending state
+  String? _invitationError; // Operation-specific invitation error
   final Map<String, String> _invitationStatus = {};
 
   AddMembersToGroupViewModel({
     required this.groupId,
     required UnifiedFriendsService friendsService,
-  })  : _friendsService = friendsService {
+  }) : _friendsService = friendsService {
     _searchManager = MemberSearchManager();
-    _selectionManager = MemberSelectionManager(() => _searchManager.filteredFriends);
+    _selectionManager =
+        MemberSelectionManager(() => _searchManager.filteredFriends);
 
     _searchManager.addListener(_onManagerChanged);
     _selectionManager.addListener(_onManagerChanged);
@@ -55,7 +57,8 @@ class AddMembersToGroupViewModel extends ChangeNotifier
   FriendCategory? get group => _group;
   String get groupName => _group?.name ?? 'Grupp';
 
-  List<UserProfile> get availableFriends => List.unmodifiable(_availableFriends);
+  List<UserProfile> get availableFriends =>
+      List.unmodifiable(_availableFriends);
   int get availableFriendsCount => _availableFriends.length;
 
   // Search manager delegations
@@ -71,12 +74,14 @@ class AddMembersToGroupViewModel extends ChangeNotifier
 
   bool get isSendingInvitations => _isSendingInvitations;
   String? get invitationError => _invitationError;
-  Map<String, String> get invitationStatus => Map.unmodifiable(_invitationStatus);
+  Map<String, String> get invitationStatus =>
+      Map.unmodifiable(_invitationStatus);
 
   /// isLoading, error, hasError provided by StateNotifierMixin
 
   bool get canSendInvitations => hasSelectedFriends && !_isSendingInvitations;
-  bool get showEmptyState => _searchManager.filteredFriends.isEmpty && !isLoading;
+  bool get showEmptyState =>
+      _searchManager.filteredFriends.isEmpty && !isLoading;
 
   // ===== INITIALIZATION =====
 
@@ -112,18 +117,21 @@ class AddMembersToGroupViewModel extends ChangeNotifier
 
     // Filtrera bort befintliga gruppmedlemmar och grupp-ägaren
     final currentMemberIds = _group!.friendUserIds.toSet();
-    final currentUserId = _friendsService.currentUserId; // ✅ FIXED: Filter out group owner
+    final currentUserId =
+        _friendsService.currentUserId; // ✅ FIXED: Filter out group owner
 
     _availableFriends = allFriends
         .where((friend) =>
             !currentMemberIds.contains(friend.uid) &&
-            friend.uid != currentUserId) // ✅ FIXED: Prevent owner from inviting themselves
+            friend.uid !=
+                currentUserId) // ✅ FIXED: Prevent owner from inviting themselves
         .toList();
 
     // ✅ NYTT: Filtrera även bort de som redan har väntande inbjudningar
     _availableFriends = _availableFriends.where((friend) {
       // Kontrollera om det redan finns en väntande inbjudan
-      final existingInvitation = _friendsService.invitations.getSentInvitations()
+      final existingInvitation = _friendsService.invitations
+          .getSentInvitations()
           .where((inv) =>
               inv.toUserId == friend.uid &&
               inv.status == GroupInvitationStatus.pending)
@@ -147,8 +155,10 @@ class AddMembersToGroupViewModel extends ChangeNotifier
   void clearSearch() => _searchManager.clearSearch();
 
   // Selection operations - delegate to selection manager
-  void toggleFriendSelection(String friendId) => _selectionManager.toggleFriendSelection(friendId);
-  bool isFriendSelected(String friendId) => _selectionManager.isFriendSelected(friendId);
+  void toggleFriendSelection(String friendId) =>
+      _selectionManager.toggleFriendSelection(friendId);
+  bool isFriendSelected(String friendId) =>
+      _selectionManager.isFriendSelected(friendId);
   void selectAllVisible() => _selectionManager.selectAllVisible();
   void clearAllSelections() => _selectionManager.clearAllSelections();
 
@@ -175,7 +185,8 @@ class AddMembersToGroupViewModel extends ChangeNotifier
       // ✅ FIXED: Use proper group invitation method that saves to Firebase
       final results = <String, bool>{};
       for (final userId in selectedUserIds) {
-        final success = await _friendsService.invitations.sendGroupInvitationToUser(
+        final success =
+            await _friendsService.invitations.sendGroupInvitationToUser(
           userId: userId,
           groupId: groupId,
           customMessage: personalMessage,
@@ -211,7 +222,8 @@ class AddMembersToGroupViewModel extends ChangeNotifier
           _setInvitationError(_friendsService.error!);
         } else if (successCount == 0 && failureCount > 0) {
           // All invitations failed
-          _setInvitationError('Kunde inte skicka gruppinbjudningar. Försök igen senare.');
+          _setInvitationError(
+              'Kunde inte skicka gruppinbjudningar. Försök igen senare.');
         }
       }
 
@@ -248,15 +260,19 @@ class AddMembersToGroupViewModel extends ChangeNotifier
 
   /// ✅ NYTT: Kontrollera om en användare redan har väntande gruppinbjudan
   bool hasExistingInvitation(String userId) {
-    final hasInvitation = _friendsService.invitations.getSentInvitations()
-        .where((inv) => inv.toUserId == userId && inv.status == GroupInvitationStatus.pending)
+    final hasInvitation = _friendsService.invitations
+        .getSentInvitations()
+        .where((inv) =>
+            inv.toUserId == userId &&
+            inv.status == GroupInvitationStatus.pending)
         .isNotEmpty;
     return hasInvitation;
   }
 
   /// ✅ NYTT: Hämta information om skickade inbjudningar för denna grupp
   List<dynamic> getSentInvitationsForGroup() {
-    final invitations = _friendsService.invitations.getSentInvitations()
+    final invitations = _friendsService.invitations
+        .getSentInvitations()
         .where((inv) => inv.groupId == groupId)
         .toList();
     return invitations;

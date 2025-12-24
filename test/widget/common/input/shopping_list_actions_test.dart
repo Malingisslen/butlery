@@ -28,7 +28,7 @@ void main() {
 
     setUp(() async {
       await TestServiceLocator.initialize();
-      
+
       // Register fallback values for mocktail
       registerFallbackValue(UnifiedShoppingList(
         ownerId: 'fallback',
@@ -46,7 +46,8 @@ void main() {
     });
 
     group('Build List Actions Button', () {
-      testWidgets('should render PopupMenuButton with correct actions', (WidgetTester tester) async {
+      testWidgets('should render PopupMenuButton with correct actions',
+          (WidgetTester tester) async {
         final mockViewModel = MockUnifiedShoppingViewModel();
         final testList = UnifiedShoppingList(
           id: 'test_list_1',
@@ -59,7 +60,8 @@ void main() {
           MaterialApp(
             home: Scaffold(
               body: Builder(
-                builder: (context) => ShoppingListActions.buildListActionsButton(
+                builder: (context) =>
+                    ShoppingListActions.buildListActionsButton(
                   context,
                   testList,
                   mockViewModel,
@@ -101,7 +103,8 @@ void main() {
           MaterialApp(
             home: Scaffold(
               body: Builder(
-                builder: (context) => ShoppingListActions.buildListActionsButton(
+                builder: (context) =>
+                    ShoppingListActions.buildListActionsButton(
                   context,
                   testList,
                   mockViewModel,
@@ -111,14 +114,16 @@ void main() {
           ),
         );
 
-        final popupButton = tester.widget<PopupMenuButton<String>>(find.byType(PopupMenuButton<String>));
+        final popupButton = tester.widget<PopupMenuButton<String>>(
+            find.byType(PopupMenuButton<String>));
         final icon = popupButton.icon as Icon;
         expect(icon.size, equals(AppDimensions.iconSizeAction));
       });
     });
 
     group('Rename Dialog', () {
-      testWidgets('should show rename dialog with current list name', (WidgetTester tester) async {
+      testWidgets('should show rename dialog with current list name',
+          (WidgetTester tester) async {
         final mockViewModel = MockUnifiedShoppingViewModel();
         final testList = UnifiedShoppingList(
           id: 'test_list_1',
@@ -164,7 +169,8 @@ void main() {
         expect(textField.autofocus, isTrue);
       });
 
-      testWidgets('should handle successful rename', (WidgetTester tester) async {
+      testWidgets('should handle successful rename',
+          (WidgetTester tester) async {
         final mockViewModel = MockUnifiedShoppingViewModel();
         final testList = UnifiedShoppingList(
           id: 'test_list_1',
@@ -204,7 +210,8 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify service was called
-        verify(() => mockViewModel.renameList('test_list_1', 'New Name')).called(1);
+        verify(() => mockViewModel.renameList('test_list_1', 'New Name'))
+            .called(1);
 
         // Should show success snackbar
         expect(find.text('Lista döpt om till "New Name"'), findsOneWidget);
@@ -250,10 +257,12 @@ void main() {
         await tester.pumpAndSettle();
 
         // Should show error snackbar
-        expect(find.text('Kunde inte byta namn: Network error'), findsOneWidget);
+        expect(
+            find.text('Kunde inte byta namn: Network error'), findsOneWidget);
       });
 
-      testWidgets('should not rename if name is empty or unchanged', (WidgetTester tester) async {
+      testWidgets('should not rename if name is empty or unchanged',
+          (WidgetTester tester) async {
         final mockViewModel = MockUnifiedShoppingViewModel();
         final testList = UnifiedShoppingList(
           id: 'test_list_1',
@@ -332,7 +341,8 @@ void main() {
     });
 
     group('Export List', () {
-      testWidgets('should handle successful export', (WidgetTester tester) async {
+      testWidgets('should handle successful export',
+          (WidgetTester tester) async {
         final mockViewModel = MockUnifiedShoppingViewModel();
         final testList = UnifiedShoppingList(
           id: 'test_list_1',
@@ -370,10 +380,12 @@ void main() {
         verify(() => mockViewModel.exportList()).called(1);
 
         // Should show success snackbar
-        expect(find.text('Lista "Export Test List" exporterad'), findsOneWidget);
+        expect(
+            find.text('Lista "Export Test List" exporterad'), findsOneWidget);
       });
 
-      testWidgets('should handle export failure from empty result', (WidgetTester tester) async {
+      testWidgets('should handle export failure from empty result',
+          (WidgetTester tester) async {
         final mockViewModel = MockUnifiedShoppingViewModel();
         final testList = UnifiedShoppingList(
           id: 'test_list_1',
@@ -408,10 +420,12 @@ void main() {
         await tester.pumpAndSettle();
 
         // Should show error snackbar
-        expect(find.text('Kunde inte exportera lista: Lista är tom'), findsOneWidget);
+        expect(find.text('Kunde inte exportera lista: Lista är tom'),
+            findsOneWidget);
       });
 
-      testWidgets('should handle export exception', (WidgetTester tester) async {
+      testWidgets('should handle export exception',
+          (WidgetTester tester) async {
         final mockViewModel = MockUnifiedShoppingViewModel();
         final testList = UnifiedShoppingList(
           id: 'test_list_1',
@@ -420,7 +434,8 @@ void main() {
           name: 'Exception Test List',
         );
 
-        when(() => mockViewModel.exportList()).thenThrow(Exception('Network error'));
+        when(() => mockViewModel.exportList())
+            .thenThrow(Exception('Network error'));
 
         await tester.pumpWidget(
           MaterialApp(
@@ -450,7 +465,8 @@ void main() {
     });
 
     group('Delete Dialog', () {
-      testWidgets('should call showDeleteDialog method without throwing', (WidgetTester tester) async {
+      testWidgets('should call showDeleteDialog method without throwing',
+          (WidgetTester tester) async {
         final mockViewModel = MockUnifiedShoppingViewModel();
         final testList = UnifiedShoppingList(
           id: 'test_list_1',
@@ -497,7 +513,8 @@ void main() {
     });
 
     group('Create List Dialog', () {
-      testWidgets('should show create list dialog with correct fields', (WidgetTester tester) async {
+      testWidgets('should show create list dialog with correct fields',
+          (WidgetTester tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -532,7 +549,8 @@ void main() {
         expect(textField.autofocus, isTrue);
       });
 
-      testWidgets('should return list name when created', (WidgetTester tester) async {
+      testWidgets('should return list name when created',
+          (WidgetTester tester) async {
         String? result;
 
         await tester.pumpWidget(
@@ -542,7 +560,8 @@ void main() {
                 builder: (context) {
                   return ElevatedButton(
                     onPressed: () async {
-                      result = await ShoppingListActions.showCreateListDialog(context);
+                      result = await ShoppingListActions.showCreateListDialog(
+                          context);
                     },
                     child: const Text('Create List'),
                   );
@@ -564,7 +583,8 @@ void main() {
         expect(result, equals('My New List'));
       });
 
-      testWidgets('should return null when cancelled', (WidgetTester tester) async {
+      testWidgets('should return null when cancelled',
+          (WidgetTester tester) async {
         String? result;
 
         await tester.pumpWidget(
@@ -574,7 +594,8 @@ void main() {
                 builder: (context) {
                   return ElevatedButton(
                     onPressed: () async {
-                      result = await ShoppingListActions.showCreateListDialog(context);
+                      result = await ShoppingListActions.showCreateListDialog(
+                          context);
                     },
                     child: const Text('Create List'),
                   );
@@ -594,7 +615,8 @@ void main() {
         expect(result, isNull);
       });
 
-      testWidgets('should handle text submission via onSubmitted', (WidgetTester tester) async {
+      testWidgets('should handle text submission via onSubmitted',
+          (WidgetTester tester) async {
         String? result;
 
         await tester.pumpWidget(
@@ -604,7 +626,8 @@ void main() {
                 builder: (context) {
                   return ElevatedButton(
                     onPressed: () async {
-                      result = await ShoppingListActions.showCreateListDialog(context);
+                      result = await ShoppingListActions.showCreateListDialog(
+                          context);
                     },
                     child: const Text('Create List'),
                   );
@@ -627,7 +650,9 @@ void main() {
     });
 
     group('Add to List Confirmation', () {
-      testWidgets('should call showAddToListConfirmation method without throwing', (WidgetTester tester) async {
+      testWidgets(
+          'should call showAddToListConfirmation method without throwing',
+          (WidgetTester tester) async {
         final testList = UnifiedShoppingList(
           id: 'test_list_1',
           ownerId: 'user_123',
@@ -673,7 +698,8 @@ void main() {
     });
 
     group('SnackBar Display', () {
-      testWidgets('should show success SnackBars with correct styling', (WidgetTester tester) async {
+      testWidgets('should show success SnackBars with correct styling',
+          (WidgetTester tester) async {
         final mockViewModel = MockUnifiedShoppingViewModel();
         final testList = UnifiedShoppingList(
           id: 'test_list_1',
@@ -716,7 +742,8 @@ void main() {
         expect(snackBar.backgroundColor, equals(AppColors.success));
       });
 
-      testWidgets('should show error SnackBars with correct styling', (WidgetTester tester) async {
+      testWidgets('should show error SnackBars with correct styling',
+          (WidgetTester tester) async {
         final mockViewModel = MockUnifiedShoppingViewModel();
         final testList = UnifiedShoppingList(
           id: 'test_list_1',
@@ -764,4 +791,5 @@ void main() {
 }
 
 // Mock classes
-class MockUnifiedShoppingViewModel extends Mock implements UnifiedShoppingViewModel {}
+class MockUnifiedShoppingViewModel extends Mock
+    implements UnifiedShoppingViewModel {}

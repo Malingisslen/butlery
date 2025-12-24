@@ -18,7 +18,8 @@ import 'package:get_it/get_it.dart';
 /// - Comment content validation
 /// ❌ DOES NOT CONTAIN: Comment CRUD, likes, notifications, content operations
 class CommentUtilities {
-  static final CommentsRepository _commentsRepository = GetIt.instance<CommentsRepository>();
+  static final CommentsRepository _commentsRepository =
+      GetIt.instance<CommentsRepository>();
 
   // ===== PERMISSION CHECKING =====
 
@@ -38,7 +39,8 @@ class CommentUtilities {
     if (recipe.isCollaborative) {
       final ownerId = recipe.socialData?.ownerId ?? recipe.createdBy;
       if (ownerId == currentUserId) return true;
-      return recipe.socialData?.memberPermissions?.containsKey(currentUserId) ?? false;
+      return recipe.socialData?.memberPermissions?.containsKey(currentUserId) ??
+          false;
     }
 
     return false;
@@ -101,9 +103,11 @@ class CommentUtilities {
       if (comment != null) {
         // Update reply count - this is a simplified approach
         // In a more robust system, reply count would be managed by the repository
-        final updatedComment = comment.copyWith(replyCount: comment.replyCount + 1);
+        final updatedComment =
+            comment.copyWith(replyCount: comment.replyCount + 1);
         await _commentsRepository.update(updatedComment);
-        AppLogger.debug('✅ Incremented reply count for comment $parentCommentId');
+        AppLogger.debug(
+            '✅ Incremented reply count for comment $parentCommentId');
       }
     } catch (e) {
       AppLogger.warning('⚠️ Failed to increment reply count: $e');
@@ -122,7 +126,8 @@ class CommentUtilities {
         final newCount = comment.replyCount > 0 ? comment.replyCount - 1 : 0;
         final updatedComment = comment.copyWith(replyCount: newCount);
         await _commentsRepository.update(updatedComment);
-        AppLogger.debug('✅ Decremented reply count for comment $parentCommentId');
+        AppLogger.debug(
+            '✅ Decremented reply count for comment $parentCommentId');
       }
     } catch (e) {
       AppLogger.warning('⚠️ Failed to decrement reply count: $e');
@@ -152,10 +157,12 @@ class CommentUtilities {
       final comments = await _commentsRepository.getCommentsForRecipe(recipeId);
 
       final totalComments = comments.length;
-      final topLevelComments = comments.where((c) => c.parentCommentId == null).length;
+      final topLevelComments =
+          comments.where((c) => c.parentCommentId == null).length;
       final replies = totalComments - topLevelComments;
-      final totalLikes = comments.fold<int>(0, (total, comment) => total + comment.likedByUserIds.length);
-      
+      final totalLikes = comments.fold<int>(
+          0, (total, comment) => total + comment.likedByUserIds.length);
+
       final uniqueCommenters = comments.map((c) => c.authorId).toSet().length;
       final deletedComments = comments.where((c) => c.isDeleted).length;
       final editedComments = comments.where((c) => c.isEdited).length;
@@ -168,9 +175,14 @@ class CommentUtilities {
         'unique_commenters': uniqueCommenters,
         'deleted_comments': deletedComments,
         'edited_comments': editedComments,
-        'average_likes_per_comment': totalComments > 0 ? (totalLikes / totalComments).round() : 0,
-        'reply_rate': topLevelComments > 0 ? (replies / topLevelComments).toDouble() : 0.0,
-        'engagement_rate': totalComments > 0 ? ((totalLikes + replies) / totalComments).toDouble() : 0.0,
+        'average_likes_per_comment':
+            totalComments > 0 ? (totalLikes / totalComments).round() : 0,
+        'reply_rate': topLevelComments > 0
+            ? (replies / topLevelComments).toDouble()
+            : 0.0,
+        'engagement_rate': totalComments > 0
+            ? ((totalLikes + replies) / totalComments).toDouble()
+            : 0.0,
       };
     } catch (e) {
       AppLogger.error('❌ Failed to get comment statistics', e);
@@ -185,7 +197,7 @@ class CommentUtilities {
   }) async {
     try {
       final comments = await _commentsRepository.getCommentsForRecipe(recipeId);
-      
+
       // Sort by creation date descending and limit
       comments.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       final limitedComments = comments.take(limit).toList();
@@ -193,7 +205,6 @@ class CommentUtilities {
       final activities = <Map<String, dynamic>>[];
 
       for (final comment in limitedComments) {
-        
         activities.add({
           'type': 'comment_created',
           'timestamp': comment.createdAt,
@@ -228,7 +239,8 @@ class CommentUtilities {
       }
 
       // Sort by timestamp descending
-      activities.sort((a, b) => (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime));
+      activities.sort((a, b) =>
+          (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime));
 
       return activities;
     } catch (e) {
@@ -247,7 +259,7 @@ class CommentUtilities {
 
       // Count comments by author
       final authorCounts = <String, Map<String, dynamic>>{};
-      
+
       for (final comment in comments) {
         if (!authorCounts.containsKey(comment.authorId)) {
           authorCounts[comment.authorId] = {
@@ -258,10 +270,11 @@ class CommentUtilities {
             'replyCount': 0,
           };
         }
-        
+
         authorCounts[comment.authorId]!['commentCount']++;
-        authorCounts[comment.authorId]!['likeCount'] += comment.likedByUserIds.length;
-        
+        authorCounts[comment.authorId]!['likeCount'] +=
+            comment.likedByUserIds.length;
+
         if (comment.parentCommentId != null) {
           authorCounts[comment.authorId]!['replyCount']++;
         }
@@ -269,7 +282,8 @@ class CommentUtilities {
 
       // Sort by comment count and return top commenters
       final sortedCommenters = authorCounts.values.toList()
-        ..sort((a, b) => (b['commentCount'] as int).compareTo(a['commentCount'] as int));
+        ..sort((a, b) =>
+            (b['commentCount'] as int).compareTo(a['commentCount'] as int));
 
       return sortedCommenters.take(limit).toList();
     } catch (e) {
@@ -286,7 +300,8 @@ class CommentUtilities {
   }
 
   /// Dispose comment stream controller safely
-  static void disposeCommentStream(StreamController<List<RecipeComment>>? controller) {
+  static void disposeCommentStream(
+      StreamController<List<RecipeComment>>? controller) {
     try {
       controller?.close();
     } catch (e) {
@@ -295,14 +310,15 @@ class CommentUtilities {
   }
 
   /// Cleanup multiple comment streams
-  static void cleanupCommentStreams(Map<String, StreamController<List<RecipeComment>>> streams) {
+  static void cleanupCommentStreams(
+      Map<String, StreamController<List<RecipeComment>>> streams) {
     AppLogger.info('🧹 Cleaning up ${streams.length} comment streams');
-    
+
     for (final controller in streams.values) {
       disposeCommentStream(controller);
     }
     streams.clear();
-    
+
     AppLogger.debug('✅ All comment streams disposed');
   }
 
@@ -311,14 +327,14 @@ class CommentUtilities {
   /// Validate comment content
   static bool isValidCommentContent(String content) {
     final trimmed = content.trim();
-    return trimmed.isNotEmpty && 
-           trimmed.length <= 1000;
+    return trimmed.isNotEmpty && trimmed.length <= 1000;
   }
 
   /// Sanitize comment content
   static String sanitizeCommentContent(String content) {
-    return content.trim()
-        .replaceAll(RegExp(r'\s+'), ' ')  // Normalize whitespace
+    return content
+        .trim()
+        .replaceAll(RegExp(r'\s+'), ' ') // Normalize whitespace
         .replaceAll(RegExp(r'<[^>]*>'), ''); // Remove HTML tags
   }
 
@@ -332,14 +348,14 @@ class CommentUtilities {
   /// Check for spam patterns in comment
   static bool isLikelySpam(String content) {
     final trimmed = content.trim().toLowerCase();
-    
+
     // Check for excessive repetition
     if (RegExp(r'(.)\1{10,}').hasMatch(trimmed)) return true;
-    
+
     // Check for excessive caps
     final capsCount = trimmed.replaceAll(RegExp(r'[^A-Z]'), '').length;
     if (capsCount > trimmed.length * 0.7 && trimmed.length > 10) return true;
-    
+
     // Check for common spam patterns
     final spamPatterns = [
       'click here',
@@ -347,7 +363,7 @@ class CommentUtilities {
       'buy now',
       'limited time',
     ];
-    
+
     return spamPatterns.any((pattern) => trimmed.contains(pattern));
   }
 
@@ -357,7 +373,7 @@ class CommentUtilities {
   static String getCommentAge(DateTime createdAt) {
     final now = DateTime.now();
     final difference = now.difference(createdAt);
-    
+
     if (difference.inMinutes < 1) {
       return 'nu';
     } else if (difference.inMinutes < 60) {

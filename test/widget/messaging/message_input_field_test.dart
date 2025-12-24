@@ -47,7 +47,8 @@ void main() {
     });
 
     group('Rendering', () {
-      testWidgets('should render with required properties', (WidgetTester tester) async {
+      testWidgets('should render with required properties',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
@@ -60,7 +61,7 @@ void main() {
 
       testWidgets('should display hint text', (WidgetTester tester) async {
         const hintText = 'Write your message here';
-        
+
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
@@ -70,35 +71,41 @@ void main() {
         expect(find.text(hintText), findsOneWidget);
       });
 
-      testWidgets('should have rounded border decoration', (WidgetTester tester) async {
+      testWidgets('should have rounded border decoration',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
         ));
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
-        
-        expect(decoration.borderRadius, equals(BorderRadius.circular(AppDimensions.borderRadiusL)));
+
+        expect(decoration.borderRadius,
+            equals(BorderRadius.circular(AppDimensions.borderRadiusL)));
         expect(decoration.color, equals(AppColors.backgroundBeige));
         expect(decoration.border, isNotNull);
       });
 
-      testWidgets('should have proper border styling', (WidgetTester tester) async {
+      testWidgets('should have proper border styling',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
         ));
 
-        final decoratedBox = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
+        final decoratedBox =
+            tester.widget<DecoratedBox>(find.byType(DecoratedBox));
         final decoration = decoratedBox.decoration as BoxDecoration;
         final border = decoration.border as Border;
-        
+
         expect(border.top.color, equals(AppColors.divider));
         expect(border.top.width, equals(1.0));
       });
 
-      testWidgets('should have proper content padding', (WidgetTester tester) async {
+      testWidgets('should have proper content padding',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
@@ -106,16 +113,19 @@ void main() {
 
         final textField = tester.widget<TextField>(find.byType(TextField));
         final inputDecoration = textField.decoration as InputDecoration;
-        
-        expect(inputDecoration.contentPadding, equals(
-          const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingM,
-            vertical: AppDimensions.paddingS,
-          ),
-        ));
+
+        expect(
+            inputDecoration.contentPadding,
+            equals(
+              const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingM,
+                vertical: AppDimensions.paddingS,
+              ),
+            ));
       });
 
-      testWidgets('should remove default input border', (WidgetTester tester) async {
+      testWidgets('should remove default input border',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
@@ -123,7 +133,7 @@ void main() {
 
         final textField = tester.widget<TextField>(find.byType(TextField));
         final inputDecoration = textField.decoration as InputDecoration;
-        
+
         expect(inputDecoration.border, equals(InputBorder.none));
       });
     });
@@ -137,7 +147,7 @@ void main() {
 
         const inputText = 'Hello, this is a test message';
         await tester.enterText(find.byType(TextField), inputText);
-        
+
         expect(controller.text, equals(inputText));
       });
 
@@ -149,7 +159,7 @@ void main() {
 
         const multilineText = 'Line 1\nLine 2\nLine 3';
         await tester.enterText(find.byType(TextField), multilineText);
-        
+
         expect(controller.text, equals(multilineText));
       });
 
@@ -180,22 +190,24 @@ void main() {
         ));
 
         final textField = tester.widget<TextField>(find.byType(TextField));
-        expect(textField.textCapitalization, equals(TextCapitalization.sentences));
+        expect(
+            textField.textCapitalization, equals(TextCapitalization.sentences));
       });
     });
 
     group('Focus Management', () {
-      testWidgets('should respond to focus changes', (WidgetTester tester) async {
+      testWidgets('should respond to focus changes',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
         ));
 
         expect(focusNode.hasFocus, isFalse);
-        
+
         await tester.tap(find.byType(TextField));
         await tester.pump();
-        
+
         expect(focusNode.hasFocus, isTrue);
       });
 
@@ -211,9 +223,10 @@ void main() {
     });
 
     group('Submit Functionality', () {
-      testWidgets('should call onSubmitted when provided', (WidgetTester tester) async {
+      testWidgets('should call onSubmitted when provided',
+          (WidgetTester tester) async {
         var submitted = false;
-        
+
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
@@ -223,11 +236,12 @@ void main() {
         await tester.enterText(find.byType(TextField), 'Test message');
         await tester.testTextInput.receiveAction(TextInputAction.done);
         await tester.pump();
-        
+
         expect(submitted, isTrue);
       });
 
-      testWidgets('should handle null onSubmitted gracefully', (WidgetTester tester) async {
+      testWidgets('should handle null onSubmitted gracefully',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
@@ -238,16 +252,17 @@ void main() {
         await tester.enterText(find.byType(TextField), 'Test message');
         await tester.testTextInput.receiveAction(TextInputAction.done);
         await tester.pump();
-        
+
         // Test passes if no exception is thrown
         expect(find.byType(MessageInputField), findsOneWidget);
       });
     });
 
     group('Swedish Localization', () {
-      testWidgets('should display Swedish hint text', (WidgetTester tester) async {
+      testWidgets('should display Swedish hint text',
+          (WidgetTester tester) async {
         const swedishHint = 'Skriv ett meddelande';
-        
+
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
@@ -257,7 +272,8 @@ void main() {
         expect(find.text(swedishHint), findsOneWidget);
       });
 
-      testWidgets('should handle Swedish characters', (WidgetTester tester) async {
+      testWidgets('should handle Swedish characters',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
@@ -265,7 +281,7 @@ void main() {
 
         const swedishText = 'Hej! Hur mår du? Jag äter smörgås';
         await tester.enterText(find.byType(TextField), swedishText);
-        
+
         expect(controller.text, equals(swedishText));
       });
     });
@@ -289,11 +305,12 @@ void main() {
 
         final longText = 'a' * 1000;
         await tester.enterText(find.byType(TextField), longText);
-        
+
         expect(controller.text, equals(longText));
       });
 
-      testWidgets('should handle rapid text changes', (WidgetTester tester) async {
+      testWidgets('should handle rapid text changes',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
@@ -301,15 +318,16 @@ void main() {
 
         await tester.enterText(find.byType(TextField), 'First');
         expect(controller.text, equals('First'));
-        
+
         await tester.enterText(find.byType(TextField), 'Second');
         expect(controller.text, equals('Second'));
-        
+
         await tester.enterText(find.byType(TextField), 'Third');
         expect(controller.text, equals('Third'));
       });
 
-      testWidgets('should handle controller text updates', (WidgetTester tester) async {
+      testWidgets('should handle controller text updates',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
@@ -317,24 +335,25 @@ void main() {
 
         controller.text = 'Programmatically set';
         await tester.pump();
-        
+
         expect(find.text('Programmatically set'), findsOneWidget);
       });
 
-      testWidgets('should preserve text when widget rebuilds', (WidgetTester tester) async {
+      testWidgets('should preserve text when widget rebuilds',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
         ));
 
         await tester.enterText(find.byType(TextField), 'Persistent text');
-        
+
         // Rebuild widget
         await tester.pumpWidget(createTestWidget(
           controller: controller,
           focusNode: focusNode,
         ));
-        
+
         expect(controller.text, equals('Persistent text'));
         expect(find.text('Persistent text'), findsOneWidget);
       });

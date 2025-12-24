@@ -77,8 +77,10 @@ class SocialExportManager {
       }
 
       friendsData['total_friends'] = friendsData['friends'].length;
-      friendsData['total_pending_sent'] = friendsData['friend_requests_sent'].length;
-      friendsData['total_pending_received'] = friendsData['friend_requests_received'].length;
+      friendsData['total_pending_sent'] =
+          friendsData['friend_requests_sent'].length;
+      friendsData['total_pending_received'] =
+          friendsData['friend_requests_received'].length;
       friendsData['total_categories'] = friendsData['friend_categories'].length;
 
       return friendsData;
@@ -135,7 +137,8 @@ class SocialExportManager {
         messagesData['total_messages'] += messagesList.length;
       }
 
-      messagesData['total_conversations'] = messagesData['conversations'].length;
+      messagesData['total_conversations'] =
+          messagesData['conversations'].length;
 
       return messagesData;
     } catch (e) {
@@ -178,12 +181,15 @@ class SocialExportManager {
         });
       }
 
-      sharedData['total_shared_recipes'] = sharedData['shared_recipes_received'].length;
-      sharedData['total_shared_menus'] = sharedData['shared_menus_received'].length;
+      sharedData['total_shared_recipes'] =
+          sharedData['shared_recipes_received'].length;
+      sharedData['total_shared_menus'] =
+          sharedData['shared_menus_received'].length;
 
       return sharedData;
     } catch (e) {
-      app_logger.AppLogger.error('[$_logTag] Failed to export shared content', e);
+      app_logger.AppLogger.error(
+          '[$_logTag] Failed to export shared content', e);
       return {'error': e.toString()};
     }
   }

@@ -143,7 +143,8 @@ class PortionScalerLogic {
     }
 
     // Format with Swedish fractions and units
-    final formattedQuantity = TextFormatting.toSwedishHalfFraction(finalQuantity);
+    final formattedQuantity =
+        TextFormatting.toSwedishHalfFraction(finalQuantity);
 
     // Build together again
     if (finalUnit.isNotEmpty) {

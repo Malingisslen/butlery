@@ -20,8 +20,8 @@ class FriendsInternalOperations {
   FriendsInternalOperations({
     required FriendCategoryRepository categoryRepository,
     required AuthRepository authRepository,
-  }) : _categoryRepository = categoryRepository,
-       _authRepository = authRepository;
+  })  : _categoryRepository = categoryRepository,
+        _authRepository = authRepository;
 
   /// Set state manager reference after initialization
   void setStateManager(FriendsStateManager stateManager) {
@@ -31,7 +31,8 @@ class FriendsInternalOperations {
   // Internal method implementations
   List<UserProfile> get friendsInternal => _stateManager.friends;
   List<FriendCategory> getAllCategoriesInternal() => _stateManager.categories;
-  List<GroupInvitation> getAllSentInvitationsInternal() => _stateManager.sentInvitations;
+  List<GroupInvitation> getAllSentInvitationsInternal() =>
+      _stateManager.sentInvitations;
   void notifyListenersInternal() {
     // Delegate to state manager's notification system
     // This is handled through the state manager's ChangeNotifier
@@ -60,9 +61,7 @@ class FriendsInternalOperations {
   }
 
   Future<void> syncCategoryToFirebaseInternal(dynamic category) async {
-
     if (category is FriendCategory) {
-
       try {
         final currentUserId = _authRepository.currentUser?.uid;
         if (currentUserId == null) {
@@ -72,13 +71,16 @@ class FriendsInternalOperations {
 
         // ✅ CRITICAL FIX: Save to category owner's subcollection, not current user's!
         // This allows members to update groups they've joined via invitation
-        AppLogger.debug('Syncing category ${category.id} to owner ${category.ownerId} (current user: $currentUserId)');
+        AppLogger.debug(
+            'Syncing category ${category.id} to owner ${category.ownerId} (current user: $currentUserId)');
         await _categoryRepository.saveCategory(category.ownerId, category);
         AppLogger.success('✅ Category synced to Firebase: ${category.name}');
       } catch (e) {
         final currentUser = _authRepository.currentUser?.uid;
-        AppLogger.error('❌ Failed to sync category to Firebase: ${category.name}', e);
-        AppLogger.error('   Category owner: ${category.ownerId}, Current user: $currentUser');
+        AppLogger.error(
+            '❌ Failed to sync category to Firebase: ${category.name}', e);
+        AppLogger.error(
+            '   Category owner: ${category.ownerId}, Current user: $currentUser');
         rethrow;
       }
     } else {
@@ -97,7 +99,8 @@ class FriendsInternalOperations {
       await _categoryRepository.deleteCategory(currentUserId, categoryId);
       AppLogger.success('✅ Category deleted from Firebase: $categoryId');
     } catch (e) {
-      AppLogger.error('❌ Failed to delete category from Firebase: $categoryId', e);
+      AppLogger.error(
+          '❌ Failed to delete category from Firebase: $categoryId', e);
       rethrow;
     }
   }
@@ -105,24 +108,30 @@ class FriendsInternalOperations {
   void addFriendToCategoryInternal(String friendId, String categoryId) {
     final category = _stateManager.getCategoryById(categoryId);
     if (category == null) {
-      AppLogger.warning('Cannot add friend to category: Category not found: $categoryId');
+      AppLogger.warning(
+          'Cannot add friend to category: Category not found: $categoryId');
       return;
     }
 
     // Check if friend is already in category
     if (category.friendUserIds.contains(friendId)) {
-      AppLogger.debug('Friend already in category: $friendId -> ${category.name}');
+      AppLogger.debug(
+          'Friend already in category: $friendId -> ${category.name}');
       return;
     }
 
     // Add friend to category's member list
     final updatedCategory = category.copyWith(
-      friendUserIds: <String>[...category.friendUserIds.cast<String>(), friendId],
+      friendUserIds: <String>[
+        ...category.friendUserIds.cast<String>(),
+        friendId
+      ],
       updatedAt: DateTime.now(),
     );
 
     _stateManager.updateCategory(categoryId, updatedCategory);
-    AppLogger.success('✅ Added friend $friendId to category ${category.name} (local state)');
+    AppLogger.success(
+        '✅ Added friend $friendId to category ${category.name} (local state)');
   }
 
   void removeFriendFromCategoryInternal(String friendId, String categoryId) {}
@@ -158,7 +167,8 @@ class FriendsInternalOperations {
       // Use the state manager's cached received invitations if available
       // In the future, this would actively query the repository
       return _stateManager.receivedInvitations
-          .where((invitation) => invitation.status == GroupInvitationStatus.pending)
+          .where((invitation) =>
+              invitation.status == GroupInvitationStatus.pending)
           .toList();
     } catch (e) {
       AppLogger.error('Error getting received group invitations', e);
@@ -166,13 +176,20 @@ class FriendsInternalOperations {
     }
   }
 
-  Future<bool> sendEmailInvitationInternal({required String email, required dynamic invitation}) async => true;
-  Future<bool> sendSMSInvitationInternal({required String phoneNumber, required dynamic invitation}) async => true;
-  String createInvitationLinkInternal(String invitationId) => 'https://example.com/invite/$invitationId';
+  Future<bool> sendEmailInvitationInternal(
+          {required String email, required dynamic invitation}) async =>
+      true;
+  Future<bool> sendSMSInvitationInternal(
+          {required String phoneNumber, required dynamic invitation}) async =>
+      true;
+  String createInvitationLinkInternal(String invitationId) =>
+      'https://example.com/invite/$invitationId';
 
-  Future<void> updateInvitationStatusInternal(String invitationId, dynamic status) async {
+  Future<void> updateInvitationStatusInternal(
+      String invitationId, dynamic status) async {
     if (status is! GroupInvitationStatus) {
-      AppLogger.warning('Invalid status type for updateInvitationStatusInternal');
+      AppLogger.warning(
+          'Invalid status type for updateInvitationStatusInternal');
       return;
     }
 
@@ -183,7 +200,8 @@ class FriendsInternalOperations {
         'status': status.toString().split('.').last,
         'respondedAt': DateTime.now(),
       });
-      AppLogger.success('✅ Updated invitation $invitationId status to $status in Firebase');
+      AppLogger.success(
+          '✅ Updated invitation $invitationId status to $status in Firebase');
     } catch (e) {
       AppLogger.error('Failed to update invitation status in Firebase', e);
       rethrow;
@@ -193,7 +211,10 @@ class FriendsInternalOperations {
   String? getCurrentUserDisplayNameInternal() {
     try {
       // ✅ FIXED: Fetch real user display name from UserService
-      return ServiceLocator.get<UserService>().currentUserProfile?.displayName ?? 'Unknown';
+      return ServiceLocator.get<UserService>()
+              .currentUserProfile
+              ?.displayName ??
+          'Unknown';
     } catch (e) {
       AppLogger.warning('Failed to get current user display name: $e');
       return 'Unknown';

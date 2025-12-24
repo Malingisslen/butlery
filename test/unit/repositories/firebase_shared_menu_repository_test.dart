@@ -134,7 +134,8 @@ void main() {
           .set(sharedMenu.toFirestore());
 
       // Create subcollection documents (Issue #014)
-      final menuRef = fakeFirestore.collection('shared_menus').doc(sharedMenu.id);
+      final menuRef =
+          fakeFirestore.collection('shared_menus').doc(sharedMenu.id);
 
       // Seed members subcollection
       if (memberUserIds != null) {
@@ -241,7 +242,8 @@ void main() {
         final sharedMenu = createSharedMenu(
           sharedByUserId: testOtherUserId, // Current user is recipient
         );
-        await seedSharedMenu(sharedMenu, memberUserIds: [testUserId]); // Current user is recipient
+        await seedSharedMenu(sharedMenu,
+            memberUserIds: [testUserId]); // Current user is recipient
 
         // Act
         final result = await repository.getSharedMenu(testMenuId);
@@ -257,7 +259,8 @@ void main() {
         final sharedMenu = createSharedMenu(
           sharedByUserId: testOtherUserId, // Current user not in list
         );
-        await seedSharedMenu(sharedMenu, memberUserIds: [testFriendId]); // Current user not in list
+        await seedSharedMenu(sharedMenu,
+            memberUserIds: [testFriendId]); // Current user not in list
 
         // Act & Assert
         expect(
@@ -286,10 +289,8 @@ void main() {
         );
 
         // Assert - Check main document
-        final doc = await fakeFirestore
-            .collection('shared_menus')
-            .doc(menuId)
-            .get();
+        final doc =
+            await fakeFirestore.collection('shared_menus').doc(menuId).get();
         expect(doc.exists, isTrue);
         expect(doc.data()?['sharedByUserId'], testUserId);
         expect(doc.data()?['menuTitle'], 'My Weekly Plan');
@@ -411,7 +412,8 @@ void main() {
         await seedSharedMenu(sharedMenu);
 
         // Act
-        await repository.addEngagement(testMenuId, testUserId, action: 'import');
+        await repository.addEngagement(testMenuId, testUserId,
+            action: 'import');
 
         // Assert - Check engagements subcollection (Issue #014)
         final engagementDoc = await fakeFirestore

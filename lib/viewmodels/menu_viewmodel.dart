@@ -36,10 +36,11 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     UnifiedRecipeService? recipeService,
     MenuService? menuService,
     AnalyticsService? analyticsService,
-  })  : _recipeService = recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
+  })  : _recipeService =
+            recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
         _menuService = menuService ?? ServiceLocator.get<MenuService>(),
-        _analyticsService = analyticsService ?? ServiceLocator.get<AnalyticsService>() {
-    
+        _analyticsService =
+            analyticsService ?? ServiceLocator.get<AnalyticsService>() {
     // Initialize focused modules
     _stateManager = MenuStateManager();
     _generator = MenuGenerator(
@@ -98,19 +99,22 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     final startTime = DateTime.now();
 
     try {
-      final generatedMenu = await _generator.generateMenuFromPrompt(prompt.trim());
+      final generatedMenu =
+          await _generator.generateMenuFromPrompt(prompt.trim());
       _stateManager.setMenu(generatedMenu);
       _stateManager.clearErrorAfterSuccess();
 
       // Track menu generation success
-      final generationTime = DateTime.now().difference(startTime).inMilliseconds;
+      final generationTime =
+          DateTime.now().difference(startTime).inMilliseconds;
       await _analyticsService.logMenuGenerated(
         recipeCount: totalRecipeCount,
         method: 'ai_prompt',
       );
 
       // Also log the time taken if it was slow
-      if (generationTime > 10000) { // More than 10 seconds
+      if (generationTime > 10000) {
+        // More than 10 seconds
         await _analyticsService.logSlowOperation(
           operationName: 'menu_generation',
           durationMs: generationTime,
@@ -151,7 +155,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
 
     try {
       final newRecipes = await _generator.regenerateMenuSection(section, menu);
-      
+
       if (newRecipes != null) {
         _stateManager.updateMenuSection(section, newRecipes);
         _stateManager.clearErrorAfterSuccess();
@@ -167,7 +171,7 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// Delegates to MenuStateManager for complete menu state cleanup
   /// enabling fresh menu generation and state reset functionality.
   void clearMenu() => _stateManager.clearMenu();
-  
+
   /// Clears current error state for error recovery and clean state management.
   /// Delegates to MenuStateManager for error state cleanup enabling
   /// error recovery and clean user experience after error resolution.
@@ -260,10 +264,12 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
               shareMethod: 'social',
             );
           } else {
-            _stateManager.setError('Meny sparad, men kunde inte dela med vänner');
+            _stateManager
+                .setError('Meny sparad, men kunde inte dela med vänner');
           }
         } catch (e) {
-          _stateManager.setError('Meny sparad, men kunde inte dela med vänner: $e');
+          _stateManager
+              .setError('Meny sparad, men kunde inte dela med vänner: $e');
         }
       }
 
@@ -308,7 +314,8 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
       }
 
       // Try loading from imported menus
-      final importedMenuData = await _socialManager.loadImportedMenuData(menuKey);
+      final importedMenuData =
+          await _socialManager.loadImportedMenuData(menuKey);
       if (importedMenuData != null) {
         _stateManager.loadMenuFromData(
           menu: importedMenuData.menu,
@@ -356,7 +363,8 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     try {
       return await _storage.markMenuAsModified(menuKey);
     } catch (e) {
-      _stateManager.handleOperationError('Kunde inte markera meny som modifierad', e);
+      _stateManager.handleOperationError(
+          'Kunde inte markera meny som modifierad', e);
       return false;
     }
   }

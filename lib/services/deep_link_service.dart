@@ -172,7 +172,7 @@ class DeepLinkService extends BaseService {
   static DeepLinkData? parseDeepLink(String url) {
     try {
       final uri = Uri.parse(url);
-      
+
       // Check if it's a Butlery deep link
       if (uri.host != 'butlery.app' && uri.host != 'www.butlery.app') {
         return null;
@@ -186,32 +186,48 @@ class DeepLinkService extends BaseService {
           type: DeepLinkType.friendInvitation,
           id: params['id'],
           fromUserId: params['from'],
-          message: params['message'] != null ? Uri.decodeComponent(params['message']!) : null,
-          timestamp: params['timestamp'] != null ? int.tryParse(params['timestamp']!) : null,
+          message: params['message'] != null
+              ? Uri.decodeComponent(params['message']!)
+              : null,
+          timestamp: params['timestamp'] != null
+              ? int.tryParse(params['timestamp']!)
+              : null,
         );
       } else if (path.startsWith(_recipePath)) {
         return DeepLinkData(
           type: DeepLinkType.recipeShare,
           id: params['id'],
           fromUserId: params['from'],
-          message: params['message'] != null ? Uri.decodeComponent(params['message']!) : null,
-          timestamp: params['timestamp'] != null ? int.tryParse(params['timestamp']!) : null,
+          message: params['message'] != null
+              ? Uri.decodeComponent(params['message']!)
+              : null,
+          timestamp: params['timestamp'] != null
+              ? int.tryParse(params['timestamp']!)
+              : null,
         );
       } else if (path.startsWith(_menuPath)) {
         return DeepLinkData(
           type: DeepLinkType.menuShare,
           id: params['id'],
           fromUserId: params['from'],
-          message: params['message'] != null ? Uri.decodeComponent(params['message']!) : null,
-          timestamp: params['timestamp'] != null ? int.tryParse(params['timestamp']!) : null,
+          message: params['message'] != null
+              ? Uri.decodeComponent(params['message']!)
+              : null,
+          timestamp: params['timestamp'] != null
+              ? int.tryParse(params['timestamp']!)
+              : null,
         );
       } else if (path.startsWith(_shoppingPath)) {
         return DeepLinkData(
           type: DeepLinkType.shoppingListShare,
           id: params['id'],
           fromUserId: params['from'],
-          message: params['message'] != null ? Uri.decodeComponent(params['message']!) : null,
-          timestamp: params['timestamp'] != null ? int.tryParse(params['timestamp']!) : null,
+          message: params['message'] != null
+              ? Uri.decodeComponent(params['message']!)
+              : null,
+          timestamp: params['timestamp'] != null
+              ? int.tryParse(params['timestamp']!)
+              : null,
         );
       }
 
@@ -223,12 +239,15 @@ class DeepLinkService extends BaseService {
   }
 
   /// Validate if a deep link is still valid (not expired)
-  static bool isLinkValid(DeepLinkData linkData, {Duration maxAge = const Duration(days: 7)}) {
-    if (linkData.timestamp == null) return true; // No expiration if no timestamp
-    
+  static bool isLinkValid(DeepLinkData linkData,
+      {Duration maxAge = const Duration(days: 7)}) {
+    if (linkData.timestamp == null) {
+      return true; // No expiration if no timestamp
+    }
+
     final createdAt = DateTime.fromMillisecondsSinceEpoch(linkData.timestamp!);
     final now = DateTime.now();
-    
+
     return now.difference(createdAt) <= maxAge;
   }
 
@@ -247,14 +266,14 @@ class DeepLinkService extends BaseService {
         AppLogger.debug('Generated internal short URL: $shortUrl');
         return shortUrl;
       }
-      
+
       // Fallback: Try external service (you can add API key configuration)
       final externalShortUrl = await _generateExternalShortUrl(longUrl);
       if (externalShortUrl != null) {
         AppLogger.debug('Generated external short URL: $externalShortUrl');
         return externalShortUrl;
       }
-      
+
       // Ultimate fallback: return original URL
       AppLogger.debug('Short URL generation failed, returning original URL');
       return longUrl;
@@ -263,39 +282,43 @@ class DeepLinkService extends BaseService {
       return longUrl;
     }
   }
-  
+
   /// Generate internal short URL using Firestore
   static Future<String?> _generateInternalShortUrl(String longUrl) async {
     try {
-      if (!ServiceLocator.get<perm_service.PermissionService>().isAuthenticated) {
+      if (!ServiceLocator.get<perm_service.PermissionService>()
+          .isAuthenticated) {
         return null;
       }
-      
+
       // Use the repository to create short URL
       final metadata = {
         'isActive': true,
-        'expiresAt': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
+        'expiresAt':
+            DateTime.now().add(const Duration(days: 30)).toIso8601String(),
       };
-      
-      final shortCode = await ServiceLocator.get<DeepLinkService>()._deepLinkRepository.createShortUrl(
-        longUrl,
-        metadata,
-      );
-      
+
+      final shortCode = await ServiceLocator.get<DeepLinkService>()
+          ._deepLinkRepository
+          .createShortUrl(
+            longUrl,
+            metadata,
+          );
+
       return 'https://butlery.app/s/$shortCode';
     } catch (e) {
       AppLogger.error('Failed to create internal short URL: $e');
       return null;
     }
   }
-  
+
   /// Generate external short URL (placeholder for external services)
   static Future<String?> _generateExternalShortUrl(String longUrl) async {
     try {
       // This could integrate with services like bit.ly, tinyurl.com, etc.
       // For now, return null to use fallback
       return null;
-      
+
       // Example integration with bit.ly (requires API key):
       // final response = await http.post(
       //   Uri.parse('https://api-ssl.bitly.com/v4/shorten'),
@@ -305,7 +328,7 @@ class DeepLinkService extends BaseService {
       //   },
       //   body: json.encode({'long_url': longUrl}),
       // );
-      // 
+      //
       // if (response.statusCode == 200) {
       //   final data = json.decode(response.body);
       //   return data['link'];
@@ -315,7 +338,6 @@ class DeepLinkService extends BaseService {
       return null;
     }
   }
-  
 
   /// Handle Firebase Dynamic Links initialization
   static Future<void> initializeDynamicLinks() async {
@@ -323,40 +345,41 @@ class DeepLinkService extends BaseService {
       // Initialize custom deep link handling
       // Note: This would integrate with Firebase Dynamic Links in a real implementation
       await _initializeCustomDeepLinkHandler();
-      
+
       AppLogger.info('✅ Deep link service initialized successfully');
     } catch (e) {
       AppLogger.error('Failed to initialize deep links: $e');
     }
   }
-  
+
   /// Initialize custom deep link handler
   static Future<void> _initializeCustomDeepLinkHandler() async {
     try {
       // Set up listeners for incoming deep links
       // This would integrate with the app's navigation system
-      
+
       // Register URL scheme handlers
       _registerUrlSchemeHandlers();
-      
+
       AppLogger.debug('Custom deep link handler initialized');
     } catch (e) {
       AppLogger.error('Failed to initialize custom deep link handler: $e');
     }
   }
-  
+
   /// Register URL scheme handlers
   static void _registerUrlSchemeHandlers() {
     // This would register handlers for different URL schemes:
     // - butlery://
     // - https://butlery.app/
     // - Custom short URLs
-    
+
     AppLogger.debug('URL scheme handlers registered');
   }
 
   /// Handle incoming deep link and navigate appropriately
-  static Future<void> handleDeepLink(String url, Function(String) navigateToRoute) async {
+  static Future<void> handleDeepLink(
+      String url, Function(String) navigateToRoute) async {
     try {
       final deepLinkData = parseDeepLink(url);
       if (deepLinkData == null) {
@@ -403,28 +426,33 @@ class DeepLinkService extends BaseService {
   /// Check if a deep link is expired
   static bool isLinkExpired(DeepLinkData deepLinkData) {
     if (deepLinkData.timestamp == null) return false;
-    
-    final linkTime = DateTime.fromMillisecondsSinceEpoch(deepLinkData.timestamp!);
+
+    final linkTime =
+        DateTime.fromMillisecondsSinceEpoch(deepLinkData.timestamp!);
     final now = DateTime.now();
     final difference = now.difference(linkTime);
-    
+
     return difference.inDays > 7; // Links expire after 7 days
   }
-  
+
   /// Resolve short URL to original URL
   static Future<String?> resolveShortUrl(String shortCode) async {
     try {
       // Get the long URL from repository
-      final longUrl = await ServiceLocator.get<DeepLinkService>()._deepLinkRepository.getLongUrl(shortCode);
-      
+      final longUrl = await ServiceLocator.get<DeepLinkService>()
+          ._deepLinkRepository
+          .getLongUrl(shortCode);
+
       if (longUrl == null) {
         AppLogger.warning('Short URL not found: $shortCode');
         return null;
       }
-      
+
       // Track the click
-      await ServiceLocator.get<DeepLinkService>()._deepLinkRepository.trackUrlClick(shortCode);
-      
+      await ServiceLocator.get<DeepLinkService>()
+          ._deepLinkRepository
+          .trackUrlClick(shortCode);
+
       AppLogger.debug('Resolved short URL $shortCode to $longUrl');
       return longUrl;
     } catch (e) {
@@ -432,20 +460,25 @@ class DeepLinkService extends BaseService {
       return null;
     }
   }
-  
+
   /// Get analytics for short URLs
-  static Future<Map<String, dynamic>> getShortUrlAnalytics(String shortCode) async {
+  static Future<Map<String, dynamic>> getShortUrlAnalytics(
+      String shortCode) async {
     try {
       // Get metadata from repository
-      final metadata = await ServiceLocator.get<DeepLinkService>()._deepLinkRepository.getDeepLinkMetadata(shortCode);
-      
+      final metadata = await ServiceLocator.get<DeepLinkService>()
+          ._deepLinkRepository
+          .getDeepLinkMetadata(shortCode);
+
       if (metadata == null) {
         return {'error': 'Short URL not found'};
       }
-      
+
       // Get the long URL
-      final longUrl = await ServiceLocator.get<DeepLinkService>()._deepLinkRepository.getLongUrl(shortCode);
-      
+      final longUrl = await ServiceLocator.get<DeepLinkService>()
+          ._deepLinkRepository
+          .getLongUrl(shortCode);
+
       return {
         'shortCode': shortCode,
         'longUrl': longUrl,

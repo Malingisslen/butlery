@@ -164,12 +164,9 @@ class ParsingContext {
   /// Hash content for cache key.
   static String _hashContent(String content) {
     // Use first 5000 chars for consistent hashing
-    final normalized = content
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
-    final truncated = normalized.length > 5000
-        ? normalized.substring(0, 5000)
-        : normalized;
+    final normalized = content.replaceAll(RegExp(r'\s+'), ' ').trim();
+    final truncated =
+        normalized.length > 5000 ? normalized.substring(0, 5000) : normalized;
 
     // Simple hash for now - can use crypto package if needed
     var hash = 0;

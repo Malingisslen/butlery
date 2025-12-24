@@ -9,11 +9,11 @@ void main() {
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
     });
-    
+
     tearDown(() async {
       BaseUnitTest.resetMocks();
     });
-    
+
     group('actionButton', () {
       testWidgets('should render primary button by default', (tester) async {
         await tester.pumpWidget(
@@ -29,12 +29,13 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.byType(ElevatedButton), findsOneWidget);
         expect(find.text('Test Button'), findsOneWidget);
       });
-      
-      testWidgets('should render secondary button when specified', (tester) async {
+
+      testWidgets('should render secondary button when specified',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -49,12 +50,13 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.byType(FilledButton), findsOneWidget);
         expect(find.text('Secondary'), findsOneWidget);
       });
-      
-      testWidgets('should render outlined button when specified', (tester) async {
+
+      testWidgets('should render outlined button when specified',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -69,12 +71,13 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.byType(OutlinedButton), findsOneWidget);
         expect(find.text('Outlined'), findsOneWidget);
       });
-      
-      testWidgets('should show loading indicator when isLoading is true', (tester) async {
+
+      testWidgets('should show loading indicator when isLoading is true',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -89,12 +92,13 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
         expect(find.text('Laddar...'), findsOneWidget); // Default loading text
       });
-      
-      testWidgets('should show custom loading text when provided', (tester) async {
+
+      testWidgets('should show custom loading text when provided',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -110,10 +114,10 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.text('Sparar...'), findsOneWidget);
       });
-      
+
       testWidgets('should display icon when provided', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -129,11 +133,11 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.byIcon(Icons.save), findsOneWidget);
         expect(find.text('Save'), findsOneWidget);
       });
-      
+
       testWidgets('should be disabled when loading', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -149,12 +153,14 @@ void main() {
             ),
           ),
         );
-        
-        final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+
+        final button =
+            tester.widget<ElevatedButton>(find.byType(ElevatedButton));
         expect(button.onPressed, isNull);
       });
-      
-      testWidgets('should expand to full width when isExpanded is true', (tester) async {
+
+      testWidgets('should expand to full width when isExpanded is true',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -169,14 +175,14 @@ void main() {
             ),
           ),
         );
-        
+
         final sizedBox = tester.widget<SizedBox>(find.byType(SizedBox).first);
         expect(sizedBox.width, equals(double.infinity));
       });
-      
+
       testWidgets('should handle onPressed callback', (tester) async {
         bool pressed = false;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -190,14 +196,14 @@ void main() {
             ),
           ),
         );
-        
+
         await tester.tap(find.text('Click Me'));
         await tester.pump();
-        
+
         expect(pressed, isTrue);
       });
     });
-    
+
     group('primaryButton', () {
       testWidgets('should create primary styled button', (tester) async {
         await tester.pumpWidget(
@@ -213,11 +219,11 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.byType(ElevatedButton), findsOneWidget);
         expect(find.text('Primary'), findsOneWidget);
       });
-      
+
       testWidgets('should support all action button features', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -235,13 +241,13 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.byIcon(Icons.add), findsOneWidget);
         final sizedBox = tester.widget<SizedBox>(find.byType(SizedBox).first);
         expect(sizedBox.width, equals(double.infinity));
       });
     });
-    
+
     group('squareButton', () {
       testWidgets('should render square aspect ratio button', (tester) async {
         await tester.pumpWidget(
@@ -262,12 +268,13 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.byType(AspectRatio), findsOneWidget);
-        final aspectRatio = tester.widget<AspectRatio>(find.byType(AspectRatio));
+        final aspectRatio =
+            tester.widget<AspectRatio>(find.byType(AspectRatio));
         expect(aspectRatio.aspectRatio, equals(1.0));
       });
-      
+
       testWidgets('should display icon and label vertically', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -287,14 +294,14 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.byIcon(Icons.file_upload), findsOneWidget);
         expect(find.text('Import'), findsOneWidget);
-        
+
         // Check vertical arrangement
         expect(find.byType(Column), findsOneWidget);
       });
-      
+
       testWidgets('should show loading state in square button', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -316,15 +323,17 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
         expect(find.text('Laddar upp...'), findsOneWidget);
-        expect(find.byIcon(Icons.upload), findsNothing); // Icon hidden when loading
+        expect(find.byIcon(Icons.upload),
+            findsNothing); // Icon hidden when loading
       });
     });
-    
+
     group('largeButton', () {
-      testWidgets('should render large button with increased height', (tester) async {
+      testWidgets('should render large button with increased height',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -339,18 +348,18 @@ void main() {
             ),
           ),
         );
-        
+
         // Verify the text is rendered
         expect(find.text('Archive'), findsOneWidget);
-        
+
         // Verify that SizedBox widgets exist in the tree
         // The largeButton implementation uses a SizedBox to constrain height
         final sizedBoxes = find.byType(SizedBox);
         expect(sizedBoxes, findsAtLeastNWidgets(1));
-        
+
         // Verify the icon is present
         expect(find.byIcon(Icons.archive), findsOneWidget);
-        
+
         // Verify the button structure has proper height constraint
         // The largeButton wraps the button in a SizedBox with height
         final sizedBox = tester.widget<SizedBox>(
@@ -358,7 +367,7 @@ void main() {
         );
         expect(sizedBox.height, equals(100)); // Default height from largeButton
       });
-      
+
       testWidgets('should support icon in large button', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -374,11 +383,11 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.byIcon(Icons.archive), findsOneWidget);
       });
     });
-    
+
     group('FloatingActionButtonWidget', () {
       testWidgets('should render basic FAB', (tester) async {
         await tester.pumpWidget(
@@ -391,12 +400,13 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.byType(FloatingActionButton), findsOneWidget);
         expect(find.byIcon(Icons.add), findsOneWidget);
       });
-      
-      testWidgets('should render message FAB with default styling', (tester) async {
+
+      testWidgets('should render message FAB with default styling',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: const Scaffold(
@@ -406,17 +416,17 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.byType(FloatingActionButton), findsOneWidget);
         expect(find.byIcon(Icons.message), findsOneWidget);
-        
+
         final fab = tester.widget<FloatingActionButton>(
           find.byType(FloatingActionButton),
         );
         expect(fab.backgroundColor, equals(AppColors.primaryBlue));
         expect(fab.foregroundColor, equals(AppColors.cardWhite));
       });
-      
+
       testWidgets('should handle custom colors', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -430,7 +440,7 @@ void main() {
             ),
           ),
         );
-        
+
         final fab = tester.widget<FloatingActionButton>(
           find.byType(FloatingActionButton),
         );
@@ -438,7 +448,7 @@ void main() {
         expect(fab.foregroundColor, equals(Colors.white));
       });
     });
-    
+
     group('Swedish Localization', () {
       testWidgets('should display Swedish loading text', (tester) async {
         await tester.pumpWidget(
@@ -455,10 +465,10 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.text('Laddar...'), findsOneWidget);
       });
-      
+
       testWidgets('should handle Swedish labels correctly', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -473,11 +483,11 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.text('Lägg till recept'), findsOneWidget);
       });
     });
-    
+
     group('Edge Cases', () {
       testWidgets('should handle null onPressed', (tester) async {
         await tester.pumpWidget(
@@ -493,12 +503,14 @@ void main() {
             ),
           ),
         );
-        
-        final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+
+        final button =
+            tester.widget<ElevatedButton>(find.byType(ElevatedButton));
         expect(button.onPressed, isNull);
       });
-      
-      testWidgets('should handle very long labels with ellipsis', (tester) async {
+
+      testWidgets('should handle very long labels with ellipsis',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -507,7 +519,8 @@ void main() {
                 child: Builder(
                   builder: (context) => ActionButtons.actionButton(
                     context,
-                    label: 'This is a very long button label that should be truncated',
+                    label:
+                        'This is a very long button label that should be truncated',
                     onPressed: () {},
                   ),
                 ),
@@ -515,14 +528,15 @@ void main() {
             ),
           ),
         );
-        
+
         final text = tester.widget<Text>(
-          find.text('This is a very long button label that should be truncated'),
+          find.text(
+              'This is a very long button label that should be truncated'),
         );
         expect(text.overflow, equals(TextOverflow.ellipsis));
         expect(text.maxLines, equals(1));
       });
-      
+
       testWidgets('should not show icon when loading', (tester) async {
         await tester.pumpWidget(
           MaterialApp(
@@ -539,7 +553,7 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.byIcon(Icons.save), findsNothing);
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
       });

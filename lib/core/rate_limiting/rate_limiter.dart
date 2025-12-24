@@ -42,8 +42,8 @@ enum RateLimitOperation {
 
 /// Rate limit configuration for an operation
 class RateLimitConfig {
-  final int maxTokens;      // Maximum tokens in bucket
-  final int refillRate;     // Tokens added per refill interval
+  final int maxTokens; // Maximum tokens in bucket
+  final int refillRate; // Tokens added per refill interval
   final Duration refillInterval; // How often to refill
 
   const RateLimitConfig({
@@ -99,7 +99,8 @@ class TokenBucket {
     final elapsed = now.difference(_lastRefill);
 
     if (elapsed >= config.refillInterval) {
-      final refills = elapsed.inMilliseconds / config.refillInterval.inMilliseconds;
+      final refills =
+          elapsed.inMilliseconds / config.refillInterval.inMilliseconds;
       final tokensToAdd = refills * config.refillRate;
 
       _tokens = (_tokens + tokensToAdd).clamp(0.0, config.maxTokens.toDouble());
@@ -290,7 +291,8 @@ class RateLimiter {
 
     if (bucket.tryConsume(tokens)) {
       final remaining = bucket.currentTokens.floor();
-      AppLogger.debug('✅ Rate limit OK: ${operation.name} ($remaining tokens remaining)');
+      AppLogger.debug(
+          '✅ Rate limit OK: ${operation.name} ($remaining tokens remaining)');
 
       return RateLimitResult.allowed(remaining);
     }
@@ -344,7 +346,8 @@ class RateLimiter {
   /// Get current token count for operation
   double getCurrentTokens(RateLimitOperation operation) {
     final bucket = _buckets[operation];
-    return bucket?.currentTokens ?? _defaultConfigs[operation]!.maxTokens.toDouble();
+    return bucket?.currentTokens ??
+        _defaultConfigs[operation]!.maxTokens.toDouble();
   }
 
   /// Get violation count for operation
@@ -400,9 +403,8 @@ class RateLimitException implements Exception {
 
   @override
   String toString() {
-    final retry = retryAfter != null
-        ? ' (retry after ${retryAfter!.inSeconds}s)'
-        : '';
+    final retry =
+        retryAfter != null ? ' (retry after ${retryAfter!.inSeconds}s)' : '';
     return 'RateLimitException: $message$retry';
   }
 }

@@ -11,7 +11,7 @@ class AppDimensions {
   /// Extra small spacing (4px) - matches original spacingXs
   static const double spacingXs = 4.0;
 
-  /// Small spacing (8px) - matches original spacingSm  
+  /// Small spacing (8px) - matches original spacingSm
   static const double spacingSm = 8.0;
 
   /// Medium spacing (16px) - matches original spacingMd
@@ -46,10 +46,10 @@ class AppDimensions {
   /// ✅ Do: padding: spacingMd or combine: spacingSm + spacingXs
 
   // Minimal aliases for backward compatibility with existing code
-  static const double spacingXxs = 2.0;       // Extra extra small (2px)
-  static const double spacingS = 3.0;         // 3px - use sparingly
-  static const double spacingM = spacingSm;   // Alias for 8px
-  static const double spacingL = (spacingSm + spacingXs);  // 12px (8+4)
+  static const double spacingXxs = 2.0; // Extra extra small (2px)
+  static const double spacingS = 3.0; // 3px - use sparingly
+  static const double spacingM = spacingSm; // Alias for 8px
+  static const double spacingL = (spacingSm + spacingXs); // 12px (8+4)
   static const double spacingXxxl = spacingLg; // Alias for 24px
 
   /// Small padding (8px)
@@ -202,7 +202,6 @@ class AppDimensions {
   /// Image size hero
   static const double imageSizeHero = 400.0;
 
-
   /// Minimum touch target size (Material Design requirement)
   static const double minTouchTarget = 48.0;
 
@@ -214,7 +213,6 @@ class AppDimensions {
 
   /// Thick border width
   static const double borderWidthThick = 2.0;
-
 
   /// Fast animation duration (150ms)
   static const Duration animationDurationFast = Duration(milliseconds: 150);
@@ -301,7 +299,6 @@ class AppDimensions {
   /// Button width (standard)
   static const double buttonWidth = 120.0;
 
-
   /// Extra small border radius (2px)
   static const double borderRadiusXs = 2.0;
 
@@ -310,14 +307,12 @@ class AppDimensions {
 
   /// Optimal button size for mobile recipe grid (prevents text wrapping)
   static const double gridButtonSize = 160.0;
-  
+
   /// Spacing between grid buttons
   static const double gridButtonSpacing = 24.0;
-  
+
   /// Spacing between grid rows
   static const double gridRowSpacing = 20.0;
-
-
 
   /// Card shadow definition
   static const List<BoxShadow> cardShadow = [
@@ -334,7 +329,6 @@ class AppDimensions {
       spreadRadius: 0,
     ),
   ];
-
 
   /// Get responsive spacing based on screen size
   /// Automatically scales spacing:

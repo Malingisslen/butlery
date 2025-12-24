@@ -54,32 +54,43 @@ void main() {
     group('Permission Validation', () {
       test('should allow user to create deeplink for themselves', () async {
         // Arrange
-        final linkData = {'createdBy': 'user-123', 'longUrl': 'https://example.com'};
+        final linkData = {
+          'createdBy': 'user-123',
+          'longUrl': 'https://example.com'
+        };
 
         // Act
-        final canCreate = await repository.validateCreatePermission('user-123', linkData);
+        final canCreate =
+            await repository.validateCreatePermission('user-123', linkData);
 
         // Assert
         expect(canCreate, isTrue);
       });
 
-      test('should allow user to create deeplink without createdBy field', () async {
+      test('should allow user to create deeplink without createdBy field',
+          () async {
         // Arrange - When createdBy is not specified, it's allowed (will be set to current user)
         final linkData = {'longUrl': 'https://example.com'};
 
         // Act
-        final canCreate = await repository.validateCreatePermission('user-123', linkData);
+        final canCreate =
+            await repository.validateCreatePermission('user-123', linkData);
 
         // Assert
         expect(canCreate, isTrue);
       });
 
-      test('should reject user from creating deeplink for another user', () async {
+      test('should reject user from creating deeplink for another user',
+          () async {
         // Arrange
-        final linkData = {'createdBy': 'other-user', 'longUrl': 'https://example.com'};
+        final linkData = {
+          'createdBy': 'other-user',
+          'longUrl': 'https://example.com'
+        };
 
         // Act
-        final canCreate = await repository.validateCreatePermission('user-123', linkData);
+        final canCreate =
+            await repository.validateCreatePermission('user-123', linkData);
 
         // Assert
         expect(canCreate, isFalse);
@@ -87,10 +98,14 @@ void main() {
 
       test('should allow anyone to read deeplinks (public sharing)', () async {
         // Arrange
-        final linkData = {'createdBy': 'other-user', 'longUrl': 'https://example.com'};
+        final linkData = {
+          'createdBy': 'other-user',
+          'longUrl': 'https://example.com'
+        };
 
         // Act
-        final canRead = await repository.validateReadPermission('user-123', 'link-1', linkData);
+        final canRead = await repository.validateReadPermission(
+            'user-123', 'link-1', linkData);
 
         // Assert
         expect(canRead, isTrue);
@@ -98,11 +113,16 @@ void main() {
 
       test('should allow anonymous users to read deeplinks', () async {
         // Arrange
-        mockAuthRepo.setAuthState(user: null, userId: null, isAuthenticated: false);
-        final linkData = {'createdBy': 'user-123', 'longUrl': 'https://example.com'};
+        mockAuthRepo.setAuthState(
+            user: null, userId: null, isAuthenticated: false);
+        final linkData = {
+          'createdBy': 'user-123',
+          'longUrl': 'https://example.com'
+        };
 
         // Act
-        final canRead = await repository.validateReadPermission('anonymous', 'link-1', linkData);
+        final canRead = await repository.validateReadPermission(
+            'anonymous', 'link-1', linkData);
 
         // Assert
         expect(canRead, isTrue);
@@ -110,10 +130,14 @@ void main() {
 
       test('should allow creator to update their deeplink', () async {
         // Arrange
-        final linkData = {'createdBy': 'user-123', 'longUrl': 'https://example.com'};
+        final linkData = {
+          'createdBy': 'user-123',
+          'longUrl': 'https://example.com'
+        };
 
         // Act
-        final canUpdate = await repository.validateUpdatePermission('user-123', 'link-1', linkData);
+        final canUpdate = await repository.validateUpdatePermission(
+            'user-123', 'link-1', linkData);
 
         // Assert
         expect(canUpdate, isTrue);
@@ -121,10 +145,14 @@ void main() {
 
       test('should reject non-creator from updating deeplink', () async {
         // Arrange
-        final linkData = {'createdBy': 'other-user', 'longUrl': 'https://example.com'};
+        final linkData = {
+          'createdBy': 'other-user',
+          'longUrl': 'https://example.com'
+        };
 
         // Act
-        final canUpdate = await repository.validateUpdatePermission('user-123', 'link-1', linkData);
+        final canUpdate = await repository.validateUpdatePermission(
+            'user-123', 'link-1', linkData);
 
         // Assert
         expect(canUpdate, isFalse);
@@ -133,11 +161,16 @@ void main() {
       test('should allow creator to delete their deeplink', () async {
         // Arrange
         const linkId = 'link-1';
-        final linkData = {'id': linkId, 'createdBy': 'user-123', 'longUrl': 'https://example.com'};
+        final linkData = {
+          'id': linkId,
+          'createdBy': 'user-123',
+          'longUrl': 'https://example.com'
+        };
         await _seedDeepLink(fakeFirestore, linkId, linkData);
 
         // Act
-        final canDelete = await repository.validateDeletePermission('user-123', linkId);
+        final canDelete =
+            await repository.validateDeletePermission('user-123', linkId);
 
         // Assert
         expect(canDelete, isTrue);
@@ -146,11 +179,16 @@ void main() {
       test('should reject non-creator from deleting deeplink', () async {
         // Arrange
         const linkId = 'link-1';
-        final linkData = {'id': linkId, 'createdBy': 'other-user', 'longUrl': 'https://example.com'};
+        final linkData = {
+          'id': linkId,
+          'createdBy': 'other-user',
+          'longUrl': 'https://example.com'
+        };
         await _seedDeepLink(fakeFirestore, linkId, linkData);
 
         // Act
-        final canDelete = await repository.validateDeletePermission('user-123', linkId);
+        final canDelete =
+            await repository.validateDeletePermission('user-123', linkId);
 
         // Assert
         expect(canDelete, isFalse);
@@ -158,7 +196,8 @@ void main() {
 
       test('should reject delete when deeplink does not exist', () async {
         // Act
-        final canDelete = await repository.validateDeletePermission('user-123', 'nonexistent');
+        final canDelete = await repository.validateDeletePermission(
+            'user-123', 'nonexistent');
 
         // Assert
         expect(canDelete, isFalse);
@@ -183,13 +222,16 @@ void main() {
         expect(shortCode.length, equals(8));
 
         // Verify data was stored
-        final doc = await fakeFirestore.collection('deep_links').doc(shortCode).get();
+        final doc =
+            await fakeFirestore.collection('deep_links').doc(shortCode).get();
         expect(doc.exists, isTrue);
         final data = doc.data()!;
         expect(data['longUrl'], equals(longUrl));
         expect(data['metadata'], equals(metadata));
         expect(data['createdBy'], equals('user-123'));
-      }, skip: 'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+      },
+          skip:
+              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
     });
 
     group('Get Long URL', () {
@@ -247,10 +289,13 @@ void main() {
         await repository.trackUrlClick(shortCode);
 
         // Assert
-        final doc = await fakeFirestore.collection('deep_links').doc(shortCode).get();
+        final doc =
+            await fakeFirestore.collection('deep_links').doc(shortCode).get();
         final data = doc.data()!;
         expect(data['clickCount'], equals(6));
-      }, skip: 'FakeFirebaseFirestore FieldValue.increment limitation - tested in integration tests');
+      },
+          skip:
+              'FakeFirebaseFirestore FieldValue.increment limitation - tested in integration tests');
 
       test('should record click history', () async {
         // Arrange
@@ -273,7 +318,9 @@ void main() {
             .get();
         expect(clicks.docs.length, equals(1));
         expect(clicks.docs.first.data()['userId'], equals('user-123'));
-      }, skip: 'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+      },
+          skip:
+              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
     });
 
     group('Store Deep Link Metadata', () {
@@ -296,10 +343,13 @@ void main() {
         await repository.storeDeepLinkMetadata(linkId, metadata);
 
         // Assert
-        final doc = await fakeFirestore.collection('deep_links').doc(linkId).get();
+        final doc =
+            await fakeFirestore.collection('deep_links').doc(linkId).get();
         final data = doc.data()!;
         expect(data['metadata'], equals(metadata));
-      }, skip: 'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+      },
+          skip:
+              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
 
       test('should create new link document if not exists', () async {
         // Arrange
@@ -313,12 +363,15 @@ void main() {
         await repository.storeDeepLinkMetadata(linkId, metadata);
 
         // Assert
-        final doc = await fakeFirestore.collection('deep_links').doc(linkId).get();
+        final doc =
+            await fakeFirestore.collection('deep_links').doc(linkId).get();
         expect(doc.exists, isTrue);
         final data = doc.data()!;
         expect(data['id'], equals(linkId));
         expect(data['metadata'], equals(metadata));
-      }, skip: 'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
+      },
+          skip:
+              'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
     });
 
     group('Get Deep Link Metadata', () {
@@ -382,7 +435,8 @@ void main() {
         await _seedDeepLink(fakeFirestore, 'old-link', {
           'id': 'old-link',
           'longUrl': 'https://example.com/old',
-          'createdAt': Timestamp.fromDate(now.subtract(const Duration(days: 60))),
+          'createdAt':
+              Timestamp.fromDate(now.subtract(const Duration(days: 60))),
           'createdBy': 'user-123',
         });
 
@@ -390,7 +444,8 @@ void main() {
         await _seedDeepLink(fakeFirestore, 'recent-link', {
           'id': 'recent-link',
           'longUrl': 'https://example.com/recent',
-          'createdAt': Timestamp.fromDate(now.subtract(const Duration(days: 10))),
+          'createdAt':
+              Timestamp.fromDate(now.subtract(const Duration(days: 10))),
           'createdBy': 'user-123',
         });
 
@@ -398,8 +453,12 @@ void main() {
         await repository.deleteExpiredLinks(cutoffDate);
 
         // Assert
-        final oldDoc = await fakeFirestore.collection('deep_links').doc('old-link').get();
-        final recentDoc = await fakeFirestore.collection('deep_links').doc('recent-link').get();
+        final oldDoc =
+            await fakeFirestore.collection('deep_links').doc('old-link').get();
+        final recentDoc = await fakeFirestore
+            .collection('deep_links')
+            .doc('recent-link')
+            .get();
 
         expect(oldDoc.exists, isFalse);
         expect(recentDoc.exists, isTrue);
@@ -411,7 +470,8 @@ void main() {
         await _seedDeepLink(fakeFirestore, 'recent-link', {
           'id': 'recent-link',
           'longUrl': 'https://example.com',
-          'createdAt': Timestamp.fromDate(now.subtract(const Duration(days: 1))),
+          'createdAt':
+              Timestamp.fromDate(now.subtract(const Duration(days: 1))),
           'createdBy': 'user-123',
         });
 
@@ -421,7 +481,10 @@ void main() {
         await repository.deleteExpiredLinks(cutoffDate);
 
         // Assert
-        final doc = await fakeFirestore.collection('deep_links').doc('recent-link').get();
+        final doc = await fakeFirestore
+            .collection('deep_links')
+            .doc('recent-link')
+            .get();
         expect(doc.exists, isTrue);
       });
 

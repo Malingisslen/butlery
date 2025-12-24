@@ -249,7 +249,7 @@ class StateWidget extends StatelessWidget {
         skeletonItemCount: skeletonItemCount,
       );
     }
-    
+
     // For skeleton lists that shouldn't be centered
     return LoadingStates.buildLoadingState(
       context,

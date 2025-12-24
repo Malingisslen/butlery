@@ -19,8 +19,7 @@ class ButtonThemes {
         elevation: 2,
         shadowColor: Colors.black26,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-              AppDimensions.borderRadius8),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         ),
         minimumSize: const Size(double.infinity, 48),
         padding: const EdgeInsets.symmetric(
@@ -39,8 +38,7 @@ class ButtonThemes {
         backgroundColor: AppColors.primaryBlue,
         foregroundColor: AppColors.cardWhite,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-              AppDimensions.borderRadius8),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         ),
         minimumSize: const Size(double.infinity, 48),
         padding: const EdgeInsets.symmetric(
@@ -63,8 +61,7 @@ class ButtonThemes {
           width: 1,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-              AppDimensions.borderRadius8),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         ),
         minimumSize: const Size(double.infinity, 48),
         padding: const EdgeInsets.symmetric(
@@ -83,8 +80,7 @@ class ButtonThemes {
         foregroundColor: AppColors.primaryBlue,
         backgroundColor: AppColors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-              AppDimensions.borderRadius8),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         ),
         minimumSize: const Size(0, 48),
         padding: const EdgeInsets.symmetric(
@@ -122,98 +118,85 @@ class ButtonThemes {
 
   /// Primary button style
   static ButtonStyle get primaryButtonStyle => ElevatedButton.styleFrom(
-    backgroundColor: AppColors.primaryBlue,
-    foregroundColor: AppColors.cardWhite,
-    padding: const EdgeInsets.symmetric(
-      horizontal: AppDimensions.paddingL,
-      vertical: AppDimensions.paddingM
-    ),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)
-    ),
-  );
+        backgroundColor: AppColors.primaryBlue,
+        foregroundColor: AppColors.cardWhite,
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingL,
+            vertical: AppDimensions.paddingM),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+      );
 
   /// Text button style
   static ButtonStyle get textButtonStyle => TextButton.styleFrom(
-    foregroundColor: AppColors.primaryBlue,
-    padding: const EdgeInsets.symmetric(
-      horizontal: AppDimensions.paddingL,
-      vertical: AppDimensions.paddingM
-    ),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)
-    ),
-  );
+        foregroundColor: AppColors.primaryBlue,
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingL,
+            vertical: AppDimensions.paddingM),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+      );
 
   /// Secondary button style
   static ButtonStyle get secondaryButtonStyle => ElevatedButton.styleFrom(
-    backgroundColor: AppColors.cardWhite,
-    foregroundColor: AppColors.primaryBlue,
-    side: const BorderSide(color: AppColors.primaryBlue),
-    padding: const EdgeInsets.symmetric(
-      horizontal: AppDimensions.paddingL,
-      vertical: AppDimensions.paddingM
-    ),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)
-    ),
-  );
+        backgroundColor: AppColors.cardWhite,
+        foregroundColor: AppColors.primaryBlue,
+        side: const BorderSide(color: AppColors.primaryBlue),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingL,
+            vertical: AppDimensions.paddingM),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+      );
 
   /// Danger button style
   static ButtonStyle get dangerButtonStyle => ElevatedButton.styleFrom(
-    backgroundColor: AppColors.error,
-    foregroundColor: AppColors.cardWhite,
-    padding: const EdgeInsets.symmetric(
-      horizontal: AppDimensions.paddingL,
-      vertical: AppDimensions.paddingM
-    ),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)
-    ),
-  );
+        backgroundColor: AppColors.error,
+        foregroundColor: AppColors.cardWhite,
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingL,
+            vertical: AppDimensions.paddingM),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+      );
 
   /// Outlined button style
   static ButtonStyle get outlinedButtonStyle => OutlinedButton.styleFrom(
-    foregroundColor: AppColors.primaryBlue,
-    backgroundColor: AppColors.transparent,
-    padding: const EdgeInsets.symmetric(
-      horizontal: AppDimensions.paddingL,
-      vertical: AppDimensions.paddingM
-    ),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)
-    ),
-    side: const BorderSide(color: AppColors.primaryBlue, width: 1),
-  );
+        foregroundColor: AppColors.primaryBlue,
+        backgroundColor: AppColors.transparent,
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingL,
+            vertical: AppDimensions.paddingM),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+        side: const BorderSide(color: AppColors.primaryBlue, width: 1),
+      );
 
   /// Delete button style
   static ButtonStyle get deleteButtonStyle => OutlinedButton.styleFrom(
-    foregroundColor: AppColors.error,
-    backgroundColor: AppColors.transparent,
-    padding: const EdgeInsets.symmetric(
-      horizontal: AppDimensions.paddingL,
-      vertical: AppDimensions.paddingM
-    ),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)
-    ),
-    side: const BorderSide(color: AppColors.error, width: 1),
-  );
+        foregroundColor: AppColors.error,
+        backgroundColor: AppColors.transparent,
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingL,
+            vertical: AppDimensions.paddingM),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusM)),
+        side: const BorderSide(color: AppColors.error, width: 1),
+      );
 
   /// Extended FAB style for Swedish text with proper sizing
   static ButtonStyle get extendedFabStyle => ElevatedButton.styleFrom(
-    backgroundColor: AppColors.primaryBlue,
-    foregroundColor: AppColors.cardWhite,
-    elevation: AppDimensions.elevationMedium,
-    shadowColor: Colors.black26,
-    padding: const EdgeInsets.symmetric(
-      horizontal: AppDimensions.paddingXl,
-      vertical: AppDimensions.paddingM
-    ),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRound)
-    ),
-    minimumSize: const Size(200, 56),
-    textStyle: AppTextStyles.buttonText,
-  );
+        backgroundColor: AppColors.primaryBlue,
+        foregroundColor: AppColors.cardWhite,
+        elevation: AppDimensions.elevationMedium,
+        shadowColor: Colors.black26,
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingXl,
+            vertical: AppDimensions.paddingM),
+        shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(AppDimensions.borderRadiusRound)),
+        minimumSize: const Size(200, 56),
+        textStyle: AppTextStyles.buttonText,
+      );
 }

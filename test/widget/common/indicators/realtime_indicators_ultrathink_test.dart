@@ -1,7 +1,7 @@
 // test/widget/common/indicators/realtime_indicators_ultrathink_test.dart
 // ULTRATHINK TEST SUITE: RealtimeIndicators (indicators) - 544 lines of production code
 // Testing 4 static methods + 4 private widgets with complex animations and realtime features
-// 
+//
 // ULTRATHINK FOCUS: Animation lifecycle, Swedish localization, participant management, theme integration
 
 import 'package:flutter/material.dart';
@@ -20,7 +20,7 @@ void main() {
     setUpAll(() async {
       TestWidgetsFlutterBinding.ensureInitialized();
     });
-    
+
     setUp(() async {
       await TestServiceLocator.initialize();
     });
@@ -32,7 +32,8 @@ void main() {
     // Helper to create test environment
     Widget createTestWidget({required Widget child}) {
       return MaterialApp(
-        locale: const Locale('en', 'US'), // Use English to avoid localization warnings
+        locale: const Locale(
+            'en', 'US'), // Use English to avoid localization warnings
         home: Scaffold(
           body: Container(
             padding: const EdgeInsets.all(16.0),
@@ -61,7 +62,8 @@ void main() {
     }
 
     group('Production Code Analysis', () {
-      testWidgets('editIndicator renders without crashes', (WidgetTester tester) async {
+      testWidgets('editIndicator renders without crashes',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test basic structure from lines 13-29 - never assume it works
         await tester.pumpWidget(
           createTestWidget(
@@ -76,10 +78,11 @@ void main() {
         expect(find.byType(AnimatedBuilder), findsWidgets);
       });
 
-      testWidgets('participantList renders without crashes', (WidgetTester tester) async {
+      testWidgets('participantList renders without crashes',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test basic structure from lines 33-47
         final activities = createMockActivities();
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: RealtimeIndicators.participantList(
@@ -90,10 +93,12 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        expect(find.byType(DecoratedBox), findsWidgets); // Multiple DecoratedBox widgets expected
+        expect(find.byType(DecoratedBox),
+            findsWidgets); // Multiple DecoratedBox widgets expected
       });
 
-      testWidgets('realtimeStatus renders without crashes', (WidgetTester tester) async {
+      testWidgets('realtimeStatus renders without crashes',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test basic structure from lines 51-65
         await tester.pumpWidget(
           createTestWidget(
@@ -109,7 +114,8 @@ void main() {
         expect(find.byType(Tooltip), findsOneWidget);
       });
 
-      testWidgets('realtimeStatusBanner renders without crashes', (WidgetTester tester) async {
+      testWidgets('realtimeStatusBanner renders without crashes',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test basic structure from lines 68-80
         await tester.pumpWidget(
           createTestWidget(
@@ -127,7 +133,8 @@ void main() {
     });
 
     group('Edit Indicator Animation Tests', () {
-      testWidgets('displays Swedish editing text correctly', (WidgetTester tester) async {
+      testWidgets('displays Swedish editing text correctly',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test Swedish localization from line 199
         await tester.pumpWidget(
           createTestWidget(
@@ -143,10 +150,11 @@ void main() {
         expect(find.text('Erik redigerar menyn'), findsOneWidget);
       });
 
-      testWidgets('respects custom animation duration', (WidgetTester tester) async {
+      testWidgets('respects custom animation duration',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test animation duration customization from lines 19, 95
         const customDuration = Duration(milliseconds: 500);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: RealtimeIndicators.editIndicator(
@@ -160,13 +168,14 @@ void main() {
 
         await tester.pump(); // Initialize animations
         expect(tester.takeException(), isNull);
-        
+
         // ULTRATHINK: Animation should respect custom duration
         await tester.pump(const Duration(milliseconds: 250));
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('handles visibility state changes', (WidgetTester tester) async {
+      testWidgets('handles visibility state changes',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test visibility logic from lines 148-157
         // Start with hidden indicator
         await tester.pumpWidget(
@@ -198,10 +207,11 @@ void main() {
         expect(find.text('Sofia redigerar listan'), findsOneWidget);
       });
 
-      testWidgets('uses custom color when provided', (WidgetTester tester) async {
+      testWidgets('uses custom color when provided',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test custom color from lines 17, 161
         const customColor = Colors.green;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: RealtimeIndicators.editIndicator(
@@ -215,18 +225,20 @@ void main() {
 
         await tester.pump(); // Initialize animations
         expect(tester.takeException(), isNull);
-        
+
         // Text should use custom color
-        final textWidget = tester.widget<Text>(find.text('Magnus redigerar kommentaren'));
+        final textWidget =
+            tester.widget<Text>(find.text('Magnus redigerar kommentaren'));
         expect(textWidget.style?.color, equals(customColor));
       });
     });
 
     group('Participant List Tests', () {
-      testWidgets('displays participant count correctly', (WidgetTester tester) async {
+      testWidgets('displays participant count correctly',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test participant count from line 270
         final activities = createMockActivities(count: 5);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: RealtimeIndicators.participantList(
@@ -254,10 +266,12 @@ void main() {
         // Should render as SizedBox.shrink() when empty
       });
 
-      testWidgets('highlights current user correctly', (WidgetTester tester) async {
+      testWidgets('highlights current user correctly',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test current user detection from line 329, 379
-        final activities = createMockActivities(count: 3, currentUserId: 'current_user');
-        
+        final activities =
+            createMockActivities(count: 3, currentUserId: 'current_user');
+
         await tester.pumpWidget(
           createTestWidget(
             child: RealtimeIndicators.participantList(
@@ -271,10 +285,12 @@ void main() {
         expect(find.text('Du'), findsOneWidget);
       });
 
-      testWidgets('displays online indicator with correct count', (WidgetTester tester) async {
+      testWidgets('displays online indicator with correct count',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test online count logic from lines 292, 319
-        final activities = createMockActivities(count: 4, mixOnlineOffline: true);
-        
+        final activities =
+            createMockActivities(count: 4, mixOnlineOffline: true);
+
         await tester.pumpWidget(
           createTestWidget(
             child: RealtimeIndicators.participantList(
@@ -288,7 +304,8 @@ void main() {
         expect(find.text('2 online'), findsOneWidget);
       });
 
-      testWidgets('generates proper initials for avatars', (WidgetTester tester) async {
+      testWidgets('generates proper initials for avatars',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test initials generation from lines 421-433
         final activities = [
           ParticipantActivity(
@@ -298,13 +315,13 @@ void main() {
             lastSeen: DateTime.now(),
           ),
           ParticipantActivity(
-            userId: 'user2', 
+            userId: 'user2',
             displayName: 'Erik', // Single word, should generate 'ER'
             isOnline: true,
             lastSeen: DateTime.now(),
           ),
         ];
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: RealtimeIndicators.participantList(
@@ -321,11 +338,12 @@ void main() {
     });
 
     group('Realtime Status Tests', () {
-      testWidgets('shows emoji and tooltip correctly', (WidgetTester tester) async {
+      testWidgets('shows emoji and tooltip correctly',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test emoji and tooltip from lines 454, 464
         const testEmoji = '🟢';
         const testDescription = 'Allt fungerar bra';
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: RealtimeIndicators.realtimeStatus(
@@ -337,15 +355,16 @@ void main() {
         );
 
         expect(find.text(testEmoji), findsOneWidget);
-        
+
         final tooltip = tester.widget<Tooltip>(find.byType(Tooltip));
         expect(tooltip.message, equals(testDescription));
       });
 
-      testWidgets('shows text when showText is enabled', (WidgetTester tester) async {
+      testWidgets('shows text when showText is enabled',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test conditional text display from lines 469-485
         const testDescription = 'Ansluten';
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: RealtimeIndicators.realtimeStatus(
@@ -360,7 +379,8 @@ void main() {
         expect(find.text(testDescription), findsOneWidget);
       });
 
-      testWidgets('applies error styling when offline', (WidgetTester tester) async {
+      testWidgets('applies error styling when offline',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test offline styling from lines 478-482
         await tester.pumpWidget(
           createTestWidget(
@@ -396,10 +416,11 @@ void main() {
         // Should render as SizedBox.shrink() when online
       });
 
-      testWidgets('shows banner with retry button when offline', (WidgetTester tester) async {
+      testWidgets('shows banner with retry button when offline',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test offline banner from lines 511-542
         bool retryPressed = false;
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: RealtimeIndicators.realtimeStatusBanner(
@@ -421,7 +442,8 @@ void main() {
         expect(retryPressed, isTrue);
       });
 
-      testWidgets('applies error styling to banner', (WidgetTester tester) async {
+      testWidgets('applies error styling to banner',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test error styling from lines 514, 528
         await tester.pumpWidget(
           createTestWidget(
@@ -435,7 +457,7 @@ void main() {
 
         expect(find.text('Offline'), findsOneWidget);
         expect(find.text('Fel uppstod'), findsOneWidget);
-        
+
         // ULTRATHINK: Banner uses Container with direct color property (line 514)
         // Find the main banner container with error background
         final containers = tester.widgetList<Container>(find.byType(Container));
@@ -443,12 +465,14 @@ void main() {
           (container) => container.color != null,
           orElse: () => throw StateError('No container with color found'),
         );
-        expect(bannerContainer.color, equals(AppColors.error.withValues(alpha: 0.1)));
+        expect(bannerContainer.color,
+            equals(AppColors.error.withValues(alpha: 0.1)));
       });
     });
 
     group('Theme Integration Tests', () {
-      testWidgets('applies AppDimensions constants correctly', (WidgetTester tester) async {
+      testWidgets('applies AppDimensions constants correctly',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test dimension integration throughout production code
         await tester.pumpWidget(
           createTestWidget(
@@ -462,15 +486,16 @@ void main() {
 
         await tester.pump(); // Initialize animations
         expect(tester.takeException(), isNull);
-        
+
         // Should use AppDimensions constants for spacing and borders
         expect(find.byType(Container), findsWidgets);
       });
 
-      testWidgets('uses AppColors throughout components', (WidgetTester tester) async {
+      testWidgets('uses AppColors throughout components',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test color integration from production code
         final activities = createMockActivities(count: 2);
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: RealtimeIndicators.participantList(
@@ -486,7 +511,8 @@ void main() {
     });
 
     group('Edge Cases and Error Handling', () {
-      testWidgets('handles empty editor name gracefully', (WidgetTester tester) async {
+      testWidgets('handles empty editor name gracefully',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test edge case with empty name
         await tester.pumpWidget(
           createTestWidget(
@@ -503,7 +529,8 @@ void main() {
         expect(find.text(' redigerar receptet'), findsOneWidget);
       });
 
-      testWidgets('handles Swedish characters correctly', (WidgetTester tester) async {
+      testWidgets('handles Swedish characters correctly',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test Swedish character support (åäö)
         await tester.pumpWidget(
           createTestWidget(
@@ -519,11 +546,13 @@ void main() {
         expect(find.text('Åsa Äberg redigerar köttfärssås'), findsOneWidget);
       });
 
-      testWidgets('handles very long status descriptions', (WidgetTester tester) async {
+      testWidgets('handles very long status descriptions',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test overflow handling for long text
         // PRODUCTION BUG DISCOVERED: Long text causes 1021px RenderFlex overflow
-        const longDescription = 'This is an extremely long status description that should be handled gracefully without causing overflow or rendering issues in the UI';
-        
+        const longDescription =
+            'This is an extremely long status description that should be handled gracefully without causing overflow or rendering issues in the UI';
+
         await tester.pumpWidget(
           createTestWidget(
             child: RealtimeIndicators.realtimeStatus(
@@ -535,8 +564,9 @@ void main() {
           ),
         );
 
-        expect(find.textContaining('This is an extremely long'), findsOneWidget);
-        
+        expect(
+            find.textContaining('This is an extremely long'), findsOneWidget);
+
         // Accept the known RenderFlex overflow as documented production bug
         final exception = tester.takeException();
         if (exception != null) {
@@ -545,7 +575,8 @@ void main() {
         }
       });
 
-      testWidgets('handles null callbacks gracefully', (WidgetTester tester) async {
+      testWidgets('handles null callbacks gracefully',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test null callback handling
         await tester.pumpWidget(
           createTestWidget(
@@ -565,7 +596,8 @@ void main() {
     });
 
     group('ParticipantActivity Integration Tests', () {
-      testWidgets('handles complex ParticipantActivity objects', (WidgetTester tester) async {
+      testWidgets('handles complex ParticipantActivity objects',
+          (WidgetTester tester) async {
         // ULTRATHINK: Test integration with ParticipantActivity model
         final complexActivities = [
           ParticipantActivity(
@@ -581,7 +613,7 @@ void main() {
             lastSeen: DateTime.now().subtract(const Duration(hours: 1)),
           ),
         ];
-        
+
         await tester.pumpWidget(
           createTestWidget(
             child: RealtimeIndicators.participantList(

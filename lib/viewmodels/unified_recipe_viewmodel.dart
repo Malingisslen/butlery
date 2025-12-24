@@ -1,12 +1,13 @@
 /// Streamlined unified recipe ViewModel providing essential recipe management operations.
-/// Serves as a facade coordinating specialized ViewModels for recipe operations while 
-/// maintaining the 500-line file size limit. For advanced operations, access focused 
+/// Serves as a facade coordinating specialized ViewModels for recipe operations while
+/// maintaining the 500-line file size limit. For advanced operations, access focused
 /// ViewModels directly.
 
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/services/unified/types/recipe_types.dart' show RecipeOperationResult;
+import 'package:butlery/services/unified/types/recipe_types.dart'
+    show RecipeOperationResult;
 import 'package:butlery/models/recipe_unified.dart';
 
 // Import focused ViewModels
@@ -18,19 +19,20 @@ import 'package:butlery/core/mixins/stream_management_mixin.dart';
 
 /// Streamlined unified recipe ViewModel facade for essential recipe operations.
 class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
-  final UnifiedRecipeService _recipeService = ServiceLocator.get<UnifiedRecipeService>();
+  final UnifiedRecipeService _recipeService =
+      ServiceLocator.get<UnifiedRecipeService>();
 
   // ===== FOCUSED VIEWMODEL ARCHITECTURE =====
-  
+
   /// Personal recipe operations ViewModel
   late final PersonalRecipeViewModel _personalViewModel;
-  
-  /// Social recipe operations ViewModel  
+
+  /// Social recipe operations ViewModel
   late final SocialRecipeViewModel _socialViewModel;
-  
+
   /// Real-time editing ViewModel
   late final RealtimeRecipeViewModel _realtimeViewModel;
-  
+
   /// Recipe querying and analytics ViewModel
   late final RecipeQueryViewModel _queryViewModel;
 
@@ -58,16 +60,16 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
   }
 
   // ===== FOCUSED VIEWMODEL ACCESS =====
-  
+
   /// Access to personal recipe operations
   PersonalRecipeViewModel get personal => _personalViewModel;
-  
+
   /// Access to social recipe operations
   SocialRecipeViewModel get social => _socialViewModel;
-  
+
   /// Access to real-time editing operations
   RealtimeRecipeViewModel get realtime => _realtimeViewModel;
-  
+
   /// Access to recipe querying operations
   RecipeQueryViewModel get query => _queryViewModel;
 
@@ -178,7 +180,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
   Future<bool> deleteRecipe(String recipeId) async {
     final recipe = getUnifiedRecipeById(recipeId);
     if (recipe == null) return false;
-    
+
     if (recipe.isPersonal) {
       return await _personalViewModel.deletePersonalRecipe(recipeId);
     } else {
@@ -216,7 +218,7 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
 
   Future<RecipeOperationResult> deleteRecipeById(String id) async {
     final success = await _recipeService.deleteRecipe(id);
-    return success 
+    return success
         ? RecipeOperationResult.success('Recipe deleted successfully')
         : RecipeOperationResult.failure('Failed to delete recipe');
   }
@@ -260,9 +262,10 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
 
   /// Check if real-time editing is connected
   bool get isRealtimeConnected => _realtimeViewModel.isRealtimeConnected;
-  
+
   /// Stream for real-time connection status
-  Stream<bool> get realtimeConnectionStream => _realtimeViewModel.realtimeConnectionStream;
+  Stream<bool> get realtimeConnectionStream =>
+      _realtimeViewModel.realtimeConnectionStream;
 
   @override
   void dispose() {
@@ -272,13 +275,13 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
     _socialViewModel.removeListener(_onServiceUpdate);
     _realtimeViewModel.removeListener(_onServiceUpdate);
     _queryViewModel.removeListener(_onServiceUpdate);
-    
+
     // Dispose focused ViewModels
     _personalViewModel.dispose();
     _socialViewModel.dispose();
     _realtimeViewModel.dispose();
     _queryViewModel.dispose();
-    
+
     // Clean up streams
     disposeStreamResources();
     super.dispose();

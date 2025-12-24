@@ -1,6 +1,6 @@
 /// Core services initialization stage.
 /// Handles initialization of essential core services including authentication,
-/// storage, analytics, persistence, and Firebase App Check. These are the 
+/// storage, analytics, persistence, and Firebase App Check. These are the
 /// foundational services that other modules depend on.
 library;
 
@@ -37,10 +37,10 @@ class CoreStage implements BootstrapStage {
     try {
       // Core module initialization is handled by the DI container
       // This stage validates that core services are ready
-      
+
       // Basic validation that we can proceed
       await Future.delayed(const Duration(milliseconds: 100));
-      
+
       if (kDebugMode) {
         debugPrint('✅ [CoreStage] Core services ready');
       }
@@ -59,7 +59,7 @@ class CoreStage implements BootstrapStage {
     try {
       // Validation is primarily handled by the DI container's health checks
       // This stage just confirms we can proceed
-      
+
       return true;
     } catch (e) {
       if (kDebugMode) {

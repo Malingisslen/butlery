@@ -13,10 +13,12 @@ import 'package:butlery/viewmodels/archive/archive_search_manager.dart';
 import 'package:butlery/viewmodels/archive/archive_selection_manager.dart';
 import 'package:butlery/viewmodels/archive/archive_import_operations_manager.dart';
 
-export 'package:butlery/viewmodels/archive/archive_search_manager.dart' show TimeFilter;
+export 'package:butlery/viewmodels/archive/archive_search_manager.dart'
+    show TimeFilter;
 
 /// Archive import ViewModel managing filtering, search, selection, and batch import of archived recipes.
-class ArchiveImportViewModel extends ChangeNotifier with ErrorHandlingMixin, StreamManagementMixin {
+class ArchiveImportViewModel extends ChangeNotifier
+    with ErrorHandlingMixin, StreamManagementMixin {
   late final ArchiveSearchManager _searchManager;
   late final ArchiveSelectionManager _selectionManager;
   late final ArchiveImportOperationsManager _importManager;
@@ -25,8 +27,10 @@ class ArchiveImportViewModel extends ChangeNotifier with ErrorHandlingMixin, Str
     UnifiedRecipeService? recipeService,
     SearchService? searchService,
   }) {
-    final recipeServiceInstance = recipeService ?? ServiceLocator.get<UnifiedRecipeService>();
-    final searchServiceInstance = searchService ?? ServiceLocator.get<SearchService>();
+    final recipeServiceInstance =
+        recipeService ?? ServiceLocator.get<UnifiedRecipeService>();
+    final searchServiceInstance =
+        searchService ?? ServiceLocator.get<SearchService>();
 
     _searchManager = ArchiveSearchManager(searchServiceInstance);
     _selectionManager = ArchiveSelectionManager();

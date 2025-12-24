@@ -1,5 +1,5 @@
 /// Comprehensive test suite for UnifiedShoppingList model
-/// 
+///
 /// Tests all aspects of the UnifiedShoppingList model including:
 /// - Construction and factory methods
 /// - copyWith functionality
@@ -27,10 +27,10 @@ void main() {
     late UnifiedShoppingList testList;
     late Map<String, dynamic> validJson;
     late DateTime testDate;
-    
+
     setUp(() {
       testDate = DateTime(2024, 1, 1, 12, 0);
-      
+
       // Create test list with items using factory
       final items = List.generate(
         5,
@@ -41,19 +41,20 @@ void main() {
           category: 'Test',
         ),
       );
-      
+
       testList = ShoppingListFactory.build(
         id: 'list_123',
         name: 'Veckans inköp',
         ownerId: 'user_123',
         ownerDisplayName: 'Anna Andersson',
         items: items,
-        updatedAt: testDate, // Set older date to ensure timestamp comparison works
+        updatedAt:
+            testDate, // Set older date to ensure timestamp comparison works
       );
-      
+
       validJson = SerializationHelper.createValidShoppingListJson();
     });
-    
+
     group('Construction', () {
       test('should create personal shopping list', () {
         // Act
@@ -62,7 +63,7 @@ void main() {
           ownerId: 'user_123',
           ownerDisplayName: 'Test User',
         );
-        
+
         // Assert
         expect(list.id, isNotEmpty);
         expect(list.name, equals('Min inköpslista'));
@@ -75,7 +76,7 @@ void main() {
         expect(list.createdAt, isA<DateTime>());
         expect(list.updatedAt, isA<DateTime>());
       });
-      
+
       test('should create collaborative shopping list', () {
         // Act
         final list = UnifiedShoppingList.collaborative(
@@ -87,19 +88,19 @@ void main() {
             'member2': SharedListPermission.view,
           },
         );
-        
+
         // Assert
         expect(list.type, equals(ListType.collaborative));
         expect(list.isCollaborative, isTrue);
         expect(list.memberPermissions, isNotNull);
-        expect(list.memberPermissions['owner_123'], 
-               equals(SharedListPermission.admin));
-        expect(list.memberPermissions['member1'], 
-               equals(SharedListPermission.edit));
-        expect(list.memberPermissions['member2'], 
-               equals(SharedListPermission.view));
+        expect(list.memberPermissions['owner_123'],
+            equals(SharedListPermission.admin));
+        expect(list.memberPermissions['member1'],
+            equals(SharedListPermission.edit));
+        expect(list.memberPermissions['member2'],
+            equals(SharedListPermission.view));
       });
-      
+
       test('should generate unique ID if not provided', () {
         // Act
         final list1 = UnifiedShoppingList.personal(
@@ -112,13 +113,13 @@ void main() {
           ownerId: 'user_123',
           ownerDisplayName: 'User Name',
         );
-        
+
         // Assert
         expect(list1.id, isNotEmpty);
         expect(list2.id, isNotEmpty);
         expect(list1.id, isNot(equals(list2.id)));
       });
-      
+
       test('should use provided optional fields', () {
         // Act
         final list = UnifiedShoppingList(
@@ -135,7 +136,7 @@ void main() {
           createdAt: testDate,
           updatedAt: testDate,
         );
-        
+
         // Assert
         expect(list.id, equals('custom_id'));
         expect(list.description, equals('Test description'));
@@ -145,7 +146,7 @@ void main() {
         expect(list.allowGuestEditing, isFalse);
       });
     });
-    
+
     group('copyWith', () {
       test('should create copy with updated fields', () {
         // Act
@@ -154,7 +155,7 @@ void main() {
           description: 'Ny beskrivning',
           syncStatus: SyncStatus.pending,
         );
-        
+
         // Assert
         expect(updated.id, equals(testList.id)); // Unchanged
         expect(updated.name, equals('Uppdaterad lista'));
@@ -162,11 +163,11 @@ void main() {
         expect(updated.syncStatus, equals(SyncStatus.pending));
         expect(updated.ownerId, equals(testList.ownerId)); // Unchanged
       });
-      
+
       test('should preserve all fields when not specified', () {
         // Act
         final copy = testList.copyWith();
-        
+
         // Assert
         expect(copy.id, equals(testList.id));
         expect(copy.name, equals(testList.name));
@@ -176,7 +177,7 @@ void main() {
         expect(copy.createdAt, equals(testList.createdAt));
       });
     });
-    
+
     group('Item Operations', () {
       test('should add item with user tracking', () {
         // Arrange
@@ -185,14 +186,14 @@ void main() {
           amount: 1,
           unit: 'liter',
         );
-        
+
         // Act
         final updated = testList.addItem(
           item,
           userId: 'user_456',
           userDisplayName: 'Test User',
         );
-        
+
         // Assert
         expect(updated.items.length, equals(testList.items.length + 1));
         expect(updated.items.last.name, equals('Mjölk'));
@@ -201,25 +202,25 @@ void main() {
         expect(updated.lastActivityAt, isNotNull);
         expect(updated.updatedAt.isAfter(testList.updatedAt), isTrue);
       });
-      
+
       test('should remove item by ID', () {
         // Arrange
         final itemId = testList.items.first.id;
         final initialCount = testList.items.length;
-        
+
         // Act
         final updated = testList.removeItem(
           itemId,
           userId: 'user_123',
           userDisplayName: 'Anna',
         );
-        
+
         // Assert
         expect(updated.items.length, equals(initialCount - 1));
         expect(updated.items.any((item) => item.id == itemId), isFalse);
         expect(updated.lastActivityByUserId, equals('user_123'));
       });
-      
+
       test('should update existing item', () {
         // Arrange
         final itemToUpdate = testList.items.first;
@@ -227,7 +228,7 @@ void main() {
           name: 'Updated Name',
           amount: 2,
         );
-        
+
         // Act
         final updated = testList.updateItem(
           itemToUpdate.id,
@@ -235,7 +236,7 @@ void main() {
           userId: 'user_123',
           userDisplayName: 'Anna',
         );
-        
+
         // Assert
         final foundItem = updated.items.firstWhere(
           (item) => item.id == itemToUpdate.id,
@@ -243,19 +244,19 @@ void main() {
         expect(foundItem.name, equals('Updated Name'));
         expect(foundItem.amount, equals(2));
       });
-      
+
       test('should toggle item bought status', () {
         // Arrange
         final item = testList.items.first;
         final initialBought = item.bought;
-        
+
         // Act
         final updated = testList.toggleItemBought(
           item.id,
           userId: 'user_123',
           userDisplayName: 'Anna',
         );
-        
+
         // Assert
         final toggledItem = updated.items.firstWhere(
           (i) => i.id == item.id,
@@ -266,7 +267,7 @@ void main() {
           expect(toggledItem.purchasedByDisplayName, equals('Anna'));
         }
       });
-      
+
       test('should clear all bought items', () {
         // Arrange
         // Mark some items as bought first
@@ -278,18 +279,18 @@ void main() {
             userDisplayName: 'Anna',
           );
         }
-        
+
         // Act
         final cleared = listWithBought.clearBoughtItems(
           userId: 'user_123',
           userDisplayName: 'Anna',
         );
-        
+
         // Assert
         expect(cleared.items.any((item) => item.bought), isFalse);
         expect(cleared.lastActivityByUserId, equals('user_123'));
       });
-      
+
       test('should uncheck all items', () {
         // Arrange
         // Mark all items as bought first
@@ -301,65 +302,66 @@ void main() {
             userDisplayName: 'Anna',
           );
         }
-        
+
         // Act
         final unchecked = allBought.uncheckAllItems(
           userId: 'user_456',
           userDisplayName: 'Test User',
         );
-        
+
         // Assert
         expect(unchecked.items.every((item) => !item.bought), isTrue);
         expect(unchecked.lastActivityByUserId, equals('user_456'));
       });
     });
-    
+
     group('Sync Status Management', () {
       test('should mark as synced with timestamp', () {
         // Arrange
         final pending = testList.copyWith(syncStatus: SyncStatus.pending);
-        
+
         // Act
         final synced = pending.markAsSynced();
-        
+
         // Assert
         expect(synced.syncStatus, equals(SyncStatus.synced));
         expect(synced.lastSyncedAt, isNotNull);
         expect(synced.lastSyncedAt!.isAfter(testDate), isTrue);
       });
-      
+
       test('should mark as pending', () {
         // Act
         final pending = testList.markAsPending();
-        
+
         // Assert
         expect(pending.syncStatus, equals(SyncStatus.pending));
         expect(pending.needsSync, isTrue);
       });
-      
+
       test('should mark as error with message', () {
         // Act
         final error = testList.markAsError();
-        
+
         // Assert
         expect(error.syncStatus, equals(SyncStatus.error));
         expect(error.hasError, isTrue);
       });
-      
+
       test('should determine needsSync correctly', () {
         // Never synced
         final neverSynced = testList.copyWith(
           lastSyncedAt: null,
           syncStatus: SyncStatus.local,
         );
-        expect(neverSynced.needsSync, isFalse); // needsSync only true when pending
-        
+        expect(
+            neverSynced.needsSync, isFalse); // needsSync only true when pending
+
         // Pending changes
         final pending = testList.copyWith(
           syncStatus: SyncStatus.pending,
         );
         expect(pending.needsSync, isTrue);
-        
+
         // Synced
         final synced = testList.copyWith(
           syncStatus: SyncStatus.synced,
@@ -368,7 +370,7 @@ void main() {
         expect(synced.needsSync, isFalse);
       });
     });
-    
+
     group('Analytics and Computed Properties', () {
       test('should calculate item counts correctly', () {
         // Arrange
@@ -384,22 +386,22 @@ void main() {
           userId: 'user',
           userDisplayName: 'User',
         );
-        
+
         // Assert
         expect(list.totalItems, equals(5));
         expect(list.boughtItems, equals(2));
         expect(list.unboughtItems, equals(3));
         expect(list.allItemsBought, isFalse);
       });
-      
+
       test('should calculate completion percentage', () {
         // Empty list
         final emptyList = testList.copyWith(items: []);
         expect(emptyList.completionPercentage, equals(0));
-        
+
         // No items bought
         expect(testList.completionPercentage, equals(0));
-        
+
         // Half bought
         var halfBought = testList;
         halfBought = halfBought.toggleItemBought(
@@ -413,7 +415,7 @@ void main() {
           userDisplayName: 'User',
         );
         expect(halfBought.completionPercentage, equals(40)); // 2/5 = 40%
-        
+
         // All bought
         var allBought = testList;
         for (final item in testList.items) {
@@ -426,21 +428,21 @@ void main() {
         expect(allBought.completionPercentage, equals(100));
         expect(allBought.allItemsBought, isTrue);
       });
-      
+
       test('should generate Swedish summary', () {
         // Empty list
         final emptyList = testList.copyWith(items: []);
         expect(emptyList.summary, equals('Tom lista'));
-        
+
         // One item
         final oneItem = testList.copyWith(
           items: [testList.items.first],
         );
         expect(oneItem.summary, equals('1 av 1 artiklar kvar'));
-        
+
         // Multiple items
         expect(testList.summary, equals('5 av 5 artiklar kvar'));
-        
+
         // With bought items
         var withBought = testList;
         withBought = withBought.toggleItemBought(
@@ -449,7 +451,7 @@ void main() {
           userDisplayName: 'User',
         );
         expect(withBought.summary, equals('4 av 5 artiklar kvar'));
-        
+
         // Multiple bought
         withBought = withBought.toggleItemBought(
           withBought.items[1].id,
@@ -458,29 +460,29 @@ void main() {
         );
         expect(withBought.summary, equals('3 av 5 artiklar kvar'));
       });
-      
+
       test('should show sync status emoji', () {
         // Synced
         final synced = testList.copyWith(syncStatus: SyncStatus.synced);
         expect(synced.syncStatusEmoji, equals('✅'));
-        
+
         // Pending
         final pending = testList.copyWith(syncStatus: SyncStatus.pending);
         expect(pending.syncStatusEmoji, equals('🔄'));
-        
+
         // Error
         final error = testList.copyWith(syncStatus: SyncStatus.error);
         expect(error.syncStatusEmoji, equals('❌'));
-        
+
         // Conflict
         final conflict = testList.copyWith(syncStatus: SyncStatus.conflict);
         expect(conflict.syncStatusEmoji, equals('⚠️'));
-        
+
         // Local
         final local = testList.copyWith(syncStatus: SyncStatus.local);
         expect(local.syncStatusEmoji, equals('📱'));
       });
-      
+
       test('should format activity summary in Swedish', () {
         // Just now
         final justNow = testList.copyWith(
@@ -489,7 +491,7 @@ void main() {
         );
         expect(justNow.activitySummary, contains('Anna'));
         expect(justNow.activitySummary, contains('nu'));
-        
+
         // Minutes ago
         final minutesAgo = testList.copyWith(
           lastActivityAt: DateTime.now().subtract(const Duration(minutes: 5)),
@@ -497,7 +499,7 @@ void main() {
         );
         expect(minutesAgo.activitySummary, contains('Erik'));
         expect(minutesAgo.activitySummary, contains('min sedan'));
-        
+
         // Hours ago
         final hoursAgo = testList.copyWith(
           lastActivityAt: DateTime.now().subtract(const Duration(hours: 2)),
@@ -505,7 +507,7 @@ void main() {
         );
         expect(hoursAgo.activitySummary, contains('Maria'));
         expect(hoursAgo.activitySummary, contains('tim sedan'));
-        
+
         // Days ago
         final daysAgo = testList.copyWith(
           lastActivityAt: DateTime.now().subtract(const Duration(days: 3)),
@@ -514,31 +516,31 @@ void main() {
         expect(daysAgo.activitySummary, contains('Johan'));
         expect(daysAgo.activitySummary, contains('dagar sedan'));
       });
-      
+
       test('should detect recent activity', () {
         // Recent (within 24 hours)
         final recent = testList.copyWith(
           lastActivityAt: DateTime.now().subtract(const Duration(hours: 3)),
         );
         expect(recent.hasRecentActivity, isTrue);
-        
+
         // Not recent (more than 24 hours)
         final old = testList.copyWith(
           lastActivityAt: DateTime.now().subtract(const Duration(hours: 25)),
         );
         expect(old.hasRecentActivity, isFalse);
-        
+
         // No activity
         final noActivity = testList.copyWith(lastActivityAt: null);
         expect(noActivity.hasRecentActivity, isFalse);
       });
     });
-    
+
     group('JSON Serialization', () {
       test('should serialize to JSON correctly', () {
         // Act
         final json = testList.toJson();
-        
+
         // Assert
         expect(json, isA<Map<String, dynamic>>());
         expect(json['id'], equals(testList.id));
@@ -551,26 +553,26 @@ void main() {
         expect(json['createdAt'], isA<String>());
         expect(json['updatedAt'], isA<String>());
       });
-      
+
       test('should deserialize from JSON correctly', () {
         // Act
         final list = UnifiedShoppingList.fromJson(validJson);
-        
+
         // Assert
         expect(list.id, equals(validJson['id']));
         expect(list.name, equals(validJson['name']));
         expect(list.ownerId, equals(validJson['ownerId']));
         expect(list.items.length, equals(validJson['items'].length));
-        expect(list.type.toString().split('.').last, 
-               equals(validJson['type'] ?? 'personal'));
+        expect(list.type.toString().split('.').last,
+            equals(validJson['type'] ?? 'personal'));
       });
-      
+
       test('should round-trip JSON serialization', () {
         // Act
         final json = testList.toJson();
         final deserialized = UnifiedShoppingList.fromJson(json);
         final json2 = deserialized.toJson();
-        
+
         // Assert
         expect(deserialized.id, equals(testList.id));
         expect(deserialized.name, equals(testList.name));
@@ -578,12 +580,12 @@ void main() {
         expect(json2['id'], equals(json['id']));
       });
     });
-    
+
     group('Firestore Serialization', () {
       test('should serialize to Firestore format', () {
         // Act
         final firestore = testList.toFirestore();
-        
+
         // Assert
         expect(firestore['name'], equals(testList.name));
         expect(firestore['ownerId'], equals(testList.ownerId));
@@ -594,7 +596,7 @@ void main() {
           expect(firestore['lastActivityAt'], isA<Timestamp>());
         }
       });
-      
+
       test('should deserialize from Firestore map', () {
         // Arrange
         final firestoreData = {
@@ -606,10 +608,10 @@ void main() {
           'createdAt': Timestamp.fromDate(testDate),
           'updatedAt': Timestamp.fromDate(testDate),
         };
-        
+
         // Act
         final list = UnifiedShoppingList.fromMap('firestore_id', firestoreData);
-        
+
         // Assert
         expect(list.id, equals('firestore_id'));
         expect(list.name, equals('Firestore List'));
@@ -617,7 +619,7 @@ void main() {
         expect(list.type, equals(ListType.collaborative));
         expect(list.createdAt, equals(testDate));
       });
-      
+
       test('should handle DateTime vs Timestamp in fromMap', () {
         // With DateTime objects
         final withDateTime = {
@@ -628,10 +630,10 @@ void main() {
           'createdAt': testDate,
           'updatedAt': testDate,
         };
-        
+
         final list1 = UnifiedShoppingList.fromMap('id1', withDateTime);
         expect(list1.createdAt, equals(testDate));
-        
+
         // With Firestore Timestamps
         final withTimestamp = {
           'name': 'Test',
@@ -641,74 +643,82 @@ void main() {
           'createdAt': Timestamp.fromDate(testDate),
           'updatedAt': Timestamp.fromDate(testDate),
         };
-        
+
         final list2 = UnifiedShoppingList.fromMap('id2', withTimestamp);
         expect(list2.createdAt, equals(testDate));
       });
     });
-    
+
     group('Edge Cases and Validation', () {
       test('should validate shopping list constraints', () {
         // Valid list
-        expect(ValidationHelper.isValidShoppingList(
-          id: testList.id,
-          name: testList.name,
-          ownerId: testList.ownerId,
-          items: testList.items,
-        ), isTrue);
-        
+        expect(
+            ValidationHelper.isValidShoppingList(
+              id: testList.id,
+              name: testList.name,
+              ownerId: testList.ownerId,
+              items: testList.items,
+            ),
+            isTrue);
+
         // Invalid - empty ID
-        expect(ValidationHelper.isValidShoppingList(
-          id: '',
-          name: 'Test',
-          ownerId: 'owner',
-          items: [],
-        ), isFalse);
-        
+        expect(
+            ValidationHelper.isValidShoppingList(
+              id: '',
+              name: 'Test',
+              ownerId: 'owner',
+              items: [],
+            ),
+            isFalse);
+
         // Invalid - empty name
-        expect(ValidationHelper.isValidShoppingList(
-          id: 'id',
-          name: '',
-          ownerId: 'owner',
-          items: [],
-        ), isFalse);
-        
+        expect(
+            ValidationHelper.isValidShoppingList(
+              id: 'id',
+              name: '',
+              ownerId: 'owner',
+              items: [],
+            ),
+            isFalse);
+
         // Invalid - null items
-        expect(ValidationHelper.isValidShoppingList(
-          id: 'id',
-          name: 'Test',
-          ownerId: 'owner',
-          items: null,
-        ), isFalse);
+        expect(
+            ValidationHelper.isValidShoppingList(
+              id: 'id',
+              name: 'Test',
+              ownerId: 'owner',
+              items: null,
+            ),
+            isFalse);
       });
-      
+
       test('should handle empty items list', () {
         // Arrange
         final emptyList = testList.copyWith(items: []);
-        
+
         // Assert
         expect(emptyList.isEmpty, isTrue);
         expect(emptyList.totalItems, equals(0));
         expect(emptyList.completionPercentage, equals(0));
         expect(emptyList.summary, equals('Tom lista'));
       });
-      
+
       test('should handle Swedish characters in names', () {
         // Arrange
         final swedishList = testList.copyWith(
           name: 'Köttbullar och köttfärs',
           description: 'Ingredienser för köttbullar med gräddsås',
         );
-        
+
         // Act
         final json = swedishList.toJson();
         final deserialized = UnifiedShoppingList.fromJson(json);
-        
+
         // Assert
         expect(deserialized.name, equals('Köttbullar och köttfärs'));
         expect(deserialized.description, contains('gräddsås'));
       });
-      
+
       test('should handle large number of items', () {
         // Arrange
         final manyItems = List.generate(
@@ -718,19 +728,19 @@ void main() {
             amount: i.toDouble(),
           ),
         );
-        
+
         final largeList = testList.copyWith(items: manyItems);
-        
+
         // Assert
         expect(largeList.items.length, equals(100));
         expect(largeList.totalItems, equals(100));
-        
+
         // Should serialize/deserialize
         final json = largeList.toJson();
         final deserialized = UnifiedShoppingList.fromJson(json);
         expect(deserialized.items.length, equals(100));
       });
-      
+
       test('should handle missing optional fields in fromJson', () {
         // Arrange - minimal JSON with required fields
         final minimalJson = {
@@ -741,10 +751,10 @@ void main() {
           'createdAt': '2024-01-01T00:00:00Z',
           'updatedAt': '2024-01-01T00:00:00Z',
         };
-        
+
         // Act
         final list = UnifiedShoppingList.fromJson(minimalJson);
-        
+
         // Assert
         expect(list.id, equals('minimal_list'));
         expect(list.name, equals('Minimal'));
@@ -753,7 +763,7 @@ void main() {
         expect(list.type, equals(ListType.personal)); // Default
         expect(list.syncStatus, equals(SyncStatus.local)); // Default
       });
-      
+
       test('should handle collaborative permissions correctly', () {
         // Arrange
         final collaborative = UnifiedShoppingList.collaborative(
@@ -765,20 +775,20 @@ void main() {
             'viewer_1': SharedListPermission.view,
           },
         );
-        
+
         // Assert
         // Owner gets admin permission automatically
-        expect(collaborative.memberPermissions['owner_123'], 
-               equals(SharedListPermission.admin));
+        expect(collaborative.memberPermissions['owner_123'],
+            equals(SharedListPermission.admin));
         // Check member permissions
         expect(collaborative.memberPermissions.length, equals(3));
-        
+
         // Serialize and deserialize
         final json = collaborative.toJson();
         final deserialized = UnifiedShoppingList.fromJson(json);
         // Check deserialized member permissions
-        expect(deserialized.memberPermissions['owner_123'], 
-               equals(SharedListPermission.admin));
+        expect(deserialized.memberPermissions['owner_123'],
+            equals(SharedListPermission.admin));
       });
     });
   });

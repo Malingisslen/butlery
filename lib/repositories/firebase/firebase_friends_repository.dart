@@ -53,7 +53,7 @@ import 'package:butlery/repositories/firebase/friends/group_invitation_repositor
 ///   authRepository: ServiceLocator.get<AuthRepository>(),
 /// );
 /// // Send and manage friend requests
-/// await friendsRepo.sendFriendRequest(targetUserId, 
+/// await friendsRepo.sendFriendRequest(targetUserId,
 ///   message: 'Let\\'s connect!');
 /// // Accept request and create mutual friendship
 /// await friendsRepo.acceptFriendRequest(requestId);
@@ -70,7 +70,6 @@ import 'package:butlery/repositories/firebase/friends/group_invitation_repositor
 /// ```
 class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     implements FriendsRepository {
-  
   // Focused repositories
   late final FriendRequestRepository _friendRequestRepo;
   late final FriendRelationshipRepository _friendRelationshipRepo;
@@ -121,26 +120,30 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   // ===== PERMISSION VALIDATION IMPLEMENTATION =====
 
   @override
-  Future<bool> validateCreatePermission(String userId, UserProfile entity) async {
+  Future<bool> validateCreatePermission(
+      String userId, UserProfile entity) async {
     // Users can only create their own friend relationships
     return userId == entity.uid;
   }
 
   @override
-  Future<bool> validateReadPermission(String userId, String resourceId, UserProfile? entity) async {
+  Future<bool> validateReadPermission(
+      String userId, String resourceId, UserProfile? entity) async {
     // Users can read profiles of their friends
     // This is validated at a higher level (friend relationship must exist)
     return true;
   }
 
   @override
-  Future<bool> validateUpdatePermission(String userId, String resourceId, UserProfile entity) async {
+  Future<bool> validateUpdatePermission(
+      String userId, String resourceId, UserProfile entity) async {
     // Users can only update their own profile in the context of friendships
     return userId == entity.uid;
   }
 
   @override
-  Future<bool> validateDeletePermission(String userId, String resourceId) async {
+  Future<bool> validateDeletePermission(
+      String userId, String resourceId) async {
     // Users can only delete their own friend relationships
     return userId == resourceId;
   }
@@ -154,7 +157,8 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   Future<bool> sendFriendRequest(String toUserId, {String? message}) async {
-    return await _friendRequestRepo.sendFriendRequest(toUserId, message: message);
+    return await _friendRequestRepo.sendFriendRequest(toUserId,
+        message: message);
   }
 
   /// Update an existing friend request document.
@@ -165,15 +169,16 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   @override
   Future<bool> acceptFriendRequest(String requestId) async {
     final success = await _friendRequestRepo.acceptFriendRequest(requestId);
-    
+
     // If request was accepted, also add mutual friends
     if (success) {
       final request = await _friendRequestRepo.fetchRequest(requestId);
       if (request != null) {
-        await _friendRelationshipRepo.addMutualFriends(request.fromUserId, request.toUserId);
+        await _friendRelationshipRepo.addMutualFriends(
+            request.fromUserId, request.toUserId);
       }
     }
-    
+
     return success;
   }
 
@@ -273,14 +278,16 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   }
 
   @override
-  Future<void> createCategoryForUser(String userId, FriendCategory category) async {
+  Future<void> createCategoryForUser(
+      String userId, FriendCategory category) async {
     return await _friendCategoryRepo.createCategoryForUser(userId, category);
   }
 
   @override
   Future<void> updateCategoryMembers(
       String userId, String categoryId, List<String> memberIds) async {
-    return await _friendCategoryRepo.updateCategoryMembers(userId, categoryId, memberIds);
+    return await _friendCategoryRepo.updateCategoryMembers(
+        userId, categoryId, memberIds);
   }
 
   @override
@@ -361,11 +368,15 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   // ===== ADDITIONAL UTILITY METHODS (Delegate to appropriate repositories) =====
 
   /// Get comprehensive friend statistics.
-  Future<Map<String, dynamic>> getComprehensiveFriendStatistics(String userId) async {
-    final friendStats = await _friendRelationshipRepo.getFriendStatistics(userId);
+  Future<Map<String, dynamic>> getComprehensiveFriendStatistics(
+      String userId) async {
+    final friendStats =
+        await _friendRelationshipRepo.getFriendStatistics(userId);
     final requestStats = await _friendRequestRepo.getRequestStatistics(userId);
-    final categoryStats = await _friendCategoryRepo.getCategoryStatistics(userId);
-    final invitationStats = await _groupInvitationRepo.getInvitationStatistics(userId);
+    final categoryStats =
+        await _friendCategoryRepo.getCategoryStatistics(userId);
+    final invitationStats =
+        await _groupInvitationRepo.getInvitationStatistics(userId);
 
     return {
       'friends': friendStats,
@@ -396,13 +407,17 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   }
 
   /// Add a friend to a category.
-  Future<void> addFriendToCategory(String userId, String categoryId, String friendId) async {
-    return await _friendCategoryRepo.addFriendToCategory(userId, categoryId, friendId);
+  Future<void> addFriendToCategory(
+      String userId, String categoryId, String friendId) async {
+    return await _friendCategoryRepo.addFriendToCategory(
+        userId, categoryId, friendId);
   }
 
   /// Remove a friend from a category.
-  Future<void> removeFriendFromCategory(String userId, String categoryId, String friendId) async {
-    return await _friendCategoryRepo.removeFriendFromCategory(userId, categoryId, friendId);
+  Future<void> removeFriendFromCategory(
+      String userId, String categoryId, String friendId) async {
+    return await _friendCategoryRepo.removeFriendFromCategory(
+        userId, categoryId, friendId);
   }
 
   /// Accept a group invitation.
@@ -421,7 +436,8 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   }
 
   /// Search categories by name.
-  Future<List<FriendCategory>> searchCategories(String userId, String query) async {
+  Future<List<FriendCategory>> searchCategories(
+      String userId, String query) async {
     return await _friendCategoryRepo.searchCategories(userId, query);
   }
 }

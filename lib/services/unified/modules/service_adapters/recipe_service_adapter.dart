@@ -24,10 +24,10 @@ class RecipeServiceAdapter {
     CommentsRepository? commentsRepository,
     RatingsRepository? ratingsRepository,
     NotificationsRepository? notificationsRepository,
-  }) : _recipeRepository = recipeRepository,
-       _commentsRepository = commentsRepository,
-       _ratingsRepository = ratingsRepository,
-       _notificationsRepository = notificationsRepository;
+  })  : _recipeRepository = recipeRepository,
+        _commentsRepository = commentsRepository,
+        _ratingsRepository = ratingsRepository,
+        _notificationsRepository = notificationsRepository;
 
   // ===== RECIPE OPERATIONS =====
 
@@ -221,7 +221,8 @@ class RecipeServiceAdapter {
   // ===== BATCH OPERATIONS =====
 
   /// Get bulk rating statistics using repository pattern
-  Future<Map<String, RatingStatistics>> getBulkRatingStatistics(List<String> recipeIds) async {
+  Future<Map<String, RatingStatistics>> getBulkRatingStatistics(
+      List<String> recipeIds) async {
     if (_ratingsRepository == null) {
       AppLogger.warning('⚠️ RatingsRepository not available');
       return {};
@@ -229,7 +230,8 @@ class RecipeServiceAdapter {
     try {
       return await _ratingsRepository.getBulkRatingStatistics(recipeIds);
     } catch (e) {
-      AppLogger.error('❌ Failed to get bulk rating statistics via repository', e);
+      AppLogger.error(
+          '❌ Failed to get bulk rating statistics via repository', e);
       return {};
     }
   }

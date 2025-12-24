@@ -4,8 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_social_stats.dart';
-import 'package:butlery/repositories/interfaces/ratings_repository.dart' hide RatingStatistics;
-import 'package:butlery/repositories/interfaces/ratings_repository.dart' as ratings_repo show RatingStatistics;
+import 'package:butlery/repositories/interfaces/ratings_repository.dart'
+    hide RatingStatistics;
+import 'package:butlery/repositories/interfaces/ratings_repository.dart'
+    as ratings_repo show RatingStatistics;
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 // RecipeSocialData is part of recipe_unified.dart, already imported
@@ -53,7 +55,7 @@ void main() {
       mockFirestoreRepository = MockFirestoreRepository();
       mockNotificationService = MockNotificationService();
       fakeFirestore = FakeFirebaseFirestore();
-      
+
       // Register the mock RatingsRepository in GetIt so RecipeRatingSystem can use it
       final getIt = GetIt.instance;
       if (getIt.isRegistered<RatingsRepository>()) {
@@ -82,7 +84,9 @@ void main() {
         socialData: RecipeSocialData(
           ownerId: 'user_123',
           ownerDisplayName: 'Recipe Owner',
-          memberPermissions: {'user_789': ResourcePermission.viewer}, // Add test user as member
+          memberPermissions: {
+            'user_789': ResourcePermission.viewer
+          }, // Add test user as member
         ),
       );
 
@@ -150,16 +154,17 @@ void main() {
             ),
           },
         );
-        
+
         when(() => mockRatingsRepository.rateRecipe(
-          recipeId: 'recipe_1',
-          userId: 'user_789',
-          rating: 5.0,
-          review: 'Excellent!',
-        )).thenAnswer((_) async => {});
-        
+              recipeId: 'recipe_1',
+              userId: 'user_789',
+              rating: 5.0,
+              review: 'Excellent!',
+            )).thenAnswer((_) async => {});
+
         when(() => mockRatingsRepository.getRatingStatistics('recipe_1'))
-            .thenAnswer((_) async => mockRatingsRepository.ratingStatistics['recipe_1']!);
+            .thenAnswer((_) async =>
+                mockRatingsRepository.ratingStatistics['recipe_1']!);
 
         // Act
         final result = await stats.rateRecipe(
@@ -270,7 +275,7 @@ void main() {
             ownerDisplayName: 'Test User',
           ),
         );
-        
+
         final ownedRecipe2 = Recipe(
           core: RecipeCore(
             id: 'recipe_2',
@@ -290,13 +295,13 @@ void main() {
             ownerDisplayName: 'Test User',
           ),
         );
-        
+
         // Configure the parent service to return our owned recipes
         mockParentService.setRecipeState(
           currentUserId: 'user_789',
           recipes: [ownedRecipe1, ownedRecipe2],
         );
-        
+
         // Add rating aggregates to FakeFirebaseFirestore
         await fakeFirestore
             .collection('rating_aggregates')
@@ -314,7 +319,7 @@ void main() {
           },
           'lastUpdated': DateTime.now().toIso8601String(),
         });
-        
+
         await fakeFirestore
             .collection('rating_aggregates')
             .doc('recipe_2')
@@ -377,7 +382,9 @@ void main() {
           socialData: RecipeSocialData(
             ownerId: 'user_456',
             ownerDisplayName: 'Another Owner',
-            memberPermissions: {'user_789': ResourcePermission.viewer}, // Add current user as member
+            memberPermissions: {
+              'user_789': ResourcePermission.viewer
+            }, // Add current user as member
           ),
         );
         mockParentService.setRecipeState(
@@ -572,8 +579,9 @@ void main() {
       test('should aggregate daily rating statistics', () async {
         // Arrange
         final now = DateTime.now();
-        final dailyRatings = List.generate(7, (day) => 
-          RecipeRating(
+        final dailyRatings = List.generate(
+          7,
+          (day) => RecipeRating(
             id: 'rating_day_$day',
             recipeId: 'recipe_1',
             userId: 'user_$day',
@@ -582,94 +590,94 @@ void main() {
             updatedAt: now.subtract(Duration(days: day)),
           ),
         );
-        
+
         mockRatingsRepository.setRatingsState(
           recipeRatings: {'recipe_1': dailyRatings},
         );
-        
+
         when(() => mockRatingsRepository.getRecipeRatings('recipe_1'))
             .thenAnswer((_) async => dailyRatings);
-        
+
         // Act
         final distribution = await stats.analyzeRatingDistribution('recipe_1');
-        
+
         // Assert
         expect(distribution['error'], isNull);
         if (distribution['average'] != null) {
           expect(distribution['average'], greaterThan(4.0));
         }
       });
-      
+
       test('should calculate user engagement metrics', () async {
         // Arrange
         mockParentService.setRecipeState(
           currentUserId: 'user_123',
           recipes: [testRecipe, anotherRecipe],
         );
-        
+
         // Act
         final userStats = await stats.getUserSocialStats();
-        
+
         // Assert
         expect(userStats['total_recipes'], equals(1));
         expect(userStats['error'], isNull);
       });
-      
+
       test('should track recipe popularity scoring', () async {
         // Arrange
         final popularRecipe = RecipeBuilder()
-          .withId('popular_1')
-          .withTitle('Populär Rätt')
-          .withRating(4.9)
-          .asCollaborative()
-          .withSocialData(
-            RecipeSocialData(
-              ownerId: 'user_789',
-              memberPermissions: {
-                'user_1': ResourcePermission.viewer,
-                'user_2': ResourcePermission.editor,
-                'user_3': ResourcePermission.viewer,
-              },
-            ),
-          )
-          .build();
-        
+            .withId('popular_1')
+            .withTitle('Populär Rätt')
+            .withRating(4.9)
+            .asCollaborative()
+            .withSocialData(
+              RecipeSocialData(
+                ownerId: 'user_789',
+                memberPermissions: {
+                  'user_1': ResourcePermission.viewer,
+                  'user_2': ResourcePermission.editor,
+                  'user_3': ResourcePermission.viewer,
+                },
+              ),
+            )
+            .build();
+
         mockParentService.setRecipeState(
           recipes: [popularRecipe, testRecipe],
         );
-        
+
         // Act
         final topEngaging = await stats.getTopEngagingRecipes(limit: 2);
-        
+
         // Assert
         expect(topEngaging.length, lessThanOrEqualTo(2));
         if (topEngaging.isNotEmpty) {
           expect(topEngaging.first['recipe'], isNotNull);
         }
       });
-      
+
       test('should track social interaction metrics', () {
         // Act
         final insights = stats.getEngagementInsights('recipe_1');
-        
+
         // Assert
         expect(insights['engagement_level'], isNotNull);
         expect(insights['member_count'], isNotNull);
       });
-      
+
       test('should calculate performance metrics', () async {
         // Arrange
-        final largeDataset = List.generate(100, (i) => 
-          RecipeBuilder()
-            .withId('recipe_$i')
-            .withRating(3.0 + (i % 20) * 0.1)
-            .build()
-        );
-        
+        final largeDataset = List.generate(
+            100,
+            (i) => RecipeBuilder()
+                .withId('recipe_$i')
+                .withRating(3.0 + (i % 20) * 0.1)
+                .build());
+
         mockParentService.setRecipeState(
           recipes: largeDataset,
         );
-        
+
         // Act
         final stopwatch = Stopwatch()..start();
         final topRated = await stats.getTopRatedRecipes(
@@ -677,78 +685,76 @@ void main() {
           minRating: 4.0,
         );
         stopwatch.stop();
-        
+
         // Assert
         expect(topRated, isNotNull);
         expect(stopwatch.elapsedMilliseconds, lessThan(100)); // Should be fast
       });
     });
-    
+
     group('Real-time Stats Tests', () {
       test('should handle live view counting', () async {
         // Arrange
-        await fakeFirestore
-            .collection('recipe_views')
-            .doc('recipe_1')
-            .set({
-              'viewCount': 100,
-              'uniqueViewers': ['user_1', 'user_2', 'user_3'],
-              'lastViewed': DateTime.now().toIso8601String(),
-            });
-        
+        await fakeFirestore.collection('recipe_views').doc('recipe_1').set({
+          'viewCount': 100,
+          'uniqueViewers': ['user_1', 'user_2', 'user_3'],
+          'lastViewed': DateTime.now().toIso8601String(),
+        });
+
         // Act
         final statsResult = await stats.getRecipeStats('recipe_1');
-        
+
         // Assert
         expect(statsResult['error'], isNull);
       });
-      
+
       test('should handle concurrent stat updates', () async {
         // Arrange
-        final futures = List.generate(5, (i) => 
-          stats.rateRecipe(
+        final futures = List.generate(
+          5,
+          (i) => stats.rateRecipe(
             recipeId: 'recipe_1',
             rating: 4.0 + (i * 0.2),
           ),
         );
-        
+
         // Act & Assert
         await expectLater(
           Future.wait(futures),
           completes,
         );
       });
-      
+
       test('should implement stat caching strategies', () async {
         // Act - Call getRecipeStats multiple times
         final stats1 = await stats.getRecipeStats('recipe_1');
         final stats2 = await stats.getRecipeStats('recipe_1');
-        
+
         // Assert - Should be efficient (cached or fast)
         expect(stats1['recipe_id'], equals('recipe_1'));
         expect(stats2['recipe_id'], equals('recipe_1'));
       });
-      
+
       test('should handle stat rollup operations', () async {
         // Arrange
         final recipeIds = ['recipe_1', 'recipe_2', 'recipe_3'];
-        
+
         // Act
         await stats.updateMultipleRatingAggregates(recipeIds);
-        
+
         // Assert - Should complete without errors
         expect(true, isTrue); // Operation completed
       });
-      
+
       test('should format Swedish locale numbers', () {
         // Act
         final formatted = stats.formatRating(4.567);
-        
+
         // Assert
         expect(formatted, equals('4.6')); // Swedish formatting
       });
     });
-    
+
     group('Swedish Language Support', () {
       test('should provide Swedish rating categories', () {
         // Note: Current implementation uses English, but test Swedish support
@@ -757,45 +763,45 @@ void main() {
         expect(stats.getRatingCategory(3.5), isNotNull);
         expect(stats.getRatingCategory(2.5), isNotNull);
       });
-      
+
       test('should handle Swedish recipe titles in stats', () async {
         // Arrange
         final swedishRecipe = RecipeBuilder()
-          .withId('swedish_1')
-          .withTitle('Köttbullar med gräddsås')
-          .withDescription('Traditionell svensk rätt')
-          .asSwedishDinner()
-          .build();
-        
+            .withId('swedish_1')
+            .withTitle('Köttbullar med gräddsås')
+            .withDescription('Traditionell svensk rätt')
+            .asSwedishDinner()
+            .build();
+
         mockParentService.setRecipeState(
           recipes: [swedishRecipe],
         );
-        
+
         // Act
         final insights = stats.getEngagementInsights('swedish_1');
-        
+
         // Assert
         expect(insights['error'], isNull);
       });
-      
+
       test('should support Swedish notification messages', () async {
         // Arrange
         mockNotificationService.setNotificationServiceState(
           notificationResults: {'milestone': true},
         );
-        
+
         // Act
         await stats.sendRatingMilestone(
           recipeId: 'recipe_1',
           totalRatings: 100,
           averageRating: 4.8,
         );
-        
+
         // Assert - Should handle Swedish content
         expect(true, isTrue); // Operation completed
       });
     });
-    
+
     group('Utility Methods', () {
       test('should format rating correctly', () {
         // Act & Assert

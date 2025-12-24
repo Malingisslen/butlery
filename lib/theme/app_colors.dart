@@ -19,18 +19,20 @@ class AppColors {
   static const Color darkNavy = Color(0xFF2C3E50);
   static const Color backgroundBeige = Color(0xFFEFE9E3);
   static const Color cardWhite = Color(0xFFFFFFFF);
-  static const Color cardWhite54 = Color(0x8AFFFFFF);  // 54% opacity white
-  
+  static const Color cardWhite54 = Color(0x8AFFFFFF); // 54% opacity white
+
   // Text colors
   static const Color textDark = Color(0xFF2C3E50);
   static const Color textMedium = Color(0xFF6B7280);
-  static const Color textMedium200 = Color(0xFFE5E7EB);  // Lighter variant for backgrounds
-  static const Color textMedium300 = Color(0xFFD1D5DB);  // Medium-light variant
-  static const Color textMedium600 = Color(0xFF4B5563);  // Darker variant for text
+  static const Color textMedium200 =
+      Color(0xFFE5E7EB); // Lighter variant for backgrounds
+  static const Color textMedium300 = Color(0xFFD1D5DB); // Medium-light variant
+  static const Color textMedium600 =
+      Color(0xFF4B5563); // Darker variant for text
   static const Color textLight = Color(0xFF9CA3AF);
   static const Color textTertiary = Color(0xFFD1D5DB);
   static const Color textSecondary = textMedium;
-  
+
   // Semantic colors
   static const Color accent = Color(0xFFA7C4D9);
   static const Color success = Color(0xFF10B981);
@@ -46,12 +48,12 @@ class AppColors {
   static const Color onInfoContainer = Color(0xFF1E40AF);
   static const Color info = Color(0xFF3B82F6);
   static const Color divider = Color(0xFFE5E7EB);
-  
+
   // Specialized colors
   static const Color recipeMeta = Color(0xFF757575);
   static const Color sectionHeader = Color(0xFF374151);
   static const Color starGold = Color(0xFFFBBF24);
-  
+
   // Utility colors (keep these - not simple aliases)
   static const Color backgroundTint = Color(0xFFF8F9FA);
   static const Color overlay = Color(0x80000000);
@@ -66,7 +68,7 @@ class AppColors {
   static const Color sharedRecipeText = Color(0xFF9CA3AF);
   static const Color sharedRecipeIcon = Color(0xFFD1D5DB);
   static const Color sharedRecipeBackground = Color(0xFFF9FAFB);
-  
+
   static const Color sharedRecipeTextColor = sharedRecipeText;
   static const Color sharedRecipeIconColor = sharedRecipeIcon;
   static const Color sharedRecipeBackgroundColor = sharedRecipeBackground;
@@ -136,8 +138,6 @@ class AppColors {
     inversePrimary: primaryBlue,
     surfaceTint: Color(0xFF90CAF9),
   );
-
-
 
   // Legacy compatibility colors (minimal set)
   static const Color shadowColor = Color(0x1A000000);

@@ -13,7 +13,7 @@
 /// - **Threaded Conversations**: Hierarchical comment structure with parent-child relationships
 /// - **Engagement Tracking**: Real-time like counting and user interaction state management
 /// - **Content Moderation**: Support for content filtering, reporting, and moderation workflows
-/// - **Real-time Updates**: Live synchronization of comments, likes, and engagement metrics  
+/// - **Real-time Updates**: Live synchronization of comments, likes, and engagement metrics
 /// - **User Context**: Complete author identification and authentication integration
 /// - **Content Integrity**: Comprehensive validation and sanitization for user-generated content
 /// **Comment Categories:**
@@ -48,6 +48,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+
 /// Comprehensive social comment model providing threaded discussion functionality with engagement tracking and moderation capabilities.
 /// This model implements sophisticated social commenting functionality with hierarchical threading, engagement
 /// tracking, and comprehensive moderation support. It provides real-time synchronization capabilities through
@@ -62,43 +63,43 @@ class SocialComment {
   /// It enables precise comment targeting for replies, likes, moderation actions, and conversation threading
   /// while maintaining referential integrity across the social commenting system.
   final String id;
-  
+
   /// Recipe identifier linking this comment to specific recipe content for contextual discussion organization.
   /// This field establishes the content context for the comment, enabling recipe-specific discussion threads,
   /// comment filtering by recipe, and contextual comment display. It maintains the relationship between
   /// user-generated comments and the specific recipe content they reference.
   final String recipeId;
-  
+
   /// Author user identifier providing comment attribution and enabling author-specific functionality.
   /// This field identifies the comment author for attribution, permission checking, moderation actions,
   /// and author-specific comment management. It integrates with the user authentication system to ensure
   /// proper comment ownership and security controls throughout the commenting workflow.
   final String authorId;
-  
+
   /// Comment text content providing the actual user message with support for rich text and moderation.
   /// This field contains the user-generated comment content, supporting rich text formatting, emoji usage,
   /// and comprehensive content validation. It undergoes content moderation, sanitization, and validation
   /// to ensure appropriate content quality and community standards compliance.
   final String text;
-  
+
   /// Comment creation timestamp enabling chronological ordering and temporal comment analysis.
   /// This timestamp provides precise comment creation timing for chronological display ordering, temporal
   /// analytics, content freshness indicators, and time-based comment filtering. It integrates with
   /// Firestore's timestamp handling for real-time synchronization and consistent temporal behavior.
   final DateTime createdAt;
-  
+
   /// Parent comment identifier enabling hierarchical threading and conversation organization.
   /// This optional field creates parent-child relationships between comments, enabling threaded conversations
   /// and hierarchical discussion structures. When null, the comment is a top-level comment; when populated,
   /// it references the parent comment for nested conversation threading and organized discussion flows.
   final String? parentCommentId;
-  
+
   /// Current user's like status for this comment enabling personalized engagement state tracking.
   /// This mutable field tracks whether the current user has liked this comment, enabling personalized
   /// UI state management, engagement interaction feedback, and user-specific comment interaction history.
   /// It supports real-time updates for immediate user feedback and engagement state synchronization.
   bool isLiked;
-  
+
   /// Total like count for this comment providing engagement metric tracking and social validation.
   /// This mutable field maintains the aggregate like count for this comment, enabling engagement metrics,
   /// popular comment identification, and social validation features. It updates in real-time as users
@@ -143,7 +144,8 @@ class SocialComment {
       authorId: SerializationUtils.safeString(data, 'authorId'),
       text: SerializationUtils.safeString(data, 'text'),
       createdAt: SerializationUtils.safeRequiredDateTime(data, 'createdAt'),
-      parentCommentId: SerializationUtils.safeNullableString(data, 'parentCommentId'),
+      parentCommentId:
+          SerializationUtils.safeNullableString(data, 'parentCommentId'),
       isLiked: SerializationUtils.safeBool(data, 'isLiked'),
       likeCount: SerializationUtils.safeInt(data, 'likeCount'),
     );

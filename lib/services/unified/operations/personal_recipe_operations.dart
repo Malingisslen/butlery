@@ -60,30 +60,34 @@ class PersonalRecipeOperations {
         tags: unifiedRecipe.tags,
         sourceUrl: unifiedRecipe.sourceUrl,
       );
-      
-      return recipeId != null 
+
+      return recipeId != null
           ? RecipeOperationResult.success('Recipe added successfully')
           : RecipeOperationResult.failure('Failed to add recipe');
     } catch (e) {
-      return RecipeOperationResult.failure('Failed to add recipe: ${e.toString()}');
+      return RecipeOperationResult.failure(
+          'Failed to add recipe: ${e.toString()}');
     }
   }
 
   /// Update unified recipe
-  Future<RecipeOperationResult> updateUnifiedRecipe(Recipe unifiedRecipe) async {
+  Future<RecipeOperationResult> updateUnifiedRecipe(
+      Recipe unifiedRecipe) async {
     try {
       final success = await updateRecipe(unifiedRecipe);
-      
-      return success 
+
+      return success
           ? RecipeOperationResult.success('Recipe updated successfully')
           : RecipeOperationResult.failure('Failed to update recipe');
     } catch (e) {
-      return RecipeOperationResult.failure('Failed to update recipe: ${e.toString()}');
+      return RecipeOperationResult.failure(
+          'Failed to update recipe: ${e.toString()}');
     }
   }
 
   /// Add multiple unified recipes
-  Future<RecipeOperationResult> addMultipleUnifiedRecipes(List<Recipe> recipes) async {
+  Future<RecipeOperationResult> addMultipleUnifiedRecipes(
+      List<Recipe> recipes) async {
     try {
       int successCount = 0;
       final failures = <String>[];
@@ -98,15 +102,14 @@ class PersonalRecipeOperations {
       }
 
       if (successCount == recipes.length) {
-        return RecipeOperationResult.success('Alla ${recipes.length} recept importerade');
+        return RecipeOperationResult.success(
+            'Alla ${recipes.length} recept importerade');
       } else if (successCount > 0) {
         return RecipeOperationResult.success(
-          '$successCount av ${recipes.length} recept importerade. Fel: ${failures.join(', ')}'
-        );
+            '$successCount av ${recipes.length} recept importerade. Fel: ${failures.join(', ')}');
       } else {
         return RecipeOperationResult.failure(
-          'Kunde inte importera några recept. Fel: ${failures.join(', ')}'
-        );
+            'Kunde inte importera några recept. Fel: ${failures.join(', ')}');
       }
     } catch (e) {
       AppLogger.error('Failed to add multiple unified recipes', e);
@@ -184,7 +187,8 @@ class PersonalRecipeOperations {
     return await _parent.addIngredient(recipeId, ingredient);
   }
 
-  Future<bool> updateIngredient(String recipeId, int index, String ingredient) async {
+  Future<bool> updateIngredient(
+      String recipeId, int index, String ingredient) async {
     return await _parent.updateIngredient(recipeId, index, ingredient);
   }
 
@@ -196,7 +200,8 @@ class PersonalRecipeOperations {
     return await _parent.addInstruction(recipeId, instruction);
   }
 
-  Future<bool> updateInstruction(String recipeId, int index, String instruction) async {
+  Future<bool> updateInstruction(
+      String recipeId, int index, String instruction) async {
     return await _parent.updateInstruction(recipeId, index, instruction);
   }
 
