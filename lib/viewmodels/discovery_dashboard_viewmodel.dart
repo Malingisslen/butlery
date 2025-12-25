@@ -122,7 +122,7 @@ class DiscoveryDashboardViewModel extends ChangeNotifier
   int get friendActivityCount => _friendActivityManager.friendActivityCount;
   int get recommendationsCount => _recommendationsManager.recommendationsCount;
   bool get hasSearchResults => _searchResults.isNotEmpty;
-  bool get hasMoreContent => _hasMoreContent;
+  bool get hasMoreContent => _hasMoreContent && _contentManager.hasMoreRecipes;
   Map<String, dynamic> get discoveryStats => {
         'trendingRecipes': _contentManager.trendingRecipes.length,
         'trendingMenus': _contentManager.trendingMenus.length,

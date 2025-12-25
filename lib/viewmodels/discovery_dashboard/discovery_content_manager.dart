@@ -20,6 +20,10 @@ class DiscoveryContentManager extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
+  // Pagination state - track loaded IDs to avoid duplicates
+  final Set<String> _loadedRecipeIds = {};
+  bool _hasMoreRecipes = true;
+
   DiscoveryContentManager({
     required RecipeDiscoveryService discoveryService,
   }) : _discoveryService = discoveryService;
@@ -30,6 +34,7 @@ class DiscoveryContentManager extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get hasError => _error != null;
+  bool get hasMoreRecipes => _hasMoreRecipes;
 
   // Content counts
   int get trendingContentCount =>
@@ -67,10 +72,18 @@ class DiscoveryContentManager extends ChangeNotifier {
   /// Load trending recipes from the discovery service
   Future<void> _loadTrendingRecipes() async {
     try {
+      // Reset pagination state for fresh load
+      _loadedRecipeIds.clear();
+      _hasMoreRecipes = true;
+
       _trendingRecipes = await _discoveryService.getTrendingRecipes(
         limit: 20,
         timeWindow: const Duration(days: 7),
       );
+
+      // Track loaded IDs for pagination
+      _loadedRecipeIds.addAll(_trendingRecipes.map((r) => r.id));
+      _hasMoreRecipes = _trendingRecipes.length >= 20;
     } catch (e) {
       AppLogger.error('❌ Failed to load trending recipes', e);
       rethrow;
@@ -115,6 +128,8 @@ class DiscoveryContentManager extends ChangeNotifier {
     _trendingRecipes.clear();
     _trendingMenus.clear();
     _trendingShoppingLists.clear();
+    _loadedRecipeIds.clear();
+    _hasMoreRecipes = true;
     _clearError();
     notifyListeners();
   }
@@ -200,13 +215,29 @@ class DiscoveryContentManager extends ChangeNotifier {
 
   /// Load more trending content for pagination
   Future<void> loadMoreTrendingContent() async {
+    if (!_hasMoreRecipes) {
+      AppLogger.info('📄 No more recipes to load');
+      return;
+    }
+
     try {
       final moreRecipes = await _discoveryService.getTrendingRecipes(
         limit: 10,
         timeWindow: const Duration(days: 14),
+        excludeIds: _loadedRecipeIds,
       );
 
-      _trendingRecipes.addAll(moreRecipes);
+      if (moreRecipes.isEmpty) {
+        _hasMoreRecipes = false;
+        AppLogger.info('📄 Reached end of trending recipes');
+      } else {
+        _trendingRecipes.addAll(moreRecipes);
+        _loadedRecipeIds.addAll(moreRecipes.map((r) => r.id));
+        _hasMoreRecipes = moreRecipes.length >= 10;
+        AppLogger.info(
+            '📄 Loaded ${moreRecipes.length} more recipes (total: ${_trendingRecipes.length})');
+      }
+
       notifyListeners();
     } catch (e) {
       AppLogger.error('❌ Failed to load more trending content', e);
