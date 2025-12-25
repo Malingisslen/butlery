@@ -9,6 +9,8 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:receive_intent/receive_intent.dart' as receive_intent;
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/core/router/deferred_module_loader.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// Deep link handler for processing incoming shared content.
 /// Handles various types of deep links including:
@@ -33,26 +35,13 @@ class DeepLinkHandler {
   /// It will handle any deep links that were received during app launch.
   Future<void> initialize() async {
     if (_isInitialized) {
-      if (kDebugMode) {
-        debugPrint('⚠️ DeepLinkHandler already initialized');
-      }
       return;
-    }
-
-    if (kDebugMode) {
-      debugPrint('🔗 Initializing deep link handler...');
     }
 
     try {
       // Check if platform supports deep links via receive_intent
       // Web platform doesn't support this plugin
       if (kIsWeb) {
-        if (kDebugMode) {
-          debugPrint(
-              '🌐 Web platform detected - deep links via receive_intent not supported');
-          debugPrint(
-              '💡 Web deep links should be handled via URL parameters in the browser');
-        }
         _isInitialized = true;
         return;
       }
@@ -66,10 +55,6 @@ class DeepLinkHandler {
             await receive_intent.ReceiveIntent.getInitialIntent();
 
         if (receivedIntent != null && receivedIntent.data != null) {
-          if (kDebugMode) {
-            debugPrint('🔗 Initial deep link received: ${receivedIntent.data}');
-          }
-
           // Store the deep link for processing when context is available
           _pendingDeepLink = receivedIntent.data;
         }
@@ -77,21 +62,10 @@ class DeepLinkHandler {
         // Note: receive_intent package doesn't support streaming
         // Deep links while app is running would typically be handled by
         // the operating system's intent system automatically
-
-        if (kDebugMode) {
-          debugPrint('📱 Mobile platform - deep link handling enabled');
-        }
       }
 
       _isInitialized = true;
-
-      if (kDebugMode) {
-        debugPrint('✅ Deep link handler initialized');
-      }
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('⚠️ Deep link initialization failed: $e');
-      }
       // Don't rethrow - app should continue even if deep links fail
       _isInitialized = true;
     }
@@ -102,10 +76,6 @@ class DeepLinkHandler {
   /// a valid navigation context available.
   Future<void> processPendingDeepLink(BuildContext context) async {
     if (_pendingDeepLink != null) {
-      if (kDebugMode) {
-        debugPrint('🔗 Processing pending deep link: $_pendingDeepLink');
-      }
-
       await processDeepLink(_pendingDeepLink!, context);
       _pendingDeepLink = null;
     }
@@ -124,9 +94,6 @@ class DeepLinkHandler {
   Future<void> processDeepLink(String deepLinkUrl, BuildContext context) async {
     try {
       final uri = Uri.parse(deepLinkUrl);
-      if (kDebugMode) {
-        debugPrint('🔗 Processing deep link: ${uri.path}');
-      }
 
       // Extract path and parameters
       final path = uri.path;
@@ -134,9 +101,6 @@ class DeepLinkHandler {
 
       // Ensure context is still valid
       if (!context.mounted) {
-        if (kDebugMode) {
-          debugPrint('⚠️ Context not mounted, cannot process deep link');
-        }
         return;
       }
 
@@ -149,15 +113,9 @@ class DeepLinkHandler {
         await _handleMenuLink(params, context);
       } else if (path.startsWith('/shopping')) {
         await _handleShoppingLink(params, context);
-      } else {
-        if (kDebugMode) {
-          debugPrint('⚠️ Unknown deep link path: $path');
-        }
       }
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('⚠️ Error processing deep link: $e');
-      }
+      // Silently handle deep link processing errors
     }
   }
 
@@ -171,9 +129,8 @@ class DeepLinkHandler {
     final type = params['type'];
 
     if (invitationId != null && fromUserId != null) {
-      if (kDebugMode) {
-        debugPrint('🔗 Handling invitation: $type from $fromUserId');
-      }
+      // Pre-load social module before navigation
+      await _ensureSocialModuleLoaded();
 
       // Navigate to appropriate view based on invitation type
       if (context.mounted) {
@@ -194,13 +151,8 @@ class DeepLinkHandler {
     BuildContext context,
   ) async {
     final recipeId = params['id'];
-    final fromUserId = params['from'];
 
     if (recipeId != null) {
-      if (kDebugMode) {
-        debugPrint('🔗 Handling recipe link: $recipeId from $fromUserId');
-      }
-
       if (context.mounted) {
         // Navigate to recipe detail view with recipe ID as query parameter
         GoRouter.of(context).push('${Routes.receptDetalj}?recipeId=$recipeId');
@@ -214,12 +166,10 @@ class DeepLinkHandler {
     BuildContext context,
   ) async {
     final menuId = params['id'];
-    final fromUserId = params['from'];
 
     if (menuId != null) {
-      if (kDebugMode) {
-        debugPrint('🔗 Handling menu link: $menuId from $fromUserId');
-      }
+      // Pre-load social module before navigation
+      await _ensureSocialModuleLoaded();
 
       if (context.mounted) {
         // Navigate to shared with me view to see the menu
@@ -234,12 +184,10 @@ class DeepLinkHandler {
     BuildContext context,
   ) async {
     final listId = params['id'];
-    final fromUserId = params['from'];
 
     if (listId != null) {
-      if (kDebugMode) {
-        debugPrint('🔗 Handling shopping list link: $listId from $fromUserId');
-      }
+      // Pre-load social module before navigation
+      await _ensureSocialModuleLoaded();
 
       if (context.mounted) {
         // Navigate to collaborative shopping view
@@ -248,14 +196,22 @@ class DeepLinkHandler {
     }
   }
 
+  /// Pre-load social module for deep link navigation
+  Future<void> _ensureSocialModuleLoaded() async {
+    if (DeferredModuleLoader.isRegistered('social') &&
+        !DeferredModuleLoader.isLoaded('social')) {
+      try {
+        await DeferredModuleLoader.ensureLoaded('social');
+      } catch (e) {
+        AppLogger.warning('Failed to pre-load social module for deep link: $e');
+      }
+    }
+  }
+
   /// Reset the handler state (for testing).
   void reset() {
     _isInitialized = false;
     _pendingDeepLink = null;
-
-    if (kDebugMode) {
-      debugPrint('🔄 DeepLinkHandler reset');
-    }
   }
 
   /// Get debug information about the handler state.

@@ -5,10 +5,17 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 
-// Auth view
+// Deferred loading infrastructure
+import 'package:butlery/core/router/deferred_module_loader.dart';
+import 'package:butlery/core/router/async_route_builder.dart';
+import 'package:butlery/core/router/modules/extraction_deferred_module.dart';
+import 'package:butlery/core/router/modules/social_deferred_module.dart';
+import 'package:butlery/core/router/modules/messaging_deferred_module.dart';
+
+// Auth view (eager - always needed)
 import 'package:butlery/views/auth_view.dart';
 
-// Recipe views
+// Core recipe views (eager - needed on home screen)
 import 'package:butlery/views/mina_recept_view.dart';
 import 'package:butlery/views/lagg_till_recept_view.dart';
 import 'package:butlery/views/skriv_sjalv_recept_view.dart';
@@ -16,36 +23,14 @@ import 'package:butlery/views/fran_sociala_medier_view.dart';
 import 'package:butlery/views/recipe_detail_view.dart';
 import 'package:butlery/views/edit_recipe_view.dart';
 import 'package:butlery/views/veckomeny_view.dart' as vecko;
-import 'package:butlery/views/importera_fran_arkiv_view.dart';
-import 'package:butlery/views/photo_import_view.dart';
-import 'package:butlery/views/file_import_view.dart';
-import 'package:butlery/views/import_via_url_view.dart';
 import 'package:butlery/views/receive_share_view.dart';
-import 'package:butlery/views/smart_import_view.dart';
 
-// Unified shopping system
+// Unified shopping system (eager - core feature)
 import 'package:butlery/views/unified_shopping_view.dart';
 
-// Social views
-import 'package:butlery/views/social/discovery_dashboard_view.dart';
-import 'package:butlery/views/social/user_profile_edit_view.dart';
-import 'package:butlery/views/social/friends_list_view.dart';
-import 'package:butlery/views/social/friend_requests_view.dart';
-import 'package:butlery/views/social/shared_with_me_view.dart';
-import 'package:butlery/views/social/collaborative_shopping_view.dart';
-import 'package:butlery/views/social/menu_preview_view.dart';
-import 'package:butlery/views/social/create_shared_shopping_list_view.dart';
-import 'package:butlery/views/social/friend_profile_view.dart';
-import 'package:butlery/views/social/shared_shopping_lists_view.dart';
-
-// Messaging views
-import 'package:butlery/views/messaging/conversations_list_view.dart';
-import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
-
-// Models
+// Models (needed for route arguments)
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
-import 'package:butlery/models/user_profile.dart';
 
 /// Centralized application router managing navigation and route generation for Butlery.
 /// This class implements a comprehensive routing system that handles all navigation
@@ -95,10 +80,27 @@ class AppRouter {
   static final FirebaseAuthRepository _authRepository =
       FirebaseAuthRepository();
 
+  static bool _modulesInitialized = false;
+
+  /// Initialize deferred modules for lazy loading
+  /// Call this once at app startup (e.g., in main.dart)
+  static void initializeDeferredModules() {
+    if (_modulesInitialized) return;
+
+    DeferredModuleLoader.register('extraction', ExtractionDeferredModule());
+    DeferredModuleLoader.register('social', SocialDeferredModule());
+    DeferredModuleLoader.register('messaging', MessagingDeferredModule());
+
+    _modulesInitialized = true;
+  }
+
   /// Main route generator that handles all app navigation
   static Route<dynamic> generateRoute(RouteSettings settings) {
     try {
       final routeName = Routes.resolveRoute(settings.name ?? '/');
+
+      // Ensure deferred modules are initialized
+      initializeDeferredModules();
 
       // Check authentication for protected routes
       if (Routes.requiresAuth(routeName)) {
@@ -108,6 +110,18 @@ class AppRouter {
         }
       }
 
+      // Check if route is handled by a deferred module
+      final moduleName = DeferredModuleLoader.findModuleForRoute(routeName);
+      if (moduleName != null) {
+        return AsyncRouteBuilder.buildDeferredRoute(
+          routeName: routeName,
+          settings: settings,
+          moduleName: moduleName,
+          animationType: Routes.getAnimationType(routeName),
+        );
+      }
+
+      // Eager routes (core app functionality)
       switch (routeName) {
         case Routes.home:
           return _buildRoute(const MinaReceptView(), settings,
@@ -119,22 +133,6 @@ class AppRouter {
 
         case Routes.laggTill:
           return _buildRoute(const LaggTillReceptView(), settings,
-              Routes.getAnimationType(routeName));
-
-        case Routes.importViaUrl:
-          return _buildRoute(const ImportViaUrlView(), settings,
-              Routes.getAnimationType(routeName));
-
-        case Routes.photoImport:
-          return _buildRoute(const PhotoImportView(), settings,
-              Routes.getAnimationType(routeName));
-
-        case Routes.fileImport:
-          return _buildRoute(const FileImportView(), settings,
-              Routes.getAnimationType(routeName));
-
-        case Routes.smartImport:
-          return _buildRoute(const SmartImportView(), settings,
               Routes.getAnimationType(routeName));
 
         case Routes.skrivSjalv:
@@ -175,10 +173,6 @@ class AppRouter {
                 sourceUrl: sourceUrl,
               ),
               settings,
-              Routes.getAnimationType(routeName));
-
-        case Routes.importFranArkiv:
-          return _buildRoute(const ImporteraFranArkivView(), settings,
               Routes.getAnimationType(routeName));
 
         case Routes.receptDetalj:
@@ -230,71 +224,6 @@ class AppRouter {
         case Routes.inkopslista:
           return _buildRoute(const UnifiedShoppingView(), settings,
               Routes.getAnimationType(routeName));
-
-        case Routes.profileEdit:
-          return _buildRoute(const UserProfileEditView(), settings,
-              Routes.getAnimationType(routeName));
-
-        case Routes.friends:
-          return _buildRoute(const FriendsListView(), settings,
-              Routes.getAnimationType(routeName));
-
-        case Routes.discovery:
-          return _buildRoute(const DiscoveryDashboardView(), settings,
-              Routes.getAnimationType(routeName));
-
-        case Routes.friendRequests:
-          return _buildRoute(const FriendRequestsView(), settings,
-              Routes.getAnimationType(routeName));
-
-        case Routes.shared:
-          return _buildRoute(const SharedWithMeView(), settings,
-              Routes.getAnimationType(routeName));
-
-        case Routes.collaborativeShopping:
-          final listId = settings.arguments as String?;
-          if (listId == null) {
-            return _errorRoute(
-                'List ID argument missing for collaborative shopping');
-          }
-          return _buildRoute(CollaborativeShoppingView(listId: listId),
-              settings, Routes.getAnimationType(routeName));
-
-        case Routes.menuPreview:
-          final menu = settings.arguments as SharedMenu?;
-          if (menu == null) {
-            return _errorRoute('Menu argument missing for preview');
-          }
-          return _buildRoute(MenuPreviewView(sharedMenu: menu), settings,
-              Routes.getAnimationType(routeName));
-
-        case Routes.createSharedShopping:
-          return _buildRoute(const CreateSharedShoppingListView(), settings,
-              Routes.getAnimationType(routeName));
-
-        case Routes.friendProfile:
-          final userProfile = settings.arguments as UserProfile?;
-          if (userProfile == null) {
-            return _errorRoute('User profile argument missing');
-          }
-          return _buildRoute(FriendProfileView(friend: userProfile), settings,
-              Routes.getAnimationType(routeName));
-
-        case Routes.sharedShoppingLists:
-          return _buildRoute(const SharedShoppingListsView(), settings,
-              Routes.getAnimationType(routeName));
-
-        case Routes.messages:
-          return _buildRoute(const ConversationsListView(), settings,
-              Routes.getAnimationType(routeName));
-
-        case Routes.chat:
-          final conversationId = settings.arguments as String?;
-          if (conversationId == null) {
-            return _errorRoute('Conversation ID argument missing for chat');
-          }
-          return _buildRoute(ChatViewFacade(conversationId: conversationId),
-              settings, Routes.getAnimationType(routeName));
 
         default:
           return _errorRoute('Unknown route: ${settings.name}');
