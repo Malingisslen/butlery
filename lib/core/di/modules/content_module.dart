@@ -9,7 +9,6 @@
 /// Depends on Core Module for authentication and database access.
 library;
 
-import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 
 // Core interfaces
@@ -156,10 +155,6 @@ class ContentModule implements DIModule {
 
   @override
   Future<void> configure(GetIt container) async {
-    if (kDebugMode) {
-      debugPrint('🔧 [ContentModule] Configuring content services...');
-    }
-
     try {
       // Recipe repository - depends on Auth from Core Module
       container.registerSingleton<RecipeRepository>(
@@ -339,9 +334,9 @@ class ContentModule implements DIModule {
       // Image picker service for photo handling
       container.registerSingleton<ImagePickerService>(ImagePickerService());
 
-      // Offline service for content synchronization
-      container.registerSingleton<OfflineService>(
-        OfflineService(
+      // Offline service for content synchronization (lazy for faster startup)
+      container.registerLazySingleton<OfflineService>(
+        () => OfflineService(
           firestoreRepository: container<FirestoreRepository>(),
           authRepository: container<auth.AuthRepository>(),
         ),
@@ -365,12 +360,6 @@ class ContentModule implements DIModule {
       container.registerSingleton<ContentDetectorService>(
         ContentDetectorService(),
       );
-
-      if (kDebugMode) {
-        debugPrint(
-          '✅ [ContentModule] Configured 27 services (Recipes, Menus, Import, Cache, RateLimiter, LLM, YouTube, Storage, Offline, Backup, Extraction, Detection, RecipeParser)',
-        );
-      }
     } catch (e) {
       throw DIModuleException(
         name,
@@ -383,37 +372,12 @@ class ContentModule implements DIModule {
 
   @override
   Future<void> initialize() async {
-    if (kDebugMode) {
-      debugPrint(
-        '🔧 [ContentModule.initialize] ENTRY - Starting initialization...',
-      );
-    }
-
     try {
       final container = GetIt.instance;
 
-      if (kDebugMode) {
-        debugPrint(
-          '🔍 [ContentModule.initialize] Getting UnifiedRecipeService from container...',
-        );
-      }
-
       // Initialize UnifiedRecipeService
       final unifiedRecipeService = container<UnifiedRecipeService>();
-
-      if (kDebugMode) {
-        debugPrint(
-          '✅ [ContentModule.initialize] Got UnifiedRecipeService instance, calling initialize()...',
-        );
-      }
-
       await unifiedRecipeService.initialize();
-
-      if (kDebugMode) {
-        debugPrint(
-          '✅ [ContentModule.initialize] UnifiedRecipeService.initialize() COMPLETED',
-        );
-      }
 
       // Initialize UnifiedMenuService
       final unifiedMenuService = container<UnifiedMenuService>();
@@ -494,54 +458,31 @@ class ContentModule implements DIModule {
         if (service is HealthCheckable) {
           final isHealthy = await service.healthCheck();
           if (!isHealthy) {
-            if (kDebugMode) {
-              debugPrint(
-                '❌ [ContentModule] Health check failed for ${entry.key}',
-              );
-            }
             return false;
           }
         }
 
         // Basic validation - service is not null
         if (service == null) {
-          if (kDebugMode) {
-            debugPrint('❌ [ContentModule] Service ${entry.key} is null');
-          }
           return false;
         }
       }
 
       return true;
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ [ContentModule] Health check failed: $e');
-      }
       return false;
     }
   }
 
   /// Register site-specific recipe parsers for URL import.
-  /// This method registers parsers for Swedish recipe websites (ICA.se, Arla.se, Köket.se, Recept.se)
+  /// This method registers parsers for Swedish recipe websites (ICA.se, Arla.se, Koket.se, Recept.se)
   /// that are used by UrlImportStrategy to extract recipes with site-specific enhancements.
   void _registerSiteParsers() {
-    if (kDebugMode) {
-      debugPrint(
-        '🔧 [ContentModule] Registering site-specific recipe parsers...',
-      );
-    }
-
     // Register Swedish recipe site parsers
     SiteParserRegistry.register(IcaRecipeParser());
     SiteParserRegistry.register(ArlaRecipeParser());
     SiteParserRegistry.register(KoketRecipeParser());
     SiteParserRegistry.register(ReceptRecipeParser());
-
-    if (kDebugMode) {
-      debugPrint(
-        '✅ [ContentModule] Registered 4 site parsers (ICA.se, Arla.se, Köket.se, Recept.se)',
-      );
-    }
   }
 }
 

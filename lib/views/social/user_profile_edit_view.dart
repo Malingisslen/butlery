@@ -1,5 +1,7 @@
 // lib/views/social/user_profile_edit_view.dart
 
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
@@ -17,6 +19,7 @@ import 'package:butlery/widgets/common/indicators/progress_overlay.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
+import 'package:butlery/core/providers/locale_provider.dart';
 
 class UserProfileEditView extends StatelessWidget {
   const UserProfileEditView({super.key});
@@ -43,15 +46,22 @@ class _UserProfileEditViewContentState
   final _formKey = GlobalKey<FormState>();
   final _displayNameController = TextEditingController();
   final _displayNameFocusNode = FocusNode();
+  late final LocaleProvider _localeProvider;
 
   bool _hasInitialized = false;
 
   @override
   void initState() {
     super.initState();
+    _localeProvider = ServiceLocator.get<LocaleProvider>();
+    _localeProvider.addListener(_onLocaleChanged);
 
     // Listen for focus changes to check display name availability
     _displayNameFocusNode.addListener(_onFocusChanged);
+  }
+
+  void _onLocaleChanged() {
+    if (mounted) setState(() {});
   }
 
   void _onFocusChanged() {
@@ -62,6 +72,7 @@ class _UserProfileEditViewContentState
 
   @override
   void dispose() {
+    _localeProvider.removeListener(_onLocaleChanged);
     _displayNameFocusNode.removeListener(_onFocusChanged);
     _displayNameController.dispose();
     _displayNameFocusNode.dispose();
@@ -276,6 +287,10 @@ class _UserProfileEditViewContentState
 
           // Privacy settings
           _buildPrivacySettings(viewModel),
+          const SizedBox(height: AppDimensions.spacingXl),
+
+          // Language settings
+          _buildLanguageSettings(),
           const SizedBox(height: AppDimensions.spacingXxl),
 
           // Action buttons
@@ -419,6 +434,45 @@ class _UserProfileEditViewContentState
                 secondary: const Icon(Icons.email),
               ),
             ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLanguageSettings() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Språk',
+          style: AppTextStyles.titleMedium,
+        ),
+        const SizedBox(height: AppDimensions.spacingL),
+        BorderedContainer(
+          child: Column(
+            children: LocaleProvider.supportedLocales.map((localeCode) {
+              final isSelected =
+                  _localeProvider.locale.languageCode == localeCode;
+              return RadioListTile<String>(
+                title: Text(LocaleProvider.getLocaleName(localeCode)),
+                value: localeCode,
+                groupValue: _localeProvider.locale.languageCode,
+                onChanged: (value) {
+                  if (value != null) {
+                    _localeProvider.setLocale(value);
+                    SnackBarUtils.showSuccess(
+                      context,
+                      'Språk ändrat till ${LocaleProvider.getLocaleName(value)}',
+                    );
+                  }
+                },
+                secondary: Icon(
+                  isSelected ? Icons.check_circle : Icons.language,
+                  color: isSelected ? AppColors.success : null,
+                ),
+              );
+            }).toList(),
           ),
         ),
       ],

@@ -1,0 +1,442 @@
+{
+  "@@locale": "sv",
+  "@@last_modified": "2025-12-25",
+
+  "commonSave": "Spara",
+  "commonCancel": "Avbryt",
+  "commonDelete": "Ta bort",
+  "commonEdit": "Redigera",
+  "commonAdd": "Lägg till",
+  "commonCreate": "Skapa",
+  "commonUpdate": "Uppdatera",
+  "commonClose": "Stäng",
+  "commonShare": "Dela",
+  "commonRename": "Byt namn",
+  "commonExport": "Exportera",
+  "commonOk": "OK",
+  "commonYes": "Ja",
+  "commonNo": "Nej",
+  "commonRetry": "Försök igen",
+  "commonLoading": "Laddar...",
+  "commonWorking": "Arbetar...",
+  "commonSend": "Skicka",
+
+  "shoppingRenameList": "Byt namn på lista",
+  "shoppingCreateList": "Skapa ny handlista",
+  "shoppingNewName": "Nytt namn",
+  "shoppingListName": "Namn på lista",
+  "shoppingAddToList": "Lägg till i",
+  "shoppingItemName": "Varunamn",
+  "shoppingAmount": "Mängd",
+  "shoppingUnit": "Enhet",
+  "shoppingCategory": "Kategori",
+  "shoppingNote": "Anteckning",
+  "shoppingAddItem": "Lägg till vara",
+  "shoppingEditItem": "Redigera vara",
+  "shoppingList": "Inköpslista",
+
+  "authResetPassword": "Återställ lösenord",
+  "authForgotPassword": "Glömt lösenord?",
+  "authEnterPassword": "Ange ditt lösenord",
+  "authPasswordMinLength": "Minst 6 tecken",
+  "authResetPasswordInstructions": "Ange din email-adress så skickar vi instruktioner för att återställa ditt lösenord.",
+
+  "navExitApp": "Avsluta Butlery?",
+  "navExitAppConfirmation": "Vill du verkligen avsluta appen?",
+  "navExit": "Avsluta",
+
+  "imageAddImage": "Lägg till bild",
+  "imageTakePhoto": "Ta foto",
+  "imageUseCamera": "Använd kameran",
+  "imageFromGallery": "Från galleriet",
+  "imageSelectFromGallery": "Välj en bild från galleriet",
+  "imageSelectUpTo": "Välj upp till {count} bilder",
+  "@imageSelectUpTo": {
+    "placeholders": {
+      "count": {"type": "int", "example": "5"}
+    }
+  },
+
+  "validationFieldRequired": "{fieldName} krävs",
+  "@validationFieldRequired": {
+    "placeholders": {
+      "fieldName": {"type": "String", "example": "E-post"}
+    }
+  },
+  "validationFieldTooShort": "{fieldName} måste vara minst {minLength} tecken",
+  "@validationFieldTooShort": {
+    "placeholders": {
+      "fieldName": {"type": "String"},
+      "minLength": {"type": "int"}
+    }
+  },
+  "validationFieldTooLong": "{fieldName} får vara max {maxLength} tecken",
+  "@validationFieldTooLong": {
+    "placeholders": {
+      "fieldName": {"type": "String"},
+      "maxLength": {"type": "int"}
+    }
+  },
+  "validationInvalidFormat": "Ogiltigt format för {fieldName}",
+  "@validationInvalidFormat": {
+    "placeholders": {
+      "fieldName": {"type": "String"}
+    }
+  },
+  "validationNameRequired": "Namn krävs",
+  "validationEmailRequired": "E-post krävs",
+  "validationPasswordRequired": "Lösenord krävs",
+  "validationInvalidEmail": "Ogiltig e-postadress",
+  "validationInvalidUrl": "Ogiltig URL",
+  "validationInvalidPhone": "Ogiltigt telefonnummer",
+  "validationInvalidAmount": "Ogiltigt antal",
+  "validationPasswordTooShort": "Lösenordet måste vara minst 6 tecken",
+  "validationGenericRequired": "Detta fält krävs",
+  "validationEmailInvalid": "Ogiltig e-postadress",
+
+  "errorGeneric": "Ett fel uppstod. Försök igen.",
+  "errorNetwork": "Nätverksfel. Kontrollera din internetanslutning.",
+  "errorServer": "Serverfel. Försök igen senare.",
+  "errorAuthentication": "Autentiseringsfel. Logga in igen.",
+  "errorPermissionDenied": "Du har inte behörighet för denna åtgärd.",
+  "errorNotFound": "Kunde inte hittas.",
+  "errorAlreadyExists": "Finns redan.",
+  "errorCouldNotCreate": "Kunde inte skapa {itemType}. Försök igen.",
+  "@errorCouldNotCreate": {
+    "placeholders": {
+      "itemType": {"type": "String", "example": "recept"}
+    }
+  },
+  "errorCouldNotUpdate": "Kunde inte uppdatera {itemType}. Försök igen.",
+  "@errorCouldNotUpdate": {
+    "placeholders": {
+      "itemType": {"type": "String"}
+    }
+  },
+  "errorCouldNotDelete": "Kunde inte ta bort {itemType}. Försök igen.",
+  "@errorCouldNotDelete": {
+    "placeholders": {
+      "itemType": {"type": "String"}
+    }
+  },
+  "errorCouldNotLoad": "Kunde inte ladda {itemType}. Försök igen.",
+  "@errorCouldNotLoad": {
+    "placeholders": {
+      "itemType": {"type": "String"}
+    }
+  },
+  "errorWithContext": "Fel vid {action}: {error}",
+  "@errorWithContext": {
+    "placeholders": {
+      "action": {"type": "String"},
+      "error": {"type": "String"}
+    }
+  },
+  "errorActionSpecific": "Problem medan {action}: {issue}",
+  "@errorActionSpecific": {
+    "placeholders": {
+      "action": {"type": "String"},
+      "issue": {"type": "String"}
+    }
+  },
+
+  "successItemCreated": "{itemType} skapades!",
+  "@successItemCreated": {
+    "placeholders": {
+      "itemType": {"type": "String"}
+    }
+  },
+  "successItemUpdated": "{itemType} uppdaterades!",
+  "@successItemUpdated": {
+    "placeholders": {
+      "itemType": {"type": "String"}
+    }
+  },
+  "successItemDeleted": "{itemType} togs bort!",
+  "@successItemDeleted": {
+    "placeholders": {
+      "itemType": {"type": "String"}
+    }
+  },
+  "successItemAdded": "{itemName} tillagd!",
+  "@successItemAdded": {
+    "placeholders": {
+      "itemName": {"type": "String"}
+    }
+  },
+
+  "confirmDeleteItem": "Är du säker på att du vill ta bort \"{itemName}\"?",
+  "@confirmDeleteItem": {
+    "placeholders": {
+      "itemName": {"type": "String"}
+    }
+  },
+  "confirmUnsavedChanges": "Du har osparade ändringar. Vill du lämna utan att spara?",
+  "confirmIrreversibleAction": "Denna åtgärd kan inte ångras.",
+
+  "draftRecovery": "Återställ utkast",
+  "draftRecoverySubtitle": "Du har osparade receptutkast. Vill du fortsätta där du slutade?",
+  "draftRestore": "Återställ",
+  "draftStartFresh": "Börja om",
+  "draftRestored": "Utkast återställt!",
+  "draftRestoredDetails": "fält laddades",
+  "draftCouldNotRestore": "Kunde inte återställa utkast. Börjar med tomt formulär.",
+  "draftRestoring": "Återställer utkast...",
+  "draftUnnamedRecipe": "Namnlöst recept",
+  "draftFieldsFilledCount": "{count} fält ifyllda",
+  "@draftFieldsFilledCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "draftRestoredWithCount": "Utkast återställt! {count} fält laddades",
+  "@draftRestoredWithCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "connectivityOfflineMode": "Offline-läge aktiverat",
+  "connectivityRestored": "Anslutning återställd",
+  "connectivitySyncingPending": "Synkroniserar väntande ändringar...",
+  "connectivityLocalSaved": "Ändringar sparade lokalt",
+  "connectivityWillSync": "Synkroniseras när du är online igen",
+
+  "permissionInsufficient": "Otillräckliga behörigheter",
+  "permissionReadOnly": "Endast läsrättigheter",
+  "permissionOwnerOnly": "Endast ägaren kan utföra denna åtgärd",
+  "permissionRequestEdit": "Be om redigeringsrättigheter",
+  "permissionMakePersonalCopy": "Skapa personlig kopia",
+
+  "recoveryCheckConnection": "Kontrollera internetanslutningen",
+  "recoveryTryAgain": "Försök igen",
+  "recoveryLoginAgain": "Logga in på nytt",
+  "recoveryContactOwner": "Kontakta ägaren",
+  "recoveryWaitAndRetry": "Vänta och försök igen",
+  "recoveryCheckPermissions": "Kontrollera behörigheter",
+
+  "emptyNoItems": "Inga objekt hittades.",
+  "emptyList": "Listan är tom.",
+  "emptyNoResults": "Inga resultat hittades.",
+  "emptyNoFriends": "Du har inga vänner än.",
+  "emptyNoRecipes": "Du har inga recept än.",
+  "emptyNoShoppingLists": "Du har inga inköpslistor än.",
+  "emptyNoRecipesSubtitle": "Lägg till ditt första recept genom att trycka på \"{addButton}\"",
+  "@emptyNoRecipesSubtitle": {
+    "placeholders": {
+      "addButton": {"type": "String"}
+    }
+  },
+  "emptyNoSearchResultsSubtitle": "Prova att söka på något annat eller rensa sökningen",
+  "emptyNoFriendsSearchTitle": "Inga vänner matchade din sökning",
+  "emptyNoGroupsSearchTitle": "Inga grupper matchade din sökning",
+  "emptyNoMenuTitle": "Ingen meny genererad ännu",
+  "emptyNoMenuSubtitle": "Skriv vad du vill ha eller tryck på knappen nedan",
+  "emptyNoShoppingListTitle": "Ingen meny att skapa inköpslista från",
+  "emptyNoShoppingListSubtitle": "Gå tillbaka och skapa en veckomeny först",
+  "emptyNoFriendsTitle": "Inga vänner ännu",
+  "emptyNoFriendsSubtitle": "Lägg till vänner för att dela recept och menyer",
+  "emptyNoCategoriesTitle": "Inga kategorier skapade",
+  "emptyNoCategoriesSubtitle": "Skapa din första kategori för att organisera dina vänner",
+  "emptyNoImagesTitle": "Inga bilder tillagda",
+  "emptyNoImagesSubtitle": "Lägg till bilder för att göra ditt recept mer attraktivt",
+  "emptyNoTargetsTitle": "Inga destinationer tillgängliga",
+  "emptyNoTargetsSubtitle": "Lägg till vänner eller grupper för att kunna dela innehåll",
+  "emptyNoSavedMenusTitle": "Inga sparade menyer",
+  "emptyNoSavedMenusSubtitle": "Skapa och spara menyer för att enkelt ladda dem senare",
+  "emptyGenericTitle": "Inget innehåll att visa",
+
+  "recipeName": "Receptnamn",
+  "recipeDescription": "Beskrivning",
+  "recipeIngredients": "Ingredienser",
+  "recipeInstructions": "Instruktioner",
+  "recipeCookingTime": "Tillagningstid",
+  "recipePortions": "Portioner",
+  "recipeAdd": "Lägg till recept",
+  "recipeEdit": "Redigera recept",
+  "recipeDelete": "Ta bort recept",
+  "recipeDeleting": "Tar bort recept...",
+  "recipeFormatPortions": "{count, plural, =1{1 portion} other{{count} portioner}}",
+  "@recipeFormatPortions": {
+    "placeholders": {
+      "count": {"type": "int", "example": "4"}
+    }
+  },
+
+  "socialFriendName": "Vännamn",
+  "socialGroupName": "Gruppnamn",
+  "socialDisplayName": "Visningsnamn",
+  "socialCreateGroup": "Skapa grupp",
+  "socialEditGroup": "Redigera grupp",
+  "socialDeleteGroup": "Ta bort grupp",
+  "socialAddFriend": "Lägg till vän",
+  "socialRemoveFriend": "Ta bort vän",
+  "socialSendFriendRequest": "Skicka vänförfrågan",
+  "socialAcceptFriendRequest": "Acceptera vänförfrågan",
+  "socialDeclineFriendRequest": "Avböj vänförfrågan",
+
+  "menuName": "Menynamn",
+  "menuSave": "Spara meny",
+  "menuLoad": "Ladda meny",
+  "menuWeek": "Veckomeny",
+
+  "messagingTitle": "Meddelanden",
+  "messagingNewConversation": "Ny konversation",
+  "messagingSearchConversations": "Sök konversationer...",
+  "messagingLoadingConversations": "Laddar konversationer...",
+  "messagingNoConversationsFound": "Inga konversationer hittades",
+  "messagingTryAnotherSearch": "Försök med ett annat sökord",
+  "messagingNoConversationsYet": "Inga konversationer än",
+  "messagingStartFirstConversation": "Starta din första konversation genom att trycka på meddelande-knappen",
+  "messagingMarkAsRead": "Markera som läst",
+  "messagingGroupInfo": "Gruppinformation",
+  "messagingLeaveGroup": "Lämna grupp",
+  "messagingViewProfile": "Visa profil",
+  "messagingDeleteConversation": "Radera konversation",
+  "messagingLeftGroup": "Du har lämnat gruppen",
+  "messagingCouldNotLeaveGroup": "Kunde inte lämna gruppen: {error}",
+  "@messagingCouldNotLeaveGroup": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "messagingLeave": "Lämna",
+  "messagingDeleteConversationConfirm": "Är du säker på att du vill radera denna konversation? Alla meddelanden kommer att försvinna.",
+  "messagingCouldNotShowProfile": "Kunde inte visa profil: {error}",
+  "@messagingCouldNotShowProfile": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "messagingConversationDeleted": "Konversation \"{title}\" raderad",
+  "@messagingConversationDeleted": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "messagingCouldNotDeleteConversation": "Kunde inte radera konversation: {error}",
+  "@messagingCouldNotDeleteConversation": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "messagingConfirmLeaveGroup": "Är du säker på att du vill lämna \"{groupName}\"?",
+  "@messagingConfirmLeaveGroup": {
+    "placeholders": {
+      "groupName": {"type": "String"}
+    }
+  },
+
+  "profileLogout": "Logga ut",
+  "profileLogoutConfirm": "Är du säker på att du vill logga ut?",
+  "profileDeleteAccount": "Radera konto permanent",
+  "profileDeleteWarningTitle": "VARNING: Detta kommer att:",
+  "profileDeleteWarningRecipes": "Ta bort alla dina recept",
+  "profileDeleteWarningMenus": "Ta bort alla dina menyer",
+  "profileDeleteWarningShoppingLists": "Ta bort alla dina shoppinglistor",
+  "profileDeleteWarningFriends": "Ta bort alla vänner och meddelanden",
+  "profileDeleteWarningSharedContent": "Ta bort all delad innehåll",
+  "profileDeleteIrreversible": "Denna åtgärd kan INTE ångras!",
+  "profileDeleteConfirmButton": "Jag förstår, radera mitt konto",
+  "profileConfirmWithPassword": "Bekräfta med lösenord",
+  "profileEnterPasswordToConfirm": "Ange ditt lösenord för att bekräfta raderingen:",
+  "profilePassword": "Lösenord",
+  "profileConfirm": "Bekräfta",
+  "profileError": "Fel",
+  "profileCouldNotDeleteAccount": "Kunde inte radera konto: {error}",
+  "@profileCouldNotDeleteAccount": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "chatErrorOccurred": "Ett fel uppstod",
+  "chatConversationInfo": "Konversationsinformation",
+  "chatTypeDirectMessage": "Typ: Direktmeddelande",
+  "chatCreatedAt": "Skapad: {date}",
+  "@chatCreatedAt": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "chatNotificationSettingsUpdated": "Notifikationsinställningar uppdaterade",
+  "chatCouldNotChangeNotifications": "Kunde inte ändra notifikationsinställningar",
+  "chatLeaveConversation": "Lämna konversation",
+  "chatLeaveConversationConfirm": "Är du säker på att du vill lämna konversationen?",
+  "chatCouldNotLeaveConversation": "Kunde inte lämna konversationen",
+  "chatEditMessage": "Redigera meddelande",
+  "chatWriteYourMessage": "Skriv ditt meddelande...",
+  "chatCouldNotEditMessage": "Kunde inte redigera meddelandet",
+  "chatCouldNotDeleteMessage": "Kunde inte ta bort meddelandet",
+  "chatMessageCopied": "Meddelande kopierat",
+  "chatCouldNotCopyMessage": "Kunde inte kopiera meddelandet",
+  "chatYourRecipes": "Dina recept",
+  "chatSharedRecipe": "Delat recept",
+  "chatCheckOutRecipe": "Kolla in detta recept!",
+  "chatCouldNotShareRecipe": "Kunde inte dela recept",
+  "chatMenuSharingComingSoon": "Menydelning kommer snart",
+  "chatCouldNotShareMenu": "Kunde inte dela meny",
+  "chatShoppingListSharingComingSoon": "Inköpslistedelning kommer snart",
+  "chatCouldNotShareShoppingList": "Kunde inte dela inköpslista",
+  "chatLoadingImage": "Laddar bild...",
+  "chatImageSent": "Bild skickad!",
+  "chatNoImageSelected": "Ingen bild vald",
+  "chatCouldNotSharePhoto": "Kunde inte dela foto",
+  "chatDeleteMessage": "Ta bort",
+  "chatDeleteMessageConfirm": "Är du säker på att du vill ta bort meddelandet?",
+
+  "placeholderSearch": "Sök...",
+  "placeholderName": "Ange namn",
+  "placeholderDescription": "Ange beskrivning (valfritt)",
+  "placeholderEmail": "din@email.com",
+  "placeholderUrl": "https://exempel.se",
+  "placeholderPhone": "+46 70 123 45 67",
+
+  "statusConnecting": "Ansluter...",
+  "statusSyncing": "Synkroniserar...",
+  "statusUploading": "Laddar upp...",
+  "statusDownloading": "Laddar ner...",
+  "statusProcessing": "Bearbetar...",
+  "statusSaving": "Sparar...",
+  "statusDeleting": "Tar bort...",
+  "statusCreating": "Skapar...",
+  "statusUpdating": "Uppdaterar...",
+
+  "accessibilityMenuButton": "Menyknapp",
+  "accessibilityBackButton": "Tillbaka",
+  "accessibilityCloseButton": "Stäng",
+  "accessibilityMoreOptions": "Fler alternativ",
+  "accessibilityExpandButton": "Expandera",
+  "accessibilityCollapseButton": "Kollapsa",
+
+  "timeToday": "Idag",
+  "timeYesterday": "Igår",
+  "timeTomorrow": "Imorgon",
+  "timeThisWeek": "Denna vecka",
+  "timeLastWeek": "Förra veckan",
+  "timeNextWeek": "Nästa vecka",
+
+  "unitMinutesShort": "min",
+  "unitHoursShort": "h",
+  "unitPiecesShort": "st",
+  "unitLiters": "liter",
+  "unitKilograms": "kg",
+  "unitGrams": "g",
+
+  "technicalShowDetails": "Visa tekniska detaljer",
+  "technicalHideDetails": "Dölj tekniska detaljer",
+  "technicalInformation": "Teknisk information",
+  "technicalContactSupport": "Kontakta support",
+  "technicalTryAgainLater": "Försök igen senare",
+
+  "dialogErrorTitle": "Ett fel uppstod",
+  "dialogLoading": "Laddar...",
+  "dialogConfirmDeleteTitle": "Bekräfta borttagning",
+  "dialogConfirmDeleteMessage": "Är du säker på att du vill ta bort {itemName} från {itemType}?",
+  "@dialogConfirmDeleteMessage": {
+    "placeholders": {
+      "itemName": {"type": "String"},
+      "itemType": {"type": "String"}
+    }
+  }
+}

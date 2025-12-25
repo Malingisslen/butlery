@@ -18,6 +18,9 @@ mixin AsyncOperationMixin on StateNotifierMixin {
   /// Cache of operation results to avoid redundant network requests.
   final Map<String, dynamic> _operationCache = {};
 
+  /// Timers for cache expiry - tracked for proper disposal.
+  final Set<Timer> _cacheExpiryTimers = {};
+
   /// Whether any operations are currently executing
   bool get hasActiveOperations => _activeOperations.isNotEmpty;
 
@@ -109,10 +112,13 @@ mixin AsyncOperationMixin on StateNotifierMixin {
 
       // Set cache expiry if specified
       if (cacheExpiry != null) {
-        Timer(cacheExpiry, () {
+        late final Timer expiryTimer;
+        expiryTimer = Timer(cacheExpiry, () {
           _operationCache.remove(cacheKey);
+          _cacheExpiryTimers.remove(expiryTimer);
           AppLogger.debug('Cache expired for $cacheKey');
         });
+        _cacheExpiryTimers.add(expiryTimer);
       }
 
       return result;
@@ -364,6 +370,11 @@ mixin AsyncOperationMixin on StateNotifierMixin {
   @override
   void dispose() {
     cancelAllOperations();
+    // Cancel all cache expiry timers
+    for (final timer in _cacheExpiryTimers) {
+      timer.cancel();
+    }
+    _cacheExpiryTimers.clear();
     clearOperationCache();
     super.dispose();
   }

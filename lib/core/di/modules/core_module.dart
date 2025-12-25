@@ -31,6 +31,9 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 
+// Core providers
+import 'package:butlery/core/providers/locale_provider.dart';
+
 // Account/GDPR services
 import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/account/data_export_service.dart';
@@ -71,6 +74,8 @@ class CoreModule implements DIModule {
       AccountDeletionService,
       DataExportService,
       ConsentService,
+      // Core providers
+      LocaleProvider,
     ];
 
     return services;
@@ -81,147 +86,69 @@ class CoreModule implements DIModule {
 
   @override
   Future<void> configure(GetIt container) async {
-    if (kDebugMode) {
-      debugPrint('🔧 [CoreModule] Configuring core services...');
-    }
-
     try {
       // SharedPreferences must be registered first as many services depend on it
-      if (kDebugMode) {
-        debugPrint('🔍 [CoreModule] Step 1: Getting SharedPreferences...');
-      }
       final sharedPreferences = await SharedPreferences.getInstance();
       container.registerSingleton<SharedPreferences>(sharedPreferences);
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] SharedPreferences registered');
-      }
+
+      // LocaleProvider for app language management
+      container.registerSingleton<LocaleProvider>(LocaleProvider());
 
       // Core repositories form the foundation of the data access layer
-      if (kDebugMode) {
-        debugPrint('🔍 [CoreModule] Step 2: Registering AuthRepository...');
-      }
       container.registerSingleton<AuthRepository>(FirebaseAuthRepository());
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] AuthRepository registered');
-      }
 
       // Audit repository for GDPR Article 30 compliance (persistent audit logging)
-      if (kDebugMode) {
-        debugPrint('🔍 [CoreModule] Step 3: Registering AuditRepository...');
-      }
       container.registerSingleton<FirebaseAuditRepository>(
         FirebaseAuditRepository(),
       );
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] AuditRepository registered');
-      }
 
       // Consent repository for GDPR Article 7 compliance (consent management)
-      if (kDebugMode) {
-        debugPrint('🔍 [CoreModule] Step 4: Registering ConsentRepository...');
-      }
       container.registerSingleton<FirebaseConsentRepository>(
         FirebaseConsentRepository(
           authRepository: container<AuthRepository>(),
           auditRepository: container<FirebaseAuditRepository>(),
         ),
       );
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] ConsentRepository registered');
-      }
 
       // FirestoreRepository provides centralized Firestore access
-      if (kDebugMode) {
-        debugPrint(
-          '🔍 [CoreModule] Step 5: Registering FirestoreRepository...',
-        );
-      }
       container.registerSingleton<FirestoreRepository>(FirestoreRepository());
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] FirestoreRepository registered');
-      }
 
       // Analytics repository for analytics operations
       // IMPORTANT: Must be registered BEFORE AuthService (which depends on it)
       // Uses FirebaseAnalyticsRepository on native platforms, NoOpAnalyticsRepository on web
-      if (kDebugMode) {
-        debugPrint(
-          '🔍 [CoreModule] Step 6: Registering Analytics - kIsWeb=$kIsWeb',
-        );
-      }
-
       // Register appropriate repository based on platform
       container.registerSingleton<AnalyticsRepository>(
         kIsWeb ? NoOpAnalyticsRepository() : FirebaseAnalyticsRepository(),
       );
-      if (kDebugMode) {
-        debugPrint(
-          '✅ [CoreModule] AnalyticsRepository registered (${kIsWeb ? "NoOp" : "Firebase"})',
-        );
-      }
 
       // Analytics service for monitoring and tracking (available on all platforms)
-      if (kDebugMode) {
-        debugPrint('🔍 [CoreModule] Registering AnalyticsService...');
-      }
       container.registerSingleton<AnalyticsService>(
         AnalyticsService(repository: container<AnalyticsRepository>()),
       );
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] AnalyticsService registered');
-      }
 
       // Authentication service is critical and needed by many other services
       // Note: Depends on AnalyticsService (available on all platforms)
-      if (kDebugMode) {
-        debugPrint('🔍 [CoreModule] Step 7: Registering AuthService...');
-      }
       container.registerSingleton<AuthService>(
         AuthService(
           authRepository: container<AuthRepository>(),
           analyticsService: container<AnalyticsService>(),
         ),
       );
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] AuthService registered');
-      }
 
       // Session timeout service for automatic logout on inactivity
       // Note: Depends on AuthService and AnalyticsService
-      if (kDebugMode) {
-        debugPrint('🔍 [CoreModule] Registering SessionTimeoutService...');
-      }
       container.registerLazySingleton<SessionTimeoutService>(
         () => SessionTimeoutService(
           authService: container<AuthService>(),
           analyticsService: container<AnalyticsService>(),
         ),
       );
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] SessionTimeoutService registered');
-      }
 
       // Persistence service for local data storage and caching
-      if (kDebugMode) {
-        debugPrint('🔍 [CoreModule] Step 8: Registering PersistenceService...');
-      }
       container.registerSingleton<PersistenceService>(PersistenceService());
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] PersistenceService registered');
-      }
-
-      if (kDebugMode) {
-        debugPrint('🔍 [CoreModule] Registering GDPR services...');
-        debugPrint('🔍 [CoreModule] kIsWeb = $kIsWeb');
-      }
 
       // Account deletion service for GDPR Article 17 (Right to Erasure)
       container.registerLazySingleton<AccountDeletionService>(() {
-        if (kDebugMode) {
-          debugPrint(
-            '🔍 [CoreModule] Creating AccountDeletionService instance...',
-          );
-        }
         return AccountDeletionService(
           authRepository: container<AuthRepository>(),
           firestoreRepository: container<FirestoreRepository>(),
@@ -232,10 +159,6 @@ class CoreModule implements DIModule {
           analyticsService: container<AnalyticsService>(),
         );
       });
-
-      if (kDebugMode) {
-        debugPrint('✅ [CoreModule] AccountDeletionService registered');
-      }
 
       // Data export service for GDPR Article 20 (Right to Data Portability)
       container.registerLazySingleton<DataExportService>(
@@ -252,12 +175,6 @@ class CoreModule implements DIModule {
           consentRepository: container<FirebaseConsentRepository>(),
         ),
       );
-
-      if (kDebugMode) {
-        debugPrint(
-          '✅ [CoreModule] Configured 12 core services (Auth, Audit, Consent, Storage, Analytics, Persistence, GDPR)',
-        );
-      }
     } catch (e) {
       throw DIModuleException(
         name,
@@ -325,27 +242,18 @@ class CoreModule implements DIModule {
         if (service is HealthCheckable) {
           final isHealthy = await service.healthCheck();
           if (!isHealthy) {
-            if (kDebugMode) {
-              debugPrint('❌ [CoreModule] Health check failed for ${entry.key}');
-            }
             return false;
           }
         }
 
         // Basic validation - service is not null
         if (service == null) {
-          if (kDebugMode) {
-            debugPrint('❌ [CoreModule] Service ${entry.key} is null');
-          }
           return false;
         }
       }
 
       return true;
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ [CoreModule] Health check failed: $e');
-      }
       return false;
     }
   }

@@ -2,7 +2,6 @@
 /// Provides platform-specific extraction strategies (Instagram, Facebook, TikTok, recipe sites) using
 /// headless browser technology with timeout management and proper resource cleanup.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'dart:async';
 import 'package:butlery/services/extraction/platform_detector.dart' as pd;
@@ -54,13 +53,11 @@ class WebScraper {
   ) async {
     final completer = Completer<ExtractionResult>();
     bool hasExtracted = false;
-    int loadCount = 0;
 
     // Set timeout
     late final Timer timeoutTimer;
     timeoutTimer = Timer(_extractionTimeout, () {
       if (!completer.isCompleted && !_isDisposed) {
-        debugPrint('⏱️ Timeout reached, ending extraction');
         completer.complete(
           ExtractionResult(
             success: false,
@@ -89,8 +86,6 @@ class WebScraper {
         onProgressChanged: (controller, progress) {
           if (_isDisposed || completer.isCompleted) return;
 
-          debugPrint('📊 Loading: $progress%');
-
           if (progress == 100 && !hasExtracted && !completer.isCompleted) {
             hasExtracted = true;
 
@@ -103,8 +98,6 @@ class WebScraper {
                   !_isDisposed &&
                   _headlessWebView != null) {
                 try {
-                  debugPrint('🔍 Extracting content...');
-
                   final extractedText = await _extractTextForPlatform(
                     controller,
                     platform,
@@ -138,7 +131,6 @@ class WebScraper {
                   await Future.delayed(const Duration(milliseconds: 1000));
                   _safeCleanup();
                 } catch (e) {
-                  debugPrint('❌ Extraction error: $e');
                   timeoutTimer.cancel();
 
                   if (!completer.isCompleted) {
@@ -168,14 +160,12 @@ class WebScraper {
                 urlString.startsWith('fb://') ||
                 urlString.startsWith('twitter://') ||
                 urlString.startsWith('tiktok://')) {
-              debugPrint('🚫 Blocking app link: $urlString');
               return NavigationActionPolicy.CANCEL;
             }
 
             // Block app store links
             if (urlString.contains('apps.apple.com') ||
                 urlString.contains('play.google.com')) {
-              debugPrint('🚫 Blocking app store link: $urlString');
               return NavigationActionPolicy.CANCEL;
             }
           }
@@ -185,18 +175,12 @@ class WebScraper {
         onLoadStop: (controller, url) async {
           if (_isDisposed) return;
 
-          loadCount++;
-          debugPrint('✅ Page loaded (time $loadCount): $url');
-
           if (url != null && url.toString().startsWith('instagram://')) {
-            debugPrint('⚠️ Ignoring Instagram app URL');
             return;
           }
         },
         onReceivedError: (controller, request, error) {
           if (_isDisposed || completer.isCompleted) return;
-
-          debugPrint('❌ Loading error: ${error.description}');
 
           timeoutTimer.cancel();
 
@@ -213,15 +197,12 @@ class WebScraper {
             _safeCleanup();
           });
         },
-        onConsoleMessage: (controller, consoleMessage) {
-          debugPrint('CONSOLE: ${consoleMessage.message}');
-        },
+        onConsoleMessage: (controller, consoleMessage) {},
       );
 
       // Start WebView
       await _headlessWebView?.run();
     } catch (e) {
-      debugPrint('❌ Extraction error: $e');
       timeoutTimer.cancel();
 
       if (!completer.isCompleted) {
@@ -316,22 +297,19 @@ class WebScraper {
     if (!_isDisposed) {
       _isDisposed = true;
 
-      debugPrint('🧹 Cleaning up WebView...');
-
       if (_headlessWebView != null) {
         try {
           _headlessWebView?.webViewController?.stopLoading();
         } catch (e) {
-          debugPrint('⚠️ Could not stop WebView: $e');
+          // Ignore stop loading errors
         }
 
         Future.delayed(const Duration(milliseconds: 500), () {
           try {
             _headlessWebView?.dispose();
             _headlessWebView = null;
-            debugPrint('✅ WebView cleaned');
           } catch (e) {
-            debugPrint('⚠️ WebView dispose error: $e');
+            // Ignore dispose errors
           }
         });
       }

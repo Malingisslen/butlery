@@ -1,7 +1,6 @@
 /// Collaboration module for real-time services and collaborative features.
 library;
 
-import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:butlery/core/di/interfaces/di_module.dart';
@@ -45,12 +44,6 @@ class CollaborationModule implements DIModule {
 
   @override
   Future<void> configure(GetIt container) async {
-    if (kDebugMode) {
-      debugPrint(
-        '🔧 [CollaborationModule] Configuring collaboration services...',
-      );
-    }
-
     try {
       container.registerSingleton<RealtimeSyncService>(
         RealtimeSyncService(
@@ -92,12 +85,6 @@ class CollaborationModule implements DIModule {
           permissionService: container<PermissionService>(),
         ),
       );
-
-      if (kDebugMode) {
-        debugPrint(
-          '✅ [CollaborationModule] Configured 6 services (Realtime sync, Shopping, Shared shopping, Permissions)',
-        );
-      }
     } catch (e) {
       throw DIModuleException(
         name,
@@ -151,12 +138,8 @@ class CollaborationModule implements DIModule {
       try {
         services['RealtimeMenuService'] = container<RealtimeMenuService>();
         services['RealtimeRecipeService'] = container<RealtimeRecipeService>();
-      } catch (e) {
-        if (kDebugMode) {
-          debugPrint(
-            '⚠️ [CollaborationModule] Could not access lazy singletons: $e',
-          );
-        }
+      } catch (_) {
+        // Lazy singletons may not be accessible yet
       }
 
       for (final entry in services.entries) {
@@ -165,28 +148,17 @@ class CollaborationModule implements DIModule {
         if (service is HealthCheckable) {
           final isHealthy = await service.healthCheck();
           if (!isHealthy) {
-            if (kDebugMode) {
-              debugPrint(
-                '❌ [CollaborationModule] Health check failed for ${entry.key}',
-              );
-            }
             return false;
           }
         }
 
         if (service == null) {
-          if (kDebugMode) {
-            debugPrint('❌ [CollaborationModule] Service ${entry.key} is null');
-          }
           return false;
         }
       }
 
       return true;
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ [CollaborationModule] Health check failed: $e');
-      }
       return false;
     }
   }

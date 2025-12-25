@@ -49,6 +49,11 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/router/app_router.dart';
 
+// Localization
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/core/providers/locale_provider.dart';
+
 // Views
 import 'package:butlery/views/auth_view.dart';
 import 'package:butlery/views/mina_recept_view.dart';
@@ -72,66 +77,41 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    if (kDebugMode) {
-      debugPrint('🚀 Starting Butlery with modular system');
-    }
-
     // Load environment variables first - required for Firebase configuration
     await dotenv.load(fileName: '.env');
-
-    if (kDebugMode) {
-      debugPrint('✅ Environment variables loaded');
-    }
 
     // Initialize Firebase with configuration from .env
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    if (kDebugMode) {
-      debugPrint('✅ Firebase initialized successfully');
-    }
+    // Initialize Firebase Crashlytics and App Check in parallel for faster startup
+    await Future.wait([
+      if (!kIsWeb)
+        FirebaseCrashlytics.instance
+            .setCrashlyticsCollectionEnabled(!kDebugMode),
+      if (!kDebugMode)
+        FirebaseAppCheck.instance.activate(
+          providerWeb: ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
+          providerAndroid: const AndroidPlayIntegrityProvider(),
+          providerApple: const AppleDeviceCheckProvider(),
+        ),
+    ]);
 
-    // Initialize Firebase Crashlytics for production error tracking (mobile only - not supported on web)
+    // Set up Crashlytics error handlers (sync, after Crashlytics enabled)
     if (!kIsWeb) {
-      await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
-        !kDebugMode,
-      );
-
-      // Pass all Flutter errors to Crashlytics
       FlutterError.onError = (errorDetails) {
         FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-        // Also log to console in debug mode
         if (kDebugMode) {
           FlutterError.presentError(errorDetails);
         }
       };
 
-      // Pass all platform dispatcher errors to Crashlytics
       PlatformDispatcher.instance.onError = (error, stack) {
         FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
         return true;
       };
-
-      if (kDebugMode) {
-        debugPrint('✅ Crashlytics initialized (collection: ${!kDebugMode})');
-      }
-    } else {
-      if (kDebugMode) {
-        debugPrint('⚠️ Crashlytics skipped (not supported on web)');
-      }
     }
-
-    // Initialize Firebase App Check
-    // Skip App Check in debug mode to avoid rate limiting during development
-    if (!kDebugMode) {
-      await FirebaseAppCheck.instance.activate(
-        providerWeb: ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
-        providerAndroid: const AndroidPlayIntegrityProvider(),
-        providerApple: const AppleDeviceCheckProvider(),
-      );
-    }
-    // Firebase App Check configuration complete (production mode uses App Check, debug mode skips it)
 
     // Initialize modular system FIRST - this sets up the DI container and ServiceLocator
     await _initializeModularSystem();
@@ -149,21 +129,12 @@ Future<void> main() async {
         if (!kIsWeb) {
           FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
         }
-        if (kDebugMode) {
-          debugPrint('❌ Uncaught async error: $error');
-          debugPrint('Stack trace: $stack');
-        }
       },
     );
 
     // Start the application (must be in same zone as ensureInitialized)
     runApp(const ButleryApp());
   } catch (e, stackTrace) {
-    if (kDebugMode) {
-      debugPrint('❌ Application startup failed: $e');
-      debugPrint('Stack trace: $stackTrace');
-    }
-
     // Show error app with more details
     runApp(
       _ErrorApp(
@@ -174,10 +145,6 @@ Future<void> main() async {
 }
 
 Future<void> _initializeModularSystem() async {
-  if (kDebugMode) {
-    debugPrint('🔧 Initializing modular DI system...');
-  }
-
   // Create DI modules in dependency order
   final modules = [
     CoreModule(),
@@ -202,27 +169,12 @@ Future<void> _initializeModularSystem() async {
   final startupTrace = FirebasePerformance.instance.newTrace('app_startup');
   await startupTrace.start();
 
-  if (kDebugMode) {
-    debugPrint('📊 Performance: Started app startup trace');
-  }
-
   // Initialize with modules and stages
   // This also initializes the ServiceLocator internally
   await ApplicationBootstrap.initialize(modules: modules, stages: stages);
 
   // Stop startup trace after initialization complete
   await startupTrace.stop();
-
-  if (kDebugMode) {
-    debugPrint('📊 Performance: Stopped app startup trace');
-  }
-
-  // ServiceLocator is now initialized by ApplicationBootstrap
-  // Performance services are handled by the PerformanceModule if registered
-
-  if (kDebugMode) {
-    debugPrint('✅ Modular system initialized successfully');
-  }
 }
 
 class _ErrorApp extends StatelessWidget {
@@ -300,6 +252,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   SessionTimeoutService? _sessionTimeoutService;
   SessionActivityObserver? _sessionActivityObserver;
   DateTime? _sessionStartTime;
+  final LocaleProvider _localeProvider = LocaleProvider();
 
   @override
   void initState() {
@@ -308,6 +261,23 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     _initializeUI();
     _trackAppOpened();
     _initializeSessionTimeout();
+    _initializeLocale();
+  }
+
+  /// Initialize locale provider
+  Future<void> _initializeLocale() async {
+    await _localeProvider.initialize();
+    _localeProvider.addListener(_onLocaleChanged);
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  /// Handle locale change
+  void _onLocaleChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   /// Initialize session timeout service for automatic logout on inactivity
@@ -315,14 +285,8 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
     try {
       final bootstrap = ApplicationBootstrap();
 
-      // Wait for bootstrap to be ready
-      if (!bootstrap.isInitialized) {
-        var attempts = 0;
-        while (!bootstrap.isInitialized && attempts < 50) {
-          await Future.delayed(const Duration(milliseconds: 100));
-          attempts++;
-        }
-      }
+      // Wait for bootstrap to be ready using Completer pattern (no polling)
+      await bootstrap.initialized;
 
       if (bootstrap.isInitialized) {
         _sessionTimeoutService =
@@ -342,15 +306,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
             _sessionTimeoutService!,
           );
         }
-
-        if (kDebugMode) {
-          debugPrint('✅ Session timeout service initialized');
-        }
       }
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('⚠️ Session timeout service initialization failed: $e');
-      }
+      // Session timeout initialization failed - non-critical
     }
   }
 
@@ -366,15 +324,9 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       remainingSeconds: remainingSeconds,
       onExtendSession: () {
         _sessionTimeoutService?.recordActivity();
-        if (kDebugMode) {
-          debugPrint('Session extended by user');
-        }
       },
       onLogoutNow: () {
         _sessionTimeoutService?.forceLogout();
-        if (kDebugMode) {
-          debugPrint('User requested immediate logout');
-        }
       },
     );
   }
@@ -382,6 +334,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _localeProvider.removeListener(_onLocaleChanged);
     _sessionTimeoutService?.dispose();
     super.dispose();
   }
@@ -394,10 +347,38 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       // App came to foreground
       _trackAppOpened();
       _sessionTimeoutService?.onAppResumed();
+      _resumeCacheManager();
     } else if (state == AppLifecycleState.paused) {
       // App went to background
       _trackAppBackgrounded();
       _sessionTimeoutService?.onAppPaused();
+      _pauseCacheManager();
+    }
+  }
+
+  /// Pause cache manager background operations when app backgrounds
+  void _pauseCacheManager() {
+    try {
+      final bootstrap = ApplicationBootstrap();
+      if (bootstrap.isInitialized) {
+        final cacheManager = bootstrap.container.get<IntelligentCacheManager>();
+        cacheManager.onAppPaused();
+      }
+    } catch (e) {
+      // Silently ignore - cache manager may not be available
+    }
+  }
+
+  /// Resume cache manager background operations when app resumes
+  void _resumeCacheManager() {
+    try {
+      final bootstrap = ApplicationBootstrap();
+      if (bootstrap.isInitialized) {
+        final cacheManager = bootstrap.container.get<IntelligentCacheManager>();
+        cacheManager.onAppResumed();
+      }
+    } catch (e) {
+      // Silently ignore - cache manager may not be available
     }
   }
 
@@ -486,45 +467,23 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         setState(() {}); // Trigger rebuild with analytics
       }
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('⚠️ UI initialization error (non-critical): $e');
-        debugPrint(
-          '💡 Note: Deep links may not work on all platforms (e.g., web)',
-        );
-      }
+      // UI initialization error - non-critical, deep links may not work on all platforms
     }
   }
 
   Future<void> _setupModularAnalytics() async {
     try {
-      // Wait for application to be ready
+      // Wait for application to be ready using Completer pattern (no polling)
       final bootstrap = ApplicationBootstrap();
-      if (!bootstrap.isInitialized) {
-        if (kDebugMode) {
-          debugPrint('⏳ Waiting for modular system to initialize...');
-        }
-
-        // Wait for initialization with timeout
-        var attempts = 0;
-        while (!bootstrap.isInitialized && attempts < 50) {
-          await Future.delayed(const Duration(milliseconds: 100));
-          attempts++;
-        }
-      }
+      await bootstrap.initialized;
 
       if (bootstrap.isInitialized) {
         final analyticsService = bootstrap.container.get<AnalyticsService>();
         _analyticsObserver =
             analyticsService.observer as FirebaseAnalyticsObserver?;
-
-        if (kDebugMode) {
-          debugPrint('✅ Modular analytics observer setup');
-        }
       }
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('⚠️ Modular analytics setup failed: $e');
-      }
+      // Analytics setup failed - non-critical
     }
   }
 
@@ -571,6 +530,15 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
         title: 'Butlery',
         theme: AppTheme.lightTheme,
         debugShowCheckedModeBanner: false,
+        // Localization configuration
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: _localeProvider.locale,
         home: const InitializationWrapper(),
         onUnknownRoute: AppRouter.handleUnknownRoute,
         onGenerateRoute: AppRouter.generateRoute,
@@ -633,10 +601,6 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
   }
 
   void _onApplicationReady() {
-    if (kDebugMode) {
-      debugPrint('✅ Application is ready for user interaction');
-    }
-
     // Process any pending deep links
     if (mounted) {
       DeepLinkHandler().processPendingDeepLink(context);
@@ -675,7 +639,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     // Log initial state
     if (_authService.currentUser != null) {
       AppLogger.debug(
-        'AuthWrapper: User logged in at startup: ${_authService.currentUser!.email}',
+        'AuthWrapper: User logged in at startup: ${_authService.currentUser!.uid}',
       );
     }
 
@@ -689,7 +653,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
       final user = _authService.currentUser;
       if (user != null) {
-        AppLogger.debug('AuthWrapper: User authenticated: ${user.email}');
+        AppLogger.debug('AuthWrapper: User authenticated: ${user.uid}');
       } else {
         AppLogger.debug('AuthWrapper: User signed out');
       }
@@ -699,7 +663,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   @override
   void dispose() {
     AppLogger.debug(
-      'AuthWrapper: Disposing wrapper for user: ${_authService.currentUser?.email ?? 'NULL'}',
+      'AuthWrapper: Disposing wrapper for user: ${_authService.currentUser?.uid ?? 'NULL'}',
     );
     _authService.removeListener(_onAuthStateChanged);
     super.dispose();
@@ -712,7 +676,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
     if (user != null) {
       AppLogger.debug(
-        'AuthWrapper: NAVIGATION SUCCESS - User logged in: ${user.email}',
+        'AuthWrapper: NAVIGATION SUCCESS - User logged in: ${user.uid}',
       );
       return MinaReceptView(key: ValueKey(user.uid));
     }

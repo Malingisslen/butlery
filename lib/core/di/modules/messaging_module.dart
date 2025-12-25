@@ -8,7 +8,6 @@
 /// Depends on Core Module and Social Module for foundational services.
 library;
 
-import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 
 // Core interfaces
@@ -66,10 +65,6 @@ class MessagingModule implements DIModule {
 
   @override
   Future<void> configure(GetIt container) async {
-    if (kDebugMode) {
-      debugPrint('🔧 [MessagingModule] Configuring messaging services...');
-    }
-
     try {
       // Messaging repository for direct messages and conversations
       container.registerSingleton<MessagingRepository>(
@@ -94,11 +89,6 @@ class MessagingModule implements DIModule {
         firestoreRepository: container<FirestoreRepository>(),
         authRepository: container<AuthRepository>(),
       ));
-
-      if (kDebugMode) {
-        debugPrint(
-            '✅ [MessagingModule] Configured messaging, presence and notifications services');
-      }
     } catch (e) {
       throw DIModuleException(
         name,
@@ -126,10 +116,6 @@ class MessagingModule implements DIModule {
       // Initialize PresenceService for online/offline tracking
       final presenceService = container<PresenceService>();
       await presenceService.initialize();
-
-      if (kDebugMode) {
-        debugPrint('✅ [MessagingModule] Initialized presence tracking');
-      }
     } catch (e) {
       throw DIModuleException(
         name,
@@ -165,28 +151,18 @@ class MessagingModule implements DIModule {
         if (service is HealthCheckable) {
           final isHealthy = await service.healthCheck();
           if (!isHealthy) {
-            if (kDebugMode) {
-              debugPrint(
-                  '❌ [MessagingModule] Health check failed for ${entry.key}');
-            }
             return false;
           }
         }
 
         // Basic validation - service is not null
         if (service == null) {
-          if (kDebugMode) {
-            debugPrint('❌ [MessagingModule] Service ${entry.key} is null');
-          }
           return false;
         }
       }
 
       return true;
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ [MessagingModule] Health check failed: $e');
-      }
       return false;
     }
   }

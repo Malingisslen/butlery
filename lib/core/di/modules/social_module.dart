@@ -1,6 +1,5 @@
 library;
 
-import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:butlery/core/di/interfaces/di_module.dart';
@@ -85,10 +84,6 @@ class SocialModule implements DIModule {
 
   @override
   Future<void> configure(GetIt container) async {
-    if (kDebugMode) {
-      debugPrint('🔧 [SocialModule] Configuring social services...');
-    }
-
     try {
       container.registerSingleton<UserRepository>(
         FirebaseUserRepository(authRepository: container<AuthRepository>()),
@@ -105,8 +100,9 @@ class SocialModule implements DIModule {
         FirebaseFriendsRepository(authRepository: container<AuthRepository>()),
       );
 
-      container.registerSingleton<UnifiedFriendsService>(
-        UnifiedFriendsService(
+      // Lazy registration for faster startup
+      container.registerLazySingleton<UnifiedFriendsService>(
+        () => UnifiedFriendsService(
           firestoreRepository: container<FirestoreRepository>(),
           authRepository: container<AuthRepository>(),
         ),
@@ -311,11 +307,6 @@ class SocialModule implements DIModule {
           permissionService: container<PermissionService>(),
         ),
       );
-
-      if (kDebugMode) {
-        debugPrint(
-            '✅ [SocialModule] Configured 16 services (Users, Friends, Social recipes, Comments, Ratings, Group content, Social coordinators)');
-      }
     } catch (e) {
       throw DIModuleException(
         name,
@@ -389,28 +380,18 @@ class SocialModule implements DIModule {
         if (service is HealthCheckable) {
           final isHealthy = await service.healthCheck();
           if (!isHealthy) {
-            if (kDebugMode) {
-              debugPrint(
-                  '❌ [SocialModule] Health check failed for ${entry.key}');
-            }
             return false;
           }
         }
 
         // Basic validation - service is not null
         if (service == null) {
-          if (kDebugMode) {
-            debugPrint('❌ [SocialModule] Service ${entry.key} is null');
-          }
           return false;
         }
       }
 
       return true;
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ [SocialModule] Health check failed: $e');
-      }
       return false;
     }
   }
