@@ -318,6 +318,7 @@ class RecipeDiscoveryService extends BaseService {
     int limit = 20,
     Duration? timeWindow,
     List<String>? categoryFilter,
+    Set<String>? excludeIds,
   }) async {
     try {
       AppLogger.info('🔥 Getting trending collaborative recipes');
@@ -326,7 +327,14 @@ class RecipeDiscoveryService extends BaseService {
       if (currentUserId == null) return [];
 
       // Get all accessible collaborative recipes
-      final collaborativeRecipes = await getCollaborativeRecipes(limit: 0);
+      var collaborativeRecipes = await getCollaborativeRecipes(limit: 0);
+
+      // Exclude already-loaded recipes for pagination
+      if (excludeIds != null && excludeIds.isNotEmpty) {
+        collaborativeRecipes = collaborativeRecipes
+            .where((r) => !excludeIds.contains(r.id))
+            .toList();
+      }
 
       if (collaborativeRecipes.isEmpty) return [];
 

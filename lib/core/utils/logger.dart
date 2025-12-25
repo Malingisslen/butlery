@@ -41,6 +41,7 @@
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:butlery/core/utils/correlation_id.dart';
 
 /// Application logging utility providing structured, production-safe logging with hierarchical severity levels.
 /// This utility class implements comprehensive logging functionality using Flutter's developer.log() system
@@ -59,6 +60,14 @@ class AppLogger {
     String userAction,
     String? stackTrace,
   )? _analyticsCallback;
+
+  /// Formats a message with correlation ID prefix if one is active.
+  /// Returns the original message if no correlation ID is set.
+  static String _withCorrelationId(String message) {
+    final corrId = CorrelationId.current;
+    if (corrId == null) return message;
+    return '[CORR:$corrId] $message';
+  }
 
   /// Configures the analytics callback for error tracking.
   /// This should be called during app initialization after AnalyticsService is available.
@@ -102,7 +111,7 @@ class AppLogger {
   /// **Log Level:** 800 (Info) - Appropriate for positive outcomes and completed operations
   static void success(String message, [String? name]) {
     developer.log(
-      '✅ $message',
+      '✅ ${_withCorrelationId(message)}',
       name: name ?? 'Butlery',
       level: 800, // Info level
     );
@@ -123,7 +132,7 @@ class AppLogger {
   /// **Log Level:** 800 (Info) - Standard information level for general application logging
   static void info(String message, [String? name]) {
     developer.log(
-      '💡 $message',
+      '💡 ${_withCorrelationId(message)}',
       name: name ?? 'Butlery',
       level: 800, // Info level
     );
@@ -144,7 +153,7 @@ class AppLogger {
   /// **Log Level:** 900 (Warning) - Elevated level for conditions requiring attention
   static void warning(String message, [String? name]) {
     developer.log(
-      '⚠️ $message',
+      '⚠️ ${_withCorrelationId(message)}',
       name: name ?? 'Butlery',
       level: 900, // Warning level
     );
@@ -177,7 +186,7 @@ class AppLogger {
     StackTrace? stackTrace,
   ]) {
     developer.log(
-      '❌ $message',
+      '❌ ${_withCorrelationId(message)}',
       name: name ?? 'Butlery',
       level: 1000, // Error level
       error: error,
@@ -272,7 +281,7 @@ class AppLogger {
   static void debug(String message, [String? name]) {
     assert(() {
       developer.log(
-        '🐛 $message',
+        '🐛 ${_withCorrelationId(message)}',
         name: name ?? 'Butlery-Debug',
         level: 700, // Debug level
       );
@@ -406,7 +415,7 @@ class AppLogger {
   static void analytics(String eventName, [Map<String, dynamic>? data]) {
     final dataStr = data != null ? ' $data' : '';
     developer.log(
-      '📊 $eventName$dataStr',
+      '📊 ${_withCorrelationId('$eventName$dataStr')}',
       name: 'Analytics',
       level: 800, // Info level
     );
