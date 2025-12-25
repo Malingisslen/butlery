@@ -279,11 +279,10 @@ service cloud.firestore {
         );
 
         // Users can dismiss for themselves
-        // Issue #014 Fix: Accept 'timestamp' (from BaseMetadataRepository) OR 'dismissedAt'
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId'])
-          && request.resource.data.keys().hasAny(['timestamp', 'dismissedAt']);
+          && request.resource.data.keys().hasAll(['timestamp']);
 
         // Users can undismiss for themselves
         allow delete: if isAuthenticated()
@@ -399,11 +398,10 @@ service cloud.firestore {
         );
 
         // Users can mark themselves as having viewed
-        // Issue #014 Fix: Accept 'timestamp' (from BaseMetadataRepository) OR 'viewedAt'
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId'])
-          && (request.resource.data.keys().hasAny(['timestamp', 'viewedAt']));
+          && request.resource.data.keys().hasAll(['timestamp']);
       }
 
       // Engagements subcollection - who has imported the menu
@@ -415,10 +413,9 @@ service cloud.firestore {
         );
 
         // Users can mark themselves as having engaged (imported)
-        // Issue #014 Fix: Accept 'timestamp' (from BaseMetadataRepository) OR 'engagedAt'
         allow create: if isAuthenticated()
           && request.auth.uid == userId
-          && request.resource.data.keys().hasAny(['timestamp', 'engagedAt']);
+          && request.resource.data.keys().hasAll(['timestamp']);
       }
 
       // Dismissals subcollection - who has dismissed the menu
@@ -430,11 +427,10 @@ service cloud.firestore {
         );
 
         // Users can dismiss for themselves
-        // Issue #014 Fix: Accept 'timestamp' (from BaseMetadataRepository) OR 'dismissedAt'
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId'])
-          && request.resource.data.keys().hasAny(['timestamp', 'dismissedAt']);
+          && request.resource.data.keys().hasAll(['timestamp']);
 
         // Users can undismiss for themselves
         allow delete: if isAuthenticated()
@@ -553,11 +549,10 @@ service cloud.firestore {
         );
 
         // Users can dismiss for themselves
-        // Issue #014 Fix: Accept 'timestamp' (from BaseMetadataRepository) OR 'dismissedAt'
         allow create: if isAuthenticated()
           && request.auth.uid == userId
           && hasRequiredFields(['userId'])
-          && request.resource.data.keys().hasAny(['timestamp', 'dismissedAt']);
+          && request.resource.data.keys().hasAll(['timestamp']);
 
         // Users can undismiss for themselves
         allow delete: if isAuthenticated()
@@ -863,15 +858,6 @@ service cloud.firestore {
       allow write: if false;
     }
     
-    
-    // ========================================
-    // CONNECTIVITY TEST - Connection validation
-    // ========================================
-    
-    match /connectivity_test/{document} {
-      // Allow all authenticated users to read/write for connection testing
-      allow read, write: if isAuthenticated();
-    }
     
     // ========================================
     // UNIFIED SHARED SHOPPING LISTS - Collaborative shopping
