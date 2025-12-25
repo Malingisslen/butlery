@@ -399,8 +399,6 @@ class FormFieldsManager {
     _values.add(''); // Börja med ett tomt fält
   }
 
-  // ===== PRIVATE HELPERS =====
-
   /// Synkronisera interna värden med externa
   void _syncValues(List<String> currentValues) {
     // CRITICAL FIX: Use synchronization lock to prevent race conditions

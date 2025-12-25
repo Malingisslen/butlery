@@ -68,8 +68,6 @@ class CollaborativeMenuOperations {
 
   CollaborativeMenuOperations(this._parent, this._repository);
 
-  // ===== REAL-TIME MENU COLLABORATION =====
-
   /// Enable real-time collaboration for a menu
   Future<bool> enableMenuCollaboration({
     required String menuId,
@@ -122,8 +120,6 @@ class CollaborativeMenuOperations {
     );
   }
 
-  // ===== MENU RATING SYSTEM =====
-
   /// Rate a menu
   Future<bool> rateMenu({
     required String menuId,
@@ -157,8 +153,6 @@ class CollaborativeMenuOperations {
   Future<double> getMenuAverageRating(String menuId) async {
     return await _repository.getMenuAverageRating(menuId);
   }
-
-  // ===== MENU COMMENTING SYSTEM =====
 
   /// Add comment to menu
   Future<bool> addMenuComment({
@@ -195,8 +189,6 @@ class CollaborativeMenuOperations {
       commentId: commentId,
     );
   }
-
-  // ===== MENU TEMPLATES =====
 
   /// Create menu template
   Future<String?> createMenuTemplate({
@@ -241,8 +233,6 @@ class CollaborativeMenuOperations {
     );
   }
 
-  // ===== HELPER METHODS =====
-
   /// Start real-time listener for menu collaboration
   void _startMenuCollaborationListener(String menuId) {
     _repository.startCollaborationListener(menuId, (menu) {
@@ -251,8 +241,6 @@ class CollaborativeMenuOperations {
       _parent.triggerNotification();
     });
   }
-
-  // ===== CLEANUP =====
 
   /// Dispose of resources
   void dispose() {

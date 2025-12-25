@@ -75,8 +75,6 @@ class FCMTokenManager {
         _userId = userId,
         _messaging = messaging ?? FirebaseMessaging.instance;
 
-  // ===== INITIALIZATION AND TOKEN REGISTRATION =====
-
   /// Initialize FCM token management for the user
   /// This should be called after user authentication to ensure tokens are properly managed
   Future<void> initialize() async {
@@ -139,8 +137,6 @@ class FCMTokenManager {
     AppLogger.info('🔄 Force refreshing FCM token');
     await _refreshToken();
   }
-
-  // ===== TOKEN REFRESH AND SYNCHRONIZATION =====
 
   /// Internal token refresh logic
   Future<void> _refreshToken() async {
@@ -217,8 +213,6 @@ class FCMTokenManager {
       AppLogger.error('❌ Failed to set up token refresh listener', e);
     }
   }
-
-  // ===== TOPIC SUBSCRIPTION MANAGEMENT =====
 
   /// Subscribe to notification topics based on user preferences
   /// This should be called after preferences are updated
@@ -306,8 +300,6 @@ class FCMTokenManager {
       AppLogger.error('❌ Failed to unsubscribe from topics', e);
     }
   }
-
-  // ===== TOKEN STORAGE AND DEVICE MANAGEMENT =====
 
   /// Save token to Firestore for server-side usage
   Future<void> _saveTokenToFirestore(String token) async {
@@ -402,8 +394,6 @@ class FCMTokenManager {
     }
   }
 
-  // ===== TOKEN VALIDATION AND UTILITIES =====
-
   /// Check if current token is fresh (less than 1 hour old)
   bool _isTokenFresh() {
     if (_lastTokenRefresh == null) return false;
@@ -426,8 +416,6 @@ class FCMTokenManager {
     return 'android'; // or 'ios', 'web', etc.
   }
 
-  // ===== PUBLIC UTILITY METHODS =====
-
   /// Get all active tokens for the current user (for admin purposes)
   Future<List<String>> getAllUserTokens() async {
     try {
@@ -446,8 +434,6 @@ class FCMTokenManager {
     if (_lastTokenRefresh == null) return null;
     return DateTime.now().difference(_lastTokenRefresh!).inMinutes;
   }
-
-  // ===== LIFECYCLE METHODS =====
 
   /// Clean up on user logout
   Future<void> cleanup() async {

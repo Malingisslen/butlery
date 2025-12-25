@@ -49,8 +49,6 @@ class FirebaseStorageRepository extends BaseStorageRepository
     Uuid? uuid,
   }) : _uuid = uuid ?? const Uuid();
 
-  // ===== SECURITY VALIDATION METHODS =====
-
   /// Get current authenticated user ID
   String? _getCurrentUserId() {
     return currentUserId; // Use inherited getter from BaseStorageRepository
@@ -193,8 +191,6 @@ class FirebaseStorageRepository extends BaseStorageRepository
       return null;
     }
   }
-
-  // ===== PUBLIC STORAGE OPERATIONS =====
 
   @override
   Future<String?> uploadImage({

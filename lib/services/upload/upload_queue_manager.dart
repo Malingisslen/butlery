@@ -33,8 +33,6 @@ class UploadQueueManager {
   /// Check if queue has items
   bool get isNotEmpty => _queue.isNotEmpty;
 
-  // ===== ADD OPERATIONS =====
-
   /// Add new upload to queue with pending state
   void addUpload({
     required String filePath,
@@ -70,8 +68,6 @@ class UploadQueueManager {
     AppLogger.info('🗂️ QUEUE: Added completed upload for $filePath');
   }
 
-  // ===== UPDATE OPERATIONS =====
-
   /// Update upload status in queue
   void updateStatus(String filePath, ImageUploadStatus newStatus) {
     if (!_queue.containsKey(filePath)) {
@@ -106,8 +102,6 @@ class UploadQueueManager {
     );
   }
 
-  // ===== REMOVE OPERATIONS =====
-
   /// Remove upload from queue
   ImageUploadStatus? removeUpload(String filePath) {
     final removed = _queue.remove(filePath);
@@ -139,8 +133,6 @@ class UploadQueueManager {
     AppLogger.info(
         '🗂️ QUEUE: Removed ${toRemove.length} uploads in state ${state.name}');
   }
-
-  // ===== QUERY OPERATIONS =====
 
   /// Get upload status by file path
   ImageUploadStatus? getStatus(String filePath) => _queue[filePath];
@@ -202,8 +194,6 @@ class UploadQueueManager {
         .map((status) => status.url!)
         .toList();
   }
-
-  // ===== SUMMARY & ANALYTICS =====
 
   /// Get queue summary for UI display
   Map<String, dynamic> getSummary() {

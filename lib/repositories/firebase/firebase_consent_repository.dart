@@ -34,9 +34,6 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
     required super.authRepository,
     super.auditRepository,
   }) : _localAuditRepository = auditRepository;
-
-  // ===== BASEFIREB ASEREPOSITORY ABSTRACT METHODS =====
-
   @override
   String get collectionName => _consentSubcollection;
 
@@ -56,7 +53,6 @@ class FirebaseConsentRepository extends BaseFirebaseRepository<UserConsent> {
     return _currentConsentDoc;
   }
 
-  // ===== PERMISSION VALIDATION METHODS =====
   // Users can only access their own consent data (self-access only)
 
   @override

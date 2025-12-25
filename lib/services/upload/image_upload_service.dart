@@ -96,8 +96,6 @@ class ImageUploadService extends BaseService {
         _storageService =
             storageService ?? ServiceLocator.get<StorageService>();
 
-  // ===== PUBLIC API: SINGLE UPLOAD =====
-
   /// Upload a single image with automatic retry and progress tracking
   /// [file] - Image file to upload
   /// [userId] - User ID for storage path
@@ -145,8 +143,6 @@ class ImageUploadService extends BaseService {
       _cancellationTokens.remove(filePath);
     }
   }
-
-  // ===== PRIVATE: UPLOAD EXECUTION =====
 
   /// Execute upload with automatic retry on failure
   Future<UploadResult> _executeUploadWithRetry({
@@ -266,8 +262,6 @@ class ImageUploadService extends BaseService {
     return url;
   }
 
-  // ===== PRIVATE: STATUS MANAGEMENT =====
-
   /// Handle successful upload
   void _handleUploadSuccess(String filePath, String url) {
     final status = _queueManager.getStatus(filePath);
@@ -361,8 +355,6 @@ class ImageUploadService extends BaseService {
     }
   }
 
-  // ===== PUBLIC API: QUEUE MANAGEMENT =====
-
   /// Get upload status for a file
   ImageUploadStatus? getUploadStatus(String filePath) =>
       _queueManager.getStatus(filePath);
@@ -414,8 +406,6 @@ class ImageUploadService extends BaseService {
     _progressTracker.clearAll();
     _cancellationTokens.clear();
   }
-
-  // ===== NOTIFICATIONS =====
 
   /// Send notification event
   void _sendNotificationEvent(UploadNotificationEvent event) {

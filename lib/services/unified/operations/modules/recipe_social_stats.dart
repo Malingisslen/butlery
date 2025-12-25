@@ -34,9 +34,6 @@ class RecipeSocialStats {
       this._firestoreRepository, this._notificationService) {
     _ratingSystem = RecipeRatingSystem();
   }
-
-  // ===== GETTERS FOR DELEGATION =====
-
   String? get currentUserId => _parent.currentUserId;
   String get currentUserDisplayName =>
       _parent.currentUserDisplayName ?? 'Okänd användare';
@@ -45,8 +42,6 @@ class RecipeSocialStats {
   Recipe? _getRecipe(String recipeId) {
     return recipes.where((r) => r.id == recipeId).firstOrNull;
   }
-
-  // ===== RECIPE RATING SYSTEM (DELEGATE TO RECIPE_RATING_SYSTEM) =====
 
   /// Rate a recipe
   Future<bool> rateRecipe({
@@ -126,8 +121,6 @@ class RecipeSocialStats {
     };
   }
 
-  // ===== RECIPE STATISTICS (DELEGATE TO RATING_STATISTICS) =====
-
   /// Get recipe rating statistics
   Future<Map<String, dynamic>> getRecipeStats(String recipeId) async {
     final recipe = _getRecipe(recipeId);
@@ -183,8 +176,6 @@ class RecipeSocialStats {
     );
   }
 
-  // ===== SOCIAL ENGAGEMENT METRICS (DELEGATE TO SOCIAL_ENGAGEMENT_METRICS) =====
-
   /// Get social statistics for user
   Future<Map<String, dynamic>> getUserSocialStats() async {
     final userId = currentUserId;
@@ -227,8 +218,6 @@ class RecipeSocialStats {
     return SocialEngagementMetrics.getEngagementInsights(recipe);
   }
 
-  // ===== PERMISSION CHECKING (DELEGATE TO RECIPE_RATING_SYSTEM) =====
-
   /// Check if user can rate a recipe
   bool _canRateRecipe(Recipe recipe) {
     return RecipeRatingSystem.canUserRateRecipe(
@@ -244,8 +233,6 @@ class RecipeSocialStats {
       currentUserId: currentUserId,
     );
   }
-
-  // ===== BATCH OPERATIONS =====
 
   /// Update multiple rating aggregates
   Future<void> updateMultipleRatingAggregates(List<String> recipeIds) async {
@@ -273,8 +260,6 @@ class RecipeSocialStats {
       recipeMap: recipeMap,
     );
   }
-
-  // ===== RATING ANALYTICS =====
 
   /// Analyze rating distribution for recipe
   Future<Map<String, dynamic>> analyzeRatingDistribution(
@@ -328,8 +313,6 @@ class RecipeSocialStats {
     }
   }
 
-  // ===== NOTIFICATION MANAGEMENT =====
-
   /// Send rating milestone notification
   Future<void> sendRatingMilestone({
     required String recipeId,
@@ -365,8 +348,6 @@ class RecipeSocialStats {
     );
   }
 
-  // ===== ANALYTICS LOGGING =====
-
   /// Log rating action for analytics
   void _logRatingAction({
     required String recipeId,
@@ -388,8 +369,6 @@ class RecipeSocialStats {
       AppLogger.warning('⚠️ Failed to log rating action: $e');
     }
   }
-
-  // ===== UTILITY METHODS =====
 
   /// Format rating for display
   String formatRating(double rating) {

@@ -497,6 +497,46 @@ class IntelligentCacheManager {
     AppLogger.info('Cleared all intelligent caches');
   }
 
+  /// Handle system memory pressure by aggressively clearing caches.
+  /// Called when the system is running low on memory and needs apps to free resources.
+  /// This method clears all caches except the current user's essential data.
+  void handleMemoryPressure() {
+    AppLogger.warning(
+        'Memory pressure detected - clearing caches aggressively');
+
+    final beforeMemory = _currentMemoryUsage;
+
+    // Clear all recipe cache
+    _recipeCache.clear();
+
+    // Clear generic cache
+    _genericCache.clear();
+
+    // Keep only current user in user cache
+    final currentUserId = _permissionService?.currentUserId;
+    if (currentUserId != null) {
+      final currentUserEntry = _userCache[currentUserId];
+      _userCache.clear();
+      if (currentUserEntry != null) {
+        _userCache[currentUserId] = currentUserEntry;
+      }
+    } else {
+      _userCache.clear();
+    }
+
+    // Reset memory tracking
+    _currentMemoryUsage = 0;
+    for (final entry in _userCache.values) {
+      _currentMemoryUsage += entry.size;
+    }
+
+    final freedMemory = beforeMemory - _currentMemoryUsage;
+    final freedMB = (freedMemory / 1024 / 1024).toStringAsFixed(2);
+
+    AppLogger.info(
+        'Memory pressure handled: freed ${freedMB}MB, keeping ${_userCache.length} user entries');
+  }
+
   /// Dispose of resources
   void dispose() {
     _prefetchTimer?.cancel();

@@ -351,9 +351,7 @@ class LlmEnhancementService extends BaseService {
   /// Check if LLM enhancement is available (not rate limited).
   Future<bool> isAvailable() => _llmService.isAvailable();
 
-  // ==========================================================================
   // Private Helpers
-  // ==========================================================================
 
   /// Convert ExtractedRecipe (from LLM) to Recipe model.
   Recipe _extractedToRecipe(ExtractedRecipe extracted) {

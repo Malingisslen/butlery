@@ -82,8 +82,6 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     _initialize();
   }
 
-  // ===== GETTERS =====
-
   /// Current group data (null if not loaded or deleted).
   FriendCategory? get group => _group;
 
@@ -100,8 +98,6 @@ class SocialGroupDetailViewModel extends ChangeNotifier
 
   /// Current error message (null if no error).
   String? get errorMessage => error;
-
-  // ===== PERMISSION GETTERS =====
 
   /// Whether current user is admin/owner of this group.
   bool get isAdmin {
@@ -134,8 +130,6 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     if (currentUserId == null) return false;
     return _group!.friendUserIds.contains(currentUserId);
   }
-
-  // ===== INITIALIZATION =====
 
   void _initialize() {
     _setupEventListening();
@@ -196,8 +190,6 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     }
   }
 
-  // ===== DATA LOADING =====
-
   /// Load group data from services.
   Future<void> loadGroupData() async {
     await executeAsync(() async {
@@ -229,8 +221,6 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     ]);
     await loadGroupData();
   }
-
-  // ===== LEAVE GROUP LOGIC =====
 
   /// Check if leaving group requires special handling (ownership transfer).
   /// Returns information about what's needed to leave the group.
@@ -343,8 +333,6 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     }
   }
 
-  // ===== CONTENT SHARING COORDINATION =====
-
   /// Coordinate recipe sharing with this group.
   /// This method validates the group state and prepares for sharing.
   /// The actual sharing dialog presentation is handled by the View.
@@ -370,8 +358,6 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     if (!_permissionService.isAuthenticated) return false;
     return true;
   }
-
-  // ===== CLEANUP =====
 
   @override
   void dispose() {

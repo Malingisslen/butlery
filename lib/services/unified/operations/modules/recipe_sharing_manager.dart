@@ -32,8 +32,6 @@ class RecipeSharingManager {
   }) : _firestoreRepository =
             firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
 
-  // ===== RECIPE SHARING CONVERSION =====
-
   /// Share a personal recipe with other users (convert to collaborative)
   /// Main entry point for recipe sharing - converts personal recipe to collaborative format
   Future<String?> shareRecipe({
@@ -238,8 +236,6 @@ class RecipeSharingManager {
     }
   }
 
-  // ===== SHARING NOTIFICATIONS =====
-
   /// Send sharing notifications to all members
   Future<void> _sendSharingNotifications({
     required String collaborativeRecipeId,
@@ -298,8 +294,6 @@ class RecipeSharingManager {
       },
     );
   }
-
-  // ===== HELPER METHODS =====
 
   /// Duplicate a personal recipe (used internally)
   Future<String?> _duplicatePersonalRecipe({

@@ -193,8 +193,6 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     await refreshSyncState();
   }
 
-  // ===== USER-SPECIFIC METHODS =====
-
   /// Get recipes for specific user
   Future<List<Recipe>> getRecipesForUser(String userId) async {
     if (!isInitialized) return [];
@@ -245,8 +243,6 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     return _userStorage.watchRecipesForUser(userId);
   }
 
-  // ===== LEGACY METHODS - BACKWARD COMPATIBLE =====
-
   /// Save recipe offline - with user support
   Future<void> saveRecipeOffline(Recipe recipe) async {
     AppLogger.debug('Recipe offline save request: ${recipe.title}');
@@ -288,16 +284,12 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     }
   }
 
-  // ===== SYNC METHODS =====
-
   /// Manual synchronization with user feedback
   Future<SyncResult> syncNow() async {
     final result = await _syncManager.syncNow(isOnline: isOnline);
     await refreshSyncState();
     return result;
   }
-
-  // ===== RESOURCE MANAGEMENT =====
 
   /// Clean up resources
   @override

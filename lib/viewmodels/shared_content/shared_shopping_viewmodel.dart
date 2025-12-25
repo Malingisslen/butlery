@@ -46,13 +46,8 @@ import 'package:butlery/core/utils/logger.dart';
 /// Status loaded from Firestore subcollections and cached for performance.
 class SharedShoppingViewModel
     extends BaseSharedContentViewModel<SharedShoppingList> {
-  // ===== DEPENDENCIES =====
-
   late final SocialShoppingCoordinator _socialShoppingCoordinator;
   late final UnifiedShoppingService _shoppingService;
-
-  // ===== CONSTRUCTOR =====
-
   SharedShoppingViewModel({
     SocialShoppingCoordinator? socialShoppingCoordinator,
     UnifiedShoppingService? shoppingService,
@@ -65,9 +60,6 @@ class SharedShoppingViewModel
     AppLogger.info(
         'SharedShoppingViewModel initialized with direct collaboration support');
   }
-
-  // ===== BASE CLASS IMPLEMENTATIONS =====
-
   @override
   String get contentTypeName => 'shopping_list';
 
@@ -140,8 +132,6 @@ class SharedShoppingViewModel
     return null; // Will be enhanced when repository returns document snapshots
   }
 
-  // ===== SHOPPING LIST-SPECIFIC GETTERS =====
-
   /// Get unviewed shopping lists count (using cache - Issue #014)
   int get unreadCount {
     final userId = currentUserId;
@@ -195,8 +185,6 @@ class SharedShoppingViewModel
   List<SharedShoppingList> get listsWithItems {
     return content.where((list) => list.itemCount > 0).toList();
   }
-
-  // ===== SHOPPING LIST OPERATIONS =====
 
   /// Join shared shopping list (direct collaboration)
   /// Unlike recipes/menus, shopping lists use direct collaboration where
@@ -298,8 +286,6 @@ class SharedShoppingViewModel
     return result ?? false;
   }
 
-  // ===== STATUS CHECKING METHODS =====
-
   /// Check if shopping list is viewed by current user (using cache - Issue #014)
   bool isShoppingListViewed(SharedShoppingList list) {
     final userId = currentUserId;
@@ -320,8 +306,6 @@ class SharedShoppingViewModel
     if (userId == null) return false;
     return _socialShoppingCoordinator.isShoppingListDismissed(list.id);
   }
-
-  // ===== SHOPPING LIST-SPECIFIC OPERATIONS =====
 
   /// Get shopping list summary for display
   /// Issue #015: Items in subcollection - can't determine checked/unchecked without loading items
@@ -380,8 +364,6 @@ class SharedShoppingViewModel
         .firstOrNull;
   }
 
-  // ===== BULK OPERATIONS =====
-
   /// Mark all shopping lists as viewed
   /// Note (Issue #014): Uses cache to identify unviewed lists, then updates cache after marking.
   Future<void> markAllAsViewed() async {
@@ -439,8 +421,6 @@ class SharedShoppingViewModel
     }).toList();
   }
 
-  // ===== ANALYTICS =====
-
   /// Get shopping list engagement statistics (using cache - Issue #014)
   Map<String, int> getEngagementStats() {
     final userId = currentUserId;
@@ -480,28 +460,7 @@ class SharedShoppingViewModel
     };
   }
 
-  /// Get most common items across shopping lists
-  /// Issue #015: Items in subcollection - not available without loading all items
-  /// This method would require calling repository.getItems() for each list
-  Map<String, int> getMostCommonItems({int limit = 10}) {
-    // Note: Items now in subcollection, can't analyze without loading from repository
-    // FIXME(Issue #015): If needed, implement async version that loads items from subcollection
-    return {};
-
-    /* Original implementation (requires items to be loaded):
-    final itemCount = <String, int>{};
-
-    for (final list in content) {
-      for (final item in list.listItems) {
-        final itemName = item.name.toLowerCase().trim();
-        itemCount[itemName] = (itemCount[itemName] ?? 0) + 1;
-      }
-    }
-
-    final sortedItems = itemCount.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-
-    return Map.fromEntries(sortedItems.take(limit));
-    */
-  }
+  /// Placeholder for future analytics - currently unused.
+  /// Items are stored in subcollections, requiring async loading.
+  Map<String, int> getMostCommonItems({int limit = 10}) => {};
 }

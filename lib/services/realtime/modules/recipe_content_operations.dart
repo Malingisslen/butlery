@@ -49,8 +49,6 @@ class RecipeOperationError {
 /// - Content validation and utilities
 /// ❌ DOES NOT CONTAIN: Participant management, state management, synchronization
 class RecipeContentOperations {
-  // ===== BASIC RECIPE OPERATIONS =====
-
   /// Update basic recipe information
   static RealtimeRecipe updateBasicInfo(
     RealtimeRecipe recipe, {
@@ -96,8 +94,6 @@ class RecipeContentOperations {
       editedByDisplayName: editedByDisplayName,
     );
   }
-
-  // ===== INGREDIENT OPERATIONS =====
 
   /// Add ingredient to recipe
   static RealtimeRecipe addIngredient(
@@ -175,8 +171,6 @@ class RecipeContentOperations {
     );
   }
 
-  // ===== INSTRUCTION OPERATIONS =====
-
   /// Add instruction to recipe
   static RealtimeRecipe addInstruction(
     RealtimeRecipe recipe, {
@@ -252,8 +246,6 @@ class RecipeContentOperations {
       editedByDisplayName: editedByDisplayName,
     );
   }
-
-  // ===== IMAGE OPERATIONS =====
 
   /// Add image URL to recipe
   static RealtimeRecipe addImage(
@@ -344,8 +336,6 @@ class RecipeContentOperations {
     );
   }
 
-  // ===== CONTENT VALIDATION =====
-
   /// Validate recipe content
   static List<String> validateRecipeContent(RealtimeRecipe recipe) {
     final errors = <String>[];
@@ -382,8 +372,6 @@ class RecipeContentOperations {
   static bool isRecipePublishable(RealtimeRecipe recipe) {
     return isRecipeComplete(recipe) && recipe.description.trim().isNotEmpty;
   }
-
-  // ===== CONTENT UTILITIES =====
 
   /// Get recipe statistics
   static Map<String, dynamic> getRecipeStatistics(RealtimeRecipe recipe) {

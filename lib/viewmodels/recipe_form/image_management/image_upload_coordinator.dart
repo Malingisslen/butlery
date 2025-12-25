@@ -41,8 +41,6 @@ class ImageUploadCoordinator {
         _setError = setError,
         _checkCompletionEvents = checkCompletionEvents;
 
-  // ===== BULK UPLOAD COORDINATION =====
-
   /// CRITICAL FIX: Thread-safe bulk upload with cancellation support and progress tracking.
   /// Uploads all pending images in parallel with coordinated progress reporting,
   /// proper cancellation handling, and disposal safety for long-running operations.
@@ -211,8 +209,6 @@ class ImageUploadCoordinator {
     }
   }
 
-  // ===== BULK UPLOAD MANAGEMENT =====
-
   /// Retry all failed uploads that can be retried with bulk coordination.
   /// Iterates through all failed uploads with retry capability and attempts
   /// re-upload with proper error isolation to prevent cascading failures.
@@ -315,8 +311,6 @@ class ImageUploadCoordinator {
     };
   }
 
-  // ===== DISPOSAL =====
-
   /// Dispose coordinator and cancel all active upload operations.
   /// Cancels all in-flight uploads and clears tracking state for proper cleanup.
   void dispose() {
@@ -327,8 +321,6 @@ class ImageUploadCoordinator {
     _activeUploads.clear();
   }
 }
-
-// ===== THREAD-SAFE UPLOAD OPERATION CLASSES =====
 
 /// CRITICAL FIX: Cancellable upload operation with proper resource management.
 /// Wraps individual upload operations with cancellation support, completion tracking,

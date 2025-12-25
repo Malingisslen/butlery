@@ -2,10 +2,14 @@
 
 // lib/models/recipe_unified.dart
 
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
+import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
 
@@ -167,6 +171,52 @@ class RecipeCore with JsonSerializableMixin {
   /// Null for recipes that have never been rated.
   DateTime? lastRatedAt;
 
+  /// SHA256 checksum of critical recipe fields for data integrity verification.
+  /// Computed from: id, title, ingredients (joined), instructions (joined).
+  /// Used to detect data corruption during storage/transmission.
+  /// Null for recipes created before checksum feature was added.
+  String? dataChecksum;
+
+  /// Compute SHA256 checksum from critical recipe fields.
+  /// Critical fields: id, title, ingredients, instructions.
+  /// These fields define the recipe's core content and any corruption
+  /// would fundamentally alter what the recipe is.
+  static String computeChecksum({
+    required String id,
+    required String title,
+    required List<String> ingredients,
+    required List<String> instructions,
+  }) {
+    final data =
+        '$id|$title|${ingredients.join('|')}|${instructions.join('|')}';
+    final bytes = utf8.encode(data);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
+  /// Verify data integrity by comparing stored checksum with computed one.
+  /// Returns true if checksum matches or if no checksum exists (legacy data).
+  bool verifyIntegrity() {
+    if (dataChecksum == null) return true; // Legacy data without checksum
+    final computed = computeChecksum(
+      id: id,
+      title: title,
+      ingredients: ingredients,
+      instructions: instructions,
+    );
+    return computed == dataChecksum;
+  }
+
+  /// Compute and update the checksum for this recipe.
+  void updateChecksum() {
+    dataChecksum = computeChecksum(
+      id: id,
+      title: title,
+      ingredients: ingredients,
+      instructions: instructions,
+    );
+  }
+
   RecipeCore({
     String? id,
     required this.title,
@@ -190,12 +240,15 @@ class RecipeCore with JsonSerializableMixin {
     this.averageRating,
     this.ratingDistribution,
     this.lastRatedAt,
+    this.dataChecksum,
   })  : id = id ?? const Uuid().v4(),
         imageUrls = imageUrls ?? [],
         createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
 
   /// Create copy with updated values
+  /// Note: If critical fields (title, ingredients, instructions) change,
+  /// the checksum is automatically recomputed.
   RecipeCore copyWith({
     String? title,
     String? description,
@@ -217,15 +270,32 @@ class RecipeCore with JsonSerializableMixin {
     double? averageRating,
     Map<int, int>? ratingDistribution,
     DateTime? lastRatedAt,
+    String? dataChecksum,
   }) {
+    final newTitle = title ?? this.title;
+    final newIngredients = ingredients ?? this.ingredients;
+    final newInstructions = instructions ?? this.instructions;
+
+    // Recompute checksum if critical fields changed
+    final needsChecksumUpdate =
+        title != null || ingredients != null || instructions != null;
+    final newChecksum = needsChecksumUpdate
+        ? computeChecksum(
+            id: id,
+            title: newTitle,
+            ingredients: newIngredients,
+            instructions: newInstructions,
+          )
+        : (dataChecksum ?? this.dataChecksum);
+
     return RecipeCore(
       id: id,
-      title: title ?? this.title,
+      title: newTitle,
       description: description ?? this.description,
       portions: portions ?? this.portions,
       timeMinutes: timeMinutes ?? this.timeMinutes,
-      ingredients: ingredients ?? this.ingredients,
-      instructions: instructions ?? this.instructions,
+      ingredients: newIngredients,
+      instructions: newInstructions,
       tags: tags ?? this.tags,
       rating: rating ?? this.rating,
       mealType: mealType ?? this.mealType,
@@ -242,6 +312,7 @@ class RecipeCore with JsonSerializableMixin {
       averageRating: averageRating ?? this.averageRating,
       ratingDistribution: ratingDistribution ?? this.ratingDistribution,
       lastRatedAt: lastRatedAt ?? this.lastRatedAt,
+      dataChecksum: newChecksum,
     );
   }
 
@@ -284,6 +355,7 @@ class RecipeCore with JsonSerializableMixin {
         'averageRating': averageRating,
         'ratingDistribution': ratingDistribution,
         'lastRatedAt': lastRatedAt?.toIso8601String(),
+        'dataChecksum': dataChecksum,
       };
 
   Map<String, dynamic> toFirestore() => {
@@ -311,55 +383,104 @@ class RecipeCore with JsonSerializableMixin {
         'ratingDistribution': ratingDistribution,
         'lastRatedAt':
             lastRatedAt != null ? Timestamp.fromDate(lastRatedAt!) : null,
+        'dataChecksum': dataChecksum,
       };
 
-  factory RecipeCore.fromJson(Map<String, dynamic> json) => RecipeCore(
-        id: json['id'] as String,
-        title: json['title'] as String,
-        description: json['description'] as String,
-        portions: json['portions'] as int?,
-        timeMinutes: json['timeMinutes'] as int?,
-        ingredients:
-            List<String>.from((json['ingredients'] as List?).orEmpty()),
-        instructions:
-            List<String>.from((json['instructions'] as List?).orEmpty()),
-        tags: json['tags'] != null ? List<String>.from(json['tags']) : null,
-        rating: (json['rating'] as num?)?.toDouble(),
-        mealType: json['mealType'] as String,
-        sourceUrl: json['sourceUrl'] as String?,
-        imageUrls: List<String>.from((json['imageUrls'] as List?).orEmpty()),
-        createdAt: DateTime.parse(json['createdAt'] as String),
-        updatedAt: DateTime.parse(json['updatedAt'] as String),
-        createdBy: json['createdBy'] as String?,
-        isPublic: (json['isPublic'] as bool?).orFalse(),
-        lastCookedAt: json['lastCookedAt'] != null
-            ? DateTime.parse(json['lastCookedAt'] as String)
-            : null,
-        ingredientsNormalized: json['ingredientsNormalized'] != null
-            ? List<String>.from(json['ingredientsNormalized'])
-            : null,
-        ratingCount: json['ratingCount'] as int?,
-        averageRating: (json['averageRating'] as num?)?.toDouble(),
-        ratingDistribution: json['ratingDistribution'] != null
-            ? Map<int, int>.from(json['ratingDistribution'])
-            : null,
-        lastRatedAt: json['lastRatedAt'] != null
-            ? DateTime.parse(json['lastRatedAt'] as String)
-            : null,
+  factory RecipeCore.fromJson(Map<String, dynamic> json) {
+    final id = json['id'] as String;
+    final title = json['title'] as String;
+    final ingredients =
+        List<String>.from((json['ingredients'] as List?).orEmpty());
+    final instructions =
+        List<String>.from((json['instructions'] as List?).orEmpty());
+    final storedChecksum = json['dataChecksum'] as String?;
+
+    // Verify data integrity if checksum exists
+    if (storedChecksum != null) {
+      final computedChecksum = computeChecksum(
+        id: id,
+        title: title,
+        ingredients: ingredients,
+        instructions: instructions,
       );
+      if (computedChecksum != storedChecksum) {
+        AppLogger.warning(
+          '⚠️ Data integrity check failed for recipe $id: '
+          'stored checksum does not match computed checksum',
+        );
+      }
+    }
+
+    return RecipeCore(
+      id: id,
+      title: title,
+      description: json['description'] as String,
+      portions: json['portions'] as int?,
+      timeMinutes: json['timeMinutes'] as int?,
+      ingredients: ingredients,
+      instructions: instructions,
+      tags: json['tags'] != null ? List<String>.from(json['tags']) : null,
+      rating: (json['rating'] as num?)?.toDouble(),
+      mealType: json['mealType'] as String,
+      sourceUrl: json['sourceUrl'] as String?,
+      imageUrls: List<String>.from((json['imageUrls'] as List?).orEmpty()),
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdBy: json['createdBy'] as String?,
+      isPublic: (json['isPublic'] as bool?).orFalse(),
+      lastCookedAt: json['lastCookedAt'] != null
+          ? DateTime.parse(json['lastCookedAt'] as String)
+          : null,
+      ingredientsNormalized: json['ingredientsNormalized'] != null
+          ? List<String>.from(json['ingredientsNormalized'])
+          : null,
+      ratingCount: json['ratingCount'] as int?,
+      averageRating: (json['averageRating'] as num?)?.toDouble(),
+      ratingDistribution: json['ratingDistribution'] != null
+          ? Map<int, int>.from(json['ratingDistribution'])
+          : null,
+      lastRatedAt: json['lastRatedAt'] != null
+          ? DateTime.parse(json['lastRatedAt'] as String)
+          : null,
+      dataChecksum: storedChecksum,
+    );
+  }
 
   /// Create from repository data map (removes Firebase dependency)
   factory RecipeCore.fromMap(String id, Map<String, dynamic> data) {
+    final title = utils.SerializationUtils.safeString(data, 'title');
+    final ingredients =
+        utils.SerializationUtils.safeStringList(data, 'ingredients');
+    final instructions =
+        utils.SerializationUtils.safeStringList(data, 'instructions');
+    final storedChecksum =
+        utils.SerializationUtils.safeNullableString(data, 'dataChecksum');
+
+    // Verify data integrity if checksum exists
+    if (storedChecksum != null) {
+      final computedChecksum = computeChecksum(
+        id: id,
+        title: title,
+        ingredients: ingredients,
+        instructions: instructions,
+      );
+      if (computedChecksum != storedChecksum) {
+        AppLogger.warning(
+          '⚠️ Data integrity check failed for recipe $id: '
+          'stored checksum does not match computed checksum',
+        );
+      }
+    }
+
     return RecipeCore(
       id: id,
-      title: utils.SerializationUtils.safeString(data, 'title'),
+      title: title,
       description: utils.SerializationUtils.safeString(data, 'description'),
       portions: utils.SerializationUtils.safeNullableInt(data, 'portions'),
       timeMinutes:
           utils.SerializationUtils.safeNullableInt(data, 'timeMinutes'),
-      ingredients: utils.SerializationUtils.safeStringList(data, 'ingredients'),
-      instructions:
-          utils.SerializationUtils.safeStringList(data, 'instructions'),
+      ingredients: ingredients,
+      instructions: instructions,
       tags: utils.SerializationUtils.safeStringList(data, 'tags').isNotEmpty
           ? utils.SerializationUtils.safeStringList(data, 'tags')
           : null,
@@ -390,6 +511,7 @@ class RecipeCore with JsonSerializableMixin {
           ? Map<int, int>.from(data['ratingDistribution'] as Map)
           : null,
       lastRatedAt: utils.SerializationUtils.safeDateTime(data, 'lastRatedAt'),
+      dataChecksum: storedChecksum,
     );
   }
 

@@ -28,8 +28,6 @@ class FirebaseSocialRecipeRepository
         _authRepository = authRepository,
         _auditRepository = auditRepository;
 
-  // ===== PRIVATE HELPER METHODS =====
-
   /// Get authenticated user and optionally validate self-operation.
   /// This helper eliminates duplication of the "get currentUser → null check → validateSelfOperation"
   /// pattern repeated across 9 methods in this repository.
@@ -65,8 +63,6 @@ class FirebaseSocialRecipeRepository
 
     return currentUser;
   }
-
-  // ===== PUBLIC INTERFACE METHODS =====
 
   @override
   CollectionReference<Map<String, dynamic>> get sharedRecipesRef =>

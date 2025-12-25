@@ -39,8 +39,6 @@ class ProfileViewModel extends ChangeNotifier
         _userService = userService,
         _accountDeletionService = accountDeletionService;
 
-  // ===== GETTERS =====
-
   /// Current authenticated user from Firebase Auth
   User? get currentUser => _authService.currentUser;
 
@@ -63,8 +61,6 @@ class ProfileViewModel extends ChangeNotifier
 
   /// Whether user is authenticated
   bool get isAuthenticated => currentUser != null;
-
-  // ===== OPERATIONS =====
 
   /// Sign out the current user
   Future<void> logout() async {

@@ -64,8 +64,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
   /// for form submission enabling and comprehensive validation status.
   bool get isFormValid => _displayNameError == null && _displayName.isNotEmpty;
 
-  // ===== PROFILE FORM ACTIONS =====
-
   /// Updates display name with comprehensive validation and change tracking.
   /// [value] New display name value for profile identification
   /// Performs automatic trimming, validation, change detection, and UI notification
@@ -96,8 +94,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     _checkForChanges();
     notifyListeners();
   }
-
-  // ===== AVATAR MANAGEMENT OPERATIONS =====
 
   /// Uploads new avatar image with comprehensive progress tracking and service coordination.
   /// Returns true if avatar upload succeeds, false if operation fails or user cancels.
@@ -180,8 +176,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     _checkForChanges();
     notifyListeners();
   }
-
-  // ===== PROFILE PERSISTENCE OPERATIONS =====
 
   /// Saves profile changes with comprehensive validation and service coordination.
   /// Returns true if profile save succeeds, false if validation fails or save operation errors.
@@ -298,8 +292,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     notifyListeners();
   }
 
-  // ===== ERROR HANDLING =====
-
   /// Handles user error messages with logging and potential UI feedback coordination.
   /// [message] Error message for user notification and logging
   /// Provides centralized user error handling with logging capability,
@@ -308,8 +300,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     // For now, just log - could be extended to show UI messages
     AppLogger.error('User error: $message');
   }
-
-  // ===== PRIVATE PROFILE MANAGEMENT METHODS =====
 
   /// Loads current profile data into form state with comprehensive default handling.
   /// Initializes form fields from existing user profile or sets appropriate defaults
@@ -335,8 +325,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     }
   }
 
-  // ===== ADVANCED VALIDATION METHODS =====
-
   /// Validates display name format and requirements with comprehensive Swedish localized feedback.
   /// Performs complete display name validation including emptiness check, length requirements,
   /// and character format validation with Unicode support for international names.
@@ -355,8 +343,6 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
       _displayNameError = null;
     }
   }
-
-  // ===== CHANGE DETECTION AND STATE MANAGEMENT =====
 
   /// Detects form changes by comparing current form state with saved profile data.
   /// Performs comprehensive comparison between form fields and existing profile data

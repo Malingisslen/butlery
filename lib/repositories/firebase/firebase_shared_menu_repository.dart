@@ -88,9 +88,6 @@ class FirebaseSharedMenuRepository
 
   @override
   String get collectionName => 'shared_menus';
-
-  // ===== METADATA REPOSITORY GETTERS =====
-
   @override
   BaseViewRepository get viewRepository => _viewRepository;
 
@@ -99,9 +96,6 @@ class FirebaseSharedMenuRepository
 
   @override
   BaseDismissalRepository get dismissalRepository => _dismissalRepository;
-
-  // ===== BASE SHARED CONTENT REPOSITORY IMPLEMENTATIONS =====
-
   @override
   String get contentTypeName => 'menu';
 
@@ -125,15 +119,10 @@ class FirebaseSharedMenuRepository
 
   @override
   bool get tracksCounts => true;
-
-  // ===== COLLECTION REFERENCE =====
-
   @override
   CollectionReference<Map<String, dynamic>> getCollectionRef() {
     return firestore.collection('shared_menus');
   }
-
-  // ===== SERIALIZATION METHODS =====
 
   @override
   SharedMenu fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -147,9 +136,6 @@ class FirebaseSharedMenuRepository
 
   @override
   String getId(SharedMenu entity) => entity.id;
-
-  // ===== FILTERING METHOD IMPLEMENTATIONS =====
-
   @override
   bool shouldShowToUser(SharedMenu content, String userId) {
     // Issue #014 Migration: If content was found via subcollection query,
@@ -170,8 +156,6 @@ class FirebaseSharedMenuRepository
   bool isCreatedBy(SharedMenu content, String userId) {
     return content.sharedByUserId == userId;
   }
-
-  // ===== SHARED MENU OPERATIONS =====
 
   /// Create new shared menu with comprehensive validation
   /// Note (Issue #014): recipientIds must be passed separately as sharedToUserIds
@@ -256,8 +240,6 @@ class FirebaseSharedMenuRepository
     return sharedMenu;
   }
 
-  // ===== STATUS MANAGEMENT (SUBCOLLECTION-BASED) =====
-
   /// Mark shared menu as viewed by user
   @override
   Future<void> markAsViewed(String menuId, String userId) async {
@@ -290,8 +272,6 @@ class FirebaseSharedMenuRepository
     // Delegate to base class method
     return await deleteSharedContent(menuId);
   }
-
-  // ===== QUERY METHODS (DELEGATED TO BASE CLASS) =====
 
   /// Get unread shared menus count for user
   @override

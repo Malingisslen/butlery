@@ -9,9 +9,11 @@ import 'package:butlery/core/storage/drift/tables/offline_recipes.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/core/storage/drift/tables/json_cache.dart';
 import 'package:butlery/core/storage/drift/tables/parse_cache.dart';
+import 'package:butlery/core/storage/drift/tables/upload_queue.dart';
 import 'package:butlery/core/storage/drift/daos/recipe_dao.dart';
 import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
 import 'package:butlery/core/storage/drift/daos/cache_dao.dart';
+import 'package:butlery/core/storage/drift/daos/upload_queue_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -23,11 +25,13 @@ part 'app_database.g.dart';
     SyncQueueEntries,
     JsonCacheEntries,
     ParseCacheEntries,
+    UploadQueueEntries,
   ],
   daos: [
     RecipeDao,
     SyncQueueDao,
     CacheDao,
+    UploadQueueDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -37,7 +41,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
@@ -46,11 +50,10 @@ class AppDatabase extends _$AppDatabase {
         await m.createAll();
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        // Add migration logic here for future schema changes
-        // Example:
-        // if (from < 2) {
-        //   await m.addColumn(offlineRecipes, offlineRecipes.newColumn);
-        // }
+        // Migration from version 1 to 2: Add upload_queue_entries table
+        if (from < 2) {
+          await m.createTable(uploadQueueEntries);
+        }
       },
       beforeOpen: (details) async {
         // Enable foreign keys
@@ -65,6 +68,7 @@ class AppDatabase extends _$AppDatabase {
     await delete(syncQueueEntries).go();
     await delete(jsonCacheEntries).go();
     await delete(parseCacheEntries).go();
+    await delete(uploadQueueEntries).go();
   }
 
   /// Clear all data for a specific user
@@ -75,6 +79,8 @@ class AppDatabase extends _$AppDatabase {
     await (delete(jsonCacheEntries)..where((t) => t.userId.equals(userId)))
         .go();
     await (delete(parseCacheEntries)..where((t) => t.userId.equals(userId)))
+        .go();
+    await (delete(uploadQueueEntries)..where((t) => t.userId.equals(userId)))
         .go();
   }
 
@@ -91,12 +97,16 @@ class AppDatabase extends _$AppDatabase {
     final parseCache = await (selectOnly(parseCacheEntries)
           ..addColumns([countAll()]))
         .getSingle();
+    final uploadQueue = await (selectOnly(uploadQueueEntries)
+          ..addColumns([countAll()]))
+        .getSingle();
 
     return {
       'offlineRecipes': recipes.read(countAll()) ?? 0,
       'syncQueue': syncQueue.read(countAll()) ?? 0,
       'jsonCache': jsonCache.read(countAll()) ?? 0,
       'parseCache': parseCache.read(countAll()) ?? 0,
+      'uploadQueue': uploadQueue.read(countAll()) ?? 0,
     };
   }
 }

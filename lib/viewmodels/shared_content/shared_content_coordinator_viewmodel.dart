@@ -30,15 +30,11 @@ enum ContentTab {
 
 /// Orchestrator ViewModel that coordinates all shared content ViewModels
 class SharedContentCoordinatorViewModel extends ChangeNotifier {
-  // ===== SPECIALIZED VIEWMODELS =====
-
   late final SharedRecipeViewModel _recipeViewModel;
   late final SharedMenuViewModel _menuViewModel;
   late final SharedShoppingViewModel _shoppingViewModel;
   late final SharedContentSearchViewModel _searchViewModel;
   late final SocialSharingViewModel _socialSharingViewModel;
-
-  // ===== STATE VARIABLES =====
 
   /// Current active tab
   ContentTab _currentTab = ContentTab.recipes;
@@ -57,9 +53,6 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
 
   /// Show imported content toggle (default: false = hidden for cleaner inbox)
   bool _showImported = false;
-
-  // ===== CONSTRUCTOR =====
-
   SharedContentCoordinatorViewModel({
     SharedRecipeViewModel? recipeViewModel,
     SharedMenuViewModel? menuViewModel,
@@ -80,8 +73,6 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
         '✅ SharedContentCoordinatorViewModel: Orchestration layer initialized');
   }
 
-  // ===== GETTERS - VIEWMODEL ACCESS =====
-
   /// Access to recipe ViewModel
   SharedRecipeViewModel get recipeViewModel => _recipeViewModel;
 
@@ -96,8 +87,6 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
 
   /// Access to social sharing ViewModel
   SocialSharingViewModel get socialSharingViewModel => _socialSharingViewModel;
-
-  // ===== GETTERS - COORDINATOR STATE =====
 
   /// Current active tab
   ContentTab get currentTab => _currentTab;
@@ -134,8 +123,6 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
       _menuViewModel.isOperating ||
       _shoppingViewModel.isOperating ||
       _socialSharingViewModel.isBusy;
-
-  // ===== GETTERS - UNIFIED CONTENT ACCESS =====
 
   /// All shared content across all types
   Map<String, dynamic> get allSharedContent => {
@@ -175,9 +162,6 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
         ContentTab.menus: _menuViewModel.unreadCount,
         ContentTab.shoppingLists: _shoppingViewModel.unreadCount,
       };
-
-  // ===== INITIALIZATION =====
-
   void _initializeViewModels({
     SharedRecipeViewModel? recipeViewModel,
     SharedMenuViewModel? menuViewModel,
@@ -250,8 +234,6 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
     }
   }
 
-  // ===== TAB MANAGEMENT =====
-
   /// Set current active tab
   void setCurrentTab(ContentTab tab) {
     if (_currentTab != tab) {
@@ -284,8 +266,6 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
 
     return title;
   }
-
-  // ===== UNIFIED OPERATIONS =====
 
   /// Refresh all content
   Future<void> refreshAllContent() async {
@@ -358,8 +338,6 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
     refreshAllContent();
   }
 
-  // ===== HIGH-LEVEL SHARING OPERATIONS =====
-
   /// Share recipe with friends
   Future<bool> shareRecipe(String recipeId,
           {List<String>? friendIds, String? message}) async =>
@@ -397,8 +375,6 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
     return result.success;
   }
 
-  // ===== CONTENT TITLE HELPERS =====
-
   String? _getRecipeTitle(String recipeId) => _recipeViewModel.content
       .firstWhere((r) => r.id == recipeId, orElse: () => throw Exception())
       .recipeSnapshot
@@ -411,8 +387,6 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
   String? _getShoppingListTitle(String listId) => _shoppingViewModel.content
       .firstWhere((l) => l.id == listId, orElse: () => throw Exception())
       .listName;
-
-  // ===== ANALYTICS =====
 
   /// Get comprehensive analytics across all ViewModels
   Map<String, dynamic> getComprehensiveAnalytics() {
@@ -435,8 +409,6 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
       'socialSharing': _socialSharingViewModel.getSharingStats(),
     };
   }
-
-  // ===== STATE MANAGEMENT =====
 
   /// Set global loading state
   void _setGlobalLoading(bool loading) {
@@ -466,8 +438,6 @@ class SharedContentCoordinatorViewModel extends ChangeNotifier {
     // This allows us to react to changes and coordinate across ViewModels
     notifyListeners();
   }
-
-  // ===== CLEANUP =====
 
   @override
   void dispose() {

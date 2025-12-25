@@ -18,9 +18,6 @@ class DiscoveryFriendActivityManager extends ChangeNotifier {
   DiscoveryFriendActivityManager({
     required RecipeDiscoveryService discoveryService,
   }) : _discoveryService = discoveryService;
-
-  // ===== GETTERS =====
-
   List<Map<String, dynamic>> get friendActivity =>
       List.unmodifiable(_friendActivity);
   bool get isLoading => _isLoading;
@@ -28,8 +25,6 @@ class DiscoveryFriendActivityManager extends ChangeNotifier {
   bool get hasError => _error != null;
   bool get hasFriendActivity => _friendActivity.isNotEmpty;
   int get friendActivityCount => _friendActivity.length;
-
-  // ===== FRIEND ACTIVITY LOADING =====
 
   /// Load friend activity timeline
   Future<void> loadFriendActivity() async {
@@ -151,8 +146,6 @@ class DiscoveryFriendActivityManager extends ChangeNotifier {
   List<Map<String, dynamic>> getActivityByType(String type) {
     return _friendActivity.where((item) => item['type'] == type).toList();
   }
-
-  // ===== PRIVATE HELPERS =====
 
   void _setLoading(bool loading) {
     _isLoading = loading;

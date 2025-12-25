@@ -98,8 +98,6 @@ class SocialShoppingCoordinator
   final Future<UnifiedShoppingList?> Function(String) _getShoppingList;
   final Future<String?> Function(UnifiedShoppingList) _saveShoppingList;
 
-  // ===== STATUS CACHING (ISSUE #014) =====
-
   /// Cached viewed status (shoppingListId → bool)
   final Map<String, bool> _viewedStatusCache = {};
 
@@ -128,9 +126,6 @@ class SocialShoppingCoordinator
     AppLogger.info(
         '✅ SocialShoppingCoordinator initialized for shopping list sharing and collaboration using $_serviceAdapter');
   }
-
-  // ===== BASE SOCIAL COORDINATOR IMPLEMENTATIONS =====
-
   @override
   String get contentTypeName => 'shopping_list';
 
@@ -202,8 +197,6 @@ class SocialShoppingCoordinator
     return await _saveShoppingList(content);
   }
 
-  // ===== MISSING ABSTRACT METHOD IMPLEMENTATIONS =====
-
   @override
   Future<String?> createStaticCopyForOwner(
       dynamic originalContent, String ownerId) async {
@@ -257,8 +250,6 @@ class SocialShoppingCoordinator
       rethrow;
     }
   }
-
-  // ===== SHOPPING-SPECIFIC INVITATION OPERATIONS =====
 
   /// Create shopping list invitation using SharedShoppingList model
   Future<String?> createShoppingListInvitation({
@@ -345,8 +336,6 @@ class SocialShoppingCoordinator
       return [];
     }
   }
-
-  // ===== STATUS CACHE METHODS (PHASE 3 SESSION 2) =====
 
   /// Load status for a shopping list from repository and cache it
   /// Phase 3 Session 2: Status caching method for ViewModel migration.
@@ -439,8 +428,6 @@ class SocialShoppingCoordinator
     }
   }
 
-  // ===== SHOPPING LIST-SPECIFIC OPERATIONS =====
-
   /// Validate shopping list content for sharing
   bool validateShoppingListForSharing(UnifiedShoppingList shoppingList) {
     if (shoppingList.name.isEmpty) {
@@ -487,8 +474,6 @@ class SocialShoppingCoordinator
         shoppingList.memberPermissions.isNotEmpty;
   }
 
-  // ===== NOTIFICATION PLACEHOLDERS =====
-
   /// Send shopping list invitation notifications
   Future<void> sendShoppingListInvitationNotifications(
       String listId, List<String> inviteeUserIds) async {
@@ -500,8 +485,6 @@ class SocialShoppingCoordinator
       String listId, List<String> sharedWithUserIds) async {
     await sendSharingNotifications(listId, sharedWithUserIds);
   }
-
-  // ===== OVERRIDE SPECIALIZED IMPORT BEHAVIOR =====
 
   /// Override importSharedContent to use join behavior for shopping lists
   @override

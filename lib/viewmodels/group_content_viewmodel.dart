@@ -41,9 +41,6 @@ class GroupContentViewModel extends ChangeNotifier
   GroupContentViewModel({
     required SocialSharingRepository sharingRepository,
   }) : _sharingRepository = sharingRepository;
-
-  // ===== GETTERS =====
-
   // Basic state getters
   FriendCategory? get group => _group;
   String get searchQuery => _searchQuery;
@@ -101,8 +98,6 @@ class GroupContentViewModel extends ChangeNotifier
         'groupMembers': _group?.friendCount ?? 0,
       };
 
-  // ===== INITIALIZATION =====
-
   /// Initializes the ViewModel with a specific group and loads its content.
   /// This method sets up the ViewModel to work with the specified group,
   /// loads all shared content for that group, and prepares the activity feed.
@@ -115,8 +110,6 @@ class GroupContentViewModel extends ChangeNotifier
     AppLogger.info(
         '🏷️ GroupContentViewModel initialized for group: ${group.name}');
   }
-
-  // ===== CONTENT OPERATIONS =====
 
   /// Loads all content shared to the current group from the repository.
   /// Fetches shared recipes, menus, and shopping lists from the social sharing
@@ -242,8 +235,6 @@ class GroupContentViewModel extends ChangeNotifier
     await loadGroupContent();
   }
 
-  // ===== GROUP SHARING OPERATIONS =====
-
   /// Shares content to the current group and refreshes the group content.
   /// Adds the specified content to the group's shared content collection
   /// through the social sharing repository. Automatically refreshes the
@@ -292,8 +283,6 @@ class GroupContentViewModel extends ChangeNotifier
       return {};
     }
   }
-
-  // ===== HELPER METHODS =====
 
   /// Filter recipes by search query
   List<SharedRecipe> _filterRecipes(List<SharedRecipe> recipes, String query) {
@@ -492,7 +481,6 @@ class GroupContentViewModel extends ChangeNotifier
     }
   }
 
-  // ===== STATE MANAGEMENT HELPERS =====
   /// setLoading, setError provided by StateNotifierMixin
 
   /// Public wrapper for clearError (for tests/external use)

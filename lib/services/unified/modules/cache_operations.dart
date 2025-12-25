@@ -44,8 +44,6 @@ import 'package:butlery/core/cache/json_cache_helper.dart';
 /// await CacheOperations.fixCacheCorruption(helper);
 /// ```
 class CacheOperations {
-  // ===== CACHE INITIALIZATION =====
-
   /// Initialize cache and load all cached recipes
   static Future<List<Recipe>> initializeCache({
     required JsonCacheHelper cacheHelper,
@@ -70,8 +68,6 @@ class CacheOperations {
       return [];
     }
   }
-
-  // ===== BASIC CACHE OPERATIONS =====
 
   /// Save recipe to local cache
   static Future<void> saveRecipeToCache({
@@ -146,8 +142,6 @@ class CacheOperations {
     }
   }
 
-  // ===== CACHE QUERIES =====
-
   /// Get cached recipe count
   static Future<int> getCachedRecipeCount(JsonCacheHelper cacheHelper) async {
     try {
@@ -197,8 +191,6 @@ class CacheOperations {
     }
   }
 
-  // ===== BATCH OPERATIONS =====
-
   /// Save multiple recipes to cache
   static Future<void> saveMultipleRecipesToCache({
     required JsonCacheHelper cacheHelper,
@@ -245,8 +237,6 @@ class CacheOperations {
     await Future.wait(futures);
     AppLogger.debug('✅ ${recipeIds.length} recipes removed from cache');
   }
-
-  // ===== CACHE MANAGEMENT =====
 
   /// Clear all cached recipes
   static Future<void> clearCache(JsonCacheHelper cacheHelper) async {
@@ -298,8 +288,6 @@ class CacheOperations {
       rethrow;
     }
   }
-
-  // ===== CACHE VALIDATION =====
 
   /// Validate cache integrity
   static Future<Map<String, dynamic>> validateCacheIntegrity(
@@ -368,8 +356,6 @@ class CacheOperations {
       return 0;
     }
   }
-
-  // ===== CACHE UTILITIES =====
 
   /// Get cache size information
   static Future<Map<String, dynamic>> getCacheSizeInfo(

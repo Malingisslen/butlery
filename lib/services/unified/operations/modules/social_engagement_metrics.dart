@@ -12,8 +12,6 @@ import 'package:butlery/core/utils/logger.dart';
 /// - Engagement trend analysis
 /// ❌ DOES NOT CONTAIN: Rating operations, statistics aggregation, notifications, top-rated queries
 class SocialEngagementMetrics {
-  // ===== RECIPE ENGAGEMENT METRICS =====
-
   /// Calculate social engagement metrics for a recipe
   static Map<String, dynamic> calculateRecipeEngagement(Recipe recipe) {
     try {
@@ -120,8 +118,6 @@ class SocialEngagementMetrics {
     if (score >= 50) return 'medium';
     return 'low';
   }
-
-  // ===== USER SOCIAL STATISTICS =====
 
   /// Calculate comprehensive user social statistics
   static Future<Map<String, dynamic>> calculateUserSocialStats({
@@ -306,8 +302,6 @@ class SocialEngagementMetrics {
     return 'low';
   }
 
-  // ===== ENGAGEMENT ANALYSIS =====
-
   /// Get top engaging recipes from a list
   static List<Map<String, dynamic>> getTopEngagingRecipes({
     required List<Recipe> recipes,
@@ -417,8 +411,6 @@ class SocialEngagementMetrics {
       };
     }
   }
-
-  // ===== ENGAGEMENT INSIGHTS =====
 
   /// Get engagement insights for a recipe
   static Map<String, dynamic> getEngagementInsights(Recipe recipe) {

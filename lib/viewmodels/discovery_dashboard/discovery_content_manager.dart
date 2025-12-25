@@ -23,9 +23,6 @@ class DiscoveryContentManager extends ChangeNotifier {
   DiscoveryContentManager({
     required RecipeDiscoveryService discoveryService,
   }) : _discoveryService = discoveryService;
-
-  // ===== GETTERS =====
-
   List<Recipe> get trendingRecipes => List.unmodifiable(_trendingRecipes);
   List<SharedMenu> get trendingMenus => List.unmodifiable(_trendingMenus);
   List<UnifiedShoppingList> get trendingShoppingLists =>
@@ -39,8 +36,6 @@ class DiscoveryContentManager extends ChangeNotifier {
       _trendingRecipes.length +
       _trendingMenus.length +
       _trendingShoppingLists.length;
-
-  // ===== CONTENT LOADING =====
 
   /// Load all trending content across all types
   Future<void> loadAllTrendingContent() async {
@@ -123,8 +118,6 @@ class DiscoveryContentManager extends ChangeNotifier {
     _clearError();
     notifyListeners();
   }
-
-  // ===== SEARCH METHODS =====
 
   /// Search recipes
   Future<List<Map<String, dynamic>>> searchRecipes(String query) async {
@@ -236,8 +229,6 @@ class DiscoveryContentManager extends ChangeNotifier {
 
     return score;
   }
-
-  // ===== PRIVATE HELPERS =====
 
   void _setLoading(bool loading) {
     _isLoading = loading;

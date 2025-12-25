@@ -79,9 +79,6 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       validateOwnership: validateOwnership,
     );
   }
-
-  // ===== BASE CLASS IMPLEMENTATION =====
-
   @override
   String get collectionName => 'recipes';
 
@@ -94,9 +91,6 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
 
   @override
   String getId(Recipe entity) => entity.id;
-
-  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
-
   @override
   Future<bool> validateCreatePermission(String userId, Recipe entity) async {
     // Users can only create recipes in their own collection
@@ -168,8 +162,6 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       return false;
     }
   }
-
-  // ===== ENHANCED BASE CLASS METHODS WITH PERMISSION VALIDATION =====
 
   @override
   Future<Recipe> create(Recipe entity) async {
@@ -355,8 +347,6 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     }
   }
 
-  // ===== SPECIALIZED RECIPE OPERATIONS =====
-
   @override
   Stream<List<Recipe>> watchRecipes(String userId) {
     // Use the mixin method to get user-specific collection
@@ -481,8 +471,6 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
     );
   }
 
-  // ===== SEARCH AND FILTER METHODS =====
-
   /// Find recipes by meal type (e.g., 'Frukost', 'Lunch', 'Middag')
   Future<List<Recipe>> findByMealType(String mealType) async {
     return await FirebasePerformanceService.traceSearch(
@@ -542,8 +530,6 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
         .where((recipe) => recipe.title.toLowerCase().contains(lowerTitle))
         .toList();
   }
-
-  // ===== PERMISSION METHODS =====
 
   /// Check if user can read a specific recipe
   Future<bool> canRead(String recipeId, String userId) async {
@@ -613,8 +599,6 @@ class FirebaseRecipeRepository extends BaseFirebaseRepository<Recipe>
       return false;
     }
   }
-
-  // ===== COLLABORATION METHODS =====
 
   /// Add a collaborator to a recipe
   Future<void> addCollaborator(String recipeId, String userId) async {

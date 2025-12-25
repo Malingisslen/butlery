@@ -24,7 +24,6 @@ import 'package:butlery/viewmodels/recipe_form/image_management/upload_queue_sum
 // Re-export ImageDisplayInfo for backwards compatibility
 export 'package:butlery/viewmodels/recipe_form/image_management/image_display_info.dart';
 
-/// ===== RECIPE IMAGE MANAGER =====
 /// REFACTORED: Now delegates to ImageUploadService for upload execution
 /// Recipe-specific multi-image coordination for recipe forms.
 /// Handles image selection, recipe-specific state, and upload safety checks.
@@ -37,12 +36,10 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   final StorageService _storageService;
   final ImagePickerService _imagePickerService;
 
-  // ===== SPECIALIZED MANAGERS (FACADE PATTERN) =====
   late final ImageUploadValidator _validator;
   late final ImageUploadNotificationManager _notificationManager;
   late final ImageUploadCoordinator _coordinator;
 
-  // ===== DISPOSAL TRACKING =====
   bool _disposed = false;
   bool get disposed => _disposed;
 
@@ -94,8 +91,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       checkCompletionEvents: _checkAndTriggerCompletionEvents,
     );
   }
-
-  // ===== GETTERS =====
 
   /// Combined list of all images for UI display
   List<String> get imageUrls {
@@ -189,8 +184,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
 
   /// Check if there are retryable failed uploads
   bool get hasRetryableFailures => failedUploads.isNotEmpty;
-
-  // ===== SETTERS =====
 
   /// Set uploaded image URLs (for loading existing recipes)
   void setUploadedImageUrls(List<String> imageUrls) {
@@ -287,8 +280,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       notifyListeners();
     }
   }
-
-  // ===== IMAGE OPERATIONS =====
 
   /// Visa image picker dialog och hantera bildval
   Future<void> showImagePickerDialog(BuildContext context,
@@ -582,8 +573,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       }
     }
   }
-
-  // ===== PRIVATE METHODS =====
 
   /// Bearbeta resultat frÃ¥n image picker
   /// Process image picker result with instant feedback (no upload yet)
@@ -936,8 +925,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     AppLogger.error('âŒ XFile upload failed: $filePath - $errorMessage');
   }
 
-  // ===== BULK UPLOAD MANAGEMENT (Delegated to ImageUploadCoordinator) =====
-
   /// Retry all failed uploads that can be retried
   Future<void> retryAllFailedUploads() async {
     await _coordinator.retryAllFailedUploads(
@@ -970,8 +957,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
       activeUploads: activeUploads,
     );
   }
-
-  // ===== BACKGROUND NOTIFICATION SYSTEM (Delegated to ImageUploadNotificationManager) =====
 
   /// Stream of upload notification events for UI subscription
   static Stream<UploadNotificationEvent> get notificationStream =>
@@ -1149,8 +1134,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     _safeNotifyListeners(immediate: true);
   }
 
-  // ===== UPLOAD SAFETY CHECKS (Delegated to ImageUploadValidator) =====
-
   /// Check if it's safe to save recipe without losing pending uploads
   /// HIGH PRIORITY FIX: Prevent data corruption from race conditions
   UploadSafetyResult ensureUploadSafety() {
@@ -1192,8 +1175,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     notifyListeners();
   }
 
-  // ===== UPLOAD OPERATIONS (Delegated to ImageUploadCoordinator) =====
-
   /// CRITICAL FIX: Thread-safe upload all pending images with cancellation support
   Future<List<String>> uploadPendingImagesInBackground(String recipeId,
       {Function(int completed, int total)? onProgress}) async {
@@ -1229,8 +1210,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
     };
   }
 
-  // ===== VALIDATION (Delegated to ImageUploadValidator) =====
-
   /// Validera bildformat
   bool isValidImageFormat(String imageUrl) {
     return _validator.isValidImageFormat(imageUrl);
@@ -1240,8 +1219,6 @@ class RecipeImageManager extends ChangeNotifier with StreamManagementMixin {
   Future<bool> isValidImageSize(XFile imageFile) async {
     return _validator.isValidImageSize(imageFile);
   }
-
-  // ===== RETRY MANAGEMENT =====
 
   /// Retry failed upload
   /// REFACTORED: Simplified to restart upload via ImageUploadService

@@ -180,8 +180,6 @@ mixin JsonSerializableMixin {
   /// Convert model to JSON map
   Map<String, dynamic> toJson();
 
-  // ===== COMMON SERIALIZATION HELPERS =====
-
   /// Serialize DateTime to ISO string or null
   String? serializeDateTime(DateTime? dateTime) {
     return dateTime?.toIso8601String();
@@ -420,8 +418,6 @@ mixin FirestoreSerializableMixin on JsonSerializableMixin {
   static List<Map<String, dynamic>> fromFirestoreList(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) => fromFirestore(doc)).toList();
   }
-
-  // ===== PRIVATE HELPERS =====
 
   /// Check if string is ISO date format
   bool _isIsoDateString(String value) {

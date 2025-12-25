@@ -1,5 +1,6 @@
 // lib/services/offline/offline_sync_manager.dart
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -24,6 +25,10 @@ class OfflineSyncManager {
 
   bool _isSyncing = false;
   final VoidCallback? _onSyncStateChanged;
+
+  /// Async lock to prevent concurrent sync operations.
+  /// Uses a Completer-based mutex pattern for thread-safe sync.
+  Completer<void>? _syncLock;
 
   OfflineSyncManager({
     required AppDatabase database,
@@ -51,7 +56,8 @@ class OfflineSyncManager {
     return await _syncQueueDao.countPending(userId);
   }
 
-  /// Sync pending changes without circular dependencies
+  /// Sync pending changes without circular dependencies.
+  /// Uses an async lock to prevent concurrent sync operations.
   Future<void> syncPendingChanges({required bool isOnline}) async {
     final userId = _authRepository.currentUserId;
     if (userId == null) {
@@ -60,8 +66,22 @@ class OfflineSyncManager {
     }
 
     final hasPending = await _syncQueueDao.hasPending(userId);
-    if (!isOnline || !hasPending || _isSyncing) return;
+    if (!isOnline || !hasPending) return;
 
+    // Acquire async lock - if another sync is in progress, wait for it
+    if (_syncLock != null) {
+      AppLogger.debug('🔄 SYNC: Waiting for ongoing sync to complete...');
+      await _syncLock!.future;
+      // After waiting, check if we still need to sync
+      final stillHasPending = await _syncQueueDao.hasPending(userId);
+      if (!stillHasPending) {
+        AppLogger.debug('🔄 SYNC: No pending changes after wait, skipping');
+        return;
+      }
+    }
+
+    // Create new lock - this atomically prevents new sync operations
+    _syncLock = Completer<void>();
     _isSyncing = true;
     _onSyncStateChanged?.call();
 
@@ -176,6 +196,9 @@ class OfflineSyncManager {
           '🛡️ Synkronisering hoppar över denna omgång, försöker igen senare');
     } finally {
       _isSyncing = false;
+      // Release the lock so waiting operations can proceed
+      _syncLock?.complete();
+      _syncLock = null;
       _onSyncStateChanged?.call();
     }
   }

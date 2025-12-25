@@ -86,9 +86,6 @@ class FirebaseDeepLinkRepository
 
   @override
   String getId(Map<String, dynamic> entity) => entity['id'] ?? '';
-
-  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
-
   @override
   Future<bool> validateCreatePermission(
       String userId, Map<String, dynamic> entity) async {

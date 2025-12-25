@@ -559,9 +559,7 @@ class _MockAuthViewModel extends AuthViewModel {
   }
 }
 
-// =============================================================================
 // ULTRA-SIMPLE E2E TEST - Focus on Basic App Loading
-// =============================================================================
 //
 // GOLD STANDARD APPROACH: Test incrementally, don't over-engineer
 // 1. First get the app to load without crashing
@@ -637,9 +635,7 @@ class _E2EStubFactory {
   }
 }
 
-// =============================================================================
 // ULTRA-SIMPLE E2E MOCK IMPLEMENTATIONS - Gold Standard Minimal Dependencies
-// =============================================================================
 
 /// Simplified UserService mock that provides basic functionality
 class _E2EUserServiceMock extends ChangeNotifier {

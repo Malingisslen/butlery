@@ -49,8 +49,6 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
         _permissionManager = permissionManager,
         _parentNotify = parentNotify;
 
-  // ===== PUBLIC API =====
-
   /// Establishes comprehensive manager listener coordination for reactive state management.
   /// Sets up listener connections to all focused managers ensuring automatic UI notification
   /// and state synchronization across form state, collaborative editing, image management,
@@ -124,8 +122,6 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
     }
   }
 
-  // ===== PRIVATE COORDINATION METHODS =====
-
   /// CRITICAL FIX: Coordinated notification system to prevent cascading loops
   void _coordinatedNotifyListeners() {
     // Prevent notification loops with debouncing
@@ -173,8 +169,6 @@ class RecipeFormCoordinator with ErrorHandlingMixin {
   void _onPermissionChanged() {
     _coordinatedNotifyListeners();
   }
-
-  // ===== DISPOSAL =====
 
   void dispose() {
     _disposed = true;

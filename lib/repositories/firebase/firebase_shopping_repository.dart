@@ -133,8 +133,6 @@ class FirebaseShoppingRepository
     );
   }
 
-  // ===== BASE CLASS IMPLEMENTATION =====
-
   @override
   String get collectionName => 'unified_shopping_lists';
 
@@ -149,9 +147,6 @@ class FirebaseShoppingRepository
 
   @override
   String getId(UnifiedShoppingList entity) => entity.id;
-
-  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
-
   @override
   Future<bool> validateCreatePermission(
       String userId, UnifiedShoppingList entity) async {
@@ -203,12 +198,8 @@ class FirebaseShoppingRepository
     }
   }
 
-  // ===== SHARED COLLECTIONS ACCESS =====
-
   CollectionReference<Map<String, dynamic>> get _sharedListsRef =>
       firestore.collection('unified_shared_shopping_lists');
-
-  // ===== COLLECTION ROUTING OVERRIDE =====
 
   /// Override create method to route collaborative lists to correct collection
   @override
@@ -294,13 +285,8 @@ class FirebaseShoppingRepository
     await super.delete(id);
   }
 
-  // ===== ENHANCED BASE CLASS METHODS =====
-
   @override
   Future<List<UnifiedShoppingList>> readAll() async => _queryModule.readAll();
-
-  // ===== SPECIALIZED SHOPPING LIST OPERATIONS =====
-
   @override
   Future<void> setActiveList(String listId) async {
     _activeListId = listId;
@@ -365,9 +351,6 @@ class FirebaseShoppingRepository
   /// Fetch collaborative lists where the current user is a member.
   Stream<List<UnifiedShoppingList>> collaborativeListsStream() =>
       _queryModule.collaborativeListsStream();
-
-  // ===== TEMPLATE OPERATIONS =====
-
   CollectionReference<Map<String, dynamic>> get _templatesRef =>
       firestore.collection('shoppingListTemplates');
 

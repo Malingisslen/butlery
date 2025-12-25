@@ -31,8 +31,6 @@ class NotificationPreferenceManager {
   })  : _notificationsRepository = notificationsRepository,
         _userId = userId;
 
-  // ===== USER PREFERENCE CHECKING =====
-
   /// Check if user should receive a specific notification type
   /// This is the main filtering method used before sending any notification
   Future<bool> shouldReceiveNotification(
@@ -108,8 +106,6 @@ class NotificationPreferenceManager {
     }
   }
 
-  // ===== QUIET HOURS LOGIC =====
-
   /// Check if current user is in quiet hours
   /// Quiet hours prevent non-critical notifications during specified time periods
   Future<bool> isInQuietHours() async {
@@ -182,8 +178,6 @@ class NotificationPreferenceManager {
 
     return timeMinutes >= startMinutes && timeMinutes < endMinutes;
   }
-
-  // ===== PREFERENCE CRUD OPERATIONS =====
 
   /// Get notification preferences for current user
   /// Uses caching to avoid repeated Firestore calls and includes offline fallback
@@ -276,8 +270,6 @@ class NotificationPreferenceManager {
     }
   }
 
-  // ===== PERMISSION VALIDATION =====
-
   /// Check if digest notifications are enabled
   Future<bool> areDigestNotificationsEnabled() async {
     try {
@@ -329,8 +321,6 @@ class NotificationPreferenceManager {
       return NotificationCategory.values; // Default to all enabled
     }
   }
-
-  // ===== CACHING AND STORAGE =====
 
   DateTime? _cacheTimestamp;
   static const Duration _cacheExpiry = Duration(minutes: 10);

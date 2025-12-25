@@ -86,9 +86,6 @@ class ImageUploadStatus {
     this.nextRetryAt,
     this.retryDelay,
   });
-
-  // ===== COMPUTED PROPERTIES =====
-
   bool get isDisplayable => file != null || url != null;
   bool get isPersistable => url != null && state == ImageUploadState.completed;
   bool get hasError => error != null;

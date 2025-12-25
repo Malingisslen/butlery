@@ -27,8 +27,6 @@ class CommentCrudOperations {
         _analyticsService =
             analyticsService ?? ServiceLocator.get<AnalyticsService>();
 
-  // ===== COMMENT CREATION =====
-
   /// Create comment with validation
   Future<String?> createComment({
     required String recipeId,
@@ -82,8 +80,6 @@ class CommentCrudOperations {
       return null;
     }
   }
-
-  // ===== COMMENT READING =====
 
   /// Get comments for recipe with pagination
   Future<List<RecipeComment>> getComments({
@@ -140,8 +136,6 @@ class CommentCrudOperations {
     });
   }
 
-  // ===== COMMENT EDITING =====
-
   /// Edit comment content with validation
   Future<bool> editComment({
     required String commentId,
@@ -167,8 +161,6 @@ class CommentCrudOperations {
     }
   }
 
-  // ===== COMMENT DELETION =====
-
   /// Delete comment with reply handling
   Future<bool> deleteComment({
     required String commentId,
@@ -188,8 +180,6 @@ class CommentCrudOperations {
       return false;
     }
   }
-
-  // ===== COMMENT UTILITIES =====
 
   /// Sort comments to show replies after their parents
   static int _sortCommentsWithReplies(RecipeComment a, RecipeComment b) {

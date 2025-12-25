@@ -394,9 +394,8 @@ class MenuCard extends StatelessWidget {
 
   int _getMenuMemberCount() {
     if (menu is SharedMenu) {
-      // TODO (Issue #014): Member count no longer stored in model.
-      // Need async repository call or cached count. Return 0 for now.
-      return 0;
+      final sharedMenu = menu as SharedMenu;
+      return sharedMenu.activeCollaboratorCount;
     } else if (menu is RealtimeMenu) {
       final realtimeMenu = menu as RealtimeMenu;
       return realtimeMenu.participantCount;

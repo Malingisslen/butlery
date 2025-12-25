@@ -64,9 +64,6 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
   }) : super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         );
-
-  // ===== BASE CLASS IMPLEMENTATION =====
-
   @override
   String get collectionName => 'public_profiles';
 
@@ -79,9 +76,6 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   String getId(UserProfile entity) => entity.uid;
-
-  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
-
   @override
   Future<bool> validateCreatePermission(
       String userId, UserProfile entity) async {
@@ -114,8 +108,6 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
     // This supports GDPR Article 17 (Right to Erasure)
     return userId == resourceId;
   }
-
-  // ===== SPECIALIZED USER PROFILE OPERATIONS =====
 
   /// Create or update the current user's profile.
   @override

@@ -22,8 +22,6 @@ class SocialMenuOperations {
   })  : _firestore = firestore,
         _friendsService = friendsService;
 
-  // ===== MENU SHARING WITH FRIENDS =====
-
   /// Share menu with selected friends
   Future<bool> shareMenuWithFriends({
     required Map<String, List<Recipe>> menu,

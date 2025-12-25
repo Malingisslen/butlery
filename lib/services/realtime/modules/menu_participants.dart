@@ -13,8 +13,6 @@ import 'package:butlery/services/realtime/modules/menu_operations.dart';
 /// - Permission checking and enforcement
 /// ❌ DOES NOT CONTAIN: Menu content operations, state management, synchronization
 class MenuParticipants {
-  // ===== PARTICIPANT MANAGEMENT =====
-
   /// Add participant to realtime menu
   static RealtimeMenu addParticipant(
     RealtimeMenu menu, {
@@ -142,8 +140,6 @@ class MenuParticipants {
     return menu.updateParticipantPermission(userId, newPermission);
   }
 
-  // ===== PARTICIPANT QUERIES =====
-
   /// Check if user is a participant
   static bool isParticipant(RealtimeMenu menu, String userId) {
     return menu.participants.containsKey(userId);
@@ -216,8 +212,6 @@ class MenuParticipants {
         .map((entry) => entry.key)
         .toList();
   }
-
-  // ===== PARTICIPANT UTILITIES =====
 
   /// Get participant summary for UI display
   static Map<String, dynamic> getParticipantSummary(RealtimeMenu menu) {

@@ -11,7 +11,6 @@ import 'package:butlery/core/utils/logger.dart';
 class FriendsProfileCacheManager extends ChangeNotifier {
   final UserService _userService;
 
-  // ===== STATE =====
   final Map<String, UserProfile> _requestUserProfiles = {};
   bool _isLoadingUserProfiles = false;
   bool _isDisposed = false;
@@ -19,7 +18,6 @@ class FriendsProfileCacheManager extends ChangeNotifier {
   FriendsProfileCacheManager({required UserService userService})
       : _userService = userService;
 
-  // ===== GETTERS =====
   bool get isLoadingUserProfiles => _isLoadingUserProfiles;
 
   UserProfile? getUserProfile(String userId) => _requestUserProfiles[userId];

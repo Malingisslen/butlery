@@ -37,8 +37,6 @@ import 'package:butlery/services/permission_service.dart';
 /// Provides common patterns for loading, filtering, state management,
 /// and operations while allowing content-specific customization.
 abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
-  // ===== STATE VARIABLES =====
-
   /// Content collection loaded from repositories
   List<TContent> _content = [];
 
@@ -66,16 +64,11 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
 
   /// Show imported content filter (default: false = hide imported for cleaner inbox)
   bool _showImported = false;
-
-  // ===== CONSTRUCTOR =====
-
   BaseSharedContentViewModel() {
     AppLogger.info('${contentTypeName}ViewModel initialized');
     // Don't auto-initialize - coordinator will trigger when ready
     // This prevents race condition where currentUserId is null at constructor time
   }
-
-  // ===== ABSTRACT METHODS FOR CUSTOMIZATION =====
 
   /// Content type name for logging (e.g., 'recipe', 'menu', 'shopping_list')
   String get contentTypeName;
@@ -104,8 +97,6 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
   /// Get current user ID for operations
   String? get currentUserId =>
       ServiceLocator.get<PermissionService>().currentUserId;
-
-  // ===== GETTERS =====
 
   /// Current search query
   String get searchQuery => _searchQuery;
@@ -177,8 +168,6 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-  // ===== CONTENT OPERATIONS (TEMPLATE METHODS) =====
 
   /// Load initial content from repository with pagination
   Future<void> loadContent() async {
@@ -274,8 +263,6 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
     updateSearchQuery('');
   }
 
-  // ===== PROTECTED STATE MANAGEMENT METHODS =====
-
   /// Set loading state and notify listeners
   void _setLoading(bool loading) {
     if (_isLoading != loading) {
@@ -305,8 +292,6 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-  // ===== CONTENT MANAGEMENT TEMPLATE METHODS =====
 
   /// Add content to local collection
   void addContent(TContent content) {
@@ -342,8 +327,6 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ===== UTILITY METHODS =====
-
   /// Execute operation with loading state and error handling
   Future<T?> executeOperation<T>(
     String operationName,
@@ -375,8 +358,6 @@ abstract class BaseSharedContentViewModel<TContent> extends ChangeNotifier {
       }
     }
   }
-
-  // ===== CLEANUP =====
 
   @override
   void dispose() {

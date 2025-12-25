@@ -56,8 +56,6 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
     setUserIdProvider(getCurrentUserId);
   }
 
-  // ===== ABSTRACT METHODS FOR CUSTOMIZATION =====
-
   /// Content type name for logging (e.g., 'recipe', 'menu', 'shopping_list')
   String get contentTypeName;
 
@@ -90,8 +88,6 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
 
   /// Save imported content to the underlying service
   Future<String?> saveImportedContent(TContent content);
-
-  // ===== UNIVERSAL INVITATION SYSTEM =====
 
   /// Create invitation using shared content model for universal invitation system
   Future<String?> createInvitation({
@@ -323,8 +319,6 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
     }
   }
 
-  // ===== ABSTRACT METHODS FOR COPY-ON-WRITE =====
-
   /// Extract original content from shared content for static copy creation
   dynamic getOriginalContentFromShared(TSharedContent sharedContent);
 
@@ -424,8 +418,6 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
     }
   }
 
-  // ===== NOTIFICATION SYSTEM (PLACEHOLDER) =====
-
   /// Send invitation notifications (placeholder for future implementation)
   Future<void> sendInvitationNotifications(
       String contentId, List<String> inviteeUserIds) async {
@@ -443,8 +435,6 @@ abstract class BaseSocialCoordinator<TContent, TSharedContent>
     // Note: Notification system implementation would be integrated here
     // when NotificationService dependency is available in coordinators
   }
-
-  // ===== UTILITY METHODS =====
 
   /// Get current user ID safely
   String? get currentUserId => _getCurrentUserId();

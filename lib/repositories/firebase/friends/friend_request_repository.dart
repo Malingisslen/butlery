@@ -74,9 +74,6 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
 
   CollectionReference<Map<String, dynamic>> get _friendRequestsRef =>
       firestore.collection('friend_requests');
-
-  // ===== BASE CLASS IMPLEMENTATION =====
-
   @override
   String get collectionName => 'friend_requests';
 
@@ -90,9 +87,6 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
 
   @override
   String getId(FriendRequest entity) => entity.id;
-
-  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
-
   @override
   Future<bool> validateCreatePermission(
       String userId, FriendRequest entity) async {
@@ -127,8 +121,6 @@ class FriendRequestRepository extends BaseFirebaseRepository<FriendRequest> {
       return false;
     }
   }
-
-  // ===== FRIEND REQUEST OPERATIONS =====
 
   /// Send a new friend request.
   Future<void> sendRequest(FriendRequest request) async {

@@ -29,9 +29,6 @@ class CreateSharedListViewModel extends ChangeNotifier {
             shoppingService ?? ServiceLocator.get<UnifiedShoppingService>(),
         _friendsService =
             friendsService ?? ServiceLocator.get<UnifiedFriendsService>();
-
-  // ===== GETTERS (UI State) =====
-
   String get title => _title;
   String get description => _description;
   List<String> get selectedFriendIds => List.unmodifiable(_selectedFriendIds);
@@ -40,9 +37,6 @@ class CreateSharedListViewModel extends ChangeNotifier {
   bool get isCreating => _isCreating;
   String? get error => _error;
   bool get hasError => _error != null;
-
-  // ===== VALIDATION GETTERS =====
-
   bool get isTitleValid => _title.trim().isNotEmpty;
   bool get hasFriendsSelected => _selectedFriendIds.isNotEmpty;
   bool get canCreate => isTitleValid && hasFriendsSelected && !_isCreating;
@@ -63,8 +57,6 @@ class CreateSharedListViewModel extends ChangeNotifier {
     return null;
   }
 
-  // ===== DISPLAY GETTERS =====
-
   String get selectedFriendsText {
     if (_selectedFriendIds.isEmpty) return 'Inga vänner valda';
     return '${_selectedFriendIds.length} ${_selectedFriendIds.length == 1 ? 'vän vald' : 'vänner valda'}';
@@ -76,9 +68,6 @@ class CreateSharedListViewModel extends ChangeNotifier {
   bool get hasDescription => trimmedDescription.isNotEmpty;
 
   String get createButtonText => _isCreating ? 'Skapar...' : 'Skapa & Dela';
-
-  // ===== INITIALIZATION =====
-
   void initialize({
     Map<String, List<Recipe>>? menu,
     String? defaultTitle,
@@ -92,8 +81,6 @@ class CreateSharedListViewModel extends ChangeNotifier {
     AppLogger.info(
         '🔧 CreateSharedListViewModel initialiserad med menu: ${menu?.keys.join(", ")}');
   }
-
-  // ===== FORM ACTIONS =====
 
   void updateTitle(String value) {
     if (_title != value) {
@@ -130,8 +117,6 @@ class CreateSharedListViewModel extends ChangeNotifier {
     notifyListeners();
     AppLogger.info('🗑️ Formulär rensat');
   }
-
-  // ===== BUSINESS ACTIONS =====
 
   Future<String?> createSharedList() async {
     if (!canCreate) {
@@ -192,8 +177,6 @@ class CreateSharedListViewModel extends ChangeNotifier {
     }
   }
 
-  // ===== VALIDATION METHODS =====
-
   bool validateForm() {
     final titleValid = titleError == null && isTitleValid;
     final descriptionValid = descriptionError == null;
@@ -217,8 +200,6 @@ class CreateSharedListViewModel extends ChangeNotifier {
     return true;
   }
 
-  // ===== ERROR HANDLING =====
-
   void _setError(String message) {
     _error = message;
     notifyListeners();
@@ -235,14 +216,10 @@ class CreateSharedListViewModel extends ChangeNotifier {
     _clearError();
   }
 
-  // ===== LOADING STATE =====
-
   void _setCreating(bool creating) {
     _isCreating = creating;
     notifyListeners();
   }
-
-  // ===== ANALYTICS HELPERS =====
 
   Map<String, dynamic> get analyticsData => {
         'title_length': _title.length,
@@ -250,9 +227,6 @@ class CreateSharedListViewModel extends ChangeNotifier {
         'selected_friends_count': _selectedFriendIds.length,
         'menu_days_count': _menu?.keys.length ?? 0,
       };
-
-  // ===== DISPOSE =====
-
   @override
   void dispose() {
     AppLogger.info('🗑️ CreateSharedListViewModel disposed');

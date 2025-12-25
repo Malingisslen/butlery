@@ -64,13 +64,7 @@ class SocialRecipeOperations {
 
     AppLogger.info('✅ SocialRecipeOperations initialized with focused modules');
   }
-
-  // ===== GETTERS =====
-
   RecipeDiscoveryService get discoveryService => _discoveryService;
-
-  // ===== RECIPE SHARING (Delegates to RecipeSharingManager) =====
-
   Future<String?> shareRecipe({
     required String recipeId,
     required List<String> memberIds,
@@ -172,8 +166,6 @@ class SocialRecipeOperations {
     return _memberManager.getMemberStatistics(recipeId);
   }
 
-  // ===== SOCIAL DISCOVERY (Delegates to RecipeDiscoveryService) =====
-
   Future<List<Recipe>> getCollaborativeRecipes({
     int limit = 50,
     String? startAfter,
@@ -256,8 +248,6 @@ class SocialRecipeOperations {
     );
   }
 
-  // ===== RECIPE COMMENTS (Delegates to RecipeCommentsManager) =====
-
   Future<String?> addComment({
     required String recipeId,
     required String content,
@@ -312,8 +302,6 @@ class SocialRecipeOperations {
     return await _commentsManager.getCommentStatistics(recipeId);
   }
 
-  // ===== RECIPE RATING & SOCIAL STATS (Delegates to RecipeSocialStats) =====
-
   Future<bool> rateRecipe({
     required String recipeId,
     required double rating,
@@ -349,8 +337,6 @@ class SocialRecipeOperations {
   Future<Map<String, dynamic>> getUserSocialStats() async {
     return await _socialStats.getUserSocialStats();
   }
-
-  // ===== LEGACY COMPATIBILITY =====
 
   Future<List<Map<String, dynamic>>> getLegacySharedRecipes() async {
     try {
@@ -390,8 +376,6 @@ class SocialRecipeOperations {
       return false;
     }
   }
-
-  // ===== PERMISSION HELPERS (Delegates to RecipePermissionHelper) =====
 
   bool canView(String recipeId) {
     try {
@@ -464,8 +448,6 @@ class SocialRecipeOperations {
       return {'error': 'Recipe not found'};
     }
   }
-
-  // ===== ADDITIONAL FEATURES =====
 
   Map<String, dynamic> getDiscoveryStatistics() {
     return _discoveryService.getDiscoveryStatistics();

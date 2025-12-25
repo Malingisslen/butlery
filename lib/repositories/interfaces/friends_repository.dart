@@ -88,8 +88,6 @@ abstract class FriendsRepository extends Repository<UserProfile> {
   /// Cancel a previously sent friend request
   Future<bool> cancelFriendRequest(String requestId);
 
-  // ===== Category methods =====
-
   /// Save a new category for the given user
   Future<void> saveCategory(String userId, FriendCategory category);
 
@@ -112,8 +110,6 @@ abstract class FriendsRepository extends Repository<UserProfile> {
 
   /// Get a single category by id for a user
   Future<FriendCategory?> getCategory(String userId, String categoryId);
-
-  // ===== Invitation methods =====
 
   /// Stream of received invitations for a user
   Stream<List<GroupInvitation>> receivedInvitationsStream(String userId);

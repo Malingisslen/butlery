@@ -21,8 +21,6 @@ class CommentUtilities {
   static final CommentsRepository _commentsRepository =
       GetIt.instance<CommentsRepository>();
 
-  // ===== PERMISSION CHECKING =====
-
   /// Check if user can comment on recipe
   static bool canCommentOnRecipe({
     required Recipe recipe,
@@ -91,8 +89,6 @@ class CommentUtilities {
     return comment.authorId == currentUserId;
   }
 
-  // ===== REPLY COUNT MANAGEMENT =====
-
   /// Increment reply count for parent comment
   static Future<void> incrementReplyCount({
     required String parentCommentId,
@@ -146,8 +142,6 @@ class CommentUtilities {
       return 0;
     }
   }
-
-  // ===== COMMENT STATISTICS =====
 
   /// Get comprehensive comment statistics for a recipe
   static Future<Map<String, dynamic>> getCommentStatistics({
@@ -292,8 +286,6 @@ class CommentUtilities {
     }
   }
 
-  // ===== STREAM MANAGEMENT =====
-
   /// Create managed comment stream controller
   static StreamController<List<RecipeComment>> createCommentStreamController() {
     return StreamController<List<RecipeComment>>.broadcast();
@@ -321,8 +313,6 @@ class CommentUtilities {
 
     AppLogger.debug('✅ All comment streams disposed');
   }
-
-  // ===== CONTENT VALIDATION =====
 
   /// Validate comment content
   static bool isValidCommentContent(String content) {
@@ -366,8 +356,6 @@ class CommentUtilities {
 
     return spamPatterns.any((pattern) => trimmed.contains(pattern));
   }
-
-  // ===== HELPER UTILITIES =====
 
   /// Get comment age in human readable format
   static String getCommentAge(DateTime createdAt) {

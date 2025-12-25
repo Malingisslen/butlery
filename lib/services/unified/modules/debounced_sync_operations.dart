@@ -54,8 +54,6 @@ import 'package:get_it/get_it.dart';
 /// );
 /// ```
 class DebouncedSyncOperations {
-  // ===== DEBOUNCED SYNC SCHEDULING =====
-
   /// Schedule recipe for sync to Firebase (debounced)
   static void scheduleSyncForRecipe({
     required String recipeId,
@@ -108,8 +106,6 @@ class DebouncedSyncOperations {
       pendingSyncIds.addAll(recipesToSync);
     }
   }
-
-  // ===== INDIVIDUAL RECIPE SYNC =====
 
   /// Sync individual recipe to repositories
   static Future<void> _syncRecipeToFirebase({
@@ -178,8 +174,6 @@ class DebouncedSyncOperations {
     }
   }
 
-  // ===== BATCH SYNC OPERATIONS =====
-
   /// Sync multiple recipes immediately (no debounce)
   static Future<void> syncMultipleRecipesImmediately({
     required List<String> recipeIds,
@@ -228,8 +222,6 @@ class DebouncedSyncOperations {
     AppLogger.success('✅ Force sync completed for recipe: $recipeId');
   }
 
-  // ===== SYNC QUEUE MANAGEMENT =====
-
   /// Get pending sync status
   static Map<String, dynamic> getPendingSyncStatus(Set<String> pendingSyncIds) {
     return {
@@ -269,8 +261,6 @@ class DebouncedSyncOperations {
     AppLogger.debug('Added recipe to pending sync: $recipeId');
   }
 
-  // ===== SYNC OPTIMIZATION =====
-
   /// Check if recipe needs sync based on last sync time
   static bool shouldSyncRecipe({
     required Recipe recipe,
@@ -299,8 +289,6 @@ class DebouncedSyncOperations {
     // For now, return all pending if they've been waiting too long
     return pendingSyncIds.toList();
   }
-
-  // ===== SYNC ERROR HANDLING =====
 
   /// Handle sync error with retry logic
   static Future<void> handleSyncError({

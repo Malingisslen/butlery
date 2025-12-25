@@ -32,14 +32,9 @@ class RealtimeStreamManager {
     required this.onStreamStarted,
     required this.onStreamStopped,
   }) : _menuService = menuService;
-
-  // ===== STREAM STATE =====
-
   bool get isStreaming => _isStreaming;
   String? get currentMenuId => _currentMenuId;
   bool get hasActiveSubscription => _menuSubscription != null;
-
-  // ===== STREAM OPERATIONS =====
 
   /// Start watching a realtime menu
   Future<void> startWatching(String menuId) async {
@@ -100,8 +95,6 @@ class RealtimeStreamManager {
     }
   }
 
-  // ===== CONNECTION MANAGEMENT =====
-
   /// Check if stream is healthy
   bool isStreamHealthy() {
     return _isStreaming && _menuSubscription != null && _currentMenuId != null;
@@ -131,8 +124,6 @@ class RealtimeStreamManager {
       AppLogger.warning('⚠️ Cannot reconnect - no active menu');
     }
   }
-
-  // ===== STREAM EVENT HANDLERS =====
 
   void _handleMenuUpdate(RealtimeMenu menu) {
     if (!_isStreaming) {
@@ -170,8 +161,6 @@ class RealtimeStreamManager {
     _isStreaming = false;
   }
 
-  // ===== STREAM VALIDATION =====
-
   /// Validate menu ID before starting stream
   bool validateMenuId(String? menuId) {
     if (menuId == null || menuId.isEmpty) {
@@ -193,8 +182,6 @@ class RealtimeStreamManager {
     return true;
   }
 
-  // ===== STREAM STATISTICS =====
-
   /// Get stream duration if active
   Duration? getStreamDuration() {
     // This would require tracking start time
@@ -211,8 +198,6 @@ class RealtimeStreamManager {
       'isHealthy': isStreamHealthy(),
     };
   }
-
-  // ===== CLEANUP =====
 
   /// Dispose and cleanup all resources
   Future<void> dispose() async {

@@ -14,7 +14,6 @@ import 'package:butlery/core/utils/logger.dart';
 class FriendsSearchManager extends ChangeNotifier {
   final UnifiedFriendsService _friendsService;
 
-  // ===== STATE =====
   String _searchQuery = '';
   List<UserProfile> _searchResults = [];
   String? _searchError;
@@ -29,7 +28,6 @@ class FriendsSearchManager extends ChangeNotifier {
   FriendsSearchManager({required UnifiedFriendsService friendsService})
       : _friendsService = friendsService;
 
-  // ===== GETTERS =====
   String get searchQuery => _searchQuery;
   List<UserProfile> get searchResults => List.unmodifiable(_searchResults);
   String? get searchError => _searchError;
@@ -71,7 +69,6 @@ class FriendsSearchManager extends ChangeNotifier {
     _safeNotifyListeners();
   }
 
-  // ===== PRIVATE METHODS =====
   Future<void> _performSearch() async {
     if (_isDisposed || _searchQuery.isEmpty) return;
 

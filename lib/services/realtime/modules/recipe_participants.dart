@@ -13,8 +13,6 @@ import 'package:butlery/services/realtime/modules/recipe_content_operations.dart
 /// - Permission checking and enforcement
 /// ❌ DOES NOT CONTAIN: Recipe content operations, state management, synchronization
 class RecipeParticipants {
-  // ===== PARTICIPANT MANAGEMENT =====
-
   /// Add participant to realtime recipe
   static RealtimeRecipe addParticipant(
     RealtimeRecipe recipe, {
@@ -142,8 +140,6 @@ class RecipeParticipants {
     return recipe.updateParticipantPermission(userId, newPermission);
   }
 
-  // ===== PARTICIPANT QUERIES =====
-
   /// Check if user is a participant
   static bool isParticipant(RealtimeRecipe recipe, String userId) {
     return recipe.participants.containsKey(userId);
@@ -217,8 +213,6 @@ class RecipeParticipants {
         .map((entry) => entry.key)
         .toList();
   }
-
-  // ===== PARTICIPANT UTILITIES =====
 
   /// Get participant summary for UI display
   static Map<String, dynamic> getParticipantSummary(RealtimeRecipe recipe) {
@@ -341,8 +335,6 @@ class RecipeParticipants {
     return getPermissionLevel(userPermission) >=
         getPermissionLevel(requiredPermission);
   }
-
-  // ===== COLLABORATION UTILITIES =====
 
   /// Get collaboration status for recipe
   static String getCollaborationStatus(RealtimeRecipe recipe) {

@@ -84,8 +84,6 @@ class CreateGroupViewModel extends ChangeNotifier
     with StreamManagementMixin, StateNotifierMixin, AsyncOperationMixin {
   final UnifiedFriendsService _friendsService;
 
-  // ===== GROUP FORM STATE =====
-
   /// Group name for identification and display throughout group functionality.
   /// Stores user input for group name enabling form validation, display coordination,
   /// and group creation with real-time validation and error feedback.
@@ -106,7 +104,6 @@ class CreateGroupViewModel extends ChangeNotifier
   /// invitation sending coordination, and group membership establishment.
   final Set<String> _selectedFriendIds = {};
 
-  // ===== UI STATE MANAGEMENT =====
   // isLoading and error provided by AsyncOperationMixin
 
   /// Name validation error message for specific form field error handling and user feedback.
@@ -128,8 +125,6 @@ class CreateGroupViewModel extends ChangeNotifier
     UnifiedFriendsService? friendsService,
   }) : _friendsService =
             friendsService ?? ServiceLocator.get<UnifiedFriendsService>();
-
-  // ===== FORM STATE ACCESSORS =====
 
   /// Current group name for display and validation coordination.
   /// Provides access to current group name input enabling form display,
@@ -162,8 +157,6 @@ class CreateGroupViewModel extends ChangeNotifier
   /// Provides count of selected friends enabling member count display,
   /// UI state management, and invitation coordination throughout group creation.
   int get selectedFriendsCount => _selectedFriendIds.length;
-
-  // ===== FORM INPUT OPERATIONS =====
 
   /// Updates group name with comprehensive validation and real-time feedback coordination.
   /// [value] New group name for validation and state management
@@ -240,8 +233,6 @@ class CreateGroupViewModel extends ChangeNotifier
     notifyListeners();
   }
 
-  // ===== FORM VALIDATION OPERATIONS =====
-
   /// Validates group name with comprehensive uniqueness checking and error feedback coordination.
   /// Performs group name validation including required field checking, uniqueness validation
   /// against existing categories, and error state management with Swedish localized error messages
@@ -284,8 +275,6 @@ class CreateGroupViewModel extends ChangeNotifier
   /// }
   /// ```
   bool get isValid => _nameError == null && _name.trim().isNotEmpty;
-
-  // ===== GROUP CREATION OPERATIONS =====
 
   /// Creates group with comprehensive multi-step workflow and invitation coordination.
   /// Returns true if group creation succeeds, false if validation fails or creation errors occur.

@@ -90,8 +90,6 @@ class SwedishLineClassifier {
 
   SwedishLineClassifier._();
 
-  // ========== Swedish Section Headers ==========
-
   /// Patterns for ingredient section headers.
   static final _ingredientHeaders = [
     RegExp(r'^ingrediens(er)?:?\s*$', caseSensitive: false),
@@ -110,8 +108,6 @@ class SwedishLineClassifier {
     RegExp(r'^metod:?\s*$', caseSensitive: false),
   ];
 
-  // ========== Swedish Units ==========
-
   /// Swedish measurement units for ingredient detection.
   static const _swedishUnits = {
     // Volume
@@ -126,8 +122,6 @@ class SwedishLineClassifier {
     // American (often used)
     'cup', 'cups', 'tbsp', 'tsp', 'oz',
   };
-
-  // ========== Swedish Food Words ==========
 
   /// Common Swedish food words for ingredient detection.
   static const _swedishFoodWords = {
@@ -154,8 +148,6 @@ class SwedishLineClassifier {
     'vatten', 'buljong', 'vin', 'öl', 'juice', 'fond',
   };
 
-  // ========== Swedish Cooking Verbs ==========
-
   /// Swedish cooking verbs for instruction detection (imperative form).
   static const _swedishCookingVerbs = {
     // Preparation
@@ -170,8 +162,6 @@ class SwedishLineClassifier {
     // Common starts
     'börja', 'förvärm', 'förbered',
   };
-
-  // ========== Quantity Patterns ==========
 
   /// Pattern for quantity at line start (ingredient indicator).
   static final _quantityPattern = RegExp(
@@ -196,8 +186,6 @@ class SwedishLineClassifier {
     r'(\d+)\s*(port(ion(er)?)?|pers(on(er)?)?|st)',
     caseSensitive: false,
   );
-
-  // ========== Public API ==========
 
   /// Classify a single line of text.
   ClassifiedLine classifyLine(String line) {
@@ -337,8 +325,6 @@ class SwedishLineClassifier {
       totalTime: totalTime,
     );
   }
-
-  // ========== Private Helpers ==========
 
   bool _isSectionHeader(String text) {
     for (final pattern in _ingredientHeaders) {

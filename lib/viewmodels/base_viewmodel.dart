@@ -74,8 +74,6 @@ import 'package:flutter/foundation.dart';
 /// reactive state management, async operation handling, error management, and lifecycle coordination.
 /// This class ensures consistent ViewModel behavior and eliminates code duplication across the presentation layer.
 abstract class BaseViewModel extends ChangeNotifier {
-  // ===== REACTIVE STATE MANAGEMENT =====
-
   /// Internal loading state for async operations and UI coordination.
   bool _isLoading = false;
 
@@ -84,8 +82,6 @@ abstract class BaseViewModel extends ChangeNotifier {
 
   /// Internal disposal state for memory management and lifecycle coordination.
   bool _isDisposed = false;
-
-  // ===== STATE ACCESSORS =====
 
   /// Whether the ViewModel is currently executing async operations requiring loading indicators.
   /// Used by UI components to display loading states, spinners, and disable user interactions
@@ -106,8 +102,6 @@ abstract class BaseViewModel extends ChangeNotifier {
   /// Critical for memory management and preventing operations on disposed ViewModels
   /// that could lead to memory leaks or unexpected behavior.
   bool get isDisposed => _isDisposed;
-
-  // ===== REACTIVE STATE MANAGEMENT =====
 
   /// Updates loading state and notifies all listening UI components for immediate state synchronization.
   /// [loading] New loading state to set
@@ -155,8 +149,6 @@ abstract class BaseViewModel extends ChangeNotifier {
     _error = null;
     notifyListeners();
   }
-
-  // ===== ASYNC OPERATION INTELLIGENCE =====
 
   /// Executes async operations with comprehensive state management, error handling, and UI coordination.
   /// [operation] The async operation to execute with automatic state management
@@ -233,8 +225,6 @@ abstract class BaseViewModel extends ChangeNotifier {
     }
   }
 
-  // ===== ADVANCED LIFECYCLE MANAGEMENT =====
-
   /// Safely notifies all listening UI components with disposal state validation.
   /// Overrides ChangeNotifier's notifyListeners to prevent notifications after disposal,
   /// ensuring memory safety and preventing potential crashes from disposed ViewModel operations.
@@ -255,8 +245,6 @@ abstract class BaseViewModel extends ChangeNotifier {
     _isDisposed = true;
     super.dispose();
   }
-
-  // ===== ADVANCED DEBUGGING SUPPORT =====
 
   /// Comprehensive debug state information for development and troubleshooting purposes.
   /// Provides complete state snapshot including loading state, error information,

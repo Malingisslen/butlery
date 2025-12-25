@@ -83,9 +83,6 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
 
   @override
   String getId(RecipeComment entity) => entity.id;
-
-  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
-
   @override
   Future<bool> validateCreatePermission(
       String userId, RecipeComment entity) async {
@@ -120,8 +117,6 @@ class FirebaseCommentsRepository extends BaseFirebaseRepository<RecipeComment>
       return false;
     }
   }
-
-  // ===== SPECIALIZED COMMENT OPERATIONS =====
 
   @override
   Future<List<RecipeComment>> getCommentsForRecipe(String recipeId) async {

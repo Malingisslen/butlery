@@ -34,6 +34,20 @@ class ShoppingFirebaseSync {
 }
 
 /// Unified shopping service implementing facade pattern for shopping list management.
+///
+/// ## Usage
+/// ```dart
+/// final service = ServiceLocator.get<UnifiedShoppingService>();
+///
+/// // Create a shopping list
+/// final list = await service.createList(title: 'Weekly Groceries');
+///
+/// // Add items
+/// await service.addItemsFromRecipe(list.id, recipe);
+///
+/// // Collaborate
+/// await service.shareList(listId: list.id, userIds: ['friend1']);
+/// ```
 class UnifiedShoppingService extends ChangeNotifier
     with FirebaseSyncMixin<UnifiedShoppingList>, ErrorHandlingMixin {
   // Dependencies
@@ -139,9 +153,6 @@ class UnifiedShoppingService extends ChangeNotifier
 
   /// Compatibility getter for legacy code
   ShoppingShareOperations get sharing => _shareOps;
-
-  // ===== GETTERS =====
-
   List<UnifiedShoppingList> get lists {
     // Deduplication safety: Remove duplicates by ID only
     final seen = <String>{};
@@ -178,9 +189,6 @@ class UnifiedShoppingService extends ChangeNotifier
       ServiceLocator.get<PermissionService>().currentUserId;
   String? get currentUserDisplayName =>
       _authRepository.getCurrentUser()?.displayName ?? 'Du';
-
-  // ===== FIREBASE SYNC MIXIN IMPLEMENTATION =====
-
   @override
   FirebaseFirestore get firestore => _firestore;
 
@@ -192,8 +200,6 @@ class UnifiedShoppingService extends ChangeNotifier
     await _firebaseSync.syncItemToFirebase(itemId, _lists);
   }
 
-  // ===== INITIALIZATION =====
-
   Future<void> initialize() async {
     await _initialization.initialize();
   }
@@ -202,8 +208,6 @@ class UnifiedShoppingService extends ChangeNotifier
   Future<void> loadLists() async {
     await _initialization.loadLists();
   }
-
-  // ===== LIST MANAGEMENT =====
 
   Future<String?> createPersonalList(String name,
       {List<UnifiedShoppingItem>? items}) async {
@@ -279,8 +283,6 @@ class UnifiedShoppingService extends ChangeNotifier
     if (targetListId == null) return '';
     return _listManagement.exportListAsText(targetListId);
   }
-
-  // ===== ITEM MANAGEMENT =====
 
   Future<bool> addItemToActiveList({
     required String name,
@@ -361,14 +363,10 @@ class UnifiedShoppingService extends ChangeNotifier
     );
   }
 
-  // ===== BATCH OPERATIONS =====
-
   /// Add multiple items to active list using high-performance batch operations
   Future<bool> addItemsBatch(List<UnifiedShoppingItem> items) async {
     return await _itemManagement.addItemsBatchToActiveList(items);
   }
-
-  // ===== INTERNAL METHODS =====
 
   /// Save active list ID to cache for persistence across app restarts
   Future<void> _saveActiveListId() async {
@@ -383,8 +381,6 @@ class UnifiedShoppingService extends ChangeNotifier
       // Don't rethrow - this is not critical for app functionality
     );
   }
-
-  // ===== ERROR HANDLING =====
 
   void clearError() {
     _error = null;

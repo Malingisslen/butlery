@@ -54,12 +54,8 @@ class CollaborativeStatusViewModel extends ChangeNotifier
     with ErrorHandlingMixin {
   final SocialRecipeService _socialRecipeService;
 
-  // ===== LIFECYCLE MANAGEMENT =====
-
   /// Flag to track if ViewModel has been disposed
   bool _isDisposed = false;
-
-  // ===== GENERIC CACHING SYSTEM =====
 
   /// Universal cache för alla content types
   final Map<String, CollaborativeStatus> _statusCache = {};
@@ -69,20 +65,12 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
   /// Cache TTL (5 minuter för collaborative status)
   static const Duration _cacheTtl = Duration(minutes: 5);
-
-  // ===== CONSTRUCTOR =====
-
   CollaborativeStatusViewModel({
     SocialRecipeService? socialRecipeService,
   }) : _socialRecipeService =
             socialRecipeService ?? ServiceLocator.get<SocialRecipeService>();
-
-  // ===== PUBLIC GETTERS =====
-
   String? get currentUserId =>
       ServiceLocator.get<PermissionService>().currentUserId;
-
-  // ===== SAFE NOTIFICATION HELPER =====
 
   /// Safely notify listeners only if not disposed
   void _safeNotifyListeners() {
@@ -111,8 +99,6 @@ class CollaborativeStatusViewModel extends ChangeNotifier
     return cached;
   }
 
-  // ===== RECIPE COLLABORATIVE STATUS =====
-
   /// 🍳 Hämta kollaborativ status för recept (modern API)
   CollaborativeStatus getRecipeCollaborativeStatus(
       String recipeId, Recipe? recipe) {
@@ -135,8 +121,6 @@ class CollaborativeStatusViewModel extends ChangeNotifier
     return getRecipeCollaborativeStatus(recipeId, recipe).isCollaborative;
   }
 
-  // ===== MENU COLLABORATIVE STATUS =====
-
   /// 📅 Hämta kollaborativ status för meny
   CollaborativeStatus getMenuCollaborativeStatus(
       String menuId, Map<String, List<Recipe>>? menuData) {
@@ -158,8 +142,6 @@ class CollaborativeStatusViewModel extends ChangeNotifier
     return getMenuCollaborativeStatus(menuId, menuData).isCollaborative;
   }
 
-  // ===== SHOPPING LIST COLLABORATIVE STATUS =====
-
   /// 🛒 Hämta kollaborativ status för inköpslista
   CollaborativeStatus getShoppingListCollaborativeStatus(String listId) {
     final cached =
@@ -174,8 +156,6 @@ class CollaborativeStatusViewModel extends ChangeNotifier
       lastChecked: null,
     );
   }
-
-  // ===== UNIVERSAL ASYNC CHECKING =====
 
   /// 🔄 Universal async check för alla content types
   Future<void> _checkContentStatusAsync(
@@ -268,8 +248,6 @@ class CollaborativeStatusViewModel extends ChangeNotifier
     }
   }
 
-  // ===== METADATA ANALYSIS =====
-
   /// 📋 Analysera recept metadata för collaborative indicators
   bool _analyzeRecipeMetadata(Recipe? recipe) {
     if (recipe == null) return false;
@@ -326,8 +304,6 @@ class CollaborativeStatusViewModel extends ChangeNotifier
 
     return false;
   }
-
-  // ===== BATCH OPERATIONS =====
 
   /// 🚀 Batch check för mixed content types
   Future<void> batchCheckContent({
@@ -391,8 +367,6 @@ class CollaborativeStatusViewModel extends ChangeNotifier
     // Vänta på alla checks
     await Future.wait(futures);
   }
-
-  // ===== CACHE MANAGEMENT =====
 
   /// 🧹 Invalidate specific content
   void invalidateContent(String contentId, CollaborativeContentType type) {

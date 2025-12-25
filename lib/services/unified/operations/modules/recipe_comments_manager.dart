@@ -36,9 +36,6 @@ class RecipeCommentsManager {
   RecipeCommentsManager(this._parent, this._notificationService) {
     _crudOperations = CommentCrudOperations();
   }
-
-  // ===== GETTERS FOR VALIDATION =====
-
   String? get currentUserId => _parent.currentUserId;
   String get currentUserDisplayName =>
       _parent.currentUserDisplayName ?? 'Okänd användare';
@@ -47,8 +44,6 @@ class RecipeCommentsManager {
   Recipe? _getRecipe(String recipeId) {
     return recipes.where((r) => r.id == recipeId).firstOrNull;
   }
-
-  // ===== COMMENT CRUD OPERATIONS (DELEGATE TO COMMENT_CRUD_OPERATIONS) =====
 
   /// Add comment to recipe
   Future<String?> addComment({
@@ -234,8 +229,6 @@ class RecipeCommentsManager {
     return result;
   }
 
-  // ===== COMMENT LIKES (DELEGATE TO COMMENT_LIKES_SYSTEM) =====
-
   /// Toggle like on comment
   Future<bool> toggleCommentLike(String commentId) async {
     if (currentUserId == null) {
@@ -263,8 +256,6 @@ class RecipeCommentsManager {
 
     return false;
   }
-
-  // ===== COMMENT STATISTICS (DELEGATE TO COMMENT_UTILITIES) =====
 
   /// Get comment statistics for a recipe
   Future<Map<String, dynamic>> getCommentStatistics(String recipeId) async {
@@ -295,8 +286,6 @@ class RecipeCommentsManager {
     );
   }
 
-  // ===== STREAM MANAGEMENT =====
-
   /// Notify all active comment streams for a recipe
   void _notifyCommentStreams(String recipeId) {
     // The Firestore listeners will automatically update the streams
@@ -304,8 +293,6 @@ class RecipeCommentsManager {
     AppLogger.debug(
         '🔄 Comment streams will update automatically for recipe $recipeId');
   }
-
-  // ===== CLEANUP =====
 
   /// Dispose of all comment streams
   void dispose() {

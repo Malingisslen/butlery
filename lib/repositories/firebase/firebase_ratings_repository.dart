@@ -83,9 +83,6 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
 
   @override
   String getId(RecipeRating entity) => entity.id;
-
-  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
-
   @override
   Future<bool> validateCreatePermission(
       String userId, RecipeRating entity) async {
@@ -119,8 +116,6 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
       return false;
     }
   }
-
-  // ===== SPECIALIZED RATING OPERATIONS =====
 
   @override
   Future<void> rateRecipe({
@@ -359,8 +354,6 @@ class FirebaseRatingsRepository extends BaseFirebaseRepository<RecipeRating>
 
     return querySnapshot.docs.map((doc) => fromFirestore(doc)).toList();
   }
-
-  // ===== PRIVATE HELPER METHODS =====
 
   RatingStatistics _calculateRatingStatistics(
       String recipeId, List<RecipeRating> ratings) {

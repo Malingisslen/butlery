@@ -12,8 +12,6 @@ import 'package:butlery/core/utils/logger.dart';
 /// - Optimistic update conflict management
 /// ❌ DOES NOT CONTAIN: Session management, content operations, editor tracking, event handling
 class RealtimeConflictResolver {
-  // ===== CONFLICT RESOLUTION ORCHESTRATION =====
-
   /// Apply real-time edit with conflict resolution
   static Future<void> applyEditWithConflictResolution({
     required FirebaseFirestore firestore,
@@ -99,8 +97,6 @@ class RealtimeConflictResolver {
       // Don't clear pending edits on failure - they'll be retried
     }
   }
-
-  // ===== CONFLICT MERGING STRATEGIES =====
 
   /// Merge conflicting edits using field-level conflict resolution
   static Map<String, dynamic> mergeConflictingEdits(
@@ -228,8 +224,6 @@ class RealtimeConflictResolver {
     }
   }
 
-  // ===== LIST OPERATION CONFLICT RESOLUTION =====
-
   /// Apply list operations (add, update, remove) to a list field
   static List<dynamic> applyListOperations(
     List<dynamic> currentList,
@@ -339,8 +333,6 @@ class RealtimeConflictResolver {
     }
   }
 
-  // ===== CONFLICT HANDLING =====
-
   /// Handle edit conflict when Firebase update fails
   static Future<void> _handleEditConflict({
     required String recipeId,
@@ -367,8 +359,6 @@ class RealtimeConflictResolver {
       ),
     );
   }
-
-  // ===== CONFLICT PREVENTION =====
 
   /// Check if edit would cause conflict
   static bool wouldCauseConflict({
@@ -408,8 +398,6 @@ class RealtimeConflictResolver {
         return 'last-write-wins';
     }
   }
-
-  // ===== CONFLICT ANALYTICS =====
 
   /// Get conflict statistics
   static Map<String, dynamic> getConflictStatistics({

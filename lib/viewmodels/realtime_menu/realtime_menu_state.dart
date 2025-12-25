@@ -31,9 +31,6 @@ class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
   // UI state
   String? _selectedCategory;
   bool _showParticipants = false;
-
-  // ===== STATE GETTERS =====
-
   RealtimeMenu? get currentMenu => _currentMenu;
   RealtimeMenuStatus get status => _status;
   String? get errorMessage => _errorMessage;
@@ -56,8 +53,6 @@ class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
     if (_selectedCategory == null || _currentMenu == null) return [];
     return _currentMenu!.getRecipesForCategory(_selectedCategory!);
   }
-
-  // ===== STATE SETTERS =====
 
   void setCurrentMenu(RealtimeMenu? menu) {
     _currentMenu = menu;
@@ -83,8 +78,6 @@ class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
     }
   }
 
-  // ===== UI STATE MANAGEMENT =====
-
   void selectCategory(String? categoryName) {
     if (_selectedCategory != categoryName) {
       _selectedCategory = categoryName;
@@ -104,8 +97,6 @@ class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
     }
   }
 
-  // ===== STATE VALIDATION =====
-
   bool hasMenu() => _currentMenu != null;
 
   bool canPerformOperations() {
@@ -115,8 +106,6 @@ class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
   bool isMenuReady() {
     return hasMenu() && isWatching;
   }
-
-  // ===== STATE TRANSITIONS =====
 
   void transitionToLoading() {
     setStatus(RealtimeMenuStatus.loading);
@@ -147,8 +136,6 @@ class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
     }
   }
 
-  // ===== BATCH UPDATES =====
-
   void updateMenuAndStatus(RealtimeMenu menu, RealtimeMenuStatus newStatus) {
     _currentMenu = menu;
     _status = newStatus;
@@ -164,8 +151,6 @@ class RealtimeMenuState extends ChangeNotifier with StreamManagementMixin {
     _showParticipants = false;
     notifyListeners();
   }
-
-  // ===== UTILITY METHODS =====
 
   /// Get current menu snapshot as map
   Map<String, List<Recipe>> get menuSnapshot {

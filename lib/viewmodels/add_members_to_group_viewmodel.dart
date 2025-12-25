@@ -82,9 +82,6 @@ class AddMembersToGroupViewModel extends ChangeNotifier
   bool get canSendInvitations => hasSelectedFriends && !_isSendingInvitations;
   bool get showEmptyState =>
       _searchManager.filteredFriends.isEmpty && !isLoading;
-
-  // ===== INITIALIZATION =====
-
   Future<void> _initializeData() async {
     try {
       await executeNamedOperation('initializeData', () async {
@@ -161,8 +158,6 @@ class AddMembersToGroupViewModel extends ChangeNotifier
       _selectionManager.isFriendSelected(friendId);
   void selectAllVisible() => _selectionManager.selectAllVisible();
   void clearAllSelections() => _selectionManager.clearAllSelections();
-
-  // ===== INVITATION ACTIONS =====
 
   /// ✅ UPPDATERAD: Skicka RIKTIGA gruppinbjudningar till valda vänner
   Future<bool> sendInvitations({String? personalMessage}) async {
@@ -246,8 +241,6 @@ class AddMembersToGroupViewModel extends ChangeNotifier
     }
   }
 
-  // ===== UTILITY METHODS =====
-
   /// Hämta status för en specifik inbjudan
   String? getInvitationStatusForUser(String userId) {
     return _invitationStatus[userId];
@@ -288,7 +281,6 @@ class AddMembersToGroupViewModel extends ChangeNotifier
     await _initializeData();
   }
 
-  // ===== PRIVATE HELPERS =====
   /// setLoading, setError, clearError provided by StateNotifierMixin
 
   void _setInvitationError(String message) {

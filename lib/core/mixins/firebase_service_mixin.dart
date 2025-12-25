@@ -682,8 +682,6 @@ mixin FirebaseServiceMixin on ErrorHandlingMixin {
   }
 }
 
-// ===== SUPPORTING CLASSES =====
-
 /// Query constraint helper class
 class QueryConstraint {
   final String field;

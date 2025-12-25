@@ -55,8 +55,6 @@ import 'package:get_it/get_it.dart';
 /// );
 /// ```
 class FirebaseSyncManager {
-  // ===== SYNC STREAM MANAGEMENT =====
-
   /// Start Firebase synchronization for user's recipes
   static Future<Map<String, StreamSubscription>> startFirebaseSync({
     required String currentUserId,
@@ -150,8 +148,6 @@ class FirebaseSyncManager {
     }
   }
 
-  // ===== PERSONAL RECIPES SYNC =====
-
   /// Start syncing personal recipes
   static StreamSubscription _startPersonalRecipesSync({
     required String currentUserId,
@@ -202,8 +198,6 @@ class FirebaseSyncManager {
       AppLogger.error('Error handling personal recipe changes: $e');
     }
   }
-
-  // ===== COLLABORATIVE RECIPES SYNC =====
 
   /// Start syncing collaborative recipes
   static StreamSubscription _startCollaborativeRecipesSync({
@@ -264,12 +258,8 @@ class FirebaseSyncManager {
     }
   }
 
-  // ===== RECIPE CHANGE HANDLING =====
   // Removed old Firebase-specific document change handling
   // Recipe changes now handled by repository-specific methods above
-
-  // ===== SYNC STATUS AND DIAGNOSTICS =====
-
   /// Get sync status information
   static Map<String, dynamic> getSyncStatus({
     required Map<String, StreamSubscription> subscriptions,
@@ -312,8 +302,6 @@ class FirebaseSyncManager {
   ) {
     return subscriptions.keys.toList();
   }
-
-  // ===== SELECTIVE SYNC CONTROL =====
 
   /// Start only personal recipes sync
   static StreamSubscription startPersonalSyncOnly({
@@ -364,8 +352,6 @@ class FirebaseSyncManager {
       rethrow;
     }
   }
-
-  // ===== SYNC HEALTH MONITORING =====
 
   /// Monitor sync health and restart if needed
   static Future<void> ensureSyncHealth({

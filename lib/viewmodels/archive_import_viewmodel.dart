@@ -46,7 +46,6 @@ class ArchiveImportViewModel extends ChangeNotifier
     notifyListeners();
   }
 
-  // ===== STATE ACCESSORS =====
   List<Recipe> get archivedRecipes => _searchManager.archivedRecipes;
   List<Recipe> get filteredRecipes => _searchManager.filteredRecipes;
   Set<String> get selectedTags => _searchManager.selectedTags;
@@ -60,9 +59,6 @@ class ArchiveImportViewModel extends ChangeNotifier
   bool get hasSelection => _selectionManager.hasSelection;
   bool get allSelected => _selectionManager.isAllSelected(filteredRecipes);
   Set<String> get availableTags => _searchManager.availableTags;
-
-  // ===== FILTERING OPERATIONS =====
-
   void updateSearch(String query) {
     _searchManager.updateSearch(query);
     _selectionManager.updateSelection(filteredRecipes);
@@ -78,8 +74,6 @@ class ArchiveImportViewModel extends ChangeNotifier
     _selectionManager.updateSelection(filteredRecipes);
   }
 
-  // ===== SELECTION OPERATIONS =====
-
   void toggleRecipeSelection(String recipeId) {
     _selectionManager.toggleRecipeSelection(recipeId);
   }
@@ -87,8 +81,6 @@ class ArchiveImportViewModel extends ChangeNotifier
   void toggleSelectAll() {
     _selectionManager.toggleSelectAll(filteredRecipes);
   }
-
-  // ===== IMPORT OPERATIONS =====
 
   Future<void> importSelectedRecipes() async {
     await _importManager.importSelectedRecipes(

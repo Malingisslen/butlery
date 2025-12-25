@@ -50,6 +50,8 @@ class RecipeFormState extends ChangeNotifier {
     'Fika',
   ];
   static const int maxImages = 5;
+  static const int maxIngredients = 100;
+  static const int maxInstructions = 50;
 
   RecipeFormState({Recipe? initialRecipe, bool isTemplate = false}) {
     _initializeFormFields();
@@ -153,8 +155,6 @@ class RecipeFormState extends ChangeNotifier {
     _tagsManager.updateItems(tags);
   }
 
-  // ===== GETTERS =====
-
   // Core getters
   Recipe? get originalRecipe => _originalRecipe;
 
@@ -191,6 +191,22 @@ class RecipeFormState extends ChangeNotifier {
   FormFieldsManager get ingredientsManager => _ingredientsManager;
   FormFieldsManager get instructionsManager => _instructionsManager;
   FormFieldsManager get tagsManager => _tagsManager;
+
+  /// Check if more ingredients can be added (respects max limit)
+  bool get canAddIngredient =>
+      _ingredientsManager.values.length < maxIngredients;
+
+  /// Check if more instructions can be added (respects max limit)
+  bool get canAddInstruction =>
+      _instructionsManager.values.length < maxInstructions;
+
+  /// Get remaining ingredient slots
+  int get remainingIngredientSlots =>
+      maxIngredients - _ingredientsManager.values.length;
+
+  /// Get remaining instruction slots
+  int get remainingInstructionSlots =>
+      maxInstructions - _instructionsManager.values.length;
 
   // CRITICAL FIX: Enhanced validation with consistent state sources and manager validation integration
   bool get isValid => _isFormValidWithConsistentSources();
@@ -348,8 +364,6 @@ class RecipeFormState extends ChangeNotifier {
     }
   }
 
-  // ===== SETTERS =====
-
   void setTitle(String title) {
     // CRITICAL FIX: Enhanced title validation with consistency checks
     final trimmedTitle = title.trim();
@@ -440,8 +454,6 @@ class RecipeFormState extends ChangeNotifier {
     }
   }
 
-  // ===== STATE MANAGEMENT =====
-
   void setSaving(bool saving) {
     _isSaving = saving;
     notifyListeners();
@@ -461,8 +473,6 @@ class RecipeFormState extends ChangeNotifier {
     _error = null;
     notifyListeners();
   }
-
-  // ===== CONTEXTUAL ERROR HANDLING (delegated to ContextualErrorHandler) =====
 
   /// Set contextual error with intelligent message generation
   Future<void> setContextualError({
@@ -533,8 +543,6 @@ class RecipeFormState extends ChangeNotifier {
     final message = ContextualErrorHandler.generateOfflineInfo(operation);
     setError(message);
   }
-
-  // ===== AUTO-SAVE FUNCTIONALITY =====
 
   /// Schedule auto-save with optional quick save for critical fields
   /// [skipIfBusy] - Skip scheduling if autosave is already in progress (prevents race conditions)
@@ -612,8 +620,6 @@ class RecipeFormState extends ChangeNotifier {
     return _serializeFormData();
   }
 
-  // ===== RECIPE CREATION =====
-
   /// Skapa Recipe från nuvarande form state
   Recipe createRecipe({String? recipeId, List<String>? imageUrls}) {
     final cleanIngredients = _ingredientsManager.values
@@ -646,8 +652,6 @@ class RecipeFormState extends ChangeNotifier {
     );
   }
 
-  // ===== RESET =====
-
   void resetForm() {
     _originalRecipe = null;
     _isSaving = false;
@@ -669,8 +673,6 @@ class RecipeFormState extends ChangeNotifier {
 
     notifyListeners();
   }
-
-  // ===== DISPOSAL =====
 
   @override
   void dispose() {

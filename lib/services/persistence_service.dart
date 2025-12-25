@@ -79,8 +79,6 @@ class PersistenceService extends BaseService {
     return await SharedPreferences.getInstance();
   }
 
-  // ==================== RECEPT PERSISTENCE ====================
-
   /// Persists complete recipe collection to local storage with atomic operation handling.
   /// This method serializes the entire recipe collection to JSON format and stores it atomically
   /// in SharedPreferences. It includes comprehensive error handling, data validation, and timestamp
@@ -182,8 +180,6 @@ class PersistenceService extends BaseService {
     }
   }
 
-  // ==================== MENY PERSISTENCE ====================
-
   /// 💾 Sparar aktuell veckomeny
   /// Sparar en lista med recept-ID:n som representerar veckans meny
   Future<bool> saveCurrentMenu(List<String> recipeIds) async {
@@ -226,8 +222,6 @@ class PersistenceService extends BaseService {
       return false;
     }
   }
-
-  // ==================== METADATA & UTILITIES ====================
 
   /// 📅 Hämtar när data senast uppdaterades
   Future<DateTime?> getLastUpdated() async {

@@ -184,8 +184,6 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     AppLogger.info('Loaded shared menu: ${sharedMenu.menuTitle}');
   }
 
-  // ===== COMPREHENSIVE MENU STORAGE OPERATIONS =====
-
   /// Saves menu with comprehensive metadata and optional social sharing coordination.
   /// [menuName] Display name for saved menu identification
   /// [comment] User comment describing menu characteristics
@@ -369,8 +367,6 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
     }
   }
 
-  // ===== COMPREHENSIVE SOCIAL MENU FEATURES =====
-
   /// Retrieves available shared menus from social network with comprehensive error handling.
   /// Returns list of shared menu metadata for social menu discovery and import functionality.
   /// Delegates to MenuSocialManager for social menu retrieval with automatic error handling
@@ -438,8 +434,6 @@ class MenuViewModel extends ChangeNotifier with ErrorHandlingMixin {
   Future<void> refreshSavedMenus() async {
     await _loadAllMenus();
   }
-
-  // ===== INTERNAL COORDINATION METHODS =====
 
   /// Handles reactive updates from recipe service changes with automatic UI synchronization.
   /// Provides seamless state synchronization between UnifiedRecipeService and ViewModel ensuring

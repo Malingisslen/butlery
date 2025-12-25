@@ -23,8 +23,6 @@ class RealtimeWatchingModule {
 
   RealtimeWatchingModule(this._parent, [this._realtimeSyncService]);
 
-  // ===== SINGLE RECIPE WATCHING =====
-
   /// Watch a recipe for real-time updates
   Stream<Recipe> watchRecipe(String recipeId) {
     if (_realtimeSyncService == null) {
@@ -113,8 +111,6 @@ class RealtimeWatchingModule {
 
     return controller.stream;
   }
-
-  // ===== MULTIPLE RECIPE WATCHING =====
 
   /// Watch multiple recipes for real-time updates
   Stream<List<Recipe>> watchMultipleRecipes(List<String> recipeIds) {
@@ -216,8 +212,6 @@ class RealtimeWatchingModule {
     }
   }
 
-  // ===== CONNECTION MONITORING =====
-
   /// Get connection status for real-time operations
   bool get isConnected => _realtimeSyncService?.isConnected ?? false;
 
@@ -293,8 +287,6 @@ class RealtimeWatchingModule {
     return controller.stream;
   }
 
-  // ===== FALLBACK POLLING =====
-
   /// Fallback watching with polling when RealtimeSyncService unavailable
   Stream<Recipe> _watchRecipeWithPolling(String recipeId) {
     return Stream.periodic(const Duration(seconds: 2), (_) {
@@ -313,8 +305,6 @@ class RealtimeWatchingModule {
           .toList();
     });
   }
-
-  // ===== WATCH MANAGEMENT =====
 
   /// Start watching recipe with callback
   StreamSubscription<Recipe> startWatchingRecipe(
@@ -346,8 +336,6 @@ class RealtimeWatchingModule {
           },
     );
   }
-
-  // ===== UTILITY METHODS =====
 
   /// Check if recipe watching is available
   bool isWatchingAvailable() {

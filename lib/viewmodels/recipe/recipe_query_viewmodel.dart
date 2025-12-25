@@ -42,9 +42,6 @@ class RecipeQueryViewModel extends ChangeNotifier
   String? _lastMealType;
   String? _lastTag;
   RecipeType? _lastType;
-
-  // ===== GETTERS =====
-
   List<Recipe> get allRecipes => _recipeService.recipes;
   List<Recipe> get personalRecipes => _recipeService.personalRecipes;
   List<Recipe> get collaborativeRecipes => _recipeService.collaborativeRecipes;
@@ -60,9 +57,6 @@ class RecipeQueryViewModel extends ChangeNotifier
   String? get selectedMealType => _selectedMealType;
   String? get selectedTag => _selectedTag;
   RecipeType? get selectedType => _selectedType;
-
-  // ===== BASIC QUERIES =====
-
   Recipe? getRecipeById(String id) {
     if (ValidationUtils.isNullOrEmpty(id)) return null;
     return allRecipes.where((r) => r.id == id).firstOrNull;
@@ -81,8 +75,6 @@ class RecipeQueryViewModel extends ChangeNotifier
   List<Recipe> getRecipesByType(RecipeType type) {
     return allRecipes.where((r) => r.type == type).toList();
   }
-
-  // ===== SEARCH FUNCTIONALITY =====
 
   List<Recipe> searchRecipes(String query) {
     if (query.trim().isEmpty) return allRecipes;
@@ -125,8 +117,6 @@ class RecipeQueryViewModel extends ChangeNotifier
   void _invalidateCache() {
     _cachedFilteredRecipes = null;
   }
-
-  // ===== FILTERING =====
 
   /// Get filtered recipes with caching to prevent redundant computations
   List<Recipe> get filteredRecipes {
@@ -211,9 +201,6 @@ class RecipeQueryViewModel extends ChangeNotifier
       _selectedMealType != null ||
       _selectedTag != null ||
       _selectedType != null;
-
-  // ===== SPECIALIZED QUERIES =====
-
   List<Recipe> getEditableRecipes() {
     if (currentUserId == null) return [];
 
@@ -278,8 +265,6 @@ class RecipeQueryViewModel extends ChangeNotifier
     return allRecipes.where((recipe) => recipe.imageUrls.isEmpty).toList();
   }
 
-  // ===== SOCIAL QUERIES =====
-
   List<Recipe> getSharedWithMe() {
     if (currentUserId == null) return [];
 
@@ -307,8 +292,6 @@ class RecipeQueryViewModel extends ChangeNotifier
                 .orFalse())
         .toList();
   }
-
-  // ===== GROUPING AND ORGANIZATION =====
 
   Map<String, List<Recipe>> get recipesByMealType {
     final Map<String, List<Recipe>> grouped = {};
@@ -364,8 +347,6 @@ class RecipeQueryViewModel extends ChangeNotifier
     return grouped;
   }
 
-  // ===== METADATA AND OPTIONS =====
-
   List<String> get usedMealTypes {
     final mealTypes =
         allRecipes.map<String>((recipe) => recipe.mealType).toSet().toList();
@@ -388,8 +369,6 @@ class RecipeQueryViewModel extends ChangeNotifier
   List<RecipeType> get usedTypes {
     return allRecipes.map((recipe) => recipe.type).toSet().toList();
   }
-
-  // ===== STATISTICS AND INSIGHTS =====
 
   Map<String, dynamic> get recipeInsights {
     return {

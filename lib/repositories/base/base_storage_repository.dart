@@ -69,8 +69,6 @@ abstract class BaseStorageRepository with PermissionValidationMixin {
         _authRepository = authRepository,
         _auditRepository = auditRepository;
 
-  // ===== PROTECTED ACCESSORS =====
-
   /// Protected access to FirebaseStorage instance for subclasses
   @protected
   FirebaseStorage get storage => _storage;
@@ -86,8 +84,6 @@ abstract class BaseStorageRepository with PermissionValidationMixin {
   /// Get current authenticated user ID
   @protected
   String? get currentUserId => _authRepository.currentUser?.uid;
-
-  // ===== COMMON STORAGE OPERATIONS =====
 
   /// Get storage reference for a path
   /// This is the primary method for accessing Firebase Storage references.
@@ -231,8 +227,6 @@ abstract class BaseStorageRepository with PermissionValidationMixin {
       throw RepositoryException('Failed to delete file: ${e.message}');
     }
   }
-
-  // ===== SECURITY VALIDATION =====
 
   /// Validate that a user has permission to access a storage path
   /// **Security Rule:** Users can only access paths in their own directory (users/{userId}/...)

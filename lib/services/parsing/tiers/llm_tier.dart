@@ -169,8 +169,6 @@ class LlmTier extends ParsingTier with QualityScoring {
     return text;
   }
 
-  // ========== P0-2: Security Validation ==========
-
   /// Check for suspicious patterns that might indicate injection.
   bool _validateForSuspiciousPatterns(ExtractedRecipe recipe) {
     // Check title
@@ -224,8 +222,6 @@ class LlmTier extends ParsingTier with QualityScoring {
 
     return false;
   }
-
-  // ========== Recipe Conversion ==========
 
   ParsedRecipe? _convertToRecipe(
     ExtractedRecipe extracted,

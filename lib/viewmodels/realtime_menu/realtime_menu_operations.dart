@@ -22,8 +22,6 @@ class RealtimeMenuOperations {
   })  : _menuService = menuService,
         _optimisticManager = optimisticManager;
 
-  // ===== RECIPE OPERATIONS =====
-
   /// Add recipe to specific category
   Future<void> addRecipeToCategory({
     required String menuId,
@@ -183,8 +181,6 @@ class RealtimeMenuOperations {
     }
   }
 
-  // ===== CATEGORY OPERATIONS =====
-
   /// Clear all recipes from a category
   Future<void> clearCategory({
     required String menuId,
@@ -230,8 +226,6 @@ class RealtimeMenuOperations {
         'This will integrate with MenuService to provide AI-powered '
         'category regeneration based on user preferences and dietary needs.');
   }
-
-  // ===== BATCH OPERATIONS =====
 
   /// Add multiple recipes to category
   Future<void> addMultipleRecipesToCategory({
@@ -316,8 +310,6 @@ class RealtimeMenuOperations {
     }
   }
 
-  // ===== OPTIMISTIC UPDATES =====
-
   /// Apply optimistic changes to menu snapshot
   Map<String, List<Recipe>> applyOptimisticChanges(
       Map<String, List<Recipe>> baseMenu) {
@@ -341,8 +333,6 @@ class RealtimeMenuOperations {
     _optimisticManager.rollback();
   }
 
-  // ===== VALIDATION =====
-
   /// Validate recipe for addition to category
   bool validateRecipeForCategory(Recipe recipe, String categoryName) {
     if (recipe.title.isEmpty) {
@@ -363,8 +353,6 @@ class RealtimeMenuOperations {
 
     return true;
   }
-
-  // ===== UTILITY METHODS =====
 
   /// Get recipe count for category (including optimistic changes)
   int getRecipeCountForCategory(String categoryName, List<Recipe> baseRecipes) {

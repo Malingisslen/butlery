@@ -40,8 +40,6 @@ import 'package:butlery/services/ocr_extraction_service.dart';
 /// - Automatic recipe parsing from OCR text with intelligent structure recognition
 /// - Swedish localized error messages and user feedback coordination
 class PhotoImportViewModel extends ImportBaseViewModel {
-  // ===== PHOTO IMPORT STATE =====
-
   /// Raw image bytes from selected photo for OCR processing and display.
   /// Stores captured or selected image data enabling OCR processing
   /// and image preview functionality throughout photo import workflow.
@@ -51,8 +49,6 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// Stores OCR results enabling recipe parsing, text review,
   /// and manual editing throughout photo import functionality.
   String _ocrText = '';
-
-  // ===== OCR QUALITY DATA (Phase 2 Enhancement) =====
 
   /// Last OCR quality score from image assessment (0.0-1.0).
   /// Enables quality-based error messaging and user guidance on image quality.
@@ -88,8 +84,6 @@ class PhotoImportViewModel extends ImportBaseViewModel {
       debugPrint('❌ [PhotoImport] Failed to initialize OCR service: $e');
     }
   }
-
-  // ===== STATE ACCESSORS =====
 
   /// Raw image bytes from selected photo for display and processing coordination.
   /// Provides access to captured or selected image data enabling image preview,
@@ -142,10 +136,6 @@ class PhotoImportViewModel extends ImportBaseViewModel {
   /// **Override Implementation**: Implements ImportBaseViewModel importType interface.
   @override
   String get importType => 'photo';
-
-  // ===== OCR SERVICE INTEGRATION =====
-
-  // ===== PUBLIC OPERATIONS =====
 
   /// Captures photo from camera and processes with comprehensive OCR coordination.
   /// Performs camera photo capture with automatic OCR processing including
@@ -290,8 +280,6 @@ class PhotoImportViewModel extends ImportBaseViewModel {
     final recipe = await parseTextToRecipe(_ocrText);
     setParsedRecipe(recipe);
   }
-
-  // ===== PRIVATE OPERATIONS =====
 
   /// Performs unified image selection and OCR processing with comprehensive workflow coordination.
   /// [source] Image source for capture or selection (camera or gallery)
@@ -519,8 +507,6 @@ class PhotoImportViewModel extends ImportBaseViewModel {
 
     return messageParts.join('\n');
   }
-
-  // ===== DEBUGGING SUPPORT =====
 
   /// Provides comprehensive debugging state information for photo import development and troubleshooting.
   /// Returns map containing debug information including photo import state, OCR processing results,

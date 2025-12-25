@@ -173,8 +173,6 @@ class _AssistedImportDialogContent extends StatelessWidget {
   }
 }
 
-// ===== STEP WIDGETS =====
-
 class _IngredientSelectionStep extends StatelessWidget {
   final AssistedImportViewModel viewModel;
 

@@ -40,8 +40,6 @@ class NotificationBatchManager {
         _sendBatchCallback = sendBatchCallback,
         _clock = clock ?? const Clock();
 
-  // ===== BATCH CREATION AND MANAGEMENT =====
-
   /// Add notification to appropriate batch queue
   /// This is the main entry point for batchable notifications
   Future<bool> addToBatch({
@@ -130,8 +128,6 @@ class NotificationBatchManager {
           _rateLimitingTracker.map((key, value) => MapEntry(key, value.length)),
     };
   }
-
-  // ===== SPAM PREVENTION AND RATE LIMITING =====
 
   /// Check if user has exceeded rate limit for category
   bool _isRateLimited(String userId, NotificationCategory category) {
@@ -224,8 +220,6 @@ class NotificationBatchManager {
 
     return false;
   }
-
-  // ===== BATCH PROCESSING =====
 
   /// Process all pending batches that are ready
   Future<void> processAllPendingBatches() async {
@@ -426,8 +420,6 @@ class NotificationBatchManager {
     timer?.cancel();
     AppLogger.debug('🧹 Cleaned up batch timer: $batchKey');
   }
-
-  // ===== LIFECYCLE METHODS =====
 
   /// Set callback for when batches are ready to send
   void setSendBatchCallback(Future<void> Function(NotificationBatch) callback) {

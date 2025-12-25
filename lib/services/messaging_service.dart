@@ -18,6 +18,17 @@ import 'package:butlery/services/messaging/conversation_action_operations.dart';
 import 'package:butlery/services/messaging/message_management_operations.dart';
 
 /// Messaging service implementing the facade pattern for real-time communication.
+///
+/// ## Usage
+/// ```dart
+/// final service = ServiceLocator.get<MessagingService>();
+///
+/// // Send a message
+/// await service.sendMessage(conversationId, 'Hello!');
+///
+/// // Watch for new messages
+/// service.watchMessages(conversationId).listen((messages) => ...);
+/// ```
 class MessagingService extends BaseService with StreamManagementMixin {
   final MessagingRepository _messagingRepository;
   final auth_repo.AuthRepository _authRepository;
