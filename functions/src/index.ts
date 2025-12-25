@@ -67,7 +67,7 @@ async function updateRecipeRatingStats(recipeId: string): Promise<void> {
   try {
     // Query all ratings for this recipe
     const ratingsSnapshot = await db
-      .collection("ratings")
+      .collection("recipe_ratings")
       .where("recipeId", "==", recipeId)
       .get();
 
@@ -158,7 +158,7 @@ async function updateRecipeRatingStats(recipeId: string): Promise<void> {
  * Event: onCreate
  */
 export const onRatingCreated = functions.firestore
-  .document("ratings/{ratingId}")
+  .document("recipe_ratings/{ratingId}")
   .onCreate(async (snapshot, context) => {
     const data = snapshot.data();
     const recipeId = data.recipeId as string;
@@ -184,7 +184,7 @@ export const onRatingCreated = functions.firestore
  * Event: onUpdate
  */
 export const onRatingUpdated = functions.firestore
-  .document("ratings/{ratingId}")
+  .document("recipe_ratings/{ratingId}")
   .onUpdate(async (change, context) => {
     const before = change.before.data();
     const after = change.after.data();
@@ -218,7 +218,7 @@ export const onRatingUpdated = functions.firestore
  * Event: onDelete
  */
 export const onRatingDeleted = functions.firestore
-  .document("ratings/{ratingId}")
+  .document("recipe_ratings/{ratingId}")
   .onDelete(async (snapshot, context) => {
     const data = snapshot.data();
     const recipeId = data.recipeId as string;
