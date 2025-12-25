@@ -75,9 +75,6 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
 
   CollectionReference<Map<String, dynamic>> _categoriesRef(String userId) =>
       firestore.collection('users').doc(userId).collection('friendCategories');
-
-  // ===== BASE CLASS IMPLEMENTATION =====
-
   @override
   String get collectionName => 'friendCategories';
 
@@ -91,9 +88,6 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
 
   @override
   String getId(FriendCategory entity) => entity.id;
-
-  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
-
   @override
   Future<bool> validateCreatePermission(
       String userId, FriendCategory entity) async {
@@ -125,8 +119,6 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     // This is validated in deleteCategory method with user context
     return true;
   }
-
-  // ===== FRIEND CATEGORY OPERATIONS =====
 
   /// Save a friend category for a user.
   Future<void> saveCategory(String userId, FriendCategory category) async {

@@ -85,9 +85,6 @@ class FirebaseNotificationsRepository
 
   @override
   String getId(UserNotification entity) => entity.id;
-
-  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
-
   @override
   Future<bool> validateCreatePermission(
     String userId,
@@ -134,8 +131,6 @@ class FirebaseNotificationsRepository
       return false;
     }
   }
-
-  // ===== SPECIALIZED NOTIFICATION OPERATIONS =====
 
   @override
   Future<void> sendNotification({

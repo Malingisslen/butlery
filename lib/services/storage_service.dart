@@ -42,9 +42,6 @@ class StorageService extends BaseService
 
   @override
   String get serviceName => 'StorageService';
-
-  // ===== FIREBASE SERVICE MIXIN IMPLEMENTATION =====
-
   @override
   FirestoreRepository get firestoreRepository => _firestoreRepository;
 

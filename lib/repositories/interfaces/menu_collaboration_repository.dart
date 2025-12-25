@@ -44,8 +44,6 @@ import 'package:butlery/models/recipe_unified.dart';
 /// await repo.rateMenu(menuId: menuId, rating: 5.0, comment: 'Fantastisk!');
 /// ```
 abstract class MenuCollaborationRepository extends Repository<SharedMenu> {
-  // ===== COLLABORATION MANAGEMENT =====
-
   /// Enable real-time collaboration for a menu with atomic updates
   /// Abstracts Firebase update operations with collaboration metadata
   /// including serverTimestamp and collaboration settings.
@@ -59,8 +57,6 @@ abstract class MenuCollaborationRepository extends Repository<SharedMenu> {
   /// Validates collaboration permissions by checking menu ownership,
   /// sharing status, and explicit collaborator lists.
   Future<bool> canCollaborate(String menuId, String userId);
-
-  // ===== RECIPE MANAGEMENT =====
 
   /// Add recipe to collaborative menu using FieldValue operations
   /// Abstracts Firebase arrayUnion and serverTimestamp operations
@@ -82,8 +78,6 @@ abstract class MenuCollaborationRepository extends Repository<SharedMenu> {
     required String recipeId,
     String? reason,
   });
-
-  // ===== RATING SYSTEM =====
 
   /// Rate a menu with timestamp and user tracking
   /// Abstracts Firebase collection operations for menu ratings
@@ -109,8 +103,6 @@ abstract class MenuCollaborationRepository extends Repository<SharedMenu> {
   /// rating statistics on menu documents.
   Future<void> updateMenuRatingStatistics(String menuId);
 
-  // ===== COMMENT SYSTEM =====
-
   /// Add comment to menu with threading support
   /// Abstracts Firebase collection operations for comments
   /// with serverTimestamp and reply thread management.
@@ -133,8 +125,6 @@ abstract class MenuCollaborationRepository extends Repository<SharedMenu> {
     required String commentId,
   });
 
-  // ===== TEMPLATE MANAGEMENT =====
-
   /// Create menu template with metadata and usage tracking
   /// Abstracts Firebase document creation with template metadata,
   /// serverTimestamp, and initialization of usage statistics.
@@ -156,8 +146,6 @@ abstract class MenuCollaborationRepository extends Repository<SharedMenu> {
     bool enableCollaboration = false,
   });
 
-  // ===== ACTIVITY LOGGING =====
-
   /// Log collaboration activity for audit and analytics
   /// Abstracts Firebase subcollection operations for activity
   /// tracking with serverTimestamp and structured metadata.
@@ -167,8 +155,6 @@ abstract class MenuCollaborationRepository extends Repository<SharedMenu> {
     required String userId,
     required String userDisplayName,
   });
-
-  // ===== REAL-TIME OPERATIONS =====
 
   /// Start real-time listener for menu collaboration updates
   /// Abstracts Firebase snapshot listeners for live collaboration

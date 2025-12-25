@@ -29,8 +29,6 @@ class NotificationAnalyticsManager {
   })  : _firestore = GetIt.instance<FirebaseFirestore>(),
         _userId = userId;
 
-  // ===== DELIVERY TRACKING =====
-
   /// Record notification sent (call after FCM send attempt)
   Future<void> recordNotificationSent({
     required String notificationId,
@@ -105,8 +103,6 @@ class NotificationAnalyticsManager {
       AppLogger.warning('⚠️ Failed to record notification failure: $e');
     }
   }
-
-  // ===== ENGAGEMENT TRACKING =====
 
   /// Record notification opened (user tapped notification)
   Future<void> recordNotificationOpened({
@@ -185,8 +181,6 @@ class NotificationAnalyticsManager {
       AppLogger.warning('⚠️ Failed to record notification action: $e');
     }
   }
-
-  // ===== PERFORMANCE METRICS =====
 
   /// Generate daily metrics (scheduled function or background job)
   Future<void> generateDailyMetrics({DateTime? date}) async {
@@ -269,8 +263,6 @@ class NotificationAnalyticsManager {
       return {};
     }
   }
-
-  // ===== ANALYTICS CALCULATIONS =====
 
   /// Calculate metrics from delivery documents
   Map<String, dynamic> _calculateMetrics(List<QueryDocumentSnapshot> docs) {
@@ -445,8 +437,6 @@ class NotificationAnalyticsManager {
     }
   }
 
-  // ===== CLEANUP AND MAINTENANCE =====
-
   /// Clean up old analytics data
   Future<void> cleanupOldData({Duration? olderThan}) async {
     try {
@@ -493,8 +483,6 @@ class NotificationAnalyticsManager {
       AppLogger.error('❌ Failed to cleanup old analytics data', e);
     }
   }
-
-  // ===== LIFECYCLE METHODS =====
 
   /// Dispose resources and flush pending events
   Future<void> dispose() async {

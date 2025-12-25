@@ -206,8 +206,6 @@ class SocialContentFeatures {
     notifyListeners();
   }
 
-  // ===== PHASE 1 FIX: INVITATION CREATION =====
-
   /// Create SharedShoppingList invitation for proper "Delat med mig" workflow
   /// This method converts UnifiedShoppingList to SharedShoppingList invitation
   /// and persists it via FirebaseSharedShoppingRepository

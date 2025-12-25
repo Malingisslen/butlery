@@ -82,9 +82,6 @@ class FirebaseSocialSharingRepository
 
   @override
   String getId(SharedContent entity) => entity.id;
-
-  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
-
   @override
   Future<bool> validateCreatePermission(
       String userId, SharedContent entity) async {
@@ -133,8 +130,6 @@ class FirebaseSocialSharingRepository
       return false;
     }
   }
-
-  // ===== SPECIALIZED SHARING OPERATIONS =====
 
   @override
   Future<void> shareToGroup(String groupId, SharedContent content) async {

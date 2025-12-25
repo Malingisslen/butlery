@@ -25,8 +25,6 @@ class RecipeRatingSystem {
         _analyticsService =
             analyticsService ?? ServiceLocator.get<AnalyticsService>();
 
-  // ===== RATING OPERATIONS =====
-
   /// Rate a recipe with validation
   Future<bool> rateRecipe({
     required String recipeId,
@@ -179,8 +177,6 @@ class RecipeRatingSystem {
     }
   }
 
-  // ===== RATING QUERIES =====
-
   /// Get rating count for a recipe
   Future<int> getRatingCount({
     required String recipeId,
@@ -266,8 +262,6 @@ class RecipeRatingSystem {
     }
   }
 
-  // ===== RATING VALIDATION =====
-
   /// Validate rating value
   static bool isValidRating(double rating) {
     return rating >= 1.0 && rating <= 5.0;
@@ -289,8 +283,6 @@ class RecipeRatingSystem {
     // Basic sanitization - remove excessive whitespace
     return trimmed.replaceAll(RegExp(r'\s+'), ' ');
   }
-
-  // ===== PERMISSION HELPERS =====
 
   /// Check if user can rate a specific recipe
   static bool canUserRateRecipe({
@@ -346,8 +338,6 @@ class RecipeRatingSystem {
     return currentUserId != null && ratingUserId == currentUserId;
   }
 
-  // ===== RATING UTILITIES =====
-
   /// Format rating for display
   static String formatRating(double rating) {
     return rating.toStringAsFixed(1);
@@ -385,8 +375,6 @@ class RecipeRatingSystem {
 
     return daysDifference <= daysThreshold;
   }
-
-  // ===== RATING STATISTICS =====
 
   /// Get rating statistics for a recipe
   Future<RatingStatistics> getRatingStatistics({

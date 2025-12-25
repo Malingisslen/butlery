@@ -93,8 +93,6 @@ class SocialRecipeModule extends BaseService with UserContextMixin {
     );
   }
 
-  // ===== FACADE METHODS - Delegate to Coordinator =====
-
   /// Creates a new collaborative recipe with initial sharing settings
   Future<String?> createCollaborativeRecipe({
     required String title,

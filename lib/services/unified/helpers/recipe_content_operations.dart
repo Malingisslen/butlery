@@ -15,9 +15,6 @@ class RecipeContentOperations {
     required this.realtimeModule,
     required this.isInRealtimeSession,
   });
-
-  // ===== INGREDIENT OPERATIONS =====
-
   Future<bool> addIngredient(String recipeId, String ingredient) async {
     if (isInRealtimeSession(recipeId)) {
       return await realtimeModule.addIngredientRealtime(
@@ -45,8 +42,6 @@ class RecipeContentOperations {
       return await personalModule.removeIngredient(recipeId, index);
     }
   }
-
-  // ===== INSTRUCTION OPERATIONS =====
 
   Future<bool> addInstruction(String recipeId, String instruction) async {
     if (isInRealtimeSession(recipeId)) {

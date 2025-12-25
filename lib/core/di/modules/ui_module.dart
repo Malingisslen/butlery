@@ -133,8 +133,6 @@ class UIModule implements DIModule {
     }
 
     try {
-      // ==================== CORE VIEWMODELS ====================
-
       // Auth ViewModel - Auth service dependency
       container.registerFactory<AuthViewModel>(
         () => AuthViewModel(
@@ -158,9 +156,6 @@ class UIModule implements DIModule {
           accountDeletionService: container<AccountDeletionService>(),
         ),
       );
-
-      // ==================== RECIPE VIEWMODELS ====================
-
       // Recipe List ViewModel
       container.registerFactory<RecipeListViewModel>(
         () => RecipeListViewModel(
@@ -186,9 +181,6 @@ class UIModule implements DIModule {
       container.registerFactory<RecipeFormViewModel>(
         () => RecipeFormViewModel(),
       );
-
-      // ==================== MENU VIEWMODELS ====================
-
       // Menu ViewModel - Factory for proper lifecycle management
       container.registerFactory<MenuViewModel>(
         () => MenuViewModel(),
@@ -202,9 +194,6 @@ class UIModule implements DIModule {
           authService: container<AuthService>(),
         ),
       );
-
-      // ==================== SHOPPING VIEWMODELS ====================
-
       // Unified Shopping ViewModel - Zero dependencies
       container.registerFactory<UnifiedShoppingViewModel>(
         () => UnifiedShoppingViewModel(),
@@ -222,9 +211,6 @@ class UIModule implements DIModule {
           friendsService: container<UnifiedFriendsService>(),
         ),
       );
-
-      // ==================== SOCIAL VIEWMODELS ====================
-
       // Friends ViewModel
       container.registerFactory<FriendsViewModel>(
         () => FriendsViewModel(
@@ -263,9 +249,6 @@ class UIModule implements DIModule {
           sharingRepository: container<SocialSharingRepository>(),
         ),
       );
-
-      // ==================== IMPORT VIEWMODELS ====================
-
       // Text Import ViewModel
       container.registerFactory<TextImportViewModel>(
         () => TextImportViewModel(
@@ -291,18 +274,12 @@ class UIModule implements DIModule {
       container.registerFactory<ArchiveImportViewModel>(
         () => ArchiveImportViewModel(),
       );
-
-      // ==================== COMMUNICATION VIEWMODELS ====================
-
       // Conversations ViewModel
       container.registerFactory<ConversationsViewModel>(
         () => ConversationsViewModel(
           messagingService: container<MessagingService>(),
         ),
       );
-
-      // ==================== OTHER VIEWMODELS ====================
-
       // Collaborative Status ViewModel
       container.registerFactory<CollaborativeStatusViewModel>(
         () => CollaborativeStatusViewModel(),

@@ -14,8 +14,6 @@ import 'package:butlery/core/cache/json_cache_helper.dart';
 /// - Cache synchronization during real-time editing
 /// ❌ DOES NOT CONTAIN: Session management, content operations, conflict resolution, editor tracking
 class RealtimeCacheManager {
-  // ===== REAL-TIME CACHE OPERATIONS =====
-
   /// Save recipe to cache during real-time editing
   static Future<void> saveToCache({
     required Recipe recipe,
@@ -160,8 +158,6 @@ class RealtimeCacheManager {
     }
   }
 
-  // ===== CACHE SYNCHRONIZATION =====
-
   /// Sync cache with Firestore during real-time editing
   static Future<void> syncCacheWithFirestore({
     required String recipeId,
@@ -229,8 +225,6 @@ class RealtimeCacheManager {
       AppLogger.error('❌ Error force refreshing cache: $e');
     }
   }
-
-  // ===== CLEANUP OPERATIONS =====
 
   /// Dispose of all real-time resources
   static Future<void> dispose({
@@ -336,8 +330,6 @@ class RealtimeCacheManager {
       AppLogger.error('❌ Error cleaning up resources for recipe $recipeId: $e');
     }
   }
-
-  // ===== MEMORY MANAGEMENT =====
 
   /// Check memory usage of real-time operations
   static Map<String, dynamic> getMemoryUsage({

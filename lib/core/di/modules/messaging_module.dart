@@ -71,8 +71,6 @@ class MessagingModule implements DIModule {
     }
 
     try {
-      // ==================== MESSAGING REPOSITORIES ====================
-
       // Messaging repository for direct messages and conversations
       container.registerSingleton<MessagingRepository>(
         FirebaseMessagingRepository(),
@@ -85,9 +83,6 @@ class MessagingModule implements DIModule {
               authRepository: container<AuthRepository>()),
         );
       }
-
-      // ==================== MESSAGING SERVICES ====================
-
       // MessagingService - handles direct messaging with FCM integration
       container.registerSingleton<MessagingService>(MessagingService(
         messagingRepository: container<MessagingRepository>(),

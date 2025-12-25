@@ -96,8 +96,6 @@ class UniversalShareDialogViewModel extends ChangeNotifier
   final SocialRecipeService _socialRecipeService;
   final UnifiedShoppingService _shoppingService;
 
-  // ===== SHARING OPERATION STATE =====
-
   /// Share operation state for UI progress indication during sharing operations.
   /// Indicates active sharing operation for loading indicators and interaction
   /// control during content distribution and delivery processes.
@@ -124,8 +122,6 @@ class UniversalShareDialogViewModel extends ChangeNotifier
     required UnifiedShoppingService shoppingService,
   })  : _socialRecipeService = socialRecipeService,
         _shoppingService = shoppingService;
-
-  // ===== SHARING STATE ACCESSORS =====
 
   /// Share operation state for UI progress indication and interaction control.
   /// Indicates whether sharing operation is in progress for loading indicators

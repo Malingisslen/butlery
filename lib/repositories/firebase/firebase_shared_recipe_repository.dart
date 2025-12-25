@@ -88,9 +88,6 @@ class FirebaseSharedRecipeRepository
 
   @override
   String get collectionName => 'shared_recipes';
-
-  // ===== METADATA REPOSITORY GETTERS =====
-
   @override
   BaseViewRepository get viewRepository => _viewRepository;
 
@@ -99,9 +96,6 @@ class FirebaseSharedRecipeRepository
 
   @override
   BaseDismissalRepository get dismissalRepository => _dismissalRepository;
-
-  // ===== BASE SHARED CONTENT REPOSITORY IMPLEMENTATIONS =====
-
   @override
   String get contentTypeName => 'recipe';
 
@@ -125,15 +119,10 @@ class FirebaseSharedRecipeRepository
 
   @override
   bool get tracksCounts => true;
-
-  // ===== COLLECTION REFERENCE =====
-
   @override
   CollectionReference<Map<String, dynamic>> getCollectionRef() {
     return firestore.collection('shared_recipes');
   }
-
-  // ===== SERIALIZATION METHODS =====
 
   @override
   SharedRecipe fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -147,9 +136,6 @@ class FirebaseSharedRecipeRepository
 
   @override
   String getId(SharedRecipe entity) => entity.id;
-
-  // ===== FILTERING METHOD IMPLEMENTATIONS =====
-
   @override
   bool shouldShowToUser(SharedRecipe content, String userId) {
     // Issue #014 Migration: If content was found via subcollection query,
@@ -170,8 +156,6 @@ class FirebaseSharedRecipeRepository
   bool isCreatedBy(SharedRecipe content, String userId) {
     return content.sharedByUserId == userId;
   }
-
-  // ===== SHARED RECIPE OPERATIONS =====
 
   /// Create new shared recipe with comprehensive validation
   /// Note (Issue #014): recipientIds must be passed separately as sharedToUserIds
@@ -248,8 +232,6 @@ class FirebaseSharedRecipeRepository
     return sharedRecipe;
   }
 
-  // ===== STATUS MANAGEMENT (SUBCOLLECTION-BASED) =====
-
   /// Mark shared recipe as viewed by user
   @override
   Future<void> markAsViewed(String recipeId, String userId) async {
@@ -282,8 +264,6 @@ class FirebaseSharedRecipeRepository
     // Delegate to base class method
     return await deleteSharedContent(recipeId);
   }
-
-  // ===== QUERY METHODS (DELEGATED TO BASE CLASS) =====
 
   /// Get unread shared recipes count for user
   @override

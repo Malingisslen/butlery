@@ -67,16 +67,12 @@ class AuthViewModel extends ChangeNotifier
     with StateNotifierMixin, AsyncOperationMixin {
   final AuthService _authService;
 
-  // ===== AUTHENTICATION STATE MANAGEMENT =====
-
   /// Authentication mode state controlling login/register UI flow presentation.
   /// true = login mode, false = register mode
   bool _isLoginMode = true;
 
   /// Password visibility state for enhanced user experience and credential entry.
   bool _isPasswordVisible = false;
-
-  // ===== SERVICE STATE INTEGRATION =====
 
   /// Local validation error message for form validation feedback
   String? _validationError;
@@ -99,8 +95,6 @@ class AuthViewModel extends ChangeNotifier
   /// Reflects real-time authentication state for UI conditional rendering and
   /// navigation flow control based on user authentication status.
   bool get isAuthenticated => _authService.isAuthenticated;
-
-  // ===== UI STATE ACCESSORS =====
 
   /// Current authentication mode for UI flow control and form field management.
   /// Controls whether authentication UI displays login or registration form
@@ -272,8 +266,6 @@ class AuthViewModel extends ChangeNotifier
     return await _authService.sendPasswordResetEmail(email.trim());
   }
 
-  // ===== ADVANCED INPUT VALIDATION =====
-
   /// Validates email format with comprehensive internationalization support and user feedback.
   /// [email] Email address to validate
   /// Returns true if email format is valid, false otherwise with automatic error message setting.
@@ -334,8 +326,6 @@ class AuthViewModel extends ChangeNotifier
 
     return true;
   }
-
-  // ===== COMPREHENSIVE ERROR MANAGEMENT =====
 
   /// Manages local validation error state with automatic UI notification and consistency patterns.
   /// [message] Error message for user display and validation feedback

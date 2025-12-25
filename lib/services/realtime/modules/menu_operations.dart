@@ -48,8 +48,6 @@ class MenuOperationError {
 /// - Recipe movement between categories
 /// ❌ DOES NOT CONTAIN: Participant management, state management, synchronization
 class MenuOperations {
-  // ===== BASIC MENU OPERATIONS =====
-
   /// Update basic menu information
   static RealtimeMenu updateBasicInfo(
     RealtimeMenu menu, {
@@ -73,8 +71,6 @@ class MenuOperations {
       editedByDisplayName: editedByDisplayName,
     );
   }
-
-  // ===== RECIPE OPERATIONS =====
 
   /// Add recipe to specific category
   static RealtimeMenu addRecipeToCategory(
@@ -194,8 +190,6 @@ class MenuOperations {
     );
   }
 
-  // ===== CATEGORY OPERATIONS =====
-
   /// Clear entire category
   static RealtimeMenu clearCategory(
     RealtimeMenu menu, {
@@ -277,8 +271,6 @@ class MenuOperations {
     );
   }
 
-  // ===== VALIDATION UTILITIES =====
-
   /// Validate category name
   static bool isValidCategoryName(String categoryName) {
     // Accept all non-empty categories (flexible system)
@@ -307,8 +299,6 @@ class MenuOperations {
         .map((recipes) => recipes.length)
         .fold(0, (sum, count) => sum + count);
   }
-
-  // ===== MENU UTILITIES =====
 
   /// Create personal copy of realtime menu
   static Map<String, List<Recipe>> createPersonalCopy(RealtimeMenu menu) {

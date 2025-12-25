@@ -273,8 +273,6 @@ class GlobalRecipeCache extends BaseService {
     );
   }
 
-  // ===== PRIVATE HELPERS =====
-
   /// Get the cache collection reference
   CollectionReference<Map<String, dynamic>> get _collection =>
       _firestoreRepo.firestore.collection(_collectionName);

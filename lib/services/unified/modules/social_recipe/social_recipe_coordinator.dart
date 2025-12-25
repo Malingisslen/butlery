@@ -42,9 +42,6 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
 
   /// Notification service for social notifications (temporarily disabled)
   // late final notif.NotificationService? _notificationService;
-
-  // ===== STATUS CACHING (ISSUE #014) =====
-
   /// Cached viewed status (recipeId → bool)
   final Map<String, bool> _viewedStatusCache = {};
 
@@ -361,8 +358,6 @@ class SocialRecipeCoordinator extends BaseService with UserContextMixin {
       return [];
     }
   }
-
-  // ===== STATUS CACHE METHODS (PHASE 3 SESSION 2) =====
 
   /// Load status for a recipe from repository and cache it
   /// Phase 3 Session 2: Status caching method for ViewModel migration.

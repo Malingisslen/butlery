@@ -41,8 +41,24 @@ import 'package:butlery/services/unified/helpers/personal_recipe_crud.dart';
 import 'package:butlery/services/unified/helpers/recipe_utility_operations.dart';
 
 /// Unified recipe service coordinating personal, social, and real-time recipe operations.
-/// Delegates to specialized modules (PersonalRecipeModule, SocialRecipeModule, RealtimeRecipeModule, RecipeCacheModule)
-/// with backward-compatible legacy interfaces (personal, social, realtime operations).
+///
+/// ## Usage
+/// ```dart
+/// final service = ServiceLocator.get<UnifiedRecipeService>();
+///
+/// // Personal recipe operations
+/// final recipe = await service.personal.createRecipe(title: 'Pasta', ...);
+/// await service.personal.updateRecipe(recipe.copyWith(title: 'Updated'));
+///
+/// // Social sharing
+/// await service.social.shareRecipe(recipeId: recipe.id, userIds: [...]);
+///
+/// // Real-time collaboration
+/// service.realtime.watchRecipe(recipe.id).listen((updated) => ...);
+/// ```
+///
+/// Delegates to specialized modules (PersonalRecipeModule, SocialRecipeModule,
+/// RealtimeRecipeModule, RecipeCacheModule) with backward-compatible legacy interfaces.
 class UnifiedRecipeService extends ChangeNotifier
     with ErrorHandlingMixin, FirebaseServiceMixin
     implements NotificationParent {
@@ -125,13 +141,8 @@ class UnifiedRecipeService extends ChangeNotifier
       '✅ UnifiedRecipeService initialized with focused modules and legacy interfaces',
     );
   }
-
-  // ===== FIREBASE SERVICE MIXIN IMPLEMENTATION =====
-
   @override
   FirestoreRepository get firestoreRepository => _firestoreRepository;
-
-  // ===== DEPENDENCY HELPERS =====
 
   /// Get recipe repository with fallback to service locator
   RecipeRepository _getRecipeRepository() {
@@ -155,8 +166,6 @@ class UnifiedRecipeService extends ChangeNotifier
     );
     return _serviceAdapter!;
   }
-
-  // ===== MODULE INITIALIZATION =====
 
   // Lazy cache helper getter
   JsonCacheHelper? _cacheHelperField;
@@ -320,8 +329,6 @@ class UnifiedRecipeService extends ChangeNotifier
     }
   }
 
-  // ===== GETTERS =====
-
   List<Recipe> get recipes => List.unmodifiable(_recipes);
   List<Recipe> get personalRecipes =>
       recipes.where((r) => r.isPersonal).toList();
@@ -352,9 +359,6 @@ class UnifiedRecipeService extends ChangeNotifier
   /// Public getter for firestore instance (for legacy interfaces)
   @override
   FirebaseFirestore get firestore => _firestore;
-
-  // ===== INITIALIZATION =====
-
   Future<void> initialize() async {
     // Early return guard to prevent double initialization
     if (_isInitialized) {
@@ -451,8 +455,6 @@ class UnifiedRecipeService extends ChangeNotifier
     }
   }
 
-  // ===== PERSONAL RECIPE OPERATIONS (DELEGATED TO CRUD HELPER) =====
-
   Future<String?> createPersonalRecipe({
     required String title,
     String description = '',
@@ -488,14 +490,8 @@ class UnifiedRecipeService extends ChangeNotifier
 
   Future<bool> markAsCooked(String recipeId) async =>
       _personalCrud.markAsCooked(recipeId);
-
-  // ===== INTERNAL SAVE METHOD FOR SOCIAL MODULE (DELEGATED) =====
-
   Future<bool> _saveRecipeForSocialModule(Recipe recipe) async =>
       _utilityOps.saveRecipeForSocialModule(recipe);
-
-  // ===== COLLABORATIVE RECIPE OPERATIONS (DELEGATE TO SOCIAL MODULE) =====
-
   Future<String?> createCollaborativeRecipe({
     required String title,
     required List<String> memberIds,
@@ -555,8 +551,6 @@ class UnifiedRecipeService extends ChangeNotifier
     );
   }
 
-  // ===== REAL-TIME EDITING OPERATIONS (DELEGATE TO REALTIME MODULE) =====
-
   Future<bool> startRealtimeEditing(String recipeId) async {
     return await _realtimeModule.startRealtimeEditing(recipeId);
   }
@@ -575,8 +569,6 @@ class UnifiedRecipeService extends ChangeNotifier
   bool isInRealtimeEditingSession(String recipeId) {
     return _realtimeModule.isInRealtimeEditingSession(recipeId);
   }
-
-  // ===== CONTENT OPERATIONS (DELEGATED) =====
 
   Future<bool> updateRecipeContent({
     required String recipeId,
@@ -642,8 +634,6 @@ class UnifiedRecipeService extends ChangeNotifier
     return await _personalModule.markRecipeAsCooked(recipeId);
   }
 
-  // ===== LEGACY COMPATIBILITY =====
-
   /// Legacy createRecipe method
   Future<String?> createRecipe({
     required String title,
@@ -687,9 +677,6 @@ class UnifiedRecipeService extends ChangeNotifier
 
   /// Legacy refresh method (delegated to utility helper)
   Future<void> refresh() async => _utilityOps.refresh();
-
-  // ===== UTILITY METHODS =====
-
   Recipe? getRecipeById(String id) {
     return _recipes.where((r) => r.id == id).firstOrNull;
   }
@@ -699,8 +686,6 @@ class UnifiedRecipeService extends ChangeNotifier
     notifyListeners();
   }
 
-  // ===== AUTH STATE HANDLING (DELEGATED TO HANDLER) =====
-
   void _handleAuthStateChange(String? userId) {
     _authHandler.handleAuthStateChange(userId);
   }
@@ -709,8 +694,6 @@ class UnifiedRecipeService extends ChangeNotifier
     _error = message.isEmpty ? null : message;
     notifyListeners();
   }
-
-  // ===== DIAGNOSTICS =====
 
   /// Get service status for debugging
   Map<String, dynamic> getServiceStatus() {

@@ -29,8 +29,6 @@ class RecipeServiceAdapter {
         _ratingsRepository = ratingsRepository,
         _notificationsRepository = notificationsRepository;
 
-  // ===== RECIPE OPERATIONS =====
-
   /// Create a new recipe using repository pattern
   Future<String?> createRecipe(Recipe recipe) async {
     try {
@@ -100,8 +98,6 @@ class RecipeServiceAdapter {
     }
   }
 
-  // ===== COMMENT OPERATIONS =====
-
   /// Add comment to recipe using repository pattern
   Future<RecipeComment?> addComment({
     required String recipeId,
@@ -139,8 +135,6 @@ class RecipeServiceAdapter {
       return [];
     }
   }
-
-  // ===== RATING OPERATIONS =====
 
   /// Rate recipe using repository pattern
   Future<bool> rateRecipe({
@@ -191,8 +185,6 @@ class RecipeServiceAdapter {
     }
   }
 
-  // ===== NOTIFICATION OPERATIONS =====
-
   /// Send notification using repository pattern
   Future<void> sendNotification({
     required String userId,
@@ -218,8 +210,6 @@ class RecipeServiceAdapter {
     }
   }
 
-  // ===== BATCH OPERATIONS =====
-
   /// Get bulk rating statistics using repository pattern
   Future<Map<String, RatingStatistics>> getBulkRatingStatistics(
       List<String> recipeIds) async {
@@ -235,8 +225,6 @@ class RecipeServiceAdapter {
       return {};
     }
   }
-
-  // ===== STREAM OPERATIONS =====
 
   /// Get comments stream using repository pattern
   Stream<List<RecipeComment>> getCommentsStream(String recipeId) {

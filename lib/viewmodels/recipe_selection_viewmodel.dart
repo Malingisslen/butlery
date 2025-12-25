@@ -79,8 +79,6 @@ class RecipeSelectionViewModel extends ChangeNotifier
     required this.targetFriend,
   }) : _recipeService = recipeService;
 
-  // ===== RECIPE COLLECTION STATE =====
-
   /// Complete recipe collection for selection and sharing coordination.
   /// Stores all available recipes enabling recipe discovery, selection functionality,
   /// and comprehensive recipe management throughout selection operations.
@@ -96,7 +94,6 @@ class RecipeSelectionViewModel extends ChangeNotifier
   /// and content discovery throughout recipe selection operations.
   String _searchQuery = '';
 
-  // ===== OPERATION STATE MANAGEMENT =====
   /// isLoading, error, hasError provided by StateNotifierMixin
 
   /// Selected recipe IDs for sharing coordination and selection management.
@@ -182,8 +179,6 @@ class RecipeSelectionViewModel extends ChangeNotifier
     _searchQuery = query;
     _applyFilters();
   }
-
-  // ===== RECIPE SELECTION OPERATIONS =====
 
   /// Advanced recipe selection toggling with state management and visual feedback coordination.
   /// [recipeId] Recipe identifier for selection management and state tracking
@@ -275,8 +270,6 @@ class RecipeSelectionViewModel extends ChangeNotifier
     }
   }
 
-  // ===== PRIVATE FILTERING AND SORTING OPERATIONS =====
-
   /// Advanced filtering and sorting coordination with search criteria and sharing status prioritization.
   /// Applies comprehensive filtering logic combining search criteria with intelligent sorting,
   /// prioritizing unshared recipes and maintaining alphabetical organization for optimal
@@ -343,7 +336,6 @@ class RecipeSelectionViewModel extends ChangeNotifier
     }
   }
 
-  // ===== PRIVATE STATE MANAGEMENT OPERATIONS =====
   /// setLoading, setError, clearError provided by StateNotifierMixin
 
   /// Sharing operation state management with UI notification coordination.

@@ -78,9 +78,6 @@ class GroupInvitationRepository
 
   CollectionReference<Map<String, dynamic>> get _invitationsRef =>
       firestore.collection('group_invitations');
-
-  // ===== BASE CLASS IMPLEMENTATION =====
-
   @override
   String get collectionName => 'group_invitations';
 
@@ -94,9 +91,6 @@ class GroupInvitationRepository
 
   @override
   String getId(GroupInvitation entity) => entity.id;
-
-  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
-
   @override
   Future<bool> validateCreatePermission(
       String userId, GroupInvitation entity) async {
@@ -131,8 +125,6 @@ class GroupInvitationRepository
       return false;
     }
   }
-
-  // ===== GROUP INVITATION OPERATIONS =====
 
   /// Stream received invitations for a user.
   /// Optimized (#043): Added limit to prevent unbounded stream
@@ -323,8 +315,6 @@ class GroupInvitationRepository
     }
   }
 
-  // ===== CLEANUP OPERATIONS =====
-
   /// Get expired invitations that need cleanup.
   Future<List<DocumentReference<Map<String, dynamic>>>> expiredInvitations(
       DateTime now) async {
@@ -428,8 +418,6 @@ class GroupInvitationRepository
       details: 'Count: ${refs.length}',
     );
   }
-
-  // ===== INVITATION STATISTICS =====
 
   /// Get invitation statistics for a user.
   Future<Map<String, int>> getInvitationStatistics(String userId) async {

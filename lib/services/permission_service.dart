@@ -248,8 +248,6 @@ class PermissionService extends BaseService {
     return _shoppingModule.canDeleteShoppingList(listId);
   }
 
-  // ===== SHOPPING INVITATION PERMISSIONS =====
-
   /// Validates user permission to send shopping list invitations.
   bool canSendShoppingInvitation(String listId) {
     return _shoppingModule.canSendShoppingInvitation(listId);

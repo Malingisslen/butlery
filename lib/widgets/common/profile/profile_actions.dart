@@ -15,8 +15,6 @@ import 'package:butlery/widgets/common/profile/builders/profile_section_builders
 ///
 /// See CLAUDE.md for architecture guidelines on facade pattern.
 class ProfileActions {
-  // ===== MENU ITEM BUILDERS =====
-
   /// Build menu item for basic navigation.
   static Widget buildMenuItem(
     BuildContext context, {
@@ -50,8 +48,6 @@ class ProfileActions {
         onTap: onTap,
         count: count,
       );
-
-  // ===== SECTION BUILDERS =====
 
   /// Build data backup section.
   static Widget buildDataBackupSection(BuildContext context,

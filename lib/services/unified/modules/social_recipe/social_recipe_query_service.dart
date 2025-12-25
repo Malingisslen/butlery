@@ -34,8 +34,6 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
     setUserIdProvider(getCurrentUserId);
   }
 
-  // ===== COLLABORATIVE RECIPE QUERIES =====
-
   /// Get collaborative recipes where user is a member using repository pattern
   Future<List<Recipe>> getCollaborativeRecipesForUser() async {
     final currentUserId = _getCurrentUserId();
@@ -126,8 +124,6 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
     }
   }
 
-  // ===== COLLABORATION ANALYTICS =====
-
   /// Get collaboration statistics for user
   Future<Map<String, int>> getCollaborationStats() async {
     final currentUserId = _getCurrentUserId();
@@ -217,8 +213,6 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
       return {};
     }
   }
-
-  // ===== CACHE OPERATIONS =====
 
   /// Save collaborative recipe to cache
   Future<void> saveToCache(Recipe recipe) async {

@@ -12,8 +12,6 @@ import 'package:butlery/core/utils/logger.dart';
 /// - Session cleanup and resource management
 /// ❌ DOES NOT CONTAIN: Content operations, conflict resolution, editor tracking, event handling
 class RealtimeSessionManager {
-  // ===== SESSION LIFECYCLE MANAGEMENT =====
-
   /// Start real-time editing session for a recipe
   static Future<bool> startRealtimeEditing({
     required FirebaseFirestore firestore,
@@ -120,8 +118,6 @@ class RealtimeSessionManager {
     }
   }
 
-  // ===== SESSION STATE QUERIES =====
-
   /// Check if currently in real-time editing session
   static bool isInRealtimeEditingSession({
     required String recipeId,
@@ -151,8 +147,6 @@ class RealtimeSessionManager {
   ) {
     return activeEditingSessions.isNotEmpty;
   }
-
-  // ===== SESSION VALIDATION =====
 
   /// Validate that user can start real-time editing
   static bool canStartRealtimeEditing({
@@ -194,8 +188,6 @@ class RealtimeSessionManager {
 
     return true;
   }
-
-  // ===== SESSION HEALTH MONITORING =====
 
   /// Check health of active sessions
   static Map<String, dynamic> checkSessionHealth(
@@ -270,8 +262,6 @@ class RealtimeSessionManager {
     }
   }
 
-  // ===== SESSION DIAGNOSTICS =====
-
   /// Get detailed session information
   static Map<String, dynamic> getSessionDiagnostics({
     required Map<String, StreamSubscription<DocumentSnapshot>>
@@ -316,8 +306,6 @@ class RealtimeSessionManager {
       'recipeIds': activeEditingSessions.keys.toList(),
     };
   }
-
-  // ===== SESSION RECOVERY =====
 
   /// Attempt to recover failed session
   static Future<bool> recoverSession({

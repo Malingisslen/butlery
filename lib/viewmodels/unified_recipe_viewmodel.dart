@@ -22,8 +22,6 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
   final UnifiedRecipeService _recipeService =
       ServiceLocator.get<UnifiedRecipeService>();
 
-  // ===== FOCUSED VIEWMODEL ARCHITECTURE =====
-
   /// Personal recipe operations ViewModel
   late final PersonalRecipeViewModel _personalViewModel;
 
@@ -59,8 +57,6 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
     notifyListeners();
   }
 
-  // ===== FOCUSED VIEWMODEL ACCESS =====
-
   /// Access to personal recipe operations
   PersonalRecipeViewModel get personal => _personalViewModel;
 
@@ -72,9 +68,6 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
 
   /// Access to recipe querying operations
   RecipeQueryViewModel get query => _queryViewModel;
-
-  // ===== ESSENTIAL STATE ACCESSORS =====
-
   List<Recipe> get allRecipes => _recipeService.recipes;
   List<Recipe> get recipes => _recipeService.recipes;
   List<Recipe> get personalRecipes => _recipeService.personalRecipes;
@@ -97,8 +90,6 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
   int get totalRecipes => recipes.length;
   int get personalRecipeCount => personalRecipes.length;
   int get collaborativeRecipeCount => collaborativeRecipes.length;
-
-  // ===== CORE OPERATIONS =====
 
   /// Initialize the unified recipe system
   Future<void> initialize() async {
@@ -206,8 +197,6 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
     return await _socialViewModel.makeRecipePersonal(collaborativeRecipeId);
   }
 
-  // ===== LEGACY COMPATIBILITY =====
-
   Future<RecipeOperationResult> addRecipe(Recipe recipe) async {
     return await _personalViewModel.addLegacyRecipe(recipe);
   }
@@ -227,8 +216,6 @@ class UnifiedRecipeViewModel extends ChangeNotifier with StreamManagementMixin {
   Future<void> refresh() async {
     await _recipeService.initialize();
   }
-
-  // ===== UTILITY METHODS =====
 
   /// Get recipe by ID from unified collection
   Recipe? getUnifiedRecipeById(String id) {

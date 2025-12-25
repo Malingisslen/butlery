@@ -37,15 +37,11 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
   RecipeFormCoordinator get coordinator;
   bool get isCollaborative;
 
-  // ===== LEGACY SAVE/FORK OPERATIONS =====
-
   /// Save fork - creates a copy of the current recipe
   /// @deprecated Use forkRecipe() instead
   Future<Recipe?> saveFork() async {
     return await persistenceManager.forkRecipe();
   }
-
-  // ===== IMAGE PICKER CONVENIENCE METHODS =====
 
   /// Pick and upload single image
   /// @deprecated Use showImagePickerDialog() instead
@@ -108,8 +104,6 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     moveImageToFirst(imageUrl);
   }
 
-  // ===== CONTROLLER GETTERS (for backward compatibility) =====
-
   /// Get ingredient controllers (for backward compatibility)
   List<TextEditingController> get ingredientControllers {
     debugPrint('🎯 VIEWMODEL_DEBUG: ingredientControllers called');
@@ -137,8 +131,6 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     return controllers;
   }
 
-  // ===== INGREDIENT MANAGEMENT =====
-
   /// Update ingredient at index with MODUL1 preprocessing
   /// **MODUL1 Integration**: Processes raw user input through full pipeline:
   /// 1. Preprocessing: Removes approximations, ranges, parentheses, instructions
@@ -158,8 +150,12 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
-  /// Add new ingredient
+  /// Add new ingredient (respects max limit)
   void addIngredient() {
+    if (!state.canAddIngredient) {
+      // Max ingredients reached - silently ignore or could show feedback
+      return;
+    }
     state.ingredientsManager.add('');
     notifyListeners();
     coordinator.syncToCollaborative(isCollaborative: isCollaborative);
@@ -172,16 +168,18 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
-  // ===== INSTRUCTION MANAGEMENT =====
-
   /// Update instruction at index
   void updateInstruction(int index, String value) {
     state.instructionsManager.updateAt(index, value);
     coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
-  /// Add new instruction
+  /// Add new instruction (respects max limit)
   void addInstruction() {
+    if (!state.canAddInstruction) {
+      // Max instructions reached - silently ignore or could show feedback
+      return;
+    }
     state.instructionsManager.add('');
     notifyListeners();
     coordinator.syncToCollaborative(isCollaborative: isCollaborative);
@@ -193,8 +191,6 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     notifyListeners();
     coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
-
-  // ===== TAG MANAGEMENT =====
 
   /// Update tag at index
   void updateTag(int index, String value) {
@@ -216,8 +212,6 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
     coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
-  // ===== PERMISSION GETTERS =====
-
   /// Get edit mode (for backward compatibility)
   String? get editMode {
     return permissionManager.editMode;
@@ -230,8 +224,6 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
 
   /// Check if in edit mode
   bool get isEditMode => permissionManager.canEdit;
-
-  // ===== FUNCTION GETTERS (for backward compatibility) =====
 
   /// Function getter for adding image URL
   Function(String) get addImageUrlFunc => addImageFromUrl;
@@ -274,8 +266,6 @@ mixin RecipeBackwardCompatibilityMixin on ChangeNotifier {
 
   /// Function getter for removing tag
   Function(int) get removeTagFunc => (int index) => removeTag(index);
-
-  // ===== REQUIRED METHODS (must be implemented by class using mixin) =====
 
   /// Show image picker dialog - must be implemented by class
   Future<void> showImagePickerDialog(BuildContext context);

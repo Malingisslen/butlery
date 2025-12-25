@@ -16,7 +16,6 @@ class GroupInvitationsViewModel extends ChangeNotifier
     with ErrorHandlingMixin, StateNotifierMixin, AsyncOperationMixin {
   final UnifiedFriendsService _friendsService;
 
-  // ===== STATE =====
   List<FriendCategory> _availableGroups = [];
   final Map<String, List<UserProfile>> _groupMembers = {};
   final Set<String> _joiningGroupIds =
@@ -31,10 +30,6 @@ class GroupInvitationsViewModel extends ChangeNotifier
     _initializeData();
   }
 
-  // ===== GETTERS =====
-
-  /// ===== BEFINTLIGA GETTERS (för tillgängliga grupper) =====
-
   /// Tillgängliga grupper som användaren kan gå med i
   List<FriendCategory> get availableGroups =>
       List.unmodifiable(_availableGroups);
@@ -46,8 +41,6 @@ class GroupInvitationsViewModel extends ChangeNotifier
 
   /// Kontrollera om en specifik grupp håller på att joinas
   bool isJoiningGroup(String groupId) => _joiningGroupIds.contains(groupId);
-
-  /// ===== NYA GETTERS (för gruppinbjudningar) =====
 
   /// Mottagna gruppinbjudningar (väntande)
   List<GroupInvitation> get receivedInvitations =>
@@ -66,7 +59,6 @@ class GroupInvitationsViewModel extends ChangeNotifier
   bool isRespondingToInvitation(String invitationId) =>
       _respondingInvitationIds.contains(invitationId);
 
-  /// ===== GENERAL GETTERS =====
   /// isLoading, error, hasError provided by StateNotifierMixin
 
   /// Aktuell användare
@@ -76,17 +68,12 @@ class GroupInvitationsViewModel extends ChangeNotifier
   /// Kombinerat "har något att visa" state
   bool get hasContent =>
       availableGroups.isNotEmpty || receivedInvitations.isNotEmpty;
-
-  // ===== INITIALIZATION =====
-
   Future<void> _initializeData() async {
     await Future.wait([
       _loadAvailableGroups(),
       _loadReceivedInvitations(),
     ]);
   }
-
-  /// ===== BEFINTLIG LOGIK (för tillgängliga grupper) =====
 
   Future<void> _loadAvailableGroups() async {
     try {
@@ -152,8 +139,6 @@ class GroupInvitationsViewModel extends ChangeNotifier
     }
   }
 
-  /// ===== NY LOGIK (för gruppinbjudningar) =====
-
   Future<void> _loadReceivedInvitations() async {
     try {
       AppLogger.info('🔄 Laddar mottagna gruppinbjudningar...');
@@ -199,8 +184,6 @@ class GroupInvitationsViewModel extends ChangeNotifier
       notifyListeners();
     }
   }
-
-  // ===== BEFINTLIGA ACTIONS (för tillgängliga grupper) =====
 
   /// Gå med i en grupp (befintlig funktionalitet)
   Future<void> joinGroup(String groupId) async {
@@ -255,8 +238,6 @@ class GroupInvitationsViewModel extends ChangeNotifier
       notifyListeners();
     }
   }
-
-  /// ===== NYA ACTIONS (för gruppinbjudningar) =====
 
   /// Acceptera gruppinbjudan
   Future<void> acceptInvitation(String invitationId) async {
@@ -356,8 +337,6 @@ class GroupInvitationsViewModel extends ChangeNotifier
     }
   }
 
-  // ===== REFRESH & UTILITY METHODS =====
-
   /// Uppdatera data
   Future<void> refresh() async {
     AppLogger.info('🔄 Refreshar gruppinbjudningsdata...');
@@ -404,8 +383,6 @@ class GroupInvitationsViewModel extends ChangeNotifier
       return null;
     }
   }
-
-  // ===== HELPER METHODS =====
 
   /// Public method to clear errors (for external/test use)
   /// Overrides protected clearError from StateNotifierMixin to make it public

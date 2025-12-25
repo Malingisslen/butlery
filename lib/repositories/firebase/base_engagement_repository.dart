@@ -57,8 +57,6 @@ abstract class BaseEngagementRepository
     return metadata.toFirestore();
   }
 
-  // ===== CONVENIENCE METHODS =====
-
   /// Mark content as engaged (imported, joined, etc.) by the current user.
   /// [resourceId] ID of the content being engaged with
   /// [action] Type of engagement ('import', 'join', 'copy', etc.)

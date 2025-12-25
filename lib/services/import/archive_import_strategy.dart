@@ -200,8 +200,6 @@ class ArchiveImportStrategy extends ImportStrategy with ImportValidationMixin {
     return mealTypes;
   }
 
-  // ===== PRIVATE HELPER METHODS =====
-
   Recipe? _findRecipeById(String id) {
     try {
       return archive.archivedRecipes

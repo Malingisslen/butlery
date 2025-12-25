@@ -365,7 +365,6 @@ class NotificationRepository {
     _cachedPreferences = null;
   }
 
-  // ===== DEVICE TOKEN MANAGEMENT METHODS =====
   // ✅ FIXED: Added advanced token management methods for FCM token manager
 
   /// Batch update device information for FCM token management
@@ -493,8 +492,6 @@ class NotificationRepository {
       AppLogger.error('❌ Failed to deactivate user devices', e);
     }
   }
-
-  // ===== FCM TOKEN MANAGEMENT METHODS =====
 
   /// Save FCM token to Firestore
   Future<void> saveTokenToFirestore(

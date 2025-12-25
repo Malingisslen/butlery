@@ -103,9 +103,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
   })  : _importManager = importManager,
         _inputDetector = inputDetector ?? InputDetector();
 
-  // ==========================================================================
   // Getters
-  // ==========================================================================
 
   String get input => _input;
   ImportPhase get phase => _phase;
@@ -162,9 +160,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
 
   int _lastStepBeforeError = 0;
 
-  // ==========================================================================
   // Input Handling
-  // ==========================================================================
 
   /// Update input text and detect platform.
   void updateInput(String text) {
@@ -196,9 +192,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     notifyListeners();
   }
 
-  // ==========================================================================
   // Import Operations
-  // ==========================================================================
 
   /// Start the import process.
   Future<SmartImportResult> startImport() async {
@@ -369,9 +363,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     notifyListeners();
   }
 
-  // ==========================================================================
   // Private Helpers
-  // ==========================================================================
 
   void _setPhase(ImportPhase phase) {
     if (isDisposed) return;
@@ -379,9 +371,7 @@ class SmartImportViewModel extends BaseViewModel with AsyncOperationMixin {
     notifyListeners();
   }
 
-  // ==========================================================================
   // Debug
-  // ==========================================================================
 
   @override
   Map<String, dynamic> get debugState => {

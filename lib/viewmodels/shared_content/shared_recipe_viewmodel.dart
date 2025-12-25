@@ -40,12 +40,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// Note (Issue #014): Uses status caching for synchronous filtering/counting.
 /// Status loaded from Firestore subcollections and cached for performance.
 class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
-  // ===== DEPENDENCIES =====
-
   late final SocialRecipeCoordinator _socialRecipeCoordinator;
-
-  // ===== CONSTRUCTOR =====
-
   SharedRecipeViewModel({
     SocialRecipeCoordinator? socialRecipeCoordinator,
   }) {
@@ -55,9 +50,6 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     AppLogger.info(
         'SharedRecipeViewModel initialized with copy-on-write support');
   }
-
-  // ===== BASE CLASS IMPLEMENTATIONS =====
-
   @override
   String get contentTypeName => 'recipe';
 
@@ -146,8 +138,6 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     return null;
   }
 
-  // ===== RECIPE-SPECIFIC GETTERS =====
-
   /// Get unread recipes count (using cache - Issue #014)
   /// Respects showImported filter - imported items don't count as unread when hidden
   int get unreadCount {
@@ -181,8 +171,6 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
             recipe.sharedByUserId != userId)
         .toList();
   }
-
-  // ===== RECIPE OPERATIONS =====
 
   /// Import shared recipe using copy-on-write pattern
   /// For new copy-on-write behavior, this joins as viewer until first edit.
@@ -291,8 +279,6 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
     return result ?? false;
   }
 
-  // ===== STATUS CHECKING METHODS =====
-
   /// Check if recipe is viewed by current user (using cache - Issue #014)
   bool isRecipeViewed(SharedRecipe recipe) {
     final userId = currentUserId;
@@ -332,8 +318,6 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
   bool isRecipeCollaborative(SharedRecipe recipe) {
     return recipe.isCollaborative;
   }
-
-  // ===== BULK OPERATIONS =====
 
   /// Mark all recipes as viewed
   /// Note (Issue #014): Uses cache to identify unviewed recipes, then updates cache after marking.
@@ -388,8 +372,6 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
       return true;
     }).toList();
   }
-
-  // ===== ANALYTICS =====
 
   /// Get recipe engagement statistics (using cache - Issue #014)
   Map<String, int> getEngagementStats() {

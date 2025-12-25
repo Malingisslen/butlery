@@ -20,8 +20,6 @@ class FriendsInvitationsOperations {
     _statistics = InvitationStatisticsModule();
   }
 
-  // ===== INVITATION SENDING =====
-
   /// Send group invitation to an existing user
   Future<bool> sendGroupInvitationToUser({
     required String userId,
@@ -297,8 +295,6 @@ class FriendsInvitationsOperations {
     return results;
   }
 
-  // ===== INVITATION MANAGEMENT =====
-
   /// Cancel an invitation
   Future<bool> cancelInvitation(String invitationId) async {
     try {
@@ -405,8 +401,6 @@ class FriendsInvitationsOperations {
     }
   }
 
-  // ===== INVITATION QUERIES =====
-
   /// Get all sent invitations
   List<GroupInvitation> getSentInvitations() {
     return List.unmodifiable(_parent.getAllSentInvitationsInternal());
@@ -471,8 +465,6 @@ class FriendsInvitationsOperations {
         _parent.getAllSentInvitationsInternal(), query);
   }
 
-  // ===== INVITATION STATISTICS =====
-
   /// Get invitation statistics
   Map<String, dynamic> getInvitationStats() {
     return _statistics
@@ -484,8 +476,6 @@ class FriendsInvitationsOperations {
     return _statistics
         .getInvitationMetrics(_parent.getAllSentInvitationsInternal());
   }
-
-  // ===== CONTACT INTEGRATION =====
 
   /// Get invitation suggestions from contacts
   Future<List<dynamic>> getInvitationSuggestions() async {
@@ -511,7 +501,6 @@ class FriendsInvitationsOperations {
     }
   }
 
-  // ===== VIEWMODEL INTEGRATION =====
   List<GroupInvitation> get pendingReceivedInvitations {
     try {
       final currentUserId = _parent.currentUserId;

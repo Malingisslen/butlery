@@ -97,8 +97,6 @@ class RealtimeRecipeModule {
     ));
   }
 
-  // ===== REAL-TIME EDITING SESSION MANAGEMENT =====
-
   /// Start real-time editing session for a recipe
   Future<bool> startRealtimeEditing(String recipeId) async {
     return await RealtimeSessionManager.startRealtimeEditing(
@@ -137,8 +135,6 @@ class RealtimeRecipeModule {
     return RealtimeSessionManager.getActiveEditingSessions(
         _activeEditingSessions);
   }
-
-  // ===== REAL-TIME CONTENT OPERATIONS =====
 
   /// Helper to create RealtimeEditContext for all operations
   RealtimeEditContext _createEditContext() {
@@ -243,8 +239,6 @@ class RealtimeRecipeModule {
     );
   }
 
-  // ===== ACTIVE EDITOR MANAGEMENT =====
-
   /// Register/unregister user as active editor
   Future<void> _registerActiveEditor(String recipeId, bool isActive) async {
     await RealtimeEditorTracker.registerActiveEditor(
@@ -270,8 +264,6 @@ class RealtimeRecipeModule {
     );
   }
 
-  // ===== CONFLICT RESOLUTION =====
-
   /// Apply real-time edit with conflict resolution
   Future<void> _applyRealtimeEditWithConflictResolution(
       String recipeId, Map<String, dynamic> editMetadata) async {
@@ -283,8 +275,6 @@ class RealtimeRecipeModule {
       pendingRealtimeEdits: _pendingRealtimeEdits,
     );
   }
-
-  // ===== REAL-TIME EVENT HANDLING =====
 
   /// Handle real-time recipe changes from Firestore
   void _handleRealtimeRecipeChange(DocumentSnapshot snapshot) {
@@ -334,8 +324,6 @@ class RealtimeRecipeModule {
     }
   }
 
-  // ===== CLEANUP =====
-
   /// Dispose of all real-time resources
   Future<void> dispose() async {
     await RealtimeCacheManager.dispose(
@@ -345,8 +333,6 @@ class RealtimeRecipeModule {
       stopRealtimeEditing: stopRealtimeEditing,
     );
   }
-
-  // ===== STATUS AND DIAGNOSTICS =====
 
   /// Get real-time editing status for debugging
   Map<String, dynamic> getRealtimeStatus() {
@@ -366,8 +352,6 @@ class RealtimeRecipeModule {
   int getPendingEditsCount(String recipeId) {
     return _pendingRealtimeEdits[recipeId]?.length ?? 0;
   }
-
-  // ===== ADDITIONAL DELEGATION METHODS =====
 
   /// Get editor statistics for recipe
   Future<Map<String, dynamic>> getEditorStatistics(String recipeId) async {

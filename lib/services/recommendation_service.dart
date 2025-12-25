@@ -29,8 +29,6 @@ class RecommendationService extends BaseService {
 
   RecommendationService();
 
-  // ===== RECOMMENDATION GENERATION =====
-
   /// Generate personalized recommendations for user
   Future<List<Recommendation>> generateRecommendations({
     required String userId,
@@ -125,8 +123,6 @@ class RecommendationService extends BaseService {
 
     return result ?? [];
   }
-
-  // ===== FEEDBACK HANDLING =====
 
   /// Provide feedback on a recommendation
   Future<void> provideFeedback(
@@ -244,8 +240,6 @@ class RecommendationService extends BaseService {
       customErrorMessage: 'Failed to undo dismissal',
     );
   }
-
-  // ===== PRIVATE HELPER METHODS =====
 
   Future<Map<String, dynamic>> _getUserPreferences(String userId) async {
     // In real implementation, this would fetch from user preferences service
@@ -385,8 +379,6 @@ class RecommendationService extends BaseService {
     // 2. Adjusting recommendation algorithm parameters
     // 3. Training ML models with feedback data
   }
-
-  // ===== PUBLIC UTILITY METHODS =====
 
   /// Get recommendation by ID
   Recommendation? getRecommendation(String recommendationId) {

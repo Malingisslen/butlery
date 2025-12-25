@@ -44,7 +44,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     _initializeModules();
   }
 
-  // ===== STATE =====
   // ignore: close_sinks - Disposed in onDispose() via disposeStreamResources()
   late final StreamController<bool> _connectionController;
   // ignore: close_sinks - Disposed in onDispose() via disposeStreamResources()
@@ -52,9 +51,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   final Map<String, StreamSubscription<DocumentSnapshot>> _activeListeners = {};
   final Map<String, RealtimeResource> _cachedResources = {};
   SyncError? _lastError;
-
-  // ===== MODULE INITIALIZATION =====
-
   void _initializeModules() {
     _connectionModule = ConnectionStateModule(
       firestoreRepository: _firestoreRepository,
@@ -78,8 +74,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     );
   }
 
-  // ===== GETTERS =====
-
   /// Är vi anslutna till Firebase?
   bool get isConnected => _connectionModule.isConnected;
 
@@ -98,8 +92,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   /// Aktuell användare
   String? get _currentUserId => _authRepository.currentUserId;
 
-  // ===== NOTIFICATION METHODS =====
-
   /// Add listener for state changes
   void addListener(VoidCallback listener) {
     _connectionModule.addListener(listener);
@@ -114,8 +106,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   void notifyListeners() {
     _connectionModule.notifyAllListeners();
   }
-
-  // ===== INITIALIZATION =====
 
   /// Initialize the service
   @override
@@ -134,8 +124,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       customErrorMessage: 'Could not initialize realtime sync service',
     );
   }
-
-  // ===== CORE CRUD OPERATIONS =====
 
   /// Watch a resource for real-time updates
   Stream<T> watchResource<T extends RealtimeResource>(String resourceId) {
@@ -309,8 +297,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     }
   }
 
-  // ===== CONFLICT RESOLUTION =====
-
   /// Resolve conflicts using edit count and timestamp strategy
   Future<T> resolveConflict<T extends RealtimeResource>(
       T local, T remote) async {
@@ -345,8 +331,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
       return remote;
     }
   }
-
-  // ===== PRIVATE HELPER METHODS =====
 
   /// Stäng specifik listener
   Future<void> _closeListener(String resourceId) async {
@@ -384,8 +368,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
     notifyListeners();
   }
 
-  // ===== PUBLIC UTILITY METHODS =====
-
   /// Rensa felstatus
   void clearError() {
     _lastError = null;
@@ -408,8 +390,6 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   bool isResourceWatched(String resourceId) {
     return _activeListeners.containsKey(resourceId);
   }
-
-  // ===== CLEANUP =====
 
   @override
   Future<void> onDispose() async {

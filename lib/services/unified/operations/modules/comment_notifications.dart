@@ -15,8 +15,6 @@ import 'package:butlery/services/notifications/notification_types.dart';
 /// - Notification targeting and batching
 /// ❌ DOES NOT CONTAIN: Comment content, likes, CRUD operations, statistics
 class CommentNotifications {
-  // ===== COMMENT NOTIFICATION SENDING =====
-
   /// Send notifications for new comments
   static Future<void> sendCommentNotifications({
     required NotificationService? notificationService,
@@ -173,8 +171,6 @@ class CommentNotifications {
     );
   }
 
-  // ===== NOTIFICATION TARGETING =====
-
   /// Collect all users who should be notified about a comment
   static List<String> _collectNotificationTargets({
     required Recipe recipe,
@@ -242,8 +238,6 @@ class CommentNotifications {
 
     return false;
   }
-
-  // ===== NOTIFICATION UTILITIES =====
 
   /// Truncate comment for notification preview
   static String _truncateComment(String content, {int maxLength = 50}) {

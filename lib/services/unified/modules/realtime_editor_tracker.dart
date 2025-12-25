@@ -12,8 +12,6 @@ import 'package:get_it/get_it.dart';
 /// - Collaborative editing indicators
 /// ❌ DOES NOT CONTAIN: Session management, content operations, conflict resolution, event handling
 class RealtimeEditorTracker {
-  // ===== EDITOR REGISTRATION =====
-
   /// Register/unregister user as active editor
   static Future<void> registerActiveEditor({
     required String recipeId,
@@ -76,8 +74,6 @@ class RealtimeEditorTracker {
     }
   }
 
-  // ===== EDITOR QUERIES =====
-
   /// Get active editors for a recipe
   static Future<List<Map<String, dynamic>>> getActiveEditors({
     required String recipeId,
@@ -135,8 +131,6 @@ class RealtimeEditorTracker {
       return false;
     }
   }
-
-  // ===== STATISTICS AND CLEANUP =====
 
   /// Get editor statistics for a recipe
   static Future<Map<String, dynamic>> getEditorStatistics({

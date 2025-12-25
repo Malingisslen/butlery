@@ -54,8 +54,6 @@ abstract class BaseViewRepository extends BaseMetadataRepository<ViewMetadata> {
     return metadata.toFirestore();
   }
 
-  // ===== CONVENIENCE METHODS =====
-
   /// Mark content as viewed by the current user.
   /// This is a convenience wrapper around addMetadata() with clearer semantics.
   /// [resourceId] ID of the content being marked as viewed

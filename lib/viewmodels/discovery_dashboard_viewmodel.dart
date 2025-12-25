@@ -282,8 +282,6 @@ class DiscoveryDashboardViewModel extends ChangeNotifier
     notifyListeners();
   }
 
-  // ===== FILTER MANAGEMENT =====
-
   /// Toggle content type filter
   void toggleContentTypeFilter(String contentType) {
     if (_contentTypeFilters.containsKey(contentType)) {
@@ -373,8 +371,6 @@ class DiscoveryDashboardViewModel extends ChangeNotifier
     }
   }
 
-  // ===== INFINITE LOADING =====
-
   /// Load more content for infinite scrolling
   Future<void> loadMoreContent() async {
     if (_isLoadingMore || !_hasMoreContent) return;
@@ -407,17 +403,12 @@ class DiscoveryDashboardViewModel extends ChangeNotifier
   }
 
   // Helper methods for mock data generation moved to respective managers
-
-  // ===== REFRESH =====
-
   /// Refresh all discovery content
   Future<void> refresh() async {
     _currentPage = 0;
     _hasMoreContent = true;
     await _loadAllContent();
   }
-
-  // ===== STATE MANAGEMENT HELPERS =====
 
   @override
   void clearError() {
@@ -439,8 +430,6 @@ class DiscoveryDashboardViewModel extends ChangeNotifier
     _isLoadingMore = loading;
     notifyListeners();
   }
-
-  // ===== DISCOVERY SETTINGS MANAGEMENT =====
 
   /// Set whether to show trending content
   void setShowTrendingContent(bool show) {

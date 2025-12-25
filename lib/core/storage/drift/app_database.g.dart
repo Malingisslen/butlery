@@ -1440,6 +1440,725 @@ class ParseCacheEntriesCompanion extends UpdateCompanion<ParseCacheEntry> {
   }
 }
 
+class $UploadQueueEntriesTable extends UploadQueueEntries
+    with TableInfo<$UploadQueueEntriesTable, UploadQueueEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $UploadQueueEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+      'user_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _localPathMeta =
+      const VerificationMeta('localPath');
+  @override
+  late final GeneratedColumn<String> localPath = GeneratedColumn<String>(
+      'local_path', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _targetPathMeta =
+      const VerificationMeta('targetPath');
+  @override
+  late final GeneratedColumn<String> targetPath = GeneratedColumn<String>(
+      'target_path', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _contentTypeMeta =
+      const VerificationMeta('contentType');
+  @override
+  late final GeneratedColumn<String> contentType = GeneratedColumn<String>(
+      'content_type', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('image/jpeg'));
+  static const VerificationMeta _fileSizeBytesMeta =
+      const VerificationMeta('fileSizeBytes');
+  @override
+  late final GeneratedColumn<int> fileSizeBytes = GeneratedColumn<int>(
+      'file_size_bytes', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+      'status', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('pending'));
+  static const VerificationMeta _retryCountMeta =
+      const VerificationMeta('retryCount');
+  @override
+  late final GeneratedColumn<int> retryCount = GeneratedColumn<int>(
+      'retry_count', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _lastErrorMeta =
+      const VerificationMeta('lastError');
+  @override
+  late final GeneratedColumn<String> lastError = GeneratedColumn<String>(
+      'last_error', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _queuedAtMeta =
+      const VerificationMeta('queuedAt');
+  @override
+  late final GeneratedColumn<DateTime> queuedAt = GeneratedColumn<DateTime>(
+      'queued_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _lastAttemptAtMeta =
+      const VerificationMeta('lastAttemptAt');
+  @override
+  late final GeneratedColumn<DateTime> lastAttemptAt =
+      GeneratedColumn<DateTime>('last_attempt_at', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _entityIdMeta =
+      const VerificationMeta('entityId');
+  @override
+  late final GeneratedColumn<String> entityId = GeneratedColumn<String>(
+      'entity_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _entityTypeMeta =
+      const VerificationMeta('entityType');
+  @override
+  late final GeneratedColumn<String> entityType = GeneratedColumn<String>(
+      'entity_type', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _metadataMeta =
+      const VerificationMeta('metadata');
+  @override
+  late final GeneratedColumn<String> metadata = GeneratedColumn<String>(
+      'metadata', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        userId,
+        localPath,
+        targetPath,
+        contentType,
+        fileSizeBytes,
+        status,
+        retryCount,
+        lastError,
+        queuedAt,
+        lastAttemptAt,
+        entityId,
+        entityType,
+        metadata
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'upload_queue_entries';
+  @override
+  VerificationContext validateIntegrity(Insertable<UploadQueueEntry> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(_userIdMeta,
+          userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta));
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('local_path')) {
+      context.handle(_localPathMeta,
+          localPath.isAcceptableOrUnknown(data['local_path']!, _localPathMeta));
+    } else if (isInserting) {
+      context.missing(_localPathMeta);
+    }
+    if (data.containsKey('target_path')) {
+      context.handle(
+          _targetPathMeta,
+          targetPath.isAcceptableOrUnknown(
+              data['target_path']!, _targetPathMeta));
+    } else if (isInserting) {
+      context.missing(_targetPathMeta);
+    }
+    if (data.containsKey('content_type')) {
+      context.handle(
+          _contentTypeMeta,
+          contentType.isAcceptableOrUnknown(
+              data['content_type']!, _contentTypeMeta));
+    }
+    if (data.containsKey('file_size_bytes')) {
+      context.handle(
+          _fileSizeBytesMeta,
+          fileSizeBytes.isAcceptableOrUnknown(
+              data['file_size_bytes']!, _fileSizeBytesMeta));
+    } else if (isInserting) {
+      context.missing(_fileSizeBytesMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(_statusMeta,
+          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+    }
+    if (data.containsKey('retry_count')) {
+      context.handle(
+          _retryCountMeta,
+          retryCount.isAcceptableOrUnknown(
+              data['retry_count']!, _retryCountMeta));
+    }
+    if (data.containsKey('last_error')) {
+      context.handle(_lastErrorMeta,
+          lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta));
+    }
+    if (data.containsKey('queued_at')) {
+      context.handle(_queuedAtMeta,
+          queuedAt.isAcceptableOrUnknown(data['queued_at']!, _queuedAtMeta));
+    } else if (isInserting) {
+      context.missing(_queuedAtMeta);
+    }
+    if (data.containsKey('last_attempt_at')) {
+      context.handle(
+          _lastAttemptAtMeta,
+          lastAttemptAt.isAcceptableOrUnknown(
+              data['last_attempt_at']!, _lastAttemptAtMeta));
+    }
+    if (data.containsKey('entity_id')) {
+      context.handle(_entityIdMeta,
+          entityId.isAcceptableOrUnknown(data['entity_id']!, _entityIdMeta));
+    }
+    if (data.containsKey('entity_type')) {
+      context.handle(
+          _entityTypeMeta,
+          entityType.isAcceptableOrUnknown(
+              data['entity_type']!, _entityTypeMeta));
+    }
+    if (data.containsKey('metadata')) {
+      context.handle(_metadataMeta,
+          metadata.isAcceptableOrUnknown(data['metadata']!, _metadataMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  UploadQueueEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return UploadQueueEntry(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      userId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}user_id'])!,
+      localPath: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}local_path'])!,
+      targetPath: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}target_path'])!,
+      contentType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}content_type'])!,
+      fileSizeBytes: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}file_size_bytes'])!,
+      status: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
+      retryCount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}retry_count'])!,
+      lastError: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}last_error']),
+      queuedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}queued_at'])!,
+      lastAttemptAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}last_attempt_at']),
+      entityId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}entity_id']),
+      entityType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}entity_type']),
+      metadata: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}metadata']),
+    );
+  }
+
+  @override
+  $UploadQueueEntriesTable createAlias(String alias) {
+    return $UploadQueueEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class UploadQueueEntry extends DataClass
+    implements Insertable<UploadQueueEntry> {
+  /// Unique upload ID (UUID from the upload request)
+  final String id;
+
+  /// User ID for data isolation
+  final String userId;
+
+  /// Local file path of the image to upload
+  final String localPath;
+
+  /// Target storage path in Firebase Storage
+  final String targetPath;
+
+  /// Content type of the file (e.g., 'image/jpeg')
+  final String contentType;
+
+  /// File size in bytes
+  final int fileSizeBytes;
+
+  /// Current status of the upload
+  final String status;
+
+  /// Number of retry attempts
+  final int retryCount;
+
+  /// Last error message if upload failed
+  final String? lastError;
+
+  /// When the upload was queued
+  final DateTime queuedAt;
+
+  /// When the last attempt was made
+  final DateTime? lastAttemptAt;
+
+  /// Associated entity ID (e.g., recipe ID)
+  final String? entityId;
+
+  /// Type of entity (e.g., 'recipe', 'profile')
+  final String? entityType;
+
+  /// Additional metadata as JSON string
+  final String? metadata;
+  const UploadQueueEntry(
+      {required this.id,
+      required this.userId,
+      required this.localPath,
+      required this.targetPath,
+      required this.contentType,
+      required this.fileSizeBytes,
+      required this.status,
+      required this.retryCount,
+      this.lastError,
+      required this.queuedAt,
+      this.lastAttemptAt,
+      this.entityId,
+      this.entityType,
+      this.metadata});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['local_path'] = Variable<String>(localPath);
+    map['target_path'] = Variable<String>(targetPath);
+    map['content_type'] = Variable<String>(contentType);
+    map['file_size_bytes'] = Variable<int>(fileSizeBytes);
+    map['status'] = Variable<String>(status);
+    map['retry_count'] = Variable<int>(retryCount);
+    if (!nullToAbsent || lastError != null) {
+      map['last_error'] = Variable<String>(lastError);
+    }
+    map['queued_at'] = Variable<DateTime>(queuedAt);
+    if (!nullToAbsent || lastAttemptAt != null) {
+      map['last_attempt_at'] = Variable<DateTime>(lastAttemptAt);
+    }
+    if (!nullToAbsent || entityId != null) {
+      map['entity_id'] = Variable<String>(entityId);
+    }
+    if (!nullToAbsent || entityType != null) {
+      map['entity_type'] = Variable<String>(entityType);
+    }
+    if (!nullToAbsent || metadata != null) {
+      map['metadata'] = Variable<String>(metadata);
+    }
+    return map;
+  }
+
+  UploadQueueEntriesCompanion toCompanion(bool nullToAbsent) {
+    return UploadQueueEntriesCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      localPath: Value(localPath),
+      targetPath: Value(targetPath),
+      contentType: Value(contentType),
+      fileSizeBytes: Value(fileSizeBytes),
+      status: Value(status),
+      retryCount: Value(retryCount),
+      lastError: lastError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastError),
+      queuedAt: Value(queuedAt),
+      lastAttemptAt: lastAttemptAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastAttemptAt),
+      entityId: entityId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(entityId),
+      entityType: entityType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(entityType),
+      metadata: metadata == null && nullToAbsent
+          ? const Value.absent()
+          : Value(metadata),
+    );
+  }
+
+  factory UploadQueueEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return UploadQueueEntry(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      localPath: serializer.fromJson<String>(json['localPath']),
+      targetPath: serializer.fromJson<String>(json['targetPath']),
+      contentType: serializer.fromJson<String>(json['contentType']),
+      fileSizeBytes: serializer.fromJson<int>(json['fileSizeBytes']),
+      status: serializer.fromJson<String>(json['status']),
+      retryCount: serializer.fromJson<int>(json['retryCount']),
+      lastError: serializer.fromJson<String?>(json['lastError']),
+      queuedAt: serializer.fromJson<DateTime>(json['queuedAt']),
+      lastAttemptAt: serializer.fromJson<DateTime?>(json['lastAttemptAt']),
+      entityId: serializer.fromJson<String?>(json['entityId']),
+      entityType: serializer.fromJson<String?>(json['entityType']),
+      metadata: serializer.fromJson<String?>(json['metadata']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'localPath': serializer.toJson<String>(localPath),
+      'targetPath': serializer.toJson<String>(targetPath),
+      'contentType': serializer.toJson<String>(contentType),
+      'fileSizeBytes': serializer.toJson<int>(fileSizeBytes),
+      'status': serializer.toJson<String>(status),
+      'retryCount': serializer.toJson<int>(retryCount),
+      'lastError': serializer.toJson<String?>(lastError),
+      'queuedAt': serializer.toJson<DateTime>(queuedAt),
+      'lastAttemptAt': serializer.toJson<DateTime?>(lastAttemptAt),
+      'entityId': serializer.toJson<String?>(entityId),
+      'entityType': serializer.toJson<String?>(entityType),
+      'metadata': serializer.toJson<String?>(metadata),
+    };
+  }
+
+  UploadQueueEntry copyWith(
+          {String? id,
+          String? userId,
+          String? localPath,
+          String? targetPath,
+          String? contentType,
+          int? fileSizeBytes,
+          String? status,
+          int? retryCount,
+          Value<String?> lastError = const Value.absent(),
+          DateTime? queuedAt,
+          Value<DateTime?> lastAttemptAt = const Value.absent(),
+          Value<String?> entityId = const Value.absent(),
+          Value<String?> entityType = const Value.absent(),
+          Value<String?> metadata = const Value.absent()}) =>
+      UploadQueueEntry(
+        id: id ?? this.id,
+        userId: userId ?? this.userId,
+        localPath: localPath ?? this.localPath,
+        targetPath: targetPath ?? this.targetPath,
+        contentType: contentType ?? this.contentType,
+        fileSizeBytes: fileSizeBytes ?? this.fileSizeBytes,
+        status: status ?? this.status,
+        retryCount: retryCount ?? this.retryCount,
+        lastError: lastError.present ? lastError.value : this.lastError,
+        queuedAt: queuedAt ?? this.queuedAt,
+        lastAttemptAt:
+            lastAttemptAt.present ? lastAttemptAt.value : this.lastAttemptAt,
+        entityId: entityId.present ? entityId.value : this.entityId,
+        entityType: entityType.present ? entityType.value : this.entityType,
+        metadata: metadata.present ? metadata.value : this.metadata,
+      );
+  UploadQueueEntry copyWithCompanion(UploadQueueEntriesCompanion data) {
+    return UploadQueueEntry(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      localPath: data.localPath.present ? data.localPath.value : this.localPath,
+      targetPath:
+          data.targetPath.present ? data.targetPath.value : this.targetPath,
+      contentType:
+          data.contentType.present ? data.contentType.value : this.contentType,
+      fileSizeBytes: data.fileSizeBytes.present
+          ? data.fileSizeBytes.value
+          : this.fileSizeBytes,
+      status: data.status.present ? data.status.value : this.status,
+      retryCount:
+          data.retryCount.present ? data.retryCount.value : this.retryCount,
+      lastError: data.lastError.present ? data.lastError.value : this.lastError,
+      queuedAt: data.queuedAt.present ? data.queuedAt.value : this.queuedAt,
+      lastAttemptAt: data.lastAttemptAt.present
+          ? data.lastAttemptAt.value
+          : this.lastAttemptAt,
+      entityId: data.entityId.present ? data.entityId.value : this.entityId,
+      entityType:
+          data.entityType.present ? data.entityType.value : this.entityType,
+      metadata: data.metadata.present ? data.metadata.value : this.metadata,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UploadQueueEntry(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('localPath: $localPath, ')
+          ..write('targetPath: $targetPath, ')
+          ..write('contentType: $contentType, ')
+          ..write('fileSizeBytes: $fileSizeBytes, ')
+          ..write('status: $status, ')
+          ..write('retryCount: $retryCount, ')
+          ..write('lastError: $lastError, ')
+          ..write('queuedAt: $queuedAt, ')
+          ..write('lastAttemptAt: $lastAttemptAt, ')
+          ..write('entityId: $entityId, ')
+          ..write('entityType: $entityType, ')
+          ..write('metadata: $metadata')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      userId,
+      localPath,
+      targetPath,
+      contentType,
+      fileSizeBytes,
+      status,
+      retryCount,
+      lastError,
+      queuedAt,
+      lastAttemptAt,
+      entityId,
+      entityType,
+      metadata);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is UploadQueueEntry &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.localPath == this.localPath &&
+          other.targetPath == this.targetPath &&
+          other.contentType == this.contentType &&
+          other.fileSizeBytes == this.fileSizeBytes &&
+          other.status == this.status &&
+          other.retryCount == this.retryCount &&
+          other.lastError == this.lastError &&
+          other.queuedAt == this.queuedAt &&
+          other.lastAttemptAt == this.lastAttemptAt &&
+          other.entityId == this.entityId &&
+          other.entityType == this.entityType &&
+          other.metadata == this.metadata);
+}
+
+class UploadQueueEntriesCompanion extends UpdateCompanion<UploadQueueEntry> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> localPath;
+  final Value<String> targetPath;
+  final Value<String> contentType;
+  final Value<int> fileSizeBytes;
+  final Value<String> status;
+  final Value<int> retryCount;
+  final Value<String?> lastError;
+  final Value<DateTime> queuedAt;
+  final Value<DateTime?> lastAttemptAt;
+  final Value<String?> entityId;
+  final Value<String?> entityType;
+  final Value<String?> metadata;
+  final Value<int> rowid;
+  const UploadQueueEntriesCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.localPath = const Value.absent(),
+    this.targetPath = const Value.absent(),
+    this.contentType = const Value.absent(),
+    this.fileSizeBytes = const Value.absent(),
+    this.status = const Value.absent(),
+    this.retryCount = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.queuedAt = const Value.absent(),
+    this.lastAttemptAt = const Value.absent(),
+    this.entityId = const Value.absent(),
+    this.entityType = const Value.absent(),
+    this.metadata = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  UploadQueueEntriesCompanion.insert({
+    required String id,
+    required String userId,
+    required String localPath,
+    required String targetPath,
+    this.contentType = const Value.absent(),
+    required int fileSizeBytes,
+    this.status = const Value.absent(),
+    this.retryCount = const Value.absent(),
+    this.lastError = const Value.absent(),
+    required DateTime queuedAt,
+    this.lastAttemptAt = const Value.absent(),
+    this.entityId = const Value.absent(),
+    this.entityType = const Value.absent(),
+    this.metadata = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        userId = Value(userId),
+        localPath = Value(localPath),
+        targetPath = Value(targetPath),
+        fileSizeBytes = Value(fileSizeBytes),
+        queuedAt = Value(queuedAt);
+  static Insertable<UploadQueueEntry> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? localPath,
+    Expression<String>? targetPath,
+    Expression<String>? contentType,
+    Expression<int>? fileSizeBytes,
+    Expression<String>? status,
+    Expression<int>? retryCount,
+    Expression<String>? lastError,
+    Expression<DateTime>? queuedAt,
+    Expression<DateTime>? lastAttemptAt,
+    Expression<String>? entityId,
+    Expression<String>? entityType,
+    Expression<String>? metadata,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (localPath != null) 'local_path': localPath,
+      if (targetPath != null) 'target_path': targetPath,
+      if (contentType != null) 'content_type': contentType,
+      if (fileSizeBytes != null) 'file_size_bytes': fileSizeBytes,
+      if (status != null) 'status': status,
+      if (retryCount != null) 'retry_count': retryCount,
+      if (lastError != null) 'last_error': lastError,
+      if (queuedAt != null) 'queued_at': queuedAt,
+      if (lastAttemptAt != null) 'last_attempt_at': lastAttemptAt,
+      if (entityId != null) 'entity_id': entityId,
+      if (entityType != null) 'entity_type': entityType,
+      if (metadata != null) 'metadata': metadata,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  UploadQueueEntriesCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? userId,
+      Value<String>? localPath,
+      Value<String>? targetPath,
+      Value<String>? contentType,
+      Value<int>? fileSizeBytes,
+      Value<String>? status,
+      Value<int>? retryCount,
+      Value<String?>? lastError,
+      Value<DateTime>? queuedAt,
+      Value<DateTime?>? lastAttemptAt,
+      Value<String?>? entityId,
+      Value<String?>? entityType,
+      Value<String?>? metadata,
+      Value<int>? rowid}) {
+    return UploadQueueEntriesCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      localPath: localPath ?? this.localPath,
+      targetPath: targetPath ?? this.targetPath,
+      contentType: contentType ?? this.contentType,
+      fileSizeBytes: fileSizeBytes ?? this.fileSizeBytes,
+      status: status ?? this.status,
+      retryCount: retryCount ?? this.retryCount,
+      lastError: lastError ?? this.lastError,
+      queuedAt: queuedAt ?? this.queuedAt,
+      lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
+      entityId: entityId ?? this.entityId,
+      entityType: entityType ?? this.entityType,
+      metadata: metadata ?? this.metadata,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (localPath.present) {
+      map['local_path'] = Variable<String>(localPath.value);
+    }
+    if (targetPath.present) {
+      map['target_path'] = Variable<String>(targetPath.value);
+    }
+    if (contentType.present) {
+      map['content_type'] = Variable<String>(contentType.value);
+    }
+    if (fileSizeBytes.present) {
+      map['file_size_bytes'] = Variable<int>(fileSizeBytes.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (retryCount.present) {
+      map['retry_count'] = Variable<int>(retryCount.value);
+    }
+    if (lastError.present) {
+      map['last_error'] = Variable<String>(lastError.value);
+    }
+    if (queuedAt.present) {
+      map['queued_at'] = Variable<DateTime>(queuedAt.value);
+    }
+    if (lastAttemptAt.present) {
+      map['last_attempt_at'] = Variable<DateTime>(lastAttemptAt.value);
+    }
+    if (entityId.present) {
+      map['entity_id'] = Variable<String>(entityId.value);
+    }
+    if (entityType.present) {
+      map['entity_type'] = Variable<String>(entityType.value);
+    }
+    if (metadata.present) {
+      map['metadata'] = Variable<String>(metadata.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('UploadQueueEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('localPath: $localPath, ')
+          ..write('targetPath: $targetPath, ')
+          ..write('contentType: $contentType, ')
+          ..write('fileSizeBytes: $fileSizeBytes, ')
+          ..write('status: $status, ')
+          ..write('retryCount: $retryCount, ')
+          ..write('lastError: $lastError, ')
+          ..write('queuedAt: $queuedAt, ')
+          ..write('lastAttemptAt: $lastAttemptAt, ')
+          ..write('entityId: $entityId, ')
+          ..write('entityType: $entityType, ')
+          ..write('metadata: $metadata, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1450,15 +2169,24 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $JsonCacheEntriesTable(this);
   late final $ParseCacheEntriesTable parseCacheEntries =
       $ParseCacheEntriesTable(this);
+  late final $UploadQueueEntriesTable uploadQueueEntries =
+      $UploadQueueEntriesTable(this);
   late final RecipeDao recipeDao = RecipeDao(this as AppDatabase);
   late final SyncQueueDao syncQueueDao = SyncQueueDao(this as AppDatabase);
   late final CacheDao cacheDao = CacheDao(this as AppDatabase);
+  late final UploadQueueDao uploadQueueDao =
+      UploadQueueDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [offlineRecipes, syncQueueEntries, jsonCacheEntries, parseCacheEntries];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+        offlineRecipes,
+        syncQueueEntries,
+        jsonCacheEntries,
+        parseCacheEntries,
+        uploadQueueEntries
+      ];
 }
 
 typedef $$OfflineRecipesTableCreateCompanionBuilder = OfflineRecipesCompanion
@@ -2214,6 +2942,318 @@ typedef $$ParseCacheEntriesTableProcessedTableManager = ProcessedTableManager<
     ),
     ParseCacheEntry,
     PrefetchHooks Function()>;
+typedef $$UploadQueueEntriesTableCreateCompanionBuilder
+    = UploadQueueEntriesCompanion Function({
+  required String id,
+  required String userId,
+  required String localPath,
+  required String targetPath,
+  Value<String> contentType,
+  required int fileSizeBytes,
+  Value<String> status,
+  Value<int> retryCount,
+  Value<String?> lastError,
+  required DateTime queuedAt,
+  Value<DateTime?> lastAttemptAt,
+  Value<String?> entityId,
+  Value<String?> entityType,
+  Value<String?> metadata,
+  Value<int> rowid,
+});
+typedef $$UploadQueueEntriesTableUpdateCompanionBuilder
+    = UploadQueueEntriesCompanion Function({
+  Value<String> id,
+  Value<String> userId,
+  Value<String> localPath,
+  Value<String> targetPath,
+  Value<String> contentType,
+  Value<int> fileSizeBytes,
+  Value<String> status,
+  Value<int> retryCount,
+  Value<String?> lastError,
+  Value<DateTime> queuedAt,
+  Value<DateTime?> lastAttemptAt,
+  Value<String?> entityId,
+  Value<String?> entityType,
+  Value<String?> metadata,
+  Value<int> rowid,
+});
+
+class $$UploadQueueEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $UploadQueueEntriesTable> {
+  $$UploadQueueEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get userId => $composableBuilder(
+      column: $table.userId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get localPath => $composableBuilder(
+      column: $table.localPath, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get targetPath => $composableBuilder(
+      column: $table.targetPath, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get contentType => $composableBuilder(
+      column: $table.contentType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get fileSizeBytes => $composableBuilder(
+      column: $table.fileSizeBytes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get retryCount => $composableBuilder(
+      column: $table.retryCount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lastError => $composableBuilder(
+      column: $table.lastError, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get queuedAt => $composableBuilder(
+      column: $table.queuedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get lastAttemptAt => $composableBuilder(
+      column: $table.lastAttemptAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get entityId => $composableBuilder(
+      column: $table.entityId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get entityType => $composableBuilder(
+      column: $table.entityType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get metadata => $composableBuilder(
+      column: $table.metadata, builder: (column) => ColumnFilters(column));
+}
+
+class $$UploadQueueEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $UploadQueueEntriesTable> {
+  $$UploadQueueEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+      column: $table.userId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get localPath => $composableBuilder(
+      column: $table.localPath, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get targetPath => $composableBuilder(
+      column: $table.targetPath, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get contentType => $composableBuilder(
+      column: $table.contentType, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get fileSizeBytes => $composableBuilder(
+      column: $table.fileSizeBytes,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get retryCount => $composableBuilder(
+      column: $table.retryCount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lastError => $composableBuilder(
+      column: $table.lastError, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get queuedAt => $composableBuilder(
+      column: $table.queuedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastAttemptAt => $composableBuilder(
+      column: $table.lastAttemptAt,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get entityId => $composableBuilder(
+      column: $table.entityId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get entityType => $composableBuilder(
+      column: $table.entityType, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get metadata => $composableBuilder(
+      column: $table.metadata, builder: (column) => ColumnOrderings(column));
+}
+
+class $$UploadQueueEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $UploadQueueEntriesTable> {
+  $$UploadQueueEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get localPath =>
+      $composableBuilder(column: $table.localPath, builder: (column) => column);
+
+  GeneratedColumn<String> get targetPath => $composableBuilder(
+      column: $table.targetPath, builder: (column) => column);
+
+  GeneratedColumn<String> get contentType => $composableBuilder(
+      column: $table.contentType, builder: (column) => column);
+
+  GeneratedColumn<int> get fileSizeBytes => $composableBuilder(
+      column: $table.fileSizeBytes, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<int> get retryCount => $composableBuilder(
+      column: $table.retryCount, builder: (column) => column);
+
+  GeneratedColumn<String> get lastError =>
+      $composableBuilder(column: $table.lastError, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get queuedAt =>
+      $composableBuilder(column: $table.queuedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastAttemptAt => $composableBuilder(
+      column: $table.lastAttemptAt, builder: (column) => column);
+
+  GeneratedColumn<String> get entityId =>
+      $composableBuilder(column: $table.entityId, builder: (column) => column);
+
+  GeneratedColumn<String> get entityType => $composableBuilder(
+      column: $table.entityType, builder: (column) => column);
+
+  GeneratedColumn<String> get metadata =>
+      $composableBuilder(column: $table.metadata, builder: (column) => column);
+}
+
+class $$UploadQueueEntriesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $UploadQueueEntriesTable,
+    UploadQueueEntry,
+    $$UploadQueueEntriesTableFilterComposer,
+    $$UploadQueueEntriesTableOrderingComposer,
+    $$UploadQueueEntriesTableAnnotationComposer,
+    $$UploadQueueEntriesTableCreateCompanionBuilder,
+    $$UploadQueueEntriesTableUpdateCompanionBuilder,
+    (
+      UploadQueueEntry,
+      BaseReferences<_$AppDatabase, $UploadQueueEntriesTable, UploadQueueEntry>
+    ),
+    UploadQueueEntry,
+    PrefetchHooks Function()> {
+  $$UploadQueueEntriesTableTableManager(
+      _$AppDatabase db, $UploadQueueEntriesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$UploadQueueEntriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$UploadQueueEntriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$UploadQueueEntriesTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> userId = const Value.absent(),
+            Value<String> localPath = const Value.absent(),
+            Value<String> targetPath = const Value.absent(),
+            Value<String> contentType = const Value.absent(),
+            Value<int> fileSizeBytes = const Value.absent(),
+            Value<String> status = const Value.absent(),
+            Value<int> retryCount = const Value.absent(),
+            Value<String?> lastError = const Value.absent(),
+            Value<DateTime> queuedAt = const Value.absent(),
+            Value<DateTime?> lastAttemptAt = const Value.absent(),
+            Value<String?> entityId = const Value.absent(),
+            Value<String?> entityType = const Value.absent(),
+            Value<String?> metadata = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              UploadQueueEntriesCompanion(
+            id: id,
+            userId: userId,
+            localPath: localPath,
+            targetPath: targetPath,
+            contentType: contentType,
+            fileSizeBytes: fileSizeBytes,
+            status: status,
+            retryCount: retryCount,
+            lastError: lastError,
+            queuedAt: queuedAt,
+            lastAttemptAt: lastAttemptAt,
+            entityId: entityId,
+            entityType: entityType,
+            metadata: metadata,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String userId,
+            required String localPath,
+            required String targetPath,
+            Value<String> contentType = const Value.absent(),
+            required int fileSizeBytes,
+            Value<String> status = const Value.absent(),
+            Value<int> retryCount = const Value.absent(),
+            Value<String?> lastError = const Value.absent(),
+            required DateTime queuedAt,
+            Value<DateTime?> lastAttemptAt = const Value.absent(),
+            Value<String?> entityId = const Value.absent(),
+            Value<String?> entityType = const Value.absent(),
+            Value<String?> metadata = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              UploadQueueEntriesCompanion.insert(
+            id: id,
+            userId: userId,
+            localPath: localPath,
+            targetPath: targetPath,
+            contentType: contentType,
+            fileSizeBytes: fileSizeBytes,
+            status: status,
+            retryCount: retryCount,
+            lastError: lastError,
+            queuedAt: queuedAt,
+            lastAttemptAt: lastAttemptAt,
+            entityId: entityId,
+            entityType: entityType,
+            metadata: metadata,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$UploadQueueEntriesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $UploadQueueEntriesTable,
+    UploadQueueEntry,
+    $$UploadQueueEntriesTableFilterComposer,
+    $$UploadQueueEntriesTableOrderingComposer,
+    $$UploadQueueEntriesTableAnnotationComposer,
+    $$UploadQueueEntriesTableCreateCompanionBuilder,
+    $$UploadQueueEntriesTableUpdateCompanionBuilder,
+    (
+      UploadQueueEntry,
+      BaseReferences<_$AppDatabase, $UploadQueueEntriesTable, UploadQueueEntry>
+    ),
+    UploadQueueEntry,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2226,4 +3266,6 @@ class $AppDatabaseManager {
       $$JsonCacheEntriesTableTableManager(_db, _db.jsonCacheEntries);
   $$ParseCacheEntriesTableTableManager get parseCacheEntries =>
       $$ParseCacheEntriesTableTableManager(_db, _db.parseCacheEntries);
+  $$UploadQueueEntriesTableTableManager get uploadQueueEntries =>
+      $$UploadQueueEntriesTableTableManager(_db, _db.uploadQueueEntries);
 }

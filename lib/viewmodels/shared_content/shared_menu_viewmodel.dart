@@ -40,12 +40,7 @@ import 'package:butlery/core/utils/logger.dart';
 /// Note (Issue #014): Uses status caching for synchronous filtering/counting.
 /// Status loaded from Firestore subcollections and cached for performance.
 class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
-  // ===== DEPENDENCIES =====
-
   late final SocialMenuCoordinator _socialMenuCoordinator;
-
-  // ===== CONSTRUCTOR =====
-
   SharedMenuViewModel({
     SocialMenuCoordinator? socialMenuCoordinator,
   }) {
@@ -55,9 +50,6 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     AppLogger.info(
         'SharedMenuViewModel initialized with copy-on-write support');
   }
-
-  // ===== BASE CLASS IMPLEMENTATIONS =====
-
   @override
   String get contentTypeName => 'menu';
 
@@ -146,8 +138,6 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     return null; // Will be enhanced when repository returns document snapshots
   }
 
-  // ===== MENU-SPECIFIC GETTERS =====
-
   /// Get unread menus count (using cache - Issue #014)
   int get unreadCount {
     final userId = currentUserId;
@@ -189,8 +179,6 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
   int get totalRecipesInMenus {
     return content.fold(0, (total, menu) => total + menu.totalRecipeCount);
   }
-
-  // ===== MENU OPERATIONS =====
 
   /// Import shared menu using copy-on-write pattern
   /// For new copy-on-write behavior, this joins as viewer until first edit.
@@ -297,8 +285,6 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     return result ?? false;
   }
 
-  // ===== STATUS CHECKING METHODS =====
-
   /// Check if menu is viewed by current user (using cache - Issue #014)
   bool isMenuViewed(SharedMenu menu) {
     final userId = currentUserId;
@@ -337,8 +323,6 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
     return menu.isCollaborative;
   }
 
-  // ===== MENU-SPECIFIC OPERATIONS =====
-
   /// Get menu summary for display
   String getMenuSummary(SharedMenu menu) {
     return menu.menuSummary; // Uses the model's built-in Swedish summary
@@ -360,8 +344,6 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
       return '${menu.categories.take(2).join(', ')} och ${menu.categories.length - 2} till';
     }
   }
-
-  // ===== BULK OPERATIONS =====
 
   /// Mark all menus as viewed
   /// Note (Issue #014): Uses cache to identify unviewed menus, then updates cache after marking.
@@ -438,8 +420,6 @@ class SharedMenuViewModel extends BaseSharedContentViewModel<SharedMenu> {
       },
     );
   }
-
-  // ===== ANALYTICS =====
 
   /// Get menu engagement statistics (using cache - Issue #014)
   Map<String, int> getEngagementStats() {

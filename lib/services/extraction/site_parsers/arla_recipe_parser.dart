@@ -112,9 +112,7 @@ class ArlaRecipeParser extends RecipeSiteParser {
     return recipe;
   }
 
-  // ============================================================================
   // CSS SELECTOR EXTRACTION (Fallback Methods)
-  // ============================================================================
 
   String? _extractTitle(Document doc) {
     final selectors = [

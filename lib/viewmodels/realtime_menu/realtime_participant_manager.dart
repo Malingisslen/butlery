@@ -29,8 +29,6 @@ class RealtimeParticipantManager {
         _permissionService =
             permissionService ?? ServiceLocator.get<PermissionService>();
 
-  // ===== PERMISSION GETTERS =====
-
   /// Current user ID
   String? get currentUserId => _permissionService.currentUserId;
 
@@ -49,8 +47,6 @@ class RealtimeParticipantManager {
     // Assuming owner or admin rights needed for deletion
     return _permissionService.canInviteToRecipe(menuId);
   }
-
-  // ===== PARTICIPANT OPERATIONS =====
 
   /// Add participant to menu
   Future<void> addParticipant({
@@ -169,8 +165,6 @@ class RealtimeParticipantManager {
     }
   }
 
-  // ===== PARTICIPANT TRACKING =====
-
   /// Get active participant count
   int get activeParticipantCount => _participantTracker.activeCount;
 
@@ -195,8 +189,6 @@ class RealtimeParticipantManager {
   void removeParticipantFromTracker(String userId) {
     _participantTracker.removeParticipant(userId);
   }
-
-  // ===== PARTICIPANT VALIDATION =====
 
   /// Validate user ID for participant operations
   bool validateUserId(String? userId) {
@@ -234,8 +226,6 @@ class RealtimeParticipantManager {
   bool canAddMoreParticipants(RealtimeMenu menu, {int maxParticipants = 50}) {
     return menu.participants.length < maxParticipants;
   }
-
-  // ===== PERMISSION ANALYSIS =====
 
   /// Get participant permission level
   ResourcePermission? getParticipantPermission(
@@ -280,8 +270,6 @@ class RealtimeParticipantManager {
     return counts;
   }
 
-  // ===== PARTICIPANT STATISTICS =====
-
   /// Get participant statistics
   Map<String, dynamic> getParticipantStats(RealtimeMenu menu) {
     final permissionCounts = countParticipantsByPermission(menu);
@@ -312,8 +300,6 @@ class RealtimeParticipantManager {
       return '$total deltagare ($online online)';
     }
   }
-
-  // ===== BULK OPERATIONS =====
 
   /// Add multiple participants at once
   Future<void> addMultipleParticipants({
@@ -373,8 +359,6 @@ class RealtimeParticipantManager {
       rethrow;
     }
   }
-
-  // ===== CLEANUP =====
 
   /// Dispose and cleanup resources
   void dispose() {

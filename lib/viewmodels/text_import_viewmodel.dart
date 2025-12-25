@@ -67,8 +67,6 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
   /// - Text validation system preparation with Swedish localization
   TextImportViewModel({required super.importManager});
 
-  // ===== TEXT PARSING OPERATIONS =====
-
   /// Parses current input text into recipe with comprehensive validation and error handling.
   /// Returns true if parsing succeeds and recipe is generated, false if parsing fails.
   /// Performs text-to-recipe parsing through ImportManager strategy with comprehensive
@@ -144,8 +142,6 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
       setSourceUrl(sourceUrl);
     }
   }
-
-  // ===== RECIPE EDITING OPERATIONS =====
 
   /// Updates recipe title with immediate state coordination and UI notification.
   /// [title] New recipe title for metadata update
@@ -318,8 +314,6 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
     updateParsedRecipe(tags: currentTags);
   }
 
-  // ===== TEXT VALIDATION OPERATIONS =====
-
   /// Validates current input text with comprehensive content assessment and Swedish error messaging.
   /// Returns true if text is valid for recipe parsing, false if validation fails.
   /// Performs comprehensive text validation including content length, parsing viability,
@@ -401,8 +395,6 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
 
     return suggestions;
   }
-
-  // ===== DEBUGGING SUPPORT =====
 
   /// Provides comprehensive debugging state information for development and troubleshooting.
   /// Returns map containing debug information including text import state, parsing suggestions,

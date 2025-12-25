@@ -43,9 +43,6 @@ class FirebaseMenuCollaborationRepository
     AuthRepository? authRepository,
     super.auditRepository,
   }) : super(authRepository: authRepository ?? FirebaseAuthRepository());
-
-  // ===== BASE REPOSITORY IMPLEMENTATION =====
-
   @override
   String get collectionName => 'shared_menus';
 
@@ -61,9 +58,6 @@ class FirebaseMenuCollaborationRepository
 
   @override
   String getId(SharedMenu menu) => menu.id;
-
-  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
-
   @override
   Future<bool> validateCreatePermission(
       String userId, SharedMenu entity) async {
@@ -111,8 +105,6 @@ class FirebaseMenuCollaborationRepository
       return false;
     }
   }
-
-  // ===== COLLABORATION MANAGEMENT =====
 
   @override
   Future<bool> enableCollaboration({
@@ -182,8 +174,6 @@ class FirebaseMenuCollaborationRepository
       return false;
     }
   }
-
-  // ===== RECIPE MANAGEMENT =====
 
   @override
   Future<bool> addRecipeToMenu({
@@ -321,8 +311,6 @@ class FirebaseMenuCollaborationRepository
     }
   }
 
-  // ===== RATING SYSTEM =====
-
   @override
   Future<bool> rateMenu({
     required String menuId,
@@ -427,8 +415,6 @@ class FirebaseMenuCollaborationRepository
     }
   }
 
-  // ===== COMMENT SYSTEM =====
-
   @override
   Future<bool> addMenuComment({
     required String menuId,
@@ -530,8 +516,6 @@ class FirebaseMenuCollaborationRepository
       return false;
     }
   }
-
-  // ===== TEMPLATE MANAGEMENT =====
 
   @override
   Future<String?> createMenuTemplate({
@@ -645,8 +629,6 @@ class FirebaseMenuCollaborationRepository
     }
   }
 
-  // ===== ACTIVITY LOGGING =====
-
   @override
   Future<void> logMenuActivity({
     required String menuId,
@@ -668,8 +650,6 @@ class FirebaseMenuCollaborationRepository
       AppLogger.error('Failed to log menu activity: $e', stackTrace);
     }
   }
-
-  // ===== REAL-TIME OPERATIONS =====
 
   @override
   void startCollaborationListener(

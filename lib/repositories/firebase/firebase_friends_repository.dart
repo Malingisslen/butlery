@@ -101,9 +101,6 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
       authRepository: this.authRepository,
     );
   }
-
-  // ===== BASE CLASS IMPLEMENTATION =====
-
   @override
   String get collectionName => 'public_profiles';
 
@@ -116,9 +113,6 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   String getId(UserProfile entity) => entity.uid;
-
-  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
-
   @override
   Future<bool> validateCreatePermission(
       String userId, UserProfile entity) async {
@@ -148,8 +142,6 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     return userId == resourceId;
   }
 
-  // ===== FRIEND REQUEST OPERATIONS (Delegate to FriendRequestRepository) =====
-
   /// Send a new friend request.
   Future<void> sendRequest(FriendRequest request) async {
     return await _friendRequestRepo.sendRequest(request);
@@ -168,18 +160,88 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
 
   @override
   Future<bool> acceptFriendRequest(String requestId) async {
-    final success = await _friendRequestRepo.acceptFriendRequest(requestId);
+    try {
+      final currentUser = requireCurrentUserId();
 
-    // If request was accepted, also add mutual friends
-    if (success) {
-      final request = await _friendRequestRepo.fetchRequest(requestId);
-      if (request != null) {
-        await _friendRelationshipRepo.addMutualFriends(
-            request.fromUserId, request.toUserId);
-      }
+      // Use a single transaction to atomically:
+      // 1. Validate and update the friend request
+      // 2. Create mutual friendships
+      // 3. Update friend counts
+      await firestore.runTransaction((transaction) async {
+        // Read the friend request
+        final requestRef =
+            firestore.collection('friend_requests').doc(requestId);
+        final requestDoc = await transaction.get(requestRef);
+
+        if (!requestDoc.exists) {
+          throw Exception('Friend request not found');
+        }
+
+        final request = FriendRequest.fromMap(requestId, requestDoc.data()!);
+
+        // Verify current user is the recipient
+        if (currentUser != request.toUserId) {
+          throw Exception('Only the recipient can accept a friend request');
+        }
+
+        // Verify request is still pending
+        if (request.status != FriendRequestStatus.pending) {
+          throw Exception('Friend request is no longer pending');
+        }
+
+        // Check if friendship already exists
+        final user1FriendRef = firestore
+            .collection('users')
+            .doc(request.fromUserId)
+            .collection('friends')
+            .doc(request.toUserId);
+        final user2FriendRef = firestore
+            .collection('users')
+            .doc(request.toUserId)
+            .collection('friends')
+            .doc(request.fromUserId);
+
+        final user1FriendDoc = await transaction.get(user1FriendRef);
+        final user2FriendDoc = await transaction.get(user2FriendRef);
+
+        // Update the friend request status
+        transaction.update(requestRef, {
+          'status': FriendRequestStatus.accepted.name,
+          'respondedAt': FieldValue.serverTimestamp(),
+        });
+
+        // Only create friendship if it doesn't already exist
+        if (!user1FriendDoc.exists && !user2FriendDoc.exists) {
+          // Create friend documents for both users
+          transaction
+              .set(user1FriendRef, {'addedAt': FieldValue.serverTimestamp()});
+          transaction
+              .set(user2FriendRef, {'addedAt': FieldValue.serverTimestamp()});
+
+          // Update friend counts
+          final user1Profile =
+              firestore.collection('public_profiles').doc(request.fromUserId);
+          final user2Profile =
+              firestore.collection('public_profiles').doc(request.toUserId);
+          transaction
+              .update(user1Profile, {'friendsCount': FieldValue.increment(1)});
+          transaction
+              .update(user2Profile, {'friendsCount': FieldValue.increment(1)});
+        }
+      });
+
+      logPermissionCheck(
+        userId: currentUser,
+        resource: 'friend_request',
+        operation: 'accept',
+        granted: true,
+        details: 'Request $requestId accepted atomically',
+      );
+
+      return true;
+    } catch (e) {
+      return false;
     }
-
-    return success;
   }
 
   @override
@@ -222,8 +284,6 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     return _friendRequestRepo.sentRequestsStream(userId);
   }
 
-  // ===== FRIEND RELATIONSHIP OPERATIONS (Delegate to FriendRelationshipRepository) =====
-
   @override
   Future<bool> areFriends(String userId1, String userId2) async {
     return await _friendRelationshipRepo.areFriends(userId1, userId2);
@@ -253,8 +313,6 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   Future<List<UserProfile>> fetchFriendProfiles(List<String> userIds) async {
     return await _friendRelationshipRepo.fetchFriendProfiles(userIds);
   }
-
-  // ===== FRIEND CATEGORY OPERATIONS (Delegate to FriendCategoryRepository) =====
 
   @override
   Future<void> saveCategory(String userId, FriendCategory category) async {
@@ -294,8 +352,6 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   Future<FriendCategory?> getCategory(String userId, String categoryId) async {
     return await _friendCategoryRepo.getCategory(userId, categoryId);
   }
-
-  // ===== GROUP INVITATION OPERATIONS (Delegate to GroupInvitationRepository) =====
 
   @override
   Stream<List<GroupInvitation>> receivedInvitationsStream(String userId) {
@@ -364,8 +420,6 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   Future<bool> hasPendingInvitation(String groupId, String toUserId) async {
     return await _groupInvitationRepo.hasPendingInvitation(groupId, toUserId);
   }
-
-  // ===== ADDITIONAL UTILITY METHODS (Delegate to appropriate repositories) =====
 
   /// Get comprehensive friend statistics.
   Future<Map<String, dynamic>> getComprehensiveFriendStatistics(

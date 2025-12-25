@@ -21,8 +21,21 @@ import 'package:butlery/repositories/interfaces/notifications_repository.dart'
     as interface_repo;
 import 'package:get_it/get_it.dart';
 
-/// Notification coordinator using modular architecture with 6 specialized managers (Content, Preference, Offline, Batch, Token, Analytics).
-/// Implements facade pattern for FCM integration, Swedish localization, and intelligent delivery with development logging.
+/// Notification coordinator using modular architecture with 6 specialized managers.
+///
+/// ## Usage
+/// ```dart
+/// final service = ServiceLocator.get<NotificationService>();
+///
+/// // Send notification
+/// await service.sendNotification(userId, type: NotificationType.friendRequest);
+///
+/// // Update preferences
+/// await service.updatePreferences(NotificationPreferences(...));
+/// ```
+///
+/// Implements facade pattern for FCM integration, Swedish localization,
+/// and intelligent delivery with development logging.
 class NotificationService extends BaseService {
   @override
   String get serviceName => 'NotificationService';
@@ -493,8 +506,6 @@ class NotificationService extends BaseService {
   Future<void> updatePreferences(NotificationPreferences preferences) async {
     await _preferenceManager.updatePreferences(preferences);
   }
-
-  // ===== PUBLIC UTILITY METHODS =====
 
   /// Get current FCM token
   Future<String?> getCurrentToken() async {

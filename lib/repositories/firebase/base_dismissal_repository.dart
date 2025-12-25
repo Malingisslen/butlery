@@ -57,8 +57,6 @@ abstract class BaseDismissalRepository
     return metadata.toFirestore();
   }
 
-  // ===== CONVENIENCE METHODS =====
-
   /// Dismiss content for the current user.
   /// [resourceId] ID of the content being dismissed
   /// [reason] Optional reason for dismissal ('not_interested', 'already_have', etc.)

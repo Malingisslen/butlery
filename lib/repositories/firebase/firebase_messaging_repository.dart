@@ -72,9 +72,6 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
       readConversation: read,
     );
   }
-
-  // ===== BASE CLASS IMPLEMENTATION =====
-
   @override
   String get collectionName => 'conversations';
 
@@ -88,9 +85,6 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
 
   @override
   String getId(Conversation entity) => entity.id;
-
-  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
-
   @override
   Future<bool> validateCreatePermission(
       String userId, Conversation entity) async {
@@ -127,13 +121,8 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     }
   }
 
-  // ===== COLLECTION REFERENCES =====
-
   CollectionReference<Map<String, dynamic>> get _messagesRef =>
       firestore.collection('messages');
-
-  // ===== CONVERSATION OPERATIONS (DELEGATED TO MODULES) =====
-
   @override
   Stream<List<Conversation>> getUserConversations(String userId) =>
       _conversationQueryModule.getUserConversations(userId);
@@ -275,9 +264,6 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
   @override
   Future<int> getUnreadConversationsCount(String userId) async =>
       _conversationQueryModule.getUnreadConversationsCount(userId);
-
-  // ===== MESSAGE OPERATIONS (DELEGATED TO MODULES) =====
-
   @override
   Stream<List<Message>> getConversationMessages({
     required String conversationId,
@@ -377,8 +363,6 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
         userId: userId,
       );
 
-  // ===== AUTO-HEALER PUBLIC API =====
-
   /// Start real-time self-healing for a conversation.
   void startConversationAutoHealer(String conversationId) =>
       _autoHealerModule.startAutoHealer(conversationId);
@@ -389,8 +373,6 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
 
   /// Stop all auto-healers (call on repository disposal).
   void stopAllAutoHealers() => _autoHealerModule.stopAllAutoHealers();
-
-  // ===== CLEANUP =====
 
   /// Dispose repository and cleanup all resources including active stream subscriptions.
   void dispose() {

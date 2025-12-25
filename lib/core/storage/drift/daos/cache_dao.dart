@@ -10,8 +10,6 @@ part 'cache_dao.g.dart';
 class CacheDao extends DatabaseAccessor<AppDatabase> with _$CacheDaoMixin {
   CacheDao(super.db);
 
-  // ==================== JSON CACHE OPERATIONS ====================
-
   /// Get a cached value
   Future<String?> getJson(String boxName, String userId, String key) async {
     final result = await (select(jsonCacheEntries)
@@ -112,8 +110,6 @@ class CacheDao extends DatabaseAccessor<AppDatabase> with _$CacheDaoMixin {
     final result = await query.getSingle();
     return result.read(count) ?? 0;
   }
-
-  // ==================== PARSE CACHE OPERATIONS ====================
 
   /// Get a cached parsed recipe
   Future<ParseCacheEntry?> getParsedRecipe(String cacheKey) {

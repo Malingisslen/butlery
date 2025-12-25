@@ -131,9 +131,6 @@ class UnifiedFriendsService extends ChangeNotifier
     AppLogger.info(
         '✅ UnifiedFriendsService facade initialized with modular architecture');
   }
-
-  // ===== GETTERS (Delegated to State Manager) =====
-
   List<UserProfile> get friends => _stateManager.friends;
   List<FriendRequest> get incomingRequests => _stateManager.incomingRequests;
   List<FriendRequest> get outgoingRequests => _stateManager.outgoingRequests;
@@ -155,22 +152,13 @@ class UnifiedFriendsService extends ChangeNotifier
   FirebaseFirestore get firestore => _firestoreRepository.firestore;
   FriendRelationshipRepository get relationshipRepository =>
       _relationshipRepository;
-
-  // ===== FEATURE INTERFACE GETTERS =====
-
   FriendsManagementOperations get management => _managementOps;
   FriendsCategoriesOperations get categories => _categoriesOps;
   FriendsInvitationsOperations get invitations => _invitationsOps;
   SocialGroupSharingOperations get groupSharing => _groupSharingOps;
-
-  // ===== SERVICE GETTERS (Delegated to Service Coordinator) =====
-
   FriendsSyncService get sync => _serviceCoordinator.sync;
   FriendsPresenceService get presence => _serviceCoordinator.presence;
   FriendsCacheService get cache => _serviceCoordinator.cache;
-
-  // ===== INITIALIZATION (Delegated to Service Coordinator) =====
-
   Future<void> initialize() async {
     AppLogger.info('🔄 Initializing UnifiedFriendsService facade...');
 
@@ -211,8 +199,6 @@ class UnifiedFriendsService extends ChangeNotifier
     AppLogger.success(
         '✅ UnifiedFriendsService facade initialized with auth state handling');
   }
-
-  // ===== PRIVATE INITIALIZATION METHODS =====
 
   void _initializeModules() {
     // Initialize state manager with Firebase repository and category repository
@@ -266,12 +252,8 @@ class UnifiedFriendsService extends ChangeNotifier
     AppLogger.debug('Feature interfaces initialized');
   }
 
-  // ===== STATE MANAGEMENT (Delegated to State Manager) =====
   // Note: State management is now handled by FriendsStateManager
   // All state operations are automatically coordinated through the service coordinator
-
-  // ===== INTERNAL METHODS FOR OPERATIONS CLASSES (Delegated to Internal Operations) =====
-
   /// Internal getter for friends list (for operations classes)
   List<UserProfile> get friendsInternal => _internalOps.friendsInternal;
 
@@ -383,10 +365,6 @@ class UnifiedFriendsService extends ChangeNotifier
   /// Internal method to refresh data (for operations classes)
   Future<void> refresh() async => await _serviceCoordinator.refresh();
 
-  // ===== ADDITIONAL INTERNAL METHODS FOR FRIENDS MANAGEMENT =====
-
-  // ===== ULTRATHINK FIX: INTERNAL METHODS THAT ACTUALLY MODIFY STATE =====
-
   /// Internal method to add outgoing friend request
   void addOutgoingRequestInternal(FriendRequest request) {
     _stateManager.addOutgoingRequest(request);
@@ -457,8 +435,6 @@ class UnifiedFriendsService extends ChangeNotifier
   Future<void> removeFriendFromFirebase(String friendId) async =>
       await _firebaseSyncOps.removeFriendFromFirebase(friendId);
 
-  // ===== PUBLIC METHODS FOR OPERATIONS CLASSES =====
-
   /// Get all friend requests (incoming and outgoing combined)
   List<FriendRequest> get friendRequests => _utilityOps.friendRequests;
 
@@ -481,8 +457,6 @@ class UnifiedFriendsService extends ChangeNotifier
   Future<List<UserProfile>> getRecentShoppingCollaborators() async =>
       await _utilityOps.getRecentShoppingCollaborators();
 
-  // ===== VIEWMODEL COMPATIBILITY METHODS (Delegated) =====
-
   /// Clear error state (for ViewModels)
   void clearError() => _stateManager.clearError();
 
@@ -496,9 +470,6 @@ class UnifiedFriendsService extends ChangeNotifier
   /// Cancel sent invitation (for ViewModels)
   Future<bool> cancelSentInvitation(String invitationId) async =>
       await invitations.cancelInvitation(invitationId);
-
-  // ===== CLEANUP (Delegated to Service Coordinator) =====
-
   @override
   void dispose() {
     // Clear friends state manager first

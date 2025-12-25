@@ -91,8 +91,6 @@ class RecipeCacheModule {
     _startCacheCleanup();
   }
 
-  // ===== CACHE INITIALIZATION (DELEGATE TO CACHE_OPERATIONS) =====
-
   /// Initialize cache and load cached recipes
   Future<List<Recipe>> initializeCache() async {
     return CacheOperations.initializeCache(
@@ -101,8 +99,6 @@ class RecipeCacheModule {
       setError: _setError,
     );
   }
-
-  // ===== CACHE OPERATIONS (DELEGATE TO CACHE_OPERATIONS) =====
 
   /// Save recipe to local cache
   Future<void> saveRecipeToCache(Recipe recipe) async {
@@ -137,8 +133,6 @@ class RecipeCacheModule {
   Future<void> clearCache() async {
     return CacheOperations.clearCache(_cacheHelper);
   }
-
-  // ===== FIREBASE SYNCHRONIZATION (DELEGATE TO FIREBASE_SYNC_MANAGER) =====
 
   /// Start Firebase synchronization for user's recipes
   Future<void> startFirebaseSync() async {
@@ -225,8 +219,6 @@ class RecipeCacheModule {
     _setError('Synkroniseringsfel för $syncType: $error');
   }
 
-  // ===== DEBOUNCED SYNC TO FIREBASE (DELEGATE TO DEBOUNCED_SYNC_OPERATIONS) =====
-
   /// Schedule recipe for sync to Firebase (debounced)
   void scheduleSyncForRecipe(String recipeId) {
     DebouncedSyncOperations.scheduleSyncForRecipe(
@@ -248,8 +240,6 @@ class RecipeCacheModule {
     );
   }
 
-  // ===== CACHE OPTIMIZATION (DELEGATE TO CACHE_OPTIMIZATION) =====
-
   /// Start periodic cache cleanup
   void _startCacheCleanup() {
     _cacheCleanupTimer = CacheOptimization.startPeriodicCleanup(
@@ -258,8 +248,6 @@ class RecipeCacheModule {
       getCurrentUserId: _getCurrentUserId,
     );
   }
-
-  // ===== CACHE STATISTICS (DELEGATE TO CACHE_OPERATIONS & DEBOUNCED_SYNC) =====
 
   /// Get cache statistics
   Future<Map<String, dynamic>> getCacheStatistics() async {
@@ -287,8 +275,6 @@ class RecipeCacheModule {
     }
   }
 
-  // ===== AUTH STATE HANDLING =====
-
   /// Handle user authentication state changes
   void onAuthStateChanged(String? userId) {
     try {
@@ -310,8 +296,6 @@ class RecipeCacheModule {
     }
   }
 
-  // ===== DISPOSAL =====
-
   /// Dispose of all resources
   Future<void> dispose() async {
     try {
@@ -327,8 +311,6 @@ class RecipeCacheModule {
       AppLogger.error('Error disposing cache module: $e');
     }
   }
-
-  // ===== STATUS AND DIAGNOSTICS =====
 
   /// Get sync status for debugging
   Map<String, dynamic> getSyncStatus() {

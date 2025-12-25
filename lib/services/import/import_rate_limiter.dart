@@ -137,8 +137,6 @@ class ImportRateLimiter extends BaseService {
     return result.isAllowed;
   }
 
-  // ===== PRIVATE METHODS =====
-
   /// Get the rate limit document reference for a user.
   DocumentReference<Map<String, dynamic>> _getRateLimitDoc(String userId) {
     return _firestoreRepo.firestore

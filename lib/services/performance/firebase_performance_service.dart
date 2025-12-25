@@ -97,8 +97,6 @@ class FirebasePerformanceService {
     }
   }
 
-  // ===== PREDEFINED TRACES FOR COMMON OPERATIONS =====
-
   /// Trace recipe loading operation
   static Future<T> traceRecipeLoad<T>(
     Future<T> Function(Trace trace) operation, {
@@ -198,8 +196,6 @@ class FirebasePerformanceService {
       },
     );
   }
-
-  // ===== HTTP METRIC MONITORING =====
 
   /// Create HTTP metric for monitoring network requests
   static HttpMetric httpMetric(

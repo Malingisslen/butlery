@@ -10,6 +10,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:butlery/services/upload/upload_models.dart';
+import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Manages retry logic and circuit breaker for upload resilience.
@@ -19,9 +20,16 @@ import 'package:butlery/core/utils/logger.dart';
 /// - Circuit breaker state management
 /// - Retry eligibility determination
 /// - Retry strategy configuration per error type
+/// - Automatic circuit breaker reset on network reconnection
 class UploadRetryManager {
   /// Random instance for jitter calculations
   static final Random _random = Random();
+
+  /// Connectivity service for monitoring network state
+  ConnectivityMonitoringService? _connectivityService;
+
+  /// Whether we were connected in the previous state
+  bool _wasConnected = true;
 
   /// Circuit breaker states per error type
   final Map<ImageUploadErrorType, CircuitBreakerState> _circuitBreakers = {};
@@ -58,8 +66,6 @@ class UploadRetryManager {
     ),
   };
 
-  // ===== ERROR CLASSIFICATION =====
-
   /// Classify error from exception for targeted handling
   ImageUploadErrorType classifyError(dynamic error) {
     final errorString = error.toString().toLowerCase();
@@ -94,8 +100,6 @@ class UploadRetryManager {
     return ImageUploadErrorType.unknown;
   }
 
-  // ===== RETRY DELAY CALCULATION =====
-
   /// Calculate retry delay with exponential backoff and jitter
   /// Uses full jitter algorithm to prevent thundering herd:
   /// - Exponential backoff: 1s, 2s, 4s, 8s, 16s (capped at 30s)
@@ -120,8 +124,6 @@ class UploadRetryManager {
 
     return finalDelay;
   }
-
-  // ===== RETRY ELIGIBILITY =====
 
   /// Check if upload should be retried based on current status
   bool shouldRetry(ImageUploadStatus status) {
@@ -155,8 +157,6 @@ class UploadRetryManager {
           description: 'No retry strategy defined',
         );
   }
-
-  // ===== CIRCUIT BREAKER =====
 
   /// Check if circuit breaker is open for error type
   bool isCircuitBreakerOpen(ImageUploadErrorType errorType) {
@@ -225,8 +225,6 @@ class UploadRetryManager {
     AppLogger.info('🔄 CIRCUIT_BREAKER: Cleared all');
   }
 
-  // ===== RETRY EXECUTION =====
-
   /// Prepare status for retry attempt
   ImageUploadStatus prepareRetry(ImageUploadStatus currentStatus) {
     final newAttemptNumber = currentStatus.retryAttempts + 1;
@@ -249,5 +247,70 @@ class UploadRetryManager {
   Future<void> waitForRetryDelay(Duration delay) async {
     AppLogger.info('🔄 RETRY: Waiting ${delay.inSeconds}s before retry...');
     await Future.delayed(delay);
+  }
+
+  /// Initialize connectivity monitoring for automatic circuit breaker reset.
+  /// Call this method after creating the UploadRetryManager to enable
+  /// automatic circuit breaker reset when network connectivity is restored.
+  void initializeConnectivityMonitoring(
+      ConnectivityMonitoringService connectivityService) {
+    _connectivityService = connectivityService;
+    _wasConnected = connectivityService.isFullyConnected;
+
+    // Listen for connectivity changes
+    connectivityService.addListener(_onConnectivityChanged);
+
+    AppLogger.info(
+        '🔄 CIRCUIT_BREAKER: Connectivity monitoring initialized (connected: $_wasConnected)');
+  }
+
+  /// Handle connectivity state changes
+  void _onConnectivityChanged() {
+    final isConnected = _connectivityService?.isFullyConnected ?? false;
+
+    // If we transitioned from disconnected to connected, reset circuit breakers
+    if (!_wasConnected && isConnected) {
+      AppLogger.info(
+          '🔄 CIRCUIT_BREAKER: Network reconnected - resetting all circuit breakers');
+      _resetNetworkRelatedCircuitBreakers();
+    }
+
+    _wasConnected = isConnected;
+  }
+
+  /// Reset circuit breakers for network-related error types.
+  /// Called automatically when network connectivity is restored.
+  void _resetNetworkRelatedCircuitBreakers() {
+    // Reset circuit breakers for error types that are network-related
+    const networkRelatedErrors = [
+      ImageUploadErrorType.network,
+      ImageUploadErrorType.server,
+    ];
+
+    for (final errorType in networkRelatedErrors) {
+      final state = _circuitBreakers[errorType];
+      if (state != null && state.isOpen) {
+        _circuitBreakers[errorType] = const CircuitBreakerState(
+          failureCount: 0,
+          lastFailureTime: null,
+          isOpen: false,
+        );
+        AppLogger.info(
+            '🔄 CIRCUIT_BREAKER: Reset ${errorType.name} after reconnection');
+      }
+    }
+  }
+
+  /// Manually trigger circuit breaker reset for all network-related errors.
+  /// Use this when you want to force a retry after user action.
+  void resetNetworkCircuitBreakers() {
+    _resetNetworkRelatedCircuitBreakers();
+  }
+
+  /// Dispose of resources and remove listeners.
+  void dispose() {
+    _connectivityService?.removeListener(_onConnectivityChanged);
+    _connectivityService = null;
+    AppLogger.info('🔄 CIRCUIT_BREAKER: Disposed connectivity monitoring');
   }
 }

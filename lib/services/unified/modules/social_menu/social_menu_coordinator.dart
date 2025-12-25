@@ -118,8 +118,6 @@ class SocialMenuCoordinator
   final Future<Map<String, List<Recipe>>?> Function(String) _getMenu;
   final Future<String?> Function(Map<String, List<Recipe>>) _saveMenu;
 
-  // ===== STATUS CACHING (ISSUE #014) =====
-
   /// Cached viewed status (menuId → bool)
   final Map<String, bool> _viewedStatusCache = {};
 
@@ -147,9 +145,6 @@ class SocialMenuCoordinator
     AppLogger.info(
         '✅ SocialMenuCoordinator initialized for menu sharing and collaboration using $_serviceAdapter');
   }
-
-  // ===== BASE SOCIAL COORDINATOR IMPLEMENTATIONS =====
-
   @override
   String get contentTypeName => 'menu';
 
@@ -231,8 +226,6 @@ class SocialMenuCoordinator
   Future<String?> saveImportedContent(Map<String, List<Recipe>> content) async {
     return await _saveMenu(content);
   }
-
-  // ===== MENU-SPECIFIC INVITATION OPERATIONS =====
 
   /// Create menu invitation using SharedMenu model
   Future<String?> createMenuInvitation({
@@ -428,8 +421,6 @@ class SocialMenuCoordinator
     }
   }
 
-  // ===== STATUS CACHE METHODS (PHASE 3 SESSION 2) =====
-
   /// Clear all status caches
   /// Call this before reloading menus to ensure fresh dismissal/viewed/imported status.
   /// Bug fix: Prevents stale cached values from causing dismissed menus to reappear.
@@ -509,8 +500,6 @@ class SocialMenuCoordinator
     return await getUnreadCount();
   }
 
-  // ===== MENU-SPECIFIC OPERATIONS =====
-
   /// Validate menu content for sharing
   bool validateMenuForSharing(Map<String, List<Recipe>> menu) {
     if (menu.isEmpty) {
@@ -551,14 +540,10 @@ class SocialMenuCoordinator
     return parts.isEmpty ? 'Tom meny' : parts.join(', ');
   }
 
-  // ===== UTILITY METHODS =====
-
   /// Get total recipe count in menu
   int _getTotalRecipeCount(Map<String, List<Recipe>> menu) {
     return menu.values.fold(0, (sum, recipes) => sum + recipes.length);
   }
-
-  // ===== COPY-ON-WRITE ABSTRACT METHOD IMPLEMENTATIONS =====
 
   @override
   Map<String, List<Recipe>> getOriginalContentFromShared(
@@ -606,8 +591,6 @@ class SocialMenuCoordinator
   Future<void> updateSharedContent(SharedMenu sharedContent) async {
     await _sharedMenuRepository.update(sharedContent);
   }
-
-  // ===== NOTIFICATION PLACEHOLDERS =====
 
   /// Send menu invitation notifications
   Future<void> sendMenuInvitationNotifications(

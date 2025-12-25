@@ -18,9 +18,6 @@ class MenuStateManager extends ChangeNotifier with StreamManagementMixin {
   String? _error;
   String _lastPrompt = '';
   List<SavedMenuInfo> _savedMenus = [];
-
-  // ===== STATE GETTERS =====
-
   Map<String, List<Recipe>> get menu => Map.unmodifiable(_menu);
   bool get isGenerating => _isGenerating;
   String? get error => _error;
@@ -31,9 +28,6 @@ class MenuStateManager extends ChangeNotifier with StreamManagementMixin {
 
   int get totalRecipeCount =>
       _menu.values.fold(0, (total, recipes) => total + recipes.length);
-
-  // ===== STATE SETTERS =====
-
   void setMenu(Map<String, List<Recipe>> menu) {
     _menu = menu;
     notifyListeners();
@@ -63,8 +57,6 @@ class MenuStateManager extends ChangeNotifier with StreamManagementMixin {
     notifyListeners();
   }
 
-  // ===== STATE OPERATIONS =====
-
   void clearMenu() {
     _menu = {};
     _lastPrompt = '';
@@ -87,8 +79,6 @@ class MenuStateManager extends ChangeNotifier with StreamManagementMixin {
     notifyListeners();
   }
 
-  // ===== STATE VALIDATION =====
-
   bool validateMenuForSaving() {
     return hasMenu;
   }
@@ -96,8 +86,6 @@ class MenuStateManager extends ChangeNotifier with StreamManagementMixin {
   bool validatePrompt(String prompt) {
     return prompt.trim().isNotEmpty;
   }
-
-  // ===== ERROR HANDLING =====
 
   void handleOperationError(String operation, dynamic error) {
     setError('$operation: ${error.toString()}');

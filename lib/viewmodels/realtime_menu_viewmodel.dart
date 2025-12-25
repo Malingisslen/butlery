@@ -111,8 +111,6 @@ class RealtimeMenuViewModel extends ChangeNotifier {
     return _operations.applyOptimisticChanges(currentMenu!.menuSnapshot);
   }
 
-  // ===== CORE OPERATIONS (DELEGATE TO STREAM_MANAGER) =====
-
   Future<void> startWatching(String menuId) async {
     _state.transitionToLoading();
     _state.clearError();
@@ -130,8 +128,6 @@ class RealtimeMenuViewModel extends ChangeNotifier {
     _state.resetState();
     AppLogger.info('🛑 Watching stopped');
   }
-
-  // ===== MENU OPERATIONS (DELEGATE TO OPERATIONS) =====
 
   Future<void> addRecipeToCategory({
     required String categoryName,
@@ -256,8 +252,6 @@ class RealtimeMenuViewModel extends ChangeNotifier {
     }
   }
 
-  // ===== PARTICIPANT OPERATIONS (DELEGATE TO PARTICIPANT_MANAGER) =====
-
   Future<void> addParticipant({
     required String userId,
     required String userDisplayName,
@@ -296,16 +290,11 @@ class RealtimeMenuViewModel extends ChangeNotifier {
     }
   }
 
-  // ===== UI STATE MANAGEMENT (DELEGATE TO STATE) =====
-
   void selectCategory(String? categoryName) =>
       _state.selectCategory(categoryName);
   void toggleParticipants() => _state.toggleParticipants();
   void clearError() => _state.clearError();
   void refreshConnection() => _connectionMonitor.forceConnectionCheck();
-
-  // ===== UTILITY METHODS =====
-
   Map<String, List<Recipe>>? createPersonalCopy() {
     if (currentMenu == null) return null;
     return _menuService.createPersonalCopy(currentMenu!);
@@ -350,8 +339,6 @@ class RealtimeMenuViewModel extends ChangeNotifier {
       }
     }
   }
-
-  // ===== INTERNAL METHODS =====
 
   void _initialize() {
     _menuService.addListener(_onServiceStateChanged);
@@ -410,8 +397,6 @@ class RealtimeMenuViewModel extends ChangeNotifier {
 
     return true;
   }
-
-  // ===== DISPOSE =====
 
   @override
   void dispose() {

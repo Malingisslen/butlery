@@ -92,8 +92,6 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
   /// - URL validation system preparation with comprehensive error handling
   UrlImportViewModel({required super.importManager});
 
-  // ===== URL CONTENT EXTRACTION OPERATIONS =====
-
   /// Fetches web content from URL and parses it into recipe with comprehensive workflow coordination.
   /// Performs complete URL import workflow including URL validation, content fetching,
   /// HTML parsing, text extraction, and recipe parsing with comprehensive error handling
@@ -188,8 +186,6 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
       webScraper.dispose();
     }
   }
-
-  // ===== URL VALIDATION OPERATIONS =====
 
   /// Generates comprehensive URL validation errors with Swedish localized error messages.
   /// Returns list of validation errors for current URL ensuring proper format and fetchability.
@@ -331,8 +327,6 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
     return suggestions;
   }
 
-  // ===== CONTENT ANALYSIS OPERATIONS =====
-
   /// Analyzes extracted content quality with comprehensive scoring and Swedish localized feedback.
   /// Returns detailed analysis map containing quality assessment, scoring, and recommendations.
   /// Performs comprehensive content analysis including recipe indicator detection, content structure assessment,
@@ -443,8 +437,6 @@ class UrlImportViewModel extends ImportBaseViewModel with UrlImportMixin {
       'positives': positives,
     };
   }
-
-  // ===== DEBUGGING SUPPORT =====
 
   /// Provides comprehensive debugging state information for URL import development and troubleshooting.
   /// Returns map containing debug information including URL validation state, content analysis results,

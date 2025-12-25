@@ -22,8 +22,6 @@ class CollaborationManagementModule {
 
   CollaborationManagementModule(this._parent, [this._realtimeSyncService]);
 
-  // ===== COLLABORATION LIFECYCLE =====
-
   /// Enable collaborative editing for a personal recipe
   Future<bool> enableCollaborativeEditing(
       String recipeId, List<String> memberIds) async {
@@ -150,8 +148,6 @@ class CollaborationManagementModule {
     return recipe.isCollaborative &&
         ServiceLocator.get<PermissionService>().isRecipeOwner(recipeId);
   }
-
-  // ===== MEMBER MANAGEMENT =====
 
   /// Add members to collaborative recipe
   Future<bool> addCollaborators(String recipeId, List<String> memberIds) async {
@@ -294,8 +290,6 @@ class CollaborationManagementModule {
     }
   }
 
-  // ===== OWNERSHIP MANAGEMENT =====
-
   /// Transfer ownership of collaborative recipe
   Future<bool> transferOwnership(String recipeId, String newOwnerId) async {
     try {
@@ -380,8 +374,6 @@ class CollaborationManagementModule {
     }
   }
 
-  // ===== COLLABORATION INFORMATION =====
-
   /// Get collaboration details for recipe
   Map<String, dynamic> getCollaborationDetails(String recipeId) {
     try {
@@ -442,8 +434,6 @@ class CollaborationManagementModule {
     }
   }
 
-  // ===== COLLABORATION VALIDATION =====
-
   /// Validate collaboration settings
   Map<String, String> validateCollaborationSettings({
     required List<String> memberIds,
@@ -483,8 +473,6 @@ class CollaborationManagementModule {
 
     return totalMembers <= 20; // Maximum collaboration size
   }
-
-  // ===== STATUS AND DIAGNOSTICS =====
 
   /// Get collaboration status for recipe
   Map<String, dynamic> getCollaborationStatus(String recipeId) {

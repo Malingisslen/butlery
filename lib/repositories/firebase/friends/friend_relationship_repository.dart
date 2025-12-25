@@ -74,9 +74,6 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
 
   CollectionReference<Map<String, dynamic>> _userFriendsRef(String userId) =>
       firestore.collection('users').doc(userId).collection('friends');
-
-  // ===== BASE CLASS IMPLEMENTATION =====
-
   @override
   String get collectionName => 'public_profiles';
 
@@ -89,9 +86,6 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
 
   @override
   String getId(UserProfile entity) => entity.uid;
-
-  // ===== PERMISSION VALIDATION IMPLEMENTATION =====
-
   @override
   Future<bool> validateCreatePermission(
       String userId, UserProfile entity) async {
@@ -122,8 +116,6 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
     return userId == resourceId;
   }
 
-  // ===== FRIEND RELATIONSHIP OPERATIONS =====
-
   /// Check if users are already friends.
   Future<bool> areFriends(String userId1, String userId2) async {
     final doc = await _userFriendsRef(userId1).doc(userId2).get();
@@ -131,39 +123,70 @@ class FriendRelationshipRepository extends BaseFirebaseRepository<UserProfile> {
   }
 
   /// Add users to each other's friends collections and update counts.
+  ///
+  /// Uses a Firestore transaction to ensure atomicity and prevent race conditions
+  /// when the same friendship is being created from multiple sources simultaneously.
   Future<void> addMutualFriends(String userId1, String userId2) async {
-    final batch = firestore.batch();
+    await firestore.runTransaction((transaction) async {
+      final user1FriendRef = _userFriendsRef(userId1).doc(userId2);
+      final user2FriendRef = _userFriendsRef(userId2).doc(userId1);
 
-    final user1Ref = _userFriendsRef(userId1).doc(userId2);
-    final user2Ref = _userFriendsRef(userId2).doc(userId1);
+      // Read both friendship documents to check if they already exist
+      final user1FriendDoc = await transaction.get(user1FriendRef);
+      final user2FriendDoc = await transaction.get(user2FriendRef);
 
-    batch.set(user1Ref, {'addedAt': FieldValue.serverTimestamp()});
-    batch.set(user2Ref, {'addedAt': FieldValue.serverTimestamp()});
+      // If friendship already exists in either direction, skip to prevent
+      // duplicate count increments
+      if (user1FriendDoc.exists || user2FriendDoc.exists) {
+        return;
+      }
 
-    final user1Profile = collection.doc(userId1);
-    final user2Profile = collection.doc(userId2);
-    batch.update(user1Profile, {'friendsCount': FieldValue.increment(1)});
-    batch.update(user2Profile, {'friendsCount': FieldValue.increment(1)});
+      // Create friend documents for both users
+      transaction
+          .set(user1FriendRef, {'addedAt': FieldValue.serverTimestamp()});
+      transaction
+          .set(user2FriendRef, {'addedAt': FieldValue.serverTimestamp()});
 
-    await batch.commit();
+      // Update friend counts atomically
+      final user1Profile = collection.doc(userId1);
+      final user2Profile = collection.doc(userId2);
+      transaction
+          .update(user1Profile, {'friendsCount': FieldValue.increment(1)});
+      transaction
+          .update(user2Profile, {'friendsCount': FieldValue.increment(1)});
+    });
   }
 
   /// Remove users from each other's friends collections and update counts.
+  ///
+  /// Uses a Firestore transaction to ensure atomicity and prevent race conditions
+  /// when the same friendship is being removed from multiple sources simultaneously.
   Future<void> removeMutualFriends(String userId1, String userId2) async {
-    final batch = firestore.batch();
+    await firestore.runTransaction((transaction) async {
+      final user1FriendRef = _userFriendsRef(userId1).doc(userId2);
+      final user2FriendRef = _userFriendsRef(userId2).doc(userId1);
 
-    final user1Ref = _userFriendsRef(userId1).doc(userId2);
-    final user2Ref = _userFriendsRef(userId2).doc(userId1);
+      // Read both friendship documents to check if they exist
+      final user1FriendDoc = await transaction.get(user1FriendRef);
+      final user2FriendDoc = await transaction.get(user2FriendRef);
 
-    batch.delete(user1Ref);
-    batch.delete(user2Ref);
+      // If friendship doesn't exist, skip to prevent duplicate count decrements
+      if (!user1FriendDoc.exists && !user2FriendDoc.exists) {
+        return;
+      }
 
-    final user1Profile = collection.doc(userId1);
-    final user2Profile = collection.doc(userId2);
-    batch.update(user1Profile, {'friendsCount': FieldValue.increment(-1)});
-    batch.update(user2Profile, {'friendsCount': FieldValue.increment(-1)});
+      // Delete friend documents for both users
+      transaction.delete(user1FriendRef);
+      transaction.delete(user2FriendRef);
 
-    await batch.commit();
+      // Update friend counts atomically
+      final user1Profile = collection.doc(userId1);
+      final user2Profile = collection.doc(userId2);
+      transaction
+          .update(user1Profile, {'friendsCount': FieldValue.increment(-1)});
+      transaction
+          .update(user2Profile, {'friendsCount': FieldValue.increment(-1)});
+    });
   }
 
   /// Remove a friend for the current user.

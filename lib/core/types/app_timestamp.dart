@@ -132,49 +132,80 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// Domain-agnostic timestamp abstraction that wraps platform-specific implementations
 /// This abstraction allows models to be independent of Firebase Timestamp while
 /// still supporting efficient serialization to/from Firestore.
+///
+/// **UTC Handling:**
+/// - Internally stores timestamps in UTC for consistency
+/// - Use [localDateTime] for display purposes
+/// - Use [utcDateTime] for comparisons and storage
+/// - Firestore automatically handles UTC conversion
 class AppTimestamp {
   final DateTime _dateTime;
 
   const AppTimestamp._(this._dateTime);
 
-  /// Create AppTimestamp from DateTime
+  /// Create AppTimestamp from DateTime.
+  /// Preserves the timezone of the input DateTime.
   factory AppTimestamp.fromDateTime(DateTime dateTime) =>
       AppTimestamp._(dateTime);
 
-  /// Create AppTimestamp from current time
-  factory AppTimestamp.now() => AppTimestamp._(DateTime.now());
+  /// Create AppTimestamp from current time.
+  /// Stores internally as UTC for consistency.
+  factory AppTimestamp.now() => AppTimestamp._(DateTime.now().toUtc());
 
-  /// Create AppTimestamp from Firestore Timestamp (repository layer only)
+  /// Create AppTimestamp from current time in UTC.
+  factory AppTimestamp.nowUtc() => AppTimestamp._(DateTime.now().toUtc());
+
+  /// Create AppTimestamp from Firestore Timestamp (repository layer only).
+  /// Firestore Timestamps are always in UTC.
   factory AppTimestamp.fromFirestore(Timestamp timestamp) =>
-      AppTimestamp._(timestamp.toDate());
+      AppTimestamp._(timestamp.toDate().toUtc());
 
-  /// Create AppTimestamp from milliseconds since epoch
-  factory AppTimestamp.fromMilliseconds(int milliseconds) =>
-      AppTimestamp._(DateTime.fromMillisecondsSinceEpoch(milliseconds));
+  /// Create AppTimestamp from milliseconds since epoch.
+  /// Epoch time is inherently UTC.
+  factory AppTimestamp.fromMilliseconds(int milliseconds) => AppTimestamp._(
+      DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: true));
 
-  /// Create AppTimestamp from ISO string
+  /// Create AppTimestamp from ISO string.
   factory AppTimestamp.fromIsoString(String isoString) =>
-      AppTimestamp._(DateTime.parse(isoString));
+      AppTimestamp._(DateTime.parse(isoString).toUtc());
 
-  /// Get underlying DateTime
+  /// Get underlying DateTime (preserves internal timezone).
+  /// For display purposes, prefer [localDateTime].
   DateTime get dateTime => _dateTime;
 
-  /// Convert to Firestore Timestamp (repository layer only)
-  Timestamp toFirestore() => Timestamp.fromDate(_dateTime);
+  /// Get DateTime in UTC for storage and comparisons.
+  DateTime get utcDateTime => _dateTime.toUtc();
 
-  /// Convert to milliseconds since epoch
-  int toMilliseconds() => _dateTime.millisecondsSinceEpoch;
+  /// Get DateTime in local timezone for display.
+  DateTime get localDateTime => _dateTime.toLocal();
 
-  /// Convert to ISO string
-  String toIsoString() => _dateTime.toIso8601String();
+  /// Convert to Firestore Timestamp (repository layer only).
+  /// Always stores in UTC for cross-timezone consistency.
+  Timestamp toFirestore() => Timestamp.fromDate(_dateTime.toUtc());
 
-  /// Convenience getters
-  int get year => _dateTime.year;
-  int get month => _dateTime.month;
-  int get day => _dateTime.day;
-  int get hour => _dateTime.hour;
-  int get minute => _dateTime.minute;
-  int get second => _dateTime.second;
+  /// Convert to milliseconds since epoch.
+  /// Epoch time is inherently UTC.
+  int toMilliseconds() => _dateTime.toUtc().millisecondsSinceEpoch;
+
+  /// Convert to ISO string (always in UTC for consistency).
+  String toIsoString() => _dateTime.toUtc().toIso8601String();
+
+  /// Convenience getters (local time for display).
+  /// These use local time because they're typically used for UI display.
+  int get year => localDateTime.year;
+  int get month => localDateTime.month;
+  int get day => localDateTime.day;
+  int get hour => localDateTime.hour;
+  int get minute => localDateTime.minute;
+  int get second => localDateTime.second;
+
+  /// UTC time component getters (for storage/comparison).
+  int get utcYear => utcDateTime.year;
+  int get utcMonth => utcDateTime.month;
+  int get utcDay => utcDateTime.day;
+  int get utcHour => utcDateTime.hour;
+  int get utcMinute => utcDateTime.minute;
+  int get utcSecond => utcDateTime.second;
 
   /// Comparison operators
   bool isBefore(AppTimestamp other) => _dateTime.isBefore(other._dateTime);
@@ -205,12 +236,21 @@ class AppTimestamp {
   @override
   String toString() => _dateTime.toString();
 
-  /// JSON serialization support
+  /// JSON serialization support (stores in UTC milliseconds).
   Map<String, dynamic> toJson() => {
-        'timestamp': _dateTime.millisecondsSinceEpoch,
+        'timestamp': toMilliseconds(),
       };
 
-  /// JSON deserialization support
+  /// JSON deserialization support.
   factory AppTimestamp.fromJson(Map<String, dynamic> json) =>
       AppTimestamp.fromMilliseconds(json['timestamp'] as int);
+
+  /// Check if the timestamp represents a time in UTC.
+  bool get isUtc => _dateTime.isUtc;
+
+  /// Convert this timestamp to use UTC internally.
+  AppTimestamp toUtc() => AppTimestamp._(_dateTime.toUtc());
+
+  /// Convert this timestamp to use local time internally.
+  AppTimestamp toLocal() => AppTimestamp._(_dateTime.toLocal());
 }

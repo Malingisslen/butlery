@@ -16,8 +16,6 @@ class CommentLikesSystem {
   static final CommentsRepository _commentsRepository =
       GetIt.instance<CommentsRepository>();
 
-  // ===== LIKE OPERATIONS =====
-
   /// Toggle like on comment with transaction safety
   static Future<String?> toggleCommentLike({
     required String commentId,
@@ -95,8 +93,6 @@ class CommentLikesSystem {
     }
   }
 
-  // ===== LIKE QUERIES =====
-
   /// Check if user has liked a comment
   static Future<bool> hasUserLikedComment({
     required String commentId,
@@ -137,8 +133,6 @@ class CommentLikesSystem {
       return [];
     }
   }
-
-  // ===== BULK LIKE OPERATIONS =====
 
   /// Get like status for multiple comments for a user
   static Future<Map<String, bool>> getBulkLikeStatus({
@@ -205,8 +199,6 @@ class CommentLikesSystem {
       return {};
     }
   }
-
-  // ===== LIKE ANALYTICS =====
 
   /// Get like statistics for a recipe's comments
   static Future<Map<String, dynamic>> getRecipeLikeStatistics({

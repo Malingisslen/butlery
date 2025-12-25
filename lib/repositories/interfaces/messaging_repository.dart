@@ -57,8 +57,6 @@ import 'package:butlery/models/messaging/conversation.dart';
 ///   });
 /// ```
 abstract class MessagingRepository {
-  // ===== CONVERSATION OPERATIONS =====
-
   /// Get all conversations for a user
   Stream<List<Conversation>> getUserConversations(String userId);
 
@@ -111,8 +109,6 @@ abstract class MessagingRepository {
     required String participantId,
   });
 
-  // ===== MESSAGE OPERATIONS =====
-
   /// Get messages for a conversation
   Stream<List<Message>> getConversationMessages({
     required String conversationId,
@@ -159,8 +155,6 @@ abstract class MessagingRepository {
 
   /// Delete conversation and all its messages
   Future<void> deleteConversation(String conversationId);
-
-  // ===== UTILITY OPERATIONS =====
 
   /// Get conversation participants
   Future<List<String>> getConversationParticipants(String conversationId);

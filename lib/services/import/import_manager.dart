@@ -144,13 +144,11 @@ class ImportManager {
     Map<String, dynamic>? options,
   }) async {
     try {
-      // ===== STEP 1: Check global cache for URL imports =====
       final cacheResult = await _checkCacheForUrl(input);
       if (cacheResult != null) {
         return cacheResult;
       }
 
-      // ===== STEP 2: Try YouTube strategy for YouTube URLs =====
       final youtubeStrategy = _youtubeStrategy;
       debugPrint(
           '🎬 YouTube strategy check: strategy=${youtubeStrategy != null}, canHandle=${youtubeStrategy?.canHandle(input)}');
@@ -187,7 +185,6 @@ class ImportManager {
         // YouTube strategy failed, continue with other strategies
       }
 
-      // ===== STEP 2b: Try TikTok pipeline for TikTok URLs =====
       final tiktokPipeline = _tiktokPipeline;
       if (tiktokPipeline != null && tiktokPipeline.canHandle(input)) {
         final result = await _parseWithStrategy(tiktokPipeline, input, options);
@@ -198,7 +195,6 @@ class ImportManager {
         // TikTok pipeline failed, continue with other strategies
       }
 
-      // ===== STEP 3: Try preferred strategy first if provided =====
       if (preferredStrategy != null && preferredStrategy.canHandle(input)) {
         final result =
             await _parseWithStrategy(preferredStrategy, input, options);
@@ -209,7 +205,6 @@ class ImportManager {
         }
       }
 
-      // ===== STEP 4: Try all compatible strategies =====
       for (final strategy in _strategies) {
         if (strategy.canHandle(input)) {
           final result = await _parseWithStrategy(strategy, input, options);
@@ -399,8 +394,6 @@ class ImportManager {
     }
   }
 
-  // ===== PRIVATE METHODS =====
-
   /// Parse with strategy without saving - returns recipe in memory only
   Future<ImportManagerResult> _parseWithStrategy(
     ImportStrategy strategy,
@@ -457,8 +450,6 @@ class ImportManager {
 
     return 0.5; // Default confidence
   }
-
-  // ===== CACHE INTEGRATION =====
 
   /// Check if input looks like a URL and return cached result if available.
   Future<ImportManagerResult?> _checkCacheForUrl(String input) async {

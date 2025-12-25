@@ -21,8 +21,6 @@ class RealtimeEditingModule {
 
   RealtimeEditingModule(this._parent, [this._realtimeSyncService]);
 
-  // ===== EDITING SESSION MANAGEMENT =====
-
   /// Start real-time editing session for recipe
   Future<bool> startRealtimeEditing(String recipeId) async {
     try {
@@ -80,8 +78,6 @@ class RealtimeEditingModule {
     final recipe = _parent.recipes.where((r) => r.id == recipeId).firstOrNull;
     return recipe?.isCollaborative == true;
   }
-
-  // ===== REALTIME EDITING OPERATIONS =====
 
   /// Make real-time edit to recipe with conflict resolution
   Future<bool> makeRealtimeEdit({
@@ -177,8 +173,6 @@ class RealtimeEditingModule {
     }
   }
 
-  // ===== CONFLICT RESOLUTION =====
-
   /// Resolve edit conflict manually
   Future<bool> resolveConflict({
     required String recipeId,
@@ -256,8 +250,6 @@ class RealtimeEditingModule {
       return [];
     }
   }
-
-  // ===== EDIT VALIDATION =====
 
   /// Validate edit changes before applying
   bool validateEditChanges(String recipeId, Map<String, dynamic> changes) {
@@ -338,8 +330,6 @@ class RealtimeEditingModule {
     };
   }
 
-  // ===== HELPER METHODS =====
-
   /// Convert Recipe to RealtimeRecipe data structure
   Future<Map<String, dynamic>> _convertToRealtimeRecipe(Recipe recipe) async {
     return RealtimeRecipeUtils.convertToRealtimeRecipe(recipe);
@@ -368,8 +358,6 @@ class RealtimeEditingModule {
       return false;
     }
   }
-
-  // ===== STATUS AND DIAGNOSTICS =====
 
   /// Get editing session status
   Map<String, dynamic> getEditingStatus(String recipeId) {

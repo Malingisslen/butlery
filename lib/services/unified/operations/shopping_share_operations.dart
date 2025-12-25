@@ -105,8 +105,6 @@ class ShoppingShareOperations {
     );
   }
 
-  // ===== EXPORT OPERATIONS (DELEGATE TO EXPORT MODULE) =====
-
   /// Export shopping list as formatted text
   String exportListAsText(String listId) =>
       _exportModule.exportListAsText(listId);
@@ -123,8 +121,6 @@ class ShoppingShareOperations {
   String exportListAsCSV(String listId) =>
       _exportModule.exportListAsCSV(listId);
 
-  // ===== EXTERNAL SHARING OPERATIONS (DELEGATE TO EXTERNAL SHARE MODULE) =====
-
   /// Share shopping list via external apps
   Future<bool> shareList({
     required String listId,
@@ -140,8 +136,6 @@ class ShoppingShareOperations {
   /// Create public link for shopping list
   Future<String?> createPublicLink(String listId) =>
       _externalShareModule.createPublicLink(listId);
-
-  // ===== TEMPLATE OPERATIONS (DELEGATE TO TEMPLATE MODULE) =====
 
   /// Save shopping list as template
   Future<bool> saveAsTemplate({
@@ -165,8 +159,6 @@ class ShoppingShareOperations {
         customName: customName,
       );
 
-  // ===== IMPORT OPERATIONS (DELEGATE TO IMPORT MODULE) =====
-
   /// Import shopping list from text
   Future<String?> importFromText({
     required String text,
@@ -180,8 +172,6 @@ class ShoppingShareOperations {
   /// Import shopping list from JSON
   Future<String?> importFromJson(Map<String, dynamic> jsonData) =>
       _importModule.importFromJson(jsonData);
-
-  // ===== SOCIAL SHARING OPERATIONS (DELEGATE TO SOCIAL SHARE MODULE) =====
 
   /// Share shopping list with specific friends
   Future<bool> shareWithFriends({
@@ -270,8 +260,6 @@ class ShoppingShareOperations {
   /// Get shopping list sharing statistics
   Future<Map<String, dynamic>> getShoppingListSharingStats(String listId) =>
       _socialShareModule.getShoppingListSharingStats(listId);
-
-  // ===== MODULE ACCESS (FOR ADVANCED USAGE) =====
 
   /// Get export module for advanced export operations
   ShoppingExportModule get export => _exportModule;

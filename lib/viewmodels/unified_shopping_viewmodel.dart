@@ -37,8 +37,6 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   late final ShoppingAnalyticsManager _analyticsManager;
   late final ShoppingItemOperationsManager _itemOpsManager;
 
-  // ===== SHOPPING LIST STATE ACCESSORS =====
-
   /// All shopping lists (personal + collaborative)
   List<UnifiedShoppingList> get lists => _shoppingService.lists;
 
@@ -55,8 +53,6 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   /// Items in active shopping list
   List<UnifiedShoppingItem> get items => activeList?.items ?? [];
 
-  // ===== LOADING AND SYNCHRONIZATION STATE =====
-
   /// Loading operation state
   @override
   bool get isLoading => _shoppingService.isLoading;
@@ -66,8 +62,6 @@ class UnifiedShoppingViewModel extends ChangeNotifier
 
   /// Initialization state
   bool get isInitialized => _shoppingService.isInitialized;
-
-  // ===== ERROR HANDLING AND CONNECTIVITY =====
 
   /// Current error message
   @override
@@ -80,15 +74,11 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   /// Online connectivity status
   bool get isOnline => !hasError && isInitialized;
 
-  // ===== SHOPPING LIST AVAILABILITY AND STATISTICS =====
-
   /// Shopping list availability indicator
   bool get hasLists => _shoppingService.hasLists;
 
   /// Shopping items availability
   bool get hasItems => items.isNotEmpty;
-
-  // ===== SHOPPING ANALYTICS AND COMPLETION TRACKING =====
 
   /// Total item count in active list
   int get totalItems => (activeList?.totalItems).orZero();
@@ -109,8 +99,6 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   /// Complete shopping indicator
   bool get allItemsBought => (activeList?.allItemsBought).orFalse();
 
-  // ===== USER CONTEXT AND IDENTIFICATION =====
-
   /// Current user identifier
   String? get currentUserId =>
       ServiceLocator.get<PermissionService>().currentUserId;
@@ -130,16 +118,12 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     notifyListeners();
   }
 
-  // ===== INITIALIZATION =====
-
   /// Initializes unified shopping system
   Future<void> initialize() async {
     await executeAsync(() async {
       await _shoppingService.initialize();
     });
   }
-
-  // ===== PERSONAL SHOPPING LIST MANAGEMENT =====
 
   /// Creates personal shopping list with validation
   Future<bool> createPersonalList(String name) async {
@@ -195,8 +179,6 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     return await _shoppingService.setActiveList(listId);
   }
 
-  // ===== BACKWARD COMPATIBILITY API METHODS =====
-
   /// Loads all shopping lists
   Future<void> loadLists() async {
     await _shoppingService.loadLists();
@@ -228,8 +210,6 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     await setActiveList(listId);
     return await _shoppingService.addItemsBatch(items);
   }
-
-  // ===== ITEM MANAGEMENT - BÅDA API:ER för kompatibilitet =====
 
   /// Lägg till artikel (original API)
   Future<bool> addItem({
@@ -373,8 +353,6 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     return await _shoppingService.uncheckAllItems();
   }
 
-  // ===== ADVANCED ITEM OPERATIONS =====
-
   /// Bulk add items from recipe ingredients
   Future<bool> addItemsFromRecipe(
       List<Map<String, dynamic>> ingredientData) async {
@@ -397,8 +375,6 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   /// Search items by name or category
   List<UnifiedShoppingItem> searchItems(String query) =>
       _itemOpsManager.searchItems(items, query);
-
-  // ===== COLLABORATIVE FEATURES =====
 
   /// Kontrollera om användaren kan redigera aktiv lista
   bool get canEditActiveList {
@@ -433,14 +409,10 @@ class UnifiedShoppingViewModel extends ChangeNotifier
     return activeList!.memberPermissions.keys.toList();
   }
 
-  // ===== ERROR HANDLING =====
-
   @override
   void clearError() {
     _shoppingService.clearError();
   }
-
-  // ===== ANALYTICS & INSIGHTS =====
 
   /// Get shopping insights for UI
   Map<String, dynamic> get shoppingInsights =>
@@ -452,16 +424,11 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   /// Export list as text with categories for UI
   String exportListAsTextWithCategories() => _analyticsManager
       .exportListAsTextWithCategories(activeList, itemsByCategory);
-
-  // ===== STATE MANAGEMENT =====
-
   @override
   void dispose() {
     _shoppingService.removeListener(_onServiceUpdate);
     super.dispose();
   }
-
-  // ===== DEBUGGING & DEVELOPMENT =====
 
   /// Debug info för utveckling
   Map<String, dynamic> get debugInfo {

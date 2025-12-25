@@ -73,8 +73,6 @@ class RecipeDetailViewModel extends ChangeNotifier
   final UnifiedRecipeService _recipeService;
   final AnalyticsService _analyticsService;
 
-  // ===== RECIPE STATE MANAGEMENT =====
-
   /// Current recipe data with real-time synchronization and state coordination.
   Recipe _recipe;
 
@@ -124,8 +122,6 @@ class RecipeDetailViewModel extends ChangeNotifier
     }
   }
 
-  // ===== RECIPE STATE ACCESSORS =====
-
   /// Current recipe data with real-time synchronization and comprehensive detail access.
   /// Provides access to current recipe state with automatic synchronization from service updates
   /// ensuring UI components always display the most current recipe information.
@@ -147,9 +143,6 @@ class RecipeDetailViewModel extends ChangeNotifier
   /// for error management, maintaining consistency with other ViewModels.
   @override
   bool get hasError => false; // No error state needed for now
-
-  // ===== UI CONVENIENCE ACCESSORS =====
-
   /// Image presence indicator for conditional image display and gallery coordination.
   /// Indicates whether recipe has associated images for UI conditional rendering
   /// of image display components and gallery functionality.
@@ -184,8 +177,6 @@ class RecipeDetailViewModel extends ChangeNotifier
   /// Indicates whether recipe has associated tags for UI conditional rendering
   /// of tag display components and tag-related functionality.
   bool get hasTags => _recipe.tags != null && _recipe.tags!.isNotEmpty;
-
-  // ===== RECIPE MANAGEMENT OPERATIONS =====
 
   /// Deletes recipe with comprehensive analytics tracking and progress management.
   /// Returns true if deletion succeeds, false if operation fails.
@@ -283,8 +274,6 @@ class RecipeDetailViewModel extends ChangeNotifier
       }
     });
   }
-
-  // ===== INTERNAL STATE MANAGEMENT =====
 
   /// Updates deletion state with automatic UI notification for progress indication.
   /// [value] New deletion state for progress tracking

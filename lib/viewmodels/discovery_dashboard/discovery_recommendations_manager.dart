@@ -20,9 +20,6 @@ class DiscoveryRecommendationsManager extends ChangeNotifier {
   DiscoveryRecommendationsManager({
     required RecommendationService recommendationService,
   }) : _recommendationService = recommendationService;
-
-  // ===== GETTERS =====
-
   List<Map<String, dynamic>> get personalizedRecommendations =>
       List.unmodifiable(_personalizedRecommendations);
   bool get isLoading => _isLoading;
@@ -44,8 +41,6 @@ class DiscoveryRecommendationsManager extends ChangeNotifier {
         .where((rec) => rec['isLiked'] == true)
         .toList();
   }
-
-  // ===== RECOMMENDATIONS LOADING =====
 
   /// Load personalized content recommendations
   Future<void> loadPersonalizedRecommendations() async {
@@ -260,8 +255,6 @@ class DiscoveryRecommendationsManager extends ChangeNotifier {
         .where((rec) => rec['contentType'] == contentType)
         .toList();
   }
-
-  // ===== PRIVATE HELPERS =====
 
   void _setLoading(bool loading) {
     _isLoading = loading;

@@ -113,21 +113,13 @@ class UnifiedMenuService extends ChangeNotifier
     AppLogger.info(
         '✅ UnifiedMenuService created - collaborative operations will initialize on first use');
   }
-
-  // ===== FIREBASE SERVICE MIXIN IMPLEMENTATION =====
-
   @override
   FirestoreRepository get firestoreRepository => _firestoreRepository;
-
-  // ===== INITIALIZATION =====
-
   CollaborativeMenuOperations _initializeCollaborativeOperations() {
     AppLogger.debug('Initializing collaborative menu operations');
     return CollaborativeMenuOperations(
         this, ServiceLocator.get<MenuCollaborationRepository>());
   }
-
-  // ===== PUBLIC API =====
 
   /// Initialize the unified menu service
   Future<void> initialize() async {
@@ -278,14 +270,10 @@ class UnifiedMenuService extends ChangeNotifier
     });
   }
 
-  // ===== PUBLIC NOTIFICATION METHOD =====
-
   /// Trigger notification to listeners (for operations classes)
   void triggerNotification() {
     notifyListeners();
   }
-
-  // ===== MENU GENERATION (Delegated to MenuService) =====
 
   /// Generate a menu from Swedish natural language prompt
   Future<Map<String, List<Recipe>>> generateMenuFromPrompt(
@@ -294,8 +282,6 @@ class UnifiedMenuService extends ChangeNotifier
   ) async {
     return await _menuService.generateMenuFromPrompt(prompt, availableRecipes);
   }
-
-  // ===== BASIC MENU OPERATIONS =====
 
   /// Create a new menu
   Future<String?> createMenu({
@@ -377,8 +363,6 @@ class UnifiedMenuService extends ChangeNotifier
   SharedMenu? getMenuById(String menuId) {
     return _menus.where((m) => m.id == menuId).firstOrNull;
   }
-
-  // ===== MENU INVITATION SYSTEM =====
 
   /// Create menu invitation using SharedMenu model for universal invitation system
   Future<String?> createMenuInvitation({
@@ -617,8 +601,6 @@ class UnifiedMenuService extends ChangeNotifier
     return result ?? false;
   }
 
-  // ===== GETTERS =====
-
   bool get isInitialized => _isInitialized;
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -629,9 +611,6 @@ class UnifiedMenuService extends ChangeNotifier
       ServiceLocator.get<PermissionService>().currentUserId;
   String? get currentUserDisplayName =>
       ServiceLocator.get<PermissionService>().currentUserDisplayName;
-
-  // ===== LIFECYCLE =====
-
   @override
   void dispose() {
     // Clean up any resources

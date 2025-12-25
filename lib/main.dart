@@ -36,6 +36,9 @@ import 'package:butlery/core/observers/session_activity_observer.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/widgets/common/dialogs/session_timeout_warning_dialog.dart';
 
+// Memory pressure handling
+import 'package:butlery/services/performance/intelligent_cache_manager.dart';
+
 // Performance optimization - handled by modular system
 
 // All services accessed through DI system - no direct imports needed
@@ -395,6 +398,32 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       // App went to background
       _trackAppBackgrounded();
       _sessionTimeoutService?.onAppPaused();
+    }
+  }
+
+  @override
+  void didHaveMemoryPressure() {
+    super.didHaveMemoryPressure();
+    _handleMemoryPressure();
+  }
+
+  /// Handle system memory pressure by clearing caches.
+  void _handleMemoryPressure() {
+    AppLogger.warning('System memory pressure detected - clearing caches');
+
+    // Clear Flutter's image cache
+    PaintingBinding.instance.imageCache.clear();
+    PaintingBinding.instance.imageCache.clearLiveImages();
+
+    // Clear app-level caches
+    try {
+      final bootstrap = ApplicationBootstrap();
+      if (bootstrap.isInitialized) {
+        final cacheManager = bootstrap.container.get<IntelligentCacheManager>();
+        cacheManager.handleMemoryPressure();
+      }
+    } catch (e) {
+      AppLogger.error('Failed to handle memory pressure in cache manager', e);
     }
   }
 

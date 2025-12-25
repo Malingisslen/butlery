@@ -313,8 +313,6 @@ class RecipeDiffCalculator {
     return corrections;
   }
 
-  // ===== MATCHING UTILITIES =====
-
   /// Check if two ingredient names match with fuzzy threshold.
   bool _namesMatch(String? a, String? b, {required double threshold}) {
     if (a == null || b == null) return false;

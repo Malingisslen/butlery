@@ -77,8 +77,6 @@ class NotificationOfflineManager {
         _clock = clock ?? const Clock(),
         _retryDelay = retryDelay ?? const Duration(minutes: 5);
 
-  // ===== QUEUE MANAGEMENT =====
-
   /// Queue notification for offline processing
   /// Called when a notification fails to send due to network issues
   void queueNotificationForOffline({
@@ -133,8 +131,6 @@ class NotificationOfflineManager {
   List<PendingNotification> get queuedNotifications =>
       List<PendingNotification>.from(_offlineQueue);
 
-  // ===== STATUS MANAGEMENT =====
-
   /// Update online status and trigger queue processing if coming online
   void setOnlineStatus(bool isOnline) {
     if (_isOnline != isOnline) {
@@ -160,8 +156,6 @@ class NotificationOfflineManager {
 
   /// Get current online status
   bool get isOnline => _isOnline;
-
-  // ===== QUEUE PROCESSING =====
 
   /// Process offline notification queue
   /// Attempts to send all queued notifications when back online
@@ -249,8 +243,6 @@ class NotificationOfflineManager {
     await processOfflineQueue(force: true);
   }
 
-  // ===== QUEUE MAINTENANCE =====
-
   /// Clear all queued notifications
   void clearQueue() {
     final queueSize = _offlineQueue.length;
@@ -306,8 +298,6 @@ class NotificationOfflineManager {
     };
   }
 
-  // ===== PRIVATE HELPER METHODS =====
-
   /// Limit queue size to prevent memory issues
   void _limitQueueSize() {
     const maxQueueSize = 100;
@@ -347,8 +337,6 @@ class NotificationOfflineManager {
     _retryTimer?.cancel();
     _retryTimer = null;
   }
-
-  // ===== LIFECYCLE METHODS =====
 
   /// Set callback for actually sending notifications
   void setSendNotificationCallback(

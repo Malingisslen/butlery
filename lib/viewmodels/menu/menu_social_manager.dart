@@ -21,8 +21,6 @@ class MenuSocialManager {
     required SocialMenuOperations socialMenuOps,
   }) : _socialMenuOps = socialMenuOps;
 
-  // ===== SOCIAL SHARING =====
-
   /// Share menu with friends
   Future<bool> shareMenuWithFriends({
     required Map<String, List<Recipe>> menu,
@@ -51,8 +49,6 @@ class MenuSocialManager {
       rethrow;
     }
   }
-
-  // ===== SOCIAL DISCOVERY =====
 
   /// Get available shared menus from friends
   Future<List<Map<String, dynamic>>> getAvailableSharedMenus() async {
@@ -91,8 +87,6 @@ class MenuSocialManager {
       AppLogger.error('Mark menu as viewed failed', e);
     }
   }
-
-  // ===== IMPORTED MENU MANAGEMENT =====
 
   /// Load imported menus from social operations
   Future<List<SavedMenuInfo>> loadImportedMenus() async {
@@ -143,8 +137,6 @@ class MenuSocialManager {
       return null;
     }
   }
-
-  // ===== SOCIAL STATISTICS =====
 
   /// Get sharing statistics
   Future<Map<String, dynamic>> getSharingStats() async {
@@ -216,8 +208,6 @@ class MenuSocialManager {
 
     return lastActivity;
   }
-
-  // ===== SOCIAL VALIDATION =====
 
   /// Validate sharing prerequisites
   bool validateSharingPrerequisites({

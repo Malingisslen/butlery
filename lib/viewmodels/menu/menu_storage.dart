@@ -28,8 +28,6 @@ class MenuStorage {
       : _firestoreRepository =
             firestoreRepository ?? ServiceLocator.get<FirestoreRepository>();
 
-  // ===== SAVE OPERATIONS =====
-
   /// Save menu to Firestore
   ///
   /// Returns the Firestore document ID for the saved menu.
@@ -85,8 +83,6 @@ class MenuStorage {
         lastPrompt: lastPrompt,
         totalRecipeCount: totalRecipeCount,
       );
-
-  // ===== LOAD OPERATIONS =====
 
   /// Load a specific menu by its Firestore document ID
   ///
@@ -192,8 +188,6 @@ class MenuStorage {
   @Deprecated('Use loadUserMenus instead')
   Future<List<SavedMenuInfo>> loadLocalMenus() => loadUserMenus();
 
-  // ===== DELETE OPERATIONS =====
-
   /// Delete a menu from Firestore by document ID
   ///
   /// Returns true if deletion succeeds, false otherwise.
@@ -234,8 +228,6 @@ class MenuStorage {
     }
   }
 
-  // ===== UPDATE OPERATIONS =====
-
   /// Mark menu as modified (updates Firestore document)
   Future<bool> markMenuAsModified(String menuId) async {
     try {
@@ -265,8 +257,6 @@ class MenuStorage {
     }
   }
 
-  // ===== VALIDATION =====
-
   /// Validate menu name for storage
   bool validateMenuName(String menuName) {
     final trimmed = menuName.trim();
@@ -284,8 +274,6 @@ class MenuStorage {
 
     return true;
   }
-
-  // ===== IMPORTED MENUS (from social sharing) =====
 
   /// Load imported menu data by key (menus shared with you)
   /// These are stored locally after being imported from social shares

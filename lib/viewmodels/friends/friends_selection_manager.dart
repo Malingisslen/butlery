@@ -6,11 +6,9 @@ import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
 
 class FriendsSelectionManager extends ChangeNotifier {
-  // ===== STATE =====
   final Set<String> _selectedFriendIds = {};
   bool _isDisposed = false;
 
-  // ===== GETTERS =====
   Set<String> get selectedFriendIds => Set.unmodifiable(_selectedFriendIds);
   bool get hasSelectedFriends => _selectedFriendIds.isNotEmpty;
   int get selectedFriendsCount => _selectedFriendIds.length;

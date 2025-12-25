@@ -13,8 +13,6 @@ import 'package:butlery/core/utils/logger.dart';
 /// - Real-time notification triggering
 /// ❌ DOES NOT CONTAIN: Session management, content operations, conflict resolution, editor tracking
 class RealtimeEventHandler {
-  // ===== REAL-TIME CHANGE PROCESSING =====
-
   /// Handle real-time recipe changes from Firestore
   static void handleRealtimeRecipeChange({
     required DocumentSnapshot snapshot,
@@ -124,8 +122,6 @@ class RealtimeEventHandler {
     return editedAt != null && editedBy != null;
   }
 
-  // ===== REAL-TIME ERROR HANDLING =====
-
   /// Handle real-time synchronization errors
   static void handleRealtimeError({
     required String recipeId,
@@ -198,8 +194,6 @@ class RealtimeEventHandler {
     }
   }
 
-  // ===== REAL-TIME NOTIFICATION HANDLING =====
-
   /// Send silent notification about real-time edit
   static Future<void> sendRealtimeEditNotification({
     required String recipeId,
@@ -257,8 +251,6 @@ class RealtimeEventHandler {
     return true;
   }
 
-  // ===== EVENT STREAM HANDLING =====
-
   /// Create real-time change listener
   static StreamSubscription<DocumentSnapshot> createRealtimeListener({
     required FirebaseFirestore firestore,
@@ -299,8 +291,6 @@ class RealtimeEventHandler {
     // Process edits from other users
     return editedBy != null && editedBy != currentUserId;
   }
-
-  // ===== EVENT FILTERING =====
 
   /// Filter out own edits from processing
   static bool isOwnEdit({

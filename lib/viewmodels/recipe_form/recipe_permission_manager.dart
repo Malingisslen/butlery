@@ -62,8 +62,6 @@ class RecipePermissionManager {
   /// ensuring proper access control and collaborative feature availability.
   void checkPermissions() {}
 
-  // ===== UI STATE PERMISSION ACCESSORS =====
-
   /// Edit permission for recipe form modification and content management.
   bool get canEdit {
     if (_recipeId == null) return true; // New recipe creation
@@ -110,8 +108,6 @@ class RecipePermissionManager {
 
   /// Edit mode enumeration for type-safe form behavior and validation.
   EditMode? get editModeEnum => EditMode.edit;
-
-  // ===== PERMISSION MANAGEMENT OPERATIONS =====
 
   /// Updates user permission with comprehensive access control and collaborative coordination.
   /// [recipeId] Recipe identifier for permission management

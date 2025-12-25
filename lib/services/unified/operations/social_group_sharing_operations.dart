@@ -30,8 +30,6 @@ class SocialGroupSharingOperations {
     );
   }
 
-  // ===== GROUP CONTENT SHARING =====
-
   /// Share content to a group
   Future<bool> shareContentToGroup({
     required String groupId,
@@ -112,8 +110,6 @@ class SocialGroupSharingOperations {
     }
   }
 
-  // ===== GROUP MEMBER RESOLUTION =====
-
   /// Get all user IDs from a group for sharing purposes
   List<String> resolveGroupMembers(String groupId) {
     try {
@@ -161,16 +157,12 @@ class SocialGroupSharingOperations {
     }
   }
 
-  // ===== GROUP SHARING VALIDATION =====
-
   bool canShareToGroup(String groupId, String userId) =>
       _validation.canShareToGroup(groupId, userId);
   bool canShareToGroups(List<String> groupIds, String userId) =>
       _validation.canShareToGroups(groupIds, userId);
   bool isGroupAccessible(String groupId) =>
       _validation.isGroupAccessible(groupId);
-
-  // ===== GROUP SHARING STATISTICS =====
 
   /// Get sharing statistics for a group
   Map<String, dynamic> getGroupSharingStats(String groupId) {
@@ -223,8 +215,6 @@ class SocialGroupSharingOperations {
     }
   }
 
-  // ===== GROUP CONTENT DISCOVERY =====
-
   /// Retrieves all content that has been shared to a specific group.
   /// Queries the SharedContent repository to find all recipes, menus, and
   /// shopping lists that have been shared to the specified group. This method
@@ -262,8 +252,6 @@ class SocialGroupSharingOperations {
       return [];
     }
   }
-
-  // ===== HELPER METHODS =====
 
   /// Get group by ID with error handling
   FriendCategory? getGroupById(String groupId) {
@@ -314,8 +302,6 @@ class SocialGroupSharingOperations {
     }
   }
 
-  // ===== BULK OPERATIONS =====
-
   Future<bool> shareContentToAllOwnedGroups({required SharedContent content}) =>
       _bulkOperations.shareContentToAllOwnedGroups(content);
 
@@ -353,9 +339,6 @@ class SocialGroupSharingOperations {
 
   Future<bool> removeContentFromAllGroups({required String contentId}) =>
       _bulkOperations.removeContentFromAllGroups(contentId);
-
-  // ===== BULK OPERATION UTILITIES =====
-
   Map<String, dynamic> getBulkSharingSummary({
     required List<String> groupIds,
     required List<SharedContent> contentList,

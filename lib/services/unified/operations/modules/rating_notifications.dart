@@ -14,8 +14,6 @@ import 'package:butlery/services/notifications/notification_types.dart';
 /// - Notification formatting and targeting
 /// ❌ DOES NOT CONTAIN: Rating operations, statistics, social metrics, engagement calculations
 class RatingNotifications {
-  // ===== RATING NOTIFICATIONS =====
-
   /// Send notification when recipe receives a rating
   static Future<void> sendRatingNotification({
     required NotificationService? notificationService,
@@ -170,8 +168,6 @@ class RatingNotifications {
     );
   }
 
-  // ===== NOTIFICATION HELPERS =====
-
   /// Get rating milestone information
   static Map<String, dynamic>? _getRatingMilestone(
       int totalRatings, double averageRating) {
@@ -240,8 +236,6 @@ class RatingNotifications {
     if (review.length <= maxLength) return review;
     return '${review.substring(0, maxLength)}...';
   }
-
-  // ===== NOTIFICATION BATCHING =====
 
   /// Send batched rating notifications to avoid spam
   static Future<void> sendBatchedRatingNotifications({
@@ -328,8 +322,6 @@ class RatingNotifications {
       ],
     );
   }
-
-  // ===== NOTIFICATION PREFERENCES =====
 
   /// Check if user wants rating notifications
   static bool shouldSendRatingNotification({

@@ -80,8 +80,6 @@ class FriendsViewModel extends ChangeNotifier
   String? get groupsError => _friendsService.error;
   int get groupsCount => groups.length;
 
-  // ===== SOCIAL SEARCH STATE ACCESSORS (DELEGATES) =====
-
   /// Current search query
   String get searchQuery => _searchManager.searchQuery;
 
@@ -99,8 +97,6 @@ class FriendsViewModel extends ChangeNotifier
 
   /// Search query presence
   bool get hasSearchQuery => _searchManager.hasSearchQuery;
-
-  // ===== LOADING AND ERROR STATE COORDINATION =====
 
   /// Comprehensive loading state combining all operations
   @override
@@ -123,8 +119,6 @@ class FriendsViewModel extends ChangeNotifier
       _groupCreationError != null ||
       _searchManager.searchError != null;
 
-  // ===== FRIEND SELECTION STATE ACCESSORS (DELEGATES) =====
-
   /// Selected friend IDs
   Set<String> get selectedFriendIds => _selectionManager.selectedFriendIds;
 
@@ -133,8 +127,6 @@ class FriendsViewModel extends ChangeNotifier
 
   /// Selected friends count
   int get selectedFriendsCount => _selectionManager.selectedFriendsCount;
-
-  // ===== GROUP CREATION STATE ACCESSORS =====
 
   /// Group creation operation state for UI progress indication during group formation.
   /// Indicates active group creation for loading indicators and interaction
@@ -146,8 +138,6 @@ class FriendsViewModel extends ChangeNotifier
   /// handling and user guidance during group formation.
   String? get groupCreationError => _groupCreationError;
 
-  // ===== USER PROFILE CACHE ACCESSORS (DELEGATES) =====
-
   /// Retrieves cached user profile
   UserProfile? getUserProfile(String userId) =>
       _profileCacheManager.getUserProfile(userId);
@@ -155,15 +145,11 @@ class FriendsViewModel extends ChangeNotifier
   /// User profile loading state
   bool get isLoadingUserProfiles => _profileCacheManager.isLoadingUserProfiles;
 
-  // ===== SOCIAL SEARCH OPERATIONS (DELEGATES) =====
-
   /// Updates search query with validation and search execution
   Future<void> updateSearch(String query) => _searchManager.updateSearch(query);
 
   /// Clears search results and state
   void clearSearch() => _searchManager.clearSearch();
-
-  // ===== FRIEND REQUEST ACTIONS =====
 
   /// Send friend request to user
   Future<bool> sendFriendRequest(String userId, {String? message}) async {
@@ -303,8 +289,6 @@ class FriendsViewModel extends ChangeNotifier
         .toList();
   }
 
-  // ===== UTILITY METHODS =====
-
   /// Get relationship status with user
   FriendshipStatus getFriendshipStatus(String userId) {
     // Check if user is already a friend
@@ -348,8 +332,6 @@ class FriendsViewModel extends ChangeNotifier
     return status == FriendshipStatus.none;
   }
 
-  // ===== SELECTION ACTIONS (DELEGATES) =====
-
   /// Toggle friend selection
   void toggleFriendSelection(String friendId) =>
       _selectionManager.toggleFriendSelection(friendId);
@@ -367,8 +349,6 @@ class FriendsViewModel extends ChangeNotifier
   /// Get profile picture URL for a user
   String? getAvatarUrlForUser(String userId) =>
       _profileCacheManager.getAvatarUrlForUser(userId);
-
-  // ===== USER PROFILE MANAGEMENT (DELEGATES) =====
 
   /// Loads user profiles for all users in friend requests
   Future<void> loadUserProfilesForRequests() => _loadUserProfilesForRequests();
@@ -396,8 +376,6 @@ class FriendsViewModel extends ChangeNotifier
       sentRequests: sentRequests,
     );
   }
-
-  // ===== LISTENER CALLBACKS =====
 
   void _onSearchChanged() {
     if (!_isDisposed) {

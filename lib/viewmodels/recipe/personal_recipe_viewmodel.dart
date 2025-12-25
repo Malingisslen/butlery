@@ -20,18 +20,12 @@ class PersonalRecipeViewModel extends ChangeNotifier
       ServiceLocator.get<UnifiedRecipeService>();
 
   String get serviceName => 'PersonalRecipeViewModel';
-
-  // ===== GETTERS =====
-
   List<Recipe> get personalRecipes => _recipeService.personalRecipes;
   bool get hasPersonalRecipes => personalRecipes.isNotEmpty;
   int get personalRecipeCount => personalRecipes.length;
 
   String? get currentUserId => _recipeService.currentUserId;
   String? get currentUserDisplayName => _recipeService.currentUserDisplayName;
-
-  // ===== PERSONAL RECIPE CREATION =====
-
   Future<bool> createPersonalRecipe({
     required String name,
     String description = '',
@@ -76,8 +70,6 @@ class PersonalRecipeViewModel extends ChangeNotifier
         false;
   }
 
-  // ===== PERSONAL RECIPE MANAGEMENT =====
-
   Future<bool> updatePersonalRecipe(Recipe recipe) async {
     if (!recipe.isPersonal) return false;
 
@@ -100,8 +92,6 @@ class PersonalRecipeViewModel extends ChangeNotifier
     }
     return result;
   }
-
-  // ===== CONTENT EDITING =====
 
   Future<bool> updateRecipeContent({
     required String recipeId,
@@ -141,8 +131,6 @@ class PersonalRecipeViewModel extends ChangeNotifier
     }
     return result;
   }
-
-  // ===== INGREDIENT MANAGEMENT =====
 
   Future<bool> addIngredient(String recipeId, String ingredient) async {
     if (ValidationUtils.isNullOrEmpty(recipeId) ||
@@ -196,8 +184,6 @@ class PersonalRecipeViewModel extends ChangeNotifier
     return result;
   }
 
-  // ===== INSTRUCTION MANAGEMENT =====
-
   Future<bool> addInstruction(String recipeId, String instruction) async {
     if (ValidationUtils.isNullOrEmpty(recipeId) ||
         ValidationUtils.isNullOrEmpty(instruction)) {
@@ -233,8 +219,6 @@ class PersonalRecipeViewModel extends ChangeNotifier
     return await _recipeService.personal.removeInstruction(recipeId, index);
   }
 
-  // ===== COOKING TRACKING =====
-
   Future<bool> markAsCooked(String recipeId) async {
     if (ValidationUtils.isNullOrEmpty(recipeId)) return false;
 
@@ -243,8 +227,6 @@ class PersonalRecipeViewModel extends ChangeNotifier
 
     return await _recipeService.personal.markAsCooked(recipeId);
   }
-
-  // ===== LEGACY COMPATIBILITY =====
 
   Future<RecipeOperationResult> addLegacyRecipe(Recipe recipe) async {
     if (!recipe.isPersonal) {
@@ -289,8 +271,6 @@ class PersonalRecipeViewModel extends ChangeNotifier
         RecipeOperationResult.failure('Failed to update recipe');
   }
 
-  // ===== QUERY UTILITIES =====
-
   Recipe? getPersonalRecipeById(String id) {
     return personalRecipes.where((r) => r.id == id).firstOrNull;
   }
@@ -321,8 +301,6 @@ class PersonalRecipeViewModel extends ChangeNotifier
               false);
     }).toList();
   }
-
-  // ===== ANALYTICS =====
 
   Map<String, int> getPersonalMealTypeCounts() {
     final mealTypeCounts = <String, int>{};

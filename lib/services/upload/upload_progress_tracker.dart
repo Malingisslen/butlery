@@ -24,8 +24,6 @@ class UploadProgressTracker {
   /// Progress milestones for notifications (25%, 50%, 75%)
   static const List<double> progressMilestones = [0.25, 0.50, 0.75];
 
-  // ===== PROGRESS TRACKING =====
-
   /// Update progress for an upload
   ImageUploadStatus updateProgress({
     required ImageUploadStatus currentStatus,
@@ -111,8 +109,6 @@ class UploadProgressTracker {
     AppLogger.debug('📊 PROGRESS: Cleared all tracking');
   }
 
-  // ===== MILESTONE DETECTION =====
-
   /// Check if a progress milestone was crossed
   /// Returns the milestone value (0.25, 0.50, 0.75) if crossed, null otherwise
   double? _checkMilestoneCrossed(
@@ -143,8 +139,6 @@ class UploadProgressTracker {
       timestamp: DateTime.now(),
     );
   }
-
-  // ===== ANALYTICS =====
 
   /// Get upload duration for a file
   Duration? getUploadDuration(String filePath) {

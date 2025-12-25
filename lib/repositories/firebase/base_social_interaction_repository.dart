@@ -57,8 +57,6 @@ abstract class BaseSocialInteractionRepository
     return metadata.toFirestore();
   }
 
-  // ===== CONVENIENCE METHODS =====
-
   /// Toggle like on content (like if not liked, unlike if liked).
   /// [resourceId] ID of the content being liked/unliked
   /// [cachedCountField] Optional field name for cached like count in parent document

@@ -56,8 +56,6 @@ class NotificationContentManager {
     required String userId,
   }) : _userId = userId;
 
-  // ===== NOTIFICATION ID GENERATION =====
-
   /// Generate unique notification ID
   /// Creates unique identifiers using strategy category, user ID, timestamp, and random number
   /// to ensure no duplicate notifications and enable proper deduplication
@@ -77,8 +75,6 @@ class NotificationContentManager {
       return 'fallback_${targetUserId}_${DateTime.now().millisecondsSinceEpoch}';
     }
   }
-
-  // ===== TEMPLATE CREATION =====
 
   /// Create notification content from strategy with variable substitution
   /// Main entry point for creating notification content
@@ -187,8 +183,6 @@ class NotificationContentManager {
     }
   }
 
-  // ===== BATCHED NOTIFICATIONS =====
-
   /// Build combined notification from multiple templates
   /// Combines multiple notifications into a single summary notification
   /// to prevent notification spam while preserving important information
@@ -236,8 +230,6 @@ class NotificationContentManager {
     }
   }
 
-  // ===== DIGEST CONTENT =====
-
   /// Build digest content from activity list
   /// Creates summary content for digest notifications that aggregate
   /// multiple activities over a longer time period
@@ -280,8 +272,6 @@ class NotificationContentManager {
       };
     }
   }
-
-  // ===== PRIVATE HELPER METHODS =====
 
   /// Substitute variables in template strings
   String _substituteVariables(String template, Map<String, String> variables) {

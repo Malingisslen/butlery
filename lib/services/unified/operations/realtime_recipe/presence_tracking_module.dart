@@ -44,8 +44,6 @@ class PresenceTrackingModule {
     _startPresenceCleanup();
   }
 
-  // ===== PRESENCE MANAGEMENT =====
-
   /// Show user presence in recipe (user starts viewing/editing)
   Future<bool> showPresence(String recipeId) async {
     try {
@@ -145,8 +143,6 @@ class PresenceTrackingModule {
     }
   }
 
-  // ===== PRESENCE QUERIES =====
-
   /// Get users currently viewing/editing the recipe
   Future<List<Map<String, dynamic>>> getRecipePresence(String recipeId) async {
     try {
@@ -244,8 +240,6 @@ class PresenceTrackingModule {
         .length;
   }
 
-  // ===== PRESENCE STREAMS =====
-
   /// Stream of presence updates for a recipe
   Stream<List<Map<String, dynamic>>> watchRecipePresence(String recipeId) {
     return _presenceController.stream
@@ -269,8 +263,6 @@ class PresenceTrackingModule {
   Stream<int> watchPresenceCount(String recipeId) {
     return watchRecipePresence(recipeId).map((presence) => presence.length);
   }
-
-  // ===== PRESENCE UTILITIES =====
 
   /// Start automatic presence tracking for recipe
   /// Fixed (#042): Track subscription internally for proper cleanup
@@ -336,8 +328,6 @@ class PresenceTrackingModule {
     }
   }
 
-  // ===== PRESENCE ANALYTICS =====
-
   /// Get presence statistics
   Map<String, dynamic> getPresenceStatistics() {
     final totalActiveRecipes = _recipePresence.keys.length;
@@ -388,8 +378,6 @@ class PresenceTrackingModule {
 
     return history;
   }
-
-  // ===== PRIVATE METHODS =====
 
   /// Update local presence tracking
   void _updateLocalPresence(String recipeId, String userId, bool isActive) {

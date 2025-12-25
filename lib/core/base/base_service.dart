@@ -23,11 +23,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
 /// - [onInitialize] method for custom initialization logic (optional)
 /// - [onDispose] method for custom cleanup logic (optional)
 abstract class BaseService with ErrorHandlingMixin {
-  // ===== COMMON SERVICE DEPENDENCIES =====
   // Service access patterns moved to ServiceLocator helper to avoid circular dependencies
-
-  // ===== SERVICE INITIALIZATION =====
-
   /// Unique name identifier for this service.
   /// Used in logging, debugging, and error reporting to identify which service
   /// generated a particular log entry or error. Should be a descriptive name
@@ -85,8 +81,6 @@ abstract class BaseService with ErrorHandlingMixin {
   Future<void> onDispose() async {
     // Default implementation - override in subclasses
   }
-
-  // ===== COMMON SERVICE OPERATIONS =====
 
   /// Executes a service operation with comprehensive error handling and validation.
   /// This method provides a standardized wrapper for all service operations,
@@ -150,8 +144,6 @@ abstract class BaseService with ErrorHandlingMixin {
     );
   }
 
-  // ===== BATCH OPERATIONS =====
-
   /// Execute multiple operations in batch with error handling
   Future<List<T>> executeBatchOperation<T>(
     List<Future<T> Function()> operations,
@@ -180,8 +172,6 @@ abstract class BaseService with ErrorHandlingMixin {
       continueOnError: continueOnError,
     );
   }
-
-  // ===== CACHING PATTERNS =====
 
   final Map<String, dynamic> _cache = {};
   final Map<String, DateTime> _cacheTimestamps = {};
@@ -225,8 +215,6 @@ abstract class BaseService with ErrorHandlingMixin {
     AppLogger.debug('🗑️ Cleared all cache for $serviceName');
   }
 
-  // ===== PERMISSION PATTERNS =====
-
   /// Check permission with caching
   Future<bool> checkPermission(String permission) async {
     return await getCachedOrExecute(
@@ -261,8 +249,6 @@ abstract class BaseService with ErrorHandlingMixin {
     );
   }
 
-  // ===== VALIDATION PATTERNS =====
-
   /// Validate input parameters before operation
   bool validateInput(Map<String, dynamic> inputs, List<String> requiredFields) {
     for (final field in requiredFields) {
@@ -293,8 +279,6 @@ abstract class BaseService with ErrorHandlingMixin {
       defaultValue: defaultValue,
     );
   }
-
-  // ===== HELPER METHODS =====
 
   /// Check if user is authenticated
   Future<bool> _isAuthenticated() async {
@@ -335,8 +319,6 @@ abstract class BaseService with ErrorHandlingMixin {
 
     return DateTime.now().difference(timestamp) < duration;
   }
-
-  // ===== ERROR HANDLING IMPLEMENTATION =====
 
   void _handleUserError(String message) {
     AppLogger.error('[$serviceName] User error: $message');
@@ -443,7 +425,6 @@ extension StringExtensions on String {
   }
 }
 
-// ===== FORWARD DECLARATIONS =====
 // These would typically be imported from their respective files
 
 abstract class UserService {

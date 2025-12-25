@@ -32,9 +32,6 @@ class RealtimeRecipeViewModel extends ChangeNotifier
   }
 
   String get serviceName => 'RealtimeRecipeViewModel';
-
-  // ===== GETTERS =====
-
   String? get currentUserId {
     if (_disposed) {
       throw FlutterError('RealtimeRecipeViewModel has been disposed');
@@ -62,8 +59,6 @@ class RealtimeRecipeViewModel extends ChangeNotifier
     }
     return _recipeService.realtime.connectionStream;
   }
-
-  // ===== REALTIME SESSION MANAGEMENT =====
 
   Future<bool> startRealtimeEditing(String recipeId) async {
     if (ValidationUtils.isNullOrEmpty(recipeId) || recipeId.trim().isEmpty) {
@@ -102,8 +97,6 @@ class RealtimeRecipeViewModel extends ChangeNotifier
     return _recipeService.isInRealtimeEditingSession(recipeId);
   }
 
-  // ===== LIVE EDITING OPERATIONS =====
-
   Future<bool> makeRealtimeEdit({
     required String recipeId,
     required Map<String, dynamic> changes,
@@ -124,8 +117,6 @@ class RealtimeRecipeViewModel extends ChangeNotifier
     ))
         .orFalse();
   }
-
-  // ===== REALTIME CONTENT OPERATIONS =====
 
   Future<bool> addIngredientRealtime(String recipeId, String ingredient) async {
     if (ValidationUtils.isNullOrEmpty(recipeId) ||
@@ -232,8 +223,6 @@ class RealtimeRecipeViewModel extends ChangeNotifier
         .orFalse();
   }
 
-  // ===== REALTIME WATCHING =====
-
   Stream<Recipe> watchRecipe(String recipeId) {
     if (ValidationUtils.isNullOrEmpty(recipeId)) {
       return const Stream.empty();
@@ -249,8 +238,6 @@ class RealtimeRecipeViewModel extends ChangeNotifier
 
     return _recipeService.realtime.watchMultipleRecipes(recipeIds);
   }
-
-  // ===== ACTIVE EDITOR TRACKING =====
 
   Future<List<String>> getActiveEditorsAsync(String recipeId) async {
     if (ValidationUtils.isNullOrEmpty(recipeId)) return [];
@@ -299,8 +286,6 @@ class RealtimeRecipeViewModel extends ChangeNotifier
             presence.map((p) => p['userId'] as String? ?? '').toList());
   }
 
-  // ===== CONNECTION MANAGEMENT =====
-
   Future<bool> reconnectRealtime() async {
     return (await safeExecute(
       () async {
@@ -330,8 +315,6 @@ class RealtimeRecipeViewModel extends ChangeNotifier
     );
   }
 
-  // ===== SESSION STATE =====
-
   Map<String, bool> getActiveRealtimeSessions() {
     // Get all recipes and check which ones are in realtime sessions
     final sessions = <String, bool>{};
@@ -352,8 +335,6 @@ class RealtimeRecipeViewModel extends ChangeNotifier
   int getActiveSessionCount() {
     return getActiveRealtimeRecipeIds().length;
   }
-
-  // ===== CONFLICT RESOLUTION =====
 
   Future<bool> resolveEditConflict({
     required String recipeId,
@@ -438,8 +419,6 @@ class RealtimeRecipeViewModel extends ChangeNotifier
       socialData: recipe.socialData,
     );
   }
-
-  // ===== REALTIME ANALYTICS =====
 
   Map<String, dynamic> getRealtimeStats() {
     final activeSessionCount = getActiveSessionCount();

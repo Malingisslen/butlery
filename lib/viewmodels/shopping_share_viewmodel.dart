@@ -101,8 +101,6 @@ class ShoppingShareViewModel extends ChangeNotifier
   final UnifiedShoppingService _shoppingService;
   final UnifiedFriendsService _friendsService;
 
-  // ===== SHARING OPERATION STATE =====
-
   /// Share operation state for UI progress indication during sharing operations.
   /// Indicates active sharing operation for loading indicators and interaction
   /// control during shopping list distribution and delivery processes.
@@ -128,8 +126,6 @@ class ShoppingShareViewModel extends ChangeNotifier
   /// state validation, and proper initialization coordination.
   bool _initialized = false;
 
-  // ===== INITIALIZATION =====
-
   /// Initializes shopping share ViewModel with comprehensive service integration and sharing preparation.
   /// [shoppingService] UnifiedShoppingService instance for shopping list operations and sharing coordination
   /// [friendsService] UnifiedFriendsService instance for friend management and social functionality
@@ -146,8 +142,6 @@ class ShoppingShareViewModel extends ChangeNotifier
     required UnifiedFriendsService friendsService,
   })  : _shoppingService = shoppingService,
         _friendsService = friendsService;
-
-  // ===== SHARING STATE ACCESSORS =====
 
   /// Share operation state for UI progress indication and interaction control.
   /// Indicates whether sharing operation is in progress for loading indicators
@@ -174,8 +168,6 @@ class ShoppingShareViewModel extends ChangeNotifier
   /// UI state management, and proper initialization validation.
   bool get isInitialized => _initialized;
 
-  // ===== COMPUTED STATE PROPERTIES =====
-
   /// Share capability indicator for UI control and interaction management.
   /// Indicates whether sharing is available based on friend selection and operation state
   /// enabling share button state management and sharing functionality access.
@@ -200,8 +192,6 @@ class ShoppingShareViewModel extends ChangeNotifier
         .toList();
   }
 
-  // ==================== INITIALIZATION COMMAND ====================
-
   /// Command: Initialize ViewModel
   Future<void> initializeCommand() async {
     if (_initialized) return;
@@ -222,8 +212,6 @@ class ShoppingShareViewModel extends ChangeNotifier
       _setLoading(false);
     }
   }
-
-  // ==================== FRIEND SELECTION COMMANDS ====================
 
   /// Command: Toggle friend selection
   void toggleFriendSelectionCommand(String friendId) {
@@ -261,15 +249,11 @@ class ShoppingShareViewModel extends ChangeNotifier
     notifyListeners();
   }
 
-  // ==================== MESSAGE COMMANDS ====================
-
   /// Command: Update share message
   void updateShareMessageCommand(String message) {
     _shareMessage = message.trim();
     notifyListeners();
   }
-
-  // ==================== SHARE COMMANDS ====================
 
   /// Command: Share shopping list with selected friends - FIXAD VERSION
   Future<bool> shareShoppingListCommand(
@@ -347,8 +331,6 @@ class ShoppingShareViewModel extends ChangeNotifier
     }
   }
 
-  // ==================== HELPER COMMANDS ====================
-
   /// Command: Refresh friends list
   Future<void> refreshFriendsCommand() async {
     debugPrint('🔄 ShoppingShareViewModel: Uppdaterar vänlista');
@@ -372,8 +354,6 @@ class ShoppingShareViewModel extends ChangeNotifier
   void clearErrorCommand() {
     _clearError();
   }
-
-  // ==================== PRIVATE HELPER METHODS ====================
 
   Future<void> _loadFriends() async {
     try {
@@ -407,8 +387,6 @@ class ShoppingShareViewModel extends ChangeNotifier
     clearError();
   }
 
-  // ==================== VALIDATION METHODS ====================
-
   /// Validate that sharing is possible
   bool validateSharingPossible() {
     if (_friends.isEmpty) {
@@ -429,8 +407,6 @@ class ShoppingShareViewModel extends ChangeNotifier
     final friendNames = selectedFriends.map((f) => f.displayName).join(', ');
     return 'Dela med: $friendNames';
   }
-
-  // ==================== DISPOSE ====================
 
   @override
   void dispose() {

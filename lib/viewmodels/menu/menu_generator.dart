@@ -21,9 +21,6 @@ class MenuGenerator {
     required UnifiedRecipeService recipeService,
   })  : _menuService = menuService,
         _recipeService = recipeService;
-
-  // ===== RECIPE AVAILABILITY =====
-
   List<Recipe> get availableRecipes {
     if (!_recipeService.isInitialized) {
       return [];
@@ -39,8 +36,6 @@ class MenuGenerator {
       await _recipeService.initialize();
     }
   }
-
-  // ===== MENU GENERATION =====
 
   /// Generate complete menu from prompt
   Future<Map<String, List<Recipe>>> generateMenuFromPrompt(
@@ -98,8 +93,6 @@ class MenuGenerator {
       throw Exception('Inga recept tillgängliga. Lägg till recept först.');
     }
   }
-
-  // ===== MENU ANALYSIS =====
 
   /// Analyze generated menu quality
   Map<String, dynamic> analyzeMenuQuality(Map<String, List<Recipe>> menu) {

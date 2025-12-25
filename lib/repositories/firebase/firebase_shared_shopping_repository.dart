@@ -89,9 +89,6 @@ class FirebaseSharedShoppingRepository
 
   @override
   String get collectionName => 'shared_shopping_lists';
-
-  // ===== METADATA REPOSITORY GETTERS =====
-
   @override
   BaseViewRepository get viewRepository => _viewRepository;
 
@@ -100,9 +97,6 @@ class FirebaseSharedShoppingRepository
 
   @override
   BaseDismissalRepository get dismissalRepository => _dismissalRepository;
-
-  // ===== BASE SHARED CONTENT REPOSITORY IMPLEMENTATIONS =====
-
   @override
   String get contentTypeName => 'shopping_list';
 
@@ -126,15 +120,10 @@ class FirebaseSharedShoppingRepository
 
   @override
   bool get tracksCounts => false; // Shopping lists don't track view/join counts
-
-  // ===== COLLECTION REFERENCE =====
-
   @override
   CollectionReference<Map<String, dynamic>> getCollectionRef() {
     return firestore.collection('shared_shopping_lists');
   }
-
-  // ===== SERIALIZATION METHODS =====
 
   @override
   SharedShoppingList fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -148,9 +137,6 @@ class FirebaseSharedShoppingRepository
 
   @override
   String getId(SharedShoppingList entity) => entity.id;
-
-  // ===== FILTERING METHOD IMPLEMENTATIONS =====
-
   @override
   bool shouldShowToUser(SharedShoppingList content, String userId) {
     // Note (Issue #014): Array-based status methods removed.
@@ -171,8 +157,6 @@ class FirebaseSharedShoppingRepository
   bool isCreatedBy(SharedShoppingList content, String userId) {
     return content.sharedByUserId == userId;
   }
-
-  // ===== SHARED SHOPPING LIST OPERATIONS =====
 
   /// Create new shared shopping list with comprehensive validation
   /// Note (Issue #014): recipientIds must be passed separately as sharedToUserIds
@@ -251,8 +235,6 @@ class FirebaseSharedShoppingRepository
     return sharedList;
   }
 
-  // ===== STATUS MANAGEMENT (SUBCOLLECTION-BASED) =====
-
   /// Mark shared shopping list as viewed by user
   @override
   Future<void> markAsViewed(String listId, String userId) async {
@@ -286,16 +268,12 @@ class FirebaseSharedShoppingRepository
     return await deleteSharedContent(listId);
   }
 
-  // ===== QUERY METHODS (DELEGATED TO BASE CLASS) =====
-
   /// Get unread shared shopping lists count for user
   @override
   Future<int> getUnreadCountForUser(String userId) async {
     // Delegate to base class method
     return await super.getUnreadCountForUser(userId);
   }
-
-  // ===== CONTENT-SPECIFIC METHODS =====
 
   /// Get joined shared shopping lists for user
   Future<List<SharedShoppingList>> getJoinedShoppingListsForUser(
@@ -355,9 +333,7 @@ class FirebaseSharedShoppingRepository
     }
   }
 
-  // ============================================================================
   // SHOPPING LIST ITEMS SUBCOLLECTION CRUD (Issue #015)
-  // ============================================================================
 
   /// Adds an item to the shopping list items subcollection.
   /// **Issue #015**: Items stored in subcollection instead of array.
@@ -682,9 +658,7 @@ class FirebaseSharedShoppingRepository
     }
   }
 
-  // ============================================================================
   // ITEM COUNT MANAGEMENT (Issue #015)
-  // ============================================================================
 
   /// Updates the cached itemCount field in the main shopping list document.
   /// **Issue #015**: Maintains itemCount consistency with items subcollection.
