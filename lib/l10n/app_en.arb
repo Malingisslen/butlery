@@ -1,0 +1,442 @@
+{
+  "@@locale": "en",
+  "@@last_modified": "2025-12-25",
+
+  "commonSave": "Save",
+  "commonCancel": "Cancel",
+  "commonDelete": "Delete",
+  "commonEdit": "Edit",
+  "commonAdd": "Add",
+  "commonCreate": "Create",
+  "commonUpdate": "Update",
+  "commonClose": "Close",
+  "commonShare": "Share",
+  "commonRename": "Rename",
+  "commonExport": "Export",
+  "commonOk": "OK",
+  "commonYes": "Yes",
+  "commonNo": "No",
+  "commonRetry": "Retry",
+  "commonLoading": "Loading...",
+  "commonWorking": "Working...",
+  "commonSend": "Send",
+
+  "shoppingRenameList": "Rename list",
+  "shoppingCreateList": "New shopping list",
+  "shoppingNewName": "New name",
+  "shoppingListName": "List name",
+  "shoppingAddToList": "Add to",
+  "shoppingItemName": "Item name",
+  "shoppingAmount": "Amount",
+  "shoppingUnit": "Unit",
+  "shoppingCategory": "Category",
+  "shoppingNote": "Note",
+  "shoppingAddItem": "Add item",
+  "shoppingEditItem": "Edit item",
+  "shoppingList": "Shopping list",
+
+  "authResetPassword": "Reset password",
+  "authForgotPassword": "Forgot password?",
+  "authEnterPassword": "Enter your password",
+  "authPasswordMinLength": "Min 6 characters",
+  "authResetPasswordInstructions": "Enter your email address and we'll send you instructions to reset your password.",
+
+  "navExitApp": "Exit Butlery?",
+  "navExitAppConfirmation": "Are you sure you want to exit the app?",
+  "navExit": "Exit",
+
+  "imageAddImage": "Add image",
+  "imageTakePhoto": "Take photo",
+  "imageUseCamera": "Use camera",
+  "imageFromGallery": "From gallery",
+  "imageSelectFromGallery": "Select an image from gallery",
+  "imageSelectUpTo": "Select up to {count} images",
+  "@imageSelectUpTo": {
+    "placeholders": {
+      "count": {"type": "int", "example": "5"}
+    }
+  },
+
+  "validationFieldRequired": "{fieldName} is required",
+  "@validationFieldRequired": {
+    "placeholders": {
+      "fieldName": {"type": "String", "example": "Email"}
+    }
+  },
+  "validationFieldTooShort": "{fieldName} must be at least {minLength} characters",
+  "@validationFieldTooShort": {
+    "placeholders": {
+      "fieldName": {"type": "String"},
+      "minLength": {"type": "int"}
+    }
+  },
+  "validationFieldTooLong": "{fieldName} cannot exceed {maxLength} characters",
+  "@validationFieldTooLong": {
+    "placeholders": {
+      "fieldName": {"type": "String"},
+      "maxLength": {"type": "int"}
+    }
+  },
+  "validationInvalidFormat": "Invalid format for {fieldName}",
+  "@validationInvalidFormat": {
+    "placeholders": {
+      "fieldName": {"type": "String"}
+    }
+  },
+  "validationNameRequired": "Name required",
+  "validationEmailRequired": "Email required",
+  "validationPasswordRequired": "Password required",
+  "validationInvalidEmail": "Invalid email address",
+  "validationInvalidUrl": "Invalid URL",
+  "validationInvalidPhone": "Invalid phone number",
+  "validationInvalidAmount": "Invalid amount",
+  "validationPasswordTooShort": "Password must be at least 6 characters",
+  "validationGenericRequired": "This field is required",
+  "validationEmailInvalid": "Invalid email address",
+
+  "errorGeneric": "An error occurred. Please try again.",
+  "errorNetwork": "Network error. Check your internet connection.",
+  "errorServer": "Server error. Please try again later.",
+  "errorAuthentication": "Authentication error. Please sign in again.",
+  "errorPermissionDenied": "You don't have permission to perform this action.",
+  "errorNotFound": "Could not be found.",
+  "errorAlreadyExists": "Already exists.",
+  "errorCouldNotCreate": "Could not create {itemType}. Please try again.",
+  "@errorCouldNotCreate": {
+    "placeholders": {
+      "itemType": {"type": "String", "example": "recipe"}
+    }
+  },
+  "errorCouldNotUpdate": "Could not update {itemType}. Please try again.",
+  "@errorCouldNotUpdate": {
+    "placeholders": {
+      "itemType": {"type": "String"}
+    }
+  },
+  "errorCouldNotDelete": "Could not delete {itemType}. Please try again.",
+  "@errorCouldNotDelete": {
+    "placeholders": {
+      "itemType": {"type": "String"}
+    }
+  },
+  "errorCouldNotLoad": "Could not load {itemType}. Please try again.",
+  "@errorCouldNotLoad": {
+    "placeholders": {
+      "itemType": {"type": "String"}
+    }
+  },
+  "errorWithContext": "Error during {action}: {error}",
+  "@errorWithContext": {
+    "placeholders": {
+      "action": {"type": "String"},
+      "error": {"type": "String"}
+    }
+  },
+  "errorActionSpecific": "Problem while {action}: {issue}",
+  "@errorActionSpecific": {
+    "placeholders": {
+      "action": {"type": "String"},
+      "issue": {"type": "String"}
+    }
+  },
+
+  "successItemCreated": "{itemType} created!",
+  "@successItemCreated": {
+    "placeholders": {
+      "itemType": {"type": "String"}
+    }
+  },
+  "successItemUpdated": "{itemType} updated!",
+  "@successItemUpdated": {
+    "placeholders": {
+      "itemType": {"type": "String"}
+    }
+  },
+  "successItemDeleted": "{itemType} deleted!",
+  "@successItemDeleted": {
+    "placeholders": {
+      "itemType": {"type": "String"}
+    }
+  },
+  "successItemAdded": "{itemName} added!",
+  "@successItemAdded": {
+    "placeholders": {
+      "itemName": {"type": "String"}
+    }
+  },
+
+  "confirmDeleteItem": "Are you sure you want to delete \"{itemName}\"?",
+  "@confirmDeleteItem": {
+    "placeholders": {
+      "itemName": {"type": "String"}
+    }
+  },
+  "confirmUnsavedChanges": "You have unsaved changes. Do you want to leave without saving?",
+  "confirmIrreversibleAction": "This action cannot be undone.",
+
+  "draftRecovery": "Restore draft",
+  "draftRecoverySubtitle": "You have unsaved recipe drafts. Would you like to continue where you left off?",
+  "draftRestore": "Restore",
+  "draftStartFresh": "Start fresh",
+  "draftRestored": "Draft restored!",
+  "draftRestoredDetails": "fields loaded",
+  "draftCouldNotRestore": "Could not restore draft. Starting with empty form.",
+  "draftRestoring": "Restoring draft...",
+  "draftUnnamedRecipe": "Unnamed recipe",
+  "draftFieldsFilledCount": "{count} fields filled",
+  "@draftFieldsFilledCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "draftRestoredWithCount": "Draft restored! {count} fields loaded",
+  "@draftRestoredWithCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "connectivityOfflineMode": "Offline mode enabled",
+  "connectivityRestored": "Connection restored",
+  "connectivitySyncingPending": "Syncing pending changes...",
+  "connectivityLocalSaved": "Changes saved locally",
+  "connectivityWillSync": "Will sync when you're back online",
+
+  "permissionInsufficient": "Insufficient permissions",
+  "permissionReadOnly": "Read-only access",
+  "permissionOwnerOnly": "Only the owner can perform this action",
+  "permissionRequestEdit": "Request edit permissions",
+  "permissionMakePersonalCopy": "Make a personal copy",
+
+  "recoveryCheckConnection": "Check your internet connection",
+  "recoveryTryAgain": "Try again",
+  "recoveryLoginAgain": "Sign in again",
+  "recoveryContactOwner": "Contact the owner",
+  "recoveryWaitAndRetry": "Wait and try again",
+  "recoveryCheckPermissions": "Check permissions",
+
+  "emptyNoItems": "No items found.",
+  "emptyList": "The list is empty.",
+  "emptyNoResults": "No results found.",
+  "emptyNoFriends": "No friends yet",
+  "emptyNoRecipes": "No recipes yet",
+  "emptyNoShoppingLists": "No shopping lists yet",
+  "emptyNoRecipesSubtitle": "Add your first recipe by tapping \"{addButton}\"",
+  "@emptyNoRecipesSubtitle": {
+    "placeholders": {
+      "addButton": {"type": "String"}
+    }
+  },
+  "emptyNoSearchResultsSubtitle": "Try searching for something else or clear the search",
+  "emptyNoFriendsSearchTitle": "No friends matched your search",
+  "emptyNoGroupsSearchTitle": "No groups matched your search",
+  "emptyNoMenuTitle": "No menu generated yet",
+  "emptyNoMenuSubtitle": "Type what you want or tap the button below",
+  "emptyNoShoppingListTitle": "No menu to create shopping list from",
+  "emptyNoShoppingListSubtitle": "Go back and create a weekly menu first",
+  "emptyNoFriendsTitle": "No friends yet",
+  "emptyNoFriendsSubtitle": "Add friends to share recipes and menus",
+  "emptyNoCategoriesTitle": "No categories created",
+  "emptyNoCategoriesSubtitle": "Create your first category to organize your friends",
+  "emptyNoImagesTitle": "No images added",
+  "emptyNoImagesSubtitle": "Add images to make your recipe more attractive",
+  "emptyNoTargetsTitle": "No destinations available",
+  "emptyNoTargetsSubtitle": "Add friends or groups to be able to share content",
+  "emptyNoSavedMenusTitle": "No saved menus",
+  "emptyNoSavedMenusSubtitle": "Create and save menus to easily load them later",
+  "emptyGenericTitle": "No content to display",
+
+  "recipeName": "Recipe name",
+  "recipeDescription": "Description",
+  "recipeIngredients": "Ingredients",
+  "recipeInstructions": "Instructions",
+  "recipeCookingTime": "Cooking time",
+  "recipePortions": "Servings",
+  "recipeAdd": "Add recipe",
+  "recipeEdit": "Edit recipe",
+  "recipeDelete": "Delete recipe",
+  "recipeDeleting": "Deleting recipe...",
+  "recipeFormatPortions": "{count, plural, =1{1 serving} other{{count} servings}}",
+  "@recipeFormatPortions": {
+    "placeholders": {
+      "count": {"type": "int", "example": "4"}
+    }
+  },
+
+  "socialFriendName": "Friend name",
+  "socialGroupName": "Group name",
+  "socialDisplayName": "Display name",
+  "socialCreateGroup": "Create group",
+  "socialEditGroup": "Edit group",
+  "socialDeleteGroup": "Delete group",
+  "socialAddFriend": "Add friend",
+  "socialRemoveFriend": "Remove friend",
+  "socialSendFriendRequest": "Send friend request",
+  "socialAcceptFriendRequest": "Accept friend request",
+  "socialDeclineFriendRequest": "Decline friend request",
+
+  "menuName": "Menu name",
+  "menuSave": "Save menu",
+  "menuLoad": "Load menu",
+  "menuWeek": "Weekly menu",
+
+  "messagingTitle": "Messages",
+  "messagingNewConversation": "New conversation",
+  "messagingSearchConversations": "Search conversations...",
+  "messagingLoadingConversations": "Loading conversations...",
+  "messagingNoConversationsFound": "No conversations found",
+  "messagingTryAnotherSearch": "Try a different search term",
+  "messagingNoConversationsYet": "No conversations yet",
+  "messagingStartFirstConversation": "Start your first conversation by tapping the message button",
+  "messagingMarkAsRead": "Mark as read",
+  "messagingGroupInfo": "Group information",
+  "messagingLeaveGroup": "Leave group",
+  "messagingViewProfile": "View profile",
+  "messagingDeleteConversation": "Delete conversation",
+  "messagingLeftGroup": "You have left the group",
+  "messagingCouldNotLeaveGroup": "Could not leave the group: {error}",
+  "@messagingCouldNotLeaveGroup": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "messagingLeave": "Leave",
+  "messagingDeleteConversationConfirm": "Are you sure you want to delete this conversation? All messages will be lost.",
+  "messagingCouldNotShowProfile": "Could not show profile: {error}",
+  "@messagingCouldNotShowProfile": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "messagingConversationDeleted": "Conversation \"{title}\" deleted",
+  "@messagingConversationDeleted": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "messagingCouldNotDeleteConversation": "Could not delete conversation: {error}",
+  "@messagingCouldNotDeleteConversation": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "messagingConfirmLeaveGroup": "Are you sure you want to leave \"{groupName}\"?",
+  "@messagingConfirmLeaveGroup": {
+    "placeholders": {
+      "groupName": {"type": "String"}
+    }
+  },
+
+  "profileLogout": "Log out",
+  "profileLogoutConfirm": "Are you sure you want to log out?",
+  "profileDeleteAccount": "Delete account permanently",
+  "profileDeleteWarningTitle": "WARNING: This will:",
+  "profileDeleteWarningRecipes": "Delete all your recipes",
+  "profileDeleteWarningMenus": "Delete all your menus",
+  "profileDeleteWarningShoppingLists": "Delete all your shopping lists",
+  "profileDeleteWarningFriends": "Remove all friends and messages",
+  "profileDeleteWarningSharedContent": "Delete all shared content",
+  "profileDeleteIrreversible": "This action CANNOT be undone!",
+  "profileDeleteConfirmButton": "I understand, delete my account",
+  "profileConfirmWithPassword": "Confirm with password",
+  "profileEnterPasswordToConfirm": "Enter your password to confirm deletion:",
+  "profilePassword": "Password",
+  "profileConfirm": "Confirm",
+  "profileError": "Error",
+  "profileCouldNotDeleteAccount": "Could not delete account: {error}",
+  "@profileCouldNotDeleteAccount": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "chatErrorOccurred": "An error occurred",
+  "chatConversationInfo": "Conversation information",
+  "chatTypeDirectMessage": "Type: Direct message",
+  "chatCreatedAt": "Created: {date}",
+  "@chatCreatedAt": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "chatNotificationSettingsUpdated": "Notification settings updated",
+  "chatCouldNotChangeNotifications": "Could not change notification settings",
+  "chatLeaveConversation": "Leave conversation",
+  "chatLeaveConversationConfirm": "Are you sure you want to leave the conversation?",
+  "chatCouldNotLeaveConversation": "Could not leave the conversation",
+  "chatEditMessage": "Edit message",
+  "chatWriteYourMessage": "Write your message...",
+  "chatCouldNotEditMessage": "Could not edit the message",
+  "chatCouldNotDeleteMessage": "Could not delete the message",
+  "chatMessageCopied": "Message copied",
+  "chatCouldNotCopyMessage": "Could not copy the message",
+  "chatYourRecipes": "Your recipes",
+  "chatSharedRecipe": "Shared recipe",
+  "chatCheckOutRecipe": "Check out this recipe!",
+  "chatCouldNotShareRecipe": "Could not share recipe",
+  "chatMenuSharingComingSoon": "Menu sharing coming soon",
+  "chatCouldNotShareMenu": "Could not share menu",
+  "chatShoppingListSharingComingSoon": "Shopping list sharing coming soon",
+  "chatCouldNotShareShoppingList": "Could not share shopping list",
+  "chatLoadingImage": "Loading image...",
+  "chatImageSent": "Image sent!",
+  "chatNoImageSelected": "No image selected",
+  "chatCouldNotSharePhoto": "Could not share photo",
+  "chatDeleteMessage": "Delete",
+  "chatDeleteMessageConfirm": "Are you sure you want to delete the message?",
+
+  "placeholderSearch": "Search...",
+  "placeholderName": "Enter name",
+  "placeholderDescription": "Enter description (optional)",
+  "placeholderEmail": "your@email.com",
+  "placeholderUrl": "https://example.com",
+  "placeholderPhone": "+1 555 123 4567",
+
+  "statusConnecting": "Connecting...",
+  "statusSyncing": "Syncing...",
+  "statusUploading": "Uploading...",
+  "statusDownloading": "Downloading...",
+  "statusProcessing": "Processing...",
+  "statusSaving": "Saving...",
+  "statusDeleting": "Deleting...",
+  "statusCreating": "Creating...",
+  "statusUpdating": "Updating...",
+
+  "accessibilityMenuButton": "Menu button",
+  "accessibilityBackButton": "Back",
+  "accessibilityCloseButton": "Close",
+  "accessibilityMoreOptions": "More options",
+  "accessibilityExpandButton": "Expand",
+  "accessibilityCollapseButton": "Collapse",
+
+  "timeToday": "Today",
+  "timeYesterday": "Yesterday",
+  "timeTomorrow": "Tomorrow",
+  "timeThisWeek": "This week",
+  "timeLastWeek": "Last week",
+  "timeNextWeek": "Next week",
+
+  "unitMinutesShort": "min",
+  "unitHoursShort": "h",
+  "unitPiecesShort": "pcs",
+  "unitLiters": "liters",
+  "unitKilograms": "kg",
+  "unitGrams": "g",
+
+  "technicalShowDetails": "Show technical details",
+  "technicalHideDetails": "Hide technical details",
+  "technicalInformation": "Technical information",
+  "technicalContactSupport": "Contact support",
+  "technicalTryAgainLater": "Try again later",
+
+  "dialogErrorTitle": "An error occurred",
+  "dialogLoading": "Loading...",
+  "dialogConfirmDeleteTitle": "Confirm deletion",
+  "dialogConfirmDeleteMessage": "Are you sure you want to remove {itemName} from {itemType}?",
+  "@dialogConfirmDeleteMessage": {
+    "placeholders": {
+      "itemName": {"type": "String"},
+      "itemType": {"type": "String"}
+    }
+  }
+}

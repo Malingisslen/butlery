@@ -20,6 +20,7 @@ class UserProfile with JsonSerializableMixin {
   final String? fcmToken;
   final DateTime? fcmTokenUpdatedAt;
   final bool notificationsEnabled;
+  final String? preferredLocale;
 
   UserProfile({
     required this.uid,
@@ -36,6 +37,7 @@ class UserProfile with JsonSerializableMixin {
     this.fcmToken,
     this.fcmTokenUpdatedAt,
     this.notificationsEnabled = true,
+    this.preferredLocale,
   });
 
   UserProfile copyWith({
@@ -53,6 +55,8 @@ class UserProfile with JsonSerializableMixin {
     String? fcmToken,
     DateTime? fcmTokenUpdatedAt,
     bool? notificationsEnabled,
+    // Locale preference
+    String? preferredLocale,
   }) {
     return UserProfile(
       uid: uid,
@@ -70,6 +74,8 @@ class UserProfile with JsonSerializableMixin {
       fcmToken: fcmToken ?? this.fcmToken,
       fcmTokenUpdatedAt: fcmTokenUpdatedAt ?? this.fcmTokenUpdatedAt,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      // Locale preference
+      preferredLocale: preferredLocale ?? this.preferredLocale,
     );
   }
 
@@ -162,6 +168,8 @@ class UserProfile with JsonSerializableMixin {
           ? AppTimestamp.fromDateTime(fcmTokenUpdatedAt!).toFirestore()
           : null,
       'notificationsEnabled': notificationsEnabled,
+      // Locale preference
+      'preferredLocale': preferredLocale,
     };
   }
 
@@ -185,6 +193,8 @@ class UserProfile with JsonSerializableMixin {
           ? serializeDateTime(fcmTokenUpdatedAt!)
           : null,
       'notificationsEnabled': notificationsEnabled,
+      // Locale preference
+      'preferredLocale': preferredLocale,
     };
   }
 
@@ -213,6 +223,9 @@ class UserProfile with JsonSerializableMixin {
       notificationsEnabled: utils.SerializationUtils.safeBool(
           data, 'notificationsEnabled',
           defaultValue: true),
+      // Locale preference
+      preferredLocale:
+          utils.SerializationUtils.safeNullableString(data, 'preferredLocale'),
     );
   }
 
@@ -235,6 +248,8 @@ class UserProfile with JsonSerializableMixin {
       fcmTokenUpdatedAt:
           UserProfile._deserializeDateTime(json['fcmTokenUpdatedAt']),
       notificationsEnabled: (json['notificationsEnabled'] as bool?).orTrue(),
+      // Locale preference
+      preferredLocale: json['preferredLocale'] as String?,
     );
   }
 
