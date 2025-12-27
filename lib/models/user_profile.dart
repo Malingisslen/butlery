@@ -3,6 +3,7 @@ import 'package:butlery/core/mixins/json_serializable_mixin.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
 import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
 
 /// User profile with social features, privacy settings, and notifications.
 class UserProfile with JsonSerializableMixin {
@@ -21,6 +22,7 @@ class UserProfile with JsonSerializableMixin {
   final DateTime? fcmTokenUpdatedAt;
   final bool notificationsEnabled;
   final String? preferredLocale;
+  final UserAllergenPreferences? allergenPreferences;
 
   UserProfile({
     required this.uid,
@@ -38,6 +40,7 @@ class UserProfile with JsonSerializableMixin {
     this.fcmTokenUpdatedAt,
     this.notificationsEnabled = true,
     this.preferredLocale,
+    this.allergenPreferences,
   });
 
   UserProfile copyWith({
@@ -57,6 +60,8 @@ class UserProfile with JsonSerializableMixin {
     bool? notificationsEnabled,
     // Locale preference
     String? preferredLocale,
+    // Allergen preferences
+    UserAllergenPreferences? allergenPreferences,
   }) {
     return UserProfile(
       uid: uid,
@@ -76,6 +81,8 @@ class UserProfile with JsonSerializableMixin {
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       // Locale preference
       preferredLocale: preferredLocale ?? this.preferredLocale,
+      // Allergen preferences
+      allergenPreferences: allergenPreferences ?? this.allergenPreferences,
     );
   }
 
@@ -170,6 +177,8 @@ class UserProfile with JsonSerializableMixin {
       'notificationsEnabled': notificationsEnabled,
       // Locale preference
       'preferredLocale': preferredLocale,
+      // Allergen preferences
+      'allergenPreferences': allergenPreferences?.toFirestore(),
     };
   }
 
@@ -195,6 +204,8 @@ class UserProfile with JsonSerializableMixin {
       'notificationsEnabled': notificationsEnabled,
       // Locale preference
       'preferredLocale': preferredLocale,
+      // Allergen preferences
+      'allergenPreferences': allergenPreferences?.toFirestore(),
     };
   }
 
@@ -226,6 +237,11 @@ class UserProfile with JsonSerializableMixin {
       // Locale preference
       preferredLocale:
           utils.SerializationUtils.safeNullableString(data, 'preferredLocale'),
+      // Allergen preferences
+      allergenPreferences: data['allergenPreferences'] != null
+          ? UserAllergenPreferences.fromFirestore(
+              data['allergenPreferences'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -250,6 +266,11 @@ class UserProfile with JsonSerializableMixin {
       notificationsEnabled: (json['notificationsEnabled'] as bool?).orTrue(),
       // Locale preference
       preferredLocale: json['preferredLocale'] as String?,
+      // Allergen preferences
+      allergenPreferences: json['allergenPreferences'] != null
+          ? UserAllergenPreferences.fromFirestore(
+              json['allergenPreferences'] as Map<String, dynamic>)
+          : null,
     );
   }
 

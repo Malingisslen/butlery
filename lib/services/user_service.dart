@@ -5,6 +5,7 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -55,6 +56,11 @@ class UserService extends ChangeNotifier
   bool get hasError => _error != null;
   String? get currentUserId =>
       ServiceLocator.get<PermissionService>().currentUserId;
+
+  /// Get user's allergen preferences, returns defaults if not set.
+  UserAllergenPreferences get allergenPreferences =>
+      _currentUserProfile?.allergenPreferences ??
+      UserAllergenPreferences.defaults;
 
   /// Initialize service och ladda current user profile
   Future<void> initialize() async {
@@ -453,6 +459,41 @@ class UserService extends ChangeNotifier
     } catch (e) {
       AppLogger.error('❌ Failed to update notification settings', e);
       _setError('Kunde inte uppdatera notifikationsinställningar: $e');
+    }
+  }
+
+  /// Update user's allergen preferences.
+  Future<bool> updateAllergenPreferences(
+      UserAllergenPreferences preferences) async {
+    final userId = currentUserId;
+    if (userId == null || _currentUserProfile == null) {
+      AppLogger.warning(
+          '⚠️ Cannot update allergen preferences - no current user');
+      return false;
+    }
+
+    try {
+      _setLoading(true);
+      _clearError();
+      AppLogger.info('🍽️ Updating allergen preferences for user: $userId');
+
+      await _repository.updateAllergenPreferences(userId, preferences);
+
+      _currentUserProfile = _currentUserProfile!.copyWith(
+        allergenPreferences: preferences,
+      );
+
+      _profileCache[userId] = _currentUserProfile!;
+      notifyListeners();
+
+      AppLogger.success('✅ Allergen preferences updated successfully');
+      return true;
+    } catch (e) {
+      AppLogger.error('❌ Failed to update allergen preferences', e);
+      _setError('Kunde inte uppdatera allergeninställningar: $e');
+      return false;
+    } finally {
+      _setLoading(false);
     }
   }
 

@@ -29,6 +29,9 @@ import 'package:butlery/views/receive_share_view.dart';
 // Unified shopping system (eager - core feature)
 import 'package:butlery/views/unified_shopping_view.dart';
 
+// Settings views
+import 'package:butlery/views/settings/allergen_preferences_view.dart';
+
 // Models (needed for route arguments)
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
@@ -225,6 +228,10 @@ class AppRouter {
         case Routes.inkopslista:
           return _buildRoute(const UnifiedShoppingView(), settings,
               Routes.getAnimationType(routeName));
+
+        case '/settings/allergens':
+          return _buildRoute(const AllergenPreferencesView(), settings,
+              RouteAnimationType.slideFromRight);
 
         default:
           return _errorRoute('Unknown route: ${settings.name}');
