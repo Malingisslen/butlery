@@ -27,6 +27,8 @@ class RecipeCard extends StatelessWidget {
   final bool showMetadata;
   final bool showAllergenBadges;
   final Set<String>? userAllergenPrefs;
+  final bool showDietaryBadges;
+  final Set<String>? userDietaryPrefs;
   final bool isSelected;
   final EdgeInsets? margin;
   final EdgeInsets? padding;
@@ -43,6 +45,8 @@ class RecipeCard extends StatelessWidget {
     this.showMetadata = true,
     this.showAllergenBadges = true,
     this.userAllergenPrefs,
+    this.showDietaryBadges = true,
+    this.userDietaryPrefs,
     this.isSelected = false,
     this.margin,
     this.padding,
@@ -141,6 +145,15 @@ class RecipeCard extends StatelessWidget {
             tagResult: recipe.tagResult!,
             userPrefs: userAllergenPrefs,
             maxBadges: 4,
+          ),
+        ],
+        // Dietary badges (vegan, vegetarian, etc.)
+        if (showDietaryBadges && recipe.tagResult != null) ...[
+          const SizedBox(height: AppDimensions.spacingXs),
+          CompactDietaryRow(
+            tagResult: recipe.tagResult!,
+            userPrefs: userDietaryPrefs,
+            maxBadges: 2,
           ),
         ],
         // Tags

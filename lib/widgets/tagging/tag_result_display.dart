@@ -350,3 +350,58 @@ class CompactAllergenRow extends StatelessWidget {
     'ägg',
   };
 }
+
+/// Compact row of dietary badges for recipe cards.
+///
+/// Shows only FREE status badges for positive dietary attributes
+/// (e.g., "Vegansk", "Vegetarisk"). Limited to maxBadges to fit on cards.
+class CompactDietaryRow extends StatelessWidget {
+  final TagResult tagResult;
+
+  /// Only show badges for these diets. If null, shows vegetarisk/vegansk.
+  final Set<String>? userPrefs;
+
+  /// Maximum number of badges to show.
+  final int maxBadges;
+
+  const CompactDietaryRow({
+    super.key,
+    required this.tagResult,
+    this.userPrefs,
+    this.maxBadges = 2,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final badges = _getBadgesToShow();
+
+    if (badges.isEmpty) return const SizedBox.shrink();
+
+    return Wrap(
+      spacing: 4,
+      runSpacing: 4,
+      children: badges.take(maxBadges).map((diet) {
+        return DietaryStatusBadge(
+          diet: diet,
+          status: TriState.free,
+          compact: true,
+          showLabel: true,
+        );
+      }).toList(),
+    );
+  }
+
+  List<String> _getBadgesToShow() {
+    final dietsToCheck = userPrefs ?? _defaultDiets;
+
+    // Only show FREE status (recipe IS vegan/vegetarian/etc)
+    return dietsToCheck.where((diet) {
+      return tagResult.getDietaryStatus(diet) == TriState.free;
+    }).toList();
+  }
+
+  static const _defaultDiets = {
+    'vegetarisk',
+    'vegansk',
+  };
+}

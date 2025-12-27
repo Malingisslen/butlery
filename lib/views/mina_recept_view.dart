@@ -402,6 +402,9 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                   userAllergenPrefs: allergenPrefs.showOnCards
                       ? allergenPrefs.trackedAllergens
                       : null,
+                  userDietaryPrefs: allergenPrefs.showOnCards
+                      ? allergenPrefs.trackedDietary
+                      : null,
                   onTap: () async {
                     // Navigera till detaljer
                     await Navigator.pushNamed(
