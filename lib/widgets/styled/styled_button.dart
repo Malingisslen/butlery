@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/buttons/animated_pressable.dart';
 
 /// Pre-styled button widgets to eliminate design-in-views violations
 /// Provides consistent button styling patterns used throughout the app
@@ -17,6 +18,14 @@ class StyledButton extends StatelessWidget {
   final double? height;
   final EdgeInsetsGeometry? padding;
 
+  /// Semantic label for screen readers.
+  /// Defaults to [text] if not provided. Important for icon-only buttons.
+  final String? semanticLabel;
+
+  /// Whether to show press animation feedback.
+  /// Respects user's "Reduce Motion" accessibility setting.
+  final bool enablePressAnimation;
+
   const StyledButton({
     super.key,
     required this.text,
@@ -27,6 +36,8 @@ class StyledButton extends StatelessWidget {
     this.width,
     this.height,
     this.padding,
+    this.semanticLabel,
+    this.enablePressAnimation = true,
   });
 
   /// Primary elevated button
@@ -37,6 +48,8 @@ class StyledButton extends StatelessWidget {
     this.isLoading = false,
     this.icon,
     this.width,
+    this.semanticLabel,
+    this.enablePressAnimation = true,
   })  : isDestructive = false,
         height = AppDimensions.buttonHeight,
         padding = null;
@@ -49,6 +62,8 @@ class StyledButton extends StatelessWidget {
     this.isLoading = false,
     this.icon,
     this.width,
+    this.semanticLabel,
+    this.enablePressAnimation = true,
   })  : isDestructive = false,
         height = AppDimensions.buttonHeight,
         padding = null;
@@ -61,6 +76,8 @@ class StyledButton extends StatelessWidget {
     this.isLoading = false,
     this.icon,
     this.width,
+    this.semanticLabel,
+    this.enablePressAnimation = true,
   })  : isDestructive = true,
         height = AppDimensions.buttonHeight,
         padding = null;
@@ -72,18 +89,22 @@ class StyledButton extends StatelessWidget {
     this.onPressed,
     this.isLoading = false,
     this.icon,
+    this.semanticLabel,
+    this.enablePressAnimation = true,
   })  : isDestructive = false,
         width = null,
         height = 36.0,
         padding = null;
 
-  /// Icon-only button
+  /// Icon-only button. [semanticLabel] is required for accessibility.
   const StyledButton.icon({
     super.key,
     required this.icon,
+    required this.semanticLabel,
     this.onPressed,
     this.isLoading = false,
     this.isDestructive = false,
+    this.enablePressAnimation = true,
   })  : text = '',
         width = null,
         height = AppDimensions.buttonHeight,
@@ -91,38 +112,61 @@ class StyledButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveLabel = semanticLabel ?? text;
+
     if (isLoading) {
-      return SizedBox(
-        width: width,
-        height: height ?? AppDimensions.buttonHeight,
-        child: ElevatedButton(
-          onPressed: null,
-          style: _getButtonStyle(context),
-          child: const SizedBox(
-            width: (AppDimensions.spacingMd + AppDimensions.spacingXs),
-            height: (AppDimensions.spacingMd + AppDimensions.spacingXs),
-            child: CircularProgressIndicator(strokeWidth: 2),
+      return Semantics(
+        label: '$effectiveLabel, laddar',
+        button: true,
+        enabled: false,
+        child: SizedBox(
+          width: width,
+          height: height ?? AppDimensions.buttonHeight,
+          child: ElevatedButton(
+            onPressed: null,
+            style: _getButtonStyle(context),
+            child: const SizedBox(
+              width: (AppDimensions.spacingMd + AppDimensions.spacingXs),
+              height: (AppDimensions.spacingMd + AppDimensions.spacingXs),
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
           ),
         ),
       );
     }
 
     if (text.isEmpty && icon != null) {
-      return SizedBox(
-        width: width ?? AppDimensions.buttonHeight,
-        height: height ?? AppDimensions.buttonHeight,
-        child: isDestructive
-            ? _buildDestructiveIconButton(context)
-            : _buildIconButton(context),
+      final iconButton = Semantics(
+        label: effectiveLabel,
+        button: true,
+        enabled: onPressed != null,
+        child: SizedBox(
+          width: width ?? AppDimensions.buttonHeight,
+          height: height ?? AppDimensions.buttonHeight,
+          child: isDestructive
+              ? _buildDestructiveIconButton(context)
+              : _buildIconButton(context),
+        ),
       );
+      return _wrapWithAnimation(iconButton);
     }
 
-    return SizedBox(
+    final button = SizedBox(
       width: width,
       height: height ?? AppDimensions.buttonHeight,
       child: isDestructive
           ? _buildDestructiveButton(context)
           : _buildRegularButton(context),
+    );
+    return _wrapWithAnimation(button);
+  }
+
+  /// Wraps the button with AnimatedPressable for press feedback.
+  Widget _wrapWithAnimation(Widget button) {
+    if (!enablePressAnimation) return button;
+    return AnimatedPressable(
+      enabled: onPressed != null,
+      child: button,
     );
   }
 
