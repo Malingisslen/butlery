@@ -735,6 +735,7 @@ class Recipe {
   String? get primaryImageUrl => core.primaryImageUrl;
   String get cookTimeText => core.cookTimeText;
   String? get lastCookedText => core.lastCookedText;
+  TagResult? get tagResult => core.tagResult;
 
   /// Check if recipe was cooked recently (within last 7 days)
   bool get wasCookedRecently {

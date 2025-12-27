@@ -5,6 +5,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
+import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 
 /// Recipe card widget for displaying recipe information with comprehensive functionality.
 /// This widget provides a complete recipe card implementation with support for:
@@ -24,6 +25,8 @@ class RecipeCard extends StatelessWidget {
   final bool showImage;
   final bool showTags;
   final bool showMetadata;
+  final bool showAllergenBadges;
+  final Set<String>? userAllergenPrefs;
   final bool isSelected;
   final EdgeInsets? margin;
   final EdgeInsets? padding;
@@ -38,6 +41,8 @@ class RecipeCard extends StatelessWidget {
     this.showImage = true,
     this.showTags = true,
     this.showMetadata = true,
+    this.showAllergenBadges = true,
+    this.userAllergenPrefs,
     this.isSelected = false,
     this.margin,
     this.padding,
@@ -128,6 +133,15 @@ class RecipeCard extends StatelessWidget {
         if (showMetadata) ...[
           const SizedBox(height: AppDimensions.spacingSm),
           _buildMetadataRow(context),
+        ],
+        // Allergen badges
+        if (showAllergenBadges && recipe.tagResult != null) ...[
+          const SizedBox(height: AppDimensions.spacingSm),
+          CompactAllergenRow(
+            tagResult: recipe.tagResult!,
+            userPrefs: userAllergenPrefs,
+            maxBadges: 4,
+          ),
         ],
         // Tags
         if (showTags && (recipe.tags?.isNotEmpty ?? false)) ...[
