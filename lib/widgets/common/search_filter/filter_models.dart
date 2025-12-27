@@ -85,4 +85,78 @@ class RecipeFilters {
       value: 5.0,
     ),
   ];
+
+  /// Allergen-free filters (recipe must be proven FREE from these).
+  static const List<FilterOption> allergenFreeFilters = [
+    FilterOption(
+      id: 'gluten-free',
+      label: 'Glutenfri',
+      icon: Icons.check_circle_outline,
+      value: 'gluten',
+    ),
+    FilterOption(
+      id: 'dairy-free',
+      label: 'Mjölkfri',
+      icon: Icons.check_circle_outline,
+      value: 'mjölk',
+    ),
+    FilterOption(
+      id: 'lactose-free',
+      label: 'Laktosfri',
+      icon: Icons.check_circle_outline,
+      value: 'laktos',
+    ),
+    FilterOption(
+      id: 'nut-free',
+      label: 'Nötfri',
+      icon: Icons.check_circle_outline,
+      value: 'nötter',
+    ),
+    FilterOption(
+      id: 'egg-free',
+      label: 'Äggfri',
+      icon: Icons.check_circle_outline,
+      value: 'ägg',
+    ),
+    FilterOption(
+      id: 'soy-free',
+      label: 'Sojafri',
+      icon: Icons.check_circle_outline,
+      value: 'soja',
+    ),
+  ];
+
+  /// Dietary restriction filters (recipe must be safe for this diet).
+  static const List<FilterOption> dietaryFilters = [
+    FilterOption(
+      id: 'vegetarian',
+      label: 'Vegetarisk',
+      icon: Icons.eco_outlined,
+      value: 'vegetarisk',
+    ),
+    FilterOption(
+      id: 'vegan',
+      label: 'Vegansk',
+      icon: Icons.eco_outlined,
+      value: 'vegansk',
+    ),
+    FilterOption(
+      id: 'pescetarian',
+      label: 'Pescetarian',
+      icon: Icons.set_meal,
+      value: 'pescetarian',
+    ),
+    FilterOption(
+      id: 'halal',
+      label: 'Halalanpassad',
+      icon: Icons.restaurant,
+      value: 'halalanpassad',
+    ),
+    FilterOption(
+      id: 'kid-friendly',
+      label: 'Barnvänlig',
+      icon: Icons.child_care,
+      value: 'barnvänlig',
+    ),
+  ];
 }

@@ -2,9 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
+import 'package:butlery/widgets/common/dialogs/unknown_ingredient_dialog.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart' as img;
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/common/input_components.dart';
+import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -46,6 +48,12 @@ class RecipeDetailContent extends StatelessWidget {
         // Tags
         if (recipe.tags?.isNotEmpty ?? false) ...[
           _buildTags(context),
+          const SizedBox(height: AppDimensions.spacingXl),
+        ],
+
+        // Allergen and dietary information from tagging system
+        if (recipe.tagResult != null) ...[
+          _buildTaggingInfo(context),
           const SizedBox(height: AppDimensions.spacingXl),
         ],
 
@@ -159,6 +167,28 @@ class RecipeDetailContent extends StatelessWidget {
                 .toList(),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTaggingInfo(BuildContext context) {
+    final tagResult = viewModel.recipe.tagResult;
+    if (tagResult == null) return const SizedBox.shrink();
+
+    return TagResultDisplay(
+      tagResult: tagResult,
+      showCoverage: true,
+      onUnknownIngredientsTap: tagResult.hasUnknowns
+          ? () => _showUnknownIngredientsDialog(context, tagResult)
+          : null,
+    );
+  }
+
+  void _showUnknownIngredientsDialog(BuildContext context, dynamic tagResult) {
+    showDialog(
+      context: context,
+      builder: (context) => UnknownIngredientDialog(
+        unknownIngredients: tagResult.unknownIngredients,
       ),
     );
   }

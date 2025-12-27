@@ -13,9 +13,13 @@ class FiltersPanelWidget extends StatelessWidget {
   final Set<String> activeTimeFilters;
   final Set<String> activeMealTypeFilters;
   final Set<String> activeRatingFilters;
+  final Set<String> activeAllergenFilters;
+  final Set<String> activeDietaryFilters;
   final Function(String) onTimeFilterToggle;
   final Function(String) onMealTypeFilterToggle;
   final Function(String) onRatingFilterToggle;
+  final Function(String)? onAllergenFilterToggle;
+  final Function(String)? onDietaryFilterToggle;
   final bool hasActiveFilters;
   final VoidCallback? onClearAllFilters;
 
@@ -25,9 +29,13 @@ class FiltersPanelWidget extends StatelessWidget {
     required this.activeTimeFilters,
     required this.activeMealTypeFilters,
     required this.activeRatingFilters,
+    this.activeAllergenFilters = const {},
+    this.activeDietaryFilters = const {},
     required this.onTimeFilterToggle,
     required this.onMealTypeFilterToggle,
     required this.onRatingFilterToggle,
+    this.onAllergenFilterToggle,
+    this.onDietaryFilterToggle,
     required this.hasActiveFilters,
     this.onClearAllFilters,
   });
@@ -75,6 +83,24 @@ class FiltersPanelWidget extends StatelessWidget {
                     activeFilters: activeRatingFilters,
                     onToggle: onRatingFilterToggle,
                   ),
+
+                  // Allergen-free filters
+                  if (onAllergenFilterToggle != null)
+                    FilterChipsWidget(
+                      title: 'Allergenfri',
+                      options: RecipeFilters.allergenFreeFilters,
+                      activeFilters: activeAllergenFilters,
+                      onToggle: onAllergenFilterToggle!,
+                    ),
+
+                  // Dietary filters
+                  if (onDietaryFilterToggle != null)
+                    FilterChipsWidget(
+                      title: 'Specialkost',
+                      options: RecipeFilters.dietaryFilters,
+                      activeFilters: activeDietaryFilters,
+                      onToggle: onDietaryFilterToggle!,
+                    ),
 
                   // Clear all filters button
                   if (hasActiveFilters && onClearAllFilters != null) ...[
