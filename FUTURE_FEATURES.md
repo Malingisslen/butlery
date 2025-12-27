@@ -1,10 +1,10 @@
 # BUTLERY - FUTURE FEATURES
 
-**Last Updated:** 2025-12-06
+**Last Updated:** 2025-12-26
 **Status:** Planned / Not Implemented
-**Source:** creative_ideas.md + comprehensive analysis gaps
-**Total Features:** 44
-**Total Estimated Effort:** ~2,029 hours (~51 weeks)
+**Source:** creative_ideas.md + comprehensive analysis gaps + platform analysis
+**Total Features:** 45
+**Total Estimated Effort:** ~2,053 hours (~51 weeks)
 
 ---
 
@@ -967,6 +967,49 @@ Import recipes from YouTube/TikTok/Instagram videos that don't have captions by 
 
 ---
 
+### 45. HOME SCREEN WIDGETS
+**Effort:** ~24 hours per platform (48 hours total)
+
+Native home screen widgets for quick recipe access and shopping list management on iOS and Android.
+
+**iOS Implementation (WidgetKit):**
+- Today's menu widget (small/medium sizes)
+- Shopping list widget with checkboxes
+- Quick recipe search widget
+- Recent recipes widget
+- Widget configuration (select which list/menu to display)
+- Deep link to app on tap
+- Timeline provider for automatic updates
+
+**Android Implementation (App Widgets):**
+- Glance API for modern widget development
+- Today's menu widget (multiple sizes: 2x2, 4x2, 4x4)
+- Shopping list widget with inline checkbox toggle
+- Recipe of the day widget
+- Widget configuration activity
+- RemoteViews for content updates
+- Pending intents for interactions
+
+**Key Capabilities:**
+- Real-time sync with app data
+- Offline support with cached content
+- Theme-aware (light/dark mode)
+- Battery-efficient updates
+- Multiple widget sizes
+- User-configurable content
+
+**Technical Notes:**
+- iOS: Swift WidgetKit extension, shared app group for data
+- Android: Kotlin Glance composables or traditional RemoteViews
+- Shared Dart model layer for widget data
+- Platform channels for native communication
+- Background refresh scheduling
+- Widget gallery previews
+
+**Priority:** MEDIUM - Enhances daily engagement, competitive differentiator
+
+---
+
 ## Implementation Priorities
 
 ### Immediate (First Fixes) - ~317 hours
@@ -1025,6 +1068,8 @@ Import recipes from YouTube/TikTok/Instagram videos that don't have captions by 
 41. Flavor Experiment Lab (~52 hrs)
 42. Recipe Carbon Calculator (~50 hrs)
 43. Chef AMAs (~66 hrs)
+44. Video Audio Transcription (~30 hrs)
+45. Home Screen Widgets (~48 hrs) **[NEW - Platform Enhancement]**
 
 ---
 

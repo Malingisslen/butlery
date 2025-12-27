@@ -207,10 +207,7 @@ Butlery is a comprehensive recipe management and meal planning Flutter applicati
 
 ## References
 
-- **Implementation Guide**: [docs/architecture/MVVM_PATTERN.md](../architecture/MVVM_PATTERN.md)
-- **Architecture Overview**: [docs/architecture/ARCHITECTURE_OVERVIEW.md](../architecture/ARCHITECTURE_OVERVIEW.md)
-- **Best Practices**: [docs/architecture/BEST_PRACTICES.md](../architecture/BEST_PRACTICES.md)
-- **Project Metrics**: Current status shows 87% health, 66.5% test coverage
+- **Project Guidelines**: [CLAUDE.md](../../CLAUDE.md)
 - **External**: [Microsoft MVVM Documentation](https://learn.microsoft.com/en-us/xamarin/xamarin-forms/enterprise-application-patterns/mvvm)
 - **External**: [Flutter Architecture Samples](https://github.com/brianegan/flutter_architecture_samples)
 

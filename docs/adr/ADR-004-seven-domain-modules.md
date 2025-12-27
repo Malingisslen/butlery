@@ -392,7 +392,7 @@ class ApplicationBootstrap {
 
 ## References
 
-- **Implementation Guide**: [docs/architecture/DI_SYSTEM.md](../architecture/DI_SYSTEM.md)
+- **Project Guidelines**: [CLAUDE.md](../../CLAUDE.md)
 - **GetIt Decision**: [ADR-002: Use GetIt for Dependency Injection](ADR-002-getit-dependency-injection.md)
 - **MVVM Architecture**: [ADR-001: Use MVVM + Repository Pattern](ADR-001-mvvm-repository-pattern.md)
 

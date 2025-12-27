@@ -299,9 +299,8 @@ If Firebase becomes too expensive or limiting:
 
 ## References
 
-- **Implementation Guide**: [docs/architecture/FIREBASE_INTEGRATION.md](../architecture/FIREBASE_INTEGRATION.md)
-- **Security Rules**: [firestore.rules](../../firestore.rules) (1,164 lines)
-- **GDPR Services**: ConsentService, DataExportService, AccountDeletionService, FirebaseAuditRepository
+- **Project Guidelines**: [CLAUDE.md](../../CLAUDE.md)
+- **Security Rules**: [firestore.rules](../../firestore.rules)
 - **Firebase Docs**: [firebase.google.com/docs](https://firebase.google.com/docs)
 - **Firestore Best Practices**: [firebase.google.com/docs/firestore/best-practices](https://firebase.google.com/docs/firestore/best-practices)
 - **Pricing**: [firebase.google.com/pricing](https://firebase.google.com/pricing)

@@ -302,7 +302,7 @@ If GetIt becomes a bottleneck:
 
 ## References
 
-- **Implementation Guide**: [docs/architecture/DI_SYSTEM.md](../architecture/DI_SYSTEM.md)
+- **Project Guidelines**: [CLAUDE.md](../../CLAUDE.md)
 - **Module Structure**: [ADR-004: 7 Domain Modules](ADR-004-seven-domain-modules.md)
 - **MVVM Pattern**: [ADR-001: MVVM + Repository Pattern](ADR-001-mvvm-repository-pattern.md)
 - **GetIt Package**: [pub.dev/packages/get_it](https://pub.dev/packages/get_it)
