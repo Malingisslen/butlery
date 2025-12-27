@@ -24,12 +24,24 @@ class RecipeDetailContent extends StatelessWidget {
   final Function(int, List<String>) onPortionChanged;
   final Function(List<String>, int) onImageTap;
 
+  /// User allergen preferences for filtering displayed allergens
+  final Set<String>? userAllergenPrefs;
+
+  /// User dietary preferences for filtering displayed dietary info
+  final Set<String>? userDietaryPrefs;
+
+  /// Whether to show ingredient coverage indicator
+  final bool showCoverage;
+
   const RecipeDetailContent({
     super.key,
     required this.viewModel,
     required this.scaledIngredients,
     required this.onPortionChanged,
     required this.onImageTap,
+    this.userAllergenPrefs,
+    this.userDietaryPrefs,
+    this.showCoverage = true,
   });
 
   @override
@@ -177,7 +189,9 @@ class RecipeDetailContent extends StatelessWidget {
 
     return TagResultDisplay(
       tagResult: tagResult,
-      showCoverage: true,
+      userAllergenPrefs: userAllergenPrefs,
+      userDietaryPrefs: userDietaryPrefs,
+      showCoverage: showCoverage,
       onUnknownIngredientsTap: tagResult.hasUnknowns
           ? () => _showUnknownIngredientsDialog(context, tagResult)
           : null,

@@ -35,9 +35,13 @@ class SearchFilterWidget extends StatefulWidget {
   final Set<String>? activeTimeFilters;
   final Set<String>? activeMealTypeFilters;
   final Set<String>? activeRatingFilters;
+  final Set<String>? activeAllergenFilters;
+  final Set<String>? activeDietaryFilters;
   final Function(String)? onTimeFilterToggle;
   final Function(String)? onMealTypeFilterToggle;
   final Function(String)? onRatingFilterToggle;
+  final Function(String)? onAllergenFilterToggle;
+  final Function(String)? onDietaryFilterToggle;
 
   // UI state (OPTIONAL - null means no filter toggle)
   final bool? showFilters;
@@ -64,9 +68,13 @@ class SearchFilterWidget extends StatefulWidget {
     this.activeTimeFilters,
     this.activeMealTypeFilters,
     this.activeRatingFilters,
+    this.activeAllergenFilters,
+    this.activeDietaryFilters,
     this.onTimeFilterToggle,
     this.onMealTypeFilterToggle,
     this.onRatingFilterToggle,
+    this.onAllergenFilterToggle,
+    this.onDietaryFilterToggle,
 
     // UI state (optional)
     this.showFilters,
@@ -263,9 +271,13 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
       activeTimeFilters: widget.activeTimeFilters!,
       activeMealTypeFilters: widget.activeMealTypeFilters!,
       activeRatingFilters: widget.activeRatingFilters!,
+      activeAllergenFilters: widget.activeAllergenFilters ?? const {},
+      activeDietaryFilters: widget.activeDietaryFilters ?? const {},
       onTimeFilterToggle: widget.onTimeFilterToggle!,
       onMealTypeFilterToggle: widget.onMealTypeFilterToggle!,
       onRatingFilterToggle: widget.onRatingFilterToggle!,
+      onAllergenFilterToggle: widget.onAllergenFilterToggle,
+      onDietaryFilterToggle: widget.onDietaryFilterToggle,
       hasActiveFilters: widget.hasActiveFilters ?? false,
       onClearAllFilters: widget.onClearAllFilters,
     );
@@ -285,6 +297,8 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
   int _getActiveFilterCount() {
     return (widget.activeTimeFilters?.length ?? 0) +
         (widget.activeMealTypeFilters?.length ?? 0) +
-        (widget.activeRatingFilters?.length ?? 0);
+        (widget.activeRatingFilters?.length ?? 0) +
+        (widget.activeAllergenFilters?.length ?? 0) +
+        (widget.activeDietaryFilters?.length ?? 0);
   }
 }

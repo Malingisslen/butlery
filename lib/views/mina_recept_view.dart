@@ -287,9 +287,13 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               activeTimeFilters: viewModel.activeTimeFilters,
               activeMealTypeFilters: viewModel.activeMealTypeFilters,
               activeRatingFilters: viewModel.activeRatingFilters,
+              activeAllergenFilters: viewModel.activeAllergenFilters,
+              activeDietaryFilters: viewModel.activeDietaryFilters,
               onTimeFilterToggle: viewModel.toggleTimeFilter,
               onMealTypeFilterToggle: viewModel.toggleMealTypeFilter,
               onRatingFilterToggle: viewModel.toggleRatingFilter,
+              onAllergenFilterToggle: viewModel.toggleAllergenFilter,
+              onDietaryFilterToggle: viewModel.toggleDietaryFilter,
 
               // UI state
               showFilters: _showFilters,
@@ -387,10 +391,17 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               gridChildAspectRatio: 0.75, // Recipe cards are taller than wide
               animate: true, // Staggered entrance animations
               itemBuilder: (context, recipe) {
+                // Get allergen preferences for recipe cards
+                final userService = context.watch<UserService>();
+                final allergenPrefs = userService.allergenPreferences;
+
                 return ContentCard(
                   key: ValueKey(recipe.id),
                   item: recipe,
                   type: ContentCardType.recipe,
+                  userAllergenPrefs: allergenPrefs.showOnCards
+                      ? allergenPrefs.trackedAllergens
+                      : null,
                   onTap: () async {
                     // Navigera till detaljer
                     await Navigator.pushNamed(

@@ -16,6 +16,7 @@ import 'package:butlery/services/import/cache/global_recipe_cache.dart';
 import 'package:butlery/services/import/cache/cache_entry.dart';
 import 'package:butlery/services/import/cache/url_normalizer.dart';
 import 'package:butlery/services/import/import_manager_result.dart';
+import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 
@@ -70,6 +71,15 @@ class ImportManager {
   TikTokPipeline? get _tiktokPipeline {
     try {
       return ServiceLocator.get<TikTokPipeline>();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Get the tagging service (lazy initialization with graceful fallback)
+  TaggingService? get _taggingService {
+    try {
+      return ServiceLocator.get<TaggingService>();
     } catch (e) {
       return null;
     }
@@ -357,14 +367,43 @@ class ImportManager {
     return textStrategy;
   }
 
-  /// Save imported recipe using PersonalRecipeOperations
+  /// Save imported recipe using PersonalRecipeOperations.
+  /// Automatically generates tags for the recipe before saving.
   Future<ImportManagerResult> saveImportedRecipe(Recipe recipe) async {
     try {
-      final saveResult = await _personalOperations.addUnifiedRecipe(recipe);
+      // Auto-generate tags for imported recipe
+      Recipe recipeToSave = recipe;
+      final taggingService = _taggingService;
+
+      if (taggingService != null && recipe.tagResult == null) {
+        AppLogger.info('🏷️ Auto-tagging imported recipe: ${recipe.title}');
+
+        final tagResult = await taggingService.generateTags(recipe);
+
+        if (tagResult != null) {
+          // Create new Recipe with updated core containing tagResult
+          recipeToSave = Recipe(
+            core: recipe.core.copyWith(tagResult: tagResult),
+            type: recipe.type,
+            socialData: recipe.socialData,
+            realtimeData: recipe.realtimeData,
+            offlineData: recipe.offlineData,
+          );
+          AppLogger.success(
+            '✅ Generated ${tagResult.tags.length} tags '
+            '(coverage: ${(tagResult.coverage * 100).toStringAsFixed(0)}%)',
+          );
+        } else {
+          AppLogger.warning('⚠️ Tagging returned null for: ${recipe.title}');
+        }
+      }
+
+      final saveResult =
+          await _personalOperations.addUnifiedRecipe(recipeToSave);
 
       if (saveResult.isSuccess) {
         return ImportManagerResult.success(
-          recipe,
+          recipeToSave,
           strategy: 'direct_save',
         );
       } else {

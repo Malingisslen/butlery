@@ -136,6 +136,9 @@ class ContentCard extends StatelessWidget {
   /// Optional subtitle text for additional context information
   final String? subtitle;
 
+  /// User allergen preferences for filtering displayed allergen badges (recipe cards only)
+  final Set<String>? userAllergenPrefs;
+
   /// Accept action handler specifically for friend request cards
   final VoidCallback? onAccept;
 
@@ -178,6 +181,7 @@ class ContentCard extends StatelessWidget {
     this.showSharingStatus = false,
     this.trailing,
     this.subtitle,
+    this.userAllergenPrefs,
     this.onAccept,
     this.onDecline,
   });
@@ -229,6 +233,7 @@ class ContentCard extends StatelessWidget {
       margin: margin,
       padding: padding,
       style: _mapToRecipeCardStyle(style),
+      userAllergenPrefs: userAllergenPrefs,
     );
   }
 
