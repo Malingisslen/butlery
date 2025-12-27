@@ -31,7 +31,7 @@ await recipeService.personal.createRecipe(...);  // User's content
 await recipeService.social.shareWithFriends(...);  // Sharing
 final stream = recipeService.realtime.watchRecipe(...);  // Live sync
 ```
-See `/docs/architecture/` for complete patterns.
+See ADRs in `/docs/adr/` for complete architectural decisions.
 
 ## Critical Conventions
 
@@ -44,15 +44,21 @@ See `/docs/architecture/` for complete patterns.
 - Color: `withValues(alpha: 0.8)` not `withOpacity(0.8)` (deprecated)
 - Type safety: Use proper models, not Map-based data access
 
-**Responsive Design**: See `/docs/RESPONSIVE_DESIGN_GUIDE.md`
+**Responsive Design**:
 - Primary pattern: Center + ConstrainedBox with responsive max width
 - Content widths: Narrow (500-600px), Medium (700-800px), Wide (900-1200px)
 
-**Commenting**: See `/docs/architecture/COMMENTING_STANDARDS.md`
+**Commenting**:
 - WHY not WHAT - code shows what, comments explain intent
 - No doc comments on simple getters/private methods
 - No section dividers (`// ===== SECTION =====`)
 - All comments in English (UI strings stay Swedish)
+
+**Documentation Files**: Prefer minimal documentation. Code should be self-documenting.
+- Before creating any `.md` file, ask: Is this genuinely necessary? Could it go in an existing file?
+- Prefer updating existing docs over creating new ones
+- Avoid: README files for every directory, V1/V2 versions (update in place), analysis reports that won't be acted upon
+- Cleanup mindset: Delete implementation plans once implemented, remove debug docs when resolved
 
 ## Infrastructure
 
@@ -80,7 +86,7 @@ factory Recipe.fromFirestore(DocumentSnapshot doc) {
 }
 ```
 
-See `/docs/architecture/DEDUPLICATION_PATTERNS.md` for full documentation.
+See `.claude/skills/code-deduplication-utilities/` for deduplication patterns.
 
 ## Feature Status
 
@@ -96,9 +102,9 @@ See `/docs/architecture/DEDUPLICATION_PATTERNS.md` for full documentation.
 
 ## Testing
 
-- **Guide**: `/docs/testing/TESTING_COMPLETE_GUIDE.md`
 - **Dashboard**: `/docs/testing/TESTING_DASHBOARD.md`
 - **Strategy**: Bottom-up (repositories → services → viewmodels → integration)
+- **Templates**: `/test/templates/` for test file templates
 
 ## CI/CD
 

@@ -294,8 +294,6 @@ For security concerns, please see [docs/security/SECRETS_MANAGEMENT.md](docs/sec
 
 **Current Phase**: P0 Critical Issues (7/15 complete - 46.7%)
 
-See [docs/ultimate/MASTERPLAN.md](docs/ultimate/MASTERPLAN.md) for detailed remediation plan.
-
 ---
 
 ## 📄 License

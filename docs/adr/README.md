@@ -144,16 +144,8 @@ Cross-reference in "Related ADRs" section of affected ADRs.
 
 ## Related Documentation
 
-### Architecture Guides
-- [Architecture Overview](../architecture/ARCHITECTURE_OVERVIEW.md) - Complete architectural reference
-- [MVVM Pattern Guide](../architecture/MVVM_PATTERN.md) - Implementation details for ADR-001
-- [DI System Guide](../architecture/DI_SYSTEM.md) - Implementation details for ADR-002 & ADR-004
-- [Firebase Integration Guide](../architecture/FIREBASE_INTEGRATION.md) - Implementation details for ADR-003
-- [Best Practices](../architecture/BEST_PRACTICES.md) - Coding standards and patterns
-
-### Project Guidelines
 - [CLAUDE.md](../../CLAUDE.md) - Project configuration and standards (references ADRs)
-- [MASTERPLAN.md](../ultimate/MASTERPLAN.md) - Issue tracking and remediation plan
+- [ACCEPTED_LARGE_FILES.md](../architecture/ACCEPTED_LARGE_FILES.md) - Files exceeding 500-line limit
 
 ---
 
