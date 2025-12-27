@@ -1,0 +1,62 @@
+path,name_sv,name_en,parent,level,order,notes
+protein,Protein,Protein,,1,1,Alla proteinkällor
+protein/meat,Kött,Meat,protein,2,1,Kött från landdjur
+protein/meat/beef,Nötkött,Beef,protein/meat,3,1,Specifikt nötkött
+protein/meat/pork,Fläsk,Pork,protein/meat,3,2,Specifikt fläsk/gris
+protein/meat/poultry,Fjäderfä,Poultry,protein/meat,3,3,Kyckling kalkon anka
+protein/meat/lamb,Lamm,Lamb,protein/meat,3,4,Specifikt lammkött
+protein/meat/game,Vilt,Game,protein/meat,3,5,Rådjur älg vildsvin
+protein/meat/other,Övrigt kött,Other Meat,protein/meat,3,6,Foie gras mjölmask
+protein/seafood,Fisk & Skaldjur,Seafood,protein,2,2,Från hav/sjö
+protein/seafood/fish,Fisk,Fish,protein/seafood,3,1,Fisk (ej skaldjur) - ALLERGI
+protein/seafood/shellfish,Skaldjur,Shellfish,protein/seafood,3,2,Räkor krabba musslor - ALLERGI
+protein/dairy,Mejeri,Dairy,protein,2,3,Mjölkprodukter
+protein/egg,Ägg,Egg,protein,2,4,Ägg från fågel
+protein/plant-based,Växtbaserat protein,Plant-based Protein,protein,2,5,Tofu tempeh bönor Beyond Quorn
+vegetable,Grönsaker,Vegetables,,1,2,Alla grönsaker
+vegetable/root,Rotfrukter,Root Vegetables,vegetable,2,1,Växer under jord (morot potatis)
+vegetable/leaf,Bladgrönt,Leafy Greens,vegetable,2,2,Sallad spenat kål
+vegetable/fruit-veg,Fruktgrönsaker,Fruit Vegetables,vegetable,2,3,Tomat paprika aubergine zucchini
+vegetable/onion-family,Lökfamiljen,Onion Family,vegetable,2,4,Lök vitlök purjolök
+vegetable/cruciferous,Korsblommiga,Cruciferous,vegetable,2,5,Broccoli blomkål kål
+vegetable/mushroom,Svamp,Mushrooms,vegetable,2,6,Alla svampar
+vegetable/legume,Baljväxter,Legumes,vegetable,2,7,Ärtor bönor linser
+vegetable/stem,Stjälkgrönsaker,Stem Vegetables,vegetable,2,8,Sparris selleri fänkål rabarber
+vegetable/sprout,Groddar & Skott,Sprouts,vegetable,2,9,Böngroddar ärtskott mikrogrönt
+fruit,Frukt,Fruit,,1,3,Alla frukter
+fruit/berry,Bär,Berries,fruit,2,1,Jordgubbar blåbär hallon
+fruit/common,Vanlig frukt,Common Fruit,fruit,2,2,Äpple banan päron
+fruit/exotic,Exotisk frukt,Exotic Fruit,fruit,2,3,Mango ananas papaya passionsfrukt
+fruit/citrus,Citrus,Citrus,fruit,2,4,Citron lime apelsin grapefrukt
+fruit/stone,Stenfrukt,Stone Fruit,fruit,2,5,Persika plommon aprikos körsbär
+fruit/dried,Torkad frukt,Dried Fruit,fruit,2,6,Russin dadlar torkad mango goji
+grain,Spannmål,Grains,,1,4,Spannmål och spannmålsprodukter
+grain/whole,Fullkorn,Whole Grains,grain,2,1,Ris quinoa bulgur havre dinkel spelt
+grain/flour,Mjöl,Flour,grain,2,2,Vetemjöl rågmjöl majsmjöl
+grain/flour/gluten-free,Glutenfritt mjöl,Gluten-free Flour,grain/flour,3,1,Majsmjöl rismjöl mandelmjöl - CELIAKI
+grain/flour/gluten-containing,Glutenhaltigt mjöl,Gluten-containing Flour,grain/flour,3,2,Vetemjöl rågmjöl speltmjöl
+grain/pasta-bread,Pasta & Bröd,Pasta & Bread,grain,2,3,Pasta bröd couscous lasagne nudlar
+grain/cereal,Flingor & Müsli,Cereal & Muesli,grain,2,4,Havregryn müsli cornflakes granola
+grain/bread,Bröd,Bread,grain,2,5,Bröd och brödprodukter
+fat,Fett,Fats,,1,5,Fetter och oljor
+fat/oil,Oljor,Oils,fat,2,1,Olivolja rapsolja sesamolja
+fat/solid,Fast fett,Solid Fats,fat,2,2,Smör margarin kokosolja
+other,Övrigt,Other,,1,6,Diverse ingredienser
+other/condiment,Såser & Smaker,Condiments,other,2,1,Sojasås tomatpuré senap majonnäs
+other/sweetener,Sötningsmedel,Sweeteners,other,2,2,Socker honung sirap agave
+other/baking,Bakning,Baking,other,2,3,Bakpulver jäst vaniljsocker
+other/nut-seed,Nötter & Frön,Nuts & Seeds,other,2,4,Mandel cashew sesamfrön solrosfrön
+other/nut-seed/tree-nut,Trädnötter,Tree Nuts,other/nut-seed,3,1,Mandel cashew valnöt - ALLERGI
+other/nut-seed/seed,Frön,Seeds,other/nut-seed,3,2,Sesamfrön solrosfrön pumpfrön
+other/beverage,Drycker,Beverages,other,2,5,Kaffe te buljong juice
+other/liquid,Vätskor,Liquids,other,2,6,Buljonger fonder och andra vätskor
+other/dessert,Dessert,Desserts,other,2,7,Glass mousse custard frozen yogurt
+other/prepared-meal,Färdigmat,Prepared Meals,other,2,8,Färdiga rätter soppor och måltider
+spice,Kryddor,Spices,,1,7,Kryddor och örter
+spice/herb-fresh,Färska örter,Fresh Herbs,spice,2,1,Basilika persilja dill koriander
+spice/herb-dry,Torkade örter,Dried Herbs,spice,2,2,Oregano timjan rosmarin
+spice/ground,Malda kryddor,Ground Spices,spice,2,3,Peppar spiskummin paprikapulver
+spice/seed,Kryddfrön,Spice Seeds,spice,2,4,Kardemumma fänkål koriander
+spice/blend,Kryddblandning,Spice Blends,spice,2,5,Curry arromat grillkrydda
+spice/paste,Kryddpastor,Spice Pastes,spice,2,6,Röd curry harissa
+spice/other,Övriga kryddor,Other Spices,spice,2,7,Salt muskotnöt lavendel galanga

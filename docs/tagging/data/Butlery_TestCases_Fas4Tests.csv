@@ -1,0 +1,27 @@
+test_id,tag,scenario,förutsättning,expected,ingredienser,metadata,notes,titel
+F4-01,vardagsmat,Snabb enkel middag,under-45-min + enkel/medel + vanliga råvaror,True,,,,
+F4-02,helgmat,Avancerad rätt,avancerad ELLER längre tid,True,,,,
+F4-03,bjudmat,Lyxiga ingredienser,,True,"oxfilé, tryffel, sparris",,,
+F4-04,comfort-food,Krämig pasta,krämig + pasta,True,,,,
+F4-05,comfort-food,Potatismos,krämig + potatis,True,,,,
+F4-06,värmande,Soppa,soppa == true,True,,,,
+F4-07,uppfriskande,Kall sallad,sallad + kall,True,,,,
+F4-08,snabbfix,10 min enkel,under-15-min + enkel,True,,,,
+F4-09,lyxig,Hummer,,True,"hummer, smör, citron",,,
+F4-10,fredagsmys,Tacos,taco == true,True,,,,
+F4-11,fredagsmys,Pizza,pizza == true,True,,,,
+F4-12,söndagsmiddag,Långkok traditionellt,,True,"nötkött, rotfrukter, sky",totalTime: 180,,
+F4-13,vår,Sparris + rabarber,,True,"sparris, rabarber, grädde",,,
+F4-14,sommar,Jordgubbar + grillfest,,True,"jordgubbar, grädde, grillad kyckling",,,
+F4-15,höst,Svamp + vilt,,True,"kantareller, älg, potatis",,,
+F4-16,vinter,Rotfrukter + långkok,långkok,True,"morot, palsternacka, nötkött",,,
+F4-17,året-runt,Pasta carbonara,,True,"pasta, ägg, pancetta, parmesan",,Inga säsongsingredienser,
+F4-18,jul,Janssons frestelse,,True,,,'jul' i titel,Janssons frestelse till julbordet
+F4-19,jul,Julskinka + grönkål,,True,"julskinka, grönkål, rödbetssallad",,,
+F4-20,lucia,Lussekatter,,True,,,'lussekatt' i titel,Saftiga lussekatter
+F4-21,lucia,Saffransbullar,,True,"saffran, mjöl, smör, russin",,,Saffransbullar
+F4-22,påsk,Påsklamm,,True,,,'påsk' i titel,Påsklamm med rotfrukter
+F4-23,midsommar,Sill + färskpotatis,,True,"sill, färskpotatis, gräddfil, gräslök",,,
+F4-24,midsommar,Jordgubbar + grädde,,True,"jordgubbar, vispgrädde, vaniljsocker",,,
+F4-25,kräftskiva,Kräftor med tillbehör,,True,"kräftor, dill, bröd",,,Kräftskiva
+F4-26,nyår,Hummer + kaviar,,True,"hummer, kaviar, champagne",,Lyxigt + festligt,

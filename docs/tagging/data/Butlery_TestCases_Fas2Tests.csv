@@ -1,0 +1,23 @@
+test_id,tag,scenario,förutsättning,expected,notes,instruktioner,metadata,ingredienser,titel
+F2-01,pastarätt,Pasta som bas,pastabaserad == true,1.0,,,,,
+F2-02,risrätt,Ris som bas,risbaserad == true,1.0,,,,,
+F2-03,nudelrätt,Nudlar som bas,nudelbaserad == true,1.0,,,,,
+F2-04,plåtmat,Allt på en plåt,,1.0,'plåt' i instruktioner,Lägg allt på en plåt och in i ugnen,,,
+F2-05,no-bake,Ingen tillagning,,1.0,Ingen ugn/spis,Blanda och servera,,,
+F2-06,långkok,Slow cooker-gryta,slow-cooker == true,1.0,>120 min + slow-cooker,,totalTime: 480,,
+F2-07,över-natten,Marinera över natten,,1.0,'över natten' i text,Låt marinera över natten i kylen,,,
+F2-08,lite-jobb,Kort aktiv tid,,1.0,Aktiv tid < 15 min,,activeTime: 10,,
+F2-09,få-ingredienser,5 ingredienser,,1.0,<=6 exkl basråvaror,,,"pasta, smör, parmesan, peppar, salt",
+F2-10,stark,Chili i recept,,1.0,is-spicy ingrediens,,,"kyckling, chili, lime, koriander",
+F2-11,stark,Chilisås i titel,,1.0,TitleKeywords SET,,,,Sriracha kyckling
+F2-12,mild,Inga starka ingredienser,,1.0,Inga is-spicy,,,"kyckling, ris, morot, grädde",
+F2-13,dessert,Chokladkaka,,1.0,kaka i titel,,,,Kladdig chokladkaka
+F2-14,frukost,Våfflor,,1.0,våffla-tagg,,,,Söndagsvåfflor
+F2-15,fika,Kanelbullar,,1.0,bulle-keyword,,,,Saftiga kanelbullar
+F2-16,dryck,Smoothie,,1.0,smoothie-tagg,,,,Bär-smoothie
+F2-17,pescetarian,Laxpasta,"vegetarisk=false, fisk=true, meat=false",1.0,Fisk utan kött,,,,
+F2-18,pescetarian,Räkwok,"vegetarisk=false, skaldjur=true, meat=false",1.0,Skaldjur utan kött,,,,
+F2-19,pescetarian,Vegetarisk pasta,vegetarisk=true,0.0,Ingen fisk/skaldjur,,,,
+F2-20,rå,Tonfisktartare,ingen tillagning,1.0,tartare + ingen tillagning,,,,Tonfisktartare
+F2-21,rå,Lax sashimi,ingen tillagning,1.0,sashimi i titel,,,,Lax sashimi
+F2-22,en-gryta,gryta == true AND alla ingredienser tillagas tillsammans,,,,,,,

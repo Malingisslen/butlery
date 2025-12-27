@@ -1,0 +1,22 @@
+allergen_key,trigger_property,contains_tag,free_tag,eu_allergen
+gluten,contains-gluten,innehåller-gluten,glutenfri,True
+laktos,contains-lactose,innehåller-laktos,laktosfri,False
+mjölk,dairy,innehåller-mjölk,mjölkfri,True
+ägg,egg,innehåller-ägg,äggfri,True
+fisk,fish,innehåller-fisk,fiskfri,True
+kräftdjur,crustacean,innehåller-kräftdjur,kräftdjursfri,True
+blötdjur,mollusc,innehåller-blötdjur,blötdjursfri,True
+skaldjur,crustacean OR mollusc,innehåller-skaldjur,skaldjursfri,False
+trädnötter,tree-nut,innehåller-trädnötter,trädnötsfri,True
+jordnötter,peanut,innehåller-jordnötter,jordnötsfri,True
+nötter,tree-nut OR peanut,innehåller-nötter,nötfri,False
+soja,soy,innehåller-soja,sojafri,True
+sesam,sesame,innehåller-sesam,sesamfri,True
+selleri,celery,innehåller-selleri,sellerifri,True
+senap,mustard,innehåller-senap,senapfri,True
+lupin,lupin,innehåller-lupin,lupinfri,True
+sulfiter,sulfites,innehåller-sulfiter,sulfitfri,True
+alkohol,contains-alcohol,innehåller-alkohol,alkoholfri,False
+kött,meat,innehåller-kött,,False
+fläsk,pork,innehåller-fläsk,fläskfri,False
+nötkött,beef,innehåller-nötkött,nötköttssfri,False

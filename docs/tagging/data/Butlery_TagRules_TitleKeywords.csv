@@ -1,0 +1,102 @@
+keyword,affects_tag,effect,category,notes
+pepparsås,stark,SET,peppar,Pepparsås är stark
+pepparbiff,stark,SET,peppar,
+pepparstekt,stark,SET,peppar,
+au poivre,stark,SET,peppar,Fransk pepparbiff
+steak au poivre,stark,SET,peppar,
+pepparrotssås,stark,SET,peppar,
+chilisås,stark,SET,chili,Om i titel = starkt fokus
+chilistekt,stark,SET,chili,
+chiliglaserad,stark,SET,chili,
+chili con carne,stark,SET,chili,
+senapssås,stark,BOOST,senap,Kan vara mild eller stark
+senapsglaserad,stark,BOOST,senap,
+dijonsås,stark,BOOST,senap,
+szechuan,stark,SET,asiatisk,Kinesisk chilihetta
+sichuan,stark,SET,asiatisk,Alternativ stavning
+kung pao,stark,SET,asiatisk,Stark kinesisk rätt
+mapo tofu,stark,SET,asiatisk,Stark sichuan-rätt
+dan dan,stark,SET,asiatisk,Stark nudelrätt
+kimchi,stark,BOOST,asiatisk,Ofta starkt
+gochujang,stark,SET,asiatisk,Koreansk chilipasta
+bulgogi,stark,BOOST,asiatisk,Kan vara kryddstark
+vindaloo,stark,SET,indisk,Mycket stark curry
+madras,stark,SET,indisk,Stark curry
+phaal,stark,SET,indisk,Extremt stark
+jalfrezi,stark,SET,indisk,Stark curry med chili
+pad prik,stark,SET,asiatisk,Thai chilirätt
+nam prik,stark,SET,asiatisk,Thai chilisås
+buffalo,stark,SET,mexikansk,Buffalo wings etc
+buffalo wings,stark,SET,mexikansk,
+jalapeño,stark,SET,mexikansk,I titelnamn
+habanero,stark,SET,mexikansk,
+chipotle,stark,BOOST,mexikansk,"Rökt chili, medel-starkt"
+arrabbiata,stark,SET,italiensk,Arg pasta med chili
+all'arrabbiata,stark,SET,italiensk,
+fra diavolo,stark,SET,italiensk,Djävulens pasta
+diavolo,stark,SET,italiensk,
+cajun,stark,SET,cajun,Kryddstark
+blackened,stark,SET,cajun,Cajun-stekt
+creole,stark,BOOST,cajun,Kan vara starkt
+harissa,stark,SET,mellanöstern,Nordafrikansk chilipasta
+piri piri,stark,SET,afrikansk,Portugisisk/afrikansk chili
+peri peri,stark,SET,afrikansk,Alternativ stavning
+stark,stark,SET,generell,Explicit i titel
+het,stark,BOOST,generell,I titel
+heta,stark,BOOST,generell,
+kryddstark,stark,SET,generell,
+eldigt,stark,SET,generell,
+fire,stark,BOOST,generell,Engelska
+spicy,stark,SET,generell,Engelska
+hot wings,stark,SET,generell,
+lyxig,lyxig,SET,generell,Explicit i titel
+lyx,lyxig,BOOST,generell,
+festlig,lyxig,BOOST,generell,
+gourmet,lyxig,SET,generell,
+fin middag,lyxig,BOOST,generell,
+middag för två,lyxig,BOOST,generell,Romantisk/festlig
+romantisk,lyxig,BOOST,generell,
+nyårsmiddag,lyxig,BOOST,generell,
+champagne,lyxig,BOOST,generell,I titel
+tryffel,lyxig,SET,generell,I titel
+comfort,comfort-food,SET,generell,
+comfort food,comfort-food,SET,generell,
+mys,comfort-food,BOOST,generell,
+fredagsmys,comfort-food,SET,generell,
+go-to,comfort-food,BOOST,generell,
+favorit,comfort-food,BOOST,generell,
+klassisk,comfort-food,BOOST,generell,
+husmanskost,comfort-food,SET,generell,Svensk comfort
+barnvänlig,barnvänlig,CONFIRM,generell,Bekräftar
+för barn,barnvänlig,CONFIRM,generell,
+kids,barnvänlig,BOOST,generell,
+hela familjen,barnvänlig,BOOST,generell,
+familje,barnvänlig,BOOST,generell,Familjerätt etc
+barnen,barnvänlig,BOOST,generell,
+barnens,barnvänlig,BOOST,generell,Barnens favorit
+snabb,snabbfix,BOOST,generell,
+snabbt,snabbfix,BOOST,generell,
+kvick,snabbfix,BOOST,generell,
+lättlagad,snabbfix,BOOST,generell,
+lätt att laga,snabbfix,BOOST,generell,
+15 min,snabbfix,SET,tid,
+15-min,snabbfix,SET,tid,
+20 min,snabbfix,BOOST,tid,
+express,snabbfix,SET,generell,
+one pot,snabbfix,BOOST,generell,
+one-pot,snabbfix,BOOST,generell,
+söndag,helgmat,BOOST,generell,
+söndags,helgmat,BOOST,generell,Söndagsmiddag
+helg,helgmat,BOOST,generell,
+weekend,helgmat,BOOST,generell,
+lördags,helgmat,BOOST,generell,
+vegansk,vegansk,CONFIRM,kost,Bekräftar om ingredienser stämmer
+vegan,vegansk,CONFIRM,kost,
+vegetarisk,vegetarisk,CONFIRM,kost,
+vegetarian,vegetarisk,CONFIRM,kost,
+vego,vegetarisk,CONFIRM,kost,Svensk slang
+glutenfri,glutenfri,CONFIRM,allergi,
+gluten-fri,glutenfri,CONFIRM,allergi,
+laktosfri,laktosfri,CONFIRM,allergi,
+mjölkfri,mjölkfri,CONFIRM,allergi,
+nötfri,nötfri,CONFIRM,allergi,

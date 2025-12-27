@@ -1,0 +1,33 @@
+test_id,dietary,scenario,ingredienser,expected_status,notes
+D01,vegetarisk,Rent vegetariskt,"ris, bönor, tomat, lök",FREE,Inga meat/seafood
+D02,vegetarisk,Med kyckling,"kyckling, ris, grönsaker",CONTAINS,Kyckling = meat
+D03,vegetarisk,Med lax,"lax, potatis, dill",CONTAINS,Lax = seafood
+D04,vegetarisk,Okänd ingrediens,"ris, tomat, XYZ-produkt",UNKNOWN,Coverage < 100%
+D05,vegansk,Rent veganskt,"linser, kokosmjölk, curry, ris",FREE,Inga animal-product
+D06,vegansk,Med ägg,"mjöl, ägg, socker",CONTAINS,Ägg = animal-product
+D07,vegansk,Med honung,"havregryn, honung, banan",CONTAINS,Honung = animal-product
+D08,vegansk,Med smör,"potatis, smör, dill",CONTAINS,Smör = animal-product
+D09,pescetarian,Fisk utan kött,"lax, ris, sparris",TRUE,"Har fisk, inget kött"
+D10,pescetarian,Räkor utan kött,"räkor, pasta, vitlök",TRUE,"Har skaldjur, inget kött"
+D11,pescetarian,Vegetariskt (ingen fisk),"pasta, tomat, basilika",FALSE,Ingen fisk/skaldjur
+D12,pescetarian,Fisk + kött,"lax, bacon, potatis",FALSE,Innehåller kött
+D13,graviditetssäker,Säker måltid,"kyckling, ris, broccoli, morot",FREE,Ingen high-mercury/alkohol
+D14,graviditetssäker,Tonfisk (high-mercury),"tonfisk, pasta, tomat",CONTAINS,Tonfisk = high-mercury
+D15,graviditetssäker,Med vin,"kyckling, vitt vin, grädde",CONTAINS,Vin = alkohol
+D16,graviditetssäker,Svärdfisk,"svärdfisk, citron, olivolja",CONTAINS,Svärdfisk = high-mercury
+D17,barnvänlig,Mild mat utan alkohol,"pasta, köttfärssås, morot",FREE,"Ej starkt, ej alkohol"
+D18,barnvänlig,Med chili,"kyckling, chilisås, ris",CONTAINS,Chili = is-spicy
+D19,barnvänlig,Med vin i sås,"kyckling, rödvin, grädde",CONTAINS,Vin = alkohol
+D20,barnvänlig,Sriracha,"nudlar, sriracha, tofu",CONTAINS,Sriracha = is-spicy
+D21,halalanpassad,Kyckling med ris,"kyckling, ris, tomat, lök",FREE,"Ej fläsk, ej alkohol"
+D22,halalanpassad,Med bacon,"kyckling, bacon, pasta",CONTAINS,Bacon = pork
+D23,halalanpassad,Med öl,"nötkött, öl, lök",CONTAINS,Öl = alkohol
+D24,halalanpassad,Med fläskfilé,"fläskfilé, äpple, grädde",CONTAINS,Fläsk = pork
+D25,kosheranpassad,Kyckling (ej fläsk/skaldjur),"kyckling, potatis, morot",FREE,"Ej pork, ej shellfish"
+D26,kosheranpassad,Med räkor,"räkor, pasta, vitlök",CONTAINS,Räkor = shellfish
+D27,kosheranpassad,Med bacon,"kyckling, bacon, ägg",CONTAINS,Bacon = pork
+D28,kosheranpassad,Lax (tillåtet),"lax, citron, dill",FREE,"Fisk OK, ej shellfish"
+D29,nötköttssfri,Kyckling,"kyckling, ris, grönsaker",FREE,Ingen beef
+D30,nötköttssfri,Med biff,"entrecôte, potatis, bearnaise",CONTAINS,Entrecôte = beef
+D31,nötköttssfri,Med nötfärs,"nötfärs, pasta, tomat",CONTAINS,Nötfärs = beef
+D32,nötköttssfri,Lamm (tillåtet),"lammkotlett, rosmarin, potatis",FREE,Lamm ≠ beef
