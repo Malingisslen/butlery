@@ -35,7 +35,7 @@ class NavigationThemes {
 
   /// Bottom navigation bar theme
   static BottomNavigationBarThemeData get bottomNavigationBarTheme {
-    return const BottomNavigationBarThemeData(
+    return BottomNavigationBarThemeData(
       backgroundColor: AppColors.primaryBlue,
       selectedItemColor: AppColors.cardWhite,
       unselectedItemColor: ThemeConstants.whiteOverlay40,
@@ -48,12 +48,12 @@ class NavigationThemes {
 
   /// Tab bar theme
   static TabBarThemeData get tabBarTheme {
-    return const TabBarThemeData(
+    return TabBarThemeData(
       labelColor: AppColors.primaryBlue,
       unselectedLabelColor: AppColors.textMedium,
       labelStyle: AppTextStyles.tabText,
       unselectedLabelStyle: AppTextStyles.tabText,
-      indicator: UnderlineTabIndicator(
+      indicator: const UnderlineTabIndicator(
         borderSide: BorderSide(
           color: AppColors.primaryBlue,
           width: AppDimensions.borderWidthThick,

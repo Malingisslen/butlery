@@ -21,7 +21,7 @@ class ButtonThemes {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         ),
-        minimumSize: const Size(double.infinity, 48),
+        minimumSize: const Size(double.infinity, AppDimensions.minTouchTarget),
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingLg,
           vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
@@ -40,7 +40,7 @@ class ButtonThemes {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         ),
-        minimumSize: const Size(double.infinity, 48),
+        minimumSize: const Size(double.infinity, AppDimensions.minTouchTarget),
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingLg,
           vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
@@ -63,7 +63,7 @@ class ButtonThemes {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         ),
-        minimumSize: const Size(double.infinity, 48),
+        minimumSize: const Size(double.infinity, AppDimensions.minTouchTarget),
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingLg,
           vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
@@ -82,7 +82,7 @@ class ButtonThemes {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
         ),
-        minimumSize: const Size(0, 48),
+        minimumSize: const Size(0, AppDimensions.minTouchTarget),
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingMd,
           vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
@@ -98,7 +98,8 @@ class ButtonThemes {
       style: IconButton.styleFrom(
         foregroundColor: AppColors.textMedium,
         backgroundColor: AppColors.transparent,
-        minimumSize: const Size(48, 48),
+        minimumSize: const Size(
+            AppDimensions.minTouchTarget, AppDimensions.minTouchTarget),
         iconSize: AppDimensions.iconSizeL,
       ),
     );

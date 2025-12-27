@@ -11,10 +11,28 @@ class AppTheme {
   AppTheme._();
 
   /// Creates the complete light theme for the application.
-  static ThemeData get lightTheme => _createTheme(AppColors.lightColorScheme);
+  /// Uses the static light color scheme.
+  static ThemeData get lightTheme => createTheme(AppColors.lightColorScheme);
+
+  /// Creates the complete dark theme for the application.
+  /// Uses the static dark color scheme.
+  static ThemeData get darkTheme => createTheme(AppColors.darkColorScheme);
+
+  /// Creates a light theme with a dynamic color scheme.
+  /// Use with Material You dynamic colors on Android 12+.
+  static ThemeData dynamicLightTheme(ColorScheme? dynamicScheme) {
+    return createTheme(dynamicScheme ?? AppColors.lightColorScheme);
+  }
+
+  /// Creates a dark theme with a dynamic color scheme.
+  /// Use with Material You dynamic colors on Android 12+.
+  static ThemeData dynamicDarkTheme(ColorScheme? dynamicScheme) {
+    return createTheme(dynamicScheme ?? AppColors.darkColorScheme);
+  }
 
   /// Creates theme configuration from color scheme.
-  static ThemeData _createTheme(ColorScheme colorScheme) {
+  /// This method is public to allow dynamic color scheme injection.
+  static ThemeData createTheme(ColorScheme colorScheme) {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
@@ -48,8 +66,8 @@ class AppTheme {
       sliderTheme: ComponentThemes.sliderTheme,
       progressIndicatorTheme: ComponentThemes.progressIndicatorTheme,
 
-      // Background colors - explicit for consistency
-      scaffoldBackgroundColor: AppColors.backgroundBeige,
+      // Background colors - use colorScheme.surface for theme-awareness
+      scaffoldBackgroundColor: colorScheme.surface,
 
       // Page transitions
       pageTransitionsTheme: const PageTransitionsTheme(
