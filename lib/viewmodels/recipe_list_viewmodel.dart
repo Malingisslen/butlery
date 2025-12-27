@@ -11,6 +11,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/search_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/search_filter/filter_models.dart';
 
 /// Recipe list ViewModel for search, filtering, sorting, and caching (MVVM).
 class RecipeListViewModel extends ChangeNotifier {
@@ -33,6 +34,12 @@ class RecipeListViewModel extends ChangeNotifier {
   /// Active rating filters for quality-based recipe filtering with threshold management.
   final Set<String> _activeRatingFilters = {};
 
+  /// Active allergen-free filters for allergen-based recipe filtering.
+  final Set<String> _activeAllergenFilters = {};
+
+  /// Active dietary filters for diet-based recipe filtering.
+  final Set<String> _activeDietaryFilters = {};
+
   /// Cached filtered recipe results for performance optimization and responsiveness.
   List<Recipe>? _cachedFilteredRecipes;
 
@@ -53,6 +60,12 @@ class RecipeListViewModel extends ChangeNotifier {
 
   /// Last rating filters for cache consistency and state management optimization.
   Set<String>? _lastRatingFilters;
+
+  /// Last allergen filters for cache validation.
+  Set<String>? _lastAllergenFilters;
+
+  /// Last dietary filters for cache validation.
+  Set<String>? _lastDietaryFilters;
 
   /// Initializes recipe list ViewModel with comprehensive service integration and reactive state coordination.
   /// [recipeService] Optional UnifiedRecipeService instance for dependency injection
@@ -124,13 +137,23 @@ class RecipeListViewModel extends ChangeNotifier {
   /// and quality threshold selection state management.
   Set<String> get activeRatingFilters => Set.unmodifiable(_activeRatingFilters);
 
+  /// Active allergen-free filters for UI display and allergen filter management.
+  Set<String> get activeAllergenFilters =>
+      Set.unmodifiable(_activeAllergenFilters);
+
+  /// Active dietary filters for UI display and dietary filter management.
+  Set<String> get activeDietaryFilters =>
+      Set.unmodifiable(_activeDietaryFilters);
+
   /// Filter presence indicator for UI conditional display and filter management.
   /// Indicates whether any filters are currently active for UI conditional rendering
   /// of filter clear buttons and filter state indicators.
   bool get hasActiveFilters =>
       _activeTimeFilters.isNotEmpty ||
       _activeMealTypeFilters.isNotEmpty ||
-      _activeRatingFilters.isNotEmpty;
+      _activeRatingFilters.isNotEmpty ||
+      _activeAllergenFilters.isNotEmpty ||
+      _activeDietaryFilters.isNotEmpty;
 
   /// Updates search query with intelligent caching and debounced filtering coordination.
   /// [query] New search query for recipe filtering and search functionality
@@ -211,14 +234,39 @@ class RecipeListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Toggles allergen-free filter for allergen-based recipe filtering.
+  /// [filterId] Allergen filter identifier matching RecipeFilters.allergenFreeFilters
+  void toggleAllergenFilter(String filterId) {
+    if (_activeAllergenFilters.contains(filterId)) {
+      _activeAllergenFilters.remove(filterId);
+    } else {
+      _activeAllergenFilters.add(filterId);
+    }
+    _invalidateCache();
+    notifyListeners();
+  }
+
+  /// Toggles dietary filter for diet-based recipe filtering.
+  /// [filterId] Dietary filter identifier matching RecipeFilters.dietaryFilters
+  void toggleDietaryFilter(String filterId) {
+    if (_activeDietaryFilters.contains(filterId)) {
+      _activeDietaryFilters.remove(filterId);
+    } else {
+      _activeDietaryFilters.add(filterId);
+    }
+    _invalidateCache();
+    notifyListeners();
+  }
+
   /// Clears all active filters with comprehensive state reset and performance optimization.
-  /// Removes all time, meal type, and rating filters with automatic cache invalidation
-  /// and UI notification for complete filter state reset and clean recipe list display.
-  /// Essential for filter reset functionality and clean state management.
+  /// Removes all time, meal type, rating, allergen, and dietary filters with automatic
+  /// cache invalidation and UI notification for complete filter state reset.
   void clearAllFilters() {
     _activeTimeFilters.clear();
     _activeMealTypeFilters.clear();
     _activeRatingFilters.clear();
+    _activeAllergenFilters.clear();
+    _activeDietaryFilters.clear();
     _invalidateCache();
     notifyListeners();
   }
@@ -271,7 +319,9 @@ class RecipeListViewModel extends ChangeNotifier {
         _lastSortAscending == _sortAscending &&
         _setEquals(_lastTimeFilters, _activeTimeFilters) &&
         _setEquals(_lastMealTypeFilters, _activeMealTypeFilters) &&
-        _setEquals(_lastRatingFilters, _activeRatingFilters)) {
+        _setEquals(_lastRatingFilters, _activeRatingFilters) &&
+        _setEquals(_lastAllergenFilters, _activeAllergenFilters) &&
+        _setEquals(_lastDietaryFilters, _activeDietaryFilters)) {
       return _cachedFilteredRecipes!;
     }
 
@@ -290,6 +340,16 @@ class RecipeListViewModel extends ChangeNotifier {
     // Applicera betygsfilter
     if (_activeRatingFilters.isNotEmpty) {
       filtered = _applyRatingFilters(filtered);
+    }
+
+    // Applicera allergenfilter
+    if (_activeAllergenFilters.isNotEmpty) {
+      filtered = _applyAllergenFilters(filtered);
+    }
+
+    // Applicera kostfilter
+    if (_activeDietaryFilters.isNotEmpty) {
+      filtered = _applyDietaryFilters(filtered);
     }
 
     // Sök
@@ -312,6 +372,8 @@ class RecipeListViewModel extends ChangeNotifier {
     _lastTimeFilters = Set.from(_activeTimeFilters);
     _lastMealTypeFilters = Set.from(_activeMealTypeFilters);
     _lastRatingFilters = Set.from(_activeRatingFilters);
+    _lastAllergenFilters = Set.from(_activeAllergenFilters);
+    _lastDietaryFilters = Set.from(_activeDietaryFilters);
 
     // PERFORMANCE FIX: Apply pagination limit to prevent UI performance issues
     return sorted.take(_displayLimit).toList();
@@ -390,6 +452,54 @@ class RecipeListViewModel extends ChangeNotifier {
 
     return recipes.where((recipe) {
       return recipe.rating != null && recipe.rating! >= minRating;
+    }).toList();
+  }
+
+  /// Applies allergen-free filters using recipe tag results.
+  /// Returns recipes that are proven free from ALL selected allergens (AND logic).
+  List<Recipe> _applyAllergenFilters(List<Recipe> recipes) {
+    return recipes.where((recipe) {
+      final tagResult = recipe.tagResult;
+      if (tagResult == null) return false;
+
+      // Recipe must be free from ALL selected allergens (AND logic)
+      for (final filterId in _activeAllergenFilters) {
+        final filterOption = RecipeFilters.allergenFreeFilters.firstWhere(
+          (f) => f.id == filterId,
+          orElse: () => const FilterOption(id: '', label: '', value: ''),
+        );
+        if (filterOption.value is String &&
+            (filterOption.value as String).isNotEmpty) {
+          if (!tagResult.isAllergenFree(filterOption.value as String)) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }).toList();
+  }
+
+  /// Applies dietary filters using recipe tag results.
+  /// Returns recipes that are safe for ALL selected diets (AND logic).
+  List<Recipe> _applyDietaryFilters(List<Recipe> recipes) {
+    return recipes.where((recipe) {
+      final tagResult = recipe.tagResult;
+      if (tagResult == null) return false;
+
+      // Recipe must be safe for ALL selected diets (AND logic)
+      for (final filterId in _activeDietaryFilters) {
+        final filterOption = RecipeFilters.dietaryFilters.firstWhere(
+          (f) => f.id == filterId,
+          orElse: () => const FilterOption(id: '', label: '', value: ''),
+        );
+        if (filterOption.value is String &&
+            (filterOption.value as String).isNotEmpty) {
+          if (!tagResult.isDietarySafe(filterOption.value as String)) {
+            return false;
+          }
+        }
+      }
+      return true;
     }).toList();
   }
 

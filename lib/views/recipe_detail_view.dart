@@ -16,6 +16,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/services/user_service.dart';
 
 /// Recipe Detail View - Complete recipe display with metadata, actions, and social features
 /// This view provides comprehensive recipe details including:
@@ -42,6 +43,9 @@ class RecipeDetailView extends StatelessWidget {
         ),
         ChangeNotifierProvider<SocialRecipeViewModel>(
           create: (_) => ServiceLocator.get<SocialRecipeViewModel>(),
+        ),
+        ChangeNotifierProvider.value(
+          value: ServiceLocator.get<UserService>(),
         ),
       ],
       child: _RecipeDetailViewContent(recipe: recipe),
@@ -307,17 +311,32 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           const SizedBox(height: AppDimensions.spacingXl),
 
                           // Recipe main content
-                          RecipeDetailContent(
-                            viewModel: viewModel,
-                            scaledIngredients: _actions.scaledIngredients,
-                            onPortionChanged: (portions, ingredients) {
-                              setState(() {
-                                _actions.onPortionChanged(
-                                    portions, ingredients);
-                              });
+                          Builder(
+                            builder: (context) {
+                              final userService = context.watch<UserService>();
+                              final allergenPrefs =
+                                  userService.allergenPreferences;
+                              return RecipeDetailContent(
+                                viewModel: viewModel,
+                                scaledIngredients: _actions.scaledIngredients,
+                                onPortionChanged: (portions, ingredients) {
+                                  setState(() {
+                                    _actions.onPortionChanged(
+                                        portions, ingredients);
+                                  });
+                                },
+                                onImageTap: (imageUrls, index) =>
+                                    _showFullscreenImage(
+                                        context, imageUrls, index),
+                                userAllergenPrefs: allergenPrefs.showOnDetail
+                                    ? allergenPrefs.trackedAllergens
+                                    : null,
+                                userDietaryPrefs: allergenPrefs.showOnDetail
+                                    ? allergenPrefs.trackedDietary
+                                    : null,
+                                showCoverage: allergenPrefs.showCoverage,
+                              );
                             },
-                            onImageTap: (imageUrls, index) =>
-                                _showFullscreenImage(context, imageUrls, index),
                           ),
                           const SizedBox(height: AppDimensions.spacingXl),
 
