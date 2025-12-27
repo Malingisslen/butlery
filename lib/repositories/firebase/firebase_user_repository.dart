@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -497,6 +498,29 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       userId: currentUser,
       resource: 'user_profile',
       operation: 'decrement_public_recipe_count',
+      granted: true,
+    );
+  }
+
+  /// Update allergen preferences for a user
+  @override
+  Future<void> updateAllergenPreferences(
+      String userId, UserAllergenPreferences preferences) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'update allergen preferences',
+    );
+
+    await collection.doc(userId).update({
+      'allergenPreferences': preferences.toFirestore(),
+    });
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'update_allergen_preferences',
       granted: true,
     );
   }

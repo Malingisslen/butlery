@@ -1,5 +1,6 @@
 import 'package:butlery/repositories/interfaces/repository.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
 
 /// Repository interface for user profile data operations and management.
 /// This interface extends the base Repository pattern to provide specialized
@@ -83,4 +84,8 @@ abstract class UserRepository extends Repository<UserProfile> {
 
   /// Decrement public recipe count when a recipe is deleted or made private
   Future<void> decrementPublicRecipeCount(String userId);
+
+  /// Update allergen preferences for a user
+  Future<void> updateAllergenPreferences(
+      String userId, UserAllergenPreferences preferences);
 }

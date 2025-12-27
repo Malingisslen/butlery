@@ -365,6 +365,16 @@ class _ProfileMenuState extends State<ProfileMenu> {
             onTap: widget.onViewMessages,
             count: _unreadMessagesCount,
           ),
+          ProfileActions.buildMenuItem(
+            context,
+            title: 'Allergeninställningar',
+            subtitle: 'Välj vilka allergener du vill spåra',
+            icon: Icons.health_and_safety,
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/settings/allergens');
+            },
+          ),
         ],
       ),
     );
