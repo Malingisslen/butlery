@@ -246,6 +246,17 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             ],
                           ),
                         ),
+                        const PopupMenuItem(
+                          value: 're_tag',
+                          child: Row(
+                            children: [
+                              Icon(Icons.local_offer,
+                                  size: AppDimensions.iconSizeM),
+                              SizedBox(width: AppDimensions.spacingM),
+                              Text('Uppdatera taggar'),
+                            ],
+                          ),
+                        ),
                         PopupMenuItem(
                           value: 'delete',
                           child: Row(
@@ -392,6 +403,9 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         break;
       case 'generate_shopping_list':
         await _actions.generateShoppingListFromRecipe(context);
+        break;
+      case 're_tag':
+        await _actions.retagRecipe(context);
         break;
       case 'delete':
         await _actions.deleteRecipe(context);

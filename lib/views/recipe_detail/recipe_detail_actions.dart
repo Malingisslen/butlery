@@ -9,6 +9,7 @@ import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_management_handler.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_social_handler.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_shopping_handler.dart';
+import 'package:butlery/views/recipe_detail/handlers/recipe_tagging_handler.dart';
 
 /// Recipe detail actions facade
 /// **SRP Compliance:** This facade coordinates action handlers and manages view state.
@@ -115,6 +116,14 @@ class RecipeDetailActions {
     await RecipeShoppingHandler.generateShoppingListFromRecipe(
       context,
       currentPortions: _currentPortions,
+      showSnackBar: _showSnackBar,
+    );
+  }
+
+  /// Re-tag recipe with new allergen and dietary analysis
+  Future<void> retagRecipe(BuildContext context) async {
+    await RecipeTaggingHandler.retagRecipe(
+      context,
       showSnackBar: _showSnackBar,
     );
   }
