@@ -119,3 +119,12 @@ See `.claude/skills/code-deduplication-utilities/` for deduplication patterns.
 3. **Security validation** - PermissionValidationMixin on all repositories
 4. **Single data source** - don't mix UserService/PermissionService
 5. **Ask before deviating** - from planned todos
+
+## Stop Hook Response
+
+När stop hook blockerar med en `reason`:
+- **Fixa problemet OMEDELBART** - fråga INTE användaren
+- Om reason nämner "uncommitted" → committa direkt
+- Om reason nämner "analyze" → kör analyze och fixa fel
+- Om reason nämner "tests" → kör tester och fixa fel
+- Försök sedan stoppa igen
