@@ -59,14 +59,14 @@ class RecipeDetailMetadata extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
-          const Row(
+          Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.info_outline,
                 color: AppColors.primaryBlue,
                 size: AppDimensions.iconSizeAction,
               ),
-              SizedBox(width: AppDimensions.spacingM),
+              const SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Recept information',
                 style: AppTextStyles.titleMedium,
@@ -145,7 +145,7 @@ class RecipeDetailMetadata extends StatelessWidget {
                 Icons.check_circle_outline,
                 size: AppDimensions.iconSizeAction,
               ),
-              label: const Text(
+              label: Text(
                 'Lagat idag',
                 style: AppTextStyles.labelLarge,
               ),

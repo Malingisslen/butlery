@@ -18,7 +18,6 @@ class SharedRecipeCard {
     SharedContentCoordinatorViewModel viewModel,
     SharedRecipe sharedRecipe,
   ) {
-    final recipe = sharedRecipe.recipeSnapshot;
     final isRead = viewModel.recipeViewModel.isRecipeViewed(sharedRecipe);
     final isImported = viewModel.recipeViewModel.isRecipeImported(sharedRecipe);
 
@@ -32,10 +31,11 @@ class SharedRecipeCard {
           if (!isRead) {
             viewModel.recipeViewModel.markAsViewed(sharedRecipe);
           }
+          // Use contentSnapshot which provides minimal recipe from denormalized fields
           Navigator.pushNamed(
             context,
             Routes.receptDetalj,
-            arguments: recipe,
+            arguments: sharedRecipe.contentSnapshot,
           );
         },
         child: Container(
@@ -56,8 +56,8 @@ class SharedRecipeCard {
               _buildHeader(context, viewModel, sharedRecipe, isRead),
               const SizedBox(height: AppDimensions.spacingS),
 
-              // Recept content
-              _buildRecipeContent(context, recipe),
+              // Recept content - uses denormalized fields for V2 efficiency
+              _buildRecipeContent(context, sharedRecipe),
 
               // Message från delaren
               if (sharedRecipe.shareMessage?.isNotEmpty == true) ...[
@@ -72,7 +72,6 @@ class SharedRecipeCard {
                 context,
                 viewModel,
                 sharedRecipe,
-                recipe,
                 isRead,
                 isImported,
               ),
@@ -149,7 +148,8 @@ class SharedRecipeCard {
           Container(
             width: 8,
             height: 8,
-            margin: const EdgeInsets.only(left: AppDimensions.spacingXs),
+            margin: const EdgeInsetsDirectional.only(
+                start: AppDimensions.spacingXs),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
               shape: BoxShape.circle,
@@ -159,35 +159,47 @@ class SharedRecipeCard {
     );
   }
 
-  static Widget _buildRecipeContent(BuildContext context, dynamic recipe) {
+  /// Build recipe content using denormalized fields for V2 efficiency.
+  /// No need to access full snapshot for list display.
+  static Widget _buildRecipeContent(
+      BuildContext context, SharedRecipe sharedRecipe) {
+    final hasImage = sharedRecipe.recipeImageUrl != null;
+    final cookTimeText = sharedRecipe.recipeTimeMinutes != null
+        ? '${sharedRecipe.recipeTimeMinutes} min'
+        : '? min';
+
     return Row(
       crossAxisAlignment:
           CrossAxisAlignment.center, // Center image with content
       children: [
-        if (recipe.hasImages)
+        if (hasImage)
           ClipRRect(
             borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
             child: Container(
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                image: recipe.primaryImageUrl != null
-                    ? DecorationImage(
-                        image: NetworkImage(recipe.primaryImageUrl!),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-                color: recipe.primaryImageUrl == null
-                    ? Theme.of(context).colorScheme.surfaceContainer
-                    : null,
+                image: DecorationImage(
+                  image: NetworkImage(sharedRecipe.recipeImageUrl!),
+                  fit: BoxFit.cover,
+                ),
               ),
-              child: recipe.primaryImageUrl == null
-                  ? Icon(
-                      Icons.restaurant,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      size: AppDimensions.iconSizeM,
-                    )
-                  : null,
+            ),
+          ),
+        if (!hasImage)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainer,
+              ),
+              child: Icon(
+                Icons.restaurant,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                size: AppDimensions.iconSizeM,
+              ),
             ),
           ),
         const SizedBox(width: AppDimensions.spacingS),
@@ -196,13 +208,13 @@ class SharedRecipeCard {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                recipe.title,
+                sharedRecipe.recipeTitle,
                 style: AppTextStyles.titleMedium,
               ),
-              if (recipe.description.isNotEmpty) ...[
+              if (sharedRecipe.recipeDescription?.isNotEmpty == true) ...[
                 const SizedBox(height: AppDimensions.spacingXs),
                 Text(
-                  recipe.description,
+                  sharedRecipe.recipeDescription!,
                   style: AppTextStyles.bodySmall,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -218,7 +230,7 @@ class SharedRecipeCard {
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text(
-                    '${recipe.portions ?? '?'} portioner',
+                    '${sharedRecipe.recipePortions ?? '?'} portioner',
                     style: AppTextStyles.bodySmall,
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
@@ -229,7 +241,7 @@ class SharedRecipeCard {
                   ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Text(
-                    recipe.cookTimeText,
+                    cookTimeText,
                     style: AppTextStyles.bodySmall,
                   ),
                 ],
@@ -262,7 +274,6 @@ class SharedRecipeCard {
     BuildContext context,
     SharedContentCoordinatorViewModel viewModel,
     SharedRecipe sharedRecipe,
-    dynamic recipe,
     bool isRead,
     bool isImported,
   ) {
@@ -278,7 +289,7 @@ class SharedRecipeCard {
               Navigator.pushNamed(
                 context,
                 Routes.receptDetalj,
-                arguments: recipe,
+                arguments: sharedRecipe.contentSnapshot,
               );
             },
             icon: Icons.visibility,

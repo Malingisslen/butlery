@@ -178,6 +178,7 @@ class ValidationUtils {
   /// Email validation - consolidates patterns from 23+ files
   static String? validateEmail(String? email, {bool required = true}) {
     if (isNullOrWhitespace(email)) {
+      // ignore: deprecated_member_use_from_same_package
       return required ? AppStrings.emailRequired : null;
     }
 

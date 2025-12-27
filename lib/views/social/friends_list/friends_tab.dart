@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
+import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
 
@@ -34,7 +35,10 @@ class FriendsTab {
               const SizedBox(height: AppDimensions.spacingS),
           itemBuilder: (context, index) {
             final friend = friends[index];
-            return FriendCard.build(context, friend);
+            return AnimatedListItem(
+              index: index,
+              child: FriendCard.build(context, friend),
+            );
           },
         ),
       ),

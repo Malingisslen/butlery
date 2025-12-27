@@ -267,6 +267,7 @@ void main() {
         await tester.pumpWidget(createTestWidget(
           StyledButton.icon(
             icon: const Icon(Icons.add),
+            semanticLabel: 'Add item',
             onPressed: () {},
           ),
         ));
@@ -283,6 +284,7 @@ void main() {
         await tester.pumpWidget(createTestWidget(
           StyledButton.icon(
             icon: const Icon(Icons.delete),
+            semanticLabel: 'Delete item',
             isDestructive: true,
             onPressed: () {},
           ),
@@ -299,6 +301,7 @@ void main() {
         await tester.pumpWidget(createTestWidget(
           const StyledButton.icon(
             icon: Icon(Icons.refresh),
+            semanticLabel: 'Refresh',
             isLoading: true,
           ),
         ));

@@ -7,9 +7,11 @@ import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/recipe/comment_form_widget.dart';
 import 'package:butlery/widgets/recipe/comment_item_widgets.dart';
+import 'package:butlery/services/unified/operations/modules/comment_likes_system.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 
 /// Recipe detail comments widget with expandable section.
 /// Uses extracted widgets from [CommentFormWidget] and [CommentItemWidgets].
@@ -109,7 +111,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Kommentarer', style: AppTextStyles.titleMedium),
+                  Text('Kommentarer', style: AppTextStyles.titleMedium),
                   if (vm.comments.isNotEmpty) ...[
                     const SizedBox(height: AppDimensions.spacingXs),
                     Text(
@@ -165,7 +167,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       padding: const EdgeInsets.all(AppDimensions.paddingL),
       child: Column(
         children: [
-          const Text(
+          Text(
             'Du måste vara inloggad för att kommentera',
             style: AppTextStyles.bodyLarge,
             textAlign: TextAlign.center,
@@ -209,7 +211,10 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       ),
       itemBuilder: (context, index) {
         final comment = vm.topLevelComments[index];
-        return _buildCommentWithReplies(comment, vm);
+        return AnimatedListItem(
+          index: index,
+          child: _buildCommentWithReplies(comment, vm),
+        );
       },
     );
   }
@@ -244,13 +249,22 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     }
   }
 
-  void _showLikesDialog(dynamic comment, SocialRecipeViewModel vm) {
+  Future<void> _showLikesDialog(
+      dynamic comment, SocialRecipeViewModel vm) async {
+    if (!mounted) return;
+
+    // Fetch likers from subcollection
+    final likerIds = await CommentLikesSystem.getCommentLikers(
+      commentId: comment.id,
+      limit: 100,
+    );
+
     if (!mounted) return;
     showModalBottomSheet(
       context: context,
       builder: (_) => CommentItemWidgets.buildLikesDialog(
         likeCount: comment.likeCount,
-        likedByUserIds: List<String>.from(comment.likedByUserIds ?? []),
+        likedByUserIds: likerIds,
         getDisplayName: vm.getAuthorDisplayName,
         getAvatarUrl: vm.getAuthorAvatarUrl,
       ),

@@ -3,7 +3,6 @@
 /// management, menu planning, import functionality, and search services.
 library;
 
-import 'package:flutter/foundation.dart';
 import 'package:butlery/core/bootstrap/stages/bootstrap_stage.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
@@ -39,12 +38,6 @@ class ContentStage implements BootstrapStage {
       // Content module initialization is handled by the DI container
       // UnifiedRecipeService.initialize() is called during ContentModule.initialize()
       // No duplicate initialization needed here - the early return guard would prevent it anyway
-
-      if (kDebugMode) {
-        debugPrint(
-          '✅ [ContentStage] Content services ready (initialized by ContentModule)',
-        );
-      }
     } catch (e) {
       throw BootstrapException(
         name,
@@ -63,9 +56,6 @@ class ContentStage implements BootstrapStage {
 
       return true;
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ [ContentStage] Validation failed: $e');
-      }
       return false;
     }
   }

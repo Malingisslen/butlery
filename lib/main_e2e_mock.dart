@@ -8,7 +8,6 @@
 /// - Mock approach provides pure UI/UX testing with maximum speed
 library;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 
@@ -49,36 +48,18 @@ import 'package:butlery/theme/app_dimensions.dart';
 /// ```
 Future<void> main() async {
   try {
-    if (kDebugMode) {
-      debugPrint('🚀 Starting Butlery E2E Mock System');
-    }
-
     // Ensure Flutter binding is initialized
     WidgetsFlutterBinding.ensureInitialized();
 
     // Skip Firebase initialization completely for mock E2E tests
     // This prevents Firebase platform channel errors in test environment
 
-    // Skip environment variables - not needed for UI testing
-    if (kDebugMode) {
-      debugPrint('⚡ Skipping Firebase initialization for E2E Mock testing');
-    }
-
     // Initialize modular system with mock configuration
     await _initializeE2EMockSystem();
 
     // Start the application
     runApp(const ButleryApp());
-
-    if (kDebugMode) {
-      debugPrint('✅ E2E Mock system started successfully');
-    }
   } catch (e, stackTrace) {
-    if (kDebugMode) {
-      debugPrint('❌ E2E Mock application startup failed: $e');
-      debugPrint('Stack trace: $stackTrace');
-    }
-
     // Show error app with E2E-specific message
     runApp(_E2EMockErrorApp(
         'E2E Mock initialization failed: $e\n\nStack trace:\n$stackTrace'));
@@ -89,10 +70,6 @@ Future<void> main() async {
 /// This creates the same modular system as production but configured for
 /// E2E mock testing with no Firebase dependencies.
 Future<void> _initializeE2EMockSystem() async {
-  if (kDebugMode) {
-    debugPrint('🔧 Initializing E2E Mock modular system...');
-  }
-
   // Create DI modules in dependency order - same as production
   final modules = [
     CoreModule(),
@@ -119,10 +96,6 @@ Future<void> _initializeE2EMockSystem() async {
     modules: modules,
     stages: stages,
   );
-
-  if (kDebugMode) {
-    debugPrint('✅ E2E Mock modular system initialized successfully');
-  }
 }
 
 /// Error app widget for E2E mock initialization failures

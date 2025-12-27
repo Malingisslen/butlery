@@ -27,7 +27,7 @@ class BackupService extends BaseService {
         'butlery_backup': {
           'version': '1.0',
           'exported_at': DateTime.now().toIso8601String(),
-          'user_email': FirebaseAuthRepository().currentUser?.email,
+          'user_id': FirebaseAuthRepository().currentUser?.uid,
           'recipe_count': recipes.length,
           'recipes': recipes.map((r) => r.toJson()).toList(),
         },

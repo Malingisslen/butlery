@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 // Import all split modules
@@ -100,7 +101,7 @@ class LayoutComponents {
 
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       isScrollControlled: true,
       builder: (modalContext) => LayoutComponents.profileMenu(
         userImageUrl: userImageUrl,
@@ -304,6 +305,7 @@ class LayoutComponents {
   /// LayoutComponents.responsiveListGrid<Recipe>(
   ///   items: recipes,
   ///   itemBuilder: (context, recipe) => RecipeCard(recipe: recipe),
+  ///   animate: true, // Staggered entrance animations
   /// );
   /// ```
   static Widget responsiveListGrid<T>({
@@ -317,6 +319,7 @@ class LayoutComponents {
     bool shrinkWrap = false,
     ScrollPhysics? physics,
     double? gridChildAspectRatio,
+    bool animate = false,
   }) {
     return ResponsiveListGrid<T>(
       items: items,
@@ -329,6 +332,7 @@ class LayoutComponents {
       shrinkWrap: shrinkWrap,
       physics: physics,
       gridChildAspectRatio: gridChildAspectRatio,
+      animate: animate,
     );
   }
 

@@ -159,18 +159,21 @@ class SocialRecipeService extends ChangeNotifier
           _sharedRecipes.where((r) => r.id == recipeId).firstOrNull;
       if (sharedRecipe == null) return false;
 
+      // Use contentSnapshot which handles V1 (full snapshot) or V2 (minimal from metadata)
+      final recipeToImport = sharedRecipe.contentSnapshot;
+
       // Create a personal recipe from the shared one
       final success = await _recipeService.personal.createRecipe(
-        title: sharedRecipe.recipeSnapshot.title,
-        description: sharedRecipe.recipeSnapshot.description,
-        ingredients: sharedRecipe.recipeSnapshot.ingredients,
-        instructions: sharedRecipe.recipeSnapshot.instructions,
-        imageUrls: sharedRecipe.recipeSnapshot.imageUrls,
-        mealType: sharedRecipe.recipeSnapshot.mealType,
-        portions: sharedRecipe.recipeSnapshot.portions,
-        timeMinutes: sharedRecipe.recipeSnapshot.timeMinutes,
-        tags: sharedRecipe.recipeSnapshot.tags,
-        rating: sharedRecipe.recipeSnapshot.rating,
+        title: recipeToImport.title,
+        description: recipeToImport.description,
+        ingredients: recipeToImport.ingredients,
+        instructions: recipeToImport.instructions,
+        imageUrls: recipeToImport.imageUrls,
+        mealType: recipeToImport.mealType,
+        portions: recipeToImport.portions,
+        timeMinutes: recipeToImport.timeMinutes,
+        tags: recipeToImport.tags,
+        rating: recipeToImport.rating,
       );
 
       if (success != null) {

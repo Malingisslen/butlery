@@ -6,6 +6,7 @@ import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/views/social/discovery_dashboard/discovery_section_header.dart';
 
 /// Friend Activity Section - Shows friend activity timeline
 class FriendActivitySection {
@@ -18,26 +19,13 @@ class FriendActivitySection {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            const Icon(
-              Icons.people,
-              color: AppColors.primary,
-              size: AppDimensions.iconSizeM,
-            ),
-            const SizedBox(width: AppDimensions.spacingS),
-            Text(
-              'Vänners aktivitet',
-              style: AppTextStyles.titleMedium.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const Spacer(),
-            TextButton(
-              onPressed: () => _showAllActivity(context, viewModel),
-              child: const Text('Se allt'),
-            ),
-          ],
+        DiscoverySectionHeader(
+          title: 'Vänners aktivitet',
+          icon: Icons.timeline,
+          iconColor: AppColors.secondary,
+          actionLabel: 'Se allt',
+          onActionPressed: () => _showAllActivity(context, viewModel),
+          count: friendActivity.length,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         if (friendActivity.isEmpty)
@@ -63,20 +51,20 @@ class FriendActivitySection {
           color: AppColors.outline.withValues(alpha: 0.2),
         ),
       ),
-      child: const Center(
+      child: Center(
         child: Column(
           children: [
-            Icon(
+            const Icon(
               Icons.people_outline,
               color: AppColors.outline,
               size: AppDimensions.iconSizeXxl,
             ),
-            SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingM),
             Text(
               'Ingen vänaktivitet än',
               style: AppTextStyles.titleSmall,
             ),
-            SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.spacingS),
             Text(
               'När dina vänner delar recept, menyer eller inköpslistor visas de här.',
               style: AppTextStyles.bodyMedium,
@@ -176,7 +164,7 @@ class FriendActivitySection {
                           size: AppDimensions.iconSizeS,
                           color: AppColors.primary,
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: AppDimensions.spacingXs),
                         Expanded(
                           child: Text(
                             'Delad av $ownerName',
@@ -195,9 +183,8 @@ class FriendActivitySection {
                         if (sharedAt != null) ...[
                           Text(
                             _formatTimeAgo(sharedAt),
-                            style: AppTextStyles.bodySmall.copyWith(
+                            style: AppTextStyles.labelMedium.copyWith(
                               color: AppColors.onSurface.withValues(alpha: 0.6),
-                              fontSize: 12,
                             ),
                           ),
                           const SizedBox(width: AppDimensions.spacingM),
@@ -208,13 +195,11 @@ class FriendActivitySection {
                             size: AppDimensions.iconSize14,
                             color: AppColors.success,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: AppDimensions.spacingXs),
                           Text(
                             '${engagement['shares']}',
-                            style: AppTextStyles.bodySmall.copyWith(
+                            style: AppTextStyles.labelMedium.copyWith(
                               color: AppColors.success,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -390,7 +375,7 @@ class FriendActivitySection {
                       children: [
                         Text(activity['action'] as String? ??
                             'Utförde en aktivitet'),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: AppDimensions.spacingXs),
                         Text(
                           activity['timestamp'] as String? ?? 'Nyligen',
                           style:

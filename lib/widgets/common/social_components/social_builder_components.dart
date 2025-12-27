@@ -62,8 +62,8 @@ class SocialBuilderComponents {
       text: text,
       onPressed: onPressed,
       icon: icon,
-      backgroundColor: Colors.blue,
-      textColor: Colors.white,
+      backgroundColor: AppColors.primaryBlue,
+      textColor: AppColors.cardWhite,
       loading: loading,
     );
   }
@@ -95,8 +95,8 @@ class SocialBuilderComponents {
       text: text,
       onPressed: onPressed,
       icon: icon,
-      backgroundColor: Colors.red,
-      textColor: Colors.white,
+      backgroundColor: AppColors.error,
+      textColor: AppColors.cardWhite,
       loading: loading,
     );
   }
@@ -359,7 +359,7 @@ class SocialBuilderComponents {
               horizontal: AppDimensions.spacingMd,
               vertical: AppDimensions.spacingSm),
       child: Material(
-        color: backgroundColor ?? Colors.white,
+        color: backgroundColor ?? AppColors.cardWhite,
         elevation: elevation ?? AppDimensions.elevationLow,
         borderRadius:
             borderRadius ?? BorderRadius.circular(AppDimensions.borderRadius8),

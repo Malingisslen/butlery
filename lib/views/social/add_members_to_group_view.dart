@@ -109,7 +109,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Lägg till medlemmar',
             style: AppTextStyles.headlineSmall,
           ),

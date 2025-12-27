@@ -12,6 +12,8 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/state/loading_states.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/animations/animated_list_item.dart';
+import 'package:butlery/views/social/discovery_dashboard/discovery_section_header.dart';
 
 // Import focused components
 import 'package:butlery/views/social/discovery_dashboard/discovery_app_bar.dart';
@@ -160,7 +162,7 @@ class _DiscoveryDashboardViewContentState
                       BorderRadius.circular(AppDimensions.borderRadiusS),
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
-                dividerColor: Colors.transparent,
+                dividerColor: AppColors.transparent,
                 overlayColor: WidgetStateProperty.all(
                   AppColors.primary.withValues(alpha: 0.05),
                 ),
@@ -268,11 +270,11 @@ class _DiscoveryDashboardViewContentState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           DiscoveryCategories.build(context, viewModel),
-          const SizedBox(height: AppDimensions.spacingL),
+          const DiscoverySectionDivider(),
           TrendingContentSection.build(context, viewModel),
-          const SizedBox(height: AppDimensions.spacingL),
+          const DiscoverySectionDivider(),
           PopularWithFriendsSection.build(context, viewModel),
-          const SizedBox(height: AppDimensions.spacingL),
+          const DiscoverySectionDivider(),
           RecentlySharedSection.build(context, viewModel),
         ],
       ),
@@ -326,7 +328,10 @@ class _DiscoveryDashboardViewContentState
             const SizedBox(height: AppDimensions.spacingS),
         itemBuilder: (context, index) {
           final item = searchResults[index];
-          return _buildSearchResultCard(context, item);
+          return AnimatedListItem(
+            index: index,
+            child: _buildSearchResultCard(context, item),
+          );
         },
       ),
     );

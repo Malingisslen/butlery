@@ -83,19 +83,26 @@ class SharedRecipeViewModel extends BaseSharedContentViewModel<SharedRecipe> {
 
   @override
   String getContentTitle(SharedRecipe content) {
-    return content.recipeSnapshot.title;
+    return content.recipeTitle;
   }
 
   @override
   bool contentMatchesSearch(SharedRecipe content, String searchQuery) {
     final query = searchQuery.toLowerCase();
-    final recipe = content.recipeSnapshot;
 
-    return recipe.title.toLowerCase().contains(query) ||
-        recipe.description.toLowerCase().contains(query) ||
-        recipe.ingredients
-            .any((ingredient) => ingredient.toLowerCase().contains(query)) ||
+    // Use denormalized fields for V2 efficiency
+    final titleMatch = content.recipeTitle.toLowerCase().contains(query);
+    final descriptionMatch =
+        content.recipeDescription?.toLowerCase().contains(query) ?? false;
+    final sharedByMatch =
         content.sharedByDisplayName.toLowerCase().contains(query);
+
+    // If full snapshot is available, also search ingredients
+    final ingredientMatch = content.hasFullSnapshot &&
+        content.recipeSnapshot!.ingredients
+            .any((ingredient) => ingredient.toLowerCase().contains(query));
+
+    return titleMatch || descriptionMatch || ingredientMatch || sharedByMatch;
   }
 
   @override

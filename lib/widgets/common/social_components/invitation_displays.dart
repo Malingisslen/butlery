@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/widgets/common/social/social_facade.dart';
+import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
 /// Invitation target display widgets.
@@ -240,13 +241,13 @@ class InvitationDisplays {
   static Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'accepted':
-        return Colors.green;
+        return AppColors.success;
       case 'declined':
-        return Colors.red;
+        return AppColors.error;
       case 'expired':
-        return Colors.orange;
+        return AppColors.warning;
       default:
-        return Colors.blue;
+        return AppColors.primaryBlue;
     }
   }
 

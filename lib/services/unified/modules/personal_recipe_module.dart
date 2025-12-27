@@ -11,6 +11,7 @@ import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
 import 'package:butlery/core/rate_limiting/rate_limiter.dart';
+import 'package:butlery/services/tagging/tagging_service.dart';
 
 /// Personal recipe CRUD operations module handling recipe creation, updates, import/export, and local storage.
 class PersonalRecipeModule {
@@ -22,6 +23,7 @@ class PersonalRecipeModule {
   final void Function(String) _setError;
   final void Function() _notifyListeners;
   final RecipeServiceAdapter Function() _getServiceAdapter;
+  final TaggingService? _taggingService;
   final RateLimiter _rateLimiter = RateLimiter();
 
   JsonCacheHelper get _cacheHelper => _getCacheHelper();
@@ -35,6 +37,7 @@ class PersonalRecipeModule {
     required void Function(String) setError,
     required void Function() notifyListeners,
     required RecipeServiceAdapter Function() getServiceAdapter,
+    TaggingService? taggingService,
   })  : _recipeRepository = recipeRepository,
         _userRepository = userRepository,
         _getCacheHelper = getCacheHelper,
@@ -42,7 +45,8 @@ class PersonalRecipeModule {
         _getCurrentUserDisplayName = getCurrentUserDisplayName,
         _setError = setError,
         _notifyListeners = notifyListeners,
-        _getServiceAdapter = getServiceAdapter;
+        _getServiceAdapter = getServiceAdapter,
+        _taggingService = taggingService;
 
   Future<String?> createPersonalRecipe({
     required String title,
@@ -74,7 +78,7 @@ class PersonalRecipeModule {
       return await _rateLimiter.executeWithLimit(
         RateLimitOperation.createRecipe,
         () async {
-          final newRecipe = Recipe.personal(
+          var newRecipe = Recipe.personal(
             title: title.trim(),
             description: description,
             ingredients: ingredients,
@@ -88,6 +92,9 @@ class PersonalRecipeModule {
             sourceUrl: sourceUrl,
             imageUrls: imageUrls,
           );
+
+          // Generate tags if tagging service is available
+          newRecipe = await _applyTagging(newRecipe);
 
           // ULTRATHINK FIX: Optimistic update - save to cache immediately and return success
           await _saveToCache(newRecipe);
@@ -140,10 +147,13 @@ class PersonalRecipeModule {
       return await _rateLimiter.executeWithLimit(
         RateLimitOperation.updateRecipe,
         () async {
-          final editedRecipe = updatedRecipe.copyWith(
+          var editedRecipe = updatedRecipe.copyWith(
             lastEditedByUserId: currentUserId,
             lastEditedByDisplayName: _getCurrentUserDisplayName(),
           );
+
+          // Regenerate tags if ingredients changed
+          editedRecipe = await _applyTagging(editedRecipe);
 
           // ULTRATHINK FIX: Optimistic update - save to cache immediately and return success
           await _saveToCache(editedRecipe);
@@ -563,5 +573,38 @@ class PersonalRecipeModule {
       AppLogger.info('🔄 Retrying background $operation for: ${recipe.title}');
       _startBackgroundRecipeSync(recipe, operation);
     });
+  }
+
+  /// Applies automatic tagging to a recipe if tagging service is available.
+  ///
+  /// Returns the recipe with tagResult populated, or the original recipe
+  /// if tagging service is not available or tagging fails.
+  Future<Recipe> _applyTagging(Recipe recipe) async {
+    if (_taggingService == null) {
+      return recipe;
+    }
+
+    try {
+      final tagResult = await _taggingService.generateTags(recipe);
+
+      if (tagResult != null) {
+        AppLogger.debug(
+          '🏷️ Generated ${tagResult.tags.length} tags for "${recipe.title}" '
+          '(coverage: ${(tagResult.coverage * 100).toStringAsFixed(0)}%)',
+        );
+
+        return Recipe(
+          core: recipe.core.copyWith(tagResult: tagResult),
+          type: recipe.type,
+          socialData: recipe.socialData,
+          realtimeData: recipe.realtimeData,
+          offlineData: recipe.offlineData,
+        );
+      }
+    } catch (e) {
+      AppLogger.warning('⚠️ Tagging failed for "${recipe.title}": $e');
+    }
+
+    return recipe;
   }
 }

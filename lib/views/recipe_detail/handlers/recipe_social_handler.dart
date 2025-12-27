@@ -28,8 +28,8 @@ class RecipeSocialHandler {
     List<UserProfile> availableFriends = [];
     try {
       availableFriends = friendsService.friends;
-    } catch (e) {
-      debugPrint('⚠️ Could not fetch friends: $e');
+    } catch (_) {
+      // Silently continue with empty friends list
     }
 
     final availableGroups = friendsService.categoriesList;

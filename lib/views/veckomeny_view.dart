@@ -312,7 +312,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                     desktop: AppDimensions.spacingL,
                   ),
                 ),
-                const Text(
+                Text(
                   'Genererar meny...',
                   style: AppTextStyles.titleMedium,
                 ),

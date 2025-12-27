@@ -47,22 +47,22 @@ class _EditableMenuItemsPreviewDialogState
         width: double.maxFinite,
         height: 400,
         child: _editableItems.isEmpty
-            ? const Center(
+            ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.shopping_cart_outlined,
                       size: AppDimensions.iconSizeXxl,
                       color: AppColors.textLight,
                     ),
-                    SizedBox(height: AppDimensions.spacingM),
+                    const SizedBox(height: AppDimensions.spacingM),
                     Text(
                       'Inga artiklar valda',
                       style: AppTextStyles.bodyLarge,
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: AppDimensions.spacingS),
+                    const SizedBox(height: AppDimensions.spacingS),
                     Text(
                       'Du har tagit bort alla artiklar från menyn',
                       style: AppTextStyles.bodyMedium,

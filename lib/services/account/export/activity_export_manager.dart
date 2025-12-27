@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/services/account/export/export_pagination_helper.dart';
 
 /// Handles export of user activity: comments, ratings, activity history.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
@@ -19,27 +20,33 @@ class ActivityExportManager {
         'comments': [],
         'ratings': [],
       };
+      final commentLimit = ExportPaginationHelper.getLimitForType('comments');
+      final ratingLimit = ExportPaginationHelper.getLimitForType('ratings');
 
-      // Get comments
-      final comments = await _firestore
-          .collection('recipe_comments')
-          .where('userId', isEqualTo: userId)
-          .get();
+      // Get comments (paginated)
+      final comments = await ExportPaginationHelper.paginatedQuery(
+        query: _firestore
+            .collection('recipe_comments')
+            .where('userId', isEqualTo: userId),
+        maxDocuments: commentLimit,
+      );
 
-      for (final doc in comments.docs) {
+      for (final doc in comments) {
         data['comments'].add({
           'comment_id': doc.id,
           'data': doc.data(),
         });
       }
 
-      // Get ratings
-      final ratings = await _firestore
-          .collection('recipe_ratings')
-          .where('userId', isEqualTo: userId)
-          .get();
+      // Get ratings (paginated)
+      final ratings = await ExportPaginationHelper.paginatedQuery(
+        query: _firestore
+            .collection('recipe_ratings')
+            .where('userId', isEqualTo: userId),
+        maxDocuments: ratingLimit,
+      );
 
-      for (final doc in ratings.docs) {
+      for (final doc in ratings) {
         data['ratings'].add({
           'rating_id': doc.id,
           'data': doc.data(),

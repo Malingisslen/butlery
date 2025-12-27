@@ -4,6 +4,11 @@ import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
 
 /// Recipe comment with threaded discussions and social engagement.
+///
+/// Like tracking uses a subcollection pattern for scalability:
+/// - `likesCount` is denormalized for quick display
+/// - Individual likes stored in `recipe_comments/{id}/likes/{userId}` subcollection
+/// - Use repository methods for like operations, not model methods
 class RecipeComment {
   final String id;
   final String recipeId;
@@ -13,7 +18,7 @@ class RecipeComment {
   final String text;
   final DateTime createdAt;
   final DateTime? editedAt;
-  final List<String> likedByUserIds;
+  final int likesCount;
   final String? parentCommentId;
   final int replyCount;
   final bool isDeleted;
@@ -27,7 +32,7 @@ class RecipeComment {
     required this.text,
     DateTime? createdAt,
     this.editedAt,
-    this.likedByUserIds = const [],
+    this.likesCount = 0,
     this.parentCommentId,
     this.replyCount = 0,
     this.isDeleted = false,
@@ -53,21 +58,15 @@ class RecipeComment {
     );
   }
 
-  /// Comment modification and social interaction methods.
+  /// Comment modification methods.
 
   /// Creates a copy of this comment with updated values while preserving immutability.
-  /// Used for all comment modifications while maintaining immutable data patterns
-  /// and ensuring consistent state management across the application.
-  /// [text] Updated comment text content
-  /// [editedAt] Edit timestamp for tracking modifications
-  /// [likedByUserIds] Updated list of users who liked the comment
-  /// [replyCount] Updated number of direct replies
-  /// [isDeleted] Updated deletion status for moderation
-  /// Returns a new [RecipeComment] instance with updated values.
+  /// Used for all comment modifications while maintaining immutable data patterns.
+  /// Note: Like operations should use repository methods, not copyWith.
   RecipeComment copyWith({
     String? text,
     DateTime? editedAt,
-    List<String>? likedByUserIds,
+    int? likesCount,
     int? replyCount,
     bool? isDeleted,
   }) {
@@ -80,34 +79,10 @@ class RecipeComment {
       text: text ?? this.text,
       createdAt: createdAt,
       editedAt: editedAt ?? this.editedAt,
-      likedByUserIds: likedByUserIds ?? List.from(this.likedByUserIds),
+      likesCount: likesCount ?? this.likesCount,
       parentCommentId: parentCommentId,
       replyCount: replyCount ?? this.replyCount,
       isDeleted: isDeleted ?? this.isDeleted,
-    );
-  }
-
-  /// Adds a like from the specified user to this comment.
-  /// Implements social engagement functionality with duplicate prevention.
-  /// If the user has already liked the comment, returns the existing comment unchanged.
-  /// [userId] The user identifier adding the like
-  /// Returns a new [RecipeComment] instance with the like added, or unchanged if already liked.
-  RecipeComment addLike(String userId) {
-    if (likedByUserIds.contains(userId)) return this;
-
-    return copyWith(likedByUserIds: [...likedByUserIds, userId]);
-  }
-
-  /// Removes a like from the specified user from this comment.
-  /// Implements social engagement functionality with non-existent like handling.
-  /// If the user hasn't liked the comment, returns the existing comment unchanged.
-  /// [userId] The user identifier removing the like
-  /// Returns a new [RecipeComment] instance with the like removed, or unchanged if not liked.
-  RecipeComment removeLike(String userId) {
-    if (!likedByUserIds.contains(userId)) return this;
-
-    return copyWith(
-      likedByUserIds: likedByUserIds.where((id) => id != userId).toList(),
     );
   }
 
@@ -131,31 +106,17 @@ class RecipeComment {
   /// Comment analysis and utility methods for UI integration and business logic.
 
   /// Gets the total number of likes this comment has received.
-  /// Provides quick access to social engagement metrics for UI display
-  /// and analytics without needing to count the likedByUserIds list.
-  int get likeCount => likedByUserIds.length;
+  /// This is a denormalized count maintained by the repository.
+  int get likeCount => likesCount;
 
   /// Checks if this comment has been edited after creation.
-  /// Returns true when editedAt is not null, indicating the comment
-  /// content has been modified since its original creation.
   bool get isEdited => editedAt != null;
 
   /// Checks if this is a top-level comment (not a reply).
-  /// Returns true when parentCommentId is null, indicating this comment
-  /// is directly attached to the recipe rather than being a reply.
   bool get isTopLevel => parentCommentId == null;
 
   /// Checks if this comment has direct replies.
-  /// Returns true when replyCount is greater than zero, indicating
-  /// other comments are threaded as replies to this comment.
   bool get hasReplies => replyCount > 0;
-
-  /// Checks if the specified user has liked this comment.
-  /// Provides convenient access to user-specific like status for UI state
-  /// management and social engagement functionality.
-  /// [userId] The user identifier to check for like status
-  /// Returns true if the user has liked this comment.
-  bool isLikedBy(String userId) => likedByUserIds.contains(userId);
 
   /// Checks if the specified user can edit or delete this comment.
   /// Implements permission checking based on authorship and deletion status.
@@ -188,9 +149,7 @@ class RecipeComment {
   /// Data persistence and serialization methods for Firestore and caching integration.
 
   /// Converts the recipe comment to Firestore-compatible format for persistence.
-  /// Transforms all comment data into a format suitable for Firestore storage
-  /// with proper timestamp handling and null value management for database efficiency.
-  /// Returns a map containing all comment data formatted for Firestore persistence.
+  /// Note: likesCount is managed by repository, not written by model.
   Map<String, dynamic> toFirestore() {
     return {
       'recipeId': recipeId,
@@ -202,7 +161,7 @@ class RecipeComment {
       'editedAt': editedAt != null
           ? AppTimestamp.fromDateTime(editedAt!).toFirestore()
           : null,
-      'likedByUserIds': likedByUserIds,
+      'likesCount': likesCount,
       'parentCommentId': parentCommentId,
       'replyCount': replyCount,
       'isDeleted': isDeleted,
@@ -210,11 +169,7 @@ class RecipeComment {
   }
 
   /// Creates a recipe comment instance from Firestore repository data.
-  /// Transforms Firestore document data into a complete [RecipeComment] instance
-  /// with proper type conversion, timestamp parsing, and default value handling for robust data recovery.
-  /// [id] Document identifier from Firestore
-  /// [data] Raw document data from Firestore with all comment fields
-  /// Returns a new [RecipeComment] instance with all data properly parsed and validated.
+  /// Reads likesCount from denormalized field (maintained by repository).
   factory RecipeComment.fromMap(String id, Map<String, dynamic> data) {
     return RecipeComment(
       id: id,
@@ -229,7 +184,7 @@ class RecipeComment {
       createdAt:
           SerializationUtils.safeDateTime(data, 'createdAt') ?? DateTime.now(),
       editedAt: SerializationUtils.safeDateTime(data, 'editedAt'),
-      likedByUserIds: SerializationUtils.safeStringList(data, 'likedByUserIds'),
+      likesCount: SerializationUtils.safeInt(data, 'likesCount'),
       parentCommentId:
           SerializationUtils.safeNullableString(data, 'parentCommentId'),
       replyCount: SerializationUtils.safeInt(data, 'replyCount'),
@@ -237,10 +192,7 @@ class RecipeComment {
     );
   }
 
-  /// Converts the recipe comment to JSON format for local caching and serialization.
-  /// Transforms all comment data into JSON-compatible format with proper DateTime
-  /// serialization for local storage, caching, and data transfer operations.
-  /// Returns a JSON-compatible map with all comment data properly serialized.
+  /// Converts the recipe comment to JSON format for local caching.
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -251,18 +203,14 @@ class RecipeComment {
       'text': text,
       'createdAt': createdAt.toIso8601String(),
       'editedAt': editedAt?.toIso8601String(),
-      'likedByUserIds': likedByUserIds,
+      'likesCount': likesCount,
       'parentCommentId': parentCommentId,
       'replyCount': replyCount,
       'isDeleted': isDeleted,
     };
   }
 
-  /// Creates a recipe comment instance from JSON data for caching and deserialization.
-  /// Transforms JSON data into a complete [RecipeComment] instance with proper
-  /// type conversion and DateTime deserialization for cache recovery and data transfer.
-  /// [json] JSON map containing all comment data with proper field names
-  /// Returns a new [RecipeComment] instance with all data properly deserialized.
+  /// Creates a recipe comment instance from JSON data for caching.
   factory RecipeComment.fromJson(Map<String, dynamic> json) {
     return RecipeComment(
       id: json['id'] as String,
@@ -275,7 +223,7 @@ class RecipeComment {
       editedAt: json['editedAt'] != null
           ? DateTime.parse(json['editedAt'] as String)
           : null,
-      likedByUserIds: List<String>.from(json['likedByUserIds'] ?? []),
+      likesCount: json['likesCount'] as int? ?? 0,
       parentCommentId: json['parentCommentId'] as String?,
       replyCount: json['replyCount'] as int? ?? 0,
       isDeleted: json['isDeleted'] as bool? ?? false,

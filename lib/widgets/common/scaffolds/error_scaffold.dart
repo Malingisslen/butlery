@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
@@ -8,7 +8,7 @@ import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 /// Error scaffold consolidating patterns from 15+ files
 class ErrorScaffold extends StatelessWidget {
   final String? title;
-  final String errorMessage;
+  final String? errorMessage;
   final VoidCallback? onRetry;
   final bool showBackButton;
   final List<Widget>? actions;
@@ -16,7 +16,7 @@ class ErrorScaffold extends StatelessWidget {
   const ErrorScaffold({
     super.key,
     this.title,
-    this.errorMessage = AppStrings.genericError,
+    this.errorMessage,
     this.onRetry,
     this.showBackButton = true,
     this.actions,
@@ -50,7 +50,7 @@ class ErrorScaffold extends StatelessWidget {
               ),
               SizedBox(height: spacing),
               Text(
-                errorMessage,
+                errorMessage ?? context.l10n.errorGeneric,
                 style: AppTextStyles.bodyLarge,
                 textAlign: TextAlign.center,
               ),
@@ -58,7 +58,7 @@ class ErrorScaffold extends StatelessWidget {
                 SizedBox(height: spacing * 1.5),
                 ElevatedButton(
                   onPressed: onRetry,
-                  child: const Text(AppStrings.retry),
+                  child: Text(context.l10n.commonRetry),
                 ),
               ],
             ],

@@ -8,7 +8,6 @@
 /// - Emulator approach provides realistic Firebase testing with isolation
 library;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -59,10 +58,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 /// ```
 Future<void> main() async {
   try {
-    if (kDebugMode) {
-      debugPrint('🚀 Starting Butlery E2E Emulator System');
-    }
-
     // Ensure Flutter binding is initialized
     WidgetsFlutterBinding.ensureInitialized();
 
@@ -71,33 +66,15 @@ Future<void> main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    if (kDebugMode) {
-      debugPrint('✅ Firebase initialized for E2E emulator testing');
-    }
-
     // Connect to Firebase emulators
     await _connectToE2EEmulators();
-
-    // Skip Firebase App Check for emulator testing
-    if (kDebugMode) {
-      debugPrint('⚠️ Firebase App Check skipped for E2E emulator testing');
-    }
 
     // Initialize modular system
     await _initializeE2EEmulatorSystem();
 
     // Start the application
     runApp(const ButleryApp());
-
-    if (kDebugMode) {
-      debugPrint('✅ E2E Emulator system started successfully');
-    }
   } catch (e, stackTrace) {
-    if (kDebugMode) {
-      debugPrint('❌ E2E Emulator application startup failed: $e');
-      debugPrint('Stack trace: $stackTrace');
-    }
-
     // Show error app with E2E-specific message
     runApp(_E2EEmulatorErrorApp(
         'E2E Emulator initialization failed: $e\n\nStack trace:\n$stackTrace'));
@@ -109,10 +86,6 @@ Future<void> main() async {
 /// using the standard emulator ports from firebase.json configuration.
 Future<void> _connectToE2EEmulators() async {
   try {
-    if (kDebugMode) {
-      debugPrint('🔌 Connecting to Firebase emulators...');
-    }
-
     const emulatorHost = 'localhost';
 
     // Connect Firestore emulator (port 8080)
@@ -123,18 +96,7 @@ Future<void> _connectToE2EEmulators() async {
 
     // Connect Storage emulator (port 9199)
     await FirebaseStorage.instance.useStorageEmulator(emulatorHost, 9199);
-
-    if (kDebugMode) {
-      debugPrint('✅ Connected to Firebase emulators successfully');
-      debugPrint('   - Firestore: localhost:8080');
-      debugPrint('   - Auth: localhost:9099');
-      debugPrint('   - Storage: localhost:9199');
-    }
   } catch (e) {
-    if (kDebugMode) {
-      debugPrint('❌ Failed to connect to Firebase emulators: $e');
-      debugPrint('Make sure emulators are running: firebase emulators:start');
-    }
     throw Exception('Firebase emulator connection failed: $e');
   }
 }
@@ -143,10 +105,6 @@ Future<void> _connectToE2EEmulators() async {
 /// This creates the same modular system as production but configured for
 /// E2E emulator testing with Firebase emulator connections.
 Future<void> _initializeE2EEmulatorSystem() async {
-  if (kDebugMode) {
-    debugPrint('🔧 Initializing E2E Emulator modular system...');
-  }
-
   // Create DI modules in dependency order - same as production
   final modules = [
     CoreModule(),
@@ -173,10 +131,6 @@ Future<void> _initializeE2EEmulatorSystem() async {
     modules: modules,
     stages: stages,
   );
-
-  if (kDebugMode) {
-    debugPrint('✅ E2E Emulator modular system initialized successfully');
-  }
 }
 
 /// Error app widget for E2E emulator initialization failures

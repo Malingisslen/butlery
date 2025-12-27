@@ -184,7 +184,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
             '${_selectedImages.length} selected',
             style: AppTextStyles.bodyLarge.copyWith(
               fontWeight: FontWeight.w500,
-              color: Colors.white,
+              color: AppColors.cardWhite,
             ),
           ),
           const Spacer(),
@@ -216,7 +216,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
         color: AppColors.cardWhite,
       ),
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: widget.onAddImage,
           borderRadius: widget.config.effectiveBorderRadius,
@@ -314,7 +314,7 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
                 isSelected ? Icons.check : Icons.circle_outlined,
                 size: AppDimensions.iconSizeS,
                 color: isSelected
-                    ? Colors.white
+                    ? AppColors.cardWhite
                     : AppColors.textDark.withValues(alpha: 0.6),
               ),
             ),

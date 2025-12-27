@@ -39,6 +39,7 @@ import 'package:butlery/services/unified/helpers/recipe_content_operations.dart'
 import 'package:butlery/services/unified/helpers/recipe_auth_state_handler.dart';
 import 'package:butlery/services/unified/helpers/personal_recipe_crud.dart';
 import 'package:butlery/services/unified/helpers/recipe_utility_operations.dart';
+import 'package:butlery/services/tagging/tagging_service.dart';
 
 /// Unified recipe service coordinating personal, social, and real-time recipe operations.
 ///
@@ -149,6 +150,16 @@ class UnifiedRecipeService extends ChangeNotifier
     return _recipeRepository ?? ServiceLocator.get<RecipeRepository>();
   }
 
+  /// Try to get TaggingService from service locator.
+  /// Returns null if not registered (tagging is optional).
+  TaggingService? _tryGetTaggingService() {
+    try {
+      return ServiceLocator.get<TaggingService>();
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Create service adapter with all dependencies
   /// Made lazy to avoid circular dependency issues during initialization
   RecipeServiceAdapter? _serviceAdapter;
@@ -190,6 +201,7 @@ class UnifiedRecipeService extends ChangeNotifier
       setError: _setError,
       notifyListeners: notifyListeners,
       getServiceAdapter: () => _getServiceAdapter(),
+      taggingService: _tryGetTaggingService(),
     );
 
     _socialModule = SocialRecipeModule(
@@ -362,17 +374,10 @@ class UnifiedRecipeService extends ChangeNotifier
   Future<void> initialize() async {
     // Early return guard to prevent double initialization
     if (_isInitialized) {
-      debugPrint(
-        '⚠️ [UnifiedRecipeService.initialize] Already initialized, skipping duplicate call',
-      );
       return;
     }
 
     try {
-      // Use debugPrint for first log to bypass AppLogger initialization issues
-      debugPrint(
-        '🔄 [UnifiedRecipeService.initialize] ENTRY - Starting initialization...',
-      );
       AppLogger.info(
         '🔄 [UnifiedRecipeService.initialize] Starting initialization (early return guard active)...',
       );

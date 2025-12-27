@@ -2,7 +2,6 @@ import 'package:butlery/models/shared_content/base_shared_content_model.dart';
 import 'package:butlery/models/shared_content/shared_content_status_mixin.dart';
 import 'package:butlery/models/shared_content/copy_on_write_mixin.dart';
 import 'package:uuid/uuid.dart';
-import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/permissions/edit_mode.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -15,10 +14,24 @@ enum ShareScope {
 }
 
 /// Shared recipe model with copy-on-write collaboration support.
+///
+/// V2 optimization (FIRE-CRITICAL-003): Uses denormalized metadata for list display
+/// instead of embedding full recipe. Full recipe fetched on-demand for detail views.
 class SharedRecipe extends BaseSharedContentModel<Recipe>
     with SharedContentStatusMixin, CopyOnWriteSupport {
   final String originalRecipeId;
-  final Recipe recipeSnapshot;
+
+  /// Denormalized metadata for efficient list display (V2)
+  final String recipeTitle;
+  final String? recipeImageUrl;
+  final int? recipePortions;
+  final int? recipeTimeMinutes;
+  final String? recipeDescription;
+
+  /// Full recipe snapshot - deprecated, kept for backward compatibility.
+  /// New shares only store denormalized fields; full recipe fetched on-demand.
+  final Recipe? _recipeSnapshot;
+
   final ShareScope scope;
   final bool allowImport;
   final bool allowCollaboration;
@@ -37,7 +50,14 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     super.engagementCount = 0,
     super.dismissalCount = 0,
     required this.originalRecipeId,
-    required this.recipeSnapshot,
+    // V2 denormalized metadata
+    required this.recipeTitle,
+    this.recipeImageUrl,
+    this.recipePortions,
+    this.recipeTimeMinutes,
+    this.recipeDescription,
+    // Deprecated: full snapshot (backward compatibility)
+    Recipe? recipeSnapshot,
     this.scope = ShareScope.individual,
     this.allowImport = true,
     this.allowCollaboration = false,
@@ -46,7 +66,8 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     bool copyOnWriteTriggered = false,
     String? originalOwnerStaticCopyId,
     int activeCollaboratorCount = 0,
-  })  : _isOriginalReference = isOriginalReference,
+  })  : _recipeSnapshot = recipeSnapshot,
+        _isOriginalReference = isOriginalReference,
         _copyOnWriteTriggered = copyOnWriteTriggered,
         _originalOwnerStaticCopyId = originalOwnerStaticCopyId,
         _activeCollaboratorCount = activeCollaboratorCount,
@@ -74,6 +95,15 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
       sharedByDisplayName: sharedByDisplayName,
       shareMessage: shareMessage,
       originalRecipeId: originalRecipeId,
+      // V2: Store denormalized metadata for efficient list display
+      recipeTitle: recipeSnapshot.title,
+      recipeImageUrl: recipeSnapshot.imageUrls.isNotEmpty
+          ? recipeSnapshot.imageUrls.first
+          : null,
+      recipePortions: recipeSnapshot.portions,
+      recipeTimeMinutes: recipeSnapshot.timeMinutes,
+      recipeDescription: recipeSnapshot.description,
+      // Keep snapshot for backward compatibility during transition
       recipeSnapshot: recipeSnapshot,
       scope: determinedScope,
       allowImport: allowImport,
@@ -84,14 +114,43 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
   @override
   String get contentTypeName => 'recipe';
 
-  @override
-  Recipe get contentSnapshot => recipeSnapshot;
+  /// Returns the full recipe snapshot if available (backward compatibility).
+  /// For new V2 shares, this may be null - use denormalized fields for display.
+  Recipe? get recipeSnapshot => _recipeSnapshot;
+
+  /// Backward compatibility getter for recipe.
+  Recipe? get recipe => _recipeSnapshot;
+
+  /// Whether full recipe snapshot is available (V1 shares have it, V2 may not).
+  bool get hasFullSnapshot => _recipeSnapshot != null;
 
   @override
-  String getContentTitle() => recipeSnapshot.title;
+  Recipe get contentSnapshot {
+    // Return snapshot if available, otherwise create minimal recipe from metadata
+    return _recipeSnapshot ??
+        Recipe(
+          core: RecipeCore(
+            id: originalRecipeId,
+            title: recipeTitle,
+            description: recipeDescription ?? '',
+            ingredients: const [],
+            instructions: const [],
+            imageUrls: recipeImageUrl != null ? [recipeImageUrl!] : const [],
+            mealType: 'Middag',
+            portions: recipePortions,
+            timeMinutes: recipeTimeMinutes,
+            createdAt: sharedAt,
+            updatedAt: sharedAt,
+          ),
+          type: RecipeType.shared,
+        );
+  }
 
   @override
-  String getContentDescription() => recipeSnapshot.description;
+  String getContentTitle() => recipeTitle;
+
+  @override
+  String getContentDescription() => recipeDescription ?? '';
 
   @override
   BaseSharedContentModel<Recipe> copyWithStatus({
@@ -126,7 +185,13 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
       engagementCount: importCount ?? engagementCount,
       dismissalCount: dismissalCount ?? this.dismissalCount,
       originalRecipeId: originalRecipeId,
-      recipeSnapshot: recipeSnapshot,
+      // V2 denormalized fields
+      recipeTitle: recipeTitle,
+      recipeImageUrl: recipeImageUrl,
+      recipePortions: recipePortions,
+      recipeTimeMinutes: recipeTimeMinutes,
+      recipeDescription: recipeDescription,
+      recipeSnapshot: _recipeSnapshot,
       scope: scope,
       allowImport: allowImport,
       allowCollaboration: allowCollaboration ?? this.allowCollaboration,
@@ -176,13 +241,14 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
     return copyWith(activeCollaboratorCount: activeCollaboratorCount + 1);
   }
 
-  Recipe get recipe => recipeSnapshot;
-
   int get importCount => engagementCount;
 
-  Recipe createImportRecipe({required String newOwnerId}) {
+  /// Creates a recipe for import. Requires full snapshot to be available.
+  /// For V2 shares without snapshot, caller must fetch full recipe first.
+  Recipe? createImportRecipe({required String newOwnerId}) {
+    if (_recipeSnapshot == null) return null;
     final attributionText = 'Inspirerat av recept från $sharedByDisplayName';
-    return recipeSnapshot.copyWith(sourceUrl: attributionText);
+    return _recipeSnapshot.copyWith(sourceUrl: attributionText);
   }
 
   ResourcePermission get permission {
@@ -213,7 +279,15 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
       'scope': scope.name,
       'allowImport': allowImport,
       'allowCollaboration': allowCollaboration,
-      'recipeSnapshot': recipeSnapshot.toFirestore(),
+      // V2 denormalized metadata for efficient list display
+      'recipeTitle': recipeTitle,
+      if (recipeImageUrl != null) 'recipeImageUrl': recipeImageUrl,
+      if (recipePortions != null) 'recipePortions': recipePortions,
+      if (recipeTimeMinutes != null) 'recipeTimeMinutes': recipeTimeMinutes,
+      if (recipeDescription != null) 'recipeDescription': recipeDescription,
+      // Keep snapshot for backward compatibility during transition
+      if (_recipeSnapshot != null)
+        'recipeSnapshot': _recipeSnapshot.toFirestore(),
     };
   }
 
@@ -223,43 +297,74 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
           BaseSharedContentModel.parseCommonFieldsFromFirestore(data);
       final cowFields =
           CopyOnWriteSupport.parseCopyOnWriteFieldsFromFirestore(data);
-      final recipeData = data['recipeSnapshot'] as Map<String, dynamic>;
 
-      final recipe = Recipe(
-        core: RecipeCore(
-          id: utils.SerializationUtils.safeString(recipeData, 'id'),
-          title: utils.SerializationUtils.safeString(recipeData, 'title',
-              defaultValue: 'Untitled Recipe'),
-          description:
-              utils.SerializationUtils.safeString(recipeData, 'description'),
-          ingredients: utils.SerializationUtils.safeStringList(
-              recipeData, 'ingredients'),
-          instructions: utils.SerializationUtils.safeStringList(
-              recipeData, 'instructions'),
-          imageUrls:
-              utils.SerializationUtils.safeStringList(recipeData, 'imageUrls'),
-          mealType: utils.SerializationUtils.safeString(recipeData, 'mealType',
-              defaultValue: 'Middag'),
-          portions:
-              utils.SerializationUtils.safeNullableInt(recipeData, 'portions'),
-          timeMinutes: utils.SerializationUtils.safeNullableInt(
-              recipeData, 'timeMinutes'),
-          rating:
-              utils.SerializationUtils.safeNullableDouble(recipeData, 'rating'),
-          tags: utils.SerializationUtils.safeStringList(recipeData, 'tags'),
-          sourceUrl: utils.SerializationUtils.safeNullableString(
-              recipeData, 'sourceUrl'),
-          createdAt:
-              utils.SerializationUtils.safeDateTime(recipeData, 'createdAt') ??
-                  DateTime.now(),
-          updatedAt:
-              utils.SerializationUtils.safeDateTime(recipeData, 'updatedAt') ??
-                  DateTime.now(),
-          lastCookedAt:
-              utils.SerializationUtils.safeDateTime(recipeData, 'lastCookedAt'),
-        ),
-        type: RecipeType.shared,
-      );
+      // V1 backward compatibility: parse full snapshot if present
+      final recipeData = data['recipeSnapshot'] as Map<String, dynamic>?;
+      Recipe? recipe;
+      String recipeTitle;
+      String? recipeImageUrl;
+      int? recipePortions;
+      int? recipeTimeMinutes;
+      String? recipeDescription;
+
+      if (recipeData != null) {
+        // V1 format: full snapshot present
+        recipe = Recipe(
+          core: RecipeCore(
+            id: utils.SerializationUtils.safeString(recipeData, 'id'),
+            title: utils.SerializationUtils.safeString(recipeData, 'title',
+                defaultValue: 'Untitled Recipe'),
+            description:
+                utils.SerializationUtils.safeString(recipeData, 'description'),
+            ingredients: utils.SerializationUtils.safeStringList(
+                recipeData, 'ingredients'),
+            instructions: utils.SerializationUtils.safeStringList(
+                recipeData, 'instructions'),
+            imageUrls: utils.SerializationUtils.safeStringList(
+                recipeData, 'imageUrls'),
+            mealType: utils.SerializationUtils.safeString(
+                recipeData, 'mealType',
+                defaultValue: 'Middag'),
+            portions: utils.SerializationUtils.safeNullableInt(
+                recipeData, 'portions'),
+            timeMinutes: utils.SerializationUtils.safeNullableInt(
+                recipeData, 'timeMinutes'),
+            rating: utils.SerializationUtils.safeNullableDouble(
+                recipeData, 'rating'),
+            tags: utils.SerializationUtils.safeStringList(recipeData, 'tags'),
+            sourceUrl: utils.SerializationUtils.safeNullableString(
+                recipeData, 'sourceUrl'),
+            createdAt: utils.SerializationUtils.safeDateTime(
+                    recipeData, 'createdAt') ??
+                DateTime.now(),
+            updatedAt: utils.SerializationUtils.safeDateTime(
+                    recipeData, 'updatedAt') ??
+                DateTime.now(),
+            lastCookedAt: utils.SerializationUtils.safeDateTime(
+                recipeData, 'lastCookedAt'),
+          ),
+          type: RecipeType.shared,
+        );
+        // Extract denormalized fields from snapshot for consistency
+        recipeTitle = recipe.title;
+        final imageUrls = recipe.imageUrls;
+        recipeImageUrl = imageUrls.isNotEmpty ? imageUrls.first : null;
+        recipePortions = recipe.portions;
+        recipeTimeMinutes = recipe.timeMinutes;
+        recipeDescription = recipe.description;
+      } else {
+        // V2 format: denormalized fields only
+        recipeTitle = utils.SerializationUtils.safeString(data, 'recipeTitle',
+            defaultValue: 'Untitled Recipe');
+        recipeImageUrl =
+            utils.SerializationUtils.safeNullableString(data, 'recipeImageUrl');
+        recipePortions =
+            utils.SerializationUtils.safeNullableInt(data, 'recipePortions');
+        recipeTimeMinutes =
+            utils.SerializationUtils.safeNullableInt(data, 'recipeTimeMinutes');
+        recipeDescription = utils.SerializationUtils.safeNullableString(
+            data, 'recipeDescription');
+      }
 
       return SharedRecipe(
         id: id,
@@ -272,6 +377,13 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
         dismissalCount: commonFields['dismissalCount'] as int,
         originalRecipeId:
             utils.SerializationUtils.safeString(data, 'originalRecipeId'),
+        // V2 denormalized fields
+        recipeTitle: recipeTitle,
+        recipeImageUrl: recipeImageUrl,
+        recipePortions: recipePortions,
+        recipeTimeMinutes: recipeTimeMinutes,
+        recipeDescription: recipeDescription,
+        // V1 backward compatibility: full snapshot
         recipeSnapshot: recipe,
         scope: utils.SerializationUtils.safeEnum(
           data,
@@ -291,11 +403,7 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
             cowFields['originalOwnerStaticCopyId'] as String?,
         activeCollaboratorCount: cowFields['activeCollaboratorCount'] as int,
       );
-    } catch (e, stackTrace) {
-      if (kDebugMode) {
-        debugPrint('❌ Error parsing SharedRecipe från doc $id: $e');
-        debugPrint('❌ Stack trace: $stackTrace');
-      }
+    } catch (e) {
       rethrow;
     }
   }
@@ -308,13 +416,45 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
       'scope': scope.name,
       'allowImport': allowImport,
       'allowCollaboration': allowCollaboration,
-      'recipeSnapshot': recipeSnapshot.toJson(),
+      // V2 denormalized metadata
+      'recipeTitle': recipeTitle,
+      if (recipeImageUrl != null) 'recipeImageUrl': recipeImageUrl,
+      if (recipePortions != null) 'recipePortions': recipePortions,
+      if (recipeTimeMinutes != null) 'recipeTimeMinutes': recipeTimeMinutes,
+      if (recipeDescription != null) 'recipeDescription': recipeDescription,
+      // V1 backward compatibility
+      if (_recipeSnapshot != null) 'recipeSnapshot': _recipeSnapshot.toJson(),
     };
   }
 
   factory SharedRecipe.fromJson(Map<String, dynamic> json) {
     final commonFields = BaseSharedContentModel.parseCommonFieldsFromJson(json);
     final cowFields = CopyOnWriteSupport.parseCopyOnWriteFieldsFromJson(json);
+
+    // V1 backward compatibility: parse snapshot if present
+    final snapshotData = json['recipeSnapshot'] as Map<String, dynamic>?;
+    Recipe? recipe;
+    String recipeTitle;
+    String? recipeImageUrl;
+    int? recipePortions;
+    int? recipeTimeMinutes;
+    String? recipeDescription;
+
+    if (snapshotData != null) {
+      recipe = Recipe.fromJson(snapshotData);
+      recipeTitle = recipe.title;
+      recipeImageUrl =
+          recipe.imageUrls.isNotEmpty ? recipe.imageUrls.first : null;
+      recipePortions = recipe.portions;
+      recipeTimeMinutes = recipe.timeMinutes;
+      recipeDescription = recipe.description;
+    } else {
+      recipeTitle = json['recipeTitle'] as String? ?? 'Untitled Recipe';
+      recipeImageUrl = json['recipeImageUrl'] as String?;
+      recipePortions = json['recipePortions'] as int?;
+      recipeTimeMinutes = json['recipeTimeMinutes'] as int?;
+      recipeDescription = json['recipeDescription'] as String?;
+    }
 
     return SharedRecipe(
       id: commonFields['id'] as String,
@@ -326,8 +466,12 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
       engagementCount: commonFields['engagementCount'] as int,
       dismissalCount: commonFields['dismissalCount'] as int,
       originalRecipeId: json['originalRecipeId'] as String? ?? '',
-      recipeSnapshot:
-          Recipe.fromJson(json['recipeSnapshot'] as Map<String, dynamic>),
+      recipeTitle: recipeTitle,
+      recipeImageUrl: recipeImageUrl,
+      recipePortions: recipePortions,
+      recipeTimeMinutes: recipeTimeMinutes,
+      recipeDescription: recipeDescription,
+      recipeSnapshot: recipe,
       scope: ShareScope.values.firstWhere(
         (s) => s.name == json['scope'],
         orElse: () => ShareScope.individual,
@@ -344,7 +488,7 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
 
   @override
   String toString() {
-    return 'SharedRecipe(id: $id, recipe: ${recipeSnapshot.title}, sharedBy: $sharedByDisplayName)';
+    return 'SharedRecipe(id: $id, recipe: $recipeTitle, sharedBy: $sharedByDisplayName)';
   }
 
   @override

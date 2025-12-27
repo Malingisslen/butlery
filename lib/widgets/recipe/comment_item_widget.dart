@@ -136,7 +136,8 @@ class CommentItemWidget extends StatelessWidget {
   List<Widget> _buildReplies(BuildContext context) {
     return socialViewModel.getReplies(comment.id).map((reply) {
       return Padding(
-        padding: const EdgeInsets.only(left: AppDimensions.spacingL),
+        padding:
+            const EdgeInsetsDirectional.only(start: AppDimensions.spacingL),
         child: CommentItemWidget(
           socialViewModel: socialViewModel,
           comment: reply,

@@ -86,7 +86,7 @@ class ProfileSectionBuilders {
                 ),
               ),
               icon: const Icon(Icons.logout),
-              label: const Text('Logga ut', style: AppTextStyles.labelLarge),
+              label: Text('Logga ut', style: AppTextStyles.labelLarge),
             ),
           ),
         ],

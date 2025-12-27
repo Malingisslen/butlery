@@ -5,6 +5,7 @@ import 'package:butlery/viewmodels/discovery_dashboard_viewmodel.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/views/social/discovery_dashboard/discovery_section_header.dart';
 
 /// Discovery Categories - Category selector for discovery dashboard
 class DiscoveryCategories {
@@ -15,11 +16,9 @@ class DiscoveryCategories {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Kategorier',
-          style: AppTextStyles.titleMedium.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+        const DiscoverySectionHeader(
+          title: 'Kategorier',
+          icon: Icons.category_outlined,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         SizedBox(
@@ -92,11 +91,10 @@ class DiscoveryCategories {
             if (count > 0)
               Text(
                 count.toString(),
-                style: AppTextStyles.bodySmall.copyWith(
+                style: AppTextStyles.labelSmall.copyWith(
                   color: isSelected
                       ? AppColors.onPrimary.withValues(alpha: 0.8)
                       : AppColors.onSurface.withValues(alpha: 0.6),
-                  fontSize: 10,
                 ),
               ),
           ],

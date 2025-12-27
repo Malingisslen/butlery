@@ -22,7 +22,7 @@ void main() {
         expect(comment.createdAt, isNotNull);
         expect(comment.editedAt, isNull);
         expect(comment.authorAvatarUrl, isNull);
-        expect(comment.likedByUserIds, isEmpty);
+        expect(comment.likesCount, equals(0));
         expect(comment.parentCommentId, isNull);
         expect(comment.replyCount, equals(0));
         expect(comment.isDeleted, isFalse);
@@ -41,7 +41,7 @@ void main() {
           text: 'Uppdaterad kommentar',
           createdAt: createdTime,
           editedAt: editedTime,
-          likedByUserIds: const ['user_1', 'user_2'],
+          likesCount: 2,
           parentCommentId: 'parent_comment_123',
           replyCount: 3,
           isDeleted: false,
@@ -51,7 +51,8 @@ void main() {
             comment.authorAvatarUrl, equals('https://example.com/avatar.jpg'));
         expect(comment.createdAt, equals(createdTime));
         expect(comment.editedAt, equals(editedTime));
-        expect(comment.likedByUserIds, equals(['user_1', 'user_2']));
+        expect(comment.likesCount, equals(2));
+        expect(comment.likeCount, equals(2));
         expect(comment.parentCommentId, equals('parent_comment_123'));
         expect(comment.replyCount, equals(3));
       });
@@ -162,70 +163,47 @@ void main() {
       });
     });
 
-    group('Social Engagement', () {
-      late RecipeComment comment;
+    group('Like Count', () {
+      test('should track likes count', () {
+        final comment = RecipeComment(
+          id: 'comment_123',
+          recipeId: 'recipe_456',
+          authorId: 'user_789',
+          authorDisplayName: 'Anna',
+          text: 'Test comment',
+          likesCount: 5,
+        );
 
-      setUp(() {
-        comment = RecipeComment(
+        expect(comment.likesCount, equals(5));
+        expect(comment.likeCount, equals(5));
+      });
+
+      test('should default to zero likes', () {
+        final comment = RecipeComment(
           id: 'comment_123',
           recipeId: 'recipe_456',
           authorId: 'user_789',
           authorDisplayName: 'Anna',
           text: 'Test comment',
         );
+
+        expect(comment.likesCount, equals(0));
+        expect(comment.likeCount, equals(0));
       });
 
-      test('should add like from user', () {
-        final liked = comment.addLike('user_1');
+      test('should update likes count via copyWith', () {
+        final comment = RecipeComment(
+          id: 'comment_123',
+          recipeId: 'recipe_456',
+          authorId: 'user_789',
+          authorDisplayName: 'Anna',
+          text: 'Test comment',
+          likesCount: 0,
+        );
 
-        expect(liked.likedByUserIds, contains('user_1'));
-        expect(liked.likeCount, equals(1));
-        expect(liked.isLikedBy('user_1'), isTrue);
-      });
-
-      test('should prevent duplicate likes', () {
-        final liked1 = comment.addLike('user_1');
-        final liked2 = liked1.addLike('user_1');
-
-        expect(liked2.likedByUserIds.length, equals(1));
-        expect(liked2.likeCount, equals(1));
-        expect(liked2, same(liked1)); // Returns same instance
-      });
-
-      test('should remove like from user', () {
-        final liked = comment.addLike('user_1');
-        final unliked = liked.removeLike('user_1');
-
-        expect(unliked.likedByUserIds, isEmpty);
-        expect(unliked.likeCount, equals(0));
-        expect(unliked.isLikedBy('user_1'), isFalse);
-      });
-
-      test('should handle non-existent like removal', () {
-        final unliked = comment.removeLike('user_999');
-
-        expect(unliked, same(comment)); // Returns same instance
-        expect(unliked.likedByUserIds, isEmpty);
-      });
-
-      test('should track like count', () {
-        var liked = comment;
-        for (int i = 1; i <= 5; i++) {
-          liked = liked.addLike('user_$i');
-        }
-
-        expect(liked.likeCount, equals(5));
-        expect(liked.likedByUserIds.length, equals(5));
-      });
-
-      test('should check if liked by user', () {
-        final liked =
-            comment.addLike('user_1').addLike('user_2').addLike('user_3');
-
-        expect(liked.isLikedBy('user_1'), isTrue);
-        expect(liked.isLikedBy('user_2'), isTrue);
-        expect(liked.isLikedBy('user_3'), isTrue);
-        expect(liked.isLikedBy('user_999'), isFalse);
+        final liked = comment.copyWith(likesCount: 10);
+        expect(liked.likeCount, equals(10));
+        expect(comment.likeCount, equals(0)); // Original unchanged
       });
     });
 
@@ -442,7 +420,7 @@ void main() {
           text: 'Test comment',
           createdAt: createdTime,
           editedAt: editedTime,
-          likedByUserIds: const ['user_1', 'user_2'],
+          likesCount: 2,
           parentCommentId: 'parent_123',
           replyCount: 3,
           isDeleted: false,
@@ -459,7 +437,7 @@ void main() {
         expect(json['text'], equals('Test comment'));
         expect(json['createdAt'], equals(createdTime.toIso8601String()));
         expect(json['editedAt'], equals(editedTime.toIso8601String()));
-        expect(json['likedByUserIds'], equals(['user_1', 'user_2']));
+        expect(json['likesCount'], equals(2));
         expect(json['parentCommentId'], equals('parent_123'));
         expect(json['replyCount'], equals(3));
         expect(json['isDeleted'], isFalse);
@@ -475,7 +453,7 @@ void main() {
           'text': 'Test comment',
           'createdAt': '2024-01-15T10:30:00.000',
           'editedAt': '2024-01-15T12:00:00.000',
-          'likedByUserIds': ['user_1', 'user_2'],
+          'likesCount': 2,
           'parentCommentId': 'parent_123',
           'replyCount': 3,
           'isDeleted': false,
@@ -492,7 +470,7 @@ void main() {
         expect(comment.text, equals('Test comment'));
         expect(comment.createdAt, equals(DateTime(2024, 1, 15, 10, 30)));
         expect(comment.editedAt, equals(DateTime(2024, 1, 15, 12, 0)));
-        expect(comment.likedByUserIds, equals(['user_1', 'user_2']));
+        expect(comment.likesCount, equals(2));
         expect(comment.parentCommentId, equals('parent_123'));
         expect(comment.replyCount, equals(3));
         expect(comment.isDeleted, isFalse);
@@ -524,7 +502,7 @@ void main() {
           'text': 'Test',
           'createdAt': '2024-01-15T10:30:00.000',
           'editedAt': null,
-          'likedByUserIds': [],
+          'likesCount': 0,
           'parentCommentId': null,
           'replyCount': 0,
           'isDeleted': false,
@@ -553,7 +531,7 @@ void main() {
         expect(firestore['authorId'], equals('user_789'));
         expect(firestore['authorDisplayName'], equals('Anna'));
         expect(firestore['text'], equals('Test'));
-        expect(firestore['likedByUserIds'], isEmpty);
+        expect(firestore['likesCount'], equals(0));
         expect(firestore['parentCommentId'], isNull);
         expect(firestore['replyCount'], equals(0));
         expect(firestore['isDeleted'], isFalse);
@@ -569,7 +547,7 @@ void main() {
           'text': 'Test comment',
           'createdAt': DateTime(2024, 1, 15, 10, 30),
           'editedAt': DateTime(2024, 1, 15, 12, 0),
-          'likedByUserIds': ['user_1'],
+          'likesCount': 1,
           'parentCommentId': 'parent_123',
           'replyCount': 2,
           'isDeleted': false,
@@ -639,7 +617,7 @@ void main() {
         expect(
             comment.authorDisplayName, equals('Användare')); // Swedish default
         expect(comment.authorAvatarUrl, isNull);
-        expect(comment.likedByUserIds, isEmpty);
+        expect(comment.likesCount, equals(0));
         expect(comment.replyCount, equals(0));
         expect(comment.isDeleted, isFalse);
       });
@@ -708,7 +686,7 @@ void main() {
           authorId: 'user_789',
           authorDisplayName: 'Anna Andersson',
           text: 'Great recipe!',
-          likedByUserIds: const ['u1', 'u2', 'u3'],
+          likesCount: 3,
           replyCount: 5,
         );
 
@@ -825,22 +803,19 @@ void main() {
         expect(comment.isEdited, isTrue);
       });
 
-      test('should handle concurrent likes', () {
-        var comment = RecipeComment(
+      test('should handle high like counts', () {
+        // Like count is now maintained by repository, model just stores the count
+        final comment = RecipeComment(
           id: 'comment_123',
           recipeId: 'recipe_456',
           authorId: 'user_789',
           authorDisplayName: 'Anna',
           text: 'Test',
+          likesCount: 100,
         );
 
-        // Simulate multiple users liking at once
-        for (int i = 1; i <= 100; i++) {
-          comment = comment.addLike('user_$i');
-        }
-
         expect(comment.likeCount, equals(100));
-        expect(comment.likedByUserIds.length, equals(100));
+        expect(comment.likesCount, equals(100));
       });
 
       test('should handle Swedish characters', () {
@@ -901,18 +876,18 @@ Last line with spaces before    ''';
           authorId: 'user_789',
           authorDisplayName: 'Anna',
           text: 'Original',
-          likedByUserIds: const ['user_1'],
+          likesCount: 1,
         );
 
         final modified = original.copyWith(
           text: 'Modified',
-          likedByUserIds: ['user_1', 'user_2'],
+          likesCount: 2,
         );
 
         expect(original.text, equals('Original'));
-        expect(original.likedByUserIds, equals(['user_1']));
+        expect(original.likesCount, equals(1));
         expect(modified.text, equals('Modified'));
-        expect(modified.likedByUserIds, equals(['user_1', 'user_2']));
+        expect(modified.likesCount, equals(2));
         expect(original.id, equals(modified.id));
       });
     });

@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/services/recommendation_service.dart';
 import 'package:butlery/models/recommendation.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/views/social/discovery_dashboard/discovery_section_header.dart';
 
 /// Recommendations Section - Shows personalized content recommendations
 class RecommendationsSection {
@@ -21,26 +22,13 @@ class RecommendationsSection {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            const Icon(
-              Icons.auto_awesome,
-              color: AppColors.secondary,
-              size: AppDimensions.iconSizeM,
-            ),
-            const SizedBox(width: AppDimensions.spacingS),
-            Text(
-              'Rekommenderat för dig',
-              style: AppTextStyles.titleMedium.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const Spacer(),
-            TextButton(
-              onPressed: () => _showAllRecommendations(context, viewModel),
-              child: const Text('Se allt'),
-            ),
-          ],
+        DiscoverySectionHeader(
+          title: 'Rekommenderat för dig',
+          icon: Icons.auto_awesome,
+          iconColor: AppColors.secondary,
+          actionLabel: 'Se allt',
+          onActionPressed: () => _showAllRecommendations(context, viewModel),
+          count: recommendations.length,
         ),
         const SizedBox(height: AppDimensions.spacingM),
         if (recommendations.isEmpty)
@@ -67,20 +55,20 @@ class RecommendationsSection {
           color: AppColors.outline.withValues(alpha: 0.2),
         ),
       ),
-      child: const Center(
+      child: Center(
         child: Column(
           children: [
-            Icon(
+            const Icon(
               Icons.auto_awesome_outlined,
               color: AppColors.outline,
               size: AppDimensions.iconSizeXxl,
             ),
-            SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.spacingM),
             Text(
               'Bygger rekommendationer',
               style: AppTextStyles.titleSmall,
             ),
-            SizedBox(height: AppDimensions.spacingS),
+            const SizedBox(height: AppDimensions.spacingS),
             Text(
               'Vi lär oss dina preferenser för att ge bättre rekommendationer.',
               style: AppTextStyles.bodyMedium,
@@ -187,13 +175,11 @@ class RecommendationsSection {
                             size: AppDimensions.iconSizeXs,
                             color: AppColors.secondary,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: AppDimensions.spacingXs),
                           Text(
                             _getRecommendationTypeLabel(type),
-                            style: AppTextStyles.bodySmall.copyWith(
+                            style: AppTextStyles.labelSmall.copyWith(
                               color: AppColors.secondary,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -251,10 +237,8 @@ class RecommendationsSection {
                         const SizedBox(width: AppDimensions.spacingS),
                         Text(
                           '${(score * 100).round()}% match',
-                          style: AppTextStyles.bodySmall.copyWith(
+                          style: AppTextStyles.labelMedium.copyWith(
                             color: AppColors.warning,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],

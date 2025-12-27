@@ -10,6 +10,47 @@ import 'package:butlery/models/social/activity_type.dart';
 export 'package:butlery/models/social/activity_engagement.dart';
 export 'package:butlery/models/social/activity_type.dart';
 
+/// Activity visibility level for social feeds.
+/// Replaces List<String> visibility for simpler, more efficient storage.
+enum ActivityVisibility {
+  /// Visible to everyone (public feed)
+  public('public'),
+
+  /// Visible to all friends
+  friends('all_friends'),
+
+  /// Visible only to close friends category
+  closeFriends('close_friends'),
+
+  /// Visible only to the activity owner
+  private('private');
+
+  final String firestoreKey;
+  const ActivityVisibility(this.firestoreKey);
+
+  /// Parse from Firestore key value
+  static ActivityVisibility fromKey(String key) {
+    return ActivityVisibility.values.firstWhere(
+      (v) => v.firestoreKey == key,
+      orElse: () => ActivityVisibility.friends, // Safe default
+    );
+  }
+
+  /// Migration: Convert from legacy List<String> to enum
+  static ActivityVisibility fromLegacyList(List<String> legacyVisibility) {
+    if (legacyVisibility.contains('public')) return ActivityVisibility.public;
+    if (legacyVisibility.contains('all_friends')) {
+      return ActivityVisibility.friends;
+    }
+    if (legacyVisibility.contains('close_friends')) {
+      return ActivityVisibility.closeFriends;
+    }
+    if (legacyVisibility.isEmpty) return ActivityVisibility.private;
+    // If category-specific, default to friends for now
+    return ActivityVisibility.friends;
+  }
+}
+
 /// Activity feed item for social streams with engagement metrics and privacy controls.
 /// ```dart
 /// final a = ActivityFeedItem.create(userId: uid, type: ActivityType.recipeCreated,
@@ -51,8 +92,12 @@ class ActivityFeedItem {
   /// When this activity occurred
   final DateTime timestamp;
 
-  /// Friend categories that can see this activity
+  /// Friend categories that can see this activity (legacy field)
+  @Deprecated('Use visibilityLevel instead. Kept for backward compatibility.')
   final List<String> visibility;
+
+  /// Simplified visibility level for this activity
+  final ActivityVisibility visibilityLevel;
 
   /// Activity-specific metadata (reaction type, share targets, etc.)
   final Map<String, dynamic> metadata;
@@ -74,6 +119,7 @@ class ActivityFeedItem {
     this.parentType,
     required this.timestamp,
     required this.visibility,
+    required this.visibilityLevel,
     required this.metadata,
     required this.engagement,
   });
@@ -90,9 +136,16 @@ class ActivityFeedItem {
     String? targetImageUrl,
     String? parentId,
     String? parentType,
-    List<String>? visibility,
+    ActivityVisibility? visibilityLevel,
+    @Deprecated('Use visibilityLevel instead') List<String>? visibility,
     Map<String, dynamic>? metadata,
   }) {
+    // Determine visibility level from new or legacy parameter
+    final resolvedVisibility =
+        visibilityLevel ?? ActivityVisibility.fromLegacyList(visibility ?? []);
+    // Keep legacy list for backward compatibility
+    final legacyVisibility = visibility ?? [resolvedVisibility.firestoreKey];
+
     return ActivityFeedItem(
       id: _generateActivityId(),
       userId: userId,
@@ -106,7 +159,8 @@ class ActivityFeedItem {
       parentId: parentId,
       parentType: parentType,
       timestamp: DateTime.now(),
-      visibility: visibility ?? ['all_friends'],
+      visibility: legacyVisibility,
+      visibilityLevel: resolvedVisibility,
       metadata: metadata ?? {},
       engagement: ActivityEngagement.empty(),
     );
@@ -124,6 +178,20 @@ class ActivityFeedItem {
 
   /// Create from Firestore document
   factory ActivityFeedItem.fromFirestore(String id, Map<String, dynamic> data) {
+    // Read legacy visibility list
+    final legacyVisibility = SerializationUtils.safeStringList(
+      data,
+      'visibility',
+      defaultValue: ['all_friends'],
+    );
+
+    // Read new visibility level, falling back to legacy if not present
+    final visibilityLevelKey =
+        SerializationUtils.safeNullableString(data, 'visibilityLevel');
+    final visibilityLevel = visibilityLevelKey != null
+        ? ActivityVisibility.fromKey(visibilityLevelKey)
+        : ActivityVisibility.fromLegacyList(legacyVisibility);
+
     return ActivityFeedItem(
       id: id,
       userId: SerializationUtils.safeString(data, 'userId'),
@@ -141,8 +209,8 @@ class ActivityFeedItem {
       parentId: SerializationUtils.safeNullableString(data, 'parentId'),
       parentType: SerializationUtils.safeNullableString(data, 'parentType'),
       timestamp: SerializationUtils.safeRequiredDateTime(data, 'timestamp'),
-      visibility: SerializationUtils.safeStringList(data, 'visibility',
-          defaultValue: ['all_friends']),
+      visibility: legacyVisibility,
+      visibilityLevel: visibilityLevel,
       metadata: SerializationUtils.safeMap(data, 'metadata'),
       engagement: ActivityEngagement.fromFirestore(
           SerializationUtils.safeMap(data, 'engagement')),
@@ -163,7 +231,8 @@ class ActivityFeedItem {
       'parentId': parentId,
       'parentType': parentType,
       'timestamp': Timestamp.fromDate(timestamp),
-      'visibility': visibility,
+      'visibility': visibility, // Legacy field for backward compatibility
+      'visibilityLevel': visibilityLevel.firestoreKey, // New simplified field
       'metadata': metadata,
       'engagement': engagement.toFirestore(),
     };
@@ -185,6 +254,7 @@ class ActivityFeedItem {
       'parentType': parentType,
       'timestamp': timestamp.toIso8601String(),
       'visibility': visibility,
+      'visibilityLevel': visibilityLevel.firestoreKey,
       'metadata': metadata,
       'engagement': engagement.toJson(),
     };
@@ -214,6 +284,16 @@ class ActivityFeedItem {
       typedEngagement = Map<String, dynamic>.from(engagement as Map);
     }
 
+    // Read legacy visibility list
+    final legacyVisibility =
+        (json['visibility'] as List?)?.cast<String>() ?? ['all_friends'];
+
+    // Read new visibility level, falling back to legacy if not present
+    final visibilityLevelKey = json['visibilityLevel'] as String?;
+    final visibilityLevel = visibilityLevelKey != null
+        ? ActivityVisibility.fromKey(visibilityLevelKey)
+        : ActivityVisibility.fromLegacyList(legacyVisibility);
+
     return ActivityFeedItem(
       id: json['id'] as String,
       userId: (json['userId'] as String?).orEmpty(),
@@ -229,8 +309,8 @@ class ActivityFeedItem {
       parentId: json['parentId'] as String?,
       parentType: json['parentType'] as String?,
       timestamp: DateTime.parse(json['timestamp'] as String),
-      visibility:
-          (json['visibility'] as List?)?.cast<String>() ?? ['all_friends'],
+      visibility: legacyVisibility,
+      visibilityLevel: visibilityLevel,
       metadata: typedMetadata,
       engagement: ActivityEngagement.fromJson(typedEngagement),
     );
@@ -250,7 +330,8 @@ class ActivityFeedItem {
     String? parentId,
     String? parentType,
     DateTime? timestamp,
-    List<String>? visibility,
+    @Deprecated('Use visibilityLevel instead') List<String>? visibility,
+    ActivityVisibility? visibilityLevel,
     Map<String, dynamic>? metadata,
     ActivityEngagement? engagement,
   }) {
@@ -268,6 +349,7 @@ class ActivityFeedItem {
       parentType: parentType ?? this.parentType,
       timestamp: timestamp ?? this.timestamp,
       visibility: visibility ?? this.visibility,
+      visibilityLevel: visibilityLevel ?? this.visibilityLevel,
       metadata: metadata ?? this.metadata,
       engagement: engagement ?? this.engagement,
     );
@@ -324,7 +406,30 @@ class ActivityFeedItem {
     }
   }
 
+  /// Check if activity is visible to a user based on their visibility level
+  bool isVisibleToLevel(ActivityVisibility userLevel) {
+    // Public activities are visible to everyone
+    if (visibilityLevel == ActivityVisibility.public) return true;
+
+    // Private activities are only visible to the owner (checked elsewhere)
+    if (visibilityLevel == ActivityVisibility.private) return false;
+
+    // Friends can see friends-level and above
+    if (visibilityLevel == ActivityVisibility.friends) {
+      return userLevel == ActivityVisibility.friends ||
+          userLevel == ActivityVisibility.closeFriends;
+    }
+
+    // Close friends only see close friends content
+    if (visibilityLevel == ActivityVisibility.closeFriends) {
+      return userLevel == ActivityVisibility.closeFriends;
+    }
+
+    return false;
+  }
+
   /// Check if activity is visible to specific friend categories
+  @Deprecated('Use isVisibleToLevel(ActivityVisibility) instead')
   bool isVisibleTo(List<String> userFriendCategories) {
     if (visibility.contains('all_friends')) return true;
     if (visibility.contains('public')) return true;

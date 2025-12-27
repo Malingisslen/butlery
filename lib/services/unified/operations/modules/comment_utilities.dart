@@ -154,8 +154,8 @@ class CommentUtilities {
       final topLevelComments =
           comments.where((c) => c.parentCommentId == null).length;
       final replies = totalComments - topLevelComments;
-      final totalLikes = comments.fold<int>(
-          0, (total, comment) => total + comment.likedByUserIds.length);
+      final totalLikes =
+          comments.fold<int>(0, (total, comment) => total + comment.likeCount);
 
       final uniqueCommenters = comments.map((c) => c.authorId).toSet().length;
       final deletedComments = comments.where((c) => c.isDeleted).length;
@@ -266,8 +266,7 @@ class CommentUtilities {
         }
 
         authorCounts[comment.authorId]!['commentCount']++;
-        authorCounts[comment.authorId]!['likeCount'] +=
-            comment.likedByUserIds.length;
+        authorCounts[comment.authorId]!['likeCount'] += comment.likeCount;
 
         if (comment.parentCommentId != null) {
           authorCounts[comment.authorId]!['replyCount']++;

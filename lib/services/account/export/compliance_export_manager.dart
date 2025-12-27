@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/services/account/export/export_pagination_helper.dart';
 
 /// Handles export of GDPR compliance data: audit logs, consent records.
 /// Implements Article 7 (Consent) and Article 30 (Records of Processing).
@@ -90,13 +91,16 @@ class ComplianceExportManager {
   Future<Map<String, dynamic>> exportConsentRecords(String userId) async {
     try {
       final consentRecords = <Map<String, dynamic>>[];
+      final consentLimit =
+          ExportPaginationHelper.getLimitForType('consent_records');
 
-      // Get consent records from user's subcollection
+      // Get consent records from user's subcollection (limited)
       final consentSnapshot = await _firestore
           .collection('users')
           .doc(userId)
           .collection('consent')
           .orderBy('timestamp', descending: true)
+          .limit(consentLimit)
           .get();
 
       for (final doc in consentSnapshot.docs) {

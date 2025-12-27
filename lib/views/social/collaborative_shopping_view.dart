@@ -120,12 +120,12 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: AppDimensions.spacingXl),
-            const Text(
+            Text(
               'Lista hittades inte',
               style: AppTextStyles.headlineSmall,
             ),
             const SizedBox(height: AppDimensions.spacingM),
-            const Text(
+            Text(
               'Listan kanske har tagits bort eller så har du inte tillgång längre',
               style: AppTextStyles.titleMedium,
               textAlign: TextAlign.center,

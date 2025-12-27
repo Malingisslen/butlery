@@ -206,8 +206,8 @@ class CollaborativeStatusWidgets {
       } else {
         viewModel.invalidateMenuStatus(contentId);
       }
-    } catch (e) {
-      debugPrint('Could not refresh collaborative status: $e');
+    } catch (_) {
+      // Silently ignore - status refresh is non-critical
     }
   }
 }
@@ -256,7 +256,8 @@ class _CollaborativeAppBar extends StatelessWidget
             // Show collaborative badge if content is collaborative
             if (isCollaborative) ...[
               Padding(
-                padding: const EdgeInsets.only(right: AppDimensions.spacingS),
+                padding: const EdgeInsetsDirectional.only(
+                    end: AppDimensions.spacingS),
                 child: Center(
                   child: Tooltip(
                     message: participants.isNotEmpty

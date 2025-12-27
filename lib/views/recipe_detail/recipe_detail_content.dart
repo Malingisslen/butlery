@@ -80,14 +80,14 @@ class RecipeDetailContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.description_outlined,
                 color: AppColors.primaryBlue,
                 size: AppDimensions.iconSizeAction,
               ),
-              SizedBox(width: AppDimensions.spacingM),
+              const SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Beskrivning',
                 style: AppTextStyles.titleMedium,
@@ -116,14 +116,14 @@ class RecipeDetailContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.local_offer_outlined,
                 color: AppColors.primaryBlue,
                 size: AppDimensions.iconSizeAction,
               ),
-              SizedBox(width: AppDimensions.spacingM),
+              const SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Taggar',
                 style: AppTextStyles.titleMedium,
@@ -185,7 +185,7 @@ class RecipeDetailContent extends StatelessWidget {
                   size: AppDimensions.iconSizeAction,
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
-                const Text(
+                Text(
                   'Bilder',
                   style: AppTextStyles.titleMedium,
                 ),
@@ -243,14 +243,14 @@ class RecipeDetailContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.format_list_numbered,
                 color: AppColors.primaryBlue,
                 size: AppDimensions.iconSizeAction,
               ),
-              SizedBox(width: AppDimensions.spacingM),
+              const SizedBox(width: AppDimensions.spacingM),
               Text(
                 'Instruktioner',
                 style: AppTextStyles.titleMedium,
@@ -278,8 +278,8 @@ class RecipeDetailContent extends StatelessWidget {
                     Container(
                       width: 28,
                       height: 28,
-                      margin:
-                          const EdgeInsets.only(right: AppDimensions.spacingS),
+                      margin: const EdgeInsetsDirectional.only(
+                          end: AppDimensions.spacingS),
                       decoration: const BoxDecoration(
                         color: AppColors.primaryBlue,
                         shape: BoxShape.circle,

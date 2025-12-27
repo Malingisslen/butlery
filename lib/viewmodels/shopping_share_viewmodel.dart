@@ -1,81 +1,3 @@
-/// Comprehensive shopping list sharing ViewModel providing advanced social shopping distribution for Flutter applications.
-/// This module implements sophisticated shopping list sharing functionality following Single Responsibility Principle,
-/// specializing in friend selection, shopping list distribution, message customization, and share status tracking.
-/// It provides complete shopping sharing infrastructure while maintaining clean separation from UI rendering,
-/// shopping data persistence, and complex social sharing business logic implementation.
-/// **Single Responsibility Focus:**
-/// This module exclusively handles shopping list sharing presentation layer concerns:
-/// - **Friend Selection Intelligence**: Advanced friend selection with multi-selection support and availability management
-/// - **Shopping List Distribution**: Comprehensive sharing operations with status tracking and delivery coordination
-/// - **Share Message Customization**: Personalized message composition with template support and content management
-/// - **Share Status Management**: Complete sharing state coordination with progress tracking and error handling
-/// - **Swedish Localization Excellence**: Complete Swedish language support for sharing operations and user feedback
-/// **What This Module Does NOT Handle:**
-/// - UI rendering and widget creation (handled by shopping share views and presentation components)
-/// - Shopping list data persistence and storage (handled by UnifiedShoppingService and underlying data repositories)
-/// - Complex social relationship business logic (handled by friends service layer and social infrastructure)
-/// - Share delivery infrastructure (handled by sharing services and communication systems)
-/// **Shopping Share ViewModel Features:**
-/// - **Advanced Friend Selection**: Multi-friend selection with selection state tracking and visual feedback
-/// - **Comprehensive Share Operations**: Shopping list sharing with status tracking and delivery confirmation
-/// - **Share Message Management**: Personalized message composition with template support and content validation
-/// - **Share Status Tracking**: Complete sharing progress monitoring with individual friend status tracking
-/// - **Swedish Localization**: Complete Swedish language support for sharing operations and error messages
-/// **Usage Examples:**
-/// ```dart
-/// // Initialize shopping share ViewModel with service integration
-/// final shoppingShareViewModel = ShoppingShareViewModel(
-///   shoppingService: ServiceLocator.get<UnifiedShoppingService>(),
-///   friendsService: ServiceLocator.get<UnifiedFriendsService>(),
-/// );
-/// // Initialize friends list and sharing functionality
-/// await shoppingShareViewModel.initializeCommand();
-/// // Friend selection and management
-/// shoppingShareViewModel.toggleFriendSelectionCommand('friend_123'); // Select Anna
-/// shoppingShareViewModel.toggleFriendSelectionCommand('friend_456'); // Select Erik
-/// shoppingShareViewModel.selectAllFriendsCommand(); // Select all friends
-/// shoppingShareViewModel.clearAllSelectionsCommand(); // Clear all selections
-/// // Share message customization
-/// shoppingShareViewModel.updateShareMessageCommand(
-///   'Hej! Kolla in min inköpslista för helgmiddagen!'
-/// );
-/// // Selection state monitoring
-/// if (shoppingShareViewModel.canShare) {
-///   final selectedCount = shoppingShareViewModel.selectedCount;
-///   final selectedFriends = shoppingShareViewModel.selectedFriends;
-///   // Enable share button
-/// }
-/// // Share shopping list with comprehensive coordination
-/// final shared = await shoppingShareViewModel.shareShoppingListCommand(shoppingList);
-/// if (shared) {
-///   // Navigate back or show success message
-/// } else if (shoppingShareViewModel.hasError) {
-///   // Handle sharing error
-/// }
-/// // Monitor sharing progress
-/// if (shoppingShareViewModel.isSharing) {
-///   // Show sharing progress indicator
-/// }
-/// // Sharing validation and summary
-/// if (shoppingShareViewModel.validateSharingPossible()) {
-///   final summary = shoppingShareViewModel.getSharingSummary();
-///   // Show confirmation dialog with summary
-/// }
-/// // State monitoring and error handling
-/// if (shoppingShareViewModel.isLoading) {
-///   // Show loading indicator
-/// } else if (shoppingShareViewModel.hasError) {
-///   // Display error message
-///   shoppingShareViewModel.clearErrorCommand(); // Clear error state
-/// }
-/// // Access friend and sharing information
-/// final hasFriends = shoppingShareViewModel.hasFriends;
-/// final shareMessage = shoppingShareViewModel.shareMessage;
-/// final isInitialized = shoppingShareViewModel.isInitialized;
-/// // Refresh functionality for pull-to-refresh
-/// await shoppingShareViewModel.refreshFriendsCommand();
-/// ```
-
 // lib/viewmodels/shopping_share_viewmodel.dart
 
 import 'package:flutter/foundation.dart';
@@ -196,18 +118,14 @@ class ShoppingShareViewModel extends ChangeNotifier
   Future<void> initializeCommand() async {
     if (_initialized) return;
 
-    debugPrint('🔄 ShoppingShareViewModel: Initialiserar...');
-
     _setLoading(true);
     _clearError();
 
     try {
       await _loadFriends();
       _initialized = true;
-      debugPrint('✅ ShoppingShareViewModel: Initiering klar');
     } catch (e) {
       _setError('Kunde inte ladda vänner: $e');
-      debugPrint('❌ ShoppingShareViewModel: Initiering misslyckades - $e');
     } finally {
       _setLoading(false);
     }
@@ -215,14 +133,10 @@ class ShoppingShareViewModel extends ChangeNotifier
 
   /// Command: Toggle friend selection
   void toggleFriendSelectionCommand(String friendId) {
-    debugPrint('🔄 ShoppingShareViewModel: Togglar vän $friendId');
-
     if (_selectedFriendIds.contains(friendId)) {
       _selectedFriendIds.remove(friendId);
-      debugPrint('   → Avmarkerad');
     } else {
       _selectedFriendIds.add(friendId);
-      debugPrint('   → Markerad');
     }
 
     notifyListeners();
@@ -230,22 +144,16 @@ class ShoppingShareViewModel extends ChangeNotifier
 
   /// Command: Select all friends
   void selectAllFriendsCommand() {
-    debugPrint('🔄 ShoppingShareViewModel: Markerar alla vänner');
-
     _selectedFriendIds.clear();
     _selectedFriendIds.addAll(_friends.map((f) => f.uid));
 
-    debugPrint('   → ${_selectedFriendIds.length} vänner markerade');
     notifyListeners();
   }
 
   /// Command: Clear all selections
   void clearAllSelectionsCommand() {
-    debugPrint('🔄 ShoppingShareViewModel: Rensar alla markeringar');
-
     _selectedFriendIds.clear();
 
-    debugPrint('   → Alla markeringar rensade');
     notifyListeners();
   }
 
@@ -263,37 +171,10 @@ class ShoppingShareViewModel extends ChangeNotifier
       return false;
     }
 
-    debugPrint(
-        '🔄 ShoppingShareViewModel: Delar inköpslista "${shoppingList.name}" med ${_selectedFriendIds.length} vänner');
-
     _setSharing(true);
     _clearError();
 
     try {
-      // ✅ FIXAT: Använd rätt metod som finns i SocialRecipeService
-      // Konvertera UnifiedShoppingList till ShareData format
-      final shareData = {
-        'type': 'shopping_list',
-        'listId': shoppingList.id,
-        'listName': shoppingList.name,
-        'itemCount': shoppingList.totalItems,
-        'items': shoppingList.items
-            .map((item) => {
-                  'name': item.name,
-                  'amount': item.amount,
-                  'unit': item.unit,
-                  'category': item.category,
-                  'bought': item.bought,
-                })
-            .toList(),
-        'message': _shareMessage.isNotEmpty
-            ? _shareMessage
-            : 'Kolla in min inköpslista!',
-        'sharedAt': DateTime.now().toIso8601String(),
-      };
-
-      debugPrint('Share data prepared: ${shareData['itemCount']} items');
-
       // Dela med varje vald vän via UnifiedShoppingService
       bool allSuccessful = true;
       for (final friendId in _selectedFriendIds) {
@@ -303,20 +184,15 @@ class ShoppingShareViewModel extends ChangeNotifier
             friendId,
           );
 
-          if (success) {
-            debugPrint('   ✅ Delad med vän: $friendId');
-          } else {
-            debugPrint('   ❌ Misslyckades med vän $friendId');
+          if (!success) {
             allSuccessful = false;
           }
         } catch (e) {
-          debugPrint('   ❌ Misslyckades med vän $friendId: $e');
           allSuccessful = false;
         }
       }
 
       if (allSuccessful) {
-        debugPrint('🎉 ShoppingShareViewModel: Delning slutförd framgångsrikt');
         return true;
       } else {
         _setError('Vissa delningar misslyckades');
@@ -324,7 +200,6 @@ class ShoppingShareViewModel extends ChangeNotifier
       }
     } catch (e) {
       _setError('Misslyckades med delning: $e');
-      debugPrint('❌ ShoppingShareViewModel: Delning misslyckades - $e');
       return false;
     } finally {
       _setSharing(false);
@@ -333,18 +208,13 @@ class ShoppingShareViewModel extends ChangeNotifier
 
   /// Command: Refresh friends list
   Future<void> refreshFriendsCommand() async {
-    debugPrint('🔄 ShoppingShareViewModel: Uppdaterar vänlista');
-
     _setLoading(true);
     _clearError();
 
     try {
       await _loadFriends();
-      debugPrint('✅ ShoppingShareViewModel: Vänlista uppdaterad');
     } catch (e) {
       _setError('Kunde inte uppdatera vänlista: $e');
-      debugPrint(
-          '❌ ShoppingShareViewModel: Vänlista-uppdatering misslyckades - $e');
     } finally {
       _setLoading(false);
     }
@@ -358,9 +228,7 @@ class ShoppingShareViewModel extends ChangeNotifier
   Future<void> _loadFriends() async {
     try {
       _friends = _friendsService.management.getAllFriends();
-      debugPrint('   → Laddade ${_friends.length} vänner');
     } catch (e) {
-      debugPrint('   ❌ Kunde inte ladda vänner: $e');
       throw Exception('Kunde inte ladda vänner');
     }
   }
@@ -406,11 +274,5 @@ class ShoppingShareViewModel extends ChangeNotifier
   String getSharingSummary() {
     final friendNames = selectedFriends.map((f) => f.displayName).join(', ');
     return 'Dela med: $friendNames';
-  }
-
-  @override
-  void dispose() {
-    debugPrint('🗑️ ShoppingShareViewModel: Disposing');
-    super.dispose();
   }
 }

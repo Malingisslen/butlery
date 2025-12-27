@@ -265,10 +265,7 @@ abstract class BaseViewModel extends ChangeNotifier {
   /// ViewModel behavior analysis during development cycles.
   @protected
   void printDebugState([String? prefix]) {
-    if (kDebugMode) {
-      final label = prefix ?? runtimeType.toString();
-      debugPrint('$label State: $debugState');
-    }
+    // Debug state printing disabled - use debugState getter directly if needed
   }
 }
 

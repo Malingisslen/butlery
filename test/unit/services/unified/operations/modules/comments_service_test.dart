@@ -56,7 +56,7 @@ void main() {
           authorDisplayName: 'Test User',
           text: content,
           createdAt: DateTime.now(),
-          likedByUserIds: const [],
+          likesCount: 0,
         );
 
         when(() => mockRepository.addComment(
@@ -78,7 +78,7 @@ void main() {
         expect(comment.authorId, equals(userId));
         expect(comment.text, equals(content));
         expect(comment.parentCommentId, isNull);
-        expect(comment.likedByUserIds, isEmpty);
+        expect(comment.likesCount, equals(0));
         expect(comment.editedAt, isNull);
 
         // Verify method was called
@@ -104,7 +104,7 @@ void main() {
           text: replyContent,
           parentCommentId: parentId,
           createdAt: DateTime.now(),
-          likedByUserIds: const [],
+          likesCount: 0,
         );
 
         when(() => mockRepository.addComment(
@@ -203,7 +203,7 @@ void main() {
                     authorDisplayName: 'User $i',
                     text: 'Comment $i',
                     createdAt: DateTime.now().subtract(Duration(hours: i)),
-                    likedByUserIds: const [],
+                    likesCount: 0,
                   ))
         ];
 
@@ -235,7 +235,7 @@ void main() {
                     text: 'Reply $i',
                     parentCommentId: parentId,
                     createdAt: DateTime.now().subtract(Duration(hours: i)),
-                    likedByUserIds: const [],
+                    likesCount: 0,
                   ))
         ];
 
@@ -264,7 +264,7 @@ void main() {
             authorDisplayName: 'User 1',
             text: 'Initial comment',
             createdAt: DateTime.now(),
-            likedByUserIds: const [],
+            likesCount: 0,
           ),
         ];
 
@@ -449,7 +449,7 @@ void main() {
           text: nestedReplyContent,
           parentCommentId: replyId,
           createdAt: DateTime.now(),
-          likedByUserIds: const [],
+          likesCount: 0,
         );
 
         when(() => mockRepository.addComment(
@@ -487,7 +487,7 @@ void main() {
             text: 'First reply',
             parentCommentId: rootCommentId,
             createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-            likedByUserIds: const [],
+            likesCount: 0,
           ),
           RecipeComment(
             id: 'reply_2',
@@ -497,7 +497,7 @@ void main() {
             text: 'Second reply',
             parentCommentId: rootCommentId,
             createdAt: DateTime.now(),
-            likedByUserIds: const [],
+            likesCount: 0,
           ),
         ];
 
@@ -510,7 +510,7 @@ void main() {
             text: 'Nested reply',
             parentCommentId: 'reply_1',
             createdAt: DateTime.now().subtract(const Duration(hours: 1)),
-            likedByUserIds: const [],
+            likesCount: 0,
           ),
         ];
 
@@ -549,7 +549,7 @@ void main() {
             text: 'Visible reply',
             parentCommentId: parentCommentId,
             createdAt: DateTime.now(),
-            likedByUserIds: const [],
+            likesCount: 0,
           ),
         ];
 
@@ -585,7 +585,7 @@ void main() {
             authorDisplayName: 'User 1',
             text: 'Very popular comment',
             createdAt: DateTime.now(),
-            likedByUserIds: List.generate(10, (i) => 'user_$i'), // 10 likes
+            likesCount: 10, // 10 likes
           ),
           RecipeComment(
             id: 'moderate_comment',
@@ -594,7 +594,7 @@ void main() {
             authorDisplayName: 'User 2',
             text: 'Moderate engagement',
             createdAt: DateTime.now(),
-            likedByUserIds: List.generate(5, (i) => 'user_$i'), // 5 likes
+            likesCount: 5, // 5 likes
           ),
           RecipeComment(
             id: 'unpopular_comment',
@@ -603,13 +603,12 @@ void main() {
             authorDisplayName: 'User 3',
             text: 'Less popular',
             createdAt: DateTime.now(),
-            likedByUserIds: const [], // 0 likes
+            likesCount: 0, // 0 likes
           ),
         ];
 
         // Sort comments by likes
-        comments.sort((a, b) =>
-            b.likedByUserIds.length.compareTo(a.likedByUserIds.length));
+        comments.sort((a, b) => b.likesCount.compareTo(a.likesCount));
 
         when(() => mockRepository.getCommentsForRecipe(recipeId))
             .thenAnswer((_) async => comments);
@@ -620,9 +619,9 @@ void main() {
 
         // Assert
         expect(sortedComments[0].id, equals('popular_comment'));
-        expect(sortedComments[0].likedByUserIds.length, equals(10));
-        expect(sortedComments[1].likedByUserIds.length, equals(5));
-        expect(sortedComments[2].likedByUserIds.length, equals(0));
+        expect(sortedComments[0].likesCount, equals(10));
+        expect(sortedComments[1].likesCount, equals(5));
+        expect(sortedComments[2].likesCount, equals(0));
       });
     });
 
@@ -773,7 +772,7 @@ void main() {
               authorDisplayName: 'User $count',
               text: 'Live comment $count',
               createdAt: DateTime.now(),
-              likedByUserIds: const [],
+              likesCount: 0,
             ),
           ],
         ).take(3);
@@ -817,7 +816,7 @@ void main() {
           text: replyContent,
           parentCommentId: parentCommentId,
           createdAt: DateTime.now(),
-          likedByUserIds: const [],
+          likesCount: 0,
         );
 
         when(() => mockRepository.getReplies(parentCommentId))
@@ -898,7 +897,7 @@ void main() {
           authorDisplayName: 'Test User',
           text: offlineContent,
           createdAt: DateTime.now(),
-          likedByUserIds: const [],
+          likesCount: 0,
         );
 
         when(() => mockRepository.addComment(
@@ -935,7 +934,7 @@ void main() {
           authorDisplayName: 'Svenska Kocken',
           text: swedishContent,
           createdAt: DateTime.now(),
-          likedByUserIds: const [],
+          likesCount: 0,
         );
 
         when(() => mockRepository.addComment(
@@ -978,7 +977,7 @@ void main() {
             authorDisplayName: 'User',
             text: 'Detta $term är underbart!',
             createdAt: DateTime.now(),
-            likedByUserIds: const [],
+            likesCount: 0,
           );
 
           expect(comment.text.contains(term), isTrue);

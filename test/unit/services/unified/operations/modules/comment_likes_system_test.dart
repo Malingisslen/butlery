@@ -241,18 +241,9 @@ void main() {
 
       test('should get list of users who liked comment', () async {
         // Arrange
-        final commentWithLikes = RecipeComment(
-          id: 'comment_2',
-          recipeId: 'recipe_1',
-          authorId: 'user_456',
-          authorDisplayName: 'User',
-          text: 'Comment',
-          createdAt: DateTime.now(),
-          likedByUserIds: ['user_1', 'user_2', 'user_3'],
-        );
-
-        when(() => mockCommentsRepository.read('comment_2'))
-            .thenAnswer((_) async => commentWithLikes);
+        when(() => mockCommentsRepository.getCommentLikers('comment_2',
+                limit: 100))
+            .thenAnswer((_) async => ['user_1', 'user_2', 'user_3']);
 
         // Act
         final userIds =
@@ -261,6 +252,8 @@ void main() {
         // Assert
         expect(userIds.length, equals(3));
         expect(userIds, containsAll(['user_1', 'user_2', 'user_3']));
+        verify(() => mockCommentsRepository.getCommentLikers('comment_2',
+            limit: 100)).called(1);
       });
     });
 

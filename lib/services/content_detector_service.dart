@@ -21,7 +21,6 @@
 /// - **Content Type Classification**: Sophisticated classification into recipe text, URLs, social media, and plain text
 /// - **Modular Pattern System**: Easy extension and maintenance of platform patterns and detection rules
 
-import 'package:flutter/material.dart';
 import 'package:butlery/core/base/base_service.dart';
 
 /// Enumeration defining the types of content that can be detected and classified by the content detection system.
@@ -256,10 +255,6 @@ class ContentDetectorService extends BaseService {
   }
 
   ContentDetectionResult _detectContentInternal(String content) {
-    debugPrint(
-      '🔍 Analyserar innehåll: ${content.substring(0, content.length.clamp(0, 100))}...',
-    );
-
     // Trimma och normalisera
     final normalizedContent = content.trim().toLowerCase();
 
@@ -268,8 +263,6 @@ class ContentDetectorService extends BaseService {
     if (urlMatch != null) {
       // Identifiera plattform
       final platform = _identifyPlatform(urlMatch);
-
-      debugPrint('✅ URL detekterad: $urlMatch från $platform');
 
       // Om det är social media, behöver vi alltid WebView för att extrahera
       if (platform == SourcePlatform.instagram ||
@@ -298,8 +291,6 @@ class ContentDetectorService extends BaseService {
 
     // 2. Ingen URL = troligen kopierad text eller delad från notes-app
     if (_containsRecipeKeywords(normalizedContent)) {
-      debugPrint('✅ Recepttext detekterad (troligen kopierad från app)');
-
       return ContentDetectionResult(
         type: ContentType.recipeText,
         originalContent: content,
@@ -311,8 +302,6 @@ class ContentDetectorService extends BaseService {
     }
 
     // 3. Vanlig text utan recept
-    debugPrint('ℹ️ Vanlig text utan recept');
-
     return ContentDetectionResult(
       type: ContentType.plainText,
       originalContent: content,
@@ -372,14 +361,5 @@ class ContentDetectorService extends BaseService {
     } catch (e) {
       return false;
     }
-  }
-
-  /// Debug-metod för att logga detekterade mönster
-  void debugPatterns() {
-    debugPrint('📋 Registrerade plattformsmönster:');
-    _platformPatterns.forEach((platform, patterns) {
-      debugPrint('  $platform: ${patterns.length} mönster');
-    });
-    debugPrint('📋 Registrerade nyckelord: ${_recipeKeywords.length}');
   }
 }

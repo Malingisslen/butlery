@@ -10,12 +10,14 @@ import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/dtos/conversation_dto.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/models/messaging/conversation.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 // Module imports
 import 'package:butlery/repositories/firebase/modules/conversation_auto_healer_module.dart';
 import 'package:butlery/repositories/firebase/modules/conversation_query_module.dart';
 import 'package:butlery/repositories/firebase/modules/conversation_mutation_module.dart';
+import 'package:butlery/repositories/firebase/modules/conversation_participant_module.dart';
 import 'package:butlery/repositories/firebase/modules/message_query_module.dart';
 import 'package:butlery/repositories/firebase/modules/message_mutation_module.dart';
 
@@ -28,6 +30,7 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
   late final ConversationAutoHealerModule _autoHealerModule;
   late final ConversationQueryModule _conversationQueryModule;
   late final ConversationMutationModule _conversationMutationModule;
+  late final ConversationParticipantModule? _participantModule;
   late final MessageQueryModule _messageQueryModule;
   late final MessageMutationModule _messageMutationModule;
 
@@ -35,9 +38,18 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
     super.firestore,
     AuthRepository? authRepository,
     super.auditRepository,
+    FeatureFlagService? featureFlagService,
   }) : super(
           authRepository: authRepository ?? FirebaseAuthRepository(),
         ) {
+    // Initialize participant module if feature flag service is provided
+    _participantModule = featureFlagService != null
+        ? ConversationParticipantModule(
+            firestore: firestore,
+            featureFlags: featureFlagService,
+          )
+        : null;
+
     // Initialize modules
     _autoHealerModule = ConversationAutoHealerModule(
       messagesRef: _messagesRef,
@@ -50,6 +62,7 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
       collectionName: collectionName,
       fromFirestore: fromFirestore,
       startAutoHealer: _autoHealerModule.startAutoHealer,
+      participantModule: _participantModule,
     );
 
     _conversationMutationModule = ConversationMutationModule(
@@ -59,6 +72,7 @@ class FirebaseMessagingRepository extends BaseFirebaseRepository<Conversation>
       updateFn: update,
       readFn: read,
       sendMessageFn: sendMessage,
+      participantModule: _participantModule,
     );
 
     _messageQueryModule = MessageQueryModule(

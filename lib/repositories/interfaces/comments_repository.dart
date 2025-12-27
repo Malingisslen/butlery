@@ -32,6 +32,9 @@ abstract class CommentsRepository extends Repository<RecipeComment> {
   /// Check if user has liked a comment
   Future<bool> hasUserLikedComment(String commentId, String userId);
 
+  /// Get list of user IDs who liked a comment (from likes subcollection)
+  Future<List<String>> getCommentLikers(String commentId, {int limit = 100});
+
   /// Get comments stream for real-time updates
   Stream<List<RecipeComment>> getCommentsStream(String recipeId);
 

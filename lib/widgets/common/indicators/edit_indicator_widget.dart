@@ -1,6 +1,7 @@
 // lib/widgets/common/indicators/edit_indicator_widget.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -33,6 +34,7 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
   late AnimationController _pulseController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _pulseAnimation;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
@@ -53,7 +55,21 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
     );
     if (widget.isVisible) {
       _fadeController.forward();
-      _pulseController.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = !AnimationUtils.shouldAnimate(context);
+    if (_reduceMotion) {
+      _fadeController.duration = Duration.zero;
+      _pulseController.stop();
+    } else {
+      _fadeController.duration = widget.animationDuration;
+      if (widget.isVisible && !_pulseController.isAnimating) {
+        _pulseController.repeat(reverse: true);
+      }
     }
   }
 
@@ -63,7 +79,10 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
     if (widget.isVisible != oldWidget.isVisible) {
       if (widget.isVisible) {
         _fadeController.forward();
-        _pulseController.repeat(reverse: true);
+        // Only start pulse animation if reduced motion is not enabled
+        if (!_reduceMotion) {
+          _pulseController.repeat(reverse: true);
+        }
       } else {
         _fadeController.reverse();
         _pulseController.stop();
@@ -92,23 +111,35 @@ class _EditIndicatorWidgetState extends State<EditIndicatorWidget>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                AnimatedBuilder(
-                  animation: _pulseAnimation,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _pulseAnimation.value,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadius4),
+                // Show static dot when reduced motion is enabled
+                if (_reduceMotion)
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.borderRadius4),
+                    ),
+                  )
+                else
+                  AnimatedBuilder(
+                    animation: _pulseAnimation,
+                    builder: (context, child) {
+                      return Transform.scale(
+                        scale: _pulseAnimation.value,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: color,
+                            borderRadius: BorderRadius.circular(
+                                AppDimensions.borderRadius4),
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
                 const SizedBox(width: AppDimensions.spacingTight),
                 Text(
                   '${widget.editorName} redigerar ${widget.editingWhat}',

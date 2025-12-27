@@ -1,6 +1,7 @@
 // lib/widgets/messaging/message_bubble.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/models/messaging/message.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -48,6 +49,7 @@ class _MessageBubbleState extends State<MessageBubble>
   double _dragExtent = 0;
   static const double _swipeThreshold = 80.0;
   static const double _maxSwipe = 120.0;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
@@ -63,6 +65,17 @@ class _MessageBubbleState extends State<MessageBubble>
       parent: _swipeController,
       curve: Curves.easeOut,
     ));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = !AnimationUtils.shouldAnimate(context);
+    if (_reduceMotion) {
+      _swipeController.duration = Duration.zero;
+    } else {
+      _swipeController.duration = const Duration(milliseconds: 200);
+    }
   }
 
   @override

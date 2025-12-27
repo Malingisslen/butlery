@@ -62,7 +62,7 @@ class GroupDetailView extends StatelessWidget {
   PreferredSizeWidget _buildAppBar(
       BuildContext context, GroupDetailViewModel viewModel) {
     return AppBar(
-      title: const Text(
+      title: Text(
         'Gruppinformation',
         style: AppTextStyles.headlineSmall,
       ),

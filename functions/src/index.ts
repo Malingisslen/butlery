@@ -22,6 +22,7 @@ export { ocrRecipeImage } from "./llm/ocr-recipe-image";
 // Cleanup Functions - Scheduled maintenance
 export { cleanupExpiredCache } from "./cleanup/cleanup-cache";
 export { cleanupOldRateLimits } from "./cleanup/cleanup-rate-limits";
+export { cleanupOldAuditLogs, getAuditLogStats } from "./cleanup/cleanup-audit-logs";
 
 // Parse Event Logging - Server-side analytics (P1-4 security)
 export { logParseEvent } from "./events/log-parse-event";

@@ -450,10 +450,6 @@ class UnifiedShoppingViewModel extends ChangeNotifier
   }
 
   void printDebugInfo() {
-    debugPrint('=== UNIFIED SHOPPING DEBUG INFO ===');
-    debugInfo.forEach((key, value) {
-      debugPrint('$key: $value');
-    });
-    debugPrint('=====================================');
+    // Debug info printing disabled - use debugInfo getter directly if needed
   }
 }

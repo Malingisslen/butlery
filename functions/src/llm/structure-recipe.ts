@@ -18,6 +18,7 @@ import {
   parseRecipeResponse,
   ExtractedRecipe,
 } from "./mistral-client";
+import { withRateLimit } from "../middleware/rate_limiter";
 
 // =============================================================================
 // Request/Response Types
@@ -62,15 +63,8 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
     cors: true,
     region: "europe-west1",
   },
-  async (request): Promise<StructureRecipeResponse> => {
-    // Authenticate
-    if (!request.auth) {
-      throw new HttpsError(
-        "unauthenticated",
-        "Du måste vara inloggad för att använda AI-funktioner."
-      );
-    }
-
+  withRateLimit("structureRecipe", async (request): Promise<StructureRecipeResponse> => {
+    // Authentication is handled by withRateLimit middleware
     const { text, partialData, mode = "extract", sourceUrl } = request.data;
 
     // Validate input
@@ -114,7 +108,7 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
       }
 
       console.log(
-        `[structureRecipe] Processing ${text.length} chars in ${mode} mode for user ${request.auth.uid}`
+        `[structureRecipe] Processing ${text.length} chars in ${mode} mode for user ${request.auth!.uid}`
       );
 
       // Call Mistral API
@@ -184,7 +178,7 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
         "Ett fel uppstod vid AI-bearbetning. Försök igen."
       );
     }
-  }
+  })
 );
 
 // =============================================================================

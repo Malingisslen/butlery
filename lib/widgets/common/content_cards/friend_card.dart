@@ -280,7 +280,7 @@ class FriendRequestCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Friend Request', // FriendRequest doesn't store sender display name directly
                     style: AppTextStyles.titleMedium,
                     maxLines: 1,

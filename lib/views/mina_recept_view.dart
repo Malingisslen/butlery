@@ -20,6 +20,7 @@ import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_vie
 
 // Constants and theming
 import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 // Widget components for modern UI architecture
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -162,7 +163,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
         actions: [
           ActionButtons.secondaryButton(
             context,
-            label: AppStrings.cancel,
+            label: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context, false),
           ),
           ActionButtons.primaryButton(
@@ -384,6 +385,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               padding: AppDimensions.responsiveContentPadding(context),
               shrinkWrap: false,
               gridChildAspectRatio: 0.75, // Recipe cards are taller than wide
+              animate: true, // Staggered entrance animations
               itemBuilder: (context, recipe) {
                 return ContentCard(
                   key: ValueKey(recipe.id),

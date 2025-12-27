@@ -2,7 +2,6 @@
 /// ```dart
 /// final im = ImportManager(ops); await im.autoImport(text);
 
-import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/import/import_strategy.dart';
@@ -61,11 +60,8 @@ class ImportManager {
   /// Get the YouTube import strategy (lazy initialization with graceful fallback)
   YouTubeImportStrategy? get _youtubeStrategy {
     try {
-      final strategy = ServiceLocator.get<YouTubeImportStrategy>();
-      debugPrint('✅ YouTubeImportStrategy loaded successfully');
-      return strategy;
+      return ServiceLocator.get<YouTubeImportStrategy>();
     } catch (e) {
-      debugPrint('❌ Failed to load YouTubeImportStrategy: $e');
       return null;
     }
   }
@@ -150,14 +146,9 @@ class ImportManager {
       }
 
       final youtubeStrategy = _youtubeStrategy;
-      debugPrint(
-          '🎬 YouTube strategy check: strategy=${youtubeStrategy != null}, canHandle=${youtubeStrategy?.canHandle(input)}');
       if (youtubeStrategy != null && youtubeStrategy.canHandle(input)) {
-        debugPrint('🎬 Using YouTubeImportStrategy for: $input');
         final result =
             await _parseWithStrategy(youtubeStrategy, input, options);
-        debugPrint(
-            '🎬 YouTube result: isSuccess=${result.isSuccess}, needsAssistance=${result.needsAssistance}, error=${result.errorMessage}');
 
         // Handle all YouTube results - don't fall back to WebScraper for YouTube URLs
         if (result.isSuccess || result.needsAssistance) {
@@ -167,8 +158,6 @@ class ImportManager {
 
         // Check for "needs screenshot" case - this is a valid result, not a fallback-worthy failure
         if (result.metadata?['needsScreenshot'] == true) {
-          debugPrint(
-              '🎬 YouTube video needs screenshot - returning assistance request');
           // Convert to user-assisted import with helpful message
           return ImportManagerResult.assistance(
             extractedText: result.errorMessage ?? 'Video saknar undertexter',
@@ -180,8 +169,6 @@ class ImportManager {
           );
         }
 
-        debugPrint(
-            '🎬 YouTube strategy failed, falling back to other strategies');
         // YouTube strategy failed, continue with other strategies
       }
 
@@ -465,15 +452,10 @@ class ImportManager {
       return null;
     }
 
-    // DEBUG: Log cache lookup
-    debugPrint('🔍 Checking cache for: $input');
-
     try {
       final cacheEntry = await cache.findByUrl(input);
 
       if (cacheEntry == null) {
-        // DEBUG: Log cache miss
-        debugPrint('❌ CACHE MISS - extracting...');
         return null; // Cache miss
       }
 
@@ -490,11 +472,6 @@ class ImportManager {
         'ImportManager: Loaded from cache '
         '(source: ${cacheEntry.sourceType}, domain: ${cacheEntry.domain})',
       );
-
-      // DEBUG: Log cache hit
-      debugPrint('✅ CACHE HIT - returning cached recipe');
-      debugPrint(
-          '   Domain: ${cacheEntry.domain}, Age: ${cacheEntry.ageInDays}d');
 
       return ImportManagerResult.success(
         recipe,
@@ -559,11 +536,6 @@ class ImportManager {
         extractionMeta: extractionMeta,
         sourceType: sourceType,
       );
-
-      // DEBUG: Log cache save
-      final urlHash = normalizer.hash(input);
-      debugPrint('💾 Saved to cache: $urlHash');
-      debugPrint('   Source: $sourceType, Title: ${result.recipe!.title}');
 
       AppLogger.debug(
         'ImportManager: Saved to cache (source: $sourceType)',

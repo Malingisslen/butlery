@@ -10,8 +10,11 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/messaging_media_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart';
 import 'package:butlery/views/messaging/group_detail_view.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// Centralized chat action handler with clean interfaces
@@ -117,7 +120,8 @@ class ChatActionHandler {
     } catch (e, stackTrace) {
       AppLogger.error('❌ [ChatActionHandler] Failed to send message', e);
       AppLogger.error('❌ [ChatActionHandler] Stack trace: $stackTrace');
-      _showErrorSnackBar('Ett fel uppstod');
+      if (!context.mounted) rethrow;
+      _showErrorSnackBar(context.l10n.chatErrorOccurred);
       rethrow;
     }
   }
@@ -181,26 +185,29 @@ class ChatActionHandler {
         );
       } else {
         // For direct conversations, show simple info dialog
+        final l10n = context.l10n;
         await showDialog(
           context: context,
           builder: (dialogContext) => AlertDialog(
-            title: const Text('Konversationsinformation'),
+            title: Text(l10n.chatConversationInfo),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Typ: Direktmeddelande'),
+                Text(l10n.chatTypeDirectMessage),
                 if (conversation != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                      'Skapad: ${conversation.createdAt.toLocal().toString().split('.')[0]}'),
+                  const SizedBox(height: AppDimensions.spacingSm),
+                  Text(l10n.chatCreatedAt(conversation.createdAt
+                      .toLocal()
+                      .toString()
+                      .split('.')[0])),
                 ],
               ],
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('Stäng'),
+                child: Text(l10n.commonClose),
               ),
             ],
           ),
@@ -217,10 +224,10 @@ class ChatActionHandler {
     try {
       // In production, this would toggle mute status through the messaging repository
       // For now, just show a message that notifications are toggled
-      _showErrorSnackBar('Notifikationsinställningar uppdaterade');
+      _showInfoSnackBar(context.l10n.chatNotificationSettingsUpdated);
     } catch (e) {
       AppLogger.error('Failed to toggle mute', e);
-      _showErrorSnackBar('Kunde inte ändra notifikationsinställningar');
+      _showErrorSnackBar(context.l10n.chatCouldNotChangeNotifications);
     }
   }
 
@@ -228,20 +235,20 @@ class ChatActionHandler {
     AppLogger.info('Leaving conversation');
 
     try {
+      final l10n = context.l10n;
       final confirmed = await showDialog<bool>(
             context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Lämna konversation'),
-              content: const Text(
-                  'Är du säker på att du vill lämna konversationen?'),
+            builder: (dialogContext) => AlertDialog(
+              title: Text(l10n.chatLeaveConversation),
+              content: Text(l10n.chatLeaveConversationConfirm),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Avbryt'),
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: Text(l10n.commonCancel),
                 ),
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text('Lämna'),
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: Text(l10n.messagingLeave),
                 ),
               ],
             ),
@@ -258,7 +265,8 @@ class ChatActionHandler {
       }
     } catch (e) {
       AppLogger.error('Failed to leave conversation', e);
-      _showErrorSnackBar('Kunde inte lämna konversationen');
+      if (!context.mounted) return;
+      _showErrorSnackBar(context.l10n.chatCouldNotLeaveConversation);
     }
   }
 
@@ -272,26 +280,27 @@ class ChatActionHandler {
     AppLogger.info('Editing message: ${message.id}');
 
     // Show edit dialog
+    final l10n = context.l10n;
     final controller = TextEditingController(text: message.content);
     final edited = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Redigera meddelande'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.chatEditMessage),
         content: TextField(
           controller: controller,
           maxLines: null,
-          decoration: const InputDecoration(
-            hintText: 'Skriv ditt meddelande...',
+          decoration: InputDecoration(
+            hintText: l10n.chatWriteYourMessage,
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Avbryt'),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.commonCancel),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(controller.text),
-            child: const Text('Spara'),
+            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
+            child: Text(l10n.commonSave),
           ),
         ],
       ),
@@ -308,7 +317,7 @@ class ChatActionHandler {
         AppLogger.success('Message edited');
       } catch (e) {
         AppLogger.error('Failed to edit message', e);
-        _showErrorSnackBar('Kunde inte redigera meddelandet');
+        _showErrorSnackBar(l10n.chatCouldNotEditMessage);
       }
     }
     controller.dispose();
@@ -324,7 +333,8 @@ class ChatActionHandler {
       }
     } catch (e) {
       AppLogger.error('Failed to delete message', e);
-      _showErrorSnackBar('Kunde inte ta bort meddelandet');
+      if (!context.mounted) return;
+      _showErrorSnackBar(context.l10n.chatCouldNotDeleteMessage);
     }
   }
 
@@ -333,10 +343,12 @@ class ChatActionHandler {
 
     try {
       await Clipboard.setData(ClipboardData(text: message.content));
-      _showErrorSnackBar('Meddelande kopierat');
+      if (!context.mounted) return;
+      _showSuccessSnackBar(context.l10n.chatMessageCopied);
     } catch (e) {
       AppLogger.error('Failed to copy message', e);
-      _showErrorSnackBar('Kunde inte kopiera meddelandet');
+      if (!context.mounted) return;
+      _showErrorSnackBar(context.l10n.chatCouldNotCopyMessage);
     }
   }
 
@@ -344,10 +356,11 @@ class ChatActionHandler {
     AppLogger.info('Sharing recipe');
 
     try {
+      final l10n = context.l10n;
       final selectedRecipes = await showDialog<List<String>>(
         context: context,
-        builder: (context) => const MenuRecipeSelectionDialog(
-          categoryName: 'Dina recept',
+        builder: (dialogContext) => MenuRecipeSelectionDialog(
+          categoryName: l10n.chatYourRecipes,
         ),
       );
 
@@ -356,13 +369,15 @@ class ChatActionHandler {
         await _messagingService.sendRecipeShare(
           conversationId: conversationId,
           recipeId: selectedRecipes.first,
-          recipeTitle: 'Delat recept', // In production, fetch the actual title
-          message: 'Kolla in detta recept!',
+          recipeTitle:
+              l10n.chatSharedRecipe, // In production, fetch the actual title
+          message: l10n.chatCheckOutRecipe,
         );
       }
     } catch (e) {
       AppLogger.error('Failed to share recipe', e);
-      _showErrorSnackBar('Kunde inte dela recept');
+      if (!context.mounted) return;
+      _showErrorSnackBar(context.l10n.chatCouldNotShareRecipe);
     }
   }
 
@@ -372,10 +387,10 @@ class ChatActionHandler {
     try {
       // For menus, we'll send a special message type
       // The menu selection would be handled by a dedicated dialog
-      _showErrorSnackBar('Menydelning kommer snart');
+      _showInfoSnackBar(context.l10n.chatMenuSharingComingSoon);
     } catch (e) {
       AppLogger.error('Failed to share menu', e);
-      _showErrorSnackBar('Kunde inte dela meny');
+      _showErrorSnackBar(context.l10n.chatCouldNotShareMenu);
     }
   }
 
@@ -384,10 +399,10 @@ class ChatActionHandler {
 
     try {
       // Shopping list sharing would involve selecting from user's lists
-      _showErrorSnackBar('Inköpslistedelning kommer snart');
+      _showInfoSnackBar(context.l10n.chatShoppingListSharingComingSoon);
     } catch (e) {
       AppLogger.error('Failed to share shopping list', e);
-      _showErrorSnackBar('Kunde inte dela inköpslista');
+      _showErrorSnackBar(context.l10n.chatCouldNotShareShoppingList);
     }
   }
 
@@ -396,8 +411,9 @@ class ChatActionHandler {
         'Sharing photo from ${source == ImageSource.camera ? "camera" : "gallery"}');
 
     try {
+      final l10n = context.l10n;
       // Show loading indicator
-      _showInfoSnackBar('Laddar bild...');
+      _showInfoSnackBar(l10n.chatLoadingImage);
 
       // Use MediaService to pick and send image
       final success = await _mediaService.pickAndSendImage(
@@ -411,31 +427,32 @@ class ChatActionHandler {
       );
 
       if (success) {
-        _showSuccessSnackBar('Bild skickad!');
+        _showSuccessSnackBar(l10n.chatImageSent);
       } else {
-        _showErrorSnackBar('Ingen bild vald');
+        _showErrorSnackBar(l10n.chatNoImageSelected);
       }
     } catch (e) {
       AppLogger.error('Failed to share photo', e);
-      _showErrorSnackBar('Kunde inte dela foto');
+      if (!context.mounted) return;
+      _showErrorSnackBar(context.l10n.chatCouldNotSharePhoto);
     }
   }
 
   Future<bool> _showDeleteConfirmation() async {
+    final l10n = context.l10n;
     return await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Ta bort'),
-            content:
-                const Text('Är du säker på att du vill ta bort meddelandet?'),
+          builder: (dialogContext) => AlertDialog(
+            title: Text(l10n.chatDeleteMessage),
+            content: Text(l10n.chatDeleteMessageConfirm),
             actions: [
               TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Avbryt'),
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: Text(l10n.commonCancel),
               ),
               TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Ta bort'),
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: Text(l10n.commonDelete),
               ),
             ],
           ),
@@ -447,7 +464,7 @@ class ChatActionHandler {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: AppColors.error,
       ),
     );
   }
@@ -456,7 +473,7 @@ class ChatActionHandler {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.green,
+        backgroundColor: AppColors.success,
       ),
     );
   }

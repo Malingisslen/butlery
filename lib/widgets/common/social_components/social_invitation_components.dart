@@ -455,7 +455,7 @@ class SocialInvitationComponents {
     IconData icon = Icons.check_circle_outline,
     VoidCallback? onContinue,
     String? continueButtonText = 'Fortsätt',
-    Color? successColor = Colors.green,
+    Color? successColor,
   }) {
     return InvitationStates.targetsSelectedSuccess(
       context,

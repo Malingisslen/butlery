@@ -8,6 +8,7 @@ import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/styled/styled_widgets.dart';
 
 /// Shopping list actions handler
@@ -57,7 +58,7 @@ class ShoppingListActions {
                 ),
                 const SizedBox(width: AppDimensions.spacingM),
                 Text(
-                  AppStrings.delete,
+                  context.l10n.commonDelete,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.error,
                       ),
@@ -114,11 +115,11 @@ class ShoppingListActions {
         ),
         actions: [
           StyledButton.secondary(
-            text: AppStrings.cancel,
+            text: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context),
           ),
           StyledButton.primary(
-            text: AppStrings.save,
+            text: context.l10n.commonSave,
             onPressed: () => Navigator.pop(context, controller.text.trim()),
           ),
         ],
@@ -232,11 +233,11 @@ class ShoppingListActions {
         ),
         actions: [
           StyledButton.secondary(
-            text: AppStrings.cancel,
+            text: context.l10n.commonCancel,
             onPressed: () => Navigator.pop(context),
           ),
           StyledButton.primary(
-            text: AppStrings.create,
+            text: context.l10n.commonCreate,
             onPressed: () => Navigator.pop(context, controller.text.trim()),
           ),
         ],
@@ -255,7 +256,7 @@ class ShoppingListActions {
       title: '${AppStrings.addToList} "${list.name}"',
       message:
           'Vill du lägga till $itemCount artiklar från menyn i "${list.name}"?',
-      confirmText: AppStrings.add,
+      confirmText: context.l10n.commonAdd,
       icon: Icons.add_shopping_cart,
     );
 

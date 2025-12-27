@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 
@@ -40,6 +41,7 @@ class _SkeletonBox extends StatefulWidget {
 class _SkeletonBoxState extends State<_SkeletonBox>
     with SingleTickerProviderStateMixin {
   late AnimationController _shimmerController;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
@@ -47,7 +49,18 @@ class _SkeletonBoxState extends State<_SkeletonBox>
     _shimmerController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
-    )..repeat();
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = !AnimationUtils.shouldAnimate(context);
+    if (!_reduceMotion && !_shimmerController.isAnimating) {
+      _shimmerController.repeat();
+    } else if (_reduceMotion && _shimmerController.isAnimating) {
+      _shimmerController.stop();
+    }
   }
 
   @override
@@ -58,6 +71,20 @@ class _SkeletonBoxState extends State<_SkeletonBox>
 
   @override
   Widget build(BuildContext context) {
+    // Show static skeleton when reduced motion is enabled
+    if (_reduceMotion) {
+      return Container(
+        width: widget.width,
+        height: widget.height,
+        margin: widget.margin,
+        decoration: BoxDecoration(
+          borderRadius: widget.borderRadius ??
+              BorderRadius.circular(AppDimensions.borderRadiusS),
+          color: AppColors.neutralLight,
+        ),
+      );
+    }
+
     return Container(
       width: widget.width,
       height: widget.height,
@@ -66,8 +93,8 @@ class _SkeletonBoxState extends State<_SkeletonBox>
         borderRadius: widget.borderRadius ??
             BorderRadius.circular(AppDimensions.borderRadiusS),
         gradient: LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
+          begin: AlignmentDirectional.centerStart,
+          end: AlignmentDirectional.centerEnd,
           colors: const [
             AppColors.neutralMedium,
             AppColors.neutralLight,

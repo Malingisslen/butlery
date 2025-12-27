@@ -88,7 +88,7 @@ class UserAvatarWidgets {
 
     return onTap != null
         ? Material(
-            color: Colors.transparent,
+            color: AppColors.transparent,
             child: InkWell(
               onTap: onTap,
               borderRadius: BorderRadius.circular(avatarSize / 2),

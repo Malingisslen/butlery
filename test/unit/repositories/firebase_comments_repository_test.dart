@@ -174,7 +174,7 @@ void main() {
         expect(result.authorId, equals(userId));
         expect(result.text, equals(content));
         expect(result.parentCommentId, isNull); // Top-level comment
-        expect(result.likedByUserIds, isEmpty);
+        expect(result.likesCount, equals(0));
       },
           skip:
               'FakeFirebaseFirestore server timestamp limitation - tested in integration tests');
@@ -798,11 +798,10 @@ Future<void> _seedComment(
     'createdAt': Timestamp.fromDate(comment.createdAt),
     'editedAt':
         comment.editedAt != null ? Timestamp.fromDate(comment.editedAt!) : null,
-    'likedByUserIds': comment.likedByUserIds,
+    'likesCount': comment.likesCount,
     'parentCommentId': comment.parentCommentId,
     'replyCount': comment.replyCount,
     'isDeleted': comment.isDeleted,
-    'likesCount': 0, // Default like count
   };
 
   await firestore.collection('recipe_comments').doc(commentId).set(data);

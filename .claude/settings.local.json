@@ -33,7 +33,12 @@
       "WebFetch(domain:github.com)",
       "Bash(git config:*)",
       "Bash(grep:*)",
-      "Bash(sort:*)"
+      "Bash(sort:*)",
+      "Bash(flutter gen-l10n:*)",
+      "Bash(git grep:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(git -C:*)",
+      "Bash(GOOGLE_APPLICATION_CREDENTIALS=service-account.json npm run sync-ingredients:*)"
     ],
     "deny": [],
     "ask": []

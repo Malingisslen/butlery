@@ -14,18 +14,17 @@ void main() {
           ReactionType.like: 10,
           ReactionType.love: 5,
         };
-        final reactedUserIds = {'user_1', 'user_2', 'user_3'};
 
         final stats = ReactionStatistics(
           reactionCounts: reactionCounts,
-          reactedUserIds: reactedUserIds,
+          userReactionCount: 3,
           lastUpdated: lastUpdated,
           contentId: 'recipe_123',
           contentType: 'recipe',
         );
 
         expect(stats.reactionCounts, equals(reactionCounts));
-        expect(stats.reactedUserIds, equals(reactedUserIds));
+        expect(stats.userReactionCount, equals(3));
         expect(stats.lastUpdated, equals(lastUpdated));
         expect(stats.contentId, equals('recipe_123'));
         expect(stats.contentType, equals('recipe'));
@@ -40,7 +39,7 @@ void main() {
         );
 
         expect(stats.reactionCounts, isEmpty);
-        expect(stats.reactedUserIds, isEmpty);
+        expect(stats.userReactionCount, equals(0));
         expect(stats.contentId, equals('recipe_123'));
         expect(stats.contentType, equals('recipe'));
         expect(stats.totalCount, equals(0));
@@ -66,21 +65,20 @@ void main() {
         expect(stats.totalCount, equals(26));
       });
 
-      test('should create from counts with user IDs', () {
+      test('should create from counts with user reaction count', () {
         final counts = {
           ReactionType.like: 5,
         };
-        final userIds = {'user_1', 'user_2', 'user_3'};
 
         final stats = ReactionStatistics.fromCounts(
           counts,
           contentId: 'menu_789',
           contentType: 'menu',
-          reactedUserIds: userIds,
+          userReactionCount: 3,
         );
 
         expect(stats.reactionCounts, equals(counts));
-        expect(stats.reactedUserIds, equals(userIds));
+        expect(stats.userReactionCount, equals(3));
       });
 
       test('should create from Firestore data', () {
@@ -90,7 +88,7 @@ void main() {
             'love': 5,
             'delicious': 3,
           },
-          'reactedUserIds': ['user_1', 'user_2'],
+          'userReactionCount': 2,
           'lastUpdated': DateTime(2025, 1, 1).millisecondsSinceEpoch,
           'contentId': 'recipe_123',
           'contentType': 'recipe',
@@ -105,8 +103,7 @@ void main() {
         expect(stats.getCount(ReactionType.like), equals(10));
         expect(stats.getCount(ReactionType.love), equals(5));
         expect(stats.getCount(ReactionType.delicious), equals(3));
-        expect(stats.reactedUserIds, contains('user_1'));
-        expect(stats.reactedUserIds, contains('user_2'));
+        expect(stats.userReactionCount, equals(2));
         expect(stats.lastUpdated.year, equals(2025));
       });
 
@@ -120,7 +117,7 @@ void main() {
         );
 
         expect(stats.reactionCounts, isEmpty);
-        expect(stats.reactedUserIds, isEmpty);
+        expect(stats.userReactionCount, equals(0));
         expect(stats.contentId, equals('recipe_123'));
       });
 
@@ -131,7 +128,7 @@ void main() {
             'invalid_type': 5,
             'love': 3,
           },
-          'reactedUserIds': [],
+          'userReactionCount': 0,
           'lastUpdated': DateTime.now().millisecondsSinceEpoch,
         };
 
@@ -173,7 +170,7 @@ void main() {
             ReactionType.like: 10,
             ReactionType.delicious: 5,
           },
-          reactedUserIds: {'user_1', 'user_2'},
+          userReactionCount: 2,
           lastUpdated: DateTime(2025, 1, 1),
           contentId: 'recipe_123',
           contentType: 'recipe',
@@ -183,8 +180,7 @@ void main() {
 
         expect(firestore['reactionCounts']['like'], equals(10));
         expect(firestore['reactionCounts']['delicious'], equals(5));
-        expect((firestore['reactedUserIds'] as List), contains('user_1'));
-        expect((firestore['reactedUserIds'] as List), contains('user_2'));
+        expect(firestore['userReactionCount'], equals(2));
         expect(firestore['lastUpdated'],
             equals(DateTime(2025, 1, 1).millisecondsSinceEpoch));
         expect(firestore['contentId'], equals('recipe_123'));
@@ -200,7 +196,7 @@ void main() {
           },
           contentId: 'recipe_456',
           contentType: 'recipe',
-          reactedUserIds: {'user_1', 'user_2', 'user_3'},
+          userReactionCount: 3,
         );
 
         final firestore = original.toFirestore();
@@ -213,7 +209,7 @@ void main() {
         expect(restored.getCount(ReactionType.like), equals(15));
         expect(restored.getCount(ReactionType.love), equals(8));
         expect(restored.getCount(ReactionType.helpful), equals(3));
-        expect(restored.reactedUserIds.length, equals(3));
+        expect(restored.userReactionCount, equals(3));
         expect(restored.contentId, equals('recipe_456'));
       });
     });
@@ -304,52 +300,78 @@ void main() {
     });
 
     group('User Tracking', () {
-      test('should track if user has reacted', () {
+      test('should track if any user has reacted', () {
         final stats = ReactionStatistics(
           reactionCounts: {ReactionType.like: 5},
-          reactedUserIds: {'user_1', 'user_2', 'user_3'},
+          userReactionCount: 3,
           lastUpdated: DateTime.now(),
           contentId: 'recipe_123',
           contentType: 'recipe',
         );
 
-        expect(stats.hasUserReacted('user_1'), isTrue);
-        expect(stats.hasUserReacted('user_2'), isTrue);
-        expect(stats.hasUserReacted('user_3'), isTrue);
-        expect(stats.hasUserReacted('user_4'), isFalse);
+        expect(stats.hasAnyUserReacted, isTrue);
+      });
+
+      test('should return false when no users have reacted', () {
+        final stats = ReactionStatistics(
+          reactionCounts: {},
+          userReactionCount: 0,
+          lastUpdated: DateTime.now(),
+          contentId: 'recipe_123',
+          contentType: 'recipe',
+        );
+
+        expect(stats.hasAnyUserReacted, isFalse);
       });
     });
 
-    group('Add/Remove Operations', () {
-      test('should add new reaction', () {
+    group('Increment/Decrement Operations', () {
+      test('should increment new reaction', () {
         final original = ReactionStatistics.empty(
           contentId: 'recipe_123',
           contentType: 'recipe',
         );
 
-        final updated = original.addReaction(ReactionType.like, 'user_1');
+        final updated =
+            original.incrementReaction(ReactionType.like, isNewUser: true);
 
         expect(updated.getCount(ReactionType.like), equals(1));
-        expect(updated.hasUserReacted('user_1'), isTrue);
+        expect(updated.userReactionCount, equals(1));
         expect(updated.totalCount, equals(1));
       });
 
-      test('should increment existing reaction', () {
+      test('should increment existing reaction without new user', () {
         final original = ReactionStatistics.fromCounts(
           {ReactionType.like: 5},
           contentId: 'recipe_123',
           contentType: 'recipe',
-          reactedUserIds: {'user_1', 'user_2'},
+          userReactionCount: 2,
         );
 
-        final updated = original.addReaction(ReactionType.like, 'user_3');
+        final updated = original.incrementReaction(ReactionType.like);
 
         expect(updated.getCount(ReactionType.like), equals(6));
-        expect(updated.hasUserReacted('user_3'), isTrue);
+        expect(updated.userReactionCount, equals(2)); // Not incremented
         expect(updated.totalCount, equals(6));
       });
 
-      test('should remove reaction', () {
+      test('should increment existing reaction with new user', () {
+        final original = ReactionStatistics.fromCounts(
+          {ReactionType.like: 5},
+          contentId: 'recipe_123',
+          contentType: 'recipe',
+          userReactionCount: 2,
+        );
+
+        final updated =
+            original.incrementReaction(ReactionType.like, isNewUser: true);
+
+        expect(updated.getCount(ReactionType.like), equals(6));
+        expect(updated.userReactionCount, equals(3));
+        expect(updated.totalCount, equals(6));
+      });
+
+      test('should decrement reaction', () {
         final original = ReactionStatistics.fromCounts(
           {
             ReactionType.like: 5,
@@ -359,11 +381,26 @@ void main() {
           contentType: 'recipe',
         );
 
-        final updated = original.removeReaction(ReactionType.like, 'user_1');
+        final updated = original.decrementReaction(ReactionType.like);
 
         expect(updated.getCount(ReactionType.like), equals(4));
         expect(updated.getCount(ReactionType.love), equals(3));
         expect(updated.totalCount, equals(7));
+      });
+
+      test('should decrement user count when was last reaction', () {
+        final original = ReactionStatistics.fromCounts(
+          {ReactionType.like: 5},
+          contentId: 'recipe_123',
+          contentType: 'recipe',
+          userReactionCount: 3,
+        );
+
+        final updated = original.decrementReaction(ReactionType.like,
+            wasLastReaction: true);
+
+        expect(updated.getCount(ReactionType.like), equals(4));
+        expect(updated.userReactionCount, equals(2));
       });
 
       test('should remove reaction type when count reaches zero', () {
@@ -376,21 +413,21 @@ void main() {
           contentType: 'recipe',
         );
 
-        final updated = original.removeReaction(ReactionType.like, 'user_1');
+        final updated = original.decrementReaction(ReactionType.like);
 
         expect(updated.reactionCounts.containsKey(ReactionType.like), isFalse);
         expect(updated.getCount(ReactionType.like), equals(0));
         expect(updated.totalCount, equals(3));
       });
 
-      test('should handle removing non-existent reaction', () {
+      test('should handle decrementing non-existent reaction', () {
         final original = ReactionStatistics.fromCounts(
           {ReactionType.like: 5},
           contentId: 'recipe_123',
           contentType: 'recipe',
         );
 
-        final updated = original.removeReaction(ReactionType.love, 'user_1');
+        final updated = original.decrementReaction(ReactionType.love);
 
         expect(updated.getCount(ReactionType.love), equals(0));
         expect(updated.getCount(ReactionType.like), equals(5));
@@ -410,17 +447,16 @@ void main() {
           ReactionType.love: 5,
           ReactionType.delicious: 3,
         };
-        final newUserIds = {'user_4', 'user_5'};
         final newTime = DateTime(2025, 2, 1);
 
         final copied = original.copyWith(
           reactionCounts: newCounts,
-          reactedUserIds: newUserIds,
+          userReactionCount: 5,
           lastUpdated: newTime,
         );
 
         expect(copied.reactionCounts, equals(newCounts));
-        expect(copied.reactedUserIds, equals(newUserIds));
+        expect(copied.userReactionCount, equals(5));
         expect(copied.lastUpdated, equals(newTime));
         expect(copied.contentId, equals('recipe_123')); // Preserved
       });
@@ -430,13 +466,13 @@ void main() {
           {ReactionType.like: 10},
           contentId: 'recipe_123',
           contentType: 'recipe',
-          reactedUserIds: {'user_1'},
+          userReactionCount: 1,
         );
 
         final copied = original.copyWith();
 
         expect(copied.reactionCounts, equals(original.reactionCounts));
-        expect(copied.reactedUserIds, equals(original.reactedUserIds));
+        expect(copied.userReactionCount, equals(original.userReactionCount));
         expect(copied.contentId, equals(original.contentId));
         expect(copied.contentType, equals(original.contentType));
       });

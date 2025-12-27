@@ -130,7 +130,7 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
 
             // Or select friend for direct chat
             Align(
-              alignment: Alignment.centerLeft,
+              alignment: AlignmentDirectional.centerStart,
               child: Text(
                 'Eller välj en vän för direktmeddelande:',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(

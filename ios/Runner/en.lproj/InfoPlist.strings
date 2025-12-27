@@ -1,0 +1,13 @@
+/* English localization for iOS permission descriptions */
+
+/* Camera access - for taking photos of recipes and ingredients */
+"NSCameraUsageDescription" = "Butlery needs camera access to take photos of recipes and ingredients";
+
+/* Photo library read access - for selecting images for recipes */
+"NSPhotoLibraryUsageDescription" = "Butlery needs photo library access to select images for recipes";
+
+/* Photo library write access - for saving recipe images */
+"NSPhotoLibraryAddUsageDescription" = "Butlery needs photo library access to save recipe images";
+
+/* Face ID authentication - for secure login */
+"NSFaceIDUsageDescription" = "Butlery uses Face ID for secure login to your account";

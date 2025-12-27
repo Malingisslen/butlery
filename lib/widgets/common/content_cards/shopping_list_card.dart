@@ -235,7 +235,7 @@ class ShoppingListCard extends StatelessWidget {
                         : Icons.radio_button_unchecked,
                     size: AppDimensions.iconSizeS,
                     color: _isItemCompleted(item)
-                        ? Colors.green
+                        ? AppColors.success
                         : AppColors.textMedium,
                   ),
                   const SizedBox(width: AppDimensions.spacingS),
@@ -284,24 +284,25 @@ class ShoppingListCard extends StatelessWidget {
         vertical: AppDimensions.spacingS,
       ),
       decoration: BoxDecoration(
-        color: Colors.blue.withValues(alpha: 0.1),
+        color: AppColors.primaryBlue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
         border: Border.all(
-          color: Colors.blue.withValues(alpha: 0.3),
+          color: AppColors.primaryBlue.withValues(alpha: 0.3),
           width: AppDimensions.borderWidthThin,
         ),
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.people,
             size: AppDimensions.iconSizeS,
-            color: Colors.blue[700],
+            color: AppColors.primaryBlue,
           ),
           const SizedBox(width: AppDimensions.spacingS),
           Text(
             memberCount > 0 ? 'Delad med $memberCount personer' : 'Delad lista',
-            style: AppTextStyles.bodySmall.copyWith(color: Colors.blue[700]),
+            style:
+                AppTextStyles.bodySmall.copyWith(color: AppColors.primaryBlue),
           ),
         ],
       ),
@@ -318,13 +319,13 @@ class ShoppingListCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingXs),
       decoration: const BoxDecoration(
-        color: Colors.blue,
+        color: AppColors.primaryBlue,
         shape: BoxShape.circle,
       ),
       child: const Icon(
         Icons.people,
         size: AppDimensions.iconSizeS,
-        color: Colors.white,
+        color: AppColors.cardWhite,
       ),
     );
   }
@@ -346,7 +347,9 @@ class ShoppingListCard extends StatelessWidget {
         vertical: AppDimensions.spacingXs,
       ),
       decoration: BoxDecoration(
-        color: isComplete ? Colors.green.shade100 : Colors.orange.shade100,
+        color: isComplete
+            ? AppColors.success.withValues(alpha: 0.15)
+            : AppColors.warning.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusS),
       ),
       child: Row(
@@ -355,13 +358,13 @@ class ShoppingListCard extends StatelessWidget {
           Icon(
             isComplete ? Icons.check_circle : Icons.hourglass_empty,
             size: AppDimensions.iconSizeS,
-            color: isComplete ? Colors.green[700] : Colors.orange[700],
+            color: isComplete ? AppColors.success : AppColors.warning,
           ),
           const SizedBox(width: AppDimensions.spacingXs),
           Text(
             isComplete ? 'Klar' : '${(completionPercentage * 100).round()}%',
             style: AppTextStyles.labelSmall.copyWith(
-              color: isComplete ? Colors.green[700] : Colors.orange[700],
+              color: isComplete ? AppColors.success : AppColors.warning,
             ),
           ),
         ],

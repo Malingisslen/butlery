@@ -114,6 +114,8 @@
 /// handling and recovery mechanisms for production-grade startup reliability and monitoring.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
@@ -161,12 +163,21 @@ class ApplicationBootstrap {
   final Map<Type, BootstrapStage> _stagesByType = {};
   bool _isInitialized = false;
   bool _initializationInProgress = false;
+  Completer<void>? _initCompleter;
 
   /// Whether the bootstrap process has completed successfully.
   bool get isInitialized => _isInitialized;
 
   /// Whether initialization is currently in progress.
   bool get isInitializing => _initializationInProgress;
+
+  /// Future that completes when initialization is done.
+  /// Use this instead of polling isInitialized.
+  Future<void> get initialized {
+    if (_isInitialized) return Future.value();
+    _initCompleter ??= Completer<void>();
+    return _initCompleter!.future;
+  }
 
   /// Get the DI container instance.
   DIContainer get container => _diContainer;
@@ -291,11 +302,21 @@ class ApplicationBootstrap {
       _isInitialized = true;
       _initializationInProgress = false;
 
+      // Signal completion to any waiters
+      if (_initCompleter != null && !_initCompleter!.isCompleted) {
+        _initCompleter!.complete();
+      }
+
       if (kDebugMode) {
         AppLogger.info('✅ Modular system initialized successfully');
       }
     } catch (e) {
       _initializationInProgress = false;
+
+      // Signal error to any waiters
+      if (_initCompleter != null && !_initCompleter!.isCompleted) {
+        _initCompleter!.completeError(e);
+      }
 
       if (kDebugMode) {
         AppLogger.error('❌ Application bootstrap failed: $e');
@@ -446,6 +467,7 @@ class ApplicationBootstrap {
     _stagesByType.clear();
     _isInitialized = false;
     _initializationInProgress = false;
+    _initCompleter = null;
 
     if (kDebugMode) {
       AppLogger.info('🔄 ApplicationBootstrap reset complete');

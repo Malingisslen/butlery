@@ -1,6 +1,8 @@
 // test/widget/common/input/shopping_list_actions_test.dart
 // Comprehensive tests for ShoppingListActions using ultrathink methodology
 
+// ignore_for_file: deprecated_member_use_from_same_package
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';

@@ -84,7 +84,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
         if (viewModel.isDeleting) {
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Deleting Recipe...'),
+              title: const Text('Tar bort recept...'),
               backgroundColor: AppColors.backgroundBeige,
             ),
             backgroundColor: AppColors.backgroundBeige,
@@ -141,13 +141,13 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           onTap: () => _showFullscreenImage(
                               context, recipe.imageUrls, 0),
                           child: DecoratedBox(
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
                                   AppColors.transparent,
-                                  Colors.black26,
+                                  AppColors.textDark.withValues(alpha: 0.26),
                                 ],
                               ),
                             ),
@@ -216,7 +216,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                             children: [
                               Icon(Icons.edit, size: AppDimensions.iconSizeM),
                               SizedBox(width: AppDimensions.spacingM),
-                              Text('Edit Recipe'),
+                              Text('Redigera recept'),
                             ],
                           ),
                         ),
@@ -227,7 +227,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                               Icon(Icons.content_copy,
                                   size: AppDimensions.iconSizeM),
                               SizedBox(width: AppDimensions.spacingM),
-                              Text('Make Copy'),
+                              Text('Skapa kopia'),
                             ],
                           ),
                         ),

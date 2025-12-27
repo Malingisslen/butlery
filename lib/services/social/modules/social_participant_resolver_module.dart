@@ -2,6 +2,7 @@
 
 import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/models/shared_content_member.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -11,8 +12,7 @@ import 'package:butlery/core/utils/logger.dart';
 
 /// Module handling participant resolution for shared content.
 /// Provides participant lookup and profile resolution for recipes, menus, and shopping lists.
-/// Note (Issue #014): Updated to use Phase 1 repositories for member tracking via
-/// Firestore subcollections instead of model arrays.
+/// Note (V1-QP-001): Uses denormalized member info from subcollection to avoid N+1 queries.
 class SocialParticipantResolverModule {
   final UserService userService;
   final UnifiedShoppingService? shoppingService;
@@ -30,41 +30,76 @@ class SocialParticipantResolverModule {
     this.shoppingService,
   });
 
-  /// Get recipe participants
-  /// Note (Issue #014): Uses repository.getMembers() to fetch participants from
-  /// Firestore subcollection instead of model's sharedToUserIds array.
+  /// Get recipe participants using denormalized member info (avoids N+1 lookups)
+  /// Returns UserProfile objects created from denormalized data in member subcollection.
   Future<List<UserProfile>> getRecipeParticipants(String recipeId) async {
     try {
       final recipe =
           getSharedRecipes().where((r) => r.id == recipeId).firstOrNull;
       if (recipe == null) return [];
 
-      // Fetch members from Firestore subcollection
-      final memberIds = await sharedRecipeRepository.getMembers(recipeId);
-      final participantIds = [recipe.sharedByUserId, ...memberIds];
-      return await userService.getUserProfiles(participantIds);
+      // Fast path: use denormalized member info from subcollection
+      final members = await sharedRecipeRepository.getMembersWithInfo(recipeId);
+      return _buildParticipantList(
+        ownerId: recipe.sharedByUserId,
+        ownerDisplayName: recipe.sharedByDisplayName,
+        members: members,
+      );
     } catch (e) {
       AppLogger.error('Failed to get recipe participants', e);
       return [];
     }
   }
 
-  /// Get menu participants
-  /// Note (Issue #014): Uses repository.getMembers() to fetch participants from
-  /// Firestore subcollection instead of model's sharedToUserIds array.
+  /// Get menu participants using denormalized member info (avoids N+1 lookups)
   Future<List<UserProfile>> getMenuParticipants(String menuId) async {
     try {
       final menu = getSharedMenus().where((m) => m.id == menuId).firstOrNull;
       if (menu == null) return [];
 
-      // Fetch members from Firestore subcollection
-      final memberIds = await sharedMenuRepository.getMembers(menuId);
-      final participantIds = [menu.sharedByUserId, ...memberIds];
-      return await userService.getUserProfiles(participantIds);
+      // Fast path: use denormalized member info from subcollection
+      final members = await sharedMenuRepository.getMembersWithInfo(menuId);
+      return _buildParticipantList(
+        ownerId: menu.sharedByUserId,
+        ownerDisplayName: menu.sharedByDisplayName,
+        members: members,
+      );
     } catch (e) {
       AppLogger.error('Failed to get menu participants', e);
       return [];
     }
+  }
+
+  /// Build participant list from owner + denormalized members
+  List<UserProfile> _buildParticipantList({
+    required String ownerId,
+    required String ownerDisplayName,
+    required List<SharedContentMember> members,
+  }) {
+    final participants = <UserProfile>[];
+
+    // Add owner as first participant
+    participants.add(UserProfile(
+      uid: ownerId,
+      displayName: ownerDisplayName,
+      email: '',
+      joinedAt: DateTime.now(),
+      lastActiveAt: DateTime.now(),
+    ));
+
+    // Add members from denormalized data (no additional fetches needed)
+    for (final member in members) {
+      participants.add(UserProfile(
+        uid: member.userId,
+        displayName: member.displayName,
+        avatarUrl: member.avatarUrl,
+        email: '',
+        joinedAt: member.addedAt,
+        lastActiveAt: member.addedAt,
+      ));
+    }
+
+    return participants;
   }
 
   /// Get shopping list participants

@@ -3,7 +3,6 @@
 /// sharing, messaging, and collaborative features.
 library;
 
-import 'package:flutter/foundation.dart';
 import 'package:butlery/core/bootstrap/stages/bootstrap_stage.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
 import 'package:butlery/core/di/modules/content_module.dart';
@@ -47,18 +46,9 @@ class SocialStage implements BootstrapStage {
     try {
       // Social module initialization is handled by the DI container
       // This stage can perform any additional social-specific setup
-
-      // Allow time for social services to fully initialize
-      await Future.delayed(const Duration(milliseconds: 300));
-
-      if (kDebugMode) {
-        debugPrint('✅ [SocialStage] Social services ready');
-      }
+      // Note: Removed 300ms delay - DI container handles initialization properly
     } catch (e) {
       if (isOptional) {
-        if (kDebugMode) {
-          debugPrint('⚠️ [SocialStage] Optional stage failed, continuing: $e');
-        }
         return; // Don't throw for optional stages
       }
 
@@ -79,10 +69,6 @@ class SocialStage implements BootstrapStage {
 
       return true;
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ [SocialStage] Validation failed: $e');
-      }
-
       // Return true for optional stages to allow app to continue
       return isOptional;
     }

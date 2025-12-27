@@ -101,6 +101,9 @@ class FirebaseSharedShoppingRepository
   String get contentTypeName => 'shopping_list';
 
   @override
+  String get counterTypeKey => 'shared_shopping_lists';
+
+  @override
   String get resourceType => 'shared_shopping_list';
 
   @override

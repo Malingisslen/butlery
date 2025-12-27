@@ -439,12 +439,5 @@ void main() {
         expect(result.type, equals(ContentType.recipeText));
       });
     });
-
-    group('Debug Functionality', () {
-      test('should have debug patterns method', () {
-        // Act & Assert
-        expect(() => service.debugPatterns(), returnsNormally);
-      });
-    });
   });
 }

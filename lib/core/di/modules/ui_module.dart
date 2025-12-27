@@ -4,7 +4,6 @@
 /// comprehensively to avoid runtime registration errors.
 library;
 
-import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 
 // Core interfaces
@@ -128,10 +127,6 @@ class UIModule implements DIModule {
 
   @override
   Future<void> configure(GetIt container) async {
-    if (kDebugMode) {
-      debugPrint('🔧 [UIModule] Configuring ViewModels...');
-    }
-
     try {
       // Auth ViewModel - Auth service dependency
       container.registerFactory<AuthViewModel>(
@@ -297,11 +292,6 @@ class UIModule implements DIModule {
       container.registerFactory<DiscoveryDashboardViewModel>(
         () => DiscoveryDashboardViewModel(),
       );
-
-      if (kDebugMode) {
-        debugPrint(
-            '✅ [UIModule] Configured 23 ViewModels (Auth, Profile, Recipe, Menu, Shopping, Social, Import)');
-      }
     } catch (e) {
       throw DIModuleException(
         name,
@@ -336,18 +326,12 @@ class UIModule implements DIModule {
 
       for (final type in viewModelTypes) {
         if (!container.isRegistered(type: type)) {
-          if (kDebugMode) {
-            debugPrint('❌ [UIModule] ViewModel $type is not registered');
-          }
           return false;
         }
       }
 
       return true;
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ [UIModule] Health check failed: $e');
-      }
       return false;
     }
   }

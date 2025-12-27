@@ -53,7 +53,7 @@ class GroupShoppingListSelectionDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Avbryt', style: AppTextStyles.labelLarge),
+          child: Text('Avbryt', style: AppTextStyles.labelLarge),
         ),
       ],
     );

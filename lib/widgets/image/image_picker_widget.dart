@@ -291,7 +291,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
               child: const Icon(
                 Icons.close,
                 size: AppDimensions.iconSizeS,
-                color: Colors.white,
+                color: AppColors.cardWhite,
               ),
             ),
           ),

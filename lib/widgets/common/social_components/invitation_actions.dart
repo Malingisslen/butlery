@@ -44,9 +44,9 @@ class InvitationActions {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: Colors.blue.withValues(alpha: 0.1),
+        color: AppColors.primaryBlue.withValues(alpha: 0.1),
         border: Border(
-          top: BorderSide(color: Colors.blue.withValues(alpha: 0.3)),
+          top: BorderSide(color: AppColors.primaryBlue.withValues(alpha: 0.3)),
         ),
       ),
       child: Row(
@@ -181,9 +181,9 @@ class InvitationActions {
           if (showRemove && onBulkRemove != null)
             TextButton.icon(
               onPressed: onBulkRemove,
-              icon: const Icon(Icons.delete, color: Colors.red),
+              icon: const Icon(Icons.delete, color: AppColors.error),
               label: Text(removeText ?? 'Ta bort'),
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
             ),
           if (showExport && onBulkExport != null)
             TextButton.icon(
@@ -271,7 +271,7 @@ class InvitationActions {
             onConfirm();
           },
           style: isDangerous
-              ? ElevatedButton.styleFrom(backgroundColor: Colors.red)
+              ? ElevatedButton.styleFrom(backgroundColor: AppColors.error)
               : null,
           child: Text(confirmText ?? 'Fortsätt'),
         ),
@@ -341,12 +341,12 @@ class InvitationActions {
             value: 'remove',
             child: Builder(
               builder: (context) => ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
+                leading: const Icon(Icons.delete, color: AppColors.error),
                 title: Text('Ta bort',
                     style: Theme.of(context)
                         .textTheme
                         .bodyMedium
-                        ?.copyWith(color: Colors.red)),
+                        ?.copyWith(color: AppColors.error)),
                 dense: true,
               ),
             ),
@@ -366,16 +366,16 @@ class InvitationActions {
     Widget? rightAction,
     String? leftLabel = 'Ta bort',
     String? rightLabel = 'Inbjud',
-    Color? leftColor = Colors.red,
-    Color? rightColor = Colors.blue,
+    Color? leftColor = AppColors.error,
+    Color? rightColor = AppColors.primaryBlue,
   }) {
     return Dismissible(
       key: UniqueKey(),
       background: leftAction ??
           Container(
             color: leftColor,
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(left: 20),
+            alignment: AlignmentDirectional.centerStart,
+            padding: const EdgeInsetsDirectional.only(start: 20),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -394,8 +394,8 @@ class InvitationActions {
       secondaryBackground: rightAction ??
           Container(
             color: rightColor,
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: 20),
+            alignment: AlignmentDirectional.centerEnd,
+            padding: const EdgeInsetsDirectional.only(end: 20),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

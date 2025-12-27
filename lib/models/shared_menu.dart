@@ -2,7 +2,6 @@ import 'package:butlery/models/shared_content/base_shared_content_model.dart';
 import 'package:butlery/models/shared_content/shared_content_status_mixin.dart';
 import 'package:butlery/models/shared_content/copy_on_write_mixin.dart';
 import 'package:uuid/uuid.dart';
-import 'package:flutter/foundation.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/types/app_timestamp.dart';
 import 'package:butlery/core/utils/serialization_utils.dart' as utils;
@@ -341,9 +340,6 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
             );
             recipeList.add(recipe);
           } catch (e) {
-            if (kDebugMode) {
-              debugPrint('⚠️ Skippar ogiltigt recept i meny: $e');
-            }
             continue;
           }
         }
@@ -378,11 +374,7 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
             cowFields['originalOwnerStaticCopyId'] as String?,
         activeCollaboratorCount: cowFields['activeCollaboratorCount'] as int,
       );
-    } catch (e, stackTrace) {
-      if (kDebugMode) {
-        debugPrint('❌ Error parsing SharedMenu från doc $id: $e');
-        debugPrint('❌ Stack trace: $stackTrace');
-      }
+    } catch (e) {
       rethrow;
     }
   }

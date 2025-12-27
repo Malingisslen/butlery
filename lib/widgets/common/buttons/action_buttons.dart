@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/buttons/animated_pressable.dart';
 
 /// ActionButtons - Utility action buttons with loading support
 /// Provides consistent button styling and loading states for the app.
@@ -17,6 +18,7 @@ class ActionButtons {
     String? loadingText,
     ActionButtonStyle style = ActionButtonStyle.primary,
     bool isExpanded = false,
+    bool enablePressAnimation = true,
   }) {
     final effectiveOnPressed = isLoading ? null : onPressed;
     final effectiveLabel = isLoading ? (loadingText ?? 'Laddar...') : label;
@@ -29,7 +31,7 @@ class ActionButtons {
         children: [
           if (isLoading)
             const Padding(
-              padding: EdgeInsets.only(right: AppDimensions.spacingS),
+              padding: EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
               child: SizedBox(
                 width: AppDimensions.iconSizeS,
                 height: AppDimensions.iconSizeS,
@@ -40,7 +42,8 @@ class ActionButtons {
             )
           else if (icon != null)
             Padding(
-              padding: const EdgeInsets.only(right: AppDimensions.spacingS),
+              padding:
+                  const EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
               child: Icon(icon),
             ),
           Flexible(
@@ -77,12 +80,25 @@ class ActionButtons {
         break;
     }
 
-    return isExpanded
-        ? SizedBox(width: double.infinity, child: button)
-        : ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 200),
-            child: button,
-          );
+    final semanticLabel = isLoading ? '$label, laddar' : label;
+
+    final result = Semantics(
+      label: semanticLabel,
+      button: true,
+      enabled: effectiveOnPressed != null,
+      child: isExpanded
+          ? SizedBox(width: double.infinity, child: button)
+          : ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 200),
+              child: button,
+            ),
+    );
+
+    if (!enablePressAnimation || isLoading) return result;
+    return AnimatedPressable(
+      enabled: effectiveOnPressed != null,
+      child: result,
+    );
   }
 
   /// Primary action button convenience method
@@ -94,6 +110,7 @@ class ActionButtons {
     bool isLoading = false,
     String? loadingText,
     bool isExpanded = false,
+    bool enablePressAnimation = true,
   }) {
     return actionButton(
       context,
@@ -104,6 +121,7 @@ class ActionButtons {
       loadingText: loadingText,
       style: ActionButtonStyle.primary,
       isExpanded: isExpanded,
+      enablePressAnimation: enablePressAnimation,
     );
   }
 
@@ -115,35 +133,49 @@ class ActionButtons {
     required VoidCallback onPressed,
     bool isLoading = false,
     String? loadingText,
+    bool enablePressAnimation = true,
   }) {
-    return AspectRatio(
-      aspectRatio: 1.0, // Perfect square
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (isLoading)
-              const SizedBox(
-                width: AppDimensions.iconSizeM,
-                height: AppDimensions.iconSizeM,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppColors.onPrimary,
-                ),
-              )
-            else
-              Icon(icon, size: AppDimensions.iconSizeXl),
-            const SizedBox(height: AppDimensions.spacingSm),
-            Text(
-              isLoading ? (loadingText ?? 'Laddar...') : label,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+    final semanticLabel = isLoading ? '$label, laddar' : label;
+
+    final result = Semantics(
+      label: semanticLabel,
+      button: true,
+      enabled: !isLoading,
+      child: AspectRatio(
+        aspectRatio: 1.0, // Perfect square
+        child: ElevatedButton(
+          onPressed: isLoading ? null : onPressed,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (isLoading)
+                const SizedBox(
+                  width: AppDimensions.iconSizeM,
+                  height: AppDimensions.iconSizeM,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.onPrimary,
+                  ),
+                )
+              else
+                Icon(icon, size: AppDimensions.iconSizeXl),
+              const SizedBox(height: AppDimensions.spacingSm),
+              Text(
+                isLoading ? (loadingText ?? 'Laddar...') : label,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
+    );
+
+    if (!enablePressAnimation || isLoading) return result;
+    return AnimatedPressable(
+      enabled: true,
+      child: result,
     );
   }
 
@@ -157,35 +189,47 @@ class ActionButtons {
     String? loadingText,
     double height = 100, // Slightly increased height
     EdgeInsets? margin,
+    bool enablePressAnimation = true,
   }) {
-    final Widget button = SizedBox(
-      height: height,
-      child: ElevatedButton.icon(
-        onPressed: isLoading ? null : onPressed,
-        icon: isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppColors.onPrimary,
-                ),
-              )
-            : Icon(icon,
-                size: AppDimensions.iconSizeXl, color: AppColors.onPrimary),
-        label: Text(
-          isLoading ? (loadingText ?? 'Laddar...') : label,
-          style: AppTextStyles.labelLarge.copyWith(
-            color: AppColors.onPrimary,
+    final semanticLabel = isLoading ? '$label, laddar' : label;
+
+    final Widget button = Semantics(
+      label: semanticLabel,
+      button: true,
+      enabled: !isLoading,
+      child: SizedBox(
+        height: height,
+        child: ElevatedButton.icon(
+          onPressed: isLoading ? null : onPressed,
+          icon: isLoading
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.onPrimary,
+                  ),
+                )
+              : Icon(icon,
+                  size: AppDimensions.iconSizeXl, color: AppColors.onPrimary),
+          label: Text(
+            isLoading ? (loadingText ?? 'Laddar...') : label,
+            style: AppTextStyles.labelLarge.copyWith(
+              color: AppColors.onPrimary,
+            ),
           ),
         ),
       ),
     );
 
-    if (margin != null) {
-      return Padding(padding: margin, child: button);
-    }
-    return button;
+    final Widget result =
+        margin != null ? Padding(padding: margin, child: button) : button;
+
+    if (!enablePressAnimation || isLoading) return result;
+    return AnimatedPressable(
+      enabled: true,
+      child: result,
+    );
   }
 
   /// Secondary action button convenience method
@@ -197,6 +241,7 @@ class ActionButtons {
     bool isLoading = false,
     String? loadingText,
     bool isExpanded = false,
+    bool enablePressAnimation = true,
   }) {
     return actionButton(
       context,
@@ -207,6 +252,7 @@ class ActionButtons {
       loadingText: loadingText,
       style: ActionButtonStyle.secondary,
       isExpanded: isExpanded,
+      enablePressAnimation: enablePressAnimation,
     );
   }
 
@@ -219,6 +265,7 @@ class ActionButtons {
     bool isLoading = false,
     String? loadingText,
     bool isExpanded = false,
+    bool enablePressAnimation = true,
   }) {
     return actionButton(
       context,
@@ -229,6 +276,7 @@ class ActionButtons {
       loadingText: loadingText,
       style: ActionButtonStyle.outlined,
       isExpanded: isExpanded,
+      enablePressAnimation: enablePressAnimation,
     );
   }
 
@@ -242,6 +290,7 @@ class ActionButtons {
     String? loadingText,
     bool isExpanded = false,
     ButtonStyle? style,
+    bool enablePressAnimation = true,
   }) {
     final effectiveOnPressed = isLoading ? null : onPressed;
     final effectiveLabel = isLoading ? (loadingText ?? 'Laddar...') : label;
@@ -254,7 +303,7 @@ class ActionButtons {
         children: [
           if (isLoading)
             const Padding(
-              padding: EdgeInsets.only(right: AppDimensions.spacingS),
+              padding: EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
               child: SizedBox(
                 width: AppDimensions.iconSizeS,
                 height: AppDimensions.iconSizeS,
@@ -265,7 +314,8 @@ class ActionButtons {
             )
           else if (icon != null)
             Padding(
-              padding: const EdgeInsets.only(right: AppDimensions.spacingS),
+              padding:
+                  const EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
               child: Icon(icon),
             ),
           Flexible(
@@ -286,9 +336,21 @@ class ActionButtons {
       child: buttonChild,
     );
 
-    return isExpanded
-        ? SizedBox(width: double.infinity, child: button)
-        : button;
+    final semanticLabel = isLoading ? '$label, laddar' : label;
+
+    final result = Semantics(
+      label: semanticLabel,
+      button: true,
+      enabled: effectiveOnPressed != null,
+      child:
+          isExpanded ? SizedBox(width: double.infinity, child: button) : button,
+    );
+
+    if (!enablePressAnimation || isLoading) return result;
+    return AnimatedPressable(
+      enabled: effectiveOnPressed != null,
+      child: result,
+    );
   }
 
   /// Cancel button that pops the current context.
@@ -313,29 +375,50 @@ class FloatingActionButtonWidget extends StatelessWidget {
   final Color? backgroundColor;
   final Color? foregroundColor;
 
+  /// Semantic label for screen readers. Required for accessibility.
+  final String semanticLabel;
+
+  /// Whether to show press animation feedback.
+  final bool enablePressAnimation;
+
   const FloatingActionButtonWidget({
     super.key,
     required this.onPressed,
     required this.child,
+    required this.semanticLabel,
     this.backgroundColor,
     this.foregroundColor,
+    this.enablePressAnimation = true,
   });
 
   /// Message FAB for conversations
   const FloatingActionButtonWidget.message({
     super.key,
     required this.onPressed,
+    this.enablePressAnimation = true,
   })  : child = const Icon(Icons.message),
         backgroundColor = AppColors.primaryBlue,
-        foregroundColor = AppColors.cardWhite;
+        foregroundColor = AppColors.cardWhite,
+        semanticLabel = 'Nytt meddelande';
 
   @override
   Widget build(BuildContext context) {
-    return FloatingActionButton(
-      onPressed: onPressed,
-      backgroundColor: backgroundColor ?? AppColors.primaryBlue,
-      foregroundColor: foregroundColor ?? AppColors.cardWhite,
-      child: child,
+    final result = Semantics(
+      label: semanticLabel,
+      button: true,
+      enabled: onPressed != null,
+      child: FloatingActionButton(
+        onPressed: onPressed,
+        backgroundColor: backgroundColor ?? AppColors.primaryBlue,
+        foregroundColor: foregroundColor ?? AppColors.cardWhite,
+        child: child,
+      ),
+    );
+
+    if (!enablePressAnimation) return result;
+    return AnimatedPressable(
+      enabled: onPressed != null,
+      child: result,
     );
   }
 }

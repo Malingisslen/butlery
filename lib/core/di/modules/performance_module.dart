@@ -7,7 +7,6 @@
 /// This is an optional module that enhances app performance.
 library;
 
-import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 
 // Core interfaces
@@ -20,6 +19,9 @@ import 'package:butlery/services/performance/performance_monitoring_service.dart
 import 'package:butlery/services/performance/firebase_performance_service.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
 import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/services/monitoring/app_monitoring_service.dart';
+import 'package:butlery/services/cache/permission_cache_service.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 
 // Dependencies from Core Module
 import 'package:butlery/core/di/modules/core_module.dart';
@@ -40,7 +42,9 @@ class PerformanceModule implements DIModule {
         IntelligentCacheManager,
         StartupOptimizationManager,
         PerformanceMonitoringService,
+        AppMonitoringService,
         JsonCacheHelper,
+        PermissionCacheService,
       ];
 
   @override
@@ -49,10 +53,6 @@ class PerformanceModule implements DIModule {
 
   @override
   Future<void> configure(GetIt container) async {
-    if (kDebugMode) {
-      debugPrint('🔧 [PerformanceModule] Configuring performance services...');
-    }
-
     try {
       // JSON cache helper (lazy singleton - uses CacheDao from OfflineService)
       container.registerLazySingleton<JsonCacheHelper>(() {
@@ -78,10 +78,17 @@ class PerformanceModule implements DIModule {
         PerformanceMonitoringService(),
       );
 
-      if (kDebugMode) {
-        debugPrint(
-            '✅ [PerformanceModule] Configured 4 performance services (JSON Cache, Intelligent Cache, Startup, Monitoring)');
-      }
+      // App monitoring service for alerting integration (singleton)
+      container.registerSingleton<AppMonitoringService>(
+        AppMonitoringService(),
+      );
+
+      // Permission cache service (lazy singleton - requires FeatureFlagService)
+      container.registerLazySingleton<PermissionCacheService>(
+        () => PermissionCacheService(
+          featureFlags: container<FeatureFlagService>(),
+        ),
+      );
     } catch (e) {
       throw DIModuleException(
         name,
@@ -103,10 +110,6 @@ class PerformanceModule implements DIModule {
 
       // Initialize Firebase Performance (enabled by default)
       await FirebasePerformanceService.setPerformanceCollectionEnabled(true);
-
-      if (kDebugMode) {
-        debugPrint('✅ [PerformanceModule] Firebase Performance initialized');
-      }
 
       // Note: IntelligentCacheManager is lazy and will initialize on first use
       // StartupOptimizationManager is initialized early in main.dart
@@ -132,23 +135,19 @@ class PerformanceModule implements DIModule {
         'StartupOptimizationManager': container<StartupOptimizationManager>(),
         'PerformanceMonitoringService':
             container<PerformanceMonitoringService>(),
+        'AppMonitoringService': container<AppMonitoringService>(),
+        'PermissionCacheService': container<PermissionCacheService>(),
       };
 
       // Basic validation - services are not null
       for (final entry in services.entries) {
         if (entry.value == null) {
-          if (kDebugMode) {
-            debugPrint('❌ [PerformanceModule] Service ${entry.key} is null');
-          }
           return false;
         }
       }
 
       return true;
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ [PerformanceModule] Health check failed: $e');
-      }
       return false;
     }
   }

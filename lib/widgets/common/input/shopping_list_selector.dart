@@ -111,7 +111,7 @@ class _ShoppingListSelectorState extends State<ShoppingListSelector> {
           color: AppColors.primaryBlue,
         ),
         const SizedBox(width: AppDimensions.spacingM),
-        const Expanded(
+        Expanded(
           child: Text(
             'Inköpslistor',
             style: AppTextStyles.headlineSmall,

@@ -30,7 +30,7 @@ class SocialBuilders {
       label: Text(label),
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor ?? AppColors.primaryBlue,
-        foregroundColor: foregroundColor ?? Colors.white,
+        foregroundColor: foregroundColor ?? AppColors.cardWhite,
         padding:
             padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),

@@ -153,7 +153,8 @@ class SharedMenuCard {
           Container(
             width: 8,
             height: 8,
-            margin: const EdgeInsets.only(left: AppDimensions.spacingXs),
+            margin: const EdgeInsetsDirectional.only(
+                start: AppDimensions.spacingXs),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
               shape: BoxShape.circle,

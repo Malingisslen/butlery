@@ -290,10 +290,10 @@ class GroupContentViewModel extends ChangeNotifier
 
     final lowerQuery = query.toLowerCase();
     return recipes.where((recipe) {
-      return recipe.recipeSnapshot.title.toLowerCase().contains(lowerQuery) ||
-          (recipe.recipeSnapshot.description
-              .toLowerCase()
-              .contains(lowerQuery)) ||
+      // Use denormalized fields for V2 efficiency
+      return recipe.recipeTitle.toLowerCase().contains(lowerQuery) ||
+          (recipe.recipeDescription?.toLowerCase().contains(lowerQuery) ??
+              false) ||
           (recipe.sharedByDisplayName.toLowerCase().contains(lowerQuery));
     }).toList();
   }
@@ -355,6 +355,15 @@ class GroupContentViewModel extends ChangeNotifier
         type: RecipeType.shared,
       );
 
+      // V2 denormalized metadata for efficient list display
+      final recipeTitle =
+          (content.metadata['title'] as String?).orDefault('Namnlöst recept');
+      final recipeImageUrl = content.metadata['imageUrl'] as String?;
+      final recipePortions = content.metadata['portions'] as int?;
+      final recipeTimeMinutes = content.metadata['timeMinutes'] as int?;
+      final recipeDescription =
+          (content.metadata['description'] as String?).orEmpty();
+
       // Note (Issue #014): Array parameters removed, now tracked in Firestore subcollections
       return SharedRecipe(
         id: content.id,
@@ -365,6 +374,13 @@ class GroupContentViewModel extends ChangeNotifier
         sharedAt: content.sharedAt,
         shareMessage: content.metadata['shareMessage'] as String?,
         allowImport: true,
+        // V2 denormalized fields
+        recipeTitle: recipeTitle,
+        recipeImageUrl: recipeImageUrl,
+        recipePortions: recipePortions,
+        recipeTimeMinutes: recipeTimeMinutes,
+        recipeDescription: recipeDescription,
+        // V1 backward compatibility
         recipeSnapshot: recipeSnapshot,
       );
     } catch (e) {

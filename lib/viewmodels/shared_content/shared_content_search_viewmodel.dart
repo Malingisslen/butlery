@@ -309,8 +309,8 @@ class SharedContentSearchViewModel extends ChangeNotifier {
             _searchQuery,
             (SharedRecipe r) => SearchResult(
                   id: r.id,
-                  title: r.recipeSnapshot.title,
-                  description: r.recipeSnapshot.description,
+                  title: r.recipeTitle,
+                  description: r.recipeDescription ?? '',
                   contentType: ContentType.recipes,
                   sharedAt: r.sharedAt,
                   sharedByDisplayName: r.sharedByDisplayName,
@@ -458,18 +458,27 @@ class SharedContentSearchViewModel extends ChangeNotifier {
 
   /// Calculate relevance score for recipe search results
   double _calculateRecipeRelevance(SharedRecipe recipe, String query) {
-    return _scoreTitleMatch(recipe.recipeSnapshot.title, query) +
-        (recipe.recipeSnapshot.description
-                .toLowerCase()
-                .contains(query.toLowerCase())
+    final lowerQuery = query.toLowerCase();
+
+    // Use denormalized fields for V2 efficiency
+    double score = _scoreTitleMatch(recipe.recipeTitle, query);
+    score +=
+        (recipe.recipeDescription?.toLowerCase().contains(lowerQuery) ?? false)
             ? 5.0
-            : 0.0) +
-        recipe.recipeSnapshot.ingredients
-                .where((i) => i.toLowerCase().contains(query.toLowerCase()))
-                .length *
-            3.0 +
-        _sharedByNameScore(recipe.sharedByDisplayName, query) +
-        _recencyBonus(recipe.sharedAt);
+            : 0.0;
+
+    // If full snapshot available, search ingredients
+    if (recipe.hasFullSnapshot) {
+      score += recipe.recipeSnapshot!.ingredients
+              .where((i) => i.toLowerCase().contains(lowerQuery))
+              .length *
+          3.0;
+    }
+
+    score += _sharedByNameScore(recipe.sharedByDisplayName, query);
+    score += _recencyBonus(recipe.sharedAt);
+
+    return score;
   }
 
   /// Calculate relevance score for menu search results

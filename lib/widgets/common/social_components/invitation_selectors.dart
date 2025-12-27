@@ -328,9 +328,9 @@ class InvitationSelectors {
     return Container(
       padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
       decoration: BoxDecoration(
-        color: Colors.blue.withValues(alpha: 0.1),
+        color: AppColors.primaryBlue.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppDimensions.borderRadius8),
-        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.primaryBlue.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -369,7 +369,7 @@ class InvitationSelectors {
                   onDeleted: onRemoveTarget != null
                       ? () => onRemoveTarget(target)
                       : null,
-                  backgroundColor: Colors.blue.withValues(alpha: 0.1),
+                  backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
                 );
               }).toList(),
             ),
@@ -455,7 +455,7 @@ class _RadioTargetSelectorState extends State<_RadioTargetSelector> {
                 ? const Icon(
                     Icons.check,
                     size: 14,
-                    color: Colors.white,
+                    color: AppColors.cardWhite,
                   )
                 : null,
           ),

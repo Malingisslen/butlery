@@ -24,7 +24,8 @@ class SharedContentAppBar {
         // Notification badge med unread count
         if (viewModel.totalUnreadCount > 0)
           Container(
-            margin: const EdgeInsets.only(right: AppDimensions.spacingS),
+            margin:
+                const EdgeInsetsDirectional.only(end: AppDimensions.spacingS),
             child: Stack(
               children: [
                 IconButton(

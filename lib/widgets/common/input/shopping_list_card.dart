@@ -180,7 +180,7 @@ class ShoppingListCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Senaste artiklar:',
             style: AppTextStyles.bodySmall,
           ),
@@ -385,7 +385,7 @@ class ShoppingListEmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          const Text(
+          Text(
             'Skapa din första handlista för att komma igång',
             style: AppTextStyles.titleMedium,
             textAlign: TextAlign.center,

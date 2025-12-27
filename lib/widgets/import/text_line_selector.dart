@@ -5,6 +5,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 /// Selection mode for the text line selector.
 enum SelectionMode {
@@ -188,7 +189,7 @@ class TextLineSelector extends StatelessWidget {
 
   Color _getModeColor(ColorScheme colorScheme) {
     return mode == SelectionMode.ingredients
-        ? Colors.green.shade600
+        ? AppColors.success
         : colorScheme.primary;
   }
 }
@@ -219,8 +220,9 @@ class _LineItem extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     // Determine colors based on state
-    final modeColor =
-        mode == SelectionMode.ingredients ? Colors.green : colorScheme.primary;
+    final modeColor = mode == SelectionMode.ingredients
+        ? AppColors.success
+        : colorScheme.primary;
 
     Color backgroundColor;
     Color borderColor;
@@ -235,7 +237,7 @@ class _LineItem extends StatelessWidget {
       borderColor = modeColor.withValues(alpha: 0.5);
       borderStyle = BorderStyle.solid;
     } else {
-      backgroundColor = Colors.transparent;
+      backgroundColor = AppColors.transparent;
       borderColor = colorScheme.outlineVariant;
       borderStyle = BorderStyle.none;
     }
@@ -266,7 +268,7 @@ class _LineItem extends StatelessWidget {
                   height: 24,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isSelected ? modeColor : Colors.transparent,
+                    color: isSelected ? modeColor : AppColors.transparent,
                     border: Border.all(
                       color: isSelected
                           ? modeColor

@@ -156,7 +156,7 @@ class _SourceOption extends StatelessWidget {
 Future<ImageSource?> showImagePickerDialog(BuildContext context) async {
   return await showModalBottomSheet<ImageSource>(
     context: context,
-    backgroundColor: Colors.transparent,
+    backgroundColor: AppColors.transparent,
     isScrollControlled: true,
     builder: (context) => const ImagePickerDialog(),
   );

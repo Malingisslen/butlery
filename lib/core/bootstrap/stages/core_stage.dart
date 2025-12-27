@@ -4,9 +4,12 @@
 /// foundational services that other modules depend on.
 library;
 
-import 'package:flutter/foundation.dart';
 import 'package:butlery/core/bootstrap/stages/bootstrap_stage.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
+import 'package:butlery/services/device_integrity_service.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:get_it/get_it.dart';
 
 /// Core stage for essential service initialization.
 /// This stage ensures that all foundational services are properly
@@ -38,12 +41,24 @@ class CoreStage implements BootstrapStage {
       // Core module initialization is handled by the DI container
       // This stage validates that core services are ready
 
+      // Initialize feature flags first - other services may depend on them
+      final featureFlagService = GetIt.instance<FeatureFlagService>();
+      await featureFlagService.initialize();
+
+      // Initialize device integrity service and perform security check
+      final integrityService = GetIt.instance<DeviceIntegrityService>();
+      await integrityService.initialize();
+
+      final status = await integrityService.getStatus();
+      if (status.isCompromised) {
+        AppLogger.warning(
+          'SECURITY: Device appears to be rooted/jailbroken. '
+          'User will be warned about security risks.',
+        );
+      }
+
       // Basic validation that we can proceed
       await Future.delayed(const Duration(milliseconds: 100));
-
-      if (kDebugMode) {
-        debugPrint('✅ [CoreStage] Core services ready');
-      }
     } catch (e) {
       throw BootstrapException(
         name,
@@ -62,9 +77,6 @@ class CoreStage implements BootstrapStage {
 
       return true;
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ [CoreStage] Validation failed: $e');
-      }
       return false;
     }
   }

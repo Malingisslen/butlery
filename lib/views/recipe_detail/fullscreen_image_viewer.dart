@@ -57,12 +57,12 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.textDark,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: _showAppBar
-            ? Colors.black.withValues(alpha: 0.7)
-            : Colors.transparent,
+            ? AppColors.textDark.withValues(alpha: 0.7)
+            : AppColors.transparent,
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle.light,
         title: _showAppBar
@@ -102,7 +102,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
               child: Container(
                 width: double.infinity,
                 height: double.infinity,
-                color: Colors.black,
+                color: AppColors.textDark,
                 child: Center(
                   child: Image.network(
                     widget.imageUrls[index],

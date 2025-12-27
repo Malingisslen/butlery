@@ -137,7 +137,7 @@ class _ImportViaUrlViewContentState extends State<_ImportViaUrlViewContent> {
                   // Extraherad text (editable)
                   if (viewModel.hasExtractedText) ...[
                     const SizedBox(height: AppDimensions.spacingXl),
-                    const Text('Extraherad text:',
+                    Text('Extraherad text:',
                         style: AppTextStyles.headlineSmall),
                     const SizedBox(height: AppDimensions.spacingS),
                     Expanded(

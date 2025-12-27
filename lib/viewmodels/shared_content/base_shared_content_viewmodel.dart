@@ -21,7 +21,7 @@
 ///     return await _sharedRecipeRepository.getSharedRecipesForUser(currentUserId);
 ///   }
 ///   @override
-///   String getContentTitle(SharedRecipe content) => content.recipeSnapshot.title;
+///   String getContentTitle(SharedRecipe content) => content.recipeTitle;
 /// }
 /// ```
 

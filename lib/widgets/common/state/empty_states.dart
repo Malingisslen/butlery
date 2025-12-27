@@ -3,7 +3,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
-import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// EmptyStates - Empty state implementations
 /// Handles different empty state variants with appropriate icons and messages.
@@ -22,7 +23,7 @@ class EmptyStates {
     double? iconSize,
     EdgeInsets? padding,
   }) {
-    final emptyConfig = _getEmptyStateConfig(variant);
+    final emptyConfig = _getEmptyStateConfig(context, variant);
 
     return Center(
       child: Padding(
@@ -82,92 +83,95 @@ class EmptyStates {
     );
   }
 
-  static _EmptyStateConfig _getEmptyStateConfig(EmptyStateVariant? variant) {
+  static _EmptyStateConfig _getEmptyStateConfig(
+    BuildContext context,
+    EmptyStateVariant? variant,
+  ) {
+    final l10n = context.l10n;
+
     switch (variant) {
       case EmptyStateVariant.noRecipes:
-        return const _EmptyStateConfig(
-          icon: Icons.restaurant_menu,
-          title: AppStrings.noResults,
-          subtitle:
-              'Lägg till ditt första recept genom att trycka på "${AppStrings.add}"',
-          actionIcon: Icons.add,
+        return _EmptyStateConfig(
+          icon: Icons.restaurant_menu, // No SF Symbol equivalent
+          title: l10n.emptyNoResults,
+          subtitle: l10n.emptyNoRecipesSubtitle(l10n.commonAdd),
+          actionIcon: AdaptiveIcons.add,
         );
       case EmptyStateVariant.noSearchResults:
-        return const _EmptyStateConfig(
+        return _EmptyStateConfig(
           icon: Icons.search_off,
-          title: AppStrings.noResults,
-          subtitle: 'Prova att söka på något annat eller rensa sökningen',
+          title: l10n.emptyNoResults,
+          subtitle: l10n.emptyNoSearchResultsSubtitle,
           actionIcon: Icons.clear,
         );
       case EmptyStateVariant.noFriendsSearchResults:
-        return const _EmptyStateConfig(
+        return _EmptyStateConfig(
           icon: Icons.search_off,
-          title: 'Inga vänner matchade din sökning',
-          subtitle: 'Prova att söka på något annat eller rensa sökningen',
+          title: l10n.emptyNoFriendsSearchTitle,
+          subtitle: l10n.emptyNoSearchResultsSubtitle,
           actionIcon: Icons.clear,
         );
       case EmptyStateVariant.noGroupsSearchResults:
-        return const _EmptyStateConfig(
+        return _EmptyStateConfig(
           icon: Icons.search_off,
-          title: 'Inga grupper matchade din sökning',
-          subtitle: 'Prova att söka på något annat eller rensa sökningen',
+          title: l10n.emptyNoGroupsSearchTitle,
+          subtitle: l10n.emptyNoSearchResultsSubtitle,
           actionIcon: Icons.clear,
         );
       case EmptyStateVariant.noMenu:
-        return const _EmptyStateConfig(
+        return _EmptyStateConfig(
           icon: Icons.restaurant_menu,
-          title: 'Ingen meny genererad ännu',
-          subtitle: 'Skriv vad du vill ha eller tryck på knappen nedan',
+          title: l10n.emptyNoMenuTitle,
+          subtitle: l10n.emptyNoMenuSubtitle,
           actionIcon: null,
         );
       case EmptyStateVariant.noShoppingList:
-        return const _EmptyStateConfig(
-          icon: Icons.shopping_cart_outlined,
-          title: 'Ingen meny att skapa inköpslista från',
-          subtitle: 'Gå tillbaka och skapa en veckomeny först',
-          actionIcon: Icons.restaurant,
+        return _EmptyStateConfig(
+          icon: AdaptiveIcons.cartOutlined,
+          title: l10n.emptyNoShoppingListTitle,
+          subtitle: l10n.emptyNoShoppingListSubtitle,
+          actionIcon: AdaptiveIcons.restaurant,
         );
       case EmptyStateVariant.noFriends:
-        return const _EmptyStateConfig(
-          icon: Icons.people_outline,
-          title: 'Inga vänner ännu',
-          subtitle: 'Lägg till vänner för att dela recept och menyer',
-          actionIcon: Icons.person_add,
+        return _EmptyStateConfig(
+          icon: AdaptiveIcons.peopleOutlined,
+          title: l10n.emptyNoFriendsTitle,
+          subtitle: l10n.emptyNoFriendsSubtitle,
+          actionIcon: Icons.person_add, // No SF Symbol equivalent
         );
       case EmptyStateVariant.noCategories:
-        return const _EmptyStateConfig(
-          icon: Icons.category,
-          title: 'Inga kategorier skapade',
-          subtitle: 'Skapa din första kategori för att organisera dina vänner',
-          actionIcon: Icons.add,
+        return _EmptyStateConfig(
+          icon: Icons.category, // No SF Symbol equivalent
+          title: l10n.emptyNoCategoriesTitle,
+          subtitle: l10n.emptyNoCategoriesSubtitle,
+          actionIcon: AdaptiveIcons.add,
         );
       case EmptyStateVariant.noImages:
-        return const _EmptyStateConfig(
+        return _EmptyStateConfig(
           icon: Icons.image_outlined,
-          title: 'Inga bilder tillagda',
-          subtitle: 'Lägg till bilder för att göra ditt recept mer attraktivt',
+          title: l10n.emptyNoImagesTitle,
+          subtitle: l10n.emptyNoImagesSubtitle,
           actionIcon: Icons.add_a_photo,
         );
       case EmptyStateVariant.noTargets:
-        return const _EmptyStateConfig(
-          icon: Icons.group_add,
-          title: 'Inga destinationer tillgängliga',
-          subtitle:
-              'Lägg till vänner eller grupper för att kunna dela innehåll',
-          actionIcon: Icons.add,
+        return _EmptyStateConfig(
+          icon: Icons.group_add, // No SF Symbol equivalent
+          title: l10n.emptyNoTargetsTitle,
+          subtitle: l10n.emptyNoTargetsSubtitle,
+          actionIcon: AdaptiveIcons.add,
         );
       case EmptyStateVariant.noSavedMenus:
-        return const _EmptyStateConfig(
-          icon: Icons.bookmark_outline,
-          title: 'Inga sparade menyer',
-          subtitle: 'Skapa och spara menyer för att enkelt ladda dem senare',
-          actionIcon: Icons.add,
+        return _EmptyStateConfig(
+          icon: AdaptiveIcons.bookmarkOutlined,
+          title: l10n.emptyNoSavedMenusTitle,
+          subtitle: l10n.emptyNoSavedMenusSubtitle,
+          actionIcon: AdaptiveIcons.add,
         );
       case EmptyStateVariant.generic:
       default:
-        return const _EmptyStateConfig(
-          icon: Icons.info_outline,
-          title: 'Inget innehåll att visa',
+        return _EmptyStateConfig(
+          icon: AdaptiveIcons.infoOutlined,
+          title: l10n.emptyGenericTitle,
           subtitle: null,
           actionIcon: null,
         );

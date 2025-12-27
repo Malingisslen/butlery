@@ -2,6 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/services/account/export/export_pagination_helper.dart';
 
 /// Handles export of user content: recipes, menus, shopping lists.
 /// Part of GDPR Article 20 (Right to Data Portability) compliance.
@@ -16,15 +17,17 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportRecipes(String userId) async {
     try {
       final recipes = <Map<String, dynamic>>[];
+      final recipeLimit = ExportPaginationHelper.getLimitForType('recipes');
 
-      // Personal recipes in user's subcollection
-      final personalRecipes = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('recipes')
-          .get();
+      // Personal recipes in user's subcollection (paginated)
+      final personalRecipes =
+          await ExportPaginationHelper.paginatedCollectionExport(
+        collection:
+            _firestore.collection('users').doc(userId).collection('recipes'),
+        maxDocuments: recipeLimit,
+      );
 
-      for (final doc in personalRecipes.docs) {
+      for (final doc in personalRecipes) {
         recipes.add({
           'recipe_id': doc.id,
           'type': 'personal',
@@ -32,13 +35,14 @@ class ContentExportManager {
         });
       }
 
-      // Unified recipes where user is owner
-      final unifiedRecipes = await _firestore
-          .collection('recipes')
-          .where('userId', isEqualTo: userId)
-          .get();
+      // Unified recipes where user is owner (paginated)
+      final unifiedRecipes = await ExportPaginationHelper.paginatedQuery(
+        query:
+            _firestore.collection('recipes').where('userId', isEqualTo: userId),
+        maxDocuments: recipeLimit,
+      );
 
-      for (final doc in unifiedRecipes.docs) {
+      for (final doc in unifiedRecipes) {
         recipes.add({
           'recipe_id': doc.id,
           'type': 'unified',
@@ -49,6 +53,7 @@ class ContentExportManager {
       return {
         'total_count': recipes.length,
         'recipes': recipes,
+        if (recipes.length >= recipeLimit) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export recipes', e);
@@ -60,28 +65,32 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportMenus(String userId) async {
     try {
       final menus = <Map<String, dynamic>>[];
+      final menuLimit = ExportPaginationHelper.getLimitForType('menus');
 
-      // Get personal menus
-      final menusSnapshot = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('menus')
-          .get();
+      // Get personal menus (paginated)
+      final menusSnapshot =
+          await ExportPaginationHelper.paginatedCollectionExport(
+        collection:
+            _firestore.collection('users').doc(userId).collection('menus'),
+        maxDocuments: menuLimit,
+      );
 
-      for (final doc in menusSnapshot.docs) {
+      for (final doc in menusSnapshot) {
         menus.add({
           'menu_id': doc.id,
           'data': doc.data(),
         });
       }
 
-      // Get menus from menus collection where user is owner
-      final sharedMenus = await _firestore
-          .collection('menus')
-          .where('sharedByUserId', isEqualTo: userId)
-          .get();
+      // Get menus from menus collection where user is owner (paginated)
+      final sharedMenus = await ExportPaginationHelper.paginatedQuery(
+        query: _firestore
+            .collection('menus')
+            .where('sharedByUserId', isEqualTo: userId),
+        maxDocuments: menuLimit,
+      );
 
-      for (final doc in sharedMenus.docs) {
+      for (final doc in sharedMenus) {
         menus.add({
           'menu_id': doc.id,
           'type': 'shared',
@@ -92,6 +101,7 @@ class ContentExportManager {
       return {
         'total_count': menus.length,
         'menus': menus,
+        if (menus.length >= menuLimit) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error('[$_logTag] Failed to export menus', e);
@@ -103,15 +113,20 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportShoppingLists(String userId) async {
     try {
       final lists = <Map<String, dynamic>>[];
+      final listLimit =
+          ExportPaginationHelper.getLimitForType('shopping_lists');
 
-      // Get personal shopping lists
-      final shoppingLists = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('shopping_lists')
-          .get();
+      // Get personal shopping lists (paginated)
+      final shoppingLists =
+          await ExportPaginationHelper.paginatedCollectionExport(
+        collection: _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('shopping_lists'),
+        maxDocuments: listLimit,
+      );
 
-      for (final listDoc in shoppingLists.docs) {
+      for (final listDoc in shoppingLists) {
         final itemsList = <Map<String, dynamic>>[];
         final listData = {
           'list_id': listDoc.id,
@@ -120,8 +135,10 @@ class ContentExportManager {
         };
 
         // Get items for this list (if they exist as subcollection)
+        // Items are limited to prevent timeout on very large lists
         try {
-          final items = await listDoc.reference.collection('items').get();
+          final items =
+              await listDoc.reference.collection('items').limit(500).get();
           for (final itemDoc in items.docs) {
             itemsList.add({
               'item_id': itemDoc.id,
@@ -140,6 +157,7 @@ class ContentExportManager {
       return {
         'total_count': lists.length,
         'shopping_lists': lists,
+        if (lists.length >= listLimit) 'truncated': true,
       };
     } catch (e) {
       app_logger.AppLogger.error(

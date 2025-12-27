@@ -49,7 +49,7 @@ class _PhotoImportViewContent extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
+                Text(
                   'Välj bildkälla',
                   style: AppTextStyles.headlineSmall,
                 ),
@@ -163,7 +163,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                           color: Theme.of(context).colorScheme.primary,
                         ),
                         const SizedBox(width: AppDimensions.spacingS),
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Ta bild av ett recept eller välj från galleriet för att importera text automatiskt',
                             style: AppTextStyles.bodySmall,
@@ -199,12 +199,12 @@ class _PhotoImportViewContent extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.all(AppDimensions.paddingM),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withValues(alpha: 0.1),
+                        color: AppColors.warning.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(
                           AppDimensions.borderRadiusM,
                         ),
                         border: Border.all(
-                          color: Colors.orange.withValues(alpha: 0.3),
+                          color: AppColors.warning.withValues(alpha: 0.3),
                           width: AppDimensions.borderWidthStandard,
                         ),
                       ),
@@ -213,9 +213,9 @@ class _PhotoImportViewContent extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.warning_amber_rounded,
-                                color: Colors.orange[700],
+                                color: AppColors.warning,
                                 size: AppDimensions.iconSizeM,
                               ),
                               const SizedBox(width: AppDimensions.spacingS),
@@ -223,7 +223,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                                 child: Text(
                                   'Bildkvaliteten är låg (${(viewModel.qualityScore! * 100).toInt()}%)',
                                   style: AppTextStyles.titleSmall.copyWith(
-                                    color: Colors.orange[900],
+                                    color: AppColors.onWarningContainer,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -236,7 +236,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                             Text(
                               'Förbättringsförslag:',
                               style: AppTextStyles.labelMedium.copyWith(
-                                color: Colors.orange[900],
+                                color: AppColors.onWarningContainer,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -252,14 +252,14 @@ class _PhotoImportViewContent extends StatelessWidget {
                                     Text(
                                       '• ',
                                       style: AppTextStyles.bodySmall.copyWith(
-                                        color: Colors.orange[800],
+                                        color: AppColors.onWarningContainer,
                                       ),
                                     ),
                                     Expanded(
                                       child: Text(
                                         rec,
                                         style: AppTextStyles.bodySmall.copyWith(
-                                          color: Colors.orange[800],
+                                          color: AppColors.onWarningContainer,
                                         ),
                                       ),
                                     ),
@@ -272,7 +272,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                           Text(
                             'OCR kan misslyckas eller ge dåliga resultat.',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: Colors.orange[800],
+                              color: AppColors.onWarningContainer,
                               fontStyle: FontStyle.italic,
                             ),
                           ),
@@ -325,7 +325,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                   if (viewModel.hasOcrResult) ...[
                     Row(
                       children: [
-                        const Text(
+                        Text(
                           'Tolkad text:',
                           style: AppTextStyles.headlineSmall,
                         ),
@@ -425,26 +425,26 @@ class _PhotoImportViewContent extends StatelessWidget {
 
     if (confidence >= 0.8) {
       // High confidence - Green
-      badgeBackgroundColor = Colors.green.withValues(alpha: 0.1);
-      badgeBorderColor = Colors.green.withValues(alpha: 0.3);
-      badgeIconColor = Colors.green[700]!;
-      badgeTextColor = Colors.green[900]!;
+      badgeBackgroundColor = AppColors.success.withValues(alpha: 0.1);
+      badgeBorderColor = AppColors.success.withValues(alpha: 0.3);
+      badgeIconColor = AppColors.success;
+      badgeTextColor = AppColors.onSuccessContainer;
       icon = Icons.check_circle;
       label = 'Hög kvalitet';
     } else if (confidence >= 0.6) {
       // Medium confidence - Orange
-      badgeBackgroundColor = Colors.orange.withValues(alpha: 0.1);
-      badgeBorderColor = Colors.orange.withValues(alpha: 0.3);
-      badgeIconColor = Colors.orange[700]!;
-      badgeTextColor = Colors.orange[900]!;
+      badgeBackgroundColor = AppColors.warning.withValues(alpha: 0.1);
+      badgeBorderColor = AppColors.warning.withValues(alpha: 0.3);
+      badgeIconColor = AppColors.warning;
+      badgeTextColor = AppColors.onWarningContainer;
       icon = Icons.info;
       label = 'God kvalitet';
     } else {
       // Low confidence - Red
-      badgeBackgroundColor = Colors.red.withValues(alpha: 0.1);
-      badgeBorderColor = Colors.red.withValues(alpha: 0.3);
-      badgeIconColor = Colors.red[700]!;
-      badgeTextColor = Colors.red[900]!;
+      badgeBackgroundColor = AppColors.error.withValues(alpha: 0.1);
+      badgeBorderColor = AppColors.error.withValues(alpha: 0.3);
+      badgeIconColor = AppColors.error;
+      badgeTextColor = AppColors.onErrorContainer;
       icon = Icons.warning;
       label = 'Låg kvalitet';
     }

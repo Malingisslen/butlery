@@ -5,7 +5,6 @@
 library;
 
 import 'package:flutter/widgets.dart';
-import 'package:flutter/foundation.dart';
 import 'package:butlery/core/bootstrap/stages/bootstrap_stage.dart';
 // Feature flags removed - using modular system only
 
@@ -39,10 +38,6 @@ class PlatformStage implements BootstrapStage {
       WidgetsFlutterBinding.ensureInitialized();
 
       // Basic environment validation - modular DI system enabled
-
-      if (kDebugMode) {
-        debugPrint('✅ [PlatformStage] Platform services ready');
-      }
     } catch (e) {
       throw BootstrapException(
         name,
@@ -67,9 +62,6 @@ class PlatformStage implements BootstrapStage {
 
       return true;
     } catch (e) {
-      if (kDebugMode) {
-        debugPrint('❌ [PlatformStage] Validation failed: $e');
-      }
       return false;
     }
   }

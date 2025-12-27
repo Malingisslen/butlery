@@ -45,9 +45,13 @@
 /// });
 /// ```
 
+import 'dart:async';
+import 'dart:io';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/user_service.dart';
@@ -64,6 +68,20 @@ class FCMService {
   // Callbacks for handling different notification scenarios
   static Function(RemoteMessage)? _onMessageReceived;
   static Function(RemoteMessage)? _onMessageOpenedApp;
+
+  // Subscription tracking for proper disposal
+  static StreamSubscription<String>? _tokenRefreshSubscription;
+  static StreamSubscription<RemoteMessage>? _onMessageSubscription;
+  static StreamSubscription<RemoteMessage>? _onMessageOpenedAppSubscription;
+
+  // Android notification channels
+  static const String _generalChannelId = 'butlery_general';
+  static const String _socialChannelId = 'butlery_social';
+  static const String _messagingChannelId = 'butlery_messaging';
+
+  // Flutter local notifications plugin
+  static final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
 
   /// Initialize FCM service with permission handling
   /// Should be called during app startup after Firebase initialization
@@ -83,6 +101,9 @@ class FCMService {
       _onMessageReceived = onMessageReceived;
       _onMessageOpenedApp = onMessageOpenedApp;
 
+      // Initialize Android notification channels (required for Android 8+)
+      await _initializeNotificationChannels();
+
       // Request notification permissions
       await _requestPermissions();
 
@@ -92,14 +113,72 @@ class FCMService {
       // Get and store initial FCM token
       await _refreshToken();
 
-      // Listen for token refresh
-      _messaging.onTokenRefresh.listen(_onTokenRefresh);
+      // Listen for token refresh (store subscription for disposal)
+      _tokenRefreshSubscription =
+          _messaging.onTokenRefresh.listen(_onTokenRefresh);
 
       _isInitialized = true;
       AppLogger.success('✅ FCM service initialized successfully');
     } catch (e) {
       AppLogger.error('❌ Failed to initialize FCM service', e);
       rethrow;
+    }
+  }
+
+  /// Initialize Android notification channels (required for Android 8+)
+  static Future<void> _initializeNotificationChannels() async {
+    // Only initialize on Android
+    if (!Platform.isAndroid) return;
+
+    try {
+      AppLogger.info('🔔 Initializing Android notification channels...');
+
+      // Define notification channels
+      const generalChannel = AndroidNotificationChannel(
+        _generalChannelId,
+        'Allmänna notiser',
+        description: 'Generella notiser från Butlery',
+        importance: Importance.defaultImportance,
+      );
+
+      const socialChannel = AndroidNotificationChannel(
+        _socialChannelId,
+        'Sociala notiser',
+        description: 'Vänförfrågningar, delningar och kommentarer',
+        importance: Importance.high,
+      );
+
+      const messagingChannel = AndroidNotificationChannel(
+        _messagingChannelId,
+        'Meddelanden',
+        description: 'Chattmeddelanden från vänner',
+        importance: Importance.high,
+        enableVibration: true,
+        playSound: true,
+      );
+
+      // Create channels using flutter_local_notifications
+      final androidPlugin =
+          _localNotifications.resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+
+      if (androidPlugin != null) {
+        await androidPlugin.createNotificationChannel(generalChannel);
+        await androidPlugin.createNotificationChannel(socialChannel);
+        await androidPlugin.createNotificationChannel(messagingChannel);
+        AppLogger.success('✅ Android notification channels created');
+      }
+
+      // Initialize flutter_local_notifications
+      const initializationSettingsAndroid =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
+      const initializationSettings =
+          InitializationSettings(android: initializationSettingsAndroid);
+
+      await _localNotifications.initialize(initializationSettings);
+    } catch (e) {
+      AppLogger.warning('⚠️ Failed to initialize notification channels: $e');
+      // Non-critical - FCM will still work with default channel
     }
   }
 
@@ -140,8 +219,9 @@ class FCMService {
   /// Set up foreground, background, and opened app message handlers
   static Future<void> _setupMessageHandlers() async {
     try {
-      // Handle messages when app is in foreground
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      // Handle messages when app is in foreground (store subscription for disposal)
+      _onMessageSubscription =
+          FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         AppLogger.info('🔔 Received foreground message: ${message.messageId}');
         _logMessageDetails(message);
 
@@ -149,8 +229,9 @@ class FCMService {
         _onMessageReceived?.call(message);
       });
 
-      // Handle messages when app is opened from notification
-      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      // Handle messages when app is opened from notification (store subscription for disposal)
+      _onMessageOpenedAppSubscription =
+          FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         AppLogger.info('🔔 App opened from notification: ${message.messageId}');
         _logMessageDetails(message);
 
@@ -399,6 +480,16 @@ class FCMService {
   static Future<void> dispose() async {
     try {
       AppLogger.info('🔔 Disposing FCM service...');
+
+      // Cancel all subscriptions to prevent memory leaks
+      await _tokenRefreshSubscription?.cancel();
+      await _onMessageSubscription?.cancel();
+      await _onMessageOpenedAppSubscription?.cancel();
+
+      _tokenRefreshSubscription = null;
+      _onMessageSubscription = null;
+      _onMessageOpenedAppSubscription = null;
+
       _currentToken = null;
       _isInitialized = false;
       _onMessageReceived = null;

@@ -129,24 +129,14 @@ class FormFieldsManager {
 
   /// Hämta alla controllers synkroniserade med aktuella värden
   List<TextEditingController> getControllers(List<String> currentValues) {
-    debugPrint(
-        '🔍 CONTROLLER_DEBUG: getControllers called with currentValues = $currentValues');
-    debugPrint('🔍 CONTROLLER_DEBUG: Before sync - _values = $_values');
-
     // CRITICAL FIX: Prevent race conditions with state synchronization lock
     if (_isUpdating) {
-      debugPrint(
-          '⚠️ CONTROLLER_WARNING: Already updating, skipping sync to prevent race condition');
       // Return controllers based on current internal state
       return _buildControllers();
     }
 
     // Synkronisera _values med currentValues
     _syncValues(currentValues);
-
-    debugPrint('🔍 CONTROLLER_DEBUG: After sync - _values = $_values');
-    debugPrint(
-        '🔍 CONTROLLER_DEBUG: Creating controllers for ${_values.length} values');
 
     return _buildControllers();
   }
@@ -158,14 +148,10 @@ class FormFieldsManager {
 
     for (int i = 0; i < _values.length; i++) {
       final key = 'field_$i';
-      debugPrint(
-          '🔍 CONTROLLER_DEBUG: Processing field $i with key=$key, value="${_values[i]}"');
 
       // Skapa ny controller om den inte finns
       if (!_controllers.containsKey(key)) {
         final controller = TextEditingController(text: _values[i]);
-        debugPrint(
-            '🔍 CONTROLLER_DEBUG: Created new controller for field $i with text "${_values[i]}"');
 
         // CRITICAL FIX: Create and track listener for proper memory management
         void listener() {
@@ -181,12 +167,7 @@ class FormFieldsManager {
         // Uppdatera befintlig controller om texten ändrats externt
         final existingController = _controllers[key]!;
         if (existingController.text != _values[i]) {
-          debugPrint(
-              '🔍 CONTROLLER_DEBUG: Updated existing controller for field $i: "${existingController.text}" -> "${_values[i]}"');
           existingController.text = _values[i];
-        } else {
-          debugPrint(
-              '🔍 CONTROLLER_DEBUG: Reused existing controller for field $i with text "${existingController.text}"');
         }
       }
 
@@ -195,11 +176,6 @@ class FormFieldsManager {
 
     // Rensa upp controllers som inte längre används
     _cleanupUnusedControllers(controllers.length);
-
-    debugPrint(
-        '🔍 CONTROLLER_DEBUG: _buildControllers returning ${controllers.length} controllers');
-    debugPrint(
-        '🔍 CONTROLLER_DEBUG: Final _controllers.keys = ${_controllers.keys}');
 
     return controllers;
   }
@@ -308,24 +284,15 @@ class FormFieldsManager {
 
   /// Get controllers property - creates controllers for current internal values
   List<TextEditingController> get controllers {
-    debugPrint('🔍 CONTROLLER_DEBUG: FormFieldsManager.controllers called');
-    debugPrint('🔍 CONTROLLER_DEBUG: _values = $_values');
-    debugPrint('🔍 CONTROLLER_DEBUG: _values.length = ${_values.length}');
-    debugPrint('🔍 CONTROLLER_DEBUG: _controllers.keys = ${_controllers.keys}');
-
     // Don't sync - just create controllers for current internal values
     final controllers = <TextEditingController>[];
 
     for (int i = 0; i < _values.length; i++) {
       final key = 'field_$i';
-      debugPrint(
-          '🔍 CONTROLLER_DEBUG: Processing field $i with key=$key, value="${_values[i]}"');
 
       // Create new controller if it doesn't exist
       if (!_controllers.containsKey(key)) {
         final controller = TextEditingController(text: _values[i]);
-        debugPrint(
-            '🔍 CONTROLLER_DEBUG: Created new controller for field $i with text "${_values[i]}"');
 
         // Add listener to track changes
         controller.addListener(() {
@@ -339,12 +306,7 @@ class FormFieldsManager {
         // Update existing controller if text changed externally
         final existingController = _controllers[key]!;
         if (existingController.text != _values[i]) {
-          debugPrint(
-              '🔍 CONTROLLER_DEBUG: Updated existing controller for field $i: "${existingController.text}" -> "${_values[i]}"');
           existingController.text = _values[i];
-        } else {
-          debugPrint(
-              '🔍 CONTROLLER_DEBUG: Reused existing controller for field $i with text "${existingController.text}"');
         }
       }
 
@@ -353,11 +315,6 @@ class FormFieldsManager {
 
     // Clean up unused controllers
     _cleanupUnusedControllers(controllers.length);
-
-    debugPrint(
-        '🔍 CONTROLLER_DEBUG: controllers getter returning ${controllers.length} controllers');
-    debugPrint(
-        '🔍 CONTROLLER_DEBUG: Final _controllers.keys = ${_controllers.keys}');
 
     return controllers;
   }
@@ -473,12 +430,5 @@ class FormFieldsManager {
     // CRITICAL FIX: Also reorganize listener tracking
     _controllerListeners.clear();
     _controllerListeners.addAll(newListeners);
-  }
-
-  /// Debug-metod för att logga state
-  void debugPrintState() {
-    debugPrint('FormFieldsManager State:');
-    debugPrint('  Values: $_values');
-    debugPrint('  Controllers: ${_controllers.keys.join(', ')}');
   }
 }

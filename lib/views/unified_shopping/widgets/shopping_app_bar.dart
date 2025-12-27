@@ -7,6 +7,7 @@ import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 
 /// App bar actions for shopping view
 class ShoppingAppBar {
@@ -25,58 +26,78 @@ class ShoppingAppBar {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Ny lista-knapp
-          IconButton(
-            icon: Icon(
-              Icons.add,
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.7),
+          Semantics(
+            label: 'Ny lista',
+            button: true,
+            enabled: true,
+            child: IconButton(
+              icon: Icon(
+                AdaptiveIcons.add,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.7),
+              ),
+              onPressed: onCreateList,
+              tooltip: 'Ny lista',
             ),
-            onPressed: onCreateList,
-            tooltip: 'Ny lista',
           ),
 
           // Dela med vänner-knapp (social)
-          IconButton(
-            icon: Icon(
-              Icons.people_outline,
-              color: canShare
-                  ? Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.7)
-                  : AppColors.textTertiary,
+          Semantics(
+            label: canShare ? 'Dela med vänner' : 'Inga artiklar att dela',
+            button: true,
+            enabled: canShare,
+            child: IconButton(
+              icon: Icon(
+                AdaptiveIcons.peopleOutlined,
+                color: canShare
+                    ? Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.7)
+                    : AppColors.textTertiary,
+              ),
+              onPressed: canShare ? onShowShareDialog : null,
+              tooltip: canShare ? 'Dela med vänner' : 'Inga artiklar att dela',
             ),
-            onPressed: canShare ? onShowShareDialog : null,
-            tooltip: canShare ? 'Dela med vänner' : 'Inga artiklar att dela',
           ),
 
           // Dela externt-knapp
-          IconButton(
-            icon: Icon(
-              Icons.share,
-              color: canShare
-                  ? Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.7)
-                  : AppColors.textTertiary,
+          Semantics(
+            label: canShare ? 'Dela externt' : 'Inga artiklar att dela',
+            button: true,
+            enabled: canShare,
+            child: IconButton(
+              icon: Icon(
+                AdaptiveIcons.share,
+                color: canShare
+                    ? Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.7)
+                    : AppColors.textTertiary,
+              ),
+              onPressed: canShare ? onShareExternally : null,
+              tooltip: canShare ? 'Dela externt' : 'Inga artiklar att dela',
             ),
-            onPressed: canShare ? onShareExternally : null,
-            tooltip: canShare ? 'Dela externt' : 'Inga artiklar att dela',
           ),
 
           // Sharing status indicator
           Container(
-            margin: const EdgeInsets.only(left: 8),
-            child: IconButton(
-              icon: Icon(
-                _getSharingStatusIcon(viewModel),
-                color: _getSharingStatusColor(viewModel),
+            margin: const EdgeInsetsDirectional.only(start: 8),
+            child: Semantics(
+              label: _getSharingStatusTooltip(viewModel),
+              button: true,
+              enabled: true,
+              child: IconButton(
+                icon: Icon(
+                  _getSharingStatusIcon(viewModel),
+                  color: _getSharingStatusColor(viewModel),
+                ),
+                onPressed: () => onShowSyncStatus(),
+                tooltip: _getSharingStatusTooltip(viewModel),
               ),
-              onPressed: () => onShowSyncStatus(),
-              tooltip: _getSharingStatusTooltip(viewModel),
             ),
           ),
         ],
@@ -88,46 +109,51 @@ class ShoppingAppBar {
     BuildContext context,
     VoidCallback onAddItem,
   ) {
-    return ElevatedButton.icon(
-      onPressed: onAddItem,
-      style: ComponentThemes.extendedFabStyle,
-      icon: const Icon(
-        Icons.add,
-        color: AppColors.cardWhite,
+    return Semantics(
+      label: 'Lägg till vara',
+      button: true,
+      enabled: true,
+      child: ElevatedButton.icon(
+        onPressed: onAddItem,
+        style: ComponentThemes.extendedFabStyle,
+        icon: Icon(
+          AdaptiveIcons.add,
+          color: AppColors.cardWhite,
+        ),
+        label: const Text('Lägg till vara'),
       ),
-      label: const Text('Lägg till vara'),
     );
   }
 
   /// Get the appropriate icon for sharing status based on list type and user permissions
   static IconData _getSharingStatusIcon(UnifiedShoppingViewModel viewModel) {
     final activeList = viewModel.activeList;
-    if (activeList == null) return Icons.person;
+    if (activeList == null) return AdaptiveIcons.person;
 
     switch (activeList.type) {
       case ListType.personal:
-        return Icons.person;
+        return AdaptiveIcons.person;
       case ListType.collaborative:
         final permissionService = ServiceLocator.get<PermissionService>();
         final currentUserId = permissionService.currentUser?.uid;
-        if (currentUserId == null) return Icons.people;
+        if (currentUserId == null) return AdaptiveIcons.people;
 
         final userPermission = activeList.memberPermissions[currentUserId];
         switch (userPermission) {
           case SharedListPermission.view:
-            return Icons.visibility;
+            return AdaptiveIcons.visibility;
           case SharedListPermission.edit:
-            return Icons.people;
+            return AdaptiveIcons.people;
           case SharedListPermission.admin:
-            return Icons.admin_panel_settings;
+            return Icons.admin_panel_settings; // No SF Symbol equivalent
           default:
             // If not in permissions map, check if owner
             return activeList.ownerId == currentUserId
-                ? Icons.admin_panel_settings
-                : Icons.people;
+                ? Icons.admin_panel_settings // No SF Symbol equivalent
+                : AdaptiveIcons.people;
         }
       case ListType.template:
-        return Icons.bookmark;
+        return AdaptiveIcons.bookmark;
     }
   }
 

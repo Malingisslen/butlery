@@ -18,6 +18,7 @@ import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/widgets/import/import_progress_widget.dart';
 import 'package:butlery/widgets/import/platform_badge_widget.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/rate_limit_dialog.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
@@ -104,7 +105,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                             // Platform badge
                             if (viewModel.detection != null &&
                                 viewModel.detection!.input.isNotEmpty) ...[
-                              const SizedBox(height: 12),
+                              const SizedBox(height: AppDimensions.spacingL),
                               PlatformBadgeWidget(
                                   detection: viewModel.detection),
                             ],
@@ -112,7 +113,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                             // Progress indicator
                             if (viewModel.isImporting ||
                                 viewModel.phase == ImportPhase.complete) ...[
-                              const SizedBox(height: 24),
+                              const SizedBox(height: AppDimensions.spacingLg),
                               ImportProgressWidget(
                                 currentStep: viewModel.currentStep,
                                 message: viewModel.progressMessage,
@@ -124,7 +125,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
                             // Error message
                             if (viewModel.error != null &&
                                 viewModel.phase == ImportPhase.error) ...[
-                              const SizedBox(height: 16),
+                              const SizedBox(height: AppDimensions.spacingMd),
                               _ErrorMessage(
                                 message: viewModel.error!,
                                 colorScheme: colorScheme,
@@ -224,8 +225,6 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
   ) async {
     // Check if this is a "needs screenshot" case (short error message, no real content)
     final text = helpResult.extractedText;
-    debugPrint(
-        '📋 AssistedImportDialog: extractedText="${text.length > 50 ? '${text.substring(0, 50)}...' : text}" (${text.length} chars)');
 
     // Detect if this is a short error message rather than actual recipe content
     final isNeedsScreenshot = text.length < 150 &&
@@ -235,8 +234,6 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
             text.toLowerCase().contains('transcript') ||
             text.toLowerCase().contains('saknar') ||
             text.isEmpty);
-
-    debugPrint('📋 isNeedsScreenshot: $isNeedsScreenshot');
 
     if (isNeedsScreenshot) {
       // Show a simple dialog with photo import option
@@ -269,7 +266,6 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
     BuildContext context,
     ImportNeedsUserHelp helpResult,
   ) async {
-    debugPrint('📋 Showing needs screenshot dialog');
     final theme = Theme.of(context);
 
     final action = await showDialog<String>(
@@ -295,8 +291,6 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
         ],
       ),
     );
-
-    debugPrint('📋 Dialog result: $action');
 
     if (!context.mounted || action != 'photo') return;
 
@@ -440,7 +434,7 @@ class _ErrorMessage extends StatelessWidget {
             color: colorScheme.onErrorContainer,
             size: 20,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppDimensions.spacingL),
           Expanded(
             child: Text(
               message,
@@ -486,7 +480,7 @@ class _ActionSection extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppDimensions.spacingL),
         ],
 
         // Import button
@@ -511,7 +505,7 @@ class _ActionSection extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: AppDimensions.spacingSm),
 
         // Manual import link
         TextButton(

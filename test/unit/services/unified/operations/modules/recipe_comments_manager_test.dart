@@ -32,7 +32,7 @@ class FakeRecipeComment implements RecipeComment {
   @override
   final DateTime? editedAt;
   @override
-  final List<String> likedByUserIds;
+  final int likesCount;
   @override
   final String? parentCommentId;
   @override
@@ -49,14 +49,14 @@ class FakeRecipeComment implements RecipeComment {
     required this.text,
     DateTime? createdAt,
     this.editedAt,
-    this.likedByUserIds = const [],
+    this.likesCount = 0,
     this.parentCommentId,
     this.replyCount = 0,
     this.isDeleted = false,
   }) : createdAt = createdAt ?? DateTime.now();
 
   @override
-  int get likeCount => likedByUserIds.length;
+  int get likeCount => likesCount;
 
   @override
   bool get isEdited => editedAt != null;
@@ -71,16 +71,13 @@ class FakeRecipeComment implements RecipeComment {
   String get timeAgoText => 'Nu';
 
   @override
-  bool isLikedBy(String userId) => likedByUserIds.contains(userId);
-
-  @override
   bool canBeEditedBy(String userId) => authorId == userId && !isDeleted;
 
   @override
   RecipeComment copyWith({
     String? text,
     DateTime? editedAt,
-    List<String>? likedByUserIds,
+    int? likesCount,
     int? replyCount,
     bool? isDeleted,
   }) {
@@ -93,24 +90,10 @@ class FakeRecipeComment implements RecipeComment {
       text: text ?? this.text,
       createdAt: createdAt,
       editedAt: editedAt ?? this.editedAt,
-      likedByUserIds: likedByUserIds ?? this.likedByUserIds,
+      likesCount: likesCount ?? this.likesCount,
       parentCommentId: parentCommentId,
       replyCount: replyCount ?? this.replyCount,
       isDeleted: isDeleted ?? this.isDeleted,
-    );
-  }
-
-  @override
-  RecipeComment addLike(String userId) {
-    if (likedByUserIds.contains(userId)) return this;
-    return copyWith(likedByUserIds: [...likedByUserIds, userId]);
-  }
-
-  @override
-  RecipeComment removeLike(String userId) {
-    if (!likedByUserIds.contains(userId)) return this;
-    return copyWith(
-      likedByUserIds: likedByUserIds.where((id) => id != userId).toList(),
     );
   }
 
@@ -194,7 +177,7 @@ void main() {
             text: 'Test comment',
             createdAt: DateTime.now(),
             editedAt: null,
-            likedByUserIds: [],
+            likesCount: 0,
             parentCommentId: null,
             replyCount: 0,
             isDeleted: false,

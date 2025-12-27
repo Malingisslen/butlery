@@ -125,7 +125,7 @@ class ShareDialogStates {
               label: const Text('Försök igen'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.error,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.cardWhite,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingLg,
                   vertical: AppDimensions.spacingL,
@@ -175,7 +175,7 @@ class ShareDialogStates {
               onPressed: onClose,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.success,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.cardWhite,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingLg,
                   vertical: AppDimensions.spacingL,

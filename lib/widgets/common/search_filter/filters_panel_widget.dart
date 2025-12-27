@@ -86,7 +86,7 @@ class FiltersPanelWidget extends StatelessWidget {
                           Icons.clear_all,
                           size: AppDimensions.iconSizeAction,
                         ),
-                        label: const Text(
+                        label: Text(
                           'Rensa alla filter',
                           style: AppTextStyles.labelLarge,
                         ),

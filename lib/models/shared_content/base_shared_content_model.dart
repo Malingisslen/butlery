@@ -1,5 +1,4 @@
 import 'package:butlery/core/types/app_timestamp.dart';
-import 'package:flutter/foundation.dart';
 
 /// Abstract base class for all shared content models providing common functionality.
 abstract class BaseSharedContentModel<TContent> {
@@ -143,15 +142,12 @@ abstract class BaseSharedContentModel<TContent> {
         try {
           return (timestamp as dynamic).toDate() as DateTime;
         } catch (e) {
-          debugPrint('❌ Error converting Firestore Timestamp: $e');
           return DateTime.now();
         }
       }
 
-      debugPrint('⚠️ Unknown timestamp format: ${timestamp.runtimeType}');
       return DateTime.now();
     } catch (e) {
-      debugPrint('❌ Error parsing timestamp: $e');
       return DateTime.now();
     }
   }

@@ -135,7 +135,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Kunde inte skicka meddelandet. Försök igen.'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
             duration: Duration(seconds: 3),
           ),
         );

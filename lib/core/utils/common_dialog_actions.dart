@@ -9,7 +9,9 @@ import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
+import 'package:butlery/widgets/common/icons/adaptive_icon.dart';
 import 'package:butlery/core/constants/app_strings.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Dialog factory for delete, action, and info dialogs with Swedish localization and BaseDialog foundation.
 class CommonDialogActions {
@@ -42,7 +44,7 @@ class CommonDialogActions {
       itemName: recipeName,
       itemType: 'recept',
       warningMessage: 'Receptet kommer att tas bort permanent.',
-      icon: Icons.restaurant,
+      icon: AdaptiveIcons.restaurant,
     );
   }
 
@@ -56,7 +58,7 @@ class CommonDialogActions {
       itemName: groupName,
       itemType: 'grupp',
       warningMessage: 'Alla medlemmar kommer att lämna gruppen.',
-      icon: Icons.group,
+      icon: AdaptiveIcons.group,
     );
   }
 
@@ -70,7 +72,7 @@ class CommonDialogActions {
       itemName: listName,
       itemType: 'inköpslista',
       warningMessage: 'Alla varor på listan kommer att försvinna.',
-      icon: Icons.shopping_cart,
+      icon: AdaptiveIcons.cart,
     );
   }
 
@@ -80,18 +82,18 @@ class CommonDialogActions {
     required String title,
     required String message,
     required String confirmText,
-    String cancelText = AppStrings.cancel,
+    String? cancelText,
     IconData? icon,
     Color? confirmColor,
     bool isDangerous = false,
   }) async {
     return await showDialog<bool>(
       context: context,
-      builder: (context) => _ActionConfirmationDialog(
+      builder: (dialogContext) => _ActionConfirmationDialog(
         title: title,
         message: message,
         primaryActionText: confirmText,
-        secondaryActionText: cancelText,
+        secondaryActionText: cancelText ?? dialogContext.l10n.commonCancel,
         icon: icon,
         confirmColor: confirmColor,
         isDangerous: isDangerous,
@@ -109,7 +111,7 @@ class CommonDialogActions {
       title: 'Lämna grupp?',
       message: 'Vill du verkligen lämna gruppen "$groupName"?',
       confirmText: 'Lämna grupp',
-      icon: Icons.exit_to_app,
+      icon: AdaptiveIcons.exitToApp,
       confirmColor: AppColors.warning,
       isDangerous: true,
     );
@@ -124,7 +126,7 @@ class CommonDialogActions {
       title: 'Osparade ändringar',
       message: 'Du har osparade ändringar. Vill du verkligen avbryta?',
       confirmText: 'Avbryt utan att spara',
-      icon: Icons.warning,
+      icon: AdaptiveIcons.warning,
       confirmColor: AppColors.warning,
       isDangerous: true,
     );
@@ -144,8 +146,8 @@ class CommonDialogActions {
       context: context,
       title: 'Dela $itemType?',
       message: 'Vill du dela $itemType med $recipients?',
-      confirmText: AppStrings.share,
-      icon: Icons.share,
+      confirmText: context.l10n.commonShare,
+      icon: AdaptiveIcons.share,
       confirmColor: AppColors.primaryBlue,
     );
   }
@@ -159,12 +161,12 @@ class CommonDialogActions {
   }) async {
     await showDialog(
       context: context,
-      builder: (context) => _InfoDialog(
+      builder: (dialogContext) => _InfoDialog(
         title: title,
         message: message,
-        icon: icon ?? Icons.check_circle,
+        icon: icon ?? AdaptiveIcons.checkCircle,
         color: AppColors.success,
-        buttonText: AppStrings.ok,
+        buttonText: dialogContext.l10n.commonOk,
       ),
     );
   }
@@ -178,12 +180,12 @@ class CommonDialogActions {
   }) async {
     await showDialog(
       context: context,
-      builder: (context) => _InfoDialog(
+      builder: (dialogContext) => _InfoDialog(
         title: title,
         message: message,
-        icon: icon ?? Icons.warning,
+        icon: icon ?? AdaptiveIcons.warning,
         color: AppColors.warning,
-        buttonText: AppStrings.ok,
+        buttonText: dialogContext.l10n.commonOk,
       ),
     );
   }
@@ -197,18 +199,19 @@ class CommonDialogActions {
   }) async {
     await showDialog(
       context: context,
-      builder: (context) => _InfoDialog(
+      builder: (dialogContext) => _InfoDialog(
         title: title,
         message: message,
-        icon: icon ?? Icons.error,
+        icon: icon ?? AdaptiveIcons.error,
         color: AppColors.error,
-        buttonText: AppStrings.ok,
+        buttonText: dialogContext.l10n.commonOk,
       ),
     );
   }
 }
 
 /// Private delete confirmation dialog
+// ignore_for_file: deprecated_member_use_from_same_package
 class _DeleteConfirmationDialog extends BaseDialog<bool> {
   final String itemName;
   final String itemType;
@@ -222,7 +225,7 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
     this.icon,
   }) : super(
           title: '${AppStrings.delete} $itemType?',
-          titleIcon: Icons.delete,
+          titleIcon: Icons.delete, // Kept as const for super constructor
           primaryActionText: AppStrings.delete,
           secondaryActionText: AppStrings.cancel,
           isDangerous: true,
